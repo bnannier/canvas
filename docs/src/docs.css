@@ -182,12 +182,19 @@
 }
 
 .docs-sidebar-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 9999px;
   background: hsl(var(--primary));
-  margin-right: 2px;
+  margin-right: 4px;
   flex-shrink: 0;
+}
+
+/* ── Collapsed group icon button ──────────────────────── */
+
+.sidebar-group-icon {
+  font-family: inherit;
+  text-decoration: none;
 }
 
 .docs-class-type {

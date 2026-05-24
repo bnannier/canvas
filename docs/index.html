@@ -10,6 +10,22 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Apply saved theme/surface before first paint to prevent flash
+      (function() {
+        try {
+          var t = localStorage.getItem('canvas-theme');
+          if (t === 'light') document.documentElement.classList.remove('dark');
+          else if (t === 'dark') document.documentElement.classList.add('dark');
+
+          var s = localStorage.getItem('canvas-surface');
+          if (s === 'glass') document.documentElement.dataset.surface = 'glass';
+
+          var d = localStorage.getItem('canvas-density');
+          if (d === 'compact' || d === 'comfy') document.documentElement.dataset.density = d;
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
