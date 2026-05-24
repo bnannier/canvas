@@ -130,11 +130,11 @@ const MODES: ThemeMode[] = [
 // Pixel diff (used when not in --update mode)
 // ---------------------------------------------------------------------------
 
-// Allow a small number of differing pixels to absorb sub-pixel rendering
-// variance across runs. 500 px out of a 1280x900 @2x capture (~2.3M px)
-// is roughly 0.02%, so real regressions still surface clearly while
-// font hinting and anti-aliasing jitter are tolerated.
-const MAX_DIFF_PIXELS = 500;
+// Use a ratio-based threshold instead of absolute pixel count so that
+// cross-platform font rendering differences (macOS vs Ubuntu) are
+// tolerated. 5% covers typical font hinting and anti-aliasing variance
+// between OSes while still catching real CSS regressions.
+const MAX_DIFF_PIXEL_RATIO = 0.05;
 
 function compareImages(
   baseline: Buffer,
@@ -146,7 +146,7 @@ function compareImages(
   const compare = utils.getComparator("image/png");
 
   const result = compare(baseline, current, {
-    maxDiffPixels: MAX_DIFF_PIXELS,
+    maxDiffPixelRatio: MAX_DIFF_PIXEL_RATIO,
   });
 
   if (!result) return { match: true, message: "pass" };
