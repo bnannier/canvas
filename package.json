@@ -1,6 +1,6 @@
 {
   "name": "@olympusoss/canvas",
-  "version": "4.0.0",
+  "version": "3.0.0",
   "type": "module",
   "description": "CSS-first design system for the Olympus platform",
   "main": "./src/index.ts",
