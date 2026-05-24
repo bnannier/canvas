@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { CodeBlock } from "./code-block";
 import type { ComponentExample } from "@/data/types";
 
@@ -7,41 +6,47 @@ interface ExampleCardProps {
 }
 
 export function ExampleCard({ example }: ExampleCardProps) {
-  const [tab, setTab] = useState<"preview" | "code">("preview");
-
   return (
-    <div>
+    <div style={{ marginBottom: "1rem" }}>
       {example.title && (
-        <h3 className="h5" style={{ marginBottom: "0.5rem" }}>{example.title}</h3>
+        <div style={{
+          fontSize: "11px",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          color: "hsl(var(--muted-foreground))",
+          fontWeight: 500,
+          marginBottom: "0.5rem",
+        }}>
+          {example.title}
+        </div>
       )}
       {example.description && (
         <p className="small muted" style={{ marginBottom: "0.5rem" }}>{example.description}</p>
       )}
-      <div style={{ border: "1px solid hsl(var(--border))", borderRadius: "var(--radius-lg, 12px)", overflow: "hidden" }}>
-        <div className="docs-example-tabs">
-          <button
-            className={`docs-example-tab${tab === "preview" ? " active" : ""}`}
-            onClick={() => setTab("preview")}
-          >
-            Preview
-          </button>
-          <button
-            className={`docs-example-tab${tab === "code" ? " active" : ""}`}
-            onClick={() => setTab("code")}
-          >
-            Code
-          </button>
-        </div>
-        {tab === "preview" ? (
-          <div className="docs-preview" style={{ borderTop: "none", borderRadius: 0, border: "none" }}>
-            <div dangerouslySetInnerHTML={{ __html: example.html }} />
-          </div>
-        ) : (
-          <div style={{ borderRadius: 0 }}>
-            <CodeBlock code={example.html} language="html" />
-          </div>
-        )}
+      <div className="section-card" style={{
+        padding: "1.25rem",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 120,
+        gap: "0.75rem",
+        flexWrap: "wrap",
+      }}>
+        <div dangerouslySetInnerHTML={{ __html: example.html }} />
       </div>
+      <details style={{ marginTop: "0.5rem" }}>
+        <summary style={{
+          fontSize: "11.5px",
+          color: "hsl(var(--muted-foreground))",
+          cursor: "pointer",
+          userSelect: "none",
+        }}>
+          Show code
+        </summary>
+        <div style={{ marginTop: "0.5rem" }}>
+          <CodeBlock code={example.html} language="html" />
+        </div>
+      </details>
     </div>
   );
 }

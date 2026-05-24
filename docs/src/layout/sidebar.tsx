@@ -1,93 +1,152 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { CanvasMark } from "@/components/canvas-mark";
+import {
+  Home, Layers, Palette, User, Award, ChevronRight, MousePointerClick,
+  Columns2, CheckSquare, Search, ChevronDown, Info, TextCursorInput,
+  Keyboard, ChevronsLeft, MessageSquare, CircleDot, List, Minus, Loader,
+  Loader2, ToggleLeft, AlignLeft, MessageCircle, Type, AlertTriangle,
+  Square, Code, Inbox, FileText, FileInput, LayoutDashboard, BarChart2,
+  Calendar, Terminal, Table, Maximize2, Filter, Heading, MoreHorizontal,
+  PanelRight, PanelLeft, Footprints, Folder, Bell, Navigation, ArrowRight,
+  Plug, Globe, ChevronLeft, X, Layout,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { CATEGORIES, type Category } from "@/data/types";
 
-interface ComponentEntry {
+interface NavItem {
   slug: string;
-  name: string;
-  category: Category;
+  label: string;
+  to: string;
+  icon: LucideIcon;
 }
 
-const GUIDE_PAGES = [
-  { slug: "tokens", label: "Tokens" },
-  { slug: "theming", label: "Theming" },
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+  collapsible: boolean;
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Overview",
+    collapsible: false,
+    items: [
+      { slug: "", label: "About Canvas", to: "/", icon: Home },
+    ],
+  },
+  {
+    label: "Tokens",
+    collapsible: true,
+    items: [
+      { slug: "tokens", label: "Tokens", to: "/tokens", icon: Layers },
+      { slug: "theming", label: "Theming", to: "/theming", icon: Palette },
+    ],
+  },
+  {
+    label: "Atoms",
+    collapsible: true,
+    items: [
+      { slug: "avatar", label: "Avatar", to: "/components/avatar", icon: User },
+      { slug: "badge", label: "Badge", to: "/components/badge", icon: Award },
+      { slug: "breadcrumb", label: "Breadcrumb", to: "/components/breadcrumb", icon: ChevronRight },
+      { slug: "button", label: "Button", to: "/components/button", icon: MousePointerClick },
+      { slug: "button-group", label: "Button Group", to: "/components/button-group", icon: Columns2 },
+      { slug: "checkbox", label: "Checkbox", to: "/components/checkbox", icon: CheckSquare },
+      { slug: "combobox", label: "Combobox", to: "/components/combobox", icon: Search },
+      { slug: "dropdown", label: "Dropdown", to: "/components/dropdown", icon: ChevronDown },
+      { slug: "icon", label: "Icon", to: "/components/icon", icon: Info },
+      { slug: "input", label: "Input", to: "/components/input", icon: TextCursorInput },
+      { slug: "input-group", label: "Input Group", to: "/components/input-group", icon: Columns2 },
+      { slug: "kbd", label: "Kbd", to: "/components/kbd", icon: Keyboard },
+      { slug: "pagination", label: "Pagination", to: "/components/pagination", icon: ChevronsLeft },
+      { slug: "popover", label: "Popover", to: "/components/popover", icon: MessageSquare },
+      { slug: "radio", label: "Radio", to: "/components/radio", icon: CircleDot },
+      { slug: "select", label: "Select", to: "/components/select", icon: List },
+      { slug: "separator", label: "Separator", to: "/components/separator", icon: Minus },
+      { slug: "skeleton", label: "Skeleton", to: "/components/skeleton", icon: Loader },
+      { slug: "spinner", label: "Spinner", to: "/components/spinner", icon: Loader2 },
+      { slug: "switch", label: "Switch", to: "/components/switch", icon: ToggleLeft },
+      { slug: "textarea", label: "Textarea", to: "/components/textarea", icon: AlignLeft },
+      { slug: "tooltip", label: "Tooltip", to: "/components/tooltip", icon: MessageCircle },
+      { slug: "typography", label: "Typography", to: "/components/typography", icon: Type },
+    ],
+  },
+  {
+    label: "Molecules",
+    collapsible: true,
+    items: [
+      { slug: "alert", label: "Alert", to: "/components/alert", icon: AlertTriangle },
+      { slug: "card", label: "Card", to: "/components/card", icon: Square },
+      { slug: "code-block", label: "Code Block", to: "/components/code-block", icon: Code },
+      { slug: "empty-state", label: "Empty State", to: "/components/empty-state", icon: Inbox },
+      { slug: "field", label: "Field", to: "/components/field", icon: FileText },
+      { slug: "form", label: "Form", to: "/components/form", icon: FileInput },
+      { slug: "section-card", label: "Section Card", to: "/components/section-card", icon: Layout },
+      { slug: "stat-card", label: "Stat Card", to: "/components/stat-card", icon: BarChart2 },
+    ],
+  },
+  {
+    label: "Organisms",
+    collapsible: true,
+    items: [
+      { slug: "app-shell", label: "App Shell", to: "/components/app-shell", icon: LayoutDashboard },
+      { slug: "calendar", label: "Calendar", to: "/components/calendar", icon: Calendar },
+      { slug: "command", label: "Command", to: "/components/command", icon: Terminal },
+      { slug: "data-table", label: "Data Table", to: "/components/data-table", icon: Table },
+      { slug: "dialog", label: "Dialog", to: "/components/dialog", icon: Maximize2 },
+      { slug: "filter-panel", label: "Filter Panel", to: "/components/filter-panel", icon: Filter },
+      { slug: "page-header", label: "Page Header", to: "/components/page-header", icon: Heading },
+      { slug: "row-menu", label: "Row Menu", to: "/components/row-menu", icon: MoreHorizontal },
+      { slug: "sheet", label: "Sheet", to: "/components/sheet", icon: PanelRight },
+      { slug: "sidebar", label: "Sidebar", to: "/components/sidebar", icon: PanelLeft },
+      { slug: "stepper", label: "Stepper", to: "/components/stepper", icon: Footprints },
+      { slug: "tabs", label: "Tabs", to: "/components/tabs", icon: Folder },
+      { slug: "toast", label: "Toast", to: "/components/toast", icon: Bell },
+      { slug: "topbar", label: "Topbar", to: "/components/topbar", icon: Navigation },
+    ],
+  },
+  {
+    label: "Guides",
+    collapsible: true,
+    items: [
+      { slug: "migration", label: "Migration", to: "/migration", icon: ArrowRight },
+      { slug: "integration", label: "Integration", to: "/integration", icon: Plug },
+      { slug: "browser-support", label: "Browser Support", to: "/browser-support", icon: Globe },
+    ],
+  },
 ];
 
-const REFERENCE_PAGES = [
-  { slug: "migration", label: "Migration" },
-  { slug: "integration", label: "Integration" },
-  { slug: "browser-support", label: "Browser Support" },
-];
+function getActiveSlug(pathname: string): string {
+  if (pathname === "/") return "";
+  const match = pathname.match(/^\/components\/(.+)$/);
+  if (match) return match[1];
+  return pathname.replace(/^\//, "");
+}
 
-const COMPONENTS: ComponentEntry[] = [
-  // Atoms
-  { slug: "avatar", name: "Avatar", category: "Atoms" },
-  { slug: "badge", name: "Badge", category: "Atoms" },
-  { slug: "breadcrumb", name: "Breadcrumb", category: "Atoms" },
-  { slug: "button", name: "Button", category: "Atoms" },
-  { slug: "button-group", name: "Button Group", category: "Atoms" },
-  { slug: "checkbox", name: "Checkbox", category: "Atoms" },
-  { slug: "combobox", name: "Combobox", category: "Atoms" },
-  { slug: "dropdown", name: "Dropdown", category: "Atoms" },
-  { slug: "icon", name: "Icon", category: "Atoms" },
-  { slug: "input", name: "Input", category: "Atoms" },
-  { slug: "input-group", name: "Input Group", category: "Atoms" },
-  { slug: "kbd", name: "Kbd", category: "Atoms" },
-  { slug: "pagination", name: "Pagination", category: "Atoms" },
-  { slug: "popover", name: "Popover", category: "Atoms" },
-  { slug: "radio", name: "Radio", category: "Atoms" },
-  { slug: "select", name: "Select", category: "Atoms" },
-  { slug: "separator", name: "Separator", category: "Atoms" },
-  { slug: "skeleton", name: "Skeleton", category: "Atoms" },
-  { slug: "spinner", name: "Spinner", category: "Atoms" },
-  { slug: "switch", name: "Switch", category: "Atoms" },
-  { slug: "textarea", name: "Textarea", category: "Atoms" },
-  { slug: "tooltip", name: "Tooltip", category: "Atoms" },
-  { slug: "typography", name: "Typography", category: "Atoms" },
-  // Molecules
-  { slug: "alert", name: "Alert", category: "Molecules" },
-  { slug: "card", name: "Card", category: "Molecules" },
-  { slug: "code-block", name: "Code Block", category: "Molecules" },
-  { slug: "empty-state", name: "Empty State", category: "Molecules" },
-  { slug: "field", name: "Field", category: "Molecules" },
-  { slug: "form", name: "Form", category: "Molecules" },
-  { slug: "section-card", name: "Section Card", category: "Molecules" },
-  { slug: "stat-card", name: "Stat Card", category: "Molecules" },
-  // Organisms
-  { slug: "app-shell", name: "App Shell", category: "Organisms" },
-  { slug: "calendar", name: "Calendar", category: "Organisms" },
-  { slug: "command", name: "Command", category: "Organisms" },
-  { slug: "data-table", name: "Data Table", category: "Organisms" },
-  { slug: "dialog", name: "Dialog", category: "Organisms" },
-  { slug: "filter-panel", name: "Filter Panel", category: "Organisms" },
-  { slug: "page-header", name: "Page Header", category: "Organisms" },
-  { slug: "row-menu", name: "Row Menu", category: "Organisms" },
-  { slug: "sheet", name: "Sheet", category: "Organisms" },
-  { slug: "sidebar", name: "Sidebar", category: "Organisms" },
-  { slug: "stepper", name: "Stepper", category: "Organisms" },
-  { slug: "tabs", name: "Tabs", category: "Organisms" },
-  { slug: "toast", name: "Toast", category: "Organisms" },
-  { slug: "topbar", name: "Topbar", category: "Organisms" },
-];
-
-function itemClass({ isActive }: { isActive: boolean }) {
-  return `sidebar-item${isActive ? " active" : ""}`;
+function getActiveGroup(pathname: string): string | null {
+  const slug = getActiveSlug(pathname);
+  for (const g of NAV_GROUPS) {
+    if (g.items.some((i) => i.slug === slug)) return g.label;
+  }
+  return null;
 }
 
 interface SidebarProps {
   open: boolean;
+  collapsed: boolean;
   onClose: () => void;
+  onToggleCollapse: () => void;
   onSearchOpen: () => void;
 }
 
-export function Sidebar({ open, onClose, onSearchOpen }: SidebarProps) {
+export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOpen }: SidebarProps) {
   const location = useLocation();
-  const activeCat = COMPONENTS.find(
-    (c) => location.pathname === `/components/${c.slug}`,
-  )?.category;
+  const activeSlug = getActiveSlug(location.pathname);
+  const activeGroup = getActiveGroup(location.pathname);
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(
-    () => new Set(activeCat ? [activeCat] : []),
+    () => new Set(activeGroup ? [activeGroup] : []),
   );
 
   function toggleGroup(label: string) {
@@ -102,105 +161,177 @@ export function Sidebar({ open, onClose, onSearchOpen }: SidebarProps) {
     <>
       {open && (
         <div
-          className="docs-sidebar-backdrop"
+          className="lg:hidden"
           onClick={onClose}
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgb(0 0 0 / 0.4)",
-            zIndex: 39,
-            display: "none",
+            background: "rgb(0 0 0 / 0.5)",
+            zIndex: 30,
           }}
+          aria-hidden
         />
       )}
-      <nav className={`sidebar${open ? " open" : ""}`}>
+      <aside className={`sidebar${collapsed ? " collapsed" : ""}${open ? " open" : ""}`}>
         <div className="sidebar-brand">
-          <NavLink
-            to="/"
-            style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "0.625rem" }}
-            onClick={onClose}
-          >
-            <span className="sidebar-brand-name">Canvas</span>
-            <span className="badge badge-secondary" style={{ fontSize: "0.6875rem" }}>v3</span>
-          </NavLink>
+          {collapsed ? (
+            <button
+              onClick={onToggleCollapse}
+              title="Expand sidebar"
+              aria-label="Expand sidebar"
+              style={{
+                border: 0,
+                background: "transparent",
+                cursor: "pointer",
+                padding: 0,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+              }}
+            >
+              <CanvasMark size={22} />
+            </button>
+          ) : (
+            <>
+              <CanvasMark size={22} />
+              <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+                <span className="sidebar-brand-name">Canvas</span>
+                <span style={{
+                  fontSize: "10px",
+                  fontWeight: 500,
+                  letterSpacing: "0.04em",
+                  color: "hsl(var(--muted-foreground))",
+                  marginTop: 2,
+                }}>
+                  design system
+                </span>
+              </div>
+              <div style={{ flex: 1 }} />
+              <button
+                className="sidebar-collapse-btn"
+                onClick={onToggleCollapse}
+                title="Collapse sidebar"
+                aria-label="Collapse sidebar"
+                style={{ display: "none" }}
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                className="sidebar-collapse-btn sidebar-close-mobile"
+                onClick={onClose}
+                title="Close menu"
+                aria-label="Close menu"
+              >
+                <X size={14} />
+              </button>
+            </>
+          )}
         </div>
 
-        <div className="sidebar-nav" style={{ overflowY: "auto", flex: 1 }}>
-          <button className="docs-sidebar-search" onClick={onSearchOpen}>
-            Search...
-            <kbd className="kbd">⌘K</kbd>
-          </button>
+        <nav className="sidebar-nav">
+          {!collapsed && (
+            <button className="docs-sidebar-search" onClick={onSearchOpen}>
+              Search...
+              <kbd className="kbd">⌘K</kbd>
+            </button>
+          )}
 
-          <div className="sidebar-group">
-            <div className="sidebar-group-label">Foundations</div>
-            {GUIDE_PAGES.map((p) => (
-              <NavLink key={p.slug} to={`/${p.slug}`} className={itemClass} onClick={onClose}>
-                {p.label}
-              </NavLink>
-            ))}
-          </div>
+          {NAV_GROUPS.map((g) => {
+            if (collapsed) {
+              return (
+                <div key={g.label} className="sidebar-group">
+                  {g.items.map((item) => (
+                    <NavLink
+                      key={item.slug}
+                      to={item.to}
+                      className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
+                      onClick={onClose}
+                      title={item.label}
+                      end={item.to === "/"}
+                    >
+                      <item.icon size={16} />
+                      <span className="label">{item.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              );
+            }
 
-          {CATEGORIES.map((cat) => {
-            const items = COMPONENTS.filter((c) => c.category === cat);
-            const isOpen = openGroups.has(cat);
-            const groupHasActive = activeCat === cat;
+            if (!g.collapsible) {
+              return (
+                <div key={g.label} className="sidebar-group">
+                  <div className="sidebar-group-label">{g.label}</div>
+                  {g.items.map((item) => (
+                    <NavLink
+                      key={item.slug}
+                      to={item.to}
+                      className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
+                      onClick={onClose}
+                      end={item.to === "/"}
+                    >
+                      <item.icon size={16} />
+                      <span className="label">{item.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              );
+            }
+
+            const isOpen = openGroups.has(g.label);
+            const groupHasActive = g.items.some((i) => i.slug === activeSlug);
             return (
-              <div key={cat} className="sidebar-group">
+              <div key={g.label} className="sidebar-group">
                 <button
                   type="button"
                   className="docs-sidebar-toggle"
-                  onClick={() => toggleGroup(cat)}
+                  onClick={() => toggleGroup(g.label)}
                   aria-expanded={isOpen}
                 >
-                  <span style={{ flex: 1 }}>{cat}</span>
+                  <span style={{ flex: 1 }}>{g.label}</span>
                   {groupHasActive && !isOpen && (
                     <span className="docs-sidebar-dot" />
                   )}
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <span
                     style={{
+                      display: "inline-flex",
                       transition: "transform 150ms ease",
                       transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-                      flexShrink: 0,
                     }}
                   >
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
+                    <ChevronRight size={11} />
+                  </span>
                 </button>
-                {isOpen && items.map((c) => (
-                  <NavLink
-                    key={c.slug}
-                    to={`/components/${c.slug}`}
-                    className={itemClass}
-                    onClick={onClose}
-                  >
-                    {c.name}
-                  </NavLink>
-                ))}
+                {isOpen && (
+                  <div style={{ marginTop: 2 }}>
+                    {g.items.map((item) => (
+                      <NavLink
+                        key={item.slug}
+                        to={item.to}
+                        className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
+                        onClick={onClose}
+                      >
+                        <item.icon size={16} />
+                        <span className="label">{item.label}</span>
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
-
-          <div className="sidebar-group">
-            <div className="sidebar-group-label">Guides</div>
-            {REFERENCE_PAGES.map((p) => (
-              <NavLink key={p.slug} to={`/${p.slug}`} className={itemClass} onClick={onClose}>
-                {p.label}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-      </nav>
+        </nav>
+      </aside>
       <style>{`
+        @media (min-width: 1024px) {
+          .sidebar-collapse-btn:not(.sidebar-close-mobile) { display: inline-flex !important; }
+          .sidebar-close-mobile { display: none !important; }
+        }
         @media (max-width: 1023px) {
-          .docs-sidebar-backdrop { display: block !important; }
+          .sidebar-collapse-btn:not(.sidebar-close-mobile) { display: none !important; }
+          .sidebar-close-mobile { display: inline-flex !important; }
         }
       `}</style>
     </>

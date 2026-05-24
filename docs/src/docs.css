@@ -199,3 +199,128 @@
   background: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
 }
+
+/* ── Sidebar collapse button ─────────────────────────────── */
+
+.sidebar-collapse-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-md, 6px);
+  color: hsl(var(--sidebar-foreground) / 0.6);
+  transition: color 150ms, background 150ms;
+}
+
+.sidebar-collapse-btn:hover {
+  background: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-foreground));
+}
+
+/* ── Topbar hamburger: mobile-only ──────────────────────── */
+
+.topbar-hamburger {
+  display: inline-flex;
+}
+
+@media (min-width: 1024px) {
+  .topbar-hamburger {
+    display: none;
+  }
+}
+
+/* ── Topbar subtitle: hide on small screens ──────────────── */
+
+.topbar-subtitle {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .topbar-subtitle {
+    display: block;
+  }
+}
+
+/* ── Topbar surface toggle (Solid / Glass pill) ───────── */
+
+.topbar-surface-toggle {
+  display: none;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  padding: 2px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+@media (min-width: 640px) {
+  .topbar-surface-toggle {
+    display: inline-flex;
+  }
+}
+
+.topbar-surface-toggle button {
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: color 150ms, background 150ms;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+}
+
+.topbar-surface-toggle button:hover {
+  color: hsl(var(--foreground));
+}
+
+.topbar-surface-toggle button.active {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+/* ── Atomic level row (home page) ─────────────────────── */
+
+.atomic-level-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.atomic-level-index {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: hsl(var(--muted) / 0.3);
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+@media (min-width: 768px) {
+  .atomic-level-row {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .atomic-level-index {
+    width: 200px;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.25rem;
+    border-bottom: none;
+    border-right: 1px solid hsl(var(--border));
+  }
+}
+
+/* ── Show code details ────────────────────────────────── */
+
+details summary:hover {
+  color: hsl(var(--foreground));
+}

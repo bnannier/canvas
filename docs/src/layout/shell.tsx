@@ -6,6 +6,7 @@ import { SearchDialog } from "@/components/search-dialog";
 
 export function Shell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const openSearch = useCallback(() => setSearchOpen(true), []);
@@ -26,14 +27,13 @@ export function Shell() {
     <div className="app-shell">
       <Sidebar
         open={sidebarOpen}
+        collapsed={sidebarCollapsed}
         onClose={() => setSidebarOpen(false)}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
         onSearchOpen={openSearch}
       />
-      <div className="app-main expanded">
-        <Topbar
-          onMenuToggle={() => setSidebarOpen((v) => !v)}
-          onSearchOpen={openSearch}
-        />
+      <div className={`app-main ${sidebarCollapsed ? "collapsed" : "expanded"}`}>
+        <Topbar onMenuToggle={() => setSidebarOpen((v) => !v)} />
         <main className="app-content">
           <Outlet />
         </main>
