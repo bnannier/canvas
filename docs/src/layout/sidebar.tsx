@@ -86,14 +86,16 @@ export function Sidebar({ open, onClose, onSearchOpen }: SidebarProps) {
     (c) => location.pathname === `/components/${c.slug}`,
   )?.category;
 
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    for (const cat of CATEGORIES) init[cat] = false;
-    return init;
-  });
+  const [openGroups, setOpenGroups] = useState<Set<string>>(
+    () => new Set(activeCat ? [activeCat] : []),
+  );
 
-  function toggle(cat: string) {
-    setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }));
+  function toggleGroup(label: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      next.has(label) ? next.delete(label) : next.add(label);
+      return next;
+    });
   }
 
   return (
@@ -140,17 +142,23 @@ export function Sidebar({ open, onClose, onSearchOpen }: SidebarProps) {
 
           {CATEGORIES.map((cat) => {
             const items = COMPONENTS.filter((c) => c.category === cat);
-            const isCollapsed = collapsed[cat] && activeCat !== cat;
+            const isOpen = openGroups.has(cat);
+            const groupHasActive = activeCat === cat;
             return (
               <div key={cat} className="sidebar-group">
                 <button
-                  className="sidebar-group-label docs-sidebar-toggle"
-                  onClick={() => toggle(cat)}
-                  aria-expanded={!isCollapsed}
+                  type="button"
+                  className="docs-sidebar-toggle"
+                  onClick={() => toggleGroup(cat)}
+                  aria-expanded={isOpen}
                 >
+                  <span style={{ flex: 1 }}>{cat}</span>
+                  {groupHasActive && !isOpen && (
+                    <span className="docs-sidebar-dot" />
+                  )}
                   <svg
-                    width="12"
-                    height="12"
+                    width="11"
+                    height="11"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -159,18 +167,14 @@ export function Sidebar({ open, onClose, onSearchOpen }: SidebarProps) {
                     strokeLinejoin="round"
                     style={{
                       transition: "transform 150ms ease",
-                      transform: isCollapsed ? "rotate(-90deg)" : "rotate(0deg)",
+                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
                       flexShrink: 0,
                     }}
                   >
-                    <path d="m6 9 6 6 6-6" />
+                    <path d="m9 18 6-6-6-6" />
                   </svg>
-                  {cat}
-                  <span className="badge badge-secondary" style={{ marginLeft: "auto", fontSize: "0.625rem" }}>
-                    {items.length}
-                  </span>
                 </button>
-                {!isCollapsed && items.map((c) => (
+                {isOpen && items.map((c) => (
                   <NavLink
                     key={c.slug}
                     to={`/components/${c.slug}`}
