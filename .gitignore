@@ -5,3 +5,4 @@ dist/
 .env*
 coverage/
 CLAUDE.md
+test/screenshots/*.current.png

@@ -1,0 +1,70 @@
+@layer canvas.patterns {
+  @media (prefers-contrast: more) {
+    :root {
+      --border: 240 5.9% 50%;
+      --input: 240 5.9% 50%;
+      --muted-foreground: 240 6% 25%;
+      --shadow-xs: none;
+      --shadow-sm: none;
+      --shadow-md: none;
+      --shadow-lg: none;
+      --shadow-elevated: none;
+    }
+
+    .dark {
+      --border: 240 5% 60%;
+      --input: 240 5% 60%;
+      --muted-foreground: 240 5% 80%;
+    }
+
+    .btn,
+    .input,
+    .select,
+    .textarea,
+    .checkbox,
+    .radio,
+    .switch {
+      border-width: 2px;
+    }
+
+    .card,
+    .stat-card,
+    .section-card,
+    .dt-wrap,
+    .empty-card,
+    .alert {
+      border-width: 2px;
+    }
+
+    .badge,
+    .status-badge,
+    .kbd {
+      border-width: 2px;
+    }
+
+    .sidebar {
+      border-right-width: 2px;
+    }
+
+    .topbar {
+      border-bottom-width: 2px;
+    }
+
+    .dt-table th,
+    .dt-table td {
+      border-bottom-width: 2px;
+    }
+
+    .tab.active {
+      border-bottom-width: 3px;
+    }
+
+    .sep {
+      border-top-width: 2px;
+    }
+
+    .sep-v {
+      border-left-width: 2px;
+    }
+  }
+}
