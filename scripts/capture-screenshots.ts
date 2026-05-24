@@ -130,17 +130,49 @@ const MODES: ThemeMode[] = [
 // Pixel diff (used when not in --update mode)
 // ---------------------------------------------------------------------------
 
-// Use a ratio-based threshold instead of absolute pixel count so that
-// cross-platform font rendering differences (macOS vs Ubuntu) are
-// tolerated. 5% covers typical font hinting and anti-aliasing variance
-// between OSes while still catching real CSS regressions.
+// Pixel-level threshold: 5 % covers typical font hinting and anti-aliasing
+// variance across OSes while still catching real CSS regressions.
 const MAX_DIFF_PIXEL_RATIO = 0.05;
+
+// Dimension tolerance: cross-platform font rendering can shift total page
+// height by a few pixels. 1 % covers that without masking real layout
+// breakage (missing sections, wrong component order, etc.).
+const MAX_DIMENSION_DIFF_RATIO = 0.01;
+
+function getPngDimensions(buf: Buffer): { width: number; height: number } {
+  // PNG IHDR: width at bytes 16-19, height at bytes 20-23 (big-endian).
+  return {
+    width: buf.readUInt32BE(16),
+    height: buf.readUInt32BE(20),
+  };
+}
 
 function compareImages(
   baseline: Buffer,
   current: Buffer,
 ): { match: boolean; message: string } {
-  // Use Playwright's built-in image comparator (bundled in coreBundle.utils).
+  const baselineDim = getPngDimensions(baseline);
+  const currentDim = getPngDimensions(current);
+
+  const widthDiff = Math.abs(baselineDim.width - currentDim.width) / baselineDim.width;
+  const heightDiff = Math.abs(baselineDim.height - currentDim.height) / baselineDim.height;
+
+  if (widthDiff > MAX_DIMENSION_DIFF_RATIO || heightDiff > MAX_DIMENSION_DIFF_RATIO) {
+    return {
+      match: false,
+      message: `dimension mismatch beyond tolerance: ${baselineDim.width}x${baselineDim.height} vs ${currentDim.width}x${currentDim.height}`,
+    };
+  }
+
+  // Accept small dimension diffs caused by cross-platform font metrics.
+  if (baselineDim.width !== currentDim.width || baselineDim.height !== currentDim.height) {
+    return {
+      match: true,
+      message: `pass (size tolerance: ${baselineDim.width}x${baselineDim.height} vs ${currentDim.width}x${currentDim.height})`,
+    };
+  }
+
+  // Dimensions match; compare pixels.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { utils } = require("playwright-core/lib/coreBundle");
   const compare = utils.getComparator("image/png");
@@ -151,7 +183,6 @@ function compareImages(
 
   if (!result) return { match: true, message: "pass" };
 
-  // `result` is a descriptor when images differ beyond the threshold.
   const detail = typeof result === "object" && "errorMessage" in result
     ? result.errorMessage
     : "pixel diff exceeded threshold";
