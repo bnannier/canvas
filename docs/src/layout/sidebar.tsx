@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { CATEGORIES, type Category } from "@/data/types";
 
 interface ComponentEntry {
@@ -80,6 +81,21 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, onClose, onSearchOpen }: SidebarProps) {
+  const location = useLocation();
+  const activeCat = COMPONENTS.find(
+    (c) => location.pathname === `/components/${c.slug}`,
+  )?.category;
+
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    for (const cat of CATEGORIES) init[cat] = false;
+    return init;
+  });
+
+  function toggle(cat: string) {
+    setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }));
+  }
+
   return (
     <>
       {open && (
@@ -124,10 +140,37 @@ export function Sidebar({ open, onClose, onSearchOpen }: SidebarProps) {
 
           {CATEGORIES.map((cat) => {
             const items = COMPONENTS.filter((c) => c.category === cat);
+            const isCollapsed = collapsed[cat] && activeCat !== cat;
             return (
               <div key={cat} className="sidebar-group">
-                <div className="sidebar-group-label">{cat}</div>
-                {items.map((c) => (
+                <button
+                  className="sidebar-group-label docs-sidebar-toggle"
+                  onClick={() => toggle(cat)}
+                  aria-expanded={!isCollapsed}
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      transition: "transform 150ms ease",
+                      transform: isCollapsed ? "rotate(-90deg)" : "rotate(0deg)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                  {cat}
+                  <span className="badge badge-secondary" style={{ marginLeft: "auto", fontSize: "0.625rem" }}>
+                    {items.length}
+                  </span>
+                </button>
+                {!isCollapsed && items.map((c) => (
                   <NavLink
                     key={c.slug}
                     to={`/components/${c.slug}`}
