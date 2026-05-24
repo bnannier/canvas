@@ -64,7 +64,7 @@ export const COMPONENTS: ComponentDoc[] = [
         title: "Sidebar with groups",
         html: `<nav class="sidebar open" style="position:relative;transform:none;height:300px">
   <div class="sidebar-brand">
-    <span class="sidebar-brand-name">Olympus</span>
+    <span class="sidebar-brand-name">Acme</span>
   </div>
   <div class="sidebar-nav">
     <div class="sidebar-group">

@@ -109,13 +109,12 @@ export function MigrationPage() {
             Framework-specific component libraries now live in dedicated packages:
           </p>
           <ul style={{ paddingLeft: "1.25rem", fontSize: "0.875rem", lineHeight: 1.75 }}>
-            <li><code className="code">@olympusoss/canvas-react</code> &ndash; React components for web</li>
-            <li><code className="code">@olympusoss/canvas-react-native</code> &ndash; React Native components</li>
-            <li><code className="code">@olympusoss/canvas-vue</code> &ndash; Vue components</li>
-            <li><code className="code">@olympusoss/canvas-flux</code> &ndash; Flux components</li>
+            <li><code className="code">canvas-react</code> &ndash; React components for web</li>
+            <li><code className="code">canvas-react-native</code> &ndash; React Native components</li>
+            <li><code className="code">canvas-vue</code> &ndash; Vue components</li>
           </ul>
           <p className="body" style={{ marginTop: "0.75rem" }}>
-            These packages depend on <code className="code">@olympusoss/canvas</code> for tokens and CSS. If your app used v2 React components directly, migrate to <code className="code">@olympusoss/canvas-react</code> or build your own components on Canvas CSS.
+            These packages depend on Canvas for tokens and CSS. If your app used v2 React components directly, migrate to the appropriate framework package or build your own components on Canvas CSS.
           </p>
         </section>
 

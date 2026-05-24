@@ -25,7 +25,7 @@ export function Home() {
       <div className="docs-hero">
         <h1 className="docs-hero-title">Canvas</h1>
         <p className="docs-hero-sub">
-          CSS-first design system for the Olympus platform. {COMPONENTS.length} components, 7 token
+          A modular, CSS-first design system. {COMPONENTS.length} components, 7 token
           files, light/dark mode, glass surface, and density controls. No framework required.
         </p>
         <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.5rem" }}>

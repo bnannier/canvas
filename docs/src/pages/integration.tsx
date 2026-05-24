@@ -171,7 +171,7 @@ export function IntegrationPage() {
         <section id="end-user-apps" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>End-User Apps</h2>
           <p className="body" style={{ marginBottom: "0.75rem" }}>
-            Apps like Athena, Hera, and Site typically consume a downstream package rather than Canvas directly. They may also import Canvas CSS or utilities when needed.
+            End-user apps typically consume a downstream framework package rather than Canvas directly. They may also import Canvas CSS or utilities when needed.
           </p>
 
           <h3 className="h5" style={{ marginBottom: "0.5rem" }}>Typical setup</h3>
