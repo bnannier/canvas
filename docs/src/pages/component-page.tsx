@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { getComponent } from "@/data/components";
 import { ExampleCard } from "@/components/example-card";
 import { Playground } from "@/components/playground";
+import { PageNav } from "@/components/page-nav";
 import { NotFound } from "./not-found";
 
 export function ComponentPage() {
@@ -11,7 +12,7 @@ export function ComponentPage() {
   if (!comp) return <NotFound />;
 
   return (
-    <div style={{ maxWidth: 960 }}>
+    <div>
       <header style={{ marginBottom: "2.5rem" }}>
         <h1 style={{
           margin: 0,
@@ -209,6 +210,8 @@ export function ComponentPage() {
           </div>
         </section>
       )}
+
+      <PageNav />
     </div>
   );
 }

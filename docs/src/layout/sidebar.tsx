@@ -16,19 +16,19 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-interface NavItem {
+export interface NavItem {
   slug: string;
   label: string;
   to: string;
   icon: LucideIcon;
 }
 
-interface NavGroup {
+export interface NavGroup {
   label: string;
   items: NavItem[];
 }
 
-const NAV_GROUPS: NavGroup[] = [
+export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [

@@ -3,10 +3,13 @@ import { Shell } from "./layout/shell";
 import { Home } from "./pages/home";
 import { ComponentPage } from "./pages/component-page";
 import { TokensPage } from "./pages/tokens";
+import { SpacingPage } from "./pages/tokens-spacing";
+import { TypographyPage } from "./pages/tokens-typography";
 import { ThemingPage } from "./pages/theming";
 import { MigrationPage } from "./pages/migration";
 import { IntegrationPage } from "./pages/integration";
 import { BrowserSupportPage } from "./pages/browser-support";
+import { ComponentsIndex } from "./pages/components-index";
 import { NotFound } from "./pages/not-found";
 
 const router = createBrowserRouter([
@@ -15,10 +18,13 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "tokens", element: <TokensPage /> },
+      { path: "tokens/spacing", element: <SpacingPage /> },
+      { path: "tokens/typography", element: <TypographyPage /> },
       { path: "theming", element: <ThemingPage /> },
       { path: "migration", element: <MigrationPage /> },
       { path: "integration", element: <IntegrationPage /> },
       { path: "browser-support", element: <BrowserSupportPage /> },
+      { path: "components", element: <ComponentsIndex /> },
       { path: "components/:slug", element: <ComponentPage /> },
       { path: "*", element: <NotFound /> },
     ],

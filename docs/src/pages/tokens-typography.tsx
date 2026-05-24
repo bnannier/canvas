@@ -1,0 +1,280 @@
+import { PageNav } from "@/components/page-nav";
+
+const SCALE = [
+  { name: "Display / H1", cls: "h1", spec: "36px / 40px · bold", use: "Hero titles. One per page max.", px: 36 },
+  { name: "H2", cls: "h2", spec: "30px / 36px · bold", use: "Major page sections.", px: 30 },
+  { name: "H3 / Page", cls: "h3", spec: "24px / 32px · bold", use: "Page titles inside the app shell.", px: 24 },
+  { name: "H4 / Card", cls: "h4", spec: "18px / 28px · semibold", use: "Card titles, dialog headings.", px: 18 },
+  { name: "H5", cls: "h5", spec: "16px / 24px · semibold", use: "Subgroup headers, form section labels.", px: 16 },
+  { name: "Body", cls: "body", spec: "16px / 24px · regular", use: "Default reading text.", px: 16 },
+  { name: "Small", cls: "small", spec: "14px / 20px · regular", use: "Secondary text, helpers, captions.", px: 14 },
+  { name: "Tiny", cls: "tiny", spec: "12px / 16px · regular", use: "Metadata, timestamps, labels.", px: 12 },
+];
+
+const WEIGHTS = [
+  { w: 400, name: "Regular", use: "Body text" },
+  { w: 500, name: "Medium", use: "Labels, table values, buttons" },
+  { w: 600, name: "Semibold", use: "Headings, card titles" },
+  { w: 700, name: "Bold", use: "Display / hero text only" },
+];
+
+function Section({ title, description, anatomy, children }: {
+  title: string;
+  description?: string;
+  anatomy?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <header style={{ marginBottom: 16 }}>
+        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "hsl(var(--foreground))" }}>
+          {title}
+        </h2>
+        {description && (
+          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "hsl(var(--muted-foreground))", maxWidth: 640, lineHeight: 1.6 }}>
+            {description}
+          </p>
+        )}
+      </header>
+      {anatomy && (
+        <div style={{
+          marginBottom: 16,
+          padding: "12px 16px",
+          borderRadius: "var(--radius-lg, 8px)",
+          background: "hsl(var(--muted) / 0.4)",
+          border: "1px solid hsl(var(--border))",
+          fontSize: "12.5px",
+          color: "hsl(var(--muted-foreground))",
+        }}>
+          <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Anatomy.</span>
+          {anatomy}
+        </div>
+      )}
+      {children}
+    </section>
+  );
+}
+
+export function TypographyPage() {
+  return (
+    <div>
+      <section style={{ marginBottom: 32 }}>
+        <h1 style={{
+          margin: 0,
+          fontSize: "clamp(32px, 5vw, 40px)",
+          fontWeight: 700,
+          letterSpacing: "-0.025em",
+          color: "hsl(var(--foreground))",
+        }}>
+          Typography
+        </h1>
+        <p style={{
+          marginTop: 12,
+          maxWidth: "42rem",
+          fontSize: "14.5px",
+          lineHeight: 1.6,
+          color: "hsl(var(--muted-foreground))",
+        }}>
+          Two families do all the work. Roboto Variable for prose and chrome; JetBrains Mono for code,
+          IDs, timestamps, and any value the user might copy. The scale is a strict 8-step ramp; anything
+          outside it gets flagged in review.
+        </p>
+      </section>
+
+      <Section
+        title="Font families"
+        description="Two families, both variable. No more weights or italics are pulled in by default; keep the network footprint honest."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 24,
+          }}>
+            <div style={{
+              fontSize: "11px",
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.08em",
+              color: "hsl(var(--muted-foreground))",
+              fontWeight: 500,
+              marginBottom: 8,
+            }}>
+              --font-sans
+            </div>
+            <div style={{ fontFamily: "var(--font-sans)", fontSize: 40, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.02em" }}>
+              Roboto
+            </div>
+            <div style={{ marginTop: 8, fontSize: "12.5px", color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-mono)" }}>
+              "Roboto", "Inter", system-ui, ...
+            </div>
+            <div style={{ marginTop: 16, fontSize: "14px", color: "hsl(var(--foreground))", lineHeight: 1.6 }}>
+              The quick brown fox jumps over the lazy dog 0123456789
+            </div>
+            <div style={{ marginTop: 12, fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>
+              Self-hosted variable font · weight 100-900 · width 75-100%.
+            </div>
+          </div>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 24,
+          }}>
+            <div style={{
+              fontSize: "11px",
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.08em",
+              color: "hsl(var(--muted-foreground))",
+              fontWeight: 500,
+              marginBottom: 8,
+            }}>
+              --font-mono
+            </div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 40, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.01em" }}>
+              JetBrains
+            </div>
+            <div style={{ marginTop: 8, fontSize: "12.5px", color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-mono)" }}>
+              "JetBrains Mono", "Fira Code", monospace
+            </div>
+            <div style={{ marginTop: 16, fontSize: "14px", color: "hsl(var(--foreground))", fontFamily: "var(--font-mono)", lineHeight: 1.6 }}>
+              const id = "01HZ73K..." // copy-friendly digits
+            </div>
+            <div style={{ marginTop: 12, fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>
+              Google Fonts CDN · weights 400 / 500 / 600.
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <Section
+        title="Type scale"
+        description="Sizes pair with line-heights; never set one without the other. The Tweaks font-scale slider multiplies the rem base, so the entire scale grows together."
+        anatomy="Display & H1 share a class so we don't ship two near-identical rules. H3 doubles as the in-app page-title."
+      >
+        <div style={{
+          borderRadius: "var(--radius-xl, 12px)",
+          border: "1px solid hsl(var(--border))",
+          background: "hsl(var(--card))",
+          overflow: "hidden",
+        }}>
+          {SCALE.map((s, i) => (
+            <div key={s.cls} style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 24,
+              padding: "16px 20px",
+              borderTop: i ? "1px solid hsl(var(--border))" : undefined,
+            }}>
+              <div style={{ width: 140, flexShrink: 0 }}>
+                <div style={{ fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>{s.name}</div>
+                <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))" }}>.{s.cls}</code>
+              </div>
+              <div className={s.cls} style={{ flex: 1 }}>
+                Sphinx of black quartz, judge my vow.
+              </div>
+              <div style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", textAlign: "right" as const, width: 200 }}>
+                {s.spec}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, fontSize: "12.5px", color: "hsl(var(--muted-foreground))" }}>
+          {SCALE.map((s) => (
+            <div key={s.cls} style={{ display: "flex", gap: 8 }}>
+              <code style={{ color: "hsl(var(--foreground))" }}>.{s.cls}</code>
+              <span>· {s.use}</span>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Weights" description="Variable axis; every integer 100-900 is available but we use four.">
+        <div style={{
+          borderRadius: "var(--radius-xl, 12px)",
+          border: "1px solid hsl(var(--border))",
+          background: "hsl(var(--card))",
+          overflow: "hidden",
+        }}>
+          {WEIGHTS.map((w, i) => (
+            <div key={w.w} style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 24,
+              padding: "12px 20px",
+              borderTop: i ? "1px solid hsl(var(--border))" : undefined,
+            }}>
+              <div style={{ width: 100, flexShrink: 0, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-mono)" }}>
+                {w.w}
+              </div>
+              <div style={{ flex: 1, fontSize: 20, fontWeight: w.w }}>{w.name}</div>
+              <div style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>{w.use}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Patterns in use">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 20,
+          }}>
+            <div style={{ fontSize: "11px", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "hsl(var(--muted-foreground))", fontWeight: 500, marginBottom: 8 }}>
+              Page header
+            </div>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em", color: "hsl(var(--foreground))" }}>Identities</h1>
+            <div style={{ marginTop: 4, fontSize: "14px", color: "hsl(var(--muted-foreground))" }}>
+              Manage user identities in your identity service
+            </div>
+          </div>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 20,
+          }}>
+            <div style={{ fontSize: "11px", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "hsl(var(--muted-foreground))", fontWeight: 500, marginBottom: 8 }}>
+              Stat card
+            </div>
+            <div style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))", fontWeight: 500 }}>Active sessions</div>
+            <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", marginTop: 4 }}>1,204</div>
+          </div>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 20,
+          }}>
+            <div style={{ fontSize: "11px", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "hsl(var(--muted-foreground))", fontWeight: 500, marginBottom: 8 }}>
+              Field display
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, alignItems: "baseline" }}>
+              <div style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))", fontWeight: 500 }}>Identifier</div>
+              <div style={{ fontSize: "13px", color: "hsl(var(--foreground))" }}>rachel.chen@example.com</div>
+              <div style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))", fontWeight: 500 }}>ID</div>
+              <div style={{ fontSize: "13px", fontFamily: "var(--font-mono)", color: "hsl(var(--foreground))" }}>01HZK7M8N9P0Q1R2S3T4U5V6W7</div>
+            </div>
+          </div>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 20,
+          }}>
+            <div style={{ fontSize: "11px", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "hsl(var(--muted-foreground))", fontWeight: 500, marginBottom: 8 }}>
+              Inline code
+            </div>
+            <p style={{ margin: 0, fontSize: "13.5px", color: "hsl(var(--foreground))", lineHeight: 1.6 }}>
+              The token <code>--primary</code> drives the accent. Mutate it on <code>&lt;html&gt;</code> to retheme live.
+            </p>
+          </div>
+        </div>
+      </Section>
+
+      <PageNav />
+    </div>
+  );
+}

@@ -1,4 +1,5 @@
 import { CodeBlock } from "@/components/code-block";
+import { PageNav } from "@/components/page-nav";
 
 const SEMANTIC_PAIRS = [
   { name: "Background", varName: "--background", light: "220 15% 92%", dark: "222 16% 9%", bgVar: "var(--background)" },
@@ -263,7 +264,7 @@ export function TokensPage() {
           lineHeight: 1.6,
           color: "hsl(var(--muted-foreground))",
         }}>
-          Canvas uses a shadcn-flavored token system. Every color is an HSL value bound to a CSS
+          Canvas uses a semantic token system. Every color is an HSL value bound to a CSS
           custom property. Tailwind utilities (<code>bg-primary</code>, <code>text-muted-foreground</code>,{" "}
           <code>border-border</code>, &#8230;) resolve through those vars via <code>@theme inline</code>, so
           switching themes is just rewriting the variables.
@@ -288,7 +289,7 @@ export function TokensPage() {
         description="The core token set. Every component reads from these, never from raw color literals."
         anatomy="Each token has a paired foreground for legible content on top (e.g. primary / primary-foreground). Use the pair together to guarantee contrast in both themes."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
           {SEMANTIC_PAIRS.map((row) => <ColorPair key={row.varName} row={row} />)}
         </div>
       </Section>
@@ -298,7 +299,7 @@ export function TokensPage() {
         title="Sidebar palette"
         description="Sidebar tokens are layered separately so the chrome can sit on a slightly different value from the page surface, a subtle elevation cue."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
           {SIDEBAR_TOKENS.map((row) => <ColorPair key={row.varName} row={row} />)}
         </div>
       </Section>
@@ -309,7 +310,7 @@ export function TokensPage() {
         description="The accent rewrites --primary and --ring at runtime. Six curated hues that all sit at similar perceived weight (chroma + lightness held roughly constant)."
         anatomy="Accents only override --primary and --ring. All foreground pairings are recalculated downstream via Tailwind's color-mix() opacity utilities, so you don't restate them per accent."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
           {ACCENT_OPTIONS.map((a) => <AccentChip key={a.name} a={a} />)}
         </div>
       </Section>
@@ -319,7 +320,7 @@ export function TokensPage() {
         title="Semantic status colors"
         description="Five tones used by StatusBadge and inline alerts. Dark mode uses translucent backgrounds so they read on the deeper page palette without punching through."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
           {STATUS.map((s) => <StatusRow key={s.name} s={s} />)}
         </div>
         <div style={{ marginTop: 24, display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -336,7 +337,7 @@ export function TokensPage() {
         title="Chart palette"
         description="Five colors tuned for data viz, distinct enough at small marks (1-2px), no two adjacent hues vibrating. The dark-mode set is independently chosen (not just lightness-flipped) for the same readability bar."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
           {CHART_PALETTE.map((c) => <ChartChip key={c.varName} c={c} />)}
         </div>
       </Section>
@@ -346,7 +347,7 @@ export function TokensPage() {
         title="Brand colors"
         description="Reserved for brand moments: the avatar gradient, sign-in orbs, marketing splashes. Never used as component fills."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
           {BRAND.map((b) => (
             <div key={b.varName} style={{ display: "flex", flexDirection: "column" }}>
               <div style={{
@@ -388,7 +389,7 @@ export function TokensPage() {
         title="How theming works"
         description="The same utility resolves to different values in different contexts. No re-skinning, no per-page overrides."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
           <div style={{
             borderRadius: "var(--radius-xl, 12px)",
             border: "1px solid hsl(var(--border))",
@@ -438,7 +439,7 @@ export function TokensPage() {
 
       {/* Don'ts */}
       <Section title="Don'ts">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
           <div style={{
             borderRadius: "var(--radius-xl, 12px)",
             border: "1px solid hsl(0 70% 60% / 0.3)",
@@ -469,6 +470,8 @@ export function TokensPage() {
           </div>
         </div>
       </Section>
+
+      <PageNav />
     </div>
   );
 }
