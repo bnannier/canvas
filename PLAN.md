@@ -872,6 +872,61 @@
 
 ---
 
+## Phase 11: Docs Site
+
+> The design handoff IS the docs site. It's a static multi-page React
+> app (~60 HTML pages) that renders live Canvas components with a
+> sidebar, tweaks panel, token inspector, and interactive playgrounds.
+> Canvas the library ships pure CSS; the docs site uses React +
+> Tailwind v4 CDN for its own rendering.
+>
+> **Source**: `~/Downloads/athena/` (handoff export)
+> **Target**: `docs/` in the Canvas repo
+
+### 11.1 File Migration
+
+> Copy the handoff into `docs/`, archive the old Vite docs, verify
+> the site serves from its new location.
+
+| # | Item | Status | Notes |
+|---|------|--------|-------|
+| 11.1.1 | Archive existing `docs/src/`, `docs/package.json`, `docs/vite.config.ts`, etc. to `docs/_v1-archive/` | [ ] | Preserve for reference |
+| 11.1.2 | Copy shared files into `docs/` | [ ] | `tokens.css`, `backdrops.css`, `Icon.jsx`, `CanvasPrimitives.jsx`, `Toast.jsx`, `tweaks-panel.jsx` |
+| 11.1.3 | Copy `canvas/` subdirectory into `docs/canvas/` | [ ] | ~60 HTML pages, `shell.jsx`, `canvas-tailwind.css`, `token-edit.jsx` |
+| 11.1.4 | Copy `fonts/` directory into `docs/fonts/` | [ ] | Roboto variable-weight self-hosted font |
+| 11.1.5 | Copy `Canvas.html` as `docs/index.html` | [ ] | Rename for default serving |
+| 11.1.6 | Verify relative paths resolve (`tokens.css`, `backdrops.css`, `../tokens.css` from sub-pages) | [ ] | |
+| 11.1.7 | Add serve script to root `package.json`: `"docs:serve"` | [ ] | `npx serve docs` or `python3 -m http.server -d docs` |
+| 11.1.8 | Smoke test: index loads, 3+ sub-pages load, glass/dark/density toggles work | [ ] | |
+
+### 11.2 Label Corrections
+
+> Fix stale references to Tailwind and React in the docs prose.
+> Canvas v3 is pure CSS; the docs should say so.
+
+| # | Item | File(s) | Status | Notes |
+|---|------|---------|--------|-------|
+| 11.2.1 | Version badge: "V1.0" to "V3.0" | `index.html` | [ ] | Hero section |
+| 11.2.2 | Subtitle: "A Tailwind v4 Design System" to "A CSS Design System" | `index.html`, `canvas/shell.jsx` | [ ] | |
+| 11.2.3 | Footer: "Tailwind v4 · React 18" to "Pure CSS · Framework-Agnostic" | `index.html` | [ ] | |
+| 11.2.4 | Principle cards: remove Tailwind/@theme references | `index.html` | [ ] | "shadcn-flavored" and "Tokens first" body text |
+| 11.2.5 | Grep all sub-pages for stale Tailwind/React prose | `canvas/*.html` | [ ] | Fix any user-facing references; leave code comments alone |
+
+### 11.3 Cleanup
+
+> Remove dead files, verify links, add serve tooling.
+
+| # | Item | Status | Notes |
+|---|------|--------|-------|
+| 11.3.1 | Remove `docs/canvas/backdrops.css` (redundant copy) | [ ] | Sub-pages already use `../backdrops.css` |
+| 11.3.2 | Verify all sidebar links resolve to real pages | [ ] | Click every nav item |
+| 11.3.3 | Verify prev/next navigation at bottom of sub-pages | [ ] | |
+| 11.3.4 | Verify CDN resources load (React, Babel, Tailwind) with SRI hashes | [ ] | |
+| 11.3.5 | Test mobile viewport (375px): sidebar drawer, responsive layout | [ ] | |
+| 11.3.6 | Delete `docs/_v1-archive/` once satisfied | [ ] | Optional; keep if useful |
+
+---
+
 ## Appendix C: Downstream Package Matrix
 
 > Tracks which downstream packages exist and their Canvas v3 integration
