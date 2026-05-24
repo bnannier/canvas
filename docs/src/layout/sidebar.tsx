@@ -9,7 +9,7 @@ import {
   Square, Code, Inbox, FileText, FileInput, LayoutDashboard, BarChart2,
   Calendar, Terminal, Table, Maximize2, Filter, Heading, MoreHorizontal,
   PanelRight, PanelLeft, Footprints, Folder, Bell, Navigation, ArrowRight,
-  Plug, Globe, ChevronLeft, X, Layout, Plus, Shield, AppWindow, BookOpen,
+  Plug, Globe, ChevronLeft, X, Layout,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -22,7 +22,6 @@ interface NavItem {
 
 interface NavGroup {
   label: string;
-  groupIcon: LucideIcon;
   items: NavItem[];
   collapsible: boolean;
 }
@@ -30,7 +29,6 @@ interface NavGroup {
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
-    groupIcon: Home,
     collapsible: false,
     items: [
       { slug: "", label: "About Canvas", to: "/", icon: Home },
@@ -38,7 +36,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Tokens",
-    groupIcon: Layers,
     collapsible: true,
     items: [
       { slug: "tokens", label: "Tokens", to: "/tokens", icon: Layers },
@@ -47,7 +44,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Atoms",
-    groupIcon: Plus,
     collapsible: true,
     items: [
       { slug: "avatar", label: "Avatar", to: "/components/avatar", icon: User },
@@ -77,7 +73,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Molecules",
-    groupIcon: Shield,
     collapsible: true,
     items: [
       { slug: "alert", label: "Alert", to: "/components/alert", icon: AlertTriangle },
@@ -92,7 +87,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Organisms",
-    groupIcon: AppWindow,
     collapsible: true,
     items: [
       { slug: "app-shell", label: "App Shell", to: "/components/app-shell", icon: LayoutDashboard },
@@ -113,7 +107,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Guides",
-    groupIcon: BookOpen,
     collapsible: true,
     items: [
       { slug: "migration", label: "Migration", to: "/migration", icon: ArrowRight },
@@ -161,15 +154,6 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
       next.has(label) ? next.delete(label) : next.add(label);
       return next;
     });
-  }
-
-  function expandToGroup(label: string) {
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      next.add(label);
-      return next;
-    });
-    onToggleCollapse();
   }
 
   return (
@@ -258,32 +242,21 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
             const groupHasActive = g.items.some((i) => i.slug === activeSlug);
 
             if (collapsed) {
-              const GIcon = g.groupIcon;
-              if (!g.collapsible) {
-                return (
-                  <div key={g.label} className="sidebar-group">
-                    <NavLink
-                      to={g.items[0].to}
-                      className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
-                      title={g.items[0].label}
-                      end
-                    >
-                      <GIcon size={16} />
-                      <span className="label">{g.items[0].label}</span>
-                    </NavLink>
-                  </div>
-                );
-              }
               return (
                 <div key={g.label} className="sidebar-group">
-                  <button
-                    className={`sidebar-item sidebar-group-icon${groupHasActive ? " active" : ""}`}
-                    onClick={() => expandToGroup(g.label)}
-                    title={g.label}
-                  >
-                    <GIcon size={16} />
-                    <span className="label">{g.label}</span>
-                  </button>
+                  {g.items.map((item) => (
+                    <NavLink
+                      key={item.slug}
+                      to={item.to}
+                      className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
+                      onClick={onClose}
+                      title={item.label}
+                      end={item.to === "/"}
+                    >
+                      <item.icon size={16} />
+                      <span className="label">{item.label}</span>
+                    </NavLink>
+                  ))}
                 </div>
               );
             }
