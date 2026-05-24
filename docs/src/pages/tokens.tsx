@@ -1,387 +1,474 @@
-import { ColorSwatch } from "@/components/color-swatch";
 import { CodeBlock } from "@/components/code-block";
-import { Toc } from "@/components/toc";
 
-const tocItems = [
-  { id: "semantic-colors", label: "Semantic Colors" },
-  { id: "chart-colors", label: "Chart Colors" },
-  { id: "sidebar-colors", label: "Sidebar Colors" },
-  { id: "brand-colors", label: "Brand Colors" },
-  { id: "status-colors", label: "Status Colors" },
-  { id: "typography", label: "Typography" },
-  { id: "radius", label: "Radius" },
-  { id: "spacing", label: "Spacing" },
-  { id: "shadows", label: "Shadows" },
-  { id: "z-index", label: "Z-Index" },
-  { id: "motion", label: "Motion" },
+const SEMANTIC_PAIRS = [
+  { name: "Background", varName: "--background", light: "220 15% 92%", dark: "222 16% 9%", bgVar: "var(--background)" },
+  { name: "Foreground", varName: "--foreground", light: "220 25% 14%", dark: "210 17% 95%", bgVar: "var(--foreground)" },
+  { name: "Card", varName: "--card", light: "220 20% 98.5%", dark: "222 14% 13%", bgVar: "var(--card)" },
+  { name: "Popover", varName: "--popover", light: "220 20% 98.5%", dark: "222 14% 14%", bgVar: "var(--popover)" },
+  { name: "Primary", varName: "--primary", light: "240 79% 60%", dark: "240 79% 60%", bgVar: "var(--primary)" },
+  { name: "Secondary", varName: "--secondary", light: "220 14% 89%", dark: "222 12% 18%", bgVar: "var(--secondary)" },
+  { name: "Muted", varName: "--muted", light: "220 14% 89%", dark: "222 12% 18%", bgVar: "var(--muted)" },
+  { name: "Accent", varName: "--accent", light: "220 14% 89%", dark: "222 12% 20%", bgVar: "var(--accent)" },
+  { name: "Destructive", varName: "--destructive", light: "0 84.2% 60.2%", dark: "0 62.8% 30.6%", bgVar: "var(--destructive)" },
+  { name: "Border", varName: "--border", light: "220 13% 83%", dark: "222 11% 22%", bgVar: "var(--border)" },
+  { name: "Input", varName: "--input", light: "220 13% 83%", dark: "222 11% 22%", bgVar: "var(--input)" },
+  { name: "Ring", varName: "--ring", light: "217 91% 60%", dark: "217 91% 60%", bgVar: "var(--ring)" },
 ];
 
-const SEMANTIC_COLORS = [
-  { property: "--background", light: "0 0% 100%", dark: "240 10% 3.9%" },
-  { property: "--foreground", light: "240 10% 3.9%", dark: "0 0% 98%" },
-  { property: "--card", light: "0 0% 100%", dark: "240 10% 3.9%" },
-  { property: "--card-foreground", light: "240 10% 3.9%", dark: "0 0% 98%" },
-  { property: "--popover", light: "0 0% 100%", dark: "240 10% 3.9%" },
-  { property: "--popover-foreground", light: "240 10% 3.9%", dark: "0 0% 98%" },
-  { property: "--primary", light: "240 5.9% 10%", dark: "0 0% 98%" },
-  { property: "--primary-foreground", light: "0 0% 98%", dark: "240 5.9% 10%" },
-  { property: "--secondary", light: "240 4.8% 95.9%", dark: "240 3.7% 15.9%" },
-  { property: "--secondary-foreground", light: "240 5.9% 10%", dark: "0 0% 98%" },
-  { property: "--muted", light: "240 4.8% 95.9%", dark: "240 3.7% 15.9%" },
-  { property: "--muted-foreground", light: "240 3.8% 46.1%", dark: "240 5% 64.9%" },
-  { property: "--accent", light: "240 4.8% 95.9%", dark: "240 3.7% 15.9%" },
-  { property: "--accent-foreground", light: "240 5.9% 10%", dark: "0 0% 98%" },
-  { property: "--destructive", light: "0 72% 51%", dark: "0 62.8% 30.6%" },
-  { property: "--destructive-foreground", light: "0 0% 98%", dark: "0 0% 98%" },
-  { property: "--border", light: "240 5.9% 90%", dark: "240 3.7% 15.9%" },
-  { property: "--input", light: "240 5.9% 90%", dark: "240 3.7% 15.9%" },
-  { property: "--ring", light: "240 5.9% 10%", dark: "240 4.9% 83.9%" },
+const SIDEBAR_TOKENS = [
+  { name: "Background", varName: "--sidebar-background", light: "220 16% 95%", dark: "222 18% 7%", bgVar: "var(--sidebar-background)" },
+  { name: "Foreground", varName: "--sidebar-foreground", light: "220 20% 22%", dark: "210 17% 92%", bgVar: "var(--sidebar-foreground)" },
+  { name: "Accent", varName: "--sidebar-accent", light: "220 14% 88%", dark: "222 14% 16%", bgVar: "var(--sidebar-accent)" },
+  { name: "Accent foreground", varName: "--sidebar-accent-foreground", light: "220 25% 14%", dark: "210 17% 95%", bgVar: "var(--sidebar-accent-foreground)" },
+  { name: "Border", varName: "--sidebar-border", light: "220 13% 84%", dark: "222 11% 18%", bgVar: "var(--sidebar-border)" },
 ];
 
-const CHART_COLORS = [
-  { property: "--chart-1", light: "12 76% 61%", dark: "220 70% 50%" },
-  { property: "--chart-2", light: "173 58% 39%", dark: "160 60% 45%" },
-  { property: "--chart-3", light: "197 37% 24%", dark: "30 80% 55%" },
-  { property: "--chart-4", light: "43 74% 66%", dark: "280 65% 60%" },
-  { property: "--chart-5", light: "27 87% 67%", dark: "340 75% 55%" },
+const ACCENT_OPTIONS = [
+  { name: "Indigo (default)", h: 240, s: 79, l: 60 },
+  { name: "Violet", h: 271, s: 70, l: 60 },
+  { name: "Teal", h: 173, s: 70, l: 42 },
+  { name: "Rose", h: 346, s: 78, l: 58 },
+  { name: "Amber", h: 38, s: 92, l: 50 },
+  { name: "Slate", h: 215, s: 16, l: 38 },
 ];
 
-const SIDEBAR_COLORS = [
-  { property: "--sidebar-background", light: "0 0% 98%", dark: "240 5.9% 10%" },
-  { property: "--sidebar-foreground", light: "240 5.3% 26.1%", dark: "240 4.8% 95.9%" },
-  { property: "--sidebar-primary", light: "240 5.9% 10%", dark: "224.3 76.3% 48%" },
-  { property: "--sidebar-primary-foreground", light: "0 0% 98%", dark: "0 0% 100%" },
-  { property: "--sidebar-accent", light: "240 4.8% 95.9%", dark: "240 3.7% 15.9%" },
-  { property: "--sidebar-accent-foreground", light: "240 5.9% 10%", dark: "240 4.8% 95.9%" },
-  { property: "--sidebar-border", light: "220 13% 91%", dark: "240 3.7% 15.9%" },
-  { property: "--sidebar-ring", light: "217.2 91.2% 59.8%", dark: "217.2 91.2% 59.8%" },
+const STATUS = [
+  { name: "Success", light: { bg: "#dcfce7", fg: "#166534" }, dark: { bg: "rgba(20,83,45,0.3)", fg: "#4ade80" } },
+  { name: "Warning", light: { bg: "#fef9c3", fg: "#854d0e" }, dark: { bg: "rgba(113,63,18,0.3)", fg: "#facc15" } },
+  { name: "Error", light: { bg: "#fee2e2", fg: "#991b1b" }, dark: { bg: "rgba(127,29,29,0.3)", fg: "#f87171" } },
+  { name: "Info", light: { bg: "#dbeafe", fg: "#1e40af" }, dark: { bg: "rgba(30,58,138,0.3)", fg: "#60a5fa" } },
 ];
 
-const BRAND_COLORS = [
-  { property: "--brand-blue-700", value: "#1e40af" },
-  { property: "--brand-blue-400", value: "#60a5fa" },
-  { property: "--orb-indigo", value: "#6366f1" },
-  { property: "--orb-violet", value: "#8b5cf6" },
-  { property: "--orb-cyan", value: "#06b6d4" },
+const CHART_PALETTE = [
+  { name: "Chart 1", varName: "--chart-1", light: "12 76% 61%", dark: "220 70% 50%" },
+  { name: "Chart 2", varName: "--chart-2", light: "173 58% 39%", dark: "160 60% 45%" },
+  { name: "Chart 3", varName: "--chart-3", light: "197 37% 24%", dark: "30 80% 55%" },
+  { name: "Chart 4", varName: "--chart-4", light: "43 74% 66%", dark: "280 65% 60%" },
+  { name: "Chart 5", varName: "--chart-5", light: "27 87% 67%", dark: "340 75% 55%" },
 ];
 
-const STATUS_COLORS_LITERAL = [
-  { property: "--color-success", value: "hsl(143 70% 45%)" },
-  { property: "--color-warning", value: "hsl(38 92% 50%)" },
-  { property: "--color-info", value: "hsl(217 91% 60%)" },
+const BRAND = [
+  { name: "Orb Indigo", hex: "#6366f1", varName: "--orb-indigo" },
+  { name: "Orb Violet", hex: "#8b5cf6", varName: "--orb-violet" },
+  { name: "Orb Cyan", hex: "#06b6d4", varName: "--orb-cyan" },
 ];
 
-const STATUS_BG_FG = [
-  { property: "--success-bg", light: "141 79% 85%", dark: "149 50% 22%" },
-  { property: "--success-fg", light: "144 61% 20%", dark: "142 70% 65%" },
-  { property: "--warning-bg", light: "48 96% 89%", dark: "38 50% 20%" },
-  { property: "--warning-fg", light: "40 80% 27%", dark: "43 90% 65%" },
-  { property: "--error-bg", light: "0 93% 94%", dark: "0 50% 18%" },
-  { property: "--error-fg", light: "0 70% 35%", dark: "0 80% 70%" },
-  { property: "--info-bg", light: "214 95% 93%", dark: "217 50% 22%" },
-  { property: "--info-fg", light: "221 83% 45%", dark: "217 90% 72%" },
-];
+function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          height: 80,
+          borderRadius: "var(--radius-lg, 8px)",
+          border: "1px solid hsl(var(--border))",
+          background: `hsl(${row.bgVar})`,
+        }}
+      />
+      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+        {row.name}
+      </div>
+      <code style={{ display: "block", fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4, marginTop: 2 }}>
+        {row.varName}
+      </code>
+      <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+        <div>L · hsl({row.light})</div>
+        <div>D · hsl({row.dark})</div>
+      </div>
+    </div>
+  );
+}
 
-const RADIUS = [
-  { property: "--radius-sm", value: "4px" },
-  { property: "--radius-md", value: "6px" },
-  { property: "--radius-lg", value: "8px" },
-  { property: "--radius-xl", value: "12px" },
-  { property: "--radius-2xl", value: "16px" },
-  { property: "--radius-full", value: "9999px" },
-];
+function AccentChip({ a }: { a: typeof ACCENT_OPTIONS[number] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          height: 80,
+          borderRadius: "var(--radius-lg, 8px)",
+          border: "1px solid hsl(var(--border))",
+          background: `hsl(${a.h} ${a.s}% ${a.l}%)`,
+        }}
+      />
+      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+        {a.name}
+      </div>
+      <div style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+        hsl({a.h} {a.s}% {a.l}%)
+      </div>
+    </div>
+  );
+}
 
-const SPACING = [
-  { property: "--space-0", value: "0px" },
-  { property: "--space-px", value: "1px" },
-  { property: "--space-0-5", value: "0.125rem (2px)" },
-  { property: "--space-1", value: "0.25rem (4px)" },
-  { property: "--space-1-5", value: "0.375rem (6px)" },
-  { property: "--space-2", value: "0.5rem (8px)" },
-  { property: "--space-2-5", value: "0.625rem (10px)" },
-  { property: "--space-3", value: "0.75rem (12px)" },
-  { property: "--space-4", value: "1rem (16px)" },
-  { property: "--space-5", value: "1.25rem (20px)" },
-  { property: "--space-6", value: "1.5rem (24px)" },
-  { property: "--space-8", value: "2rem (32px)" },
-  { property: "--space-10", value: "2.5rem (40px)" },
-  { property: "--space-12", value: "3rem (48px)" },
-  { property: "--space-16", value: "4rem (64px)" },
-];
+function StatusRow({ s }: { s: typeof STATUS[number] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>{s.name}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div>
+          <div
+            style={{
+              height: 48,
+              borderRadius: "var(--radius-md, 6px)",
+              border: "1px solid hsl(var(--border))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12px",
+              fontWeight: 500,
+              background: s.light.bg,
+              color: s.light.fg,
+            }}
+          >
+            Light
+          </div>
+          <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+            <div>bg {s.light.bg}</div>
+            <div>fg {s.light.fg}</div>
+          </div>
+        </div>
+        <div>
+          <div
+            style={{
+              height: 48,
+              borderRadius: "var(--radius-md, 6px)",
+              border: "1px solid hsl(var(--border))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12px",
+              fontWeight: 500,
+              background: s.dark.bg,
+              color: s.dark.fg,
+            }}
+          >
+            Dark
+          </div>
+          <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+            <div>bg {s.dark.bg}</div>
+            <div>fg {s.dark.fg}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-const SHADOWS = [
-  { property: "--shadow-xs", description: "Minimal shadow for subtle depth" },
-  { property: "--shadow-sm", description: "Subtle dual-layer shadow" },
-  { property: "--shadow-md", description: "Medium spread (12px)" },
-  { property: "--shadow-lg", description: "Large spread (32px)" },
-  { property: "--shadow-elevated", description: "shadow-md + inset highlight" },
-];
+function ChartChip({ c }: { c: typeof CHART_PALETTE[number] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          height: 64,
+          borderRadius: "var(--radius-lg, 8px)",
+          border: "1px solid hsl(var(--border))",
+          background: `hsl(${c.light})`,
+        }}
+      />
+      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+        {c.name}
+      </div>
+      <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+        {c.varName}
+      </code>
+      <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+        <div>L · {c.light}</div>
+        <div>D · {c.dark}</div>
+      </div>
+    </div>
+  );
+}
 
-const Z_INDEX = [
-  { property: "--z-base", value: "0" },
-  { property: "--z-dropdown", value: "10" },
-  { property: "--z-sticky", value: "20" },
-  { property: "--z-overlay", value: "30" },
-  { property: "--z-sidebar", value: "40" },
-  { property: "--z-modal", value: "50" },
-  { property: "--z-popover", value: "60" },
-  { property: "--z-toast", value: "70" },
-];
+function Section({ title, description, anatomy, children }: {
+  title: string;
+  description?: string;
+  anatomy?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section style={{ marginBottom: 40 }}>
+      <header style={{ marginBottom: 16 }}>
+        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "hsl(var(--foreground))" }}>
+          {title}
+        </h2>
+        {description && (
+          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "hsl(var(--muted-foreground))", maxWidth: 640, lineHeight: 1.6 }}>
+            {description}
+          </p>
+        )}
+      </header>
+      {anatomy && (
+        <div style={{
+          marginBottom: 16,
+          padding: "12px 16px",
+          borderRadius: "var(--radius-lg, 8px)",
+          background: "hsl(var(--muted) / 0.4)",
+          border: "1px solid hsl(var(--border))",
+          fontSize: "12.5px",
+          color: "hsl(var(--muted-foreground))",
+        }}>
+          <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Anatomy.</span>
+          {anatomy}
+        </div>
+      )}
+      {children}
+    </section>
+  );
+}
 
-const MOTION_KEYFRAMES = [
-  { name: "toast-in", effect: "Fade up 8px" },
-  { name: "modal-in", effect: "Fade + scale from 0.96" },
-  { name: "fade-in", effect: "Opacity 0 to 1" },
-  { name: "slide-in", effect: "Translate from right (100%)" },
-];
+const cssVarsCode = `:root {
+  --primary: 240 79% 60%;
+  --background: 220 15% 92%;
+  /* … */
+}
+.dark {
+  --primary: 240 79% 60%;
+  --background: 222 16% 9%;
+  /* … */
+}`;
 
-const MOTION_DURATION = [
-  { property: "--duration-fast", value: "150ms" },
-  { property: "--duration-normal", value: "200ms" },
-  { property: "--duration-slow", value: "300ms" },
-  { property: "--ease-out", value: "cubic-bezier(0.32, 0.72, 0, 1)" },
-];
+const themeBridgeCode = `@theme inline {
+  --color-primary:    hsl(var(--primary));
+  --color-background: hsl(var(--background));
+  /* … */
+}`;
 
-const ANIMATION_SHORTHANDS = [
-  { property: "--animate-toast-in", value: "toast-in var(--duration-normal) ease-out" },
-  { property: "--animate-modal-in", value: "modal-in 180ms ease-out" },
-  { property: "--animate-fade-in", value: "fade-in var(--duration-normal) ease-out" },
-  { property: "--animate-slide-in", value: "slide-in 240ms var(--ease-out)" },
-];
+const dynamicCode = `<button className="bg-primary text-primary-foreground">Save</button>
 
-const importCode = `@import "@olympusoss/canvas/styles/tokens/colors.css";
-@import "@olympusoss/canvas/styles/tokens/typography.css";
-@import "@olympusoss/canvas/styles/tokens/radius.css";
-@import "@olympusoss/canvas/styles/tokens/motion.css";`;
+// Same markup, different theme:
+//   light → background-color: hsl(240 79% 60%)
+//   dark  → background-color: hsl(240 79% 60%)
+//   accent=teal → background-color: hsl(173 70% 42%)`;
+
+const dontCode = `<button style={{ background: '#6366f1' }}>`;
+const doCode = `<button className="bg-primary text-primary-foreground">`;
 
 export function TokensPage() {
   return (
-    <div className="docs-content">
-      <div style={{ minWidth: 0 }}>
-        <div className="page-header" style={{ marginBottom: "1.5rem" }}>
-          <div>
-            <div className="page-header-title"><h1>Tokens</h1></div>
-            <p className="sub">Design token reference. All tokens are CSS custom properties defined in the <code className="code">canvas.tokens</code> layer.</p>
+    <div>
+      {/* Intro */}
+      <section style={{ marginBottom: 32 }}>
+        <h1 style={{
+          margin: 0,
+          fontSize: "clamp(32px, 5vw, 40px)",
+          fontWeight: 700,
+          letterSpacing: "-0.025em",
+          color: "hsl(var(--foreground))",
+        }}>
+          Colors & Theme
+        </h1>
+        <p style={{
+          marginTop: 12,
+          maxWidth: "42rem",
+          fontSize: "14.5px",
+          lineHeight: 1.6,
+          color: "hsl(var(--muted-foreground))",
+        }}>
+          Canvas uses a shadcn-flavored token system. Every color is an HSL value bound to a CSS
+          custom property. Tailwind utilities (<code>bg-primary</code>, <code>text-muted-foreground</code>,{" "}
+          <code>border-border</code>, &#8230;) resolve through those vars via <code>@theme inline</code>, so
+          switching themes is just rewriting the variables.
+        </p>
+        <div style={{
+          marginTop: 16,
+          padding: "12px 16px",
+          borderRadius: "var(--radius-lg, 8px)",
+          background: "hsl(var(--muted) / 0.4)",
+          border: "1px solid hsl(var(--border))",
+          fontSize: "12.5px",
+          color: "hsl(var(--muted-foreground))",
+        }}>
+          <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Try this.</span>
+          Toggle the surface or change the theme. Every swatch below reacts live.
+        </div>
+      </section>
+
+      {/* Semantic palette */}
+      <Section
+        title="Semantic palette"
+        description="The core token set. Every component reads from these, never from raw color literals."
+        anatomy="Each token has a paired foreground for legible content on top (e.g. primary / primary-foreground). Use the pair together to guarantee contrast in both themes."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+          {SEMANTIC_PAIRS.map((row) => <ColorPair key={row.varName} row={row} />)}
+        </div>
+      </Section>
+
+      {/* Sidebar palette */}
+      <Section
+        title="Sidebar palette"
+        description="Sidebar tokens are layered separately so the chrome can sit on a slightly different value from the page surface, a subtle elevation cue."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+          {SIDEBAR_TOKENS.map((row) => <ColorPair key={row.varName} row={row} />)}
+        </div>
+      </Section>
+
+      {/* Accent options */}
+      <Section
+        title="Accent options"
+        description="The accent rewrites --primary and --ring at runtime. Six curated hues that all sit at similar perceived weight (chroma + lightness held roughly constant)."
+        anatomy="Accents only override --primary and --ring. All foreground pairings are recalculated downstream via Tailwind's color-mix() opacity utilities, so you don't restate them per accent."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+          {ACCENT_OPTIONS.map((a) => <AccentChip key={a.name} a={a} />)}
+        </div>
+      </Section>
+
+      {/* Semantic status colors */}
+      <Section
+        title="Semantic status colors"
+        description="Five tones used by StatusBadge and inline alerts. Dark mode uses translucent backgrounds so they read on the deeper page palette without punching through."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 20 }}>
+          {STATUS.map((s) => <StatusRow key={s.name} s={s} />)}
+        </div>
+        <div style={{ marginTop: 24, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <span className="status-badge sb-success"><span className="dot" />Active</span>
+          <span className="status-badge sb-warning"><span className="dot" />Pending</span>
+          <span className="status-badge sb-error"><span className="dot" />Failed</span>
+          <span className="status-badge sb-info"><span className="dot" />Info</span>
+          <span className="status-badge sb-neutral"><span className="dot" />Inactive</span>
+        </div>
+      </Section>
+
+      {/* Chart palette */}
+      <Section
+        title="Chart palette"
+        description="Five colors tuned for data viz, distinct enough at small marks (1-2px), no two adjacent hues vibrating. The dark-mode set is independently chosen (not just lightness-flipped) for the same readability bar."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+          {CHART_PALETTE.map((c) => <ChartChip key={c.varName} c={c} />)}
+        </div>
+      </Section>
+
+      {/* Brand colors */}
+      <Section
+        title="Brand colors"
+        description="Reserved for brand moments: the avatar gradient, sign-in orbs, marketing splashes. Never used as component fills."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
+          {BRAND.map((b) => (
+            <div key={b.varName} style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{
+                height: 80,
+                borderRadius: "var(--radius-lg, 8px)",
+                border: "1px solid hsl(var(--border))",
+                background: b.hex,
+              }} />
+              <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+                {b.name}
+              </div>
+              <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+                {b.varName}
+              </code>
+              <div style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4, marginTop: 2 }}>
+                {b.hex}
+              </div>
+            </div>
+          ))}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{
+              height: 80,
+              borderRadius: "var(--radius-lg, 8px)",
+              border: "1px solid hsl(var(--border))",
+              background: "linear-gradient(135deg, var(--orb-indigo), var(--orb-violet))",
+            }} />
+            <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+              Avatar gradient
+            </div>
+            <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+              --orb-indigo → --orb-violet
+            </code>
           </div>
         </div>
+      </Section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <CodeBlock code={importCode} language="css" />
-          <p className="small muted" style={{ marginTop: "0.5rem" }}>
-            Or use the all-in-one entry: <code className="code">@import "@olympusoss/canvas/styles/canvas.css"</code>
+      {/* How theming works */}
+      <Section
+        title="How theming works"
+        description="The same utility resolves to different values in different contexts. No re-skinning, no per-page overrides."
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 20,
+          }}>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: 8 }}>
+              1 · CSS variables (tokens.css)
+            </div>
+            <CodeBlock code={cssVarsCode} language="css" />
+          </div>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+            padding: 20,
+          }}>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: 8 }}>
+              2 · Tailwind theme bridge
+            </div>
+            <CodeBlock code={themeBridgeCode} language="css" />
+          </div>
+        </div>
+        <div style={{
+          marginTop: 16,
+          borderRadius: "var(--radius-xl, 12px)",
+          border: "1px solid hsl(var(--border))",
+          background: "hsl(var(--card))",
+          padding: 20,
+        }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: 8 }}>
+            3 · Utilities resolve dynamically
+          </div>
+          <CodeBlock code={dynamicCode} language="tsx" />
+          <p style={{
+            marginTop: 12,
+            marginBottom: 0,
+            fontSize: "12.5px",
+            color: "hsl(var(--muted-foreground))",
+          }}>
+            The accent picker mutates <code>--primary</code> directly on <code>&lt;html&gt;</code>; because{" "}
+            <code>@theme inline</code> preserves the <code>var()</code> reference (not the resolved value),
+            every utility everywhere in the page reflows.
           </p>
-        </section>
+        </div>
+      </Section>
 
-        <section id="semantic-colors" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Semantic Colors</h2>
-          <p className="small muted" style={{ marginBottom: "1rem" }}>HSL channel values. Use with <code className="code">hsl(var(--token))</code>.</p>
-          <div className="docs-category-grid">
-            {SEMANTIC_COLORS.map((c) => (
-              <ColorSwatch key={c.property} property={c.property} light={c.light} dark={c.dark} />
-            ))}
+      {/* Don'ts */}
+      <Section title="Don'ts">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(0 70% 60% / 0.3)",
+            background: "hsl(0 70% 60% / 0.05)",
+            padding: 20,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "hsl(var(--destructive))", fontWeight: 600, marginBottom: 4 }}>
+              Don't
+            </div>
+            <CodeBlock code={dontCode} language="tsx" />
+            <p style={{ marginTop: 8, fontSize: "12.5px", color: "hsl(var(--muted-foreground))", margin: "8px 0 0" }}>
+              Hard-coded hex bypasses the theme. Won't follow accent changes; will look wrong in dark mode.
+            </p>
           </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="chart-colors" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Chart Colors</h2>
-          <div className="docs-category-grid">
-            {CHART_COLORS.map((c) => (
-              <ColorSwatch key={c.property} property={c.property} light={c.light} dark={c.dark} />
-            ))}
+          <div style={{
+            borderRadius: "var(--radius-xl, 12px)",
+            border: "1px solid hsl(143 70% 45% / 0.3)",
+            background: "hsl(143 70% 45% / 0.05)",
+            padding: 20,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "hsl(143 60% 38%)", fontWeight: 600, marginBottom: 4 }}>
+              Do
+            </div>
+            <CodeBlock code={doCode} language="tsx" />
+            <p style={{ marginTop: 8, fontSize: "12.5px", color: "hsl(var(--muted-foreground))", margin: "8px 0 0" }}>
+              Always token-routed. Theme changes are free.
+            </p>
           </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="sidebar-colors" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Sidebar Colors</h2>
-          <div className="docs-category-grid">
-            {SIDEBAR_COLORS.map((c) => (
-              <ColorSwatch key={c.property} property={c.property} light={c.light} dark={c.dark} />
-            ))}
-          </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="brand-colors" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Brand Colors</h2>
-          <p className="small muted" style={{ marginBottom: "1rem" }}>Literal values, not HSL channels.</p>
-          <div className="docs-category-grid">
-            {BRAND_COLORS.map((c) => (
-              <ColorSwatch key={c.property} property={c.property} light={c.value} literal />
-            ))}
-          </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="status-colors" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Status Colors</h2>
-          <h3 className="h5" style={{ marginBottom: "0.5rem" }}>Literal</h3>
-          <div className="docs-category-grid" style={{ marginBottom: "1.5rem" }}>
-            {STATUS_COLORS_LITERAL.map((c) => (
-              <ColorSwatch key={c.property} property={c.property} light={c.value} literal />
-            ))}
-          </div>
-          <h3 className="h5" style={{ marginBottom: "0.5rem" }}>Background / Foreground (HSL channels)</h3>
-          <div className="docs-category-grid">
-            {STATUS_BG_FG.map((c) => (
-              <ColorSwatch key={c.property} property={c.property} light={c.light} dark={c.dark} />
-            ))}
-          </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="typography" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Typography</h2>
-          <table className="dt-table">
-            <thead><tr><th>Property</th><th>Value</th></tr></thead>
-            <tbody>
-              <tr><td><code className="code">--font-sans</code></td><td>"Inter", system-ui, -apple-system, sans-serif</td></tr>
-              <tr><td><code className="code">--font-mono</code></td><td>"JetBrains Mono", "Fira Code", monospace</td></tr>
-            </tbody>
-          </table>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="radius" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Radius</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
-            {RADIUS.map((r) => (
-              <div key={r.property} style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    border: "2px solid hsl(var(--primary))",
-                    borderRadius: r.value,
-                    margin: "0 auto 0.5rem",
-                  }}
-                />
-                <code className="code" style={{ fontSize: "0.75rem" }}>{r.property}</code>
-                <div className="tiny muted">{r.value}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="spacing" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Spacing</h2>
-          <table className="dt-table">
-            <thead><tr><th>Property</th><th>Value</th></tr></thead>
-            <tbody>
-              {SPACING.map((s) => (
-                <tr key={s.property}>
-                  <td><code className="code">{s.property}</code></td>
-                  <td>{s.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="shadows" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Shadows</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
-            {SHADOWS.map((s) => (
-              <div key={s.property} style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    width: 80,
-                    height: 48,
-                    borderRadius: "var(--radius-md, 6px)",
-                    background: "hsl(var(--card))",
-                    boxShadow: `var(${s.property})`,
-                    margin: "0 auto 0.5rem",
-                  }}
-                />
-                <code className="code" style={{ fontSize: "0.75rem" }}>{s.property}</code>
-                <div className="tiny muted">{s.description}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="z-index" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Z-Index</h2>
-          <table className="dt-table">
-            <thead><tr><th>Property</th><th>Value</th></tr></thead>
-            <tbody>
-              {Z_INDEX.map((z) => (
-                <tr key={z.property}>
-                  <td><code className="code">{z.property}</code></td>
-                  <td>{z.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="motion" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Motion</h2>
-
-          <h3 className="h5" style={{ marginBottom: "0.5rem" }}>Keyframes</h3>
-          <table className="dt-table" style={{ marginBottom: "1.5rem" }}>
-            <thead><tr><th>Name</th><th>Effect</th></tr></thead>
-            <tbody>
-              {MOTION_KEYFRAMES.map((m) => (
-                <tr key={m.name}>
-                  <td><code className="code">{m.name}</code></td>
-                  <td>{m.effect}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <h3 className="h5" style={{ marginBottom: "0.5rem" }}>Duration and Easing</h3>
-          <table className="dt-table" style={{ marginBottom: "1.5rem" }}>
-            <thead><tr><th>Property</th><th>Value</th></tr></thead>
-            <tbody>
-              {MOTION_DURATION.map((m) => (
-                <tr key={m.property}>
-                  <td><code className="code">{m.property}</code></td>
-                  <td><code className="code">{m.value}</code></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <h3 className="h5" style={{ marginBottom: "0.5rem" }}>Animation Shorthands</h3>
-          <table className="dt-table">
-            <thead><tr><th>Property</th><th>Value</th></tr></thead>
-            <tbody>
-              {ANIMATION_SHORTHANDS.map((a) => (
-                <tr key={a.property}>
-                  <td><code className="code">{a.property}</code></td>
-                  <td><code className="code" style={{ fontSize: "0.75rem" }}>{a.value}</code></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </div>
-
-      <div style={{ display: "none" }} className="docs-toc-col">
-        <Toc items={tocItems} />
-      </div>
-      <style>{`
-        @media (min-width: 1280px) {
-          .docs-toc-col { display: block !important; }
-        }
-      `}</style>
+        </div>
+      </Section>
     </div>
   );
 }

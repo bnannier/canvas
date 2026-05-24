@@ -1,24 +1,51 @@
-export interface CssClass {
-  name: string;
-  description: string;
-  type: "base" | "variant" | "size" | "state" | "sub-element";
+export interface ComponentExample {
+  label?: string;
+  html: string;
+  code?: string;
+  full?: boolean;
 }
 
-export interface ComponentExample {
+export interface ComponentSection {
   title: string;
   description?: string;
-  html: string;
+  anatomy?: string;
+  examples: ComponentExample[];
+  columns?: number;
+}
+
+export interface DontDo {
+  dont: { html: string; caption: string };
+  do: { html: string; caption: string };
+}
+
+export interface PlaygroundControl {
+  type: "pills" | "check" | "text" | "range";
+  key: string;
+  label: string;
+  options?: string[];
+  cols?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  suffix?: string;
+  disabledWhen?: (state: Record<string, unknown>) => boolean;
+}
+
+export interface PlaygroundConfig {
+  controls: PlaygroundControl[];
+  defaults: Record<string, unknown>;
+  render: (state: Record<string, unknown>) => string;
+  markup: (state: Record<string, unknown>) => string;
 }
 
 export interface ComponentDoc {
   slug: string;
   name: string;
   description: string;
-  cssFile: string;
   category: Category;
-  classes: CssClass[];
-  examples: ComponentExample[];
-  notes?: string;
+  sections: ComponentSection[];
+  playground?: PlaygroundConfig;
+  donts?: DontDo[];
 }
 
 export type Category =

@@ -2,14 +2,17 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
 import {
-  Home, Layers, Palette, User, Award, ChevronRight, MousePointerClick,
-  Columns2, CheckSquare, Search, ChevronDown, Info, TextCursorInput,
-  Keyboard, ChevronsLeft, MessageSquare, CircleDot, List, Minus, Loader,
-  Loader2, ToggleLeft, AlignLeft, MessageCircle, Type, AlertTriangle,
-  Square, Code, Inbox, FileText, FileInput, LayoutDashboard, BarChart2,
-  Calendar, Terminal, Table, Maximize2, Filter, Heading, MoreHorizontal,
-  PanelRight, PanelLeft, Footprints, Folder, Bell, Navigation, ArrowRight,
-  Plug, Globe, ChevronLeft, X, Layout,
+  Home, Layers, Palette, User, Award, ChevronRight,
+  MousePointerClick, Columns2, CheckSquare, Search,
+  ChevronDown, Info, TextCursorInput, Keyboard,
+  ChevronsLeft, CircleDot, List, Minus, Loader,
+  ToggleLeft, AlignLeft, MessageCircle,
+  AlertTriangle, Square, Inbox, FileText, FileInput,
+  BarChart2, Calendar, Terminal, Table, Filter,
+  MoreHorizontal, PanelRight, Footprints, Folder,
+  Navigation, Layout, Shield, Activity, Users,
+  ChartLine, Lock, Settings, Check, Eye,
+  Type, ChevronLeft, X, Gauge, Smartphone,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -23,95 +26,102 @@ interface NavItem {
 interface NavGroup {
   label: string;
   items: NavItem[];
-  collapsible: boolean;
 }
 
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
-    collapsible: false,
     items: [
       { slug: "", label: "About Canvas", to: "/", icon: Home },
+      { slug: "components", label: "All components", to: "/components", icon: Layers },
     ],
   },
   {
     label: "Tokens",
-    collapsible: true,
     items: [
-      { slug: "tokens", label: "Tokens", to: "/tokens", icon: Layers },
-      { slug: "theming", label: "Theming", to: "/theming", icon: Palette },
+      { slug: "tokens", label: "Colors & Theme", to: "/tokens", icon: Palette },
+      { slug: "tokens-spacing", label: "Spacing & Shape", to: "/tokens/spacing", icon: Layers },
+      { slug: "tokens-typography", label: "Typography", to: "/tokens/typography", icon: Type },
     ],
   },
   {
     label: "Atoms",
-    collapsible: true,
     items: [
-      { slug: "avatar", label: "Avatar", to: "/components/avatar", icon: User },
-      { slug: "badge", label: "Badge", to: "/components/badge", icon: Award },
-      { slug: "breadcrumb", label: "Breadcrumb", to: "/components/breadcrumb", icon: ChevronRight },
-      { slug: "button", label: "Button", to: "/components/button", icon: MousePointerClick },
-      { slug: "button-group", label: "Button Group", to: "/components/button-group", icon: Columns2 },
-      { slug: "checkbox", label: "Checkbox", to: "/components/checkbox", icon: CheckSquare },
-      { slug: "combobox", label: "Combobox", to: "/components/combobox", icon: Search },
-      { slug: "dropdown", label: "Dropdown", to: "/components/dropdown", icon: ChevronDown },
-      { slug: "icon", label: "Icon", to: "/components/icon", icon: Info },
-      { slug: "input", label: "Input", to: "/components/input", icon: TextCursorInput },
-      { slug: "input-group", label: "Input Group", to: "/components/input-group", icon: Columns2 },
-      { slug: "kbd", label: "Kbd", to: "/components/kbd", icon: Keyboard },
+      { slug: "avatar", label: "Avatars", to: "/components/avatar", icon: User },
+      { slug: "badge", label: "Badges", to: "/components/badge", icon: Award },
+      { slug: "breadcrumb", label: "Breadcrumbs", to: "/components/breadcrumb", icon: ChevronRight },
+      { slug: "button-group", label: "Button Groups", to: "/components/button-group", icon: Columns2 },
+      { slug: "button", label: "Buttons", to: "/components/button", icon: MousePointerClick },
+      { slug: "checkbox", label: "Checkboxes", to: "/components/checkbox", icon: CheckSquare },
+      { slug: "combobox", label: "Comboboxes", to: "/components/combobox", icon: Search },
+      { slug: "separator", label: "Dividers", to: "/components/separator", icon: Minus },
+      { slug: "dropdown", label: "Dropdowns", to: "/components/dropdown", icon: ChevronDown },
+      { slug: "icon", label: "Icons", to: "/components/icon", icon: Info },
+      { slug: "input-group", label: "Input Groups", to: "/components/input-group", icon: Columns2 },
+      { slug: "input", label: "Inputs & Forms", to: "/components/input", icon: TextCursorInput },
       { slug: "pagination", label: "Pagination", to: "/components/pagination", icon: ChevronsLeft },
-      { slug: "popover", label: "Popover", to: "/components/popover", icon: MessageSquare },
-      { slug: "radio", label: "Radio", to: "/components/radio", icon: CircleDot },
-      { slug: "select", label: "Select", to: "/components/select", icon: List },
-      { slug: "separator", label: "Separator", to: "/components/separator", icon: Minus },
-      { slug: "skeleton", label: "Skeleton", to: "/components/skeleton", icon: Loader },
-      { slug: "spinner", label: "Spinner", to: "/components/spinner", icon: Loader2 },
-      { slug: "switch", label: "Switch", to: "/components/switch", icon: ToggleLeft },
-      { slug: "textarea", label: "Textarea", to: "/components/textarea", icon: AlignLeft },
-      { slug: "tooltip", label: "Tooltip", to: "/components/tooltip", icon: MessageCircle },
-      { slug: "typography", label: "Typography", to: "/components/typography", icon: Type },
+      { slug: "radio", label: "Radios", to: "/components/radio", icon: CircleDot },
+      { slug: "select", label: "Selects", to: "/components/select", icon: List },
+      { slug: "skeleton", label: "Skeletons", to: "/components/skeleton", icon: Loader },
+      { slug: "textarea", label: "Textareas", to: "/components/textarea", icon: AlignLeft },
+      { slug: "switch", label: "Toggles", to: "/components/switch", icon: ToggleLeft },
+      { slug: "tooltip", label: "Tooltips", to: "/components/tooltip", icon: MessageCircle },
     ],
   },
   {
     label: "Molecules",
-    collapsible: true,
     items: [
-      { slug: "alert", label: "Alert", to: "/components/alert", icon: AlertTriangle },
-      { slug: "card", label: "Card", to: "/components/card", icon: Square },
-      { slug: "code-block", label: "Code Block", to: "/components/code-block", icon: Code },
-      { slug: "empty-state", label: "Empty State", to: "/components/empty-state", icon: Inbox },
-      { slug: "field", label: "Field", to: "/components/field", icon: FileText },
-      { slug: "form", label: "Form", to: "/components/form", icon: FileInput },
-      { slug: "section-card", label: "Section Card", to: "/components/section-card", icon: Layout },
-      { slug: "stat-card", label: "Stat Card", to: "/components/stat-card", icon: BarChart2 },
+      { slug: "action-panels", label: "Action Panels", to: "/components/action-panels", icon: Shield },
+      { slug: "alert", label: "Alerts", to: "/components/alert", icon: AlertTriangle },
+      { slug: "card", label: "Cards", to: "/components/card", icon: Square },
+      { slug: "description-lists", label: "Description Lists", to: "/components/description-lists", icon: Info },
+      { slug: "empty-state", label: "Empty States", to: "/components/empty-state", icon: Inbox },
+      { slug: "feeds", label: "Feeds", to: "/components/feeds", icon: Activity },
+      { slug: "field", label: "Field Display", to: "/components/field", icon: FileText },
+      { slug: "form", label: "Form Layouts", to: "/components/form", icon: FileInput },
+      { slug: "grid-lists", label: "Grid Lists", to: "/components/grid-lists", icon: Layers },
+      { slug: "media-objects", label: "Media Objects", to: "/components/media-objects", icon: Users },
+      { slug: "stacked-lists", label: "Stacked Lists", to: "/components/stacked-lists", icon: Layers },
+      { slug: "stats", label: "Stats", to: "/components/stats", icon: BarChart2 },
     ],
   },
   {
     label: "Organisms",
-    collapsible: true,
     items: [
-      { slug: "app-shell", label: "App Shell", to: "/components/app-shell", icon: LayoutDashboard },
-      { slug: "calendar", label: "Calendar", to: "/components/calendar", icon: Calendar },
-      { slug: "command", label: "Command", to: "/components/command", icon: Terminal },
-      { slug: "data-table", label: "Data Table", to: "/components/data-table", icon: Table },
-      { slug: "dialog", label: "Dialog", to: "/components/dialog", icon: Maximize2 },
-      { slug: "filter-panel", label: "Filter Panel", to: "/components/filter-panel", icon: Filter },
-      { slug: "page-header", label: "Page Header", to: "/components/page-header", icon: Heading },
-      { slug: "row-menu", label: "Row Menu", to: "/components/row-menu", icon: MoreHorizontal },
-      { slug: "sheet", label: "Sheet", to: "/components/sheet", icon: PanelRight },
-      { slug: "sidebar", label: "Sidebar", to: "/components/sidebar", icon: PanelLeft },
-      { slug: "stepper", label: "Stepper", to: "/components/stepper", icon: Footprints },
+      { slug: "calendar", label: "Calendars", to: "/components/calendar", icon: Calendar },
+      { slug: "charts", label: "Charts", to: "/components/charts", icon: ChartLine },
+      { slug: "command", label: "Command Palette", to: "/components/command", icon: Terminal },
+      { slug: "data-table", label: "Data Tables", to: "/components/data-table", icon: Table },
+      { slug: "filter-panel", label: "Filter Panels", to: "/components/filter-panel", icon: Filter },
+      { slug: "navbars", label: "Navbars", to: "/components/navbars", icon: Navigation },
+      { slug: "sidebar", label: "Navigation", to: "/components/sidebar", icon: Navigation },
+      { slug: "dialog", label: "Overlays", to: "/components/dialog", icon: PanelRight },
+      { slug: "stepper", label: "Steppers", to: "/components/stepper", icon: Footprints },
       { slug: "tabs", label: "Tabs", to: "/components/tabs", icon: Folder },
-      { slug: "toast", label: "Toast", to: "/components/toast", icon: Bell },
-      { slug: "topbar", label: "Topbar", to: "/components/topbar", icon: Navigation },
     ],
   },
   {
-    label: "Guides",
-    collapsible: true,
+    label: "Templates",
     items: [
-      { slug: "migration", label: "Migration", to: "/migration", icon: ArrowRight },
-      { slug: "integration", label: "Integration", to: "/integration", icon: Plug },
-      { slug: "browser-support", label: "Browser Support", to: "/browser-support", icon: Globe },
+      { slug: "tpl-calendar", label: "Calendar", to: "/templates/calendar", icon: Calendar },
+      { slug: "tpl-dashboard", label: "Dashboard", to: "/templates/dashboard", icon: Layout },
+      { slug: "tpl-detail-sidebar", label: "Detail w/ sidebar", to: "/templates/detail-sidebar", icon: PanelRight },
+      { slug: "tpl-identities", label: "Identities", to: "/templates/identities", icon: Users },
+      { slug: "tpl-onboarding", label: "Onboarding", to: "/templates/onboarding", icon: Check },
+      { slug: "tpl-profile", label: "Profile", to: "/templates/profile", icon: User },
+      { slug: "tpl-settings", label: "Settings", to: "/templates/settings", icon: Settings },
+      { slug: "tpl-signin", label: "Sign-in", to: "/templates/signin", icon: Lock },
+    ],
+  },
+  {
+    label: "Patterns",
+    items: [
+      { slug: "pat-accessibility", label: "Accessibility", to: "/patterns/accessibility", icon: Eye },
+      { slug: "pat-density", label: "Density", to: "/patterns/density", icon: Gauge },
+      { slug: "pat-form-validation", label: "Form Validation", to: "/patterns/form-validation", icon: AlertTriangle },
+      { slug: "pat-glass", label: "Glass Surface", to: "/patterns/glass", icon: Layers },
+      { slug: "pat-loading", label: "Loading", to: "/patterns/loading", icon: Loader },
+      { slug: "pat-responsive", label: "Responsive", to: "/patterns/responsive", icon: Smartphone },
     ],
   },
 ];
@@ -120,6 +130,10 @@ function getActiveSlug(pathname: string): string {
   if (pathname === "/") return "";
   const match = pathname.match(/^\/components\/(.+)$/);
   if (match) return match[1];
+  const tplMatch = pathname.match(/^\/templates\/(.+)$/);
+  if (tplMatch) return "tpl-" + tplMatch[1];
+  const patMatch = pathname.match(/^\/patterns\/(.+)$/);
+  if (patMatch) return "pat-" + patMatch[1];
   return pathname.replace(/^\//, "");
 }
 
@@ -240,6 +254,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
 
           {NAV_GROUPS.map((g) => {
             const groupHasActive = g.items.some((i) => i.slug === activeSlug);
+            const isOpen = openGroups.has(g.label);
 
             if (collapsed) {
               return (
@@ -261,27 +276,6 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
               );
             }
 
-            if (!g.collapsible) {
-              return (
-                <div key={g.label} className="sidebar-group">
-                  <div className="sidebar-group-label">{g.label}</div>
-                  {g.items.map((item) => (
-                    <NavLink
-                      key={item.slug}
-                      to={item.to}
-                      className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
-                      onClick={onClose}
-                      end={item.to === "/"}
-                    >
-                      <item.icon size={16} />
-                      <span className="label">{item.label}</span>
-                    </NavLink>
-                  ))}
-                </div>
-              );
-            }
-
-            const isOpen = openGroups.has(g.label);
             return (
               <div key={g.label} className="sidebar-group">
                 <button
@@ -312,6 +306,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
                         to={item.to}
                         className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
                         onClick={onClose}
+                        end={item.to === "/"}
                       >
                         <item.icon size={16} />
                         <span className="label">{item.label}</span>

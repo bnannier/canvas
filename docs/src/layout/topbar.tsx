@@ -9,6 +9,7 @@ import {
   type Surface,
 } from "../../../src/theme";
 import { useState, useCallback } from "react";
+import { getComponent } from "@/data/components";
 
 interface TopbarProps {
   onMenuToggle: () => void;
@@ -16,19 +17,41 @@ interface TopbarProps {
 
 function getPageInfo(pathname: string): { title: string; subtitle?: string } {
   if (pathname === "/") return { title: "Canvas", subtitle: "Design System" };
-  if (pathname === "/tokens") return { title: "Tokens", subtitle: "Colors, typography, spacing, radius" };
-  if (pathname === "/theming") return { title: "Theming", subtitle: "Light/dark, glass surface, density" };
-  if (pathname === "/migration") return { title: "Migration", subtitle: "v2 to v3 upgrade guide" };
-  if (pathname === "/integration") return { title: "Integration", subtitle: "How to consume Canvas" };
-  if (pathname === "/browser-support") return { title: "Browser Support", subtitle: "CSS feature matrix" };
+  if (pathname === "/tokens") return { title: "Colors & Theme", subtitle: "Tokens" };
+  if (pathname === "/tokens/spacing") return { title: "Spacing & Shape", subtitle: "Tokens" };
+  if (pathname === "/tokens/typography") return { title: "Typography", subtitle: "Tokens" };
+  if (pathname === "/theming") return { title: "Theming", subtitle: "Foundations" };
+  if (pathname === "/migration") return { title: "Migration", subtitle: "Guides" };
+  if (pathname === "/integration") return { title: "Integration", subtitle: "Guides" };
+  if (pathname === "/browser-support") return { title: "Browser Support", subtitle: "Guides" };
 
   const match = pathname.match(/^\/components\/(.+)$/);
   if (match) {
+    const comp = getComponent(match[1]);
+    if (comp) return { title: comp.name, subtitle: comp.category };
     const name = match[1]
       .split("-")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
-    return { title: name, subtitle: "Component reference" };
+    return { title: name, subtitle: "Components" };
+  }
+
+  const tplMatch = pathname.match(/^\/templates\/(.+)$/);
+  if (tplMatch) {
+    const name = tplMatch[1]
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    return { title: name, subtitle: "Templates" };
+  }
+
+  const patMatch = pathname.match(/^\/patterns\/(.+)$/);
+  if (patMatch) {
+    const name = patMatch[1]
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    return { title: name, subtitle: "Patterns" };
   }
 
   return { title: "Canvas" };

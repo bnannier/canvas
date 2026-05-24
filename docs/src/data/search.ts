@@ -17,7 +17,7 @@ const ALL_ENTRIES: SearchEntry[] = [
     description: c.description,
     path: `/components/${c.slug}`,
     category: c.category,
-    keywords: c.classes.map((cl) => cl.name.replace(/^\./, "")),
+    keywords: [c.slug, ...c.slug.split("-")],
   })),
 ];
 

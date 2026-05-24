@@ -1,9 +1,7 @@
 import { useParams } from "react-router-dom";
 import { getComponent } from "@/data/components";
 import { ExampleCard } from "@/components/example-card";
-import { ClassTable } from "@/components/class-table";
-import { CodeBlock } from "@/components/code-block";
-import { Toc } from "@/components/toc";
+import { Playground } from "@/components/playground";
 import { NotFound } from "./not-found";
 
 export function ComponentPage() {
@@ -12,66 +10,205 @@ export function ComponentPage() {
 
   if (!comp) return <NotFound />;
 
-  const tocItems = [
-    { id: "import", label: "Import" },
-    { id: "examples", label: "Examples" },
-    { id: "classes", label: "CSS Classes" },
-    ...(comp.notes ? [{ id: "notes", label: "Notes" }] : []),
-  ];
-
-  const importCode = `@import "@olympusoss/canvas/styles/${comp.cssFile}";`;
-
   return (
-    <div className="docs-content">
-      <div style={{ minWidth: 0 }}>
-        <div className="page-header" style={{ marginBottom: "1.5rem" }}>
-          <div>
-            <div className="page-header-title"><h1>{comp.name}</h1></div>
-            <p className="sub">{comp.description}</p>
-          </div>
-          <div className="page-header-actions">
-            <span className="badge badge-secondary">{comp.category}</span>
-          </div>
-        </div>
+    <div style={{ maxWidth: 960 }}>
+      <header style={{ marginBottom: "2.5rem" }}>
+        <h1 style={{
+          margin: 0,
+          fontSize: 28,
+          fontWeight: 700,
+          letterSpacing: "-0.015em",
+          color: "hsl(var(--foreground))",
+        }}>
+          {comp.name}
+        </h1>
+        <p style={{
+          marginTop: 6,
+          marginBottom: 0,
+          fontSize: "13.5px",
+          color: "hsl(var(--muted-foreground))",
+          maxWidth: 640,
+          lineHeight: 1.6,
+        }}
+          dangerouslySetInnerHTML={{ __html: comp.description }}
+        />
+      </header>
 
-        <section id="import" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Import</h2>
-          <CodeBlock code={importCode} language="css" />
-          <p className="small muted" style={{ marginTop: "0.5rem" }}>
-            Or use the all-in-one entry point: <code className="code">@import "@olympusoss/canvas/styles/canvas.css"</code>
-          </p>
+      {comp.playground && (
+        <section style={{ marginBottom: "2.5rem" }}>
+          <header style={{ marginBottom: "1rem" }}>
+            <h2 style={{
+              margin: 0,
+              fontSize: 20,
+              fontWeight: 600,
+              letterSpacing: "-0.015em",
+              color: "hsl(var(--foreground))",
+            }}>
+              Playground
+            </h2>
+            <p style={{
+              marginTop: 4,
+              marginBottom: 0,
+              fontSize: "13.5px",
+              color: "hsl(var(--muted-foreground))",
+              maxWidth: 640,
+              lineHeight: 1.6,
+            }}>
+              Combine variant, size, and state. The class string updates live: copy from the Markup field at the bottom right.
+            </p>
+          </header>
+          <Playground config={comp.playground} />
         </section>
+      )}
 
-        <section id="examples" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "1rem" }}>Examples</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {comp.examples.map((ex, i) => (
-              <ExampleCard key={i} example={ex} />
+      {comp.sections.map((section, i) => (
+        <section key={i} style={{ marginBottom: "2.5rem" }}>
+          <header style={{ marginBottom: "1rem" }}>
+            <h2 style={{
+              margin: 0,
+              fontSize: 20,
+              fontWeight: 600,
+              letterSpacing: "-0.015em",
+              color: "hsl(var(--foreground))",
+            }}>
+              {section.title}
+            </h2>
+            {section.description && (
+              <p style={{
+                marginTop: 4,
+                marginBottom: 0,
+                fontSize: "13.5px",
+                color: "hsl(var(--muted-foreground))",
+                maxWidth: 640,
+                lineHeight: 1.6,
+              }}
+                dangerouslySetInnerHTML={{ __html: section.description }}
+              />
+            )}
+          </header>
+          {section.anatomy && (
+            <div style={{
+              marginBottom: "1rem",
+              padding: "0.75rem 1rem",
+              borderRadius: 8,
+              background: "hsl(var(--muted) / 0.4)",
+              border: "1px solid hsl(var(--border))",
+              fontSize: "12.5px",
+              color: "hsl(var(--muted-foreground))",
+            }}>
+              <span style={{
+                fontWeight: 600,
+                color: "hsl(var(--foreground))",
+                marginRight: 8,
+              }}>
+                Anatomy.
+              </span>
+              <span dangerouslySetInnerHTML={{ __html: section.anatomy }} />
+            </div>
+          )}
+          {section.columns && section.columns > 1 ? (
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${section.columns}, 1fr)`,
+              gap: "1rem",
+            }}>
+              {section.examples.map((ex, j) => (
+                <ExampleCard key={j} example={ex} compact />
+              ))}
+            </div>
+          ) : (
+            section.examples.map((ex, j) => (
+              <ExampleCard key={j} example={ex} />
+            ))
+          )}
+        </section>
+      ))}
+
+      {comp.donts && comp.donts.length > 0 && (
+        <section style={{ marginBottom: "2.5rem" }}>
+          <header style={{ marginBottom: "1rem" }}>
+            <h2 style={{
+              margin: 0,
+              fontSize: 20,
+              fontWeight: 600,
+              letterSpacing: "-0.015em",
+              color: "hsl(var(--foreground))",
+            }}>
+              Don&rsquo;ts
+            </h2>
+          </header>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "1rem",
+          }}>
+            {comp.donts.map((d, i) => (
+              <div key={`dont-${i}`} style={{
+                display: "contents",
+              }}>
+                <div style={{
+                  borderRadius: 12,
+                  border: "1px solid hsl(0 70% 60% / 0.3)",
+                  background: "hsl(0 70% 60% / 0.05)",
+                  padding: "1.25rem",
+                }}>
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "hsl(0 84% 60%)",
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                    Don&rsquo;t
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}
+                    dangerouslySetInnerHTML={{ __html: d.dont.html }} />
+                  <p style={{
+                    margin: 0,
+                    fontSize: "12px",
+                    color: "hsl(var(--muted-foreground))",
+                    lineHeight: 1.5,
+                  }}>
+                    {d.dont.caption}
+                  </p>
+                </div>
+                <div style={{
+                  borderRadius: 12,
+                  border: "1px solid hsl(143 70% 45% / 0.3)",
+                  background: "hsl(143 70% 45% / 0.05)",
+                  padding: "1.25rem",
+                }}>
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "hsl(143 60% 38%)",
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    Do
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}
+                    dangerouslySetInnerHTML={{ __html: d.do.html }} />
+                  <p style={{
+                    margin: 0,
+                    fontSize: "12px",
+                    color: "hsl(var(--muted-foreground))",
+                    lineHeight: 1.5,
+                  }}>
+                    {d.do.caption}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </section>
-
-        <section id="classes" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>CSS Classes</h2>
-          <ClassTable classes={comp.classes} />
-        </section>
-
-        {comp.notes && (
-          <section id="notes" className="docs-section" style={{ marginBottom: "2rem" }}>
-            <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Notes</h2>
-            <p className="body">{comp.notes}</p>
-          </section>
-        )}
-      </div>
-
-      <div style={{ display: "none" }} className="docs-toc-col">
-        <Toc items={tocItems} />
-      </div>
-      <style>{`
-        @media (min-width: 1280px) {
-          .docs-toc-col { display: block !important; }
-        }
-      `}</style>
+      )}
     </div>
   );
 }
