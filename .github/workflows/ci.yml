@@ -9,6 +9,7 @@ on:
       - 'bun.lock'
       - 'tsconfig*.json'
       - 'scripts/**'
+      - 'test/**'
       - '.changeset/**'
       - '.github/workflows/**'
   pull_request:
@@ -64,3 +65,11 @@ jobs:
 
       - name: Check CSS size budget
         run: bun run check-size
+
+      - name: Check color contrast (WCAG AA)
+        run: bun scripts/check-contrast.ts
+
+      - name: Visual regression screenshots
+        run: |
+          bun x playwright install --with-deps chromium
+          bun run screenshots
