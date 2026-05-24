@@ -4,17 +4,6 @@
     input:focus,
     textarea:focus,
     select:focus,
-    .btn:focus,
-    button:focus,
-    a:focus,
-    [role="button"]:focus,
-    [role="switch"]:focus,
-    [role="checkbox"]:focus,
-    [role="radio"]:focus,
-    [role="menuitem"]:focus,
-    [role="option"]:focus,
-    [role="tab"]:focus,
-    [tabindex]:focus,
     .focus-pulse-within:focus-within
   ):not(.no-focus-pulse),
   .canvas-focus-pulse {
@@ -29,10 +18,5 @@
   @keyframes canvasFocusPulse {
     0% { box-shadow: 0 0 0 0px hsl(var(--ring) / 0.7); }
     100% { box-shadow: 0 0 0 5px hsl(var(--ring) / 0); }
-  }
-
-  :where(a, [role="link"]):focus,
-  :where(a, [role="link"]).canvas-focus-pulse {
-    border-radius: 9999px;
   }
 }

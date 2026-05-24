@@ -1,5 +1,26 @@
 import type { ComponentDoc } from "./types";
 
+const DONKEY = "data:image/svg+xml," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+  '<circle cx="50" cy="50" r="50" fill="#C4B5A5"/>' +
+  '<ellipse cx="25" cy="4" rx="10" ry="26" fill="#8C7A68" transform="rotate(-15 25 4)"/>' +
+  '<ellipse cx="26" cy="2" rx="6" ry="19" fill="#E0D3C6" transform="rotate(-15 26 2)"/>' +
+  '<ellipse cx="75" cy="4" rx="10" ry="26" fill="#8C7A68" transform="rotate(15 75 4)"/>' +
+  '<ellipse cx="74" cy="2" rx="6" ry="19" fill="#E0D3C6" transform="rotate(15 74 2)"/>' +
+  '<circle cx="50" cy="56" r="33" fill="#8C7A68"/>' +
+  '<ellipse cx="50" cy="73" rx="22" ry="17" fill="#E0D3C6"/>' +
+  '<circle cx="36" cy="48" r="7" fill="#fff"/>' +
+  '<circle cx="64" cy="48" r="7" fill="#fff"/>' +
+  '<circle cx="38" cy="49.5" r="4" fill="#1A0A00"/>' +
+  '<circle cx="66" cy="49.5" r="4" fill="#1A0A00"/>' +
+  '<circle cx="39.2" cy="48" r="1.5" fill="#fff"/>' +
+  '<circle cx="67.2" cy="48" r="1.5" fill="#fff"/>' +
+  '<ellipse cx="42" cy="75" rx="3.5" ry="4" fill="#5C4E40"/>' +
+  '<ellipse cx="58" cy="75" rx="3.5" ry="4" fill="#5C4E40"/>' +
+  '<path d="M42 84 Q50 90 58 84" fill="none" stroke="#5C4E40" stroke-width="2.5" stroke-linecap="round"/>' +
+  '</svg>',
+);
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Layout ──────────────────────────────────────────────────────────
   {
@@ -861,20 +882,105 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
   {
     slug: "avatar",
     name: "Avatar",
-    description: "Circular user avatar displaying initials.",
+    description: "Circular user avatar displaying initials or images.",
     cssFile: "components/avatar.css",
     category: "Data Display",
     classes: [
-      { name: ".avatar", description: "Circular avatar with initials", type: "base" },
+      { name: ".avatar", description: "Circular avatar with initials or image", type: "base" },
+      { name: ".avatar img", description: "Image fills and clips to circle", type: "sub-element" },
     ],
     examples: [
       {
-        title: "Default",
+        title: "Initials",
         html: `<div style="display:flex;gap:0.5rem">
   <span class="avatar">BN</span>
   <span class="avatar">AJ</span>
   <span class="avatar">KM</span>
 </div>`,
+      },
+      {
+        title: "With photos",
+        description: "Wrap an <img> inside .avatar. The image clips to a circle.",
+        html: `<div style="display:flex;gap:0.75rem;align-items:center">
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Ada Lovelace">
+  </span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="https://randomuser.me/api/portraits/women/78.jpg" alt="Rachel Chen">
+  </span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Linus Berg">
+  </span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="${DONKEY}" alt="Donkey">
+  </span>
+</div>`,
+      },
+      {
+        title: "Company logos",
+        html: `<div style="display:flex;gap:0.75rem;align-items:center">
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="https://github.com/github.png?size=128" alt="GitHub">
+  </span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="https://github.com/slackapi.png?size=128" alt="Slack">
+  </span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="https://github.com/figma.png?size=128" alt="Figma">
+  </span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem">
+    <img src="https://github.com/stripe.png?size=128" alt="Stripe">
+  </span>
+</div>`,
+      },
+      {
+        title: "Sizes",
+        html: `<div style="display:flex;gap:0.75rem;align-items:end">
+  <span class="avatar" style="width:1.25rem;height:1.25rem;font-size:8px">AO</span>
+  <span class="avatar">AO</span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem;font-size:14px">AO</span>
+  <span class="avatar" style="width:3.5rem;height:3.5rem;font-size:18px">AO</span>
+  <span class="avatar" style="width:5rem;height:5rem;font-size:24px">AO</span>
+</div>`,
+      },
+      {
+        title: "Stacked group",
+        description: "Overlap avatars with negative margin. Use outline to create visual separation.",
+        html: `<div style="display:flex;align-items:center">
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card))">
+    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
+  </span>
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-8px">
+    <img src="https://randomuser.me/api/portraits/women/78.jpg" alt="">
+  </span>
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-8px">
+    <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="">
+  </span>
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-8px">
+    <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="">
+  </span>
+  <span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>
+</div>`,
+      },
+      {
+        title: "Ring outline",
+        description: "Use box-shadow to add a visible ring around an avatar.",
+        html: `<div style="display:flex;gap:1.5rem;align-items:center">
+  <span class="avatar" style="width:2.5rem;height:2.5rem;box-shadow:0 0 0 2px hsl(var(--card)),0 0 0 4px hsl(var(--border))">
+    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Ada Lovelace">
+  </span>
+  <span class="avatar" style="width:2.5rem;height:2.5rem;font-size:14px;box-shadow:0 0 0 2px hsl(var(--card)),0 0 0 4px hsl(var(--border))">RC</span>
+</div>`,
+      },
+      {
+        title: "Topbar user pill",
+        html: `<button style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));cursor:default;font-size:13px;font-weight:500">
+  <span class="avatar">
+    <img src="${DONKEY}" alt="Donkey">
+  </span>
+  <span>donkey@example.com</span>
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+</button>`,
       },
     ],
   },
