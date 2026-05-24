@@ -30,7 +30,9 @@
     "screenshots": "bun scripts/capture-screenshots.ts",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "docs:dev": "cd docs && npx vite",
+    "docs:build": "cd docs && npx vite build"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
