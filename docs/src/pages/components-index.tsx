@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { NAV_GROUPS } from "@/layout/sidebar";
 import { CanvasMark } from "@/components/canvas-mark";
@@ -115,6 +116,13 @@ const gradients = [
 export function ComponentsIndex() {
   const groups = NAV_GROUPS.filter((g) => CATEGORY_IDS.includes(g.label));
   const totalCount = groups.reduce((sum, g) => sum + g.items.length, 0);
+
+  useEffect(() => {
+    const el = document.querySelector(".app-content") as HTMLElement | null;
+    if (!el) return;
+    el.style.maxWidth = "none";
+    return () => { el.style.maxWidth = ""; };
+  }, []);
 
   return (
     <div>

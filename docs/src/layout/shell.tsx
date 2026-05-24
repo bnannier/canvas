@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { SearchDialog } from "@/components/search-dialog";
@@ -18,6 +18,9 @@ export function Shell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(loadSidebarState);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
 
   const openSearch = useCallback(() => setSearchOpen(true), []);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
