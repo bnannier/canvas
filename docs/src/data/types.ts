@@ -22,20 +22,14 @@ export interface ComponentDoc {
 }
 
 export type Category =
-  | "Layout"
-  | "Typography"
-  | "Forms"
-  | "Data Display"
-  | "Feedback"
-  | "Navigation";
+  | "Atoms"
+  | "Molecules"
+  | "Organisms";
 
 export const CATEGORIES: Category[] = [
-  "Layout",
-  "Typography",
-  "Forms",
-  "Data Display",
-  "Feedback",
-  "Navigation",
+  "Atoms",
+  "Molecules",
+  "Organisms",
 ];
 
 export interface GuidePage {

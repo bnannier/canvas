@@ -11,12 +11,9 @@ const GUIDE_LINKS = [
 ];
 
 const CATEGORY_FIRST_COMPONENT: Record<string, string> = {
-  Layout: "app-shell",
-  Typography: "typography",
-  Forms: "button",
-  "Data Display": "card",
-  Feedback: "alert",
-  Navigation: "tabs",
+  Atoms: "button",
+  Molecules: "card",
+  Organisms: "app-shell",
 };
 
 export function Home() {
@@ -93,12 +90,9 @@ export function Home() {
 
 function getCategoryDescription(cat: string): string {
   const descriptions: Record<string, string> = {
-    Layout: "App shell, sidebar, topbar, page header, separator",
-    Typography: "Type scale, kbd, code block, icon defaults",
-    Forms: "Buttons, inputs, selects, checkboxes, radios, switches, and more",
-    "Data Display": "Cards, tables, badges, avatars, skeletons, calendars",
-    Feedback: "Alerts, dialogs, sheets, toasts, tooltips, dropdowns, command palette",
-    Navigation: "Tabs, breadcrumbs, pagination, row menu, stepper",
+    Atoms: "Buttons, inputs, badges, avatars, icons, selects, checkboxes, tooltips, and other fundamental building blocks",
+    Molecules: "Cards, alerts, forms, fields, code blocks, and other purposeful compositions of atoms",
+    Organisms: "App shell, sidebar, data tables, dialogs, tabs, command palette, and other complex UI sections",
   };
   return descriptions[cat] ?? "";
 }
