@@ -108,11 +108,7 @@ export function ComponentPage() {
             </div>
           )}
           {section.columns && section.columns > 1 ? (
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${section.columns}, 1fr)`,
-              gap: "1rem",
-            }}>
+            <div className={`section-col-grid cols-${section.columns}`}>
               {section.examples.map((ex, j) => (
                 <ExampleCard key={j} example={ex} compact />
               ))}
@@ -138,11 +134,7 @@ export function ComponentPage() {
               Don&rsquo;ts
             </h2>
           </header>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "1rem",
-          }}>
+          <div className="donts-grid">
             {comp.donts.map((d, i) => (
               <div key={`dont-${i}`} style={{
                 display: "contents",

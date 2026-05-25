@@ -24,9 +24,9 @@ function Tile({ title, to, span, children }: {
         textDecoration: "none",
         color: "hsl(var(--foreground))",
         display: "block",
-        gridColumn: span === 2 ? "span 2" : undefined,
+        gridColumn: undefined,
       }}
-      className="docs-tile"
+      className={`docs-tile${span === 2 ? " cat-tile-span2" : ""}`}
     >
       <div style={{
         aspectRatio: "16 / 9",
@@ -95,11 +95,7 @@ function CatGroup({ id, label, count, children }: {
           {count} components
         </span>
       </div>
-      <div style={{
-        display: "grid",
-        gap: 12,
-        gridTemplateColumns: "repeat(3, 1fr)",
-      }}>
+      <div className="cat-tile-grid">
         {children}
       </div>
     </section>
@@ -127,22 +123,7 @@ export function ComponentsIndex() {
   return (
     <div>
       {/* Sticky category anchor bar */}
-      <div style={{
-        position: "sticky",
-        top: 56,
-        zIndex: 10,
-        marginLeft: -28,
-        marginRight: -28,
-        marginTop: -24,
-        paddingLeft: 28,
-        paddingRight: 28,
-        paddingTop: 12,
-        paddingBottom: 12,
-        marginBottom: 20,
-        borderBottom: "1px solid hsl(var(--border))",
-        background: "hsl(var(--background) / 0.8)",
-        backdropFilter: "blur(8px)",
-      }}>
+      <div className="cat-subbar">
         <div style={{
           display: "flex",
           gap: 6,

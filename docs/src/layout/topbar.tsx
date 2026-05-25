@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Search } from "lucide-react";
 import {
   getTheme,
   setTheme,
@@ -13,6 +13,7 @@ import { getComponent } from "@/data/components";
 
 interface TopbarProps {
   onMenuToggle: () => void;
+  onSearchOpen: () => void;
 }
 
 function getPageInfo(pathname: string): { title: string; subtitle?: string } {
@@ -57,7 +58,7 @@ function getPageInfo(pathname: string): { title: string; subtitle?: string } {
   return { title: "Canvas" };
 }
 
-export function Topbar({ onMenuToggle }: TopbarProps) {
+export function Topbar({ onMenuToggle, onSearchOpen }: TopbarProps) {
   const { pathname } = useLocation();
   const { title, subtitle } = getPageInfo(pathname);
 
@@ -100,6 +101,14 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
           </div>
         )}
       </div>
+
+      <div style={{ flex: 1 }} />
+
+      <button className="topbar-search" onClick={onSearchOpen}>
+        <Search size={13} />
+        <span>Search components...</span>
+        <kbd className="kbd">⌘K</kbd>
+      </button>
 
       <div style={{ flex: 1 }} />
 

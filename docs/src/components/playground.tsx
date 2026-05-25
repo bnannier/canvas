@@ -16,11 +16,7 @@ export function Playground({ config }: PlaygroundProps) {
   const markup = config.markup(state);
 
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "minmax(0, 1fr) 280px",
-      gap: "1rem",
-    }}>
+    <div className="playground-grid">
       <div className="section-card" style={{
         padding: "2rem",
         display: "flex",

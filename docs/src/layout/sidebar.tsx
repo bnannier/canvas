@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
 import {
@@ -25,12 +25,14 @@ export interface NavItem {
 
 export interface NavGroup {
   label: string;
+  icon: LucideIcon;
   items: NavItem[];
 }
 
 export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
+    icon: Home,
     items: [
       { slug: "", label: "About Canvas", to: "/", icon: Home },
       { slug: "components", label: "All components", to: "/components", icon: Layers },
@@ -38,6 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Tokens",
+    icon: Palette,
     items: [
       { slug: "tokens", label: "Colors & Theme", to: "/tokens", icon: Palette },
       { slug: "tokens-spacing", label: "Spacing & Shape", to: "/tokens/spacing", icon: Layers },
@@ -46,6 +49,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Atoms",
+    icon: MousePointerClick,
     items: [
       { slug: "avatar", label: "Avatars", to: "/components/avatar", icon: User },
       { slug: "badge", label: "Badges", to: "/components/badge", icon: Award },
@@ -70,6 +74,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Molecules",
+    icon: Layers,
     items: [
       { slug: "action-panels", label: "Action Panels", to: "/components/action-panels", icon: Shield },
       { slug: "alert", label: "Alerts", to: "/components/alert", icon: AlertTriangle },
@@ -87,6 +92,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Organisms",
+    icon: Layout,
     items: [
       { slug: "calendar", label: "Calendars", to: "/components/calendar", icon: Calendar },
       { slug: "charts", label: "Charts", to: "/components/charts", icon: ChartLine },
@@ -102,6 +108,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Templates",
+    icon: FileText,
     items: [
       { slug: "tpl-calendar", label: "Calendar", to: "/templates/calendar", icon: Calendar },
       { slug: "tpl-dashboard", label: "Dashboard", to: "/templates/dashboard", icon: Layout },
@@ -115,6 +122,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Patterns",
+    icon: Settings,
     items: [
       { slug: "pat-accessibility", label: "Accessibility", to: "/patterns/accessibility", icon: Eye },
       { slug: "pat-density", label: "Density", to: "/patterns/density", icon: Gauge },
@@ -150,10 +158,10 @@ interface SidebarProps {
   collapsed: boolean;
   onClose: () => void;
   onToggleCollapse: () => void;
-  onSearchOpen: () => void;
+  onSearchOpen?: () => void;
 }
 
-export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOpen }: SidebarProps) {
+export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarProps) {
   const location = useLocation();
   const activeSlug = getActiveSlug(location.pathname);
   const activeGroup = getActiveGroup(location.pathname);
@@ -168,6 +176,22 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
       next.has(label) ? next.delete(label) : next.add(label);
       return next;
     });
+  }
+
+  const tempExpanded = useRef(false);
+
+  function expandToGroup(label: string) {
+    setOpenGroups(new Set([label]));
+    tempExpanded.current = true;
+    onToggleCollapse();
+  }
+
+  function handleItemClick() {
+    if (tempExpanded.current) {
+      tempExpanded.current = false;
+      onToggleCollapse();
+    }
+    onClose();
   }
 
   return (
@@ -225,7 +249,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
               <div style={{ flex: 1 }} />
               <button
                 className="sidebar-collapse-btn"
-                onClick={onToggleCollapse}
+                onClick={() => { tempExpanded.current = false; onToggleCollapse(); }}
                 title="Collapse sidebar"
                 aria-label="Collapse sidebar"
                 style={{ display: "none" }}
@@ -245,33 +269,30 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
         </div>
 
         <nav className="sidebar-nav">
-          {!collapsed && (
-            <button className="docs-sidebar-search" onClick={onSearchOpen}>
-              Search...
-              <kbd className="kbd">⌘K</kbd>
-            </button>
-          )}
-
           {NAV_GROUPS.map((g) => {
             const groupHasActive = g.items.some((i) => i.slug === activeSlug);
             const isOpen = openGroups.has(g.label);
 
             if (collapsed) {
+              const GroupIcon = g.icon;
               return (
                 <div key={g.label} className="sidebar-group">
-                  {g.items.map((item) => (
-                    <NavLink
-                      key={item.slug}
-                      to={item.to}
-                      className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
-                      onClick={onClose}
-                      title={item.label}
-                      end={item.to === "/"}
-                    >
-                      <item.icon size={16} />
-                      <span className="label">{item.label}</span>
-                    </NavLink>
-                  ))}
+                  <button
+                    className={`sidebar-item${groupHasActive ? " active" : ""}`}
+                    onClick={() => expandToGroup(g.label)}
+                    title={g.label}
+                    style={{
+                      border: 0,
+                      background: "transparent",
+                      cursor: "pointer",
+                      width: "100%",
+                      fontFamily: "inherit",
+                      textAlign: "left",
+                    }}
+                  >
+                    <GroupIcon size={16} />
+                    <span className="label">{g.label}</span>
+                  </button>
                 </div>
               );
             }
@@ -305,7 +326,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, onSearchOp
                         key={item.slug}
                         to={item.to}
                         className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
-                        onClick={onClose}
+                        onClick={handleItemClick}
                         end={item.to === "/"}
                       >
                         <item.icon size={16} />

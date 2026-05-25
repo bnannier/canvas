@@ -54,7 +54,7 @@ export function Shell() {
         onSearchOpen={openSearch}
       />
       <div className={`app-main ${sidebarCollapsed ? "collapsed" : "expanded"}`}>
-        <Topbar onMenuToggle={() => setSidebarOpen((v) => !v)} />
+        <Topbar onMenuToggle={() => setSidebarOpen((v) => !v)} onSearchOpen={openSearch} />
         <main className="app-content">
           <Outlet />
         </main>

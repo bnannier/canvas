@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { CodeBlock } from "./code-block";
+import { Code, ChevronDown } from "lucide-react";
 import type { ComponentExample } from "@/data/types";
 
 interface ExampleCardProps {
@@ -7,6 +9,7 @@ interface ExampleCardProps {
 }
 
 export function ExampleCard({ example, compact }: ExampleCardProps) {
+  const [open, setOpen] = useState(false);
   const codeStr = example.code ?? example.html;
 
   if (compact) {
@@ -30,12 +33,7 @@ export function ExampleCard({ example, compact }: ExampleCardProps) {
           </div>
         )}
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            flexWrap: "wrap",
-          }}
+          className="example-inner"
           dangerouslySetInnerHTML={{ __html: example.html }}
         />
       </div>
@@ -57,33 +55,49 @@ export function ExampleCard({ example, compact }: ExampleCardProps) {
         </div>
       )}
       <div className="section-card" style={{
-        padding: "1.25rem",
-        ...(example.full
-          ? {}
-          : {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 120,
-              gap: "0.75rem",
-              flexWrap: "wrap" as const,
-            }),
+        overflow: "hidden",
       }}>
-        <div dangerouslySetInnerHTML={{ __html: example.html }} />
-      </div>
-      <details style={{ marginTop: "0.5rem" }}>
-        <summary style={{
-          fontSize: "11.5px",
-          color: "hsl(var(--muted-foreground))",
-          cursor: "pointer",
-          userSelect: "none",
+        <div style={{
+          padding: "1.25rem",
+          ...(example.full
+            ? {}
+            : {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 120,
+              }),
         }}>
-          Show code
-        </summary>
-        <div style={{ marginTop: "0.5rem" }}>
-          <CodeBlock code={codeStr} language="html" />
+          <div
+            className="example-inner"
+            style={example.full ? undefined : { justifyContent: "center" }}
+            dangerouslySetInnerHTML={{ __html: example.html }}
+          />
         </div>
-      </details>
+
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="docs-code-toggle"
+          aria-expanded={open}
+        >
+          <Code size={13} />
+          <span>{open ? "Hide code" : "Show code"}</span>
+          <ChevronDown
+            size={13}
+            style={{
+              marginLeft: "auto",
+              transition: "transform 200ms ease",
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            }}
+          />
+        </button>
+
+        <div className={`docs-code-collapse ${open ? "open" : ""}`}>
+          <div style={{ minHeight: 0, overflow: "hidden" }}>
+            <CodeBlock code={codeStr} language="html" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
