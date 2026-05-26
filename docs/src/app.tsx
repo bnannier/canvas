@@ -2,6 +2,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Shell } from "./layout/shell";
 import { Home } from "./pages/home";
 import { ComponentPage } from "./pages/component-page";
+import { TemplatePage } from "./pages/template-page";
+import { PatternPage } from "./pages/pattern-page";
 import { TokensPage } from "./pages/tokens";
 import { SpacingPage } from "./pages/tokens-spacing";
 import { TypographyPage } from "./pages/tokens-typography";
@@ -26,6 +28,8 @@ const router = createBrowserRouter([
       { path: "browser-support", element: <BrowserSupportPage /> },
       { path: "components", element: <ComponentsIndex /> },
       { path: "components/:slug", element: <ComponentPage /> },
+      { path: "templates/:slug", element: <TemplatePage /> },
+      { path: "patterns/:slug", element: <PatternPage /> },
       { path: "*", element: <NotFound /> },
     ],
   },

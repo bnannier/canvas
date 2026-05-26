@@ -13,6 +13,7 @@ import { getComponent } from "@/data/components";
 
 interface TopbarProps {
   onMenuToggle: () => void;
+  onCollapseToggle: () => void;
   onSearchOpen: () => void;
 }
 
@@ -58,7 +59,7 @@ function getPageInfo(pathname: string): { title: string; subtitle?: string } {
   return { title: "Canvas" };
 }
 
-export function Topbar({ onMenuToggle, onSearchOpen }: TopbarProps) {
+export function Topbar({ onMenuToggle, onCollapseToggle, onSearchOpen }: TopbarProps) {
   const { pathname } = useLocation();
   const { title, subtitle } = getPageInfo(pathname);
 
@@ -79,10 +80,10 @@ export function Topbar({ onMenuToggle, onSearchOpen }: TopbarProps) {
   return (
     <header className="topbar">
       <button
-        onClick={onMenuToggle}
+        onClick={() => window.innerWidth >= 1024 ? onCollapseToggle() : onMenuToggle()}
         className="btn btn-ghost btn-icon topbar-hamburger"
-        title="Open menu"
-        aria-label="Open menu"
+        title="Toggle menu"
+        aria-label="Toggle menu"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="4" y1="6" x2="20" y2="6" />

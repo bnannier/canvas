@@ -55,7 +55,7 @@ export function ExampleCard({ example, compact }: ExampleCardProps) {
         </div>
       )}
       <div className="section-card" style={{
-        overflow: "hidden",
+        overflow: example.allowOverflow ? "visible" : "hidden",
       }}>
         <div style={{
           padding: "1.25rem",

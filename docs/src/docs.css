@@ -221,16 +221,10 @@
   color: hsl(var(--sidebar-foreground));
 }
 
-/* ── Topbar hamburger: mobile-only ──────────────────────── */
+/* ── Topbar hamburger: always visible ─────────────────── */
 
 .topbar-hamburger {
   display: inline-flex;
-}
-
-@media (min-width: 1024px) {
-  .topbar-hamburger {
-    display: none;
-  }
 }
 
 /* ── Topbar search trigger ────────────────────────────── */

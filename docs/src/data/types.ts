@@ -3,6 +3,7 @@ export interface ComponentExample {
   html: string;
   code?: string;
   full?: boolean;
+  allowOverflow?: boolean;
 }
 
 export interface ComponentSection {
@@ -64,6 +65,34 @@ export interface GuidePage {
   title: string;
   description: string;
   section: "Foundations" | "Guides";
+}
+
+export interface TemplateSection {
+  title: string;
+  description?: string;
+  anatomy?: string;
+  html: string;
+}
+
+export interface TemplateDoc {
+  slug: string;
+  name: string;
+  description: string;
+  sections: TemplateSection[];
+}
+
+export interface PatternSection {
+  title: string;
+  description?: string;
+  anatomy?: string;
+  html: string;
+}
+
+export interface PatternDoc {
+  slug: string;
+  name: string;
+  description: string;
+  sections: PatternSection[];
 }
 
 export interface SearchEntry {
