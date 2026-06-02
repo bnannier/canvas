@@ -130,9 +130,9 @@
   }
 
   .sidebar-item.active {
-    background-color: hsl(var(--sidebar-accent));
+    background-color: hsl(var(--sidebar-primary) / 0.16);
     opacity: 1;
-    color: hsl(var(--sidebar-accent-foreground));
+    color: hsl(var(--sidebar-primary));
   }
 
   .sidebar.collapsed .sidebar-item {

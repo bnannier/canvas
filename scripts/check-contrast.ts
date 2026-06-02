@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 function parseHSL(h: number, s: number, l: number): [number, number, number] {
   s /= 100;
   l /= 100;
@@ -58,6 +61,53 @@ for (const [label, fgStr, bgStr, minStr] of pairs) {
   const pass = ratio >= min;
   const icon = pass ? "OK" : "FAIL";
   console.log(`  [${icon}] ${label}: ${ratio.toFixed(2)}:1 (min ${min}:1)`);
+  if (!pass) failed = true;
+}
+
+// --- Dark-mode UI element visibility -------------------------------------
+// WCAG text-contrast checks above pass even when structural tokens (borders,
+// hover/selected fills) sit almost on top of the surface they paint over, the
+// exact bug that made dark mode look washed out. Against near-black surfaces a
+// contrast *ratio* is tiny even for clearly visible greys, so we gate on the
+// perceptual proxy that actually matters here: the HSL lightness delta between
+// a structural token and the surface it renders on. Tokens are read live from
+// colors.css so the gate tracks the real values, not a hardcoded copy.
+const colorsCss = readFileSync(
+  join(import.meta.dir, "..", "styles", "tokens", "colors.css"),
+  "utf-8"
+);
+const darkBlock = colorsCss.slice(
+  colorsCss.indexOf(".dark {"),
+  colorsCss.indexOf("}", colorsCss.indexOf(".dark {"))
+);
+function darkL(token: string): number {
+  const m = darkBlock.match(
+    new RegExp(`--${token}:\\s*[\\d.]+ [\\d.]+% ([\\d.]+)%`)
+  );
+  if (!m) throw new Error(`dark token not found: --${token}`);
+  return parseFloat(m[1]);
+}
+
+const MIN_L_DELTA = 14; // percentage points of HSL lightness
+const uiPairs: [string, string, string][] = [
+  // [label, structural token, surface it paints on]
+  ["border on background (dark)", "border", "background"],
+  ["input border on background (dark)", "input", "background"],
+  ["accent fill on card (dark)", "accent", "card"],
+  ["muted fill on card (dark)", "muted", "card"],
+  ["secondary fill on background (dark)", "secondary", "background"],
+  ["sidebar-accent on sidebar-background (dark)", "sidebar-accent", "sidebar-background"],
+  ["sidebar-border on sidebar-background (dark)", "sidebar-border", "sidebar-background"],
+];
+
+console.log(`\nDark UI element visibility (min ${MIN_L_DELTA}% lightness delta)\n`);
+
+for (const [label, token, surface] of uiPairs) {
+  const delta = Math.abs(darkL(token) - darkL(surface));
+  const pass = delta >= MIN_L_DELTA;
+  console.log(
+    `  [${pass ? "OK" : "FAIL"}] ${label}: ${delta.toFixed(1)}% (min ${MIN_L_DELTA}%)`
+  );
   if (!pass) failed = true;
 }
 

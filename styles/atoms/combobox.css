@@ -62,8 +62,9 @@
   }
 
   .combobox-item.selected {
-    background-color: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
+    background-color: hsl(var(--primary) / 0.16);
+    color: hsl(var(--primary));
+    font-weight: 500;
   }
 
   .combobox-empty {

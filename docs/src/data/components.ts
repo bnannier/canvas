@@ -663,7 +663,7 @@ export const COMPONENTS: ComponentDoc[] = [
         const dis = s.disabled ? " disabled" : "";
         const label = s.withLabel ? `<label class="label">Assigned to</label>` : "";
         const helper = s.withHelper ? `<p class="field-helper">The person responsible for this account.</p>` : "";
-        return `<div style="max-width:280px">${label}<div class="combobox"><input class="combobox-input" placeholder="${s.placeholder}"${dis} /><div class="combobox-list"><div class="combobox-item selected">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div></div></div>${helper}</div>`;
+        return `<div style="max-width:280px">${label}<div class="combobox"><input class="combobox-input" placeholder="${s.placeholder}"${dis} /><div class="combobox-list" style="position:static"><div class="combobox-item selected">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div></div></div>${helper}</div>`;
       },
       markup: (s) => {
         return `<div class="combobox">\n  <input class="combobox-input" placeholder="${s.placeholder}" />\n  <div class="combobox-list">\n    <div class="combobox-item">Option</div>\n  </div>\n</div>`;
@@ -701,7 +701,7 @@ export const COMPONENTS: ComponentDoc[] = [
   <label class="label">Fruit</label>
   <div class="combobox">
     <input class="combobox-input" placeholder="Pick one..." oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})">
-    <div class="combobox-list" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(i=>i.classList.remove('selected'));t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent">
+    <div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(i=>i.classList.remove('selected'));t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent">
       <div class="combobox-item selected">Banana</div>
       <div class="combobox-item">Cherry</div>
     </div>

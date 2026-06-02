@@ -67,17 +67,19 @@
     --popover-foreground: 0 0% 98%;
     --primary: 240 79.4% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 240 3.7% 20%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
+    --muted: 240 3.7% 20%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --accent: 240 3.7% 20%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 79.4% 60%;
+    --border: 240 3.7% 22%;
+    --input: 240 3.7% 22%;
+    /* Lighter than the light-theme ring so the focus indicator keeps >=3:1
+       contrast against dark surfaces (cards, menus, accent rows). */
+    --ring: 240 80% 70%;
 
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -89,9 +91,9 @@
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 240 79.4% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 240 3.7% 24%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-border: 240 3.7% 24%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     --success-bg: 149 50% 22%;
