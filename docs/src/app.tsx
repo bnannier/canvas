@@ -7,6 +7,7 @@ import { PatternPage } from "./pages/pattern-page";
 import { TokensPage } from "./pages/tokens";
 import { SpacingPage } from "./pages/tokens-spacing";
 import { TypographyPage } from "./pages/tokens-typography";
+import { UtilitiesPage } from "./pages/utilities";
 import { ThemingPage } from "./pages/theming";
 import { MigrationPage } from "./pages/migration";
 import { IntegrationPage } from "./pages/integration";
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { path: "tokens", element: <TokensPage /> },
       { path: "tokens/spacing", element: <SpacingPage /> },
       { path: "tokens/typography", element: <TypographyPage /> },
+      { path: "utilities", element: <UtilitiesPage /> },
       { path: "theming", element: <ThemingPage /> },
       { path: "migration", element: <MigrationPage /> },
       { path: "integration", element: <IntegrationPage /> },

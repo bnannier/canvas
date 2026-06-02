@@ -21,6 +21,11 @@ const classPattern = /^\s*\.([\w-]+)/gm;
 for (const file of files) {
   const rel = relative(join(import.meta.dir, ".."), file);
   if (rel === "styles/canvas.css") continue;
+  // The utility layer is generated, single-source-per-class, and uses escaped
+  // selectors (.md\:flex) that this simple regex would mis-parse into false
+  // "sm/md/lg/xl" duplicates. The generator + CI sync check already guarantee
+  // its integrity, so it is not a useful target for this hand-authored check.
+  if (rel.startsWith("styles/utilities/") || rel.startsWith("styles\\utilities\\")) continue;
   const css = await readFile(file, "utf-8");
   for (const m of css.matchAll(classPattern)) {
     const cls = m[1];

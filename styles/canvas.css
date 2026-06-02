@@ -1,4 +1,4 @@
-@layer canvas.reset, canvas.tokens, canvas.base, canvas.components, canvas.patterns;
+@layer canvas.reset, canvas.tokens, canvas.base, canvas.components, canvas.patterns, canvas.utilities;
 
 /* Reset */
 @import "./reset.css";
@@ -70,3 +70,11 @@
 @import "./patterns/scrollbar.css";
 @import "./patterns/reduced-motion.css";
 @import "./patterns/high-contrast.css";
+
+/* Utilities */
+@import "./utilities/display.css";
+@import "./utilities/flexbox.css";
+@import "./utilities/grid.css";
+@import "./utilities/gap.css";
+@import "./utilities/sizing.css";
+@import "./utilities/position.css";

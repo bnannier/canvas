@@ -23,6 +23,7 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "generate-utilities": "bun scripts/generate-utilities.ts",
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
     "check-duplicates": "bun scripts/check-duplicates.ts",

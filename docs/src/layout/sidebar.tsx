@@ -12,7 +12,7 @@ import {
   MoreHorizontal, PanelRight, Footprints, Folder,
   Navigation, Layout, Shield, Activity, Users,
   ChartLine, Lock, Settings, Check, Eye,
-  Type, ChevronLeft, X, Gauge, Smartphone,
+  Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -45,6 +45,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "tokens", label: "Colors & Theme", to: "/tokens", icon: Palette },
       { slug: "tokens-spacing", label: "Spacing & Shape", to: "/tokens/spacing", icon: Layers },
       { slug: "tokens-typography", label: "Typography", to: "/tokens/typography", icon: Type },
+    ],
+  },
+  {
+    label: "Utilities",
+    icon: LayoutGrid,
+    items: [
+      { slug: "utilities", label: "Layout & Flexbox", to: "/utilities", icon: LayoutGrid },
     ],
   },
   {

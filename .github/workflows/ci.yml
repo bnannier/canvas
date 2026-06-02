@@ -57,6 +57,17 @@ jobs:
           fi
           echo "All CSS imports resolve."
 
+      - name: Verify utilities are in sync with the generator
+        run: |
+          bun run generate-utilities
+          if ! git diff --quiet --exit-code styles/utilities/; then
+            echo "ERROR: styles/utilities/ is out of sync with scripts/generate-utilities.ts."
+            echo "Run 'bun run generate-utilities' and commit the result."
+            git diff --stat styles/utilities/
+            exit 1
+          fi
+          echo "Utilities are in sync with the generator."
+
       - name: Verify package exports
         run: bun -e "import { cn, getTheme, token } from './src/index.ts'; console.log('JS exports OK')"
 
