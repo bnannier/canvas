@@ -184,11 +184,8 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
   );
 
   function toggleGroup(label: string) {
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      next.has(label) ? next.delete(label) : next.add(label);
-      return next;
-    });
+    // Accordion: expanding a group collapses any other open group.
+    setOpenGroups((prev) => (prev.has(label) ? new Set<string>() : new Set([label])));
   }
 
   const tempExpanded = useRef(false);
