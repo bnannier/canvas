@@ -29,6 +29,7 @@
     "check-duplicates": "bun scripts/check-duplicates.ts",
     "check-contrast": "bun scripts/check-contrast.ts",
     "screenshots": "bun scripts/capture-screenshots.ts",
+    "verify-docs": "bun scripts/verify-docs.ts",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",

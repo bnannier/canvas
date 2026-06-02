@@ -111,7 +111,7 @@ const PATTERNS: PatternDoc[] = [
 </div>`,
       },
       {
-        title: "Live comparison",
+        title: "Live demo",
         description: "The same toolbar and table row rendered at each density level.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <div>
@@ -146,6 +146,13 @@ const PATTERNS: PatternDoc[] = [
   </div>
 </div>`,
       },
+      {
+        title: "Extending",
+        anatomy: "Use the compact and comfy density selectors in your own components to shrink or grow padding the same way the built-ins do.",
+        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12.5px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:hsl(var(--foreground))">html[data-density="compact"] .my-row { padding: 0.5rem 0.75rem; }
+.my-row                               { padding: 0.75rem 1rem; }
+html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
+      },
     ],
   },
 
@@ -156,7 +163,7 @@ const PATTERNS: PatternDoc[] = [
     description: "Touch-on-blur validation pattern with visual states (default, focused, error, success, disabled) and inline error messages.",
     sections: [
       {
-        title: "Input states",
+        title: "States",
         description: "Each state has a distinct visual treatment. Error and success states include helper text below the field.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
   <div>
@@ -234,6 +241,10 @@ const PATTERNS: PatternDoc[] = [
   </div>
 </div>`,
       },
+      {
+        title: "Production stack",
+        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.6"><span style="font-weight:600;color:hsl(var(--foreground))">In production:</span> use <code>react-hook-form</code> for state and <code>zod</code> via <code>@hookform/resolvers/zod</code> for validation. Canvas demonstrates the visual states; the runtime wiring is the consumer's choice.</div>`,
+      },
     ],
   },
 
@@ -244,7 +255,13 @@ const PATTERNS: PatternDoc[] = [
     description: "Backdrop-filter glassmorphism applied to all UI surfaces. Controlled via data-surface=\"glass\" on the document root.",
     sections: [
       {
-        title: "Four ingredients",
+        title: "What 'glass' means in Canvas",
+        description: "Glass mode is a single toggle (Surface: solid / glass) that re-skins every chrome surface: sidebar, topbar, cards, tables, popovers, drawers, inputs. The page background switches to a 3-radial-gradient aurora and each surface gets a backdrop-filter blur with a light edge highlight.",
+        anatomy: "Toggle with the Solid / Glass switch in the topbar (top right), or set the data-surface attribute to glass on the html element manually.",
+        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground));line-height:1.6">Components never change for glass. Only token values and a few backdrop-filter overrides switch on, keyed off the document's surface attribute. Any Canvas surface gets the frosted treatment for free.</p></div>`,
+      },
+      {
+        title: "The four ingredients",
         description: "Glass surfaces combine four CSS effects to create the frosted-pane look.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
   <div class="section-card" style="padding:16px;text-align:center">
@@ -296,6 +313,20 @@ const PATTERNS: PatternDoc[] = [
 </div>`,
       },
       {
+        title: "Live comparison",
+        description: "The same content rendered in solid mode vs glass mode. The Solid / Glass toggle in the topbar swaps both at once.",
+        html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:12px;padding:20px;background:radial-gradient(120% 120% at 0% 0%, hsl(262 83% 58% / 0.25), transparent 50%), radial-gradient(120% 120% at 100% 100%, hsl(190 90% 50% / 0.2), transparent 50%), hsl(var(--background))">
+  <div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));margin-bottom:8px">Solid</div>
+    <div class="section-card" style="padding:16px;background:hsl(var(--card))"><div style="font-size:13px;font-weight:600;margin-bottom:4px">Active sessions</div><div style="font-size:22px;font-weight:700">1,204</div></div>
+  </div>
+  <div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));margin-bottom:8px">Glass</div>
+    <div style="padding:16px;border-radius:12px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);background:hsl(255 100% 100% / 0.12);border:1px solid hsl(255 100% 100% / 0.25);box-shadow:inset 0 1px 0 hsl(255 100% 100% / 0.25)"><div style="font-size:13px;font-weight:600;margin-bottom:4px">Active sessions</div><div style="font-size:22px;font-weight:700">1,204</div></div>
+  </div>
+</div>`,
+      },
+      {
         title: "When NOT to use glass",
         description: "Glass works best for ambient UI. Avoid it in contexts where legibility or performance matters more than aesthetics.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
@@ -316,6 +347,20 @@ const PATTERNS: PatternDoc[] = [
     <div style="font-size:12px;color:hsl(var(--muted-foreground))">When misreading a value is dangerous (medical, financial), never rely on translucent surfaces.</div>
   </div>
 </div>`,
+      },
+      {
+        title: "Implementation",
+        description: "Glass is implemented with deep selectors keyed off the document's data-surface attribute. CSS variables (--glass-tint, --glass-edge-a, --glass-hi-a, --glass-shadow) carry the per-mode values so dark glass uses different alphas without duplicating rules.",
+        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:hsl(var(--foreground))">html[data-surface="glass"] .stat-card,
+html[data-surface="glass"] .section-card,
+html[data-surface="glass"] .topbar,
+html[data-surface="glass"] .sidebar {
+  backdrop-filter: blur(18px) saturate(1.4);
+  background-color: hsl(var(--glass-tint) / var(--glass-tint-a));
+  border-color: hsl(255 100% 100% / var(--glass-edge-a));
+  box-shadow: inset 0 1px 0 hsl(255 100% 100% / var(--glass-hi-a)),
+              0 8px 24px -12px hsl(var(--glass-shadow) / 0.18);
+}</div>`,
       },
     ],
   },
@@ -363,7 +408,7 @@ const PATTERNS: PatternDoc[] = [
 </div>`,
       },
       {
-        title: "Skeleton rows",
+        title: "Skeleton row",
         description: "Animated placeholder rows that match the shape of the content being loaded.",
         html: `<div class="section-card" style="padding:0;overflow:hidden">
   <div style="display:flex;flex-direction:column">
@@ -440,7 +485,7 @@ const PATTERNS: PatternDoc[] = [
 </div>`,
       },
       {
-        title: "Sidebar behavior",
+        title: "Sidebar - drawer ↔ fixed",
         description: "Below lg (1024px) the sidebar becomes a drawer overlay triggered by the hamburger button. At lg and above, it is a fixed panel.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
   <div class="section-card" style="padding:16px">
@@ -464,7 +509,7 @@ const PATTERNS: PatternDoc[] = [
 </div>`,
       },
       {
-        title: "Grid patterns",
+        title: "Grid templates",
         description: "Four reusable responsive grid templates that adapt across breakpoints.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <div>
@@ -492,6 +537,22 @@ const PATTERNS: PatternDoc[] = [
     </div>
   </div>
 </div>`,
+      },
+      {
+        title: "What's behind the scenes",
+        description: "Specific responsive treatments worth noting beyond just stacking grids.",
+        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Topbar: progressive disclosure</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Search text shrinks to just "Search..." at small sizes, the Cmd+K kbd hides below sm, and the user pill collapses to an avatar below md.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Tables: horizontal scroll</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Tables get a min-width and live inside a scroll container that overflows horizontally. Easier to scroll than to pack columns into a phone screen.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Drawer: viewport cap</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The slide-over width is wrapped in min(width, 100vw) so an open drawer can never exceed the phone's width.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Page header: wrap actions</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The actions row uses flex-wrap. On small screens, a row of buttons wraps to a second line rather than overflowing.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Density layers on top</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The compact and comfy utilities layer on top of responsive ones, so compact mode shrinks padding everywhere regardless of viewport.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Mobile is real, not an afterthought</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Every page was checked at 375px and 768px. No desktop-only surfaces.</div></div>
+</div>`,
+      },
+      {
+        title: "Try it yourself",
+        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.6">Resize this browser window. Watch the sidebar collapse into a drawer, the page header stack, and the grids reflow. The same patterns apply across every page in the system.</div>`,
       },
     ],
   },

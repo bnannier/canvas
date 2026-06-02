@@ -6,3 +6,4 @@ dist/
 coverage/
 CLAUDE.md
 test/screenshots/*.current.png
+test/verify/

@@ -91,11 +91,20 @@ export const COMPONENTS: ComponentDoc[] = [
         examples: [
           {
             label: "Topbar user pill",
-            html: `<button style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));cursor:default;font-size:13px;font-weight:500">
-  <span class="avatar">AO</span>
-  <span>admin@example.com</span>
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-</button>`,
+            html: `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px">
+  <button type="button" aria-haspopup="menu" aria-expanded="false" onclick="var m=this.nextElementSibling;var open=m.style.display!=='block';m.style.display=open?'block':'none';this.setAttribute('aria-expanded',open);this.querySelector('svg').style.transform=open?'rotate(180deg)':'';" style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));cursor:pointer;font-size:13px;font-weight:500">
+    <span class="avatar">AO</span>
+    <span>admin@example.com</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 150ms ease"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+  <div class="dropdown" role="menu" style="position:static;display:none;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;this.style.display='none';var b=this.previousElementSibling;b.setAttribute('aria-expanded','false');b.querySelector('svg').style.transform='';">
+    <div class="dropdown-label">admin@example.com</div>
+    <button class="dropdown-item">Profile</button>
+    <button class="dropdown-item">Settings</button>
+    <div class="dropdown-sep"></div>
+    <button class="dropdown-item">Sign out</button>
+  </div>
+</div>`,
           },
           {
             label: "Identity header card",
@@ -156,7 +165,7 @@ export const COMPONENTS: ComponentDoc[] = [
     },
     sections: [
       {
-        title: ".badge – metadata",
+        title: ".badge - metadata",
         description: "Square corners, no dot. Use for static categorization (schema, type, scope).",
         examples: [{
           html: `<div style="display:flex;gap:0.5rem;flex-wrap:wrap">
@@ -168,7 +177,7 @@ export const COMPONENTS: ComponentDoc[] = [
         }],
       },
       {
-        title: ".status-badge – live state",
+        title: ".status-badge - live state",
         description: "Rounded full + leading dot. Use for transient or computed state.",
         examples: [{
           html: `<div style="display:flex;gap:0.5rem;flex-wrap:wrap">
@@ -1901,6 +1910,14 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Molecules",
     sections: [
       {
+        title: "StatCard playground",
+        anatomy: "The tiny metric card primitive: title, value, icon, and an optional delta. Compose these into a stat row.",
+        examples: [{
+          full: true,
+          html: `<div class="stat-card" style="max-width:280px"><div class="stat-card-row"><div><div class="stat-card-label">Active identities</div><div class="stat-card-value">12,348</div><div style="font-size:11px;color:hsl(142 71% 45%);margin-top:2px">+142 today</div></div><div class="stat-card-icon blue">U</div></div></div>`,
+        }],
+      },
+      {
         title: "StatCard variants",
         description: "Five icon tones. Pick by what the metric means: success for healthy, destructive for problems, etc.",
         columns: 3,
@@ -2562,6 +2579,18 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         }],
       },
       {
+        title: "Density modes",
+        anatomy: "Switch via the density toggle. Affects all .dt-table th, td, and .dt-toolbar padding and font size.",
+        examples: [{
+          full: true,
+          html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.75rem">
+  <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:0.5rem">compact</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">8px padding, 12.5px font</div></div>
+  <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:0.5rem">regular</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">12px padding, 13px font</div></div>
+  <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:0.5rem">comfy</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">16px padding, 13.5px font</div></div>
+</div>`,
+        }],
+      },
+      {
         title: "States",
         columns: 2,
         examples: [
@@ -2747,6 +2776,44 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
   <div class="page-header-actions">
     <button class="btn btn-outline" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Exporting…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Export</button>
     <button class="btn btn-default" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Added!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Add User</button>
+  </div>
+</div>`,
+        }],
+      },
+      {
+        title: "Breadcrumbs",
+        description: "Where am I in the hierarchy. Chevron separators; the last crumb is the current page, not a link. See the dedicated Breadcrumbs page for full options.",
+        examples: [{
+          html: `<nav class="breadcrumb"><a class="breadcrumb-item" href="#">Home</a><span class="breadcrumb-sep">/</span><a class="breadcrumb-item" href="#">Team</a><span class="breadcrumb-sep">/</span><span class="breadcrumb-item active">Rachel Chen</span></nav>`,
+        }],
+      },
+      {
+        title: "Tabs",
+        description: "Switch between facets of one record without leaving the page. See the dedicated Tabs page for pill, underline, and vertical variants.",
+        examples: [{
+          full: true,
+          html: `<div style="display:flex;gap:0;border-bottom:1px solid hsl(var(--border))" onclick="if(!event.target.dataset.tab)return;this.querySelectorAll('[data-tab]').forEach(t=>{t.style.borderBottomColor='transparent';t.style.color='hsl(var(--muted-foreground))'});event.target.style.borderBottomColor='hsl(var(--primary))';event.target.style.color='hsl(var(--foreground))'">
+  <button data-tab="1" style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid hsl(var(--primary));color:hsl(var(--foreground))">Overview</button>
+  <button data-tab="2" style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:hsl(var(--muted-foreground))">Sessions</button>
+  <button data-tab="3" style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:hsl(var(--muted-foreground))">Audit log</button>
+</div>`,
+        }],
+      },
+      {
+        title: "Command palette (⌘K)",
+        description: "Global fuzzy launcher. Cmd+K opens it from anywhere. See the dedicated Command Palette page for the full anatomy.",
+        examples: [{
+          full: true,
+          html: `<div class="section-card" style="max-width:480px;padding:0;overflow:hidden">
+  <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid hsl(var(--border))">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <span style="font-size:13px;color:hsl(var(--muted-foreground))">Type a command or search...</span>
+    <kbd class="kbd" style="margin-left:auto">esc</kbd>
+  </div>
+  <div style="padding:6px">
+    <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));padding:6px 10px">Actions</div>
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:hsl(var(--accent));font-size:13px">Create identity <kbd class="kbd" style="margin-left:auto">C</kbd></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;font-size:13px">Invite teammate</div>
   </div>
 </div>`,
         }],
@@ -3451,6 +3518,33 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         }],
       },
       {
+        title: "With trailing meta + chevron",
+        anatomy: "Clickable rows: hover background, trailing chevron indicates drilldown.",
+        examples: [{
+          full: true,
+          html: `<div class="section-card" style="max-width:560px">
+  <a href="#" style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid hsl(var(--border));text-decoration:none;color:inherit" onmouseover="this.style.background='hsl(var(--accent))'" onmouseout="this.style.background=''">
+    <span class="avatar" style="flex-shrink:0"><img src="/rachel-chen.jpg" alt="RC"></span>
+    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Rachel Chen</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">rachel.chen@example.com</div></div>
+    <span style="font-size:12px;color:hsl(var(--muted-foreground))">2h ago</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+  <a href="#" style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid hsl(var(--border));text-decoration:none;color:inherit" onmouseover="this.style.background='hsl(var(--accent))'" onmouseout="this.style.background=''">
+    <span class="avatar" style="flex-shrink:0"><img src="/ada-lovelace.jpg" alt="AL"></span>
+    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ada@example.com</div></div>
+    <span style="font-size:12px;color:hsl(var(--muted-foreground))">5h ago</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+  <a href="#" style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:inherit" onmouseover="this.style.background='hsl(var(--accent))'" onmouseout="this.style.background=''">
+    <span class="avatar" style="flex-shrink:0">KT</span>
+    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Kevin Turner</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">kevin@example.com</div></div>
+    <span style="font-size:12px;color:hsl(var(--muted-foreground))">1d ago</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+</div>`,
+        }],
+      },
+      {
         title: "Card surface group",
         anatomy: "Header with title + action button, list items inside card surface.",
         examples: [{
@@ -3482,6 +3576,18 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
     description: "Single value, grouped row, with sparkline, with comparison. Used for dashboards and overview pages.",
     category: "Molecules",
     sections: [
+      {
+        title: "Single",
+        anatomy: "One metric card: title, value, and a delta with a comparison label.",
+        examples: [{
+          full: true,
+          html: `<div class="stat-card" style="max-width:280px">
+  <div class="stat-card-label">Active users</div>
+  <div class="stat-card-value">71,897</div>
+  <div class="stat-card-delta" style="color:hsl(142 71% 45%)">+12.3% <span style="color:hsl(var(--muted-foreground));font-weight:400">vs. last 30 days</span></div>
+</div>`,
+        }],
+      },
       {
         title: "Group",
         anatomy: "Three or four metric cards in a responsive row. Auto-fit layout with 220px minimum.",
@@ -3553,8 +3659,18 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
     category: "Organisms",
     sections: [
       {
-        title: "Bar chart",
-        anatomy: "Discrete buckets as flex items. Last bar highlighted. Axis labels below.",
+        title: "Overview",
+        description: "Every chart in Canvas is plain SVG or CSS using the same color tokens as the rest of the system. No charting library: visuals respond to accent, dark mode, and glass without any data layer. Use them when your data is small enough to inline; for dozens of series or interactive brushing, reach for d3/recharts and theme it with the same tokens.",
+        examples: [{
+          full: true,
+          html: `<div class="section-card" style="padding:1.25rem;max-width:680px">
+  <p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground));line-height:1.6">The charts below are derived from real dashboard widgets, pulled out and isolated so the patterns are obvious. Each is themed entirely by Canvas tokens, so the same markup adapts to light, dark, and glass surfaces.</p>
+</div>`,
+        }],
+      },
+      {
+        title: "Bar chart - discrete buckets",
+        anatomy: "Each bar is a flex item; the last bar gets a brighter fill to highlight 'now'. Axis labels are a separate flex row below.",
         examples: [{
           full: true,
           html: `<div class="section-card" style="padding:1.25rem;max-width:560px">
@@ -3573,8 +3689,32 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         }],
       },
       {
-        title: "Stacked bar",
-        anatomy: "Single thin bar divided by percentage. Legend below with colored dots.",
+        title: "Sparkline - direction + magnitude",
+        anatomy: "Polyline + gradient-filled polygon. The last value gets a dot. Use for stat cards or row-level trends where space is tight.",
+        examples: [{
+          full: true,
+          html: `<div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+  <div class="stat-card">
+    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Tokens issued</div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:22px;font-weight:600">4,847</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(var(--primary))">+12%</span></div>
+    <svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" style="margin-top:8px;display:block;overflow:visible"><defs><linearGradient id="spk1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(var(--primary))" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(var(--primary))" stop-opacity="0"/></linearGradient></defs><polygon points="0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3 200,34 0,34" fill="url(#spk1)"/><polyline points="0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3" fill="none" stroke="hsl(var(--primary))" stroke-width="1.5"/><circle cx="200" cy="3" r="2.5" fill="hsl(var(--primary))"/></svg>
+  </div>
+  <div class="stat-card">
+    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Active sessions</div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:22px;font-weight:600">1,204</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(173 70% 42%)">+8%</span></div>
+    <svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" style="margin-top:8px;display:block;overflow:visible"><defs><linearGradient id="spk2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(173 70% 42%)" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(173 70% 42%)" stop-opacity="0"/></linearGradient></defs><polygon points="0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6 200,34 0,34" fill="url(#spk2)"/><polyline points="0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6" fill="none" stroke="hsl(173 70% 42%)" stroke-width="1.5"/><circle cx="200" cy="6" r="2.5" fill="hsl(173 70% 42%)"/></svg>
+  </div>
+  <div class="stat-card">
+    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Error rate</div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:22px;font-weight:600">0.42%</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(0 80% 60%)">-3%</span></div>
+    <svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" style="margin-top:8px;display:block;overflow:visible"><defs><linearGradient id="spk3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(0 80% 60%)" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(0 80% 60%)" stop-opacity="0"/></linearGradient></defs><polygon points="0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24 200,34 0,34" fill="url(#spk3)"/><polyline points="0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24" fill="none" stroke="hsl(0 80% 60%)" stroke-width="1.5"/><circle cx="200" cy="24" r="2.5" fill="hsl(0 80% 60%)"/></svg>
+  </div>
+</div>`,
+        }],
+      },
+      {
+        title: "Stacked bar - proportional breakdown",
+        anatomy: "Single thin bar divided by percentage. Legend below with colored dots. Use when you want a quick visual sense of distribution.",
         examples: [{
           full: true,
           html: `<div class="section-card" style="padding:1.25rem;max-width:560px">
@@ -3596,8 +3736,8 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         }],
       },
       {
-        title: "Gauge",
-        anatomy: "Two concentric arcs (track + fill). Big number in center, label below.",
+        title: "Gauge - single percentage",
+        anatomy: "Two concentric arcs (track + fill). Big numeric in the middle, label below.",
         examples: [{
           full: true,
           html: `<div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
@@ -3610,6 +3750,18 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
   <div class="section-card" style="padding:1.25rem;display:flex;align-items:center;justify-content:center">
     <svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(var(--muted))" stroke-width="12"/><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(0 84% 60%)" stroke-width="12" stroke-dasharray="${56*2*Math.PI}" stroke-dashoffset="${56*2*Math.PI*(1-0.89)}" stroke-linecap="round" transform="rotate(-90 70 70)"/><text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="hsl(var(--foreground))">89%</text><text x="70" y="84" text-anchor="middle" font-size="11" fill="hsl(var(--muted-foreground))">CPU</text></svg>
   </div>
+</div>`,
+        }],
+      },
+      {
+        title: "Heatmap - density grid",
+        anatomy: "2D grid of cells, alpha mapped to value. Use for activity over time (day x hour, week x day). Always ship with a discrete legend.",
+        examples: [{
+          full: true,
+          html: `<div class="section-card" style="padding:1.25rem;max-width:480px">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem"><div><div style="font-size:15px;font-weight:600">Token issuance</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">14 days, darker = more</div></div></div>
+  <div style="display:grid;grid-template-columns:repeat(14,1fr);gap:3px"><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.31)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.54)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.77)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.89)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.85)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.68)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.47)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.20)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.17)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.17)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.20)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.25)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.21)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.36)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.59)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.82)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.95)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.89)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.69)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.45)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.25)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.15)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.12)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.11)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.13)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.18)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.26)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.39)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.58)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.77)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.87)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.81)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.63)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.39)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.21)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.12)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.11)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.27)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.38)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.49)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.62)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.69)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.65)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.51)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.12)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.52)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.43)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.35)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.31)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.32)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.36)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.42)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.48)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.48)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.41)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.13)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.11)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.79)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.70)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.54)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.39)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.28)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.23)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.23)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.25)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.22)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.17)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.87)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.92)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.81)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.60)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.38)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.23)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.16)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.14)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.15)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.24)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.31)"></span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;font-size:11.5px;color:hsl(var(--muted-foreground));font-family:var(--font-mono)"><span>14d ago</span><span style="display:inline-flex;align-items:center;gap:6px"><span>less</span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.1)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.3)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.55)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.8)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary))"></span><span>more</span></span></div>
 </div>`,
         }],
       },

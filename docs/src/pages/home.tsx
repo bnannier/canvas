@@ -131,7 +131,7 @@ export function Home() {
           color: "hsl(var(--muted-foreground))",
         }}>
           A working specification for any product built on the Olympus platform.
-          {" "}{COMPONENTS.length} CSS component files, 7 token files, light/dark mode,
+          {" "}{COMPONENTS.length} documented components, 7 token files, light/dark mode,
           glass surface, and density controls. No framework required.
         </p>
         <div style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>

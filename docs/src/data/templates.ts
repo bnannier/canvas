@@ -89,8 +89,15 @@ const TEMPLATES: TemplateDoc[] = [
     sections: [
       {
         title: "The shape of a dashboard",
-        description: "Dense, scannable, lots of small data points. Hero stat row up top, then two-column for primary content, then auto-fit grid for secondary widgets.",
-        anatomy: "PageHeader, 4x StatCard row (auto-fit minmax 220px), 2-col activity + chart (lg), auto-fit minmax 280px secondary widgets.",
+        description: "Dense, scannable, lots of small data points. Hero stat row up top, then two-column for primary content, then an auto-fit grid for secondary widgets. Every value should be a sparkline, a number with a delta, or a status.",
+        anatomy: "PageHeader -> 4x StatCard row (auto-fit minmax 220px) -> 2-col activity + chart (lg) -> auto-fit minmax 280px secondary widgets -> full-width heatmap.",
+        html: `<div class="section-card" style="padding:1.25rem">
+  <p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground));line-height:1.6">Read top to bottom: the numbers an operator needs first (hero stats), then the primary working area (activity stream + a chart), then secondary widgets that auto-fit and collapse as the viewport narrows. Nothing here is decorative.</p>
+</div>`,
+      },
+      {
+        title: "Live preview",
+        description: "The same layout a real admin dashboard might use, with synthetic data. Toggle dark mode or the surface in the topbar to see how it adapts.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <!-- Page header -->
   <div class="page-header">
@@ -194,6 +201,15 @@ const TEMPLATES: TemplateDoc[] = [
       </div>
     </div>
   </div>
+</div>`,
+      },
+      {
+        title: "Why this layout",
+        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Hero stats first</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Four cards in a single row at the top: the numbers an operator wants to see immediately on landing.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">2/3 + 1/3 split</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The activity stream gets the wider column (variable-length text); the chart gets the narrower one (bars compress gracefully).</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Auto-fit tertiaries</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The third row uses minmax(280px, 1fr), so it collapses from 3-column to 2 to 1 as the viewport narrows. No breakpoints needed.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">No filler</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Every widget has a single, clear job. Denser AND scannable beats cramming eight widgets onto one screen.</div></div>
 </div>`,
       },
     ],
@@ -359,8 +375,16 @@ const TEMPLATES: TemplateDoc[] = [
     description: "Searchable, filterable data table with bulk actions, row selection, and status badges. The canonical list-view template.",
     sections: [
       {
-        title: "Identity table",
-        anatomy: "PageHeader + toolbar (search + filter pills + bulk actions) + data table with checkbox selection + pagination footer.",
+        title: "The shape of a list",
+        description: "A list page is a toolbar + a table + a paginator. The toolbar holds search, filters, and bulk actions (which only appear when rows are selected). Rows are clickable to drill into detail.",
+        anatomy: "PageHeader (title + primary action) -> Toolbar (search, filter chips, bulk-action slot, result count) -> table -> footer (pagination).",
+        html: `<div class="section-card" style="padding:1.25rem">
+  <p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground));line-height:1.6">Search and filters live on the left of the toolbar; the right slot shows the result count until rows are selected, then swaps to bulk actions. The table fills the middle, pagination anchors the footer. Every row is a link into the detail view.</p>
+</div>`,
+      },
+      {
+        title: "Live preview",
+        description: "The same data table a typical identity list might render. Filter chips control what's shown; clicking a row opens the detail panel.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <div class="page-header">
     <div class="page-header-text"><h2 class="page-header-title">Identities</h2><p class="page-header-sub">1,247 total</p></div>
@@ -431,6 +455,28 @@ const TEMPLATES: TemplateDoc[] = [
   </div>
 </div>`,
       },
+      {
+        title: "Bulk-action toolbar swap",
+        description: "When rows are selected, the right-hand slot of the toolbar swaps from result count to bulk actions. Same toolbar height, no jank.",
+        html: `<div class="dt-wrap">
+  <div class="dt-toolbar" style="background:hsl(var(--primary)/0.06)">
+    <span style="font-size:13px;font-weight:500">3 selected</span>
+    <div style="display:flex;gap:6px;margin-left:auto">
+      <button class="btn btn-outline btn-sm">Assign role</button>
+      <button class="btn btn-outline btn-sm">Export</button>
+      <button class="btn btn-destructive btn-sm">Delete</button>
+    </div>
+  </div>
+  <table class="dt-table">
+    <thead><tr><th style="width:40px"><input type="checkbox" class="checkbox" checked></th><th>Identity</th><th>Email</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr style="background:hsl(var(--primary)/0.04)"><td><input type="checkbox" class="checkbox" checked></td><td style="font-weight:500">Rachel Chen</td><td>rachel.chen@example.com</td><td><span class="badge">admin</span></td></tr>
+      <tr style="background:hsl(var(--primary)/0.04)"><td><input type="checkbox" class="checkbox" checked></td><td style="font-weight:500">Ada Lovelace</td><td>ada@example.com</td><td><span class="badge badge-secondary">editor</span></td></tr>
+      <tr style="background:hsl(var(--primary)/0.04)"><td><input type="checkbox" class="checkbox" checked></td><td style="font-weight:500">Kevin Turner</td><td>kevin@example.com</td><td><span class="badge badge-secondary">viewer</span></td></tr>
+    </tbody>
+  </table>
+</div>`,
+      },
     ],
   },
 
@@ -497,8 +543,16 @@ const TEMPLATES: TemplateDoc[] = [
     description: "Single-record detail page with hero card, stat strip, tabbed interface, and content grid. Used for user profiles, entity details, and record views.",
     sections: [
       {
-        title: "Profile detail",
-        anatomy: "Breadcrumb + hero card (avatar, name, role, stat strip) + tab bar + 2-col content grid (traits list + metadata sidebar).",
+        title: "The shape of a detail page",
+        description: "A detail page is a breadcrumb, a canonical hero strip (avatar, identity, status pills, stat strip), a tab bar, and a 2/3 + 1/3 content grid. The same shape on every detail page in the product, so users learn it once.",
+        anatomy: "Breadcrumb -> hero card (avatar + identity + status pills + stat strip) -> tab bar -> 2-col grid (primary traits 2fr + metadata 1fr).",
+        html: `<div class="section-card" style="padding:1.25rem">
+  <p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground));line-height:1.6">The hero strip is the canonical identity block: who this is, their status, and a few key stats. Tabs hold the record's facets so users scroll rather than navigate. The wider left column carries primary content; the narrower right column carries metadata and secondary panes.</p>
+</div>`,
+      },
+      {
+        title: "Live preview",
+        description: "A single-record detail layout with hero card, stat strip, tabs, and a 2/3 + 1/3 content grid.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <nav class="breadcrumb"><a class="breadcrumb-item" href="#">Team</a><span class="breadcrumb-sep">/</span><span class="breadcrumb-item active">Rachel Chen</span></nav>
 
@@ -561,6 +615,15 @@ const TEMPLATES: TemplateDoc[] = [
       </div>
     </div>
   </div>
+</div>`,
+      },
+      {
+        title: "Layout principles",
+        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Breadcrumb + back action</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Detail pages have two ways back. The breadcrumb is the discoverable one; the back button is the fast one. Both land in the same place.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Hero strip is canonical</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Avatar, identity, status pills, and stat strip. The same shape on every detail page in the product. Users learn it once.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Tabs over sub-pages</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">For a single record, tabs scroll faster than navigating between pages. Use real pages only when sub-data needs its own URL.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">2/3 + 1/3 is the default</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Two columns: the wider one holds primary content (traits, credentials), the narrower one holds metadata and secondary panes.</div></div>
 </div>`,
       },
     ],
