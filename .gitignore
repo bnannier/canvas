@@ -4,6 +4,5 @@ dist/
 *.tsbuildinfo
 .env*
 coverage/
-CLAUDE.md
 test/screenshots/*.current.png
 test/verify/
