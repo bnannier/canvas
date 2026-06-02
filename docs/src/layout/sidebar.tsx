@@ -12,7 +12,7 @@ import {
   MoreHorizontal, PanelRight, Footprints, Folder,
   Navigation, Layout, Shield, Activity, Users,
   ChartLine, Lock, Settings, Check, Eye,
-  Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid,
+  Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid, Code,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -70,13 +70,17 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "icon", label: "Icons", to: "/components/icon", icon: Info },
       { slug: "input-group", label: "Input Groups", to: "/components/input-group", icon: Columns2 },
       { slug: "input", label: "Inputs & Forms", to: "/components/input", icon: TextCursorInput },
+      { slug: "kbd", label: "Kbd", to: "/components/kbd", icon: Keyboard },
       { slug: "pagination", label: "Pagination", to: "/components/pagination", icon: ChevronsLeft },
+      { slug: "popover", label: "Popover", to: "/components/popover", icon: Square },
       { slug: "radio", label: "Radios", to: "/components/radio", icon: CircleDot },
       { slug: "select", label: "Selects", to: "/components/select", icon: List },
       { slug: "skeleton", label: "Skeletons", to: "/components/skeleton", icon: Loader },
+      { slug: "spinner", label: "Spinner", to: "/components/spinner", icon: Loader },
       { slug: "textarea", label: "Textareas", to: "/components/textarea", icon: AlignLeft },
       { slug: "switch", label: "Toggles", to: "/components/switch", icon: ToggleLeft },
       { slug: "tooltip", label: "Tooltips", to: "/components/tooltip", icon: MessageCircle },
+      { slug: "typography", label: "Typography", to: "/components/typography", icon: Type },
     ],
   },
   {
@@ -86,6 +90,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "action-panels", label: "Action Panels", to: "/components/action-panels", icon: Shield },
       { slug: "alert", label: "Alerts", to: "/components/alert", icon: AlertTriangle },
       { slug: "card", label: "Cards", to: "/components/card", icon: Square },
+      { slug: "code-block", label: "Code Block", to: "/components/code-block", icon: Code },
       { slug: "description-lists", label: "Description Lists", to: "/components/description-lists", icon: Info },
       { slug: "empty-state", label: "Empty States", to: "/components/empty-state", icon: Inbox },
       { slug: "feeds", label: "Feeds", to: "/components/feeds", icon: Activity },
@@ -109,6 +114,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "navbars", label: "Navbars", to: "/components/navbars", icon: Navigation },
       { slug: "sidebar", label: "Navigation", to: "/components/sidebar", icon: Navigation },
       { slug: "dialog", label: "Overlays", to: "/components/dialog", icon: PanelRight },
+      { slug: "row-menu", label: "Row Menu", to: "/components/row-menu", icon: MoreHorizontal },
       { slug: "stepper", label: "Steppers", to: "/components/stepper", icon: Footprints },
       { slug: "tabs", label: "Tabs", to: "/components/tabs", icon: Folder },
     ],
