@@ -316,7 +316,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                   aria-expanded={isOpen}
                 >
                   <span style={{ flex: 1 }}>{g.label}</span>
-                  {groupHasActive && !isOpen && (
+                  {isOpen && (
                     <span className="docs-sidebar-dot" />
                   )}
                   <span
