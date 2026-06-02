@@ -25,8 +25,12 @@ Or import selectively:
 @import "@olympusoss/canvas/styles/tokens/colors.css";
 @import "@olympusoss/canvas/styles/tokens/typography.css";
 @import "@olympusoss/canvas/styles/base.css";
-@import "@olympusoss/canvas/styles/components/button.css";
+@import "@olympusoss/canvas/styles/atoms/button.css";
 ```
+
+Component CSS is organized by atomic-design level: `styles/atoms/`,
+`styles/molecules/`, `styles/organisms/`. (Importing the all-in-one
+`styles/canvas.css` pulls in everything and is unaffected by this layout.)
 
 Use component classes in your HTML:
 

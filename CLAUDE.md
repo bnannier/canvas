@@ -64,9 +64,12 @@ styles/
   canvas.css            # all-in-one entry (@imports everything)
   reset.css  base.css
   tokens/      colors, typography, radius, motion
-  components/  typography, button, input, card, badge, separator, icon,
-               avatar, kbd, code-block, sidebar, topbar, app-shell, stat-card,
-               section-card, data-table, field, page-header, empty-state, row-menu
+  atoms/       button, input, badge, avatar, checkbox, icon, tooltip, spinner,
+               kbd, separator, ... (single-purpose primitives)
+  molecules/   card, alert, form, field, stat-card, section-card, page-header,
+               empty-state, toast, code-block (small compositions of atoms)
+  organisms/   data-table, sidebar, topbar, app-shell, dialog, sheet, command,
+               calendar, stepper, tabs, filter-panel, row-menu (complex surfaces)
   patterns/    backdrops, glass, density, focus, scrollbar
 src/
   index.ts  theme.ts  tokens.ts  cn.ts
