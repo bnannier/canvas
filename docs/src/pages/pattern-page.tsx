@@ -11,7 +11,7 @@ export function PatternPage() {
     <div style={{ maxWidth: 960 }}>
       <div style={{ marginBottom: "2rem" }}>
         <h1 className="h2" style={{ marginBottom: "0.5rem" }}>{pat.name}</h1>
-        <p className="body" style={{ color: "hsl(var(--muted-foreground))", maxWidth: 640 }}>
+        <p className="body" style={{ color: "var(--muted-foreground)", maxWidth: 640 }}>
           {pat.description}
         </p>
       </div>
@@ -21,7 +21,7 @@ export function PatternPage() {
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>{section.title}</h2>
 
           {section.description && (
-            <p className="body-sm" style={{ color: "hsl(var(--muted-foreground))", marginBottom: "1rem", maxWidth: 640 }}>
+            <p className="body-sm" style={{ color: "var(--muted-foreground)", marginBottom: "1rem", maxWidth: 640 }}>
               {section.description}
             </p>
           )}
@@ -30,13 +30,13 @@ export function PatternPage() {
             <div style={{
               padding: "0.625rem 1rem",
               borderRadius: "var(--radius-md, 8px)",
-              background: "hsl(var(--muted) / 0.3)",
-              border: "1px solid hsl(var(--border))",
+              background: "color-mix(in oklch, var(--muted) 30%, transparent)",
+              border: "1px solid var(--border)",
               fontSize: "12.5px",
-              color: "hsl(var(--muted-foreground))",
+              color: "var(--muted-foreground)",
               marginBottom: "1rem",
             }}>
-              <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Anatomy.</span>
+              <span style={{ fontWeight: 600, color: "var(--foreground)", marginRight: 8 }}>Anatomy.</span>
               {section.anatomy}
             </div>
           )}

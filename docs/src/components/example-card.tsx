@@ -25,7 +25,7 @@ export function ExampleCard({ example, compact }: ExampleCardProps) {
             fontSize: "11px",
             textTransform: "uppercase",
             letterSpacing: "0.08em",
-            color: "hsl(var(--muted-foreground))",
+            color: "var(--muted-foreground)",
             fontWeight: 500,
             marginBottom: "0.75rem",
           }}>
@@ -47,7 +47,7 @@ export function ExampleCard({ example, compact }: ExampleCardProps) {
           fontSize: "11px",
           textTransform: "uppercase",
           letterSpacing: "0.08em",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
           fontWeight: 500,
           marginBottom: "0.5rem",
         }}>

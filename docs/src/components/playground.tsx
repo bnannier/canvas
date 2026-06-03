@@ -137,7 +137,7 @@ function ControlField({
           fontSize: "11px",
           textTransform: "uppercase",
           letterSpacing: "0.08em",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
           fontWeight: 500,
           marginBottom: 6,
         }}>
@@ -158,9 +158,9 @@ function ControlField({
             type="checkbox"
             checked={value as boolean}
             onChange={(e) => onChange(e.target.checked)}
-            style={{ accentColor: "hsl(var(--primary))" }}
+            style={{ accentColor: "var(--primary)" }}
           />
-          <span style={{ color: "hsl(var(--foreground))" }}>{control.label}</span>
+          <span style={{ color: "var(--foreground)" }}>{control.label}</span>
         </label>
       )}
       {control.type === "text" && (
@@ -181,11 +181,11 @@ function ControlField({
             step={control.step ?? 1}
             value={value as number}
             onChange={(e) => onChange(Number(e.target.value))}
-            style={{ flex: 1, accentColor: "hsl(var(--primary))" }}
+            style={{ flex: 1, accentColor: "var(--primary)" }}
           />
           <code style={{
             fontSize: "11px",
-            color: "hsl(var(--muted-foreground))",
+            color: "var(--muted-foreground)",
             width: 48,
             textAlign: "right",
           }}>
@@ -227,9 +227,9 @@ function PillGroup({
               padding: "4px 8px",
               borderRadius: 4,
               fontSize: "11.5px",
-              border: `1px solid ${active ? "hsl(var(--foreground))" : "hsl(var(--border))"}`,
-              background: active ? "hsl(var(--foreground))" : "hsl(var(--card))",
-              color: active ? "hsl(var(--background))" : "hsl(var(--foreground))",
+              border: `1px solid ${active ? "var(--foreground)" : "var(--border)"}`,
+              background: active ? "var(--foreground)" : "var(--card)",
+              color: active ? "var(--background)" : "var(--foreground)",
               cursor: "pointer",
               textOverflow: "ellipsis",
               overflow: "hidden",

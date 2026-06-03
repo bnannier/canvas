@@ -17,7 +17,7 @@ export function ColorSwatch({ property, light, dark, literal }: ColorSwatchProps
           width: 32,
           height: 32,
           borderRadius: "var(--radius-md, 6px)",
-          border: "1px solid hsl(var(--border))",
+          border: "1px solid var(--border)",
           flexShrink: 0,
           ...previewStyle,
         }}

@@ -15,11 +15,11 @@ function Section({ title, description, anatomy, children }: {
   return (
     <section style={{ marginBottom: 40 }}>
       <header style={{ marginBottom: 16 }}>
-        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "hsl(var(--foreground))" }}>
+        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "var(--foreground)" }}>
           {title}
         </h2>
         {description && (
-          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "hsl(var(--muted-foreground))", maxWidth: 640, lineHeight: 1.6 }}>
+          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "var(--muted-foreground)", maxWidth: 640, lineHeight: 1.6 }}>
             {description}
           </p>
         )}
@@ -29,12 +29,12 @@ function Section({ title, description, anatomy, children }: {
           marginBottom: 16,
           padding: "12px 16px",
           borderRadius: "var(--radius-lg, 8px)",
-          background: "hsl(var(--muted) / 0.4)",
-          border: "1px solid hsl(var(--border))",
+          background: "color-mix(in oklch, var(--muted) 40%, transparent)",
+          border: "1px solid var(--border)",
           fontSize: "12.5px",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
-          <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Anatomy.</span>
+          <span style={{ fontWeight: 600, color: "var(--foreground)", marginRight: 8 }}>Anatomy.</span>
           {anatomy}
         </div>
       )}
@@ -47,15 +47,15 @@ function Section({ title, description, anatomy, children }: {
 function Demo({ code, children, minHeight }: { code: string; children: React.ReactNode; minHeight?: number }) {
   return (
     <div style={{
-      border: "1px solid hsl(var(--border))",
+      border: "1px solid var(--border)",
       borderRadius: "var(--radius-xl, 12px)",
       overflow: "hidden",
       marginBottom: 12,
-      background: "hsl(var(--card))",
+      background: "var(--card)",
     }}>
       <div style={{ padding: 16, minHeight }}>{children}</div>
-      <div style={{ borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--muted) / 0.3)", padding: "8px 12px" }}>
-        <code style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", fontFamily: "var(--font-mono)" }}>{code}</code>
+      <div style={{ borderTop: "1px solid var(--border)", background: "color-mix(in oklch, var(--muted) 30%, transparent)", padding: "8px 12px" }}>
+        <code style={{ fontSize: "12px", color: "var(--muted-foreground)", fontFamily: "var(--font-mono)" }}>{code}</code>
       </div>
     </div>
   );
@@ -65,13 +65,13 @@ function Demo({ code, children, minHeight }: { code: string; children: React.Rea
 function Tile({ children, full }: { children?: React.ReactNode; full?: boolean }) {
   return (
     <div style={{
-      background: "hsl(var(--primary) / 0.15)",
-      border: "1px solid hsl(var(--primary) / 0.35)",
+      background: "color-mix(in oklch, var(--primary) 15%, transparent)",
+      border: "1px solid color-mix(in oklch, var(--primary) 35%, transparent)",
       borderRadius: "var(--radius-md, 6px)",
       padding: "10px 14px",
       fontSize: "12px",
       fontWeight: 600,
-      color: "hsl(var(--primary))",
+      color: "var(--primary)",
       textAlign: "center" as const,
       width: full ? "100%" : undefined,
     }}>
@@ -88,9 +88,9 @@ function Chip({ children }: { children: React.ReactNode }) {
       fontFamily: "var(--font-mono)",
       padding: "2px 7px",
       borderRadius: "var(--radius-sm, 4px)",
-      background: "hsl(var(--muted))",
-      color: "hsl(var(--foreground))",
-      border: "1px solid hsl(var(--border))",
+      background: "var(--muted)",
+      color: "var(--foreground)",
+      border: "1px solid var(--border)",
     }}>
       {children}
     </code>
@@ -108,7 +108,7 @@ export function UtilitiesPage() {
           fontSize: "clamp(32px, 5vw, 40px)",
           fontWeight: 700,
           letterSpacing: "-0.025em",
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         }}>
           Layout utilities
         </h1>
@@ -117,7 +117,7 @@ export function UtilitiesPage() {
           maxWidth: "44rem",
           fontSize: "14.5px",
           lineHeight: 1.6,
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
           Canvas ships a layout utility layer, display, flexbox, grid, gap, sizing,
           and position, as real static CSS. The vocabulary follows Tailwind so it is
@@ -177,7 +177,7 @@ export function UtilitiesPage() {
           {GAP_SCALE.map((v) => (
             <div key={v} className={`flex items-center gap-${v}`} style={{
               padding: "8px 12px",
-              border: "1px dashed hsl(var(--border))",
+              border: "1px dashed var(--border)",
               borderRadius: "var(--radius-md, 6px)",
             }}>
               <span style={{ width: 84, flexShrink: 0 }}><Chip>gap-{v}</Chip></span>
@@ -234,7 +234,7 @@ export function UtilitiesPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <button className="btn btn-outline btn-icon">★</button>
-              <span style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>.btn-icon, fixed square width</span>
+              <span style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>.btn-icon, fixed square width</span>
             </div>
             <button className="btn btn-outline btn-icon w-full">★ &nbsp; .btn-icon.w-full, utility wins</button>
           </div>

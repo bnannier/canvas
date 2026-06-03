@@ -94,11 +94,11 @@ export function Topbar({ onMenuToggle, onCollapseToggle, onSearchOpen }: TopbarP
       </button>
 
       <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {title}
         </div>
         {subtitle && (
-          <div className="topbar-subtitle" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div className="topbar-subtitle" style={{ fontSize: 11, color: "var(--muted-foreground)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {subtitle}
           </div>
         )}

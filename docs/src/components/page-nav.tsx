@@ -17,7 +17,7 @@ export function PageNav() {
     <nav style={{
       marginTop: 48,
       paddingTop: 24,
-      borderTop: "1px solid hsl(var(--border))",
+      borderTop: "1px solid var(--border)",
       display: "flex",
       justifyContent: "space-between",
       fontSize: "13px",
@@ -26,7 +26,7 @@ export function PageNav() {
         <Link
           to={prev.to}
           style={{
-            color: "hsl(var(--muted-foreground))",
+            color: "var(--muted-foreground)",
             textDecoration: "none",
           }}
         >
@@ -37,7 +37,7 @@ export function PageNav() {
         <Link
           to={next.to}
           style={{
-            color: "hsl(var(--foreground))",
+            color: "var(--foreground)",
             fontWeight: 500,
             textDecoration: "none",
           }}

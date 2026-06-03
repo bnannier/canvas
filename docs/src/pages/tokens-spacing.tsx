@@ -49,11 +49,11 @@ function Section({ title, description, anatomy, children }: {
   return (
     <section style={{ marginBottom: 40 }}>
       <header style={{ marginBottom: 16 }}>
-        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "hsl(var(--foreground))" }}>
+        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "var(--foreground)" }}>
           {title}
         </h2>
         {description && (
-          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "hsl(var(--muted-foreground))", maxWidth: 640, lineHeight: 1.6 }}>
+          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "var(--muted-foreground)", maxWidth: 640, lineHeight: 1.6 }}>
             {description}
           </p>
         )}
@@ -63,12 +63,12 @@ function Section({ title, description, anatomy, children }: {
           marginBottom: 16,
           padding: "12px 16px",
           borderRadius: "var(--radius-lg, 8px)",
-          background: "hsl(var(--muted) / 0.4)",
-          border: "1px solid hsl(var(--border))",
+          background: "color-mix(in oklch, var(--muted) 40%, transparent)",
+          border: "1px solid var(--border)",
           fontSize: "12.5px",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
-          <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Anatomy.</span>
+          <span style={{ fontWeight: 600, color: "var(--foreground)", marginRight: 8 }}>Anatomy.</span>
           {anatomy}
         </div>
       )}
@@ -86,7 +86,7 @@ export function SpacingPage() {
           fontSize: "clamp(32px, 5vw, 40px)",
           fontWeight: 700,
           letterSpacing: "-0.025em",
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         }}>
           Spacing & Shape
         </h1>
@@ -95,7 +95,7 @@ export function SpacingPage() {
           maxWidth: "42rem",
           fontSize: "14.5px",
           lineHeight: 1.6,
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
           The 4px grid governs all of Canvas. Every padding, margin, gap, width, and height is a multiple
           of 4. Radii follow a strict ramp set by <code>--radius</code> (which the Tweaks panel mutates
@@ -109,8 +109,8 @@ export function SpacingPage() {
       >
         <div style={{
           borderRadius: "var(--radius-xl, 12px)",
-          border: "1px solid hsl(var(--border))",
-          background: "hsl(var(--card))",
+          border: "1px solid var(--border)",
+          background: "var(--card)",
           padding: 20,
         }}>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
@@ -119,12 +119,12 @@ export function SpacingPage() {
                 <div style={{
                   width: s.px,
                   height: s.px,
-                  background: "hsl(var(--primary) / 0.2)",
-                  border: "1px solid hsl(var(--primary) / 0.4)",
+                  background: "color-mix(in oklch, var(--primary) 20%, transparent)",
+                  border: "1px solid color-mix(in oklch, var(--primary) 40%, transparent)",
                   borderRadius: "var(--radius-sm, 4px)",
                 }} />
-                <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))" }}>{s.tw}</code>
-                <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))" }}>{s.px}px</div>
+                <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{s.tw}</code>
+                <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)" }}>{s.px}px</div>
               </div>
             ))}
           </div>
@@ -142,25 +142,25 @@ export function SpacingPage() {
               <div style={{
                 width: "100%",
                 height: 80,
-                background: "hsl(var(--primary) / 0.2)",
-                border: "1px solid hsl(var(--primary) / 0.4)",
+                background: "color-mix(in oklch, var(--primary) 20%, transparent)",
+                border: "1px solid color-mix(in oklch, var(--primary) 40%, transparent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "20px",
                 fontFamily: "var(--font-mono)",
-                color: "hsl(var(--primary))",
+                color: "var(--primary)",
                 borderRadius: r.px ? r.px : 9999,
               }}>
                 {r.label}
               </div>
-              <div style={{ fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+              <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
                 rounded-{r.name}
               </div>
-              <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))" }}>
+              <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>
                 {r.px ? r.px + "px" : "9999px"}
               </code>
-              <div style={{ fontSize: "10.5px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>{r.use}</div>
+              <div style={{ fontSize: "10.5px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>{r.use}</div>
             </div>
           ))}
         </div>
@@ -173,15 +173,15 @@ export function SpacingPage() {
               <div style={{
                 width: "100%",
                 height: 80,
-                background: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
+                background: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: "var(--radius-xl, 12px)",
                 boxShadow: s.shadow,
               }} />
-              <div style={{ fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+              <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
                 shadow{s.name ? `-${s.name}` : ""}
               </div>
-              <div style={{ fontSize: "10.5px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>{s.use}</div>
+              <div style={{ fontSize: "10.5px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>{s.use}</div>
             </div>
           ))}
         </div>
@@ -190,8 +190,8 @@ export function SpacingPage() {
       <Section title="Z-index reserves" description="A handful of stack levels; keep them named, not magic numbers.">
         <div style={{
           borderRadius: "var(--radius-xl, 12px)",
-          border: "1px solid hsl(var(--border))",
-          background: "hsl(var(--card))",
+          border: "1px solid var(--border)",
+          background: "var(--card)",
           overflow: "hidden",
         }}>
           {ZINDEX.map((r, i) => (
@@ -200,13 +200,13 @@ export function SpacingPage() {
               alignItems: "center",
               gap: 24,
               padding: "12px 20px",
-              borderTop: i ? "1px solid hsl(var(--border))" : undefined,
+              borderTop: i ? "1px solid var(--border)" : undefined,
             }}>
-              <code style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", width: 80 }}>
+              <code style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", width: 80 }}>
                 z-{r.z}
               </code>
-              <div style={{ flex: 1, fontSize: "13px", fontWeight: 500, color: "hsl(var(--foreground))" }}>{r.name}</div>
-              <div style={{ fontSize: "11.5px", color: "hsl(var(--muted-foreground))" }}>{r.note}</div>
+              <div style={{ flex: 1, fontSize: "13px", fontWeight: 500, color: "var(--foreground)" }}>{r.name}</div>
+              <div style={{ fontSize: "11.5px", color: "var(--muted-foreground)" }}>{r.note}</div>
             </div>
           ))}
         </div>
@@ -217,22 +217,22 @@ export function SpacingPage() {
           {DENSITY.map((d) => (
             <div key={d.name} style={{
               borderRadius: "var(--radius-xl, 12px)",
-              border: "1px solid hsl(var(--border))",
-              background: "hsl(var(--card))",
+              border: "1px solid var(--border)",
+              background: "var(--card)",
               padding: 20,
             }}>
               <div style={{
                 fontSize: "11px",
                 textTransform: "uppercase" as const,
                 letterSpacing: "0.08em",
-                color: "hsl(var(--muted-foreground))",
+                color: "var(--muted-foreground)",
                 fontWeight: 500,
                 marginBottom: 8,
               }}>
                 {d.name}
               </div>
-              <div style={{ fontSize: "13.5px", color: "hsl(var(--foreground))" }}>Row padding</div>
-              <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))" }}>{d.padding}</code>
+              <div style={{ fontSize: "13.5px", color: "var(--foreground)" }}>Row padding</div>
+              <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{d.padding}</code>
             </div>
           ))}
         </div>

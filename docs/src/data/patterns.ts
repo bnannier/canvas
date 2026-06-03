@@ -12,20 +12,20 @@ const PATTERNS: PatternDoc[] = [
         description: "Every interactive element gets a visible focus indicator on :focus-visible. Canvas uses a 2px ring offset with the --ring token color.",
         anatomy: "Ring appears on keyboard focus only (not mouse click). Uses box-shadow, not outline, so it respects border-radius.",
         html: `<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-  <button class="btn btn-primary" style="box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring))">Focused button</button>
-  <input class="input" value="Focused input" style="max-width:200px;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring))">
-  <a href="#" style="padding:4px 8px;border-radius:var(--radius-md,8px);box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));text-decoration:none;color:hsl(var(--primary));font-size:13px">Focused link</a>
+  <button class="btn btn-primary" style="box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)">Focused button</button>
+  <input class="input" value="Focused input" style="max-width:200px;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)">
+  <a href="#" style="padding:4px 8px;border-radius:var(--radius-md,8px);box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring);text-decoration:none;color:var(--primary);font-size:13px">Focused link</a>
 </div>`,
       },
       {
         title: "Keyboard shortcuts",
         description: "Standard keyboard patterns used across Canvas components.",
         html: `<div style="display:flex;flex-direction:column;gap:0;font-size:13px">
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid hsl(var(--border))"><span style="width:200px;color:hsl(var(--muted-foreground))">Open command palette</span><span style="display:flex;gap:4px"><kbd class="kbd">&#8984;</kbd><kbd class="kbd">K</kbd></span></div>
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid hsl(var(--border))"><span style="width:200px;color:hsl(var(--muted-foreground))">Close dialog / drawer</span><span><kbd class="kbd">Esc</kbd></span></div>
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid hsl(var(--border))"><span style="width:200px;color:hsl(var(--muted-foreground))">Navigate list items</span><span style="display:flex;gap:4px"><kbd class="kbd">&uarr;</kbd><kbd class="kbd">&darr;</kbd></span></div>
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid hsl(var(--border))"><span style="width:200px;color:hsl(var(--muted-foreground))">Select / activate</span><span><kbd class="kbd">Enter</kbd></span></div>
-  <div style="display:flex;padding:10px 0"><span style="width:200px;color:hsl(var(--muted-foreground))">Move focus forward</span><span><kbd class="kbd">Tab</kbd></span></div>
+  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Open command palette</span><span style="display:flex;gap:4px"><kbd class="kbd">&#8984;</kbd><kbd class="kbd">K</kbd></span></div>
+  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Close dialog / drawer</span><span><kbd class="kbd">Esc</kbd></span></div>
+  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Navigate list items</span><span style="display:flex;gap:4px"><kbd class="kbd">&uarr;</kbd><kbd class="kbd">&darr;</kbd></span></div>
+  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Select / activate</span><span><kbd class="kbd">Enter</kbd></span></div>
+  <div style="display:flex;padding:10px 0"><span style="width:200px;color:var(--muted-foreground)">Move focus forward</span><span><kbd class="kbd">Tab</kbd></span></div>
 </div>`,
       },
       {
@@ -34,19 +34,19 @@ const PATTERNS: PatternDoc[] = [
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Dialog</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:hsl(var(--muted)/0.3);border-radius:var(--radius-sm,4px);line-height:1.6">role="dialog"<br>aria-modal="true"<br>aria-labelledby="title-id"</code>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="dialog"<br>aria-modal="true"<br>aria-labelledby="title-id"</code>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Tabs</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:hsl(var(--muted)/0.3);border-radius:var(--radius-sm,4px);line-height:1.6">role="tablist"<br>role="tab" + aria-selected<br>role="tabpanel"</code>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="tablist"<br>role="tab" + aria-selected<br>role="tabpanel"</code>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Alert</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:hsl(var(--muted)/0.3);border-radius:var(--radius-sm,4px);line-height:1.6">role="alert"<br>aria-live="assertive"</code>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="alert"<br>aria-live="assertive"</code>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Toggle</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:hsl(var(--muted)/0.3);border-radius:var(--radius-sm,4px);line-height:1.6">role="switch"<br>aria-checked="true|false"</code>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="switch"<br>aria-checked="true|false"</code>
   </div>
 </div>`,
       },
@@ -56,24 +56,24 @@ const PATTERNS: PatternDoc[] = [
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
   <div class="section-card" style="padding:16px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="width:24px;height:24px;border-radius:4px;background:hsl(var(--foreground))"></span>
-      <span style="width:24px;height:24px;border-radius:4px;background:hsl(var(--background));border:1px solid hsl(var(--border))"></span>
+      <span style="width:24px;height:24px;border-radius:4px;background:var(--foreground)"></span>
+      <span style="width:24px;height:24px;border-radius:4px;background:var(--background);border:1px solid var(--border)"></span>
     </div>
     <div style="font-size:12px;font-weight:500">foreground / background</div>
     <div style="font-size:11px;color:hsl(142 71% 45%);font-weight:600;margin-top:2px">&#10003; AA pass</div>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="width:24px;height:24px;border-radius:4px;background:hsl(var(--muted-foreground))"></span>
-      <span style="width:24px;height:24px;border-radius:4px;background:hsl(var(--background));border:1px solid hsl(var(--border))"></span>
+      <span style="width:24px;height:24px;border-radius:4px;background:var(--muted-foreground)"></span>
+      <span style="width:24px;height:24px;border-radius:4px;background:var(--background);border:1px solid var(--border)"></span>
     </div>
     <div style="font-size:12px;font-weight:500">muted-foreground / background</div>
     <div style="font-size:11px;color:hsl(142 71% 45%);font-weight:600;margin-top:2px">&#10003; AA pass</div>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="width:24px;height:24px;border-radius:4px;background:hsl(var(--primary))"></span>
-      <span style="width:24px;height:24px;border-radius:4px;background:white;border:1px solid hsl(var(--border))"></span>
+      <span style="width:24px;height:24px;border-radius:4px;background:var(--primary)"></span>
+      <span style="width:24px;height:24px;border-radius:4px;background:white;border:1px solid var(--border)"></span>
     </div>
     <div style="font-size:12px;font-weight:500">primary / white</div>
     <div style="font-size:11px;color:hsl(142 71% 45%);font-weight:600;margin-top:2px">&#10003; AA pass</div>
@@ -95,18 +95,18 @@ const PATTERNS: PatternDoc[] = [
         html: `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:13px">
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-weight:600;margin-bottom:4px">Compact</div>
-    <code style="font-size:11px;color:hsl(var(--muted-foreground))">data-density="compact"</code>
-    <div style="margin-top:12px;font-size:12px;color:hsl(var(--muted-foreground))">Tight spacing for dense data views (tables, admin panels)</div>
+    <code style="font-size:11px;color:var(--muted-foreground)">data-density="compact"</code>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted-foreground)">Tight spacing for dense data views (tables, admin panels)</div>
   </div>
-  <div class="section-card" style="padding:16px;text-align:center;border-color:hsl(var(--primary))">
+  <div class="section-card" style="padding:16px;text-align:center;border-color:var(--primary)">
     <div style="font-weight:600;margin-bottom:4px">Regular</div>
-    <code style="font-size:11px;color:hsl(var(--muted-foreground))">default</code>
-    <div style="margin-top:12px;font-size:12px;color:hsl(var(--muted-foreground))">Balanced spacing for most interfaces</div>
+    <code style="font-size:11px;color:var(--muted-foreground)">default</code>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted-foreground)">Balanced spacing for most interfaces</div>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-weight:600;margin-bottom:4px">Comfy</div>
-    <code style="font-size:11px;color:hsl(var(--muted-foreground))">data-density="comfy"</code>
-    <div style="margin-top:12px;font-size:12px;color:hsl(var(--muted-foreground))">Generous spacing for reading-heavy or touch-friendly layouts</div>
+    <code style="font-size:11px;color:var(--muted-foreground)">data-density="comfy"</code>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted-foreground)">Generous spacing for reading-heavy or touch-friendly layouts</div>
   </div>
 </div>`,
       },
@@ -115,32 +115,32 @@ const PATTERNS: PatternDoc[] = [
         description: "The same toolbar and table row rendered at each density level.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));margin-bottom:6px">Compact</div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:6px">Compact</div>
     <div class="section-card" style="padding:8px 12px">
       <div style="display:flex;align-items:center;gap:6px">
         <input class="input" placeholder="Search..." style="height:28px;font-size:12px;padding:0 8px;max-width:180px">
         <button class="btn btn-outline" style="height:28px;font-size:11px;padding:0 10px">Filter</button>
-        <span style="margin-left:auto;font-size:11px;color:hsl(var(--muted-foreground))">24 results</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--muted-foreground)">24 results</span>
       </div>
     </div>
   </div>
   <div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));margin-bottom:6px">Regular (default)</div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:6px">Regular (default)</div>
     <div class="section-card" style="padding:12px 16px">
       <div style="display:flex;align-items:center;gap:8px">
         <input class="input" placeholder="Search..." style="max-width:200px">
         <button class="btn btn-outline btn-sm">Filter</button>
-        <span style="margin-left:auto;font-size:12px;color:hsl(var(--muted-foreground))">24 results</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--muted-foreground)">24 results</span>
       </div>
     </div>
   </div>
   <div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));margin-bottom:6px">Comfy</div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:6px">Comfy</div>
     <div class="section-card" style="padding:16px 20px">
       <div style="display:flex;align-items:center;gap:10px">
         <input class="input" placeholder="Search..." style="height:40px;font-size:14px;max-width:220px">
         <button class="btn btn-outline" style="height:40px;font-size:13px">Filter</button>
-        <span style="margin-left:auto;font-size:13px;color:hsl(var(--muted-foreground))">24 results</span>
+        <span style="margin-left:auto;font-size:13px;color:var(--muted-foreground)">24 results</span>
       </div>
     </div>
   </div>
@@ -149,7 +149,7 @@ const PATTERNS: PatternDoc[] = [
       {
         title: "Extending",
         anatomy: "Use the compact and comfy density selectors in your own components to shrink or grow padding the same way the built-ins do.",
-        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12.5px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:hsl(var(--foreground))">html[data-density="compact"] .my-row { padding: 0.5rem 0.75rem; }
+        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12.5px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">html[data-density="compact"] .my-row { padding: 0.5rem 0.75rem; }
 .my-row                               { padding: 0.75rem 1rem; }
 html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
       },
@@ -172,7 +172,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
   </div>
   <div>
     <label class="label">Focused</label>
-    <input class="input" placeholder="Enter value" style="border-color:hsl(var(--ring));box-shadow:0 0 0 2px hsl(var(--ring)/0.2)">
+    <input class="input" placeholder="Enter value" style="border-color:var(--ring);box-shadow:0 0 0 2px color-mix(in oklch, var(--ring) 20%, transparent)">
   </div>
   <div>
     <label class="label">Error</label>
@@ -196,24 +196,24 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
         anatomy: "1. User focuses field. 2. User types and leaves (blur). 3. If invalid, show error state + message. 4. On next keystroke, re-validate live until valid. 5. Show success briefly, then return to default.",
         html: `<div style="display:flex;gap:12px;flex-wrap:wrap">
   <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
-    <div style="width:32px;height:32px;border-radius:50%;background:hsl(var(--muted));display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">1</div>
+    <div style="width:32px;height:32px;border-radius:50%;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">1</div>
     <div style="font-size:12px;font-weight:500">Focus</div>
-    <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">Ring appears</div>
+    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Ring appears</div>
   </div>
   <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
-    <div style="width:32px;height:32px;border-radius:50%;background:hsl(var(--muted));display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">2</div>
+    <div style="width:32px;height:32px;border-radius:50%;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">2</div>
     <div style="font-size:12px;font-weight:500">Blur</div>
-    <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">Validate on leave</div>
+    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Validate on leave</div>
   </div>
   <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
-    <div style="width:32px;height:32px;border-radius:50%;background:hsl(var(--destructive)/0.15);color:hsl(var(--destructive));display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">3</div>
+    <div style="width:32px;height:32px;border-radius:50%;background:color-mix(in oklch, var(--destructive) 15%, transparent);color:var(--destructive);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">3</div>
     <div style="font-size:12px;font-weight:500">Error</div>
-    <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">Show inline message</div>
+    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Show inline message</div>
   </div>
   <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
     <div style="width:32px;height:32px;border-radius:50%;background:hsl(142 71% 45%/0.15);color:hsl(142 71% 45%);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">4</div>
     <div style="font-size:12px;font-weight:500">Corrected</div>
-    <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">Clear error live</div>
+    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Clear error live</div>
   </div>
 </div>`,
       },
@@ -224,7 +224,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
   <div class="card">
     <div class="card-header">
       <h3 style="margin:0 0 4px;font-size:18px;font-weight:600">Sign in</h3>
-      <p style="margin:0;font-size:13px;color:hsl(var(--muted-foreground))">Enter your credentials</p>
+      <p style="margin:0;font-size:13px;color:var(--muted-foreground)">Enter your credentials</p>
     </div>
     <div class="card-content" style="display:flex;flex-direction:column;gap:14px">
       <div>
@@ -243,7 +243,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
       },
       {
         title: "Production stack",
-        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.6"><span style="font-weight:600;color:hsl(var(--foreground))">In production:</span> use <code>react-hook-form</code> for state and <code>zod</code> via <code>@hookform/resolvers/zod</code> for validation. Canvas demonstrates the visual states; the runtime wiring is the consumer's choice.</div>`,
+        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);font-size:12.5px;color:var(--muted-foreground);line-height:1.6"><span style="font-weight:600;color:var(--foreground)">In production:</span> use <code>react-hook-form</code> for state and <code>zod</code> via <code>@hookform/resolvers/zod</code> for validation. Canvas demonstrates the visual states; the runtime wiring is the consumer's choice.</div>`,
       },
     ],
   },
@@ -258,7 +258,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
         title: "What 'glass' means in Canvas",
         description: "Glass mode is a single toggle (Surface: solid / glass) that re-skins every chrome surface: sidebar, topbar, cards, tables, popovers, drawers, inputs. The page background switches to a 3-radial-gradient aurora and each surface gets a backdrop-filter blur with a light edge highlight.",
         anatomy: "Toggle with the Solid / Glass switch in the topbar (top right), or set the data-surface attribute to glass on the html element manually.",
-        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground));line-height:1.6">Components never change for glass. Only token values and a few backdrop-filter overrides switch on, keyed off the document's surface attribute. Any Canvas surface gets the frosted treatment for free.</p></div>`,
+        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass. Only token values and a few backdrop-filter overrides switch on, keyed off the document's surface attribute. Any Canvas surface gets the frosted treatment for free.</p></div>`,
       },
       {
         title: "The four ingredients",
@@ -267,22 +267,22 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F4A8;</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Backdrop blur</div>
-    <code style="font-size:11px;color:hsl(var(--muted-foreground))">backdrop-filter: blur(12px)</code>
+    <code style="font-size:11px;color:var(--muted-foreground)">backdrop-filter: blur(12px)</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F3A8;</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Tinted background</div>
-    <code style="font-size:11px;color:hsl(var(--muted-foreground))">background: hsl(... / 0.6)</code>
+    <code style="font-size:11px;color:var(--muted-foreground)">background: hsl(... / 0.6)</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x2728;</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Subtle border</div>
-    <code style="font-size:11px;color:hsl(var(--muted-foreground))">border: 1px solid rgba(...)</code>
+    <code style="font-size:11px;color:var(--muted-foreground)">border: 1px solid rgba(...)</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F30C;</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Aurora background</div>
-    <code style="font-size:11px;color:hsl(var(--muted-foreground))">3-radial-gradient body bg</code>
+    <code style="font-size:11px;color:var(--muted-foreground)">3-radial-gradient body bg</code>
   </div>
 </div>`,
       },
@@ -290,38 +290,38 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
         title: "Surface inventory",
         description: "How glass values map to each UI role.",
         html: `<div style="font-size:13px">
-  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;border:1px solid hsl(var(--border));border-radius:var(--radius-md,8px);overflow:hidden">
-    <div style="padding:8px 12px;font-weight:600;background:hsl(var(--muted)/0.3);border-bottom:1px solid hsl(var(--border))">Surface</div>
-    <div style="padding:8px 12px;font-weight:600;background:hsl(var(--muted)/0.3);border-bottom:1px solid hsl(var(--border))">Blur</div>
-    <div style="padding:8px 12px;font-weight:600;background:hsl(var(--muted)/0.3);border-bottom:1px solid hsl(var(--border))">Opacity</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border))">Sidebar</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">16px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">0.65</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border))">Card / Section card</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">12px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">0.55</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border))">Topbar</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">12px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">0.60</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border))">Dialog / Drawer</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">20px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">0.70</div>
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Surface</div>
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Blur</div>
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Opacity</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Sidebar</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">16px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.65</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Card / Section card</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">12px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.55</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Topbar</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">12px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.60</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Dialog / Drawer</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">20px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.70</div>
     <div style="padding:8px 12px">Tooltip / Popover</div>
-    <div style="padding:8px 12px;color:hsl(var(--muted-foreground))">8px</div>
-    <div style="padding:8px 12px;color:hsl(var(--muted-foreground))">0.80</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">8px</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">0.80</div>
   </div>
 </div>`,
       },
       {
         title: "Live comparison",
         description: "The same content rendered in solid mode vs glass mode. The Solid / Glass toggle in the topbar swaps both at once.",
-        html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:12px;padding:20px;background:radial-gradient(120% 120% at 0% 0%, hsl(262 83% 58% / 0.25), transparent 50%), radial-gradient(120% 120% at 100% 100%, hsl(190 90% 50% / 0.2), transparent 50%), hsl(var(--background))">
+        html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:12px;padding:20px;background:radial-gradient(120% 120% at 0% 0%, hsl(262 83% 58% / 0.25), transparent 50%), radial-gradient(120% 120% at 100% 100%, hsl(190 90% 50% / 0.2), transparent 50%), var(--background)">
   <div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));margin-bottom:8px">Solid</div>
-    <div class="section-card" style="padding:16px;background:hsl(var(--card))"><div style="font-size:13px;font-weight:600;margin-bottom:4px">Active sessions</div><div style="font-size:22px;font-weight:700">1,204</div></div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:8px">Solid</div>
+    <div class="section-card" style="padding:16px;background:var(--card)"><div style="font-size:13px;font-weight:600;margin-bottom:4px">Active sessions</div><div style="font-size:22px;font-weight:700">1,204</div></div>
   </div>
   <div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));margin-bottom:8px">Glass</div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:8px">Glass</div>
     <div style="padding:16px;border-radius:12px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);background:hsl(255 100% 100% / 0.12);border:1px solid hsl(255 100% 100% / 0.25);box-shadow:inset 0 1px 0 hsl(255 100% 100% / 0.25)"><div style="font-size:13px;font-weight:600;margin-bottom:4px">Active sessions</div><div style="font-size:22px;font-weight:700">1,204</div></div>
   </div>
 </div>`,
@@ -330,28 +330,28 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
         title: "When NOT to use glass",
         description: "Glass works best for ambient UI. Avoid it in contexts where legibility or performance matters more than aesthetics.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
-  <div class="section-card" style="padding:16px;border-color:hsl(var(--destructive)/0.3)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:hsl(var(--destructive))">Dense data tables</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Blur behind hundreds of rows tanks rendering. Use solid background for data tables.</div>
+  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Dense data tables</div>
+    <div style="font-size:12px;color:var(--muted-foreground)">Blur behind hundreds of rows tanks rendering. Use solid background for data tables.</div>
   </div>
-  <div class="section-card" style="padding:16px;border-color:hsl(var(--destructive)/0.3)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:hsl(var(--destructive))">Low-end devices</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">backdrop-filter is GPU-intensive. Degrade to solid on devices without hardware acceleration.</div>
+  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Low-end devices</div>
+    <div style="font-size:12px;color:var(--muted-foreground)">backdrop-filter is GPU-intensive. Degrade to solid on devices without hardware acceleration.</div>
   </div>
-  <div class="section-card" style="padding:16px;border-color:hsl(var(--destructive)/0.3)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:hsl(var(--destructive))">Print stylesheets</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Glass has no meaning on paper. Reset to opaque backgrounds in @media print.</div>
+  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Print stylesheets</div>
+    <div style="font-size:12px;color:var(--muted-foreground)">Glass has no meaning on paper. Reset to opaque backgrounds in @media print.</div>
   </div>
-  <div class="section-card" style="padding:16px;border-color:hsl(var(--destructive)/0.3)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:hsl(var(--destructive))">Safety-critical UI</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">When misreading a value is dangerous (medical, financial), never rely on translucent surfaces.</div>
+  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Safety-critical UI</div>
+    <div style="font-size:12px;color:var(--muted-foreground)">When misreading a value is dangerous (medical, financial), never rely on translucent surfaces.</div>
   </div>
 </div>`,
       },
       {
         title: "Implementation",
         description: "Glass is implemented with deep selectors keyed off the document's data-surface attribute. CSS variables (--glass-tint, --glass-edge-a, --glass-hi-a, --glass-shadow) carry the per-mode values so dark glass uses different alphas without duplicating rules.",
-        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:hsl(var(--foreground))">html[data-surface="glass"] .stat-card,
+        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">html[data-surface="glass"] .stat-card,
 html[data-surface="glass"] .section-card,
 html[data-surface="glass"] .topbar,
 html[data-surface="glass"] .sidebar {
@@ -359,7 +359,7 @@ html[data-surface="glass"] .sidebar {
   background-color: hsl(var(--glass-tint) / var(--glass-tint-a));
   border-color: hsl(255 100% 100% / var(--glass-edge-a));
   box-shadow: inset 0 1px 0 hsl(255 100% 100% / var(--glass-hi-a)),
-              0 8px 24px -12px hsl(var(--glass-shadow) / 0.18);
+              0 8px 24px -12px color-mix(in oklch, var(--glass-shadow) 18%, transparent);
 }</div>`,
       },
     ],
@@ -377,17 +377,17 @@ html[data-surface="glass"] .sidebar {
         html: `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Skeleton</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:12px">Layout is predictable. Feels faster because shape is visible immediately.</div>
-    <div style="font-size:11px;padding:4px 8px;border-radius:var(--radius-sm,4px);background:hsl(var(--primary)/0.1);color:hsl(var(--primary));display:inline-block">Best for: page loads, lists</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:12px">Layout is predictable. Feels faster because shape is visible immediately.</div>
+    <div style="font-size:11px;padding:4px 8px;border-radius:var(--radius-sm,4px);background:color-mix(in oklch, var(--primary) 10%, transparent);color:var(--primary);display:inline-block">Best for: page loads, lists</div>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Spinner</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:12px">Indeterminate. Good for short waits where content shape is unknown.</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:12px">Indeterminate. Good for short waits where content shape is unknown.</div>
     <div style="font-size:11px;padding:4px 8px;border-radius:var(--radius-sm,4px);background:hsl(38 92% 50%/0.1);color:hsl(38 92% 50%);display:inline-block">Best for: button actions, saves</div>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Progressive</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:12px">Show what you have, load the rest. Keeps parent interactive.</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:12px">Show what you have, load the rest. Keeps parent interactive.</div>
     <div style="font-size:11px;padding:4px 8px;border-radius:var(--radius-sm,4px);background:hsl(142 71% 45%/0.1);color:hsl(142 71% 45%);display:inline-block">Best for: dashboards, feeds</div>
   </div>
 </div>`,
@@ -412,12 +412,12 @@ html[data-surface="glass"] .sidebar {
         description: "Animated placeholder rows that match the shape of the content being loaded.",
         html: `<div class="section-card" style="padding:0;overflow:hidden">
   <div style="display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid hsl(var(--border))">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">
       <div class="skeleton" style="width:32px;height:32px;border-radius:50%"></div>
       <div style="flex:1"><div class="skeleton" style="width:60%;height:12px;border-radius:4px;margin-bottom:6px"></div><div class="skeleton" style="width:40%;height:10px;border-radius:4px"></div></div>
       <div class="skeleton" style="width:60px;height:10px;border-radius:4px"></div>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid hsl(var(--border))">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">
       <div class="skeleton" style="width:32px;height:32px;border-radius:50%"></div>
       <div style="flex:1"><div class="skeleton" style="width:50%;height:12px;border-radius:4px;margin-bottom:6px"></div><div class="skeleton" style="width:35%;height:10px;border-radius:4px"></div></div>
       <div class="skeleton" style="width:48px;height:10px;border-radius:4px"></div>
@@ -437,12 +437,12 @@ html[data-surface="glass"] .sidebar {
   <div class="section-card" style="padding:16px">
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
       <span style="font-weight:500">Uploading report.pdf</span>
-      <span style="color:hsl(var(--muted-foreground))">68%</span>
+      <span style="color:var(--muted-foreground)">68%</span>
     </div>
-    <div style="height:6px;border-radius:9999px;background:hsl(var(--muted));overflow:hidden">
-      <div style="width:68%;height:100%;border-radius:9999px;background:hsl(var(--primary));transition:width 300ms"></div>
+    <div style="height:6px;border-radius:9999px;background:var(--muted);overflow:hidden">
+      <div style="width:68%;height:100%;border-radius:9999px;background:var(--primary);transition:width 300ms"></div>
     </div>
-    <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:6px">2.4 MB of 3.5 MB</div>
+    <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">2.4 MB of 3.5 MB</div>
   </div>
 </div>`,
       },
@@ -459,28 +459,28 @@ html[data-surface="glass"] .sidebar {
         title: "Breakpoints",
         description: "Canvas uses six responsive breakpoints. Mobile-first: styles apply from the breakpoint upward.",
         html: `<div style="font-size:13px">
-  <div style="display:grid;grid-template-columns:80px 100px 1fr;gap:0;border:1px solid hsl(var(--border));border-radius:var(--radius-md,8px);overflow:hidden">
-    <div style="padding:8px 12px;font-weight:600;background:hsl(var(--muted)/0.3);border-bottom:1px solid hsl(var(--border))">Name</div>
-    <div style="padding:8px 12px;font-weight:600;background:hsl(var(--muted)/0.3);border-bottom:1px solid hsl(var(--border))">Min-width</div>
-    <div style="padding:8px 12px;font-weight:600;background:hsl(var(--muted)/0.3);border-bottom:1px solid hsl(var(--border))">Typical use</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-weight:500">base</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-family:var(--font-mono);font-size:12px">0px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">Mobile phones (portrait)</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-weight:500">sm</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-family:var(--font-mono);font-size:12px">640px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">Large phones (landscape)</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-weight:500">md</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-family:var(--font-mono);font-size:12px">768px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">Tablets</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-weight:500">lg</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-family:var(--font-mono);font-size:12px">1024px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">Small laptops, sidebar becomes fixed</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-weight:500">xl</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));font-family:var(--font-mono);font-size:12px">1280px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid hsl(var(--border));color:hsl(var(--muted-foreground))">Desktops, TOC sidebar appears</div>
+  <div style="display:grid;grid-template-columns:80px 100px 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Name</div>
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Min-width</div>
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Typical use</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">base</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">0px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Mobile phones (portrait)</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">sm</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">640px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Large phones (landscape)</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">md</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">768px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Tablets</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">lg</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">1024px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Small laptops, sidebar becomes fixed</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">xl</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">1280px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Desktops, TOC sidebar appears</div>
     <div style="padding:8px 12px;font-weight:500">2xl</div>
     <div style="padding:8px 12px;font-family:var(--font-mono);font-size:12px">1536px</div>
-    <div style="padding:8px 12px;color:hsl(var(--muted-foreground))">Large monitors</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">Large monitors</div>
   </div>
 </div>`,
       },
@@ -490,21 +490,21 @@ html[data-surface="glass"] .sidebar {
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Mobile (< lg)</div>
-    <div style="display:flex;gap:0;border:1px solid hsl(var(--border));border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
+    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
       <div style="flex:1;padding:8px;font-size:11px;display:flex;align-items:start">
-        <div style="width:24px;height:24px;border-radius:4px;background:hsl(var(--muted));display:inline-flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer">&#9776;</div>
-        <span style="margin-left:8px;color:hsl(var(--muted-foreground))">Full-width content</span>
+        <div style="width:24px;height:24px;border-radius:4px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer">&#9776;</div>
+        <span style="margin-left:8px;color:var(--muted-foreground)">Full-width content</span>
       </div>
     </div>
-    <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:6px">Sidebar hidden. Hamburger opens drawer overlay.</div>
+    <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">Sidebar hidden. Hamburger opens drawer overlay.</div>
   </div>
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Desktop (>= lg)</div>
-    <div style="display:flex;gap:0;border:1px solid hsl(var(--border));border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
-      <div style="width:48px;background:hsl(var(--sidebar-background));border-right:1px solid hsl(var(--border));padding:6px;font-size:9px;color:hsl(var(--muted-foreground))">Nav</div>
-      <div style="flex:1;padding:8px;font-size:11px;color:hsl(var(--muted-foreground))">Main content area</div>
+    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
+      <div style="width:48px;background:var(--sidebar-background);border-right:1px solid var(--border);padding:6px;font-size:9px;color:var(--muted-foreground)">Nav</div>
+      <div style="flex:1;padding:8px;font-size:11px;color:var(--muted-foreground)">Main content area</div>
     </div>
-    <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:6px">Sidebar fixed. Collapsible via toggle.</div>
+    <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">Sidebar fixed. Collapsible via toggle.</div>
   </div>
 </div>`,
       },
@@ -542,17 +542,17 @@ html[data-surface="glass"] .sidebar {
         title: "What's behind the scenes",
         description: "Specific responsive treatments worth noting beyond just stacking grids.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Topbar: progressive disclosure</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Search text shrinks to just "Search..." at small sizes, the Cmd+K kbd hides below sm, and the user pill collapses to an avatar below md.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Tables: horizontal scroll</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Tables get a min-width and live inside a scroll container that overflows horizontally. Easier to scroll than to pack columns into a phone screen.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Drawer: viewport cap</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The slide-over width is wrapped in min(width, 100vw) so an open drawer can never exceed the phone's width.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Page header: wrap actions</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The actions row uses flex-wrap. On small screens, a row of buttons wraps to a second line rather than overflowing.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Density layers on top</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">The compact and comfy utilities layer on top of responsive ones, so compact mode shrinks padding everywhere regardless of viewport.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Mobile is real, not an afterthought</div><div style="font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.5">Every page was checked at 375px and 768px. No desktop-only surfaces.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Topbar: progressive disclosure</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Search text shrinks to just "Search..." at small sizes, the Cmd+K kbd hides below sm, and the user pill collapses to an avatar below md.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Tables: horizontal scroll</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Tables get a min-width and live inside a scroll container that overflows horizontally. Easier to scroll than to pack columns into a phone screen.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Drawer: viewport cap</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The slide-over width is wrapped in min(width, 100vw) so an open drawer can never exceed the phone's width.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Page header: wrap actions</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The actions row uses flex-wrap. On small screens, a row of buttons wraps to a second line rather than overflowing.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Density layers on top</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The compact and comfy utilities layer on top of responsive ones, so compact mode shrinks padding everywhere regardless of viewport.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Mobile is real, not an afterthought</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Every page was checked at 375px and 768px. No desktop-only surfaces.</div></div>
 </div>`,
       },
       {
         title: "Try it yourself",
-        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:hsl(var(--muted)/0.4);border:1px solid hsl(var(--border));font-size:12.5px;color:hsl(var(--muted-foreground));line-height:1.6">Resize this browser window. Watch the sidebar collapse into a drawer, the page header stack, and the grids reflow. The same patterns apply across every page in the system.</div>`,
+        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);font-size:12.5px;color:var(--muted-foreground);line-height:1.6">Resize this browser window. Watch the sidebar collapse into a drawer, the page header stack, and the grids reflow. The same patterns apply across every page in the system.</div>`,
       },
     ],
   },

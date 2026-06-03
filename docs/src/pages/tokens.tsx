@@ -18,9 +18,9 @@ const SEMANTIC_PAIRS = [
 
 const SIDEBAR_TOKENS = [
   { name: "Background", varName: "--sidebar-background", light: "220 16% 95%", dark: "222 18% 7%", bgVar: "var(--sidebar-background)" },
-  { name: "Foreground", varName: "--sidebar-foreground", light: "220 20% 22%", dark: "210 17% 92%", bgVar: "var(--sidebar-foreground)" },
-  { name: "Accent", varName: "--sidebar-accent", light: "220 14% 88%", dark: "222 14% 16%", bgVar: "var(--sidebar-accent)" },
-  { name: "Accent foreground", varName: "--sidebar-accent-foreground", light: "220 25% 14%", dark: "210 17% 95%", bgVar: "var(--sidebar-accent-foreground)" },
+  { name: "Foreground", varName: "--foreground", light: "220 20% 22%", dark: "210 17% 92%", bgVar: "var(--foreground)" },
+  { name: "Accent", varName: "--accent", light: "220 14% 88%", dark: "222 14% 16%", bgVar: "var(--accent)" },
+  { name: "Accent foreground", varName: "--accent-foreground", light: "220 25% 14%", dark: "210 17% 95%", bgVar: "var(--accent-foreground)" },
   { name: "Border", varName: "--sidebar-border", light: "220 13% 84%", dark: "222 11% 18%", bgVar: "var(--sidebar-border)" },
 ];
 
@@ -61,17 +61,17 @@ function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
         style={{
           height: 80,
           borderRadius: "var(--radius-lg, 8px)",
-          border: "1px solid hsl(var(--border))",
+          border: "1px solid var(--border)",
           background: `hsl(${row.bgVar})`,
         }}
       />
-      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
         {row.name}
       </div>
-      <code style={{ display: "block", fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4, marginTop: 2 }}>
+      <code style={{ display: "block", fontSize: "11px", color: "var(--muted-foreground)", lineHeight: 1.4, marginTop: 2 }}>
         {row.varName}
       </code>
-      <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+      <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
         <div>L · hsl({row.light})</div>
         <div>D · hsl({row.dark})</div>
       </div>
@@ -86,14 +86,14 @@ function AccentChip({ a }: { a: typeof ACCENT_OPTIONS[number] }) {
         style={{
           height: 80,
           borderRadius: "var(--radius-lg, 8px)",
-          border: "1px solid hsl(var(--border))",
+          border: "1px solid var(--border)",
           background: `hsl(${a.h} ${a.s}% ${a.l}%)`,
         }}
       />
-      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
         {a.name}
       </div>
-      <div style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+      <div style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
         hsl({a.h} {a.s}% {a.l}%)
       </div>
     </div>
@@ -103,14 +103,14 @@ function AccentChip({ a }: { a: typeof ACCENT_OPTIONS[number] }) {
 function StatusRow({ s }: { s: typeof STATUS[number] }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>{s.name}</div>
+      <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>{s.name}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div>
           <div
             style={{
               height: 48,
               borderRadius: "var(--radius-md, 6px)",
-              border: "1px solid hsl(var(--border))",
+              border: "1px solid var(--border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -122,7 +122,7 @@ function StatusRow({ s }: { s: typeof STATUS[number] }) {
           >
             Light
           </div>
-          <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+          <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
             <div>bg {s.light.bg}</div>
             <div>fg {s.light.fg}</div>
           </div>
@@ -132,7 +132,7 @@ function StatusRow({ s }: { s: typeof STATUS[number] }) {
             style={{
               height: 48,
               borderRadius: "var(--radius-md, 6px)",
-              border: "1px solid hsl(var(--border))",
+              border: "1px solid var(--border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -144,7 +144,7 @@ function StatusRow({ s }: { s: typeof STATUS[number] }) {
           >
             Dark
           </div>
-          <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+          <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
             <div>bg {s.dark.bg}</div>
             <div>fg {s.dark.fg}</div>
           </div>
@@ -161,17 +161,17 @@ function ChartChip({ c }: { c: typeof CHART_PALETTE[number] }) {
         style={{
           height: 64,
           borderRadius: "var(--radius-lg, 8px)",
-          border: "1px solid hsl(var(--border))",
+          border: "1px solid var(--border)",
           background: `hsl(${c.light})`,
         }}
       />
-      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+      <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
         {c.name}
       </div>
-      <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+      <code style={{ fontSize: "11px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
         {c.varName}
       </code>
-      <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+      <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
         <div>L · {c.light}</div>
         <div>D · {c.dark}</div>
       </div>
@@ -188,11 +188,11 @@ function Section({ title, description, anatomy, children }: {
   return (
     <section style={{ marginBottom: 40 }}>
       <header style={{ marginBottom: 16 }}>
-        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "hsl(var(--foreground))" }}>
+        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.015em", color: "var(--foreground)" }}>
           {title}
         </h2>
         {description && (
-          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "hsl(var(--muted-foreground))", maxWidth: 640, lineHeight: 1.6 }}>
+          <p style={{ marginTop: 4, marginBottom: 0, fontSize: "13.5px", color: "var(--muted-foreground)", maxWidth: 640, lineHeight: 1.6 }}>
             {description}
           </p>
         )}
@@ -202,12 +202,12 @@ function Section({ title, description, anatomy, children }: {
           marginBottom: 16,
           padding: "12px 16px",
           borderRadius: "var(--radius-lg, 8px)",
-          background: "hsl(var(--muted) / 0.4)",
-          border: "1px solid hsl(var(--border))",
+          background: "color-mix(in oklch, var(--muted) 40%, transparent)",
+          border: "1px solid var(--border)",
           fontSize: "12.5px",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
-          <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Anatomy.</span>
+          <span style={{ fontWeight: 600, color: "var(--foreground)", marginRight: 8 }}>Anatomy.</span>
           {anatomy}
         </div>
       )}
@@ -228,8 +228,8 @@ const cssVarsCode = `:root {
 }`;
 
 const themeBridgeCode = `@theme inline {
-  --color-primary:    hsl(var(--primary));
-  --color-background: hsl(var(--background));
+  --color-primary:    var(--primary);
+  --color-background: var(--background);
   /* … */
 }`;
 
@@ -253,7 +253,7 @@ export function TokensPage() {
           fontSize: "clamp(32px, 5vw, 40px)",
           fontWeight: 700,
           letterSpacing: "-0.025em",
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         }}>
           Colors & Theme
         </h1>
@@ -262,7 +262,7 @@ export function TokensPage() {
           maxWidth: "42rem",
           fontSize: "14.5px",
           lineHeight: 1.6,
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
           Canvas uses a semantic token system. Every color is an HSL value bound to a CSS
           custom property. Tailwind utilities (<code>bg-primary</code>, <code>text-muted-foreground</code>,{" "}
@@ -273,12 +273,12 @@ export function TokensPage() {
           marginTop: 16,
           padding: "12px 16px",
           borderRadius: "var(--radius-lg, 8px)",
-          background: "hsl(var(--muted) / 0.4)",
-          border: "1px solid hsl(var(--border))",
+          background: "color-mix(in oklch, var(--muted) 40%, transparent)",
+          border: "1px solid var(--border)",
           fontSize: "12.5px",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
-          <span style={{ fontWeight: 600, color: "hsl(var(--foreground))", marginRight: 8 }}>Try this.</span>
+          <span style={{ fontWeight: 600, color: "var(--foreground)", marginRight: 8 }}>Try this.</span>
           Toggle the surface or change the theme. Every swatch below reacts live.
         </div>
       </section>
@@ -353,16 +353,16 @@ export function TokensPage() {
               <div style={{
                 height: 80,
                 borderRadius: "var(--radius-lg, 8px)",
-                border: "1px solid hsl(var(--border))",
+                border: "1px solid var(--border)",
                 background: b.hex,
               }} />
-              <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+              <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
                 {b.name}
               </div>
-              <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+              <code style={{ fontSize: "11px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
                 {b.varName}
               </code>
-              <div style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "hsl(var(--muted-foreground))", lineHeight: 1.4, marginTop: 2 }}>
+              <div style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", lineHeight: 1.4, marginTop: 2 }}>
                 {b.hex}
               </div>
             </div>
@@ -371,13 +371,13 @@ export function TokensPage() {
             <div style={{
               height: 80,
               borderRadius: "var(--radius-lg, 8px)",
-              border: "1px solid hsl(var(--border))",
+              border: "1px solid var(--border)",
               background: "linear-gradient(135deg, var(--orb-indigo), var(--orb-violet))",
             }} />
-            <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "hsl(var(--foreground))" }}>
+            <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
               Avatar gradient
             </div>
-            <code style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", lineHeight: 1.4 }}>
+            <code style={{ fontSize: "11px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
               --orb-indigo → --orb-violet
             </code>
           </div>
@@ -392,22 +392,22 @@ export function TokensPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
           <div style={{
             borderRadius: "var(--radius-xl, 12px)",
-            border: "1px solid hsl(var(--border))",
-            background: "hsl(var(--card))",
+            border: "1px solid var(--border)",
+            background: "var(--card)",
             padding: 20,
           }}>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: 8 }}>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--foreground)", marginBottom: 8 }}>
               1 · CSS variables (tokens.css)
             </div>
             <CodeBlock code={cssVarsCode} language="css" />
           </div>
           <div style={{
             borderRadius: "var(--radius-xl, 12px)",
-            border: "1px solid hsl(var(--border))",
-            background: "hsl(var(--card))",
+            border: "1px solid var(--border)",
+            background: "var(--card)",
             padding: 20,
           }}>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: 8 }}>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--foreground)", marginBottom: 8 }}>
               2 · Tailwind theme bridge
             </div>
             <CodeBlock code={themeBridgeCode} language="css" />
@@ -416,11 +416,11 @@ export function TokensPage() {
         <div style={{
           marginTop: 16,
           borderRadius: "var(--radius-xl, 12px)",
-          border: "1px solid hsl(var(--border))",
-          background: "hsl(var(--card))",
+          border: "1px solid var(--border)",
+          background: "var(--card)",
           padding: 20,
         }}>
-          <div style={{ fontSize: "13px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: 8 }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--foreground)", marginBottom: 8 }}>
             3 · Utilities resolve dynamically
           </div>
           <CodeBlock code={dynamicCode} language="tsx" />
@@ -428,7 +428,7 @@ export function TokensPage() {
             marginTop: 12,
             marginBottom: 0,
             fontSize: "12.5px",
-            color: "hsl(var(--muted-foreground))",
+            color: "var(--muted-foreground)",
           }}>
             The accent picker mutates <code>--primary</code> directly on <code>&lt;html&gt;</code>; because{" "}
             <code>@theme inline</code> preserves the <code>var()</code> reference (not the resolved value),
@@ -446,11 +446,11 @@ export function TokensPage() {
             background: "hsl(0 70% 60% / 0.05)",
             padding: 20,
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "hsl(var(--destructive))", fontWeight: 600, marginBottom: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--destructive)", fontWeight: 600, marginBottom: 4 }}>
               Don't
             </div>
             <CodeBlock code={dontCode} language="tsx" />
-            <p style={{ marginTop: 8, fontSize: "12.5px", color: "hsl(var(--muted-foreground))", margin: "8px 0 0" }}>
+            <p style={{ marginTop: 8, fontSize: "12.5px", color: "var(--muted-foreground)", margin: "8px 0 0" }}>
               Hard-coded hex bypasses the theme. Won't follow accent changes; will look wrong in dark mode.
             </p>
           </div>
@@ -464,7 +464,7 @@ export function TokensPage() {
               Do
             </div>
             <CodeBlock code={doCode} language="tsx" />
-            <p style={{ marginTop: 8, fontSize: "12.5px", color: "hsl(var(--muted-foreground))", margin: "8px 0 0" }}>
+            <p style={{ marginTop: 8, fontSize: "12.5px", color: "var(--muted-foreground)", margin: "8px 0 0" }}>
               Always token-routed. Theme changes are free.
             </p>
           </div>

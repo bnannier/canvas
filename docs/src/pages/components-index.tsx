@@ -18,11 +18,11 @@ function Tile({ title, to, span, children }: {
       to={to}
       style={{
         borderRadius: "var(--radius-xl, 12px)",
-        border: "1px solid hsl(var(--border))",
-        background: "hsl(var(--card))",
+        border: "1px solid var(--border)",
+        background: "var(--card)",
         overflow: "hidden",
         textDecoration: "none",
-        color: "hsl(var(--foreground))",
+        color: "var(--foreground)",
         display: "block",
         gridColumn: undefined,
       }}
@@ -33,8 +33,8 @@ function Tile({ title, to, span, children }: {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "hsl(var(--muted) / 0.3)",
-        borderBottom: "1px solid hsl(var(--border))",
+        background: "color-mix(in oklch, var(--muted) 30%, transparent)",
+        borderBottom: "1px solid var(--border)",
         padding: 16,
         overflow: "hidden",
       }}>
@@ -57,7 +57,7 @@ function Tile({ title, to, span, children }: {
         justifyContent: "space-between",
       }}>
         <div style={{ fontSize: "12.5px", fontWeight: 500 }}>{title}</div>
-        <ChevronRight size={12} style={{ color: "hsl(var(--muted-foreground))" }} />
+        <ChevronRight size={12} style={{ color: "var(--muted-foreground)" }} />
       </div>
     </Link>
   );
@@ -89,7 +89,7 @@ function CatGroup({ id, label, count, children }: {
           fontSize: "11px",
           textTransform: "uppercase",
           letterSpacing: "0.08em",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
           fontWeight: 500,
         }}>
           {count} components
@@ -139,11 +139,11 @@ export function ComponentsIndex() {
                 flexShrink: 0,
                 padding: "4px 12px",
                 borderRadius: 9999,
-                background: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
+                background: "var(--card)",
+                border: "1px solid var(--border)",
                 fontSize: "12px",
                 fontWeight: 500,
-                color: "hsl(var(--foreground))",
+                color: "var(--foreground)",
                 textDecoration: "none",
               }}
             >
@@ -153,7 +153,7 @@ export function ComponentsIndex() {
           <div style={{ flex: 1 }} />
           <span style={{
             fontSize: "11px",
-            color: "hsl(var(--muted-foreground))",
+            color: "var(--muted-foreground)",
             alignSelf: "center",
             paddingRight: 4,
             whiteSpace: "nowrap",
@@ -167,7 +167,7 @@ export function ComponentsIndex() {
         marginBottom: 24,
         maxWidth: "42rem",
         fontSize: "13px",
-        color: "hsl(var(--muted-foreground))",
+        color: "var(--muted-foreground)",
         lineHeight: 1.6,
       }}>
         A live catalog of every component in the Canvas design system. Each tile is the real
@@ -179,16 +179,16 @@ export function ComponentsIndex() {
         <Tile title="Colors & Theme" to="/tokens">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 4, width: "100%", maxWidth: 220 }}>
             {[
-              "hsl(var(--primary))", "hsl(var(--card))", "hsl(var(--muted))",
-              "hsl(var(--accent))", "hsl(var(--foreground))", "hsl(var(--destructive))",
-              "hsl(var(--secondary))", "hsl(var(--popover))", "hsl(var(--background))",
-              "hsl(var(--ring))", "hsl(var(--input))", "hsl(var(--border))",
+              "var(--primary)", "var(--card)", "var(--muted)",
+              "var(--accent)", "var(--foreground)", "var(--destructive)",
+              "var(--secondary)", "var(--popover)", "var(--background)",
+              "var(--ring)", "var(--input)", "var(--border)",
             ].map((c, i) => (
               <div key={i} style={{
                 height: 28,
                 borderRadius: "var(--radius-sm, 4px)",
                 background: c,
-                border: "1px solid hsl(var(--border))",
+                border: "1px solid var(--border)",
               }} />
             ))}
           </div>
@@ -200,8 +200,8 @@ export function ComponentsIndex() {
                 width: n,
                 height: n,
                 borderRadius: "var(--radius-md, 6px)",
-                background: "hsl(var(--primary) / 0.25)",
-                border: "1px solid hsl(var(--primary) / 0.4)",
+                background: "color-mix(in oklch, var(--primary) 25%, transparent)",
+                border: "1px solid color-mix(in oklch, var(--primary) 40%, transparent)",
               }} />
             ))}
           </div>
@@ -229,7 +229,7 @@ export function ComponentsIndex() {
                 justifyContent: "center",
                 fontSize: 10,
                 fontWeight: 600,
-                border: "2px solid hsl(var(--background))",
+                border: "2px solid var(--background)",
                 background: gradients[i],
                 marginLeft: i > 0 ? -8 : 0,
                 zIndex: 10 - i,
@@ -253,9 +253,9 @@ export function ComponentsIndex() {
         </Tile>
         <Tile title="Breadcrumbs" to="/components/breadcrumb">
           <nav style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-            <span style={{ color: "hsl(var(--muted-foreground))" }}>Projects</span>
+            <span style={{ color: "var(--muted-foreground)" }}>Projects</span>
             <ChevronRight size={10} />
-            <span style={{ color: "hsl(var(--muted-foreground))" }}>Identity</span>
+            <span style={{ color: "var(--muted-foreground)" }}>Identity</span>
             <ChevronRight size={10} />
             <span style={{ fontWeight: 500 }}>Profile</span>
           </nav>
@@ -264,19 +264,19 @@ export function ComponentsIndex() {
           <div style={{
             display: "inline-flex",
             borderRadius: "var(--radius-md, 6px)",
-            border: "1px solid hsl(var(--input))",
-            background: "hsl(var(--card))",
+            border: "1px solid var(--input)",
+            background: "var(--card)",
             padding: 2,
           }}>
             <span style={{
               padding: "2px 8px",
               fontSize: 11,
-              background: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
+              background: "var(--primary)",
+              color: "var(--primary-foreground)",
               borderRadius: "var(--radius-sm, 4px)",
             }}>Day</span>
-            <span style={{ padding: "2px 8px", fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Week</span>
-            <span style={{ padding: "2px 8px", fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Month</span>
+            <span style={{ padding: "2px 8px", fontSize: 11, color: "var(--muted-foreground)" }}>Week</span>
+            <span style={{ padding: "2px 8px", fontSize: 11, color: "var(--muted-foreground)" }}>Month</span>
           </div>
         </Tile>
         <Tile title="Buttons" to="/components/button">
@@ -288,11 +288,11 @@ export function ComponentsIndex() {
         <Tile title="Checkboxes" to="/components/checkbox">
           <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 11 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" defaultChecked style={{ width: 14, height: 14, accentColor: "hsl(var(--primary))" }} />
+              <input type="checkbox" defaultChecked style={{ width: 14, height: 14, accentColor: "var(--primary)" }} />
               Option A
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" style={{ width: 14, height: 14, accentColor: "hsl(var(--primary))" }} />
+              <input type="checkbox" style={{ width: 14, height: 14, accentColor: "var(--primary)" }} />
               Option B
             </label>
           </div>
@@ -305,7 +305,7 @@ export function ComponentsIndex() {
               right: 8,
               top: "50%",
               transform: "translateY(-50%)",
-              color: "hsl(var(--muted-foreground))",
+              color: "var(--muted-foreground)",
               pointerEvents: "none",
             }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -314,15 +314,15 @@ export function ComponentsIndex() {
         </Tile>
         <Tile title="Dividers" to="/components/separator">
           <div style={{ width: "100%", maxWidth: 180 }}>
-            <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))", marginBottom: 8 }}>Above</div>
+            <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginBottom: 8 }}>Above</div>
             <hr className="sep" />
-            <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>Below</div>
+            <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginTop: 8 }}>Below</div>
           </div>
         </Tile>
         <Tile title="Dropdowns" to="/components/dropdown">
           <div style={{
-            background: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: "var(--radius-md, 6px)",
             padding: 4,
             boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
@@ -331,7 +331,7 @@ export function ComponentsIndex() {
           }}>
             <div style={{ padding: "4px 8px", borderRadius: "var(--radius-sm, 4px)" }}>Edit</div>
             <div style={{ padding: "4px 8px", borderRadius: "var(--radius-sm, 4px)" }}>Copy</div>
-            <div style={{ padding: "4px 8px", borderRadius: "var(--radius-sm, 4px)", color: "hsl(var(--destructive))" }}>Delete</div>
+            <div style={{ padding: "4px 8px", borderRadius: "var(--radius-sm, 4px)", color: "var(--destructive)" }}>Delete</div>
           </div>
         </Tile>
         <Tile title="Icons" to="/components/icon">
@@ -363,11 +363,11 @@ export function ComponentsIndex() {
               alignItems: "center",
               padding: "0 8px",
               borderRadius: "var(--radius-md, 6px) 0 0 var(--radius-md, 6px)",
-              border: "1px solid hsl(var(--input))",
+              border: "1px solid var(--input)",
               borderRight: 0,
-              background: "hsl(var(--muted))",
+              background: "var(--muted)",
               fontSize: 10,
-              color: "hsl(var(--muted-foreground))",
+              color: "var(--muted-foreground)",
             }}>
               https://
             </span>
@@ -398,11 +398,11 @@ export function ComponentsIndex() {
         <Tile title="Radios" to="/components/radio">
           <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 11 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="radio" name="tile-radio" defaultChecked style={{ width: 14, height: 14, accentColor: "hsl(var(--primary))" }} />
+              <input type="radio" name="tile-radio" defaultChecked style={{ width: 14, height: 14, accentColor: "var(--primary)" }} />
               Pro
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="radio" name="tile-radio" style={{ width: 14, height: 14, accentColor: "hsl(var(--primary))" }} />
+              <input type="radio" name="tile-radio" style={{ width: 14, height: 14, accentColor: "var(--primary)" }} />
               Hobby
             </label>
           </div>
@@ -418,12 +418,12 @@ export function ComponentsIndex() {
               width: 28,
               height: 28,
               borderRadius: "50%",
-              background: "hsl(var(--muted) / 0.6)",
+              background: "color-mix(in oklch, var(--muted) 60%, transparent)",
               animation: "pulse 2s ease-in-out infinite",
             }} />
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ height: 8, background: "hsl(var(--muted) / 0.6)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
-              <div style={{ height: 8, width: "75%", background: "hsl(var(--muted) / 0.6)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
+              <div style={{ height: 8, background: "color-mix(in oklch, var(--muted) 60%, transparent)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
+              <div style={{ height: 8, width: "75%", background: "color-mix(in oklch, var(--muted) 60%, transparent)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
             </div>
           </div>
         </Tile>
@@ -445,13 +445,13 @@ export function ComponentsIndex() {
               height: 20,
               width: 36,
               borderRadius: 9999,
-              background: "hsl(var(--primary))",
+              background: "var(--primary)",
             }}>
               <span style={{
                 height: 16,
                 width: 16,
                 borderRadius: "50%",
-                background: "hsl(var(--background))",
+                background: "var(--background)",
                 boxShadow: "0 1px 3px rgb(0 0 0 / 0.1)",
                 transform: "translateX(16px)",
                 marginTop: 2,
@@ -464,13 +464,13 @@ export function ComponentsIndex() {
               height: 20,
               width: 36,
               borderRadius: 9999,
-              background: "hsl(var(--muted))",
+              background: "var(--muted)",
             }}>
               <span style={{
                 height: 16,
                 width: 16,
                 borderRadius: "50%",
-                background: "hsl(var(--background))",
+                background: "var(--background)",
                 boxShadow: "0 1px 3px rgb(0 0 0 / 0.1)",
                 transform: "translateX(0px)",
                 marginTop: 2,
@@ -484,12 +484,12 @@ export function ComponentsIndex() {
             <span style={{
               padding: "4px 8px",
               borderRadius: "var(--radius-sm, 4px)",
-              background: "hsl(var(--foreground))",
-              color: "hsl(var(--background))",
+              background: "var(--foreground)",
+              color: "var(--background)",
               fontSize: 10,
             }}>Tooltip</span>
             <svg width="10" height="6" viewBox="0 0 10 6">
-              <polygon points="0,0 10,0 5,6" fill="hsl(var(--foreground))" />
+              <polygon points="0,0 10,0 5,6" fill="var(--foreground)" />
             </svg>
             <button className="btn btn-outline btn-sm">Hover me</button>
           </div>
@@ -501,11 +501,11 @@ export function ComponentsIndex() {
         <Tile title="Action Panels" to="/components/action-panels">
           <div className="section-card" style={{ width: "100%", maxWidth: 220, padding: 12 }}>
             <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4 }}>Delete account</div>
-            <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))", marginBottom: 8 }}>Permanent and irreversible.</div>
+            <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginBottom: 8 }}>Permanent and irreversible.</div>
             <button className="btn btn-sm" style={{
-              background: "hsl(var(--destructive))",
+              background: "var(--destructive)",
               color: "#fff",
-              border: "1px solid hsl(var(--destructive))",
+              border: "1px solid var(--destructive)",
               height: 24,
               fontSize: 10,
               padding: "0 8px",
@@ -547,7 +547,7 @@ export function ComponentsIndex() {
             <div className="stat-card" style={{ padding: 12 }}>
               <div className="stat-card-header">
                 <span className="stat-card-label">Users</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "hsl(var(--muted-foreground))" }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--muted-foreground)" }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
               <div className="stat-card-value">12.3k</div>
               <div className="stat-card-delta" data-trend="up">+8%</div>
@@ -557,11 +557,11 @@ export function ComponentsIndex() {
         <Tile title="Description Lists" to="/components/description-lists">
           <dl style={{ fontSize: 11, width: "100%", maxWidth: 220, margin: 0 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", padding: "4px 0" }}>
-              <dt style={{ color: "hsl(var(--muted-foreground))" }}>Name</dt>
+              <dt style={{ color: "var(--muted-foreground)" }}>Name</dt>
               <dd style={{ margin: 0 }}>Ada Lovelace</dd>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", padding: "4px 0", borderTop: "1px solid hsl(var(--border))" }}>
-              <dt style={{ color: "hsl(var(--muted-foreground))" }}>Email</dt>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", padding: "4px 0", borderTop: "1px solid var(--border)" }}>
+              <dt style={{ color: "var(--muted-foreground)" }}>Email</dt>
               <dd style={{ margin: 0 }}>ada@...</dd>
             </div>
           </dl>
@@ -573,28 +573,28 @@ export function ComponentsIndex() {
             alignItems: "center",
             gap: 4,
             padding: 16,
-            border: "1px solid hsl(var(--border))",
+            border: "1px solid var(--border)",
             borderRadius: "var(--radius-xl, 12px)",
-            background: "hsl(var(--card))",
+            background: "var(--card)",
           }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <div style={{ fontSize: 12, fontWeight: 600 }}>No items</div>
-            <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))" }}>Create one to start.</div>
+            <div style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Create one to start.</div>
           </div>
         </Tile>
         <Tile title="Feeds" to="/components/feeds">
           <div style={{ width: "100%", maxWidth: 220, display: "flex", flexDirection: "column", gap: 6 }}>
             {[
-              { icon: "M12 5v14M5 12h14", label: "created", color: "hsl(var(--primary))" },
-              { icon: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z", label: "commented", color: "hsl(var(--primary))" },
-              { icon: "M20 6L9 17l-5-5", label: "merged", color: "hsl(var(--primary))" },
+              { icon: "M12 5v14M5 12h14", label: "created", color: "var(--primary)" },
+              { icon: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z", label: "commented", color: "var(--primary)" },
+              { icon: "M20 6L9 17l-5-5", label: "merged", color: "var(--primary)" },
             ].map((item) => (
               <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{
                   width: 20,
                   height: 20,
                   borderRadius: "50%",
-                  background: "hsl(var(--primary) / 0.15)",
+                  background: "color-mix(in oklch, var(--primary) 15%, transparent)",
                   color: item.color,
                   display: "flex",
                   alignItems: "center",
@@ -604,7 +604,7 @@ export function ComponentsIndex() {
                 </div>
                 <div style={{ fontSize: 10, flex: 1 }}>
                   <b>Ada</b>{" "}
-                  <span style={{ color: "hsl(var(--muted-foreground))" }}>{item.label}</span>
+                  <span style={{ color: "var(--muted-foreground)" }}>{item.label}</span>
                 </div>
               </div>
             ))}
@@ -630,7 +630,7 @@ export function ComponentsIndex() {
         <Tile title="Grid Lists" to="/components/grid-lists">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, width: "100%", maxWidth: 220 }}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} style={{ aspectRatio: "1", borderRadius: "var(--radius-sm, 4px)", background: "hsl(var(--muted) / 0.6)" }} />
+              <div key={i} style={{ aspectRatio: "1", borderRadius: "var(--radius-sm, 4px)", background: "color-mix(in oklch, var(--muted) 60%, transparent)" }} />
             ))}
           </div>
         </Tile>
@@ -639,7 +639,7 @@ export function ComponentsIndex() {
             <span className="avatar" style={{ width: 32, height: 32, fontSize: 10 }}>AL</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, fontWeight: 600 }}>Ada Lovelace</div>
-              <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))" }}>Principal eng.</div>
+              <div style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Principal eng.</div>
             </div>
           </div>
         </Tile>
@@ -651,7 +651,7 @@ export function ComponentsIndex() {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                borderTop: i > 0 ? "1px solid hsl(var(--border))" : undefined,
+                borderTop: i > 0 ? "1px solid var(--border)" : undefined,
               }}>
                 <span className="avatar" style={{ width: 24, height: 24, fontSize: 10 }}>{s}</span>
                 <div style={{ fontSize: 10, flex: 1, minWidth: 0 }}>
@@ -664,11 +664,11 @@ export function ComponentsIndex() {
         <Tile title="Stats" to="/components/stats">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, width: "100%", maxWidth: 220 }}>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))" }}>Users</div>
+              <div style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Users</div>
               <div style={{ fontSize: 14, fontWeight: 600 }}>71.8k</div>
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 10, color: "hsl(var(--muted-foreground))" }}>Revenue</div>
+              <div style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Revenue</div>
               <div style={{ fontSize: 14, fontWeight: 600 }}>$58</div>
             </div>
           </div>
@@ -687,8 +687,8 @@ export function ComponentsIndex() {
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: "var(--radius-sm, 4px)",
-                background: i === 14 ? "hsl(var(--primary))" : i % 3 === 0 ? "hsl(var(--accent))" : undefined,
-                color: i === 14 ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                background: i === 14 ? "var(--primary)" : i % 3 === 0 ? "var(--accent)" : undefined,
+                color: i === 14 ? "var(--primary-foreground)" : "var(--muted-foreground)",
                 fontWeight: i === 14 ? 600 : undefined,
               }}>
                 {i + 1}
@@ -701,7 +701,7 @@ export function ComponentsIndex() {
             <polyline
               points="0,24 10,20 20,22 30,14 40,16 50,10 60,12 70,6 80,8 90,4 100,2"
               fill="none"
-              stroke="hsl(var(--primary))"
+              stroke="var(--primary)"
               strokeWidth="1.5"
               vectorEffect="non-scaling-stroke"
             />
@@ -711,25 +711,25 @@ export function ComponentsIndex() {
           <div style={{
             width: "100%",
             maxWidth: 220,
-            background: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: "var(--radius-md, 6px)",
             boxShadow: "0 1px 3px rgb(0 0 0 / 0.1)",
             fontSize: 10,
           }}>
             <div style={{
               padding: "4px 8px",
-              borderBottom: "1px solid hsl(var(--border))",
+              borderBottom: "1px solid var(--border)",
               display: "flex",
               alignItems: "center",
               gap: 6,
             }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <span style={{ color: "hsl(var(--muted-foreground))" }}>Search...</span>
+              <span style={{ color: "var(--muted-foreground)" }}>Search...</span>
               <span className="kbd" style={{ marginLeft: "auto", fontSize: 9 }}>&#8984;K</span>
             </div>
             <div style={{ padding: 4 }}>
-              <div style={{ padding: "2px 6px", background: "hsl(var(--accent))", borderRadius: "var(--radius-sm, 4px)" }}>Go to Dashboard</div>
+              <div style={{ padding: "2px 6px", background: "var(--accent)", borderRadius: "var(--radius-sm, 4px)" }}>Go to Dashboard</div>
               <div style={{ padding: "2px 6px" }}>Identities</div>
             </div>
           </div>
@@ -749,12 +749,12 @@ export function ComponentsIndex() {
         </Tile>
         <Tile title="Filter Panels" to="/components/filter-panel">
           <div className="section-card" style={{ width: "100%", maxWidth: 180, padding: 8, fontSize: 10 }}>
-            <div style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.05em", color: "hsl(var(--muted-foreground))", marginBottom: 4 }}>Status</div>
+            <div style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--muted-foreground)", marginBottom: 4 }}>Status</div>
             <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <input type="checkbox" defaultChecked style={{ width: 12, height: 12, accentColor: "hsl(var(--primary))" }} />Active
+              <input type="checkbox" defaultChecked style={{ width: 12, height: 12, accentColor: "var(--primary)" }} />Active
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <input type="checkbox" style={{ width: 12, height: 12, accentColor: "hsl(var(--primary))" }} />Inactive
+              <input type="checkbox" style={{ width: 12, height: 12, accentColor: "var(--primary)" }} />Inactive
             </label>
           </div>
         </Tile>
@@ -762,7 +762,7 @@ export function ComponentsIndex() {
           <div style={{
             width: "100%",
             maxWidth: 260,
-            border: "1px solid hsl(var(--border))",
+            border: "1px solid var(--border)",
             borderRadius: "var(--radius-md, 6px)",
             overflow: "hidden",
           }}>
@@ -772,8 +772,8 @@ export function ComponentsIndex() {
               display: "flex",
               alignItems: "center",
               gap: 8,
-              background: "hsl(var(--card))",
-              borderBottom: "1px solid hsl(var(--border))",
+              background: "var(--card)",
+              borderBottom: "1px solid var(--border)",
             }}>
               <CanvasMark size={16} />
               <span style={{ fontWeight: 600, fontSize: 10 }}>Canvas</span>
@@ -786,20 +786,20 @@ export function ComponentsIndex() {
           <div style={{
             width: "100%",
             maxWidth: 160,
-            background: "hsl(var(--sidebar-background, var(--card)))",
-            border: "1px solid hsl(var(--border))",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: "var(--radius-md, 6px)",
             padding: 6,
             fontSize: 10,
           }}>
-            <div style={{ fontSize: 9, textTransform: "uppercase", color: "hsl(var(--muted-foreground))", padding: "0 4px", marginBottom: 2 }}>Identity</div>
+            <div style={{ fontSize: 9, textTransform: "uppercase", color: "var(--muted-foreground)", padding: "0 4px", marginBottom: 2 }}>Identity</div>
             <div style={{
               display: "flex",
               alignItems: "center",
               gap: 6,
               padding: "4px",
               borderRadius: "var(--radius-sm, 4px)",
-              background: "hsl(var(--accent))",
+              background: "var(--accent)",
             }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/></svg>
               Identities
@@ -810,7 +810,7 @@ export function ComponentsIndex() {
               gap: 6,
               padding: "4px",
               borderRadius: "var(--radius-sm, 4px)",
-              color: "hsl(var(--muted-foreground))",
+              color: "var(--muted-foreground)",
             }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               Sessions
@@ -819,13 +819,13 @@ export function ComponentsIndex() {
         </Tile>
         <Tile title="Overlays" to="/components/dialog">
           <div style={{ position: "relative", width: "100%", maxWidth: 200, height: 64 }}>
-            <div style={{ borderRadius: "var(--radius-md, 6px)", background: "hsl(var(--muted) / 0.4)", height: "100%" }} />
+            <div style={{ borderRadius: "var(--radius-md, 6px)", background: "color-mix(in oklch, var(--muted) 40%, transparent)", height: "100%" }} />
             <div style={{
               position: "absolute",
               top: 8,
               right: 8,
-              background: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
               borderRadius: "var(--radius-md, 6px)",
               padding: 4,
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
@@ -849,31 +849,31 @@ export function ComponentsIndex() {
                   justifyContent: "center",
                   fontSize: 9,
                   fontWeight: 600,
-                  background: done ? "hsl(var(--primary))" : i === 2 ? "transparent" : "hsl(var(--muted))",
-                  color: done ? "hsl(var(--primary-foreground))" : i === 2 ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                  border: i === 2 ? "2px solid hsl(var(--primary))" : undefined,
+                  background: done ? "var(--primary)" : i === 2 ? "transparent" : "var(--muted)",
+                  color: done ? "var(--primary-foreground)" : i === 2 ? "var(--primary)" : "var(--muted-foreground)",
+                  border: i === 2 ? "2px solid var(--primary)" : undefined,
                 }}>
                   {done ? (
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   ) : i + 1}
                 </div>
                 {i < arr.length - 1 && (
-                  <div style={{ flex: 1, height: 2, margin: "0 4px", background: done ? "hsl(var(--primary))" : "hsl(var(--muted))" }} />
+                  <div style={{ flex: 1, height: 2, margin: "0 4px", background: done ? "var(--primary)" : "var(--muted)" }} />
                 )}
               </li>
             ))}
           </ol>
         </Tile>
         <Tile title="Tabs" to="/components/tabs">
-          <div style={{ width: "100%", maxWidth: 260, display: "flex", gap: 2, borderBottom: "1px solid hsl(var(--border))" }}>
+          <div style={{ width: "100%", maxWidth: 260, display: "flex", gap: 2, borderBottom: "1px solid var(--border)" }}>
             {["Overview", "Activity", "Settings"].map((t, i) => (
               <div key={t} style={{
                 padding: "6px 8px",
                 fontSize: 10,
                 marginBottom: -1,
-                borderBottom: i === 0 ? "2px solid hsl(var(--foreground))" : undefined,
+                borderBottom: i === 0 ? "2px solid var(--foreground)" : undefined,
                 fontWeight: i === 0 ? 600 : undefined,
-                color: i === 0 ? undefined : "hsl(var(--muted-foreground))",
+                color: i === 0 ? undefined : "var(--muted-foreground)",
               }}>{t}</div>
             ))}
           </div>
@@ -887,8 +887,8 @@ export function ComponentsIndex() {
             {Array.from({ length: 21 }).map((_, i) => (
               <div key={i} style={{
                 aspectRatio: "1",
-                background: i === 10 ? "hsl(var(--primary))" : "hsl(var(--muted) / 0.4)",
-                borderBottom: i === 8 ? "1px solid hsl(var(--primary))" : undefined,
+                background: i === 10 ? "var(--primary)" : "color-mix(in oklch, var(--muted) 40%, transparent)",
+                borderBottom: i === 8 ? "1px solid var(--primary)" : undefined,
               }} />
             ))}
           </div>
@@ -900,30 +900,30 @@ export function ComponentsIndex() {
                 <div key={i} style={{
                   height: 28,
                   borderRadius: "var(--radius-sm, 4px)",
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
+                  background: "var(--card)",
+                  border: "1px solid var(--border)",
                   padding: 4,
                 }}>
-                  <div style={{ fontSize: 7, color: "hsl(var(--muted-foreground))" }}>Stat</div>
+                  <div style={{ fontSize: 7, color: "var(--muted-foreground)" }}>Stat</div>
                   <div style={{ fontSize: 8, fontWeight: 600 }}>12k</div>
                 </div>
               ))}
             </div>
             <svg viewBox="0 0 100 18" preserveAspectRatio="none" style={{ width: "100%", height: 20 }}>
-              <polyline points="0,14 20,10 40,12 60,5 80,7 100,2" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+              <polyline points="0,14 20,10 40,12 60,5 80,7 100,2" fill="none" stroke="var(--primary)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
             </svg>
           </div>
         </Tile>
         <Tile title="Detail w/ sidebar" to="/templates/detail-sidebar">
           <div style={{ width: "100%", maxWidth: 220, display: "grid", gridTemplateColumns: "1fr 60px", gap: 6 }}>
             <div className="section-card" style={{ padding: 6, display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ height: 6, width: 48, borderRadius: 4, background: "hsl(var(--foreground) / 0.8)" }} />
-              <div style={{ height: 6, width: 64, borderRadius: 4, background: "hsl(var(--muted))" }} />
-              <div style={{ height: 6, width: 56, borderRadius: 4, background: "hsl(var(--muted))" }} />
+              <div style={{ height: 6, width: 48, borderRadius: 4, background: "color-mix(in oklch, var(--foreground) 80%, transparent)" }} />
+              <div style={{ height: 6, width: 64, borderRadius: 4, background: "var(--muted)" }} />
+              <div style={{ height: 6, width: 56, borderRadius: 4, background: "var(--muted)" }} />
             </div>
             <div className="section-card" style={{ padding: 6, display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ height: 6, borderRadius: 4, background: "hsl(var(--muted))" }} />
-              <div style={{ height: 6, borderRadius: 4, background: "hsl(var(--muted))" }} />
+              <div style={{ height: 6, borderRadius: 4, background: "var(--muted)" }} />
+              <div style={{ height: 6, borderRadius: 4, background: "var(--muted)" }} />
             </div>
           </div>
         </Tile>
@@ -931,24 +931,24 @@ export function ComponentsIndex() {
           <div style={{ width: "100%", maxWidth: 200, display: "flex", flexDirection: "column", gap: 2 }}>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, height: 12 }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "hsl(var(--primary) / 0.3)" }} />
-                <div style={{ flex: 1, height: 6, borderRadius: 4, background: "hsl(var(--muted))" }} />
-                <div style={{ width: 24, height: 6, borderRadius: 4, background: "hsl(var(--muted) / 0.6)" }} />
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "color-mix(in oklch, var(--primary) 30%, transparent)" }} />
+                <div style={{ flex: 1, height: 6, borderRadius: 4, background: "var(--muted)" }} />
+                <div style={{ width: 24, height: 6, borderRadius: 4, background: "color-mix(in oklch, var(--muted) 60%, transparent)" }} />
               </div>
             ))}
           </div>
         </Tile>
         <Tile title="Onboarding" to="/templates/onboarding">
           <div style={{ width: "100%", maxWidth: 200, display: "flex", flexDirection: "column", gap: 6 }}>
-            <div style={{ fontSize: 8, color: "hsl(var(--muted-foreground))", display: "flex", justifyContent: "space-between" }}>
+            <div style={{ fontSize: 8, color: "var(--muted-foreground)", display: "flex", justifyContent: "space-between" }}>
               <span>Step 2 of 4</span><span>50%</span>
             </div>
-            <div style={{ height: 4, background: "hsl(var(--muted))", borderRadius: 9999, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: "50%", background: "hsl(var(--primary))" }} />
+            <div style={{ height: 4, background: "var(--muted)", borderRadius: 9999, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: "50%", background: "var(--primary)" }} />
             </div>
             <div className="section-card" style={{ padding: 8, marginTop: 4 }}>
               <div style={{ fontSize: 10, fontWeight: 600 }}>Profile</div>
-              <div style={{ fontSize: 8, color: "hsl(var(--muted-foreground))" }}>Tell us about yourself.</div>
+              <div style={{ fontSize: 8, color: "var(--muted-foreground)" }}>Tell us about yourself.</div>
             </div>
           </div>
         </Tile>
@@ -962,27 +962,27 @@ export function ComponentsIndex() {
                 background: "linear-gradient(135deg, hsl(240 70% 55%), hsl(280 70% 55%))",
               }} />
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-                <div style={{ height: 8, width: 64, borderRadius: 4, background: "hsl(var(--foreground) / 0.8)" }} />
-                <div style={{ height: 6, width: 48, borderRadius: 4, background: "hsl(var(--muted))" }} />
+                <div style={{ height: 8, width: 64, borderRadius: 4, background: "color-mix(in oklch, var(--foreground) 80%, transparent)" }} />
+                <div style={{ height: 6, width: 48, borderRadius: 4, background: "var(--muted)" }} />
               </div>
             </div>
-            <div style={{ display: "flex", gap: 2, borderBottom: "1px solid hsl(var(--border))", paddingBottom: 2 }}>
-              <div style={{ fontSize: 8, fontWeight: 500, paddingBottom: 2, borderBottom: "1px solid hsl(var(--foreground))", marginBottom: -3 }}>Overview</div>
-              <div style={{ fontSize: 8, color: "hsl(var(--muted-foreground))", marginLeft: 4 }}>Credentials</div>
+            <div style={{ display: "flex", gap: 2, borderBottom: "1px solid var(--border)", paddingBottom: 2 }}>
+              <div style={{ fontSize: 8, fontWeight: 500, paddingBottom: 2, borderBottom: "1px solid var(--foreground)", marginBottom: -3 }}>Overview</div>
+              <div style={{ fontSize: 8, color: "var(--muted-foreground)", marginLeft: 4 }}>Credentials</div>
             </div>
           </div>
         </Tile>
         <Tile title="Settings" to="/templates/settings">
           <div style={{ width: "100%", maxWidth: 220, display: "grid", gridTemplateColumns: "60px 1fr", gap: 6 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ fontSize: 9, padding: "2px 4px", borderRadius: "var(--radius-sm, 4px)", background: "hsl(var(--accent))" }}>Profile</div>
-              <div style={{ fontSize: 9, padding: "2px 4px", color: "hsl(var(--muted-foreground))" }}>Security</div>
-              <div style={{ fontSize: 9, padding: "2px 4px", color: "hsl(var(--muted-foreground))" }}>Billing</div>
+              <div style={{ fontSize: 9, padding: "2px 4px", borderRadius: "var(--radius-sm, 4px)", background: "var(--accent)" }}>Profile</div>
+              <div style={{ fontSize: 9, padding: "2px 4px", color: "var(--muted-foreground)" }}>Security</div>
+              <div style={{ fontSize: 9, padding: "2px 4px", color: "var(--muted-foreground)" }}>Billing</div>
             </div>
             <div className="section-card" style={{ padding: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-              <div style={{ height: 6, width: 48, borderRadius: 4, background: "hsl(var(--foreground) / 0.8)" }} />
-              <div style={{ height: 16, borderRadius: "var(--radius-sm, 4px)", border: "1px solid hsl(var(--border))" }} />
-              <div style={{ height: 16, borderRadius: "var(--radius-sm, 4px)", border: "1px solid hsl(var(--border))" }} />
+              <div style={{ height: 6, width: 48, borderRadius: 4, background: "color-mix(in oklch, var(--foreground) 80%, transparent)" }} />
+              <div style={{ height: 16, borderRadius: "var(--radius-sm, 4px)", border: "1px solid var(--border)" }} />
+              <div style={{ height: 16, borderRadius: "var(--radius-sm, 4px)", border: "1px solid var(--border)" }} />
             </div>
           </div>
         </Tile>
@@ -1004,16 +1004,16 @@ export function ComponentsIndex() {
         <Tile title="Accessibility" to="/patterns/accessibility">
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button className="btn btn-default btn-sm" style={{
-              boxShadow: "0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring))",
+              boxShadow: "0 0 0 2px var(--background), 0 0 0 4px var(--ring)",
             }}>Focus</button>
             <span className="kbd">&#8984;K</span>
           </div>
         </Tile>
         <Tile title="Density" to="/patterns/density">
           <div style={{ width: "100%", maxWidth: 200, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, fontSize: 8, textAlign: "center" }}>
-            <div style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "var(--radius-sm, 4px)", padding: 4 }}>Compact</div>
-            <div style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", border: "1px solid hsl(var(--primary))", borderRadius: "var(--radius-sm, 4px)", padding: 8 }}>Regular</div>
-            <div style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "var(--radius-sm, 4px)", padding: 12 }}>Comfy</div>
+            <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm, 4px)", padding: 4 }}>Compact</div>
+            <div style={{ background: "var(--primary)", color: "var(--primary-foreground)", border: "1px solid var(--primary)", borderRadius: "var(--radius-sm, 4px)", padding: 8 }}>Regular</div>
+            <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm, 4px)", padding: 12 }}>Comfy</div>
           </div>
         </Tile>
         <Tile title="Form Validation" to="/patterns/form-validation">
@@ -1024,11 +1024,11 @@ export function ComponentsIndex() {
               style={{
                 height: 28,
                 fontSize: 10,
-                borderColor: "hsl(var(--destructive))",
-                boxShadow: "0 0 0 1px hsl(var(--destructive))",
+                borderColor: "var(--destructive)",
+                boxShadow: "0 0 0 1px var(--destructive)",
               }}
             />
-            <div style={{ fontSize: 9, color: "hsl(var(--destructive))" }}>Not a valid email</div>
+            <div style={{ fontSize: 9, color: "var(--destructive)" }}>Not a valid email</div>
           </div>
         </Tile>
         <Tile title="Glass Surface" to="/patterns/glass">
@@ -1062,12 +1062,12 @@ export function ComponentsIndex() {
               width: 28,
               height: 28,
               borderRadius: "50%",
-              background: "hsl(var(--muted) / 0.6)",
+              background: "color-mix(in oklch, var(--muted) 60%, transparent)",
               animation: "pulse 2s ease-in-out infinite",
             }} />
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ height: 8, background: "hsl(var(--muted) / 0.6)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
-              <div style={{ height: 8, width: "75%", background: "hsl(var(--muted) / 0.6)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
+              <div style={{ height: 8, background: "color-mix(in oklch, var(--muted) 60%, transparent)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
+              <div style={{ height: 8, width: "75%", background: "color-mix(in oklch, var(--muted) 60%, transparent)", borderRadius: 4, animation: "pulse 2s ease-in-out infinite" }} />
             </div>
           </div>
         </Tile>
@@ -1077,8 +1077,8 @@ export function ComponentsIndex() {
               width: 20,
               height: 36,
               borderRadius: 2,
-              background: "hsl(var(--primary) / 0.15)",
-              border: "1px solid hsl(var(--primary) / 0.3)",
+              background: "color-mix(in oklch, var(--primary) 15%, transparent)",
+              border: "1px solid color-mix(in oklch, var(--primary) 30%, transparent)",
               display: "flex",
               alignItems: "flex-end",
               justifyContent: "center",
@@ -1090,8 +1090,8 @@ export function ComponentsIndex() {
               width: 32,
               height: 44,
               borderRadius: 2,
-              background: "hsl(var(--primary) / 0.20)",
-              border: "1px solid hsl(var(--primary) / 0.3)",
+              background: "color-mix(in oklch, var(--primary) 20%, transparent)",
+              border: "1px solid color-mix(in oklch, var(--primary) 30%, transparent)",
               display: "flex",
               alignItems: "flex-end",
               justifyContent: "center",
@@ -1103,8 +1103,8 @@ export function ComponentsIndex() {
               width: 48,
               height: 48,
               borderRadius: 2,
-              background: "hsl(var(--primary) / 0.30)",
-              border: "1px solid hsl(var(--primary) / 0.4)",
+              background: "color-mix(in oklch, var(--primary) 30%, transparent)",
+              border: "1px solid color-mix(in oklch, var(--primary) 40%, transparent)",
               display: "flex",
               alignItems: "flex-end",
               justifyContent: "center",
@@ -1120,7 +1120,7 @@ export function ComponentsIndex() {
 
       <style>{`
         .docs-tile:hover {
-          border-color: hsl(var(--foreground) / 0.2) !important;
+          border-color: color-mix(in oklch, var(--foreground) 20%, transparent) !important;
         }
         @keyframes pulse {
           0%, 100% { opacity: 1; }

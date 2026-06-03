@@ -106,7 +106,7 @@ export function Home() {
             fontWeight: 600,
             textTransform: "uppercase",
             letterSpacing: "0.12em",
-            color: "hsl(var(--muted-foreground))",
+            color: "var(--muted-foreground)",
           }}>
             v3.0
           </span>
@@ -117,18 +117,18 @@ export function Home() {
           fontWeight: 700,
           letterSpacing: "-0.03em",
           lineHeight: 1.05,
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
           maxWidth: "48rem",
         }}>
           A complete visual language:{" "}
-          <span style={{ color: "hsl(var(--primary))" }}>tokens</span>, components, patterns, and page templates.
+          <span style={{ color: "var(--primary)" }}>tokens</span>, components, patterns, and page templates.
         </h1>
         <p style={{
           marginTop: "1rem",
           maxWidth: "42rem",
           fontSize: "15px",
           lineHeight: 1.6,
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
         }}>
           A working specification for any product built on the Olympus platform.
           {" "}{COMPONENTS.length} documented components, 7 token files, light/dark mode,
@@ -150,14 +150,14 @@ export function Home() {
           {PRINCIPLES.map((p) => (
             <div key={p.title} style={{
               borderRadius: "var(--radius-lg, 12px)",
-              border: "1px solid hsl(var(--border))",
-              background: "hsl(var(--card))",
+              border: "1px solid var(--border)",
+              background: "var(--card)",
               padding: "1.25rem",
             }}>
-              <div style={{ fontSize: "15px", fontWeight: 600, color: "hsl(var(--foreground))", marginBottom: "0.375rem" }}>
+              <div style={{ fontSize: "15px", fontWeight: 600, color: "var(--foreground)", marginBottom: "0.375rem" }}>
                 {p.title}
               </div>
-              <div style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))", lineHeight: 1.6 }}>
+              <div style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.6 }}>
                 {p.body}
               </div>
             </div>
@@ -174,8 +174,8 @@ export function Home() {
           {ATOMIC_LEVELS.map((lvl, i) => (
             <div key={lvl.id} style={{
               borderRadius: "var(--radius-lg, 12px)",
-              border: "1px solid hsl(var(--border))",
-              background: "hsl(var(--card))",
+              border: "1px solid var(--border)",
+              background: "var(--card)",
               overflow: "hidden",
             }}>
               <div className="atomic-level-row">
@@ -185,13 +185,13 @@ export function Home() {
                     fontFamily: "var(--font-mono)",
                     fontWeight: 600,
                     lineHeight: 1,
-                    color: "hsl(var(--muted-foreground) / 0.7)",
+                    color: "color-mix(in oklch, var(--muted-foreground) 70%, transparent)",
                   }}>
                     0{i + 1}
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <lvl.icon size={16} />
-                    <span style={{ fontSize: "15px", fontWeight: 600, color: "hsl(var(--foreground))" }}>
+                    <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--foreground)" }}>
                       {lvl.label}
                     </span>
                   </div>
@@ -200,7 +200,7 @@ export function Home() {
                   <p style={{
                     margin: 0,
                     fontSize: "13.5px",
-                    color: "hsl(var(--muted-foreground))",
+                    color: "var(--muted-foreground)",
                     lineHeight: 1.6,
                     maxWidth: "42rem",
                   }}>
@@ -217,10 +217,10 @@ export function Home() {
                           gap: "0.25rem",
                           padding: "0.25rem 0.625rem",
                           borderRadius: "9999px",
-                          border: "1px solid hsl(var(--border))",
-                          background: "hsl(var(--background))",
+                          border: "1px solid var(--border)",
+                          background: "var(--background)",
                           fontSize: "12px",
-                          color: "hsl(var(--foreground))",
+                          color: "var(--foreground)",
                           textDecoration: "none",
                           transition: "background 150ms",
                         }}
@@ -272,12 +272,12 @@ export function Home() {
       <footer style={{
         marginTop: "3rem",
         paddingTop: "1.5rem",
-        borderTop: "1px solid hsl(var(--border))",
+        borderTop: "1px solid var(--border)",
         display: "flex",
         alignItems: "center",
         gap: "0.5rem",
         fontSize: "12px",
-        color: "hsl(var(--muted-foreground))",
+        color: "var(--muted-foreground)",
         flexWrap: "wrap",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -299,7 +299,7 @@ function Section({ title, description, children }: { title: string; description?
           fontSize: "20px",
           fontWeight: 600,
           letterSpacing: "-0.015em",
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         }}>
           {title}
         </h2>
@@ -308,7 +308,7 @@ function Section({ title, description, children }: { title: string; description?
             marginTop: "0.25rem",
             marginBottom: 0,
             fontSize: "13.5px",
-            color: "hsl(var(--muted-foreground))",
+            color: "var(--muted-foreground)",
             maxWidth: "640px",
             lineHeight: 1.6,
           }}>
@@ -331,8 +331,8 @@ function FeatureCard({ icon, iconBg, iconColor, title, body }: {
   return (
     <div style={{
       borderRadius: "var(--radius-lg, 12px)",
-      border: "1px solid hsl(var(--border))",
-      background: "hsl(var(--card))",
+      border: "1px solid var(--border)",
+      background: "var(--card)",
       padding: "1.25rem",
     }}>
       <div style={{
@@ -352,7 +352,7 @@ function FeatureCard({ icon, iconBg, iconColor, title, body }: {
       <p style={{
         margin: 0,
         fontSize: "13px",
-        color: "hsl(var(--muted-foreground))",
+        color: "var(--muted-foreground)",
         lineHeight: 1.6,
       }}>
         {body}

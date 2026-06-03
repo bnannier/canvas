@@ -19,7 +19,7 @@ export function ComponentPage() {
           fontSize: 28,
           fontWeight: 700,
           letterSpacing: "-0.015em",
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         }}>
           {comp.name}
         </h1>
@@ -27,7 +27,7 @@ export function ComponentPage() {
           marginTop: 6,
           marginBottom: 0,
           fontSize: "13.5px",
-          color: "hsl(var(--muted-foreground))",
+          color: "var(--muted-foreground)",
           maxWidth: 640,
           lineHeight: 1.6,
         }}
@@ -43,7 +43,7 @@ export function ComponentPage() {
               fontSize: 20,
               fontWeight: 600,
               letterSpacing: "-0.015em",
-              color: "hsl(var(--foreground))",
+              color: "var(--foreground)",
             }}>
               Playground
             </h2>
@@ -51,7 +51,7 @@ export function ComponentPage() {
               marginTop: 4,
               marginBottom: 0,
               fontSize: "13.5px",
-              color: "hsl(var(--muted-foreground))",
+              color: "var(--muted-foreground)",
               maxWidth: 640,
               lineHeight: 1.6,
             }}>
@@ -70,7 +70,7 @@ export function ComponentPage() {
               fontSize: 20,
               fontWeight: 600,
               letterSpacing: "-0.015em",
-              color: "hsl(var(--foreground))",
+              color: "var(--foreground)",
             }}>
               {section.title}
             </h2>
@@ -79,7 +79,7 @@ export function ComponentPage() {
                 marginTop: 4,
                 marginBottom: 0,
                 fontSize: "13.5px",
-                color: "hsl(var(--muted-foreground))",
+                color: "var(--muted-foreground)",
                 maxWidth: 640,
                 lineHeight: 1.6,
               }}
@@ -92,14 +92,14 @@ export function ComponentPage() {
               marginBottom: "1rem",
               padding: "0.75rem 1rem",
               borderRadius: 8,
-              background: "hsl(var(--muted) / 0.4)",
-              border: "1px solid hsl(var(--border))",
+              background: "color-mix(in oklch, var(--muted) 40%, transparent)",
+              border: "1px solid var(--border)",
               fontSize: "12.5px",
-              color: "hsl(var(--muted-foreground))",
+              color: "var(--muted-foreground)",
             }}>
               <span style={{
                 fontWeight: 600,
-                color: "hsl(var(--foreground))",
+                color: "var(--foreground)",
                 marginRight: 8,
               }}>
                 Anatomy.
@@ -129,7 +129,7 @@ export function ComponentPage() {
               fontSize: 20,
               fontWeight: 600,
               letterSpacing: "-0.015em",
-              color: "hsl(var(--foreground))",
+              color: "var(--foreground)",
             }}>
               Don&rsquo;ts
             </h2>
@@ -144,7 +144,7 @@ export function ComponentPage() {
                     gridColumn: "1 / -1",
                     fontSize: "13px",
                     fontWeight: 600,
-                    color: "hsl(var(--foreground))",
+                    color: "var(--foreground)",
                     marginTop: i > 0 ? "0.75rem" : 0,
                   }}>
                     {d.title}
@@ -173,7 +173,7 @@ export function ComponentPage() {
                   <p style={{
                     margin: 0,
                     fontSize: "12px",
-                    color: "hsl(var(--muted-foreground))",
+                    color: "var(--muted-foreground)",
                     lineHeight: 1.5,
                   }}>
                     {d.dont.caption}
@@ -202,7 +202,7 @@ export function ComponentPage() {
                   <p style={{
                     margin: 0,
                     fontSize: "12px",
-                    color: "hsl(var(--muted-foreground))",
+                    color: "var(--muted-foreground)",
                     lineHeight: 1.5,
                   }}>
                     {d.do.caption}

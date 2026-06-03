@@ -80,8 +80,8 @@ if (stored === "dark" || stored === "light") {
 }`;
 
 const customLayoutCode = `.custom-panel {
-  background-color: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
   box-shadow: var(--shadow-elevated);

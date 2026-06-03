@@ -250,7 +250,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                   fontSize: "10px",
                   fontWeight: 500,
                   letterSpacing: "0.04em",
-                  color: "hsl(var(--muted-foreground))",
+                  color: "var(--muted-foreground)",
                   marginTop: 2,
                 }}>
                   design system
