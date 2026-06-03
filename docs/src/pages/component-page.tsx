@@ -58,7 +58,7 @@ export function ComponentPage() {
               Combine variant, size, and state. The preview updates live; open Show code to copy the markup.
             </p>
           </header>
-          <Playground config={comp.playground} />
+          <Playground key={comp.slug} config={comp.playground} />
         </section>
       )}
 
