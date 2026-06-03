@@ -234,6 +234,15 @@ const cmdSep = "command-sep my-1 h-px bg-border";
 const cmdItemEl = (label: string, shortcut = "", selected = false) =>
   `<div class="${cmdItem}${selected ? " bg-accent text-accent-foreground" : ""}">${label}${shortcut ? `<span class="text-xs text-muted-foreground">${shortcut}</span>` : ""}</div>`;
 
+const dtWrap = "dt-wrap overflow-hidden rounded-lg border border-border";
+const dtToolbar = "dt-toolbar flex items-center gap-2 border-b border-border p-3";
+const dtTable = "w-full text-sm";
+const dtTh = "border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
+const dtThSort = dtTh + " cursor-pointer select-none hover:text-foreground";
+const dtTd = "border-b border-border px-4 py-2.5";
+const dtFooter = "dt-footer flex items-center justify-between border-t border-border px-4 py-2.5 text-sm text-muted-foreground";
+const dtRow = "clickable cursor-pointer hover:bg-accent/50";
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -1928,7 +1937,7 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
   {
     slug: "data-table",
     name: "Data Tables",
-    description: "Every table is the same composition: .dt-wrap &rarr; Toolbar &rarr; scrollable .dt-table &rarr; .dt-footer. Density tweaks affect padding live.",
+    description: "Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrollable table &rarr; footer. Density tweaks affect padding live.",
     category: "Organisms",
     sections: [
       {
@@ -1936,69 +1945,67 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Toolbar (filters + bulk actions + count) . Header row (12px muted labels on tinted background) . Body rows (13px, clickable optional, hover background) . Footer (count + pagination)",
         examples: [{
           full: true,
-          html: `<div class="dt-wrap">
-  <div class="dt-toolbar">
-    <input class="input" placeholder="Search users..." style="max-width:240px" oninput="var v=this.value.toLowerCase();var rows=this.closest('.dt-wrap').querySelectorAll('tbody tr');var count=0;rows.forEach(function(r){var txt=r.textContent.toLowerCase();var show=txt.includes(v);r.style.display=show?'':'none';if(show)count++});this.closest('.dt-wrap').querySelector('.dt-footer span').innerHTML='Showing 1&ndash;'+count+' of '+count" />
-    <div style="flex:1"></div>
-    <button class="btn btn-outline btn-sm">Export</button>
+          html: `<div class="${dtWrap}">
+  <div class="${dtToolbar}">
+    <input class="${inputBase} max-w-[240px]" placeholder="Search users..." oninput="var v=this.value.toLowerCase();var rows=this.closest('.dt-wrap').querySelectorAll('tbody tr');var count=0;rows.forEach(function(r){var txt=r.textContent.toLowerCase();var show=txt.includes(v);r.style.display=show?'':'none';if(show)count++});this.closest('.dt-wrap').querySelector('.dt-footer span').innerHTML='Showing 1&ndash;'+count+' of '+count" />
+    <div class="flex-1"></div>
+    ${btn("outline", "Export", "sm")}
   </div>
-  <div class="dt-scroll">
-    <table class="dt-table">
+  <div class="overflow-x-auto">
+    <table class="${dtTable}">
       <thead>
-        <tr onclick="var th=event.target.closest('.sortable');if(!th)return;var ths=this.querySelectorAll('.sortable');ths.forEach(function(h){if(h!==th){h.classList.remove('sorted');var ic=h.querySelector('.dt-sort-icon');if(ic)ic.remove()}});th.classList.add('sorted');var ico=th.querySelector('.dt-sort-icon');if(ico){var up=ico.innerHTML==='▲';ico.innerHTML=up?'▼':'▲'}else{var s=document.createElement('span');s.className='dt-sort-icon';s.innerHTML='▲';th.appendChild(s)}">
-          <th class="sortable sorted">Name <span class="dt-sort-icon">&#9650;</span></th>
-          <th class="sortable">Email</th>
-          <th>Role</th>
-          <th>Status</th>
+        <tr onclick="var th=event.target.closest('.sortable');if(!th)return;var ths=this.querySelectorAll('.sortable');ths.forEach(function(h){if(h!==th){h.classList.remove('sorted');var ic=h.querySelector('.dt-sort-icon');if(ic)ic.remove()}});th.classList.add('sorted');var ico=th.querySelector('.dt-sort-icon');if(ico){var up=ico.innerHTML==='▲';ico.innerHTML=up?'▼':'▲'}else{var s=document.createElement('span');s.className='dt-sort-icon ml-1 text-[10px]';s.innerHTML='▲';th.appendChild(s)}">
+          <th class="${dtThSort} sortable sorted">Name <span class="dt-sort-icon ml-1 text-[10px]">&#9650;</span></th>
+          <th class="${dtThSort} sortable">Email</th>
+          <th class="${dtTh}">Role</th>
+          <th class="${dtTh}">Status</th>
         </tr>
       </thead>
-      <tbody onclick="var tr=event.target.closest('tr');if(!tr)return;tr.classList.toggle('active')">
-        <tr class="clickable">
-          <td>Alice Johnson</td>
-          <td>alice@example.com</td>
-          <td>Admin</td>
-          <td><span class="status-badge sb-success"><span class="dot"></span> Active</span></td>
+      <tbody onclick="var tr=event.target.closest('tr');if(!tr)return;tr.classList.toggle('bg-accent')">
+        <tr class="${dtRow}">
+          <td class="${dtTd}">Alice Johnson</td>
+          <td class="${dtTd}">alice@example.com</td>
+          <td class="${dtTd}">Admin</td>
+          <td class="${dtTd}">${statusBadge("success", "Active")}</td>
         </tr>
-        <tr class="clickable">
-          <td>Bob Smith</td>
-          <td>bob@example.com</td>
-          <td>Editor</td>
-          <td><span class="status-badge sb-neutral"><span class="dot"></span> Inactive</span></td>
+        <tr class="${dtRow}">
+          <td class="${dtTd}">Bob Smith</td>
+          <td class="${dtTd}">bob@example.com</td>
+          <td class="${dtTd}">Editor</td>
+          <td class="${dtTd}">${statusBadge("neutral", "Inactive")}</td>
         </tr>
-        <tr class="clickable">
-          <td>Rachel Chen</td>
-          <td>rachel@example.com</td>
-          <td>Admin</td>
-          <td><span class="status-badge sb-success"><span class="dot"></span> Active</span></td>
+        <tr class="${dtRow}">
+          <td class="${dtTd}">Rachel Chen</td>
+          <td class="${dtTd}">rachel@example.com</td>
+          <td class="${dtTd}">Admin</td>
+          <td class="${dtTd}">${statusBadge("success", "Active")}</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <div class="dt-footer">
+  <div class="${dtFooter}">
     <span>Showing 1&ndash;3 of 142</span>
-    <div style="display:flex;gap:0.25rem">
-      <button class="btn btn-outline btn-sm" disabled>&laquo;</button>
-      <button class="btn btn-outline btn-sm">&raquo;</button>
+    <div class="flex gap-1">
+      ${btn("outline", "&laquo;", "sm", " disabled")}
+      ${btn("outline", "&raquo;", "sm")}
     </div>
   </div>
 </div>`,
-          code: `<div class="dt-wrap">
-  <div class="dt-toolbar">
-    <input class="input" placeholder="Search users..." />
-    <button class="btn btn-outline btn-sm">Export</button>
+          code: `<div class="overflow-hidden rounded-lg border border-border">
+  <div class="flex items-center gap-2 border-b border-border p-3">
+    <input class="...input..." placeholder="Search users..." />
+    <button class="...outline sm...">Export</button>
   </div>
-  <table class="dt-table">
+  <table class="w-full text-sm">
     <thead><tr>
-      <th class="sortable sorted">Name <span class="dt-sort-icon">▲</span></th>
-      <th class="sortable">Email</th>
-      <th>Role</th>
-      <th>Status</th>
+      <th class="...th sortable...">Name ▲</th>
+      <th class="...th...">Email</th>
     </tr></thead>
     <tbody>
-      <tr class="clickable"><td>...</td></tr>
+      <tr class="cursor-pointer hover:bg-accent/50"><td class="...td...">...</td></tr>
     </tbody>
   </table>
-  <div class="dt-footer">...</div>
+  <div class="...footer...">...</div>
 </div>`,
         }],
       },
@@ -2006,26 +2013,26 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "Toolbar variations",
         examples: [{
           full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:1rem">
-  <div class="dt-toolbar">
-    <input class="input" placeholder="Search..." style="max-width:200px" />
-    <div style="flex:1"></div>
-    <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Exporting…';setTimeout(function(){b.textContent='Exported!';setTimeout(function(){b.textContent=o;b.disabled=false},1000)},800)">Export</button>
+          html: `<div class="flex flex-col gap-4">
+  <div class="flex items-center gap-2 rounded-lg border border-border p-3">
+    <input class="${inputBase} max-w-[200px]" placeholder="Search..." />
+    <div class="flex-1"></div>
+    ${btn("outline", "Export", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Exporting…';setTimeout(function(){b.textContent='Exported!';setTimeout(function(){b.textContent=o;b.disabled=false},1000)},800)"`)}
   </div>
-  <div class="dt-toolbar">
-    <input class="input" placeholder="Filter users..." style="max-width:200px" />
-    <div style="flex:1"></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">3 selected</span>
-    <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Editing…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Bulk edit</button>
-    <button class="btn btn-destructive btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Deleting…';setTimeout(function(){b.textContent='Deleted!';setTimeout(function(){b.textContent=o;b.disabled=false},1000)},800)">Delete</button>
+  <div class="flex items-center gap-2 rounded-lg border border-border p-3">
+    <input class="${inputBase} max-w-[200px]" placeholder="Filter users..." />
+    <div class="flex-1"></div>
+    <span class="text-xs text-muted-foreground">3 selected</span>
+    ${btn("outline", "Bulk edit", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Editing…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}
+    ${btn("destructive", "Delete", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Deleting…';setTimeout(function(){b.textContent='Deleted!';setTimeout(function(){b.textContent=o;b.disabled=false},1000)},800)"`)}
   </div>
-  <div class="dt-toolbar">
-    <div style="display:flex;gap:0.5rem;align-items:center">
-      <span style="font-size:12px;color:hsl(var(--muted-foreground))">Status:</span>
-      <select class="input" style="height:32px;font-size:12px;width:120px"><option>All</option><option>Active</option></select>
+  <div class="flex items-center gap-2 rounded-lg border border-border p-3">
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted-foreground">Status:</span>
+      <select class="${inputBase.replace("h-9", "h-8")} w-[120px] text-xs"><option>All</option><option>Active</option></select>
     </div>
-    <div style="flex:1"></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">142 results</span>
+    <div class="flex-1"></div>
+    <span class="text-xs text-muted-foreground">142 results</span>
   </div>
 </div>`,
         }],
@@ -2035,10 +2042,10 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Switch via the density toggle. Affects all .dt-table th, td, and .dt-toolbar padding and font size.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.75rem">
-  <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:0.5rem">compact</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">8px padding, 12.5px font</div></div>
-  <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:0.5rem">regular</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">12px padding, 13px font</div></div>
-  <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:0.5rem">comfy</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">16px padding, 13.5px font</div></div>
+          html: `<div class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
+  <div><div class="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">compact</div><div class="text-xs text-muted-foreground">8px padding, 12.5px font</div></div>
+  <div><div class="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">regular</div><div class="text-xs text-muted-foreground">12px padding, 13px font</div></div>
+  <div><div class="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">comfy</div><div class="text-xs text-muted-foreground">16px padding, 13.5px font</div></div>
 </div>`,
         }],
       },
@@ -2048,11 +2055,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         examples: [
           {
             label: "Empty",
-            html: `<div class="dt-wrap"><div class="dt-scroll"><table class="dt-table"><thead><tr><th>Name</th><th>Email</th><th>Status</th></tr></thead><tbody><tr><td colspan="3" style="text-align:center;padding:2rem;color:hsl(var(--muted-foreground));font-size:13px">No results found.</td></tr></tbody></table></div></div>`,
+            html: `<div class="${dtWrap}"><div class="overflow-x-auto"><table class="${dtTable}"><thead><tr><th class="${dtTh}">Name</th><th class="${dtTh}">Email</th><th class="${dtTh}">Status</th></tr></thead><tbody><tr><td colspan="3" class="px-4 py-8 text-center text-sm text-muted-foreground">No results found.</td></tr></tbody></table></div></div>`,
           },
           {
             label: "Loading",
-            html: `<div class="dt-wrap"><div class="dt-scroll"><table class="dt-table"><thead><tr><th>Name</th><th>Email</th><th>Status</th></tr></thead><tbody><tr><td colspan="3" style="text-align:center;padding:2rem"><div style="display:inline-block;width:16px;height:16px;border:2px solid hsl(var(--muted));border-top-color:hsl(var(--primary));border-radius:50%;animation:spin 0.6s linear infinite"></div></td></tr></tbody></table></div></div>`,
+            html: `<div class="${dtWrap}"><div class="overflow-x-auto"><table class="${dtTable}"><thead><tr><th class="${dtTh}">Name</th><th class="${dtTh}">Email</th><th class="${dtTh}">Status</th></tr></thead><tbody><tr><td colspan="3" class="px-4 py-8 text-center">${spinnerEl("inline-block h-4 w-4")}</td></tr></tbody></table></div></div>`,
           },
         ],
       },
@@ -2072,26 +2079,24 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         examples: [
           {
             label: "SlideOver (drawer)",
-            html: `<div style="position:relative;border:1px solid hsl(var(--border));border-radius:var(--radius-lg,12px);overflow:hidden;height:200px">
-  <div class="sheet sheet-right" style="position:absolute;transform:none;animation:none;width:100%">
-    <div class="sheet-header"><h2 class="sheet-title">Edit Identity</h2><button class="btn btn-ghost btn-sm" style="margin-left:auto;padding:2px 6px" onclick="var s=this.closest('.sheet');s.style.opacity='0.3';s.style.transition='opacity 300ms';setTimeout(function(){s.style.opacity='1'},1000)">&times;</button></div>
-    <div class="sheet-body">
-      <div class="form-group"><label class="label">Email</label><input class="input" value="user@example.com" /></div>
+            html: `<div class="relative h-[200px] overflow-hidden rounded-lg border border-border">
+  <div class="sheet absolute inset-y-0 right-0 flex w-full flex-col bg-popover">
+    <div class="flex items-center border-b border-border px-4 py-3"><h2 class="text-sm font-semibold">Edit Identity</h2><button class="${btnBase} ${btnVariant.ghost} ml-auto h-7 w-7 p-0" onclick="var s=this.closest('.sheet');s.style.opacity='0.3';s.style.transition='opacity 300ms';setTimeout(function(){s.style.opacity='1'},1000)">&times;</button></div>
+    <div class="p-4">
+      <div><label class="${labelCls}">Email</label><input class="${inputBase}" value="user@example.com" /></div>
     </div>
   </div>
 </div>`,
           },
           {
             label: "Confirm modal",
-            html: `<div style="position:relative;border:1px solid hsl(var(--border));border-radius:var(--radius-lg,12px);padding:0">
-  <div class="dialog" style="position:relative;transform:none;top:auto;left:auto;animation:none">
-    <div class="dialog-header">
-      <h2 class="dialog-title">Delete identity?</h2>
-      <p class="dialog-desc">This cannot be undone.</p>
-    </div>
-    <div class="dialog-footer">
-      <button class="btn btn-outline btn-sm" onclick="var d=this.closest('.dialog');d.style.opacity='0.5';setTimeout(function(){d.style.opacity='1'},1000)">Cancel</button>
-      <button class="btn btn-destructive btn-sm" onclick="var b=this;b.disabled=true;b.textContent='Deleting…';setTimeout(function(){b.textContent='Deleted!';setTimeout(function(){b.textContent='Delete';b.disabled=false},1500)},800)">Delete</button>
+            html: `<div class="rounded-lg border border-border p-0">
+  <div class="dialog rounded-lg bg-popover p-5">
+    <h2 class="text-base font-semibold">Delete identity?</h2>
+    <p class="mt-1 text-sm text-muted-foreground">This cannot be undone.</p>
+    <div class="mt-4 flex justify-end gap-2">
+      ${btn("outline", "Cancel", "sm", ` onclick="var d=this.closest('.dialog');d.style.opacity='0.5';setTimeout(function(){d.style.opacity='1'},1000)"`)}
+      ${btn("destructive", "Delete", "sm", ` onclick="var b=this;b.disabled=true;b.textContent='Deleting…';setTimeout(function(){b.textContent='Deleted!';setTimeout(function(){b.textContent='Delete';b.disabled=false},1500)},800)"`)}
     </div>
   </div>
 </div>`,
@@ -2099,20 +2104,20 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
           {
             label: "Toast",
             html: `<div>
-  <div class="toast" style="position:relative;animation:none" data-toast>
-    <div><div class="toast-title">Changes saved</div><div class="toast-desc">Your settings have been updated.</div></div>
-    <button class="toast-close" onclick="var t=this.closest('[data-toast]');t.style.display='none';t.nextElementSibling.style.display='inline-block'">&times;</button>
+  <div class="flex items-start justify-between gap-3 rounded-lg border border-border bg-popover px-4 py-3 shadow-lg" data-toast>
+    <div><div class="text-sm font-medium">Changes saved</div><div class="text-xs text-muted-foreground">Your settings have been updated.</div></div>
+    <button class="text-muted-foreground transition-colors hover:text-foreground" onclick="var t=this.closest('[data-toast]');t.style.display='none';t.nextElementSibling.style.display='inline-flex'">&times;</button>
   </div>
-  <button class="btn btn-outline btn-sm" style="display:none;margin-top:0.5rem" onclick="var t=this.previousElementSibling;t.style.display='';this.style.display='none'">Show toast again</button>
+  <button class="${btnBase} ${btnVariant.outline} ${btnSize.sm} mt-2 hidden" onclick="var t=this.previousElementSibling;t.style.display='';this.style.display='none'">Show toast again</button>
 </div>`,
           },
           {
             label: "Row menu",
-            html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:160px" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)">
-  <button class="dropdown-item">Edit</button>
-  <button class="dropdown-item">Duplicate</button>
-  <div class="dropdown-sep"></div>
-  <button class="dropdown-item" style="color:hsl(0 84% 60%)">Delete</button>
+            html: `<div class="${menuBase} inline-block min-w-[160px]" onclick="var t=event.target.closest('[data-menu-item]');if(!t)return;t.classList.add('bg-accent');setTimeout(function(){t.classList.remove('bg-accent')},300)">
+  ${menuItemEl("Edit")}
+  ${menuItemEl("Duplicate")}
+  <div class="${menuSep}"></div>
+  ${menuItemEl("Delete", "text-destructive")}
 </div>`,
           },
         ],
@@ -2124,19 +2129,19 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         examples: [
           {
             label: "SlideOver / Drawer",
-            html: `<div style="padding:0.75rem;font-size:13px;color:hsl(var(--muted-foreground));line-height:1.6">Identity detail edit, message preview, client config: anywhere the user benefits from seeing the parent page beneath the form.</div>`,
+            html: `<div class="p-3 text-sm leading-relaxed text-muted-foreground">Identity detail edit, message preview, client config: anywhere the user benefits from seeing the parent page beneath the form.</div>`,
           },
           {
             label: "Confirm Modal",
-            html: `<div style="padding:0.75rem;font-size:13px;color:hsl(var(--muted-foreground));line-height:1.6">Destructive or irreversible actions: delete identity, revoke all sessions, rotate client secret. Always uses the danger flag and an unambiguous confirm label.</div>`,
+            html: `<div class="p-3 text-sm leading-relaxed text-muted-foreground">Destructive or irreversible actions: delete identity, revoke all sessions, rotate client secret. Always uses the danger flag and an unambiguous confirm label.</div>`,
           },
           {
             label: "Toast",
-            html: `<div style="padding:0.75rem;font-size:13px;color:hsl(var(--muted-foreground));line-height:1.6">After-the-fact feedback for completed actions, especially ones triggered far from the surface that needs updating.</div>`,
+            html: `<div class="p-3 text-sm leading-relaxed text-muted-foreground">After-the-fact feedback for completed actions, especially ones triggered far from the surface that needs updating.</div>`,
           },
           {
             label: "Row menu",
-            html: `<div style="padding:0.75rem;font-size:13px;color:hsl(var(--muted-foreground));line-height:1.6">Per-row table actions. Hidden by default behind the &middot;&middot;&middot; button to reduce visual noise.</div>`,
+            html: `<div class="p-3 text-sm leading-relaxed text-muted-foreground">Per-row table actions. Hidden by default behind the &middot;&middot;&middot; button to reduce visual noise.</div>`,
           },
         ],
       },
@@ -2145,16 +2150,16 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "Overlays compose. Be deliberate about ordering: confirm dialogs must beat toasts must beat drawers must beat the row menu.",
         examples: [{
           full: true,
-          html: `<div class="dt-wrap" style="max-width:560px">
-  <table class="dt-table">
-    <thead><tr><th>Surface</th><th>z-index</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td>Row menu (popover)</td><td style="font-family:var(--font-mono);font-size:12px">50</td><td>In-flow, no backdrop.</td></tr>
-      <tr><td>Sidebar drawer backdrop</td><td style="font-family:var(--font-mono);font-size:12px">30</td><td>Below sidebar (40), only on mobile.</td></tr>
-      <tr><td>SlideOver</td><td style="font-family:var(--font-mono);font-size:12px">9000</td><td>Above all page content; below toasts and modals.</td></tr>
-      <tr><td>Confirm Modal</td><td style="font-family:var(--font-mono);font-size:12px">99999</td><td>Blocks everything beneath it.</td></tr>
-      <tr><td>Toast stack</td><td style="font-family:var(--font-mono);font-size:12px">100000</td><td>Highest: always visible so feedback isn't lost.</td></tr>
-    </tbody>
+          html: `<div class="${dtWrap} max-w-[560px]">
+  <table class="${dtTable}">
+    <thead><tr><th class="${dtTh}">Surface</th><th class="${dtTh}">z-index</th><th class="${dtTh}">Notes</th></tr></thead>
+    <tbody>${[
+  ["Row menu (popover)", "50", "In-flow, no backdrop."],
+  ["Sidebar drawer backdrop", "30", "Below sidebar (40), only on mobile."],
+  ["SlideOver", "9000", "Above all page content; below toasts and modals."],
+  ["Confirm Modal", "99999", "Blocks everything beneath it."],
+  ["Toast stack", "100000", "Highest: always visible so feedback isn't lost."],
+].map(([s, z, n]) => `<tr><td class="${dtTd}">${s}</td><td class="${dtTd} font-mono text-xs">${z}</td><td class="${dtTd}">${n}</td></tr>`).join("")}</tbody>
   </table>
 </div>`,
         }],
