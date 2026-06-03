@@ -344,15 +344,15 @@ export const COMPONENTS: ComponentDoc[] = [
             `<button class="btn btn-outline${sz}">${l}</button>`
           ).join("")}</div>`;
         }
-        return `<div onclick="var b=event.target.closest('button');if(!b)return;this.querySelectorAll('button').forEach(function(x){x.style.background='';x.style.boxShadow=''});b.style.background='hsl(var(--background))';b.style.boxShadow='0 1px 2px hsl(var(--foreground)/0.08)'" style="display:inline-flex;gap:2px;background:hsl(var(--muted));padding:2px;border-radius:var(--radius-md)">${labels.map((l, i) =>
-          `<button class="btn btn-ghost${sz}" style="border-radius:calc(var(--radius-md) - 2px);${i === 0 ? "background:hsl(var(--background));box-shadow:0 1px 2px hsl(var(--foreground)/0.08);" : ""}">${l}</button>`
+        return `<div class="btn-group" onclick="var b=event.target.closest('.btn');if(!b)return;this.querySelectorAll('.btn').forEach(function(x){x.classList.remove('btn-default');x.classList.add('btn-outline')});b.classList.remove('btn-outline');b.classList.add('btn-default')">${labels.map((l, i) =>
+          `<button class="btn btn-${i === 0 ? "default" : "outline"}${sz}">${l}</button>`
         ).join("")}</div>`;
       },
     },
     sections: [
       {
         title: "Segmented control",
-        anatomy: "A rounded container holding 2-4 buttons. The active one fills with primary; others are ghost. Use for mutually-exclusive view switching.",
+        anatomy: "An attached .btn-group of 2-4 buttons: the active one fills with primary, the rest are outline. Use for mutually-exclusive view switching.",
         examples: [{
           html: `<div class="btn-group">
   <button class="btn btn-default btn-sm" onclick="this.parentElement.querySelectorAll('.btn').forEach(b=>b.classList.replace('btn-default','btn-outline'));this.classList.replace('btn-outline','btn-default')">All</button>
