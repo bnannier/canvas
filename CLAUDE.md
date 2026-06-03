@@ -1,19 +1,24 @@
 # Canvas
 
-CSS-first design system for the Olympus platform. Published as
-`@olympusoss/canvas` (v3.0.0+).
+Tailwind CSS v4 design system for the Olympus platform. Published as
+`@olympusoss/canvas`. The next major (v4.0.0) is the first Tailwind release: a
+breaking change from the v3 hand-authored CSS library (pin the v3 tag to
+migrate).
 
-Pure CSS plus optional framework-agnostic JS helpers. No React/RN/Vue/etc.
-code. Framework bindings live in downstream packages (`@olympusoss/canvas-react`,
-`-react-native`, `-vue`, `-flux`; pattern `canvas-{framework}`) that depend on
-Canvas. The dependency arrow is one-way: Canvas never references a downstream
+Canvas is the platform's Tailwind theme plus a library of components expressed as
+Tailwind utility-class markup, plus small framework-agnostic JS helpers. No
+React/RN/Vue code lives here. Framework bindings live in downstream packages
+(`@olympusoss/canvas-react`, `-react-native`, `-vue`, `-flux`; pattern
+`canvas-{framework}`) that depend on Canvas and bake its utility markup into
+components. The dependency arrow is one-way: Canvas never references a downstream
 package.
 
 ## Atomic design
 
 Canvas is organized by the atomic design methodology. Every component is
 classified into exactly one level, and the docs (sidebar groups, the `category`
-field) reflect that taxonomy:
+field) reflect that taxonomy. A component is a documented composition of Tailwind
+utilities, not a CSS class.
 
 - **Atoms**: indivisible building blocks (button, input, badge, avatar,
   checkbox, icon, tooltip, spinner, kbd, separator).
@@ -36,86 +41,108 @@ cross-cutting concern is a Pattern, not a component.
 
 ## Architecture
 
-**Custom properties are the API.** Every visual decision (color, spacing,
-type, radius, shadow, motion) is a CSS custom property; components reference
-properties, never raw values.
+**Tailwind CSS v4 is the engine.** Canvas builds on Tailwind v4's CSS-first
+config: `@import "tailwindcss"`, the design tokens in `@theme`, the cascade in
+Tailwind's `@layer theme, base, components, utilities`, custom utilities via
+`@utility`, custom variants via `@custom-variant`. There is no JS
+`tailwind.config`.
 
-**No preprocessors, no build step for consumers.** Author plain,
-spec-compliant CSS: custom properties, `@layer`, `@container`, `color-mix()`,
-`light-dark()`. Each concern ships as its own modular CSS file; consumers
-import only what they use (`canvas.css` is the all-in-one entry).
+**Utilities are the API.** Components are not CSS classes. A component is a
+composition of Tailwind utilities applied directly in markup (the shadcn /
+Tailwind Plus idiom): a button is
+`inline-flex items-center justify-center rounded-md bg-primary px-4 ...`, not a
+`.btn`. Canvas ships the theme and the base layer; the canonical markup for each
+component lives in the docs data and in the downstream framework packages, not in
+component CSS.
 
-**CSS layers** control the cascade, declared in this order:
-`@layer canvas.reset, canvas.tokens, canvas.base, canvas.components, canvas.patterns;`
-reset = browser normalization · tokens = custom-property defs · base = element
-defaults · components = component classes · patterns = cross-cutting
-(backdrops, glass, density, focus, scrollbar).
+**The design language is the theme.** Every visual decision (color, spacing,
+type, radius, shadow, motion) is a Tailwind theme token defined in `@theme` as a
+CSS custom property, which generates the matching utilities (`bg-primary`,
+`rounded-md`, `text-muted-foreground`). Tokens stay shadcn-compatible: raw HSL
+channel variables (`--background`, `--primary`, `--ring`, ...) live at `:root`
+and `.dark`, and `@theme inline` maps them to Tailwind color tokens
+(`--color-background: hsl(var(--background))`). Change a token value and every
+utility that references it follows.
 
-**Theming** via custom properties only (components never change, only token
-values): light at `:root`, dark via `.dark` on `<html>`; glass via
-`data-surface="glass"`; density via `data-density="compact|comfy"`.
+**A build step is required.** Tailwind scans content and JIT-generates only the
+utilities in use, so consumers run Tailwind (the `@tailwindcss/vite` plugin, the
+PostCSS plugin, or the CLI) and import Canvas for the theme and base. This
+reverses the v3 "no build step" promise on purpose: the Tailwind engine is the
+tradeoff for the Tailwind look and the utility API.
 
-**JS utilities** (`src/`): theme switching, token access, `cn()` class
-composition. No framework deps; needs only a DOM.
+**Theming** via theme tokens only (markup never changes, only token values):
+light at `:root`, dark via Tailwind's `dark` variant (`.dark` on `<html>`); glass
+via `data-surface="glass"` and a `@custom-variant`; density via
+`data-density="compact|comfy"`.
+
+**JS utilities** (`src/`): `cn()` for class composition (clsx + tailwind-merge,
+so conflicting utilities resolve last-wins), a dark-mode toggle, and token-value
+access for native consumers. No framework deps; needs only a DOM.
 
 ## File structure
 ```
 styles/
-  canvas.css            # all-in-one entry (@imports everything)
-  reset.css  base.css
-  tokens/      colors, typography, radius, motion
-  atoms/       button, input, badge, avatar, checkbox, icon, tooltip, spinner,
-               kbd, separator, ... (single-purpose primitives)
-  molecules/   card, alert, form, field, stat-card, section-card, page-header,
-               empty-state, toast, code-block (small compositions of atoms)
-  organisms/   data-table, sidebar, topbar, app-shell, dialog, sheet, command,
-               calendar, stepper, tabs, filter-panel, row-menu (complex surfaces)
-  patterns/    backdrops, glass, density, focus, scrollbar
+  canvas.css     # entry: @import "tailwindcss"; @import the theme + base; @utility/@custom-variant
+  theme.css      # @theme tokens + the shadcn :root/.dark channel variables
+  base.css       # @layer base element defaults and reset
 src/
-  index.ts  theme.ts  tokens.ts  cn.ts
+  index.ts  cn.ts  theme.ts  tokens.ts
 ```
+Component markup is not CSS. The source of truth for each component's utility
+composition is the docs data (`docs/src/data/`) and the downstream framework
+packages.
 
 ## Naming
-- **Custom properties**: shadcn-compatible flat names, no `canvas-` prefix.
-  Colors as HSL channels (`--background`, `--primary`, `--muted-foreground`,
-  `--ring`, `--chart-1`, `--sidebar-background`); scales (`--radius-sm`,
-  `--font-sans`); animations (`--animate-modal-in`).
-- **Classes**: short flat names, no prefix, no BEM. Components `.btn` `.card`
-  `.sidebar`; variants `.btn-outline` `.btn-sm`; sub-elements `.card-header`
-  `.stat-card-label`.
-- **Files**: kebab-case matching the component/concern. **JS exports**:
-  camelCase functions, PascalCase types.
+- **Theme tokens**: shadcn-compatible. Raw channels (`--background`, `--primary`,
+  `--muted-foreground`, `--ring`, `--chart-1`, `--sidebar`) at `:root`/`.dark`,
+  mapped into Tailwind via `@theme inline` so they generate semantic utilities
+  (`bg-primary`, `text-muted-foreground`). Scale tokens use Tailwind namespaces
+  (`--radius-*`, `--font-*`, `--shadow-*`, `--animate-*`).
+- **Utilities**: Tailwind's own (`bg-primary`, `px-4`, `rounded-md`). No Canvas
+  component classes, no `canvas-` prefix, no BEM. Semantics live in the token
+  names and in downstream component names (`<Button variant="...">`), not in CSS
+  classes.
+- **Files**: kebab-case. **JS exports**: camelCase functions, PascalCase types.
 
 ## Principles
-1. CSS does the work: if it can be done in CSS, do it in CSS, not JS.
-2. No build step required for consumers; valid spec-compliant CSS only.
-3. Progressive enhancement: modern CSS, degrade gracefully, document support.
-4. Minimal footprint: every token/class/file earns its place; orphaned tokens
-   are dead weight.
-5. Semantic over visual: name by meaning (`--primary`), not appearance
-   (`--blue-500`).
-6. Platform-neutral: Canvas is a standalone UI kit, not a clone of any OS. Do
-   not borrow iOS- or Android-specific idioms (iOS-style segmented pills,
-   Material ripples, platform-named tokens); design every component on its own
-   terms.
+1. Utilities do the work: express components as Tailwind utilities in markup. Drop
+   to `@utility`/`@layer`/`@custom-variant` only for what utilities cannot express
+   (glass, complex state, keyframes).
+2. The theme is the single source of visual truth: never hard-code a color,
+   spacing, or radius in markup; use the token-backed utility (`bg-primary`, not
+   `bg-[#0a0a0a]`).
+3. Build step accepted: consumers run Tailwind. Optimize the developer loop (JIT,
+   sub-second rebuilds) rather than pretend there is none.
+4. Minimal footprint: Tailwind purges unused utilities; keep the theme lean and
+   every token earning its place. Orphan tokens are dead weight.
+5. Semantic tokens, visual utilities: name tokens by meaning (`--primary`), let
+   the generated utilities be visual (`bg-primary`). Apps express intent through
+   downstream component names, not raw utility soup where a named component fits.
+6. Platform-neutral: the visual baseline is Tailwind's own design language (its
+   palette, spacing, type, radii), which is platform-neutral. Do not borrow iOS-
+   or Android-specific idioms (iOS segmented pills, Material ripples,
+   platform-named tokens); design every component on its own terms.
 
 ## Release & testing
-- **Changesets** for versioning. Releases go through CI/CD; never
-  `npm publish` locally. v3.0.0 is the first CSS-first release (breaking change
-  from the v2 React component library; pin the v2 tag to migrate).
-- Testing strategy: visual regression (screenshots across themes/viewports),
-  token validation (every token defined, no orphans), per-module size budget,
-  color-contrast + focus-visible a11y, JS unit tests.
+- **Changesets** for versioning. Releases go through CI/CD; never `npm publish`
+  locally. v4.0.0 is the first Tailwind release (breaking change from the v3
+  hand-authored CSS library; pin the v3 tag to migrate).
+- Testing: visual regression (screenshots across themes/viewports), theme-token
+  validation (every token defined, no orphans), color-contrast + focus-visible
+  a11y, built-CSS size budget on the shipped theme, JS unit tests.
 
 ## Consumer contract
-Downstream packages depend on Canvas, import its tokens/CSS (or read token
-values for native), and wrap Canvas CSS patterns in framework components.
-End-user apps (Athena, Hera, Site) usually consume a downstream package but may
-import Canvas directly. Platform-wide visual decisions (a color, a spacing
-scale, a new semantic token) go in Canvas; framework-specific API decisions go
-in the downstream package.
+Consumers install Tailwind v4, import Canvas for the theme and base, point
+Tailwind's `@source` at Canvas's component markup (so the utilities its
+components use get generated), and either use a downstream framework package's
+components or copy the documented utility markup. Native (RN) reads token values
+rather than CSS. Platform-wide visual decisions (a color, a spacing step, a new
+token) go in Canvas's theme; framework-specific API decisions go in the
+downstream package.
 
 ## Toolchain
-Being rethought from scratch; prioritize sub-second CSS feedback, CSS
-correctness/linting, per-module size tracking, visual regression. Do NOT carry
-over v2 tooling assumptions (Biome, Vitest) without explicit discussion.
+Tailwind CSS v4 (Lightning CSS under the hood). Docs run the `@tailwindcss/vite`
+plugin; the shipped theme builds with the Tailwind CLI or PostCSS. Keep
+Changesets and Playwright (visual regression). The v3 token/utility scripts
+(`generate-utilities`, `validate-tokens`, `check-size`) are superseded by
+Tailwind's own generation and need reworking, not carrying over wholesale.
