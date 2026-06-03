@@ -199,6 +199,8 @@ const emptyCard = (title: string, desc: string, extra = "") =>
   `<div class="${emptyCardCls}"><div class="text-[15px] font-semibold">${title}</div><p class="mt-1 text-sm text-muted-foreground">${desc}</p>${extra}</div>`;
 const fieldRowEl = (label: string, value: string) =>
   `<div class="grid grid-cols-[180px_1fr] gap-4 text-sm"><span class="text-muted-foreground">${label}</span><span>${value}</span></div>`;
+const statCard = (label: string, value: string, delta = "", deltaTone = "text-emerald-600", extra = "") =>
+  `<div class="${cardCls} p-5${extra ? " " + extra : ""}"><div class="text-xs text-muted-foreground">${label}</div><div class="mt-1 text-2xl font-semibold tracking-tight">${value}</div>${delta ? `<div class="mt-1 text-xs font-medium ${deltaTone}">${delta}</div>` : ""}</div>`;
 
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
@@ -2915,23 +2917,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Avatar + primary text over secondary text, divider between rows.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:560px">
-  <div style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid hsl(var(--border))">
-    <span class="avatar" style="flex-shrink:0"><img src="/rachel-chen.jpg" alt="RC"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Rachel Chen</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">rachel.chen@example.com</div></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">admin</span>
-  </div>
-  <div style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid hsl(var(--border))">
-    <span class="avatar" style="flex-shrink:0"><img src="/ada-lovelace.jpg" alt="AL"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ada@example.com</div></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">editor</span>
-  </div>
-  <div style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem">
-    <span class="avatar" style="flex-shrink:0">KT</span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Kevin Turner</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">kevin@example.com</div></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">viewer</span>
-  </div>
-</div>`,
+          html: `<div class="${cardCls} max-w-[560px]">${[
+  { name: "Rachel Chen", email: "rachel.chen@example.com", img: "/rachel-chen.jpg", initials: "RC", meta: "admin" },
+  { name: "Ada Lovelace", email: "ada@example.com", img: "/ada-lovelace.jpg", initials: "AL", meta: "editor" },
+  { name: "Kevin Turner", email: "kevin@example.com", img: "", initials: "KT", meta: "viewer" },
+].map((u, i, a) => `<div class="flex items-center gap-3 px-5 py-3${i < a.length - 1 ? " border-b border-border" : ""}"><span class="${avatarBase} h-10 w-10 shrink-0">${u.img ? `<img src="${u.img}" alt="${u.initials}" class="h-full w-full object-cover">` : u.initials}</span><div class="min-w-0 flex-1"><div class="truncate text-[13.5px] font-semibold">${u.name}</div><div class="truncate text-xs text-muted-foreground">${u.email}</div></div><span class="text-xs text-muted-foreground">${u.meta}</span></div>`).join("")}</div>`,
         }],
       },
       {
@@ -2939,26 +2929,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Clickable rows: hover background, trailing chevron indicates drilldown.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:560px">
-  <a href="#" style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid hsl(var(--border));text-decoration:none;color:inherit" onmouseover="this.style.background='hsl(var(--accent))'" onmouseout="this.style.background=''">
-    <span class="avatar" style="flex-shrink:0"><img src="/rachel-chen.jpg" alt="RC"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Rachel Chen</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">rachel.chen@example.com</div></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">2h ago</span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-  </a>
-  <a href="#" style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid hsl(var(--border));text-decoration:none;color:inherit" onmouseover="this.style.background='hsl(var(--accent))'" onmouseout="this.style.background=''">
-    <span class="avatar" style="flex-shrink:0"><img src="/ada-lovelace.jpg" alt="AL"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ada@example.com</div></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">5h ago</span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-  </a>
-  <a href="#" style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:inherit" onmouseover="this.style.background='hsl(var(--accent))'" onmouseout="this.style.background=''">
-    <span class="avatar" style="flex-shrink:0">KT</span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Kevin Turner</div><div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">kevin@example.com</div></div>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">1d ago</span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-  </a>
-</div>`,
+          html: `<div class="${cardCls} max-w-[560px]">${[
+  { name: "Rachel Chen", email: "rachel.chen@example.com", img: "/rachel-chen.jpg", initials: "RC", meta: "2h ago" },
+  { name: "Ada Lovelace", email: "ada@example.com", img: "/ada-lovelace.jpg", initials: "AL", meta: "5h ago" },
+  { name: "Kevin Turner", email: "kevin@example.com", img: "", initials: "KT", meta: "1d ago" },
+].map((u, i, a) => `<a href="#" class="flex items-center gap-3 px-5 py-3 text-inherit no-underline transition-colors hover:bg-accent${i < a.length - 1 ? " border-b border-border" : ""}"><span class="${avatarBase} h-10 w-10 shrink-0">${u.img ? `<img src="${u.img}" alt="${u.initials}" class="h-full w-full object-cover">` : u.initials}</span><div class="min-w-0 flex-1"><div class="truncate text-[13.5px] font-semibold">${u.name}</div><div class="truncate text-xs text-muted-foreground">${u.email}</div></div><span class="text-xs text-muted-foreground">${u.meta}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="m9 18 6-6-6-6"/></svg></a>`).join("")}</div>`,
         }],
       },
       {
@@ -2966,21 +2941,15 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Header with title + action button, list items inside card surface.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:560px">
-  <div style="padding:0.75rem 1.25rem;border-bottom:1px solid hsl(var(--border));display:flex;align-items:center;justify-content:space-between">
-    <span style="font-size:13px;font-weight:600">Team members</span>
-    <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.innerHTML;b.disabled=true;b.textContent='Added!';setTimeout(function(){b.innerHTML=o;b.disabled=false},2000)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add</button>
+          html: `<div class="${cardCls} max-w-[560px]">
+  <div class="flex items-center justify-between border-b border-border px-5 py-3">
+    <span class="text-sm font-semibold">Team members</span>
+    <button class="${btnBase} ${btnVariant.outline} ${btnSize.sm}" onclick="var b=this;var o=b.innerHTML;b.disabled=true;b.textContent='Added!';setTimeout(function(){b.innerHTML=o;b.disabled=false},2000)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add</button>
   </div>
-  <div style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid hsl(var(--border))">
-    <span class="avatar" style="flex-shrink:0"><img src="/rachel-chen.jpg" alt="RC"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600">Rachel Chen</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Engineering Lead</div></div>
-    <button class="btn btn-ghost btn-sm" style="height:28px;padding:0 8px" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
-  </div>
-  <div style="padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem">
-    <span class="avatar" style="flex-shrink:0"><img src="/ada-lovelace.jpg" alt="AL"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Staff Engineer</div></div>
-    <button class="btn btn-ghost btn-sm" style="height:28px;padding:0 8px" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
-  </div>
+  ${[
+  { name: "Rachel Chen", role: "Engineering Lead", img: "/rachel-chen.jpg", initials: "RC" },
+  { name: "Ada Lovelace", role: "Staff Engineer", img: "/ada-lovelace.jpg", initials: "AL" },
+].map((u, i, a) => `<div class="flex items-center gap-3 px-5 py-3${i < a.length - 1 ? " border-b border-border" : ""}"><span class="${avatarBase} h-10 w-10 shrink-0"><img src="${u.img}" alt="${u.initials}" class="h-full w-full object-cover"></span><div class="min-w-0 flex-1"><div class="text-[13.5px] font-semibold">${u.name}</div><div class="text-xs text-muted-foreground">${u.role}</div></div><button class="${btnBase} ${btnVariant.ghost} h-7 px-2" onclick="var b=this;b.classList.add('bg-accent');setTimeout(function(){b.classList.remove('bg-accent')},300)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button></div>`).join("")}
 </div>`,
         }],
       },
@@ -2998,11 +2967,7 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "One metric card: title, value, and a delta with a comparison label.",
         examples: [{
           full: true,
-          html: `<div class="stat-card" style="max-width:280px">
-  <div class="stat-card-label">Active users</div>
-  <div class="stat-card-value">71,897</div>
-  <div class="stat-card-delta" style="color:hsl(142 71% 45%)">+12.3% <span style="color:hsl(var(--muted-foreground));font-weight:400">vs. last 30 days</span></div>
-</div>`,
+          html: statCard("Active users", "71,897", `+12.3% <span class="font-normal text-muted-foreground">vs. last 30 days</span>`, "text-emerald-600", "max-w-[280px]"),
         }],
       },
       {
@@ -3010,23 +2975,7 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Three or four metric cards in a responsive row. Auto-fit layout with 220px minimum.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;gap:0.875rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-  <div class="stat-card">
-    <div class="stat-card-label">Total users</div>
-    <div class="stat-card-value">12,847</div>
-    <div class="stat-card-delta" style="color:hsl(142 71% 45%)">+12.5%</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-card-label">Active sessions</div>
-    <div class="stat-card-value">1,024</div>
-    <div class="stat-card-delta" style="color:hsl(142 71% 45%)">+3.2%</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-card-label">Error rate</div>
-    <div class="stat-card-value">0.12%</div>
-    <div class="stat-card-delta" style="color:hsl(0 84% 60%)">+0.03%</div>
-  </div>
-</div>`,
+          html: `<div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">${statCard("Total users", "12,847", "+12.5%")}${statCard("Active sessions", "1,024", "+3.2%")}${statCard("Error rate", "0.12%", "+0.03%", "text-red-600")}</div>`,
         }],
       },
       {
@@ -3034,15 +2983,7 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "When stats live inside a parent surface, drop border and radius. Just number stacks.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.5rem">
-  <div style="font-size:15px;font-weight:600;margin-bottom:1rem">Key metrics</div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1.5rem">
-    <div><div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px">Revenue</div><div style="font-size:24px;font-weight:600;letter-spacing:-0.02em">$48.2k</div></div>
-    <div><div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px">Orders</div><div style="font-size:24px;font-weight:600;letter-spacing:-0.02em">842</div></div>
-    <div><div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px">Avg. value</div><div style="font-size:24px;font-weight:600;letter-spacing:-0.02em">$57.24</div></div>
-    <div><div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:4px">Conversion</div><div style="font-size:24px;font-weight:600;letter-spacing:-0.02em">3.6%</div></div>
-  </div>
-</div>`,
+          html: `<div class="${cardCls} p-6"><div class="mb-4 text-[15px] font-semibold">Key metrics</div><div class="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-6">${[["Revenue", "$48.2k"], ["Orders", "842"], ["Avg. value", "$57.24"], ["Conversion", "3.6%"]].map(([l, v]) => `<div><div class="mb-1 text-xs text-muted-foreground">${l}</div><div class="text-2xl font-semibold tracking-tight">${v}</div></div>`).join("")}</div></div>`,
         }],
       },
       {
@@ -3050,16 +2991,16 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Value + inline SVG sparkline with gradient fill. Shows trend direction at a glance.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;gap:0.875rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-  <div class="stat-card">
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Requests</div>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:24px;font-weight:600">24.5k</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(142 71% 45%)">+8.2%</span></div>
-    <svg width="100%" height="24" viewBox="0 0 200 24" preserveAspectRatio="none" style="margin-top:8px;display:block"><defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(var(--primary))" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(var(--primary))" stop-opacity="0"/></linearGradient></defs><polygon points="0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2 200,24 0,24" fill="url(#sg1)"/><polyline points="0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2" fill="none" stroke="hsl(var(--primary))" stroke-width="1.5"/></svg>
+          html: `<div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
+  <div class="${cardCls} p-5">
+    <div class="text-xs text-muted-foreground">Requests</div>
+    <div class="mt-1 flex items-baseline justify-between"><span class="text-2xl font-semibold">24.5k</span><span class="font-mono text-[11px] text-emerald-600">+8.2%</span></div>
+    <svg width="100%" height="24" viewBox="0 0 200 24" preserveAspectRatio="none" class="mt-2 block"><defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs><polygon points="0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2 200,24 0,24" fill="url(#sg1)"/><polyline points="0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2" fill="none" stroke="var(--primary)" stroke-width="1.5"/></svg>
   </div>
-  <div class="stat-card">
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Latency</div>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:24px;font-weight:600">142ms</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(0 84% 60%)">+12ms</span></div>
-    <svg width="100%" height="24" viewBox="0 0 200 24" preserveAspectRatio="none" style="margin-top:8px;display:block"><defs><linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(0 84% 60%)" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(0 84% 60%)" stop-opacity="0"/></linearGradient></defs><polygon points="0,18 20,16 40,14 60,12 80,10 100,12 120,8 140,6 160,4 180,2 200,4 200,24 0,24" fill="url(#sg2)"/><polyline points="0,18 20,16 40,14 60,12 80,10 100,12 120,8 140,6 160,4 180,2 200,4" fill="none" stroke="hsl(0 84% 60%)" stroke-width="1.5"/></svg>
+  <div class="${cardCls} p-5">
+    <div class="text-xs text-muted-foreground">Latency</div>
+    <div class="mt-1 flex items-baseline justify-between"><span class="text-2xl font-semibold">142ms</span><span class="font-mono text-[11px] text-red-600">+12ms</span></div>
+    <svg width="100%" height="24" viewBox="0 0 200 24" preserveAspectRatio="none" class="mt-2 block"><defs><linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--destructive)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--destructive)" stop-opacity="0"/></linearGradient></defs><polygon points="0,18 20,16 40,14 60,12 80,10 100,12 120,8 140,6 160,4 180,2 200,4 200,24 0,24" fill="url(#sg2)"/><polyline points="0,18 20,16 40,14 60,12 80,10 100,12 120,8 140,6 160,4 180,2 200,4" fill="none" stroke="var(--destructive)" stroke-width="1.5"/></svg>
   </div>
 </div>`,
         }],
