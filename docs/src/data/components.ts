@@ -498,89 +498,54 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Atoms",
     playground: {
       controls: [
+        { type: "check", key: "trigger", label: "Trigger button (click to open)" },
+        { type: "check", key: "label", label: "Section label" },
         { type: "check", key: "icons", label: "Leading icons" },
         { type: "check", key: "shortcuts", label: "Keyboard shortcuts" },
+        { type: "check", key: "disabledItem", label: "Disabled item" },
         { type: "check", key: "destructive", label: "Destructive item" },
       ],
-      defaults: { icons: true, shortcuts: false, destructive: false },
+      defaults: { trigger: false, label: false, icons: true, shortcuts: false, disabledItem: false, destructive: false },
       render: (s) => {
         const ico = (d: string) => s.icons ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${d}</svg> ` : "";
         const sc = (k: string) => s.shortcuts ? `<span class="command-shortcut">${k}</span>` : "";
-        let items = `<button class="dropdown-item">${ico(`<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>`)}<span>Edit profile</span>${sc("⌘E")}</button>`;
+        let items = s.label ? `<div class="dropdown-label">Actions</div>` : "";
+        items += `<button class="dropdown-item">${ico(`<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>`)}<span>Edit profile</span>${sc("⌘E")}</button>`;
         items += `<button class="dropdown-item">${ico(`<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>`)}<span>Duplicate</span>${sc("⌘D")}</button>`;
         items += `<button class="dropdown-item">${ico(`<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>`)}<span>Settings</span>${sc("⌘,")}</button>`;
+        if (s.disabledItem) {
+          items += `<button class="dropdown-item disabled"><span>Archive</span></button>`;
+        }
         if (s.destructive) {
           items += `<div class="dropdown-sep"></div><button class="dropdown-item" style="color:hsl(0 84% 60%)">${ico(`<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`)}<span>Delete…</span></button>`;
         }
-        return `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)">${items}</div>`;
+        const flash = `onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"`;
+        if (s.trigger) {
+          return `<div style="position:relative;display:inline-block" onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="var d=this.nextElementSibling;if(d.style.display==='none'){d.style.display='block';var close=function(e){if(!d.contains(e.target)){d.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{d.style.display='none'}">Actions <span style="margin-left:2px;font-size:10px">▾</span></button><div class="dropdown" style="position:absolute;top:100%;left:0;margin-top:4px;min-width:200px;display:none;z-index:10" ${flash}>${items}</div></div>`;
+        }
+        return `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" ${flash}>${items}</div>`;
       },
     },
-    sections: [
-      {
-        title: "Simple",
-        anatomy: "Menu of plain text items; one column.",
-        examples: [{
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)">
-  <div class="dropdown-label">Actions</div>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px">
+  <button class="dropdown-item">Edit</button>
+  <button class="dropdown-item">Delete</button>
+  <button class="dropdown-item">Duplicate</button>
+</div>`,
+        caption: "A destructive item wedged between routine ones invites a costly misclick.",
+      },
+      do: {
+        html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px">
   <button class="dropdown-item">Edit</button>
   <button class="dropdown-item">Duplicate</button>
   <div class="dropdown-sep"></div>
-  <button class="dropdown-item">Archive</button>
-  <button class="dropdown-item disabled">Delete (disabled)</button>
+  <button class="dropdown-item" style="color:hsl(0 84% 60%)">Delete</button>
 </div>`,
-        }],
+        caption: "Separate destructive actions with a divider, color them, and place them last.",
       },
-      {
-        title: "With shortcuts",
-        anatomy: "Keyboard hint pinned to the right.",
-        examples: [{
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:220px" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)">
-  <button class="dropdown-item"><span>Undo</span><span class="command-shortcut">⌘Z</span></button>
-  <button class="dropdown-item"><span>Redo</span><span class="command-shortcut">⌘⇧Z</span></button>
-  <div class="dropdown-sep"></div>
-  <button class="dropdown-item"><span>Cut</span><span class="command-shortcut">⌘X</span></button>
-  <button class="dropdown-item"><span>Copy</span><span class="command-shortcut">⌘C</span></button>
-  <button class="dropdown-item"><span>Paste</span><span class="command-shortcut">⌘V</span></button>
-</div>`,
-        }],
-      },
-      {
-        title: "With destructive",
-        examples: [{
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)">
-  <button class="dropdown-item">Edit profile</button>
-  <button class="dropdown-item">Settings</button>
-  <div class="dropdown-sep"></div>
-  <button class="dropdown-item" style="color:hsl(0 84% 60%)">Delete account</button>
-</div>`,
-        }],
-      },
-      {
-        title: "With trigger",
-        anatomy: "Button click toggles the menu. Click outside or press Escape to close.",
-        examples: [{
-          allowOverflow: true,
-          html: `<div style="position:relative;display:inline-block" onclick="event.stopPropagation()">
-  <button class="btn btn-outline btn-sm" onclick="var d=this.nextElementSibling;if(d.style.display==='none'){d.style.display='block';var close=function(e){if(!d.contains(e.target)){d.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{d.style.display='none'}">Actions <span style="margin-left:2px;font-size:10px">▾</span></button>
-  <div class="dropdown" style="position:absolute;top:100%;left:0;margin-top:4px;min-width:180px;display:none;z-index:10">
-    <button class="dropdown-item">Edit</button>
-    <button class="dropdown-item">Duplicate</button>
-    <div class="dropdown-sep"></div>
-    <button class="dropdown-item">Archive</button>
-  </div>
-</div>`,
-          code: `<div style="position:relative;display:inline-block">
-  <button class="btn btn-outline btn-sm" onclick="toggleDropdown(this)">Actions ▾</button>
-  <div class="dropdown" style="position:absolute;top:100%;left:0;margin-top:4px;min-width:180px;display:none">
-    <button class="dropdown-item">Edit</button>
-    <button class="dropdown-item">Duplicate</button>
-    <div class="dropdown-sep"></div>
-    <button class="dropdown-item">Archive</button>
-  </div>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
