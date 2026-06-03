@@ -368,71 +368,27 @@ export const COMPONENTS: ComponentDoc[] = [
         return `<label style="display:flex;gap:0.5rem;cursor:pointer"><input type="checkbox"${checked}${disabled} style="accent-color:hsl(var(--primary));margin-top:3px"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div></label>`;
       },
     },
-    sections: [
-      {
-        title: "Variants",
-        anatomy: "Native input with accent-color set to var(--primary). 16px square, 2px ring on focus.",
-        examples: [{
-          html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Default (unchecked)</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" checked style="accent-color:hsl(var(--primary))"> Checked</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" disabled style="accent-color:hsl(var(--primary))"> Disabled</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" checked disabled style="accent-color:hsl(var(--primary))"> Disabled + checked</label>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
+  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Free</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" checked style="accent-color:hsl(var(--primary))"> Pro</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Enterprise</label>
 </div>`,
-        }],
+        caption: "Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.",
       },
-      {
-        title: "With description",
-        anatomy: "Block label + secondary description text. Description stays muted.",
-        examples: [{
-          full: true,
-          html: `<div class="section-card" style="max-width:400px;padding:1.25rem">
-  <fieldset style="border:0;margin:0;padding:0">
-    <legend style="font-size:14px;font-weight:600;margin-bottom:0.75rem">Notifications</legend>
-    <div style="display:flex;flex-direction:column;gap:0.75rem">
-      <label style="display:flex;gap:0.5rem;cursor:pointer">
-        <input type="checkbox" checked style="accent-color:hsl(var(--primary));margin-top:3px">
-        <div>
-          <div style="font-size:13px;font-weight:500">Comments</div>
-          <div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when someone comments on your posts.</div>
-        </div>
-      </label>
-      <label style="display:flex;gap:0.5rem;cursor:pointer">
-        <input type="checkbox" style="accent-color:hsl(var(--primary));margin-top:3px">
-        <div>
-          <div style="font-size:13px;font-weight:500">Candidates</div>
-          <div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when a candidate applies for a job.</div>
-        </div>
-      </label>
-      <label style="display:flex;gap:0.5rem;cursor:pointer">
-        <input type="checkbox" checked style="accent-color:hsl(var(--primary));margin-top:3px">
-        <div>
-          <div style="font-size:13px;font-weight:500">Offers</div>
-          <div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when a candidate accepts or rejects an offer.</div>
-        </div>
-      </label>
-    </div>
-  </fieldset>
+      do: {
+        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
+  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" style="accent-color:hsl(var(--primary))"> Free</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" checked style="accent-color:hsl(var(--primary))"> Pro</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" style="accent-color:hsl(var(--primary))"> Enterprise</label>
 </div>`,
-        }],
+        caption: "Radios for one-of-many; reserve checkboxes for independent multi-select.",
       },
-      {
-        title: "As a list filter",
-        anatomy: "Inline column of checkboxes in a filter panel.",
-        examples: [{
-          full: true,
-          html: `<div class="section-card" style="max-width:200px;padding:1rem">
-  <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:0.5rem">Status</div>
-  <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-    <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" checked style="accent-color:hsl(var(--primary))"> Active</label>
-    <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Pending</label>
-    <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Archived</label>
-    <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Deleted</label>
-  </div>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
