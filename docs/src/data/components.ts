@@ -247,6 +247,13 @@ const sidebarItem = "sidebar-item flex w-full items-center rounded-md px-2 py-1.
 const sidebarGroupLabel = "px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground";
 const tabUnderline = "border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground";
 const tabUnderlineActive = "border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground";
+const tabU = `tab ${tabUnderline}`;
+const tabUActive = `tab ${tabUnderlineActive}`;
+const tabsPillList = "inline-flex gap-1 rounded-lg bg-muted p-1";
+const tabPill = "tab rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground";
+const tabPillActive = "tab rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm";
+const tabV = "tab w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
+const tabVActive = "tab w-full rounded-md bg-accent px-3 py-2 text-left text-sm font-medium text-accent-foreground";
 const stepInd = (state: string) =>
   "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium " +
   (state === "completed" ? "border-primary bg-primary text-primary-foreground" : state === "active" ? "border-primary text-primary" : "border-border text-muted-foreground");
@@ -2362,24 +2369,22 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Default tab style: underline beneath the active tab. Use for primary navigation between sibling views of a record (overview, settings, audit, etc.).",
         examples: [{
           html: `<div>
-  <div class="tabs-list" onclick="if(!event.target.classList.contains('tab'))return;this.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');var m={'General':'General settings content goes here.','Security':'Security preferences and two-factor authentication.','Notifications':'Email and push notification preferences.','Billing':'Payment methods and subscription plan.','Integrations':'Connected apps and API configuration.'};this.nextElementSibling.querySelector('p').textContent=m[event.target.textContent]||''">
-    <button class="tab active">General</button>
-    <button class="tab">Security</button>
-    <button class="tab">Notifications</button>
-    <button class="tab">Billing</button>
-    <button class="tab">Integrations</button>
+  <div class="flex border-b border-border" onclick="if(!event.target.classList.contains('tab'))return;this.querySelectorAll('.tab').forEach(function(t){t.className='${tabU}'});event.target.className='${tabUActive}';var m={'General':'General settings content goes here.','Security':'Security preferences and two-factor authentication.','Notifications':'Email and push notification preferences.','Billing':'Payment methods and subscription plan.','Integrations':'Connected apps and API configuration.'};this.nextElementSibling.querySelector('p').textContent=m[event.target.textContent]||''">
+    <button class="${tabUActive}">General</button>
+    <button class="${tabU}">Security</button>
+    <button class="${tabU}">Notifications</button>
+    <button class="${tabU}">Billing</button>
+    <button class="${tabU}">Integrations</button>
   </div>
-  <div class="tabs-content"><p class="body">General settings content goes here.</p></div>
+  <div class="pt-4"><p class="text-sm">General settings content goes here.</p></div>
 </div>`,
           code: `<div>
-  <div class="tabs-list">
-    <button class="tab active">General</button>
-    <button class="tab">Security</button>
-    <button class="tab">Notifications</button>
-    <button class="tab">Billing</button>
-    <button class="tab">Integrations</button>
+  <div class="flex border-b border-border">
+    <button class="...tab active...">General</button>
+    <button class="...tab...">Security</button>
+    <button class="...tab...">Notifications</button>
   </div>
-  <div class="tabs-content">...</div>
+  <div class="pt-4">...</div>
 </div>`,
         }],
       },
@@ -2387,17 +2392,17 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "Pill",
         anatomy: "Rounded background segment for the active tab. Use in toolbars and filter bars.",
         examples: [{
-          html: `<div class="tabs-list tabs-pill" onclick="if(!event.target.classList.contains('tab'))return;this.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active')">
-  <button class="tab active">All</button>
-  <button class="tab">Active</button>
-  <button class="tab">Archived</button>
-  <button class="tab">Deleted</button>
+          html: `<div class="${tabsPillList}" onclick="if(!event.target.classList.contains('tab'))return;this.querySelectorAll('.tab').forEach(function(t){t.className='${tabPill}'});event.target.className='${tabPillActive}'">
+  <button class="${tabPillActive}">All</button>
+  <button class="${tabPill}">Active</button>
+  <button class="${tabPill}">Archived</button>
+  <button class="${tabPill}">Deleted</button>
 </div>`,
-          code: `<div class="tabs-list tabs-pill">
-  <button class="tab active">All</button>
-  <button class="tab">Active</button>
-  <button class="tab">Archived</button>
-  <button class="tab">Deleted</button>
+          code: `<div class="inline-flex gap-1 rounded-lg bg-muted p-1">
+  <button class="...pill active...">All</button>
+  <button class="...pill...">Active</button>
+  <button class="...pill...">Archived</button>
+  <button class="...pill...">Deleted</button>
 </div>`,
         }],
       },
@@ -2405,17 +2410,15 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "With badge counts",
         anatomy: "Tabs with a trailing count indicate the volume of each section.",
         examples: [{
-          html: `<div class="tabs-list" onclick="var t=event.target.closest('.tab');if(!t)return;this.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));t.classList.add('active')">
-  <button class="tab active">All <span class="badge badge-secondary" style="margin-left:6px;font-size:10px">142</span></button>
-  <button class="tab">Active <span class="badge badge-secondary" style="margin-left:6px;font-size:10px">89</span></button>
-  <button class="tab">Pending <span class="badge badge-secondary" style="margin-left:6px;font-size:10px">12</span></button>
-  <button class="tab">Archived <span class="badge badge-secondary" style="margin-left:6px;font-size:10px">53</span></button>
+          html: `<div class="flex border-b border-border" onclick="var t=event.target.closest('.tab');if(!t)return;this.querySelectorAll('.tab').forEach(function(b){b.className='${tabU} inline-flex items-center gap-1.5'});t.className='${tabUActive} inline-flex items-center gap-1.5'">
+  <button class="${tabUActive} inline-flex items-center gap-1.5">All ${badge("secondary", "142")}</button>
+  <button class="${tabU} inline-flex items-center gap-1.5">Active ${badge("secondary", "89")}</button>
+  <button class="${tabU} inline-flex items-center gap-1.5">Pending ${badge("secondary", "12")}</button>
+  <button class="${tabU} inline-flex items-center gap-1.5">Archived ${badge("secondary", "53")}</button>
 </div>`,
-          code: `<div class="tabs-list">
-  <button class="tab active">All <span class="badge badge-secondary">142</span></button>
-  <button class="tab">Active <span class="badge badge-secondary">89</span></button>
-  <button class="tab">Pending <span class="badge badge-secondary">12</span></button>
-  <button class="tab">Archived <span class="badge badge-secondary">53</span></button>
+          code: `<div class="flex border-b border-border">
+  <button class="...tab active...">All <span class="...badge...">142</span></button>
+  <button class="...tab...">Active <span class="...badge...">89</span></button>
 </div>`,
         }],
       },
@@ -2424,35 +2427,30 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "For settings panes: left rail tabs, right content. Mobile collapses to a top-row pill.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;grid-template-columns:180px 1fr;gap:1.5rem;min-height:200px">
-  <div class="tabs-list tabs-vertical" onclick="if(!event.target.classList.contains('tab'))return;this.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');var p=this.nextElementSibling;p.querySelector('.h4').textContent=event.target.textContent+' Settings';var b=p.querySelector('.section-card-body');var f={'General':'<div class=\\'form-group\\'><label class=\\'label\\'>Display name</label><input class=\\'input\\' value=\\'Rachel Chen\\' /></div><div class=\\'form-group\\'><label class=\\'label\\'>Email</label><input class=\\'input\\' value=\\'rachel@example.com\\' /></div>','Security':'<div class=\\'form-group\\'><label class=\\'label\\'>Password</label><input class=\\'input\\' type=\\'password\\' value=\\'secretpass\\' /></div><div class=\\'form-group\\' style=\\'display:flex;align-items:center;gap:0.75rem\\'><label class=\\'label\\' style=\\'margin:0\\'>Two-factor auth</label><input type=\\'checkbox\\' role=\\'switch\\' class=\\'switch\\'></div>','Notifications':'<div class=\\'form-group\\' style=\\'display:flex;align-items:center;gap:0.75rem\\'><label class=\\'label\\' style=\\'margin:0\\'>Email notifications</label><input type=\\'checkbox\\' role=\\'switch\\' class=\\'switch\\' checked></div><div class=\\'form-group\\' style=\\'display:flex;align-items:center;gap:0.75rem\\'><label class=\\'label\\' style=\\'margin:0\\'>Push notifications</label><input type=\\'checkbox\\' role=\\'switch\\' class=\\'switch\\'></div>','API Keys':'<div class=\\'form-group\\'><label class=\\'label\\'>API Key</label><input class=\\'input\\' value=\\'sk-proj-abc123\\' readonly style=\\'font-family:var(--font-mono)\\' /></div>','Billing':'<div class=\\'form-group\\'><label class=\\'label\\'>Plan</label><input class=\\'input\\' value=\\'Pro ($12/mo)\\' readonly /></div>'};b.innerHTML=f[event.target.textContent]||''">
-    <button class="tab active">General</button>
-    <button class="tab">Security</button>
-    <button class="tab">Notifications</button>
-    <button class="tab">API Keys</button>
-    <button class="tab">Billing</button>
+          html: `<div data-vtabs class="grid grid-cols-[180px_1fr] gap-6">
+  <div class="flex flex-col gap-1" onclick="if(!event.target.classList.contains('tab'))return;this.querySelectorAll('.tab').forEach(function(t){t.className='${tabV}'});event.target.className='${tabVActive}';var wrap=this.closest('[data-vtabs]');wrap.querySelector('[data-title]').textContent=event.target.textContent+' Settings';var f={'General':'<div><label class=\\'${labelCls}\\'>Display name</label><input class=\\'${inputBase}\\' value=\\'Rachel Chen\\' /></div><div><label class=\\'${labelCls}\\'>Email</label><input class=\\'${inputBase}\\' value=\\'rachel@example.com\\' /></div>','Security':'<div><label class=\\'${labelCls}\\'>Password</label><input class=\\'${inputBase}\\' type=\\'password\\' value=\\'secretpass\\' /></div><label class=\\'flex items-center gap-2 text-sm\\'><input type=\\'checkbox\\' class=\\'size-4 accent-primary\\'> Two-factor auth</label>','Notifications':'<label class=\\'flex items-center gap-2 text-sm\\'><input type=\\'checkbox\\' class=\\'size-4 accent-primary\\' checked> Email notifications</label><label class=\\'flex items-center gap-2 text-sm\\'><input type=\\'checkbox\\' class=\\'size-4 accent-primary\\'> Push notifications</label>','API Keys':'<div><label class=\\'${labelCls}\\'>API Key</label><input class=\\'${inputBase} font-mono\\' value=\\'sk-proj-abc123\\' readonly /></div>','Billing':'<div><label class=\\'${labelCls}\\'>Plan</label><input class=\\'${inputBase}\\' value=\\'Pro ($12/mo)\\' readonly /></div>'};wrap.querySelector('[data-body]').innerHTML=f[event.target.textContent]||''">
+    <button class="${tabVActive}">General</button>
+    <button class="${tabV}">Security</button>
+    <button class="${tabV}">Notifications</button>
+    <button class="${tabV}">API Keys</button>
+    <button class="${tabV}">Billing</button>
   </div>
-  <div class="section-card">
-    <div class="section-card-header"><h3 class="h4">General Settings</h3></div>
-    <div class="section-card-divider"></div>
-    <div class="section-card-body">
-      <div class="form-group"><label class="label">Display name</label><input class="input" value="Rachel Chen" /></div>
-      <div class="form-group"><label class="label">Email</label><input class="input" value="rachel@example.com" /></div>
+  <div class="${cardCls}">
+    <div class="border-b border-border px-5 py-3"><h3 data-title class="text-sm font-semibold">General Settings</h3></div>
+    <div data-body class="space-y-3 p-5">
+      <div><label class="${labelCls}">Display name</label><input class="${inputBase}" value="Rachel Chen" /></div>
+      <div><label class="${labelCls}">Email</label><input class="${inputBase}" value="rachel@example.com" /></div>
     </div>
   </div>
 </div>`,
-          code: `<div style="display:grid;grid-template-columns:180px 1fr;gap:1.5rem">
-  <div class="tabs-list tabs-vertical">
-    <button class="tab active">General</button>
-    <button class="tab">Security</button>
-    <button class="tab">Notifications</button>
-    <button class="tab">API Keys</button>
-    <button class="tab">Billing</button>
+          code: `<div class="grid grid-cols-[180px_1fr] gap-6">
+  <div class="flex flex-col gap-1">
+    <button class="...vtab active...">General</button>
+    <button class="...vtab...">Security</button>
   </div>
-  <div class="section-card">
-    <div class="section-card-header"><h3 class="h4">General Settings</h3></div>
-    <div class="section-card-divider"></div>
-    <div class="section-card-body">...</div>
+  <div class="rounded-lg border border-border ...">
+    <div class="border-b border-border px-5 py-3"><h3 class="text-sm font-semibold">General Settings</h3></div>
+    <div class="space-y-3 p-5">...</div>
   </div>
 </div>`,
         }],
