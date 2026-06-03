@@ -950,62 +950,41 @@ export const COMPONENTS: ComponentDoc[] = [
     playground: {
       controls: [
         { type: "range", key: "rows", label: "Rows", min: 2, max: 10, step: 1 },
-        { type: "check", key: "withLabel", label: "With label" },
-        { type: "check", key: "charCounter", label: "Character counter" },
+        { type: "check", key: "withLabel", label: "With label", disabledWhen: (s) => s.toolbar === true },
+        { type: "check", key: "charCounter", label: "Character counter", disabledWhen: (s) => s.toolbar === true },
+        { type: "check", key: "toolbar", label: "Formatting toolbar" },
         { type: "check", key: "disabled", label: "Disabled" },
       ],
-      defaults: { rows: 4, withLabel: true, charCounter: false, disabled: false },
+      defaults: { rows: 4, withLabel: true, charCounter: false, toolbar: false, disabled: false },
       render: (s) => {
         const dis = s.disabled ? " disabled" : "";
-        const label = s.withLabel ? `<label class="label">Description</label>` : "";
         const h = (s.rows as number) * 22 + 16;
+        if (s.toolbar) {
+          return `<div style="max-width:400px;border:1px solid hsl(var(--border));border-radius:var(--radius-md);overflow:hidden"><div style="display:flex;align-items:center;gap:0.25rem;padding:0.5rem 0.75rem;border-bottom:1px solid hsl(var(--border));background:hsl(var(--muted)/0.3)"><button class="btn btn-ghost btn-sm" style="font-weight:700;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''">B</button><button class="btn btn-ghost btn-sm" style="font-style:italic;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''">I</button><button class="btn btn-ghost btn-sm" style="font-family:var(--font-mono);font-size:11px;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''"><span>&lt;/&gt;</span></button><div class="sep-v" style="height:1rem;margin:0 0.25rem"></div><button class="btn btn-ghost btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Posted!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Comment</button></div><textarea class="input" placeholder="Leave a comment…" style="min-height:${h}px;border:0;border-radius:0;resize:vertical"${dis}></textarea></div>`;
+        }
+        const label = s.withLabel ? `<label class="label">Description</label>` : "";
         const counter = s.charCounter ? `<div style="display:flex;justify-content:flex-end;margin-top:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">0 / 280</span></div>` : "";
-        return `<div style="max-width:400px">${label}<textarea class="input" placeholder="A few words about this project…" style="min-height:${h}px;resize:vertical"${dis}></textarea>${counter}</div>`;
+        const oninput = s.charCounter ? ` oninput="var c=this.value.length;var s=this.nextElementSibling.querySelector('span');s.textContent=c+' / 280';s.style.color=c>280?'hsl(0 84% 60%)':'hsl(var(--muted-foreground))'"` : "";
+        return `<div style="max-width:400px">${label}<textarea class="input" placeholder="A few words about this project…" style="min-height:${h}px;resize:vertical"${dis}${oninput}></textarea>${counter}</div>`;
       },
     },
-    sections: [
-      {
-        title: "Basic",
-        anatomy: "<code>textarea.input</code> with min-height. Resize vertical only.",
-        examples: [{
-          full: true,
-          html: `<div style="max-width:560px">
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="max-width:400px">
   <label class="label">Description</label>
-  <textarea class="input" placeholder="A few words about this project…" style="min-height:80px;resize:vertical"></textarea>
-  <p class="field-helper">Plain text only. Markdown not supported.</p>
+  <textarea class="input" style="height:32px;resize:none">This is a longer description that runs past one line and gets clipped.</textarea>
 </div>`,
-        }],
+        caption: "A locked, single-line textarea hides long content with no way to expand.",
       },
-      {
-        title: "With character count",
-        anatomy: "Trailing counter turns red once max is exceeded.",
-        examples: [{
-          full: true,
-          html: `<div style="max-width:560px">
-  <label class="label">Bio</label>
-  <textarea class="input" placeholder="Tell us about yourself…" style="min-height:80px;resize:vertical" oninput="var c=this.value.length;var s=this.nextElementSibling.querySelector('span');s.textContent=c+' / 280';s.style.color=c>280?'hsl(0 84% 60%)':'hsl(var(--muted-foreground))'"></textarea>
-  <div style="display:flex;justify-content:flex-end;margin-top:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">0 / 280</span></div>
+      do: {
+        html: `<div style="max-width:400px">
+  <label class="label">Description</label>
+  <textarea class="input" style="min-height:80px;resize:vertical">This is a longer description that runs past one line and stays readable.</textarea>
 </div>`,
-        }],
+        caption: "Give a sensible min-height and allow vertical resize so users can see and grow their text.",
       },
-      {
-        title: "With toolbar",
-        anatomy: "A simple toolbar above the textarea: usually formatting controls or an attach button.",
-        examples: [{
-          full: true,
-          html: `<div style="max-width:560px;border:1px solid hsl(var(--border));border-radius:var(--radius-md,8px);overflow:hidden">
-  <div style="display:flex;align-items:center;gap:0.25rem;padding:0.5rem 0.75rem;border-bottom:1px solid hsl(var(--border));background:hsl(var(--muted) / 0.3)">
-    <button class="btn btn-ghost btn-sm" style="font-weight:700;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''">B</button>
-    <button class="btn btn-ghost btn-sm" style="font-style:italic;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''">I</button>
-    <button class="btn btn-ghost btn-sm" style="font-family:var(--font-mono);font-size:11px;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''"><span>&lt;/&gt;</span></button>
-    <div class="sep-v" style="height:1rem;margin:0 0.25rem"></div>
-    <button class="btn btn-ghost btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Posted!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Comment</button>
-  </div>
-  <textarea class="input" placeholder="Leave a comment…" style="min-height:80px;border:0;border-radius:0;resize:vertical"></textarea>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
