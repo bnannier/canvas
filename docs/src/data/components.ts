@@ -21,6 +21,29 @@ const DONKEY = "data:image/svg+xml," + encodeURIComponent(
   '</svg>',
 );
 
+// ── Tailwind recipes ─────────────────────────────────────────────────────
+// Literal class strings so Tailwind generates the utilities, plus helpers,
+// reused by playground renders and do/dont markup.
+
+const btnBase =
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50";
+const btnVariant: Record<string, string> = {
+  default: "bg-primary text-primary-foreground hover:bg-primary/90",
+  outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+  secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+  ghost: "hover:bg-accent hover:text-accent-foreground",
+  destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+  link: "text-primary underline-offset-4 hover:underline",
+};
+const btnSize: Record<string, string> = {
+  sm: "h-8 rounded-md px-3 text-xs",
+  default: "h-9 px-4 py-2",
+  lg: "h-10 rounded-md px-6",
+  icon: "h-9 w-9",
+};
+const btn = (variant: string, label: string, size = "default", attrs = "") =>
+  `<button class="${btnBase} ${btnVariant[variant]} ${btnSize[size]}"${attrs}>${label}</button>`;
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -535,16 +558,11 @@ export const COMPONENTS: ComponentDoc[] = [
       ],
       defaults: { variant: "default", size: "default", disabled: false, withIcon: false, label: "Save changes" },
       render: (s) => {
-        const v = s.variant as string;
-        const sz = s.size as string;
-        const label = s.label as string;
-        const sizeCls = sz === "default" ? "" : ` btn-${sz}`;
+        const plus = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
         const dis = s.disabled ? " disabled" : "";
-        const icon = s.withIcon ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>` : "";
-        if (sz === "icon") {
-          return `<button class="btn btn-${v} btn-icon"${dis}>${icon || "+"}</button>`;
-        }
-        return `<button class="btn btn-${v}${sizeCls}"${dis}>${icon}${label}</button>`;
+        if (s.size === "icon") return btn(s.variant as string, s.withIcon ? plus : "+", "icon", dis);
+        const inner = s.withIcon ? `${plus}${s.label}` : `${s.label}`;
+        return btn(s.variant as string, inner, s.size as string, dis);
       },
     },
     sections: [],
@@ -552,93 +570,66 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Default (primary)",
         dont: {
-          html: `<div style="display:flex;gap:0.5rem">
-  <button class="btn btn-default">Save</button>
-  <button class="btn btn-default">Apply</button>
-  <button class="btn btn-default">Continue</button>
-</div>`,
+          html: `<div class="flex gap-2">${btn("default", "Save")}${btn("default", "Apply")}${btn("default", "Continue")}</div>`,
           caption: "Multiple primaries compete; nothing stands out.",
         },
         do: {
-          html: `<div style="display:flex;gap:0.5rem">
-  <button class="btn btn-default">Save</button>
-  <button class="btn btn-outline">Cancel</button>
-</div>`,
+          html: `<div class="flex gap-2">${btn("default", "Save")}${btn("outline", "Cancel")}</div>`,
           caption: "One clear primary action; everything else is supporting.",
         },
       },
       {
         title: "Outline",
         dont: {
-          html: `<div style="display:flex;gap:0.5rem">
-  <button class="btn btn-outline">Save</button>
-  <button class="btn btn-outline">Publish</button>
-  <button class="btn btn-outline">Schedule</button>
-</div>`,
+          html: `<div class="flex gap-2">${btn("outline", "Save")}${btn("outline", "Publish")}${btn("outline", "Schedule")}</div>`,
           caption: "All-outline leaves no signal which action is primary.",
         },
         do: {
-          html: `<div style="display:flex;gap:0.5rem">
-  <button class="btn btn-default">Publish</button>
-  <button class="btn btn-outline">Save draft</button>
-  <button class="btn btn-outline">Schedule</button>
-</div>`,
+          html: `<div class="flex gap-2">${btn("default", "Publish")}${btn("outline", "Save draft")}${btn("outline", "Schedule")}</div>`,
           caption: "Promote the main action to default; keep the rest outline.",
         },
       },
       {
         title: "Secondary",
         dont: {
-          html: `<button class="btn btn-secondary">Create account</button>`,
+          html: btn("secondary", "Create account"),
           caption: "A secondary button as the main call to action under-sells it.",
         },
         do: {
-          html: `<div style="display:flex;gap:0.5rem">
-  <button class="btn btn-default">Create account</button>
-  <button class="btn btn-secondary">Import instead</button>
-</div>`,
+          html: `<div class="flex gap-2">${btn("default", "Create account")}${btn("secondary", "Import instead")}</div>`,
           caption: "Default for the primary action; secondary for the next one down.",
         },
       },
       {
         title: "Ghost",
         dont: {
-          html: `<button class="btn btn-ghost">Save changes</button>`,
+          html: btn("ghost", "Save changes"),
           caption: "A ghost button is too quiet to carry the primary action.",
         },
         do: {
-          html: `<div style="display:flex;gap:0.5rem">
-  <button class="btn btn-ghost">Cancel</button>
-  <button class="btn btn-default">Save changes</button>
-</div>`,
+          html: `<div class="flex gap-2">${btn("ghost", "Cancel")}${btn("default", "Save changes")}</div>`,
           caption: "Use ghost for tertiary and toolbar actions; keep the CTA filled.",
         },
       },
       {
         title: "Destructive",
         dont: {
-          html: `<button class="btn btn-destructive">Save changes</button>`,
+          html: btn("destructive", "Save changes"),
           caption: "Red on a safe action cries wolf; users learn to ignore it.",
         },
         do: {
-          html: `<div style="display:flex;gap:0.5rem">
-  <button class="btn btn-default">Save changes</button>
-  <button class="btn btn-destructive">Delete account</button>
-</div>`,
+          html: `<div class="flex gap-2">${btn("default", "Save changes")}${btn("destructive", "Delete account")}</div>`,
           caption: "Reserve the destructive variant for irreversible actions like delete.",
         },
       },
       {
         title: "Link",
         dont: {
-          html: `<button class="btn btn-link">Submit form</button>`,
+          html: btn("link", "Submit form"),
           caption: "A link-styled submit doesn't look pressable and gets lost.",
         },
         do: {
-          html: `<div style="display:flex;gap:0.75rem;align-items:center">
-  <button class="btn btn-default">Submit</button>
-  <button class="btn btn-link">Learn more</button>
-</div>`,
+          html: `<div class="flex items-center gap-3">${btn("default", "Submit")}${btn("link", "Learn more")}</div>`,
           caption: "Link variant for inline navigation; a filled button for the submit.",
         },
       },
