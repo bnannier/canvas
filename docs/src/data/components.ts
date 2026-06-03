@@ -134,6 +134,12 @@ const menuTrigger =
   ` onclick="var d=this.nextElementSibling;if(d.classList.contains('hidden')){d.classList.remove('hidden');var c=function(e){if(!d.contains(e.target)){d.classList.add('hidden');document.removeEventListener('click',c)}};setTimeout(function(){document.addEventListener('click',c)},0)}else{d.classList.add('hidden')}"`;
 const shortcut = (k: string) => `<span class="ml-auto text-xs tracking-widest text-muted-foreground">${k}</span>`;
 
+const pageBtnCls =
+  "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50";
+const pageBtnActive = "bg-foreground text-background hover:bg-foreground hover:text-background";
+const pageBtn = (label: string, active = false, attrs = "") =>
+  `<button data-pg class="${pageBtnCls}${active ? " " + pageBtnActive : ""}"${attrs}>${label}</button>`;
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -1000,7 +1006,7 @@ export const COMPONENTS: ComponentDoc[] = [
         const prevDis = cur <= 1 ? " disabled" : "";
         const nextDis = cur >= total ? " disabled" : "";
         if (s.variant === "compact") {
-          return `<div data-p="${cur}" onclick="var c=this;var t=event.target.closest('.btn');if(!t||t.disabled)return;var p=+c.dataset.p;if(/Next/.test(t.textContent)&&p<${total})p++;else if(/Previous/.test(t.textContent)&&p>1)p--;else return;c.dataset.p=p;c.querySelector('[data-info]').textContent='Showing '+(((p-1)*${perPage})+1)+'–'+Math.min(p*${perPage},${total * perPage})+' of ${total * perPage}';var bs=c.querySelectorAll('button');bs[0].disabled=p<=1;bs[1].disabled=p>=${total}" style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span data-info style="color:hsl(var(--muted-foreground))">Showing ${showFrom}–${showTo} of ${total * perPage}</span><div style="display:flex;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button><button class="btn btn-outline btn-sm"${nextDis}>Next</button></div></div>`;
+          return `<div data-p="${cur}" class="flex items-center justify-between gap-4 text-sm" onclick="var c=this;var t=event.target.closest('button');if(!t||t.disabled)return;var p=+c.dataset.p;if(/Next/.test(t.textContent)&&p<${total})p++;else if(/Previous/.test(t.textContent)&&p>1)p--;else return;c.dataset.p=p;c.querySelector('[data-info]').textContent='Showing '+(((p-1)*${perPage})+1)+'–'+Math.min(p*${perPage},${total * perPage})+' of ${total * perPage}';var bs=c.querySelectorAll('button');bs[0].disabled=p<=1;bs[1].disabled=p>=${total}"><span data-info class="text-muted-foreground">Showing ${showFrom}–${showTo} of ${total * perPage}</span><div class="flex gap-1">${btn("outline", "Previous", "sm", prevDis)}${btn("outline", "Next", "sm", nextDis)}</div></div>`;
         }
         if (s.variant === "numbered") {
           const list: number[] = [];
@@ -1014,47 +1020,20 @@ export const COMPONENTS: ComponentDoc[] = [
             if (cur < total - 2) list.push(-1);
             add(total);
           }
-          const pages = list.map((p) => {
-            if (p === -1) return `<span style="padding:0 4px;color:hsl(var(--muted-foreground))">…</span>`;
-            const active = p === cur ? "background:hsl(var(--foreground));color:hsl(var(--background));" : "";
-            return `<button class="btn btn-ghost btn-sm" style="min-width:32px;${active}">${p}</button>`;
-          }).join("");
-          return `<div onclick="var b=event.target.closest('.btn-ghost');if(!b)return;this.querySelectorAll('.btn-ghost').forEach(function(x){x.style.background='';x.style.color=''});b.style.background='hsl(var(--foreground))';b.style.color='hsl(var(--background))'" style="display:flex;align-items:center;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button>${pages}<button class="btn btn-outline btn-sm"${nextDis}>Next</button></div>`;
+          const pages = list.map((p) => p === -1 ? `<span class="px-1 text-muted-foreground">…</span>` : pageBtn(String(p), p === cur)).join("");
+          return `<div class="flex items-center gap-1" onclick="var b=event.target.closest('[data-pg]');if(!b)return;this.querySelectorAll('[data-pg]').forEach(function(x){x.className='${pageBtnCls}'});b.className='${pageBtnCls} ${pageBtnActive}'">${btn("outline", "Previous", "sm", prevDis)}${pages}${btn("outline", "Next", "sm", nextDis)}</div>`;
         }
-        return `<div data-p="${cur}" data-per="${perPage}" style="display:flex;align-items:center;gap:1rem;font-size:13px"><div style="display:flex;align-items:center;gap:0.5rem"><span style="color:hsl(var(--muted-foreground))">Rows per page</span><select class="input" style="width:64px;height:28px;font-size:12px" onchange="var c=this.closest('[data-p]');c.dataset.per=+this.value;c.dataset.p=1;var tp=Math.max(1,Math.ceil(${total * perPage}/+this.value));c.querySelector('[data-info]').textContent='Page 1 of '+tp;var bs=c.querySelectorAll('.btn');bs[0].disabled=true;bs[1].disabled=tp<=1"><option>10</option><option>25</option><option>50</option></select></div><span data-info style="color:hsl(var(--muted-foreground))">Page ${cur} of ${total}</span><div style="display:flex;gap:0.25rem" onclick="var c=this.closest('[data-p]');var t=event.target.closest('.btn');if(!t||t.disabled)return;var p=+c.dataset.p;var tp=Math.max(1,Math.ceil(${total * perPage}/+c.dataset.per));if(t.textContent.includes('>')&&p<tp)p++;else if(t.textContent.includes('<')&&p>1)p--;else return;c.dataset.p=p;c.querySelector('[data-info]').textContent='Page '+p+' of '+tp;var bs=c.querySelectorAll('.btn');bs[0].disabled=p<=1;bs[1].disabled=p>=tp"><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${prevDis}>&lt;</button><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${nextDis}>&gt;</button></div></div>`;
+        return `<div data-p="${cur}" data-per="${perPage}" class="flex items-center gap-4 text-sm"><div class="flex items-center gap-2"><span class="text-muted-foreground">Rows per page</span><select class="${inputBase.replace("h-9", "h-7")} w-16 text-xs" onchange="var c=this.closest('[data-p]');c.dataset.per=+this.value;c.dataset.p=1;var tp=Math.max(1,Math.ceil(${total * perPage}/+this.value));c.querySelector('[data-info]').textContent='Page 1 of '+tp;var bs=c.querySelectorAll('button');bs[0].disabled=true;bs[1].disabled=tp<=1"><option>10</option><option>25</option><option>50</option></select></div><span data-info class="text-muted-foreground">Page ${cur} of ${total}</span><div class="flex gap-1" onclick="var c=this.closest('[data-p]');var t=event.target.closest('button');if(!t||t.disabled)return;var p=+c.dataset.p;var tp=Math.max(1,Math.ceil(${total * perPage}/+c.dataset.per));if(t.textContent.includes('>')&&p<tp)p++;else if(t.textContent.includes('<')&&p>1)p--;else return;c.dataset.p=p;c.querySelector('[data-info]').textContent='Page '+p+' of '+tp;var bs=c.querySelectorAll('button');bs[0].disabled=p<=1;bs[1].disabled=p>=tp"><button class="${btnBase} ${btnVariant.outline} h-7 w-7 rounded-md p-0"${prevDis}>&lt;</button><button class="${btnBase} ${btnVariant.outline} h-7 w-7 rounded-md p-0"${nextDis}>&gt;</button></div></div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<nav class="pagination">
-  <button class="page-btn" disabled>&laquo;</button>
-  <button class="page-btn active">1</button>
-  <button class="page-btn">2</button>
-  <button class="page-btn">3</button>
-  <button class="page-btn">4</button>
-  <button class="page-btn">5</button>
-  <button class="page-btn">6</button>
-  <button class="page-btn">7</button>
-  <button class="page-btn">8</button>
-  <button class="page-btn">9</button>
-  <button class="page-btn">10</button>
-  <button class="page-btn">11</button>
-  <button class="page-btn">12</button>
-  <button class="page-btn">&raquo;</button>
-</nav>`,
+        html: `<nav class="flex items-center gap-1">${pageBtn("&laquo;", false, " disabled")}${pageBtn("1", true)}${[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => pageBtn(String(n))).join("")}${pageBtn("&raquo;")}</nav>`,
         caption: "Rendering every page number overflows and stops being scannable past a handful.",
       },
       do: {
-        html: `<nav class="pagination">
-  <button class="page-btn" disabled>&laquo;</button>
-  <button class="page-btn active">1</button>
-  <button class="page-btn">2</button>
-  <button class="page-btn">3</button>
-  <span class="page-ellipsis">...</span>
-  <button class="page-btn">12</button>
-  <button class="page-btn">&raquo;</button>
-</nav>`,
+        html: `<nav class="flex items-center gap-1">${pageBtn("&laquo;", false, " disabled")}${pageBtn("1", true)}${pageBtn("2")}${pageBtn("3")}<span class="px-1 text-muted-foreground">...</span>${pageBtn("12")}${pageBtn("&raquo;")}</nav>`,
         caption: "Truncate the middle with an ellipsis; keep first, last, and a window around the current page.",
       },
     }],
