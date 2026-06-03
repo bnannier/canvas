@@ -173,6 +173,32 @@ const typeScale: Record<string, string> = {
 const spinnerEl = (size = "h-5 w-5") =>
   `<div class="${size} animate-spin rounded-full border-2 border-muted border-t-foreground"></div>`;
 const popoverCls = "rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md";
+const alertTone: Record<string, { box: string; title: string }> = {
+  info: { box: "border-border bg-muted/40", title: "text-foreground" },
+  success: { box: "border-green-600/30 bg-green-600/5", title: "text-green-700 dark:text-green-400" },
+  warning: { box: "border-amber-600/30 bg-amber-600/5", title: "text-amber-700 dark:text-amber-400" },
+  destructive: { box: "border-destructive/30 bg-destructive/5", title: "text-destructive" },
+};
+const alertBox = (v: string, title: string, desc: string, extra = "") =>
+  `<div data-alert class="max-w-[560px] rounded-lg border px-4 py-3 ${alertTone[v].box}"><div class="mb-1 text-sm font-semibold ${alertTone[v].title}">${title}</div><div class="text-sm text-muted-foreground">${desc}</div>${extra}</div>`;
+const statTone: Record<string, string> = {
+  blue: "bg-blue-500/10 text-blue-600",
+  success: "bg-green-500/10 text-green-600",
+  purple: "bg-purple-500/10 text-purple-600",
+  destructive: "bg-destructive/10 text-destructive",
+  amber: "bg-amber-500/10 text-amber-600",
+};
+const codeblockCls =
+  "overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-[13px] leading-relaxed";
+const tableWrap = "overflow-x-auto rounded-lg border border-border";
+const tableCls = "w-full text-sm";
+const thCls = "border-b border-border px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
+const tdCls = "border-b border-border px-4 py-2.5";
+const emptyCardCls = "rounded-lg border border-dashed border-border px-6 py-8 text-center";
+const emptyCard = (title: string, desc: string, extra = "") =>
+  `<div class="${emptyCardCls}"><div class="text-[15px] font-semibold">${title}</div><p class="mt-1 text-sm text-muted-foreground">${desc}</p>${extra}</div>`;
+const fieldRowEl = (label: string, value: string) =>
+  `<div class="grid grid-cols-[180px_1fr] gap-4 text-sm"><span class="text-muted-foreground">${label}</span><span>${value}</span></div>`;
 
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
@@ -1389,24 +1415,25 @@ export const COMPONENTS: ComponentDoc[] = [
       defaults: { variant: "info", title: true, actions: false, banner: false },
       render: (s) => {
         if (s.banner) {
-          return `<div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.625rem 1rem;background:hsl(var(--foreground));color:hsl(var(--background));font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>We've shipped a new dashboard. <a href="#" style="color:inherit;text-decoration:underline" onclick="event.preventDefault()">See what's new &rarr;</a></span></div>`;
+          return `<div class="flex items-center justify-center gap-3 bg-foreground px-4 py-2.5 text-sm text-background"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>We've shipped a new dashboard. <a href="#" class="underline" onclick="event.preventDefault()">See what's new &rarr;</a></span></div>`;
         }
         const v = s.variant as string;
         const titles: Record<string, string> = { info: "Heads up", success: "All set", warning: "Action required", destructive: "Something went wrong" };
         const descs: Record<string, string> = { info: "Maintenance window scheduled for Sunday 2:00 UTC.", success: "Your changes have been saved successfully.", warning: "Your trial expires in 3 days.", destructive: "Could not save your changes. Please try again." };
-        const title = s.title ? `<div class="alert-title">${titles[v]}</div>` : "";
-        const actions = s.actions ? `<div style="display:flex;gap:0.5rem;margin-top:0.75rem"><button class="btn btn-sm btn-default" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Upgrading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Upgrade plan</button><button class="btn btn-ghost btn-sm" onclick="this.closest('.alert').style.display='none'">Dismiss</button></div>` : "";
-        return `<div class="alert alert-${v}" style="max-width:560px"><div>${title}<div class="alert-desc">${descs[v]}</div>${actions}</div></div>`;
+        const title = s.title ? titles[v] : "";
+        const actions = s.actions ? `<div class="mt-3 flex gap-2">${btn("default", "Upgrade plan", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Upgrading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}${btn("ghost", "Dismiss", "sm", ` onclick="this.closest('[data-alert]').style.display='none'"`)}</div>` : "";
+        const titleEl = title ? `<div class="mb-1 text-sm font-semibold ${alertTone[v].title}">${title}</div>` : "";
+        return `<div data-alert class="max-w-[560px] rounded-lg border px-4 py-3 ${alertTone[v].box}">${titleEl}<div class="text-sm text-muted-foreground">${descs[v]}</div>${actions}</div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div class="alert alert-destructive" style="max-width:560px"><div><div class="alert-title">Saved</div><div class="alert-desc">Your changes have been saved successfully.</div></div></div>`,
+        html: alertBox("destructive", "Saved", "Your changes have been saved successfully."),
         caption: "Using the error variant for non-errors cries wolf; users learn to ignore red.",
       },
       do: {
-        html: `<div class="alert alert-success" style="max-width:560px"><div><div class="alert-title">Saved</div><div class="alert-desc">Your changes have been saved successfully.</div></div></div>`,
+        html: alertBox("success", "Saved", "Your changes have been saved successfully."),
         caption: "Match the variant to the severity: success for confirmations, destructive for failures.",
       },
     }],
@@ -1415,7 +1442,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "card",
     name: "Cards",
-    description: "Three families. <code>StatCard</code> = a single metric, big number + delta. <code>SectionCard</code> = a labeled content surface with optional header and divider. Generic <code>.card</code> = bring your own structure.",
+    description: "Three families. <code>StatCard</code> = a single metric, big number + delta. <code>SectionCard</code> = a labeled content surface with optional header and divider. Generic <code>card</code> = bring your own structure.",
     category: "Molecules",
     playground: {
       controls: [
@@ -1429,32 +1456,32 @@ export const COMPONENTS: ComponentDoc[] = [
       defaults: { type: "stat", tone: "blue", icon: true, label: "Active identities", value: "12,348", header: true },
       render: (s) => {
         if (s.type === "generic") {
-          return `<div class="card" style="max-width:360px;padding:1.5rem"><div style="font-size:15px;font-weight:600;margin-bottom:4px">Anything goes here</div><p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground))">The .card class gives you the surface + border + radius + shadow. You bring the content.</p></div>`;
+          return `<div class="${cardCls} max-w-[360px] p-6"><div class="mb-1 text-[15px] font-semibold">Anything goes here</div><p class="text-sm text-muted-foreground">The card surface gives you the border, radius, and shadow. You bring the content.</p></div>`;
         }
         if (s.type === "section") {
-          const header = s.header ? `<div class="section-card-header"><h3 class="h4">Recent activity</h3><button class="btn btn-ghost btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Loading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">View all</button></div><div class="section-card-divider"></div>` : "";
-          return `<div class="section-card" style="max-width:360px">${header}<div class="section-card-body"><p class="body" style="margin:0">A labeled content surface. Drop fields, a list, or any module of content here.</p></div></div>`;
+          const header = s.header ? `<div class="flex items-center justify-between px-5 pb-4 pt-5"><h3 class="${typeScale.h4}">Recent activity</h3>${btn("ghost", "View all", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Loading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}</div><div class="h-px bg-border"></div>` : "";
+          return `<div class="${cardCls} max-w-[360px]">${header}<div class="p-5"><p class="text-sm">A labeled content surface. Drop fields, a list, or any module of content here.</p></div></div>`;
         }
         const tone = s.tone as string;
         const letters: Record<string, string> = { blue: "U", success: "S", purple: "O", destructive: "!", amber: "T" };
-        const ico = s.icon ? `<div class="stat-card-icon ${tone}">${letters[tone]}</div>` : "";
-        return `<div class="stat-card" style="max-width:280px"><div class="stat-card-row"><div><div class="stat-card-label">${s.label}</div><div class="stat-card-value">${s.value}</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">+142 today</div></div>${ico}</div></div>`;
+        const ico = s.icon ? `<div class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold ${statTone[tone]}">${letters[tone]}</div>` : "";
+        return `<div class="${cardCls} max-w-[280px] p-5"><div class="flex items-start justify-between"><div><div class="text-xs font-medium uppercase tracking-wide text-muted-foreground">${s.label}</div><div class="mt-1 text-2xl font-bold">${s.value}</div><div class="mt-0.5 text-[11px] text-muted-foreground">+142 today</div></div>${ico}</div></div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div class="section-card" style="max-width:360px">
-  <div class="section-card-header"><h3 class="h4">Recent activity</h3></div>
-  <div class="section-card-body"><p class="body" style="margin:0">Two events today.</p></div>
+        html: `<div class="${cardCls} max-w-[360px]">
+  <div class="flex items-center justify-between px-5 pb-4 pt-5"><h3 class="${typeScale.h4}">Recent activity</h3></div>
+  <div class="px-5 pb-5"><p class="text-sm">Two events today.</p></div>
 </div>`,
         caption: "Without the divider the header floats and stops reading as a header.",
       },
       do: {
-        html: `<div class="section-card" style="max-width:360px">
-  <div class="section-card-header"><h3 class="h4">Recent activity</h3></div>
-  <div class="section-card-divider"></div>
-  <div class="section-card-body"><p class="body" style="margin:0">Two events today.</p></div>
+        html: `<div class="${cardCls} max-w-[360px]">
+  <div class="flex items-center justify-between px-5 pb-4 pt-5"><h3 class="${typeScale.h4}">Recent activity</h3></div>
+  <div class="h-px bg-border"></div>
+  <div class="p-5"><p class="text-sm">Two events today.</p></div>
 </div>`,
         caption: "Keep the divider between header and body; it anchors the title.",
       },
@@ -1469,7 +1496,7 @@ export const COMPONENTS: ComponentDoc[] = [
     sections: [{
       title: "Default",
       examples: [{
-        html: `<pre class="codeblock">const theme = getTheme();
+        html: `<pre class="${codeblockCls}">const theme = getTheme();
 setTheme(theme === "dark" ? "light" : "dark");</pre>`,
       }],
     }],
@@ -1486,10 +1513,7 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "Icon disc, title, description. Used inside SectionCard or as a cell colspan in tables.",
         anatomy: "Round muted icon container (48x48) . 12px gap . semibold 15px title . 13px muted description.",
         examples: [{
-          html: `<div class="empty-card">
-  <div class="title">No results found</div>
-  <p>Try adjusting your search filters.</p>
-</div>`,
+          html: emptyCard("No results found", "Try adjusting your search filters."),
         }],
       },
       {
@@ -1497,15 +1521,12 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "When a query has no results, the empty state spans all columns.",
         examples: [{
           full: true,
-          html: `<div class="dt-wrap">
-  <table class="dt-table">
-    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+          html: `<div class="${tableWrap}">
+  <table class="${tableCls}">
+    <thead><tr>${["Name", "Email", "Role", "Status"].map((h) => `<th class="${thCls}">${h}</th>`).join("")}</tr></thead>
     <tbody>
-      <tr><td colspan="4" style="padding:3rem 1rem">
-        <div class="empty-card">
-          <div class="title">No results</div>
-          <p>Try adjusting your search or filter criteria.</p>
-        </div>
+      <tr><td colspan="4" class="px-4 py-10">
+        ${emptyCard("No results", "Try adjusting your search or filter criteria.")}
       </td></tr>
     </tbody>
   </table>
@@ -1516,23 +1537,19 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "With a single action",
         description: "If the user can do something about it, put one button.",
         examples: [{
-          html: `<div class="empty-card">
-  <div class="title">No identities yet</div>
-  <p>Create your first identity to get started.</p>
-  <button class="btn btn-default btn-sm" style="margin-top:1rem" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Creating…';setTimeout(function(){b.textContent='Created!';setTimeout(function(){b.textContent=o;b.disabled=false},1200)},800)">Create identity</button>
-</div>`,
+          html: emptyCard("No identities yet", "Create your first identity to get started.", `<div class="mt-4">${btn("default", "Create identity", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Creating…';setTimeout(function(){b.textContent='Created!';setTimeout(function(){b.textContent=o;b.disabled=false},1200)},800)"`)}</div>`),
         }],
       },
       {
         title: "Success-flavored ('all clear')",
         description: "When emptiness is good: no lockouts, no errors, no pending work.",
         examples: [{
-          html: `<div class="empty-card">
-  <div style="width:48px;height:48px;border-radius:50%;background:hsl(143 70% 45% / 0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(143 60% 38%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          html: `<div class="${emptyCardCls}">
+  <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-600/10">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
   </div>
-  <div class="title">All clear</div>
-  <p>No locked accounts or pending reviews.</p>
+  <div class="text-[15px] font-semibold">All clear</div>
+  <p class="mt-1 text-sm text-muted-foreground">No locked accounts or pending reviews.</p>
 </div>`,
         }],
       },
@@ -1540,30 +1557,12 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "Variants by icon",
         columns: 3,
         examples: [
-          {
-            label: "Users",
-            html: `<div class="empty-card"><div class="title">No users</div><p>Invite your first team member.</p></div>`,
-          },
-          {
-            label: "Search",
-            html: `<div class="empty-card"><div class="title">No results</div><p>Try a different query.</p></div>`,
-          },
-          {
-            label: "Files",
-            html: `<div class="empty-card"><div class="title">No files</div><p>Upload or drag files here.</p></div>`,
-          },
-          {
-            label: "Activity",
-            html: `<div class="empty-card"><div class="title">No activity</div><p>Events will appear as they happen.</p></div>`,
-          },
-          {
-            label: "Notifications",
-            html: `<div class="empty-card"><div class="title">All caught up</div><p>No new notifications.</p></div>`,
-          },
-          {
-            label: "Errors",
-            html: `<div class="empty-card"><div class="title">No errors</div><p>Everything is running smoothly.</p></div>`,
-          },
+          { label: "Users", html: emptyCard("No users", "Invite your first team member.") },
+          { label: "Search", html: emptyCard("No results", "Try a different query.") },
+          { label: "Files", html: emptyCard("No files", "Upload or drag files here.") },
+          { label: "Activity", html: emptyCard("No activity", "Events will appear as they happen.") },
+          { label: "Notifications", html: emptyCard("All caught up", "No new notifications.") },
+          { label: "Errors", html: emptyCard("No errors", "Everything is running smoothly.") },
         ],
       },
     ],
@@ -1580,11 +1579,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "180px label column . 16px gap . value column. Aligns multiple fields to the same baseline for scanning.",
         examples: [{
           full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:0.75rem;max-width:400px">
-  <div class="field"><span class="field-label">User ID</span><span class="field-value mono">usr_abc123</span></div>
-  <div class="field"><span class="field-label">Name</span><span class="field-value">Rachel Chen</span></div>
-  <div class="field"><span class="field-label">Role</span><span class="field-value">Admin</span></div>
-  <div class="field"><span class="field-label">Status</span><span class="field-value"><span class="status-badge sb-success"><span class="dot"></span> Active</span></span></div>
+          html: `<div class="flex max-w-[400px] flex-col gap-3">
+  ${fieldRowEl("User ID", `<span class="font-mono">usr_abc123</span>`)}
+  ${fieldRowEl("Name", "Rachel Chen")}
+  ${fieldRowEl("Role", "Admin")}
+  ${fieldRowEl("Status", statusBadge("success", "Active"))}
 </div>`,
         }],
       },
@@ -1593,10 +1592,10 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "Pass mono to use the JetBrains font for IDs, hashes, timestamps: anything copy-able.",
         examples: [{
           full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:0.75rem;max-width:400px">
-  <div class="field"><span class="field-label">Client ID</span><span class="field-value mono">clt_8f2a9b4c7e1d</span></div>
-  <div class="field"><span class="field-label">Created</span><span class="field-value mono">2026-05-24T14:32:00Z</span></div>
-  <div class="field"><span class="field-label">Fingerprint</span><span class="field-value mono">sha256:xK9v...</span></div>
+          html: `<div class="flex max-w-[400px] flex-col gap-3">
+  ${fieldRowEl("Client ID", `<span class="font-mono">clt_8f2a9b4c7e1d</span>`)}
+  ${fieldRowEl("Created", `<span class="font-mono">2026-05-24T14:32:00Z</span>`)}
+  ${fieldRowEl("Fingerprint", `<span class="font-mono">sha256:xK9v...</span>`)}
 </div>`,
         }],
       },
@@ -1605,11 +1604,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "value can be any React node: a badge, a button, a small layout.",
         examples: [{
           full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:0.75rem;max-width:400px">
-  <div class="field"><span class="field-label">Status</span><span class="field-value"><span class="status-badge sb-success"><span class="dot"></span> Active</span></span></div>
-  <div class="field"><span class="field-label">Plan</span><span class="field-value"><span class="badge badge-secondary">Pro</span></span></div>
-  <div class="field"><span class="field-label">Token</span><span class="field-value mono" style="display:flex;align-items:center;gap:0.5rem">sk_live_a8f2...c9e1 <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px" onclick="var b=this;navigator.clipboard.writeText('sk_live_a8f2c9e1');var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o},1500)">Copy</button></span></div>
-  <div class="field"><span class="field-label">Members</span><span class="field-value" style="display:flex;gap:0.25rem"><span class="avatar avatar-sm"><img src="/rachel-chen.jpg" alt="RC"></span><span class="avatar avatar-sm">AJ</span><span class="avatar avatar-sm">+3</span></span></div>
+          html: `<div class="flex max-w-[400px] flex-col gap-3">
+  ${fieldRowEl("Status", statusBadge("success", "Active"))}
+  ${fieldRowEl("Plan", badge("secondary", "Pro"))}
+  ${fieldRowEl("Token", `<span class="flex items-center gap-2"><span class="font-mono">sk_live_a8f2...c9e1</span><button class="${btnBase} ${btnVariant.ghost} h-6 px-2 text-[11px]" onclick="var b=this;navigator.clipboard.writeText('sk_live_a8f2c9e1');var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o},1500)">Copy</button></span>`)}
+  ${fieldRowEl("Members", `<span class="flex gap-1"><span class="${avatarBase} h-6 w-6"><img src="/rachel-chen.jpg" alt="RC" class="h-full w-full object-cover"></span><span class="${avatarBase} h-6 w-6 text-[10px]">AJ</span><span class="${avatarBase} h-6 w-6 text-[10px]">+3</span></span>`)}
 </div>`,
         }],
       },
@@ -1627,15 +1626,15 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Single column, label above input. Easiest to scan, best for short forms and forms on mobile.",
         examples: [{
           full: true,
-          html: `<div style="max-width:360px">
-  <div class="form-group"><label class="label">Email</label><input class="input" type="email" placeholder="you@example.com" /></div>
-  <div class="form-group"><label class="label">Password</label><input class="input" type="password" /></div>
-  <div class="form-actions"><button class="btn btn-default" style="width:100%" onclick="var form=this.closest('div[style*=max-width]');var email=form.querySelector('input[type=email]');var pw=form.querySelector('input[type=password]');var err=form.querySelector('[data-error]');if(err)err.remove();if(!email.value){email.style.borderColor='hsl(0 84% 60%)';var e=document.createElement('div');e.dataset.error='';e.style.cssText='font-size:12px;color:hsl(0 84% 60%);margin-top:4px';e.textContent='Email is required';email.parentElement.appendChild(e);setTimeout(function(){email.style.borderColor='';if(e.parentElement)e.remove()},2500);return}email.style.borderColor='hsl(143 70% 45%)';pw.style.borderColor='hsl(143 70% 45%)';var b=this;b.disabled=true;b.textContent='Signing in…';setTimeout(function(){b.textContent='Sign in';b.disabled=false;email.style.borderColor='';pw.style.borderColor=''},2000)">Sign in</button></div>
+          html: `<div data-form class="max-w-[360px]">
+  <div class="mb-4"><label class="${labelCls}">Email</label><input class="${inputBase}" type="email" placeholder="you@example.com" /></div>
+  <div class="mb-4"><label class="${labelCls}">Password</label><input class="${inputBase}" type="password" /></div>
+  <div class="mt-4"><button class="${btnBase} ${btnVariant.default} ${btnSize.default} w-full" onclick="var form=this.closest('[data-form]');var email=form.querySelector('input[type=email]');var err=form.querySelector('[data-error]');if(err)err.remove();if(!email.value){email.classList.add('ring-2','ring-destructive');var e=document.createElement('div');e.dataset.error='';e.className='mt-1 text-xs text-destructive';e.textContent='Email is required';email.parentElement.appendChild(e);setTimeout(function(){email.classList.remove('ring-2','ring-destructive');if(e.parentElement)e.remove()},2500);return}var b=this;b.disabled=true;b.textContent='Signing in…';setTimeout(function(){b.textContent='Sign in';b.disabled=false},2000)">Sign in</button></div>
 </div>`,
-          code: `<div style="max-width:360px">
-  <div class="form-group"><label class="label">Email</label><input class="input" type="email" placeholder="you@example.com" /></div>
-  <div class="form-group"><label class="label">Password</label><input class="input" type="password" /></div>
-  <div class="form-actions"><button class="btn btn-default" style="width:100%">Sign in</button></div>
+          code: `<div class="max-w-[360px]">
+  <div class="mb-4"><label class="${labelCls}">Email</label><input class="${inputBase}" type="email" placeholder="you@example.com" /></div>
+  <div class="mb-4"><label class="${labelCls}">Password</label><input class="${inputBase}" type="password" /></div>
+  <div class="mt-4"><button class="${btnBase} ${btnVariant.default} ${btnSize.default} w-full">Sign in</button></div>
 </div>`,
         }],
       },
@@ -1644,13 +1643,13 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Use when adjacent fields are related (first/last name, city/state). Stacks to one column below sm.",
         examples: [{
           full: true,
-          html: `<div style="max-width:560px">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-    <div class="form-group"><label class="label">First name</label><input class="input" placeholder="Ada" /></div>
-    <div class="form-group"><label class="label">Last name</label><input class="input" placeholder="King" /></div>
+          html: `<div data-form class="max-w-[560px]">
+  <div class="grid grid-cols-2 gap-3">
+    <div class="mb-4"><label class="${labelCls}">First name</label><input class="${inputBase}" placeholder="Ada" /></div>
+    <div class="mb-4"><label class="${labelCls}">Last name</label><input class="${inputBase}" placeholder="King" /></div>
   </div>
-  <div class="form-group"><label class="label">Email</label><input class="input" placeholder="ada@example.com" /></div>
-  <div class="form-actions" style="justify-content:flex-end"><button class="btn btn-outline btn-sm" onclick="var c=this.closest('div[style*=max-width]');c.style.opacity='0.5';setTimeout(function(){c.style.opacity='1'},800)">Cancel</button><button class="btn btn-default btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Creating…';setTimeout(function(){b.textContent='Created!';setTimeout(function(){b.textContent=o;b.disabled=false},1200)},800)">Create</button></div>
+  <div class="mb-4"><label class="${labelCls}">Email</label><input class="${inputBase}" placeholder="ada@example.com" /></div>
+  <div class="mt-4 flex justify-end gap-2">${btn("outline", "Cancel", "sm", ` onclick="var c=this.closest('[data-form]');c.style.opacity='0.5';setTimeout(function(){c.style.opacity='1'},800)"`)}${btn("default", "Create", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Creating…';setTimeout(function(){b.textContent='Created!';setTimeout(function(){b.textContent=o;b.disabled=false},1200)},800)"`)}</div>
 </div>`,
         }],
       },
@@ -1659,25 +1658,25 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Section headline + helper text on the left; the form fields on the right. Best for settings or long forms with multiple sections.",
         examples: [{
           full: true,
-          html: `<div style="max-width:720px">
-  <div style="display:grid;grid-template-columns:200px 1fr;gap:2rem;padding-bottom:1.5rem;border-bottom:1px solid hsl(var(--border))">
+          html: `<div class="max-w-[720px]">
+  <div class="grid grid-cols-[200px_1fr] gap-8 border-b border-border pb-6">
     <div>
-      <div style="font-size:14px;font-weight:600">Personal info</div>
-      <p style="margin:4px 0 0;font-size:12.5px;color:hsl(var(--muted-foreground))">This information will be displayed on your public profile.</p>
+      <div class="text-sm font-semibold">Personal info</div>
+      <p class="mt-1 text-xs text-muted-foreground">This information will be displayed on your public profile.</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:0.75rem">
-      <div class="form-group"><label class="label">Full name</label><input class="input" value="Rachel Chen" /></div>
-      <div class="form-group"><label class="label">Email</label><input class="input" value="rachel@example.com" /></div>
+    <div class="flex flex-col gap-3">
+      <div><label class="${labelCls}">Full name</label><input class="${inputBase}" value="Rachel Chen" /></div>
+      <div><label class="${labelCls}">Email</label><input class="${inputBase}" value="rachel@example.com" /></div>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:200px 1fr;gap:2rem;padding-top:1.5rem">
+  <div class="grid grid-cols-[200px_1fr] gap-8 pt-6">
     <div>
-      <div style="font-size:14px;font-weight:600">Notifications</div>
-      <p style="margin:4px 0 0;font-size:12.5px;color:hsl(var(--muted-foreground))">Choose how you'd like to be notified.</p>
+      <div class="text-sm font-semibold">Notifications</div>
+      <p class="mt-1 text-xs text-muted-foreground">Choose how you'd like to be notified.</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:0.75rem">
-      <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" checked /> Email notifications</label>
-      <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" /> SMS alerts</label>
+    <div class="flex flex-col gap-3">
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" checked /> Email notifications</label>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" /> SMS alerts</label>
     </div>
   </div>
 </div>`,
