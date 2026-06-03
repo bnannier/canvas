@@ -94,6 +94,10 @@ src/
    are dead weight.
 5. Semantic over visual: name by meaning (`--primary`), not appearance
    (`--blue-500`).
+6. Platform-neutral: Canvas is a standalone UI kit, not a clone of any OS. Do
+   not borrow iOS- or Android-specific idioms (iOS-style segmented pills,
+   Material ripples, platform-named tokens); design every component on its own
+   terms.
 
 ## Release & testing
 - **Changesets** for versioning. Releases go through CI/CD; never
