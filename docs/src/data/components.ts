@@ -94,6 +94,31 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="display:flex;align-items:center">
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card))">AO</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">RC</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">LB</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">KT</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">JD</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">MA</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">AL</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">SK</span>
+</div>`,
+        caption: "An unbounded stack runs off the row and stops being scannable.",
+      },
+      do: {
+        html: `<div style="display:flex;align-items:center">
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card))">AO</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">RC</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">LB</span>
+  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">KT</span>
+  <span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>
+</div>`,
+        caption: "Cap the stack and summarize the rest with a +N count.",
+      },
+    }],
   },
 
   {
@@ -132,6 +157,26 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+  <span class="badge badge-default">employee</span>
+  <span class="badge badge-destructive">engineering</span>
+  <span class="badge badge-default">remote</span>
+  <span class="badge badge-destructive">active</span>
+</div>`,
+        caption: "Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.",
+      },
+      do: {
+        html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+  <span class="badge badge-secondary">employee</span>
+  <span class="badge badge-secondary">engineering</span>
+  <span class="badge badge-secondary">remote</span>
+  <span class="status-badge sb-success"><span class="dot"></span> active</span>
+</div>`,
+        caption: "Neutral tags for metadata; reserve color and the status-badge dot for live state.",
+      },
+    }],
   },
 
   {
@@ -178,6 +223,28 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
+    donts: [{
+      dont: {
+        html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#">Projects</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Settings</a></span>
+</nav>`,
+        caption: "Linking the current page implies there's somewhere to go; it's a dead link to itself.",
+      },
+      do: {
+        html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#">Projects</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Settings</span>
+</nav>`,
+        caption: "Ancestors are links; the page you're on is plain text at the end of the trail.",
+      },
+    }],
   },
 
   {
@@ -211,6 +278,28 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="btn-group">
+  <button class="btn btn-default btn-sm">Day</button>
+  <button class="btn btn-outline btn-sm">Week</button>
+  <button class="btn btn-outline btn-sm">Month</button>
+  <button class="btn btn-outline btn-sm">Quarter</button>
+  <button class="btn btn-outline btn-sm">Year</button>
+  <button class="btn btn-outline btn-sm">5Y</button>
+  <button class="btn btn-outline btn-sm">All</button>
+</div>`,
+        caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.",
+      },
+      do: {
+        html: `<div class="btn-group">
+  <button class="btn btn-default btn-sm">Day</button>
+  <button class="btn btn-outline btn-sm">Week</button>
+  <button class="btn btn-outline btn-sm">Month</button>
+</div>`,
+        caption: "Keep a segmented control to a few mutually-exclusive views.",
+      },
+    }],
   },
 
   {
@@ -241,6 +330,23 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="display:flex;gap:0.5rem">
+  <button class="btn btn-default">Save</button>
+  <button class="btn btn-default">Apply</button>
+  <button class="btn btn-default">Continue</button>
+</div>`,
+        caption: "Multiple primary buttons compete. Pick one default; downgrade the rest to outline/ghost.",
+      },
+      do: {
+        html: `<div style="display:flex;gap:0.5rem">
+  <button class="btn btn-default">Save</button>
+  <button class="btn btn-outline">Cancel</button>
+</div>`,
+        caption: "One clear primary action; everything else is supporting.",
+      },
+    }],
   },
 
   {
