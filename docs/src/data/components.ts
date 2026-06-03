@@ -2288,41 +2288,29 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
     name: "Typography",
     description: "Type scale classes for headings, body text, and helper styles.",
     category: "Atoms",
-    sections: [
-      {
-        title: "Headings",
-        examples: [{
-          full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:0.25rem">
-  <h1 class="display">Display</h1>
-  <h1 class="h1">Heading 1</h1>
-  <h2 class="h2">Heading 2</h2>
-  <h3 class="h3">Heading 3</h3>
-  <h4 class="h4">Heading 4</h4>
-  <h5 class="h5">Heading 5</h5>
-</div>`,
-        }],
+    playground: {
+      controls: [
+        { type: "pills", key: "style", label: "Style", options: ["display", "h1", "h2", "h3", "h4", "h5", "body", "small", "tiny", "muted", "caption", "code", "mono"], cols: 4 },
+        { type: "text", key: "content", label: "Content" },
+      ],
+      defaults: { style: "h1", content: "The quick brown fox" },
+      render: (s) => {
+        const tags: Record<string, string> = { display: "h1", h1: "h1", h2: "h2", h3: "h3", h4: "h4", h5: "h5", code: "span" };
+        const tag = tags[s.style as string] || "p";
+        return `<${tag} class="${s.style}">${s.content}</${tag}>`;
       },
-      {
-        title: "Body text",
-        examples: [{
-          full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:0.25rem">
-  <p class="body">Body text for main content.</p>
-  <p class="small">Small helper text.</p>
-  <p class="tiny">Tiny label text.</p>
-  <p class="muted">Muted secondary text.</p>
-  <p class="caption">Caption for images or tables.</p>
-</div>`,
-        }],
+    },
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<p class="h3" style="max-width:340px">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p>`,
+        caption: "Body copy set in a heading style is hard to read in bulk and flattens the hierarchy.",
       },
-      {
-        title: "Code and mono",
-        examples: [{
-          html: `<div><p class="body">Use the <span class="code">useState</span> hook for state.</p><p class="mono">monospace text for IDs</p></div>`,
-        }],
+      do: {
+        html: `<div style="max-width:340px"><h3 class="h3">About Canvas</h3><p class="body">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p></div>`,
+        caption: "Reserve heading styles for titles; set running text in .body.",
       },
-    ],
+    }],
   },
 
   {
