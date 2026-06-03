@@ -694,7 +694,7 @@ export const COMPONENTS: ComponentDoc[] = [
         const dis = s.disabled ? " disabled" : "";
         const label = s.withLabel ? `<label class="label">Assigned to</label>` : "";
         const helper = s.withHelper ? `<p class="field-helper">The person responsible for this account.</p>` : "";
-        return `<div style="max-width:280px">${label}<div class="combobox"><input class="combobox-input" placeholder="${s.placeholder}"${dis} /><div class="combobox-list" style="position:static"><div class="combobox-item selected">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div></div></div>${helper}</div>`;
+        return `<div style="max-width:280px">${label}<div class="combobox"><input class="combobox-input" placeholder="${s.placeholder}"${dis} oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})" /><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item selected">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div></div></div>${helper}</div>`;
       },
       markup: (s) => {
         return `<div class="combobox">\n  <input class="combobox-input" placeholder="${s.placeholder}" />\n  <div class="combobox-list">\n    <div class="combobox-item">Option</div>\n  </div>\n</div>`;
@@ -840,7 +840,7 @@ export const COMPONENTS: ComponentDoc[] = [
         if (s.destructive) {
           items += `<div class="dropdown-sep"></div><button class="dropdown-item" style="color:hsl(0 84% 60%)">${ico(`<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`)}<span>Delete…</span></button>`;
         }
-        return `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px">${items}</div>`;
+        return `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)">${items}</div>`;
       },
       markup: () => `<div class="dropdown">\n  <button class="dropdown-item">Edit</button>\n  <button class="dropdown-item">Duplicate</button>\n  <div class="dropdown-sep"></div>\n  <button class="dropdown-item">Delete</button>\n</div>`,
     },
@@ -1745,14 +1745,11 @@ export const COMPONENTS: ComponentDoc[] = [
       defaults: { state: "on", label: "Available to chat", withDesc: false, disabled: false },
       render: (s) => {
         const on = s.state === "on";
-        const dis = s.disabled as boolean;
-        const track = on ? "background:hsl(var(--primary))" : "background:hsl(var(--muted))";
-        const thumb = on ? "transform:translateX(20px)" : "transform:translateX(0)";
-        const opacity = dis ? "opacity:0.5;pointer-events:none;" : "";
+        const dis = s.disabled ? " disabled" : "";
         const desc = s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">Show your availability to teammates.</div>` : "";
-        return `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;${opacity}"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div><button role="switch" aria-checked="${on}" style="width:44px;height:24px;border-radius:9999px;border:none;${track};cursor:pointer;position:relative;flex-shrink:0;transition:background 200ms"><span style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:9999px;background:white;${thumb};transition:transform 200ms;box-shadow:0 1px 3px hsl(var(--foreground)/0.15)"></span></button></div>`;
+        return `<label style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;cursor:pointer"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div><input type="checkbox" role="switch" class="switch"${on ? " checked" : ""}${dis}></label>`;
       },
-      markup: () => `<button role="switch" aria-checked="true" class="switch">\n  <span class="switch-thumb"></span>\n</button>`,
+      markup: (s) => `<input type="checkbox" role="switch" class="switch"${s.state === "on" ? " checked" : ""} />`,
     },
     sections: [
       {
