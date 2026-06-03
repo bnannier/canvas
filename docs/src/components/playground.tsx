@@ -65,7 +65,7 @@ export function Playground({ config }: PlaygroundProps) {
         <div className="section-card" style={{
           padding: "2rem",
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "center",
           minHeight: 180,
         }}>
