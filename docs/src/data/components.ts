@@ -55,27 +55,6 @@ export const COMPONENTS: ComponentDoc[] = [
         }
         return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}">${ini}</span>`;
       },
-      markup: (s) => {
-        const sz = s.size as number;
-        const ini = ((s.initials as string) || "AO").slice(0, 2).toUpperCase();
-        const ring = s.ring ? ";outline:2px solid hsl(var(--card))" : "";
-        if (s.stacked) {
-          const overlap = Math.round(sz * 0.3);
-          const items = [
-            `<img src="/rachel-chen.jpg" alt="RC">`,
-            `<img src="/liang-bao.jpg" alt="LB">`,
-            "AO",
-            `<img src="/kira-tanaka.jpg" alt="KT">`,
-          ];
-          const spans = items
-            .map((content, i) =>
-              `  <span class="avatar" style="width:${sz}px;height:${sz}px${i > 0 ? `;margin-left:-${overlap}px` : ""}${ring}">${content}</span>`,
-            )
-            .join("\n");
-          return `<div style="display:flex">\n${spans}\n</div>`;
-        }
-        return `<span class="avatar" style="width:${sz}px;height:${sz}px${ring}">${ini}</span>`;
-      },
     },
     sections: [
       {
@@ -189,10 +168,6 @@ export const COMPONENTS: ComponentDoc[] = [
         if (s.kind === "status") return `<span class="status-badge sb-${s.statusVariant}"><span class="dot"></span> ${s.label}</span>`;
         return `<span class="badge badge-${s.variant}">${s.label}</span>`;
       },
-      markup: (s) => {
-        if (s.kind === "status") return `<span class="status-badge sb-${s.statusVariant}"><span class="dot"></span> Label</span>`;
-        return `<span class="badge badge-${s.variant}">Label</span>`;
-      },
     },
     sections: [
       {
@@ -295,10 +270,6 @@ export const COMPONENTS: ComponentDoc[] = [
           : `<span class="breadcrumb-item"><a href="#">${c}</a></span>${sepHtml}`).join("");
         return `<nav class="breadcrumb">${homeHtml}${items}</nav>`;
       },
-      markup: (s) => {
-        const sep = s.separator === "slash" ? "/" : s.separator === "dot" ? "&middot;" : "chevron";
-        return `<nav class="breadcrumb">\n  <span class="breadcrumb-item"><a>Parent</a></span>\n  <span class="breadcrumb-sep">${sep}</span>\n  <span class="breadcrumb-item active">Current</span>\n</nav>`;
-      },
     },
     sections: [
       {
@@ -377,11 +348,6 @@ export const COMPONENTS: ComponentDoc[] = [
           `<button class="btn btn-ghost${sz}" style="border-radius:calc(var(--radius-md) - 2px);${i === 0 ? "background:hsl(var(--background));box-shadow:0 1px 2px hsl(var(--foreground)/0.08);" : ""}">${l}</button>`
         ).join("")}</div>`;
       },
-      markup: (s) => {
-        if (s.variant === "split") return `<div class="btn-group">\n  <button class="btn btn-default">Save</button>\n  <button class="btn btn-default">▾</button>\n</div>`;
-        if (s.variant === "attached") return `<div class="btn-group">\n  <button class="btn btn-outline">A</button>\n  <button class="btn btn-outline">B</button>\n</div>`;
-        return `<div style="display:inline-flex;gap:2px;background:hsl(var(--muted));padding:2px">\n  <button class="btn btn-ghost">A</button>\n  <button class="btn btn-ghost">B</button>\n</div>`;
-      },
     },
     sections: [
       {
@@ -450,13 +416,6 @@ export const COMPONENTS: ComponentDoc[] = [
           return `<button class="btn btn-${v} btn-icon"${dis}>${icon || "+"}</button>`;
         }
         return `<button class="btn btn-${v}${sizeCls}"${dis}>${icon}${label}</button>`;
-      },
-      markup: (s) => {
-        const v = s.variant as string;
-        const sz = s.size as string;
-        const sizeCls = sz === "default" ? "" : ` btn-${sz}`;
-        const dis = s.disabled ? " disabled" : "";
-        return `<button class="btn btn-${v}${sizeCls}"${dis}>`;
       },
     },
     sections: [
@@ -604,11 +563,6 @@ export const COMPONENTS: ComponentDoc[] = [
         const desc = s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when activity happens on your account.</div>` : "";
         return `<label style="display:flex;gap:0.5rem;cursor:pointer"><input type="checkbox"${checked}${disabled} style="accent-color:hsl(var(--primary));margin-top:3px"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div></label>`;
       },
-      markup: (s) => {
-        const checked = s.state === "checked" ? " checked" : "";
-        const disabled = s.state === "disabled" ? " disabled" : "";
-        return `<label>\n  <input type="checkbox"${checked}${disabled} />\n  <span>${s.label}</span>\n</label>`;
-      },
     },
     sections: [
       {
@@ -696,9 +650,6 @@ export const COMPONENTS: ComponentDoc[] = [
         const helper = s.withHelper ? `<p class="field-helper">The person responsible for this account.</p>` : "";
         return `<div style="max-width:280px">${label}<div class="combobox"><input class="combobox-input" placeholder="${s.placeholder}"${dis} oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})" /><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item selected">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div></div></div>${helper}</div>`;
       },
-      markup: (s) => {
-        return `<div class="combobox">\n  <input class="combobox-input" placeholder="${s.placeholder}" />\n  <div class="combobox-list">\n    <div class="combobox-item">Option</div>\n  </div>\n</div>`;
-      },
     },
     sections: [
       {
@@ -764,12 +715,6 @@ export const COMPONENTS: ComponentDoc[] = [
         if (s.variant === "action") {
           return `<div style="display:flex;align-items:center;gap:0.75rem"><hr class="sep" style="flex:1" /><button class="btn btn-ghost btn-sm">Add</button><hr class="sep" style="flex:1" /></div>`;
         }
-        return `<hr class="sep" />`;
-      },
-      markup: (s) => {
-        if (s.orientation === "vertical") return `<div class="sep-v"></div>`;
-        if (s.variant === "label") return `<div class="sep-label">${s.label}</div>`;
-        if (s.variant === "action") return `<hr class="sep" /> <button class="btn btn-ghost btn-sm">Add</button> <hr class="sep" />`;
         return `<hr class="sep" />`;
       },
     },
@@ -842,7 +787,6 @@ export const COMPONENTS: ComponentDoc[] = [
         }
         return `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)">${items}</div>`;
       },
-      markup: () => `<div class="dropdown">\n  <button class="dropdown-item">Edit</button>\n  <button class="dropdown-item">Duplicate</button>\n  <div class="dropdown-sep"></div>\n  <button class="dropdown-item">Delete</button>\n</div>`,
     },
     sections: [
       {
@@ -927,10 +871,6 @@ export const COMPONENTS: ComponentDoc[] = [
         const sz = s.size as number;
         const col = s.color === "foreground" ? "currentColor" : `hsl(var(--${s.color}))`;
         return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-      },
-      markup: (s) => {
-        const sz = s.size as number;
-        return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">\n  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>\n</svg>`;
       },
     },
     sections: [
@@ -1040,14 +980,6 @@ export const COMPONENTS: ComponentDoc[] = [
         if (s.variant === "currency") return `<div class="input-group"><span class="input-addon">$</span><input class="input${szCls}" type="number" placeholder="0.00"${dis} /><span class="input-addon">USD</span></div>`;
         return `<div class="input-group"><input class="input${szCls}" value="sk_live_••••••••4242" readonly${dis} /><button class="btn btn-outline btn-sm">Copy</button></div>`;
       },
-      markup: (s) => {
-        if (s.variant === "lead-text") return `<div class="input-group">\n  <span class="input-addon">https://</span>\n  <input class="input" />\n</div>`;
-        if (s.variant === "trail-text") return `<div class="input-group">\n  <input class="input" />\n  <span class="input-addon">@canvas.dev</span>\n</div>`;
-        if (s.variant === "lead-icon") return `<div class="input-group">\n  <span class="input-icon">…</span>\n  <input class="input" />\n</div>`;
-        if (s.variant === "trail-icon") return `<div class="input-group">\n  <input class="input" />\n  <span class="input-icon">…</span>\n</div>`;
-        if (s.variant === "currency") return `<div class="input-group">\n  <span class="input-addon">$</span>\n  <input class="input" />\n  <span class="input-addon">USD</span>\n</div>`;
-        return `<div class="input-group">\n  <input class="input" readonly />\n  <button class="btn btn-outline btn-sm">Copy</button>\n</div>`;
-      },
     },
     sections: [
       {
@@ -1128,13 +1060,6 @@ export const COMPONENTS: ComponentDoc[] = [
         const helperColor = st === "error" ? "color:hsl(0 84% 60%)" : "";
         const helper = s.helper ? `<p class="field-helper" style="${helperColor}">${helperText}</p>` : "";
         return `<div style="max-width:320px"><label class="label">Email</label><div style="position:relative">${mailIco}<input class="input" value="rachel.chen@example.com" style="${pad}${errStyle}${focusStyle}"${dis}${ro} /></div>${helper}</div>`;
-      },
-      markup: (s) => {
-        const st = s.state as string;
-        const dis = st === "disabled" ? " disabled" : "";
-        const ro = st === "readonly" ? " readonly" : "";
-        const cls = st === "error" ? ' class="input input-error"' : ' class="input"';
-        return `<label class="label">Email</label>\n<input${cls} value="…"${dis}${ro} />\n<p class="field-helper">Helper text</p>`;
       },
     },
     sections: [
@@ -1288,11 +1213,6 @@ export const COMPONENTS: ComponentDoc[] = [
         }
         return `<div style="display:flex;align-items:center;gap:1rem;font-size:13px"><div style="display:flex;align-items:center;gap:0.5rem"><span style="color:hsl(var(--muted-foreground))">Rows per page</span><select class="input" style="width:64px;height:28px;font-size:12px"><option>10</option><option>25</option><option>50</option></select></div><span style="color:hsl(var(--muted-foreground))">Page ${cur} of ${total}</span><div style="display:flex;gap:0.25rem"><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${prevDis}>&lt;</button><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${nextDis}>&gt;</button></div></div>`;
       },
-      markup: (s) => {
-        if (s.variant === "compact") return `<div>\n  <span>Showing 1–10 of 120</span>\n  <button class="btn btn-outline btn-sm">Previous</button>\n  <button class="btn btn-outline btn-sm">Next</button>\n</div>`;
-        if (s.variant === "numbered") return `<div>\n  <button class="btn btn-outline btn-sm">Previous</button>\n  <button class="btn btn-ghost btn-sm">1</button>\n  <button class="btn btn-ghost btn-sm">2</button>\n  <button class="btn btn-outline btn-sm">Next</button>\n</div>`;
-        return `<div>\n  <span>Rows per page</span>\n  <select class="input">…</select>\n  <span>Page 1 of 12</span>\n</div>`;
-      },
     },
     sections: [
       {
@@ -1396,10 +1316,6 @@ export const COMPONENTS: ComponentDoc[] = [
         return `<div style="display:flex;flex-direction:column;gap:0.625rem">${opts.map(o =>
           `<label style="display:flex;gap:0.5rem;cursor:pointer"><input type="radio" name="pg-radio"${o.val === "pro" ? " checked" : ""} style="accent-color:hsl(var(--primary));margin-top:3px"><div><div style="font-size:13px;font-weight:500">${o.label}</div>${s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">${o.desc}</div>` : ""}</div></label>`
         ).join("")}</div>`;
-      },
-      markup: (s) => {
-        if (s.variant === "card") return `<label class="radio-card">\n  <input type="radio" name="plan" />\n  <span>Label</span>\n</label>`;
-        return `<label>\n  <input type="radio" name="plan" />\n  <span>Label</span>\n</label>`;
       },
     },
     sections: [
@@ -1508,10 +1424,6 @@ export const COMPONENTS: ComponentDoc[] = [
         const pad = s.withIcon ? "padding-left:34px;" : "";
         return `<div style="max-width:280px">${label}<div style="position:relative">${globe}<select class="input${szCls}" style="${pad}"${dis}><option>United States</option><option>Canada</option><option>Mexico</option><option>United Kingdom</option></select></div></div>`;
       },
-      markup: (s) => {
-        const szCls = s.size === "default" ? "" : ` input-${s.size}`;
-        return `<label class="label">Country</label>\n<select class="input${szCls}">\n  <option>United States</option>\n</select>`;
-      },
     },
     sections: [
       {
@@ -1578,12 +1490,6 @@ export const COMPONENTS: ComponentDoc[] = [
           return `<div class="section-card" style="max-width:320px;padding:1rem"><div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem"><div class="skeleton${pulse}" style="width:40px;height:40px;border-radius:9999px;flex-shrink:0"></div><div style="flex:1"><div class="skeleton skeleton-text${pulse}" style="width:70%"></div><div class="skeleton skeleton-text${pulse}" style="width:40%;margin-top:6px"></div></div></div><div class="skeleton skeleton-text${pulse}" style="width:100%"></div><div class="skeleton skeleton-text${pulse}" style="width:80%;margin-top:6px"></div></div>`;
         }
         return `<div class="skeleton skeleton-text${pulse}" style="width:${w}%"></div>`;
-      },
-      markup: (s) => {
-        if (s.shape === "avatar") return `<div class="skeleton" style="width:48px;height:48px;border-radius:9999px"></div>`;
-        if (s.shape === "button") return `<div class="skeleton" style="width:96px;height:36px;border-radius:var(--radius-md)"></div>`;
-        if (s.shape === "card") return `<div class="skeleton skeleton-text" style="width:70%"></div>`;
-        return `<div class="skeleton skeleton-text" style="width:${s.width}%"></div>`;
       },
     },
     sections: [
@@ -1690,9 +1596,6 @@ export const COMPONENTS: ComponentDoc[] = [
         const counter = s.charCounter ? `<div style="display:flex;justify-content:flex-end;margin-top:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">0 / 280</span></div>` : "";
         return `<div style="max-width:400px">${label}<textarea class="input" placeholder="A few words about this project…" style="min-height:${h}px;resize:vertical"${dis}></textarea>${counter}</div>`;
       },
-      markup: (s) => {
-        return `<label class="label">Description</label>\n<textarea class="input" rows="${s.rows}"></textarea>`;
-      },
     },
     sections: [
       {
@@ -1758,7 +1661,6 @@ export const COMPONENTS: ComponentDoc[] = [
         const desc = s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">Show your availability to teammates.</div>` : "";
         return `<label style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;cursor:pointer"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div><input type="checkbox" role="switch" class="switch"${on ? " checked" : ""}${dis}></label>`;
       },
-      markup: (s) => `<input type="checkbox" role="switch" class="switch"${s.state === "on" ? " checked" : ""} />`,
     },
     sections: [
       {
@@ -1834,9 +1736,6 @@ export const COMPONENTS: ComponentDoc[] = [
         if (side === "left") pos = "right:calc(100% + 8px);top:50%;transform:translateY(-50%)";
         if (side === "right") pos = "left:calc(100% + 8px);top:50%;transform:translateY(-50%)";
         return `<div style="position:relative;display:inline-flex">${triggerHtml}<div style="${tipStyle};${pos}">${lbl}</div></div>`;
-      },
-      markup: (s) => {
-        return `<div class="tooltip" data-side="${s.side}">\n  <button>Trigger</button>\n  <div class="tooltip-content">${s.label}</div>\n</div>`;
       },
     },
     sections: [

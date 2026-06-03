@@ -36,7 +36,6 @@ export interface PlaygroundConfig {
   controls: PlaygroundControl[];
   defaults: Record<string, unknown>;
   render: (state: Record<string, unknown>) => string;
-  markup: (state: Record<string, unknown>) => string;
 }
 
 export interface ComponentDoc {

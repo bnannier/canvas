@@ -7,6 +7,47 @@ interface PlaygroundProps {
   config: PlaygroundConfig;
 }
 
+const HTML_VOID = new Set(["img", "input", "br", "hr", "meta", "link", "source", "area", "col", "embed", "wbr"]);
+const SVG_SELF = new Set(["path", "circle", "rect", "line", "polyline", "polygon", "ellipse", "stop", "use"]);
+
+function serializeNode(node: Node, indent: number): string {
+  const pad = "  ".repeat(indent);
+  if (node.nodeType === Node.TEXT_NODE) {
+    const text = node.textContent?.replace(/\s+/g, " ").trim() ?? "";
+    return text ? pad + text : "";
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+  const el = node as Element;
+  const tag = el.tagName.toLowerCase();
+  const attrs = Array.from(el.attributes)
+    .map((a) => ` ${a.name}="${a.value.replace(/"/g, "&quot;")}"`)
+    .join("");
+  if (HTML_VOID.has(tag)) return `${pad}<${tag}${attrs}>`;
+  if (SVG_SELF.has(tag)) return `${pad}<${tag}${attrs} />`;
+  const kids = Array.from(el.childNodes)
+    .map((c) => serializeNode(c, indent + 1))
+    .filter(Boolean);
+  if (kids.length === 0) return `${pad}<${tag}${attrs}></${tag}>`;
+  if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+    const text = el.textContent?.replace(/\s+/g, " ").trim() ?? "";
+    return `${pad}<${tag}${attrs}>${text}</${tag}>`;
+  }
+  return `${pad}<${tag}${attrs}>\n${kids.join("\n")}\n${pad}</${tag}>`;
+}
+
+/** Pretty-print the exact HTML the preview renders, so the code panel shows the
+ *  real markup, never a separate hand-authored snippet that can drift from it. */
+function formatHtml(html: string): string {
+  if (typeof document === "undefined") return html;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  const out = Array.from(tmp.childNodes)
+    .map((n) => serializeNode(n, 0))
+    .filter(Boolean)
+    .join("\n");
+  return out || html;
+}
+
 export function Playground({ config }: PlaygroundProps) {
   const [state, setState] = useState<Record<string, unknown>>(config.defaults);
   const [showCode, setShowCode] = useState(true);
@@ -16,7 +57,7 @@ export function Playground({ config }: PlaygroundProps) {
   }, []);
 
   const html = config.render(state);
-  const markup = config.markup(state);
+  const code = formatHtml(html);
 
   return (
     <div>
@@ -70,7 +111,7 @@ export function Playground({ config }: PlaygroundProps) {
         </button>
         <div className={`docs-code-collapse ${showCode ? "open" : ""}`}>
           <div style={{ minHeight: 0, overflow: "hidden" }}>
-            <CodeBlock code={markup} language="html" />
+            <CodeBlock code={code} language="html" />
           </div>
         </div>
       </div>
