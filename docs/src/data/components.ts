@@ -140,6 +140,19 @@ const pageBtnActive = "bg-foreground text-background hover:bg-foreground hover:t
 const pageBtn = (label: string, active = false, attrs = "") =>
   `<button data-pg class="${pageBtnCls}${active ? " " + pageBtnActive : ""}"${attrs}>${label}</button>`;
 
+const cardCls = "rounded-lg border border-border bg-card text-card-foreground shadow-sm";
+const skelCls = (pulse: boolean) => `bg-muted${pulse ? " animate-pulse" : ""}`;
+const skLine = (pulse: boolean, w: string, extra = "") =>
+  `<div class="${skelCls(pulse)} h-3.5 rounded${extra ? " " + extra : ""}" style="width:${w}"></div>`;
+const radioCard = (sel: boolean) =>
+  `flex cursor-pointer flex-col rounded-md p-3.5 transition-colors ${sel ? "border-2 border-primary bg-primary/5" : "border border-border"}`;
+const taBase = inputBase.replace("h-9 ", "") + " resize-y";
+const switchTrack =
+  "relative h-5 w-9 rounded-full bg-input transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-background after:shadow after:transition-transform after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background";
+const switchEl = (on: boolean, dis = "") =>
+  `<span class="relative inline-flex shrink-0 items-center${dis ? " opacity-50" : ""}"><input type="checkbox" role="switch" class="peer sr-only"${on ? " checked" : ""}${dis}><span class="${switchTrack}"></span></span>`;
+const tooltipCls = "z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md";
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -1057,37 +1070,38 @@ export const COMPONENTS: ComponentDoc[] = [
           { val: "enterprise", label: "Enterprise", desc: "Advanced security, compliance, and support." },
         ];
         if (s.variant === "card") {
-          return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem">${opts.map(o =>
-            `<label style="display:flex;flex-direction:column;padding:0.875rem;border-radius:var(--radius-md);border:${o.val === "pro" ? "2px solid hsl(var(--primary))" : "1px solid hsl(var(--border))"};${o.val === "pro" ? "background:hsl(var(--primary)/0.05);" : ""}cursor:pointer"><input type="radio" name="pg-radio-card"${o.val === "pro" ? " checked" : ""} style="accent-color:hsl(var(--primary));margin-bottom:8px" onchange="this.closest('div').querySelectorAll('label').forEach(function(l){l.style.border='1px solid hsl(var(--border))';l.style.background=''});this.parentElement.style.border='2px solid hsl(var(--primary))';this.parentElement.style.background='hsl(var(--primary)/0.05)'"><span style="font-size:13px;font-weight:600">${o.label}</span>${s.withDesc ? `<span style="font-size:12px;color:hsl(var(--muted-foreground))">${o.desc}</span>` : ""}</label>`
-          ).join("")}</div>`;
+          return `<div data-rg class="grid grid-cols-3 gap-2">${opts.map(o => {
+            const sel = o.val === "pro";
+            return `<label class="${radioCard(sel)}"><input type="radio" name="pg-radio-card" class="accent-primary mb-2"${sel ? " checked" : ""} onchange="var g=this.closest('[data-rg]');g.querySelectorAll('label').forEach(function(l){l.className='${radioCard(false)}'});this.closest('label').className='${radioCard(true)}'"><span class="text-[13px] font-semibold">${o.label}</span>${s.withDesc ? `<span class="text-xs text-muted-foreground">${o.desc}</span>` : ""}</label>`;
+          }).join("")}</div>`;
         }
         if (s.variant === "inline") {
-          return `<div style="display:flex;gap:1.5rem">${opts.map(o =>
-            `<label style="display:flex;align-items:center;gap:0.5rem;font-size:13px;cursor:pointer"><input type="radio" name="pg-radio"${o.val === "pro" ? " checked" : ""} style="accent-color:hsl(var(--primary))">${o.label}</label>`
+          return `<div class="flex gap-6">${opts.map(o =>
+            `<label class="flex cursor-pointer items-center gap-2 text-sm"><input type="radio" name="pg-radio" class="accent-primary"${o.val === "pro" ? " checked" : ""}>${o.label}</label>`
           ).join("")}</div>`;
         }
-        return `<div style="display:flex;flex-direction:column;gap:0.625rem">${opts.map(o =>
-          `<label style="display:flex;gap:0.5rem;cursor:pointer"><input type="radio" name="pg-radio"${o.val === "pro" ? " checked" : ""} style="accent-color:hsl(var(--primary));margin-top:3px"><div><div style="font-size:13px;font-weight:500">${o.label}</div>${s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">${o.desc}</div>` : ""}</div></label>`
+        return `<div class="flex flex-col gap-2.5">${opts.map(o =>
+          `<label class="flex cursor-pointer gap-2"><input type="radio" name="pg-radio" class="accent-primary mt-[3px]"${o.val === "pro" ? " checked" : ""}><div><div class="text-[13px] font-medium">${o.label}</div>${s.withDesc ? `<div class="text-xs text-muted-foreground">${o.desc}</div>` : ""}</div></label>`
         ).join("")}</div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r1" style="accent-color:hsl(var(--primary))"> Hobby</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r1" style="accent-color:hsl(var(--primary))"> Pro</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r1" style="accent-color:hsl(var(--primary))"> Enterprise</label>
+        html: `<div class="flex flex-col gap-2 text-sm">
+  <div class="mb-1 font-semibold">Plan</div>
+  <label class="flex items-center gap-2"><input type="radio" name="dd-r1" class="accent-primary"> Hobby</label>
+  <label class="flex items-center gap-2"><input type="radio" name="dd-r1" class="accent-primary"> Pro</label>
+  <label class="flex items-center gap-2"><input type="radio" name="dd-r1" class="accent-primary"> Enterprise</label>
 </div>`,
         caption: "Leaving a radio group with nothing selected forces an extra decision and can submit empty.",
       },
       do: {
-        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r2" style="accent-color:hsl(var(--primary))"> Hobby</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r2" checked style="accent-color:hsl(var(--primary))"> Pro</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r2" style="accent-color:hsl(var(--primary))"> Enterprise</label>
+        html: `<div class="flex flex-col gap-2 text-sm">
+  <div class="mb-1 font-semibold">Plan</div>
+  <label class="flex items-center gap-2"><input type="radio" name="dd-r2" class="accent-primary"> Hobby</label>
+  <label class="flex items-center gap-2"><input type="radio" name="dd-r2" checked class="accent-primary"> Pro</label>
+  <label class="flex items-center gap-2"><input type="radio" name="dd-r2" class="accent-primary"> Enterprise</label>
 </div>`,
         caption: "Pre-select a sensible default so the common path needs no clicks.",
       },
@@ -1108,20 +1122,20 @@ export const COMPONENTS: ComponentDoc[] = [
       ],
       defaults: { size: "default", withLabel: true, withIcon: false, disabled: false },
       render: (s) => {
-        const szCls = s.size === "default" ? "" : s.size === "sm" ? " input-sm" : " input-lg";
+        const sz = s.size === "sm" ? inputBase.replace("h-9", "h-8") : s.size === "lg" ? inputBase.replace("h-9", "h-10") : inputBase;
         const dis = s.disabled ? " disabled" : "";
-        const label = s.withLabel ? `<label class="label">Country</label>` : "";
-        const globe = s.withIcon ? `<span class="input-icon" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:hsl(var(--muted-foreground))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>` : "";
-        const pad = s.withIcon ? "padding-left:34px;" : "";
-        return `<div style="max-width:280px">${label}<div style="position:relative">${globe}<select class="input${szCls}" style="${pad}"${dis}><option>United States</option><option>Canada</option><option>Mexico</option><option>United Kingdom</option></select></div></div>`;
+        const label = s.withLabel ? `<label class="${labelCls}">Country</label>` : "";
+        const globe = s.withIcon ? `<span class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>` : "";
+        const pad = s.withIcon ? " pl-9" : "";
+        return `<div class="max-w-[280px]">${label}<div class="relative">${globe}<select class="${sz}${pad}"${dis}><option>United States</option><option>Canada</option><option>Mexico</option><option>United Kingdom</option></select></div></div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div style="max-width:280px">
-  <label class="label">Country</label>
-  <select class="input">
+        html: `<div class="max-w-[280px]">
+  <label class="${labelCls}">Country</label>
+  <select class="${inputBase}">
     <option>Choose a country…</option>
     <option>United States</option>
     <option>Canada</option>
@@ -1131,9 +1145,9 @@ export const COMPONENTS: ComponentDoc[] = [
         caption: "A placeholder as a normal option can be submitted as a real value.",
       },
       do: {
-        html: `<div style="max-width:280px">
-  <label class="label">Country</label>
-  <select class="input">
+        html: `<div class="max-w-[280px]">
+  <label class="${labelCls}">Country</label>
+  <select class="${inputBase}">
     <option value="" disabled selected>Choose a country…</option>
     <option>United States</option>
     <option>Canada</option>
@@ -1158,36 +1172,37 @@ export const COMPONENTS: ComponentDoc[] = [
       ],
       defaults: { shape: "text", width: 60, animate: true },
       render: (s) => {
-        const pulse = s.animate ? " skeleton-pulse" : "";
+        const pulse = s.animate as boolean;
         const w = s.width as number;
         if (s.shape === "avatar") {
           const sz = Math.round(w * 0.8);
-          return `<div class="skeleton skeleton-circle${pulse}" style="width:${sz}px;height:${sz}px"></div>`;
+          return `<div class="${skelCls(pulse)} rounded-full" style="width:${sz}px;height:${sz}px"></div>`;
         }
         if (s.shape === "button") {
-          return `<div class="skeleton${pulse}" style="width:${Math.round(w * 1.6)}px;height:36px;border-radius:var(--radius-md)"></div>`;
+          return `<div class="${skelCls(pulse)} rounded-md" style="width:${Math.round(w * 1.6)}px;height:36px"></div>`;
         }
         if (s.shape === "card") {
-          return `<div class="section-card" style="max-width:320px;padding:1rem"><div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem"><div class="skeleton${pulse}" style="width:40px;height:40px;border-radius:9999px;flex-shrink:0"></div><div style="flex:1"><div class="skeleton skeleton-text${pulse}" style="width:70%"></div><div class="skeleton skeleton-text${pulse}" style="width:40%;margin-top:6px"></div></div></div><div class="skeleton skeleton-text${pulse}" style="width:100%"></div><div class="skeleton skeleton-text${pulse}" style="width:80%;margin-top:6px"></div></div>`;
+          return `<div class="${cardCls} max-w-[320px] p-4"><div class="mb-4 flex items-center gap-3"><div class="${skelCls(pulse)} shrink-0 rounded-full" style="width:40px;height:40px"></div><div class="flex-1">${skLine(pulse, "70%")}${skLine(pulse, "40%", "mt-1.5")}</div></div>${skLine(pulse, "100%")}${skLine(pulse, "80%", "mt-1.5")}</div>`;
         }
         if (s.shape === "list") {
-          return `<div style="display:flex;flex-direction:column;gap:1rem;max-width:400px"><div style="display:flex;gap:0.75rem;align-items:center"><div class="skeleton skeleton-circle${pulse}" style="width:2rem;height:2rem"></div><div style="flex:1"><div class="skeleton skeleton-text${pulse}" style="width:70%;margin-bottom:6px"></div><div class="skeleton skeleton-text${pulse}" style="width:50%"></div></div><div class="skeleton skeleton-text${pulse}" style="width:40px"></div></div><div style="display:flex;gap:0.75rem;align-items:center"><div class="skeleton skeleton-circle${pulse}" style="width:2rem;height:2rem"></div><div style="flex:1"><div class="skeleton skeleton-text${pulse}" style="width:55%;margin-bottom:6px"></div><div class="skeleton skeleton-text${pulse}" style="width:35%"></div></div><div class="skeleton skeleton-text${pulse}" style="width:40px"></div></div></div>`;
+          const row = (a: string, b: string) => `<div class="flex items-center gap-3"><div class="${skelCls(pulse)} rounded-full" style="width:2rem;height:2rem"></div><div class="flex-1">${skLine(pulse, a, "mb-1.5")}${skLine(pulse, b)}</div>${skLine(pulse, "40px")}</div>`;
+          return `<div class="flex max-w-[400px] flex-col gap-4">${row("70%", "50%")}${row("55%", "35%")}</div>`;
         }
         if (s.shape === "table") {
-          const row = (a: string, b: string, last: boolean) => `<div style="display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:0.75rem;padding:0.75rem 0;${last ? "" : "border-bottom:1px solid hsl(var(--border))"}"><div class="skeleton skeleton-text${pulse}" style="width:100%"></div><div class="skeleton skeleton-text${pulse}" style="width:${a}"></div><div class="skeleton skeleton-text${pulse}" style="width:${b}"></div><div class="skeleton skeleton-text${pulse}" style="width:100%"></div></div>`;
-          return `<div style="max-width:560px">${row("70%", "50%", false)}${row("80%", "60%", false)}${row("65%", "45%", true)}</div>`;
+          const row = (a: string, b: string, last: boolean) => `<div class="grid gap-3 py-3${last ? "" : " border-b border-border"}" style="grid-template-columns:40px 1fr 1fr 80px">${skLine(pulse, "100%")}${skLine(pulse, a)}${skLine(pulse, b)}${skLine(pulse, "100%")}</div>`;
+          return `<div class="max-w-[560px]">${row("70%", "50%", false)}${row("80%", "60%", false)}${row("65%", "45%", true)}</div>`;
         }
-        return `<div class="skeleton skeleton-text${pulse}" style="width:${w}%"></div>`;
+        return skLine(pulse, w + "%");
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div class="skeleton skeleton-pulse" style="width:320px;height:88px;border-radius:var(--radius-md)"></div>`,
+        html: `<div class="${skelCls(true)} rounded-md" style="width:320px;height:88px"></div>`,
         caption: "A generic block that ignores the content's shape causes a jarring shift when it loads.",
       },
       do: {
-        html: `<div class="section-card" style="max-width:320px;padding:1rem"><div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem"><div class="skeleton skeleton-circle skeleton-pulse" style="width:40px;height:40px;flex-shrink:0"></div><div style="flex:1"><div class="skeleton skeleton-text skeleton-pulse" style="width:70%"></div><div class="skeleton skeleton-text skeleton-pulse" style="width:40%;margin-top:6px"></div></div></div><div class="skeleton skeleton-text skeleton-pulse" style="width:100%"></div></div>`,
+        html: `<div class="${cardCls} max-w-[320px] p-4"><div class="mb-4 flex items-center gap-3"><div class="${skelCls(true)} shrink-0 rounded-full" style="width:40px;height:40px"></div><div class="flex-1">${skLine(true, "70%")}${skLine(true, "40%", "mt-1.5")}</div></div>${skLine(true, "100%")}</div>`,
         caption: "Mirror the real layout (avatar circle, text lines) so the swap is seamless.",
       },
     }],
@@ -1211,27 +1226,28 @@ export const COMPONENTS: ComponentDoc[] = [
         const dis = s.disabled ? " disabled" : "";
         const h = (s.rows as number) * 22 + 16;
         if (s.toolbar) {
-          return `<div style="max-width:400px;border:1px solid hsl(var(--border));border-radius:var(--radius-md);overflow:hidden"><div style="display:flex;align-items:center;gap:0.25rem;padding:0.5rem 0.75rem;border-bottom:1px solid hsl(var(--border));background:hsl(var(--muted)/0.3)"><button class="btn btn-ghost btn-sm" style="font-weight:700;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''">B</button><button class="btn btn-ghost btn-sm" style="font-style:italic;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''">I</button><button class="btn btn-ghost btn-sm" style="font-family:var(--font-mono);font-size:11px;min-width:32px" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'hsl(var(--accent))':''"><span>&lt;/&gt;</span></button><div class="sep-v" style="height:1rem;margin:0 0.25rem"></div><button class="btn btn-ghost btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Posted!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Comment</button></div><textarea class="input" placeholder="Leave a comment…" style="min-height:${h}px;border:0;border-radius:0;resize:vertical"${dis}></textarea></div>`;
+          const tbtn = (inner: string, extra: string) => `<button type="button" class="${btnBase} ${btnVariant.ghost} h-8 min-w-8 px-2 ${extra}" onclick="this.classList.toggle('bg-accent');this.classList.toggle('text-accent-foreground')">${inner}</button>`;
+          return `<div class="max-w-[400px] overflow-hidden rounded-md border border-border"><div class="flex items-center gap-1 border-b border-border bg-muted/30 px-3 py-2">${tbtn("B", "font-bold")}${tbtn("I", "italic")}${tbtn("&lt;/&gt;", "font-mono text-[11px]")}<span class="mx-1 h-4 w-px bg-border"></span><button type="button" class="${btnBase} ${btnVariant.ghost} h-8 px-3 text-xs" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Posted!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Comment</button></div><textarea class="w-full resize-y bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none" placeholder="Leave a comment…" style="min-height:${h}px"${dis}></textarea></div>`;
         }
-        const label = s.withLabel ? `<label class="label">Description</label>` : "";
-        const counter = s.charCounter ? `<div style="display:flex;justify-content:flex-end;margin-top:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">0 / 280</span></div>` : "";
-        const oninput = s.charCounter ? ` oninput="var c=this.value.length;var s=this.nextElementSibling.querySelector('span');s.textContent=c+' / 280';s.style.color=c>280?'hsl(0 84% 60%)':'hsl(var(--muted-foreground))'"` : "";
-        return `<div style="max-width:400px">${label}<textarea class="input" placeholder="A few words about this project…" style="min-height:${h}px;resize:vertical"${dis}${oninput}></textarea>${counter}</div>`;
+        const label = s.withLabel ? `<label class="${labelCls}">Description</label>` : "";
+        const counter = s.charCounter ? `<div class="mt-1 flex justify-end"><span class="text-[11px] text-muted-foreground">0 / 280</span></div>` : "";
+        const oninput = s.charCounter ? ` oninput="var c=this.value.length;var s=this.nextElementSibling.querySelector('span');s.textContent=c+' / 280';s.classList.toggle('text-destructive',c>280);s.classList.toggle('text-muted-foreground',c<=280)"` : "";
+        return `<div class="max-w-[400px]">${label}<textarea class="${taBase}" placeholder="A few words about this project…" style="min-height:${h}px"${dis}${oninput}></textarea>${counter}</div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div style="max-width:400px">
-  <label class="label">Description</label>
-  <textarea class="input" style="height:32px;resize:none">This is a longer description that runs past one line and gets clipped.</textarea>
+        html: `<div class="max-w-[400px]">
+  <label class="${labelCls}">Description</label>
+  <textarea class="${taBase}" style="height:32px;resize:none">This is a longer description that runs past one line and gets clipped.</textarea>
 </div>`,
         caption: "A locked, single-line textarea hides long content with no way to expand.",
       },
       do: {
-        html: `<div style="max-width:400px">
-  <label class="label">Description</label>
-  <textarea class="input" style="min-height:80px;resize:vertical">This is a longer description that runs past one line and stays readable.</textarea>
+        html: `<div class="max-w-[400px]">
+  <label class="${labelCls}">Description</label>
+  <textarea class="${taBase}" style="min-height:80px">This is a longer description that runs past one line and stays readable.</textarea>
 </div>`,
         caption: "Give a sensible min-height and allow vertical resize so users can see and grow their text.",
       },
@@ -1254,23 +1270,23 @@ export const COMPONENTS: ComponentDoc[] = [
       render: (s) => {
         const on = s.state === "on";
         const dis = s.disabled ? " disabled" : "";
-        const desc = s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">Show your availability to teammates.</div>` : "";
-        return `<label style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;cursor:pointer"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div><input type="checkbox" role="switch" class="switch"${on ? " checked" : ""}${dis}></label>`;
+        const desc = s.withDesc ? `<div class="text-xs text-muted-foreground">Show your availability to teammates.</div>` : "";
+        return `<label class="flex cursor-pointer items-start justify-between gap-4"><div><div class="text-[13px] font-medium">${s.label}</div>${desc}</div>${switchEl(on, dis)}</label>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div style="display:flex;align-items:center;justify-content:space-between;max-width:280px">
-  <span style="font-size:13px">Notifications</span>
-  <div style="display:flex;align-items:center;gap:0.5rem"><span style="font-size:12px;color:hsl(var(--muted-foreground))">Off</span><input type="checkbox" role="switch" class="switch"><span style="font-size:12px;color:hsl(var(--muted-foreground))">On</span></div>
+        html: `<div class="flex max-w-[280px] items-center justify-between">
+  <span class="text-[13px]">Notifications</span>
+  <div class="flex items-center gap-2"><span class="text-xs text-muted-foreground">Off</span>${switchEl(false)}<span class="text-xs text-muted-foreground">On</span></div>
 </div>`,
         caption: "An On/Off label duplicates what the switch position already shows.",
       },
       do: {
-        html: `<div style="display:flex;align-items:center;justify-content:space-between;max-width:280px">
-  <span style="font-size:13px">Notifications</span>
-  <input type="checkbox" role="switch" class="switch" checked>
+        html: `<div class="flex max-w-[280px] items-center justify-between">
+  <span class="text-[13px]">Notifications</span>
+  ${switchEl(true)}
 </div>`,
         caption: "Label the setting, not the state; the switch communicates on or off.",
       },
@@ -1295,11 +1311,11 @@ export const COMPONENTS: ComponentDoc[] = [
         const lbl = s.label as string;
         let triggerHtml = "";
         if (s.trigger === "icon") {
-          triggerHtml = `<button class="btn btn-ghost btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/></svg></button>`;
+          triggerHtml = btn("ghost", `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/></svg>`, "icon");
         } else if (s.trigger === "button") {
-          triggerHtml = `<button class="btn btn-outline btn-sm">Hover me</button>`;
+          triggerHtml = btn("outline", "Hover me", "sm");
         } else {
-          triggerHtml = `<span style="text-decoration:underline;text-decoration-style:dotted;cursor:help;font-size:13px">hover this text</span>`;
+          triggerHtml = `<span class="cursor-help text-sm underline decoration-dotted">hover this text</span>`;
         }
         let pos = "";
         if (side === "top") pos = "bottom:calc(100% + 8px);left:50%;transform:translateX(-50%)";
@@ -1309,25 +1325,25 @@ export const COMPONENTS: ComponentDoc[] = [
         const hover = s.reveal === "on hover";
         const tipDisplay = hover ? "display:none;" : "";
         const wrapperEvents = hover ? ` onmouseenter="this.querySelector('[data-tip]').style.display='block'" onmouseleave="this.querySelector('[data-tip]').style.display='none'" onfocusin="this.querySelector('[data-tip]').style.display='block'" onfocusout="this.querySelector('[data-tip]').style.display='none'"` : "";
-        return `<div style="position:relative;display:inline-flex"${wrapperEvents}>${triggerHtml}<div class="tooltip" data-tip style="position:absolute;${pos};white-space:nowrap;${tipDisplay}">${lbl}</div></div>`;
+        return `<div class="relative inline-flex"${wrapperEvents}>${triggerHtml}<div class="${tooltipCls} absolute whitespace-nowrap" data-tip style="${pos};${tipDisplay}">${lbl}</div></div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div style="padding-bottom:3.5rem">
-  <div style="position:relative;display:inline-flex">
-    <button class="btn btn-ghost btn-icon">?</button>
-    <div class="tooltip" style="position:absolute;top:calc(100% + 8px);left:0;white-space:normal;width:240px">To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours.</div>
+        html: `<div class="pb-14">
+  <div class="relative inline-flex">
+    ${btn("ghost", "?", "icon")}
+    <div class="${tooltipCls} absolute w-60" style="top:calc(100% + 8px);left:0;white-space:normal">To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours.</div>
   </div>
 </div>`,
         caption: "Long, essential instructions hidden in a tooltip are missed on touch and by screen readers.",
       },
       do: {
-        html: `<div style="padding-bottom:3.5rem">
-  <div style="position:relative;display:inline-flex">
-    <button class="btn btn-ghost btn-icon">?</button>
-    <div class="tooltip" style="position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap">Rotate key</div>
+        html: `<div class="pb-14">
+  <div class="relative inline-flex">
+    ${btn("ghost", "?", "icon")}
+    <div class="${tooltipCls} absolute whitespace-nowrap" style="top:calc(100% + 8px);left:50%;transform:translateX(-50%)">Rotate key</div>
   </div>
 </div>`,
         caption: "Keep tooltips short and supplementary; put essential steps in visible copy.",
