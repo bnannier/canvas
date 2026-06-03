@@ -86,6 +86,14 @@ const statusDot: Record<string, string> = {
 const statusBadge = (variant: string, label: string) =>
   `<span class="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${statusTone[variant]}"><span class="h-1.5 w-1.5 rounded-full ${statusDot[variant]}"></span>${label}</span>`;
 
+const bcNav = "flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground";
+const crumbLink = (label: string, attrs = "") =>
+  `<a href="#"${attrs} class="transition-colors hover:text-foreground">${label}</a>`;
+const crumbCurrent = (label: string) => `<span class="font-medium text-foreground">${label}</span>`;
+const crumbSep = (sep = "/") => `<span class="select-none text-muted-foreground/60">${sep}</span>`;
+const crumbChevron = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/60"><path d="m9 18 6-6-6-6"/></svg>`;
+const homeIconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`;
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -278,33 +286,16 @@ export const COMPONENTS: ComponentDoc[] = [
       ],
       defaults: { depth: 4, separator: "chevron", homeIcon: false, pageHeader: false },
       render: (s) => {
+        const click = ` onclick="var a=event.target.closest('a');if(a)event.preventDefault()"`;
         if (s.pageHeader) {
-          return `<div class="page-header">
-  <div>
-    <nav class="breadcrumb" style="margin-bottom:0.5rem" onclick="var a=event.target.closest('a');if(a){event.preventDefault();this.querySelectorAll('.breadcrumb-item').forEach(function(s){s.classList.remove('active')});a.closest('.breadcrumb-item').classList.add('active')}">
-      <span class="breadcrumb-item"><a href="#">Users</a></span>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item active">Rachel Chen</span>
-    </nav>
-    <div class="page-header-title"><h1>Rachel Chen</h1></div>
-  </div>
-  <div class="page-header-actions">
-    <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Editing…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Edit</button>
-    <button class="btn btn-default btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Saved!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Save</button>
-  </div>
-</div>`;
+          const fb = (t: string) => ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='${t}';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`;
+          return `<div class="flex items-start justify-between gap-4"><div><nav class="${bcNav} mb-2"${click}>${crumbLink("Users")}${crumbSep()}${crumbCurrent("Rachel Chen")}</nav><h1 class="text-2xl font-semibold tracking-tight text-foreground">Rachel Chen</h1></div><div class="flex items-center gap-2">${btn("outline", "Edit", "sm", fb("Editing…"))}${btn("default", "Save", "sm", fb("Saved!"))}</div></div>`;
         }
         const crumbs = ["Projects", "Identity Platform", "Settings", "Profile", "Avatar", "Edit"].slice(0, s.depth as number);
-        const sepHtml = s.separator === "chevron"
-          ? `<span class="breadcrumb-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5"><path d="m9 18 6-6-6-6"/></svg></span>`
-          : `<span class="breadcrumb-sep">${s.separator === "dot" ? "·" : "/"}</span>`;
-        const homeHtml = s.homeIcon
-          ? `<span class="breadcrumb-item"><a href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>${sepHtml}`
-          : "";
-        const items = crumbs.map((c, i) => i === crumbs.length - 1
-          ? `<span class="breadcrumb-item active">${c}</span>`
-          : `<span class="breadcrumb-item"><a href="#">${c}</a></span>${sepHtml}`).join("");
-        return `<nav class="breadcrumb" onclick="var a=event.target.closest('a');if(a){event.preventDefault();this.querySelectorAll('.breadcrumb-item').forEach(function(s){s.classList.remove('active')});a.closest('.breadcrumb-item').classList.add('active')}">${homeHtml}${items}</nav>`;
+        const sep = s.separator === "chevron" ? crumbChevron : crumbSep(s.separator === "dot" ? "·" : "/");
+        const home = s.homeIcon ? crumbLink(homeIconSvg, ` aria-label="Home"`) + sep : "";
+        const items = crumbs.map((c, i) => i === crumbs.length - 1 ? crumbCurrent(c) : crumbLink(c) + sep).join("");
+        return `<nav class="${bcNav}"${click}>${home}${items}</nav>`;
       },
     },
     sections: [],
@@ -312,96 +303,44 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Current page",
         dont: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#">Projects</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Settings</a></span>
-</nav>`,
+          html: `<nav class="${bcNav}">${crumbLink("Projects")}${crumbSep()}${crumbLink("Identity Platform")}${crumbSep()}${crumbLink("Settings")}</nav>`,
           caption: "Linking the current page implies there's somewhere to go; it's a dead link to itself.",
         },
         do: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#">Projects</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Settings</span>
-</nav>`,
+          html: `<nav class="${bcNav}">${crumbLink("Projects")}${crumbSep()}${crumbLink("Identity Platform")}${crumbSep()}${crumbCurrent("Settings")}</nav>`,
           caption: "Ancestors are links; the page you're on is plain text at the end of the trail.",
         },
       },
       {
         title: "Deep paths",
         dont: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#">Projects</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Settings</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Profile</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Avatar</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Edit</span>
-</nav>`,
+          html: `<nav class="${bcNav}">${["Projects", "Identity Platform", "Settings", "Profile", "Avatar"].map((c) => crumbLink(c) + crumbSep()).join("")}${crumbCurrent("Edit")}</nav>`,
           caption: "A fully expanded deep path wraps and competes with the page.",
         },
         do: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#">Projects</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item">…</span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Avatar</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Edit</span>
-</nav>`,
+          html: `<nav class="${bcNav}">${crumbLink("Projects")}${crumbSep()}<span class="px-1 text-muted-foreground">…</span>${crumbSep()}${crumbLink("Avatar")}${crumbSep()}${crumbCurrent("Edit")}</nav>`,
           caption: "Collapse the middle to an ellipsis; keep the root and the last couple of levels.",
         },
       },
       {
         title: "Separator",
         dont: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#">Projects</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
-  <span class="breadcrumb-sep">›</span>
-  <span class="breadcrumb-item active">Settings</span>
-</nav>`,
+          html: `<nav class="${bcNav}">${crumbLink("Projects")}${crumbSep("/")}${crumbLink("Identity Platform")}${crumbSep("›")}${crumbCurrent("Settings")}</nav>`,
           caption: "Mixing separators in one trail looks broken.",
         },
         do: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#">Projects</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Settings</span>
-</nav>`,
+          html: `<nav class="${bcNav}">${crumbLink("Projects")}${crumbSep()}${crumbLink("Identity Platform")}${crumbSep()}${crumbCurrent("Settings")}</nav>`,
           caption: "Pick one separator and use it the whole way.",
         },
       },
       {
         title: "Home root",
         dont: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Settings</span>
-</nav>`,
+          html: `<nav class="${bcNav}">${crumbLink(homeIconSvg)}${crumbSep()}${crumbCurrent("Settings")}</nav>`,
           caption: "An icon-only root with no label is unclear to screen readers.",
         },
         do: {
-          html: `<nav class="breadcrumb">
-  <span class="breadcrumb-item"><a href="#" aria-label="Home"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Settings</span>
-</nav>`,
+          html: `<nav class="${bcNav}">${crumbLink(homeIconSvg, ` aria-label="Home"`)}${crumbSep()}${crumbCurrent("Settings")}</nav>`,
           caption: "Give the home icon an aria-label so the root is announced.",
         },
       },
