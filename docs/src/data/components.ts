@@ -201,6 +201,38 @@ const fieldRowEl = (label: string, value: string) =>
   `<div class="grid grid-cols-[180px_1fr] gap-4 text-sm"><span class="text-muted-foreground">${label}</span><span>${value}</span></div>`;
 const statCard = (label: string, value: string, delta = "", deltaTone = "text-emerald-600", extra = "") =>
   `<div class="${cardCls} p-5${extra ? " " + extra : ""}"><div class="text-xs text-muted-foreground">${label}</div><div class="mt-1 text-2xl font-semibold tracking-tight">${value}</div>${delta ? `<div class="mt-1 text-xs font-medium ${deltaTone}">${delta}</div>` : ""}</div>`;
+const filterChipCls =
+  "inline-flex cursor-pointer items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground";
+const filterGroupLabel = "text-xs font-medium uppercase tracking-wide text-muted-foreground";
+const fbtnOutline = `${btnBase} ${btnVariant.outline} ${btnSize.sm}`;
+const fbtnActive = `${btnBase} ${btnVariant.default} ${btnSize.sm}`;
+
+const calCellBase = "flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent";
+const calCellOut = "text-muted-foreground/40";
+const calToday = "bg-accent font-medium text-accent-foreground";
+const calSelected = "bg-primary text-primary-foreground hover:bg-primary";
+const calHead = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+  .map((h) => `<span class="flex h-8 w-9 items-center justify-center text-xs font-medium text-muted-foreground">${h}</span>`)
+  .join("");
+const calCells = ([27, 28, 29, 30] as number[])
+  .map((d) => ({ d, v: "out" }))
+  .concat(Array.from({ length: 31 }, (_, i) => ({ d: i + 1, v: i + 1 === 23 ? "today" : i + 1 === 24 ? "selected" : "" })))
+  .map((c) => {
+    const cls = calCellBase + (c.v === "out" ? " " + calCellOut : c.v === "today" ? " " + calToday : c.v === "selected" ? " " + calSelected : "");
+    return `<button data-cell="${c.v === "out" ? "out" : c.v === "today" ? "today" : ""}" class="${cls}">${c.d}</button>`;
+  })
+  .join("");
+const calendarBlock = (gridOnclick: string) =>
+  `<div class="w-fit rounded-lg border border-border p-3"><div class="mb-2 flex items-center justify-between"><button class="${btnBase} ${btnVariant.ghost} h-7 w-7 p-0">&lt;</button><span class="text-sm font-medium">May 2026</span><button class="${btnBase} ${btnVariant.ghost} h-7 w-7 p-0">&gt;</button></div><div class="grid grid-cols-7 gap-0.5"${gridOnclick}>${calHead}${calCells}</div></div>`;
+
+const cmdDialog = "rounded-lg border border-border bg-popover shadow-lg";
+const cmdInput = "w-full border-b border-border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground";
+const cmdList = "max-h-80 overflow-auto p-2";
+const cmdGroupLabel = "px-2 py-1.5 text-xs font-medium text-muted-foreground";
+const cmdItem = "command-item flex cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent";
+const cmdSep = "command-sep my-1 h-px bg-border";
+const cmdItemEl = (label: string, shortcut = "", selected = false) =>
+  `<div class="${cmdItem}${selected ? " bg-accent text-accent-foreground" : ""}">${label}${shortcut ? `<span class="text-xs text-muted-foreground">${shortcut}</span>` : ""}</div>`;
 
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
@@ -1698,49 +1730,49 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Left: categorical filters. Top: chip row showing active filters. Each chip is removable.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;grid-template-columns:200px 1fr;gap:1.5rem" onclick="var chip=event.target.closest('[data-filter]');if(!chip)return;var n=chip.dataset.filter;this.querySelectorAll('input[type=checkbox]').forEach(function(c){if(c.parentElement.textContent.trim()===n)c.click()})">
-  <div class="filter-panel" onchange="var wrap=this.closest('div[style*=grid]');var chips=wrap.querySelector('[data-chips]');while(chips.firstChild)chips.removeChild(chips.firstChild);this.querySelectorAll('input[type=checkbox]:checked').forEach(function(cb){var name=cb.parentElement.textContent.trim();var s=document.createElement('span');s.className='filter-chip active';s.style.cursor='pointer';s.dataset.filter=name;s.textContent=name+' ×';chips.appendChild(s)});var count=chips.children.length;wrap.querySelector('[data-count]').textContent='Showing '+(count*12)+' of 142 identities'">
-    <div class="filter-group">
-      <span class="filter-group-label">Status</span>
-      <div class="filter-group-content">
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" checked /> Active</label>
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" /> Pending</label>
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" /> Archived</label>
+          html: `<div data-fp class="grid grid-cols-[200px_1fr] gap-6" onclick="var chip=event.target.closest('[data-filter]');if(!chip)return;var n=chip.dataset.filter;this.querySelectorAll('input[type=checkbox]').forEach(function(c){if(c.parentElement.textContent.trim()===n)c.click()})">
+  <div class="space-y-5 rounded-lg border border-border p-4" onchange="var wrap=this.closest('[data-fp]');var chips=wrap.querySelector('[data-chips]');while(chips.firstChild)chips.removeChild(chips.firstChild);this.querySelectorAll('input[type=checkbox]:checked').forEach(function(cb){var name=cb.parentElement.textContent.trim();var s=document.createElement('span');s.className='${filterChipCls}';s.dataset.filter=name;s.textContent=name+' ×';chips.appendChild(s)});var count=chips.children.length;wrap.querySelector('[data-count]').textContent='Showing '+(count*12)+' of 142 identities'">
+    <div class="space-y-2">
+      <span class="${filterGroupLabel}">Status</span>
+      <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" checked /> Active</label>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" /> Pending</label>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" /> Archived</label>
       </div>
     </div>
-    <div class="filter-group">
-      <span class="filter-group-label">Schema</span>
-      <div class="filter-group-content">
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" checked /> Default</label>
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" /> Custom</label>
+    <div class="space-y-2">
+      <span class="${filterGroupLabel}">Schema</span>
+      <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" checked /> Default</label>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" /> Custom</label>
       </div>
     </div>
-    <div class="filter-group">
-      <span class="filter-group-label">MFA</span>
-      <div class="filter-group-content">
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" /> Enabled</label>
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" class="checkbox" /> Disabled</label>
+    <div class="space-y-2">
+      <span class="${filterGroupLabel}">MFA</span>
+      <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" /> Enabled</label>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary" /> Disabled</label>
       </div>
     </div>
   </div>
   <div>
-    <div data-chips style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap">
-      <span class="filter-chip active" style="cursor:pointer" data-filter="Active">Active ×</span>
-      <span class="filter-chip active" style="cursor:pointer" data-filter="Default">Default ×</span>
+    <div data-chips class="mb-4 flex flex-wrap gap-2">
+      <span class="${filterChipCls}" data-filter="Active">Active ×</span>
+      <span class="${filterChipCls}" data-filter="Default">Default ×</span>
     </div>
-    <div data-count style="font-size:13px;color:hsl(var(--muted-foreground))">Showing 24 of 142 identities</div>
+    <div data-count class="text-sm text-muted-foreground">Showing 24 of 142 identities</div>
   </div>
 </div>`,
-          code: `<div style="display:grid;grid-template-columns:200px 1fr;gap:1.5rem">
-  <div class="filter-panel">
-    <div class="filter-group">
-      <span class="filter-group-label">Status</span>
-      <label><input type="checkbox" checked /> Active</label>
-      <label><input type="checkbox" /> Pending</label>
+          code: `<div class="grid grid-cols-[200px_1fr] gap-6">
+  <div class="space-y-5 rounded-lg border border-border p-4">
+    <div class="space-y-2">
+      <span class="${filterGroupLabel}">Status</span>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" checked /> Active</label>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" /> Pending</label>
     </div>
   </div>
   <div>
-    <div class="filter-chip active">Active &times;</div>
+    <span class="${filterChipCls}">Active &times;</span>
     <div>Showing 24 of 142 identities</div>
   </div>
 </div>`,
@@ -1751,11 +1783,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Compact horizontal filters: dropdowns above the table. Use when sidebar real estate is precious.",
         examples: [{
           full: true,
-          html: `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap" onclick="var b=event.target.closest('.btn');if(!b)return;if(b.textContent.includes('Add filter')){var o=b.textContent;b.disabled=true;b.textContent='Added!';setTimeout(function(){b.textContent=o;b.disabled=false},1500);return}b.classList.toggle('active');if(b.classList.contains('active')){b.className=b.className.replace('btn-outline','btn-default')}else{b.className=b.className.replace('btn-default','btn-outline')}">
-  <button class="btn btn-outline btn-sm">Status <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-  <button class="btn btn-outline btn-sm">Role <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-  <button class="btn btn-outline btn-sm">Date range <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-  <button class="btn btn-ghost btn-sm" style="color:hsl(var(--primary))">+ Add filter</button>
+          html: `<div class="flex flex-wrap items-center gap-2" onclick="var b=event.target.closest('button');if(!b)return;if(b.dataset.add!==undefined){var o=b.textContent;b.disabled=true;b.textContent='Added!';setTimeout(function(){b.textContent=o;b.disabled=false},1500);return}if(b.dataset.on==='1'){b.dataset.on='0';b.className='${fbtnOutline}'}else{b.dataset.on='1';b.className='${fbtnActive}'}">
+  <button data-on="0" class="${fbtnOutline}">Status <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+  <button data-on="0" class="${fbtnOutline}">Role <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+  <button data-on="0" class="${fbtnOutline}">Date range <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+  <button data-add class="${btnBase} ${btnVariant.ghost} ${btnSize.sm} text-primary">+ Add filter</button>
 </div>`,
         }],
       },
@@ -1774,31 +1806,17 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "Single date",
         anatomy: "Token-themed month grid. Selected day has primary background; today gets accent.",
         examples: [{
-          html: `<div class="calendar">
-  <div class="calendar-header">
-    <button class="calendar-nav">&lt;</button>
-    <span class="calendar-title">May 2026</span>
-    <button class="calendar-nav">&gt;</button>
+          html: calendarBlock(` onclick="var t=event.target.closest('[data-cell]');if(!t||t.dataset.cell==='out')return;this.querySelectorAll('[data-cell]').forEach(function(c){var v=c.dataset.cell;c.className='${calCellBase}'+(v==='out'?' ${calCellOut}':v==='today'?' ${calToday}':'')});t.className='${calCellBase} ${calSelected}'"`),
+          code: `<div class="w-fit rounded-lg border border-border p-3">
+  <div class="mb-2 flex items-center justify-between">
+    <button class="...ghost icon...">&lt;</button>
+    <span class="text-sm font-medium">May 2026</span>
+    <button class="...ghost icon...">&gt;</button>
   </div>
-  <div class="calendar-grid" onclick="var t=event.target;if(!t.classList.contains('calendar-cell')||t.classList.contains('outside'))return;this.querySelectorAll('.calendar-cell').forEach(c=>c.classList.remove('selected'));t.classList.add('selected')">
-    <span class="calendar-head">Mo</span><span class="calendar-head">Tu</span><span class="calendar-head">We</span><span class="calendar-head">Th</span><span class="calendar-head">Fr</span><span class="calendar-head">Sa</span><span class="calendar-head">Su</span>
-    <button class="calendar-cell outside">27</button><button class="calendar-cell outside">28</button><button class="calendar-cell outside">29</button><button class="calendar-cell outside">30</button><button class="calendar-cell">1</button><button class="calendar-cell">2</button><button class="calendar-cell">3</button>
-    <button class="calendar-cell">4</button><button class="calendar-cell">5</button><button class="calendar-cell">6</button><button class="calendar-cell">7</button><button class="calendar-cell">8</button><button class="calendar-cell">9</button><button class="calendar-cell">10</button>
-    <button class="calendar-cell">11</button><button class="calendar-cell">12</button><button class="calendar-cell">13</button><button class="calendar-cell">14</button><button class="calendar-cell">15</button><button class="calendar-cell">16</button><button class="calendar-cell">17</button>
-    <button class="calendar-cell">18</button><button class="calendar-cell">19</button><button class="calendar-cell">20</button><button class="calendar-cell">21</button><button class="calendar-cell">22</button><button class="calendar-cell today">23</button><button class="calendar-cell selected">24</button>
-    <button class="calendar-cell">25</button><button class="calendar-cell">26</button><button class="calendar-cell">27</button><button class="calendar-cell">28</button><button class="calendar-cell">29</button><button class="calendar-cell">30</button><button class="calendar-cell">31</button>
-  </div>
-</div>`,
-          code: `<div class="calendar">
-  <div class="calendar-header">
-    <button class="calendar-nav">&lt;</button>
-    <span class="calendar-title">May 2026</span>
-    <button class="calendar-nav">&gt;</button>
-  </div>
-  <div class="calendar-grid">
-    <span class="calendar-head">Mo</span>...
-    <button class="calendar-cell">1</button>...
-    <button class="calendar-cell selected">24</button>...
+  <div class="grid grid-cols-7 gap-0.5">
+    <span class="...head...">Mo</span>...
+    <button class="...cell...">1</button>...
+    <button class="...cell + bg-primary text-primary-foreground...">24</button>...
   </div>
 </div>`,
         }],
@@ -1808,40 +1826,22 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Calendar on the left, day's events on the right.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:start">
-  <div class="calendar">
-    <div class="calendar-header">
-      <button class="calendar-nav">&lt;</button>
-      <span class="calendar-title">May 2026</span>
-      <button class="calendar-nav">&gt;</button>
-    </div>
-    <div class="calendar-grid" onclick="var t=event.target;if(!t.classList.contains('calendar-cell')||t.classList.contains('outside'))return;this.querySelectorAll('.calendar-cell').forEach(c=>c.classList.remove('selected'));t.classList.add('selected');var d=t.textContent;var wrap=this.closest('div[style*=grid-template]');wrap.querySelector('.h4').textContent='May '+d;var ev={'1':'Sprint kickoff|10:00 AM','8':'Retrospective|3:00 PM','15':'All-hands|11:00 AM','22':'Demo day|2:00 PM','23':'Team lunch|12:00 PM~Code review|4:00 PM','24':'Sprint planning|9:00 AM~Design review|11:30 AM~1:1 with manager|2:00 PM','25':'Standup|9:30 AM','26':'Deploy window|6:00 PM'};var items=(ev[d]||'No events').split('~');var bd=wrap.querySelector('.section-card-body');bd.innerHTML=items[0]==='No events'?'<div style=\\'padding:1rem;font-size:13px;color:hsl(var(--muted-foreground))\\'>No events scheduled.</div>':items.map(function(e,i){var p=e.split('|');return '<div style=\\'padding:0.625rem 1rem;font-size:13px;display:flex;justify-content:space-between'+(i<items.length-1?';border-bottom:1px solid hsl(var(--border))':'')+'\\'><span><span style=\\'font-weight:500\\'>'+p[0]+'</span></span><span style=\\'color:hsl(var(--muted-foreground))\\'>'+p[1]+'</span></div>'}).join('')">
-      <span class="calendar-head">Mo</span><span class="calendar-head">Tu</span><span class="calendar-head">We</span><span class="calendar-head">Th</span><span class="calendar-head">Fr</span><span class="calendar-head">Sa</span><span class="calendar-head">Su</span>
-      <button class="calendar-cell outside">27</button><button class="calendar-cell outside">28</button><button class="calendar-cell outside">29</button><button class="calendar-cell outside">30</button><button class="calendar-cell">1</button><button class="calendar-cell">2</button><button class="calendar-cell">3</button>
-      <button class="calendar-cell">4</button><button class="calendar-cell">5</button><button class="calendar-cell">6</button><button class="calendar-cell">7</button><button class="calendar-cell">8</button><button class="calendar-cell">9</button><button class="calendar-cell">10</button>
-      <button class="calendar-cell">11</button><button class="calendar-cell">12</button><button class="calendar-cell">13</button><button class="calendar-cell">14</button><button class="calendar-cell">15</button><button class="calendar-cell">16</button><button class="calendar-cell">17</button>
-      <button class="calendar-cell">18</button><button class="calendar-cell">19</button><button class="calendar-cell">20</button><button class="calendar-cell">21</button><button class="calendar-cell">22</button><button class="calendar-cell today">23</button><button class="calendar-cell selected">24</button>
-      <button class="calendar-cell">25</button><button class="calendar-cell">26</button><button class="calendar-cell">27</button><button class="calendar-cell">28</button><button class="calendar-cell">29</button><button class="calendar-cell">30</button><button class="calendar-cell">31</button>
-    </div>
-  </div>
-  <div class="section-card">
-    <div class="section-card-header"><h3 class="h4">May 24</h3></div>
-    <div class="section-card-divider"></div>
-    <div class="section-card-body" style="padding:0">
-      <div style="padding:0.625rem 1rem;font-size:13px;display:flex;justify-content:space-between;border-bottom:1px solid hsl(var(--border))"><span><span style="font-weight:500">Sprint planning</span></span><span style="color:hsl(var(--muted-foreground))">9:00 AM</span></div>
-      <div style="padding:0.625rem 1rem;font-size:13px;display:flex;justify-content:space-between;border-bottom:1px solid hsl(var(--border))"><span><span style="font-weight:500">Design review</span></span><span style="color:hsl(var(--muted-foreground))">11:30 AM</span></div>
-      <div style="padding:0.625rem 1rem;font-size:13px;display:flex;justify-content:space-between"><span><span style="font-weight:500">1:1 with manager</span></span><span style="color:hsl(var(--muted-foreground))">2:00 PM</span></div>
+          html: `<div data-cal class="grid grid-cols-[auto_1fr] items-start gap-6">
+  ${calendarBlock(` onclick="var t=event.target.closest('[data-cell]');if(!t||t.dataset.cell==='out')return;this.querySelectorAll('[data-cell]').forEach(function(c){var v=c.dataset.cell;c.className='${calCellBase}'+(v==='out'?' ${calCellOut}':v==='today'?' ${calToday}':'')});t.className='${calCellBase} ${calSelected}';var d=t.textContent;var wrap=this.closest('[data-cal]');wrap.querySelector('[data-day]').textContent='May '+d;var ev={'1':'Sprint kickoff|10:00 AM','8':'Retrospective|3:00 PM','15':'All-hands|11:00 AM','22':'Demo day|2:00 PM','23':'Team lunch|12:00 PM~Code review|4:00 PM','24':'Sprint planning|9:00 AM~Design review|11:30 AM~1:1 with manager|2:00 PM','25':'Standup|9:30 AM','26':'Deploy window|6:00 PM'};var items=(ev[d]||'No events').split('~');var bd=wrap.querySelector('[data-events]');bd.innerHTML=items[0]==='No events'?'<div class=\\'px-4 py-3 text-sm text-muted-foreground\\'>No events scheduled.</div>':items.map(function(e,i){var p=e.split('|');return '<div class=\\'flex justify-between px-4 py-2.5 text-sm'+(i<items.length-1?' border-b border-border':'')+'\\'><span class=\\'font-medium\\'>'+p[0]+'</span><span class=\\'text-muted-foreground\\'>'+p[1]+'</span></div>'}).join('')"`)}
+  <div class="${cardCls}">
+    <div data-day class="border-b border-border px-5 py-3 text-sm font-semibold">May 24</div>
+    <div data-events>
+      <div class="flex justify-between border-b border-border px-4 py-2.5 text-sm"><span class="font-medium">Sprint planning</span><span class="text-muted-foreground">9:00 AM</span></div>
+      <div class="flex justify-between border-b border-border px-4 py-2.5 text-sm"><span class="font-medium">Design review</span><span class="text-muted-foreground">11:30 AM</span></div>
+      <div class="flex justify-between px-4 py-2.5 text-sm"><span class="font-medium">1:1 with manager</span><span class="text-muted-foreground">2:00 PM</span></div>
     </div>
   </div>
 </div>`,
-          code: `<div style="display:grid;grid-template-columns:auto 1fr;gap:1.5rem">
-  <div class="calendar">...</div>
-  <div class="section-card">
-    <div class="section-card-header"><h3 class="h4">May 24</h3></div>
-    <div class="section-card-divider"></div>
-    <div class="section-card-body">
-      <!-- Event rows -->
-    </div>
+          code: `<div class="grid grid-cols-[auto_1fr] items-start gap-6">
+  <div class="...calendar...">...</div>
+  <div class="rounded-lg border border-border ...">
+    <div class="border-b border-border px-5 py-3 font-semibold">May 24</div>
+    <div><!-- Event rows --></div>
   </div>
 </div>`,
         }],
@@ -1851,8 +1851,8 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "In production, wrap <code>react-day-picker</code> (or your framework's equivalent) with Canvas token overrides. The examples on this page use a static HTML mock for illustration.",
         examples: [{
           full: true,
-          html: `<div style="padding:1rem;border-radius:8px;background:hsl(var(--muted) / 0.4);border:1px solid hsl(var(--border));font-size:13px;color:hsl(var(--muted-foreground));line-height:1.6;max-width:560px">
-  <span style="font-weight:600;color:hsl(var(--foreground))">Why not ship a full calendar?</span> Calendars need locale-aware date math, keyboard navigation, range selection, and accessibility: things a CSS-only system can't provide. Use <code>react-day-picker</code> or similar, then apply Canvas tokens for colors, radius, and typography.
+          html: `<div class="max-w-[560px] rounded-lg border border-border bg-muted/40 p-4 text-sm leading-relaxed text-muted-foreground">
+  <span class="font-semibold text-foreground">Why not ship a full calendar?</span> Calendars need locale-aware date math, keyboard navigation, range selection, and accessibility: things a CSS-only system can't provide. Use <code>react-day-picker</code> or similar, then apply Canvas tokens for colors, radius, and typography.
 </div>`,
         }],
       },
@@ -1870,22 +1870,22 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Press &#x2318;K (or ctrl+K) anywhere. Click below to open it manually.",
         examples: [{
           html: `<div>
-  <button class="btn btn-outline btn-sm" style="display:flex;align-items:center;gap:0.5rem" onclick="var d=this.nextElementSibling;if(d.style.display==='none'){d.style.display='block';d.querySelector('.command-input').focus();var close=function(e){if(!d.contains(e.target)&&e.target!==this){d.style.display='none';document.removeEventListener('click',close)}}.bind(this);setTimeout(function(){document.addEventListener('click',close)},0)}else{d.style.display='none'}">
+  <button class="${btnBase} ${btnVariant.outline} ${btnSize.sm}" onclick="var d=this.nextElementSibling;if(d.classList.contains('hidden')){d.classList.remove('hidden');d.querySelector('input').focus();var close=function(e){if(!d.contains(e.target)&&e.target!==this){d.classList.add('hidden');document.removeEventListener('click',close)}}.bind(this);setTimeout(function(){document.addEventListener('click',close)},0)}else{d.classList.add('hidden')}">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     Search...
-    <kbd class="kbd" style="margin-left:auto">⌘K</kbd>
+    <kbd class="${kbdCls} ml-auto">⌘K</kbd>
   </button>
-  <div class="command-dialog" style="display:none;position:relative;transform:none;top:auto;left:auto;animation:none;margin-top:0.75rem;max-width:480px">
-    <input class="command-input" placeholder="Type a command..." oninput="var v=this.value.toLowerCase();var items=this.parentElement.querySelectorAll('.command-item');items.forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})">
-    <div class="command-list">
-      <div class="command-group"><div class="command-group-label">Actions</div><div class="command-item selected">New File</div><div class="command-item">Open File</div><div class="command-item">Save</div></div>
-      <div class="command-sep"></div>
-      <div class="command-group"><div class="command-group-label">Navigation</div><div class="command-item">Go to Dashboard</div><div class="command-item">Go to Settings</div></div>
+  <div class="${cmdDialog} mt-3 hidden max-w-[480px]">
+    <input class="${cmdInput}" placeholder="Type a command..." oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.command-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})">
+    <div class="${cmdList}">
+      <div class="command-group"><div class="${cmdGroupLabel}">Actions</div>${cmdItemEl("New File", "", true)}${cmdItemEl("Open File")}${cmdItemEl("Save")}</div>
+      <div class="${cmdSep}"></div>
+      <div class="command-group"><div class="${cmdGroupLabel}">Navigation</div>${cmdItemEl("Go to Dashboard")}${cmdItemEl("Go to Settings")}</div>
     </div>
   </div>
 </div>`,
-          code: `<button class="btn btn-outline btn-sm" onclick="openCommandPalette()">
-  <svg><!-- search icon --></svg> Search... <kbd class="kbd">⌘K</kbd>
+          code: `<button class="...outline sm..." onclick="openCommandPalette()">
+  <svg><!-- search icon --></svg> Search... <kbd class="...kbd...">⌘K</kbd>
 </button>`,
         }],
       },
@@ -1893,29 +1893,29 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "Anatomy",
         anatomy: "Centered overlay . 600px wide . search input + grouped results + footer with key hints.",
         examples: [{
-          html: `<div class="command-dialog" style="position:relative;transform:none;top:auto;left:auto;animation:none;max-width:480px">
-  <input class="command-input" placeholder="Type a command..." oninput="var v=this.value.toLowerCase();var items=this.parentElement.querySelectorAll('.command-item');var first=true;items.forEach(function(i){var txt=i.textContent.toLowerCase();var show=txt.includes(v);i.style.display=show?'':'none';i.classList.remove('selected');if(show&&first){i.classList.add('selected');first=false}});this.parentElement.querySelectorAll('.command-group').forEach(function(g){var vis=g.querySelectorAll('.command-item:not([style*=none])');g.style.display=vis.length?'':'none'});this.parentElement.querySelectorAll('.command-sep').forEach(function(s){s.style.display=v?'none':''})">
-  <div class="command-list" onclick="var t=event.target.closest('.command-item');if(!t)return;this.querySelectorAll('.command-item').forEach(i=>i.classList.remove('selected'));t.classList.add('selected')">
+          html: `<div class="${cmdDialog} max-w-[480px]">
+  <input class="${cmdInput}" placeholder="Type a command..." oninput="var v=this.value.toLowerCase();var items=this.parentElement.querySelectorAll('.command-item');var first=true;items.forEach(function(i){var txt=i.textContent.toLowerCase();var show=txt.includes(v);i.style.display=show?'':'none';i.classList.remove('bg-accent','text-accent-foreground');if(show&&first){i.classList.add('bg-accent','text-accent-foreground');first=false}});this.parentElement.querySelectorAll('.command-group').forEach(function(g){var vis=g.querySelectorAll('.command-item:not([style*=none])');g.style.display=vis.length?'':'none'});this.parentElement.querySelectorAll('.command-sep').forEach(function(s){s.style.display=v?'none':''})">
+  <div class="${cmdList}" onclick="var t=event.target.closest('.command-item');if(!t)return;this.querySelectorAll('.command-item').forEach(function(i){i.classList.remove('bg-accent','text-accent-foreground')});t.classList.add('bg-accent','text-accent-foreground')">
     <div class="command-group">
-      <div class="command-group-label">Actions</div>
-      <div class="command-item selected">New File <span class="command-shortcut">Ctrl+N</span></div>
-      <div class="command-item">Open File <span class="command-shortcut">Ctrl+O</span></div>
-      <div class="command-item">Save <span class="command-shortcut">Ctrl+S</span></div>
+      <div class="${cmdGroupLabel}">Actions</div>
+      ${cmdItemEl("New File", "Ctrl+N", true)}
+      ${cmdItemEl("Open File", "Ctrl+O")}
+      ${cmdItemEl("Save", "Ctrl+S")}
     </div>
-    <div class="command-sep"></div>
+    <div class="${cmdSep}"></div>
     <div class="command-group">
-      <div class="command-group-label">Navigation</div>
-      <div class="command-item">Go to Dashboard</div>
-      <div class="command-item">Go to Settings</div>
+      <div class="${cmdGroupLabel}">Navigation</div>
+      ${cmdItemEl("Go to Dashboard")}
+      ${cmdItemEl("Go to Settings")}
     </div>
   </div>
 </div>`,
-          code: `<div class="command-dialog">
-  <input class="command-input" placeholder="Type a command..." />
-  <div class="command-list">
+          code: `<div class="rounded-lg border border-border bg-popover shadow-lg">
+  <input class="...command input..." placeholder="Type a command..." />
+  <div class="max-h-80 overflow-auto p-2">
     <div class="command-group">
-      <div class="command-group-label">Actions</div>
-      <div class="command-item selected">New File</div>
+      <div class="...group label...">Actions</div>
+      <div class="command-item ...selected...">New File</div>
       <div class="command-item">Open File</div>
     </div>
   </div>
