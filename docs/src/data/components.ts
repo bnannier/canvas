@@ -163,13 +163,15 @@ export const COMPONENTS: ComponentDoc[] = [
       controls: [
         { type: "pills", key: "kind", label: "Kind", options: ["badge", "status"], cols: 2 },
         { type: "pills", key: "variant", label: "Badge variant", options: ["default", "secondary", "outline", "destructive"], cols: 4, disabledWhen: (s) => s.kind === "status" },
+        { type: "check", key: "mono", label: "Mono (token / event names)", disabledWhen: (s) => s.kind === "status" },
         { type: "pills", key: "statusVariant", label: "Status variant", options: ["success", "warning", "error", "info", "neutral"], cols: 3, disabledWhen: (s) => s.kind === "badge" },
         { type: "text", key: "label", label: "Label" },
       ],
-      defaults: { kind: "badge", variant: "secondary", statusVariant: "success", label: "admin" },
+      defaults: { kind: "badge", variant: "secondary", statusVariant: "success", label: "admin", mono: false },
       render: (s) => {
         if (s.kind === "status") return `<span class="status-badge sb-${s.statusVariant}"><span class="dot"></span> ${s.label}</span>`;
-        return `<span class="badge badge-${s.variant}">${s.label}</span>`;
+        const mono = s.mono ? ` style="font-family:var(--font-mono);font-size:10.5px"` : "";
+        return `<span class="badge badge-${s.variant}"${mono}>${s.label}</span>`;
       },
     },
     sections: [
