@@ -728,7 +728,7 @@ export const COMPONENTS: ComponentDoc[] = [
         const prevDis = cur <= 1 ? " disabled" : "";
         const nextDis = cur >= total ? " disabled" : "";
         if (s.variant === "compact") {
-          return `<div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:hsl(var(--muted-foreground))">Showing ${showFrom}–${showTo} of ${total * perPage}</span><div style="display:flex;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button><button class="btn btn-outline btn-sm"${nextDis}>Next</button></div></div>`;
+          return `<div data-p="${cur}" onclick="var c=this;var t=event.target.closest('.btn');if(!t||t.disabled)return;var p=+c.dataset.p;if(/Next/.test(t.textContent)&&p<${total})p++;else if(/Previous/.test(t.textContent)&&p>1)p--;else return;c.dataset.p=p;c.querySelector('[data-info]').textContent='Showing '+(((p-1)*${perPage})+1)+'–'+Math.min(p*${perPage},${total * perPage})+' of ${total * perPage}';var bs=c.querySelectorAll('button');bs[0].disabled=p<=1;bs[1].disabled=p>=${total}" style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span data-info style="color:hsl(var(--muted-foreground))">Showing ${showFrom}–${showTo} of ${total * perPage}</span><div style="display:flex;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button><button class="btn btn-outline btn-sm"${nextDis}>Next</button></div></div>`;
         }
         if (s.variant === "numbered") {
           const list: number[] = [];
@@ -749,33 +749,32 @@ export const COMPONENTS: ComponentDoc[] = [
           }).join("");
           return `<div onclick="var b=event.target.closest('.btn-ghost');if(!b)return;this.querySelectorAll('.btn-ghost').forEach(function(x){x.style.background='';x.style.color=''});b.style.background='hsl(var(--foreground))';b.style.color='hsl(var(--background))'" style="display:flex;align-items:center;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button>${pages}<button class="btn btn-outline btn-sm"${nextDis}>Next</button></div>`;
         }
-        return `<div style="display:flex;align-items:center;gap:1rem;font-size:13px"><div style="display:flex;align-items:center;gap:0.5rem"><span style="color:hsl(var(--muted-foreground))">Rows per page</span><select class="input" style="width:64px;height:28px;font-size:12px"><option>10</option><option>25</option><option>50</option></select></div><span style="color:hsl(var(--muted-foreground))">Page ${cur} of ${total}</span><div style="display:flex;gap:0.25rem"><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${prevDis}>&lt;</button><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${nextDis}>&gt;</button></div></div>`;
+        return `<div data-p="${cur}" data-per="${perPage}" style="display:flex;align-items:center;gap:1rem;font-size:13px"><div style="display:flex;align-items:center;gap:0.5rem"><span style="color:hsl(var(--muted-foreground))">Rows per page</span><select class="input" style="width:64px;height:28px;font-size:12px" onchange="var c=this.closest('[data-p]');c.dataset.per=+this.value;c.dataset.p=1;var tp=Math.max(1,Math.ceil(${total * perPage}/+this.value));c.querySelector('[data-info]').textContent='Page 1 of '+tp;var bs=c.querySelectorAll('.btn');bs[0].disabled=true;bs[1].disabled=tp<=1"><option>10</option><option>25</option><option>50</option></select></div><span data-info style="color:hsl(var(--muted-foreground))">Page ${cur} of ${total}</span><div style="display:flex;gap:0.25rem" onclick="var c=this.closest('[data-p]');var t=event.target.closest('.btn');if(!t||t.disabled)return;var p=+c.dataset.p;var tp=Math.max(1,Math.ceil(${total * perPage}/+c.dataset.per));if(t.textContent.includes('>')&&p<tp)p++;else if(t.textContent.includes('<')&&p>1)p--;else return;c.dataset.p=p;c.querySelector('[data-info]').textContent='Page '+p+' of '+tp;var bs=c.querySelectorAll('.btn');bs[0].disabled=p<=1;bs[1].disabled=p>=tp"><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${prevDis}>&lt;</button><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${nextDis}>&gt;</button></div></div>`;
       },
     },
-    sections: [
-      {
-        title: "Compact (used in DataTable)",
-        anatomy: "Showing X of Y + Previous / Next buttons. The default everywhere in Canvas.",
-        examples: [{
-          html: `<div style="display:flex;align-items:center;gap:1rem;font-size:13px;color:hsl(var(--muted-foreground))" data-page="1" onclick="var c=this;var p=parseInt(c.dataset.page);var t=event.target;if(t.textContent.includes('Next')&&p<15){p++}else if(t.textContent.includes('Previous')&&p>1){p--}else{return}c.dataset.page=p;c.querySelector('span').innerHTML='Showing '+(((p-1)*10)+1)+'&ndash;'+Math.min(p*10,142)+' of 142';var bs=c.querySelectorAll('button');bs[0].disabled=p<=1;bs[1].disabled=p>=15">
-  <span>Showing 1&ndash;10 of 142</span>
-  <div style="display:flex;gap:0.25rem">
-    <button class="btn btn-outline btn-sm" disabled>&laquo; Previous</button>
-    <button class="btn btn-outline btn-sm">Next &raquo;</button>
-  </div>
-</div>`,
-          code: `<div style="display:flex;align-items:center;gap:1rem;font-size:13px">
-  <span>Showing 1–10 of 142</span>
-  <button class="btn btn-outline btn-sm" disabled>« Previous</button>
-  <button class="btn btn-outline btn-sm">Next »</button>
-</div>`,
-        }],
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<nav class="pagination">
+  <button class="page-btn" disabled>&laquo;</button>
+  <button class="page-btn active">1</button>
+  <button class="page-btn">2</button>
+  <button class="page-btn">3</button>
+  <button class="page-btn">4</button>
+  <button class="page-btn">5</button>
+  <button class="page-btn">6</button>
+  <button class="page-btn">7</button>
+  <button class="page-btn">8</button>
+  <button class="page-btn">9</button>
+  <button class="page-btn">10</button>
+  <button class="page-btn">11</button>
+  <button class="page-btn">12</button>
+  <button class="page-btn">&raquo;</button>
+</nav>`,
+        caption: "Rendering every page number overflows and stops being scannable past a handful.",
       },
-      {
-        title: "Numbered",
-        anatomy: "Use when the user benefits from knowing absolute page count (e.g. paginated search results).",
-        examples: [{
-          html: `<nav class="pagination" onclick="var t=event.target;if(!t.classList.contains('page-btn')||t.disabled)return;var bs=this.querySelectorAll('.page-btn:not(:first-child):not(:last-child)');var arr=this.querySelector('.page-btn:first-child');var nxt=this.querySelector('.page-btn:last-child');if(t===arr||t===nxt){var cur=this.querySelector('.page-btn.active');var idx=[].indexOf.call(bs,cur);var ni=t===nxt?idx+1:idx-1;if(ni>=0&&ni<bs.length){bs.forEach(b=>b.classList.remove('active'));bs[ni].classList.add('active');arr.disabled=ni<=0;nxt.disabled=ni>=bs.length-1}}else{bs.forEach(b=>b.classList.remove('active'));t.classList.add('active');arr.disabled=t===bs[0];nxt.disabled=t===bs[bs.length-1]}">
+      do: {
+        html: `<nav class="pagination">
   <button class="page-btn" disabled>&laquo;</button>
   <button class="page-btn active">1</button>
   <button class="page-btn">2</button>
@@ -784,44 +783,9 @@ export const COMPONENTS: ComponentDoc[] = [
   <button class="page-btn">12</button>
   <button class="page-btn">&raquo;</button>
 </nav>`,
-          code: `<nav class="pagination">
-  <button class="page-btn" disabled>«</button>
-  <button class="page-btn active">1</button>
-  <button class="page-btn">2</button>
-  <button class="page-btn">3</button>
-  <span class="page-ellipsis">...</span>
-  <button class="page-btn">12</button>
-  <button class="page-btn">»</button>
-</nav>`,
-        }],
+        caption: "Truncate the middle with an ellipsis; keep first, last, and a window around the current page.",
       },
-      {
-        title: "With page size selector",
-        examples: [{
-          full: true,
-          html: `<div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:hsl(var(--muted-foreground))" data-page="1" data-per="50">
-  <div style="display:flex;align-items:center;gap:0.5rem">
-    <span>Rows per page</span>
-    <select class="input" style="width:auto;padding:0.25rem 0.5rem;font-size:12px" onchange="var c=this.closest('[data-page]');c.dataset.per=this.value;c.dataset.page='1';var per=parseInt(this.value);var tp=Math.ceil(142/per);c.querySelector('[data-info]').textContent='Showing 1–'+Math.min(per,142)+' of 142';var bs=c.querySelectorAll('button');bs[0].disabled=true;bs[1].disabled=tp<=1"><option>10</option><option>25</option><option selected>50</option><option>100</option></select>
-  </div>
-  <div style="display:flex;align-items:center;gap:1rem">
-    <span data-info>Showing 1–50 of 142</span>
-    <div style="display:flex;gap:0.25rem" onclick="var c=this.closest('[data-page]');var p=parseInt(c.dataset.page);var per=parseInt(c.dataset.per);var tp=Math.ceil(142/per);var t=event.target;if(t.textContent.includes('Next')&&p<tp){p++}else if(t.textContent.includes('Previous')&&p>1){p--}else{return}c.dataset.page=p;c.querySelector('[data-info]').textContent='Showing '+(((p-1)*per)+1)+'–'+Math.min(p*per,142)+' of 142';var bs=c.querySelectorAll('button');bs[0].disabled=p<=1;bs[1].disabled=p>=tp">
-      <button class="btn btn-outline btn-sm" disabled>&laquo; Previous</button>
-      <button class="btn btn-outline btn-sm">Next &raquo;</button>
-    </div>
-  </div>
-</div>`,
-          code: `<div style="display:flex;align-items:center;justify-content:space-between;font-size:13px">
-  <span>Rows per page</span>
-  <select class="input"><option>10</option><option>25</option><option selected>50</option><option>100</option></select>
-  <span>Showing 1–50 of 142</span>
-  <button class="btn btn-outline btn-sm" disabled>« Previous</button>
-  <button class="btn btn-outline btn-sm">Next »</button>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
