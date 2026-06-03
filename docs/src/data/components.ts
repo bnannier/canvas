@@ -1007,48 +1007,23 @@ export const COMPONENTS: ComponentDoc[] = [
         return `<label style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;cursor:pointer"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div><input type="checkbox" role="switch" class="switch"${on ? " checked" : ""}${dis}></label>`;
       },
     },
-    sections: [
-      {
-        title: "Variants",
-        anatomy: "44px wide, 24px tall pill. Thumb is 20px. Track switches between bg-muted and bg-primary.",
-        examples: [{
-          full: true,
-          html: `<div class="section-card" style="max-width:320px;padding:1.25rem">
-  <div style="display:flex;flex-direction:column;gap:1rem">
-    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px">Available to chat</span><input type="checkbox" role="switch" class="switch" checked /></div>
-    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px">Public profile</span><input type="checkbox" role="switch" class="switch" /></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;opacity:0.5"><span style="font-size:13px">Disabled (off)</span><input type="checkbox" role="switch" class="switch" disabled /></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;opacity:0.5"><span style="font-size:13px">Disabled (on)</span><input type="checkbox" role="switch" class="switch" checked disabled /></div>
-  </div>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="display:flex;align-items:center;justify-content:space-between;max-width:280px">
+  <span style="font-size:13px">Notifications</span>
+  <div style="display:flex;align-items:center;gap:0.5rem"><span style="font-size:12px;color:hsl(var(--muted-foreground))">Off</span><input type="checkbox" role="switch" class="switch"><span style="font-size:12px;color:hsl(var(--muted-foreground))">On</span></div>
 </div>`,
-        }],
+        caption: "An On/Off label duplicates what the switch position already shows.",
       },
-      {
-        title: "With description",
-        anatomy: "Settings rows: label + description on the left, toggle on the right.",
-        examples: [{
-          full: true,
-          html: `<div class="section-card" style="max-width:560px;padding:1.25rem">
-  <div style="display:flex;flex-direction:column;gap:1rem">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
-      <div><div style="font-size:13px;font-weight:500">Email notifications</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified about activity on your account.</div></div>
-      <input type="checkbox" role="switch" class="switch" checked />
-    </div>
-    <hr class="sep" />
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
-      <div><div style="font-size:13px;font-weight:500">Marketing emails</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Receive emails about new products, features, and more.</div></div>
-      <input type="checkbox" role="switch" class="switch" />
-    </div>
-    <hr class="sep" />
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
-      <div><div style="font-size:13px;font-weight:500">Push notifications</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Get push notifications in-app when you receive new activity.</div></div>
-      <input type="checkbox" role="switch" class="switch" checked />
-    </div>
-  </div>
+      do: {
+        html: `<div style="display:flex;align-items:center;justify-content:space-between;max-width:280px">
+  <span style="font-size:13px">Notifications</span>
+  <input type="checkbox" role="switch" class="switch" checked>
 </div>`,
-        }],
+        caption: "Label the setting, not the state; the switch communicates on or off.",
       },
-    ],
+    }],
   },
 
   {
