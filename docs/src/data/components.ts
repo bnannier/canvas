@@ -254,6 +254,10 @@ const tabPill = "tab rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreg
 const tabPillActive = "tab rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm";
 const tabV = "tab w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
 const tabVActive = "tab w-full rounded-md bg-accent px-3 py-2 text-left text-sm font-medium text-accent-foreground";
+const navlink = "navlink rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground";
+const navlinkActive = "navlink rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-foreground";
+const navlinkM = "navlink block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent";
+const navlinkMActive = "navlink block rounded-md bg-accent px-3 py-2 text-sm font-medium text-foreground";
 const stepInd = (state: string) =>
   "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium " +
   (state === "completed" ? "border-primary bg-primary text-primary-foreground" : state === "active" ? "border-primary text-primary" : "border-border text-muted-foreground");
@@ -2600,11 +2604,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
     sections: [{
       title: "Context menu",
       examples: [{
-        html: `<div style="display:inline-flex;flex-direction:column;min-width:180px;border:1px solid hsl(var(--border));border-radius:var(--radius-lg,12px);padding:0.25rem;background:hsl(var(--popover));box-shadow:var(--shadow-md)" onclick="var t=event.target.closest('.rowmenu-item');if(!t)return;var o=t.textContent;t.style.background='hsl(var(--accent))';t.textContent=t.classList.contains('rowmenu-danger')?'Deleted!':o==='Edit'?'Editing…':'Duplicated!';setTimeout(function(){t.textContent=o;t.style.background=''},1500)">
-  <button class="rowmenu-item">Edit</button>
-  <button class="rowmenu-item">Duplicate</button>
-  <div class="rowmenu-sep"></div>
-  <button class="rowmenu-item rowmenu-danger">Delete</button>
+        html: `<div class="${menuBase} inline-flex flex-col" onclick="var t=event.target.closest('[data-menu-item]');if(!t)return;var o=t.textContent;t.classList.add('bg-accent');t.textContent=t.dataset.danger!==undefined?'Deleted!':o==='Edit'?'Editing…':'Duplicated!';setTimeout(function(){t.textContent=o;t.classList.remove('bg-accent')},1500)">
+  ${menuItemEl("Edit")}
+  ${menuItemEl("Duplicate")}
+  <div class="${menuSep}"></div>
+  ${menuItemEl("Delete", "text-destructive", " data-danger")}
 </div>`,
       }],
     }],
@@ -3012,8 +3016,8 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "Every chart in Canvas is plain SVG or CSS using the same color tokens as the rest of the system. No charting library: visuals respond to accent, dark mode, and glass without any data layer. Use them when your data is small enough to inline; for dozens of series or interactive brushing, reach for d3/recharts and theme it with the same tokens.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.25rem;max-width:680px">
-  <p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground));line-height:1.6">The charts below are derived from real dashboard widgets, pulled out and isolated so the patterns are obvious. Each is themed entirely by Canvas tokens, so the same markup adapts to light, dark, and glass surfaces.</p>
+          html: `<div class="${cardCls} max-w-[680px] p-5">
+  <p class="text-sm leading-relaxed text-muted-foreground">The charts below are derived from real dashboard widgets, pulled out and isolated so the patterns are obvious. Each is themed entirely by Canvas tokens, so the same markup adapts to light, dark, and glass surfaces.</p>
 </div>`,
         }],
       },
@@ -3022,18 +3026,10 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Each bar is a flex item; the last bar gets a brighter fill to highlight 'now'. Axis labels are a separate flex row below.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.25rem;max-width:560px">
-  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.75rem"><span style="font-size:15px;font-weight:600">Signups</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">642 total</span></div>
-  <div style="display:flex;align-items:flex-end;gap:3px;height:140px">
-    <div style="flex:1;border-radius:2px;background:hsl(var(--primary)/0.3);height:45%"></div>
-    <div style="flex:1;border-radius:2px;background:hsl(var(--primary)/0.3);height:60%"></div>
-    <div style="flex:1;border-radius:2px;background:hsl(var(--primary)/0.3);height:35%"></div>
-    <div style="flex:1;border-radius:2px;background:hsl(var(--primary)/0.3);height:70%"></div>
-    <div style="flex:1;border-radius:2px;background:hsl(var(--primary)/0.3);height:55%"></div>
-    <div style="flex:1;border-radius:2px;background:hsl(var(--primary)/0.3);height:80%"></div>
-    <div style="flex:1;border-radius:2px;background:hsl(var(--primary));height:95%"></div>
-  </div>
-  <div style="display:flex;justify-content:space-between;margin-top:0.5rem;font-size:11px;color:hsl(var(--muted-foreground));font-family:var(--font-mono)"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+          html: `<div class="${cardCls} max-w-[560px] p-5">
+  <div class="mb-3 flex items-baseline justify-between"><span class="text-[15px] font-semibold">Signups</span><span class="text-xs text-muted-foreground">642 total</span></div>
+  <div class="flex h-[140px] items-end gap-[3px]">${[45, 60, 35, 70, 55, 80, 95].map((h, i, a) => `<div class="flex-1 rounded-sm ${i === a.length - 1 ? "bg-primary" : "bg-primary/30"}" style="height:${h}%"></div>`).join("")}</div>
+  <div class="mt-2 flex justify-between font-mono text-[11px] text-muted-foreground">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => `<span>${d}</span>`).join("")}</div>
 </div>`,
         }],
       },
@@ -3042,23 +3038,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Polyline + gradient-filled polygon. The last value gets a dot. Use for stat cards or row-level trends where space is tight.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
-  <div class="stat-card">
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Tokens issued</div>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:22px;font-weight:600">4,847</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(var(--primary))">+12%</span></div>
-    <svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" style="margin-top:8px;display:block;overflow:visible"><defs><linearGradient id="spk1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(var(--primary))" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(var(--primary))" stop-opacity="0"/></linearGradient></defs><polygon points="0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3 200,34 0,34" fill="url(#spk1)"/><polyline points="0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3" fill="none" stroke="hsl(var(--primary))" stroke-width="1.5"/><circle cx="200" cy="3" r="2.5" fill="hsl(var(--primary))"/></svg>
-  </div>
-  <div class="stat-card">
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Active sessions</div>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:22px;font-weight:600">1,204</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(173 70% 42%)">+8%</span></div>
-    <svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" style="margin-top:8px;display:block;overflow:visible"><defs><linearGradient id="spk2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(173 70% 42%)" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(173 70% 42%)" stop-opacity="0"/></linearGradient></defs><polygon points="0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6 200,34 0,34" fill="url(#spk2)"/><polyline points="0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6" fill="none" stroke="hsl(173 70% 42%)" stroke-width="1.5"/><circle cx="200" cy="6" r="2.5" fill="hsl(173 70% 42%)"/></svg>
-  </div>
-  <div class="stat-card">
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Error rate</div>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span style="font-size:22px;font-weight:600">0.42%</span><span style="font-size:11px;font-family:var(--font-mono);color:hsl(0 80% 60%)">-3%</span></div>
-    <svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" style="margin-top:8px;display:block;overflow:visible"><defs><linearGradient id="spk3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(0 80% 60%)" stop-opacity="0.3"/><stop offset="100%" stop-color="hsl(0 80% 60%)" stop-opacity="0"/></linearGradient></defs><polygon points="0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24 200,34 0,34" fill="url(#spk3)"/><polyline points="0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24" fill="none" stroke="hsl(0 80% 60%)" stroke-width="1.5"/><circle cx="200" cy="24" r="2.5" fill="hsl(0 80% 60%)"/></svg>
-  </div>
-</div>`,
+          html: `<div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">${[
+  { label: "Tokens issued", val: "4,847", delta: "+12%", deltaCls: "text-foreground", color: "var(--primary)", id: "spk1", poly: "0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3 200,34 0,34", line: "0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3", cy: 3 },
+  { label: "Active sessions", val: "1,204", delta: "+8%", deltaCls: "text-teal-600", color: "#0d9488", id: "spk2", poly: "0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6 200,34 0,34", line: "0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6", cy: 6 },
+  { label: "Error rate", val: "0.42%", delta: "-3%", deltaCls: "text-red-600", color: "var(--destructive)", id: "spk3", poly: "0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24 200,34 0,34", line: "0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24", cy: 24 },
+].map((c) => `<div class="${cardCls} p-5"><div class="text-xs text-muted-foreground">${c.label}</div><div class="mt-1 flex items-baseline justify-between"><span class="text-[22px] font-semibold">${c.val}</span><span class="font-mono text-[11px] ${c.deltaCls}">${c.delta}</span></div><svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" class="mt-2 block overflow-visible"><defs><linearGradient id="${c.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c.color}" stop-opacity="0.3"/><stop offset="100%" stop-color="${c.color}" stop-opacity="0"/></linearGradient></defs><polygon points="${c.poly}" fill="url(#${c.id})"/><polyline points="${c.line}" fill="none" stroke="${c.color}" stroke-width="1.5"/><circle cx="200" cy="${c.cy}" r="2.5" fill="${c.color}"/></svg></div>`).join("")}</div>`,
         }],
       },
       {
@@ -3066,21 +3050,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Single thin bar divided by percentage. Legend below with colored dots. Use when you want a quick visual sense of distribution.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.25rem;max-width:560px">
-  <div style="font-size:15px;font-weight:600;margin-bottom:4px">Traffic sources</div>
-  <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-bottom:1rem">Breakdown by channel</div>
-  <div style="display:flex;height:10px;border-radius:9999px;overflow:hidden;margin-bottom:0.875rem;background:hsl(var(--muted))">
-    <div style="width:42%;background:hsl(var(--primary))"></div>
-    <div style="width:28%;background:hsl(var(--chart-2))"></div>
-    <div style="width:18%;background:hsl(var(--chart-3))"></div>
-    <div style="width:12%;background:hsl(var(--chart-4))"></div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:0.5rem">
-    <div style="display:flex;align-items:center;gap:0.625rem;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:hsl(var(--primary));flex-shrink:0"></span><span style="flex:1">Direct</span><span style="font-family:var(--font-mono);font-size:12px;color:hsl(var(--muted-foreground))">42%</span></div>
-    <div style="display:flex;align-items:center;gap:0.625rem;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:hsl(var(--chart-2));flex-shrink:0"></span><span style="flex:1">Organic search</span><span style="font-family:var(--font-mono);font-size:12px;color:hsl(var(--muted-foreground))">28%</span></div>
-    <div style="display:flex;align-items:center;gap:0.625rem;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:hsl(var(--chart-3));flex-shrink:0"></span><span style="flex:1">Social</span><span style="font-family:var(--font-mono);font-size:12px;color:hsl(var(--muted-foreground))">18%</span></div>
-    <div style="display:flex;align-items:center;gap:0.625rem;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:hsl(var(--chart-4));flex-shrink:0"></span><span style="flex:1">Referral</span><span style="font-family:var(--font-mono);font-size:12px;color:hsl(var(--muted-foreground))">12%</span></div>
-  </div>
+          html: `<div class="${cardCls} max-w-[560px] p-5">
+  <div class="mb-1 text-[15px] font-semibold">Traffic sources</div>
+  <div class="mb-4 text-xs text-muted-foreground">Breakdown by channel</div>
+  <div class="mb-3.5 flex h-2.5 overflow-hidden rounded-full bg-muted">${[["bg-primary", "42%"], ["bg-blue-500", "28%"], ["bg-violet-500", "18%"], ["bg-amber-500", "12%"]].map(([c, w]) => `<div class="${c}" style="width:${w}"></div>`).join("")}</div>
+  <div class="flex flex-col gap-2">${[["bg-primary", "Direct", "42%"], ["bg-blue-500", "Organic search", "28%"], ["bg-violet-500", "Social", "18%"], ["bg-amber-500", "Referral", "12%"]].map(([c, l, p]) => `<div class="flex items-center gap-2.5 text-sm"><span class="h-2 w-2 shrink-0 rounded-full ${c}"></span><span class="flex-1">${l}</span><span class="font-mono text-xs text-muted-foreground">${p}</span></div>`).join("")}</div>
 </div>`,
         }],
       },
@@ -3089,17 +3063,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Two concentric arcs (track + fill). Big numeric in the middle, label below.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
-  <div class="section-card" style="padding:1.25rem;display:flex;align-items:center;justify-content:center">
-    <svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(var(--muted))" stroke-width="12"/><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(var(--primary))" stroke-width="12" stroke-dasharray="${56*2*Math.PI}" stroke-dashoffset="${56*2*Math.PI*(1-0.73)}" stroke-linecap="round" transform="rotate(-90 70 70)"/><text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="hsl(var(--foreground))">73%</text><text x="70" y="84" text-anchor="middle" font-size="11" fill="hsl(var(--muted-foreground))">Uptime</text></svg>
-  </div>
-  <div class="section-card" style="padding:1.25rem;display:flex;align-items:center;justify-content:center">
-    <svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(var(--muted))" stroke-width="12"/><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(var(--chart-2))" stroke-width="12" stroke-dasharray="${56*2*Math.PI}" stroke-dashoffset="${56*2*Math.PI*(1-0.45)}" stroke-linecap="round" transform="rotate(-90 70 70)"/><text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="hsl(var(--foreground))">45%</text><text x="70" y="84" text-anchor="middle" font-size="11" fill="hsl(var(--muted-foreground))">Storage</text></svg>
-  </div>
-  <div class="section-card" style="padding:1.25rem;display:flex;align-items:center;justify-content:center">
-    <svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(var(--muted))" stroke-width="12"/><circle cx="70" cy="70" r="56" fill="none" stroke="hsl(0 84% 60%)" stroke-width="12" stroke-dasharray="${56*2*Math.PI}" stroke-dashoffset="${56*2*Math.PI*(1-0.89)}" stroke-linecap="round" transform="rotate(-90 70 70)"/><text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="hsl(var(--foreground))">89%</text><text x="70" y="84" text-anchor="middle" font-size="11" fill="hsl(var(--muted-foreground))">CPU</text></svg>
-  </div>
-</div>`,
+          html: `<div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">${[
+  { pct: 0.73, color: "var(--primary)", label: "Uptime", val: "73%" },
+  { pct: 0.45, color: "#0d9488", label: "Storage", val: "45%" },
+  { pct: 0.89, color: "var(--destructive)", label: "CPU", val: "89%" },
+].map((g) => `<div class="${cardCls} flex items-center justify-center p-5"><svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="56" fill="none" stroke="var(--muted)" stroke-width="12"/><circle cx="70" cy="70" r="56" fill="none" stroke="${g.color}" stroke-width="12" stroke-dasharray="${56 * 2 * Math.PI}" stroke-dashoffset="${56 * 2 * Math.PI * (1 - g.pct)}" stroke-linecap="round" transform="rotate(-90 70 70)"/><text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="var(--foreground)">${g.val}</text><text x="70" y="84" text-anchor="middle" font-size="11" fill="var(--muted-foreground)">${g.label}</text></svg></div>`).join("")}</div>`,
         }],
       },
       {
@@ -3107,10 +3075,10 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "2D grid of cells, alpha mapped to value. Use for activity over time (day x hour, week x day). Always ship with a discrete legend.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.25rem;max-width:480px">
-  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem"><div><div style="font-size:15px;font-weight:600">Token issuance</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">14 days, darker = more</div></div></div>
-  <div style="display:grid;grid-template-columns:repeat(14,1fr);gap:3px"><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.31)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.54)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.77)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.89)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.85)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.68)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.47)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.20)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.17)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.17)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.20)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.25)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.21)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.36)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.59)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.82)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.95)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.89)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.69)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.45)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.25)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.15)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.12)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.11)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.13)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.18)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.26)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.39)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.58)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.77)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.87)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.81)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.63)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.39)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.21)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.12)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.11)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.27)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.38)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.49)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.62)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.69)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.65)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.51)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.12)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.10)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.52)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.43)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.35)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.31)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.32)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.36)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.42)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.48)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.48)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.41)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.13)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.11)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.79)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.70)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.54)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.39)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.28)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.23)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.23)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.25)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.29)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.22)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.17)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.87)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.92)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.81)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.60)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.38)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.23)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.16)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.14)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.15)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.19)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.24)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.30)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.33)"></span><span style="aspect-ratio:1;border-radius:2px;background:hsl(var(--primary)/0.31)"></span></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;font-size:11.5px;color:hsl(var(--muted-foreground));font-family:var(--font-mono)"><span>14d ago</span><span style="display:inline-flex;align-items:center;gap:6px"><span>less</span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.1)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.3)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.55)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary)/0.8)"></span><span style="width:12px;height:12px;border-radius:3px;background:hsl(var(--primary))"></span><span>more</span></span></div>
+          html: `<div class="${cardCls} max-w-[480px] p-5">
+  <div class="mb-4"><div class="text-[15px] font-semibold">Token issuance</div><div class="text-xs text-muted-foreground">14 days, darker = more</div></div>
+  <div class="grid grid-cols-[repeat(14,1fr)] gap-[3px]">${Array.from({ length: 98 }, (_, i) => `<span class="aspect-square rounded-sm" style="background:var(--primary);opacity:${(0.12 + ((i * 37) % 80) / 100).toFixed(2)}"></span>`).join("")}</div>
+  <div class="mt-3 flex items-center justify-between font-mono text-[11.5px] text-muted-foreground"><span>14d ago</span><span class="inline-flex items-center gap-1.5"><span>less</span>${[0.1, 0.3, 0.55, 0.8, 1].map((o) => `<span class="h-3 w-3 rounded-[3px]" style="background:var(--primary);opacity:${o}"></span>`).join("")}<span>more</span></span></div>
 </div>`,
         }],
       },
@@ -3128,21 +3096,21 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Logo + nav links + actions. The canonical Canvas navigation bar.",
         examples: [{
           full: true,
-          html: `<div style="border:1px solid hsl(var(--border));border-radius:var(--radius-lg);overflow:hidden">
-  <header class="topbar" style="position:static">
-    <div style="display:flex;align-items:center;gap:0.5rem">
-      <div style="width:24px;height:24px;border-radius:50%;background:hsl(var(--primary));display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>
-      <span style="font-size:14px;font-weight:600">Canvas</span>
+          html: `<div class="overflow-hidden rounded-lg border border-border">
+  <header class="flex h-14 items-center gap-2 bg-card px-4">
+    <div class="flex items-center gap-2">
+      <div class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"><svg width="14" height="14" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>
+      <span class="text-sm font-semibold">Canvas</span>
     </div>
-    <nav style="display:flex;gap:4px;margin-left:1rem" onclick="if(!event.target.classList.contains('navlink'))return;event.preventDefault();this.querySelectorAll('.navlink').forEach(a=>a.classList.remove('active'));event.target.classList.add('active')">
-      <a class="navlink active" href="#">Dashboard</a>
-      <a class="navlink" href="#">Users</a>
-      <a class="navlink" href="#">Settings</a>
+    <nav class="ml-4 flex gap-1" onclick="if(!event.target.classList.contains('navlink'))return;event.preventDefault();this.querySelectorAll('.navlink').forEach(function(a){a.className='${navlink}'});event.target.className='${navlinkActive}'">
+      <a class="${navlinkActive}" href="#">Dashboard</a>
+      <a class="${navlink}" href="#">Users</a>
+      <a class="${navlink}" href="#">Settings</a>
     </nav>
-    <div style="flex:1"></div>
-    <button class="btn btn-ghost btn-icon" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
-    <button class="btn btn-ghost btn-icon" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
-    <span class="avatar"><img src="/rachel-chen.jpg" alt="RC"></span>
+    <div class="flex-1"></div>
+    ${btn("ghost", `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`, "icon", ` onclick="var b=this;b.classList.add('bg-accent');setTimeout(function(){b.classList.remove('bg-accent')},300)"`)}
+    ${btn("ghost", `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`, "icon", ` onclick="var b=this;b.classList.add('bg-accent');setTimeout(function(){b.classList.remove('bg-accent')},300)"`)}
+    <span class="${avatarBase} h-8 w-8"><img src="/rachel-chen.jpg" alt="RC" class="h-full w-full object-cover"></span>
   </header>
 </div>`,
         }],
@@ -3152,22 +3120,22 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Inline search command in the middle of the bar. Triggers the command palette on click.",
         examples: [{
           full: true,
-          html: `<div style="border:1px solid hsl(var(--border));border-radius:var(--radius-lg);overflow:hidden">
-  <header class="topbar" style="position:static">
-    <div style="display:flex;align-items:center;gap:0.5rem">
-      <div style="width:24px;height:24px;border-radius:50%;background:hsl(var(--primary));display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>
-      <span style="font-size:14px;font-weight:600">Canvas</span>
+          html: `<div class="overflow-hidden rounded-lg border border-border">
+  <header class="flex h-14 items-center gap-2 bg-card px-4">
+    <div class="flex items-center gap-2">
+      <div class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"><svg width="14" height="14" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>
+      <span class="text-sm font-semibold">Canvas</span>
     </div>
-    <div style="flex:1;max-width:400px;margin:0 1rem">
-      <button style="width:100%;display:flex;align-items:center;gap:0.5rem;height:34px;padding:0 0.625rem;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius-md);color:hsl(var(--muted-foreground));font-size:13px;font-family:inherit;cursor:pointer" onclick="var b=this;b.style.borderColor='hsl(var(--primary))';b.style.boxShadow='0 0 0 2px hsl(var(--ring))';setTimeout(function(){b.style.borderColor='';b.style.boxShadow=''},400)">
+    <div class="mx-4 max-w-[400px] flex-1">
+      <button class="flex h-[34px] w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 text-sm text-muted-foreground transition-shadow" onclick="var b=this;b.classList.add('ring-2','ring-ring');setTimeout(function(){b.classList.remove('ring-2','ring-ring')},400)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <span style="flex:1;text-align:left">Search…</span>
-        <span class="kbd">⌘K</span>
+        <span class="flex-1 text-left">Search…</span>
+        <kbd class="${kbdCls}">⌘K</kbd>
       </button>
     </div>
-    <div style="flex:1"></div>
-    <button class="btn btn-ghost btn-icon" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
-    <span class="avatar"><img src="/rachel-chen.jpg" alt="RC"></span>
+    <div class="flex-1"></div>
+    ${btn("ghost", `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`, "icon", ` onclick="var b=this;b.classList.add('bg-accent');setTimeout(function(){b.classList.remove('bg-accent')},300)"`)}
+    <span class="${avatarBase} h-8 w-8"><img src="/rachel-chen.jpg" alt="RC" class="h-full w-full object-cover"></span>
   </header>
 </div>`,
         }],
@@ -3177,20 +3145,20 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Nav collapses to hamburger below md breakpoint. Logo + avatar remain visible.",
         examples: [{
           full: true,
-          html: `<div style="border:1px solid hsl(var(--border));border-radius:var(--radius-lg);overflow:hidden;max-width:360px">
-  <header class="topbar" style="position:static">
-    <button class="btn btn-ghost btn-icon" onclick="var nav=this.closest('div[style*=max-width]').querySelector('[data-mobilenav]');nav.style.display=nav.style.display==='none'?'block':'none'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
-    <div style="display:flex;align-items:center;gap:0.5rem">
-      <div style="width:20px;height:20px;border-radius:50%;background:hsl(var(--primary));display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>
-      <span style="font-size:13px;font-weight:600">Canvas</span>
+          html: `<div data-mnav-wrap class="max-w-[360px] overflow-hidden rounded-lg border border-border">
+  <header class="flex h-14 items-center gap-2 bg-card px-4">
+    ${btn("ghost", `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`, "icon", ` onclick="var nav=this.closest('[data-mnav-wrap]').querySelector('[data-mobilenav]');nav.classList.toggle('hidden')"`)}
+    <div class="flex items-center gap-2">
+      <div class="flex h-5 w-5 items-center justify-center rounded-full bg-primary"><svg width="12" height="12" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>
+      <span class="text-[13px] font-semibold">Canvas</span>
     </div>
-    <div style="flex:1"></div>
-    <span class="avatar" style="width:28px;height:28px;font-size:11px"><img src="/rachel-chen.jpg" alt="RC"></span>
+    <div class="flex-1"></div>
+    <span class="${avatarBase} h-7 w-7 text-[11px]"><img src="/rachel-chen.jpg" alt="RC" class="h-full w-full object-cover"></span>
   </header>
-  <nav data-mobilenav style="display:none;padding:0.5rem;border-top:1px solid hsl(var(--border));background:hsl(var(--card))" onclick="if(!event.target.classList.contains('navlink'))return;event.preventDefault();this.querySelectorAll('.navlink').forEach(a=>a.classList.remove('active'));event.target.classList.add('active')">
-    <a class="navlink active" href="#" style="display:block;padding:0.5rem 0.75rem">Dashboard</a>
-    <a class="navlink" href="#" style="display:block;padding:0.5rem 0.75rem">Users</a>
-    <a class="navlink" href="#" style="display:block;padding:0.5rem 0.75rem">Settings</a>
+  <nav data-mobilenav class="hidden border-t border-border bg-card p-2" onclick="if(!event.target.classList.contains('navlink'))return;event.preventDefault();this.querySelectorAll('.navlink').forEach(function(a){a.className='${navlinkM}'});event.target.className='${navlinkMActive}'">
+    <a class="${navlinkMActive}" href="#">Dashboard</a>
+    <a class="${navlinkM}" href="#">Users</a>
+    <a class="${navlinkM}" href="#">Settings</a>
   </nav>
 </div>`,
         }],
