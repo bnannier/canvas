@@ -865,43 +865,33 @@ export const COMPONENTS: ComponentDoc[] = [
         return `<div style="max-width:280px">${label}<div style="position:relative">${globe}<select class="input${szCls}" style="${pad}"${dis}><option>United States</option><option>Canada</option><option>Mexico</option><option>United Kingdom</option></select></div></div>`;
       },
     },
-    sections: [
-      {
-        title: "Variants",
-        anatomy: "Native HTML select with the .input class. The OS chevron remains for accessibility.",
-        columns: 2,
-        examples: [
-          {
-            label: "Country",
-            html: `<div><label class="label">Country</label><select class="input"><option>United States</option><option>Canada</option><option>Mexico</option><option>United Kingdom</option></select></div>`,
-          },
-          {
-            label: "Currency",
-            html: `<div><label class="label">Currency</label><select class="input"><option>USD - US Dollar</option><option>EUR - Euro</option><option>GBP - Pound Sterling</option><option>JPY - Yen</option></select></div>`,
-          },
-          {
-            label: "Small size",
-            html: `<div><label class="label">Size</label><select class="input" style="height:32px;font-size:12px"><option>Small</option><option>Medium</option><option>Large</option></select></div>`,
-          },
-          {
-            label: "Disabled",
-            html: `<div><label class="label">Disabled</label><select class="input" disabled><option>Pick one&hellip;</option></select></div>`,
-          },
-        ],
-      },
-      {
-        title: "Inline",
-        anatomy: "Use a select in a toolbar without a separate label. Keep the height to 32px (h-8).",
-        examples: [{
-          html: `<div style="display:flex;align-items:center;gap:0.5rem">
-  <span style="font-size:13px;color:hsl(var(--muted-foreground))">Show:</span>
-  <select class="input" style="width:140px;height:32px;font-size:12px"><option>All</option><option>Active only</option><option>Archived</option></select>
-  <span style="font-size:13px;color:hsl(var(--muted-foreground))">Sort by:</span>
-  <select class="input" style="width:140px;height:32px;font-size:12px"><option>Most recent</option><option>Oldest</option><option>Alphabetical</option></select>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="max-width:280px">
+  <label class="label">Country</label>
+  <select class="input">
+    <option>Choose a country…</option>
+    <option>United States</option>
+    <option>Canada</option>
+    <option>Mexico</option>
+  </select>
 </div>`,
-        }],
+        caption: "A placeholder as a normal option can be submitted as a real value.",
       },
-    ],
+      do: {
+        html: `<div style="max-width:280px">
+  <label class="label">Country</label>
+  <select class="input">
+    <option value="" disabled selected>Choose a country…</option>
+    <option>United States</option>
+    <option>Canada</option>
+    <option>Mexico</option>
+  </select>
+</div>`,
+        caption: "Mark the placeholder disabled and selected so it prompts without being a valid choice.",
+      },
+    }],
   },
 
   {
