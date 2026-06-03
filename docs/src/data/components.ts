@@ -411,48 +411,34 @@ export const COMPONENTS: ComponentDoc[] = [
         return `<div style="max-width:280px">${label}<div class="combobox"><input class="combobox-input" placeholder="${s.placeholder}"${dis} oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})" /><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item selected">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div></div></div>${helper}</div>`;
       },
     },
-    sections: [
-      {
-        title: "Single-select",
-        anatomy: "Input + chevron + dropdown list. Filter as you type, arrow/enter to pick.",
-        examples: [{
-          html: `<div class="combobox" style="max-width:280px">
-  <input class="combobox-input" placeholder="Search or select..." oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})">
-  <div class="combobox-list" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(i=>i.classList.remove('selected'));t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent">
-    <div class="combobox-item">Apple</div>
-    <div class="combobox-item selected">Banana</div>
-    <div class="combobox-item">Cherry</div>
-    <div class="combobox-item">Date</div>
-    <div class="combobox-item">Elderberry</div>
-  </div>
-</div>`,
-          code: `<div class="combobox">
-  <input class="combobox-input" placeholder="Search or select..." />
-  <div class="combobox-list">
-    <div class="combobox-item">Apple</div>
-    <div class="combobox-item selected">Banana</div>
-    <div class="combobox-item">Cherry</div>
-  </div>
-</div>`,
-        }],
-      },
-      {
-        title: "With label + helper",
-        examples: [{
-          html: `<div style="max-width:280px">
-  <label class="label">Fruit</label>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="max-width:280px">
+  <label class="label">Size</label>
   <div class="combobox">
-    <input class="combobox-input" placeholder="Pick one..." oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})">
-    <div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(i=>i.classList.remove('selected'));t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent">
-      <div class="combobox-item selected">Banana</div>
-      <div class="combobox-item">Cherry</div>
+    <input class="combobox-input" placeholder="Search…">
+    <div class="combobox-list" style="position:static">
+      <div class="combobox-item">Small</div>
+      <div class="combobox-item">Medium</div>
+      <div class="combobox-item">Large</div>
     </div>
   </div>
-  <p class="field-helper">Start typing to filter.</p>
 </div>`,
-        }],
+        caption: "A search field for three fixed options is overhead; there's nothing to filter.",
       },
-    ],
+      do: {
+        html: `<div style="max-width:280px">
+  <label class="label">Size</label>
+  <select class="input">
+    <option>Small</option>
+    <option>Medium</option>
+    <option>Large</option>
+  </select>
+</div>`,
+        caption: "A plain select for short, fixed lists; reserve the combobox for long, searchable ones.",
+      },
+    }],
   },
 
   {
