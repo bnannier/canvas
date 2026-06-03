@@ -628,62 +628,26 @@ export const COMPONENTS: ComponentDoc[] = [
         if (s.variant === "lead-icon") return `<div class="input-group"><span class="input-icon">${searchIco}</span><input class="input${szCls}" placeholder="Quick search…"${dis} /></div>`;
         if (s.variant === "trail-icon") return `<div class="input-group"><input class="input${szCls}" placeholder="you@example.com"${dis} /><span class="input-icon">${mailIco}</span></div>`;
         if (s.variant === "currency") return `<div class="input-group"><span class="input-addon">$</span><input class="input${szCls}" type="number" placeholder="0.00"${dis} /><span class="input-addon">USD</span></div>`;
-        return `<div class="input-group"><input class="input${szCls}" value="sk_live_••••••••4242" readonly${dis} /><button class="btn btn-outline btn-sm">Copy</button></div>`;
+        return `<div class="input-group"><input class="input${szCls}" value="sk_live_••••••••4242" readonly${dis} /><button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o},1500)">Copy</button></div>`;
       },
     },
-    sections: [
-      {
-        title: "Leading addon",
-        examples: [{
-          html: `<div class="input-group" style="max-width:320px">
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="input-group" style="max-width:320px">
+  <span class="input-addon">https://</span>
+  <input class="input" placeholder="https://example.com" />
+</div>`,
+        caption: "The addon already shows the protocol; repeating it in the placeholder is redundant.",
+      },
+      do: {
+        html: `<div class="input-group" style="max-width:320px">
   <span class="input-addon">https://</span>
   <input class="input" placeholder="example.com" />
 </div>`,
-        }],
+        caption: "Let the addon carry the fixed part; the input holds only what the user types.",
       },
-      {
-        title: "Trailing addon",
-        examples: [{
-          html: `<div class="input-group" style="max-width:320px">
-  <input class="input" placeholder="0.00" />
-  <span class="input-addon">USD</span>
-</div>`,
-        }],
-      },
-      {
-        title: "With icon",
-        columns: 2,
-        examples: [
-          {
-            label: "Search",
-            html: `<div class="input-with-icon"><input class="input" style="padding-left:2rem" placeholder="Quick search..." /><div class="input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div></div>`,
-          },
-          {
-            label: "Email",
-            html: `<div class="input-with-icon"><input class="input" style="padding-left:2rem" placeholder="you@example.com" /><div class="input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div></div>`,
-          },
-        ],
-      },
-      {
-        title: "Currency",
-        examples: [{
-          html: `<div class="input-group" style="max-width:320px">
-  <span class="input-addon">$</span>
-  <input class="input" type="number" value="49.99" style="font-family:var(--font-mono)" />
-  <span class="input-addon">USD</span>
-</div>`,
-        }],
-      },
-      {
-        title: "With action button",
-        examples: [{
-          html: `<div class="input-group" style="max-width:400px">
-  <input class="input" type="password" value="sk_live_abc123def456" style="font-family:var(--font-mono);font-size:12px" />
-  <button class="btn btn-outline btn-sm" style="border-top-left-radius:0;border-bottom-left-radius:0;border-left:0" onclick="var b=this;var inp=b.previousElementSibling;navigator.clipboard.writeText(inp.value);var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o},1500)">Copy</button>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
