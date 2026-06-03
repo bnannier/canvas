@@ -2256,12 +2256,30 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
     name: "Kbd",
     description: "Keyboard shortcut indicator badge.",
     category: "Atoms",
-    sections: [{
-      title: "Default",
-      examples: [
-        { html: `<kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">K</kbd>` },
-        { label: "In context", html: `<p class="body">Press <kbd class="kbd">⌘</kbd><kbd class="kbd">K</kbd> to search.</p>` },
+    playground: {
+      controls: [
+        { type: "pills", key: "mode", label: "Mode", options: ["single", "combo", "in a sentence"], cols: 3 },
+        { type: "text", key: "keys", label: "Keys (space-separated)" },
       ],
+      defaults: { mode: "combo", keys: "⌘ K" },
+      render: (s) => {
+        const keys = ((s.keys as string) || "⌘ K").trim().split(/\s+/);
+        const kbds = keys.map((k) => `<kbd class="kbd">${k}</kbd>`);
+        if (s.mode === "single") return kbds[0];
+        if (s.mode === "in a sentence") return `<p class="body">Press ${kbds.join("")} to search.</p>`;
+        return kbds.join(" + ");
+      },
+    },
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<p class="body">Press Ctrl+K to search.</p>`,
+        caption: "Plain-text shortcuts blend into the prose and are easy to miss.",
+      },
+      do: {
+        html: `<p class="body">Press <kbd class="kbd">Ctrl</kbd><kbd class="kbd">K</kbd> to search.</p>`,
+        caption: "Wrap each key in a kbd so shortcuts read as physical keys.",
+      },
     }],
   },
 
