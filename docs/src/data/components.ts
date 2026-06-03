@@ -195,14 +195,29 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Atoms",
     playground: {
       controls: [
-        { type: "pills", key: "kind", label: "Kind", options: ["badge", "status"], cols: 2 },
-        { type: "pills", key: "variant", label: "Badge variant", options: ["default", "secondary", "outline", "destructive"], cols: 4, disabledWhen: (s) => s.kind === "status" },
-        { type: "check", key: "mono", label: "Mono (token / event names)", disabledWhen: (s) => s.kind === "status" },
-        { type: "pills", key: "statusVariant", label: "Status variant", options: ["success", "warning", "error", "info", "neutral"], cols: 3, disabledWhen: (s) => s.kind === "badge" },
-        { type: "text", key: "label", label: "Label" },
+        { type: "pills", key: "kind", label: "Type", options: ["badge", "status", "identity", "grants"], cols: 4 },
+        { type: "pills", key: "variant", label: "Badge variant", options: ["default", "secondary", "outline", "destructive"], cols: 4, disabledWhen: (s) => s.kind !== "badge" },
+        { type: "check", key: "mono", label: "Mono (token / event names)", disabledWhen: (s) => s.kind !== "badge" },
+        { type: "pills", key: "statusVariant", label: "Status variant", options: ["success", "warning", "error", "info", "neutral"], cols: 3, disabledWhen: (s) => s.kind !== "status" },
+        { type: "text", key: "label", label: "Label", disabledWhen: (s) => s.kind === "identity" || s.kind === "grants" },
       ],
       defaults: { kind: "badge", variant: "secondary", statusVariant: "success", label: "admin", mono: false },
       render: (s) => {
+        if (s.kind === "identity") {
+          return `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+  <span style="font-size:15px;font-weight:600">Rachel Chen</span>
+  <span class="status-badge sb-success"><span class="dot"></span> active</span>
+  <span class="status-badge sb-info"><span class="dot"></span> Verified</span>
+  <span class="badge badge-secondary">employee</span>
+</div>`;
+        }
+        if (s.kind === "grants") {
+          return `<div style="display:flex;gap:4px;flex-wrap:wrap">
+  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">authorization_code</span>
+  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">refresh_token</span>
+  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">client_credentials</span>
+</div>`;
+        }
         if (s.kind === "status") return `<span class="status-badge sb-${s.statusVariant}"><span class="dot"></span> ${s.label}</span>`;
         const mono = s.mono ? ` style="font-family:var(--font-mono);font-size:10.5px"` : "";
         return `<span class="badge badge-${s.variant}"${mono}>${s.label}</span>`;
