@@ -94,6 +94,18 @@ const crumbSep = (sep = "/") => `<span class="select-none text-muted-foreground/
 const crumbChevron = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/60"><path d="m9 18 6-6-6-6"/></svg>`;
 const homeIconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`;
 
+const chevronDown = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
+const chevronLeft = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`;
+const chevronRight = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`;
+
+const segItem =
+  "relative inline-flex items-center justify-center rounded-none border border-input font-medium transition-colors -ml-px first:ml-0 first:rounded-l-md last:rounded-r-md focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const segIdle = "bg-background hover:bg-accent hover:text-accent-foreground";
+const segActive = "z-10 border-primary bg-primary text-primary-foreground hover:bg-primary/90";
+const segSize: Record<string, string> = { sm: "h-8 px-3 text-xs", default: "h-9 px-4 text-sm", lg: "h-10 px-5 text-sm" };
+const seg = (label: string, active: boolean, size = "sm", attrs = "", extra = "") =>
+  `<button class="${segItem} ${segSize[size]} ${active ? segActive : segIdle}${extra ? " " + extra : ""}"${attrs}>${label}</button>`;
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -360,21 +372,18 @@ export const COMPONENTS: ComponentDoc[] = [
       ],
       defaults: { variant: "segmented", size: "sm", buttons: 3 },
       render: (s) => {
-        const sz = s.size === "default" ? "" : ` btn-${s.size}`;
-        const labels = ["Day", "Week", "Month", "Year", "All"].slice(0, s.buttons as number);
+        const sz = s.size as string;
         if (s.variant === "split") {
-          return `<div data-split style="position:relative;display:inline-block"><span data-saved style="position:absolute;bottom:100%;left:0;margin-bottom:6px;padding:4px 10px;background:hsl(var(--foreground));color:hsl(var(--background));border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity 150ms,transform 150ms;pointer-events:none">Saved ✓</span><div class="btn-group"><button class="btn btn-default${sz}" style="border-top-right-radius:0;border-bottom-right-radius:0" onclick="var t=this.closest('[data-split]').querySelector('[data-saved]');t.textContent='Saved ✓';t.style.opacity='1';t.style.transform='translateY(0)';setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(4px)'},1400)">Save</button><button class="btn btn-default${sz}" aria-label="More save options" style="border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid hsl(var(--primary-foreground)/0.2);padding-inline:0.5rem" onclick="var m=this.closest('[data-split]').querySelector('[data-menu]');m.style.display=m.style.display==='block'?'none':'block'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button></div><div data-menu class="dropdown" style="position:absolute;top:100%;right:0;margin-top:4px;display:none;min-width:184px;z-index:10" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;this.style.display='none';var s=this.closest('[data-split]').querySelector('[data-saved]');s.textContent='Saved ('+t.textContent.trim()+')';s.style.opacity='1';s.style.transform='translateY(0)';setTimeout(function(){s.style.opacity='0';s.style.transform='translateY(4px)'},1600)"><button class="dropdown-item">Save as draft</button><button class="dropdown-item">Save and close</button><button class="dropdown-item">Save a copy</button></div></div>`;
+          const splitL = `${btnBase.replace("rounded-md", "rounded-l-md rounded-r-none")} ${btnVariant.default} ${btnSize.sm}`;
+          const splitR = `${btnBase.replace("rounded-md", "rounded-r-md rounded-l-none")} ${btnVariant.default} ${btnSize.sm} border-l border-l-primary-foreground/20 px-2`;
+          return `<div class="relative inline-block" data-split><span data-saved class="pointer-events-none absolute bottom-full left-0 mb-1.5 rounded-md bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 transition-opacity">Saved ✓</span><div class="inline-flex"><button class="${splitL}" onclick="var t=this.closest('[data-split]').querySelector('[data-saved]');t.textContent='Saved ✓';t.classList.remove('opacity-0');setTimeout(function(){t.classList.add('opacity-0')},1400)">Save</button><button class="${splitR}" aria-label="More save options" onclick="var m=this.closest('[data-split]').querySelector('[data-menu]');m.classList.toggle('hidden')">${chevronDown}</button></div><div data-menu class="${menuBase} absolute right-0 top-full z-10 mt-1 hidden" onclick="var t=event.target.closest('button');if(!t)return;this.classList.add('hidden');var s=this.closest('[data-split]').querySelector('[data-saved]');s.textContent='Saved ('+t.textContent.trim()+')';s.classList.remove('opacity-0');setTimeout(function(){s.classList.add('opacity-0')},1600)"><button class="${menuItem}">Save as draft</button><button class="${menuItem}">Save and close</button><button class="${menuItem}">Save a copy</button></div></div>`;
         }
         if (s.variant === "attached") {
-          return `<div class="btn-group" data-idx="3">
-  <button class="btn btn-outline" onclick="const g=this.parentElement,d=['May 23','May 24','May 25','Today','May 27','May 28','May 29'];let i=Math.max(0,+(g.dataset.idx)-1);g.dataset.idx=i;g.querySelector('[data-lbl]').textContent=d[i]"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
-  <button class="btn btn-outline" data-lbl style="min-width:5.5rem;pointer-events:none">Today</button>
-  <button class="btn btn-outline" onclick="const g=this.parentElement,d=['May 23','May 24','May 25','Today','May 27','May 28','May 29'];let i=Math.min(d.length-1,+(g.dataset.idx)+1);g.dataset.idx=i;g.querySelector('[data-lbl]').textContent=d[i]"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
-</div>`;
+          const nav = (dir: number) => ` onclick="const g=this.parentElement,d=['May 23','May 24','May 25','Today','May 27','May 28','May 29'];let i=Math.${dir < 0 ? "max(0," : "min(d.length-1,"}+(g.dataset.idx)${dir < 0 ? "-1)" : "+1)"};g.dataset.idx=i;g.querySelector('[data-lbl]').textContent=d[i]"`;
+          return `<div class="inline-flex" data-idx="3">${seg(chevronLeft, false, "sm", nav(-1))}${seg("Today", false, "sm", " data-lbl", "pointer-events-none min-w-[5.5rem]")}${seg(chevronRight, false, "sm", nav(1))}</div>`;
         }
-        return `<div class="btn-group" onclick="var b=event.target.closest('.btn');if(!b)return;this.querySelectorAll('.btn').forEach(function(x){x.classList.remove('btn-default');x.classList.add('btn-outline')});b.classList.remove('btn-outline');b.classList.add('btn-default')">${labels.map((l, i) =>
-          `<button class="btn btn-${i === 0 ? "default" : "outline"}${sz}">${l}</button>`
-        ).join("")}</div>`;
+        const labels = ["Day", "Week", "Month", "Year", "All"].slice(0, s.buttons as number);
+        return `<div class="inline-flex" onclick="var b=event.target.closest('button');if(!b)return;this.querySelectorAll('button').forEach(function(x){x.className='${segItem} ${segSize[sz]} ${segIdle}'});b.className='${segItem} ${segSize[sz]} ${segActive}'">${labels.map((l, i) => seg(l, i === 0, sz)).join("")}</div>`;
       },
     },
     sections: [],
@@ -382,59 +391,33 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Segmented",
         dont: {
-          html: `<div class="btn-group">
-  <button class="btn btn-default btn-sm">Day</button>
-  <button class="btn btn-outline btn-sm">Week</button>
-  <button class="btn btn-outline btn-sm">Month</button>
-  <button class="btn btn-outline btn-sm">Quarter</button>
-  <button class="btn btn-outline btn-sm">Year</button>
-  <button class="btn btn-outline btn-sm">5Y</button>
-  <button class="btn btn-outline btn-sm">All</button>
-</div>`,
+          html: `<div class="inline-flex">${["Day", "Week", "Month", "Quarter", "Year", "5Y", "All"].map((l, i) => seg(l, i === 0)).join("")}</div>`,
           caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.",
         },
         do: {
-          html: `<div class="btn-group">
-  <button class="btn btn-default btn-sm">Day</button>
-  <button class="btn btn-outline btn-sm">Week</button>
-  <button class="btn btn-outline btn-sm">Month</button>
-</div>`,
+          html: `<div class="inline-flex">${["Day", "Week", "Month"].map((l, i) => seg(l, i === 0)).join("")}</div>`,
           caption: "Keep a segmented control to a few mutually-exclusive views.",
         },
       },
       {
         title: "Attached",
         dont: {
-          html: `<div class="btn-group">
-  <button class="btn btn-outline btn-sm">Save</button>
-  <button class="btn btn-outline btn-sm">Delete</button>
-  <button class="btn btn-outline btn-sm">Export</button>
-</div>`,
+          html: `<div class="inline-flex">${["Save", "Delete", "Export"].map((l) => seg(l, false)).join("")}</div>`,
           caption: "Attaching unrelated actions implies they belong to one control.",
         },
         do: {
-          html: `<div class="btn-group">
-  <button class="btn btn-outline btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
-  <button class="btn btn-outline btn-sm" style="min-width:5.5rem">Today</button>
-  <button class="btn btn-outline btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
-</div>`,
+          html: `<div class="inline-flex">${seg(chevronLeft, false)}${seg("Today", false, "sm", "", "min-w-[5.5rem]")}${seg(chevronRight, false)}</div>`,
           caption: "Reserve attached groups for closely-related actions like prev / today / next.",
         },
       },
       {
         title: "Split",
         dont: {
-          html: `<div class="btn-group">
-  <button class="btn btn-default btn-sm">Save</button>
-  <button class="btn btn-default btn-sm" style="padding-inline:0.5rem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-</div>`,
+          html: `<div class="inline-flex"><button class="${btnBase.replace("rounded-md", "rounded-l-md rounded-r-none")} ${btnVariant.default} ${btnSize.sm}">Save</button><button class="${btnBase.replace("rounded-md", "rounded-r-md rounded-l-none")} ${btnVariant.default} ${btnSize.sm} px-2">${chevronDown}</button></div>`,
           caption: "With no divider the chevron looks like part of one button, hiding the menu.",
         },
         do: {
-          html: `<div class="btn-group">
-  <button class="btn btn-default btn-sm" style="border-top-right-radius:0;border-bottom-right-radius:0">Save</button>
-  <button class="btn btn-default btn-sm" style="border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid hsl(var(--primary-foreground)/0.2);padding-inline:0.5rem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-</div>`,
+          html: `<div class="inline-flex"><button class="${btnBase.replace("rounded-md", "rounded-l-md rounded-r-none")} ${btnVariant.default} ${btnSize.sm}">Save</button><button class="${btnBase.replace("rounded-md", "rounded-r-md rounded-l-none")} ${btnVariant.default} ${btnSize.sm} border-l border-l-primary-foreground/20 px-2">${chevronDown}</button></div>`,
           caption: "Separate the chevron with a hairline so the secondary menu reads as distinct.",
         },
       },
