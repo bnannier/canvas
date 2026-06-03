@@ -27,7 +27,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "avatar",
     name: "Avatars",
-    description: "Initials on a brand gradient. No portrait photography; keeps the chrome consistent across seeded admin accounts. Sizes scale font proportionally (40% of diameter).",
+    description: "A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).",
     category: "Atoms",
     playground: {
       controls: [
@@ -43,9 +43,13 @@ export const COMPONENTS: ComponentDoc[] = [
         const fs = Math.round(sz * 0.4);
         const ring = s.ring ? `outline:2px solid hsl(var(--card));` : "";
         if (s.stacked) {
-          return ["AO","RC","LB","KT"].map((n, i) => {
-            const content = n === "RC" ? `<img src="/rachel-chen.jpg" alt="RC">` : n;
-            return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}${i > 0 ? "margin-left:-8px;" : ""}z-index:${10-i}">${content}</span>`;
+          const overlap = Math.round(sz * 0.3);
+          const photos: Record<string, string> = {
+            RC: "/rachel-chen.jpg", LB: "/liang-bao.jpg", KT: "/kira-tanaka.jpg",
+          };
+          return ["RC","LB","AO","KT"].map((n, i) => {
+            const content = photos[n] ? `<img src="${photos[n]}" alt="${n}">` : n;
+            return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}${i > 0 ? `margin-left:-${overlap}px;` : ""}z-index:${10-i}">${content}</span>`;
           }).join("");
         }
         return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}">${ini}</span>`;
@@ -61,13 +65,13 @@ export const COMPONENTS: ComponentDoc[] = [
         title: "Sizes",
         examples: [{
           html: `<div style="display:flex;gap:0.75rem;align-items:end">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:20px;height:20px;font-size:8px">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">20px</code></div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:24px;height:24px;font-size:10px">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">24px</code></div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">28px</code></div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:32px;height:32px;font-size:13px">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">32px</code></div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:40px;height:40px;font-size:16px">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">40px</code></div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:56px;height:56px;font-size:22px">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">56px</code></div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:80px;height:80px;font-size:32px">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">80px</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:20px;height:20px"><img src="/rachel-chen.jpg" alt="RC"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">20px</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:24px;height:24px"><img src="/liang-bao.jpg" alt="LB"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">24px</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar"><img src="/ada-lovelace.jpg" alt="AL"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">28px</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:32px;height:32px"><img src="/kira-tanaka.jpg" alt="KT"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">32px</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:40px;height:40px"><img src="/noor-park.jpg" alt="NP"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">40px</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:56px;height:56px"><img src="/grace-hopper.jpg" alt="GH"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">56px</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:80px;height:80px"><img src="/marcus-allen.jpg" alt="MA"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">80px</code></div>
 </div>`,
         }],
       },
@@ -76,12 +80,22 @@ export const COMPONENTS: ComponentDoc[] = [
         description: "The shared <code>.avatar</code> token renders the 28px default, used in topbars and table rows.",
         examples: [{
           html: `<div style="display:flex;gap:0.5rem">
-  <span class="avatar">AO</span>
   <span class="avatar"><img src="/rachel-chen.jpg" alt="RC"></span>
-  <span class="avatar">LB</span>
-  <span class="avatar">KT</span>
-  <span class="avatar">NP</span>
-  <span class="avatar">GH</span>
+  <span class="avatar"><img src="/ada-lovelace.jpg" alt="AL"></span>
+  <span class="avatar"><img src="/liang-bao.jpg" alt="LB"></span>
+  <span class="avatar"><img src="/kira-tanaka.jpg" alt="KT"></span>
+  <span class="avatar"><img src="/noor-park.jpg" alt="NP"></span>
+  <span class="avatar"><img src="/grace-hopper.jpg" alt="GH"></span>
+</div>`,
+        }],
+      },
+      {
+        title: "Initials fallback",
+        description: "No photo on the account (seeded admin users) falls back to up to two initials on the brand gradient.",
+        examples: [{
+          html: `<div style="display:flex;gap:1.5rem;align-items:center">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:40px;height:40px"><img src="/noor-park.jpg" alt="NP"></span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">photo</code></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="avatar" style="width:40px;height:40px;font-size:16px">AO</span><code style="font-size:10.5px;color:hsl(var(--muted-foreground))">initials</code></div>
 </div>`,
         }],
       },
@@ -93,7 +107,7 @@ export const COMPONENTS: ComponentDoc[] = [
             label: "Topbar user pill",
             html: `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px">
   <button type="button" aria-haspopup="menu" aria-expanded="false" onclick="var m=this.nextElementSibling;var open=m.style.display!=='block';m.style.display=open?'block':'none';this.setAttribute('aria-expanded',open);this.querySelector('svg').style.transform=open?'rotate(180deg)':'';" style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));cursor:pointer;font-size:13px;font-weight:500">
-    <span class="avatar">AO</span>
+    <span class="avatar"><img src="/marcus-allen.jpg" alt="MA"></span>
     <span>admin@example.com</span>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 150ms ease"><path d="m6 9 6 6 6-6"/></svg>
   </button>
@@ -119,10 +133,10 @@ export const COMPONENTS: ComponentDoc[] = [
           {
             label: "Stacked group",
             html: `<div style="display:flex;align-items:center">
-  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));z-index:4">AO</span>
-  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-8px;z-index:3"><img src="/rachel-chen.jpg" alt="RC"></span>
-  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-8px;z-index:2">LB</span>
-  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-8px;z-index:1">KT</span>
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));z-index:4"><img src="/rachel-chen.jpg" alt="RC"></span>
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-12px;z-index:3"><img src="/liang-bao.jpg" alt="LB"></span>
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-12px;z-index:2">AO</span>
+  <span class="avatar" style="width:2rem;height:2rem;outline:2px solid hsl(var(--card));margin-left:-12px;z-index:1"><img src="/kira-tanaka.jpg" alt="KT"></span>
   <span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>
 </div>`,
           },
