@@ -459,55 +459,36 @@ export const COMPONENTS: ComponentDoc[] = [
         }
         if (s.variant === "label") return `<div class="sep-label">${s.label}</div>`;
         if (s.variant === "action") {
-          return `<div style="display:flex;align-items:center;gap:0.75rem"><hr class="sep" style="flex:1" /><button class="btn btn-ghost btn-sm">Add</button><hr class="sep" style="flex:1" /></div>`;
+          return `<div style="display:flex;align-items:center;gap:0.75rem"><hr class="sep" style="flex:1" /><button class="btn btn-ghost btn-sm" onclick="this.textContent=this.textContent==='Show more'?'Show less':'Show more'">Show more</button><hr class="sep" style="flex:1" /></div>`;
         }
         return `<hr class="sep" />`;
       },
     },
-    sections: [
-      {
-        title: "Horizontal",
-        anatomy: "A simple 1px hairline using border-border. Use <code>.sep</code> utility class.",
-        examples: [{
-          full: true,
-          html: `<div>
-  <p class="body" style="margin-bottom:0.75rem">Content above</p>
-  <hr class="sep" />
-  <p class="body" style="margin-top:0.75rem">Content below</p>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="max-width:280px">
+  <div style="padding:0.4rem 0;font-size:13px">Profile</div>
+  <hr class="sep">
+  <div style="padding:0.4rem 0;font-size:13px">Account</div>
+  <hr class="sep">
+  <div style="padding:0.4rem 0;font-size:13px">Notifications</div>
+  <hr class="sep">
+  <div style="padding:0.4rem 0;font-size:13px">Billing</div>
 </div>`,
-        }],
+        caption: "A divider between every row is visual noise; the lines compete with the content.",
       },
-      {
-        title: "With label",
-        anatomy: "Hairline + centered label. Pad the label horizontally so the line breaks around it.",
-        examples: [{
-          html: `<div class="sep-label">or continue with</div>`,
-        }],
-      },
-      {
-        title: "With action",
-        anatomy: "Trailing button replaces the centered label.",
-        examples: [{
-          full: true,
-          html: `<div style="display:flex;align-items:center;gap:0.75rem">
-  <hr class="sep" style="flex:1" />
-  <button class="btn btn-ghost btn-sm" onclick="this.textContent=this.textContent==='Show more'?'Show less':'Show more'">Show more</button>
-  <hr class="sep" style="flex:1" />
+      do: {
+        html: `<div style="max-width:280px">
+  <div style="padding:0.4rem 0;font-size:13px">Profile</div>
+  <div style="padding:0.4rem 0;font-size:13px">Account</div>
+  <div style="padding:0.4rem 0;font-size:13px">Notifications</div>
+  <hr class="sep">
+  <div style="padding:0.4rem 0;font-size:13px">Sign out</div>
 </div>`,
-        }],
+        caption: "Group with spacing; reserve a divider for a meaningful break, like fencing off a destructive action.",
       },
-      {
-        title: "Vertical",
-        anatomy: "Inside a flex row, a 1px vertical line. <code>.sep-v</code> utility.",
-        examples: [{
-          html: `<div style="display:flex;align-items:center;gap:0.75rem;height:2rem">
-  <span class="body">Left</span>
-  <div class="sep-v" style="height:1.25rem"></div>
-  <span class="body">Right</span>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
