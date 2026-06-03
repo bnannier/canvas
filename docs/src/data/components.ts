@@ -457,9 +457,11 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div class="btn-group">
+    donts: [
+      {
+        title: "Segmented",
+        dont: {
+          html: `<div class="btn-group">
   <button class="btn btn-default btn-sm">Day</button>
   <button class="btn btn-outline btn-sm">Week</button>
   <button class="btn btn-outline btn-sm">Month</button>
@@ -468,17 +470,54 @@ export const COMPONENTS: ComponentDoc[] = [
   <button class="btn btn-outline btn-sm">5Y</button>
   <button class="btn btn-outline btn-sm">All</button>
 </div>`,
-        caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.",
-      },
-      do: {
-        html: `<div class="btn-group">
+          caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.",
+        },
+        do: {
+          html: `<div class="btn-group">
   <button class="btn btn-default btn-sm">Day</button>
   <button class="btn btn-outline btn-sm">Week</button>
   <button class="btn btn-outline btn-sm">Month</button>
 </div>`,
-        caption: "Keep a segmented control to a few mutually-exclusive views.",
+          caption: "Keep a segmented control to a few mutually-exclusive views.",
+        },
       },
-    }],
+      {
+        title: "Attached",
+        dont: {
+          html: `<div class="btn-group">
+  <button class="btn btn-outline btn-sm">Save</button>
+  <button class="btn btn-outline btn-sm">Delete</button>
+  <button class="btn btn-outline btn-sm">Export</button>
+</div>`,
+          caption: "Attaching unrelated actions implies they belong to one control.",
+        },
+        do: {
+          html: `<div class="btn-group">
+  <button class="btn btn-outline btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+  <button class="btn btn-outline btn-sm" style="min-width:5.5rem">Today</button>
+  <button class="btn btn-outline btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+</div>`,
+          caption: "Reserve attached groups for closely-related actions like prev / today / next.",
+        },
+      },
+      {
+        title: "Split",
+        dont: {
+          html: `<div class="btn-group">
+  <button class="btn btn-default btn-sm">Save</button>
+  <button class="btn btn-default btn-sm" style="padding-inline:0.5rem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+</div>`,
+          caption: "With no divider the chevron looks like part of one button, hiding the menu.",
+        },
+        do: {
+          html: `<div class="btn-group">
+  <button class="btn btn-default btn-sm" style="border-top-right-radius:0;border-bottom-right-radius:0">Save</button>
+  <button class="btn btn-default btn-sm" style="border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid hsl(var(--primary-foreground)/0.2);padding-inline:0.5rem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+</div>`,
+          caption: "Separate the chevron with a hairline so the secondary menu reads as distinct.",
+        },
+      },
+    ],
   },
 
   {
@@ -509,23 +548,101 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div style="display:flex;gap:0.5rem">
+    donts: [
+      {
+        title: "Default (primary)",
+        dont: {
+          html: `<div style="display:flex;gap:0.5rem">
   <button class="btn btn-default">Save</button>
   <button class="btn btn-default">Apply</button>
   <button class="btn btn-default">Continue</button>
 </div>`,
-        caption: "Multiple primary buttons compete. Pick one default; downgrade the rest to outline/ghost.",
-      },
-      do: {
-        html: `<div style="display:flex;gap:0.5rem">
+          caption: "Multiple primaries compete; nothing stands out.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:0.5rem">
   <button class="btn btn-default">Save</button>
   <button class="btn btn-outline">Cancel</button>
 </div>`,
-        caption: "One clear primary action; everything else is supporting.",
+          caption: "One clear primary action; everything else is supporting.",
+        },
       },
-    }],
+      {
+        title: "Outline",
+        dont: {
+          html: `<div style="display:flex;gap:0.5rem">
+  <button class="btn btn-outline">Save</button>
+  <button class="btn btn-outline">Publish</button>
+  <button class="btn btn-outline">Schedule</button>
+</div>`,
+          caption: "All-outline leaves no signal which action is primary.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:0.5rem">
+  <button class="btn btn-default">Publish</button>
+  <button class="btn btn-outline">Save draft</button>
+  <button class="btn btn-outline">Schedule</button>
+</div>`,
+          caption: "Promote the main action to default; keep the rest outline.",
+        },
+      },
+      {
+        title: "Secondary",
+        dont: {
+          html: `<button class="btn btn-secondary">Create account</button>`,
+          caption: "A secondary button as the main call to action under-sells it.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:0.5rem">
+  <button class="btn btn-default">Create account</button>
+  <button class="btn btn-secondary">Import instead</button>
+</div>`,
+          caption: "Default for the primary action; secondary for the next one down.",
+        },
+      },
+      {
+        title: "Ghost",
+        dont: {
+          html: `<button class="btn btn-ghost">Save changes</button>`,
+          caption: "A ghost button is too quiet to carry the primary action.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:0.5rem">
+  <button class="btn btn-ghost">Cancel</button>
+  <button class="btn btn-default">Save changes</button>
+</div>`,
+          caption: "Use ghost for tertiary and toolbar actions; keep the CTA filled.",
+        },
+      },
+      {
+        title: "Destructive",
+        dont: {
+          html: `<button class="btn btn-destructive">Save changes</button>`,
+          caption: "Red on a safe action cries wolf; users learn to ignore it.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:0.5rem">
+  <button class="btn btn-default">Save changes</button>
+  <button class="btn btn-destructive">Delete account</button>
+</div>`,
+          caption: "Reserve the destructive variant for irreversible actions like delete.",
+        },
+      },
+      {
+        title: "Link",
+        dont: {
+          html: `<button class="btn btn-link">Submit form</button>`,
+          caption: "A link-styled submit doesn't look pressable and gets lost.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:0.75rem;align-items:center">
+  <button class="btn btn-default">Submit</button>
+  <button class="btn btn-link">Learn more</button>
+</div>`,
+          caption: "Link variant for inline navigation; a filled button for the submit.",
+        },
+      },
+    ],
   },
 
   {
@@ -548,26 +665,57 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
+    donts: [
+      {
+        title: "Selection",
+        dont: {
+          html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
   <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
   <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Free</label>
   <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" checked style="accent-color:hsl(var(--primary))"> Pro</label>
   <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Enterprise</label>
 </div>`,
-        caption: "Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.",
-      },
-      do: {
-        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
+          caption: "Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.",
+        },
+        do: {
+          html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
   <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
   <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" style="accent-color:hsl(var(--primary))"> Free</label>
   <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" checked style="accent-color:hsl(var(--primary))"> Pro</label>
   <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" style="accent-color:hsl(var(--primary))"> Enterprise</label>
 </div>`,
-        caption: "Radios for one-of-many; reserve checkboxes for independent multi-select.",
+          caption: "Radios for one-of-many; reserve checkboxes for independent multi-select.",
+        },
       },
-    }],
+      {
+        title: "With description",
+        dont: {
+          html: `<div style="display:flex;gap:0.5rem;font-size:13px">
+  <input type="checkbox" checked style="accent-color:hsl(var(--primary));margin-top:3px">
+  <div><div style="font-weight:500">Email notifications</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when activity happens on your account.</div></div>
+</div>`,
+          caption: "A bare div makes only the 16px box clickable; the label text does nothing.",
+        },
+        do: {
+          html: `<label style="display:flex;gap:0.5rem;cursor:pointer;font-size:13px">
+  <input type="checkbox" checked style="accent-color:hsl(var(--primary));margin-top:3px">
+  <div><div style="font-weight:500">Email notifications</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when activity happens on your account.</div></div>
+</label>`,
+          caption: "Wrap the box, label, and description in a <label> so the whole row toggles.",
+        },
+      },
+      {
+        title: "Disabled",
+        dont: {
+          html: `<label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" disabled style="accent-color:hsl(var(--primary))"> Export to CSV</label>`,
+          caption: "A disabled option with no reason leaves users stuck and guessing.",
+        },
+        do: {
+          html: `<label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" disabled style="accent-color:hsl(var(--primary))"> Export to CSV <span style="font-size:11px;color:hsl(var(--muted-foreground))">(Pro plan)</span></label>`,
+          caption: "Say why it's unavailable, like a plan gate, or don't show it at all.",
+        },
+      },
+    ],
   },
 
   {
