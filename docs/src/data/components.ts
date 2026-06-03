@@ -152,6 +152,27 @@ const switchTrack =
 const switchEl = (on: boolean, dis = "") =>
   `<span class="relative inline-flex shrink-0 items-center${dis ? " opacity-50" : ""}"><input type="checkbox" role="switch" class="peer sr-only"${on ? " checked" : ""}${dis}><span class="${switchTrack}"></span></span>`;
 const tooltipCls = "z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md";
+const kbdCls =
+  "inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted px-1.5 font-mono text-[11px] font-medium text-muted-foreground";
+const kbdEl = (k: string) => `<kbd class="${kbdCls}">${k}</kbd>`;
+const typeScale: Record<string, string> = {
+  display: "text-5xl font-bold tracking-tight",
+  h1: "text-4xl font-bold tracking-tight",
+  h2: "text-3xl font-semibold tracking-tight",
+  h3: "text-2xl font-semibold tracking-tight",
+  h4: "text-xl font-semibold tracking-tight",
+  h5: "text-lg font-semibold",
+  body: "text-sm leading-relaxed",
+  small: "text-sm text-muted-foreground",
+  tiny: "text-xs text-muted-foreground",
+  muted: "text-sm text-muted-foreground",
+  caption: "text-xs uppercase tracking-wide text-muted-foreground",
+  code: "rounded bg-muted px-1.5 py-0.5 font-mono text-[13px]",
+  mono: "font-mono text-sm",
+};
+const spinnerEl = (size = "h-5 w-5") =>
+  `<div class="${size} animate-spin rounded-full border-2 border-muted border-t-foreground"></div>`;
+const popoverCls = "rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md";
 
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
@@ -2460,20 +2481,20 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
       defaults: { mode: "combo", keys: "⌘ K" },
       render: (s) => {
         const keys = ((s.keys as string) || "⌘ K").trim().split(/\s+/);
-        const kbds = keys.map((k) => `<kbd class="kbd">${k}</kbd>`);
+        const kbds = keys.map(kbdEl);
         if (s.mode === "single") return kbds[0];
-        if (s.mode === "in a sentence") return `<p class="body">Press ${kbds.join("")} to search.</p>`;
+        if (s.mode === "in a sentence") return `<p class="text-sm">Press ${kbds.join("")} to search.</p>`;
         return kbds.join(" + ");
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<p class="body">Press Ctrl+K to search.</p>`,
+        html: `<p class="text-sm">Press Ctrl+K to search.</p>`,
         caption: "Plain-text shortcuts blend into the prose and are easy to miss.",
       },
       do: {
-        html: `<p class="body">Press <kbd class="kbd">Ctrl</kbd><kbd class="kbd">K</kbd> to search.</p>`,
+        html: `<p class="text-sm">Press ${kbdEl("Ctrl")}${kbdEl("K")} to search.</p>`,
         caption: "Wrap each key in a kbd so shortcuts read as physical keys.",
       },
     }],
@@ -2493,18 +2514,18 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
       render: (s) => {
         const tags: Record<string, string> = { display: "h1", h1: "h1", h2: "h2", h3: "h3", h4: "h4", h5: "h5", code: "span" };
         const tag = tags[s.style as string] || "p";
-        return `<${tag} class="${s.style}">${s.content}</${tag}>`;
+        return `<${tag} class="${typeScale[s.style as string] || "text-sm"}">${s.content}</${tag}>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<p class="h3" style="max-width:340px">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p>`,
+        html: `<p class="${typeScale.h3} max-w-[340px]">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p>`,
         caption: "Body copy set in a heading style is hard to read in bulk and flattens the hierarchy.",
       },
       do: {
-        html: `<div style="max-width:340px"><h3 class="h3">About Canvas</h3><p class="body">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p></div>`,
-        caption: "Reserve heading styles for titles; set running text in .body.",
+        html: `<div class="max-w-[340px]"><h3 class="${typeScale.h3}">About Canvas</h3><p class="${typeScale.body} mt-1">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p></div>`,
+        caption: "Reserve heading styles for titles; set running text in a small body utility.",
       },
     }],
   },
@@ -2520,18 +2541,18 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
       ],
       defaults: { size: "default" },
       render: (s) => {
-        const cls = s.size === "default" ? "" : ` spinner-${s.size}`;
-        return `<div class="spinner${cls}"></div>`;
+        const size = s.size === "sm" ? "h-4 w-4" : s.size === "lg" ? "h-8 w-8" : "h-5 w-5";
+        return spinnerEl(size);
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div class="spinner"></div>`,
+        html: spinnerEl(),
         caption: "A bare spinner with no label leaves users guessing what is happening and for how long.",
       },
       do: {
-        html: `<div style="display:flex;align-items:center;gap:0.5rem"><div class="spinner spinner-sm"></div><span class="small">Loading…</span></div>`,
+        html: `<div class="flex items-center gap-2">${spinnerEl("h-4 w-4")}<span class="text-sm text-muted-foreground">Loading…</span></div>`,
         caption: "Pair longer waits with a short label so the spinner has context.",
       },
     }],
@@ -2551,28 +2572,28 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
       render: (s) => {
         const content = s.content as string;
         if (s.trigger) {
-          return `<div style="position:relative;display:inline-block" onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="var p=this.nextElementSibling;if(p.style.display==='none'){p.style.display='block';var close=function(e){if(!p.contains(e.target)){p.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{p.style.display='none'}">Open popover</button><div class="popover" style="position:absolute;top:100%;left:0;margin-top:8px;min-width:260px;display:none;z-index:10"><p class="body" style="margin-bottom:0.5rem">${content}</p><button class="btn btn-outline btn-sm" onclick="this.closest('.popover').style.display='none'">Close</button></div></div>`;
+          return `<div class="relative inline-block" onclick="event.stopPropagation()">${btn("outline", "Open popover", "sm", ` onclick="var p=this.nextElementSibling;if(p.classList.contains('hidden')){p.classList.remove('hidden');var close=function(e){if(!p.contains(e.target)){p.classList.add('hidden');document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{p.classList.add('hidden')}"`)}<div data-pop class="${popoverCls} absolute left-0 top-full z-10 mt-2 hidden min-w-[260px]"><p class="mb-2 text-sm">${content}</p>${btn("outline", "Close", "sm", ` onclick="this.closest('[data-pop]').classList.add('hidden')"`)}</div></div>`;
         }
-        return `<div class="popover" style="position:relative;display:inline-block;min-width:260px"><p class="body" style="margin-bottom:0.5rem">${content}</p><button class="btn btn-outline btn-sm">Action</button></div>`;
+        return `<div class="${popoverCls} relative inline-block min-w-[260px]"><p class="mb-2 text-sm">${content}</p>${btn("outline", "Action", "sm")}</div>`;
       },
     },
     sections: [],
     donts: [{
       dont: {
-        html: `<div class="popover" style="position:relative;display:inline-block;min-width:260px">
-  <label class="label">Name</label><input class="input" style="margin-bottom:0.5rem">
-  <label class="label">Email</label><input class="input" style="margin-bottom:0.5rem">
-  <label class="label">Role</label><select class="input" style="margin-bottom:0.5rem"><option>Engineer</option></select>
-  <label class="label">Team</label><input class="input" style="margin-bottom:0.5rem">
-  <div style="display:flex;justify-content:flex-end;gap:0.5rem"><button class="btn btn-outline btn-sm">Cancel</button><button class="btn btn-default btn-sm">Save</button></div>
+        html: `<div class="${popoverCls} relative inline-block min-w-[260px]">
+  <label class="${labelCls}">Name</label><input class="${inputBase} mb-2">
+  <label class="${labelCls}">Email</label><input class="${inputBase} mb-2">
+  <label class="${labelCls}">Role</label><select class="${inputBase} mb-2"><option>Engineer</option></select>
+  <label class="${labelCls}">Team</label><input class="${inputBase} mb-2">
+  <div class="flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Save", "sm")}</div>
 </div>`,
         caption: "A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident.",
       },
       do: {
-        html: `<div class="popover" style="position:relative;display:inline-block;min-width:240px">
-  <p class="body" style="margin-bottom:0.5rem">Rename this project?</p>
-  <input class="input" value="Identity Platform" style="margin-bottom:0.5rem">
-  <div style="display:flex;justify-content:flex-end;gap:0.5rem"><button class="btn btn-outline btn-sm">Cancel</button><button class="btn btn-default btn-sm">Rename</button></div>
+        html: `<div class="${popoverCls} relative inline-block min-w-[240px]">
+  <p class="mb-2 text-sm">Rename this project?</p>
+  <input class="${inputBase} mb-2" value="Identity Platform">
+  <div class="flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Rename", "sm")}</div>
 </div>`,
         caption: "Keep popovers compact: a focused prompt with one input and a clear action.",
       },
