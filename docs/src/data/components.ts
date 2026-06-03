@@ -243,6 +243,15 @@ const dtTd = "border-b border-border px-4 py-2.5";
 const dtFooter = "dt-footer flex items-center justify-between border-t border-border px-4 py-2.5 text-sm text-muted-foreground";
 const dtRow = "clickable cursor-pointer hover:bg-accent/50";
 
+const sidebarItem = "sidebar-item flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium transition-colors hover:bg-accent";
+const sidebarGroupLabel = "px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground";
+const tabUnderline = "border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground";
+const tabUnderlineActive = "border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground";
+const stepInd = (state: string) =>
+  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium " +
+  (state === "completed" ? "border-primary bg-primary text-primary-foreground" : state === "active" ? "border-primary text-primary" : "border-border text-muted-foreground");
+const stepConn = (done: boolean) => "mx-2 mt-4 h-0.5 flex-1 " + (done ? "bg-primary" : "bg-border");
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -2178,29 +2187,28 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "240px expanded, 56px collapsed, drawer on mobile. Groups labeled with 11px uppercase headers.",
         anatomy: "Brand row (56px) . groups (label + items) . items are 32px tall, 13px medium, with leading icon. Active item gets accent background.",
         examples: [{
-          html: `<nav class="sidebar open" style="position:relative;transform:none;height:300px">
-  <div class="sidebar-brand"><span class="sidebar-brand-name">Acme</span></div>
-  <div class="sidebar-nav" onclick="if(!event.target.classList.contains('sidebar-item'))return;this.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));event.target.classList.add('active')">
-    <div class="sidebar-group">
-      <div class="sidebar-group-label">Main</div>
-      <button class="sidebar-item active">Dashboard</button>
-      <button class="sidebar-item">Users</button>
-      <button class="sidebar-item">Settings</button>
+          html: `<nav class="h-[300px] w-60 overflow-hidden rounded-lg border border-border bg-card">
+  <div class="flex h-14 items-center border-b border-border px-4 font-semibold">Acme</div>
+  <div class="p-2" onclick="if(!event.target.classList.contains('sidebar-item'))return;this.querySelectorAll('.sidebar-item').forEach(function(i){i.classList.remove('bg-accent','text-accent-foreground')});event.target.classList.add('bg-accent','text-accent-foreground')">
+    <div class="mb-2">
+      <div class="${sidebarGroupLabel}">Main</div>
+      <button class="${sidebarItem} bg-accent text-accent-foreground">Dashboard</button>
+      <button class="${sidebarItem}">Users</button>
+      <button class="${sidebarItem}">Settings</button>
     </div>
-    <div class="sidebar-group">
-      <div class="sidebar-group-label">Reports</div>
-      <button class="sidebar-item">Analytics</button>
+    <div class="mb-2">
+      <div class="${sidebarGroupLabel}">Reports</div>
+      <button class="${sidebarItem}">Analytics</button>
     </div>
   </div>
 </nav>`,
-          code: `<nav class="sidebar open">
-  <div class="sidebar-brand"><span class="sidebar-brand-name">Acme</span></div>
-  <div class="sidebar-nav">
-    <div class="sidebar-group">
-      <div class="sidebar-group-label">Main</div>
-      <button class="sidebar-item active">Dashboard</button>
-      <button class="sidebar-item">Users</button>
-      <button class="sidebar-item">Settings</button>
+          code: `<nav class="w-60 rounded-lg border border-border bg-card">
+  <div class="flex h-14 items-center border-b border-border px-4 font-semibold">Acme</div>
+  <div class="p-2">
+    <div class="mb-2">
+      <div class="...group label...">Main</div>
+      <button class="...item... bg-accent text-accent-foreground">Dashboard</button>
+      <button class="...item...">Users</button>
     </div>
   </div>
 </nav>`,
@@ -2210,11 +2218,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "Topbar",
         description: "Sticky, 56px tall. Holds the search trigger, glass/solid toggle, theme button, notifications, user menu.",
         examples: [{
-          html: `<header class="topbar">
-  <span class="h5">Dashboard</span>
-  <div style="margin-left:auto;display:flex;gap:0.5rem">
-    <button class="btn btn-ghost btn-sm" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)">Search</button>
-    <button class="btn btn-default btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Created!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">New</button>
+          html: `<header class="flex h-14 items-center rounded-lg border border-border bg-card px-4">
+  <span class="text-base font-semibold">Dashboard</span>
+  <div class="ml-auto flex gap-2">
+    ${btn("ghost", "Search", "sm", ` onclick="var b=this;b.classList.add('bg-accent');setTimeout(function(){b.classList.remove('bg-accent')},300)"`)}
+    ${btn("default", "New", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Created!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}
   </div>
 </header>`,
         }],
@@ -2225,14 +2233,14 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Title + sub on left, actions on right. Page-header h1 = 20-22px (smaller than Display h1): never compete with the topbar.",
         examples: [{
           full: true,
-          html: `<div class="page-header">
+          html: `<div class="flex items-start justify-between">
   <div>
-    <div class="page-header-title"><h1>Users</h1></div>
-    <p class="sub">Manage your team members.</p>
+    <h1 class="text-[22px] font-semibold tracking-tight">Users</h1>
+    <p class="mt-1 text-sm text-muted-foreground">Manage your team members.</p>
   </div>
-  <div class="page-header-actions">
-    <button class="btn btn-outline" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Exporting…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Export</button>
-    <button class="btn btn-default" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Added!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Add User</button>
+  <div class="flex gap-2">
+    ${btn("outline", "Export", "default", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Exporting…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}
+    ${btn("default", "Add User", "default", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Added!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}
   </div>
 </div>`,
         }],
@@ -2241,7 +2249,7 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         title: "Breadcrumbs",
         description: "Where am I in the hierarchy. Chevron separators; the last crumb is the current page, not a link. See the dedicated Breadcrumbs page for full options.",
         examples: [{
-          html: `<nav class="breadcrumb"><a class="breadcrumb-item" href="#">Home</a><span class="breadcrumb-sep">/</span><a class="breadcrumb-item" href="#">Team</a><span class="breadcrumb-sep">/</span><span class="breadcrumb-item active">Rachel Chen</span></nav>`,
+          html: `<nav class="${bcNav}">${crumbLink("Home")}${crumbSep()}${crumbLink("Team")}${crumbSep()}${crumbCurrent("Rachel Chen")}</nav>`,
         }],
       },
       {
@@ -2249,10 +2257,10 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "Switch between facets of one record without leaving the page. See the dedicated Tabs page for pill, underline, and vertical variants.",
         examples: [{
           full: true,
-          html: `<div style="display:flex;gap:0;border-bottom:1px solid hsl(var(--border))" onclick="if(!event.target.dataset.tab)return;this.querySelectorAll('[data-tab]').forEach(t=>{t.style.borderBottomColor='transparent';t.style.color='hsl(var(--muted-foreground))'});event.target.style.borderBottomColor='hsl(var(--primary))';event.target.style.color='hsl(var(--foreground))'">
-  <button data-tab="1" style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid hsl(var(--primary));color:hsl(var(--foreground))">Overview</button>
-  <button data-tab="2" style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:hsl(var(--muted-foreground))">Sessions</button>
-  <button data-tab="3" style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:hsl(var(--muted-foreground))">Audit log</button>
+          html: `<div class="flex border-b border-border" onclick="if(!event.target.dataset.tab)return;this.querySelectorAll('[data-tab]').forEach(function(t){t.className='${tabUnderline}'});event.target.className='${tabUnderlineActive}'">
+  <button data-tab="1" class="${tabUnderlineActive}">Overview</button>
+  <button data-tab="2" class="${tabUnderline}">Sessions</button>
+  <button data-tab="3" class="${tabUnderline}">Audit log</button>
 </div>`,
         }],
       },
@@ -2261,16 +2269,16 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         description: "Global fuzzy launcher. Cmd+K opens it from anywhere. See the dedicated Command Palette page for the full anatomy.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:480px;padding:0;overflow:hidden">
-  <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid hsl(var(--border))">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-    <span style="font-size:13px;color:hsl(var(--muted-foreground))">Type a command or search...</span>
-    <kbd class="kbd" style="margin-left:auto">esc</kbd>
+          html: `<div class="${cardCls} max-w-[480px] overflow-hidden">
+  <div class="flex items-center gap-2 border-b border-border px-3.5 py-3">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted-foreground"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <span class="text-sm text-muted-foreground">Type a command or search...</span>
+    <kbd class="${kbdCls} ml-auto">esc</kbd>
   </div>
-  <div style="padding:6px">
-    <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:hsl(var(--muted-foreground));padding:6px 10px">Actions</div>
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:hsl(var(--accent));font-size:13px">Create identity <kbd class="kbd" style="margin-left:auto">C</kbd></div>
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;font-size:13px">Invite teammate</div>
+  <div class="p-1.5">
+    <div class="px-2.5 py-1.5 text-[10.5px] uppercase tracking-wider text-muted-foreground">Actions</div>
+    <div class="flex items-center gap-2.5 rounded-md bg-accent px-2.5 py-2 text-sm">Create identity <kbd class="${kbdCls} ml-auto">C</kbd></div>
+    <div class="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm">Invite teammate</div>
   </div>
 </div>`,
         }],
@@ -2290,30 +2298,25 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         examples: [{
           full: true,
           html: `<div>
-  <div class="stepper">
-    <div class="step completed"><div class="step-indicator">&#10003;</div><span class="step-label">Account</span></div>
-    <div class="step-connector completed"></div>
-    <div class="step active"><div class="step-indicator">2</div><span class="step-label">Profile</span></div>
-    <div class="step-connector"></div>
-    <div class="step"><div class="step-indicator">3</div><span class="step-label">Review</span></div>
-    <div class="step-connector"></div>
-    <div class="step"><div class="step-indicator">4</div><span class="step-label">Done</span></div>
+  <div data-stepper class="flex items-start">
+    <div class="flex flex-col items-center gap-1.5"><div data-ind data-state="completed" class="${stepInd("completed")}">&#10003;</div><span class="text-xs font-medium">Account</span></div>
+    <div data-conn class="${stepConn(true)}"></div>
+    <div class="flex flex-col items-center gap-1.5"><div data-ind data-state="active" class="${stepInd("active")}">2</div><span class="text-xs font-medium">Profile</span></div>
+    <div data-conn class="${stepConn(false)}"></div>
+    <div class="flex flex-col items-center gap-1.5"><div data-ind data-state="pending" class="${stepInd("pending")}">3</div><span class="text-xs font-medium">Review</span></div>
+    <div data-conn class="${stepConn(false)}"></div>
+    <div class="flex flex-col items-center gap-1.5"><div data-ind data-state="pending" class="${stepInd("pending")}">4</div><span class="text-xs font-medium">Done</span></div>
   </div>
-  <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1.5rem" onclick="var wrap=this.parentElement;var steps=[].slice.call(wrap.querySelectorAll('.step'));var cons=[].slice.call(wrap.querySelectorAll('.step-connector'));var cur=steps.findIndex(function(s){return s.classList.contains('active')});var t=event.target.closest('button');if(!t)return;var isNext=t.textContent.trim()==='Next';var ni=isNext?cur+1:cur-1;if(ni<0||ni>=steps.length)return;steps.forEach(function(s,i){s.classList.remove('active','completed');var ind=s.querySelector('.step-indicator');if(i<ni){s.classList.add('completed');ind.innerHTML='&#10003;'}else if(i===ni){s.classList.add('active');ind.textContent=''+(i+1)}else{ind.textContent=''+(i+1)}});cons.forEach(function(c,i){if(i<ni)c.classList.add('completed');else c.classList.remove('completed')});var bs=this.querySelectorAll('button');bs[0].disabled=ni<=0;bs[1].textContent=ni>=steps.length-1?'Finish':'Next';if(ni>=steps.length-1)bs[1].disabled=true">
-    <button class="btn btn-outline btn-sm" disabled>Back</button>
-    <button class="btn btn-default btn-sm">Next</button>
+  <div class="mt-6 flex justify-end gap-2" onclick="var wrap=this.parentElement.querySelector('[data-stepper]');var inds=[].slice.call(wrap.querySelectorAll('[data-ind]'));var conns=[].slice.call(wrap.querySelectorAll('[data-conn]'));var cur=inds.findIndex(function(s){return s.dataset.state==='active'});var t=event.target.closest('button');if(!t)return;var fwd=t.textContent.trim()==='Next'||t.textContent.trim()==='Finish';var ni=fwd?cur+1:cur-1;if(ni<0||ni>=inds.length)return;inds.forEach(function(ind,i){var st=i<ni?'completed':i===ni?'active':'pending';ind.dataset.state=st;ind.className=st==='completed'?'${stepInd("completed")}':st==='active'?'${stepInd("active")}':'${stepInd("pending")}';ind.innerHTML=i<ni?'\\u2713':''+(i+1)});conns.forEach(function(c,i){c.className=i<ni?'${stepConn(true)}':'${stepConn(false)}'});var bs=this.querySelectorAll('button');bs[0].disabled=ni<=0;bs[1].textContent=ni>=inds.length-1?'Finish':'Next'">
+    <button class="${btnBase} ${btnVariant.outline} ${btnSize.sm}" disabled>Back</button>
+    <button class="${btnBase} ${btnVariant.default} ${btnSize.sm}">Next</button>
   </div>
 </div>`,
-          code: `<div>
-  <div class="stepper">
-    <div class="step completed"><div class="step-indicator">✓</div><span class="step-label">Account</span></div>
-    <div class="step-connector completed"></div>
-    <div class="step active"><div class="step-indicator">2</div><span class="step-label">Profile</span></div>
-    <div class="step-connector"></div>
-    <div class="step"><div class="step-indicator">3</div><span class="step-label">Review</span></div>
-  </div>
-  <button class="btn btn-outline btn-sm">Back</button>
-  <button class="btn btn-default btn-sm">Next</button>
+          code: `<div class="flex items-start">
+  <div class="flex flex-col items-center gap-1.5"><div class="...completed circle...">✓</div><span class="text-xs font-medium">Account</span></div>
+  <div class="...connector done..."></div>
+  <div class="flex flex-col items-center gap-1.5"><div class="...active circle...">2</div><span class="text-xs font-medium">Profile</span></div>
+  <!-- ...Review, Done... -->
 </div>`,
         }],
       },
@@ -2322,40 +2325,25 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Each step has a circle + label + description, connected by a line. Use for forms with discrete sections.",
         examples: [{
           full: true,
-          html: `<div class="stepper stepper-vertical" style="max-width:320px">
-  <div class="step completed">
-    <div class="step-indicator">&#10003;</div>
-    <div class="step-content"><span class="step-label">Account created</span><span class="step-desc" style="font-size:12px;color:hsl(var(--muted-foreground))">Email verified and password set.</span></div>
-  </div>
-  <div class="step-connector-v completed"></div>
-  <div class="step active">
-    <div class="step-indicator">2</div>
-    <div class="step-content"><span class="step-label">Profile setup</span><span class="step-desc" style="font-size:12px;color:hsl(var(--muted-foreground))">Add your name and avatar.</span></div>
-  </div>
-  <div class="step-connector-v"></div>
-  <div class="step">
-    <div class="step-indicator">3</div>
-    <div class="step-content"><span class="step-label">Team invite</span><span class="step-desc" style="font-size:12px;color:hsl(var(--muted-foreground))">Invite collaborators to your workspace.</span></div>
-  </div>
-  <div class="step-connector-v"></div>
-  <div class="step">
-    <div class="step-indicator">4</div>
-    <div class="step-content"><span class="step-label">Done</span><span class="step-desc" style="font-size:12px;color:hsl(var(--muted-foreground))">You're all set.</span></div>
-  </div>
-</div>`,
+          html: `<div class="max-w-[320px]">${[
+  { s: "completed", n: 1, t: "Account created", d: "Email verified and password set." },
+  { s: "active", n: 2, t: "Profile setup", d: "Add your name and avatar." },
+  { s: "pending", n: 3, t: "Team invite", d: "Invite collaborators to your workspace." },
+  { s: "pending", n: 4, t: "Done", d: "You're all set." },
+].map((st, i, a) => `<div class="flex gap-3"><div class="flex flex-col items-center"><div class="${stepInd(st.s)}">${st.s === "completed" ? "&#10003;" : st.n}</div>${i < a.length - 1 ? `<div class="my-1 w-0.5 flex-1 ${st.s === "completed" ? "bg-primary" : "bg-border"}"></div>` : ""}</div><div class="${i < a.length - 1 ? "pb-6" : ""}"><span class="block text-sm font-medium">${st.t}</span><span class="text-xs text-muted-foreground">${st.d}</span></div></div>`).join("")}</div>`,
         }],
       },
       {
         title: "Progress bar",
         anatomy: "A single bar showing % complete: when individual steps don't matter, only progress.",
         examples: [{
-          html: `<div style="max-width:320px">
-  <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
-    <span style="font-weight:500">Setup progress</span>
-    <span style="color:hsl(var(--muted-foreground))">68%</span>
+          html: `<div class="max-w-[320px]">
+  <div class="mb-1.5 flex justify-between text-xs">
+    <span class="font-medium">Setup progress</span>
+    <span class="text-muted-foreground">68%</span>
   </div>
-  <div style="height:6px;border-radius:999px;background:hsl(var(--muted))">
-    <div style="width:68%;height:100%;border-radius:999px;background:hsl(var(--primary))"></div>
+  <div class="h-1.5 overflow-hidden rounded-full bg-muted">
+    <div class="h-full rounded-full bg-primary" style="width:68%"></div>
   </div>
 </div>`,
         }],
