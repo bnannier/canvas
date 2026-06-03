@@ -106,6 +106,24 @@ const segSize: Record<string, string> = { sm: "h-8 px-3 text-xs", default: "h-9 
 const seg = (label: string, active: boolean, size = "sm", attrs = "", extra = "") =>
   `<button class="${segItem} ${segSize[size]} ${active ? segActive : segIdle}${extra ? " " + extra : ""}"${attrs}>${label}</button>`;
 
+const inputBase =
+  "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
+const labelCls = "mb-1.5 block text-sm font-medium";
+const helperCls = "mt-1.5 text-xs text-muted-foreground";
+const cbList = "mt-1 max-h-60 overflow-auto rounded-md border border-border bg-popover p-1 shadow-md";
+const cbItem =
+  "flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground";
+const cbItemEl = (name: string, selected = false) =>
+  `<button type="button" data-cb-item class="${cbItem}${selected ? " bg-accent text-accent-foreground" : ""}">${name}</button>`;
+const cbFilter =
+  ` oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('[data-cb-item]').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"`;
+const cbSelect =
+  ` onclick="var t=event.target.closest('[data-cb-item]');if(!t)return;this.querySelectorAll('[data-cb-item]').forEach(function(i){i.classList.remove('bg-accent','text-accent-foreground')});t.classList.add('bg-accent','text-accent-foreground');this.parentElement.querySelector('input').value=t.textContent.trim()"`;
+
+const hrLine = `<hr class="border-border">`;
+const sepLabel = (label: string) =>
+  `<div class="flex items-center gap-3 text-xs text-muted-foreground"><span class="h-px flex-1 bg-border"></span><span>${label}</span><span class="h-px flex-1 bg-border"></span></div>`;
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -589,9 +607,10 @@ export const COMPONENTS: ComponentDoc[] = [
       defaults: { placeholder: "Search a person…", withLabel: true, withHelper: false, disabled: false },
       render: (s) => {
         const dis = s.disabled ? " disabled" : "";
-        const label = s.withLabel ? `<label class="label">Assigned to</label>` : "";
-        const helper = s.withHelper ? `<p class="field-helper">The person responsible for this account.</p>` : "";
-        return `<div style="max-width:280px">${label}<div class="combobox"><input class="combobox-input" placeholder="${s.placeholder}"${dis} oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})" /><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item selected">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div></div></div>${helper}</div>`;
+        const label = s.withLabel ? `<label class="${labelCls}">Assigned to</label>` : "";
+        const helper = s.withHelper ? `<p class="${helperCls}">The person responsible for this account.</p>` : "";
+        const items = ["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n, i) => cbItemEl(n, i === 0)).join("");
+        return `<div class="max-w-[280px]">${label}<div class="relative"><input class="${inputBase}" placeholder="${s.placeholder}"${dis}${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${items}</div></div>${helper}</div>`;
       },
     },
     sections: [],
@@ -599,33 +618,33 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "When to use",
         dont: {
-          html: `<div style="max-width:280px"><label class="label">Size</label><div class="combobox"><input class="combobox-input" placeholder="Search…" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Small</div><div class="combobox-item">Medium</div><div class="combobox-item">Large</div></div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Size</label><div class="relative"><input class="${inputBase}" placeholder="Search…"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${["Small", "Medium", "Large"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
           caption: "Type or click: a search field for three fixed options is overhead with nothing to filter.",
         },
         do: {
-          html: `<div style="max-width:280px"><label class="label">Size</label><select class="input" onchange="this.style.outline='2px solid hsl(var(--ring))';var el=this;setTimeout(function(){el.style.outline=''},500)"><option>Small</option><option>Medium</option><option>Large</option></select></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Size</label><select class="${inputBase}" onchange="this.classList.add('ring-2','ring-ring');var el=this;setTimeout(function(){el.classList.remove('ring-2','ring-ring')},500)"><option>Small</option><option>Medium</option><option>Large</option></select></div>`,
           caption: "A plain select for short, fixed lists; reserve the combobox for long, searchable ones.",
         },
       },
       {
         title: "Filtering",
         dont: {
-          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" placeholder="Type to filter… (nothing happens)"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div><div class="combobox-item">Tom Cook</div><div class="combobox-item">Tanya Fox</div><div class="combobox-item">Hellen Schmidt</div></div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Type to filter… (nothing happens)"><div data-cb-list class="${cbList}"${cbSelect}>${["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook", "Tanya Fox", "Hellen Schmidt"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
           caption: "Try typing: a search box that ignores input is just a dropdown wearing a costume.",
         },
         do: {
-          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" placeholder="Type to filter…" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div><div class="combobox-item">Tom Cook</div><div class="combobox-item">Tanya Fox</div><div class="combobox-item">Hellen Schmidt</div></div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Type to filter…"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook", "Tanya Fox", "Hellen Schmidt"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
           caption: "Type a few letters: the list narrows as you go, so a long list stays usable.",
         },
       },
       {
         title: "Selection",
         dont: {
-          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" placeholder="Pick a person…" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},250)"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div><div class="combobox-item">Tom Cook</div></div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Pick a person…"${cbFilter}><div data-cb-list class="${cbList}" onclick="var t=event.target.closest('[data-cb-item]');if(!t)return;t.classList.add('bg-accent');setTimeout(function(){t.classList.remove('bg-accent')},250)">${["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
           caption: "Click an option: it flashes but the field stays empty, so you can't tell what you picked.",
         },
         do: {
-          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" value="Devon Webb" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item selected">Devon Webb</div><div class="combobox-item">Tom Cook</div></div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" value="Devon Webb"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}${cbItemEl("Tom Cook")}</div></div></div>`,
           caption: "Click an option: it fills the input and stays marked as selected.",
         },
       },
@@ -646,13 +665,13 @@ export const COMPONENTS: ComponentDoc[] = [
       defaults: { orientation: "horizontal", variant: "plain", label: "Or continue with" },
       render: (s) => {
         if (s.orientation === "vertical") {
-          return `<div style="display:flex;align-items:center;gap:0.75rem;height:2rem"><span>Left</span><div class="sep-v" style="height:1.25rem"></div><span>Right</span></div>`;
+          return `<div class="flex h-8 items-center gap-3 text-sm"><span>Left</span><div class="h-5 w-px bg-border"></div><span>Right</span></div>`;
         }
-        if (s.variant === "label") return `<div class="sep-label">${s.label}</div>`;
+        if (s.variant === "label") return `<div class="w-80">${sepLabel(s.label as string)}</div>`;
         if (s.variant === "action") {
-          return `<div style="display:flex;align-items:center;gap:0.75rem"><hr class="sep" style="flex:1" /><button class="btn btn-ghost btn-sm" onclick="this.textContent=this.textContent==='Show more'?'Show less':'Show more'">Show more</button><hr class="sep" style="flex:1" /></div>`;
+          return `<div class="flex w-80 items-center gap-3"><hr class="flex-1 border-border"><button class="${btnBase} ${btnVariant.ghost} ${btnSize.sm}" onclick="this.textContent=this.textContent==='Show more'?'Show less':'Show more'">Show more</button><hr class="flex-1 border-border"></div>`;
         }
-        return `<hr class="sep" />`;
+        return `<hr class="w-64 border-border">`;
       },
     },
     sections: [],
@@ -660,44 +679,44 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Plain",
         dont: {
-          html: `<div style="max-width:280px" onclick="var r=event.target.closest('[data-row]');if(!r)return;r.style.background='hsl(var(--accent))';setTimeout(function(){r.style.background=''},250)"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Profile</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Account</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Notifications</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Billing</div></div>`,
+          html: `<div class="max-w-[280px]" onclick="var r=event.target.closest('[data-row]');if(!r)return;r.classList.add('bg-accent');setTimeout(function(){r.classList.remove('bg-accent')},250)"><div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Profile</div>${hrLine}<div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Account</div>${hrLine}<div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Notifications</div>${hrLine}<div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Billing</div></div>`,
           caption: "Click a row: a divider between every one is noise that competes with the content.",
         },
         do: {
-          html: `<div style="max-width:280px" onclick="var r=event.target.closest('[data-row]');if(!r)return;r.style.background='hsl(var(--accent))';setTimeout(function(){r.style.background=''},250)"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Profile</div><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Account</div><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Notifications</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Sign out</div></div>`,
+          html: `<div class="max-w-[280px]" onclick="var r=event.target.closest('[data-row]');if(!r)return;r.classList.add('bg-accent');setTimeout(function(){r.classList.remove('bg-accent')},250)"><div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Profile</div><div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Account</div><div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Notifications</div>${hrLine}<div data-row class="cursor-pointer rounded-md px-2 py-1.5 text-sm">Sign out</div></div>`,
           caption: "Click a row: group with spacing and reserve a divider for a real break like Sign out.",
         },
       },
       {
         title: "With label",
         dont: {
-          html: `<div style="max-width:320px;display:flex;flex-direction:column;gap:0.5rem"><button class="btn btn-default" style="width:100%" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">Sign in</button><div class="sep-label">or continue with one of your previously linked third-party accounts</div></div>`,
+          html: `<div class="flex w-80 flex-col gap-2"><button class="${btnBase} ${btnVariant.default} ${btnSize.default} w-full" onclick="this.classList.add('ring-2','ring-ring');var b=this;setTimeout(function(){b.classList.remove('ring-2','ring-ring')},400)">Sign in</button>${sepLabel("or continue with one of your previously linked third-party accounts")}</div>`,
           caption: "Click Sign in: a full sentence in the label divider buries the choice.",
         },
         do: {
-          html: `<div style="max-width:320px;display:flex;flex-direction:column;gap:0.5rem"><button class="btn btn-default" style="width:100%" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">Sign in</button><div class="sep-label">or continue with</div><div style="display:flex;gap:0.5rem"><button class="btn btn-outline" style="flex:1" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">Google</button><button class="btn btn-outline" style="flex:1" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">GitHub</button></div></div>`,
+          html: `<div class="flex w-80 flex-col gap-2"><button class="${btnBase} ${btnVariant.default} ${btnSize.default} w-full" onclick="this.classList.add('ring-2','ring-ring');var b=this;setTimeout(function(){b.classList.remove('ring-2','ring-ring')},400)">Sign in</button>${sepLabel("or continue with")}<div class="flex gap-2"><button class="${btnBase} ${btnVariant.outline} ${btnSize.default} flex-1" onclick="this.classList.add('ring-2','ring-ring');var b=this;setTimeout(function(){b.classList.remove('ring-2','ring-ring')},400)">Google</button><button class="${btnBase} ${btnVariant.outline} ${btnSize.default} flex-1" onclick="this.classList.add('ring-2','ring-ring');var b=this;setTimeout(function(){b.classList.remove('ring-2','ring-ring')},400)">GitHub</button></div></div>`,
           caption: "Click a provider: keep the label to a few words and let the buttons carry the options.",
         },
       },
       {
         title: "With action",
         dont: {
-          html: `<div style="display:flex;align-items:center;gap:0.75rem;max-width:320px"><hr class="sep" style="flex:1"><button class="btn btn-ghost btn-sm">Show more</button><hr class="sep" style="flex:1"></div>`,
+          html: `<div class="flex w-80 items-center gap-3"><hr class="flex-1 border-border"><button class="${btnBase} ${btnVariant.ghost} ${btnSize.sm}">Show more</button><hr class="flex-1 border-border"></div>`,
           caption: "Click the button: an action divider that does nothing is just decoration.",
         },
         do: {
-          html: `<div style="max-width:320px"><div data-extra style="display:none;padding:0.4rem 0;font-size:13px;color:hsl(var(--muted-foreground))">Logged in from 2 new devices · 3 more entries</div><div style="display:flex;align-items:center;gap:0.75rem"><hr class="sep" style="flex:1"><button class="btn btn-ghost btn-sm" onclick="var x=this.parentElement.parentElement.querySelector('[data-extra]');var open=x.style.display==='none';x.style.display=open?'block':'none';this.textContent=open?'Show less':'Show more'">Show more</button><hr class="sep" style="flex:1"></div></div>`,
+          html: `<div class="w-80"><div data-extra class="hidden py-1.5 text-sm text-muted-foreground">Logged in from 2 new devices · 3 more entries</div><div class="flex items-center gap-3"><hr class="flex-1 border-border"><button class="${btnBase} ${btnVariant.ghost} ${btnSize.sm}" onclick="var x=this.parentElement.parentElement.querySelector('[data-extra]');x.classList.toggle('hidden');this.textContent=x.classList.contains('hidden')?'Show more':'Show less'">Show more</button><hr class="flex-1 border-border"></div></div>`,
           caption: "Click Show more: the button toggles its label and reveals the rest.",
         },
       },
       {
         title: "Vertical",
         dont: {
-          html: `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem" onclick="var a=event.target.closest('[data-act]');if(!a)return;a.style.color='hsl(var(--primary))';setTimeout(function(){a.style.color=''},400)"><span data-act style="font-size:13px;cursor:pointer">Edit</span><div class="sep-v" style="height:1rem"></div><span data-act style="font-size:13px;cursor:pointer">Delete</span></div>`,
+          html: `<div class="flex flex-col items-start gap-2" onclick="var a=event.target.closest('[data-act]');if(!a)return;a.classList.add('text-primary');setTimeout(function(){a.classList.remove('text-primary')},400)"><span data-act class="cursor-pointer text-sm">Edit</span><div class="h-4 w-px bg-border"></div><span data-act class="cursor-pointer text-sm">Delete</span></div>`,
           caption: "Click an action: a vertical rule between stacked items reads as a glitch.",
         },
         do: {
-          html: `<div style="display:flex;align-items:center;gap:0.75rem" onclick="var a=event.target.closest('[data-act]');if(!a)return;a.style.color='hsl(var(--primary))';setTimeout(function(){a.style.color=''},400)"><span data-act style="font-size:13px;cursor:pointer">Edit</span><div class="sep-v" style="height:1rem"></div><span data-act style="font-size:13px;cursor:pointer">Delete</span><div class="sep-v" style="height:1rem"></div><span data-act style="font-size:13px;cursor:pointer">Share</span></div>`,
+          html: `<div class="flex items-center gap-3" onclick="var a=event.target.closest('[data-act]');if(!a)return;a.classList.add('text-primary');setTimeout(function(){a.classList.remove('text-primary')},400)"><span data-act class="cursor-pointer text-sm">Edit</span><div class="h-4 w-px bg-border"></div><span data-act class="cursor-pointer text-sm">Delete</span><div class="h-4 w-px bg-border"></div><span data-act class="cursor-pointer text-sm">Share</span></div>`,
           caption: "Click an action: the vertical rule separates inline actions in a row.",
         },
       },
