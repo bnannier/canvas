@@ -739,33 +739,41 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div style="max-width:280px">
-  <label class="label">Size</label>
-  <div class="combobox">
-    <input class="combobox-input" placeholder="Search…">
-    <div class="combobox-list" style="position:static">
-      <div class="combobox-item">Small</div>
-      <div class="combobox-item">Medium</div>
-      <div class="combobox-item">Large</div>
-    </div>
-  </div>
-</div>`,
-        caption: "A search field for three fixed options is overhead; there's nothing to filter.",
+    donts: [
+      {
+        title: "When to use",
+        dont: {
+          html: `<div style="max-width:280px"><label class="label">Size</label><div class="combobox"><input class="combobox-input" placeholder="Search…" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Small</div><div class="combobox-item">Medium</div><div class="combobox-item">Large</div></div></div></div>`,
+          caption: "Type or click: a search field for three fixed options is overhead with nothing to filter.",
+        },
+        do: {
+          html: `<div style="max-width:280px"><label class="label">Size</label><select class="input" onchange="this.style.outline='2px solid hsl(var(--ring))';var el=this;setTimeout(function(){el.style.outline=''},500)"><option>Small</option><option>Medium</option><option>Large</option></select></div>`,
+          caption: "A plain select for short, fixed lists; reserve the combobox for long, searchable ones.",
+        },
       },
-      do: {
-        html: `<div style="max-width:280px">
-  <label class="label">Size</label>
-  <select class="input">
-    <option>Small</option>
-    <option>Medium</option>
-    <option>Large</option>
-  </select>
-</div>`,
-        caption: "A plain select for short, fixed lists; reserve the combobox for long, searchable ones.",
+      {
+        title: "Filtering",
+        dont: {
+          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" placeholder="Type to filter… (nothing happens)"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div><div class="combobox-item">Tom Cook</div><div class="combobox-item">Tanya Fox</div><div class="combobox-item">Hellen Schmidt</div></div></div></div>`,
+          caption: "Try typing: a search box that ignores input is just a dropdown wearing a costume.",
+        },
+        do: {
+          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" placeholder="Type to filter…" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div><div class="combobox-item">Tom Cook</div><div class="combobox-item">Tanya Fox</div><div class="combobox-item">Hellen Schmidt</div></div></div></div>`,
+          caption: "Type a few letters: the list narrows as you go, so a long list stays usable.",
+        },
       },
-    }],
+      {
+        title: "Selection",
+        dont: {
+          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" placeholder="Pick a person…" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},250)"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item">Devon Webb</div><div class="combobox-item">Tom Cook</div></div></div></div>`,
+          caption: "Click an option: it flashes but the field stays empty, so you can't tell what you picked.",
+        },
+        do: {
+          html: `<div style="max-width:280px"><label class="label">Assigned to</label><div class="combobox"><input class="combobox-input" value="Devon Webb" oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('.combobox-item').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"><div class="combobox-list" style="position:static" onclick="var t=event.target;if(!t.classList.contains('combobox-item'))return;this.querySelectorAll('.combobox-item').forEach(function(i){i.classList.remove('selected')});t.classList.add('selected');this.parentElement.querySelector('.combobox-input').value=t.textContent"><div class="combobox-item">Wade Cooper</div><div class="combobox-item">Arlene Mccoy</div><div class="combobox-item selected">Devon Webb</div><div class="combobox-item">Tom Cook</div></div></div></div>`,
+          caption: "Click an option: it fills the input and stays marked as selected.",
+        },
+      },
+    ],
   },
 
   {
@@ -792,30 +800,52 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div style="max-width:280px">
-  <div style="padding:0.4rem 0;font-size:13px">Profile</div>
-  <hr class="sep">
-  <div style="padding:0.4rem 0;font-size:13px">Account</div>
-  <hr class="sep">
-  <div style="padding:0.4rem 0;font-size:13px">Notifications</div>
-  <hr class="sep">
-  <div style="padding:0.4rem 0;font-size:13px">Billing</div>
-</div>`,
-        caption: "A divider between every row is visual noise; the lines compete with the content.",
+    donts: [
+      {
+        title: "Plain",
+        dont: {
+          html: `<div style="max-width:280px" onclick="var r=event.target.closest('[data-row]');if(!r)return;r.style.background='hsl(var(--accent))';setTimeout(function(){r.style.background=''},250)"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Profile</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Account</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Notifications</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Billing</div></div>`,
+          caption: "Click a row: a divider between every one is noise that competes with the content.",
+        },
+        do: {
+          html: `<div style="max-width:280px" onclick="var r=event.target.closest('[data-row]');if(!r)return;r.style.background='hsl(var(--accent))';setTimeout(function(){r.style.background=''},250)"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Profile</div><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Account</div><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Notifications</div><hr class="sep"><div data-row style="padding:0.35rem 0.5rem;font-size:13px;cursor:pointer;border-radius:6px">Sign out</div></div>`,
+          caption: "Click a row: group with spacing and reserve a divider for a real break like Sign out.",
+        },
       },
-      do: {
-        html: `<div style="max-width:280px">
-  <div style="padding:0.4rem 0;font-size:13px">Profile</div>
-  <div style="padding:0.4rem 0;font-size:13px">Account</div>
-  <div style="padding:0.4rem 0;font-size:13px">Notifications</div>
-  <hr class="sep">
-  <div style="padding:0.4rem 0;font-size:13px">Sign out</div>
-</div>`,
-        caption: "Group with spacing; reserve a divider for a meaningful break, like fencing off a destructive action.",
+      {
+        title: "With label",
+        dont: {
+          html: `<div style="max-width:320px;display:flex;flex-direction:column;gap:0.5rem"><button class="btn btn-default" style="width:100%" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">Sign in</button><div class="sep-label">or continue with one of your previously linked third-party accounts</div></div>`,
+          caption: "Click Sign in: a full sentence in the label divider buries the choice.",
+        },
+        do: {
+          html: `<div style="max-width:320px;display:flex;flex-direction:column;gap:0.5rem"><button class="btn btn-default" style="width:100%" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">Sign in</button><div class="sep-label">or continue with</div><div style="display:flex;gap:0.5rem"><button class="btn btn-outline" style="flex:1" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">Google</button><button class="btn btn-outline" style="flex:1" onclick="this.style.outline='2px solid hsl(var(--ring))';var b=this;setTimeout(function(){b.style.outline=''},400)">GitHub</button></div></div>`,
+          caption: "Click a provider: keep the label to a few words and let the buttons carry the options.",
+        },
       },
-    }],
+      {
+        title: "With action",
+        dont: {
+          html: `<div style="display:flex;align-items:center;gap:0.75rem;max-width:320px"><hr class="sep" style="flex:1"><button class="btn btn-ghost btn-sm">Show more</button><hr class="sep" style="flex:1"></div>`,
+          caption: "Click the button: an action divider that does nothing is just decoration.",
+        },
+        do: {
+          html: `<div style="max-width:320px"><div data-extra style="display:none;padding:0.4rem 0;font-size:13px;color:hsl(var(--muted-foreground))">Logged in from 2 new devices · 3 more entries</div><div style="display:flex;align-items:center;gap:0.75rem"><hr class="sep" style="flex:1"><button class="btn btn-ghost btn-sm" onclick="var x=this.parentElement.parentElement.querySelector('[data-extra]');var open=x.style.display==='none';x.style.display=open?'block':'none';this.textContent=open?'Show less':'Show more'">Show more</button><hr class="sep" style="flex:1"></div></div>`,
+          caption: "Click Show more: the button toggles its label and reveals the rest.",
+        },
+      },
+      {
+        title: "Vertical",
+        dont: {
+          html: `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem" onclick="var a=event.target.closest('[data-act]');if(!a)return;a.style.color='hsl(var(--primary))';setTimeout(function(){a.style.color=''},400)"><span data-act style="font-size:13px;cursor:pointer">Edit</span><div class="sep-v" style="height:1rem"></div><span data-act style="font-size:13px;cursor:pointer">Delete</span></div>`,
+          caption: "Click an action: a vertical rule between stacked items reads as a glitch.",
+        },
+        do: {
+          html: `<div style="display:flex;align-items:center;gap:0.75rem" onclick="var a=event.target.closest('[data-act]');if(!a)return;a.style.color='hsl(var(--primary))';setTimeout(function(){a.style.color=''},400)"><span data-act style="font-size:13px;cursor:pointer">Edit</span><div class="sep-v" style="height:1rem"></div><span data-act style="font-size:13px;cursor:pointer">Delete</span><div class="sep-v" style="height:1rem"></div><span data-act style="font-size:13px;cursor:pointer">Share</span></div>`,
+          caption: "Click an action: the vertical rule separates inline actions in a row.",
+        },
+      },
+    ],
   },
 
   {
@@ -854,25 +884,52 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px">
-  <button class="dropdown-item">Edit</button>
-  <button class="dropdown-item">Delete</button>
-  <button class="dropdown-item">Duplicate</button>
-</div>`,
-        caption: "A destructive item wedged between routine ones invites a costly misclick.",
+    donts: [
+      {
+        title: "Trigger",
+        dont: {
+          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item"><span>Edit profile</span></button><button class="dropdown-item"><span>Duplicate</span></button><button class="dropdown-item"><span>Settings</span></button></div>`,
+          caption: "Always open: it clutters the page and there's no way to dismiss it.",
+        },
+        do: {
+          html: `<div style="position:relative;display:inline-block;padding-bottom:7rem" onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="var d=this.nextElementSibling;if(d.style.display==='none'){d.style.display='block';var close=function(e){if(!d.contains(e.target)){d.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{d.style.display='none'}">Actions <span style="margin-left:2px;font-size:10px">▾</span></button><div class="dropdown" style="position:absolute;top:100%;left:0;margin-top:4px;min-width:200px;display:none;z-index:10" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item"><span>Edit profile</span></button><button class="dropdown-item"><span>Duplicate</span></button><button class="dropdown-item"><span>Settings</span></button></div></div>`,
+          caption: "Click Actions to open; click outside to dismiss.",
+        },
       },
-      do: {
-        html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px">
-  <button class="dropdown-item">Edit</button>
-  <button class="dropdown-item">Duplicate</button>
-  <div class="dropdown-sep"></div>
-  <button class="dropdown-item" style="color:hsl(0 84% 60%)">Delete</button>
-</div>`,
-        caption: "Separate destructive actions with a divider, color them, and place them last.",
+      {
+        title: "Sectioning",
+        dont: {
+          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">New file</button><button class="dropdown-item">New folder</button><button class="dropdown-item">Upload</button><button class="dropdown-item">Rename</button><button class="dropdown-item">Duplicate</button><button class="dropdown-item">Move to…</button><button class="dropdown-item">Download</button><button class="dropdown-item">Delete</button></div>`,
+          caption: "Click an item: a long, flat menu of eight actions is hard to scan.",
+        },
+        do: {
+          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><div class="dropdown-label">Create</div><button class="dropdown-item">New file</button><button class="dropdown-item">New folder</button><button class="dropdown-item">Upload</button><div class="dropdown-sep"></div><div class="dropdown-label">Manage</div><button class="dropdown-item">Rename</button><button class="dropdown-item">Move to…</button><button class="dropdown-item">Download</button></div>`,
+          caption: "Click an item: group related actions under labels with a separator.",
+        },
       },
-    }],
+      {
+        title: "Disabled item",
+        dont: {
+          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item" style="opacity:0.45">Archive</button><button class="dropdown-item">Duplicate</button></div>`,
+          caption: "Click Archive: it looks disabled but still fires, a greyed item that works is a trap.",
+        },
+        do: {
+          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item disabled">Archive</button><button class="dropdown-item">Duplicate</button></div>`,
+          caption: "Click Archive: nothing happens; a real disabled item doesn't respond.",
+        },
+      },
+      {
+        title: "Destructive item",
+        dont: {
+          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item">Delete</button><button class="dropdown-item">Duplicate</button></div>`,
+          caption: "Click an item: a destructive action wedged between routine ones invites a costly misclick.",
+        },
+        do: {
+          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item">Duplicate</button><div class="dropdown-sep"></div><button class="dropdown-item" style="color:hsl(0 84% 60%)">Delete</button></div>`,
+          caption: "Click an item: separate destructive actions with a divider, color them, and place them last.",
+        },
+      },
+    ],
   },
 
   {

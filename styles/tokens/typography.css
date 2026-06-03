@@ -1,6 +1,0 @@
-@layer canvas.tokens {
-  :root {
-    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-    --font-mono: "JetBrains Mono", "Fira Code", monospace;
-  }
-}

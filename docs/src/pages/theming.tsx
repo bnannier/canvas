@@ -181,9 +181,9 @@ export function ThemingPage() {
               </p>
             </div>
             <div className="card" style={{ padding: "1rem" }}>
-              <h3 className="h5">Focus Pulse</h3>
+              <h3 className="h5">Focus ring &amp; pulse</h3>
               <p className="small muted" style={{ marginTop: "0.25rem" }}>
-                All interactive elements get an animated ring pulse on focus via <code className="code">patterns/focus.css</code>. Suppress on individual elements with the <code className="code">.no-focus-pulse</code> class.
+                <code className="code">patterns/focus.css</code> gives every interactive element a static keyboard-only ring (<code className="code">:focus-visible</code>) drawn with <code className="code">outline</code>, so it survives forced-colors mode. Buttons and text inputs add a one-shot pulse on top, suppressed under <code className="code">prefers-reduced-motion</code>.
               </p>
             </div>
             <div className="card" style={{ padding: "1rem" }}>

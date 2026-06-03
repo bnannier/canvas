@@ -1,8 +1,0 @@
-@layer canvas.components {
-  [data-lucide] {
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-    stroke-width: 2;
-  }
-}
