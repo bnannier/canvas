@@ -94,9 +94,22 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div style="display:flex;align-items:center">
+    donts: [
+      {
+        title: "Single",
+        dont: {
+          html: `<span class="avatar" style="width:40px;height:40px;font-size:12px">ABCD</span>`,
+          caption: "Cramming in a full set of initials shrinks the type and crowds the circle.",
+        },
+        do: {
+          html: `<span class="avatar" style="width:40px;height:40px;font-size:16px">AO</span>`,
+          caption: "One or two initials, sized about 40% of the diameter.",
+        },
+      },
+      {
+        title: "Stacked",
+        dont: {
+          html: `<div style="display:flex;align-items:center">
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card))">AO</span>
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">RC</span>
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">LB</span>
@@ -106,19 +119,53 @@ export const COMPONENTS: ComponentDoc[] = [
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">AL</span>
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">SK</span>
 </div>`,
-        caption: "An unbounded stack runs off the row and stops being scannable.",
-      },
-      do: {
-        html: `<div style="display:flex;align-items:center">
+          caption: "An unbounded stack runs off the row and stops being scannable.",
+        },
+        do: {
+          html: `<div style="display:flex;align-items:center">
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card))">AO</span>
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">RC</span>
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">LB</span>
   <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">KT</span>
   <span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>
 </div>`,
-        caption: "Cap the stack and summarize the rest with a +N count.",
+          caption: "Cap the stack and summarize the rest with a +N count.",
+        },
       },
-    }],
+      {
+        title: "Topbar account menu",
+        dont: {
+          html: `<span class="avatar" style="width:32px;height:32px"><img src="/marcus-allen.jpg" alt="MA"></span>`,
+          caption: "A lone avatar gives no hint that it opens the account menu.",
+        },
+        do: {
+          html: `<div style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));font-size:13px;font-weight:500"><span class="avatar" style="width:24px;height:24px"><img src="/marcus-allen.jpg" alt="MA"></span><span>admin@example.com</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="m6 9 6 6 6-6"/></svg></div>`,
+          caption: "Pair it with the account name and a chevron so it reads as a trigger.",
+        },
+      },
+      {
+        title: "Identity",
+        dont: {
+          html: `<div style="display:flex;align-items:center;gap:1rem"><span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/rachel-chen.jpg" alt="RC"></span><div><div style="font-size:14px">Rachel Chen</div><div style="font-size:14px">rachel.chen@example.com</div></div></div>`,
+          caption: "Equal weight on the name and email flattens the hierarchy.",
+        },
+        do: {
+          html: `<div style="display:flex;align-items:center;gap:1rem"><span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/rachel-chen.jpg" alt="RC"></span><div><div style="font-size:16px;font-weight:600">Rachel Chen</div><div style="font-size:13px;color:hsl(var(--muted-foreground))">rachel.chen@example.com</div></div></div>`,
+          caption: "Name primary; email muted and secondary.",
+        },
+      },
+      {
+        title: "Menu header",
+        dont: {
+          html: `<div style="display:flex;align-items:center;gap:0.75rem"><span class="avatar" style="width:40px;height:40px;border-radius:6px"><img src="/ada-lovelace.jpg" alt="AL"></span><div><div style="font-size:13px;font-weight:600">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">admin@example.com</div></div></div>`,
+          caption: "Squaring the avatar here clashes with the circular avatars everywhere else.",
+        },
+        do: {
+          html: `<div style="display:flex;align-items:center;gap:0.75rem"><span class="avatar" style="width:40px;height:40px"><img src="/ada-lovelace.jpg" alt="AL"></span><div><div style="font-size:13px;font-weight:600">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">admin@example.com</div></div></div>`,
+          caption: "Keep one consistent circular avatar shape across contexts.",
+        },
+      },
+    ],
   },
 
   {
@@ -157,26 +204,82 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+    donts: [
+      {
+        title: "Metadata badge",
+        dont: {
+          html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
   <span class="badge badge-default">employee</span>
   <span class="badge badge-destructive">engineering</span>
   <span class="badge badge-default">remote</span>
   <span class="badge badge-destructive">active</span>
 </div>`,
-        caption: "Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.",
-      },
-      do: {
-        html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+          caption: "Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
   <span class="badge badge-secondary">employee</span>
   <span class="badge badge-secondary">engineering</span>
   <span class="badge badge-secondary">remote</span>
   <span class="status-badge sb-success"><span class="dot"></span> active</span>
 </div>`,
-        caption: "Neutral tags for metadata; reserve color and the status-badge dot for live state.",
+          caption: "Neutral tags for metadata; reserve color and the status-badge dot for live state.",
+        },
       },
-    }],
+      {
+        title: "Status badge",
+        dont: {
+          html: `<span class="status-badge sb-error"><span class="dot"></span></span>`,
+          caption: "A bare colored dot isn't a label and fails for color-blind users.",
+        },
+        do: {
+          html: `<span class="status-badge sb-error"><span class="dot"></span> Failed</span>`,
+          caption: "Always pair the dot with a word: active, pending, failed.",
+        },
+      },
+      {
+        title: "Identity row",
+        dont: {
+          html: `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+  <span style="font-size:15px;font-weight:600">Rachel Chen</span>
+  <span class="status-badge sb-success"><span class="dot"></span> active</span>
+  <span class="status-badge sb-info"><span class="dot"></span> Verified</span>
+  <span class="badge badge-secondary">employee</span>
+  <span class="badge badge-secondary">engineering</span>
+  <span class="badge badge-secondary">remote</span>
+  <span class="badge badge-secondary">admin</span>
+</div>`,
+          caption: "A wall of badges after a name buries the one that matters.",
+        },
+        do: {
+          html: `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+  <span style="font-size:15px;font-weight:600">Rachel Chen</span>
+  <span class="status-badge sb-success"><span class="dot"></span> active</span>
+  <span class="badge badge-secondary">employee</span>
+</div>`,
+          caption: "Show only the one or two badges relevant to this view.",
+        },
+      },
+      {
+        title: "Token / code badge",
+        dont: {
+          html: `<div style="display:flex;gap:4px;flex-wrap:wrap">
+  <span class="badge badge-secondary">authorization_code</span>
+  <span class="badge badge-secondary">refresh_token</span>
+  <span class="badge badge-secondary">client_credentials</span>
+</div>`,
+          caption: "Proportional type makes identifiers hard to scan and compare.",
+        },
+        do: {
+          html: `<div style="display:flex;gap:4px;flex-wrap:wrap">
+  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">authorization_code</span>
+  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">refresh_token</span>
+  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">client_credentials</span>
+</div>`,
+          caption: "Use the mono variant for tokens, scopes, and event names.",
+        },
+      },
+    ],
   },
 
   {
@@ -223,28 +326,104 @@ export const COMPONENTS: ComponentDoc[] = [
       },
     },
     sections: [],
-    donts: [{
-      dont: {
-        html: `<nav class="breadcrumb">
+    donts: [
+      {
+        title: "Current page",
+        dont: {
+          html: `<nav class="breadcrumb">
   <span class="breadcrumb-item"><a href="#">Projects</a></span>
   <span class="breadcrumb-sep">/</span>
   <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
   <span class="breadcrumb-sep">/</span>
   <span class="breadcrumb-item"><a href="#">Settings</a></span>
 </nav>`,
-        caption: "Linking the current page implies there's somewhere to go; it's a dead link to itself.",
-      },
-      do: {
-        html: `<nav class="breadcrumb">
+          caption: "Linking the current page implies there's somewhere to go; it's a dead link to itself.",
+        },
+        do: {
+          html: `<nav class="breadcrumb">
   <span class="breadcrumb-item"><a href="#">Projects</a></span>
   <span class="breadcrumb-sep">/</span>
   <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
   <span class="breadcrumb-sep">/</span>
   <span class="breadcrumb-item active">Settings</span>
 </nav>`,
-        caption: "Ancestors are links; the page you're on is plain text at the end of the trail.",
+          caption: "Ancestors are links; the page you're on is plain text at the end of the trail.",
+        },
       },
-    }],
+      {
+        title: "Deep paths",
+        dont: {
+          html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#">Projects</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Settings</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Profile</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Avatar</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Edit</span>
+</nav>`,
+          caption: "A fully expanded deep path wraps and competes with the page.",
+        },
+        do: {
+          html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#">Projects</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item">…</span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Avatar</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Edit</span>
+</nav>`,
+          caption: "Collapse the middle to an ellipsis; keep the root and the last couple of levels.",
+        },
+      },
+      {
+        title: "Separator",
+        dont: {
+          html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#">Projects</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
+  <span class="breadcrumb-sep">›</span>
+  <span class="breadcrumb-item active">Settings</span>
+</nav>`,
+          caption: "Mixing separators in one trail looks broken.",
+        },
+        do: {
+          html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#">Projects</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item"><a href="#">Identity Platform</a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Settings</span>
+</nav>`,
+          caption: "Pick one separator and use it the whole way.",
+        },
+      },
+      {
+        title: "Home root",
+        dont: {
+          html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Settings</span>
+</nav>`,
+          caption: "An icon-only root with no label is unclear to screen readers.",
+        },
+        do: {
+          html: `<nav class="breadcrumb">
+  <span class="breadcrumb-item"><a href="#" aria-label="Home"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active">Settings</span>
+</nav>`,
+          caption: "Give the home icon an aria-label so the root is announced.",
+        },
+      },
+    ],
   },
 
   {

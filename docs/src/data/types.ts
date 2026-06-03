@@ -15,6 +15,7 @@ export interface ComponentSection {
 }
 
 export interface DontDo {
+  title?: string;
   dont: { html: string; caption: string };
   do: { html: string; caption: string };
 }

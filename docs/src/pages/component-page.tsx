@@ -139,6 +139,17 @@ export function ComponentPage() {
               <div key={`dont-${i}`} style={{
                 display: "contents",
               }}>
+                {d.title && (
+                  <div style={{
+                    gridColumn: "1 / -1",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    color: "hsl(var(--foreground))",
+                    marginTop: i > 0 ? "0.75rem" : 0,
+                  }}>
+                    {d.title}
+                  </div>
+                )}
                 <div style={{
                   borderRadius: 12,
                   border: "1px solid hsl(0 70% 60% / 0.3)",
