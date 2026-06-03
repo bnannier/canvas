@@ -2630,10 +2630,10 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Title + supporting text + trailing button. Use for single-decision prompts (delete zone, billing alert).",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.5rem;max-width:560px">
-  <div style="font-size:15px;font-weight:600;margin-bottom:4px">Delete this project</div>
-  <div style="font-size:13px;color:hsl(var(--muted-foreground));margin-bottom:1rem">Once you delete a project, there is no going back. Please be certain.</div>
-  <button class="btn btn-destructive btn-sm" onclick="var b=this;var orig=b.textContent;b.disabled=true;b.textContent='Deleted!';setTimeout(function(){b.textContent=orig;b.disabled=false},2000)">Delete project</button>
+          html: `<div class="${cardCls} max-w-[560px] p-6">
+  <div class="mb-1 text-[15px] font-semibold">Delete this project</div>
+  <div class="mb-4 text-sm text-muted-foreground">Once you delete a project, there is no going back. Please be certain.</div>
+  ${btn("destructive", "Delete project", "sm", ` onclick="var b=this;var orig=b.textContent;b.disabled=true;b.textContent='Deleted!';setTimeout(function(){b.textContent=orig;b.disabled=false},2000)"`)}
 </div>`,
         }],
       },
@@ -2642,12 +2642,12 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Title + text + inline form (input + button). Newsletter, invite, or quick-add patterns.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.5rem;max-width:560px">
-  <div style="font-size:15px;font-weight:600;margin-bottom:4px">Subscribe to updates</div>
-  <div style="font-size:13px;color:hsl(var(--muted-foreground));margin-bottom:1rem">We'll send you a weekly digest of what changed.</div>
-  <div style="display:flex;gap:0.5rem;max-width:360px">
-    <input class="input" type="email" placeholder="you@example.com" style="flex:1" />
-    <button class="btn btn-default" onclick="var b=this;var inp=b.parentElement.querySelector('input');if(!inp.value){inp.style.borderColor='hsl(0 84% 60%)';inp.placeholder='Enter your email';setTimeout(function(){inp.style.borderColor='';inp.placeholder='you@example.com'},2000);return}b.disabled=true;b.textContent='Subscribed!';inp.disabled=true;setTimeout(function(){b.textContent='Subscribe';b.disabled=false;inp.disabled=false;inp.value=''},2000)">Subscribe</button>
+          html: `<div class="${cardCls} max-w-[560px] p-6">
+  <div class="mb-1 text-[15px] font-semibold">Subscribe to updates</div>
+  <div class="mb-4 text-sm text-muted-foreground">We'll send you a weekly digest of what changed.</div>
+  <div class="flex max-w-[360px] gap-2">
+    <input class="${inputBase} flex-1" type="email" placeholder="you@example.com" />
+    <button class="${btnBase} ${btnVariant.default} ${btnSize.default}" onclick="var b=this;var inp=b.parentElement.querySelector('input');if(!inp.value){inp.classList.add('ring-2','ring-destructive');inp.placeholder='Enter your email';setTimeout(function(){inp.classList.remove('ring-2','ring-destructive');inp.placeholder='you@example.com'},2000);return}b.disabled=true;b.textContent='Subscribed!';inp.disabled=true;setTimeout(function(){b.textContent='Subscribe';b.disabled=false;inp.disabled=false;inp.value=''},2000)">Subscribe</button>
   </div>
 </div>`,
         }],
@@ -2657,15 +2657,12 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Text on the left, actions on the right. For confirming destructive or irreversible operations.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.5rem;max-width:560px;display:flex;align-items:flex-start;gap:1.5rem">
-  <div style="flex:1">
-    <div style="font-size:15px;font-weight:600;margin-bottom:4px">Discard unsaved changes?</div>
-    <div style="font-size:13px;color:hsl(var(--muted-foreground))">You have unsaved edits in this form. Leaving now will lose all progress.</div>
+          html: `<div data-card class="${cardCls} flex max-w-[560px] items-start gap-6 p-6">
+  <div class="flex-1">
+    <div class="mb-1 text-[15px] font-semibold">Discard unsaved changes?</div>
+    <div class="text-sm text-muted-foreground">You have unsaved edits in this form. Leaving now will lose all progress.</div>
   </div>
-  <div style="display:flex;gap:0.5rem;flex-shrink:0">
-    <button class="btn btn-outline btn-sm" onclick="var card=this.closest('.section-card');card.style.opacity='0.5';setTimeout(function(){card.style.opacity='1'},1000)">Cancel</button>
-    <button class="btn btn-destructive btn-sm" onclick="var b=this;b.disabled=true;b.textContent='Discarded!';setTimeout(function(){b.textContent='Discard';b.disabled=false},2000)">Discard</button>
-  </div>
+  <div class="flex shrink-0 gap-2">${btn("outline", "Cancel", "sm", ` onclick="var card=this.closest('[data-card]');card.style.opacity='0.5';setTimeout(function(){card.style.opacity='1'},1000)"`)}${btn("destructive", "Discard", "sm", ` onclick="var b=this;b.disabled=true;b.textContent='Discarded!';setTimeout(function(){b.textContent='Discard';b.disabled=false},2000)"`)}</div>
 </div>`,
         }],
       },
@@ -2674,12 +2671,12 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Text on the left, toggle switch on the right. For feature flags, notification opt-ins.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.5rem;max-width:560px;display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem">
-  <div style="flex:1">
-    <div style="font-size:15px;font-weight:600;margin-bottom:4px">Two-factor authentication</div>
-    <div style="font-size:13px;color:hsl(var(--muted-foreground))">Add an extra layer of security to your account by requiring a verification code on login.</div>
+          html: `<div class="${cardCls} flex max-w-[560px] items-start justify-between gap-6 p-6">
+  <div class="flex-1">
+    <div class="mb-1 text-[15px] font-semibold">Two-factor authentication</div>
+    <div class="text-sm text-muted-foreground">Add an extra layer of security to your account by requiring a verification code on login.</div>
   </div>
-  <button role="switch" aria-checked="true" onclick="var on=this.getAttribute('aria-checked')==='true';this.setAttribute('aria-checked',on?'false':'true');this.style.background=on?'hsl(var(--muted))':'hsl(var(--primary))';this.querySelector('span').style.transform=on?'translateX(0)':'translateX(20px)'" style="width:44px;height:24px;border-radius:9999px;border:none;background:hsl(var(--primary));cursor:pointer;position:relative;flex-shrink:0"><span style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:9999px;background:white;transform:translateX(20px);transition:transform 200ms;box-shadow:0 1px 3px hsl(var(--foreground)/0.15)"></span></button>
+  <label class="shrink-0 cursor-pointer">${switchEl(true)}</label>
 </div>`,
         }],
       },
@@ -2697,28 +2694,16 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Fixed-width label (left), value (right). Best for dense reference data.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:640px">
-  <div style="padding:1rem 1.5rem;border-bottom:1px solid hsl(var(--border))">
-    <div style="font-size:15px;font-weight:600">Application details</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Personal information and credentials.</div>
+          html: `<div class="${cardCls} max-w-[640px]">
+  <div class="border-b border-border px-6 py-4">
+    <div class="text-[15px] font-semibold">Application details</div>
+    <div class="text-xs text-muted-foreground">Personal information and credentials.</div>
   </div>
-  <dl style="padding:0 1.5rem">
-    <div style="display:grid;grid-template-columns:160px 1fr;gap:1rem;padding:0.875rem 0;border-bottom:1px solid hsl(var(--border));font-size:13.5px">
-      <dt style="color:hsl(var(--muted-foreground))">Full name</dt>
-      <dd>Rachel Chen</dd>
-    </div>
-    <div style="display:grid;grid-template-columns:160px 1fr;gap:1rem;padding:0.875rem 0;border-bottom:1px solid hsl(var(--border));font-size:13.5px">
-      <dt style="color:hsl(var(--muted-foreground))">Email</dt>
-      <dd>rachel.chen@example.com</dd>
-    </div>
-    <div style="display:grid;grid-template-columns:160px 1fr;gap:1rem;padding:0.875rem 0;border-bottom:1px solid hsl(var(--border));font-size:13.5px">
-      <dt style="color:hsl(var(--muted-foreground))">Role</dt>
-      <dd><span class="badge badge-secondary">admin</span></dd>
-    </div>
-    <div style="display:grid;grid-template-columns:160px 1fr;gap:1rem;padding:0.875rem 0;font-size:13.5px">
-      <dt style="color:hsl(var(--muted-foreground))">Status</dt>
-      <dd><span class="status-badge sb-success"><span class="dot"></span> Active</span></dd>
-    </div>
+  <dl class="px-6">
+    <div class="grid grid-cols-[160px_1fr] gap-4 border-b border-border py-3.5 text-sm"><dt class="text-muted-foreground">Full name</dt><dd>Rachel Chen</dd></div>
+    <div class="grid grid-cols-[160px_1fr] gap-4 border-b border-border py-3.5 text-sm"><dt class="text-muted-foreground">Email</dt><dd>rachel.chen@example.com</dd></div>
+    <div class="grid grid-cols-[160px_1fr] gap-4 border-b border-border py-3.5 text-sm"><dt class="text-muted-foreground">Role</dt><dd>${badge("secondary", "admin")}</dd></div>
+    <div class="grid grid-cols-[160px_1fr] gap-4 py-3.5 text-sm"><dt class="text-muted-foreground">Status</dt><dd>${statusBadge("success", "Active")}</dd></div>
   </dl>
 </div>`,
         }],
@@ -2728,33 +2713,19 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Each row has a trailing 'Update' link. Clicking reveals an inline editor.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:640px">
-  <div style="padding:1rem 1.5rem;border-bottom:1px solid hsl(var(--border))">
-    <div style="font-size:15px;font-weight:600">Profile</div>
-  </div>
-  <dl style="padding:0 1.5rem" onclick="var btn=event.target.closest('button');if(!btn)return;var row=btn.closest('div[style*=grid]');var dd=row.querySelector('dd');if(btn.textContent==='Update'){var inp=document.createElement('input');inp.className='input';inp.style.cssText='font-size:13.5px;height:32px;padding:4px 8px';inp.value=dd.textContent;dd.textContent='';dd.appendChild(inp);inp.focus();btn.textContent='Save';btn.style.color='hsl(143 60% 38%)'}else{var inp=dd.querySelector('input');dd.textContent=inp?inp.value:dd.textContent;btn.textContent='Update';btn.style.color='hsl(var(--primary))'}">
-    <div style="display:grid;grid-template-columns:160px 1fr auto;gap:1rem;padding:0.875rem 0;border-bottom:1px solid hsl(var(--border));font-size:13.5px;align-items:baseline">
-      <dt style="color:hsl(var(--muted-foreground))">Name</dt>
-      <dd>Rachel Chen</dd>
-      <button class="btn btn-link btn-sm" style="color:hsl(var(--primary))">Update</button>
-    </div>
-    <div style="display:grid;grid-template-columns:160px 1fr auto;gap:1rem;padding:0.875rem 0;border-bottom:1px solid hsl(var(--border));font-size:13.5px;align-items:baseline">
-      <dt style="color:hsl(var(--muted-foreground))">Email</dt>
-      <dd>rachel.chen@example.com</dd>
-      <button class="btn btn-link btn-sm" style="color:hsl(var(--primary))">Update</button>
-    </div>
-    <div style="display:grid;grid-template-columns:160px 1fr auto;gap:1rem;padding:0.875rem 0;font-size:13.5px;align-items:baseline">
-      <dt style="color:hsl(var(--muted-foreground))">Title</dt>
-      <dd>Senior Engineer</dd>
-      <button class="btn btn-link btn-sm" style="color:hsl(var(--primary))">Update</button>
-    </div>
+          html: `<div class="${cardCls} max-w-[640px]">
+  <div class="border-b border-border px-6 py-4"><div class="text-[15px] font-semibold">Profile</div></div>
+  <dl class="px-6" onclick="var btn=event.target.closest('button');if(!btn)return;var row=btn.closest('[data-row]');var dd=row.querySelector('dd');if(btn.textContent==='Update'){var inp=document.createElement('input');inp.className='${inputBase.replace("h-9", "h-8")}';inp.value=dd.textContent;dd.textContent='';dd.appendChild(inp);inp.focus();btn.textContent='Save'}else{var inp=dd.querySelector('input');dd.textContent=inp?inp.value:dd.textContent;btn.textContent='Update'}">
+    <div data-row class="grid grid-cols-[160px_1fr_auto] items-baseline gap-4 border-b border-border py-3.5 text-sm"><dt class="text-muted-foreground">Name</dt><dd>Rachel Chen</dd>${btn("link", "Update", "sm")}</div>
+    <div data-row class="grid grid-cols-[160px_1fr_auto] items-baseline gap-4 border-b border-border py-3.5 text-sm"><dt class="text-muted-foreground">Email</dt><dd>rachel.chen@example.com</dd>${btn("link", "Update", "sm")}</div>
+    <div data-row class="grid grid-cols-[160px_1fr_auto] items-baseline gap-4 py-3.5 text-sm"><dt class="text-muted-foreground">Title</dt><dd>Senior Engineer</dd>${btn("link", "Update", "sm")}</div>
   </dl>
 </div>`,
           code: `<dl>
-  <div style="display:grid;grid-template-columns:160px 1fr auto">
-    <dt>Name</dt>
+  <div class="grid grid-cols-[160px_1fr_auto] items-baseline gap-4 py-3.5">
+    <dt class="text-muted-foreground">Name</dt>
     <dd>Rachel Chen</dd>
-    <button class="btn btn-link btn-sm">Update</button>
+    <button class="text-primary text-sm underline-offset-4 hover:underline">Update</button>
   </div>
   <!-- Click "Update" to toggle inline edit -->
 </dl>`,
@@ -2765,19 +2736,19 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Label above value. For narrow surfaces (sidebars, mobile views).",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:320px;padding:1.5rem">
-  <dl style="display:flex;flex-direction:column;gap:1rem">
+          html: `<div class="${cardCls} max-w-[320px] p-6">
+  <dl class="flex flex-col gap-4">
     <div>
-      <dt style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:4px">Full name</dt>
-      <dd style="font-size:13.5px">Rachel Chen</dd>
+      <dt class="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Full name</dt>
+      <dd class="text-sm">Rachel Chen</dd>
     </div>
     <div>
-      <dt style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:4px">Email</dt>
-      <dd style="font-size:13.5px">rachel.chen@example.com</dd>
+      <dt class="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Email</dt>
+      <dd class="text-sm">rachel.chen@example.com</dd>
     </div>
     <div>
-      <dt style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:hsl(var(--muted-foreground));font-weight:500;margin-bottom:4px">Client ID</dt>
-      <dd style="font-size:12.5px;font-family:var(--font-mono);word-break:break-all">clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF</dd>
+      <dt class="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Client ID</dt>
+      <dd class="break-all font-mono text-[12.5px]">clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF</dd>
     </div>
   </dl>
 </div>`,
@@ -2797,21 +2768,21 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Chronological events connected by a vertical line. Icon circles indicate event type.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.5rem;max-width:560px">
-  <ul style="list-style:none;padding:0;margin:0">
-    <li style="position:relative;display:flex;gap:0.75rem;padding-bottom:1.5rem">
-      <div style="position:absolute;left:13px;top:28px;bottom:0;width:1px;background:hsl(var(--border))"></div>
-      <div style="width:28px;height:28px;border-radius:50%;background:hsl(var(--card));border:1px solid hsl(var(--border));display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <div style="flex:1;padding-top:3px"><div style="font-size:13px"><span style="font-weight:600">Rachel Chen</span> <span style="color:hsl(var(--muted-foreground))">approved the request</span></div><div style="font-size:11.5px;color:hsl(var(--muted-foreground));margin-top:2px">2 hours ago</div></div>
+          html: `<div class="${cardCls} max-w-[560px] p-6">
+  <ul class="m-0 list-none p-0">
+    <li class="relative flex gap-3 pb-6">
+      <div class="absolute bottom-0 left-[13px] top-7 w-px bg-border"></div>
+      <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="flex-1 pt-0.5"><div class="text-sm"><span class="font-semibold">Rachel Chen</span> <span class="text-muted-foreground">approved the request</span></div><div class="mt-0.5 text-[11.5px] text-muted-foreground">2 hours ago</div></div>
     </li>
-    <li style="position:relative;display:flex;gap:0.75rem;padding-bottom:1.5rem">
-      <div style="position:absolute;left:13px;top:28px;bottom:0;width:1px;background:hsl(var(--border))"></div>
-      <div style="width:28px;height:28px;border-radius:50%;background:hsl(var(--card));border:1px solid hsl(var(--border));display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>
-      <div style="flex:1;padding-top:3px"><div style="font-size:13px"><span style="font-weight:600">Ada Lovelace</span> <span style="color:hsl(var(--muted-foreground))">updated the description</span></div><div style="font-size:11.5px;color:hsl(var(--muted-foreground));margin-top:2px">5 hours ago</div></div>
+    <li class="relative flex gap-3 pb-6">
+      <div class="absolute bottom-0 left-[13px] top-7 w-px bg-border"></div>
+      <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>
+      <div class="flex-1 pt-0.5"><div class="text-sm"><span class="font-semibold">Ada Lovelace</span> <span class="text-muted-foreground">updated the description</span></div><div class="mt-0.5 text-[11.5px] text-muted-foreground">5 hours ago</div></div>
     </li>
-    <li style="display:flex;gap:0.75rem">
-      <div style="width:28px;height:28px;border-radius:50%;background:hsl(var(--card));border:1px solid hsl(var(--border));display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-      <div style="flex:1;padding-top:3px"><div style="font-size:13px"><span style="font-weight:600">System</span> <span style="color:hsl(var(--muted-foreground))">created the project</span></div><div style="font-size:11.5px;color:hsl(var(--muted-foreground));margin-top:2px">3 days ago</div></div>
+    <li class="flex gap-3">
+      <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+      <div class="flex-1 pt-0.5"><div class="text-sm"><span class="font-semibold">System</span> <span class="text-muted-foreground">created the project</span></div><div class="mt-0.5 text-[11.5px] text-muted-foreground">3 days ago</div></div>
     </li>
   </ul>
 </div>`,
@@ -2822,18 +2793,18 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Avatar replaces the icon circle for a more personal feel. Used in comment threads and team activity.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="max-width:560px">
-  <div style="padding:1rem 1.25rem;border-bottom:1px solid hsl(var(--border));display:flex;align-items:flex-start;gap:0.75rem">
-    <span class="avatar" style="flex-shrink:0"><img src="/rachel-chen.jpg" alt="RC"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13px"><span style="font-weight:600">Rachel Chen</span> <span style="color:hsl(var(--muted-foreground))">commented on the pull request</span></div><div style="font-size:11.5px;color:hsl(var(--muted-foreground));margin-top:2px">2 hours ago</div></div>
+          html: `<div class="${cardCls} max-w-[560px]">
+  <div class="flex items-start gap-3 border-b border-border px-5 py-4">
+    <span class="${avatarBase} h-10 w-10 shrink-0"><img src="/rachel-chen.jpg" alt="RC" class="h-full w-full object-cover"></span>
+    <div class="min-w-0 flex-1"><div class="text-sm"><span class="font-semibold">Rachel Chen</span> <span class="text-muted-foreground">commented on the pull request</span></div><div class="mt-0.5 text-[11.5px] text-muted-foreground">2 hours ago</div></div>
   </div>
-  <div style="padding:1rem 1.25rem;border-bottom:1px solid hsl(var(--border));display:flex;align-items:flex-start;gap:0.75rem">
-    <span class="avatar" style="flex-shrink:0"><img src="/ada-lovelace.jpg" alt="AL"></span>
-    <div style="flex:1;min-width:0"><div style="font-size:13px"><span style="font-weight:600">Ada Lovelace</span> <span style="color:hsl(var(--muted-foreground))">pushed 3 commits</span></div><div style="font-size:11.5px;color:hsl(var(--muted-foreground));margin-top:2px">5 hours ago</div></div>
+  <div class="flex items-start gap-3 border-b border-border px-5 py-4">
+    <span class="${avatarBase} h-10 w-10 shrink-0"><img src="/ada-lovelace.jpg" alt="AL" class="h-full w-full object-cover"></span>
+    <div class="min-w-0 flex-1"><div class="text-sm"><span class="font-semibold">Ada Lovelace</span> <span class="text-muted-foreground">pushed 3 commits</span></div><div class="mt-0.5 text-[11.5px] text-muted-foreground">5 hours ago</div></div>
   </div>
-  <div style="padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:0.75rem">
-    <span class="avatar" style="flex-shrink:0">KT</span>
-    <div style="flex:1;min-width:0"><div style="font-size:13px"><span style="font-weight:600">Kevin Turner</span> <span style="color:hsl(var(--muted-foreground))">opened the pull request</span></div><div style="font-size:11.5px;color:hsl(var(--muted-foreground));margin-top:2px">1 day ago</div></div>
+  <div class="flex items-start gap-3 px-5 py-4">
+    <span class="${avatarBase} h-10 w-10 shrink-0">KT</span>
+    <div class="min-w-0 flex-1"><div class="text-sm"><span class="font-semibold">Kevin Turner</span> <span class="text-muted-foreground">opened the pull request</span></div><div class="mt-0.5 text-[11.5px] text-muted-foreground">1 day ago</div></div>
   </div>
 </div>`,
         }],
@@ -2852,35 +2823,11 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Avatar + name + role + action buttons per card. Auto-fills columns based on available width.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;gap:0.875rem;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
-  <div class="section-card" style="padding:1.25rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem">
-    <span class="avatar" style="width:64px;height:64px;font-size:24px"><img src="/rachel-chen.jpg" alt="RC"></span>
-    <div style="font-size:14px;font-weight:600">Rachel Chen</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Engineering Lead</div>
-    <div style="margin-top:0.75rem;display:flex;gap:0.5rem">
-      <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Sent!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Message</button>
-      <button class="btn btn-ghost btn-sm" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)">View</button>
-    </div>
-  </div>
-  <div class="section-card" style="padding:1.25rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem">
-    <span class="avatar" style="width:64px;height:64px;font-size:24px"><img src="/ada-lovelace.jpg" alt="AL"></span>
-    <div style="font-size:14px;font-weight:600">Ada Lovelace</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Staff Engineer</div>
-    <div style="margin-top:0.75rem;display:flex;gap:0.5rem">
-      <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Sent!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Message</button>
-      <button class="btn btn-ghost btn-sm" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)">View</button>
-    </div>
-  </div>
-  <div class="section-card" style="padding:1.25rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.5rem">
-    <span class="avatar" style="width:64px;height:64px;font-size:24px">KT</span>
-    <div style="font-size:14px;font-weight:600">Kevin Turner</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Product Designer</div>
-    <div style="margin-top:0.75rem;display:flex;gap:0.5rem">
-      <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Sent!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Message</button>
-      <button class="btn btn-ghost btn-sm" onclick="var b=this;b.style.background='hsl(var(--accent))';setTimeout(function(){b.style.background=''},300)">View</button>
-    </div>
-  </div>
-</div>`,
+          html: `<div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3.5">${[
+  { name: "Rachel Chen", role: "Engineering Lead", img: "/rachel-chen.jpg", initials: "RC" },
+  { name: "Ada Lovelace", role: "Staff Engineer", img: "/ada-lovelace.jpg", initials: "AL" },
+  { name: "Kevin Turner", role: "Product Designer", img: "", initials: "KT" },
+].map((p) => `<div class="${cardCls} flex flex-col items-center gap-2 p-5 text-center"><span class="${avatarBase} h-16 w-16 text-2xl">${p.img ? `<img src="${p.img}" alt="${p.initials}" class="h-full w-full object-cover">` : p.initials}</span><div class="text-sm font-semibold">${p.name}</div><div class="text-xs text-muted-foreground">${p.role}</div><div class="mt-3 flex gap-2">${btn("outline", "Message", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Sent!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}${btn("ghost", "View", "sm", ` onclick="var b=this;b.classList.add('bg-accent');setTimeout(function(){b.classList.remove('bg-accent')},300)"`)}</div></div>`).join("")}</div>`,
         }],
       },
       {
@@ -2888,12 +2835,12 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Aspect-ratio thumbnails with captions. Locked aspect ratio prevents layout shift.",
         examples: [{
           full: true,
-          html: `<div style="display:grid;gap:0.75rem;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))">
-  <div><div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:linear-gradient(135deg,hsl(var(--primary)/0.3),hsl(var(--primary)/0.1))"></div><div style="margin-top:0.5rem"><div style="font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">hero-banner.png</div><div style="font-size:11px;color:hsl(var(--muted-foreground))">1.2 MB</div></div></div>
-  <div><div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:linear-gradient(135deg,hsl(var(--chart-2)/0.3),hsl(var(--chart-2)/0.1))"></div><div style="margin-top:0.5rem"><div style="font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">icon-set.svg</div><div style="font-size:11px;color:hsl(var(--muted-foreground))">340 KB</div></div></div>
-  <div><div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:linear-gradient(135deg,hsl(var(--chart-3)/0.3),hsl(var(--chart-3)/0.1))"></div><div style="margin-top:0.5rem"><div style="font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">product-shot.jpg</div><div style="font-size:11px;color:hsl(var(--muted-foreground))">2.8 MB</div></div></div>
-  <div><div style="aspect-ratio:1;border-radius:var(--radius-md);overflow:hidden;background:linear-gradient(135deg,hsl(var(--chart-4)/0.3),hsl(var(--chart-4)/0.1))"></div><div style="margin-top:0.5rem"><div style="font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">avatar-default.png</div><div style="font-size:11px;color:hsl(var(--muted-foreground))">96 KB</div></div></div>
-</div>`,
+          html: `<div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">${[
+  { name: "hero-banner.png", size: "1.2 MB", grad: "from-primary/30 to-primary/10" },
+  { name: "icon-set.svg", size: "340 KB", grad: "from-blue-500/30 to-blue-500/10" },
+  { name: "product-shot.jpg", size: "2.8 MB", grad: "from-emerald-500/30 to-emerald-500/10" },
+  { name: "avatar-default.png", size: "96 KB", grad: "from-amber-500/30 to-amber-500/10" },
+].map((f) => `<div><div class="aspect-square overflow-hidden rounded-md bg-gradient-to-br ${f.grad}"></div><div class="mt-2"><div class="truncate text-[12.5px] font-medium">${f.name}</div><div class="text-[11px] text-muted-foreground">${f.size}</div></div></div>`).join("")}</div>`,
         }],
       },
     ],
@@ -2910,12 +2857,12 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Avatar left, title + subtitle + body right. Independent heights.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1.25rem;max-width:480px;display:flex;align-items:flex-start;gap:1rem">
-  <span class="avatar" style="width:48px;height:48px;font-size:18px;flex-shrink:0"><img src="/rachel-chen.jpg" alt="RC"></span>
-  <div style="flex:1;min-width:0">
-    <div style="font-size:14.5px;font-weight:600">Rachel Chen</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">Engineering Lead</div>
-    <div style="margin-top:0.5rem;font-size:13px;line-height:1.6">Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging.</div>
+          html: `<div class="${cardCls} flex max-w-[480px] items-start gap-4 p-5">
+  <span class="${avatarBase} h-12 w-12 shrink-0 text-lg"><img src="/rachel-chen.jpg" alt="RC" class="h-full w-full object-cover"></span>
+  <div class="min-w-0 flex-1">
+    <div class="text-[14.5px] font-semibold">Rachel Chen</div>
+    <div class="text-xs text-muted-foreground">Engineering Lead</div>
+    <div class="mt-2 text-sm leading-relaxed">Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging.</div>
   </div>
 </div>`,
         }],
@@ -2926,15 +2873,15 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         columns: 2,
         examples: [
           {
-            html: `<div class="section-card" style="padding:1rem;display:flex;align-items:flex-start;gap:0.75rem">
-  <div style="width:36px;height:36px;border-radius:var(--radius-md);background:hsl(var(--primary)/0.15);color:hsl(var(--primary));display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-  <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600">Security first</div><div style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:2px;line-height:1.5">End-to-end encryption with automatic key rotation.</div></div>
+            html: `<div class="${cardCls} flex items-start gap-3 p-4">
+  <div class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+  <div class="min-w-0 flex-1"><div class="text-[13.5px] font-semibold">Security first</div><div class="mt-0.5 text-xs leading-snug text-muted-foreground">End-to-end encryption with automatic key rotation.</div></div>
 </div>`,
           },
           {
-            html: `<div class="section-card" style="padding:1rem;display:flex;align-items:flex-start;gap:0.75rem">
-  <div style="width:36px;height:36px;border-radius:var(--radius-md);background:hsl(var(--chart-2)/0.15);color:hsl(var(--chart-2));display:inline-flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-  <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600">Real-time analytics</div><div style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:2px;line-height:1.5">Live dashboards with sub-second refresh latency.</div></div>
+            html: `<div class="${cardCls} flex items-start gap-3 p-4">
+  <div class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+  <div class="min-w-0 flex-1"><div class="text-[13.5px] font-semibold">Real-time analytics</div><div class="mt-0.5 text-xs leading-snug text-muted-foreground">Live dashboards with sub-second refresh latency.</div></div>
 </div>`,
           },
         ],
@@ -2944,13 +2891,13 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
         anatomy: "Avatar (left), text (middle), action button (right). Common in team lists and notification rows.",
         examples: [{
           full: true,
-          html: `<div class="section-card" style="padding:1rem;max-width:480px;display:flex;align-items:center;gap:0.75rem">
-  <span class="avatar" style="width:40px;height:40px;font-size:16px;flex-shrink:0"><img src="/ada-lovelace.jpg" alt="AL"></span>
-  <div style="flex:1;min-width:0">
-    <div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ada Lovelace</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ada@example.com</div>
+          html: `<div class="${cardCls} flex max-w-[480px] items-center gap-3 p-4">
+  <span class="${avatarBase} h-10 w-10 shrink-0"><img src="/ada-lovelace.jpg" alt="AL" class="h-full w-full object-cover"></span>
+  <div class="min-w-0 flex-1">
+    <div class="truncate text-[13.5px] font-semibold">Ada Lovelace</div>
+    <div class="truncate text-xs text-muted-foreground">ada@example.com</div>
   </div>
-  <button class="btn btn-outline btn-sm" style="flex-shrink:0" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Invited!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Invite</button>
+  <button class="${btnBase} ${btnVariant.outline} ${btnSize.sm} shrink-0" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Invited!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Invite</button>
 </div>`,
         }],
       },
