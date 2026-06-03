@@ -47,10 +47,11 @@ export const COMPONENTS: ComponentDoc[] = [
           const photos: Record<string, string> = {
             RC: "/rachel-chen.jpg", LB: "/liang-bao.jpg", KT: "/kira-tanaka.jpg",
           };
-          return ["RC","LB","AO","KT"].map((n, i) => {
+          const stack = ["RC","LB","AO","KT"].map((n, i) => {
             const content = photos[n] ? `<img src="${photos[n]}" alt="${n}">` : n;
             return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}${i > 0 ? `margin-left:-${overlap}px;` : ""}z-index:${10-i}">${content}</span>`;
           }).join("");
+          return `<div style="display:flex;align-items:center">${stack}</div>`;
         }
         return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}">${ini}</span>`;
       },
