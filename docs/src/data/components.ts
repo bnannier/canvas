@@ -188,8 +188,8 @@ export const COMPONENTS: ComponentDoc[] = [
     playground: {
       controls: [
         { type: "pills", key: "variant", label: "Variant", options: ["segmented", "attached", "split"], cols: 3 },
-        { type: "pills", key: "size", label: "Size", options: ["sm", "default", "lg"], cols: 3 },
-        { type: "range", key: "buttons", label: "Buttons", min: 2, max: 5, step: 1, disabledWhen: (s) => s.variant === "split" },
+        { type: "pills", key: "size", label: "Size", options: ["sm", "default", "lg"], cols: 3, disabledWhen: (s) => s.variant === "attached" },
+        { type: "range", key: "buttons", label: "Buttons", min: 2, max: 5, step: 1, disabledWhen: (s) => s.variant !== "segmented" },
       ],
       defaults: { variant: "segmented", size: "sm", buttons: 3 },
       render: (s) => {
@@ -199,55 +199,18 @@ export const COMPONENTS: ComponentDoc[] = [
           return `<div data-split style="position:relative;display:inline-block"><span data-saved style="position:absolute;bottom:100%;left:0;margin-bottom:6px;padding:4px 10px;background:hsl(var(--foreground));color:hsl(var(--background));border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;opacity:0;transform:translateY(4px);transition:opacity 150ms,transform 150ms;pointer-events:none">Saved ✓</span><div class="btn-group"><button class="btn btn-default${sz}" style="border-top-right-radius:0;border-bottom-right-radius:0" onclick="var t=this.closest('[data-split]').querySelector('[data-saved]');t.textContent='Saved ✓';t.style.opacity='1';t.style.transform='translateY(0)';setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(4px)'},1400)">Save</button><button class="btn btn-default${sz}" aria-label="More save options" style="border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid hsl(var(--primary-foreground)/0.2);padding-inline:0.5rem" onclick="var m=this.closest('[data-split]').querySelector('[data-menu]');m.style.display=m.style.display==='block'?'none':'block'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button></div><div data-menu class="dropdown" style="position:absolute;top:100%;right:0;margin-top:4px;display:none;min-width:184px;z-index:10" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;this.style.display='none';var s=this.closest('[data-split]').querySelector('[data-saved]');s.textContent='Saved ('+t.textContent.trim()+')';s.style.opacity='1';s.style.transform='translateY(0)';setTimeout(function(){s.style.opacity='0';s.style.transform='translateY(4px)'},1600)"><button class="dropdown-item">Save as draft</button><button class="dropdown-item">Save and close</button><button class="dropdown-item">Save a copy</button></div></div>`;
         }
         if (s.variant === "attached") {
-          return `<div class="btn-group">${labels.map((l) =>
-            `<button class="btn btn-outline${sz}">${l}</button>`
-          ).join("")}</div>`;
+          return `<div class="btn-group" data-idx="3">
+  <button class="btn btn-outline" onclick="const g=this.parentElement,d=['May 23','May 24','May 25','Today','May 27','May 28','May 29'];let i=Math.max(0,+(g.dataset.idx)-1);g.dataset.idx=i;g.querySelector('[data-lbl]').textContent=d[i]"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+  <button class="btn btn-outline" data-lbl style="min-width:5.5rem;pointer-events:none">Today</button>
+  <button class="btn btn-outline" onclick="const g=this.parentElement,d=['May 23','May 24','May 25','Today','May 27','May 28','May 29'];let i=Math.min(d.length-1,+(g.dataset.idx)+1);g.dataset.idx=i;g.querySelector('[data-lbl]').textContent=d[i]"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+</div>`;
         }
         return `<div class="btn-group" onclick="var b=event.target.closest('.btn');if(!b)return;this.querySelectorAll('.btn').forEach(function(x){x.classList.remove('btn-default');x.classList.add('btn-outline')});b.classList.remove('btn-outline');b.classList.add('btn-default')">${labels.map((l, i) =>
           `<button class="btn btn-${i === 0 ? "default" : "outline"}${sz}">${l}</button>`
         ).join("")}</div>`;
       },
     },
-    sections: [
-      {
-        title: "Segmented control",
-        anatomy: "An attached .btn-group of 2-4 buttons: the active one fills with primary, the rest are outline. Use for mutually-exclusive view switching.",
-        examples: [{
-          html: `<div class="btn-group">
-  <button class="btn btn-default btn-sm" onclick="this.parentElement.querySelectorAll('.btn').forEach(b=>b.classList.replace('btn-default','btn-outline'));this.classList.replace('btn-outline','btn-default')">All</button>
-  <button class="btn btn-outline btn-sm" onclick="this.parentElement.querySelectorAll('.btn').forEach(b=>b.classList.replace('btn-default','btn-outline'));this.classList.replace('btn-outline','btn-default')">Active</button>
-  <button class="btn btn-outline btn-sm" onclick="this.parentElement.querySelectorAll('.btn').forEach(b=>b.classList.replace('btn-default','btn-outline'));this.classList.replace('btn-outline','btn-default')">Archived</button>
-</div>`,
-        }],
-      },
-      {
-        title: "Attached buttons",
-        anatomy: "Adjacent buttons with shared borders. Use for groups of related actions (zoom, alignment).",
-        examples: [{
-          html: `<div class="btn-group" data-idx="3">
-  <button class="btn btn-outline" onclick="const g=this.parentElement,d=['May 23','May 24','May 25','Today','May 27','May 28','May 29'];let i=Math.max(0,+(g.dataset.idx)-1);g.dataset.idx=i;g.querySelector('[data-lbl]').textContent=d[i]"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
-  <button class="btn btn-outline" data-lbl style="min-width:5.5rem;pointer-events:none">Today</button>
-  <button class="btn btn-outline" onclick="const g=this.parentElement,d=['May 23','May 24','May 25','Today','May 27','May 28','May 29'];let i=Math.min(d.length-1,+(g.dataset.idx)+1);g.dataset.idx=i;g.querySelector('[data-lbl]').textContent=d[i]"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
-</div>`,
-        }],
-      },
-      {
-        title: "Split button",
-        anatomy: "A primary action with a chevron that opens a menu of secondary actions.",
-        examples: [{
-          html: `<div style="position:relative;display:inline-flex">
-  <div class="btn-group">
-    <button class="btn btn-default" style="border-top-right-radius:0;border-bottom-right-radius:0" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Saved!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Save</button>
-    <button class="btn btn-default" style="border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid hsl(var(--primary-foreground)/0.2);padding-inline:0.5rem" onclick="const d=this.parentElement.nextElementSibling;d.style.display=d.style.display==='none'?'block':'none'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-  </div>
-  <div class="dropdown" style="display:none;position:absolute;top:100%;right:0;margin-top:4px;min-width:160px">
-    <button class="dropdown-item" onclick="var b=this;var o=b.textContent;b.textContent='Draft saved!';b.style.background='hsl(var(--accent))';setTimeout(function(){b.textContent=o;b.style.background=''},1500)">Save as draft</button>
-    <button class="dropdown-item" onclick="var b=this;var o=b.textContent;b.textContent='Published!';b.style.background='hsl(var(--accent))';setTimeout(function(){b.textContent=o;b.style.background=''},1500)">Save and publish</button>
-  </div>
-</div>`,
-        }],
-      },
-    ],
+    sections: [],
   },
 
   {
