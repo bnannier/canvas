@@ -1129,106 +1129,48 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Cards",
     description: "Three families. <code>StatCard</code> = a single metric, big number + delta. <code>SectionCard</code> = a labeled content surface with optional header and divider. Generic <code>.card</code> = bring your own structure.",
     category: "Molecules",
-    sections: [
-      {
-        title: "StatCard playground",
-        anatomy: "The tiny metric card primitive: title, value, icon, and an optional delta. Compose these into a stat row.",
-        examples: [{
-          full: true,
-          html: `<div class="stat-card" style="max-width:280px"><div class="stat-card-row"><div><div class="stat-card-label">Active identities</div><div class="stat-card-value">12,348</div><div style="font-size:11px;color:hsl(142 71% 45%);margin-top:2px">+142 today</div></div><div class="stat-card-icon blue">U</div></div></div>`,
-        }],
+    playground: {
+      controls: [
+        { type: "pills", key: "type", label: "Type", options: ["stat", "section", "generic"], cols: 3 },
+        { type: "pills", key: "tone", label: "Icon tone", options: ["blue", "success", "purple", "destructive", "amber"], cols: 3, disabledWhen: (s) => s.type !== "stat" },
+        { type: "check", key: "icon", label: "Icon", disabledWhen: (s) => s.type !== "stat" },
+        { type: "text", key: "label", label: "Label", disabledWhen: (s) => s.type !== "stat" },
+        { type: "text", key: "value", label: "Value", disabledWhen: (s) => s.type !== "stat" },
+        { type: "check", key: "header", label: "Header + action", disabledWhen: (s) => s.type !== "section" },
+      ],
+      defaults: { type: "stat", tone: "blue", icon: true, label: "Active identities", value: "12,348", header: true },
+      render: (s) => {
+        if (s.type === "generic") {
+          return `<div class="card" style="max-width:360px;padding:1.5rem"><div style="font-size:15px;font-weight:600;margin-bottom:4px">Anything goes here</div><p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground))">The .card class gives you the surface + border + radius + shadow. You bring the content.</p></div>`;
+        }
+        if (s.type === "section") {
+          const header = s.header ? `<div class="section-card-header"><h3 class="h4">Recent activity</h3><button class="btn btn-ghost btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Loading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">View all</button></div><div class="section-card-divider"></div>` : "";
+          return `<div class="section-card" style="max-width:360px">${header}<div class="section-card-body"><p class="body" style="margin:0">A labeled content surface. Drop fields, a list, or any module of content here.</p></div></div>`;
+        }
+        const tone = s.tone as string;
+        const letters: Record<string, string> = { blue: "U", success: "S", purple: "O", destructive: "!", amber: "T" };
+        const ico = s.icon ? `<div class="stat-card-icon ${tone}">${letters[tone]}</div>` : "";
+        return `<div class="stat-card" style="max-width:280px"><div class="stat-card-row"><div><div class="stat-card-label">${s.label}</div><div class="stat-card-value">${s.value}</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">+142 today</div></div>${ico}</div></div>`;
       },
-      {
-        title: "StatCard variants",
-        description: "Five icon tones. Pick by what the metric means: success for healthy, destructive for problems, etc.",
-        columns: 3,
-        examples: [
-          {
-            label: "Default (blue)",
-            html: `<div class="stat-card"><div class="stat-card-row"><div><div class="stat-card-label">Active identities</div><div class="stat-card-value">12,348</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">+142 today</div></div><div class="stat-card-icon blue">U</div></div></div>`,
-          },
-          {
-            label: "Success",
-            html: `<div class="stat-card"><div class="stat-card-row"><div><div class="stat-card-label">Active sessions</div><div class="stat-card-value">1,204</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">+8% vs yesterday</div></div><div class="stat-card-icon success">S</div></div></div>`,
-          },
-          {
-            label: "Purple",
-            html: `<div class="stat-card"><div class="stat-card-row"><div><div class="stat-card-label">OAuth2 clients</div><div class="stat-card-value">38</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">6 M2M &middot; 32 user</div></div><div class="stat-card-icon purple">O</div></div></div>`,
-          },
-          {
-            label: "Destructive",
-            html: `<div class="stat-card"><div class="stat-card-row"><div><div class="stat-card-label">Locked accounts</div><div class="stat-card-value">6</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">&darr; 2 since 1h ago</div></div><div class="stat-card-icon destructive">!</div></div></div>`,
-          },
-          {
-            label: "Amber",
-            html: `<div class="stat-card"><div class="stat-card-row"><div><div class="stat-card-label">Token errors</div><div class="stat-card-value">0.21%</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">last 60m</div></div><div class="stat-card-icon amber">T</div></div></div>`,
-          },
-          {
-            label: "No icon",
-            html: `<div class="stat-card"><div class="stat-card-row"><div><div class="stat-card-label">Avg latency</div><div class="stat-card-value">42ms</div><div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">p95 last hour</div></div></div></div>`,
-          },
-        ],
+    },
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="section-card" style="max-width:360px">
+  <div class="section-card-header"><h3 class="h4">Recent activity</h3></div>
+  <div class="section-card-body"><p class="body" style="margin:0">Two events today.</p></div>
+</div>`,
+        caption: "Without the divider the header floats and stops reading as a header.",
       },
-      {
-        title: "SectionCard",
-        description: "Labeled block with optional title row + divider. Action slot on the right. Use for any module of content larger than a few lines.",
-        anatomy: "Header (title + actions) &middot; 1px divider &middot; body. The divider is what visually anchors the title: don't skip it.",
-        columns: 2,
-        examples: [
-          {
-            label: "With action button",
-            html: `<div class="section-card">
-  <div class="section-card-header"><h3 class="h4">Recent activity</h3><button class="btn btn-ghost btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Loading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">View all</button></div>
+      do: {
+        html: `<div class="section-card" style="max-width:360px">
+  <div class="section-card-header"><h3 class="h4">Recent activity</h3></div>
   <div class="section-card-divider"></div>
-  <div class="section-card-body" style="padding:0">
-    <div style="padding:0.625rem 1rem;font-size:13px"><span style="font-weight:500">rachel.chen@example.com</span> <span style="color:hsl(var(--muted-foreground))">signed in</span></div>
-    <div style="padding:0.625rem 1rem;font-size:13px;border-top:1px solid hsl(var(--border))"><span style="font-weight:500">rachel.chen@example.com</span> <span style="color:hsl(var(--muted-foreground))">revoked session</span></div>
-  </div>
+  <div class="section-card-body"><p class="body" style="margin:0">Two events today.</p></div>
 </div>`,
-          },
-          {
-            label: "With fields",
-            html: `<div class="section-card">
-  <div class="section-card-header"><h3 class="h4">Account Details</h3></div>
-  <div class="section-card-divider"></div>
-  <div class="section-card-body" style="display:flex;flex-direction:column;gap:0.5rem">
-    <div class="field"><span class="field-label">Email</span><span class="field-value">user@example.com</span></div>
-    <div class="field"><span class="field-label">Role</span><span class="field-value">Admin</span></div>
-    <div class="field"><span class="field-label">Status</span><span class="field-value"><span class="status-badge sb-success"><span class="dot"></span> Active</span></span></div>
-  </div>
-</div>`,
-          },
-          {
-            label: "Title only",
-            html: `<div class="section-card">
-  <div class="section-card-header"><h3 class="h4">Quick stats</h3></div>
-  <div class="section-card-divider"></div>
-  <div class="section-card-body">
-    <p class="body" style="margin:0">Content without an action button in the header.</p>
-  </div>
-</div>`,
-          },
-          {
-            label: "No header",
-            html: `<div class="section-card">
-  <div class="section-card-body">
-    <p class="body" style="margin:0">A section card with just a body. Useful as a simple content surface.</p>
-  </div>
-</div>`,
-          },
-        ],
+        caption: "Keep the divider between header and body; it anchors the title.",
       },
-      {
-        title: "Generic .card primitive",
-        description: "When neither StatCard nor SectionCard fits, drop down to the base class.",
-        examples: [{
-          html: `<div class="card" style="max-width:400px;padding:1.5rem">
-  <div style="font-size:15px;font-weight:600;margin-bottom:4px">Anything goes here</div>
-  <p style="margin:0;font-size:13.5px;color:hsl(var(--muted-foreground))">The .card class gives you the surface + border + radius + shadow. You bring the content.</p>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
