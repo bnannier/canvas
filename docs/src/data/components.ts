@@ -2318,15 +2318,26 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
     name: "Spinner",
     description: "Animated loading spinner in three sizes.",
     category: "Atoms",
-    sections: [{
-      title: "Sizes",
-      examples: [{
-        html: `<div style="display:flex;gap:1rem;align-items:center">
-  <div class="spinner spinner-sm"></div>
-  <div class="spinner"></div>
-  <div class="spinner spinner-lg"></div>
-</div>`,
-      }],
+    playground: {
+      controls: [
+        { type: "pills", key: "size", label: "Size", options: ["sm", "default", "lg"], cols: 3 },
+      ],
+      defaults: { size: "default" },
+      render: (s) => {
+        const cls = s.size === "default" ? "" : ` spinner-${s.size}`;
+        return `<div class="spinner${cls}"></div>`;
+      },
+    },
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="spinner"></div>`,
+        caption: "A bare spinner with no label leaves users guessing what is happening and for how long.",
+      },
+      do: {
+        html: `<div style="display:flex;align-items:center;gap:0.5rem"><div class="spinner spinner-sm"></div><span class="small">Loading…</span></div>`,
+        caption: "Pair longer waits with a short label so the spinner has context.",
+      },
     }],
   },
 
