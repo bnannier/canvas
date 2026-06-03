@@ -532,8 +532,8 @@ export const COMPONENTS: ComponentDoc[] = [
       render: (s) => {
         const checked = s.state === "checked" ? " checked" : "";
         const disabled = s.state === "disabled" ? " disabled" : "";
-        const desc = s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when activity happens on your account.</div>` : "";
-        return `<label style="display:flex;gap:0.5rem;cursor:pointer"><input type="checkbox"${checked}${disabled} style="accent-color:hsl(var(--primary));margin-top:3px"><div><div style="font-size:13px;font-weight:500">${s.label}</div>${desc}</div></label>`;
+        const desc = s.withDesc ? `<div class="text-xs text-muted-foreground">Get notified when activity happens on your account.</div>` : "";
+        return `<label class="flex cursor-pointer gap-2"><input type="checkbox"${checked}${disabled} class="mt-0.5 size-4 accent-primary"><div><div class="text-sm font-medium">${s.label}</div>${desc}</div></label>`;
       },
     },
     sections: [],
@@ -541,49 +541,33 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Selection",
         dont: {
-          html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Free</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" checked style="accent-color:hsl(var(--primary))"> Pro</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Enterprise</label>
-</div>`,
+          html: `<div class="flex flex-col gap-2 text-sm"><div class="mb-1 font-semibold">Plan</div><label class="flex items-center gap-2"><input type="checkbox" class="size-4 accent-primary"> Free</label><label class="flex items-center gap-2"><input type="checkbox" checked class="size-4 accent-primary"> Pro</label><label class="flex items-center gap-2"><input type="checkbox" class="size-4 accent-primary"> Enterprise</label></div>`,
           caption: "Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.",
         },
         do: {
-          html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" style="accent-color:hsl(var(--primary))"> Free</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" checked style="accent-color:hsl(var(--primary))"> Pro</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-plan" style="accent-color:hsl(var(--primary))"> Enterprise</label>
-</div>`,
+          html: `<div class="flex flex-col gap-2 text-sm"><div class="mb-1 font-semibold">Plan</div><label class="flex items-center gap-2"><input type="radio" name="dd-plan" class="size-4 accent-primary"> Free</label><label class="flex items-center gap-2"><input type="radio" name="dd-plan" checked class="size-4 accent-primary"> Pro</label><label class="flex items-center gap-2"><input type="radio" name="dd-plan" class="size-4 accent-primary"> Enterprise</label></div>`,
           caption: "Radios for one-of-many; reserve checkboxes for independent multi-select.",
         },
       },
       {
         title: "With description",
         dont: {
-          html: `<div style="display:flex;gap:0.5rem;font-size:13px">
-  <input type="checkbox" checked style="accent-color:hsl(var(--primary));margin-top:3px">
-  <div><div style="font-weight:500">Email notifications</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when activity happens on your account.</div></div>
-</div>`,
+          html: `<div class="flex gap-2 text-sm"><input type="checkbox" checked class="mt-0.5 size-4 accent-primary"><div><div class="font-medium">Email notifications</div><div class="text-xs text-muted-foreground">Get notified when activity happens on your account.</div></div></div>`,
           caption: "A bare div makes only the 16px box clickable; the label text does nothing.",
         },
         do: {
-          html: `<label style="display:flex;gap:0.5rem;cursor:pointer;font-size:13px">
-  <input type="checkbox" checked style="accent-color:hsl(var(--primary));margin-top:3px">
-  <div><div style="font-weight:500">Email notifications</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">Get notified when activity happens on your account.</div></div>
-</label>`,
+          html: `<label class="flex cursor-pointer gap-2 text-sm"><input type="checkbox" checked class="mt-0.5 size-4 accent-primary"><div><div class="font-medium">Email notifications</div><div class="text-xs text-muted-foreground">Get notified when activity happens on your account.</div></div></label>`,
           caption: "Wrap the box, label, and description in a <label> so the whole row toggles.",
         },
       },
       {
         title: "Disabled",
         dont: {
-          html: `<label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" disabled style="accent-color:hsl(var(--primary))"> Export to CSV</label>`,
+          html: `<label class="flex items-center gap-2 text-sm"><input type="checkbox" disabled class="size-4 accent-primary"> Export to CSV</label>`,
           caption: "A disabled option with no reason leaves users stuck and guessing.",
         },
         do: {
-          html: `<label style="display:flex;align-items:center;gap:0.5rem;font-size:13px"><input type="checkbox" disabled style="accent-color:hsl(var(--primary))"> Export to CSV <span style="font-size:11px;color:hsl(var(--muted-foreground))">(Pro plan)</span></label>`,
+          html: `<label class="flex items-center gap-2 text-sm"><input type="checkbox" disabled class="size-4 accent-primary"> Export to CSV <span class="text-xs text-muted-foreground">(Pro plan)</span></label>`,
           caption: "Say why it's unavailable, like a plan gate, or don't show it at all.",
         },
       },
