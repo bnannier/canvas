@@ -2346,38 +2346,41 @@ setTheme(theme === "dark" ? "light" : "dark");</pre>`,
     name: "Popover",
     description: "Floating panel for rich content triggered by a click.",
     category: "Atoms",
-    sections: [
-      {
-        title: "Default",
-        examples: [{
-          html: `<div class="popover" style="position:relative;display:inline-block">
-  <p class="body" style="margin-bottom:0.5rem">Popover content</p>
-  <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Done!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Action</button>
-</div>`,
-        }],
+    playground: {
+      controls: [
+        { type: "check", key: "trigger", label: "Trigger button (click to open)" },
+        { type: "text", key: "content", label: "Content" },
+      ],
+      defaults: { trigger: true, content: "Place your rich content, form fields, or secondary actions here." },
+      render: (s) => {
+        const content = s.content as string;
+        if (s.trigger) {
+          return `<div style="position:relative;display:inline-block" onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="var p=this.nextElementSibling;if(p.style.display==='none'){p.style.display='block';var close=function(e){if(!p.contains(e.target)){p.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{p.style.display='none'}">Open popover</button><div class="popover" style="position:absolute;top:100%;left:0;margin-top:8px;min-width:260px;display:none;z-index:10"><p class="body" style="margin-bottom:0.5rem">${content}</p><button class="btn btn-outline btn-sm" onclick="this.closest('.popover').style.display='none'">Close</button></div></div>`;
+        }
+        return `<div class="popover" style="position:relative;display:inline-block;min-width:260px"><p class="body" style="margin-bottom:0.5rem">${content}</p><button class="btn btn-outline btn-sm">Action</button></div>`;
       },
-      {
-        title: "With trigger",
-        anatomy: "Click the button to toggle the panel.",
-        examples: [{
-          allowOverflow: true,
-          html: `<div style="position:relative;display:inline-block" onclick="event.stopPropagation()">
-  <button class="btn btn-outline btn-sm" onclick="var p=this.nextElementSibling;if(p.style.display==='none'){p.style.display='block';var close=function(e){if(!p.contains(e.target)){p.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{p.style.display='none'}">Open popover</button>
-  <div class="popover" style="position:absolute;top:100%;left:0;margin-top:8px;min-width:260px;display:none;z-index:10">
-    <p class="body" style="margin-bottom:0.5rem">Place your rich content, form fields, or secondary actions here.</p>
-    <button class="btn btn-outline btn-sm" onclick="this.closest('.popover').style.display='none'">Close</button>
-  </div>
+    },
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="popover" style="position:relative;display:inline-block;min-width:260px">
+  <label class="label">Name</label><input class="input" style="margin-bottom:0.5rem">
+  <label class="label">Email</label><input class="input" style="margin-bottom:0.5rem">
+  <label class="label">Role</label><select class="input" style="margin-bottom:0.5rem"><option>Engineer</option></select>
+  <label class="label">Team</label><input class="input" style="margin-bottom:0.5rem">
+  <div style="display:flex;justify-content:flex-end;gap:0.5rem"><button class="btn btn-outline btn-sm">Cancel</button><button class="btn btn-default btn-sm">Save</button></div>
 </div>`,
-          code: `<div style="position:relative;display:inline-block">
-  <button class="btn btn-outline btn-sm" onclick="togglePopover(this)">Open popover</button>
-  <div class="popover" style="position:absolute;top:100%;left:0;margin-top:8px;display:none">
-    <p class="body">Popover content</p>
-    <button class="btn btn-outline btn-sm">Close</button>
-  </div>
-</div>`,
-        }],
+        caption: "A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident.",
       },
-    ],
+      do: {
+        html: `<div class="popover" style="position:relative;display:inline-block;min-width:240px">
+  <p class="body" style="margin-bottom:0.5rem">Rename this project?</p>
+  <input class="input" value="Identity Platform" style="margin-bottom:0.5rem">
+  <div style="display:flex;justify-content:flex-end;gap:0.5rem"><button class="btn btn-outline btn-sm">Cancel</button><button class="btn btn-default btn-sm">Rename</button></div>
+</div>`,
+        caption: "Keep popovers compact: a focused prompt with one input and a clear action.",
+      },
+    }],
   },
 
   {
