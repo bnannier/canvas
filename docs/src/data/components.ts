@@ -58,7 +58,23 @@ export const COMPONENTS: ComponentDoc[] = [
       markup: (s) => {
         const sz = s.size as number;
         const ini = ((s.initials as string) || "AO").slice(0, 2).toUpperCase();
-        return `<span class="avatar" style="width:${sz}px;height:${sz}px">${ini}</span>`;
+        const ring = s.ring ? ";outline:2px solid hsl(var(--card))" : "";
+        if (s.stacked) {
+          const overlap = Math.round(sz * 0.3);
+          const items = [
+            `<img src="/rachel-chen.jpg" alt="RC">`,
+            `<img src="/liang-bao.jpg" alt="LB">`,
+            "AO",
+            `<img src="/kira-tanaka.jpg" alt="KT">`,
+          ];
+          const spans = items
+            .map((content, i) =>
+              `  <span class="avatar" style="width:${sz}px;height:${sz}px${i > 0 ? `;margin-left:-${overlap}px` : ""}${ring}">${content}</span>`,
+            )
+            .join("\n");
+          return `<div style="display:flex">\n${spans}\n</div>`;
+        }
+        return `<span class="avatar" style="width:${sz}px;height:${sz}px${ring}">${ini}</span>`;
       },
     },
     sections: [
