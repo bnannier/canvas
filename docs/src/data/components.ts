@@ -31,19 +31,19 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Atoms",
     playground: {
       controls: [
-        { type: "range", key: "size", label: "Size", min: 20, max: 96, step: 4, suffix: "px" },
-        { type: "text", key: "initials", label: "Initials" },
-        { type: "check", key: "stacked", label: "Stacked group" },
-        { type: "check", key: "overflow", label: "Overflow +N", disabledWhen: (s) => !s.stacked },
-        { type: "check", key: "ring", label: "Ring outline", disabledWhen: (s) => s.stacked === true },
+        { type: "pills", key: "variant", label: "Variant", options: ["single", "stacked", "topbar", "identity", "menu"], cols: 3 },
+        { type: "range", key: "size", label: "Size", min: 20, max: 96, step: 4, suffix: "px", disabledWhen: (s) => s.variant !== "single" && s.variant !== "stacked" },
+        { type: "text", key: "initials", label: "Initials", disabledWhen: (s) => s.variant !== "single" },
+        { type: "check", key: "overflow", label: "Overflow +N", disabledWhen: (s) => s.variant !== "stacked" },
+        { type: "check", key: "ring", label: "Ring outline", disabledWhen: (s) => s.variant !== "single" },
       ],
-      defaults: { size: 40, initials: "AO", stacked: false, ring: false, overflow: false },
+      defaults: { variant: "single", size: 40, initials: "AO", ring: false, overflow: false },
       render: (s) => {
         const sz = s.size as number;
         const ini = ((s.initials as string) || "AO").slice(0, 2).toUpperCase();
         const fs = Math.round(sz * 0.4);
         const ring = s.ring ? `outline:2px solid hsl(var(--card));` : "";
-        if (s.stacked) {
+        if (s.variant === "stacked") {
           const overlap = Math.round(sz * 0.3);
           const photos: Record<string, string> = {
             RC: "/rachel-chen.jpg", LB: "/liang-bao.jpg", KT: "/kira-tanaka.jpg",
@@ -55,6 +55,40 @@ export const COMPONENTS: ComponentDoc[] = [
           }).join("");
           const overflow = s.overflow ? `<span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>` : "";
           return `<div style="display:flex;align-items:center">${stack}${overflow}</div>`;
+        }
+        if (s.variant === "topbar") {
+          return `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px">
+  <button type="button" aria-haspopup="menu" aria-expanded="false" onclick="var m=this.nextElementSibling;var open=m.style.display!=='block';m.style.display=open?'block':'none';this.setAttribute('aria-expanded',open);this.querySelector('svg').style.transform=open?'rotate(180deg)':'';" style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));cursor:pointer;font-size:13px;font-weight:500">
+    <span class="avatar"><img src="/marcus-allen.jpg" alt="MA"></span>
+    <span>admin@example.com</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 150ms ease"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+  <div class="dropdown" role="menu" style="position:static;display:none;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;this.style.display='none';var b=this.previousElementSibling;b.setAttribute('aria-expanded','false');b.querySelector('svg').style.transform='';">
+    <div class="dropdown-label">admin@example.com</div>
+    <button class="dropdown-item">Profile</button>
+    <button class="dropdown-item">Settings</button>
+    <div class="dropdown-sep"></div>
+    <button class="dropdown-item">Sign out</button>
+  </div>
+</div>`;
+        }
+        if (s.variant === "identity") {
+          return `<div style="display:flex;align-items:center;gap:1rem">
+  <span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/rachel-chen.jpg" alt="RC"></span>
+  <div>
+    <div style="font-size:16px;font-weight:600">Rachel Chen</div>
+    <div style="font-size:13px;color:hsl(var(--muted-foreground))">rachel.chen@example.com</div>
+  </div>
+</div>`;
+        }
+        if (s.variant === "menu") {
+          return `<div style="display:flex;align-items:center;gap:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid hsl(var(--border))">
+  <span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/ada-lovelace.jpg" alt="AL"></span>
+  <div>
+    <div style="font-size:13px;font-weight:600">Ada Lovelace</div>
+    <div style="font-size:12px;color:hsl(var(--muted-foreground))">admin@example.com</div>
+  </div>
+</div>`;
         }
         return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}">${ini}</span>`;
       },
