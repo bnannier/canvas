@@ -44,6 +44,48 @@ const btnSize: Record<string, string> = {
 const btn = (variant: string, label: string, size = "default", attrs = "") =>
   `<button class="${btnBase} ${btnVariant[variant]} ${btnSize[size]}"${attrs}>${label}</button>`;
 
+const avatarBase =
+  "inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground";
+const avatarImg = (src: string, alt: string) =>
+  `<img src="${src}" alt="${alt}" class="h-full w-full object-cover">`;
+const avatarEl = (content: string, style: string, ring = false, extra = "") =>
+  `<span class="${avatarBase}${ring ? " ring-2 ring-background" : ""}${extra ? " " + extra : ""}" style="${style}">${content}</span>`;
+
+const menuBase =
+  "min-w-[12rem] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md";
+const menuItem =
+  "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground";
+const menuLabel = "px-2 py-1.5 text-xs font-medium text-muted-foreground";
+const menuSep = "my-1 h-px bg-border";
+
+const badgeBase =
+  "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors";
+const badgeVariant: Record<string, string> = {
+  default: "border-transparent bg-primary text-primary-foreground",
+  secondary: "border-transparent bg-secondary text-secondary-foreground",
+  outline: "border-border text-foreground",
+  destructive: "border-transparent bg-destructive text-destructive-foreground",
+};
+const badge = (variant: string, label: string, mono = false) =>
+  `<span class="${badgeBase} ${badgeVariant[variant]}${mono ? " font-mono text-[10.5px]" : ""}">${label}</span>`;
+
+const statusTone: Record<string, string> = {
+  success: "border-green-600/20 bg-green-600/10 text-green-700 dark:text-green-400",
+  warning: "border-amber-600/20 bg-amber-600/10 text-amber-700 dark:text-amber-400",
+  error: "border-red-600/20 bg-red-600/10 text-red-700 dark:text-red-400",
+  info: "border-blue-600/20 bg-blue-600/10 text-blue-700 dark:text-blue-400",
+  neutral: "border-border bg-muted text-muted-foreground",
+};
+const statusDot: Record<string, string> = {
+  success: "bg-green-500",
+  warning: "bg-amber-500",
+  error: "bg-red-500",
+  info: "bg-blue-500",
+  neutral: "bg-zinc-400",
+};
+const statusBadge = (variant: string, label: string) =>
+  `<span class="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${statusTone[variant]}"><span class="h-1.5 w-1.5 rounded-full ${statusDot[variant]}"></span>${label}</span>`;
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -65,55 +107,27 @@ export const COMPONENTS: ComponentDoc[] = [
         const sz = s.size as number;
         const ini = ((s.initials as string) || "AO").slice(0, 2).toUpperCase();
         const fs = Math.round(sz * 0.4);
-        const ring = s.ring ? `outline:2px solid hsl(var(--card));` : "";
         if (s.variant === "stacked") {
           const overlap = Math.round(sz * 0.3);
-          const photos: Record<string, string> = {
-            RC: "/rachel-chen.jpg", LB: "/liang-bao.jpg", KT: "/kira-tanaka.jpg",
-          };
+          const photos: Record<string, string> = { RC: "/rachel-chen.jpg", LB: "/liang-bao.jpg", KT: "/kira-tanaka.jpg" };
           const items = ["RC", "LB", "AO", "KT"];
-          const stack = items.map((n, i) => {
-            const content = photos[n] ? `<img src="${photos[n]}" alt="${n}">` : n;
-            return `<span class="avatar" style="width:${sz}px;height:${sz}px;outline:2px solid hsl(var(--card));${i > 0 ? `margin-left:-${overlap}px;` : ""}z-index:${items.length - i}">${content}</span>`;
-          }).join("");
-          const overflow = s.overflow ? `<span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>` : "";
-          return `<div style="display:flex;align-items:center">${stack}${overflow}</div>`;
+          const stack = items.map((n, i) =>
+            avatarEl(photos[n] ? avatarImg(photos[n], n) : n,
+              `width:${sz}px;height:${sz}px;font-size:${fs}px;${i > 0 ? `margin-left:-${overlap}px;` : ""}z-index:${items.length - i}`, true)
+          ).join("");
+          const overflow = s.overflow ? `<span class="ml-1.5 inline-flex items-center text-xs text-muted-foreground">+12</span>` : "";
+          return `<div class="flex items-center">${stack}${overflow}</div>`;
         }
         if (s.variant === "topbar") {
-          return `<div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px">
-  <button type="button" aria-haspopup="menu" aria-expanded="false" onclick="var m=this.nextElementSibling;var open=m.style.display!=='block';m.style.display=open?'block':'none';this.setAttribute('aria-expanded',open);this.querySelector('svg').style.transform=open?'rotate(180deg)':'';" style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));cursor:pointer;font-size:13px;font-weight:500">
-    <span class="avatar"><img src="/marcus-allen.jpg" alt="MA"></span>
-    <span>admin@example.com</span>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 150ms ease"><path d="m6 9 6 6 6-6"/></svg>
-  </button>
-  <div class="dropdown" role="menu" style="position:static;display:none;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t)return;this.style.display='none';var b=this.previousElementSibling;b.setAttribute('aria-expanded','false');b.querySelector('svg').style.transform='';">
-    <div class="dropdown-label">admin@example.com</div>
-    <button class="dropdown-item">Profile</button>
-    <button class="dropdown-item">Settings</button>
-    <div class="dropdown-sep"></div>
-    <button class="dropdown-item">Sign out</button>
-  </div>
-</div>`;
+          return `<div class="inline-flex flex-col items-start gap-1.5"><button type="button" aria-haspopup="menu" aria-expanded="false" onclick="var m=this.nextElementSibling;var open=m.style.display!=='block';m.style.display=open?'block':'none';this.setAttribute('aria-expanded',open);this.querySelector('svg').style.transform=open?'rotate(180deg)':'';" class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5 text-sm font-medium">${avatarEl(avatarImg("/marcus-allen.jpg", "MA"), "width:28px;height:28px")}<span>admin@example.com</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform"><path d="m6 9 6 6 6-6"/></svg></button><div role="menu" class="${menuBase}" style="display:none" onclick="var t=event.target.closest('button');if(!t)return;this.style.display='none';var b=this.previousElementSibling;b.setAttribute('aria-expanded','false');b.querySelector('svg').style.transform='';"><div class="${menuLabel}">admin@example.com</div><button class="${menuItem}">Profile</button><button class="${menuItem}">Settings</button><div class="${menuSep}"></div><button class="${menuItem}">Sign out</button></div></div>`;
         }
         if (s.variant === "identity") {
-          return `<div style="display:flex;align-items:center;gap:1rem">
-  <span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/rachel-chen.jpg" alt="RC"></span>
-  <div>
-    <div style="font-size:16px;font-weight:600">Rachel Chen</div>
-    <div style="font-size:13px;color:hsl(var(--muted-foreground))">rachel.chen@example.com</div>
-  </div>
-</div>`;
+          return `<div class="flex items-center gap-4">${avatarEl(avatarImg("/rachel-chen.jpg", "RC"), "width:40px;height:40px;font-size:16px")}<div><div class="text-base font-semibold">Rachel Chen</div><div class="text-sm text-muted-foreground">rachel.chen@example.com</div></div></div>`;
         }
         if (s.variant === "menu") {
-          return `<div style="display:flex;align-items:center;gap:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid hsl(var(--border))">
-  <span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/ada-lovelace.jpg" alt="AL"></span>
-  <div>
-    <div style="font-size:13px;font-weight:600">Ada Lovelace</div>
-    <div style="font-size:12px;color:hsl(var(--muted-foreground))">admin@example.com</div>
-  </div>
-</div>`;
+          return `<div class="flex items-center gap-3 border-b border-border pb-3">${avatarEl(avatarImg("/ada-lovelace.jpg", "AL"), "width:40px;height:40px;font-size:16px")}<div><div class="text-sm font-semibold">Ada Lovelace</div><div class="text-xs text-muted-foreground">admin@example.com</div></div></div>`;
         }
-        return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}">${ini}</span>`;
+        return avatarEl(ini, `width:${sz}px;height:${sz}px;font-size:${fs}px`, s.ring === true);
       },
     },
     sections: [],
@@ -121,70 +135,55 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Single",
         dont: {
-          html: `<span class="avatar" style="width:40px;height:40px;font-size:12px">ABCD</span>`,
+          html: avatarEl("ABCD", "width:40px;height:40px;font-size:12px"),
           caption: "Cramming in a full set of initials shrinks the type and crowds the circle.",
         },
         do: {
-          html: `<span class="avatar" style="width:40px;height:40px;font-size:16px">AO</span>`,
+          html: avatarEl("AO", "width:40px;height:40px;font-size:16px"),
           caption: "One or two initials, sized about 40% of the diameter.",
         },
       },
       {
         title: "Stacked",
         dont: {
-          html: `<div style="display:flex;align-items:center">
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card))">AO</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">RC</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">LB</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">KT</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">JD</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">MA</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">AL</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">SK</span>
-</div>`,
+          html: `<div class="flex items-center">${["AO", "RC", "LB", "KT", "JD", "MA", "AL", "SK"].map((n, i) => avatarEl(n, `width:32px;height:32px;font-size:13px;${i > 0 ? "margin-left:-10px;" : ""}`, true)).join("")}</div>`,
           caption: "An unbounded stack runs off the row and stops being scannable.",
         },
         do: {
-          html: `<div style="display:flex;align-items:center">
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card))">AO</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">RC</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">LB</span>
-  <span class="avatar" style="width:32px;height:32px;font-size:13px;outline:2px solid hsl(var(--card));margin-left:-10px">KT</span>
-  <span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>
-</div>`,
+          html: `<div class="flex items-center">${["AO", "RC", "LB", "KT"].map((n, i) => avatarEl(n, `width:32px;height:32px;font-size:13px;${i > 0 ? "margin-left:-10px;" : ""}`, true)).join("")}<span class="ml-1.5 inline-flex items-center text-xs text-muted-foreground">+12</span></div>`,
           caption: "Cap the stack and summarize the rest with a +N count.",
         },
       },
       {
         title: "Topbar account menu",
         dont: {
-          html: `<span class="avatar" style="width:32px;height:32px"><img src="/marcus-allen.jpg" alt="MA"></span>`,
+          html: avatarEl(avatarImg("/marcus-allen.jpg", "MA"), "width:32px;height:32px"),
           caption: "A lone avatar gives no hint that it opens the account menu.",
         },
         do: {
-          html: `<div style="display:inline-flex;align-items:center;gap:0.5rem;border:1px solid hsl(var(--border));padding:4px 10px 4px 4px;border-radius:9999px;background:hsl(var(--card));font-size:13px;font-weight:500"><span class="avatar" style="width:24px;height:24px"><img src="/marcus-allen.jpg" alt="MA"></span><span>admin@example.com</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="m6 9 6 6 6-6"/></svg></div>`,
+          html: `<div class="inline-flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5 text-sm font-medium">${avatarEl(avatarImg("/marcus-allen.jpg", "MA"), "width:24px;height:24px")}<span>admin@example.com</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-60"><path d="m6 9 6 6 6-6"/></svg></div>`,
           caption: "Pair it with the account name and a chevron so it reads as a trigger.",
         },
       },
       {
         title: "Identity",
         dont: {
-          html: `<div style="display:flex;align-items:center;gap:1rem"><span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/rachel-chen.jpg" alt="RC"></span><div><div style="font-size:14px">Rachel Chen</div><div style="font-size:14px">rachel.chen@example.com</div></div></div>`,
+          html: `<div class="flex items-center gap-4">${avatarEl(avatarImg("/rachel-chen.jpg", "RC"), "width:40px;height:40px;font-size:16px")}<div><div class="text-sm">Rachel Chen</div><div class="text-sm">rachel.chen@example.com</div></div></div>`,
           caption: "Equal weight on the name and email flattens the hierarchy.",
         },
         do: {
-          html: `<div style="display:flex;align-items:center;gap:1rem"><span class="avatar" style="width:40px;height:40px;font-size:16px"><img src="/rachel-chen.jpg" alt="RC"></span><div><div style="font-size:16px;font-weight:600">Rachel Chen</div><div style="font-size:13px;color:hsl(var(--muted-foreground))">rachel.chen@example.com</div></div></div>`,
+          html: `<div class="flex items-center gap-4">${avatarEl(avatarImg("/rachel-chen.jpg", "RC"), "width:40px;height:40px;font-size:16px")}<div><div class="text-base font-semibold">Rachel Chen</div><div class="text-sm text-muted-foreground">rachel.chen@example.com</div></div></div>`,
           caption: "Name primary; email muted and secondary.",
         },
       },
       {
         title: "Menu header",
         dont: {
-          html: `<div style="display:flex;align-items:center;gap:0.75rem"><span class="avatar" style="width:40px;height:40px;border-radius:6px"><img src="/ada-lovelace.jpg" alt="AL"></span><div><div style="font-size:13px;font-weight:600">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">admin@example.com</div></div></div>`,
+          html: `<div class="flex items-center gap-3">${avatarEl(avatarImg("/ada-lovelace.jpg", "AL"), "width:40px;height:40px;border-radius:6px")}<div><div class="text-sm font-semibold">Ada Lovelace</div><div class="text-xs text-muted-foreground">admin@example.com</div></div></div>`,
           caption: "Squaring the avatar here clashes with the circular avatars everywhere else.",
         },
         do: {
-          html: `<div style="display:flex;align-items:center;gap:0.75rem"><span class="avatar" style="width:40px;height:40px"><img src="/ada-lovelace.jpg" alt="AL"></span><div><div style="font-size:13px;font-weight:600">Ada Lovelace</div><div style="font-size:12px;color:hsl(var(--muted-foreground))">admin@example.com</div></div></div>`,
+          html: `<div class="flex items-center gap-3">${avatarEl(avatarImg("/ada-lovelace.jpg", "AL"), "width:40px;height:40px")}<div><div class="text-sm font-semibold">Ada Lovelace</div><div class="text-xs text-muted-foreground">admin@example.com</div></div></div>`,
           caption: "Keep one consistent circular avatar shape across contexts.",
         },
       },
@@ -207,23 +206,13 @@ export const COMPONENTS: ComponentDoc[] = [
       defaults: { kind: "badge", variant: "secondary", statusVariant: "success", label: "admin", mono: false },
       render: (s) => {
         if (s.kind === "identity") {
-          return `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
-  <span style="font-size:15px;font-weight:600">Rachel Chen</span>
-  <span class="status-badge sb-success"><span class="dot"></span> active</span>
-  <span class="status-badge sb-info"><span class="dot"></span> Verified</span>
-  <span class="badge badge-secondary">employee</span>
-</div>`;
+          return `<div class="flex flex-wrap items-center gap-2"><span class="text-[15px] font-semibold">Rachel Chen</span>${statusBadge("success", "active")}${statusBadge("info", "Verified")}${badge("secondary", "employee")}</div>`;
         }
         if (s.kind === "grants") {
-          return `<div style="display:flex;gap:4px;flex-wrap:wrap">
-  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">authorization_code</span>
-  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">refresh_token</span>
-  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">client_credentials</span>
-</div>`;
+          return `<div class="flex flex-wrap gap-1">${["authorization_code", "refresh_token", "client_credentials"].map((g) => badge("secondary", g, true)).join("")}</div>`;
         }
-        if (s.kind === "status") return `<span class="status-badge sb-${s.statusVariant}"><span class="dot"></span> ${s.label}</span>`;
-        const mono = s.mono ? ` style="font-family:var(--font-mono);font-size:10.5px"` : "";
-        return `<span class="badge badge-${s.variant}"${mono}>${s.label}</span>`;
+        if (s.kind === "status") return statusBadge(s.statusVariant as string, s.label as string);
+        return badge(s.variant as string, s.label as string, s.mono === true);
       },
     },
     sections: [],
@@ -231,74 +220,44 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Metadata badge",
         dont: {
-          html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
-  <span class="badge badge-default">employee</span>
-  <span class="badge badge-destructive">engineering</span>
-  <span class="badge badge-default">remote</span>
-  <span class="badge badge-destructive">active</span>
-</div>`,
+          html: `<div class="flex flex-wrap items-center gap-1.5">${badge("default", "employee")}${badge("destructive", "engineering")}${badge("default", "remote")}${badge("destructive", "active")}</div>`,
           caption: "Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.",
         },
         do: {
-          html: `<div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
-  <span class="badge badge-secondary">employee</span>
-  <span class="badge badge-secondary">engineering</span>
-  <span class="badge badge-secondary">remote</span>
-  <span class="status-badge sb-success"><span class="dot"></span> active</span>
-</div>`,
+          html: `<div class="flex flex-wrap items-center gap-1.5">${badge("secondary", "employee")}${badge("secondary", "engineering")}${badge("secondary", "remote")}${statusBadge("success", "active")}</div>`,
           caption: "Neutral tags for metadata; reserve color and the status-badge dot for live state.",
         },
       },
       {
         title: "Status badge",
         dont: {
-          html: `<span class="status-badge sb-error"><span class="dot"></span></span>`,
+          html: statusBadge("error", ""),
           caption: "A bare colored dot isn't a label and fails for color-blind users.",
         },
         do: {
-          html: `<span class="status-badge sb-error"><span class="dot"></span> Failed</span>`,
+          html: statusBadge("error", "Failed"),
           caption: "Always pair the dot with a word: active, pending, failed.",
         },
       },
       {
         title: "Identity row",
         dont: {
-          html: `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
-  <span style="font-size:15px;font-weight:600">Rachel Chen</span>
-  <span class="status-badge sb-success"><span class="dot"></span> active</span>
-  <span class="status-badge sb-info"><span class="dot"></span> Verified</span>
-  <span class="badge badge-secondary">employee</span>
-  <span class="badge badge-secondary">engineering</span>
-  <span class="badge badge-secondary">remote</span>
-  <span class="badge badge-secondary">admin</span>
-</div>`,
+          html: `<div class="flex flex-wrap items-center gap-2"><span class="text-[15px] font-semibold">Rachel Chen</span>${statusBadge("success", "active")}${statusBadge("info", "Verified")}${badge("secondary", "employee")}${badge("secondary", "engineering")}${badge("secondary", "remote")}${badge("secondary", "admin")}</div>`,
           caption: "A wall of badges after a name buries the one that matters.",
         },
         do: {
-          html: `<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
-  <span style="font-size:15px;font-weight:600">Rachel Chen</span>
-  <span class="status-badge sb-success"><span class="dot"></span> active</span>
-  <span class="badge badge-secondary">employee</span>
-</div>`,
+          html: `<div class="flex flex-wrap items-center gap-2"><span class="text-[15px] font-semibold">Rachel Chen</span>${statusBadge("success", "active")}${badge("secondary", "employee")}</div>`,
           caption: "Show only the one or two badges relevant to this view.",
         },
       },
       {
         title: "Token / code badge",
         dont: {
-          html: `<div style="display:flex;gap:4px;flex-wrap:wrap">
-  <span class="badge badge-secondary">authorization_code</span>
-  <span class="badge badge-secondary">refresh_token</span>
-  <span class="badge badge-secondary">client_credentials</span>
-</div>`,
+          html: `<div class="flex flex-wrap gap-1">${["authorization_code", "refresh_token", "client_credentials"].map((g) => badge("secondary", g)).join("")}</div>`,
           caption: "Proportional type makes identifiers hard to scan and compare.",
         },
         do: {
-          html: `<div style="display:flex;gap:4px;flex-wrap:wrap">
-  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">authorization_code</span>
-  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">refresh_token</span>
-  <span class="badge badge-secondary" style="font-family:var(--font-mono);font-size:10.5px">client_credentials</span>
-</div>`,
+          html: `<div class="flex flex-wrap gap-1">${["authorization_code", "refresh_token", "client_credentials"].map((g) => badge("secondary", g, true)).join("")}</div>`,
           caption: "Use the mono variant for tokens, scopes, and event names.",
         },
       },
