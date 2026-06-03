@@ -55,7 +55,7 @@ export function ComponentPage() {
               maxWidth: 640,
               lineHeight: 1.6,
             }}>
-              Combine variant, size, and state. The class string updates live: copy from the Markup field at the bottom right.
+              Combine variant, size, and state. The preview updates live; open Show code to copy the markup.
             </p>
           </header>
           <Playground config={comp.playground} />

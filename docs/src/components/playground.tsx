@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+import { Code, ChevronDown } from "lucide-react";
+import { CodeBlock } from "./code-block";
 import type { PlaygroundConfig, PlaygroundControl } from "@/data/types";
 
 interface PlaygroundProps {
@@ -7,6 +9,7 @@ interface PlaygroundProps {
 
 export function Playground({ config }: PlaygroundProps) {
   const [state, setState] = useState<Record<string, unknown>>(config.defaults);
+  const [showCode, setShowCode] = useState(false);
 
   const set = useCallback((key: string, value: unknown) => {
     setState(prev => ({ ...prev, [key]: value }));
@@ -16,61 +19,59 @@ export function Playground({ config }: PlaygroundProps) {
   const markup = config.markup(state);
 
   return (
-    <div className="playground-grid">
-      <div className="section-card" style={{
-        padding: "2rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: 180,
-      }}>
-        <div dangerouslySetInnerHTML={{ __html: html }} />
+    <div>
+      <div className="playground-grid">
+        <div className="section-card" style={{
+          padding: "2rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 180,
+        }}>
+          <div dangerouslySetInnerHTML={{ __html: html }} />
+        </div>
+
+        <div className="section-card" style={{
+          padding: "1rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.75rem",
+          fontSize: "12.5px",
+        }}>
+          {config.controls.map(ctrl => (
+            <ControlField
+              key={ctrl.key}
+              control={ctrl}
+              value={state[ctrl.key]}
+              onChange={(v) => set(ctrl.key, v)}
+              disabled={ctrl.disabledWhen?.(state) ?? false}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="section-card" style={{
-        padding: "1rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.75rem",
-        fontSize: "12.5px",
-      }}>
-        {config.controls.map(ctrl => (
-          <ControlField
-            key={ctrl.key}
-            control={ctrl}
-            value={state[ctrl.key]}
-            onChange={(v) => set(ctrl.key, v)}
-            disabled={ctrl.disabledWhen?.(state) ?? false}
+      <div className="section-card" style={{ overflow: "hidden", marginTop: "1rem" }}>
+        <button
+          onClick={() => setShowCode((v) => !v)}
+          className="docs-code-toggle"
+          aria-expanded={showCode}
+          style={{ borderTop: "none" }}
+        >
+          <Code size={13} />
+          <span>{showCode ? "Hide code" : "Show code"}</span>
+          <ChevronDown
+            size={13}
+            style={{
+              marginLeft: "auto",
+              transition: "transform 200ms ease",
+              transform: showCode ? "rotate(180deg)" : "rotate(0deg)",
+            }}
           />
-        ))}
-
-        <div style={{
-          marginTop: "0.25rem",
-          paddingTop: "0.75rem",
-          borderTop: "1px solid hsl(var(--border))",
-        }}>
-          <div style={{
-            fontSize: "11px",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "hsl(var(--muted-foreground))",
-            fontWeight: 500,
-            marginBottom: 6,
-          }}>
-            Markup
+        </button>
+        <div className={`docs-code-collapse ${showCode ? "open" : ""}`}>
+          <div style={{ minHeight: 0, overflow: "hidden" }}>
+            <CodeBlock code={markup} language="html" />
           </div>
-          <code style={{
-            display: "block",
-            fontSize: "11px",
-            color: "hsl(var(--foreground))",
-            background: "hsl(var(--muted))",
-            padding: "0.375rem 0.5rem",
-            borderRadius: 4,
-            wordBreak: "break-all",
-            lineHeight: 1.6,
-          }}>
-            {markup}
-          </code>
         </div>
       </div>
     </div>
