@@ -807,7 +807,7 @@ export const COMPONENTS: ComponentDoc[] = [
         ];
         if (s.variant === "card") {
           return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem">${opts.map(o =>
-            `<label style="display:flex;align-items:flex-start;gap:0.625rem;padding:0.875rem;border-radius:var(--radius-md);border:1px solid ${o.val === "pro" ? "hsl(var(--primary))" : "hsl(var(--border))"};cursor:pointer;${o.val === "pro" ? "background:hsl(var(--primary)/0.05);" : ""}"><span style="width:16px;height:16px;border-radius:50%;border:2px solid ${o.val === "pro" ? "hsl(var(--primary))" : "hsl(var(--border))"};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${o.val === "pro" ? `<span style="width:8px;height:8px;border-radius:50%;background:hsl(var(--primary))"></span>` : ""}</span><div><div style="font-size:13px;font-weight:500">${o.label}</div>${s.withDesc ? `<div style="font-size:12px;color:hsl(var(--muted-foreground))">${o.desc}</div>` : ""}</div></label>`
+            `<label style="display:flex;flex-direction:column;padding:0.875rem;border-radius:var(--radius-md);border:${o.val === "pro" ? "2px solid hsl(var(--primary))" : "1px solid hsl(var(--border))"};${o.val === "pro" ? "background:hsl(var(--primary)/0.05);" : ""}cursor:pointer"><input type="radio" name="pg-radio-card"${o.val === "pro" ? " checked" : ""} style="accent-color:hsl(var(--primary));margin-bottom:8px" onchange="this.closest('div').querySelectorAll('label').forEach(function(l){l.style.border='1px solid hsl(var(--border))';l.style.background=''});this.parentElement.style.border='2px solid hsl(var(--primary))';this.parentElement.style.background='hsl(var(--primary)/0.05)'"><span style="font-size:13px;font-weight:600">${o.label}</span>${s.withDesc ? `<span style="font-size:12px;color:hsl(var(--muted-foreground))">${o.desc}</span>` : ""}</label>`
           ).join("")}</div>`;
         }
         if (s.variant === "inline") {
@@ -820,89 +820,27 @@ export const COMPONENTS: ComponentDoc[] = [
         ).join("")}</div>`;
       },
     },
-    sections: [
-      {
-        title: "Stacked",
-        anatomy: "Vertical column of label + description rows. Native input with accent-color.",
-        examples: [{
-          full: true,
-          html: `<fieldset style="border:0;margin:0;padding:0;max-width:400px">
-  <legend style="font-size:14px;font-weight:600;margin-bottom:0.75rem">Plan</legend>
-  <div style="display:flex;flex-direction:column;gap:0.75rem">
-    <label style="display:flex;gap:0.5rem;cursor:pointer">
-      <input type="radio" name="plan2" checked style="accent-color:hsl(var(--primary));margin-top:3px">
-      <div>
-        <div style="font-size:13px;font-weight:500">Hobby</div>
-        <div style="font-size:12px;color:hsl(var(--muted-foreground))">Get started for free with up to 3 projects.</div>
-      </div>
-    </label>
-    <label style="display:flex;gap:0.5rem;cursor:pointer">
-      <input type="radio" name="plan2" style="accent-color:hsl(var(--primary));margin-top:3px">
-      <div>
-        <div style="font-size:13px;font-weight:500">Freelancer</div>
-        <div style="font-size:12px;color:hsl(var(--muted-foreground))">Unlimited projects + invoicing for one person.</div>
-      </div>
-    </label>
-    <label style="display:flex;gap:0.5rem;cursor:pointer">
-      <input type="radio" name="plan2" style="accent-color:hsl(var(--primary));margin-top:3px">
-      <div>
-        <div style="font-size:13px;font-weight:500">Startup</div>
-        <div style="font-size:12px;color:hsl(var(--muted-foreground))">Up to 25 users + audit log.</div>
-      </div>
-    </label>
-    <label style="display:flex;gap:0.5rem;cursor:pointer;opacity:0.5">
-      <input type="radio" name="plan2" disabled style="accent-color:hsl(var(--primary));margin-top:3px">
-      <div>
-        <div style="font-size:13px;font-weight:500">Enterprise</div>
-        <div style="font-size:12px;color:hsl(var(--muted-foreground))">Unlimited everything.</div>
-      </div>
-    </label>
-  </div>
-</fieldset>`,
-        }],
-      },
-      {
-        title: "Card-style",
-        anatomy: "The whole card is the trigger. Selected card gets a primary border + tinted background.",
-        examples: [{
-          full: true,
-          html: `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;max-width:480px">
-  <label style="display:flex;flex-direction:column;padding:1rem;border:1px solid hsl(var(--border));border-radius:8px;cursor:pointer">
-    <input type="radio" name="plan3" style="accent-color:hsl(var(--primary));margin-bottom:8px" onchange="this.closest('div[style*=grid]').querySelectorAll('label').forEach(l=>{l.style.border='1px solid hsl(var(--border))';l.style.background=''});this.parentElement.style.border='2px solid hsl(var(--primary))';this.parentElement.style.background='hsl(var(--primary) / 0.05)'">
-    <span style="font-weight:600;font-size:13px">Hobby</span>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">Free forever</span>
-  </label>
-  <label style="display:flex;flex-direction:column;padding:1rem;border:2px solid hsl(var(--primary));border-radius:8px;background:hsl(var(--primary) / 0.05);cursor:pointer">
-    <input type="radio" name="plan3" checked style="accent-color:hsl(var(--primary));margin-bottom:8px" onchange="this.closest('div[style*=grid]').querySelectorAll('label').forEach(l=>{l.style.border='1px solid hsl(var(--border))';l.style.background=''});this.parentElement.style.border='2px solid hsl(var(--primary))';this.parentElement.style.background='hsl(var(--primary) / 0.05)'">
-    <span style="font-weight:600;font-size:13px">Pro</span>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">$12/mo per user</span>
-  </label>
-  <label style="display:flex;flex-direction:column;padding:1rem;border:1px solid hsl(var(--border));border-radius:8px;cursor:pointer">
-    <input type="radio" name="plan3" style="accent-color:hsl(var(--primary));margin-bottom:8px" onchange="this.closest('div[style*=grid]').querySelectorAll('label').forEach(l=>{l.style.border='1px solid hsl(var(--border))';l.style.background=''});this.parentElement.style.border='2px solid hsl(var(--primary))';this.parentElement.style.background='hsl(var(--primary) / 0.05)'">
-    <span style="font-weight:600;font-size:13px">Enterprise</span>
-    <span style="font-size:12px;color:hsl(var(--muted-foreground))">Contact us</span>
-  </label>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
+  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r1" style="accent-color:hsl(var(--primary))"> Hobby</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r1" style="accent-color:hsl(var(--primary))"> Pro</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r1" style="accent-color:hsl(var(--primary))"> Enterprise</label>
 </div>`,
-          code: `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem">
-  <label class="radio-card">
-    <input type="radio" name="plan">
-    <span class="font-weight:600">Hobby</span>
-    <span>Free forever</span>
-  </label>
-  <label class="radio-card selected">
-    <input type="radio" name="plan" checked>
-    <span>Pro</span>
-    <span>$12/mo per user</span>
-  </label>
-  <label class="radio-card">
-    <input type="radio" name="plan">
-    <span>Enterprise</span>
-    <span>Contact us</span>
-  </label>
-</div>`,
-        }],
+        caption: "Leaving a radio group with nothing selected forces an extra decision and can submit empty.",
       },
-    ],
+      do: {
+        html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
+  <div style="font-weight:600;margin-bottom:0.25rem">Plan</div>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r2" style="accent-color:hsl(var(--primary))"> Hobby</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r2" checked style="accent-color:hsl(var(--primary))"> Pro</label>
+  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="dd-r2" style="accent-color:hsl(var(--primary))"> Enterprise</label>
+</div>`,
+        caption: "Pre-select a sensible default so the common path needs no clicks.",
+      },
+    }],
   },
 
   {
