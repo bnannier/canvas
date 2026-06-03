@@ -6,8 +6,11 @@ breaking change from the v3 hand-authored CSS library (pin the v3 tag to
 migrate).
 
 Canvas is the platform's Tailwind theme plus a library of components expressed as
-Tailwind utility-class markup, plus small framework-agnostic JS helpers. No
-React/RN/Vue code lives here. Framework bindings live in downstream packages
+Tailwind utility-class markup, plus small framework-agnostic JS helpers. It fills
+the role shadcn fills elsewhere, a Tailwind-native component system you compose
+from utilities, but it does not depend on or vendor shadcn: the theme and the
+components are Canvas's own, built fresh on Tailwind. Canvas aims to be the new
+shadcn for the Olympus platform. No React/RN/Vue code lives here. Framework bindings live in downstream packages
 (`@olympusoss/canvas-react`, `-react-native`, `-vue`, `-flux`; pattern
 `canvas-{framework}`) that depend on Canvas and bake its utility markup into
 components. The dependency arrow is one-way: Canvas never references a downstream
@@ -58,11 +61,12 @@ component CSS.
 **The design language is the theme.** Every visual decision (color, spacing,
 type, radius, shadow, motion) is a Tailwind theme token defined in `@theme` as a
 CSS custom property, which generates the matching utilities (`bg-primary`,
-`rounded-md`, `text-muted-foreground`). Tokens stay shadcn-compatible: raw HSL
-channel variables (`--background`, `--primary`, `--ring`, ...) live at `:root`
-and `.dark`, and `@theme inline` maps them to Tailwind color tokens
-(`--color-background: hsl(var(--background))`). Change a token value and every
-utility that references it follows.
+`rounded-md`, `text-muted-foreground`). Canvas defines its own semantic tokens
+(`--color-primary`, `--color-muted-foreground`, `--color-border`, `--color-ring`,
+`--radius-md`, ...), built fresh on Tailwind's defaults: not shadcn's set, not
+recovered v3 values. Light values live at `:root`; dark overrides under `.dark`,
+following Tailwind v4's own CSS-variable dark-mode pattern. Change a token value
+and every utility that references it follows.
 
 **A build step is required.** Tailwind scans content and JIT-generates only the
 utilities in use, so consumers run Tailwind (the `@tailwindcss/vite` plugin, the
@@ -93,11 +97,11 @@ composition is the docs data (`docs/src/data/`) and the downstream framework
 packages.
 
 ## Naming
-- **Theme tokens**: shadcn-compatible. Raw channels (`--background`, `--primary`,
-  `--muted-foreground`, `--ring`, `--chart-1`, `--sidebar`) at `:root`/`.dark`,
-  mapped into Tailwind via `@theme inline` so they generate semantic utilities
-  (`bg-primary`, `text-muted-foreground`). Scale tokens use Tailwind namespaces
-  (`--radius-*`, `--font-*`, `--shadow-*`, `--animate-*`).
+- **Theme tokens**: Canvas's own semantic names defined in `@theme` using Tailwind
+  namespaces, so they generate semantic utilities: `--color-primary` produces
+  `bg-primary`, `--color-muted-foreground` produces `text-muted-foreground`, plus
+  `--radius-*`, `--font-*`, `--shadow-*`, `--animate-*`. Fresh, Tailwind-native
+  values; no shadcn token set, no recovered v3 values.
 - **Utilities**: Tailwind's own (`bg-primary`, `px-4`, `rounded-md`). No Canvas
   component classes, no `canvas-` prefix, no BEM. Semantics live in the token
   names and in downstream component names (`<Button variant="...">`), not in CSS
