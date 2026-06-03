@@ -61,7 +61,7 @@ export function Playground({ config }: PlaygroundProps) {
 
   return (
     <div>
-      <div className="playground-grid" style={{ alignItems: "start" }}>
+      <div className="playground-grid">
         <div className="section-card" style={{
           padding: "2rem",
           display: "flex",
