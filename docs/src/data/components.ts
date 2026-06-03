@@ -901,8 +901,8 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Atoms",
     playground: {
       controls: [
-        { type: "pills", key: "shape", label: "Shape", options: ["text", "avatar", "button", "card"], cols: 4 },
-        { type: "range", key: "width", label: "Width", min: 10, max: 100, step: 5, suffix: "%" },
+        { type: "pills", key: "shape", label: "Shape", options: ["text", "avatar", "button", "card", "list", "table"], cols: 3 },
+        { type: "range", key: "width", label: "Width", min: 10, max: 100, step: 5, suffix: "%", disabledWhen: (s) => s.shape === "card" || s.shape === "list" || s.shape === "table" },
         { type: "check", key: "animate", label: "Animate pulse" },
       ],
       defaults: { shape: "text", width: 60, animate: true },
@@ -911,7 +911,7 @@ export const COMPONENTS: ComponentDoc[] = [
         const w = s.width as number;
         if (s.shape === "avatar") {
           const sz = Math.round(w * 0.8);
-          return `<div class="skeleton${pulse}" style="width:${sz}px;height:${sz}px;border-radius:9999px"></div>`;
+          return `<div class="skeleton skeleton-circle${pulse}" style="width:${sz}px;height:${sz}px"></div>`;
         }
         if (s.shape === "button") {
           return `<div class="skeleton${pulse}" style="width:${Math.round(w * 1.6)}px;height:36px;border-radius:var(--radius-md)"></div>`;
@@ -919,91 +919,27 @@ export const COMPONENTS: ComponentDoc[] = [
         if (s.shape === "card") {
           return `<div class="section-card" style="max-width:320px;padding:1rem"><div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem"><div class="skeleton${pulse}" style="width:40px;height:40px;border-radius:9999px;flex-shrink:0"></div><div style="flex:1"><div class="skeleton skeleton-text${pulse}" style="width:70%"></div><div class="skeleton skeleton-text${pulse}" style="width:40%;margin-top:6px"></div></div></div><div class="skeleton skeleton-text${pulse}" style="width:100%"></div><div class="skeleton skeleton-text${pulse}" style="width:80%;margin-top:6px"></div></div>`;
         }
+        if (s.shape === "list") {
+          return `<div style="display:flex;flex-direction:column;gap:1rem;max-width:400px"><div style="display:flex;gap:0.75rem;align-items:center"><div class="skeleton skeleton-circle${pulse}" style="width:2rem;height:2rem"></div><div style="flex:1"><div class="skeleton skeleton-text${pulse}" style="width:70%;margin-bottom:6px"></div><div class="skeleton skeleton-text${pulse}" style="width:50%"></div></div><div class="skeleton skeleton-text${pulse}" style="width:40px"></div></div><div style="display:flex;gap:0.75rem;align-items:center"><div class="skeleton skeleton-circle${pulse}" style="width:2rem;height:2rem"></div><div style="flex:1"><div class="skeleton skeleton-text${pulse}" style="width:55%;margin-bottom:6px"></div><div class="skeleton skeleton-text${pulse}" style="width:35%"></div></div><div class="skeleton skeleton-text${pulse}" style="width:40px"></div></div></div>`;
+        }
+        if (s.shape === "table") {
+          const row = (a: string, b: string, last: boolean) => `<div style="display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:0.75rem;padding:0.75rem 0;${last ? "" : "border-bottom:1px solid hsl(var(--border))"}"><div class="skeleton skeleton-text${pulse}" style="width:100%"></div><div class="skeleton skeleton-text${pulse}" style="width:${a}"></div><div class="skeleton skeleton-text${pulse}" style="width:${b}"></div><div class="skeleton skeleton-text${pulse}" style="width:100%"></div></div>`;
+          return `<div style="max-width:560px">${row("70%", "50%", false)}${row("80%", "60%", false)}${row("65%", "45%", true)}</div>`;
+        }
         return `<div class="skeleton skeleton-text${pulse}" style="width:${w}%"></div>`;
       },
     },
-    sections: [
-      {
-        title: "Shapes",
-        anatomy: "Plain divs with bg-muted + animate-pulse. Sized to mimic the real content.",
-        examples: [{
-          html: `<div style="display:flex;gap:1.5rem;align-items:center">
-  <div class="skeleton skeleton-circle" style="width:2.5rem;height:2.5rem"></div>
-  <div style="display:flex;flex-direction:column;gap:0.5rem;flex:1">
-    <div class="skeleton skeleton-text" style="width:60%"></div>
-    <div class="skeleton skeleton-text" style="width:40%"></div>
-  </div>
-</div>`,
-        }],
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="skeleton skeleton-pulse" style="width:320px;height:88px;border-radius:var(--radius-md)"></div>`,
+        caption: "A generic block that ignores the content's shape causes a jarring shift when it loads.",
       },
-      {
-        title: "Stacked list row",
-        anatomy: "One row of an avatar + two-line content + trailing meta.",
-        examples: [{
-          full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:1rem;max-width:400px">
-  <div style="display:flex;gap:0.75rem;align-items:center">
-    <div class="skeleton skeleton-circle" style="width:2rem;height:2rem"></div>
-    <div style="flex:1"><div class="skeleton skeleton-text" style="width:70%;margin-bottom:6px"></div><div class="skeleton skeleton-text" style="width:50%"></div></div>
-    <div class="skeleton skeleton-text" style="width:40px"></div>
-  </div>
-  <div style="display:flex;gap:0.75rem;align-items:center">
-    <div class="skeleton skeleton-circle" style="width:2rem;height:2rem"></div>
-    <div style="flex:1"><div class="skeleton skeleton-text" style="width:55%;margin-bottom:6px"></div><div class="skeleton skeleton-text" style="width:35%"></div></div>
-    <div class="skeleton skeleton-text" style="width:40px"></div>
-  </div>
-</div>`,
-        }],
+      do: {
+        html: `<div class="section-card" style="max-width:320px;padding:1rem"><div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem"><div class="skeleton skeleton-circle skeleton-pulse" style="width:40px;height:40px;flex-shrink:0"></div><div style="flex:1"><div class="skeleton skeleton-text skeleton-pulse" style="width:70%"></div><div class="skeleton skeleton-text skeleton-pulse" style="width:40%;margin-top:6px"></div></div></div><div class="skeleton skeleton-text skeleton-pulse" style="width:100%"></div></div>`,
+        caption: "Mirror the real layout (avatar circle, text lines) so the swap is seamless.",
       },
-      {
-        title: "Stat card placeholder",
-        examples: [{
-          html: `<div class="card" style="max-width:320px;padding:1.25rem">
-  <div class="skeleton skeleton-text" style="width:40%;margin-bottom:0.75rem"></div>
-  <div class="skeleton skeleton-text" style="width:60%;height:24px;margin-bottom:0.5rem"></div>
-  <div class="skeleton skeleton-text" style="width:30%"></div>
-</div>`,
-        }],
-      },
-      {
-        title: "Table placeholder",
-        examples: [{
-          full: true,
-          html: `<div style="max-width:560px">
-  <div style="display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid hsl(var(--border))">
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-    <div class="skeleton skeleton-text" style="width:70%"></div>
-    <div class="skeleton skeleton-text" style="width:50%"></div>
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-  </div>
-  <div style="display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid hsl(var(--border))">
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-    <div class="skeleton skeleton-text" style="width:80%"></div>
-    <div class="skeleton skeleton-text" style="width:60%"></div>
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-  </div>
-  <div style="display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid hsl(var(--border))">
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-    <div class="skeleton skeleton-text" style="width:65%"></div>
-    <div class="skeleton skeleton-text" style="width:45%"></div>
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-  </div>
-  <div style="display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid hsl(var(--border))">
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-    <div class="skeleton skeleton-text" style="width:75%"></div>
-    <div class="skeleton skeleton-text" style="width:55%"></div>
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-  </div>
-  <div style="display:grid;grid-template-columns:40px 1fr 1fr 80px;gap:0.75rem;padding:0.75rem 0">
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-    <div class="skeleton skeleton-text" style="width:60%"></div>
-    <div class="skeleton skeleton-text" style="width:40%"></div>
-    <div class="skeleton skeleton-text" style="width:100%"></div>
-  </div>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
