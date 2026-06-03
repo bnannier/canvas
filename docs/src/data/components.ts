@@ -1091,50 +1091,37 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Alerts",
     description: "Inline messages: info, success, warning, error.",
     category: "Molecules",
-    sections: [
-      {
-        title: "Variants",
-        anatomy: "Tinted background + matching border + icon + content. Use sparingly: the page should not be full of alerts.",
-        examples: [{
-          full: true,
-          html: `<div style="display:flex;flex-direction:column;gap:0.75rem;max-width:560px">
-  <div class="alert alert-info"><div><div class="alert-title">Heads up</div><div class="alert-desc">Maintenance window scheduled for Sunday 2:00 UTC.</div></div></div>
-  <div class="alert alert-success"><div><div class="alert-title">All set</div><div class="alert-desc">Your changes have been saved successfully.</div></div></div>
-  <div class="alert alert-warning"><div><div class="alert-title">Action required</div><div class="alert-desc">Your trial expires in 3 days.</div></div></div>
-  <div class="alert alert-destructive"><div><div class="alert-title">Something went wrong</div><div class="alert-desc">Could not save your changes. Please try again.</div></div></div>
-</div>`,
-        }],
+    playground: {
+      controls: [
+        { type: "pills", key: "variant", label: "Variant", options: ["info", "success", "warning", "destructive"], cols: 4, disabledWhen: (s) => s.banner === true },
+        { type: "check", key: "title", label: "Title", disabledWhen: (s) => s.banner === true },
+        { type: "check", key: "actions", label: "Action buttons", disabledWhen: (s) => s.banner === true },
+        { type: "check", key: "banner", label: "Full-width banner" },
+      ],
+      defaults: { variant: "info", title: true, actions: false, banner: false },
+      render: (s) => {
+        if (s.banner) {
+          return `<div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.625rem 1rem;background:hsl(var(--foreground));color:hsl(var(--background));font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>We've shipped a new dashboard. <a href="#" style="color:inherit;text-decoration:underline" onclick="event.preventDefault()">See what's new &rarr;</a></span></div>`;
+        }
+        const v = s.variant as string;
+        const titles: Record<string, string> = { info: "Heads up", success: "All set", warning: "Action required", destructive: "Something went wrong" };
+        const descs: Record<string, string> = { info: "Maintenance window scheduled for Sunday 2:00 UTC.", success: "Your changes have been saved successfully.", warning: "Your trial expires in 3 days.", destructive: "Could not save your changes. Please try again." };
+        const title = s.title ? `<div class="alert-title">${titles[v]}</div>` : "";
+        const actions = s.actions ? `<div style="display:flex;gap:0.5rem;margin-top:0.75rem"><button class="btn btn-sm btn-default" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Upgrading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Upgrade plan</button><button class="btn btn-ghost btn-sm" onclick="this.closest('.alert').style.display='none'">Dismiss</button></div>` : "";
+        return `<div class="alert alert-${v}" style="max-width:560px"><div>${title}<div class="alert-desc">${descs[v]}</div>${actions}</div></div>`;
       },
-      {
-        title: "With actions",
-        examples: [{
-          full: true,
-          html: `<div style="max-width:560px">
-  <div class="alert alert-warning">
-    <div>
-      <div class="alert-title">Your account is approaching the user limit</div>
-      <div class="alert-desc">You have 9/10 seats in use. Upgrade to add more.</div>
-      <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
-        <button class="btn btn-sm btn-default" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Upgrading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Upgrade plan</button>
-        <button class="btn btn-ghost btn-sm" onclick="var a=this.closest('.alert');a.style.opacity='0';a.style.transition='opacity 300ms';setTimeout(function(){a.style.display='none';var btn=document.createElement('button');btn.className='btn btn-outline btn-sm';btn.textContent='Show alert';btn.onclick=function(){a.style.display='';a.style.opacity='1';btn.remove()};a.parentElement.appendChild(btn)},300)">Dismiss</button>
-      </div>
-    </div>
-  </div>
-</div>`,
-        }],
+    },
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div class="alert alert-destructive" style="max-width:560px"><div><div class="alert-title">Saved</div><div class="alert-desc">Your changes have been saved successfully.</div></div></div>`,
+        caption: "Using the error variant for non-errors cries wolf; users learn to ignore red.",
       },
-      {
-        title: "Banner (full-width)",
-        anatomy: "Top of page; for system-wide announcements. No rounded corners, no shadow.",
-        examples: [{
-          full: true,
-          html: `<div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:0.625rem 1rem;background:hsl(var(--foreground));color:hsl(var(--background));font-size:13px">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-  <span>We've shipped a new dashboard. <a href="#" style="color:inherit;text-decoration:underline" onclick="event.preventDefault();this.style.opacity='0.6';var a=this;setTimeout(function(){a.style.opacity='1'},400)">See what's new &rarr;</a></span>
-</div>`,
-        }],
+      do: {
+        html: `<div class="alert alert-success" style="max-width:560px"><div><div class="alert-title">Saved</div><div class="alert-desc">Your changes have been saved successfully.</div></div></div>`,
+        caption: "Match the variant to the severity: success for confirmations, destructive for failures.",
       },
-    ],
+    }],
   },
 
   {
