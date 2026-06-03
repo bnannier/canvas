@@ -9,7 +9,7 @@ interface PlaygroundProps {
 
 export function Playground({ config }: PlaygroundProps) {
   const [state, setState] = useState<Record<string, unknown>>(config.defaults);
-  const [showCode, setShowCode] = useState(false);
+  const [showCode, setShowCode] = useState(true);
 
   const set = useCallback((key: string, value: unknown) => {
     setState(prev => ({ ...prev, [key]: value }));
