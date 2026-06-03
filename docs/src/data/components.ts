@@ -214,57 +214,15 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Atoms",
     playground: {
       controls: [
-        { type: "range", key: "depth", label: "Depth", min: 2, max: 6, step: 1 },
-        { type: "pills", key: "separator", label: "Separator", options: ["chevron", "slash", "dot"], cols: 3 },
-        { type: "check", key: "homeIcon", label: "Leading home icon" },
+        { type: "range", key: "depth", label: "Depth", min: 2, max: 6, step: 1, disabledWhen: (s) => s.pageHeader === true },
+        { type: "pills", key: "separator", label: "Separator", options: ["chevron", "slash", "dot"], cols: 3, disabledWhen: (s) => s.pageHeader === true },
+        { type: "check", key: "homeIcon", label: "Leading home icon", disabledWhen: (s) => s.pageHeader === true },
+        { type: "check", key: "pageHeader", label: "In a page header" },
       ],
-      defaults: { depth: 4, separator: "chevron", homeIcon: false },
+      defaults: { depth: 4, separator: "chevron", homeIcon: false, pageHeader: false },
       render: (s) => {
-        const crumbs = ["Projects", "Identity Platform", "Settings", "Profile", "Avatar", "Edit"].slice(0, s.depth as number);
-        const sepHtml = s.separator === "chevron"
-          ? `<span class="breadcrumb-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5"><path d="m9 18 6-6-6-6"/></svg></span>`
-          : `<span class="breadcrumb-sep">${s.separator === "dot" ? "·" : "/"}</span>`;
-        const homeHtml = s.homeIcon
-          ? `<span class="breadcrumb-item"><a href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>${sepHtml}`
-          : "";
-        const items = crumbs.map((c, i) => i === crumbs.length - 1
-          ? `<span class="breadcrumb-item active">${c}</span>`
-          : `<span class="breadcrumb-item"><a href="#">${c}</a></span>${sepHtml}`).join("");
-        return `<nav class="breadcrumb">${homeHtml}${items}</nav>`;
-      },
-    },
-    sections: [
-      {
-        title: "With chevrons",
-        anatomy: "Each segment is a link except the current page. 11px chevron separator.",
-        examples: [{
-          html: `<nav class="breadcrumb" onclick="var a=event.target.closest('a');if(a){event.preventDefault();this.querySelectorAll('.breadcrumb-item').forEach(function(s){s.classList.remove('active')});a.closest('.breadcrumb-item').classList.add('active')}">
-  <span class="breadcrumb-item"><a href="#">Home</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Components</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Button</span>
-</nav>`,
-        }],
-      },
-      {
-        title: "With home icon",
-        examples: [{
-          html: `<nav class="breadcrumb" onclick="var a=event.target.closest('a');if(a){event.preventDefault();this.querySelectorAll('.breadcrumb-item').forEach(function(s){s.classList.remove('active')});a.closest('.breadcrumb-item').classList.add('active')}">
-  <span class="breadcrumb-item"><a href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item"><a href="#">Components</a></span>
-  <span class="breadcrumb-sep">/</span>
-  <span class="breadcrumb-item active">Button</span>
-</nav>`,
-        }],
-      },
-      {
-        title: "In a PageHeader",
-        anatomy: "Most pages use the breadcrumb inside PageHeader instead of standalone.",
-        examples: [{
-          full: true,
-          html: `<div class="page-header">
+        if (s.pageHeader) {
+          return `<div class="page-header">
   <div>
     <nav class="breadcrumb" style="margin-bottom:0.5rem" onclick="var a=event.target.closest('a');if(a){event.preventDefault();this.querySelectorAll('.breadcrumb-item').forEach(function(s){s.classList.remove('active')});a.closest('.breadcrumb-item').classList.add('active')}">
       <span class="breadcrumb-item"><a href="#">Users</a></span>
@@ -277,10 +235,22 @@ export const COMPONENTS: ComponentDoc[] = [
     <button class="btn btn-outline btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Editing…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Edit</button>
     <button class="btn btn-default btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Saved!';setTimeout(function(){b.textContent=o;b.disabled=false},2000)">Save</button>
   </div>
-</div>`,
-        }],
+</div>`;
+        }
+        const crumbs = ["Projects", "Identity Platform", "Settings", "Profile", "Avatar", "Edit"].slice(0, s.depth as number);
+        const sepHtml = s.separator === "chevron"
+          ? `<span class="breadcrumb-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5"><path d="m9 18 6-6-6-6"/></svg></span>`
+          : `<span class="breadcrumb-sep">${s.separator === "dot" ? "·" : "/"}</span>`;
+        const homeHtml = s.homeIcon
+          ? `<span class="breadcrumb-item"><a href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a></span>${sepHtml}`
+          : "";
+        const items = crumbs.map((c, i) => i === crumbs.length - 1
+          ? `<span class="breadcrumb-item active">${c}</span>`
+          : `<span class="breadcrumb-item"><a href="#">${c}</a></span>${sepHtml}`).join("");
+        return `<nav class="breadcrumb" onclick="var a=event.target.closest('a');if(a){event.preventDefault();this.querySelectorAll('.breadcrumb-item').forEach(function(s){s.classList.remove('active')});a.closest('.breadcrumb-item').classList.add('active')}">${homeHtml}${items}</nav>`;
       },
-    ],
+    },
+    sections: [],
   },
 
   {
