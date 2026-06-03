@@ -124,6 +124,14 @@ const hrLine = `<hr class="border-border">`;
 const sepLabel = (label: string) =>
   `<div class="flex items-center gap-3 text-xs text-muted-foreground"><span class="h-px flex-1 bg-border"></span><span>${label}</span><span class="h-px flex-1 bg-border"></span></div>`;
 
+const menuItemEl = (label: string, extra = "", attrs = "") =>
+  `<button type="button" data-menu-item class="${menuItem}${extra ? " " + extra : ""}"${attrs}>${label}</button>`;
+const menuFlash =
+  ` onclick="var t=event.target.closest('[data-menu-item]');if(!t)return;t.classList.add('bg-accent');setTimeout(function(){t.classList.remove('bg-accent')},300)"`;
+const menuTrigger =
+  ` onclick="var d=this.nextElementSibling;if(d.classList.contains('hidden')){d.classList.remove('hidden');var c=function(e){if(!d.contains(e.target)){d.classList.add('hidden');document.removeEventListener('click',c)}};setTimeout(function(){document.addEventListener('click',c)},0)}else{d.classList.add('hidden')}"`;
+const shortcut = (k: string) => `<span class="ml-auto text-xs tracking-widest text-muted-foreground">${k}</span>`;
+
 export const COMPONENTS: ComponentDoc[] = [
   // ─── Atoms ────────────────────────────────────────────────────────────
 
@@ -739,23 +747,18 @@ export const COMPONENTS: ComponentDoc[] = [
       ],
       defaults: { trigger: false, label: false, icons: true, shortcuts: false, disabledItem: false, destructive: false },
       render: (s) => {
-        const ico = (d: string) => s.icons ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${d}</svg> ` : "";
-        const sc = (k: string) => s.shortcuts ? `<span class="command-shortcut">${k}</span>` : "";
-        let items = s.label ? `<div class="dropdown-label">Actions</div>` : "";
-        items += `<button class="dropdown-item">${ico(`<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>`)}<span>Edit profile</span>${sc("⌘E")}</button>`;
-        items += `<button class="dropdown-item">${ico(`<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>`)}<span>Duplicate</span>${sc("⌘D")}</button>`;
-        items += `<button class="dropdown-item">${ico(`<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>`)}<span>Settings</span>${sc("⌘,")}</button>`;
-        if (s.disabledItem) {
-          items += `<button class="dropdown-item disabled"><span>Archive</span></button>`;
-        }
-        if (s.destructive) {
-          items += `<div class="dropdown-sep"></div><button class="dropdown-item" style="color:hsl(0 84% 60%)">${ico(`<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`)}<span>Delete…</span></button>`;
-        }
-        const flash = `onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"`;
+        const ico = (d: string) => s.icons ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">${d}</svg>` : "";
+        const sc = (k: string) => s.shortcuts ? shortcut(k) : "";
+        let items = s.label ? `<div class="${menuLabel}">Actions</div>` : "";
+        items += menuItemEl(`${ico(`<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>`)}<span>Edit profile</span>${sc("⌘E")}`);
+        items += menuItemEl(`${ico(`<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>`)}<span>Duplicate</span>${sc("⌘D")}`);
+        items += menuItemEl(`${ico(`<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>`)}<span>Settings</span>${sc("⌘,")}`);
+        if (s.disabledItem) items += menuItemEl(`<span>Archive</span>`, "pointer-events-none opacity-50", " disabled");
+        if (s.destructive) items += `<div class="${menuSep}"></div>` + menuItemEl(`${ico(`<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`)}<span>Delete…</span>`, "text-destructive");
         if (s.trigger) {
-          return `<div style="position:relative;display:inline-block" onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="var d=this.nextElementSibling;if(d.style.display==='none'){d.style.display='block';var close=function(e){if(!d.contains(e.target)){d.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{d.style.display='none'}">Actions <span style="margin-left:2px;font-size:10px">▾</span></button><div class="dropdown" style="position:absolute;top:100%;left:0;margin-top:4px;min-width:200px;display:none;z-index:10" ${flash}>${items}</div></div>`;
+          return `<div class="relative inline-block pb-28" onclick="event.stopPropagation()"><button class="${btnBase} ${btnVariant.outline} ${btnSize.sm}"${menuTrigger}>Actions ${chevronDown}</button><div class="${menuBase} absolute left-0 top-full z-10 mt-1 hidden"${menuFlash}>${items}</div></div>`;
         }
-        return `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" ${flash}>${items}</div>`;
+        return `<div class="${menuBase}"${menuFlash}>${items}</div>`;
       },
     },
     sections: [],
@@ -763,44 +766,44 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Trigger",
         dont: {
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item"><span>Edit profile</span></button><button class="dropdown-item"><span>Duplicate</span></button><button class="dropdown-item"><span>Settings</span></button></div>`,
+          html: `<div class="${menuBase}"${menuFlash}>${menuItemEl("<span>Edit profile</span>")}${menuItemEl("<span>Duplicate</span>")}${menuItemEl("<span>Settings</span>")}</div>`,
           caption: "Always open: it clutters the page and there's no way to dismiss it.",
         },
         do: {
-          html: `<div style="position:relative;display:inline-block;padding-bottom:7rem" onclick="event.stopPropagation()"><button class="btn btn-outline btn-sm" onclick="var d=this.nextElementSibling;if(d.style.display==='none'){d.style.display='block';var close=function(e){if(!d.contains(e.target)){d.style.display='none';document.removeEventListener('click',close)}};setTimeout(function(){document.addEventListener('click',close)},0)}else{d.style.display='none'}">Actions <span style="margin-left:2px;font-size:10px">▾</span></button><div class="dropdown" style="position:absolute;top:100%;left:0;margin-top:4px;min-width:200px;display:none;z-index:10" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item"><span>Edit profile</span></button><button class="dropdown-item"><span>Duplicate</span></button><button class="dropdown-item"><span>Settings</span></button></div></div>`,
+          html: `<div class="relative inline-block pb-28" onclick="event.stopPropagation()"><button class="${btnBase} ${btnVariant.outline} ${btnSize.sm}"${menuTrigger}>Actions ${chevronDown}</button><div class="${menuBase} absolute left-0 top-full z-10 mt-1 hidden"${menuFlash}>${menuItemEl("<span>Edit profile</span>")}${menuItemEl("<span>Duplicate</span>")}${menuItemEl("<span>Settings</span>")}</div></div>`,
           caption: "Click Actions to open; click outside to dismiss.",
         },
       },
       {
         title: "Sectioning",
         dont: {
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">New file</button><button class="dropdown-item">New folder</button><button class="dropdown-item">Upload</button><button class="dropdown-item">Rename</button><button class="dropdown-item">Duplicate</button><button class="dropdown-item">Move to…</button><button class="dropdown-item">Download</button><button class="dropdown-item">Delete</button></div>`,
+          html: `<div class="${menuBase}"${menuFlash}>${["New file", "New folder", "Upload", "Rename", "Duplicate", "Move to…", "Download", "Delete"].map((l) => menuItemEl(l)).join("")}</div>`,
           caption: "Click an item: a long, flat menu of eight actions is hard to scan.",
         },
         do: {
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><div class="dropdown-label">Create</div><button class="dropdown-item">New file</button><button class="dropdown-item">New folder</button><button class="dropdown-item">Upload</button><div class="dropdown-sep"></div><div class="dropdown-label">Manage</div><button class="dropdown-item">Rename</button><button class="dropdown-item">Move to…</button><button class="dropdown-item">Download</button></div>`,
+          html: `<div class="${menuBase}"${menuFlash}><div class="${menuLabel}">Create</div>${["New file", "New folder", "Upload"].map((l) => menuItemEl(l)).join("")}<div class="${menuSep}"></div><div class="${menuLabel}">Manage</div>${["Rename", "Move to…", "Download"].map((l) => menuItemEl(l)).join("")}</div>`,
           caption: "Click an item: group related actions under labels with a separator.",
         },
       },
       {
         title: "Disabled item",
         dont: {
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item" style="opacity:0.45">Archive</button><button class="dropdown-item">Duplicate</button></div>`,
+          html: `<div class="${menuBase}"${menuFlash}>${menuItemEl("Edit")}${menuItemEl("Archive", "opacity-50")}${menuItemEl("Duplicate")}</div>`,
           caption: "Click Archive: it looks disabled but still fires, a greyed item that works is a trap.",
         },
         do: {
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:200px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item disabled">Archive</button><button class="dropdown-item">Duplicate</button></div>`,
+          html: `<div class="${menuBase}"${menuFlash}>${menuItemEl("Edit")}${menuItemEl("Archive", "pointer-events-none opacity-50", " disabled")}${menuItemEl("Duplicate")}</div>`,
           caption: "Click Archive: nothing happens; a real disabled item doesn't respond.",
         },
       },
       {
         title: "Destructive item",
         dont: {
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item">Delete</button><button class="dropdown-item">Duplicate</button></div>`,
+          html: `<div class="${menuBase}"${menuFlash}>${menuItemEl("Edit")}${menuItemEl("Delete")}${menuItemEl("Duplicate")}</div>`,
           caption: "Click an item: a destructive action wedged between routine ones invites a costly misclick.",
         },
         do: {
-          html: `<div class="dropdown" style="position:relative;display:inline-block;min-width:180px" onclick="var t=event.target.closest('.dropdown-item');if(!t||t.classList.contains('disabled'))return;t.style.background='hsl(var(--accent))';setTimeout(function(){t.style.background=''},300)"><button class="dropdown-item">Edit</button><button class="dropdown-item">Duplicate</button><div class="dropdown-sep"></div><button class="dropdown-item" style="color:hsl(0 84% 60%)">Delete</button></div>`,
+          html: `<div class="${menuBase}"${menuFlash}>${menuItemEl("Edit")}${menuItemEl("Duplicate")}<div class="${menuSep}"></div>${menuItemEl("Delete", "text-destructive")}</div>`,
           caption: "Click an item: separate destructive actions with a divider, color them, and place them last.",
         },
       },
