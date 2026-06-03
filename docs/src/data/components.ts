@@ -657,130 +657,54 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Atoms",
     playground: {
       controls: [
+        { type: "pills", key: "type", label: "Control", options: ["text", "number", "select", "textarea"], cols: 4 },
         { type: "pills", key: "state", label: "State", options: ["default", "focus", "error", "disabled", "readonly"], cols: 3 },
-        { type: "check", key: "icon", label: "With leading icon" },
+        { type: "check", key: "icon", label: "With leading icon", disabledWhen: (s) => s.type !== "text" },
         { type: "check", key: "helper", label: "Show helper" },
       ],
-      defaults: { state: "default", icon: true, helper: true },
+      defaults: { type: "text", state: "default", icon: true, helper: true },
       render: (s) => {
         const st = s.state as string;
-        const mailIco = s.icon ? `<span class="input-icon" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:hsl(var(--muted-foreground))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>` : "";
-        const pad = s.icon ? "padding-left:34px;" : "";
         const errStyle = st === "error" ? "border-color:hsl(0 84% 60%);" : "";
         const focusStyle = st === "focus" ? "box-shadow:0 0 0 2px hsl(var(--ring));" : "";
+        const style = `${errStyle}${focusStyle}`;
         const dis = st === "disabled" ? " disabled" : "";
         const ro = st === "readonly" ? " readonly" : "";
+        const labelText = s.type === "select" ? "Status" : s.type === "textarea" ? "Notes" : "Email";
         const helperText = st === "error" ? "Please enter a valid email address." : "We'll use this for account recovery.";
         const helperColor = st === "error" ? "color:hsl(0 84% 60%)" : "";
         const helper = s.helper ? `<p class="field-helper" style="${helperColor}">${helperText}</p>` : "";
-        return `<div style="max-width:320px"><label class="label">Email</label><div style="position:relative">${mailIco}<input class="input" value="rachel.chen@example.com" style="${pad}${errStyle}${focusStyle}"${dis}${ro} /></div>${helper}</div>`;
+        let control;
+        if (s.type === "select") {
+          control = `<select class="input" style="${style}"${dis}><option>Active</option><option>Inactive</option><option>Pending</option></select>`;
+        } else if (s.type === "textarea") {
+          control = `<textarea class="input" style="min-height:80px;${style}"${dis}${ro}>Describe the change…</textarea>`;
+        } else if (s.type === "number") {
+          control = `<input class="input" type="number" value="1024" style="${style}"${dis}${ro} />`;
+        } else if (s.icon) {
+          control = `<div class="input-with-icon"><input class="input" value="rachel.chen@example.com" style="padding-left:2rem;${style}"${dis}${ro} /><div class="input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div></div>`;
+        } else {
+          control = `<input class="input" value="rachel.chen@example.com" style="${style}"${dis}${ro} />`;
+        }
+        return `<div style="max-width:320px"><label class="label">${labelText}</label>${control}${helper}</div>`;
       },
     },
-    sections: [
-      {
-        title: "Anatomy",
-        anatomy: "Label . 6px gap . Control . 6px gap . Helper text. Every form field follows this rhythm.",
-        examples: [{
-          html: `<div style="max-width:320px">
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="max-width:320px">
+  <input class="input" placeholder="Email" />
+</div>`,
+        caption: "A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.",
+      },
+      do: {
+        html: `<div style="max-width:320px">
   <label class="label">Email</label>
   <input class="input" placeholder="ada@acme.dev" />
-  <p class="field-helper">We'll never share your email.</p>
 </div>`,
-        }],
+        caption: "Pair every field with a persistent .label above the control.",
       },
-      {
-        title: "Variants",
-        columns: 2,
-        examples: [
-          {
-            label: "Text input",
-            html: `<input class="input" placeholder="Placeholder text" />`,
-          },
-          {
-            label: "With leading icon",
-            html: `<div class="input-with-icon"><input class="input" style="padding-left:2rem" placeholder="Search identities…" /><div class="input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div></div>`,
-          },
-          {
-            label: "Select",
-            html: `<select class="input"><option>Active</option><option>Inactive</option></select>`,
-          },
-          {
-            label: "Textarea",
-            html: `<textarea class="input" placeholder="Describe the change..." style="min-height:80px"></textarea>`,
-          },
-          {
-            label: "Number",
-            html: `<input class="input" type="number" value="1024" />`,
-          },
-          {
-            label: "Disabled",
-            html: `<input class="input" value="System managed" disabled />`,
-          },
-        ],
-      },
-      {
-        title: "Checkboxes & radios",
-        description: "Native controls inherit the accent via accent-color. No custom styling: the OS chrome is the design.",
-        columns: 2,
-        examples: [
-          {
-            label: "Checkboxes",
-            html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" checked style="accent-color:hsl(var(--primary))"> Active identities only</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" style="accent-color:hsl(var(--primary))"> Include archived</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="checkbox" disabled style="accent-color:hsl(var(--primary))"> Cannot toggle</label>
-</div>`,
-          },
-          {
-            label: "Radio group",
-            html: `<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:13px">
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="r1" checked style="accent-color:hsl(var(--primary))"> Send recovery email</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="r1" style="accent-color:hsl(var(--primary))"> Generate temp password</label>
-  <label style="display:flex;align-items:center;gap:0.5rem"><input type="radio" name="r1" style="accent-color:hsl(var(--primary))"> Magic link</label>
-</div>`,
-          },
-        ],
-      },
-      {
-        title: "Validation",
-        description: "Errors are red-bordered + replace the helper text. The validation message replaces, never appends: keep the layout calm.",
-        columns: 2,
-        examples: [
-          {
-            html: `<div>
-  <label class="label">Email <span style="color:hsl(0 84% 60%)">*</span></label>
-  <input class="input" value="not-an-email" style="border-color:hsl(0 84% 60%)" />
-  <p class="field-helper" style="color:hsl(0 84% 60%)">Must be a valid email address.</p>
-</div>`,
-          },
-          {
-            html: `<div>
-  <label class="label">Password</label>
-  <input class="input" type="password" value="correcthorse" />
-  <p class="field-helper">12+ chars, one number, one symbol.</p>
-</div>`,
-          },
-        ],
-      },
-      {
-        title: "Real form (create-identity)",
-        examples: [{
-          full: true,
-          html: `<div class="card" style="max-width:560px;padding:1.25rem">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-    <div><label class="label">First name</label><input class="input" placeholder="Ada" /></div>
-    <div><label class="label">Last name</label><input class="input" placeholder="King" /></div>
-  </div>
-  <div style="margin-top:0.75rem"><label class="label">Email</label><input class="input" placeholder="ada.king@example.com" /></div>
-  <div style="margin-top:0.75rem"><label class="label">Role</label><select class="input"><option>engineer</option><option>designer</option><option>principal</option></select></div>
-  <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1.25rem">
-    <button class="btn btn-outline btn-sm" onclick="var c=this.closest('.card');c.style.opacity='0.5';setTimeout(function(){c.style.opacity='1'},800)">Cancel</button>
-    <button class="btn btn-default btn-sm" onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Creating…';setTimeout(function(){b.textContent='Created!';setTimeout(function(){b.textContent=o;b.disabled=false},1200)},800)">Create identity</button>
-  </div>
-</div>`,
-        }],
-      },
-    ],
+    }],
   },
 
   {
