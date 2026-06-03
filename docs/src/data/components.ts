@@ -34,9 +34,10 @@ export const COMPONENTS: ComponentDoc[] = [
         { type: "range", key: "size", label: "Size", min: 20, max: 96, step: 4, suffix: "px" },
         { type: "text", key: "initials", label: "Initials" },
         { type: "check", key: "stacked", label: "Stacked group" },
-        { type: "check", key: "ring", label: "Ring outline" },
+        { type: "check", key: "overflow", label: "Overflow +N", disabledWhen: (s) => !s.stacked },
+        { type: "check", key: "ring", label: "Ring outline", disabledWhen: (s) => s.stacked === true },
       ],
-      defaults: { size: 40, initials: "AO", stacked: false, ring: false },
+      defaults: { size: 40, initials: "AO", stacked: false, ring: false, overflow: false },
       render: (s) => {
         const sz = s.size as number;
         const ini = ((s.initials as string) || "AO").slice(0, 2).toUpperCase();
@@ -47,11 +48,13 @@ export const COMPONENTS: ComponentDoc[] = [
           const photos: Record<string, string> = {
             RC: "/rachel-chen.jpg", LB: "/liang-bao.jpg", KT: "/kira-tanaka.jpg",
           };
-          const stack = ["RC","LB","AO","KT"].map((n, i) => {
+          const items = ["RC", "LB", "AO", "KT"];
+          const stack = items.map((n, i) => {
             const content = photos[n] ? `<img src="${photos[n]}" alt="${n}">` : n;
-            return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}${i > 0 ? `margin-left:-${overlap}px;` : ""}z-index:${10-i}">${content}</span>`;
+            return `<span class="avatar" style="width:${sz}px;height:${sz}px;outline:2px solid hsl(var(--card));${i > 0 ? `margin-left:-${overlap}px;` : ""}z-index:${items.length - i}">${content}</span>`;
           }).join("");
-          return `<div style="display:flex;align-items:center">${stack}</div>`;
+          const overflow = s.overflow ? `<span style="margin-left:6px;display:inline-flex;align-items:center;font-size:12px;color:hsl(var(--muted-foreground))">+12</span>` : "";
+          return `<div style="display:flex;align-items:center">${stack}${overflow}</div>`;
         }
         return `<span class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;${ring}">${ini}</span>`;
       },
