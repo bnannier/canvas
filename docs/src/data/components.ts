@@ -373,7 +373,7 @@ export const COMPONENTS: ComponentDoc[] = [
             `<button class="btn btn-outline${sz}" style="${i > 0 ? "border-left:0;" : ""}border-radius:${i === 0 ? "var(--radius-md) 0 0 var(--radius-md)" : i === labels.length - 1 ? "0 var(--radius-md) var(--radius-md) 0" : "0"}">${l}</button>`
           ).join("")}</div>`;
         }
-        return `<div style="display:inline-flex;gap:2px;background:hsl(var(--muted));padding:2px;border-radius:var(--radius-md)">${labels.map((l, i) =>
+        return `<div onclick="var b=event.target.closest('button');if(!b)return;this.querySelectorAll('button').forEach(function(x){x.style.background='';x.style.boxShadow=''});b.style.background='hsl(var(--background))';b.style.boxShadow='0 1px 2px hsl(var(--foreground)/0.08)'" style="display:inline-flex;gap:2px;background:hsl(var(--muted));padding:2px;border-radius:var(--radius-md)">${labels.map((l, i) =>
           `<button class="btn btn-ghost${sz}" style="border-radius:calc(var(--radius-md) - 2px);${i === 0 ? "background:hsl(var(--background));box-shadow:0 1px 2px hsl(var(--foreground)/0.08);" : ""}">${l}</button>`
         ).join("")}</div>`;
       },
@@ -1268,14 +1268,23 @@ export const COMPONENTS: ComponentDoc[] = [
           return `<div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:hsl(var(--muted-foreground))">Showing ${showFrom}–${showTo} of ${total * perPage}</span><div style="display:flex;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button><button class="btn btn-outline btn-sm"${nextDis}>Next</button></div></div>`;
         }
         if (s.variant === "numbered") {
-          let pages = "";
-          for (let i = 1; i <= Math.min(total, 7); i++) {
-            const p = total <= 7 ? i : (i <= 2 ? i : i === 3 && cur > 4 ? -1 : i >= 6 ? total - (7 - i) : cur + (i - 4));
-            if (p === -1) { pages += `<span style="padding:0 4px;color:hsl(var(--muted-foreground))">…</span>`; continue; }
-            const active = p === cur ? "background:hsl(var(--foreground));color:hsl(var(--background));" : "";
-            pages += `<button class="btn btn-ghost btn-sm" style="min-width:32px;${active}">${p}</button>`;
+          const list: number[] = [];
+          const add = (p: number) => { if (!list.includes(p)) list.push(p); };
+          if (total <= 7) {
+            for (let p = 1; p <= total; p++) add(p);
+          } else {
+            add(1);
+            if (cur > 3) list.push(-1);
+            for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) add(p);
+            if (cur < total - 2) list.push(-1);
+            add(total);
           }
-          return `<div style="display:flex;align-items:center;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button>${pages}<button class="btn btn-outline btn-sm"${nextDis}>Next</button></div>`;
+          const pages = list.map((p) => {
+            if (p === -1) return `<span style="padding:0 4px;color:hsl(var(--muted-foreground))">…</span>`;
+            const active = p === cur ? "background:hsl(var(--foreground));color:hsl(var(--background));" : "";
+            return `<button class="btn btn-ghost btn-sm" style="min-width:32px;${active}">${p}</button>`;
+          }).join("");
+          return `<div onclick="var b=event.target.closest('.btn-ghost');if(!b)return;this.querySelectorAll('.btn-ghost').forEach(function(x){x.style.background='';x.style.color=''});b.style.background='hsl(var(--foreground))';b.style.color='hsl(var(--background))'" style="display:flex;align-items:center;gap:0.25rem"><button class="btn btn-outline btn-sm"${prevDis}>Previous</button>${pages}<button class="btn btn-outline btn-sm"${nextDis}>Next</button></div>`;
         }
         return `<div style="display:flex;align-items:center;gap:1rem;font-size:13px"><div style="display:flex;align-items:center;gap:0.5rem"><span style="color:hsl(var(--muted-foreground))">Rows per page</span><select class="input" style="width:64px;height:28px;font-size:12px"><option>10</option><option>25</option><option>50</option></select></div><span style="color:hsl(var(--muted-foreground))">Page ${cur} of ${total}</span><div style="display:flex;gap:0.25rem"><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${prevDis}>&lt;</button><button class="btn btn-outline btn-sm btn-icon" style="width:28px;height:28px"${nextDis}>&gt;</button></div></div>`;
       },
