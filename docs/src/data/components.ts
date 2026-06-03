@@ -1035,9 +1035,10 @@ export const COMPONENTS: ComponentDoc[] = [
       controls: [
         { type: "pills", key: "side", label: "Side", options: ["top", "right", "bottom", "left"], cols: 4 },
         { type: "pills", key: "trigger", label: "Trigger", options: ["icon", "button", "text"], cols: 3 },
+        { type: "pills", key: "reveal", label: "Reveal", options: ["always", "on hover"], cols: 2 },
         { type: "text", key: "label", label: "Label" },
       ],
-      defaults: { side: "top", trigger: "icon", label: "Open settings" },
+      defaults: { side: "top", trigger: "icon", reveal: "always", label: "Open settings" },
       render: (s) => {
         const side = s.side as string;
         const lbl = s.label as string;
@@ -1049,61 +1050,38 @@ export const COMPONENTS: ComponentDoc[] = [
         } else {
           triggerHtml = `<span style="text-decoration:underline;text-decoration-style:dotted;cursor:help;font-size:13px">hover this text</span>`;
         }
-        const tipStyle = `position:absolute;padding:6px 10px;border-radius:var(--radius-sm);background:hsl(var(--foreground));color:hsl(var(--background));font-size:12px;white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px hsl(var(--foreground)/0.12)`;
         let pos = "";
         if (side === "top") pos = "bottom:calc(100% + 8px);left:50%;transform:translateX(-50%)";
         if (side === "bottom") pos = "top:calc(100% + 8px);left:50%;transform:translateX(-50%)";
         if (side === "left") pos = "right:calc(100% + 8px);top:50%;transform:translateY(-50%)";
         if (side === "right") pos = "left:calc(100% + 8px);top:50%;transform:translateY(-50%)";
-        return `<div style="position:relative;display:inline-flex">${triggerHtml}<div style="${tipStyle};${pos}">${lbl}</div></div>`;
+        const hover = s.reveal === "on hover";
+        const tipDisplay = hover ? "display:none;" : "";
+        const wrapperEvents = hover ? ` onmouseenter="this.querySelector('[data-tip]').style.display='block'" onmouseleave="this.querySelector('[data-tip]').style.display='none'" onfocusin="this.querySelector('[data-tip]').style.display='block'" onfocusout="this.querySelector('[data-tip]').style.display='none'"` : "";
+        return `<div style="position:relative;display:inline-flex"${wrapperEvents}>${triggerHtml}<div class="tooltip" data-tip style="position:absolute;${pos};white-space:nowrap;${tipDisplay}">${lbl}</div></div>`;
       },
     },
-    sections: [
-      {
-        title: "Sides",
-        anatomy: "Bottom of foreground color, foreground-inverted text. Use sparingly: only when the label can't fit in the trigger.",
-        examples: [{
-          html: `<div style="display:flex;gap:2rem;padding:1rem">
-  <div class="tooltip" style="position:relative">Tooltip top<span class="tooltip-arrow bottom"></span></div>
-  <div class="tooltip" style="position:relative">Tooltip bottom<span class="tooltip-arrow top"></span></div>
-</div>`,
-        }],
-      },
-      {
-        title: "On icon buttons",
-        anatomy: "Hover (or focus) the icon to see the tooltip appear.",
-        examples: [{
-          allowOverflow: true,
-          html: `<div style="display:flex;gap:1.5rem;padding:1rem">
-  <div style="position:relative;display:inline-flex" onmouseenter="this.querySelector('.tooltip').style.display='block'" onmouseleave="this.querySelector('.tooltip').style.display='none'">
-    <button class="btn btn-ghost btn-icon" onfocus="this.parentElement.querySelector('.tooltip').style.display='block'" onblur="this.parentElement.querySelector('.tooltip').style.display='none'">&oast;</button>
-    <div class="tooltip" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap">Settings</div>
-  </div>
-  <div style="position:relative;display:inline-flex" onmouseenter="this.querySelector('.tooltip').style.display='block'" onmouseleave="this.querySelector('.tooltip').style.display='none'">
-    <button class="btn btn-ghost btn-icon" onfocus="this.parentElement.querySelector('.tooltip').style.display='block'" onblur="this.parentElement.querySelector('.tooltip').style.display='none'">&#9993;</button>
-    <div class="tooltip" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap">Notifications</div>
+    sections: [],
+    donts: [{
+      dont: {
+        html: `<div style="padding-bottom:3.5rem">
+  <div style="position:relative;display:inline-flex">
+    <button class="btn btn-ghost btn-icon">?</button>
+    <div class="tooltip" style="position:absolute;top:calc(100% + 8px);left:0;white-space:normal;width:240px">To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours.</div>
   </div>
 </div>`,
-          code: `<div style="position:relative;display:inline-flex">
-  <button class="btn btn-ghost btn-icon">&oast;</button>
-  <div class="tooltip" style="position:absolute;bottom:calc(100% + 8px)">Settings</div>
-</div>`,
-        }],
+        caption: "Long, essential instructions hidden in a tooltip are missed on touch and by screen readers.",
       },
-      {
-        title: "Helper text on inputs",
-        examples: [{
-          full: true,
-          html: `<div style="max-width:320px">
-  <div class="form-group">
-    <label class="label" style="display:flex;align-items:center;gap:4px">API Key <span class="tooltip" style="position:relative;cursor:help;font-size:11px;padding:2px 6px">?<span class="tooltip-arrow bottom"></span></span></label>
-    <input class="input" placeholder="sk_live_..." />
-    <span class="field-helper">Found in your dashboard under Settings &rarr; API.</span>
+      do: {
+        html: `<div style="padding-bottom:3.5rem">
+  <div style="position:relative;display:inline-flex">
+    <button class="btn btn-ghost btn-icon">?</button>
+    <div class="tooltip" style="position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap">Rotate key</div>
   </div>
 </div>`,
-        }],
+        caption: "Keep tooltips short and supplementary; put essential steps in visible copy.",
       },
-    ],
+    }],
   },
 
   // ─── Molecules ────────────────────────────────────────────────────────
