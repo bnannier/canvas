@@ -12,8 +12,8 @@ const PRINCIPLES = [
     body: "Every value in the system is a token. No hex codes in components. Custom properties are the API, so theming is a single-property change.",
   },
   {
-    title: "CSS-first",
-    body: "Pure CSS with no framework dependency. Components are CSS classes that compose with any stack. No React, no Tailwind, no build step required.",
+    title: "Utilities are the API",
+    body: "Components are Tailwind utility classes composed directly in markup, not bespoke CSS. The theme is the design language: change a token and every utility follows. The Tailwind engine is the build step you accept for the Tailwind API.",
   },
   {
     title: "Dual surface",
@@ -108,7 +108,7 @@ export function Home() {
             letterSpacing: "0.12em",
             color: "var(--muted-foreground)",
           }}>
-            v3.0
+            v4.0
           </span>
         </div>
         <h1 style={{
@@ -131,8 +131,8 @@ export function Home() {
           color: "var(--muted-foreground)",
         }}>
           A working specification for any product built on the Olympus platform.
-          {" "}{COMPONENTS.length} documented components, 7 token files, light/dark mode,
-          glass surface, and density controls. No framework required.
+          {" "}{COMPONENTS.length} documented components, a Tailwind CSS v4 theme, light/dark mode,
+          glass surface, and density controls. Built on Tailwind, composed from utilities.
         </p>
         <div style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
           <Link to="/components/button" className="btn btn-default">Browse all components</Link>
@@ -281,10 +281,10 @@ export function Home() {
         flexWrap: "wrap",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <CanvasMark size={16} /> Canvas v3.0
+          <CanvasMark size={16} /> Canvas v4.0
         </div>
         <span style={{ display: "inline-block", margin: "0 0.25rem" }}>·</span>
-        <span>CSS-first · Framework-agnostic</span>
+        <span>Tailwind CSS v4 · Utility-composed</span>
       </footer>
     </div>
   );

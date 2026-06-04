@@ -13,7 +13,7 @@ const TEMPLATES: TemplateDoc[] = [
         html: `<div style="display:flex;align-items:center;justify-content:center;min-height:420px;background:color-mix(in oklch, var(--muted) 15%, transparent);border-radius:var(--radius-lg,12px);padding:2rem">
   <div class="card" style="width:100%;max-width:400px">
     <div class="card-header" style="text-align:center">
-      <div style="width:40px;height:40px;border-radius:var(--radius-md,8px);background:var(--primary);display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;margin-bottom:12px">C</div>
+      <div style="width:40px;height:40px;border-radius:var(--radius-md,8px);background:var(--primary);display:inline-flex;align-items:center;justify-content:center;color:var(--primary-foreground);font-weight:700;font-size:18px;margin-bottom:12px">C</div>
       <h3 style="margin:0 0 4px;font-size:18px;font-weight:600">Sign in to Canvas</h3>
       <p style="margin:0;font-size:13px;color:var(--muted-foreground)">Enter your credentials to continue</p>
     </div>
@@ -38,13 +38,13 @@ const TEMPLATES: TemplateDoc[] = [
         title: "Split-screen",
         anatomy: "Two equal columns. Left: brand panel with headline and feature bullets. Right: sign-in form. Collapses to form-only on mobile.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;min-height:400px;border-radius:var(--radius-lg,12px);overflow:hidden;border:1px solid var(--border)">
-  <div style="background:var(--primary);color:white;padding:2.5rem;display:flex;flex-direction:column;justify-content:center">
-    <h2 style="margin:0 0 8px;font-size:24px;font-weight:700;color:white">Welcome back</h2>
+  <div style="background:var(--primary);color:var(--primary-foreground);padding:2.5rem;display:flex;flex-direction:column;justify-content:center">
+    <h2 style="margin:0 0 8px;font-size:24px;font-weight:700;color:var(--primary-foreground)">Welcome back</h2>
     <p style="margin:0 0 24px;font-size:14px;opacity:0.85">Manage identities, sessions, and access policies from one dashboard.</p>
     <ul style="list-style:none;margin:0;padding:0;font-size:13px;display:flex;flex-direction:column;gap:10px;opacity:0.9">
-      <li style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.2);display:inline-flex;align-items:center;justify-content:center;font-size:11px">&#10003;</span> Multi-factor authentication</li>
-      <li style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.2);display:inline-flex;align-items:center;justify-content:center;font-size:11px">&#10003;</span> OAuth2 and OIDC support</li>
-      <li style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.2);display:inline-flex;align-items:center;justify-content:center;font-size:11px">&#10003;</span> Audit logging and compliance</li>
+      <li style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;background:color-mix(in oklch, var(--primary-foreground) 20%, transparent);display:inline-flex;align-items:center;justify-content:center;font-size:11px">&#10003;</span> Multi-factor authentication</li>
+      <li style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;background:color-mix(in oklch, var(--primary-foreground) 20%, transparent);display:inline-flex;align-items:center;justify-content:center;font-size:11px">&#10003;</span> OAuth2 and OIDC support</li>
+      <li style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;background:color-mix(in oklch, var(--primary-foreground) 20%, transparent);display:inline-flex;align-items:center;justify-content:center;font-size:11px">&#10003;</span> Audit logging and compliance</li>
     </ul>
   </div>
   <div style="padding:2.5rem;display:flex;flex-direction:column;justify-content:center;background:var(--background)">
@@ -277,7 +277,7 @@ const TEMPLATES: TemplateDoc[] = [
       <div style="padding:8px;min-height:80px;border-right:1px solid var(--border)"><span style="font-size:12px">21</span></div>
       <div style="padding:8px;min-height:80px;border-right:1px solid var(--border)"><span style="font-size:12px">22</span></div>
       <div style="padding:8px;min-height:80px;border-right:1px solid var(--border)"><span style="font-size:12px">23</span></div>
-      <div style="padding:8px;min-height:80px"><span style="font-size:12px;width:24px;height:24px;border-radius:50%;background:var(--primary);color:white;display:inline-flex;align-items:center;justify-content:center">24</span></div>
+      <div style="padding:8px;min-height:80px"><span style="font-size:12px;width:24px;height:24px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);display:inline-flex;align-items:center;justify-content:center">24</span></div>
     </div>
   </div>
 </div>`,
@@ -342,7 +342,7 @@ const TEMPLATES: TemplateDoc[] = [
       <div class="section-card">
         <div class="section-card-header"><h3 class="section-card-title">Customer</h3></div>
         <div class="section-card-body" style="display:flex;flex-direction:column;gap:8px;font-size:13px">
-          <div style="display:flex;align-items:center;gap:10px"><span class="avatar avatar-sm" style="background:var(--primary);color:white"><img src="/rachel-chen.jpg" alt="RC"></span><div><div style="font-weight:500">Rachel Chen</div><div style="font-size:12px;color:var(--muted-foreground)">rachel.chen@example.com</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="avatar avatar-sm" style="background:var(--primary);color:var(--primary-foreground)"><img src="/rachel-chen.jpg" alt="RC"></span><div><div style="font-weight:500">Rachel Chen</div><div style="font-size:12px;color:var(--muted-foreground)">rachel.chen@example.com</div></div></div>
         </div>
       </div>
       <div class="section-card">
@@ -413,7 +413,7 @@ const TEMPLATES: TemplateDoc[] = [
       <tbody>
         <tr>
           <td><input type="checkbox" class="checkbox"></td>
-          <td><div style="display:flex;align-items:center;gap:8px"><span class="avatar avatar-sm" style="background:var(--primary);color:white;font-size:11px"><img src="/rachel-chen.jpg" alt="RC"></span><span style="font-weight:500">Rachel Chen</span></div></td>
+          <td><div style="display:flex;align-items:center;gap:8px"><span class="avatar avatar-sm" style="background:var(--primary);color:var(--primary-foreground);font-size:11px"><img src="/rachel-chen.jpg" alt="RC"></span><span style="font-weight:500">Rachel Chen</span></div></td>
           <td>rachel.chen@example.com</td>
           <td><span class="badge">admin</span></td>
           <td><span class="status-badge sb-success"><span class="dot"></span> Active</span></td>
@@ -493,12 +493,12 @@ const TEMPLATES: TemplateDoc[] = [
   <!-- Progress -->
   <div style="display:flex;align-items:center;justify-content:center;gap:0">
     <div style="display:flex;align-items:center;gap:8px">
-      <span style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">1</span>
+      <span style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">1</span>
       <span style="font-size:13px;font-weight:500">Profile</span>
     </div>
     <div style="width:48px;height:2px;background:var(--primary);margin:0 8px"></div>
     <div style="display:flex;align-items:center;gap:8px">
-      <span style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">2</span>
+      <span style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">2</span>
       <span style="font-size:13px;font-weight:500">Workspace</span>
     </div>
     <div style="width:48px;height:2px;background:var(--border);margin:0 8px"></div>
@@ -559,7 +559,7 @@ const TEMPLATES: TemplateDoc[] = [
   <!-- Hero card -->
   <div class="section-card" style="padding:24px">
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
-      <span class="avatar avatar-lg" style="background:var(--primary);color:white;font-size:20px"><img src="/rachel-chen.jpg" alt="RC"></span>
+      <span class="avatar avatar-lg" style="background:var(--primary);color:var(--primary-foreground);font-size:20px"><img src="/rachel-chen.jpg" alt="RC"></span>
       <div style="flex:1">
         <h2 style="margin:0;font-size:20px;font-weight:600">Rachel Chen</h2>
         <p style="margin:2px 0 8px;font-size:13px;color:var(--muted-foreground)">Engineering Lead</p>
