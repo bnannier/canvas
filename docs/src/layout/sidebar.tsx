@@ -13,7 +13,7 @@ import {
   Navigation, Layout, Shield, Activity, Users,
   ChartLine, Lock, Settings, Check, Eye,
   Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid, Code,
-  Group, ListChecks,
+  Group, ListChecks, MessageSquareWarning,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -91,6 +91,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { slug: "action-panels", label: "Action Panels", to: "/components/action-panels", icon: Shield },
       { slug: "alert", label: "Alerts", to: "/components/alert", icon: AlertTriangle },
+      { slug: "alert-dialog", label: "Alert Dialog", to: "/components/alert-dialog", icon: MessageSquareWarning },
       { slug: "card", label: "Cards", to: "/components/card", icon: Square },
       { slug: "code-block", label: "Code Block", to: "/components/code-block", icon: Code },
       { slug: "description-lists", label: "Description Lists", to: "/components/description-lists", icon: Info },

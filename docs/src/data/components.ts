@@ -1482,7 +1482,46 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "alert",
     name: "Alerts",
-    description: "Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred backdrop, with a title, description, optional body, and action buttons. Plus inline notification banners for passive, non-blocking messages.",
+    description: "Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.",
+    category: "Molecules",
+    playground: {
+      controls: [
+        { type: "pills", key: "variant", label: "Variant", options: ["info", "success", "warning", "destructive"], cols: 4, disabledWhen: (s) => s.banner === true },
+        { type: "check", key: "title", label: "Title", disabledWhen: (s) => s.banner === true },
+        { type: "check", key: "actions", label: "Action buttons", disabledWhen: (s) => s.banner === true },
+        { type: "check", key: "banner", label: "Full-width banner" },
+      ],
+      defaults: { variant: "info", title: true, actions: false, banner: false },
+      render: (s) => {
+        if (s.banner) {
+          return `<div class="flex items-center justify-center gap-3 bg-foreground px-4 py-2.5 text-sm text-background"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>We've shipped a new dashboard. <a href="#" class="underline" onclick="event.preventDefault()">See what's new &rarr;</a></span></div>`;
+        }
+        const v = s.variant as string;
+        const titles: Record<string, string> = { info: "Heads up", success: "All set", warning: "Action required", destructive: "Something went wrong" };
+        const descs: Record<string, string> = { info: "Maintenance window scheduled for Sunday 2:00 UTC.", success: "Your changes have been saved successfully.", warning: "Your trial expires in 3 days.", destructive: "Could not save your changes. Please try again." };
+        const title = s.title ? titles[v] : "";
+        const actions = s.actions ? `<div class="mt-3 flex gap-2">${btn("default", "Upgrade plan", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Upgrading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}${btn("ghost", "Dismiss", "sm", ` onclick="this.closest('[data-alert]').style.display='none'"`)}</div>` : "";
+        const titleEl = title ? `<div class="mb-1 text-sm font-semibold ${alertTone[v].title}">${title}</div>` : "";
+        return `<div data-alert class="max-w-[560px] rounded-lg border px-4 py-3 ${alertTone[v].box}">${titleEl}<div class="text-sm text-muted-foreground">${descs[v]}</div>${actions}</div>`;
+      },
+    },
+    sections: [],
+    donts: [{
+      dont: {
+        html: alertBox("destructive", "Saved", "Your changes have been saved successfully."),
+        caption: "Using the error variant for non-errors cries wolf; users learn to ignore red.",
+      },
+      do: {
+        html: alertBox("success", "Saved", "Your changes have been saved successfully."),
+        caption: "Match the variant to the severity: success for confirmations, destructive for failures.",
+      },
+    }],
+  },
+
+  {
+    slug: "alert-dialog",
+    name: "Alert Dialog",
+    description: "Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred backdrop, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.",
     category: "Molecules",
     playground: {
       controls: [
@@ -1518,35 +1557,8 @@ export const COMPONENTS: ComponentDoc[] = [
           html: `<div class="flex flex-col gap-3">${["xs", "sm", "md", "lg"].map((sz) => `<div class="${alertPanel} ${alertSize[sz]}"><div class="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">${sz}</div><h2 class="text-sm font-semibold">Confirm action</h2><p class="mt-1 text-sm text-muted-foreground">The panel grows with the size prop.</p></div>`).join("")}</div>`,
         }],
       },
-      {
-        title: "Inline banner",
-        description: "For passive, in-page messages that should not block the user, use an inline alert banner instead of the dialog. Match the variant to the severity.",
-        examples: [{
-          full: true,
-          html: `<div class="flex flex-col gap-3">${alertBox("info", "Heads up", "Maintenance window scheduled for Sunday 2:00 UTC.")}${alertBox("success", "All set", "Your changes have been saved successfully.")}${alertBox("warning", "Action required", "Your trial expires in 3 days.")}${alertBox("destructive", "Something went wrong", "Could not save your changes. Please try again.")}</div>`,
-        }],
-      },
-      {
-        title: "Full-width banner",
-        description: "A page-level announcement bar pinned across the top of a layout.",
-        examples: [{
-          full: true,
-          html: `<div class="flex items-center justify-center gap-3 rounded-lg bg-foreground px-4 py-2.5 text-sm text-background"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>We've shipped a new dashboard. <a href="#" class="underline" onclick="event.preventDefault()">See what's new &rarr;</a></span></div>`,
-        }],
-      },
     ],
     donts: [
-      {
-        title: "Match severity to the variant",
-        dont: {
-          html: alertBox("destructive", "Saved", "Your changes have been saved successfully."),
-          caption: "Using the error variant for non-errors cries wolf; users learn to ignore red.",
-        },
-        do: {
-          html: alertBox("success", "Saved", "Your changes have been saved successfully."),
-          caption: "Match the variant to the severity: success for confirmations, destructive for failures.",
-        },
-      },
       {
         title: "Reserve the dialog for blocking decisions",
         dont: {
@@ -1556,6 +1568,17 @@ export const COMPONENTS: ComponentDoc[] = [
         do: {
           html: alertBox("success", "Saved", "Your changes have been saved."),
           caption: "Use an inline banner or toast for passive feedback; reserve the dialog for decisions that must be confirmed.",
+        },
+      },
+      {
+        title: "Name the action on the confirm button",
+        dont: {
+          html: `<div class="${alertPanel} ${alertSize.sm}"><h2 class="text-sm font-semibold">Delete this identity?</h2><div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">${btn("ghost", "No", "sm")}${btn("destructive", "Yes", "sm")}</div></div>`,
+          caption: "Generic Yes / No forces the user to re-read the title to know what they are confirming.",
+        },
+        do: {
+          html: `<div class="${alertPanel} ${alertSize.sm}"><h2 class="text-sm font-semibold">Delete this identity?</h2><div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">${btn("ghost", "Cancel", "sm")}${btn("destructive", "Delete", "sm")}</div></div>`,
+          caption: "Label the confirm button with the verb it performs (Delete, Archive, Sign out).",
         },
       },
     ],
