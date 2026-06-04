@@ -42,6 +42,20 @@ The `category` field is `"Atoms" | "Molecules" | "Organisms"`; place the entry i
 the matching sidebar group. A full page is a Template, not a component; a
 cross-cutting concern is a Pattern, not a component.
 
+## Component docs
+
+Two rules for every component entry in `docs/src/data/`:
+
+- **Examples live in the playground, not in standalone sections.** Each component
+  demonstrates all of its variants and states through its playground (controls +
+  render), which is the single source of truth. Do not add `sections` examples that
+  duplicate what the playground can already show; if a variation is not reachable,
+  add a playground control for it rather than a separate example. Reserve `sections`
+  for non-example content (anatomy notes) only.
+- **A do's-and-don'ts pair for every variant.** Every variant of a component gets its
+  own labeled entry in `donts` (name it with the `DontDo.title` field). A single
+  blanket do/don't is not enough; cover each variant.
+
 ## Architecture
 
 **Tailwind CSS v4 is the engine.** Canvas builds on Tailwind v4's CSS-first
