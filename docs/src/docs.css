@@ -30,6 +30,8 @@
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
 }
 
 .docs-content {

@@ -37,7 +37,7 @@ const TEMPLATES: TemplateDoc[] = [
       {
         title: "Split-screen",
         anatomy: "Two equal columns. Left: brand panel with headline and feature bullets. Right: sign-in form. Collapses to form-only on mobile.",
-        html: `<div style="display:grid;grid-template-columns:1fr 1fr;min-height:400px;border-radius:var(--radius-lg,12px);overflow:hidden;border:1px solid var(--border)">
+        html: `<div class="tpl-grid" style="display:grid;grid-template-columns:1fr 1fr;min-height:400px;border-radius:var(--radius-lg,12px);overflow:hidden;border:1px solid var(--border)">
   <div style="background:var(--primary);color:var(--primary-foreground);padding:2.5rem;display:flex;flex-direction:column;justify-content:center">
     <h2 style="margin:0 0 8px;font-size:24px;font-weight:700;color:var(--primary-foreground)">Welcome back</h2>
     <p style="margin:0 0 24px;font-size:14px;opacity:0.85">Manage identities, sessions, and access policies from one dashboard.</p>
@@ -117,7 +117,7 @@ const TEMPLATES: TemplateDoc[] = [
   </div>
 
   <!-- Two-column: activity + chart -->
-  <div style="display:grid;gap:16px;grid-template-columns:1fr 1fr">
+  <div class="tpl-grid" style="display:grid;gap:16px;grid-template-columns:1fr 1fr">
     <div class="section-card">
       <div class="section-card-header"><h3 class="section-card-title">Recent activity</h3><button class="btn btn-ghost btn-sm">View all</button></div>
       <div class="section-card-body">
@@ -303,7 +303,7 @@ const TEMPLATES: TemplateDoc[] = [
     <div class="page-header-actions"><span class="status-badge sb-success"><span class="dot"></span> Fulfilled</span></div>
   </div>
 
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+  <div class="tpl-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
     <!-- Main column -->
     <div style="display:flex;flex-direction:column;gap:16px">
       <div class="section-card">
@@ -575,7 +575,7 @@ const TEMPLATES: TemplateDoc[] = [
       </div>
     </div>
     <!-- Stat strip -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:16px;border-top:1px solid var(--border)">
+    <div class="tpl-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:16px;border-top:1px solid var(--border)">
       <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted-foreground);margin-bottom:2px">Sessions</div><div style="font-size:18px;font-weight:600">24</div></div>
       <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted-foreground);margin-bottom:2px">Sign-ins (30d)</div><div style="font-size:18px;font-weight:600">142</div></div>
       <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted-foreground);margin-bottom:2px">Joined</div><div style="font-size:18px;font-weight:600">Jan 2024</div></div>
@@ -592,7 +592,7 @@ const TEMPLATES: TemplateDoc[] = [
   </div>
 
   <!-- Content grid -->
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+  <div class="tpl-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
     <div class="section-card">
       <div class="section-card-header"><h3 class="section-card-title">Traits</h3></div>
       <div class="section-card-body" style="padding:0">
@@ -638,7 +638,7 @@ const TEMPLATES: TemplateDoc[] = [
       {
         title: "Settings layout",
         anatomy: "Sidebar navigation (vertical pill list) + main form area with section cards. Sticky save bar appears at the bottom when changes are made.",
-        html: `<div style="display:grid;grid-template-columns:200px 1fr;gap:24px">
+        html: `<div class="tpl-grid" style="display:grid;grid-template-columns:200px 1fr;gap:24px">
   <!-- Sidebar nav -->
   <nav style="display:flex;flex-direction:column;gap:2px">
     <a href="#" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius-md,8px);font-size:13px;font-weight:500;background:color-mix(in oklch, var(--primary) 10%, transparent);color:var(--primary);text-decoration:none">General</a>

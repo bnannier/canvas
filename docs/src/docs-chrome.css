@@ -604,6 +604,14 @@ input.checkbox { width: 1rem; height: 1rem; accent-color: var(--primary); cursor
 .neutral { color: var(--muted-foreground); }
 .dark .positive { color: oklch(0.75 0.16 150); }
 
+/* ── Template demo grids: collapse multi-column layouts on mobile ──────────── */
+/* Tagged inline-styled template grids keep their desktop columns and stack on
+   phones (their anatomy promises "collapses on mobile"). Calendar week grids and
+   auto-fit grids are intentionally left untagged. */
+@media (max-width: 767px) {
+  .tpl-grid { grid-template-columns: 1fr !important; }
+}
+
 /* ── Misc docs helpers ────────────────────────────────────────────────────── */
 
 .docs-toc-col { position: sticky; top: 5rem; align-self: start; }
