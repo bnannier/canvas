@@ -13,6 +13,7 @@ import {
   Navigation, Layout, Shield, Activity, Users,
   ChartLine, Lock, Settings, Check, Eye,
   Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid, Code,
+  Group, ListChecks,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -71,6 +72,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "input-group", label: "Input Groups", to: "/components/input-group", icon: Columns2 },
       { slug: "input", label: "Inputs & Forms", to: "/components/input", icon: TextCursorInput },
       { slug: "kbd", label: "Kbd", to: "/components/kbd", icon: Keyboard },
+      { slug: "listbox", label: "Listboxes", to: "/components/listbox", icon: ListChecks },
       { slug: "pagination", label: "Pagination", to: "/components/pagination", icon: ChevronsLeft },
       { slug: "popover", label: "Popover", to: "/components/popover", icon: Square },
       { slug: "radio", label: "Radios", to: "/components/radio", icon: CircleDot },
@@ -95,6 +97,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "empty-state", label: "Empty States", to: "/components/empty-state", icon: Inbox },
       { slug: "feeds", label: "Feeds", to: "/components/feeds", icon: Activity },
       { slug: "field", label: "Field Display", to: "/components/field", icon: FileText },
+      { slug: "fieldset", label: "Fieldsets", to: "/components/fieldset", icon: Group },
       { slug: "form", label: "Form Layouts", to: "/components/form", icon: FileInput },
       { slug: "grid-lists", label: "Grid Lists", to: "/components/grid-lists", icon: Layers },
       { slug: "media-objects", label: "Media Objects", to: "/components/media-objects", icon: Users },

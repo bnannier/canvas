@@ -181,6 +181,22 @@ const alertTone: Record<string, { box: string; title: string }> = {
 };
 const alertBox = (v: string, title: string, desc: string, extra = "") =>
   `<div data-alert class="max-w-[560px] rounded-lg border px-4 py-3 ${alertTone[v].box}"><div class="mb-1 text-sm font-semibold ${alertTone[v].title}">${title}</div><div class="text-sm text-muted-foreground">${desc}</div>${extra}</div>`;
+// Catalyst-style alert dialog: a centered modal over a dimmed, blurred backdrop.
+const alertSize: Record<string, string> = { xs: "max-w-xs", sm: "max-w-sm", md: "max-w-md", lg: "max-w-lg" };
+const overlayCls = "fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm sm:items-center";
+const alertPanel = "w-full rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-xl";
+const alertTrigger = ` onclick="var o=this.nextElementSibling;o.classList.remove('hidden');o.classList.add('flex')"`;
+const alertClose = ` onclick="var o=this.closest('[data-alert-overlay]');o.classList.add('hidden');o.classList.remove('flex')"`;
+// Fieldset: a labeled group of fields (legend + field group + per-field label/help/error).
+const fieldsetLegend = "text-base font-semibold text-foreground";
+const fsField = (label: string, control: string, help = "", error = "") =>
+  `<div><label class="${labelCls}">${label}</label>${control}${error ? `<p class="mt-1 text-xs text-destructive">${error}</p>` : help ? `<p class="${helperCls}">${help}</p>` : ""}</div>`;
+// Listbox: a custom (non-native) select with single/multi selection.
+const lbTriggerCls = "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
+const lbPanel = "absolute left-0 top-full z-10 mt-1 hidden max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md";
+const lbOption = "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground";
+const lbCheck = (selected: boolean) =>
+  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-check class="ml-auto shrink-0${selected ? "" : " invisible"}"><polyline points="20 6 9 17 4 12"/></svg>`;
 const statTone: Record<string, string> = {
   blue: "bg-blue-500/10 text-blue-600",
   success: "bg-green-500/10 text-green-600",
@@ -1466,38 +1482,225 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "alert",
     name: "Alerts",
-    description: "Inline messages: info, success, warning, error.",
+    description: "Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred backdrop, with a title, description, optional body, and action buttons. Plus inline notification banners for passive, non-blocking messages.",
     category: "Molecules",
     playground: {
       controls: [
-        { type: "pills", key: "variant", label: "Variant", options: ["info", "success", "warning", "destructive"], cols: 4, disabledWhen: (s) => s.banner === true },
-        { type: "check", key: "title", label: "Title", disabledWhen: (s) => s.banner === true },
-        { type: "check", key: "actions", label: "Action buttons", disabledWhen: (s) => s.banner === true },
-        { type: "check", key: "banner", label: "Full-width banner" },
+        { type: "pills", key: "size", label: "Size", options: ["xs", "sm", "md", "lg"], cols: 4 },
+        { type: "check", key: "withDescription", label: "Description" },
+        { type: "check", key: "withInput", label: "Body field" },
+        { type: "check", key: "destructive", label: "Destructive confirm" },
       ],
-      defaults: { variant: "info", title: true, actions: false, banner: false },
+      defaults: { size: "md", withDescription: true, withInput: false, destructive: true },
       render: (s) => {
-        if (s.banner) {
-          return `<div class="flex items-center justify-center gap-3 bg-foreground px-4 py-2.5 text-sm text-background"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>We've shipped a new dashboard. <a href="#" class="underline" onclick="event.preventDefault()">See what's new &rarr;</a></span></div>`;
-        }
-        const v = s.variant as string;
-        const titles: Record<string, string> = { info: "Heads up", success: "All set", warning: "Action required", destructive: "Something went wrong" };
-        const descs: Record<string, string> = { info: "Maintenance window scheduled for Sunday 2:00 UTC.", success: "Your changes have been saved successfully.", warning: "Your trial expires in 3 days.", destructive: "Could not save your changes. Please try again." };
-        const title = s.title ? titles[v] : "";
-        const actions = s.actions ? `<div class="mt-3 flex gap-2">${btn("default", "Upgrade plan", "sm", ` onclick="var b=this;var o=b.textContent;b.disabled=true;b.textContent='Upgrading…';setTimeout(function(){b.textContent=o;b.disabled=false},2000)"`)}${btn("ghost", "Dismiss", "sm", ` onclick="this.closest('[data-alert]').style.display='none'"`)}</div>` : "";
-        const titleEl = title ? `<div class="mb-1 text-sm font-semibold ${alertTone[v].title}">${title}</div>` : "";
-        return `<div data-alert class="max-w-[560px] rounded-lg border px-4 py-3 ${alertTone[v].box}">${titleEl}<div class="text-sm text-muted-foreground">${descs[v]}</div>${actions}</div>`;
+        const size = alertSize[s.size as string] || alertSize.md;
+        const desc = s.withDescription ? `<p class="mt-2 text-sm text-muted-foreground sm:mt-1">This permanently removes the identity and revokes any active sessions. This action cannot be undone.</p>` : "";
+        const body = s.withInput ? `<div class="mt-4">${fsField("Type DELETE to confirm", `<input class="${inputBase}" placeholder="DELETE">`)}</div>` : "";
+        const v = s.destructive ? "destructive" : "default";
+        const confirmLabel = s.destructive ? "Delete" : "Confirm";
+        return `<div class="relative inline-block"><button class="${btnBase} ${btnVariant.outline} ${btnSize.default}"${alertTrigger}>Open alert</button><div data-alert-overlay class="${overlayCls}" onclick="if(event.target===this){this.classList.add('hidden');this.classList.remove('flex')}"><div class="${alertPanel} ${size}"><h2 class="text-base font-semibold sm:text-sm">Delete this identity?</h2>${desc}${body}<div class="mt-6 flex flex-col-reverse gap-2 sm:mt-4 sm:flex-row sm:justify-end">${btn("ghost", "Cancel", "default", alertClose)}${btn(v, confirmLabel, "default", alertClose)}</div></div></div></div>`;
       },
     },
-    sections: [],
+    sections: [
+      {
+        title: "Anatomy",
+        anatomy: "Title (the question) . optional description . optional body (custom content like an input) . actions (Cancel + confirm; right-aligned on desktop, stacked on mobile). The panel sits centered over a dimmed, blurred backdrop; dismiss via Cancel, a backdrop click, or Esc.",
+        examples: [{
+          full: true,
+          html: `<div class="${alertPanel} ${alertSize.md} mx-auto"><h2 class="text-base font-semibold sm:text-sm">Delete this identity?</h2><p class="mt-2 text-sm text-muted-foreground sm:mt-1">This permanently removes the identity and revokes any active sessions.</p><div class="mt-6 flex flex-col-reverse gap-2 sm:mt-4 sm:flex-row sm:justify-end">${btn("ghost", "Cancel")}${btn("destructive", "Delete")}</div></div>`,
+        }],
+      },
+      {
+        title: "Sizes",
+        description: "Four sizes (xs, sm, md, lg) set the panel max-width.",
+        examples: [{
+          full: true,
+          html: `<div class="flex flex-col gap-3">${["xs", "sm", "md", "lg"].map((sz) => `<div class="${alertPanel} ${alertSize[sz]}"><div class="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">${sz}</div><h2 class="text-sm font-semibold">Confirm action</h2><p class="mt-1 text-sm text-muted-foreground">The panel grows with the size prop.</p></div>`).join("")}</div>`,
+        }],
+      },
+      {
+        title: "Inline banner",
+        description: "For passive, in-page messages that should not block the user, use an inline alert banner instead of the dialog. Match the variant to the severity.",
+        examples: [{
+          full: true,
+          html: `<div class="flex flex-col gap-3">${alertBox("info", "Heads up", "Maintenance window scheduled for Sunday 2:00 UTC.")}${alertBox("success", "All set", "Your changes have been saved successfully.")}${alertBox("warning", "Action required", "Your trial expires in 3 days.")}${alertBox("destructive", "Something went wrong", "Could not save your changes. Please try again.")}</div>`,
+        }],
+      },
+      {
+        title: "Full-width banner",
+        description: "A page-level announcement bar pinned across the top of a layout.",
+        examples: [{
+          full: true,
+          html: `<div class="flex items-center justify-center gap-3 rounded-lg bg-foreground px-4 py-2.5 text-sm text-background"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>We've shipped a new dashboard. <a href="#" class="underline" onclick="event.preventDefault()">See what's new &rarr;</a></span></div>`,
+        }],
+      },
+    ],
+    donts: [
+      {
+        title: "Match severity to the variant",
+        dont: {
+          html: alertBox("destructive", "Saved", "Your changes have been saved successfully."),
+          caption: "Using the error variant for non-errors cries wolf; users learn to ignore red.",
+        },
+        do: {
+          html: alertBox("success", "Saved", "Your changes have been saved successfully."),
+          caption: "Match the variant to the severity: success for confirmations, destructive for failures.",
+        },
+      },
+      {
+        title: "Reserve the dialog for blocking decisions",
+        dont: {
+          html: `<div class="${alertPanel} ${alertSize.sm}"><h2 class="text-sm font-semibold">Saved</h2><p class="mt-1 text-sm text-muted-foreground">Your changes have been saved.</p><div class="mt-4 flex justify-end">${btn("default", "OK", "sm")}</div></div>`,
+          caption: "A blocking alert dialog for passive confirmation interrupts the user for no reason.",
+        },
+        do: {
+          html: alertBox("success", "Saved", "Your changes have been saved."),
+          caption: "Use an inline banner or toast for passive feedback; reserve the dialog for decisions that must be confirmed.",
+        },
+      },
+    ],
+  },
+
+  {
+    slug: "fieldset",
+    name: "Fieldsets",
+    description: "Group related form controls under a legend. Each field pairs a label, control, optional help text, and an inline error, so a set of inputs reads as one labeled unit.",
+    category: "Molecules",
+    playground: {
+      controls: [
+        { type: "check", key: "legend", label: "Legend" },
+        { type: "check", key: "description", label: "Description" },
+        { type: "check", key: "error", label: "Validation error" },
+        { type: "check", key: "disabled", label: "Disabled" },
+        { type: "pills", key: "columns", label: "Columns", options: ["1", "2"], cols: 2 },
+      ],
+      defaults: { legend: true, description: true, error: false, disabled: false, columns: "1" },
+      render: (s) => {
+        const dis = s.disabled ? " disabled" : "";
+        const legend = s.legend ? `<legend class="${fieldsetLegend}">Shipping details</legend>` : "";
+        const desc = s.description ? `<p class="mt-1 text-sm text-muted-foreground">Where should we send your order?</p>` : "";
+        const err = s.error ? "Enter a valid email address" : "";
+        const group = s.columns === "2" ? "mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2" : "mt-4 space-y-4";
+        const fields =
+          fsField("Full name", `<input class="${inputBase}" placeholder="Ada Lovelace"${dis}>`) +
+          fsField("Email", `<input class="${inputBase}${err ? " border-destructive" : ""}" value="ada@" type="email"${dis}>`, "We'll only use this for order updates.", err) +
+          fsField("Country", `<select class="${inputBase}"${dis}><option>United States</option><option>Canada</option><option>Mexico</option></select>`);
+        return `<fieldset class="max-w-xl${s.disabled ? " opacity-60" : ""}"${dis}>${legend}${desc}<div class="${group}">${fields}</div></fieldset>`;
+      },
+    },
+    sections: [
+      {
+        title: "Anatomy",
+        anatomy: "fieldset (the group) . legend (its name) . field group (a vertical stack) . field (label + control + help/error). The native <fieldset disabled> attribute disables every control inside at once.",
+        examples: [{
+          full: true,
+          html: `<fieldset class="max-w-xl"><legend class="${fieldsetLegend}">Profile</legend><p class="mt-1 text-sm text-muted-foreground">This information is shown on your public profile.</p><div class="mt-4 space-y-4">${fsField("Display name", `<input class="${inputBase}" value="Rachel Chen">`)}${fsField("Bio", `<textarea class="${inputBase} min-h-20" rows="3">Engineering lead.</textarea>`, "A short description, up to 280 characters.")}</div></fieldset>`,
+        }],
+      },
+      {
+        title: "Checkbox group",
+        description: "A fieldset is the right container for a set of related checkboxes or switches; the legend labels the whole group.",
+        examples: [{
+          full: true,
+          html: `<fieldset class="max-w-xl"><legend class="${fieldsetLegend}">Email notifications</legend><div class="mt-3 space-y-2">${["Product updates", "Security alerts", "Weekly digest"].map((l, i) => `<label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary"${i < 2 ? " checked" : ""}> ${l}</label>`).join("")}</div></fieldset>`,
+        }],
+      },
+      {
+        title: "Two-column",
+        description: "Place adjacent related fields side by side; stacks to one column on small screens.",
+        examples: [{
+          full: true,
+          html: `<fieldset class="max-w-xl"><legend class="${fieldsetLegend}">Card details</legend><div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">${fsField("Expiry", `<input class="${inputBase}" placeholder="MM / YY">`)}${fsField("CVC", `<input class="${inputBase}" placeholder="123">`)}</div></fieldset>`,
+        }],
+      },
+      {
+        title: "Inline validation",
+        description: "Show the error below the offending field; the message replaces the help text.",
+        examples: [{
+          full: true,
+          html: `<fieldset class="max-w-xl"><legend class="${fieldsetLegend}">Account</legend><div class="mt-4 space-y-4">${fsField("Email", `<input class="${inputBase} border-destructive" value="ada@">`, "", "Enter a valid email address.")}${fsField("Password", `<input class="${inputBase}" type="password" value="secret">`, "At least 8 characters.")}</div></fieldset>`,
+        }],
+      },
+    ],
     donts: [{
+      title: "Always name the group with a legend",
       dont: {
-        html: alertBox("destructive", "Saved", "Your changes have been saved successfully."),
-        caption: "Using the error variant for non-errors cries wolf; users learn to ignore red.",
+        html: `<fieldset class="max-w-md"><div class="space-y-3">${["Email", "SMS", "Push"].map((l) => `<label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary"> ${l}</label>`).join("")}</div></fieldset>`,
+        caption: "Without a legend the relationship between the controls is implicit; screen readers announce them as unrelated.",
       },
       do: {
-        html: alertBox("success", "Saved", "Your changes have been saved successfully."),
-        caption: "Match the variant to the severity: success for confirmations, destructive for failures.",
+        html: `<fieldset class="max-w-md"><legend class="${fieldsetLegend}">Notify me by</legend><div class="mt-3 space-y-3">${["Email", "SMS", "Push"].map((l) => `<label class="flex items-center gap-2 text-sm"><input type="checkbox" class="size-4 accent-primary"> ${l}</label>`).join("")}</div></fieldset>`,
+        caption: "A legend names the group so its fields read as one labeled unit.",
+      },
+    }],
+  },
+
+  {
+    slug: "listbox",
+    name: "Listboxes",
+    description: "A custom (non-native) select: single or multi-select, optional avatars or icons per option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.",
+    category: "Atoms",
+    playground: {
+      controls: [
+        { type: "pills", key: "mode", label: "Mode", options: ["single", "multi"], cols: 2 },
+        { type: "pills", key: "size", label: "Size", options: ["sm", "default", "lg"], cols: 3 },
+        { type: "check", key: "withIcon", label: "Avatars" },
+        { type: "check", key: "disabled", label: "Disabled" },
+      ],
+      defaults: { mode: "single", size: "default", withIcon: false, disabled: false },
+      render: (s) => {
+        const multi = s.mode === "multi";
+        const dis = s.disabled ? " disabled" : "";
+        const sizeH = s.size === "sm" ? "h-8 text-xs" : s.size === "lg" ? "h-10 text-sm" : "h-9 text-sm";
+        const items: any[] = s.withIcon
+          ? [{ l: "Rachel Chen", i: "RC", img: "/rachel-chen.jpg" }, { l: "Ada Lovelace", i: "AL", img: "/ada-lovelace.jpg" }, { l: "Kevin Turner", i: "KT", img: "" }, { l: "Linus Berg", i: "LB", img: "" }]
+          : [{ l: "Backend" }, { l: "Frontend" }, { l: "Design" }, { l: "Platform" }, { l: "Security" }];
+        const av = (it: any) => s.withIcon ? `<span class="${avatarBase} h-5 w-5 text-[9px]">${it.img ? avatarImg(it.img, it.i) : (it.i || "")}</span>` : "";
+        const optionRow = (it: any, sel: boolean) => `<button type="button" data-lb-opt class="${lbOption}">${av(it)}<span data-lb-label>${it.l}</span>${lbCheck(sel)}</button>`;
+        const optionsHtml = items.map((it, i) => optionRow(it, i === 0)).join("");
+        const value = multi ? "1 selected" : items[0].l;
+        const triggerAv = (s.withIcon && !multi) ? `<span class="${avatarBase} h-5 w-5 text-[9px]">${items[0].img ? avatarImg(items[0].img, items[0].i) : items[0].i}</span>` : "";
+        const panelClick = multi
+          ? ` onclick="var t=event.target.closest('[data-lb-opt]');if(!t)return;t.querySelector('[data-check]').classList.toggle('invisible');var sel=[].slice.call(this.querySelectorAll('[data-lb-opt]')).filter(function(o){return !o.querySelector('[data-check]').classList.contains('invisible')});this.previousElementSibling.querySelector('[data-lb-value]').textContent=sel.length?sel.length+' selected':'Select…'"`
+          : ` onclick="var t=event.target.closest('[data-lb-opt]');if(!t)return;this.querySelectorAll('[data-check]').forEach(function(c){c.classList.add('invisible')});t.querySelector('[data-check]').classList.remove('invisible');this.previousElementSibling.querySelector('[data-lb-value]').textContent=t.querySelector('[data-lb-label]').textContent;this.classList.add('hidden')"`;
+        return `<div class="relative w-64 max-w-full"><button type="button" class="${lbTriggerCls} ${sizeH}"${dis}${menuTrigger}><span class="flex min-w-0 items-center gap-2">${triggerAv}<span data-lb-value class="truncate">${value}</span></span>${chevronDown}</button><div class="${lbPanel}"${panelClick}>${optionsHtml}</div></div>`;
+      },
+    },
+    sections: [
+      {
+        title: "Single select",
+        description: "One choice; the selected option carries a checkmark and the panel closes on pick.",
+        examples: [{
+          full: true,
+          html: `<div class="w-64 rounded-md border border-border bg-popover p-1 shadow-md">${([["Backend", true], ["Frontend", false], ["Design", false], ["Platform", false]] as [string, boolean][]).map(([l, sel]) => `<div class="${lbOption}"><span>${l}</span>${lbCheck(sel)}</div>`).join("")}</div>`,
+        }],
+      },
+      {
+        title: "Multi-select",
+        description: "Several choices; each toggles its own checkmark and the panel stays open.",
+        examples: [{
+          full: true,
+          html: `<div class="w-64 rounded-md border border-border bg-popover p-1 shadow-md">${([["Backend", true], ["Frontend", true], ["Design", false], ["Platform", true]] as [string, boolean][]).map(([l, sel]) => `<div class="${lbOption}"><span>${l}</span>${lbCheck(sel)}</div>`).join("")}</div>`,
+        }],
+      },
+      {
+        title: "With avatars",
+        description: "Options can carry an avatar or icon, useful for assignee and owner pickers.",
+        examples: [{
+          full: true,
+          html: `<div class="w-64 rounded-md border border-border bg-popover p-1 shadow-md">${([["Rachel Chen", "RC", "/rachel-chen.jpg", true], ["Ada Lovelace", "AL", "/ada-lovelace.jpg", false], ["Kevin Turner", "KT", "", false]] as [string, string, string, boolean][]).map(([l, ini, img, sel]) => `<div class="${lbOption}"><span class="${avatarBase} h-5 w-5 text-[9px]">${img ? avatarImg(img, ini) : ini}</span><span>${l}</span>${lbCheck(sel)}</div>`).join("")}</div>`,
+        }],
+      },
+    ],
+    donts: [{
+      title: "Prefer a native select for simple lists",
+      dont: {
+        html: `<div class="w-48 rounded-md border border-border bg-popover p-1 shadow-md">${([["Yes", true], ["No", false]] as [string, boolean][]).map(([l, sel]) => `<div class="${lbOption}"><span>${l}</span>${lbCheck(sel)}</div>`).join("")}</div>`,
+        caption: "A custom listbox for two short options is heavier than it needs to be and worse on mobile.",
+      },
+      do: {
+        html: `<select class="${inputBase} w-48"><option>Yes</option><option>No</option></select>`,
+        caption: "For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.",
       },
     }],
   },
