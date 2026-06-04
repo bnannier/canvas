@@ -3493,6 +3493,10 @@ npm run build</pre></div>`,
           caption: "Keep toasts to passive confirmation of something already done; offer Undo, not a blocking choice.",
         },
       },
+      // Dialog `menu` surface do/dont: teaches the overlay choice (collapse row
+      // actions behind ··· vs splaying them inline), not the item-ordering lesson
+      // the standalone row-menu component covers. Required by the dont-per-variant
+      // directive; intentionally kept distinct, not merged with row-menu.
       {
         title: "Row menu",
         dont: {
@@ -5094,7 +5098,7 @@ npm run build</pre></div>`,
         if (type === "sparkline") {
           return `<div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">${[
   { label: "Tokens issued", val: "4,847", delta: "+12%", deltaCls: "text-foreground", color: "var(--primary)", id: "spk1", poly: "0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3 200,34 0,34", line: "0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3", cy: 3 },
-  { label: "Active sessions", val: "1,204", delta: "+8%", deltaCls: "text-teal-600", color: "#0d9488", id: "spk2", poly: "0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6 200,34 0,34", line: "0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6", cy: 6 },
+  { label: "Active sessions", val: "1,204", delta: "+8%", deltaCls: "text-teal-600", color: "var(--chart-2)", id: "spk2", poly: "0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6 200,34 0,34", line: "0,22 20,24 40,18 60,20 80,15 100,17 120,11 140,13 160,8 180,10 200,6", cy: 6 },
   { label: "Error rate", val: "0.42%", delta: "-3%", deltaCls: "text-red-600", color: "var(--destructive)", id: "spk3", poly: "0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24 200,34 0,34", line: "0,8 20,10 40,9 60,14 80,12 100,16 120,15 140,19 160,17 180,21 200,24", cy: 24 },
 ].map((c) => `<div class="${cardCls} p-5"><div class="text-xs text-muted-foreground">${c.label}</div><div class="mt-1 flex items-baseline justify-between"><span class="text-[22px] font-semibold">${c.val}</span><span class="font-mono text-[11px] ${c.deltaCls}">${c.delta}</span></div><svg width="100%" height="34" viewBox="0 0 200 34" preserveAspectRatio="none" class="mt-2 block overflow-visible"><defs><linearGradient id="${c.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c.color}" stop-opacity="0.3"/><stop offset="100%" stop-color="${c.color}" stop-opacity="0"/></linearGradient></defs><polygon points="${c.poly}" fill="url(#${c.id})"/><polyline points="${c.line}" fill="none" stroke="${c.color}" stroke-width="1.5"/><circle cx="200" cy="${c.cy}" r="2.5" fill="${c.color}"/></svg></div>`).join("")}</div>`;
         }
@@ -5102,14 +5106,14 @@ npm run build</pre></div>`,
           return `<div class="${cardCls} max-w-[560px] p-5">
   <div class="mb-1 text-[15px] font-semibold">Traffic sources</div>
   <div class="mb-4 text-xs text-muted-foreground">Breakdown by channel</div>
-  <div class="mb-3.5 flex h-2.5 overflow-hidden rounded-full bg-muted">${[["bg-primary", "42%"], ["bg-blue-500", "28%"], ["bg-violet-500", "18%"], ["bg-amber-500", "12%"]].map(([c, w]) => `<div class="${c}" style="width:${w}"></div>`).join("")}</div>
-  <div class="flex flex-col gap-2">${[["bg-primary", "Direct", "42%"], ["bg-blue-500", "Organic search", "28%"], ["bg-violet-500", "Social", "18%"], ["bg-amber-500", "Referral", "12%"]].map(([c, l, p]) => `<div class="flex items-center gap-2.5 text-sm"><span class="h-2 w-2 shrink-0 rounded-full ${c}"></span><span class="flex-1">${l}</span><span class="font-mono text-xs text-muted-foreground">${p}</span></div>`).join("")}</div>
+  <div class="mb-3.5 flex h-2.5 overflow-hidden rounded-full bg-muted">${[["bg-chart-1", "42%"], ["bg-chart-2", "28%"], ["bg-chart-3", "18%"], ["bg-chart-4", "12%"]].map(([c, w]) => `<div class="${c}" style="width:${w}"></div>`).join("")}</div>
+  <div class="flex flex-col gap-2">${[["bg-chart-1", "Direct", "42%"], ["bg-chart-2", "Organic search", "28%"], ["bg-chart-3", "Social", "18%"], ["bg-chart-4", "Referral", "12%"]].map(([c, l, p]) => `<div class="flex items-center gap-2.5 text-sm"><span class="h-2 w-2 shrink-0 rounded-full ${c}"></span><span class="flex-1">${l}</span><span class="font-mono text-xs text-muted-foreground">${p}</span></div>`).join("")}</div>
 </div>`;
         }
         if (type === "gauge") {
           return `<div class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">${[
   { pct: 0.73, color: "var(--primary)", label: "Uptime", val: "73%" },
-  { pct: 0.45, color: "#0d9488", label: "Storage", val: "45%" },
+  { pct: 0.45, color: "var(--chart-2)", label: "Storage", val: "45%" },
   { pct: 0.89, color: "var(--destructive)", label: "CPU", val: "89%" },
 ].map((g) => `<div class="${cardCls} flex items-center justify-center p-5"><svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="56" fill="none" stroke="var(--muted)" stroke-width="12"/><circle cx="70" cy="70" r="56" fill="none" stroke="${g.color}" stroke-width="12" stroke-dasharray="${56 * 2 * Math.PI}" stroke-dashoffset="${56 * 2 * Math.PI * (1 - g.pct)}" stroke-linecap="round" transform="rotate(-90 70 70)"/><text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="var(--foreground)">${g.val}</text><text x="70" y="84" text-anchor="middle" font-size="11" fill="var(--muted-foreground)">${g.label}</text></svg></div>`).join("")}</div>`;
         }
@@ -5160,11 +5164,11 @@ npm run build</pre></div>`,
       {
         title: "Stacked bar",
         dont: {
-          html: `<div class="${cardCls} max-w-[560px] p-5"><div class="flex h-2.5 overflow-hidden rounded-full bg-muted">${[["bg-primary", "42%"], ["bg-blue-500", "28%"], ["bg-violet-500", "18%"], ["bg-amber-500", "12%"]].map(([c, w]) => `<div class="${c}" style="width:${w}"></div>`).join("")}</div></div>`,
+          html: `<div class="${cardCls} max-w-[560px] p-5"><div class="flex h-2.5 overflow-hidden rounded-full bg-muted">${[["bg-chart-1", "42%"], ["bg-chart-2", "28%"], ["bg-chart-3", "18%"], ["bg-chart-4", "12%"]].map(([c, w]) => `<div class="${c}" style="width:${w}"></div>`).join("")}</div></div>`,
           caption: "Colored segments with no legend force the reader to guess which channel each band represents.",
         },
         do: {
-          html: `<div class="${cardCls} max-w-[560px] p-5"><div class="mb-3.5 flex h-2.5 overflow-hidden rounded-full bg-muted">${[["bg-primary", "42%"], ["bg-blue-500", "28%"], ["bg-violet-500", "18%"], ["bg-amber-500", "12%"]].map(([c, w]) => `<div class="${c}" style="width:${w}"></div>`).join("")}</div><div class="flex flex-col gap-2">${[["bg-primary", "Direct", "42%"], ["bg-blue-500", "Organic search", "28%"], ["bg-violet-500", "Social", "18%"], ["bg-amber-500", "Referral", "12%"]].map(([c, l, p]) => `<div class="flex items-center gap-2.5 text-sm"><span class="h-2 w-2 shrink-0 rounded-full ${c}"></span><span class="flex-1">${l}</span><span class="font-mono text-xs text-muted-foreground">${p}</span></div>`).join("")}</div></div>`,
+          html: `<div class="${cardCls} max-w-[560px] p-5"><div class="mb-3.5 flex h-2.5 overflow-hidden rounded-full bg-muted">${[["bg-chart-1", "42%"], ["bg-chart-2", "28%"], ["bg-chart-3", "18%"], ["bg-chart-4", "12%"]].map(([c, w]) => `<div class="${c}" style="width:${w}"></div>`).join("")}</div><div class="flex flex-col gap-2">${[["bg-chart-1", "Direct", "42%"], ["bg-chart-2", "Organic search", "28%"], ["bg-chart-3", "Social", "18%"], ["bg-chart-4", "Referral", "12%"]].map(([c, l, p]) => `<div class="flex items-center gap-2.5 text-sm"><span class="h-2 w-2 shrink-0 rounded-full ${c}"></span><span class="flex-1">${l}</span><span class="font-mono text-xs text-muted-foreground">${p}</span></div>`).join("")}</div></div>`,
           caption: "Always ship a legend with a colored dot, label, and percentage per segment.",
         },
       },

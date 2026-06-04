@@ -2,26 +2,18 @@ import { CodeBlock } from "@/components/code-block";
 import { PageNav } from "@/components/page-nav";
 
 const SEMANTIC_PAIRS = [
-  { name: "Background", varName: "--background", light: "220 15% 92%", dark: "222 16% 9%", bgVar: "var(--background)" },
-  { name: "Foreground", varName: "--foreground", light: "220 25% 14%", dark: "210 17% 95%", bgVar: "var(--foreground)" },
-  { name: "Card", varName: "--card", light: "220 20% 98.5%", dark: "222 14% 13%", bgVar: "var(--card)" },
-  { name: "Popover", varName: "--popover", light: "220 20% 98.5%", dark: "222 14% 14%", bgVar: "var(--popover)" },
-  { name: "Primary", varName: "--primary", light: "240 79% 60%", dark: "240 79% 60%", bgVar: "var(--primary)" },
-  { name: "Secondary", varName: "--secondary", light: "220 14% 89%", dark: "222 12% 18%", bgVar: "var(--secondary)" },
-  { name: "Muted", varName: "--muted", light: "220 14% 89%", dark: "222 12% 18%", bgVar: "var(--muted)" },
-  { name: "Accent", varName: "--accent", light: "220 14% 89%", dark: "222 12% 20%", bgVar: "var(--accent)" },
-  { name: "Destructive", varName: "--destructive", light: "0 84.2% 60.2%", dark: "0 62.8% 30.6%", bgVar: "var(--destructive)" },
-  { name: "Border", varName: "--border", light: "220 13% 83%", dark: "222 11% 22%", bgVar: "var(--border)" },
-  { name: "Input", varName: "--input", light: "220 13% 83%", dark: "222 11% 22%", bgVar: "var(--input)" },
-  { name: "Ring", varName: "--ring", light: "217 91% 60%", dark: "217 91% 60%", bgVar: "var(--ring)" },
-];
-
-const SIDEBAR_TOKENS = [
-  { name: "Background", varName: "--sidebar-background", light: "220 16% 95%", dark: "222 18% 7%", bgVar: "var(--sidebar-background)" },
-  { name: "Foreground", varName: "--foreground", light: "220 20% 22%", dark: "210 17% 92%", bgVar: "var(--foreground)" },
-  { name: "Accent", varName: "--accent", light: "220 14% 88%", dark: "222 14% 16%", bgVar: "var(--accent)" },
-  { name: "Accent foreground", varName: "--accent-foreground", light: "220 25% 14%", dark: "210 17% 95%", bgVar: "var(--accent-foreground)" },
-  { name: "Border", varName: "--sidebar-border", light: "220 13% 84%", dark: "222 11% 18%", bgVar: "var(--sidebar-border)" },
+  { name: "Background", varName: "--background", light: "oklch(1 0 0)", dark: "oklch(0.141 0.005 285.8)", bgVar: "var(--background)" },
+  { name: "Foreground", varName: "--foreground", light: "oklch(0.141 0.005 285.8)", dark: "oklch(0.985 0 0)", bgVar: "var(--foreground)" },
+  { name: "Card", varName: "--card", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.9)", bgVar: "var(--card)" },
+  { name: "Popover", varName: "--popover", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.9)", bgVar: "var(--popover)" },
+  { name: "Primary", varName: "--primary", light: "oklch(0.511 0.262 277)", dark: "oklch(0.585 0.233 277)", bgVar: "var(--primary)" },
+  { name: "Secondary", varName: "--secondary", light: "oklch(0.967 0.001 286.4)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--secondary)" },
+  { name: "Muted", varName: "--muted", light: "oklch(0.967 0.001 286.4)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--muted)" },
+  { name: "Accent", varName: "--accent", light: "oklch(0.967 0.001 286.4)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--accent)" },
+  { name: "Destructive", varName: "--destructive", light: "oklch(0.577 0.245 27.3)", dark: "oklch(0.704 0.191 22.2)", bgVar: "var(--destructive)" },
+  { name: "Border", varName: "--border", light: "oklch(0.92 0.004 286.3)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--border)" },
+  { name: "Input", varName: "--input", light: "oklch(0.92 0.004 286.3)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--input)" },
+  { name: "Ring", varName: "--ring", light: "oklch(0.585 0.233 277)", dark: "oklch(0.585 0.233 277)", bgVar: "var(--ring)" },
 ];
 
 const ACCENT_OPTIONS = [
@@ -62,7 +54,7 @@ function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
           height: 80,
           borderRadius: "var(--radius-lg, 8px)",
           border: "1px solid var(--border)",
-          background: `hsl(${row.bgVar})`,
+          background: row.bgVar,
         }}
       />
       <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
@@ -72,8 +64,8 @@ function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
         {row.varName}
       </code>
       <div style={{ marginTop: 4, fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
-        <div>L · hsl({row.light})</div>
-        <div>D · hsl({row.dark})</div>
+        <div>L · {row.light}</div>
+        <div>D · {row.dark}</div>
       </div>
     </div>
   );
@@ -162,7 +154,7 @@ function ChartChip({ c }: { c: typeof CHART_PALETTE[number] }) {
           height: 64,
           borderRadius: "var(--radius-lg, 8px)",
           border: "1px solid var(--border)",
-          background: `hsl(${c.light})`,
+          background: `var(${c.varName})`,
         }}
       />
       <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
@@ -217,13 +209,13 @@ function Section({ title, description, anatomy, children }: {
 }
 
 const cssVarsCode = `:root {
-  --primary: 240 79% 60%;
-  --background: 220 15% 92%;
+  --primary: oklch(0.511 0.262 277);
+  --background: oklch(1 0 0);
   /* … */
 }
 .dark {
-  --primary: 240 79% 60%;
-  --background: 222 16% 9%;
+  --primary: oklch(0.585 0.233 277);
+  --background: oklch(0.141 0.005 285.8);
   /* … */
 }`;
 
@@ -236,8 +228,8 @@ const themeBridgeCode = `@theme inline {
 const dynamicCode = `<button className="bg-primary text-primary-foreground">Save</button>
 
 // Same markup, different theme:
-//   light → background-color: hsl(240 79% 60%)
-//   dark  → background-color: hsl(240 79% 60%)
+//   light → background-color: oklch(0.511 0.262 277)
+//   dark  → background-color: oklch(0.585 0.233 277)
 //   accent=teal → background-color: hsl(173 70% 42%)`;
 
 const dontCode = `<button style={{ background: '#6366f1' }}>`;
@@ -264,7 +256,7 @@ export function TokensPage() {
           lineHeight: 1.6,
           color: "var(--muted-foreground)",
         }}>
-          Canvas uses a semantic token system. Every color is an HSL value bound to a CSS
+          Canvas uses a semantic token system. Every color is an oklch value bound to a CSS
           custom property. Tailwind utilities (<code>bg-primary</code>, <code>text-muted-foreground</code>,{" "}
           <code>border-border</code>, &#8230;) resolve through those vars via <code>@theme inline</code>, so
           switching themes is just rewriting the variables.
@@ -294,20 +286,10 @@ export function TokensPage() {
         </div>
       </Section>
 
-      {/* Sidebar palette */}
-      <Section
-        title="Sidebar palette"
-        description="Sidebar tokens are layered separately so the chrome can sit on a slightly different value from the page surface, a subtle elevation cue."
-      >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
-          {SIDEBAR_TOKENS.map((row) => <ColorPair key={row.varName} row={row} />)}
-        </div>
-      </Section>
-
       {/* Accent options */}
       <Section
         title="Accent options"
-        description="The accent rewrites --primary and --ring at runtime. Six curated hues that all sit at similar perceived weight (chroma + lightness held roughly constant)."
+        description="The default --primary is Indigo. Point --primary and --ring at any of these six curated hues to re-skin the whole system; they sit at similar perceived weight (chroma and lightness held roughly constant)."
         anatomy="Accents only override --primary and --ring. All foreground pairings are recalculated downstream via Tailwind's color-mix() opacity utilities, so you don't restate them per accent."
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>

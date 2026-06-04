@@ -6,3 +6,4 @@ dist/
 coverage/
 test/screenshots/*.current.png
 test/verify/
+test/ui/

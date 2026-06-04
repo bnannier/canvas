@@ -501,7 +501,7 @@ html[data-surface="glass"] .sidebar {
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Desktop (>= lg)</div>
     <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
-      <div style="width:48px;background:var(--sidebar-background);border-right:1px solid var(--border);padding:6px;font-size:9px;color:var(--muted-foreground)">Nav</div>
+      <div style="width:48px;background:var(--card);border-right:1px solid var(--border);padding:6px;font-size:9px;color:var(--muted-foreground)">Nav</div>
       <div style="flex:1;padding:8px;font-size:11px;color:var(--muted-foreground)">Main content area</div>
     </div>
     <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">Sidebar fixed. Collapsible via toggle.</div>

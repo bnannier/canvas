@@ -2,8 +2,9 @@
 
 /* ─────────────────────────────────────────────────────────────────────────
    Canvas theme. Fresh and Tailwind-native: Canvas's own semantic tokens,
-   not shadcn's set and not the old v3 values. Neutral zinc baseline; swap
-   --primary for a brand accent. Light at :root, dark under .dark.
+   not shadcn's set and not the old v3 values. Indigo brand primary on a
+   zinc-neutral base, plus a five-hue chart palette and brand orb colors.
+   Light at :root, dark under .dark.
    ───────────────────────────────────────────────────────────────────────── */
 
 /* Dark mode keys off a `.dark` class on <html>, not prefers-color-scheme. */
@@ -43,6 +44,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 }
 
 /* Light */
@@ -53,7 +59,7 @@
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
+  --primary: oklch(0.511 0.262 276.966);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
@@ -65,7 +71,19 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.015 286.067);
+  --ring: oklch(0.585 0.233 277.117);
+
+  /* Data-viz palette: five distinct hues tuned for small marks. */
+  --chart-1: hsl(12 76% 61%);
+  --chart-2: hsl(173 58% 39%);
+  --chart-3: hsl(197 37% 24%);
+  --chart-4: hsl(43 74% 66%);
+  --chart-5: hsl(27 87% 67%);
+
+  /* Brand constants (do not flip with theme): avatar gradient, sign-in orbs. */
+  --orb-indigo: #6366f1;
+  --orb-violet: #8b5cf6;
+  --orb-cyan: #06b6d4;
 }
 
 /* Dark */
@@ -76,8 +94,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.21 0.006 285.885);
+  --primary: oklch(0.585 0.233 277.117);
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
@@ -88,7 +106,14 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.274 0.006 286.033);
   --input: oklch(0.274 0.006 286.033);
-  --ring: oklch(0.552 0.016 285.938);
+  --ring: oklch(0.585 0.233 277.117);
+
+  /* Data-viz palette: dark-mode set is independently chosen, not lightness-flipped. */
+  --chart-1: hsl(220 70% 50%);
+  --chart-2: hsl(160 60% 45%);
+  --chart-3: hsl(30 80% 55%);
+  --chart-4: hsl(280 65% 60%);
+  --chart-5: hsl(340 75% 55%);
 }
 
 @layer base {
