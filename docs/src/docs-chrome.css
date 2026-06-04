@@ -615,3 +615,53 @@ input.checkbox { width: 1rem; height: 1rem; accent-color: var(--primary); cursor
 /* ── Misc docs helpers ────────────────────────────────────────────────────── */
 
 .docs-toc-col { position: sticky; top: 5rem; align-self: start; }
+
+/* ── Themed scrollbars: match the active light/dark theme everywhere ───────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+  background-clip: padding-box;
+}
+
+/* ── Glass surface (data-surface="glass") ─────────────────────────────────────
+   Translucent, blurred chrome AND playground surfaces over an aurora backdrop.
+   The Solid/Glass toggle sets <html data-surface="glass">. Surfaces become
+   semi-transparent (via the token override) and frosted (backdrop-filter), so the
+   aurora shows through. Targets the shared surface classes (.sidebar, .topbar,
+   cards) and the Tailwind bg-card/bg-popover utilities, so components rendered in
+   the playground pick up the glass treatment too. */
+[data-surface="glass"] {
+  --card: oklch(1 0 0 / 0.62);
+  --popover: oklch(1 0 0 / 0.74);
+}
+.dark[data-surface="glass"] {
+  --card: oklch(0.24 0.006 285.885 / 0.5);
+  --popover: oklch(0.25 0.006 285.885 / 0.62);
+}
+[data-surface="glass"] body {
+  background-image:
+    radial-gradient(38rem 38rem at 12% 6%, color-mix(in oklch, var(--primary) 18%, transparent), transparent 60%),
+    radial-gradient(34rem 34rem at 90% 12%, oklch(0.68 0.19 295 / 0.18), transparent 60%),
+    radial-gradient(42rem 42rem at 78% 94%, oklch(0.78 0.15 200 / 0.18), transparent 62%);
+  background-attachment: fixed;
+}
+[data-surface="glass"] :where(
+  .sidebar, .topbar, .bg-card, .bg-popover, .section-card, .stat-card,
+  .card, .dt-wrap, .codeblock, [data-alert]
+) {
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+}
+[data-surface="glass"] .topbar { background-color: var(--card); }
