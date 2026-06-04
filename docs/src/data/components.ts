@@ -189,7 +189,7 @@ const statTone: Record<string, string> = {
   amber: "bg-amber-500/10 text-amber-600",
 };
 const codeblockCls =
-  "overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-[13px] leading-relaxed";
+  "block w-full overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 text-left font-mono text-[13px] leading-relaxed";
 const tableWrap = "overflow-x-auto rounded-lg border border-border";
 const tableCls = "w-full text-sm";
 const thCls = "border-b border-border px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground";
@@ -1559,6 +1559,7 @@ export const COMPONENTS: ComponentDoc[] = [
     sections: [{
       title: "Default",
       examples: [{
+        full: true,
         html: `<pre class="${codeblockCls}">const theme = getTheme();
 setTheme(theme === "dark" ? "light" : "dark");</pre>`,
       }],
