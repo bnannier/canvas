@@ -71,31 +71,30 @@ const BADGE_LABEL: Record<Tone, string> = {
   destructive: "text-destructive-foreground",
 };
 
-// Status badge: fully rounded pill with a leading dot, soft tinted surface.
-// The engine ships only Canvas's semantic tokens (no hue scale), so each tone
-// maps to the nearest token-backed surface: error -> destructive, neutral ->
-// muted, and the remaining tones to a soft accent surface differentiated by the
-// dot color.
+// Status badge: fully rounded pill with a leading dot and a soft tinted surface.
+// Each tone uses the engine's Tailwind palette: a soft 50/200/700 surface in
+// light mode and a 950/800/400 surface in dark mode (neutral stays on the
+// semantic muted token), with a saturated 500 dot.
 const STATUS_BASE = "flex-row items-center self-start gap-1.5 rounded-full border px-2 py-0.5";
 const STATUS_CONTAINER: Record<Status, string> = {
-  success: "border-border bg-accent",
-  warning: "border-border bg-accent",
-  error: "border-destructive/20 bg-destructive/10",
-  info: "border-border bg-accent",
+  success: "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950",
+  warning: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950",
+  error: "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950",
+  info: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950",
   neutral: "border-border bg-muted",
 };
 const STATUS_LABEL: Record<Status, string> = {
-  success: "text-foreground",
-  warning: "text-foreground",
-  error: "text-destructive",
-  info: "text-foreground",
+  success: "text-green-700 dark:text-green-400",
+  warning: "text-amber-700 dark:text-amber-400",
+  error: "text-red-700 dark:text-red-400",
+  info: "text-blue-700 dark:text-blue-400",
   neutral: "text-muted-foreground",
 };
 const STATUS_DOT: Record<Status, string> = {
-  success: "bg-primary",
-  warning: "bg-foreground",
-  error: "bg-destructive",
-  info: "bg-primary",
+  success: "bg-green-500",
+  warning: "bg-amber-500",
+  error: "bg-red-500",
+  info: "bg-blue-500",
   neutral: "bg-muted-foreground",
 };
 

@@ -9,6 +9,7 @@
 import {
   type ColorTokens,
   baseColors,
+  palette,
   spacing,
   radius,
   fontSize,
@@ -102,7 +103,7 @@ function color(name: string, tokens: ColorTokens): string | undefined {
     const a = Number(name.slice(slash + 1));
     if (!Number.isNaN(a)) alpha = a / 100;
   }
-  const hex = (tokens as unknown as Record<string, string>)[key] ?? baseColors[key];
+  const hex = (tokens as unknown as Record<string, string>)[key] ?? baseColors[key] ?? palette[key];
   if (!hex) return undefined;
   if (alpha === undefined || hex === "transparent") return hex;
   return hexToRgba(hex, alpha);

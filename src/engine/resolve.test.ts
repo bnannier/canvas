@@ -71,6 +71,14 @@ test("color alpha modifier", () => {
   });
 });
 
+test("palette hues resolve for bg/text/border, including alpha", () => {
+  expect(resolve("bg-red-500", ctx())).toEqual({ backgroundColor: "#ef4444" });
+  expect(resolve("text-green-700", ctx())).toEqual({ color: "#15803d" });
+  expect(resolve("bg-blue-500/50", ctx())).toEqual({
+    backgroundColor: "rgba(59, 130, 246, 0.5)",
+  });
+});
+
 test("desktop-first: md: applies at width and below, and wins there", () => {
   expect(resolve("flex-row md:flex-col", ctx({ width: 700 }))).toEqual({
     flexDirection: "column",
