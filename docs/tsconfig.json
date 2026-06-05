@@ -13,7 +13,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@olympusoss/canvas": ["../src/index.ts"]
     }
   },
   "include": ["src"]
