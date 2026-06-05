@@ -315,25 +315,30 @@ export const registry: Record<string, RegistryEntry> = {
     Component: InputGroup as AnyComponent,
     mapProps: (s) => {
       const v = s.variant as string;
+      const isAction = v === "action";
       return {
         small: s.size === "sm",
         large: s.size === "lg",
         disabled: Boolean(s.disabled),
-        prefix: v === "lead-text" ? "https://" : v === "lead-icon" ? "🔍" : v === "currency" ? "$" : undefined,
+        prefix: v === "lead-text" ? "https://" : v === "currency" ? "$" : undefined,
         suffix:
           v === "trail-text" ? "@canvas.dev"
-            : v === "trail-icon" ? "✉"
-              : v === "currency" ? "USD"
-                : v === "action" ? "Copy"
-                  : undefined,
-        action: v === "action",
+            : v === "currency" ? "USD"
+              : isAction ? "Copy"
+                : undefined,
+        action: isAction,
+        readOnly: isAction,
+        leadingIcon: v === "lead-icon",
+        trailingIcon: v === "trail-icon",
+        icon: v === "lead-icon" ? "search" : v === "trail-icon" ? "mail" : undefined,
+        value: isAction ? "sk_live_••••••••4242" : undefined,
         placeholder:
           v === "lead-text" ? "example.com"
             : v === "trail-text" ? "ada"
-              : v === "lead-icon" ? "Quick search"
+              : v === "lead-icon" ? "Quick search…"
                 : v === "trail-icon" ? "you@example.com"
                   : v === "currency" ? "0.00"
-                    : "sk_live_4242",
+                    : undefined,
         className: "max-w-[320px]",
       };
     },
@@ -638,17 +643,46 @@ export const registry: Record<string, RegistryEntry> = {
   "description-lists": {
     name: "DescriptionList",
     Component: DescriptionList as AnyComponent,
-    mapProps: (s) => ({
-      items: [
-        { term: "Full name", value: "Rachel Chen" },
-        { term: "Email", value: "rachel.chen@example.com" },
-        { term: "Role", value: "admin" },
-        { term: "Status", value: "Active" },
-      ],
-      card: true,
-      inline: s.variant === "two-column" || s.variant === "inline-edit",
-      divided: s.variant === "two-column" || s.variant === "inline-edit",
-    }),
+    mapProps: (s) => {
+      if (s.variant === "inline-edit") {
+        return {
+          card: true,
+          twoColumn: true,
+          divided: true,
+          title: "Profile",
+          items: [
+            { term: "Name", value: "Rachel Chen", update: true },
+            { term: "Email", value: "rachel.chen@example.com", update: true },
+            { term: "Title", value: "Senior Engineer", update: true },
+          ],
+        };
+      }
+      if (s.variant === "stacked") {
+        return {
+          card: true,
+          stacked: true,
+          items: [
+            { term: "Full name", value: "Rachel Chen" },
+            { term: "Email", value: "rachel.chen@example.com" },
+            { term: "Client ID", value: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF", mono: true },
+          ],
+        };
+      }
+      // Default: two-column read-only detail card with a header band and badges.
+      return {
+        card: true,
+        twoColumn: true,
+        divided: true,
+        title: "Application details",
+        subtitle: "Personal information and credentials.",
+        items: [
+          { term: "Full name", value: "Rachel Chen" },
+          { term: "Email", value: "rachel.chen@example.com" },
+          { term: "Role", value: "admin", badge: true },
+          { term: "Status", value: "Active", status: true },
+        ],
+      };
+    },
   },
 
   tabs: {
@@ -720,18 +754,22 @@ export const registry: Record<string, RegistryEntry> = {
     Component: GridList as AnyComponent,
     mapProps: (s) => {
       const gallery = s.variant === "gallery";
+      const actions = [
+        { label: "Message", outline: true },
+        { label: "View", ghost: true },
+      ];
       const people = [
-        { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC" },
-        { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL" },
-        { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT" },
+        { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "/rachel-chen.jpg", actions },
+        { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "/ada-lovelace.jpg", actions },
+        { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", actions },
       ];
       const files = [
-        { title: "hero-banner.png", subtitle: "1.2 MB", avatar: "HB" },
-        { title: "icon-set.svg", subtitle: "340 KB", avatar: "IS" },
-        { title: "product-shot.jpg", subtitle: "2.8 MB", avatar: "PS" },
-        { title: "avatar-default.png", subtitle: "96 KB", avatar: "AD" },
+        { title: "hero-banner.png", subtitle: "1.2 MB", color: "primary" },
+        { title: "icon-set.svg", subtitle: "340 KB", color: "blue-500" },
+        { title: "product-shot.jpg", subtitle: "2.8 MB", color: "emerald-500" },
+        { title: "avatar-default.png", subtitle: "96 KB", color: "amber-500" },
       ];
-      return { items: gallery ? files : people, cols3: gallery, cols2: !gallery };
+      return { items: gallery ? files : people, gallery, cols3: gallery, cols2: !gallery };
     },
   },
 

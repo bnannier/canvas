@@ -3,6 +3,7 @@ import { Box, Text } from "../engine/index.js";
 import { Card } from "./card.js";
 import { Avatar } from "./avatar.js";
 import { Badge } from "./badge.js";
+import { Button } from "./button.js";
 
 // GridList: a responsive grid of card tiles for a people directory, a project
 // or file collection, or any tiled gallery. Each item renders as a bordered
@@ -21,6 +22,16 @@ import { Badge } from "./badge.js";
 //   `cols2` is the explicit two-up. With neither set the grid is two-up.
 // - Density: `compact` tightens the gap and per-tile padding for denser grids.
 
+/** A trailing tile action, rendered as a Button in people mode. */
+export interface GridListAction {
+  /** Button label (e.g. "Message"). */
+  label: string;
+  /** Render as an outline button (the default look is solid). */
+  outline?: boolean;
+  /** Render as a ghost button. */
+  ghost?: boolean;
+}
+
 export interface GridListItem {
   /** Primary label for the tile (a name, project, or file). */
   title: string;
@@ -30,6 +41,16 @@ export interface GridListItem {
   avatar?: string;
   /** Optional status word rendered as a trailing badge (e.g. "Active"). */
   badge?: string;
+  /**
+   * Gallery-tile block tint: a palette or token color name (e.g. "primary",
+   * "blue-500"). Painted as `bg-{color}/20` behind the filename in gallery mode.
+   */
+  color?: string;
+  /**
+   * Trailing actions rendered as a button row beneath the title (people mode),
+   * e.g. an outline "Message" and a ghost "View".
+   */
+  actions?: GridListAction[];
 }
 
 export interface GridListProps {
@@ -38,6 +59,13 @@ export interface GridListProps {
   // Columns (pick one; default is two-up).
   cols3?: boolean;
   cols2?: boolean;
+  /**
+   * Gallery mode: render each tile as a borderless thumbnail (a square color
+   * block from `item.color`, with a left-aligned filename and size below).
+   * Avatars, badges, and actions are not shown in this mode. Omit for the
+   * default people/card tile.
+   */
+  gallery?: boolean;
   // Density modifier: tighter gap and tile padding.
   compact?: boolean;
   className?: string;
@@ -61,39 +89,66 @@ const TILE_WIDTH: Record<Columns, string> = {
 };
 
 export function GridList(props: GridListProps) {
-  const { items, compact, className } = props;
+  const { items, gallery, compact, className } = props;
   const columns = columnsOf(props);
 
   // Container: a wrapping flex row. Compact tightens the inter-tile gap.
   const container = cn("flex-row flex-wrap", compact ? "gap-2" : "gap-3.5", className);
 
-  // Tile: a bordered card sharing the row. Centered stack of avatar, title, and
-  // supporting line, matching the people-directory tile in the docs reference.
+  // Gallery tiles are borderless thumbnails; people tiles are bordered cards.
   const tilePad = compact ? "p-4" : "p-5";
 
   return (
     <Box className={container}>
-      {items.map((item, index) => (
-        <Card
-          key={`${item.title}-${index}`}
-          className={cn("grow items-center", TILE_WIDTH[columns], tilePad)}
-        >
-          <Box className="items-center gap-2">
-            <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
-              {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
-            </Avatar>
-            <Text className="text-sm font-semibold text-card-foreground">{item.title}</Text>
-            {item.subtitle != null ? (
-              <Text className="text-xs text-muted-foreground">{item.subtitle}</Text>
-            ) : null}
-            {item.badge != null ? (
-              <Box className="mt-1">
-                <Badge secondary>{item.badge}</Badge>
-              </Box>
-            ) : null}
+      {items.map((item, index) =>
+        gallery ? (
+          <Box
+            key={`${item.title}-${index}`}
+            className={cn("grow", TILE_WIDTH[columns])}
+          >
+            {/* Square color block. The engine has no bg-gradient, so a single
+                translucent tint stands in for the legacy gradient swatch. */}
+            <Box
+              className={cn("w-full h-32 rounded-md", item.color ? `bg-${item.color}/20` : "bg-muted")}
+            />
+            <Box className="mt-2">
+              <Text className="text-xs font-medium text-card-foreground">{item.title}</Text>
+              {item.subtitle != null ? (
+                <Text className="text-xs text-muted-foreground">{item.subtitle}</Text>
+              ) : null}
+            </Box>
           </Box>
-        </Card>
-      ))}
+        ) : (
+          <Card
+            key={`${item.title}-${index}`}
+            className={cn("grow items-center", TILE_WIDTH[columns], tilePad)}
+          >
+            <Box className="items-center gap-2">
+              <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
+                {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
+              </Avatar>
+              <Text className="text-sm font-semibold text-card-foreground">{item.title}</Text>
+              {item.subtitle != null ? (
+                <Text className="text-xs text-muted-foreground">{item.subtitle}</Text>
+              ) : null}
+              {item.badge != null ? (
+                <Box className="mt-1">
+                  <Badge secondary>{item.badge}</Badge>
+                </Box>
+              ) : null}
+              {item.actions != null && item.actions.length > 0 ? (
+                <Box className="flex-row gap-2 mt-2">
+                  {item.actions.map((action, i) => (
+                    <Button key={`${action.label}-${i}`} small outline={action.outline} ghost={action.ghost}>
+                      {action.label}
+                    </Button>
+                  ))}
+                </Box>
+              ) : null}
+            </Box>
+          </Card>
+        ),
+      )}
     </Box>
   );
 }
