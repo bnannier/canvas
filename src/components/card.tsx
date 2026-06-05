@@ -18,6 +18,10 @@ import { Box, Text } from "../engine/index.js";
 // - Padding: `padded` pads the surface itself (good for a single block of
 //   content); omit when you compose CardHeader/CardContent, which carry their
 //   own padding.
+// - Density (pick one): `compact` > `comfortable`. Sets the card's own content
+//   padding and the gap between flat children, tight (compact) or roomy
+//   (comfortable). A density prop pads the surface on its own, so it needs no
+//   `padded`, and it wins over `padded` when both are set.
 //
 // For the docs playground, which maps plain state to props (no JSX children),
 // Card also accepts simple string props (title, description, body, footer):
@@ -39,11 +43,16 @@ export interface CardProps {
   // Interaction and padding (orthogonal booleans).
   interactive?: boolean;
   padded?: boolean;
+  // Density (pick one; default is the standard inset). Scales the card's own
+  // content padding and the gap between flat children.
+  compact?: boolean;
+  comfortable?: boolean;
   className?: string;
 }
 
 type Surface = "solid" | "glass";
 type Elevation = "raised" | "flat" | "default";
+type Density = "compact" | "comfortable" | "default";
 
 // Surface precedence when more than one is passed: first match wins.
 function surfaceOf(p: CardProps): Surface {
@@ -55,6 +64,13 @@ function surfaceOf(p: CardProps): Surface {
 function elevationOf(p: CardProps): Elevation {
   if (p.raised) return "raised";
   if (p.flat) return "flat";
+  return "default";
+}
+
+// Density precedence when more than one is passed: first match wins.
+function densityOf(p: CardProps): Density {
+  if (p.compact) return "compact";
+  if (p.comfortable) return "comfortable";
   return "default";
 }
 
@@ -70,18 +86,28 @@ const CARD_ELEVATION: Record<Elevation, string> = {
   flat: "shadow-none",
   default: "shadow-sm",
 };
+// Density sets the card's own content padding and the gap between flat children.
+// It pads the surface on its own (no `padded` needed) and wins over `padded`.
+const CARD_DENSITY: Record<Density, string> = {
+  compact: "p-4 gap-3",
+  comfortable: "p-8 gap-6",
+  default: "",
+};
 
 export function Card(props: CardProps) {
   const { children, title, description, body, footer, interactive, padded, className } = props;
   const surface = surfaceOf(props);
   const elevation = elevationOf(props);
+  const density = densityOf(props);
 
   const container = cn(
     CARD_BASE,
     CARD_SURFACE[surface],
     CARD_ELEVATION[elevation],
     interactive && "active:opacity-90",
-    padded && "p-6",
+    // Density pads + gaps on its own and wins over `padded`; otherwise `padded`
+    // applies the standard inset, and a bare card stays unpadded for composition.
+    density !== "default" ? CARD_DENSITY[density] : padded && "p-6",
     className,
   );
 
