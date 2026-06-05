@@ -118,15 +118,40 @@ const labelCls = "mb-1.5 block text-sm font-medium";
 const helperCls = "mt-1.5 text-xs text-muted-foreground";
 const inputAddon =
   "inline-flex items-center whitespace-nowrap border border-input bg-muted px-3 text-sm text-muted-foreground";
-const cbList = "mt-1 max-h-60 overflow-auto rounded-md border border-border bg-popover p-1 shadow-md";
-const cbItem =
-  "flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground";
-const cbItemEl = (name: string, selected = false) =>
-  `<button type="button" data-cb-item class="${cbItem}${selected ? " bg-accent text-accent-foreground" : ""}">${name}</button>`;
+// Combobox: a searchable single-select. An input with a chevron and a popover
+// list that opens on focus, closes on blur or selection, filters as you type
+// (with an empty state), and shows a check on the selected option. Same popover
+// idiom as the listbox (lbPanel/lbOption/lbCheck), plus text filtering.
+const cbChevron =
+  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>`;
+const cbList =
+  "absolute left-0 top-full z-20 mt-1 hidden max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md";
+const cbOption =
+  "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground";
+const cbItemEl = (name: string, selected = false, avatar = "") =>
+  `<button type="button" data-cb-item class="${cbOption}">${avatar ? `<span class="${avatarBase} h-6 w-6 shrink-0 text-[10px]">${avatar}</span>` : ""}<span data-cb-label class="flex-1 truncate">${name}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-cb-check class="ml-auto shrink-0${selected ? "" : " invisible"}"><polyline points="20 6 9 17 4 12"/></svg></button>`;
+const cbEmpty =
+  `<div data-cb-empty class="hidden px-2 py-1.5 text-sm text-muted-foreground">No matches.</div>`;
 const cbFilter =
-  ` oninput="var v=this.value.toLowerCase();this.parentElement.querySelectorAll('[data-cb-item]').forEach(function(i){i.style.display=i.textContent.toLowerCase().includes(v)?'':'none'})"`;
+  ` onfocus="this.parentElement.querySelector('[data-cb-list]').classList.remove('hidden')"` +
+  ` onblur="var el=this;setTimeout(function(){el.parentElement.querySelector('[data-cb-list]').classList.add('hidden')},160)"` +
+  ` oninput="var l=this.parentElement.querySelector('[data-cb-list]');l.classList.remove('hidden');var v=this.value.toLowerCase(),any=false;l.querySelectorAll('[data-cb-item]').forEach(function(i){var m=i.querySelector('[data-cb-label]').textContent.toLowerCase().includes(v);i.style.display=m?'':'none';if(m)any=true});l.querySelector('[data-cb-empty]').classList.toggle('hidden',any)"`;
 const cbSelect =
-  ` onclick="var t=event.target.closest('[data-cb-item]');if(!t)return;this.querySelectorAll('[data-cb-item]').forEach(function(i){i.classList.remove('bg-accent','text-accent-foreground')});t.classList.add('bg-accent','text-accent-foreground');this.parentElement.querySelector('input').value=t.textContent.trim()"`;
+  ` onclick="var t=event.target.closest('[data-cb-item]');if(!t)return;this.querySelectorAll('[data-cb-check]').forEach(function(c){c.classList.add('invisible')});var c=t.querySelector('[data-cb-check]');if(c)c.classList.remove('invisible');this.parentElement.querySelector('input').value=t.querySelector('[data-cb-label]').textContent.trim();this.querySelectorAll('[data-cb-item]').forEach(function(i){i.style.display=''});this.querySelector('[data-cb-empty]').classList.add('hidden');this.classList.add('hidden')"`;
+const cbField = (
+  opts: string,
+  o: { value?: string; placeholder?: string; disabled?: boolean; filter?: boolean; select?: string } = {},
+) =>
+  `<div class="relative"><input class="${inputBase} pr-9"${o.value ? ` value="${o.value}"` : ""}${o.placeholder ? ` placeholder="${o.placeholder}"` : ""}${o.disabled ? " disabled" : ""}${o.filter === false ? "" : cbFilter}><span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">${cbChevron}</span><div data-cb-list class="${cbList}"${o.select ?? cbSelect}>${opts}${cbEmpty}</div></div>`;
+const cbPeople: [string, string][] = [
+  ["Ada Lovelace", "ada-lovelace.jpg"],
+  ["Grace Hopper", "grace-hopper.jpg"],
+  ["Kira Tanaka", "kira-tanaka.jpg"],
+  ["Liang Bao", "liang-bao.jpg"],
+  ["Marcus Allen", "marcus-allen.jpg"],
+  ["Noor Park", "noor-park.jpg"],
+  ["Rachel Chen", "rachel-chen.jpg"],
+];
 
 const hrLine = `<hr class="border-border">`;
 const sepLabel = (label: string) =>
@@ -864,11 +889,10 @@ export const COMPONENTS: ComponentDoc[] = [
       ],
       defaults: { placeholder: "Search a person…", withLabel: true, withHelper: false, disabled: false },
       render: (s) => {
-        const dis = s.disabled ? " disabled" : "";
         const label = s.withLabel ? `<label class="${labelCls}">Assigned to</label>` : "";
         const helper = s.withHelper ? `<p class="${helperCls}">The person responsible for this account.</p>` : "";
-        const items = ["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n, i) => cbItemEl(n, i === 0)).join("");
-        return `<div class="max-w-[280px]">${label}<div class="relative"><input class="${inputBase}" placeholder="${s.placeholder}"${dis}${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${items}</div></div>${helper}</div>`;
+        const items = cbPeople.map(([n, img]) => cbItemEl(n, false, avatarImg("/" + img, n))).join("");
+        return `<div class="max-w-[300px]">${label}${cbField(items, { placeholder: s.placeholder as string, disabled: s.disabled as boolean })}${helper}</div>`;
       },
     },
     sections: [],
@@ -876,7 +900,7 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "When to use",
         dont: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Size</label><div class="relative"><input class="${inputBase}" placeholder="Search…"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${["Small", "Medium", "Large"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Size</label>${cbField(["Small", "Medium", "Large"].map((n) => cbItemEl(n)).join(""), { placeholder: "Search…" })}</div>`,
           caption: "Type or click: a search field for three fixed options is overhead with nothing to filter.",
         },
         do: {
@@ -887,55 +911,55 @@ export const COMPONENTS: ComponentDoc[] = [
       {
         title: "Filtering",
         dont: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Type to filter… (nothing happens)"><div data-cb-list class="${cbList}"${cbSelect}>${["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook", "Tanya Fox", "Hellen Schmidt"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook", "Tanya Fox", "Hellen Schmidt"].map((n) => cbItemEl(n)).join(""), { placeholder: "Type to filter… (nothing happens)", filter: false })}</div>`,
           caption: "Try typing: a search box that ignores input is just a dropdown wearing a costume.",
         },
         do: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Type to filter…"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook", "Tanya Fox", "Hellen Schmidt"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook", "Tanya Fox", "Hellen Schmidt"].map((n) => cbItemEl(n)).join(""), { placeholder: "Type to filter…" })}</div>`,
           caption: "Type a few letters: the list narrows as you go, so a long list stays usable.",
         },
       },
       {
         title: "Selection",
         dont: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Pick a person…"${cbFilter}><div data-cb-list class="${cbList}" onclick="var t=event.target.closest('[data-cb-item]');if(!t)return;t.classList.add('bg-accent');setTimeout(function(){t.classList.remove('bg-accent')},250)">${["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"].map((n) => cbItemEl(n)).join(""), { placeholder: "Pick a person…", select: ` onclick="var t=event.target.closest('[data-cb-item]');if(!t)return;t.classList.add('bg-accent');setTimeout(function(){t.classList.remove('bg-accent')},250)"` })}</div>`,
           caption: "Click an option: it flashes but the field stays empty, so you can't tell what you picked.",
         },
         do: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" value="Devon Webb"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}${cbItemEl("Tom Cook")}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(`${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}${cbItemEl("Tom Cook")}`, { value: "Devon Webb" })}</div>`,
           caption: "Click an option: it fills the input and stays marked as selected.",
         },
       },
       {
         title: "With label",
         dont: {
-          html: `<div class="max-w-[280px]"><div class="relative"><input class="${inputBase}" value="Devon Webb"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}</div></div></div>`,
+          html: `<div class="max-w-[280px]">${cbField(`${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}`, { value: "Devon Webb" })}</div>`,
           caption: "Once a value replaces the placeholder, an unlabeled field has nothing left to name it.",
         },
         do: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" value="Devon Webb"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(`${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}`, { value: "Devon Webb" })}</div>`,
           caption: "A persistent label keeps the field named after a selection has filled the input.",
         },
       },
       {
         title: "With helper text",
         dont: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Pick an active teammate; deactivated users are hidden"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n) => cbItemEl(n)).join(""), { placeholder: "Pick an active teammate; deactivated users are hidden" })}</div>`,
           caption: "Type a letter: guidance crammed into the placeholder vanishes the moment you start.",
         },
         do: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Search a person…"${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n) => cbItemEl(n)).join("")}</div></div><p class="${helperCls}">Deactivated users are hidden from the list.</p></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n) => cbItemEl(n)).join(""), { placeholder: "Search a person…" })}<p class="${helperCls}">Deactivated users are hidden from the list.</p></div>`,
           caption: "A short placeholder plus persistent helper text keeps the rule visible while you type.",
         },
       },
       {
         title: "Disabled",
         dont: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" placeholder="Search a person…" disabled${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n) => cbItemEl(n)).join("")}</div></div></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(["Wade Cooper", "Arlene Mccoy", "Devon Webb"].map((n) => cbItemEl(n)).join(""), { placeholder: "Search a person…", disabled: true })}</div>`,
           caption: "An empty, dimmed field with no value reads as broken, not as intentionally locked.",
         },
         do: {
-          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label><div class="relative"><input class="${inputBase}" value="Devon Webb" disabled${cbFilter}><div data-cb-list class="${cbList}"${cbSelect}>${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}</div></div><p class="${helperCls}">Set by the project owner and can't be changed here.</p></div>`,
+          html: `<div class="max-w-[280px]"><label class="${labelCls}">Assigned to</label>${cbField(`${cbItemEl("Wade Cooper")}${cbItemEl("Arlene Mccoy")}${cbItemEl("Devon Webb", true)}`, { value: "Devon Webb", disabled: true })}<p class="${helperCls}">Set by the project owner and can't be changed here.</p></div>`,
           caption: "Show the locked value and say why it's fixed, so disabled reads as a settled choice.",
         },
       },
