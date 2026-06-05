@@ -350,8 +350,9 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
       },
       {
         title: "Implementation",
-        description: "Glass keys off the document's data-surface attribute. Rather than restyle each surface, it overrides the surface tokens (--card, --popover) with translucent oklch values per mode, then applies a backdrop-filter blur so the aurora backdrop shows through. Dark glass carries its own alphas without duplicating the blur rules.",
-        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">[data-surface="glass"] {
+        description: "Glass keys off the document's data-surface attribute. Rather than restyle each surface, it overrides the surface tokens (--card, --popover) with translucent oklch values, then applies a backdrop-filter blur so the aurora backdrop shows through. Because <html> carries both .dark and data-surface=\"glass\" at once, light-only values are scoped with :not(.dark) so they never leak into dark mode. Light mode also needs a colored backdrop: pure-white frost over a white page reads as a solid card, so light glass strengthens the aurora (plus a faint floor tint) and adds soft edge definition to content surfaces so the frosted panes separate from what is behind them.",
+        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">/* base alphas (also feed dark) */
+[data-surface="glass"] {
   --card: oklch(1 0 0 / 0.62);
   --popover: oklch(1 0 0 / 0.74);
 }
@@ -359,6 +360,12 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
   --card: oklch(0.24 0.006 285.885 / 0.5);
   --popover: oklch(0.25 0.006 285.885 / 0.62);
 }
+/* light only: more translucent, faint cool tint */
+[data-surface="glass"]:not(.dark) {
+  --card: oklch(0.99 0.01 286 / 0.52);
+  --popover: oklch(0.99 0.01 286 / 0.66);
+}
+/* frost every surface */
 [data-surface="glass"] :where(.card, .topbar, .sidebar, .bg-card) {
   backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);

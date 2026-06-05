@@ -638,18 +638,48 @@ input.checkbox { width: 1rem; height: 1rem; accent-color: var(--primary); cursor
 /* ── Glass surface (data-surface="glass") ─────────────────────────────────────
    Translucent, blurred chrome AND playground surfaces over an aurora backdrop.
    The Solid/Glass toggle sets <html data-surface="glass">. Surfaces become
-   semi-transparent (via the token override) and frosted (backdrop-filter), so the
-   aurora shows through. Targets the shared surface classes (.sidebar, .topbar,
-   cards) and the Tailwind bg-card/bg-popover utilities, so components rendered in
-   the playground pick up the glass treatment too. */
+   semi-transparent (token override) and frosted (backdrop-filter) so the aurora
+   shows through.
+
+   Theme scoping (important): <html> carries BOTH .dark and data-surface="glass"
+   at once, so a bare [data-surface="glass"] rule also matches in dark mode. To
+   change ONLY light glass we scope light-specific values with :not(.dark); the
+   unscoped base values below feed dark mode unchanged. Solid mode is safe by
+   construction (nothing here applies without the data-surface attribute). Do not
+   touch the base :root/.dark tokens in styles/canvas.css.
+
+   Light glass used to be invisible: pure-white tokens (chroma 0) at high alpha
+   frosted a near-white page into something identical to a solid card (white on
+   white on white). The light fix gives the backdrop real color (a faint floor +
+   a stronger aurora) so the frost has something to transmit, makes the surface
+   tokens a touch more translucent and faintly cool-tinted, and adds edge
+   definition so the low-contrast panes still separate from the backdrop. */
+
+/* Base (shared) tokens; dark overrides its own alphas below. */
 [data-surface="glass"] {
   --card: oklch(1 0 0 / 0.62);
   --popover: oklch(1 0 0 / 0.74);
 }
 .dark[data-surface="glass"] {
+  /* Dark glass already reads well (dark translucent over a dark aurora has real
+     contrast); leave its tokens exactly as-is. */
   --card: oklch(0.24 0.006 285.885 / 0.5);
   --popover: oklch(0.25 0.006 285.885 / 0.62);
 }
+
+/* Light glass surfaces (light only). Drop the alpha modestly (0.62 -> 0.52,
+   0.74 -> 0.66) so more aurora transmits, and shift off pure white to a faint
+   cool tint (hue 286, the zinc/--border family) so the pane reads as cool glass,
+   not flat paper. Kept bright (L ~0.99) so near-black foreground stays
+   high-contrast and two stacked layers (~0.52) still composite to ~0.77,
+   bright and non-muddy. */
+[data-surface="glass"]:not(.dark) {
+  --card: oklch(0.99 0.01 286 / 0.52);
+  --popover: oklch(0.99 0.01 286 / 0.66);
+}
+
+/* Aurora backdrop. The base rule is the original and feeds DARK mode unchanged
+   (intentionally left bare so dark keeps the restrained look). */
 [data-surface="glass"] body {
   background-image:
     radial-gradient(38rem 38rem at 12% 6%, color-mix(in oklch, var(--primary) 18%, transparent), transparent 60%),
@@ -657,6 +687,27 @@ input.checkbox { width: 1rem; height: 1rem; accent-color: var(--primary); cursor
     radial-gradient(42rem 42rem at 78% 94%, oklch(0.78 0.15 200 / 0.18), transparent 62%);
   background-attachment: fixed;
 }
+
+/* Light aurora (light only). Give the light backdrop real color so the frost has
+   something to transmit. (1) A faint cool-violet floor (the last full-viewport
+   200% radial) replaces the implicit opaque pure-white body floor, so even
+   "empty" areas are a hair off white; luminance stays ~0.985 so floor text
+   contrast is essentially unchanged. (2) The three stops rise from 0.18 to the
+   0.30-0.38 band (primary mix 18% -> 30%); primary is capped lower (it is darker,
+   L 0.511) to avoid a hard indigo blob. (3) Radii enlarge (38/34/42rem ->
+   52/48/56rem) and overlap toward the page center so content-area surfaces sit
+   over color, not bare floor. The floor radial is listed LAST so it paints
+   bottom-most, beneath the three colored stops. */
+[data-surface="glass"]:not(.dark) body {
+  background-image:
+    radial-gradient(52rem 52rem at 12% 6%, color-mix(in oklch, var(--primary) 30%, transparent), transparent 62%),
+    radial-gradient(48rem 48rem at 90% 12%, oklch(0.68 0.19 295 / 0.38), transparent 62%),
+    radial-gradient(56rem 56rem at 78% 94%, oklch(0.78 0.15 200 / 0.36), transparent 64%),
+    radial-gradient(200% 200% at 50% 50%, oklch(0.985 0.012 286), oklch(0.985 0.012 286));
+}
+
+/* Frosting. Shared across both themes and the whole surface list (chrome and
+   content); this is the blur that makes the aurora read through every pane. */
 [data-surface="glass"] :where(
   .sidebar, .topbar, .bg-card, .bg-popover, .section-card, .stat-card,
   .card, .dt-wrap, .codeblock, [data-alert]
@@ -664,4 +715,25 @@ input.checkbox { width: 1rem; height: 1rem; accent-color: var(--primary); cursor
   backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
 }
+
+/* Edge definition (light only, CONTENT surfaces only). At low fill-vs-backdrop
+   contrast a frosted pane needs a defined edge to separate from the colorful
+   aurora; translucency alone cannot do it. Chrome is excluded: .sidebar (fixed,
+   full-height, square corners, border-right only) and .topbar (sticky,
+   border-bottom only) would read as a stray outline/halo if wrapped in a card
+   border. [data-alert] is excluded so its tone-colored semantic border survives;
+   .dt-wrap is excluded because it owns its border with overflow:hidden (an inset
+   rim would be clipped). This box-shadow replaces the base 5% card shadow
+   (intended); the base 1px var(--border) still applies under the inset rim. */
+[data-surface="glass"]:not(.dark) :where(
+  .section-card, .stat-card, .card, .codeblock
+) {
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.55),                 /* bright top rim */
+    0 1px 2px 0 oklch(0.4 0.02 286 / 0.08),              /* tight contact */
+    0 8px 24px -12px oklch(0.4 0.05 286 / 0.18);         /* soft cool ambient */
+}
+
+/* Topbar fill. Sticky bar gets the card token as its background so it frosts
+   with the rest; it keeps ONLY its native border-bottom (no card border/shadow). */
 [data-surface="glass"] .topbar { background-color: var(--card); }
