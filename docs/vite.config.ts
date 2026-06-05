@@ -29,6 +29,14 @@ export default defineConfig({
     extensions: [".web.tsx", ".web.ts", ".web.jsx", ".web.js", ".tsx", ".ts", ".jsx", ".js", ".json"],
   },
   optimizeDeps: {
-    include: ["react-native-web"],
+    include: ["react-native-web", "react-native-svg"],
+    // The dep pre-bundler (esbuild) has its own resolver that does NOT read the
+    // resolve.extensions above, so without this it follows react-native-svg's
+    // native Fabric entry (which imports RN internals RNW lacks) instead of its
+    // .web.js variants. Mirror the web-first extension order here so pre-bundling
+    // resolves the same web files the production Rollup build already does.
+    esbuildOptions: {
+      resolveExtensions: [".web.tsx", ".web.ts", ".web.jsx", ".web.js", ".tsx", ".ts", ".jsx", ".js", ".json"],
+    },
   },
 });

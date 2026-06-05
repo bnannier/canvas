@@ -49,3 +49,4 @@ export * from "./alert-dialog.js";
 export * from "./listbox.js";
 export * from "./filter-panel.js";
 export * from "./overlays.js";
+export * from "./icon.js";

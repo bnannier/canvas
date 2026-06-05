@@ -42,7 +42,8 @@
   },
   "peerDependencies": {
     "react": ">=18",
-    "react-native": ">=0.74"
+    "react-native": ">=0.74",
+    "react-native-svg": ">=13"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
@@ -50,6 +51,7 @@
     "@types/react": "^19.2.16",
     "react": "^19.2.7",
     "react-native": "^0.85.3",
+    "react-native-svg": "^15",
     "typescript": "^5.8.3"
   }
 }

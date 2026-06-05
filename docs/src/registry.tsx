@@ -27,6 +27,7 @@ import {
   FilterPanel,
   Form,
   GridList,
+  Icon,
   Input,
   InputGroup,
   Kbd,
@@ -897,6 +898,26 @@ export const registry: Record<string, RegistryEntry> = {
         title: (s.title as string) || "Edit Identity",
         description: s.withDescription ? "Visible above the parent page so the user can compare." : undefined,
         ...placement,
+      };
+    },
+  },
+
+  icon: {
+    name: "Icon",
+    Component: Icon as AnyComponent,
+    mapProps: (s) => {
+      if (s.view === "set") return { set: true };
+      const color = s.color as string;
+      return {
+        shield: true,
+        size: s.size as number,
+        ...(color === "primary"
+          ? { primary: true }
+          : color === "destructive"
+            ? { destructive: true }
+            : color === "muted"
+              ? { muted: true }
+              : {}),
       };
     },
   },
