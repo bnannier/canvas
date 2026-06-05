@@ -1,6 +1,9 @@
 # @olympusoss/canvas
 
-CSS-first design system.
+Universal React Native UI kit. Canvas runs natively on iOS and Android, and on
+the web through React Native Web, from a single component API. Components are
+styled with semantic boolean props and authored desktop-first, so they adapt
+cleanly from large desktop down to phone.
 
 ## Install
 
@@ -8,90 +11,97 @@ CSS-first design system.
 npm install @olympusoss/canvas
 ```
 
+Canvas relies on three peer dependencies that you install alongside it:
+
+```bash
+npm install react react-native react-native-svg
+```
+
+For web rendering, add `react-native-web` to your app and alias `react-native`
+to `react-native-web` in your bundler, the same way any React Native Web project
+does.
+
 ## Quick Start
 
-Import all styles:
+Wrap your app in the engine `ThemeProvider`, then compose components imported
+from `@olympusoss/canvas`. The provider supplies the active color scheme and
+token map; omit `scheme` to follow the OS appearance, or force it with
+`scheme="light"` / `scheme="dark"`.
 
-```css
-@import "@olympusoss/canvas/styles/canvas.css";
+```jsx
+import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@olympusoss/canvas";
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <Card padded>
+        <CardHeader>
+          <CardTitle>Welcome to Canvas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button primary large onPress={() => console.log("saved")}>
+            Save
+          </Button>
+        </CardContent>
+      </Card>
+    </ThemeProvider>
+  );
+}
 ```
 
-Or import selectively:
+The same component tree renders natively on iOS and Android and, through React
+Native Web, in the browser. There is no separate web component set to learn.
 
-```css
-@layer canvas.reset, canvas.tokens, canvas.base, canvas.components, canvas.patterns;
+## Semantic boolean props
 
-@import "@olympusoss/canvas/styles/reset.css";
-@import "@olympusoss/canvas/styles/tokens/colors.css";
-@import "@olympusoss/canvas/styles/tokens/typography.css";
-@import "@olympusoss/canvas/styles/base.css";
-@import "@olympusoss/canvas/styles/atoms/button.css";
+Styling is done with flat boolean props. Each style choice is its own prop,
+named for the meaning it carries, and passing the prop turns it on. The prop
+name is the value, so the call site reads like natural language ("a primary,
+large button").
+
+```jsx
+<Button primary large>Save</Button>
+<Button destructive>Delete</Button>
+<Button ghost small>Cancel</Button>
+<Card glass>...</Card>
 ```
 
-Component CSS is organized by atomic-design level: `styles/atoms/`,
-`styles/molecules/`, `styles/organisms/`. (Importing the all-in-one
-`styles/canvas.css` pulls in everything and is unaffected by this layout.)
+Props are grouped into orthogonal axes (intent, size, surface, density, and
+stacking state/layout flags). Props on different axes combine freely; props
+within one axis are mutually exclusive, so you pass at most one and the
+component resolves any conflict by a fixed precedence.
 
-Use component classes in your HTML:
-
-```html
-<button class="btn btn-default">Save</button>
-<button class="btn btn-outline btn-sm">Cancel</button>
-<input class="input" placeholder="Search..." />
+```jsx
+// Four props from four axes, all applied together.
+<Button primary large loading block>Save</Button>
 ```
+
+String-valued enum props such as `variant="primary"`, `size="lg"`, or
+`tone="destructive"` are not part of the API and are not accepted. The boolean
+form is the only styling surface.
 
 ## Theming
 
-Toggle themes with HTML attributes:
+`ThemeProvider` reads the OS color scheme by default and exposes the resolved
+tokens to every Canvas component through `useTheme`. Force a scheme when you
+need to:
 
-```html
-<!-- Dark mode -->
-<html class="dark">
-
-<!-- Glass surface -->
-<html data-surface="glass">
-
-<!-- Compact density -->
-<html data-density="compact">
-```
-
-Or use the JS utilities:
-
-```js
-import { setTheme, toggleTheme, setSurface, setDensity } from "@olympusoss/canvas";
-
-toggleTheme();           // switches between light/dark
-setSurface("glass");     // enables glass surface
-setDensity("compact");   // switches to compact density
+```jsx
+<ThemeProvider scheme="dark">
+  <App />
+</ThemeProvider>
 ```
 
 ## What's Included
 
-- **62 CSS files**: tokens, components, and patterns
-- **4 JS utilities**: theme switching, token access, class composition
-- **5 cascade layers**: reset, tokens, base, components, patterns
-- **45 component styles**: buttons, cards, tables, forms, dialogs, and more
-- **Light/dark mode**, glass surface, compact/comfy density
-- **WCAG AA** color contrast compliance
-- **prefers-reduced-motion** and **prefers-contrast** support
-
-## Documentation
-
-- [Token Reference](docs/tokens.md)
-- [Component Catalog](docs/components.md)
-- [Theming Guide](docs/theming.md)
-- [Migration Guide (v2 to v3)](docs/migration.md)
-- [Consumer Integration](docs/integration.md)
-- [Browser Support](docs/browser-support.md)
-
-## Framework Packages
-
-Canvas provides the CSS foundation. Framework-specific components live in dedicated packages:
-
-- `@olympusoss/canvas-react`: React components for web
-- `@olympusoss/canvas-react-native`: React Native components
-- `@olympusoss/canvas-vue`: Vue components
-- `@olympusoss/canvas-flux`: Flux components
+- A full component kit: buttons, inputs, cards, tables, tabs, dialogs,
+  dropdowns, calendars, charts, sidebars, and more, all exported from
+  `@olympusoss/canvas`.
+- The Canvas engine: design tokens, a className-to-React-Native-style resolver,
+  and the runtime (`ThemeProvider`, `useTheme`, `useStyles`, and the styled
+  `Box` / `Text` / `Pressable` primitives).
+- Light and dark color schemes resolved through theme tokens.
+- Desktop-first responsiveness built into every component.
 
 ## License
 
