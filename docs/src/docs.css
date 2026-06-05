@@ -416,6 +416,21 @@
   }
 }
 
+/* ── Home: API source + live render, side by side ───── */
+
+.home-api-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .home-api-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+  }
+}
+
 /* ── Component index tile grid ──────────────────────── */
 
 .cat-tile-grid {
