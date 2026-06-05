@@ -1,5 +1,5 @@
 import { createElement, type ComponentType, type ReactNode } from "react";
-import type { El, ElChild } from "@/jsx-code";
+import { isElLike, type ElChild } from "@/jsx-code";
 import {
   Box,
   Text,
@@ -13,6 +13,9 @@ import {
   ButtonGroup,
   Calendar,
   Card,
+  CardContent,
+  CardHeader,
+  CardSeparator,
   Chart,
   Checkbox,
   CodeBlock,
@@ -65,10 +68,6 @@ export interface RegistryEntry {
   name: string;
   Component: ComponentType<Record<string, unknown>>;
   mapProps: (state: Record<string, unknown>) => Record<string, unknown>;
-  /** Optional composite preview. When it returns a tree (non-null) for the given
-   *  state, the playground renders AND serializes that tree instead of the single
-   *  Component, so multi-component previews (rows, stacks, combos) stay in sync. */
-  tree?: (state: Record<string, unknown>) => El | null;
 }
 
 type AnyComponent = ComponentType<Record<string, unknown>>;
@@ -81,18 +80,27 @@ const COMPONENT_MAP: Record<string, AnyComponent> = {
   Text: Text as AnyComponent,
   Avatar: Avatar as AnyComponent,
   Badge: Badge as AnyComponent,
+  Breadcrumb: Breadcrumb as AnyComponent,
   Button: Button as AnyComponent,
-  Divider: Divider as AnyComponent,
-  Field: Field as AnyComponent,
-  Kbd: Kbd as AnyComponent,
-  Input: Input as AnyComponent,
-  Textarea: Textarea as AnyComponent,
-  Checkbox: Checkbox as AnyComponent,
-  Switch: Switch as AnyComponent,
-  MediaObject: MediaObject as AnyComponent,
+  Calendar: Calendar as AnyComponent,
   Card: Card as AnyComponent,
+  CardContent: CardContent as AnyComponent,
+  CardHeader: CardHeader as AnyComponent,
+  CardSeparator: CardSeparator as AnyComponent,
+  Checkbox: Checkbox as AnyComponent,
+  Divider: Divider as AnyComponent,
+  EmptyState: EmptyState as AnyComponent,
+  Field: Field as AnyComponent,
   Icon: Icon as AnyComponent,
+  Input: Input as AnyComponent,
+  InputGroup: InputGroup as AnyComponent,
+  Kbd: Kbd as AnyComponent,
+  MediaObject: MediaObject as AnyComponent,
+  Radio: Radio as AnyComponent,
+  Select: Select as AnyComponent,
   Spinner: Spinner as AnyComponent,
+  Switch: Switch as AnyComponent,
+  Textarea: Textarea as AnyComponent,
 };
 
 /** Render a composite element tree (a registry entry's `tree`) into React
@@ -110,7 +118,12 @@ export function renderTree(node: ElChild, key?: number): ReactNode {
       : Array.isArray(node.children)
         ? node.children.map((c, i) => renderTree(c, i))
         : renderTree(node.children, 0);
-  return createElement(Comp, { key, ...node.props }, kids);
+  // Element-valued props are slots (e.g. action={<Button/>}); render them too.
+  const props: Record<string, unknown> = { key };
+  if (node.props) {
+    for (const [k, v] of Object.entries(node.props)) props[k] = isElLike(v) ? renderTree(v) : v;
+  }
+  return createElement(Comp, props, kids);
 }
 
 const BUTTON_VARIANT: Record<string, string> = {
@@ -169,34 +182,6 @@ export const registry: Record<string, RegistryEntry> = {
       s.kind === "status"
         ? { status: true, [s.statusVariant as string]: true, children: (s.label as string) ?? "active" }
         : { [s.variant as string]: true, mono: s.mono === true, children: (s.label as string) ?? "admin" },
-    // identity and grants are not Badge props, they are compositions of several
-    // badges (and a name). Render them as real composite trees.
-    tree: (s) => {
-      if (s.kind === "identity") {
-        return {
-          type: "Box",
-          props: { className: "flex-row flex-wrap items-center gap-2" },
-          children: [
-            { type: "Text", props: { className: "text-[15px] font-semibold text-foreground" }, children: "Rachel Chen" },
-            { type: "Badge", props: { status: true, success: true }, children: "active" },
-            { type: "Badge", props: { status: true, info: true }, children: "Verified" },
-            { type: "Badge", props: { secondary: true }, children: "employee" },
-          ],
-        };
-      }
-      if (s.kind === "grants") {
-        return {
-          type: "Box",
-          props: { className: "flex-row flex-wrap gap-1" },
-          children: ["authorization_code", "refresh_token", "client_credentials"].map((g) => ({
-            type: "Badge",
-            props: { secondary: true, mono: true },
-            children: g,
-          })),
-        };
-      }
-      return null;
-    },
   },
 
   divider: {

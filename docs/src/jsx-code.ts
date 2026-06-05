@@ -56,6 +56,10 @@ function formatAttrs(rest: Record<string, unknown>): Attr[] {
       attrs.push({ text: `${key}=${JSON.stringify(value)}`, multiline: false });
     } else if (typeof value === "number") {
       attrs.push({ text: `${key}={${value}}`, multiline: false });
+    } else if (isElLike(value)) {
+      // A slot prop whose value is itself an element, e.g. action={<Button/>}.
+      const inner = serializeEl(value as El, "");
+      attrs.push({ text: `${key}={${inner}}`, multiline: inner.includes("\n") });
     } else {
       const lit = literal(value, "  ");
       attrs.push({ text: `${key}={${lit}}`, multiline: lit.includes("\n") });
@@ -103,6 +107,19 @@ export interface El {
   type: string;
   props?: Record<string, unknown>;
   children?: ElChild | ElChild[];
+}
+
+/** A value is an element node if it has a string `type` and only El-shaped keys.
+ *  Used to treat slot props (action={<Button/>}) as nested elements, both when
+ *  rendering (registry.renderTree) and serializing. */
+export function isElLike(v: unknown): v is El {
+  return (
+    v != null &&
+    typeof v === "object" &&
+    !Array.isArray(v) &&
+    typeof (v as El).type === "string" &&
+    Object.keys(v as object).every((k) => k === "type" || k === "props" || k === "children")
+  );
 }
 
 function serializeEl(node: ElChild, indent: string): string {

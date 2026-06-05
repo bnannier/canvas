@@ -3,6 +3,7 @@ import { Code, ChevronDown } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import type { PlaygroundConfig, PlaygroundControl } from "@/data/types";
 import { registry, renderTree } from "@/registry";
+import { TREES } from "@/registry-trees";
 import { propsToJsx, serializeTree } from "@/jsx-code";
 
 interface PlaygroundProps {
@@ -65,7 +66,8 @@ export function Playground({ config, slug }: PlaygroundProps) {
   // `tree` (multi-component preview) which takes precedence over its single
   // Component; otherwise the resolved props drive a single <Component/>.
   const entry = slug ? registry[slug] : undefined;
-  const treeEl = entry?.tree ? entry.tree(state) : null;
+  const treeFn = slug ? TREES[slug] : undefined;
+  const treeEl = treeFn ? treeFn(state) : null;
   const resolvedProps = entry && !treeEl ? entry.mapProps(state) : null;
   const code = treeEl
     ? serializeTree(treeEl)
