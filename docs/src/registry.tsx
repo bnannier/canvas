@@ -223,12 +223,22 @@ export const registry: Record<string, RegistryEntry> = {
   skeleton: {
     name: "Skeleton",
     Component: Skeleton as AnyComponent,
-    mapProps: (s) => ({
-      [s.shape as string]: true,
-      animate: s.animate as boolean,
-      className:
-        s.shape === "text" || s.shape === "button" || s.shape === "avatar" ? `w-[${s.width}%]` : undefined,
-    }),
+    mapProps: (s) => {
+      const shape = s.shape as string;
+      const width = s.width as number;
+      return {
+        [shape]: true,
+        animate: s.animate as boolean,
+        // Avatar has no pixel-diameter prop; map the width slider onto the real
+        // small/large size axis so it stays a circle that scales (emitting a
+        // w-[%] className would override only width and produce an oval).
+        small: shape === "avatar" && width <= 33,
+        large: shape === "avatar" && width >= 66,
+        // Text and button widen by percentage; last-wins lets w-[%] win while
+        // the button keeps its fixed height.
+        className: shape === "text" || shape === "button" ? `w-[${width}%]` : undefined,
+      };
+    },
   },
 
   avatar: {
@@ -539,7 +549,6 @@ export const registry: Record<string, RegistryEntry> = {
           : "Where should we send your order?"
         : undefined,
       disabled: s.disabled,
-      error: s.content === "fields" && s.error,
       twoColumn: s.content === "fields" && s.columns === "2",
       checkboxes:
         s.content === "checkboxes"
@@ -549,11 +558,20 @@ export const registry: Record<string, RegistryEntry> = {
               { label: "Weekly digest", checked: false },
             ]
           : undefined,
+      // The validation error belongs on the Email item (FieldsetItem.error),
+      // not the group (group-level error fans the same message onto every row).
+      // The item help key is `help`, not `helper`, and value pre-fills the input.
       items:
         s.content === "fields"
           ? [
               { label: "Full name", placeholder: "Ada Lovelace" },
-              { label: "Email", placeholder: "ada@example.com", helper: "We'll only use this for order updates." },
+              {
+                label: "Email",
+                placeholder: "ada@example.com",
+                value: "ada@",
+                help: "We'll only use this for order updates.",
+                error: s.error ? "Enter a valid email address" : undefined,
+              },
               { label: "Country", placeholder: "United States" },
             ]
           : undefined,
@@ -754,7 +772,9 @@ export const registry: Record<string, RegistryEntry> = {
     Component: Dropdown as AnyComponent,
     mapProps: (s) => ({
       trigger: "Actions",
-      open: true,
+      // The Trigger control toggles whether the menu starts open; the trigger
+      // Button always renders, the menu only when open.
+      open: !s.trigger,
       items: [
         { label: "Edit profile", icon: s.icons ? "✎" : undefined, shortcut: s.shortcuts ? "⌘E" : undefined },
         { label: "Duplicate", icon: s.icons ? "⧉" : undefined, shortcut: s.shortcuts ? "⌘D" : undefined },
@@ -800,7 +820,8 @@ export const registry: Record<string, RegistryEntry> = {
     mapProps: (s) => ({
       label: (s.label as string) || "Open settings",
       trigger: s.trigger === "icon" ? "?" : s.trigger === "text" ? "hover this text" : "Hover me",
-      open: true,
+      // "on hover" starts hidden (open=false); "always" keeps the bubble shown.
+      open: s.reveal !== "on hover",
       top: s.side === "top",
       bottom: s.side === "bottom",
       left: s.side === "left",
@@ -858,10 +879,11 @@ export const registry: Record<string, RegistryEntry> = {
   combobox: {
     name: "Combobox",
     Component: Combobox as AnyComponent,
+    // A hardcoded query/value used to mask the Placeholder control (the
+    // placeholder only shows when the field is empty); drop them so the control
+    // works.
     mapProps: (s) => ({
-      query: "a",
       options: ["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Marcus Allen", "Noor Park", "Rachel Chen"],
-      value: "Marcus Allen",
       placeholder: (s.placeholder as string) || "Search a person…",
       disabled: Boolean(s.disabled),
       open: true,
