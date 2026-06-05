@@ -3,6 +3,7 @@ import { Code, ChevronDown } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import type { PlaygroundConfig, PlaygroundControl } from "@/data/types";
 import { registry } from "@/registry";
+import { propsToJsx } from "@/jsx-code";
 
 interface PlaygroundProps {
   config: PlaygroundConfig;
@@ -58,8 +59,12 @@ export function Playground({ config, slug }: PlaygroundProps) {
     setState(prev => ({ ...prev, [key]: value }));
   }, []);
 
+  // Single source of truth: resolve the props once, then both render the
+  // component with them and serialize the same object into the code panel, so
+  // the shown code always matches the rendered component.
   const entry = slug ? registry[slug] : undefined;
-  const code = entry ? entry.toCode(state) : formatHtml(config.render(state));
+  const resolvedProps = entry ? entry.mapProps(state) : null;
+  const code = entry && resolvedProps ? propsToJsx(entry.name, resolvedProps) : formatHtml(config.render(state));
   const codeLanguage = entry ? "tsx" : "html";
 
   return (
@@ -72,8 +77,8 @@ export function Playground({ config, slug }: PlaygroundProps) {
           justifyContent: "center",
           minHeight: 180,
         }}>
-          {entry ? (
-            <entry.Component {...entry.mapProps(state)} />
+          {entry && resolvedProps ? (
+            <entry.Component {...resolvedProps} />
           ) : (
             <div dangerouslySetInnerHTML={{ __html: config.render(state) }} />
           )}
