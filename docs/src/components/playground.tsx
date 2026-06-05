@@ -2,9 +2,11 @@ import { useState, useCallback } from "react";
 import { Code, ChevronDown } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import type { PlaygroundConfig, PlaygroundControl } from "@/data/types";
+import { registry } from "@/registry";
 
 interface PlaygroundProps {
   config: PlaygroundConfig;
+  slug?: string;
 }
 
 const HTML_VOID = new Set(["img", "input", "br", "hr", "meta", "link", "source", "area", "col", "embed", "wbr"]);
@@ -48,7 +50,7 @@ function formatHtml(html: string): string {
   return out || html;
 }
 
-export function Playground({ config }: PlaygroundProps) {
+export function Playground({ config, slug }: PlaygroundProps) {
   const [state, setState] = useState<Record<string, unknown>>(config.defaults);
   const [showCode, setShowCode] = useState(true);
 
@@ -56,8 +58,9 @@ export function Playground({ config }: PlaygroundProps) {
     setState(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  const html = config.render(state);
-  const code = formatHtml(html);
+  const entry = slug ? registry[slug] : undefined;
+  const code = entry ? entry.toCode(state) : formatHtml(config.render(state));
+  const codeLanguage = entry ? "tsx" : "html";
 
   return (
     <div>
@@ -69,7 +72,11 @@ export function Playground({ config }: PlaygroundProps) {
           justifyContent: "center",
           minHeight: 180,
         }}>
-          <div dangerouslySetInnerHTML={{ __html: html }} />
+          {entry ? (
+            <entry.Component {...entry.mapProps(state)} />
+          ) : (
+            <div dangerouslySetInnerHTML={{ __html: config.render(state) }} />
+          )}
         </div>
 
         <div className="section-card" style={{
@@ -111,7 +118,7 @@ export function Playground({ config }: PlaygroundProps) {
         </button>
         <div className={`docs-code-collapse ${showCode ? "open" : ""}`}>
           <div style={{ minHeight: 0, overflow: "hidden" }}>
-            <CodeBlock code={code} language="html" />
+            <CodeBlock code={code} language={codeLanguage} />
           </div>
         </div>
       </div>

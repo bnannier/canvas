@@ -8,7 +8,7 @@ async function getHighlighter(): Promise<Highlighter> {
     highlighterPromise = import("shiki").then((mod) =>
       mod.createHighlighter({
         themes: ["github-dark", "github-light"],
-        langs: ["html", "css", "javascript", "bash"],
+        langs: ["html", "css", "javascript", "bash", "tsx"],
       }),
     );
   }
