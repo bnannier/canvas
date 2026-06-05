@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
 import {
@@ -188,6 +188,18 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
   const [openGroups, setOpenGroups] = useState<Set<string>>(
     () => new Set(activeGroup ? [activeGroup] : []),
   );
+
+  // Reveal the active item on navigation: when the route lands on an item in a
+  // group (e.g. clicking a tile on the components index), open that group so the
+  // active item is visible and highlighted. `openGroups` is otherwise only seeded
+  // at mount, so a client-side route change would leave the new item's group
+  // collapsed. Accordion-consistent: opening the active group closes the others.
+  // No-ops (returns the same Set) when the active group is already the only one
+  // open, so a deliberate collapse while staying on a page is preserved.
+  useEffect(() => {
+    if (!activeGroup) return;
+    setOpenGroups((prev) => (prev.size === 1 && prev.has(activeGroup) ? prev : new Set([activeGroup])));
+  }, [activeGroup, location.pathname]);
 
   function toggleGroup(label: string) {
     // Accordion: expanding a group collapses any other open group.
