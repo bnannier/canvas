@@ -513,30 +513,53 @@ export const registry: Record<string, RegistryEntry> = {
   form: {
     name: "Form",
     Component: Form as AnyComponent,
-    mapProps: (s) => ({
-      stacked: s.layout === "stacked",
-      twoColumn: s.layout === "two-column",
-      sidebar: s.layout === "sidebar",
-      fields:
-        s.layout === "two-column"
-          ? [
-              { label: "First name", placeholder: "Ada" },
-              { label: "Last name", placeholder: "King" },
-              { label: "Email", placeholder: "ada@example.com" },
-            ]
-          : s.layout === "sidebar"
+    mapProps: (s) => {
+      // Sidebar uses the sectioned layout: a Personal-info section spanning two
+      // pre-filled inputs and a Notifications checkbox-group section.
+      if (s.layout === "sidebar") {
+        return {
+          sidebar: true,
+          sections: [
+            {
+              title: "Personal info",
+              description: "This information will be displayed on your public profile.",
+              fields: [
+                { label: "Full name", value: "Rachel Chen" },
+                { label: "Email", value: "rachel@example.com" },
+              ],
+            },
+            {
+              title: "Notifications",
+              description: "Choose how you'd like to be notified.",
+              checkboxes: [
+                { label: "Email notifications", checked: true },
+                { label: "SMS alerts" },
+              ],
+            },
+          ],
+          submitLabel: "Save",
+          className: "max-w-[720px]",
+        };
+      }
+      return {
+        stacked: s.layout === "stacked",
+        twoColumn: s.layout === "two-column",
+        fields:
+          s.layout === "two-column"
             ? [
-                { label: "Full name", placeholder: "Rachel Chen", helper: "Displayed on your public profile." },
-                { label: "Email", placeholder: "rachel@example.com", helper: "Used for sign-in and receipts." },
+                { label: "First name", placeholder: "Ada" },
+                { label: "Last name", placeholder: "King" },
+                { label: "Email", placeholder: "ada@example.com" },
               ]
             : [
                 { label: "Email", placeholder: "you@example.com" },
                 { label: "Password" },
               ],
-      submitLabel: s.layout === "two-column" ? "Create" : "Sign in",
-      cancelLabel: s.layout === "two-column" ? "Cancel" : undefined,
-      className: s.layout === "two-column" ? "max-w-[560px]" : s.layout === "sidebar" ? "max-w-[720px]" : "max-w-[360px]",
-    }),
+        submitLabel: s.layout === "two-column" ? "Create" : "Sign in",
+        cancelLabel: s.layout === "two-column" ? "Cancel" : undefined,
+        className: s.layout === "two-column" ? "max-w-[560px]" : "max-w-[360px]",
+      };
+    },
   },
 
   fieldset: {
@@ -894,6 +917,8 @@ export const registry: Record<string, RegistryEntry> = {
         open: true,
         active: 0,
         placeholder: "Type a command...",
+        trigger: s.mode === "trigger",
+        footer: s.footer === true,
         groups: [
           {
             heading: "Actions",
