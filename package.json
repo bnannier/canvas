@@ -2,7 +2,7 @@
   "name": "@olympusoss/canvas",
   "version": "3.2.1",
   "type": "module",
-  "description": "CSS-first design system for the Olympus platform",
+  "description": "CSS-first design system",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {

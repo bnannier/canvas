@@ -1,6 +1,6 @@
 # @olympusoss/canvas
 
-CSS-first design system for the Olympus platform.
+CSS-first design system.
 
 ## Install
 

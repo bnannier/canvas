@@ -4068,11 +4068,11 @@ npm run build</pre></div>`,
       {
         title: "h3",
         dont: {
-          html: `<p class="${typeScale.h3} max-w-[340px]">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p>`,
+          html: `<p class="${typeScale.h3} max-w-[340px]">Canvas is a CSS-first design system for building consistent product interfaces.</p>`,
           caption: "Body copy set in a heading style is hard to read in bulk and flattens the hierarchy.",
         },
         do: {
-          html: `<div class="max-w-[340px]"><h3 class="${typeScale.h3}">About Canvas</h3><p class="${typeScale.body} mt-1">Canvas is a CSS-first design system for building consistent product interfaces across the Olympus platform.</p></div>`,
+          html: `<div class="max-w-[340px]"><h3 class="${typeScale.h3}">About Canvas</h3><p class="${typeScale.body} mt-1">Canvas is a CSS-first design system for building consistent product interfaces.</p></div>`,
           caption: "Reserve heading styles for titles; set running text in a small body utility.",
         },
       },

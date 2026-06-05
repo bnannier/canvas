@@ -1,16 +1,16 @@
 # Canvas
 
-Tailwind CSS v4 design system for the Olympus platform. Published as
+Tailwind CSS v4 design system. Published as
 `@olympusoss/canvas`. The next major (v4.0.0) is the first Tailwind release: a
 breaking change from the v3 hand-authored CSS library (pin the v3 tag to
 migrate).
 
-Canvas is the platform's Tailwind theme plus a library of components expressed as
+Canvas is a Tailwind theme plus a library of components expressed as
 Tailwind utility-class markup, plus small framework-agnostic JS helpers. It fills
 the role shadcn fills elsewhere, a Tailwind-native component system you compose
 from utilities, but it does not depend on or vendor shadcn: the theme and the
 components are Canvas's own, built fresh on Tailwind. Canvas aims to be the new
-shadcn for the Olympus platform. No React/RN/Vue code lives here. Framework bindings live in downstream packages
+shadcn. No React/RN/Vue code lives here. Framework bindings live in downstream packages
 (`@olympusoss/canvas-react`, `-react-native`, `-vue`, `-flux`; pattern
 `canvas-{framework}`) that depend on Canvas and bake its utility markup into
 components. The dependency arrow is one-way: Canvas never references a downstream
@@ -154,7 +154,7 @@ Consumers install Tailwind v4, import Canvas for the theme and base, point
 Tailwind's `@source` at Canvas's component markup (so the utilities its
 components use get generated), and either use a downstream framework package's
 components or copy the documented utility markup. Native (RN) reads token values
-rather than CSS. Platform-wide visual decisions (a color, a spacing step, a new
+rather than CSS. System-wide visual decisions (a color, a spacing step, a new
 token) go in Canvas's theme; framework-specific API decisions go in the
 downstream package.
 

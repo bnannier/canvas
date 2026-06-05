@@ -130,7 +130,7 @@ export function Home() {
           lineHeight: 1.6,
           color: "var(--muted-foreground)",
         }}>
-          A working specification for any product built on the Olympus platform.
+          A working specification for any product you build.
           {" "}{COMPONENTS.length} documented components, a Tailwind CSS v4 theme, light/dark mode,
           glass surface, and density controls. Built on Tailwind, composed from utilities.
         </p>
