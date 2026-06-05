@@ -1,6 +1,7 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { Box, Pressable, Text } from "../engine/index.js";
 import { Button } from "./button.js";
+import { Icon } from "./icon.js";
 
 // Tooltip: a small dark bubble of helper text shown beside a trigger on hover
 // or focus. This RN port renders the open state inline (no portal/Modal): a
@@ -15,6 +16,9 @@ export interface TooltipProps {
   label?: string;
   // The element the tip describes; rendered as an <Button outline small>.
   trigger?: string;
+  // Render the trigger as a ghost icon button (a settings glyph) instead of the
+  // text Button. When set, `trigger` (the label string) is ignored.
+  iconTrigger?: boolean;
   // Whether the bubble is shown. Defaults to true so the open state renders.
   open?: boolean;
   // Placement (pick one; default is top).
@@ -63,7 +67,7 @@ const BUBBLE_FIRST: Record<Placement, boolean> = {
 };
 
 export function Tooltip(props: TooltipProps) {
-  const { label, trigger, open = true, className } = props;
+  const { label, trigger, iconTrigger, open = true, className } = props;
   const placement = placementOf(props);
 
   const wrapper = cn(WRAPPER[placement], className);
@@ -76,7 +80,18 @@ export function Tooltip(props: TooltipProps) {
     </Box>
   ) : null;
 
-  const triggerEl = (
+  // Icon trigger: a ghost icon button (40px square) holding the settings glyph,
+  // matching a ghost icon Button. The glyph renders directly inside the
+  // Pressable (not via Button's <Text> children, which can't host an SVG).
+  const triggerEl = iconTrigger ? (
+    <Pressable
+      className="h-10 w-10 items-center justify-center rounded-md active:opacity-90"
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Icon settings size={16} />
+    </Pressable>
+  ) : (
     <Button outline small>
       {trigger}
     </Button>

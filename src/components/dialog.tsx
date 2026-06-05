@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { cn } from "../cn.js";
 import { Box, Text } from "../engine/index.js";
 import { Button } from "./button.js";
+import { Input } from "./input.js";
 
 // Dialog: a modal panel centered over a dimmed backdrop, with a title, an
 // optional description, and a right-aligned action row (a primary confirm plus
@@ -24,6 +25,9 @@ export interface DialogProps {
   // Content (strings, for the children-less / data-driven case).
   title?: string;
   description?: string;
+  // Body: render a short form (Amount + Reason fields) inside the panel for
+  // the data-driven case.
+  withBody?: boolean;
   // Action labels.
   confirmLabel?: string;
   cancelLabel?: string;
@@ -74,6 +78,7 @@ export function Dialog(props: DialogProps) {
     children,
     title,
     description,
+    withBody,
     confirmLabel = "Confirm",
     cancelLabel = "Cancel",
     open = true,
@@ -110,6 +115,17 @@ export function Dialog(props: DialogProps) {
             ) : null}
             {description != null ? (
               <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
+            ) : null}
+            {withBody ? (
+              <Box className="mt-5">
+                <Text className="text-sm font-medium text-foreground mb-1.5">Amount</Text>
+                <Box className="flex-row items-center">
+                  <Text className="text-sm text-muted-foreground mr-2">$</Text>
+                  <Input value="90.00" className="flex-1" />
+                </Box>
+                <Text className="text-sm font-medium text-foreground mb-1.5 mt-4">Reason</Text>
+                <Input placeholder="Duplicate charge" />
+              </Box>
             ) : null}
             <Box className="flex-row justify-end gap-2 mt-6">
               <Button outline small onPress={onCancel}>

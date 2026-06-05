@@ -24,6 +24,10 @@ export interface ComboboxProps {
    * visible inline (the docs render it this way; there is no portal/Modal).
    */
   open?: boolean;
+  /** Optional stacked field label rendered above the field. */
+  label?: string;
+  /** Optional muted helper line rendered below the option list. */
+  helperText?: string;
   /** Dims the control and blocks interaction. */
   disabled?: boolean;
   /** Called with the chosen option label when a row is pressed. */
@@ -63,6 +67,8 @@ export function Combobox(props: ComboboxProps) {
     query,
     options = [],
     value,
+    label,
+    helperText,
     placeholder = "Search…",
     open = true,
     disabled,
@@ -92,6 +98,11 @@ export function Combobox(props: ComboboxProps) {
 
   return (
     <Box className={cn("w-full", className)}>
+      {label != null && label !== "" ? (
+        <Text className={cn("mb-1.5 font-medium text-foreground", TEXT_SIZE[size])}>
+          {label}
+        </Text>
+      ) : null}
       <Pressable className={field} disabled={disabled} accessibilityRole="button">
         <Text
           className={cn(
@@ -140,6 +151,10 @@ export function Combobox(props: ComboboxProps) {
             })
           )}
         </Box>
+      ) : null}
+
+      {helperText != null && helperText !== "" ? (
+        <Text className="mt-1.5 text-xs text-muted-foreground">{helperText}</Text>
       ) : null}
     </Box>
   );

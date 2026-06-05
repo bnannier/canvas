@@ -24,6 +24,8 @@ export interface DropdownItem {
   shortcut?: string;
   /** Red-tinted row for destructive actions (e.g. Delete). */
   destructive?: boolean;
+  /** Dimmed, non-interactive row: skips onSelect and renders at reduced opacity. */
+  disabled?: boolean;
   /** Draw a hairline separator above this row to start a new group. */
   separatorBefore?: boolean;
 }
@@ -31,6 +33,8 @@ export interface DropdownItem {
 export interface DropdownProps {
   /** Label for the outline trigger button. */
   trigger: string;
+  /** Optional muted section heading rendered above the rows (e.g. "Actions"). */
+  label?: string;
   /** The menu rows, top to bottom. */
   items: DropdownItem[];
   /** Whether the menu is shown below the trigger. Open by default for the docs. */
@@ -46,7 +50,7 @@ const ITEM_ROW =
   "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent";
 
 export function Dropdown(props: DropdownProps) {
-  const { trigger, items, open = true, onSelect, className } = props;
+  const { trigger, label, items, open = true, onSelect, className } = props;
 
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
@@ -57,15 +61,22 @@ export function Dropdown(props: DropdownProps) {
 
       {open ? (
         <Box className={cn(MENU_CARD, "mt-1")}>
+          {label ? (
+            <Text className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+              {label}
+            </Text>
+          ) : null}
           {items.map((item, index) => (
             <Box key={`${item.label}-${index}`}>
               {item.separatorBefore ? (
                 <Box className="my-1 h-px bg-border" />
               ) : null}
               <Pressable
-                className={ITEM_ROW}
-                onPress={() => onSelect?.(item, index)}
+                className={cn(ITEM_ROW, item.disabled && "opacity-50")}
+                onPress={item.disabled ? undefined : () => onSelect?.(item, index)}
+                disabled={item.disabled}
                 accessibilityRole="menuitem"
+                accessibilityState={{ disabled: item.disabled }}
               >
                 {item.icon ? (
                   <Text

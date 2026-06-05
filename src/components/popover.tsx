@@ -41,6 +41,12 @@ export interface PopoverProps {
   // Placement (pick one; default is `bottom`). Presentational only here.
   top?: boolean;
   bottom?: boolean;
+  /**
+   * Static mode: render the card on its own with no trigger button (an
+   * always-visible inline panel). When set, the card is always shown and
+   * `open` is ignored.
+   */
+  inline?: boolean;
   /** Whether the floating card is shown. Defaults to open. */
   open?: boolean;
   className?: string;
@@ -55,23 +61,28 @@ function placementOf(p: PopoverProps): Placement {
 }
 
 export function Popover(props: PopoverProps) {
-  const { trigger, title, description, actionLabel, className } = props;
-  const open = props.open ?? true;
+  const { trigger, title, description, actionLabel, inline, className } = props;
+  // In static mode the card is always shown; otherwise `open` controls it.
+  const open = inline ? true : props.open ?? true;
   // Resolve the placement axis (documented, presentational in this rendering).
   placementOf(props);
 
   const card = cn(
-    "mt-2 w-[260px] rounded-lg border border-border bg-popover p-4 shadow-lg",
+    "w-[260px] rounded-lg border border-border bg-popover p-4 shadow-lg",
+    // Space the card below the trigger only when a trigger is present.
+    !inline && "mt-2",
     className,
   );
 
   return (
     <Box>
-      <Box className="self-start">
-        <Button outline small>
-          {trigger ?? "Open popover"}
-        </Button>
-      </Box>
+      {inline ? null : (
+        <Box className="self-start">
+          <Button outline small>
+            {trigger ?? "Open popover"}
+          </Button>
+        </Box>
+      )}
       {open ? (
         <Box className={card}>
           {title != null ? (

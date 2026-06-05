@@ -777,11 +777,13 @@ export const registry: Record<string, RegistryEntry> = {
       // The Trigger control toggles whether the menu starts open; the trigger
       // Button always renders, the menu only when open.
       open: !s.trigger,
+      // Section heading above the rows when "Section label" is on.
+      label: s.label ? "Actions" : undefined,
       items: [
         { label: "Edit profile", icon: s.icons ? "✎" : undefined, shortcut: s.shortcuts ? "⌘E" : undefined },
         { label: "Duplicate", icon: s.icons ? "⧉" : undefined, shortcut: s.shortcuts ? "⌘D" : undefined },
         { label: "Settings", icon: s.icons ? "⚙" : undefined, shortcut: s.shortcuts ? "⌘," : undefined },
-        ...(s.disabledItem ? [{ label: "Archive", icon: s.icons ? "📦" : undefined }] : []),
+        ...(s.disabledItem ? [{ label: "Archive", icon: s.icons ? "📦" : undefined, disabled: true }] : []),
         ...(s.destructive
           ? [{ label: "Delete…", icon: s.icons ? "🗑" : undefined, destructive: true, separatorBefore: true }]
           : []),
@@ -810,10 +812,13 @@ export const registry: Record<string, RegistryEntry> = {
     name: "Popover",
     Component: Popover as AnyComponent,
     mapProps: (s) => ({
+      // Trigger on -> show the trigger button + anchored card; trigger off ->
+      // a static inline panel with no trigger button.
+      inline: !s.trigger,
       trigger: "Open popover",
       title: "Popover",
       description: (s.content as string) ?? "Place your rich content, form fields, or secondary actions here.",
-      actionLabel: "Got it",
+      actionLabel: s.trigger ? "Close" : "Action",
       open: true,
     }),
   },
@@ -823,7 +828,9 @@ export const registry: Record<string, RegistryEntry> = {
     Component: Tooltip as AnyComponent,
     mapProps: (s) => ({
       label: (s.label as string) || "Open settings",
-      trigger: s.trigger === "icon" ? "?" : s.trigger === "text" ? "hover this text" : "Hover me",
+      // Icon trigger renders the settings glyph; text/button triggers use a label.
+      iconTrigger: s.trigger === "icon",
+      trigger: s.trigger === "text" ? "hover this text" : "Hover me",
       // "on hover" starts hidden (open=false); "always" keeps the bubble shown.
       open: s.reveal !== "on hover",
       top: s.side === "top",
@@ -842,6 +849,8 @@ export const registry: Record<string, RegistryEntry> = {
       description: s.withDescription
         ? "The refund will be reflected in the customer's bank account within 2 to 3 business days."
         : undefined,
+      // Body form: render the Amount + Reason fields inside the panel.
+      withBody: s.withBody === true,
       confirmLabel: s.destructive ? "Refund" : "Confirm",
       cancelLabel: "Cancel",
       destructive: s.destructive === true,
@@ -894,6 +903,8 @@ export const registry: Record<string, RegistryEntry> = {
     // works.
     mapProps: (s) => ({
       options: ["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Marcus Allen", "Noor Park", "Rachel Chen"],
+      label: s.withLabel ? "Assigned to" : undefined,
+      helperText: s.withHelper ? "The person responsible for this account." : undefined,
       placeholder: (s.placeholder as string) || "Search a person…",
       disabled: Boolean(s.disabled),
       open: true,
