@@ -37,11 +37,16 @@ function literal(value: unknown, indent: string): string {
   return "null";
 }
 
-/** Serialize a component name + the exact props it renders with into JSX. */
-export function propsToJsx(name: string, props: Record<string, unknown>): string {
-  const { children, ...rest } = props;
+interface Attr {
+  text: string;
+  multiline: boolean;
+}
 
-  const attrs: { text: string; multiline: boolean }[] = [];
+// Format a props object into JSX attribute fragments. Shared by propsToJsx and
+// the composite-tree serializer so both render boolean/string/number/object
+// props identically. Skips undefined/null/false and functions (event handlers).
+function formatAttrs(rest: Record<string, unknown>): Attr[] {
+  const attrs: Attr[] = [];
   for (const [key, value] of Object.entries(rest)) {
     if (value === undefined || value === null || value === false) continue;
     if (typeof value === "function") continue;
@@ -56,6 +61,13 @@ export function propsToJsx(name: string, props: Record<string, unknown>): string
       attrs.push({ text: `${key}={${lit}}`, multiline: lit.includes("\n") });
     }
   }
+  return attrs;
+}
+
+/** Serialize a component name + the exact props it renders with into JSX. */
+export function propsToJsx(name: string, props: Record<string, unknown>): string {
+  const { children, ...rest } = props;
+  const attrs = formatAttrs(rest);
 
   // Components with text children are simple (no complex props); one line.
   if (typeof children === "string" || typeof children === "number") {
@@ -73,4 +85,42 @@ export function propsToJsx(name: string, props: Record<string, unknown>): string
   for (const a of attrs) lines.push("  " + a.text);
   lines.push("/>");
   return lines.join("\n");
+}
+
+// --- composite tree ---------------------------------------------------------
+//
+// Some playground previews are not a single component but a composition of
+// several real Canvas components (an identity row, an avatar stack, a key
+// combo). A registry entry models these as an `El` descriptor tree, which the
+// playground BOTH renders (registry.renderTree) and serializes here, so the
+// shown code always matches the rendered composite, the same single-source rule
+// propsToJsx gives single components.
+
+export type ElChild = string | number | El;
+
+export interface El {
+  /** Component name resolved against the registry's COMPONENT_MAP, e.g. "Box", "Badge". */
+  type: string;
+  props?: Record<string, unknown>;
+  children?: ElChild | ElChild[];
+}
+
+function serializeEl(node: ElChild, indent: string): string {
+  if (typeof node === "string" || typeof node === "number") return `${indent}${node}`;
+
+  const attrs = formatAttrs(node.props ?? {});
+  const attrStr = attrs.length ? " " + attrs.map((a) => a.text).join(" ") : "";
+  const kids = node.children == null ? [] : Array.isArray(node.children) ? node.children : [node.children];
+
+  if (kids.length === 0) return `${indent}<${node.type}${attrStr} />`;
+  if (kids.length === 1 && (typeof kids[0] === "string" || typeof kids[0] === "number")) {
+    return `${indent}<${node.type}${attrStr}>${kids[0]}</${node.type}>`;
+  }
+  const inner = kids.map((k) => serializeEl(k, indent + "  ")).join("\n");
+  return `${indent}<${node.type}${attrStr}>\n${inner}\n${indent}</${node.type}>`;
+}
+
+/** Serialize a composite element tree to JSX, matching what registry.renderTree renders. */
+export function serializeTree(node: El): string {
+  return serializeEl(node, "");
 }

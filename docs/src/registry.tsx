@@ -1,5 +1,8 @@
-import type { ComponentType } from "react";
+import { createElement, type ComponentType, type ReactNode } from "react";
+import type { El, ElChild } from "@/jsx-code";
 import {
+  Box,
+  Text,
   ActionPanel,
   Alert,
   AlertDialog,
@@ -62,9 +65,53 @@ export interface RegistryEntry {
   name: string;
   Component: ComponentType<Record<string, unknown>>;
   mapProps: (state: Record<string, unknown>) => Record<string, unknown>;
+  /** Optional composite preview. When it returns a tree (non-null) for the given
+   *  state, the playground renders AND serializes that tree instead of the single
+   *  Component, so multi-component previews (rows, stacks, combos) stay in sync. */
+  tree?: (state: Record<string, unknown>) => El | null;
 }
 
 type AnyComponent = ComponentType<Record<string, unknown>>;
+
+// Components a composite `tree` may reference by name. Layout containers are
+// Box/Text from the engine; the rest are real Canvas components. serializeTree
+// (jsx-code.ts) emits these same names, so preview and code stay identical.
+const COMPONENT_MAP: Record<string, AnyComponent> = {
+  Box: Box as AnyComponent,
+  Text: Text as AnyComponent,
+  Avatar: Avatar as AnyComponent,
+  Badge: Badge as AnyComponent,
+  Button: Button as AnyComponent,
+  Divider: Divider as AnyComponent,
+  Field: Field as AnyComponent,
+  Kbd: Kbd as AnyComponent,
+  Input: Input as AnyComponent,
+  Textarea: Textarea as AnyComponent,
+  Checkbox: Checkbox as AnyComponent,
+  Switch: Switch as AnyComponent,
+  MediaObject: MediaObject as AnyComponent,
+  Card: Card as AnyComponent,
+  Icon: Icon as AnyComponent,
+  Spinner: Spinner as AnyComponent,
+};
+
+/** Render a composite element tree (a registry entry's `tree`) into React
+ *  elements via COMPONENT_MAP. Strings/numbers pass through as text nodes. */
+export function renderTree(node: ElChild, key?: number): ReactNode {
+  if (typeof node === "string" || typeof node === "number") return node;
+  const Comp = COMPONENT_MAP[node.type];
+  if (!Comp) {
+    if (typeof console !== "undefined") console.warn(`renderTree: unknown component "${node.type}"`);
+    return null;
+  }
+  const kids =
+    node.children == null
+      ? undefined
+      : Array.isArray(node.children)
+        ? node.children.map((c, i) => renderTree(c, i))
+        : renderTree(node.children, 0);
+  return createElement(Comp, { key, ...node.props }, kids);
+}
 
 const BUTTON_VARIANT: Record<string, string> = {
   default: "primary",
@@ -122,6 +169,34 @@ export const registry: Record<string, RegistryEntry> = {
       s.kind === "status"
         ? { status: true, [s.statusVariant as string]: true, children: (s.label as string) ?? "active" }
         : { [s.variant as string]: true, mono: s.mono === true, children: (s.label as string) ?? "admin" },
+    // identity and grants are not Badge props, they are compositions of several
+    // badges (and a name). Render them as real composite trees.
+    tree: (s) => {
+      if (s.kind === "identity") {
+        return {
+          type: "Box",
+          props: { className: "flex-row flex-wrap items-center gap-2" },
+          children: [
+            { type: "Text", props: { className: "text-[15px] font-semibold text-foreground" }, children: "Rachel Chen" },
+            { type: "Badge", props: { status: true, success: true }, children: "active" },
+            { type: "Badge", props: { status: true, info: true }, children: "Verified" },
+            { type: "Badge", props: { secondary: true }, children: "employee" },
+          ],
+        };
+      }
+      if (s.kind === "grants") {
+        return {
+          type: "Box",
+          props: { className: "flex-row flex-wrap gap-1" },
+          children: ["authorization_code", "refresh_token", "client_credentials"].map((g) => ({
+            type: "Badge",
+            props: { secondary: true, mono: true },
+            children: g,
+          })),
+        };
+      }
+      return null;
+    },
   },
 
   divider: {

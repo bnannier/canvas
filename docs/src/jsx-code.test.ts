@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { propsToJsx } from "./jsx-code";
+import { propsToJsx, serializeTree } from "./jsx-code";
 
 test("boolean true is a bare attribute; false/undefined are omitted", () => {
   expect(propsToJsx("Button", { primary: true, ghost: false, large: undefined })).toBe("<Button primary />");
@@ -57,5 +57,36 @@ test("a long single line wraps to multi-line", () => {
 test("computed boolean keys serialize (badge status)", () => {
   expect(propsToJsx("Badge", { status: true, success: true, children: "active" })).toBe(
     "<Badge status success>active</Badge>",
+  );
+});
+
+test("serializeTree: a single element with a text child is one line", () => {
+  expect(serializeTree({ type: "Badge", props: { secondary: true }, children: "employee" })).toBe(
+    "<Badge secondary>employee</Badge>",
+  );
+});
+
+test("serializeTree: a self-closing element has no children", () => {
+  expect(serializeTree({ type: "Avatar", props: { name: "Rachel Chen" } })).toBe('<Avatar name="Rachel Chen" />');
+});
+
+test("serializeTree: a composite row nests and indents children", () => {
+  const code = serializeTree({
+    type: "Box",
+    props: { className: "flex-row items-center gap-2" },
+    children: [
+      { type: "Text", props: { className: "font-semibold" }, children: "Rachel Chen" },
+      { type: "Badge", props: { status: true, success: true }, children: "active" },
+      { type: "Badge", props: { secondary: true }, children: "employee" },
+    ],
+  });
+  expect(code).toBe(
+    [
+      '<Box className="flex-row items-center gap-2">',
+      '  <Text className="font-semibold">Rachel Chen</Text>',
+      "  <Badge status success>active</Badge>",
+      "  <Badge secondary>employee</Badge>",
+      "</Box>",
+    ].join("\n"),
   );
 });

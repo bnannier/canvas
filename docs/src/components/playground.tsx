@@ -2,8 +2,8 @@ import { useState, useCallback } from "react";
 import { Code, ChevronDown } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import type { PlaygroundConfig, PlaygroundControl } from "@/data/types";
-import { registry } from "@/registry";
-import { propsToJsx } from "@/jsx-code";
+import { registry, renderTree } from "@/registry";
+import { propsToJsx, serializeTree } from "@/jsx-code";
 
 interface PlaygroundProps {
   config: PlaygroundConfig;
@@ -59,13 +59,20 @@ export function Playground({ config, slug }: PlaygroundProps) {
     setState(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  // Single source of truth: resolve the props once, then both render the
-  // component with them and serialize the same object into the code panel, so
-  // the shown code always matches the rendered component.
+  // Single source of truth: derive one description of the preview, then both
+  // render it and serialize the same description into the code panel, so the
+  // shown code always matches the render. An entry may expose a composite
+  // `tree` (multi-component preview) which takes precedence over its single
+  // Component; otherwise the resolved props drive a single <Component/>.
   const entry = slug ? registry[slug] : undefined;
-  const resolvedProps = entry ? entry.mapProps(state) : null;
-  const code = entry && resolvedProps ? propsToJsx(entry.name, resolvedProps) : formatHtml(config.render(state));
-  const codeLanguage = entry ? "tsx" : "html";
+  const treeEl = entry?.tree ? entry.tree(state) : null;
+  const resolvedProps = entry && !treeEl ? entry.mapProps(state) : null;
+  const code = treeEl
+    ? serializeTree(treeEl)
+    : entry && resolvedProps
+      ? propsToJsx(entry.name, resolvedProps)
+      : formatHtml(config.render(state));
+  const codeLanguage = treeEl || entry ? "tsx" : "html";
 
   return (
     <div>
@@ -77,7 +84,9 @@ export function Playground({ config, slug }: PlaygroundProps) {
           justifyContent: "center",
           minHeight: 180,
         }}>
-          {entry && resolvedProps ? (
+          {treeEl ? (
+            renderTree(treeEl)
+          ) : entry && resolvedProps ? (
             <entry.Component {...resolvedProps} />
           ) : (
             <div dangerouslySetInnerHTML={{ __html: config.render(state) }} />
