@@ -297,7 +297,27 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
         </div>
 
         <nav className="sidebar-nav">
-          {NAV_GROUPS.map((g) => {
+          {/* Primary links (About Canvas, All components) pinned to the top and
+              always visible, not folded into a collapsible group, so navigating
+              into a category never hides them. */}
+          <div className="sidebar-group">
+            {NAV_GROUPS[0].items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
+                onClick={handleItemClick}
+                title={item.label}
+                end
+              >
+                <item.icon size={16} />
+                <span className="label">{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+          {/* The collapsible category groups (Tokens, Atoms, ... ); Overview is
+              rendered flat above, so skip it here. */}
+          {NAV_GROUPS.slice(1).map((g) => {
             const groupHasActive = g.items.some((i) => i.slug === activeSlug);
             const isOpen = openGroups.has(g.label);
 
