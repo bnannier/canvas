@@ -9,13 +9,17 @@ import { Box, Pressable, Text } from "../engine/index.js";
 //
 // Boolean-prop API across two axes (mirrors Button's intentOf precedence; first
 // match wins within an axis, axes are orthogonal):
-//   - Variant: `compact` collapses the number row to just Prev/Next plus a
-//     "Page X of N" label; the default is the full numbered row.
+//   - Variant: `withSize` prepends a "Rows per page" size selector to the
+//     compact Prev/Next + "Page X of N" layout; `compact` collapses the number
+//     row to just Prev/Next plus a "Page X of N" label; the default is the full
+//     numbered row. Precedence when more than one is passed: withSize, then
+//     compact, then the numbered default.
 //   - Size: `small`, `large` (omit for the default, medium size).
 //
 // The engine has no icon utility, so Prev/Next use reading-direction single
-// guillemet glyphs ("‹" / "›") rendered as Text rather than SVG chevrons, and the
-// truncation gap is an ellipsis glyph ("…").
+// guillemet glyphs ("‹" / "›") rendered as Text rather than SVG chevrons, the
+// size selector uses a "▾" caret glyph, and the truncation gap is an ellipsis
+// glyph ("…").
 
 export interface PaginationProps {
   /** Current page, 1-based. Clamped into the 1..total range before rendering. */
@@ -28,6 +32,19 @@ export interface PaginationProps {
   // Variant (pick one; default is the full numbered row).
   /** Collapse to Prev/Next plus a "Page X of N" label, no number buttons. */
   compact?: boolean;
+  /**
+   * Prepend a "Rows per page" size selector to the compact Prev/Next +
+   * "Page X of N" layout. Takes precedence over `compact`.
+   */
+  withSize?: boolean;
+
+  // Content for the `withSize` selector.
+  /** Currently selected rows-per-page value shown in the selector. */
+  pageSize?: number;
+  /** Selectable rows-per-page values; pressing the selector advances through them. */
+  pageSizes?: number[];
+  /** Fired with the next rows-per-page value when the selector is pressed. */
+  onPageSizeChange?: (size: number) => void;
 
   // Size (pick one; default is the medium size).
   small?: boolean;
@@ -44,6 +61,15 @@ function sizeOf(p: PaginationProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
+}
+
+type Variant = "withSize" | "compact" | "numbered";
+
+// Variant precedence when more than one is passed: first match wins.
+function variantOf(p: PaginationProps): Variant {
+  if (p.withSize) return "withSize";
+  if (p.compact) return "compact";
+  return "numbered";
 }
 
 // Square-ish button footprint per size (height + matching min width).
@@ -115,6 +141,7 @@ function Control({ glyph, size, disabled, accessibilityLabel, onPress }: Control
 export function Pagination(props: PaginationProps) {
   const { onChange, disabled, className } = props;
   const size = sizeOf(props);
+  const variant = variantOf(props);
 
   // Clamp inputs so the control never renders an out-of-range current page.
   const total = Math.max(1, Math.floor(props.total ?? 1));
@@ -149,7 +176,7 @@ export function Pagination(props: PaginationProps) {
   );
 
   // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
-  if (props.compact) {
+  if (variant === "compact") {
     return (
       <Box className={cn("flex-row items-center gap-2", className)}>
         {prev}
@@ -157,6 +184,49 @@ export function Pagination(props: PaginationProps) {
           {`Page ${current} of ${total}`}
         </Text>
         {next}
+      </Box>
+    );
+  }
+
+  // With-size: a "Rows per page" selector ahead of the compact indicator and the
+  // Prev/Next controls. The engine has no native select, so the selector is a
+  // closed trigger (value + caret) that advances through `pageSizes` on press.
+  if (variant === "withSize") {
+    const sizes = props.pageSizes ?? [10, 25, 50];
+    const pageSize = props.pageSize ?? sizes[0] ?? 10;
+    const cycleSize = () => {
+      if (disabled) return;
+      const i = sizes.indexOf(pageSize);
+      const nextSize = sizes[(i + 1) % sizes.length];
+      if (nextSize !== undefined && nextSize !== pageSize) props.onPageSizeChange?.(nextSize);
+    };
+    const selector = cn(
+      "flex-row items-center justify-between gap-1 rounded-md border border-input bg-background",
+      ITEM_SIZE[size],
+      disabled && "opacity-50",
+    );
+    return (
+      <Box className={cn("flex-row items-center gap-4", className)}>
+        <Box className="flex-row items-center gap-2">
+          <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>Rows per page</Text>
+          <Pressable
+            className={selector}
+            onPress={cycleSize}
+            disabled={disabled}
+            accessibilityRole="button"
+            accessibilityLabel="Rows per page"
+          >
+            <Text className={cn("font-medium text-foreground", LABEL_SIZE[size])}>{pageSize}</Text>
+            <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>▾</Text>
+          </Pressable>
+        </Box>
+        <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>
+          {`Page ${current} of ${total}`}
+        </Text>
+        <Box className="flex-row items-center gap-1">
+          {prev}
+          {next}
+        </Box>
       </Box>
     );
   }

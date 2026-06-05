@@ -345,7 +345,17 @@ export const registry: Record<string, RegistryEntry> = {
     mapProps: (s) => {
       const total = s.totalPages as number;
       const page = Math.min(s.currentPage as number, total);
-      return { page, total, compact: s.variant === "compact", onChange: () => {} };
+      const variant = s.variant as string;
+      return {
+        page,
+        total,
+        compact: variant === "compact",
+        withSize: variant === "with-size",
+        pageSize: 10,
+        pageSizes: [10, 25, 50],
+        onChange: () => {},
+        onPageSizeChange: () => {},
+      };
     },
   },
 
@@ -572,23 +582,34 @@ export const registry: Record<string, RegistryEntry> = {
   "action-panels": {
     name: "ActionPanel",
     Component: ActionPanel as AnyComponent,
-    mapProps: (s) => ({
-      title: (s.title as string) || (s.variant === "side-by-side" ? "Discard unsaved changes?" : "Delete this project"),
-      description:
-        s.variant === "side-by-side"
-          ? "You have unsaved edits in this form. Leaving now will lose all progress."
-          : "Once you delete a project, there is no going back. Please be certain.",
-      actionLabel:
-        s.destructive === true
-          ? s.variant === "side-by-side"
-            ? "Discard"
-            : "Delete project"
-          : s.variant === "side-by-side"
-            ? "Save"
-            : "Save changes",
-      destructive: s.destructive === true,
-      inline: s.variant === "side-by-side",
-    }),
+    mapProps: (s) => {
+      if (s.variant === "toggle") {
+        return {
+          title: (s.title as string) || "Two-factor authentication",
+          description:
+            "Add an extra layer of security to your account by requiring a verification code on login.",
+          toggle: true,
+          checked: s.on === true,
+        };
+      }
+      return {
+        title: (s.title as string) || (s.variant === "side-by-side" ? "Discard unsaved changes?" : "Delete this project"),
+        description:
+          s.variant === "side-by-side"
+            ? "You have unsaved edits in this form. Leaving now will lose all progress."
+            : "Once you delete a project, there is no going back. Please be certain.",
+        actionLabel:
+          s.destructive === true
+            ? s.variant === "side-by-side"
+              ? "Discard"
+              : "Delete project"
+            : s.variant === "side-by-side"
+              ? "Save"
+              : "Save changes",
+        destructive: s.destructive === true,
+        inline: s.variant === "side-by-side",
+      };
+    },
   },
 
   "description-lists": {
