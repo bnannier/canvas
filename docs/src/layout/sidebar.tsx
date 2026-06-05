@@ -40,18 +40,12 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Tokens",
+    label: "Tokens & Utilities",
     icon: Palette,
     items: [
       { slug: "tokens", label: "Colors & Theme", to: "/tokens", icon: Palette },
       { slug: "tokens-spacing", label: "Spacing & Shape", to: "/tokens/spacing", icon: Layers },
       { slug: "tokens-typography", label: "Typography", to: "/tokens/typography", icon: Type },
-    ],
-  },
-  {
-    label: "Utilities",
-    icon: LayoutGrid,
-    items: [
       { slug: "utilities", label: "Layout & Flexbox", to: "/utilities", icon: LayoutGrid },
     ],
   },
@@ -222,6 +216,22 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
     onClose();
   }
 
+  // A single nav link, shared by the flat top section, the always-open
+  // Tokens & Utilities section, and the collapsible category groups.
+  const renderItem = (item: NavItem) => (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
+      onClick={handleItemClick}
+      title={item.label}
+      end
+    >
+      <item.icon size={16} />
+      <span className="label">{item.label}</span>
+    </NavLink>
+  );
+
   return (
     <>
       {open && (
@@ -301,23 +311,35 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
               always visible, not folded into a collapsible group, so navigating
               into a category never hides them. */}
           <div className="sidebar-group">
-            {NAV_GROUPS[0].items.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
-                onClick={handleItemClick}
-                title={item.label}
-                end
-              >
-                <item.icon size={16} />
-                <span className="label">{item.label}</span>
-              </NavLink>
-            ))}
+            {NAV_GROUPS[0].items.map(renderItem)}
           </div>
-          {/* The collapsible category groups (Tokens, Atoms, ... ); Overview is
-              rendered flat above, so skip it here. */}
-          {NAV_GROUPS.slice(1).map((g) => {
+
+          {/* Tokens & Utilities: an always-open section, never collapsible, so
+              its links stay visible even when a category below is expanded. In
+              the collapsed icon rail it renders its items only, no header. */}
+          <div className="sidebar-group">
+            {!collapsed && (
+              <div
+                style={{
+                  padding: "0.375rem 0.625rem",
+                  fontSize: "11px",
+                  fontWeight: 500,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "var(--muted-foreground)",
+                }}
+              >
+                {NAV_GROUPS[1].label}
+              </div>
+            )}
+            <div style={{ marginTop: collapsed ? 0 : 2 }}>
+              {NAV_GROUPS[1].items.map(renderItem)}
+            </div>
+          </div>
+
+          {/* The collapsible category groups (Atoms, Molecules, ... ); Overview
+              and Tokens & Utilities are rendered above, so skip them here. */}
+          {NAV_GROUPS.slice(2).map((g) => {
             const groupHasActive = g.items.some((i) => i.slug === activeSlug);
             const isOpen = openGroups.has(g.label);
 
@@ -369,18 +391,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                 </button>
                 {isOpen && (
                   <div style={{ marginTop: 2 }}>
-                    {g.items.map((item) => (
-                      <NavLink
-                        key={item.slug}
-                        to={item.to}
-                        className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
-                        onClick={handleItemClick}
-                        end
-                      >
-                        <item.icon size={16} />
-                        <span className="label">{item.label}</span>
-                      </NavLink>
-                    ))}
+                    {g.items.map(renderItem)}
                   </div>
                 )}
               </div>
