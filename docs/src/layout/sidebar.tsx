@@ -244,11 +244,11 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                 borderRadius: 8,
               }}
             >
-              <CanvasMark size={22} />
+              <CanvasMark size={24.2} />
             </button>
           ) : (
             <>
-              <CanvasMark size={22} />
+              <CanvasMark size={24.2} />
               <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
                 <span className="sidebar-brand-name">Canvas</span>
                 <span style={{
