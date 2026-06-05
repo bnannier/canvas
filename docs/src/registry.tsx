@@ -10,23 +10,29 @@ import {
   Card,
   Checkbox,
   CodeBlock,
+  DataTable,
   DescriptionList,
   Divider,
   EmptyState,
+  Feed,
   Field,
   Fieldset,
   Form,
+  GridList,
   Input,
   InputGroup,
   Kbd,
   MediaObject,
+  Navbar,
   Pagination,
   Radio,
   Skeleton,
   Spinner,
   StackedList,
   Stats,
+  Stepper,
   Switch,
+  Tabs,
   Textarea,
   Typography,
 } from "@olympusoss/canvas";
@@ -616,5 +622,109 @@ export const registry: Record<string, RegistryEntry> = {
       divided: s.variant === "two-column" || s.variant === "inline-edit",
     }),
     toCode: (s) => `<DescriptionList items={details} card${s.variant === "stacked" ? "" : " inline divided"} />`,
+  },
+
+  tabs: {
+    Component: Tabs as AnyComponent,
+    mapProps: (s) => {
+      const labelled = [
+        { label: "All", badge: "142" },
+        { label: "Active", badge: "89" },
+        { label: "Pending", badge: "12" },
+        { label: "Archived", badge: "53" },
+      ];
+      const plain = ["General", "Security", "Notifications", "Billing", "Integrations"];
+      const pills = ["All", "Active", "Archived", "Deleted"];
+      const isPill = s.variant === "pill";
+      const useBadges = s.variant === "underline" && !!s.badges;
+      return { pills: isPill, tabs: isPill ? pills : useBadges ? labelled : plain, active: 0, onChange: () => {} };
+    },
+    toCode: (s) => `<Tabs${s.variant === "pill" ? " pills" : ""} tabs={tabs} active={0} />`,
+  },
+
+  stepper: {
+    Component: Stepper as AnyComponent,
+    mapProps: (s) => ({
+      steps: [
+        { label: "Account", description: "Email verified and password set." },
+        { label: "Profile", description: "Add your name and avatar." },
+        { label: "Review", description: "Invite collaborators to your workspace." },
+        { label: "Done", description: "You're all set." },
+      ],
+      current: 1,
+      vertical: s.type === "Vertical",
+    }),
+    toCode: (s) => `<Stepper${s.type === "Vertical" ? " vertical" : ""} current={1} steps={steps} />`,
+  },
+
+  feeds: {
+    Component: Feed as AnyComponent,
+    mapProps: (s) => {
+      const items =
+        s.variant === "avatar"
+          ? [
+              { actor: "Rachel Chen", action: "commented on the pull request", time: "2 hours ago" },
+              { actor: "Ada Lovelace", action: "pushed 3 commits", time: "5 hours ago" },
+              { actor: "Kevin Turner", action: "opened the pull request", time: "1 day ago" },
+            ]
+          : [
+              { actor: "Rachel Chen", action: "approved the request", time: "2 hours ago" },
+              { actor: "Ada Lovelace", action: "updated the description", time: "5 hours ago" },
+              { actor: "System", action: "created the project", time: "3 days ago" },
+            ];
+      return { connector: s.variant === "connector", avatar: s.variant === "avatar", items };
+    },
+    toCode: (s) => `<Feed ${s.variant === "avatar" ? "avatar" : "connector"} items={events} />`,
+  },
+
+  "grid-lists": {
+    Component: GridList as AnyComponent,
+    mapProps: (s) => {
+      const gallery = s.variant === "gallery";
+      const people = [
+        { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC" },
+        { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL" },
+        { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT" },
+      ];
+      const files = [
+        { title: "hero-banner.png", subtitle: "1.2 MB", avatar: "HB" },
+        { title: "icon-set.svg", subtitle: "340 KB", avatar: "IS" },
+        { title: "product-shot.jpg", subtitle: "2.8 MB", avatar: "PS" },
+        { title: "avatar-default.png", subtitle: "96 KB", avatar: "AD" },
+      ];
+      return { items: gallery ? files : people, cols3: gallery, cols2: !gallery };
+    },
+    toCode: (s) => `<GridList${s.variant === "gallery" ? " cols3" : " cols2"} items={items} />`,
+  },
+
+  navbars: {
+    Component: Navbar as AnyComponent,
+    mapProps: (s) => ({
+      brand: "Canvas",
+      links: ["Dashboard", "Users", "Settings"],
+      active: 0,
+      actionLabel: s.layout === "search" ? undefined : "New",
+      avatar: "RC",
+      bordered: s.layout !== "mobile",
+    }),
+    toCode: (s) =>
+      `<Navbar brand="Canvas" links={["Dashboard", "Users", "Settings"]} active={0}${s.layout === "search" ? "" : ' actionLabel="New"'} avatar="RC"${s.layout === "mobile" ? "" : " bordered"} />`,
+  },
+
+  "data-table": {
+    Component: DataTable as AnyComponent,
+    mapProps: (s) => ({
+      columns: ["Name", "Email", "Role", "Status"],
+      rows: [
+        ["Alice Johnson", "alice@example.com", "Admin", "Active"],
+        ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
+        ["Rachel Chen", "rachel@example.com", "Admin", "Active"],
+      ],
+      bordered: true,
+      compact: s.density === "compact",
+      selectable: s.variant === "bulk",
+    }),
+    toCode: (s) =>
+      `<DataTable columns={columns} rows={rows} bordered${s.density === "compact" ? " compact" : ""}${s.variant === "bulk" ? " selectable" : ""} />`,
   },
 };
