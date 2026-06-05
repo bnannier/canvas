@@ -4,6 +4,8 @@ import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
 import { Avatar } from "./avatar.js";
 import { Badge } from "./badge.js";
+import { Button } from "./button.js";
+import { Icon } from "./icon.js";
 
 // A stacked list is a vertical list of rows separated by hairlines, each row a
 // leading avatar, a primary + secondary text column, and trailing meta/badge/
@@ -42,10 +44,20 @@ export interface StackedListProps {
   items?: StackedListItem[];
   /** Optional header title; shown above the rows, separated by a rule. */
   title?: ReactNode;
-  /** Trailing header content (e.g. an action button); only shown with a title. */
+  /** Trailing header content (e.g. an action button); only shown with a title.
+   *  Takes precedence over `addAction` when both are supplied. */
   action?: ReactNode;
+  /** Convenience header action: renders a small outlined button with a leading
+   *  plus icon and this label (e.g. "Add"). Only shown with a title and when
+   *  `action` is not set. Serializable, so the playground can drive it. */
+  addAction?: string;
+  /** Appends a trailing ghost overflow ("...") action-menu button to every row.
+   *  Press is reported through `onPressItemMenu`. */
+  rowMenu?: boolean;
   /** Press handler for a row, by index. Only used in the `clickable` variant. */
   onPressItem?: (index: number, event: GestureResponderEvent) => void;
+  /** Press handler for a row's overflow menu, by index. Used with `rowMenu`. */
+  onPressItemMenu?: (index: number, event: GestureResponderEvent) => void;
   // Variant (pick one; default is the plain two-line list).
   clickable?: boolean;
   card?: boolean;
@@ -82,8 +94,22 @@ const DETAIL_LABEL = "text-xs text-muted-foreground";
 const META_LABEL = "text-xs text-muted-foreground";
 
 export function StackedList(props: StackedListProps) {
-  const { items = [], title, action, onPressItem, flush, className } = props;
+  const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, className } = props;
   const variant = variantOf(props);
+
+  // The header action: an explicit ReactNode wins; otherwise a small outlined
+  // button with a leading plus icon when `addAction` supplies a label.
+  const headerAction =
+    action != null ? (
+      action
+    ) : addAction != null ? (
+      <Button outline small>
+        <Box className="flex-row items-center gap-1.5">
+          <Icon plus size={13} />
+          <Text className="text-xs font-medium text-foreground">{addAction}</Text>
+        </Box>
+      </Button>
+    ) : null;
 
   // The card variant always rules its rows; the others rule unless `flush`.
   const ruled = variant === "card" ? true : !flush;
@@ -108,6 +134,21 @@ export function StackedList(props: StackedListProps) {
     return null;
   };
 
+  // A ghost overflow ("...") action-menu button drawn as three horizontal dots;
+  // the Icon set has no more-horizontal glyph, so the dots are primitives.
+  const renderMenu = (index: number) => (
+    <Pressable
+      className="h-7 w-7 flex-row items-center justify-center gap-1 rounded-md bg-transparent active:bg-accent"
+      onPress={(event) => onPressItemMenu?.(index, event)}
+      accessibilityRole="button"
+      accessibilityLabel="Actions"
+    >
+      <Box className="h-1 w-1 rounded-full bg-foreground" />
+      <Box className="h-1 w-1 rounded-full bg-foreground" />
+      <Box className="h-1 w-1 rounded-full bg-foreground" />
+    </Pressable>
+  );
+
   const renderAvatar = (item: StackedListItem) => (
     <Avatar src={item.avatar} name={item.name}>
       {item.initials ?? initialsFrom(item.name)}
@@ -128,6 +169,7 @@ export function StackedList(props: StackedListProps) {
           {renderAvatar(item)}
           {renderColumn(item)}
           {renderTrailing(item)}
+          {rowMenu ? renderMenu(index) : null}
           <Text className="text-xs text-muted-foreground">{"›"}</Text>
         </Pressable>
       );
@@ -138,6 +180,7 @@ export function StackedList(props: StackedListProps) {
         {renderAvatar(item)}
         {renderColumn(item)}
         {renderTrailing(item)}
+        {rowMenu ? renderMenu(index) : null}
       </Box>
     );
   });
@@ -146,7 +189,7 @@ export function StackedList(props: StackedListProps) {
     title != null ? (
       <Box className="flex-row items-center justify-between border-b border-border px-5 py-3">
         <Text className="text-sm font-semibold text-foreground">{title}</Text>
-        {action != null ? <Box>{action}</Box> : null}
+        {headerAction != null ? <Box>{headerAction}</Box> : null}
       </Box>
     ) : null;
 

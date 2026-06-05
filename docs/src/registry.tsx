@@ -477,13 +477,16 @@ export const registry: Record<string, RegistryEntry> = {
         { name: "Rachel Chen", detail: "Engineering Lead" },
         { name: "Ada Lovelace", detail: "Staff Engineer" },
       ];
-      const items = s.variant === "clickable" ? clickable : s.variant === "card" ? card : twoLine;
+      const isCard = s.variant === "card";
+      const items = s.variant === "clickable" ? clickable : isCard ? card : twoLine;
       return {
         items,
         clickable: s.variant === "clickable",
-        card: s.variant === "card",
-        flush: s.variant === "card" ? false : s.divider === false,
-        title: s.variant === "card" ? "Team members" : undefined,
+        card: isCard,
+        flush: isCard ? false : s.divider === false,
+        title: isCard ? "Team members" : undefined,
+        addAction: isCard ? "Add" : undefined,
+        rowMenu: isCard,
       };
     },
   },
@@ -506,13 +509,42 @@ export const registry: Record<string, RegistryEntry> = {
   field: {
     name: "Field",
     Component: Field as AnyComponent,
-    mapProps: (s) => ({
-      label: (s.mode === "basic" ? (s.label as string) : s.mode === "mono" ? "Client ID" : "Status") || "User ID",
-      helper: s.mode === "mono" ? "Fixed-width value for IDs and hashes." : "Shown on the public profile.",
-      placeholder: s.mode === "mono" ? "clt_8f2a9b4c7e1d" : "Rachel Chen",
-      required: s.mode === "basic",
-      className: "max-w-[400px]",
-    }),
+    mapProps: (s) => {
+      if (s.mode === "mono") {
+        return {
+          rows: [
+            { label: "Client ID", value: "clt_8f2a9b4c7e1d", mono: true },
+            { label: "Created", value: "2026-05-24T14:32:00Z", mono: true },
+            { label: "Fingerprint", value: "sha256:xK9v...", mono: true },
+          ],
+          className: "max-w-[400px]",
+        };
+      }
+      if (s.mode === "composed") {
+        return {
+          rows: [
+            { label: "Status", status: "Active" },
+            { label: "Plan", badge: "Pro" },
+            { label: "Token", value: "sk_live_a8f2...c9e1", mono: true, copyValue: "sk_live_a8f2c9e1" },
+            {
+              label: "Members",
+              avatars: [{ src: "/rachel-chen.jpg", name: "RC" }, { name: "AJ" }],
+              overflow: 3,
+            },
+          ],
+          className: "max-w-[400px]",
+        };
+      }
+      return {
+        rows: [
+          { label: (s.label as string) || "User ID", value: "usr_abc123", mono: true },
+          { label: "Name", value: "Rachel Chen" },
+          { label: "Role", value: "Admin" },
+          { label: "Status", status: "Active" },
+        ],
+        className: "max-w-[400px]",
+      };
+    },
   },
 
   form: {
