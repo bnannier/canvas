@@ -1,0 +1,92 @@
+import { cn } from "../cn.js";
+import { Box, Text } from "../engine/index.js";
+import { Button } from "./button.js";
+
+// Tooltip: a small dark bubble of helper text shown beside a trigger on hover
+// or focus. This RN port renders the open state inline (no portal/Modal): a
+// trigger button with the bubble positioned next to it via flex order, so the
+// docs playground can show it without an overlay layer.
+//
+// Placement is a boolean axis (top default, bottom, left, right); first match
+// wins. top/bottom stack the bubble above/below the trigger in a column;
+// left/right place it beside the trigger in a row.
+export interface TooltipProps {
+  // The tip text shown in the bubble.
+  label?: string;
+  // The element the tip describes; rendered as an <Button outline small>.
+  trigger?: string;
+  // Whether the bubble is shown. Defaults to true so the open state renders.
+  open?: boolean;
+  // Placement (pick one; default is top).
+  top?: boolean;
+  bottom?: boolean;
+  left?: boolean;
+  right?: boolean;
+  className?: string;
+}
+
+type Placement = "top" | "bottom" | "left" | "right";
+
+// Placement precedence when more than one is passed: first match wins.
+function placementOf(p: TooltipProps): Placement {
+  if (p.top) return "top";
+  if (p.bottom) return "bottom";
+  if (p.left) return "left";
+  if (p.right) return "right";
+  return "top";
+}
+
+// Wrapper layout per placement: column for top/bottom, row for left/right.
+const WRAPPER: Record<Placement, string> = {
+  top: "flex-col items-center self-start",
+  bottom: "flex-col items-center self-start",
+  left: "flex-row items-center self-start",
+  right: "flex-row items-center self-start",
+};
+
+// Gap between bubble and trigger, applied to the bubble on the trigger-facing
+// side. top -> mb-1.5, bottom -> mt-1.5, left -> mr-1.5, right -> ml-1.5.
+const BUBBLE_GAP: Record<Placement, string> = {
+  top: "mb-1.5",
+  bottom: "mt-1.5",
+  left: "mr-1.5",
+  right: "ml-1.5",
+};
+
+// Whether the bubble renders before the trigger in source order. top and left
+// place the bubble first; bottom and right place it after.
+const BUBBLE_FIRST: Record<Placement, boolean> = {
+  top: true,
+  bottom: false,
+  left: true,
+  right: false,
+};
+
+export function Tooltip(props: TooltipProps) {
+  const { label, trigger, open = true, className } = props;
+  const placement = placementOf(props);
+
+  const wrapper = cn(WRAPPER[placement], className);
+  const bubble = cn("rounded-md bg-foreground px-2 py-1 shadow-md", BUBBLE_GAP[placement]);
+  const bubbleLabel = "text-xs font-medium text-background";
+
+  const tip = open ? (
+    <Box className={bubble}>
+      <Text className={bubbleLabel}>{label}</Text>
+    </Box>
+  ) : null;
+
+  const triggerEl = (
+    <Button outline small>
+      {trigger}
+    </Button>
+  );
+
+  return (
+    <Box className={wrapper}>
+      {BUBBLE_FIRST[placement] ? tip : null}
+      {triggerEl}
+      {BUBBLE_FIRST[placement] ? null : tip}
+    </Box>
+  );
+}

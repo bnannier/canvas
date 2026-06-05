@@ -12,9 +12,12 @@ import {
   Chart,
   Checkbox,
   CodeBlock,
+  Command,
   DataTable,
   DescriptionList,
+  Dialog,
   Divider,
+  Dropdown,
   EmptyState,
   Feed,
   Field,
@@ -27,7 +30,9 @@ import {
   MediaObject,
   Navbar,
   Pagination,
+  Popover,
   Radio,
+  Select,
   Sidebar,
   Skeleton,
   Spinner,
@@ -37,6 +42,7 @@ import {
   Switch,
   Tabs,
   Textarea,
+  Tooltip,
   Typography,
 } from "@olympusoss/canvas";
 
@@ -659,5 +665,111 @@ export const registry: Record<string, RegistryEntry> = {
       destructive: s.type === "heatmap",
       horizontal: s.type === "sparkline" || s.type === "gauge",
     }),
+  },
+
+  dropdown: {
+    name: "Dropdown",
+    Component: Dropdown as AnyComponent,
+    mapProps: (s) => ({
+      trigger: "Actions",
+      open: true,
+      items: [
+        { label: "Edit profile", icon: s.icons ? "✎" : undefined, shortcut: s.shortcuts ? "⌘E" : undefined },
+        { label: "Duplicate", icon: s.icons ? "⧉" : undefined, shortcut: s.shortcuts ? "⌘D" : undefined },
+        { label: "Settings", icon: s.icons ? "⚙" : undefined, shortcut: s.shortcuts ? "⌘," : undefined },
+        ...(s.disabledItem ? [{ label: "Archive", icon: s.icons ? "📦" : undefined }] : []),
+        ...(s.destructive
+          ? [{ label: "Delete…", icon: s.icons ? "🗑" : undefined, destructive: true, separatorBefore: true }]
+          : []),
+      ],
+    }),
+  },
+
+  select: {
+    name: "Select",
+    Component: Select as AnyComponent,
+    mapProps: (s) => ({
+      small: s.size === "sm",
+      large: s.size === "lg",
+      disabled: Boolean(s.disabled),
+      open: true,
+      value: "United States",
+      options: ["United States", "Canada", "Mexico", "United Kingdom"],
+      placeholder: "Select a country",
+      className: "max-w-[280px]",
+    }),
+  },
+
+  popover: {
+    name: "Popover",
+    Component: Popover as AnyComponent,
+    mapProps: (s) => ({
+      trigger: "Open popover",
+      title: "Popover",
+      description: (s.content as string) ?? "Place your rich content, form fields, or secondary actions here.",
+      actionLabel: "Got it",
+      open: true,
+    }),
+  },
+
+  tooltip: {
+    name: "Tooltip",
+    Component: Tooltip as AnyComponent,
+    mapProps: (s) => ({
+      label: (s.label as string) || "Open settings",
+      trigger: s.trigger === "icon" ? "?" : s.trigger === "text" ? "hover this text" : "Hover me",
+      open: true,
+      top: s.side === "top",
+      bottom: s.side === "bottom",
+      left: s.side === "left",
+      right: s.side === "right",
+    }),
+  },
+
+  dialog: {
+    name: "Dialog",
+    Component: Dialog as AnyComponent,
+    mapProps: (s) => ({
+      open: true,
+      title: "Refund payment",
+      description: s.withDescription
+        ? "The refund will be reflected in the customer's bank account within 2 to 3 business days."
+        : undefined,
+      confirmLabel: s.destructive ? "Refund" : "Confirm",
+      cancelLabel: "Cancel",
+      destructive: s.destructive === true,
+      small: s.size === "xs" || s.size === "sm",
+    }),
+  },
+
+  command: {
+    name: "Command",
+    Component: Command as AnyComponent,
+    mapProps: (s) => {
+      const sc = s.shortcuts === true;
+      return {
+        open: true,
+        active: 0,
+        placeholder: "Type a command...",
+        groups: [
+          {
+            heading: "Actions",
+            items: [
+              { label: "New File", icon: "📄", shortcut: sc ? "Ctrl+N" : undefined },
+              { label: "Open File", icon: "📂", shortcut: sc ? "Ctrl+O" : undefined },
+              { label: "Save", icon: "💾", shortcut: sc ? "Ctrl+S" : undefined },
+            ],
+          },
+          {
+            heading: "Navigation",
+            items: [
+              { label: "Go to Dashboard", icon: "▸" },
+              { label: "Go to Settings", icon: "▸" },
+            ],
+          },
+        ],
+        onSelect: () => {},
+      };
+    },
   },
 };
