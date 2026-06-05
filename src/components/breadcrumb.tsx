@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
+import { Icon } from "./icon.js";
 
 // A breadcrumb is a horizontal trail of links separated by a divider glyph, with
 // the last item current (non-link, emphasized). Ancestors are muted links; the
@@ -23,6 +24,11 @@ export interface BreadcrumbProps {
   chevron?: boolean;
   slash?: boolean;
   dot?: boolean;
+  /**
+   * Leading affordance: prepend a muted home-icon crumb (aria-labelled "Home")
+   * before the trail, followed by the separator. Off by default.
+   */
+  homeIcon?: boolean;
   /** Fired with the crumb label and its index when a link (non-last) is pressed. */
   onItemPress?: (item: string, index: number) => void;
   className?: string;
@@ -80,13 +86,30 @@ export function BreadcrumbItem(props: BreadcrumbItemProps) {
 }
 
 export function Breadcrumb(props: BreadcrumbProps) {
-  const { items, onItemPress, className } = props;
+  const { items, homeIcon, onItemPress, className } = props;
   const trail = items ?? [];
   const separator = separatorOf(props);
   const glyph = SEPARATOR_GLYPH[separator];
 
   return (
     <Box className={cn(NAV, className)} accessibilityRole="header">
+      {homeIcon ? (
+        <Box className="flex-row items-center gap-1.5">
+          <Pressable
+            onPress={() => onItemPress?.("Home", 0)}
+            accessibilityRole="link"
+            accessibilityLabel="Home"
+            className="active:opacity-70"
+          >
+            <Icon home muted size={14} />
+          </Pressable>
+          {trail.length === 0 ? null : (
+            <Text className={SEPARATOR} accessibilityElementsHidden>
+              {glyph}
+            </Text>
+          )}
+        </Box>
+      ) : null}
       {trail.map((item, index) => {
         const last = index === trail.length - 1;
         return (

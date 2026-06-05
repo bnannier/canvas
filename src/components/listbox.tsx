@@ -30,6 +30,13 @@ export interface ListboxProps {
   multi?: boolean;
   /** Wrap the list in a rounded, bordered popover-surface card. */
   bordered?: boolean;
+  // Size (pick one; default is medium).
+  /** Tighter rows with smaller text. */
+  small?: boolean;
+  /** Taller rows. */
+  large?: boolean;
+  /** Dim the list and block selection. */
+  disabled?: boolean;
   /** Fired with the pressed option's index. */
   onSelect?: (index: number) => void;
   className?: string;
@@ -43,19 +50,44 @@ function modeOf(p: ListboxProps): Mode {
   return "single";
 }
 
+// Size precedence when more than one is passed: first match wins (small over
+// large). The default is medium.
+type Size = "small" | "medium" | "large";
+function sizeOf(p: ListboxProps): Size {
+  if (p.small) return "small";
+  if (p.large) return "large";
+  return "medium";
+}
+
+// Per-row vertical padding by size: small reads like the legacy h-8 trigger,
+// medium like h-9, large like h-10.
+const ROW_SIZE: Record<Size, string> = {
+  small: "px-2 py-1.5",
+  medium: "px-2 py-2",
+  large: "px-2 py-2.5",
+};
+
+// Label text size tracks the row size.
+const LABEL_SIZE: Record<Size, string> = {
+  small: "text-xs",
+  medium: "text-sm",
+  large: "text-sm",
+};
+
 // A bordered container reads as a popover surface: rounded card, hairline
 // border, popover fill, and a 4px inset so rows don't touch the edge.
 const CONTAINER_BORDERED = "rounded-md border border-border bg-popover p-1";
 
 // Each row: a horizontal Pressable with a leading control, the label/detail
-// stack, and a subtle press-state fill.
-const ROW_BASE = "flex-row items-center gap-2 rounded-sm px-2 py-2 active:bg-accent";
+// stack, and a subtle press-state fill. Size adds the vertical padding.
+const ROW_BASE = "flex-row items-center gap-2 rounded-sm";
 
 export function Listbox(props: ListboxProps) {
-  const { items, bordered, onSelect, className } = props;
+  const { items, bordered, disabled, onSelect, className } = props;
   const mode = modeOf(props);
+  const size = sizeOf(props);
 
-  const container = cn(bordered && CONTAINER_BORDERED, className);
+  const container = cn(bordered && CONTAINER_BORDERED, disabled && "opacity-50", className);
 
   return (
     <Box className={container} accessibilityRole="list">
@@ -63,15 +95,21 @@ export function Listbox(props: ListboxProps) {
         const selected = !!item.selected;
         // Single-select fills the chosen row; multi-select leaves the row plain
         // and reflects state in the leading Checkbox instead.
-        const row = cn(ROW_BASE, mode === "single" && selected && "bg-accent");
+        const row = cn(
+          ROW_BASE,
+          ROW_SIZE[size],
+          !disabled && "active:bg-accent",
+          mode === "single" && selected && "bg-accent",
+        );
 
         return (
           <Pressable
             key={index}
             className={row}
-            onPress={() => onSelect?.(index)}
+            onPress={disabled ? undefined : () => onSelect?.(index)}
+            disabled={disabled}
             accessibilityRole={mode === "multi" ? "checkbox" : "menuitem"}
-            accessibilityState={{ selected }}
+            accessibilityState={{ selected, disabled: !!disabled }}
           >
             {mode === "multi" ? (
               <Checkbox checked={selected} />
@@ -83,7 +121,7 @@ export function Listbox(props: ListboxProps) {
               </Text>
             )}
             <Box className="flex-1">
-              <Text className="text-sm text-foreground">{item.label}</Text>
+              <Text className={cn("text-foreground", LABEL_SIZE[size])}>{item.label}</Text>
               {item.detail != null ? (
                 <Text className="text-xs text-muted-foreground">{item.detail}</Text>
               ) : null}

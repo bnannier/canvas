@@ -17,6 +17,8 @@ export interface SwitchProps {
   disabled?: boolean;
   /** Optional label, rendered to the left of the track. */
   children?: ReactNode;
+  /** Optional muted description line, rendered under the label. */
+  description?: ReactNode;
   className?: string;
 }
 
@@ -50,8 +52,15 @@ const LABEL_SIZE: Record<Size, string> = {
   large: "text-base",
 };
 
+// Description type scale: one step below the label, always muted.
+const DESC_SIZE: Record<Size, string> = {
+  small: "text-[11px]",
+  base: "text-xs",
+  large: "text-sm",
+};
+
 export function Switch(props: SwitchProps) {
-  const { checked = false, onChange, onValueChange, disabled, children, className } = props;
+  const { checked = false, onChange, onValueChange, disabled, children, description, className } = props;
   const size = sizeOf(props);
 
   const handlePress = (_event: GestureResponderEvent) => {
@@ -61,7 +70,8 @@ export function Switch(props: SwitchProps) {
   };
 
   const row = cn(
-    "flex-row items-center justify-between gap-4 active:opacity-90",
+    "flex-row justify-between gap-4 active:opacity-90",
+    description != null ? "items-start" : "items-center",
     disabled && "opacity-50",
     className,
   );
@@ -83,6 +93,7 @@ export function Switch(props: SwitchProps) {
   );
 
   const labelClass = cn("font-medium text-foreground", LABEL_SIZE[size]);
+  const descClass = cn("text-muted-foreground", DESC_SIZE[size]);
 
   return (
     <Pressable
@@ -92,7 +103,12 @@ export function Switch(props: SwitchProps) {
       accessibilityRole="switch"
       accessibilityState={{ checked, disabled: !!disabled }}
     >
-      {children != null ? <Text className={labelClass}>{children}</Text> : null}
+      {children != null || description != null ? (
+        <Box>
+          {children != null ? <Text className={labelClass}>{children}</Text> : null}
+          {description != null ? <Text className={descClass}>{description}</Text> : null}
+        </Box>
+      ) : null}
       <Box className={track}>
         <Box className={thumb} />
       </Box>

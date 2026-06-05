@@ -8,8 +8,9 @@ import { Box, Text } from "../engine/index.js";
 // read as upcoming (muted). Connectors leading into a completed step fill
 // primary; the rest track the border token.
 //
-// Boolean-prop API: orientation is a single axis with `vertical` opting out of
-// the default horizontal layout (first-match precedence, mirroring Divider).
+// Boolean-prop API: layout is a single axis with `progress` and `vertical`
+// opting out of the default horizontal layout (first-match precedence,
+// mirroring Divider). `progress` beats `vertical` beats the horizontal default.
 
 export interface Step {
   label: string;
@@ -21,16 +22,23 @@ export interface StepperProps {
   steps: Step[];
   /** Index of the active step. Earlier steps read completed, later ones muted. */
   current: number;
-  // Orientation (pick one; default is horizontal).
+  // Layout (pick one; default is horizontal).
   vertical?: boolean;
+  /** Render a labeled percentage progress bar instead of discrete steps. */
+  progress?: boolean;
+  /** Progress mode only: filled fraction, 0-100 (clamped). Defaults to 0. */
+  value?: number;
+  /** Progress mode only: caption shown left of the percentage. */
+  label?: string;
   className?: string;
 }
 
-type Orientation = "horizontal" | "vertical";
+type Layout = "horizontal" | "vertical" | "progress";
 type State = "completed" | "current" | "upcoming";
 
-// First match wins when more than one orientation flag is passed.
-function orientationOf(p: StepperProps): Orientation {
+// First match wins when more than one layout flag is passed.
+function layoutOf(p: StepperProps): Layout {
+  if (p.progress) return "progress";
   if (p.vertical) return "vertical";
   return "horizontal";
 }
@@ -84,10 +92,30 @@ function Circle({ index, state }: { index: number; state: State }) {
 }
 
 export function Stepper(props: StepperProps) {
-  const { steps, current, className } = props;
-  const orientation = orientationOf(props);
+  const { steps, current, value, label, className } = props;
+  const layout = layoutOf(props);
 
-  if (orientation === "vertical") {
+  if (layout === "progress") {
+    const pct = Math.max(0, Math.min(100, Math.round(value ?? 0)));
+    return (
+      <Box className={cn("w-full", className)}>
+        <Box className="mb-1.5 flex-row items-center justify-between">
+          <Text className="text-xs font-medium text-foreground">
+            {label ?? "Setup progress"}
+          </Text>
+          <Text className="text-xs text-muted-foreground">{pct}%</Text>
+        </Box>
+        <Box className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <Box
+            className="h-full rounded-full bg-primary"
+            style={{ width: `${pct}%` }}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
+  if (layout === "vertical") {
     return (
       <Box className={cn("w-full", className)}>
         {steps.map((step, i) => {

@@ -246,6 +246,7 @@ export const registry: Record<string, RegistryEntry> = {
       chevron: s.separator === "chevron",
       slash: s.separator === "slash",
       dot: s.separator === "dot",
+      homeIcon: Boolean(s.homeIcon),
     }),
   },
 
@@ -274,7 +275,12 @@ export const registry: Record<string, RegistryEntry> = {
   switch: {
     name: "Switch",
     Component: Switch as AnyComponent,
-    mapProps: (s) => ({ checked: s.state === "on", disabled: Boolean(s.disabled), children: s.label || undefined }),
+    mapProps: (s) => ({
+      checked: s.state === "on",
+      disabled: Boolean(s.disabled),
+      children: s.label || undefined,
+      description: s.withDesc ? "Show your availability to teammates." : undefined,
+    }),
   },
 
   input: {
@@ -613,9 +619,17 @@ export const registry: Record<string, RegistryEntry> = {
       ];
       const plain = ["General", "Security", "Notifications", "Billing", "Integrations"];
       const pills = ["All", "Active", "Archived", "Deleted"];
+      const verticalTabs = ["General", "Security", "Notifications", "API Keys", "Billing"];
       const isPill = s.variant === "pill";
+      const isVertical = s.variant === "vertical";
       const useBadges = s.variant === "underline" && !!s.badges;
-      return { pills: isPill, tabs: isPill ? pills : useBadges ? labelled : plain, active: 0, onChange: () => {} };
+      return {
+        pills: isPill,
+        vertical: isVertical,
+        tabs: isPill ? pills : isVertical ? verticalTabs : useBadges ? labelled : plain,
+        active: 0,
+        onChange: () => {},
+      };
     },
   },
 
@@ -631,6 +645,9 @@ export const registry: Record<string, RegistryEntry> = {
       ],
       current: 1,
       vertical: s.type === "Vertical",
+      progress: s.type === "Progress bar",
+      value: s.progress as number,
+      label: "Setup progress",
     }),
   },
 
@@ -779,6 +796,8 @@ export const registry: Record<string, RegistryEntry> = {
       small: s.size === "sm",
       large: s.size === "lg",
       disabled: Boolean(s.disabled),
+      label: s.withLabel ? "Country" : undefined,
+      icon: Boolean(s.withIcon),
       open: true,
       value: "United States",
       options: ["United States", "Canada", "Mexico", "United Kingdom"],
@@ -826,7 +845,13 @@ export const registry: Record<string, RegistryEntry> = {
       confirmLabel: s.destructive ? "Refund" : "Confirm",
       cancelLabel: "Cancel",
       destructive: s.destructive === true,
-      small: s.size === "xs" || s.size === "sm",
+      // Width axis: map each size pill to its boolean prop (lg is the default,
+      // so it sets no width prop). xs/sm/md/xl/2xl -> xs/small/medium/large/wide.
+      xs: s.size === "xs",
+      small: s.size === "sm",
+      medium: s.size === "md",
+      large: s.size === "xl",
+      wide: s.size === "2xl",
     }),
   },
 
@@ -908,6 +933,10 @@ export const registry: Record<string, RegistryEntry> = {
         : undefined,
       confirmLabel: s.destructive ? "Delete" : "Continue",
       destructive: !!s.destructive,
+      narrow: s.size === "xs",
+      small: s.size === "sm",
+      large: s.size === "lg",
+      withInput: !!s.withInput,
       open: true,
     }),
   },
@@ -932,7 +961,14 @@ export const registry: Record<string, RegistryEntry> = {
           ];
       const multi = s.mode === "multi";
       const selectedItems = multi ? items.map((it, i) => ({ ...it, selected: i === 0 || i === 2 })) : items;
-      return { items: selectedItems, multi, bordered: true };
+      return {
+        items: selectedItems,
+        multi,
+        bordered: true,
+        small: s.size === "sm",
+        large: s.size === "lg",
+        disabled: !!s.disabled,
+      };
     },
   },
 

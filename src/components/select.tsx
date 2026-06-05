@@ -1,11 +1,16 @@
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
+import { Icon } from "./icon.js";
 
 export interface SelectProps {
   /** The currently selected option label. Empty shows the placeholder. */
   value?: string;
   /** The list of selectable option labels. */
   options?: string[];
+  /** Optional stacked field label rendered above the trigger. */
+  label?: string;
+  /** Renders a leading globe glyph inside the trigger, indented so the value clears it. */
+  icon?: boolean;
   /** Prompt shown in the trigger when no value is selected. */
   placeholder?: string;
   /**
@@ -51,6 +56,8 @@ export function Select(props: SelectProps) {
   const {
     value,
     options = [],
+    label,
+    icon,
     placeholder = "Select an option",
     open = true,
     disabled,
@@ -74,8 +81,16 @@ export function Select(props: SelectProps) {
 
   return (
     <Box className={cn("w-full", className)}>
+      {label != null && label !== "" ? (
+        <Text className={cn("mb-1.5 font-medium text-foreground", TEXT_SIZE[size])}>
+          {label}
+        </Text>
+      ) : null}
       <Pressable className={trigger} disabled={disabled} accessibilityRole="button">
-        <Text className={triggerText}>{hasValue ? value : placeholder}</Text>
+        <Box className="flex-row items-center gap-2">
+          {icon ? <Icon globe muted size={14} /> : null}
+          <Text className={triggerText}>{hasValue ? value : placeholder}</Text>
+        </Box>
         <Text className={cn("text-muted-foreground", TEXT_SIZE[size])}>▾</Text>
       </Pressable>
 

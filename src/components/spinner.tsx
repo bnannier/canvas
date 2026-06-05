@@ -29,10 +29,13 @@ const TONE_TOKEN: Record<Tone, keyof ColorTokens> = {
   foreground: "foreground",
 };
 
-// Native ActivityIndicator size is two-step; the default size maps to "small".
-function sizeOf(p: SpinnerProps): "small" | "large" {
-  if (p.large) return "large";
-  return "small";
+// Three distinct diameters (px) so each size axis value renders a different
+// arc; ActivityIndicator accepts a numeric size on native and RN-Web.
+// Precedence within the size axis: large > small > default (first match wins).
+function sizeOf(p: SpinnerProps): number {
+  if (p.large) return 32;
+  if (p.small) return 16;
+  return 20;
 }
 
 export function Spinner(props: SpinnerProps) {

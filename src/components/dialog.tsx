@@ -14,8 +14,10 @@ import { Button } from "./button.js";
 //
 // - Confirm intent: `destructive` renders the confirm action as a destructive
 //   Button (for an irreversible action); omit for the default primary confirm.
-// - Size (pick one): `small` tightens the panel to a compact width; omit for
-//   the default panel width.
+// - Width (pick one): from narrowest to widest, `xs`, `small`, `medium`,
+//   `large`, `wide`; omit for the default panel width (one step wider than
+//   `medium`). First-match precedence in that order, so a narrower prop wins if
+//   more than one is set.
 
 export interface DialogProps {
   children?: ReactNode;
@@ -29,27 +31,42 @@ export interface DialogProps {
   open?: boolean;
   // Confirm intent (default is a primary confirm).
   destructive?: boolean;
-  // Size (pick one; default is the standard panel width).
+  // Width (pick one; default is the standard panel width). First-match
+  // precedence: xs, small, medium, large, wide.
+  xs?: boolean;
   small?: boolean;
+  medium?: boolean;
+  large?: boolean;
+  wide?: boolean;
   // Action handlers.
   onConfirm?: () => void;
   onCancel?: () => void;
   className?: string;
 }
 
-type Size = "small" | "default";
+type Size = "xs" | "small" | "medium" | "default" | "large" | "wide";
 
 // Size precedence when more than one is passed: first match wins.
 function sizeOf(p: DialogProps): Size {
+  if (p.xs) return "xs";
   if (p.small) return "small";
+  if (p.medium) return "medium";
+  if (p.large) return "large";
+  if (p.wide) return "wide";
   return "default";
 }
 
-// The dialog card's max width per size. `small` tightens the panel for a terse
-// message; the default is roomy enough for a short form.
+// The dialog card's max width per size, narrowest to widest. The default sits
+// one step wider than `medium`, roomy enough for a short form; `xs`/`small`
+// tighten the panel for a terse message, `large`/`wide` open it up for a longer
+// form. Pixel widths mirror Tailwind's max-w-xs..2xl scale.
 const PANEL_SIZE: Record<Size, string> = {
-  small: "max-w-[320px]",
-  default: "max-w-[420px]",
+  xs: "max-w-[320px]",
+  small: "max-w-[384px]",
+  medium: "max-w-[448px]",
+  default: "max-w-[512px]",
+  large: "max-w-[576px]",
+  wide: "max-w-[672px]",
 };
 
 export function Dialog(props: DialogProps) {
