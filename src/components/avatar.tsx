@@ -72,6 +72,15 @@ const SHAPE_RADIUS: Record<Shape, string> = {
   rounded: "rounded-md",
 };
 
+// Reduce a name or label to one or two initials ("Rachel Chen" -> "RC", "AO" ->
+// "AO"), so callers can pass either a full name or ready-made initials.
+function initialsFrom(text: string): string {
+  const parts = text.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export function Avatar(props: AvatarProps) {
   const { src, uri, name, children, ring, className } = props;
   const size = sizeOf(props);
@@ -106,7 +115,8 @@ export function Avatar(props: AvatarProps) {
     );
   }
 
-  const initials = (name ?? (typeof children === "string" ? children : "")) || "";
+  const source = name ?? (typeof children === "string" ? children : "");
+  const initials = source ? initialsFrom(source) : "";
   const label = cn("font-medium text-muted-foreground", SIZE_LABEL[size]);
 
   return (

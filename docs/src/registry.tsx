@@ -1,19 +1,25 @@
 import type { ComponentType } from "react";
 import {
+  Alert,
   Avatar,
   Badge,
   Breadcrumb,
   Button,
   ButtonGroup,
+  Card,
   Checkbox,
   Divider,
+  EmptyState,
   Input,
   InputGroup,
   Kbd,
+  MediaObject,
   Pagination,
   Radio,
   Skeleton,
   Spinner,
+  StackedList,
+  Stats,
   Switch,
   Textarea,
   Typography,
@@ -316,5 +322,147 @@ export const registry: Record<string, RegistryEntry> = {
     Component: Typography as AnyComponent,
     mapProps: (s) => ({ [s.style as string]: true, children: (s.content as string) ?? "The quick brown fox" }),
     toCode: (s) => `<Typography ${s.style as string}>${(s.content as string) ?? ""}</Typography>`,
+  },
+
+  card: {
+    Component: Card as AnyComponent,
+    mapProps: (s) => {
+      const type = s.type as string;
+      if (type === "generic") {
+        return { padded: true, title: "Anything goes here", body: "The card surface gives you the border, radius, and shadow. You bring the content." };
+      }
+      if (type === "section") {
+        return s.header
+          ? { title: "Recent activity", body: "A labeled content surface. Drop fields, a list, or any module of content here." }
+          : { body: "A labeled content surface. Drop fields, a list, or any module of content here." };
+      }
+      return { padded: true, title: s.label as string, body: `${s.value} (+142 today)` };
+    },
+    toCode: (s) => {
+      const type = s.type as string;
+      if (type === "generic") return `<Card padded title="Anything goes here" body="The card surface gives you the border, radius, and shadow." />`;
+      if (type === "section") return s.header ? `<Card title="Recent activity" body="A labeled content surface." />` : `<Card body="A labeled content surface." />`;
+      return `<Card padded title="${s.label}" body="${s.value} (+142 today)" />`;
+    },
+  },
+
+  alert: {
+    Component: Alert as AnyComponent,
+    mapProps: (s) => {
+      const v = s.variant as string;
+      const tone = v === "destructive" ? "error" : v;
+      const titles: Record<string, string> = { info: "Heads up", success: "All set", warning: "Action required", destructive: "Something went wrong" };
+      const descs: Record<string, string> = { info: "Maintenance window scheduled for Sunday 2:00 UTC.", success: "Your changes have been saved successfully.", warning: "Your trial expires in 3 days.", destructive: "Could not save your changes. Please try again." };
+      const glyphs: Record<string, string> = { info: "ℹ", success: "✓", warning: "⚠", destructive: "✕" };
+      return { [tone]: true, icon: glyphs[v], title: s.title ? titles[v] : undefined, description: descs[v] };
+    },
+    toCode: (s) => {
+      const v = s.variant as string;
+      const tone = v === "destructive" ? "error" : v;
+      const descs: Record<string, string> = { info: "Maintenance window scheduled for Sunday 2:00 UTC.", success: "Your changes have been saved successfully.", warning: "Your trial expires in 3 days.", destructive: "Could not save your changes. Please try again." };
+      const titles: Record<string, string> = { info: "Heads up", success: "All set", warning: "Action required", destructive: "Something went wrong" };
+      const titleAttr = s.title ? ` title="${titles[v]}"` : "";
+      return `<Alert ${tone}${titleAttr} description="${descs[v]}" />`;
+    },
+  },
+
+  "empty-state": {
+    Component: EmptyState as AnyComponent,
+    mapProps: (s) => {
+      const v = s.variant as string;
+      const icons: Record<string, string> = { search: "🔍", users: "👥", files: "📄", activity: "📈", notifications: "🔔", errors: "✅", "all-clear": "✅" };
+      const titles: Record<string, string> = { search: "No results found", users: "No users", files: "No files", activity: "No activity", notifications: "All caught up", errors: "No errors", "all-clear": "All clear" };
+      const descs: Record<string, string> = { search: "Try adjusting your search filters.", users: "Invite your first team member.", files: "Upload or drag files here.", activity: "Events will appear as they happen.", notifications: "No new notifications.", errors: "Everything is running smoothly.", "all-clear": "No locked accounts or pending reviews." };
+      const positive = v === "errors" || v === "all-clear";
+      return { icon: icons[v], title: titles[v], description: descs[v], actionLabel: s.action ? "Create identity" : undefined, positive, bordered: true, compact: Boolean(s.inTable) };
+    },
+    toCode: (s) => {
+      const v = s.variant as string;
+      const positive = v === "errors" || v === "all-clear";
+      const flags = [positive ? "positive" : null, "bordered", s.inTable ? "compact" : null].filter(Boolean).join(" ");
+      return `<EmptyState icon="🔍" title="No results found" description="Try adjusting your search filters."${s.action ? ' actionLabel="Create identity"' : ""}${flags ? " " + flags : ""} />`;
+    },
+  },
+
+  stats: {
+    Component: Stats as AnyComponent,
+    mapProps: (s) => {
+      const showDelta = s.delta !== false;
+      if (s.variant === "group") {
+        return { items: [
+          { label: "Total users", value: "12,847", delta: showDelta ? "+12.5%" : undefined },
+          { label: "Active sessions", value: "1,024", delta: showDelta ? "+3.2%" : undefined },
+          { label: "Error rate", value: "0.12%", delta: showDelta ? "+0.03%" : undefined, down: true },
+        ] };
+      }
+      if (s.variant === "plain") {
+        return { plain: true, title: "Key metrics", items: [
+          { label: "Revenue", value: "$48.2k" },
+          { label: "Orders", value: "842" },
+          { label: "Avg. value", value: "$57.24" },
+          { label: "Conversion", value: "3.6%" },
+        ] };
+      }
+      if (s.variant === "sparkline") {
+        return { items: [
+          { label: "Requests", value: "24.5k", delta: "+8.2%" },
+          { label: "Latency", value: "142ms", delta: "+12ms", down: true },
+        ] };
+      }
+      return { items: [{ label: "Active users", value: "71,897", delta: showDelta ? "+12.3% vs. last 30 days" : undefined }] };
+    },
+    toCode: (s) => (s.variant === "plain" ? `<Stats plain title="Key metrics" items={metrics} />` : `<Stats items={metrics} />`),
+  },
+
+  "media-objects": {
+    Component: MediaObject as AnyComponent,
+    mapProps: (s) => ({
+      avatar: s.variant === "icon" ? undefined : s.variant === "action" ? "AL" : "RC",
+      icon: s.variant === "icon" ? "S" : undefined,
+      title: s.variant === "action" ? "Ada Lovelace" : s.variant === "icon" ? "Security first" : "Rachel Chen",
+      description: s.variant === "action" ? "ada@example.com" : s.variant === "icon" ? "End-to-end encryption with automatic key rotation." : "Engineering Lead",
+      body: s.variant === "avatar" ? "Reviewed the latest pull request and left comments on the auth middleware changes." : undefined,
+      center: s.variant !== "avatar",
+      start: s.variant === "avatar",
+      truncate: s.variant === "action",
+      bordered: true,
+    }),
+    toCode: (s) => {
+      if (s.variant === "icon") return `<MediaObject icon="S" title="Security first" description="End-to-end encryption with automatic key rotation." center bordered />`;
+      if (s.variant === "action") return `<MediaObject avatar="AL" title="Ada Lovelace" description="ada@example.com" truncate center bordered />`;
+      return `<MediaObject avatar="RC" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request..." bordered />`;
+    },
+  },
+
+  "stacked-lists": {
+    Component: StackedList as AnyComponent,
+    mapProps: (s) => {
+      const twoLine = [
+        { name: "Rachel Chen", detail: "rachel.chen@example.com", meta: "admin" },
+        { name: "Ada Lovelace", detail: "ada@example.com", meta: "editor" },
+        { name: "Kevin Turner", detail: "kevin@example.com", meta: "viewer" },
+      ];
+      const clickable = [
+        { name: "Rachel Chen", detail: "rachel.chen@example.com", meta: "2h ago" },
+        { name: "Ada Lovelace", detail: "ada@example.com", meta: "5h ago" },
+        { name: "Kevin Turner", detail: "kevin@example.com", meta: "1d ago" },
+      ];
+      const card = [
+        { name: "Rachel Chen", detail: "Engineering Lead" },
+        { name: "Ada Lovelace", detail: "Staff Engineer" },
+      ];
+      const items = s.variant === "clickable" ? clickable : s.variant === "card" ? card : twoLine;
+      return {
+        items,
+        clickable: s.variant === "clickable",
+        card: s.variant === "card",
+        flush: s.variant === "card" ? false : s.divider === false,
+        title: s.variant === "card" ? "Team members" : undefined,
+      };
+    },
+    toCode: (s) => {
+      const propLine = s.variant === "clickable" ? " clickable" : s.variant === "card" ? " card" : s.divider === false ? " flush" : "";
+      return `<StackedList${propLine} items={members} />`;
+    },
   },
 };
