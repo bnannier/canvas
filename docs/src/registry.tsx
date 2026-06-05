@@ -7,7 +7,9 @@ import {
   Breadcrumb,
   Button,
   ButtonGroup,
+  Calendar,
   Card,
+  Chart,
   Checkbox,
   CodeBlock,
   DataTable,
@@ -26,6 +28,7 @@ import {
   Navbar,
   Pagination,
   Radio,
+  Sidebar,
   Skeleton,
   Spinner,
   StackedList,
@@ -606,6 +609,55 @@ export const registry: Record<string, RegistryEntry> = {
       bordered: true,
       compact: s.density === "compact",
       selectable: s.variant === "bulk",
+    }),
+  },
+
+  calendar: {
+    name: "Calendar",
+    Component: Calendar as AnyComponent,
+    mapProps: () => ({ month: "May 2026", today: 23, selected: 24, daysInMonth: 31, startWeekday: 4 }),
+  },
+
+  sidebar: {
+    name: "Sidebar",
+    Component: Sidebar as AnyComponent,
+    mapProps: (s) => ({
+      active: "Dashboard",
+      sections: [
+        {
+          title: s.groupLabels ? "Main" : undefined,
+          items: [
+            { label: "Dashboard", icon: "◉" },
+            { label: "Users", icon: "○", badge: "12" },
+            { label: "Settings", icon: "◇" },
+          ],
+        },
+        {
+          title: s.groupLabels ? "Reports" : undefined,
+          items: [{ label: "Analytics", icon: "△" }],
+        },
+      ],
+    }),
+  },
+
+  charts: {
+    name: "Chart",
+    Component: Chart as AnyComponent,
+    mapProps: (s) => ({
+      title: "Signups",
+      data: [
+        { label: "Mon", value: 45 },
+        { label: "Tue", value: 60 },
+        { label: "Wed", value: 35 },
+        { label: "Thu", value: 70 },
+        { label: "Fri", value: 55 },
+        { label: "Sat", value: 80 },
+        { label: "Sun", value: 95 },
+      ],
+      max: 100,
+      success: s.type === "stacked" || s.type === "gauge",
+      destructive: s.type === "heatmap",
+      horizontal: s.type === "sparkline" || s.type === "gauge",
     }),
   },
 };

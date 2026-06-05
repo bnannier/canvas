@@ -34,3 +34,6 @@ export * from "./feeds.js";
 export * from "./grid-lists.js";
 export * from "./navbars.js";
 export * from "./data-table.js";
+export * from "./calendar.js";
+export * from "./sidebar.js";
+export * from "./charts.js";
