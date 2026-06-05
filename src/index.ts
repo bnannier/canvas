@@ -14,3 +14,6 @@ export type { Theme, Surface, Density } from "./theme.js";
 
 // The React Native engine: tokens, resolver, runtime, and styled primitives.
 export * from "./engine/index.js";
+
+// Components: the React Native UI kit.
+export * from "./components/index.js";
