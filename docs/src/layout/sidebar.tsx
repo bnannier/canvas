@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
 import {
-  Home, Layers, Palette, User, Award, ChevronRight,
+  Home, Layers, Palette, User, Award, ChevronRight, AppWindow,
   MousePointerClick, Columns2, CheckSquare, Search,
   ChevronDown, Info, TextCursorInput, Keyboard,
   ChevronsLeft, CircleDot, List, Minus, Loader,
@@ -114,10 +114,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "charts", label: "Charts", to: "/components/charts", icon: ChartLine },
       { slug: "command", label: "Command Palette", to: "/components/command", icon: Terminal },
       { slug: "data-table", label: "Data Tables", to: "/components/data-table", icon: Table },
+      { slug: "dialog", label: "Dialog", to: "/components/dialog", icon: AppWindow },
       { slug: "filter-panel", label: "Filter Panels", to: "/components/filter-panel", icon: Filter },
       { slug: "navbars", label: "Navbars", to: "/components/navbars", icon: Navigation },
       { slug: "sidebar", label: "Navigation", to: "/components/sidebar", icon: Navigation },
-      { slug: "dialog", label: "Overlays", to: "/components/dialog", icon: PanelRight },
+      { slug: "overlays", label: "Overlays", to: "/components/overlays", icon: PanelRight },
       { slug: "row-menu", label: "Row Menu", to: "/components/row-menu", icon: MoreHorizontal },
       { slug: "stepper", label: "Steppers", to: "/components/stepper", icon: Footprints },
       { slug: "tabs", label: "Tabs", to: "/components/tabs", icon: Folder },

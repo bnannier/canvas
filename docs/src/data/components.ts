@@ -218,6 +218,11 @@ const overlayCls = "fixed inset-0 z-50 hidden items-start justify-center overflo
 const alertPanel = "w-full rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-xl";
 const alertTrigger = ` onclick="var o=this.nextElementSibling;o.classList.remove('hidden');o.classList.add('flex')"`;
 const alertClose = ` onclick="var o=this.closest('[data-alert-overlay]');o.classList.add('hidden');o.classList.remove('flex')"`;
+// Dialog: the general modal. Same overlay machinery as the alert dialog
+// (overlayCls + alertTrigger/alertClose), with a roomier panel and a wider
+// size scale for task content like a form.
+const dialogPanel = "w-full rounded-2xl border border-border bg-popover p-6 text-popover-foreground shadow-xl sm:p-7";
+const dialogSize: Record<string, string> = { xs: "max-w-xs", sm: "max-w-sm", md: "max-w-md", lg: "max-w-lg", xl: "max-w-xl", "2xl": "max-w-2xl" };
 // Fieldset: a labeled group of fields (legend + field group + per-field label/help/error).
 const fieldsetLegend = "text-base font-semibold text-foreground";
 const fsField = (label: string, control: string, help = "", error = "") =>
@@ -3422,6 +3427,104 @@ npm run build</pre></div>`,
 
   {
     slug: "dialog",
+    name: "Dialog",
+    description: "A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, an optional description, a body for real content like a form, and right-aligned actions. Use it for a focused task that warrants interrupting the page; reach for the Alert Dialog for a terse yes/no confirmation.",
+    category: "Organisms",
+    playground: {
+      controls: [
+        { type: "pills", key: "size", label: "Size", options: ["xs", "sm", "md", "lg", "xl", "2xl"], cols: 6 },
+        { type: "check", key: "withDescription", label: "Description" },
+        { type: "check", key: "withBody", label: "Body form" },
+        { type: "check", key: "destructive", label: "Destructive action" },
+      ],
+      defaults: { size: "lg", withDescription: true, withBody: true, destructive: false },
+      render: (s) => {
+        const size = dialogSize[s.size as string] || dialogSize.lg;
+        const desc = s.withDescription ? `<p class="mt-2 text-sm text-muted-foreground">The refund will be reflected in the customer's bank account within 2 to 3 business days.</p>` : "";
+        const body = s.withBody ? `<div class="mt-5 space-y-4">${fsField("Amount", `<div class="relative"><span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span><input class="${inputBase} pl-7" value="90.00"></div>`)}${fsField("Reason", `<input class="${inputBase}" placeholder="Duplicate charge">`)}</div>` : "";
+        const v = s.destructive ? "destructive" : "default";
+        return `<div class="relative inline-block"><button class="${btnBase} ${btnVariant.outline} ${btnSize.default}"${alertTrigger}>Open dialog</button><div data-alert-overlay class="${overlayCls}" onclick="if(event.target===this){this.classList.add('hidden');this.classList.remove('flex')}"><div class="${dialogPanel} ${size}"><h2 class="text-lg font-semibold">Refund payment</h2>${desc}${body}<div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">${btn("outline", "Cancel", "default", alertClose)}${btn(v, "Refund", "default", alertClose)}</div></div></div></div>`;
+      },
+    },
+    sections: [
+      {
+        title: "Anatomy",
+        anatomy: "Title (the task) . optional description . body (the real content, usually a form) . actions (Cancel plus a primary, right-aligned on desktop and stacked on mobile). The panel is centered over a dimmed, blurred backdrop; dismiss via Cancel, a backdrop click, or Esc. Size to the content: a form wants md to xl, a one-line message wants sm.",
+        examples: [],
+      },
+    ],
+    donts: [
+      {
+        title: "When to use",
+        dont: {
+          html: `<div class="${dialogPanel} ${dialogSize.sm}"><h2 class="text-lg font-semibold">Delete file?</h2><div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">${btn("outline", "Cancel", "sm")}${btn("destructive", "Delete", "sm")}</div></div>`,
+          caption: "A bare yes/no question does not need the roomier Dialog; that is what the Alert Dialog is for.",
+        },
+        do: {
+          html: `<div class="${dialogPanel} ${dialogSize.lg}"><h2 class="text-lg font-semibold">Edit profile</h2><p class="mt-2 text-sm text-muted-foreground">Update how your name and email appear to teammates.</p><div class="mt-5 space-y-4">${fsField("Name", `<input class="${inputBase}" value="Ada Lovelace">`)}${fsField("Email", `<input class="${inputBase}" value="ada@example.com">`)}</div><div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">${btn("outline", "Cancel", "sm")}${btn("default", "Save changes", "sm")}</div></div>`,
+          caption: "Use the Dialog for a focused task with real content, like a short form.",
+        },
+      },
+      {
+        title: "Description",
+        dont: {
+          html: `<div class="${dialogPanel} ${dialogSize.md}"><h2 class="text-lg font-semibold">Refund payment</h2><p class="mt-2 text-sm text-muted-foreground">Refunds are processed through the original payment method. Depending on the bank, the amount can take 2 to 3 business days to appear. Partial refunds are supported. Once submitted a refund cannot be cancelled, and the payout for this period will be adjusted on your next statement.</p><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Refund", "sm")}</div></div>`,
+          caption: "A multi-sentence policy dump in the description buries the task under reading.",
+        },
+        do: {
+          html: `<div class="${dialogPanel} ${dialogSize.md}"><h2 class="text-lg font-semibold">Refund payment</h2><p class="mt-2 text-sm text-muted-foreground">The refund posts to the original card in 2 to 3 business days.</p><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Refund", "sm")}</div></div>`,
+          caption: "Keep the description to one supporting line; link out for the full policy.",
+        },
+      },
+      {
+        title: "Body form",
+        dont: {
+          html: `<div class="${dialogPanel} ${dialogSize.sm}"><h2 class="text-lg font-semibold">Create project</h2><div class="mt-5 space-y-3">${["Name", "Key", "Description", "Lead", "Team", "Visibility", "Template"].map((l) => fsField(l, `<input class="${inputBase}">`)).join("")}</div><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Create", "sm")}</div></div>`,
+          caption: "A seven-field form crammed into a small dialog feels like a page stuffed into a popup.",
+        },
+        do: {
+          html: `<div class="${dialogPanel} ${dialogSize.lg}"><h2 class="text-lg font-semibold">Create project</h2><div class="mt-5 space-y-4">${fsField("Name", `<input class="${inputBase}" placeholder="Acme website">`)}${fsField("Key", `<input class="${inputBase}" placeholder="ACME">`)}</div><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Create", "sm")}</div></div>`,
+          caption: "Keep the body to the few fields the task needs; send long forms to a full page.",
+        },
+      },
+      {
+        title: "Actions",
+        dont: {
+          html: `<div class="${dialogPanel} ${dialogSize.md}"><h2 class="text-lg font-semibold">Unsaved changes</h2><p class="mt-2 text-sm text-muted-foreground">You have edits that are not saved.</p><div class="mt-6 flex justify-end gap-2">${btn("default", "Save", "sm")}${btn("default", "Discard", "sm")}${btn("default", "Keep editing", "sm")}</div></div>`,
+          caption: "Three look-alike primary buttons give no signal about the default, safe choice.",
+        },
+        do: {
+          html: `<div class="${dialogPanel} ${dialogSize.md}"><h2 class="text-lg font-semibold">Unsaved changes</h2><p class="mt-2 text-sm text-muted-foreground">You have edits that are not saved.</p><div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">${btn("ghost", "Discard", "sm")}${btn("outline", "Keep editing", "sm")}${btn("default", "Save", "sm")}</div></div>`,
+          caption: "One primary plus quieter secondaries, right-aligned and labeled with their verb.",
+        },
+      },
+      {
+        title: "Destructive action",
+        dont: {
+          html: `<div class="${dialogPanel} ${dialogSize.md}"><h2 class="text-lg font-semibold">Save changes</h2><p class="mt-2 text-sm text-muted-foreground">Update the profile with your edits.</p><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("destructive", "Save", "sm")}</div></div>`,
+          caption: "A red button on a routine Save trains users to ignore the colour that should mean danger.",
+        },
+        do: {
+          html: `<div class="${dialogPanel} ${dialogSize.md}"><h2 class="text-lg font-semibold">Delete workspace</h2><p class="mt-2 text-sm text-muted-foreground">This removes all projects and cannot be undone.</p><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("destructive", "Delete", "sm")}</div></div>`,
+          caption: "Reserve the destructive tone for the irreversible action it names.",
+        },
+      },
+      {
+        title: "Size",
+        dont: {
+          html: `<div class="${dialogPanel} ${dialogSize["2xl"]}"><h2 class="text-lg font-semibold">Rename</h2><div class="mt-5">${fsField("Name", `<input class="${inputBase}" value="Untitled">`)}</div><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Save", "sm")}</div></div>`,
+          caption: "A 2xl panel around a single field leaves a vast empty expanse beside the input.",
+        },
+        do: {
+          html: `<div class="${dialogPanel} ${dialogSize.sm}"><h2 class="text-lg font-semibold">Rename</h2><div class="mt-5">${fsField("Name", `<input class="${inputBase}" value="Untitled">`)}</div><div class="mt-6 flex justify-end gap-2">${btn("outline", "Cancel", "sm")}${btn("default", "Save", "sm")}</div></div>`,
+          caption: "Size the dialog to its content: a single field belongs in xs or sm.",
+        },
+      },
+    ],
+  },
+
+  {
+    slug: "overlays",
     name: "Overlays",
     description: "Floating surfaces: drawers, modals, popovers, toasts.",
     category: "Organisms",

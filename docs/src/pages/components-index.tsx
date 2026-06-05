@@ -817,7 +817,19 @@ export function ComponentsIndex() {
             </div>
           </div>
         </Tile>
-        <Tile title="Overlays" to="/components/dialog">
+        <Tile title="Dialog" to="/components/dialog">
+          <div style={{ position: "relative", width: "100%", maxWidth: 200, height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 130, background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius-md, 6px)", boxShadow: "0 8px 16px -4px rgb(0 0 0 / 0.2)", padding: 8 }}>
+              <div style={{ height: 6, width: 56, borderRadius: 3, background: "var(--foreground)", opacity: 0.8, marginBottom: 6 }} />
+              <div style={{ height: 4, width: "100%", borderRadius: 2, background: "var(--muted-foreground)", opacity: 0.4, marginBottom: 8 }} />
+              <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
+                <div style={{ height: 12, width: 28, borderRadius: 3, border: "1px solid var(--border)" }} />
+                <div style={{ height: 12, width: 28, borderRadius: 3, background: "var(--primary)" }} />
+              </div>
+            </div>
+          </div>
+        </Tile>
+        <Tile title="Overlays" to="/components/overlays">
           <div style={{ position: "relative", width: "100%", maxWidth: 200, height: 64 }}>
             <div style={{ borderRadius: "var(--radius-md, 6px)", background: "color-mix(in oklch, var(--muted) 40%, transparent)", height: "100%" }} />
             <div style={{
