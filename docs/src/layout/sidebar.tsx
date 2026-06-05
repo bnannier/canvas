@@ -159,7 +159,8 @@ function getActiveSlug(pathname: string): string {
   if (tplMatch) return "tpl-" + tplMatch[1];
   const patMatch = pathname.match(/^\/patterns\/(.+)$/);
   if (patMatch) return "pat-" + patMatch[1];
-  return pathname.replace(/^\//, "");
+  // Nested token routes (/tokens/spacing) map to dash-joined slugs (tokens-spacing).
+  return pathname.replace(/^\//, "").replace(/\//g, "-");
 }
 
 function getActiveGroup(pathname: string): string | null {
@@ -341,7 +342,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                         to={item.to}
                         className={({ isActive }) => `sidebar-item${isActive ? " active" : ""}`}
                         onClick={handleItemClick}
-                        end={item.to === "/"}
+                        end
                       >
                         <item.icon size={16} />
                         <span className="label">{item.label}</span>
