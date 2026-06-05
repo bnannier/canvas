@@ -66,7 +66,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "button", label: "Buttons", to: "/components/button", icon: MousePointerClick },
       { slug: "checkbox", label: "Checkboxes", to: "/components/checkbox", icon: CheckSquare },
       { slug: "combobox", label: "Comboboxes", to: "/components/combobox", icon: Search },
-      { slug: "separator", label: "Dividers", to: "/components/separator", icon: Minus },
+      { slug: "divider", label: "Dividers", to: "/components/divider", icon: Minus },
       { slug: "dropdown", label: "Dropdowns", to: "/components/dropdown", icon: ChevronDown },
       { slug: "icon", label: "Icons", to: "/components/icon", icon: Info },
       { slug: "input-group", label: "Input Groups", to: "/components/input-group", icon: Columns2 },

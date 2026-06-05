@@ -972,7 +972,7 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
-    slug: "separator",
+    slug: "divider",
     name: "Dividers",
     description: "Horizontal, vertical, with label, with action.",
     category: "Atoms",
@@ -985,13 +985,15 @@ export const COMPONENTS: ComponentDoc[] = [
       defaults: { orientation: "horizontal", variant: "plain", label: "Or continue with" },
       render: (s) => {
         if (s.orientation === "vertical") {
-          return `<div class="flex h-8 items-center gap-3 text-sm"><span>Left</span><div class="h-5 w-px bg-border"></div><span>Right</span></div>`;
+          return `<div class="flex h-8 items-center gap-3 text-sm"><span class="text-foreground">Docs</span><div class="h-4 w-px bg-border"></div><span class="text-muted-foreground">API</span><div class="h-4 w-px bg-border"></div><span class="text-muted-foreground">Support</span></div>`;
         }
-        if (s.variant === "label") return `<div class="w-80">${sepLabel(s.label as string)}</div>`;
+        if (s.variant === "label") {
+          return `<div class="w-80 space-y-3"><button class="${btnBase} ${btnVariant.default} ${btnSize.default} w-full">Sign in</button>${sepLabel(s.label as string)}<button class="${btnBase} ${btnVariant.outline} ${btnSize.default} w-full">Continue with Google</button></div>`;
+        }
         if (s.variant === "action") {
-          return `<div class="flex w-80 items-center gap-3"><hr class="flex-1 border-border"><button class="${btnBase} ${btnVariant.ghost} ${btnSize.sm}" onclick="this.textContent=this.textContent==='Show more'?'Show less':'Show more'">Show more</button><hr class="flex-1 border-border"></div>`;
+          return `<div class="w-80 text-sm"><div class="space-y-2"><div class="rounded-md border border-border px-3 py-2">Ada commented on the draft</div><div class="rounded-md border border-border px-3 py-2">Grace approved the request</div></div><div class="mt-3 flex items-center gap-3"><hr class="flex-1 border-border"><button class="${btnBase} ${btnVariant.ghost} ${btnSize.sm}" onclick="this.textContent=this.textContent==='Show more'?'Show less':'Show more'">Show more</button><hr class="flex-1 border-border"></div></div>`;
         }
-        return `<hr class="w-64 border-border">`;
+        return `<div class="w-80"><div class="text-sm font-medium">Billing</div><p class="text-sm text-muted-foreground">Manage your plan and payment method.</p><hr class="my-4 border-border"><div class="text-sm font-medium">Notifications</div><p class="text-sm text-muted-foreground">Choose what updates you receive.</p></div>`;
       },
     },
     sections: [],

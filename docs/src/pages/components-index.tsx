@@ -312,7 +312,7 @@ export function ComponentsIndex() {
             </div>
           </div>
         </Tile>
-        <Tile title="Dividers" to="/components/separator">
+        <Tile title="Dividers" to="/components/divider">
           <div style={{ width: "100%", maxWidth: 180 }}>
             <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginBottom: 8 }}>Above</div>
             <hr className="sep" />
