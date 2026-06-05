@@ -7,3 +7,6 @@ coverage/
 test/screenshots/*.current.png
 test/verify/
 test/ui/
+
+# Local Claude Code session state
+.claude/

@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import {
   ActionPanel,
   Alert,
+  AlertDialog,
   Avatar,
   Badge,
   Breadcrumb,
@@ -12,6 +13,7 @@ import {
   Chart,
   Checkbox,
   CodeBlock,
+  Combobox,
   Command,
   DataTable,
   DescriptionList,
@@ -22,16 +24,20 @@ import {
   Feed,
   Field,
   Fieldset,
+  FilterPanel,
   Form,
   GridList,
   Input,
   InputGroup,
   Kbd,
+  Listbox,
   MediaObject,
   Navbar,
+  Overlay,
   Pagination,
   Popover,
   Radio,
+  RowMenu,
   Select,
   Sidebar,
   Skeleton,
@@ -769,6 +775,128 @@ export const registry: Record<string, RegistryEntry> = {
           },
         ],
         onSelect: () => {},
+      };
+    },
+  },
+
+  combobox: {
+    name: "Combobox",
+    Component: Combobox as AnyComponent,
+    mapProps: (s) => ({
+      query: "a",
+      options: ["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Marcus Allen", "Noor Park", "Rachel Chen"],
+      value: "Marcus Allen",
+      placeholder: (s.placeholder as string) || "Search a person…",
+      disabled: Boolean(s.disabled),
+      open: true,
+      className: "max-w-[300px]",
+    }),
+  },
+
+  "row-menu": {
+    name: "RowMenu",
+    Component: RowMenu as AnyComponent,
+    mapProps: (s) => {
+      const isLinks = s.kind === "links";
+      const ico = (g: string) => (s.icons ? g : undefined);
+      const items = isLinks
+        ? [
+            { label: "Profile", icon: ico("●") },
+            { label: "Billing", icon: ico("●") },
+            { label: "Members", icon: ico("●") },
+            { label: "Settings", icon: ico("●") },
+          ]
+        : [
+            { label: "Edit", icon: ico("✎") },
+            { label: "Duplicate", icon: ico("⧉") },
+            ...(s.destructive ? [{ label: "Delete", icon: ico("🗑"), destructive: true, separatorBefore: true }] : []),
+          ];
+      return { open: true, links: isLinks, sectionLabel: s.label ? (isLinks ? "Account" : "Actions") : undefined, items };
+    },
+  },
+
+  "alert-dialog": {
+    name: "AlertDialog",
+    Component: AlertDialog as AnyComponent,
+    mapProps: (s) => ({
+      title: "Delete this identity?",
+      description: s.withDescription
+        ? "This permanently removes the identity and revokes any active sessions. This action cannot be undone."
+        : undefined,
+      confirmLabel: s.destructive ? "Delete" : "Continue",
+      destructive: !!s.destructive,
+      open: true,
+    }),
+  },
+
+  listbox: {
+    name: "Listbox",
+    Component: Listbox as AnyComponent,
+    mapProps: (s) => {
+      const items = s.withIcon
+        ? [
+            { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
+            { label: "Ada Lovelace", detail: "ada@acme.io" },
+            { label: "Kevin Turner", detail: "kevin@acme.io" },
+            { label: "Linus Berg", detail: "linus@acme.io" },
+          ]
+        : [
+            { label: "Backend", selected: true },
+            { label: "Frontend" },
+            { label: "Design" },
+            { label: "Platform" },
+            { label: "Security" },
+          ];
+      const multi = s.mode === "multi";
+      const selectedItems = multi ? items.map((it, i) => ({ ...it, selected: i === 0 || i === 2 })) : items;
+      return { items: selectedItems, multi, bordered: true };
+    },
+  },
+
+  "filter-panel": {
+    name: "FilterPanel",
+    Component: FilterPanel as AnyComponent,
+    mapProps: () => ({
+      bordered: true,
+      activeCount: 2,
+      groups: [
+        {
+          title: "Status",
+          options: [
+            { label: "Active", checked: true, count: "128" },
+            { label: "Pending", count: "12" },
+            { label: "Archived", count: "2" },
+          ],
+        },
+        {
+          title: "Schema",
+          options: [
+            { label: "Default", checked: true, count: "96" },
+            { label: "Custom", count: "46" },
+          ],
+        },
+        {
+          title: "MFA",
+          options: [
+            { label: "Enabled", count: "84" },
+            { label: "Disabled", count: "58" },
+          ],
+        },
+      ],
+    }),
+  },
+
+  overlays: {
+    name: "Overlay",
+    Component: Overlay as AnyComponent,
+    mapProps: (s) => {
+      const placement =
+        s.kind === "modal" ? { modal: true } : s.kind === "toast" || s.kind === "menu" ? { sheet: true } : { drawer: true };
+      return {
+        open: true,
+        title: (s.title as string) || "Edit Identity",
+        description: s.withDescription ? "Visible above the parent page so the user can compare." : undefined,
+        ...placement,
       };
     },
   },
