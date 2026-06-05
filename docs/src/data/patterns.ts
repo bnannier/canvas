@@ -455,43 +455,44 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
   {
     slug: "responsive",
     name: "Responsive",
-    description: "Mobile-first responsive system with breakpoints, sidebar drawer-to-fixed transition, and reusable grid patterns.",
+    description: "Desktop-first responsive system with breakpoints, sidebar drawer-to-fixed transition, and reusable grid patterns.",
     sections: [
       {
         title: "Breakpoints",
-        description: "Canvas uses six responsive breakpoints. Mobile-first: styles apply from the breakpoint upward.",
+        description: "Canvas is desktop-first. Unprefixed utilities are the desktop base; a breakpoint prefix (sm, md, lg, xl, 2xl) applies at that width and below.",
         html: `<div style="font-size:13px">
-  <div style="display:grid;grid-template-columns:80px 100px 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
+  <div style="display:grid;grid-template-columns:80px 110px 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Name</div>
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Min-width</div>
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Applies at</div>
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Typical use</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">base</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">0px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Mobile phones (portrait)</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">sm</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">640px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Large phones (landscape)</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">md</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">768px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Tablets</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">lg</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">1024px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Small laptops, sidebar becomes fixed</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">default</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Unprefixed desktop base; the widest layouts, where the side table-of-contents shows</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">2xl</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 1536px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Large monitors</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">xl</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">1280px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Desktops, TOC sidebar appears</div>
-    <div style="padding:8px 12px;font-weight:500">2xl</div>
-    <div style="padding:8px 12px;font-family:var(--font-mono);font-size:12px">1536px</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">Large monitors</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 1280px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Desktops</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">lg</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 1024px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Small laptops; the sidebar collapses to a drawer at lg and below</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">md</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 768px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Tablets</div>
+    <div style="padding:8px 12px;font-weight:500">sm</div>
+    <div style="padding:8px 12px;font-family:var(--font-mono);font-size:12px">&le; 640px</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">Phones</div>
   </div>
+  <p style="margin:12px 0 0;font-size:12.5px;color:var(--muted-foreground);line-height:1.6">A prefix is active when the viewport is at its width or narrower, so several match at once on a small screen. The smallest matching prefix wins: at 700px wide, <code style="font-family:var(--font-mono);font-size:11.5px">md:</code> applies (sm at 640px does not match yet), and <code style="font-family:var(--font-mono);font-size:11.5px">sm:</code> takes over at 640px and below.</p>
 </div>`,
       },
       {
         title: "Sidebar - drawer ↔ fixed",
-        description: "Below lg (1024px) the sidebar becomes a drawer overlay triggered by the hamburger button. At lg and above, it is a fixed panel.",
+        description: "On the desktop base the sidebar is a fixed panel. The lg variant applies at 1024px and below, swapping it for a drawer overlay triggered by the hamburger button. Above lg, the fixed panel stays.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
   <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Mobile (< lg)</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">lg and below (drawer)</div>
     <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
       <div style="flex:1;padding:8px;font-size:11px;display:flex;align-items:start">
         <div style="width:24px;height:24px;border-radius:4px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer">&#9776;</div>
@@ -501,7 +502,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
     <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">Sidebar hidden. Hamburger opens drawer overlay.</div>
   </div>
   <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Desktop (>= lg)</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Above lg (fixed)</div>
     <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
       <div style="width:48px;background:var(--card);border-right:1px solid var(--border);padding:6px;font-size:9px;color:var(--muted-foreground)">Nav</div>
       <div style="flex:1;padding:8px;font-size:11px;color:var(--muted-foreground)">Main content area</div>
