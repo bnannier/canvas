@@ -21,6 +21,12 @@ const DONKEY = "data:image/svg+xml," + encodeURIComponent(
   '</svg>',
 );
 
+// The Canvas brand mark (flat-fill rainbow "C") for example app logos in the
+// nav demos. viewBox 0 0 48 48, transparent counter so it sits on any bar.
+// Flat fills (no gradient ids) stay crisp and collision-free at small sizes.
+const canvasLogo = (px: number) =>
+  `<svg width="${px}" height="${px}" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Canvas"><path d="M31.293 28.557 L41.385 34.863 A20.5 20.5 0 0 1 28.959 43.891 L26.081 32.345 A8.6 8.6 0 0 0 31.293 28.557 Z" fill="#a83ff0"/><path d="M26.081 32.345 L28.959 43.891 A20.5 20.5 0 0 1 14.376 42.1 L19.963 31.593 A8.6 8.6 0 0 0 26.081 32.345 Z" fill="#ff2d6e"/><path d="M19.963 31.593 L14.376 42.1 A20.5 20.5 0 0 1 4.736 31.011 L15.919 26.941 A8.6 8.6 0 0 0 19.963 31.593 Z" fill="#ff5a44"/><path d="M15.919 26.941 L4.736 31.011 A20.5 20.5 0 0 1 6.246 13.75 L16.552 19.7 A8.6 8.6 0 0 0 15.919 26.941 Z" fill="#ffa72e"/><path d="M16.552 19.7 L6.246 13.75 A20.5 20.5 0 0 1 24 3.5 L24 15.4 A8.6 8.6 0 0 0 16.552 19.7 Z" fill="#25bdf0"/><path d="M24 15.4 L24 3.5 A20.5 20.5 0 0 1 41.385 13.137 L31.293 19.443 A8.6 8.6 0 0 0 24 15.4 Z" fill="#2fd673"/><path d="M25.016 26.393 L27.985 33.389 A10.2 10.2 0 0 1 20.345 33.523 L23.068 26.427 A2.6 2.6 0 0 0 25.016 26.393 Z" fill="#ff3d86"/></svg>`;
+
 // ── Tailwind recipes ─────────────────────────────────────────────────────
 // Literal class strings so Tailwind generates the utilities, plus helpers,
 // reused by playground renders and do/dont markup.
@@ -5211,7 +5217,7 @@ npm run build</pre></div>`,
         const flash = ` onclick="var b=this;b.classList.add('bg-accent');setTimeout(function(){b.classList.remove('bg-accent')},300)"`;
         const searchIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
         const bellIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
-        const logo = `<div class="flex h-6 w-6 items-center justify-center rounded-full bg-primary"><svg width="14" height="14" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>`;
+        const logo = canvasLogo(24);
         const avatar = `<span class="${avatarBase} h-8 w-8"><img src="/rachel-chen.jpg" alt="RC" class="h-full w-full object-cover"></span>`;
         if (s.layout === "search") {
           return `<div class="w-full overflow-hidden rounded-lg border border-border">
@@ -5239,7 +5245,7 @@ npm run build</pre></div>`,
   <header class="flex h-14 items-center gap-2 bg-card px-4">
     ${btn("ghost", hamburger, "icon", ` onclick="var nav=this.closest('[data-mnav-wrap]').querySelector('[data-mobilenav]');nav.classList.toggle('hidden')"`)}
     <div class="flex items-center gap-2">
-      <div class="flex h-5 w-5 items-center justify-center rounded-full bg-primary"><svg width="12" height="12" viewBox="0 0 100 100" fill="white"><circle cx="50" cy="50" r="20"/></svg></div>
+      ${canvasLogo(20)}
       <span class="text-[13px] font-semibold">Canvas</span>
     </div>
     <div class="flex-1"></div>
