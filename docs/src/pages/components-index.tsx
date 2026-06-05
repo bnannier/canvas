@@ -209,7 +209,7 @@ export function ComponentsIndex() {
         <Tile title="Typography" to="/tokens/typography">
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
             <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1 }}>Aa</div>
-            <div style={{ fontSize: 11, fontFamily: "var(--font-mono)", lineHeight: 1.2 }}>JetBrains</div>
+            <div style={{ fontSize: 11, fontFamily: "var(--font-mono)", lineHeight: 1.2 }}>Geist Mono</div>
           </div>
         </Tile>
       </CatGroup>

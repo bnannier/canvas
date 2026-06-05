@@ -41,7 +41,7 @@ const tokenReadCode = `import { token, hsl } from "@olympusoss/canvas";
 
 token("foreground");       // "240 10% 3.9%" (raw HSL channels)
 token("radius-md");        // "6px"
-token("font-sans");        // "\\"Inter\\", system-ui, -apple-system, sans-serif"
+token("font-sans");        // "\\"Geist\\", ui-sans-serif, system-ui, ..."
 
 hsl("foreground");         // "hsl(240 10% 3.9%)"
 hsl("primary", 0.5);       // "hsl(240 5.9% 10% / 0.5)"`;

@@ -75,7 +75,7 @@ export function TypographyPage() {
           lineHeight: 1.6,
           color: "var(--muted-foreground)",
         }}>
-          Two families do all the work. Roboto Variable for prose and chrome; JetBrains Mono for code,
+          Two families do all the work. Geist Sans for prose and chrome; Geist Mono for code,
           IDs, timestamps, and any value the user might copy. The scale is a strict 8-step ramp; anything
           outside it gets flagged in review.
         </p>
@@ -83,7 +83,7 @@ export function TypographyPage() {
 
       <Section
         title="Font families"
-        description="Two families, both variable. No more weights or italics are pulled in by default; keep the network footprint honest."
+        description="Two families, both self-hosted variable fonts. Upright only (no italics); one woff2 per family carries the full 100-900 weight range, so the network footprint stays honest."
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
           <div style={{
@@ -103,16 +103,16 @@ export function TypographyPage() {
               --font-sans
             </div>
             <div style={{ fontFamily: "var(--font-sans)", fontSize: 40, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.02em" }}>
-              Roboto
+              Geist
             </div>
             <div style={{ marginTop: 8, fontSize: "12.5px", color: "var(--muted-foreground)", fontFamily: "var(--font-mono)" }}>
-              "Roboto", "Inter", system-ui, ...
+              "Geist", ui-sans-serif, system-ui, ...
             </div>
             <div style={{ marginTop: 16, fontSize: "14px", color: "var(--foreground)", lineHeight: 1.6 }}>
               The quick brown fox jumps over the lazy dog 0123456789
             </div>
             <div style={{ marginTop: 12, fontSize: "12px", color: "var(--muted-foreground)" }}>
-              Self-hosted variable font · weight 100-900 · width 75-100%.
+              Self-hosted variable font · weight 100-900.
             </div>
           </div>
           <div style={{
@@ -132,16 +132,16 @@ export function TypographyPage() {
               --font-mono
             </div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 40, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.01em" }}>
-              JetBrains
+              Geist Mono
             </div>
             <div style={{ marginTop: 8, fontSize: "12.5px", color: "var(--muted-foreground)", fontFamily: "var(--font-mono)" }}>
-              "JetBrains Mono", "Fira Code", monospace
+              "Geist Mono", ui-monospace, monospace
             </div>
             <div style={{ marginTop: 16, fontSize: "14px", color: "var(--foreground)", fontFamily: "var(--font-mono)", lineHeight: 1.6 }}>
               const id = "01HZ73K..." // copy-friendly digits
             </div>
             <div style={{ marginTop: 12, fontSize: "12px", color: "var(--muted-foreground)" }}>
-              Google Fonts CDN · weights 400 / 500 / 600.
+              Self-hosted variable font · weight 100-900.
             </div>
           </div>
         </div>
