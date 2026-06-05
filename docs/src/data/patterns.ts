@@ -272,7 +272,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F3A8;</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Tinted background</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">background: hsl(... / 0.6)</code>
+    <code style="font-size:11px;color:var(--muted-foreground)">background: oklch(... / 0.62)</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x2728;</div>
@@ -350,16 +350,18 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
       },
       {
         title: "Implementation",
-        description: "Glass is implemented with deep selectors keyed off the document's data-surface attribute. CSS variables (--glass-tint, --glass-edge-a, --glass-hi-a, --glass-shadow) carry the per-mode values so dark glass uses different alphas without duplicating rules.",
-        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">html[data-surface="glass"] .stat-card,
-html[data-surface="glass"] .section-card,
-html[data-surface="glass"] .topbar,
-html[data-surface="glass"] .sidebar {
-  backdrop-filter: blur(18px) saturate(1.4);
-  background-color: hsl(var(--glass-tint) / var(--glass-tint-a));
-  border-color: hsl(255 100% 100% / var(--glass-edge-a));
-  box-shadow: inset 0 1px 0 hsl(255 100% 100% / var(--glass-hi-a)),
-              0 8px 24px -12px color-mix(in oklch, var(--glass-shadow) 18%, transparent);
+        description: "Glass keys off the document's data-surface attribute. Rather than restyle each surface, it overrides the surface tokens (--card, --popover) with translucent oklch values per mode, then applies a backdrop-filter blur so the aurora backdrop shows through. Dark glass carries its own alphas without duplicating the blur rules.",
+        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">[data-surface="glass"] {
+  --card: oklch(1 0 0 / 0.62);
+  --popover: oklch(1 0 0 / 0.74);
+}
+.dark[data-surface="glass"] {
+  --card: oklch(0.24 0.006 285.885 / 0.5);
+  --popover: oklch(0.25 0.006 285.885 / 0.62);
+}
+[data-surface="glass"] :where(.card, .topbar, .sidebar, .bg-card) {
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
 }</div>`,
       },
     ],

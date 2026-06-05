@@ -34,17 +34,19 @@ const selectiveCode = `/* Required foundation */
 @import "@olympusoss/canvas/styles/patterns/focus.css";`;
 
 const jsImportCode = `import { setTheme, toggleTheme, setSurface, setDensity } from "@olympusoss/canvas";
-import { token, hsl } from "@olympusoss/canvas";
+import { token } from "@olympusoss/canvas";
 import { cn } from "@olympusoss/canvas";`;
 
-const tokenReadCode = `import { token, hsl } from "@olympusoss/canvas";
+const tokenReadCode = `import { token } from "@olympusoss/canvas";
 
-token("foreground");       // "240 10% 3.9%" (raw HSL channels)
-token("radius-md");        // "6px"
+token("foreground");       // "oklch(0.141 0.005 285.823)"
+token("primary");          // "oklch(0.511 0.262 276.966)"
+token("radius-md");        // "0.375rem"
 token("font-sans");        // "\\"Geist\\", ui-sans-serif, system-ui, ..."
 
-hsl("foreground");         // "hsl(240 10% 3.9%)"
-hsl("primary", 0.5);       // "hsl(240 5.9% 10% / 0.5)"`;
+// Colors are oklch strings, so the old hsl() wrapper no longer applies.
+// Compose an alpha variant in CSS instead:
+//   color-mix(in oklch, var(--primary) 50%, transparent)`;
 
 const cnCode = `import { cn } from "@olympusoss/canvas";
 
