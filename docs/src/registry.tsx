@@ -7,11 +7,16 @@ import {
   ButtonGroup,
   Checkbox,
   Divider,
+  Input,
+  InputGroup,
   Kbd,
+  Pagination,
   Radio,
   Skeleton,
   Spinner,
   Switch,
+  Textarea,
+  Typography,
 } from "@olympusoss/canvas";
 
 // Maps a component slug to the real Canvas RN component, how to derive its props
@@ -211,5 +216,105 @@ export const registry: Record<string, RegistryEntry> = {
     Component: Switch as AnyComponent,
     mapProps: (s) => ({ checked: s.state === "on", disabled: Boolean(s.disabled), children: s.label || undefined }),
     toCode: (s) => `<Switch${s.state === "on" ? " checked" : ""}${s.disabled ? " disabled" : ""}>${s.label ?? ""}</Switch>`,
+  },
+
+  input: {
+    Component: Input as AnyComponent,
+    mapProps: (s) => {
+      const st = s.state as string;
+      return {
+        multiline: s.type === "textarea",
+        error: st === "error",
+        disabled: st === "disabled",
+        readOnly: st === "readonly",
+        placeholder:
+          s.type === "textarea" ? "Describe the change" : s.type === "number" ? "1024" : "rachel.chen@example.com",
+        className: "max-w-[320px]",
+      };
+    },
+    toCode: (s) => {
+      const st = s.state as string;
+      const p: string[] = [];
+      if (s.type === "textarea") p.push("multiline");
+      if (st === "error") p.push("error");
+      if (st === "disabled") p.push("disabled");
+      if (st === "readonly") p.push("readOnly");
+      const ph =
+        s.type === "textarea" ? "Describe the change" : s.type === "number" ? "1024" : "rachel.chen@example.com";
+      return `<Input${p.length ? " " + p.join(" ") : ""} placeholder="${ph}" />`;
+    },
+  },
+
+  textarea: {
+    Component: Textarea as AnyComponent,
+    mapProps: (s) => ({
+      rows: s.rows as number,
+      disabled: s.disabled as boolean,
+      placeholder: "A few words about this project",
+    }),
+    toCode: (s) =>
+      `<Textarea rows={${s.rows as number}}${s.disabled ? " disabled" : ""} placeholder="A few words about this project" />`,
+  },
+
+  "input-group": {
+    Component: InputGroup as AnyComponent,
+    mapProps: (s) => {
+      const v = s.variant as string;
+      return {
+        small: s.size === "sm",
+        large: s.size === "lg",
+        disabled: Boolean(s.disabled),
+        prefix: v === "lead-text" ? "https://" : v === "lead-icon" ? "🔍" : v === "currency" ? "$" : undefined,
+        suffix:
+          v === "trail-text" ? "@canvas.dev"
+            : v === "trail-icon" ? "✉"
+              : v === "currency" ? "USD"
+                : v === "action" ? "Copy"
+                  : undefined,
+        action: v === "action",
+        placeholder:
+          v === "lead-text" ? "example.com"
+            : v === "trail-text" ? "ada"
+              : v === "lead-icon" ? "Quick search"
+                : v === "trail-icon" ? "you@example.com"
+                  : v === "currency" ? "0.00"
+                    : "sk_live_4242",
+        className: "max-w-[320px]",
+      };
+    },
+    toCode: (s) => {
+      const v = s.variant as string;
+      const sz = s.size === "sm" ? " small" : s.size === "lg" ? " large" : "";
+      const dis = s.disabled ? " disabled" : "";
+      const pfx =
+        v === "lead-text" ? ' prefix="https://"' : v === "currency" ? ' prefix="$"' : v === "lead-icon" ? ' prefix="🔍"' : "";
+      const sfx =
+        v === "trail-text" ? ' suffix="@canvas.dev"'
+          : v === "currency" ? ' suffix="USD"'
+            : v === "trail-icon" ? ' suffix="✉"'
+              : v === "action" ? ' suffix="Copy" action' : "";
+      return `<InputGroup${pfx}${sfx}${sz}${dis} placeholder="..." />`;
+    },
+  },
+
+  pagination: {
+    Component: Pagination as AnyComponent,
+    mapProps: (s) => {
+      const total = s.totalPages as number;
+      const page = Math.min(s.currentPage as number, total);
+      return { page, total, compact: s.variant === "compact", onChange: () => {} };
+    },
+    toCode: (s) => {
+      const total = s.totalPages as number;
+      const page = Math.min(s.currentPage as number, total);
+      const variantProp = s.variant === "compact" ? " compact" : "";
+      return `<Pagination page={${page}} total={${total}}${variantProp} onChange={setPage} />`;
+    },
+  },
+
+  typography: {
+    Component: Typography as AnyComponent,
+    mapProps: (s) => ({ [s.style as string]: true, children: (s.content as string) ?? "The quick brown fox" }),
+    toCode: (s) => `<Typography ${s.style as string}>${(s.content as string) ?? ""}</Typography>`,
   },
 };
