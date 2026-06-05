@@ -6,9 +6,9 @@ interface CanvasMarkProps {
 
 // The Canvas mark: a segmented rainbow "C". A ring of six hue segments (blue,
 // green, amber, coral, pink, purple) around a transparent counter, with a
-// central magenta facet and a wedge gap on the right. The counter is open, so
-// it sits cleanly on any background (light, dark, glass). Gradient ids are
-// namespaced per instance so several marks can render on one page.
+// wedge gap on the right forming the C. The counter is open, so it sits
+// cleanly on any background (light, dark, glass). Gradient ids are namespaced
+// per instance so several marks can render on one page.
 export function CanvasMark({ size = 22 }: CanvasMarkProps) {
   const uid = useId().replace(/:/g, "");
   const g = (name: string) => `${uid}-${name}`;
@@ -21,7 +21,6 @@ export function CanvasMark({ size = 22 }: CanvasMarkProps) {
         <linearGradient id={g("amber")} gradientUnits="userSpaceOnUse" x1="15.433" y1="23.25" x2="3.578" y2="22.213"><stop offset="0" stopColor="#f78a18" /><stop offset="1" stopColor="#ffb43d" /></linearGradient>
         <linearGradient id={g("blue")} gradientUnits="userSpaceOnUse" x1="19.7" y1="16.552" x2="13.75" y2="6.246"><stop offset="0" stopColor="#1f86f0" /><stop offset="1" stopColor="#27cdf2" /></linearGradient>
         <linearGradient id={g("green")} gradientUnits="userSpaceOnUse" x1="28.169" y1="16.478" x2="33.939" y2="6.07"><stop offset="0" stopColor="#15b85f" /><stop offset="1" stopColor="#46e082" /></linearGradient>
-        <linearGradient id={g("accent")} gradientUnits="userSpaceOnUse" x1="24.045" y1="26.6" x2="24.178" y2="34.198"><stop offset="0" stopColor="#ff1f7a" /><stop offset="1" stopColor="#ff5ea1" /></linearGradient>
       </defs>
       <path d="M31.293 28.557 L41.385 34.863 A20.5 20.5 0 0 1 28.959 43.891 L26.081 32.345 A8.6 8.6 0 0 0 31.293 28.557 Z" fill={`url(#${g("purple")})`} />
       <path d="M26.081 32.345 L28.959 43.891 A20.5 20.5 0 0 1 14.376 42.1 L19.963 31.593 A8.6 8.6 0 0 0 26.081 32.345 Z" fill={`url(#${g("pink")})`} />
@@ -29,7 +28,6 @@ export function CanvasMark({ size = 22 }: CanvasMarkProps) {
       <path d="M15.919 26.941 L4.736 31.011 A20.5 20.5 0 0 1 6.246 13.75 L16.552 19.7 A8.6 8.6 0 0 0 15.919 26.941 Z" fill={`url(#${g("amber")})`} />
       <path d="M16.552 19.7 L6.246 13.75 A20.5 20.5 0 0 1 24 3.5 L24 15.4 A8.6 8.6 0 0 0 16.552 19.7 Z" fill={`url(#${g("blue")})`} />
       <path d="M24 15.4 L24 3.5 A20.5 20.5 0 0 1 41.385 13.137 L31.293 19.443 A8.6 8.6 0 0 0 24 15.4 Z" fill={`url(#${g("green")})`} />
-      <path d="M25.016 26.393 L27.985 33.389 A10.2 10.2 0 0 1 20.345 33.523 L23.068 26.427 A2.6 2.6 0 0 0 25.016 26.393 Z" fill={`url(#${g("accent")})`} />
     </svg>
   );
 }
