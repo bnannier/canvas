@@ -1,5 +1,18 @@
 import type { ComponentType } from "react";
-import { Badge, Button, Divider, Kbd, Skeleton, Spinner } from "@olympusoss/canvas";
+import {
+  Avatar,
+  Badge,
+  Breadcrumb,
+  Button,
+  ButtonGroup,
+  Checkbox,
+  Divider,
+  Kbd,
+  Radio,
+  Skeleton,
+  Spinner,
+  Switch,
+} from "@olympusoss/canvas";
 
 // Maps a component slug to the real Canvas RN component, how to derive its props
 // from the playground state, and how to render the JSX shown in the code panel.
@@ -48,11 +61,32 @@ function buttonCode(s: Record<string, unknown>): string {
   return `<Button${attrs}>${String(props.children)}</Button>`;
 }
 
+const CRUMB_TRAIL = ["Projects", "Identity Platform", "Settings", "Profile", "Avatar", "Edit"];
+
 export const registry: Record<string, RegistryEntry> = {
   button: {
     Component: Button as AnyComponent,
     mapProps: buttonProps,
     toCode: buttonCode,
+  },
+
+  "button-group": {
+    Component: ButtonGroup as AnyComponent,
+    mapProps: (s) => {
+      const size = s.size === "sm" ? { small: true } : s.size === "lg" ? { large: true } : {};
+      if (s.variant === "split") return { split: true, items: ["Save", "More"], ...size };
+      if (s.variant === "attached") return { segmented: true, active: -1, items: ["‹", "Today", "›"], ...size };
+      const n = (s.buttons as number) ?? 3;
+      return { segmented: true, active: 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), ...size };
+    },
+    toCode: (s) => {
+      const size = s.size === "sm" ? " small" : s.size === "lg" ? " large" : "";
+      if (s.variant === "split") return `<ButtonGroup split${size} items={["Save", "More"]} />`;
+      if (s.variant === "attached") return `<ButtonGroup segmented${size} active={-1} items={["‹", "Today", "›"]} />`;
+      const n = (s.buttons as number) ?? 3;
+      const items = ["Day", "Week", "Month", "Year", "All"].slice(0, n);
+      return `<ButtonGroup segmented${size} items={${JSON.stringify(items)}} />`;
+    },
   },
 
   badge: {
@@ -107,5 +141,75 @@ export const registry: Record<string, RegistryEntry> = {
           ? ` className="w-[${s.width}%]"`
           : ""
       } />`,
+  },
+
+  avatar: {
+    Component: Avatar as AnyComponent,
+    mapProps: (s) => ({
+      large: (s.size as number) >= 48,
+      small: (s.size as number) <= 28,
+      ring: s.ring === true,
+      src: s.variant === "single" ? undefined : "https://i.pravatar.cc/100",
+      name: ((s.initials as string) || "AO").slice(0, 2).toUpperCase(),
+    }),
+    toCode: (s) => {
+      const big = (s.size as number) >= 48;
+      const sm = (s.size as number) <= 28;
+      const sz = big ? " large" : sm ? " small" : "";
+      const r = s.ring === true ? " ring" : "";
+      const ini = ((s.initials as string) || "AO").slice(0, 2).toUpperCase();
+      return s.variant === "single"
+        ? `<Avatar${sz}${r}>${ini}</Avatar>`
+        : `<Avatar${sz}${r} src="https://i.pravatar.cc/100" name="${ini}" />`;
+    },
+  },
+
+  breadcrumb: {
+    Component: Breadcrumb as AnyComponent,
+    mapProps: (s) => ({
+      items: CRUMB_TRAIL.slice(0, (s.depth as number) ?? 4),
+      chevron: s.separator === "chevron",
+      slash: s.separator === "slash",
+      dot: s.separator === "dot",
+    }),
+    toCode: (s) => {
+      const trail = CRUMB_TRAIL.slice(0, (s.depth as number) ?? 4);
+      const sep = s.separator === "slash" ? " slash" : s.separator === "dot" ? " dot" : " chevron";
+      return `<Breadcrumb${sep} items={${JSON.stringify(trail)}} />`;
+    },
+  },
+
+  checkbox: {
+    Component: Checkbox as AnyComponent,
+    mapProps: (s) => ({
+      checked: s.state === "checked",
+      disabled: s.state === "disabled",
+      children: s.withDesc
+        ? `${s.label}: get notified when activity happens on your account.`
+        : s.label,
+    }),
+    toCode: (s) =>
+      `<Checkbox${s.state === "checked" ? " checked" : ""}${s.state === "disabled" ? " disabled" : ""}>${
+        s.withDesc ? `${s.label}: get notified when activity happens on your account.` : s.label
+      }</Checkbox>`,
+  },
+
+  radio: {
+    Component: Radio as AnyComponent,
+    mapProps: (s) => ({
+      checked: true,
+      small: s.variant === "inline",
+      children: s.withDesc ? "Pro, for growing teams that need more control." : "Pro",
+    }),
+    toCode: (s) =>
+      `<Radio checked${s.variant === "inline" ? " small" : ""}>${
+        s.withDesc ? "Pro, for growing teams that need more control." : "Pro"
+      }</Radio>`,
+  },
+
+  switch: {
+    Component: Switch as AnyComponent,
+    mapProps: (s) => ({ checked: s.state === "on", disabled: Boolean(s.disabled), children: s.label || undefined }),
+    toCode: (s) => `<Switch${s.state === "on" ? " checked" : ""}${s.disabled ? " disabled" : ""}>${s.label ?? ""}</Switch>`,
   },
 };
