@@ -1,27 +1,49 @@
 import { Link } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
+import { CodeBlock } from "@/components/code-block";
 import { COMPONENTS } from "@/data/components";
 import {
   Layers, CheckCircle, Copy, ChevronRight,
   Plus, Shield, AppWindow, Home as HomeIcon, Check,
 } from "lucide-react";
 
+// The styling API, shown before it is explained. Static illustrative JSX: the
+// home page is docs chrome (plain divs + inline styles), not live Canvas
+// components, so this is a syntax-highlighted snippet, not a rendered example.
+const API_SAMPLE = `import { Card, Field, Button } from "@olympusoss/canvas";
+
+function SaveBar({ saving }) {
+  return (
+    <Card glass compact>
+      <Field label="Workspace name" />
+      <Button primary large loading={saving} block>
+        Save changes
+      </Button>
+      <Button ghost small>Cancel</Button>
+      <Button destructive>Delete workspace</Button>
+    </Card>
+  );
+}`;
+
+const API_CAPTION =
+  "This is the entire styling API. Style props group into orthogonal axes (intent, size, surface, density): within an axis you pass at most one, across axes they stack freely. The same component, the same props, on iOS, Android, and web. No enum strings, no className soup, no platform forks.";
+
 const PRINCIPLES = [
   {
-    title: "Tokens first",
-    body: "Every value in the system is a token. No hex codes in components. Custom properties are the API, so theming is a single-property change.",
+    title: "Universal React Native",
+    body: "One codebase, one component API, every platform. Canvas renders natively on iOS and Android, and on the web through React Native Web. You write a screen once and ship it everywhere; the same Button and Card components run wherever your app runs, with no per-platform forks to maintain.",
   },
   {
-    title: "Utilities are the API",
-    body: "Components are Tailwind utility classes composed directly in markup, not bespoke CSS. The theme is the design language: change a token and every utility follows. The Tailwind engine is the build step you accept for the Tailwind API.",
+    title: "Responsive, desktop-first",
+    body: "Every component is highly responsive by default, authored desktop-first: lay out and size for the desktop case, then add responsive variants that scale it down to tablet and phone. This is the inverse of mobile-first. Breakpoint variants apply at a given width and below, so the smallest matching variant wins.",
   },
   {
-    title: "Dual surface",
-    body: "Every chrome surface can render solid or glass. Tokens stay the same; glass mode layers an aurora backdrop and backdrop-filter blur over the existing palette.",
+    title: "Semantic boolean props",
+    body: "Change a component's style with flat boolean props. Each style choice is its own prop, named for its meaning; passing the prop turns it on, so the prop name is the value. You write <Button primary large>, never <Button variant=\"primary\" size=\"lg\">. String-valued enum props (variant, size, tone, surface) are rejected. It reads like natural language.",
   },
   {
-    title: "Mobile equal",
-    body: "Every layout has a tested phone form. Sidebar becomes a drawer, dense grids stack, tables horizontal-scroll. No desktop-only excuse.",
+    title: "Tokens, themes, and atomic design",
+    body: "Built with atomic design (Atoms, Molecules, Organisms, plus Templates and Patterns), all driven by design tokens: light and dark color schemes, a glass surface mode, and density controls. Theming is a token change, not a rewrite. An in-house engine resolves it under the hood; the boolean props stay your only API.",
   },
 ];
 
@@ -30,7 +52,7 @@ const ATOMIC_LEVELS = [
     id: "tokens",
     label: "Tokens",
     icon: Layers,
-    blurb: "The lowest-level decisions: colors, typography, spacing, radii, shadows. Every component derives from these.",
+    blurb: "The lowest-level decisions: color schemes (light and dark), typography, spacing, radii, and density. Every component derives from these tokens, so theming is a token change, not a rewrite.",
     pages: [
       { label: "Colors & Theme", to: "/tokens" },
       { label: "Theming", to: "/theming" },
@@ -40,7 +62,7 @@ const ATOMIC_LEVELS = [
     id: "atoms",
     label: "Atoms",
     icon: Plus,
-    blurb: "Indivisible building blocks. One job each, every variant and state documented.",
+    blurb: "Indivisible building blocks like Button, Input, Badge, Icon, and Avatar. One job each, styled entirely through semantic boolean props, every state documented and identical on native and web.",
     pages: [
       { label: "Buttons", to: "/components/button" },
       { label: "Inputs", to: "/components/input" },
@@ -53,7 +75,7 @@ const ATOMIC_LEVELS = [
     id: "molecules",
     label: "Molecules",
     icon: Shield,
-    blurb: "Small compositions of atoms with a clear single purpose. Reusable across pages.",
+    blurb: "Small compositions of atoms with a single clear purpose: Card, Field, Empty State. Reusable across pages and built from the same boolean prop API.",
     pages: [
       { label: "Cards", to: "/components/card" },
       { label: "Field Display", to: "/components/field" },
@@ -64,7 +86,7 @@ const ATOMIC_LEVELS = [
     id: "organisms",
     label: "Organisms",
     icon: AppWindow,
-    blurb: "Self-contained sections of a page. Tables, navigation, overlays.",
+    blurb: "Self-contained sections of a screen: Data Table, Sidebar, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
     pages: [
       { label: "Data Tables", to: "/components/data-table" },
       { label: "Sidebar", to: "/components/sidebar" },
@@ -76,20 +98,22 @@ const ATOMIC_LEVELS = [
     id: "templates",
     label: "Templates",
     icon: HomeIcon,
-    blurb: "Full page compositions showing how the pieces assemble into product surfaces.",
+    blurb: "Full screen compositions showing how atoms, molecules, and organisms assemble into real product surfaces, from a dashboard to a sign-in flow.",
     pages: [
-      { label: "App Shell", to: "/components/app-shell" },
-      { label: "Page Header", to: "/components/page-header" },
+      { label: "Dashboard", to: "/templates/dashboard" },
+      { label: "Sign In", to: "/templates/signin" },
+      { label: "Settings", to: "/templates/settings" },
     ],
   },
   {
     id: "patterns",
     label: "Patterns",
     icon: Check,
-    blurb: "Cross-cutting concerns and treatments that span multiple components.",
+    blurb: "Cross-cutting treatments that span many components: responsive layout, glass surfaces, density, loading, form validation, and accessibility.",
     pages: [
-      { label: "Theming", to: "/theming" },
-      { label: "Browser Support", to: "/browser-support" },
+      { label: "Responsive", to: "/patterns/responsive" },
+      { label: "Glass", to: "/patterns/glass" },
+      { label: "Density", to: "/patterns/density" },
     ],
   },
 ];
@@ -108,7 +132,7 @@ export function Home() {
             letterSpacing: "0.12em",
             color: "var(--muted-foreground)",
           }}>
-            v4.0
+            v3.2.1 · @olympusoss/canvas
           </span>
         </div>
         <h1 style={{
@@ -120,24 +144,50 @@ export function Home() {
           color: "var(--foreground)",
           maxWidth: "48rem",
         }}>
-          A complete visual language:{" "}
-          <span style={{ color: "var(--primary)" }}>tokens</span>, components, patterns, and page templates.
+          One codebase.{" "}
+          <span style={{ color: "var(--primary)" }}>Every platform.</span>{" "}
+          One component API.
         </h1>
         <p style={{
           marginTop: "1rem",
-          maxWidth: "42rem",
+          maxWidth: "44rem",
           fontSize: "15px",
           lineHeight: 1.6,
           color: "var(--muted-foreground)",
         }}>
-          A working specification for any product you build.
-          {" "}{COMPONENTS.length} documented components, a Tailwind CSS v4 theme, light/dark mode,
-          glass surface, and density controls. Built on Tailwind, composed from utilities.
+          Canvas is a Universal React Native UI kit, published as{" "}
+          <code style={{ fontSize: "13px" }}>@olympusoss/canvas</code>. It runs natively on iOS and Android
+          and on the web through React Native Web, so the same components ship everywhere with no per-platform
+          forks. You style them with flat, semantic boolean props that read like a sentence, theme them from
+          design tokens, and watch all {COMPONENTS.length} components render live in the playground as real
+          React Native components. Read the snippet below; that is the whole API.
         </p>
         <div style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
-          <Link to="/components/button" className="btn btn-default">Browse all components</Link>
+          <Link to="/components" className="btn btn-default">Browse all components</Link>
           <Link to="/tokens" className="btn btn-outline">Start with tokens</Link>
         </div>
+      </section>
+
+      {/* The API, shown before it is told */}
+      <section style={{ marginBottom: "2.5rem" }}>
+        <div style={{
+          borderRadius: "var(--radius-lg, 12px)",
+          border: "1px solid var(--border)",
+          background: "var(--card)",
+          overflow: "hidden",
+        }}>
+          <CodeBlock code={API_SAMPLE} language="tsx" />
+        </div>
+        <p style={{
+          marginTop: "0.75rem",
+          marginBottom: 0,
+          maxWidth: "44rem",
+          fontSize: "13px",
+          lineHeight: 1.6,
+          color: "var(--muted-foreground)",
+        }}>
+          {API_CAPTION}
+        </p>
       </section>
 
       {/* Principles */}
@@ -168,7 +218,7 @@ export function Home() {
       {/* Atomic structure */}
       <Section
         title="Atomic structure"
-        description="The system follows atomic design. Every page in this site is one of six levels of abstraction."
+        description="The system follows atomic design. Every page in this site is one of six levels of abstraction, and every component renders as a real React Native component."
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {ATOMIC_LEVELS.map((lvl, i) => (
@@ -249,21 +299,21 @@ export function Home() {
             iconBg="rgb(59 130 246 / 0.1)"
             iconColor="#3b82f6"
             title="Reference"
-            body="Every token value, every component variant, every state. The single source of truth designers and engineers compare against."
+            body="Every token value, every component, every state, documented and rendered live as real React Native components. The single source of truth designers and engineers compare against, with the semantic boolean prop for each variation spelled out."
           />
           <FeatureCard
             icon={<CheckCircle size={18} />}
             iconBg="rgb(16 185 129 / 0.1)"
             iconColor="#10b981"
             title="Playground"
-            body="Toggle dark mode, glass surface, and density. See every page react live. Useful for evaluating brand options without rebuilding."
+            body={`Toggle dark mode, the glass surface, and density, then resize to watch each page respond desktop-first. All ${COMPONENTS.length} components render as real React Native components, so what you see is exactly what ships to native and web.`}
           />
           <FeatureCard
             icon={<Copy size={18} />}
             iconBg="rgb(139 92 246 / 0.1)"
             iconColor="#8b5cf6"
             title="Handoff"
-            body='Click "Show code" on any example to see the exact class string. Pair this with the integration guide for full implementation guidance.'
+            body="Click Show code on any example to see idiomatic JSX with its semantic boolean props, ready to paste. Pair it with the integration guide for end-to-end implementation across native and web."
           />
         </div>
       </Section>
@@ -281,10 +331,12 @@ export function Home() {
         flexWrap: "wrap",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <CanvasMark size={16} /> Canvas v4.0
+          <CanvasMark size={16} /> Canvas v3.2.1
         </div>
         <span style={{ display: "inline-block", margin: "0 0.25rem" }}>·</span>
-        <span>Tailwind CSS v4 · Utility-composed</span>
+        <span>@olympusoss/canvas</span>
+        <span style={{ display: "inline-block", margin: "0 0.25rem" }}>·</span>
+        <span>Universal React Native, native iOS and Android plus web</span>
       </footer>
     </div>
   );
