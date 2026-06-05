@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import {
+  ActionPanel,
   Alert,
   Avatar,
   Badge,
@@ -8,8 +9,13 @@ import {
   ButtonGroup,
   Card,
   Checkbox,
+  CodeBlock,
+  DescriptionList,
   Divider,
   EmptyState,
+  Field,
+  Fieldset,
+  Form,
   Input,
   InputGroup,
   Kbd,
@@ -464,5 +470,151 @@ export const registry: Record<string, RegistryEntry> = {
       const propLine = s.variant === "clickable" ? " clickable" : s.variant === "card" ? " card" : s.divider === false ? " flush" : "";
       return `<StackedList${propLine} items={members} />`;
     },
+  },
+
+  "code-block": {
+    Component: CodeBlock as AnyComponent,
+    mapProps: (s) => ({
+      code: 'const theme = getTheme();\nsetTheme(theme === "dark" ? "light" : "dark");',
+      filename: "theme.ts",
+      language: "ts",
+      terminal: s.variant === "terminal",
+      numbered: s.variant === "numbered",
+      inline: s.variant === "inline",
+      copy: !!s.copy,
+      wrap: !!s.wrap,
+    }),
+    toCode: (s) => {
+      const variantProp = s.variant === "plain" ? "" : ` ${s.variant}`;
+      const copyProp = s.copy && s.variant !== "inline" ? " copy" : "";
+      const wrapProp = s.wrap && s.variant !== "inline" ? " wrap" : "";
+      return `<CodeBlock${variantProp}${copyProp}${wrapProp} code={code} filename="theme.ts" language="ts" />`;
+    },
+  },
+
+  field: {
+    Component: Field as AnyComponent,
+    mapProps: (s) => ({
+      label: (s.mode === "basic" ? (s.label as string) : s.mode === "mono" ? "Client ID" : "Status") || "User ID",
+      helper: s.mode === "mono" ? "Fixed-width value for IDs and hashes." : "Shown on the public profile.",
+      placeholder: s.mode === "mono" ? "clt_8f2a9b4c7e1d" : "Rachel Chen",
+      required: s.mode === "basic",
+      className: "max-w-[400px]",
+    }),
+    toCode: (s) =>
+      `<Field${s.mode === "basic" ? " required" : ""} label="${s.mode === "basic" ? (s.label as string) || "User ID" : s.mode === "mono" ? "Client ID" : "Status"}" placeholder="${s.mode === "mono" ? "clt_8f2a9b4c7e1d" : "Rachel Chen"}" />`,
+  },
+
+  form: {
+    Component: Form as AnyComponent,
+    mapProps: (s) => ({
+      stacked: s.layout === "stacked",
+      twoColumn: s.layout === "two-column",
+      sidebar: s.layout === "sidebar",
+      fields:
+        s.layout === "two-column"
+          ? [
+              { label: "First name", placeholder: "Ada" },
+              { label: "Last name", placeholder: "King" },
+              { label: "Email", placeholder: "ada@example.com" },
+            ]
+          : s.layout === "sidebar"
+            ? [
+                { label: "Full name", placeholder: "Rachel Chen", helper: "Displayed on your public profile." },
+                { label: "Email", placeholder: "rachel@example.com", helper: "Used for sign-in and receipts." },
+              ]
+            : [
+                { label: "Email", placeholder: "you@example.com" },
+                { label: "Password" },
+              ],
+      submitLabel: s.layout === "two-column" ? "Create" : "Sign in",
+      cancelLabel: s.layout === "two-column" ? "Cancel" : undefined,
+      className: s.layout === "two-column" ? "max-w-[560px]" : s.layout === "sidebar" ? "max-w-[720px]" : "max-w-[360px]",
+    }),
+    toCode: (s) => {
+      const layout = s.layout === "two-column" ? "twoColumn" : s.layout === "sidebar" ? "sidebar" : "stacked";
+      return `<Form ${layout} fields={fields} submitLabel="${s.layout === "two-column" ? "Create" : "Sign in"}" />`;
+    },
+  },
+
+  fieldset: {
+    Component: Fieldset as AnyComponent,
+    mapProps: (s) => ({
+      legend: s.legend ? (s.content === "checkboxes" ? "Email notifications" : "Shipping details") : undefined,
+      description: s.description
+        ? s.content === "checkboxes"
+          ? "Choose what we email you about."
+          : "Where should we send your order?"
+        : undefined,
+      disabled: s.disabled,
+      error: s.content === "fields" && s.error,
+      twoColumn: s.content === "fields" && s.columns === "2",
+      checkboxes:
+        s.content === "checkboxes"
+          ? [
+              { label: "Product updates", checked: true },
+              { label: "Security alerts", checked: true },
+              { label: "Weekly digest", checked: false },
+            ]
+          : undefined,
+      items:
+        s.content === "fields"
+          ? [
+              { label: "Full name", placeholder: "Ada Lovelace" },
+              { label: "Email", placeholder: "ada@example.com", helper: "We'll only use this for order updates." },
+              { label: "Country", placeholder: "United States" },
+            ]
+          : undefined,
+    }),
+    toCode: (s) => {
+      const flags = [
+        s.content === "fields" && s.columns === "2" ? "twoColumn" : null,
+        s.content === "fields" && s.error ? "error" : null,
+        s.disabled ? "disabled" : null,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const legendAttr = s.legend ? ` legend="${s.content === "checkboxes" ? "Email notifications" : "Shipping details"}"` : "";
+      return `<Fieldset${legendAttr}${flags ? " " + flags : ""} items={fields} />`;
+    },
+  },
+
+  "action-panels": {
+    Component: ActionPanel as AnyComponent,
+    mapProps: (s) => ({
+      title: (s.title as string) || (s.variant === "side-by-side" ? "Discard unsaved changes?" : "Delete this project"),
+      description:
+        s.variant === "side-by-side"
+          ? "You have unsaved edits in this form. Leaving now will lose all progress."
+          : "Once you delete a project, there is no going back. Please be certain.",
+      actionLabel:
+        s.destructive === true
+          ? s.variant === "side-by-side"
+            ? "Discard"
+            : "Delete project"
+          : s.variant === "side-by-side"
+            ? "Save"
+            : "Save changes",
+      destructive: s.destructive === true,
+      inline: s.variant === "side-by-side",
+    }),
+    toCode: (s) =>
+      `<ActionPanel${s.destructive === true ? " destructive" : ""}${s.variant === "side-by-side" ? " inline" : ""} title="${(s.title as string) || (s.variant === "side-by-side" ? "Discard unsaved changes?" : "Delete this project")}" actionLabel="${s.destructive === true ? (s.variant === "side-by-side" ? "Discard" : "Delete project") : (s.variant === "side-by-side" ? "Save" : "Save changes")}" />`,
+  },
+
+  "description-lists": {
+    Component: DescriptionList as AnyComponent,
+    mapProps: (s) => ({
+      items: [
+        { term: "Full name", value: "Rachel Chen" },
+        { term: "Email", value: "rachel.chen@example.com" },
+        { term: "Role", value: "admin" },
+        { term: "Status", value: "Active" },
+      ],
+      card: true,
+      inline: s.variant === "two-column" || s.variant === "inline-edit",
+      divided: s.variant === "two-column" || s.variant === "inline-edit",
+    }),
+    toCode: (s) => `<DescriptionList items={details} card${s.variant === "stacked" ? "" : " inline divided"} />`,
   },
 };
