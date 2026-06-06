@@ -187,12 +187,13 @@ export const registry: Record<string, RegistryEntry> = {
   "button-group": {
     name: "ButtonGroup",
     Component: ButtonGroup as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const size = s.size === "sm" ? { small: true } : s.size === "lg" ? { large: true } : {};
-      if (s.variant === "split") return { split: true, items: ["Save", "More"], ...size };
-      if (s.variant === "attached") return { segmented: true, active: -1, items: ["‹", "Today", "›"], ...size };
+      const fireItem = (_i: number, item: string) => demo?.fire(item);
+      if (s.variant === "split") return { split: true, items: ["Save", "More"], onSelect: fireItem, ...size };
+      if (s.variant === "attached") return { segmented: true, active: -1, items: ["‹", "Today", "›"], onSelect: fireItem, ...size };
       const n = (s.buttons as number) ?? 3;
-      return { segmented: true, active: 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), ...size };
+      return { segmented: true, active: (s.demoSeg as number) ?? 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), onSelect: (i: number) => demo?.set("demoSeg", i), ...size };
     },
   },
 
@@ -262,12 +263,14 @@ export const registry: Record<string, RegistryEntry> = {
   breadcrumb: {
     name: "Breadcrumb",
     Component: Breadcrumb as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       items: CRUMB_TRAIL.slice(0, (s.depth as number) ?? 4),
       chevron: s.separator === "chevron",
       slash: s.separator === "slash",
       dot: s.separator === "dot",
       homeIcon: Boolean(s.homeIcon),
+      // Demo: clicking a crumb flashes where it would navigate.
+      onItemPress: (label: string) => demo?.fire("→ " + label),
     }),
   },
 
@@ -374,9 +377,9 @@ export const registry: Record<string, RegistryEntry> = {
   pagination: {
     name: "Pagination",
     Component: Pagination as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const total = s.totalPages as number;
-      const page = Math.min(s.currentPage as number, total);
+      const page = Math.min(((s.demoPage as number) ?? (s.currentPage as number)), total);
       const variant = s.variant as string;
       return {
         page,
@@ -385,8 +388,8 @@ export const registry: Record<string, RegistryEntry> = {
         withSize: variant === "with-size",
         pageSize: 10,
         pageSizes: [10, 25, 50],
-        onChange: () => {},
-        onPageSizeChange: () => {},
+        onChange: (p: number) => demo?.set("demoPage", p),
+        onPageSizeChange: (sz: number) => demo?.fire("Rows per page: " + sz),
       };
     },
   },
@@ -489,7 +492,7 @@ export const registry: Record<string, RegistryEntry> = {
   "stacked-lists": {
     name: "StackedList",
     Component: StackedList as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const twoLine = [
         { name: "Rachel Chen", detail: "rachel.chen@example.com", meta: "admin" },
         { name: "Ada Lovelace", detail: "ada@example.com", meta: "editor" },
@@ -514,6 +517,8 @@ export const registry: Record<string, RegistryEntry> = {
         title: isCard ? "Team members" : undefined,
         addAction: isCard ? "Add" : undefined,
         rowMenu: isCard,
+        onPressItem: (i: number) => demo?.fire("Row " + (i + 1)),
+        onPressItemMenu: (i: number) => demo?.fire("Row menu " + (i + 1)),
       };
     },
   },
@@ -747,7 +752,7 @@ export const registry: Record<string, RegistryEntry> = {
   tabs: {
     name: "Tabs",
     Component: Tabs as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const labelled = [
         { label: "All", badge: "142" },
         { label: "Active", badge: "89" },
@@ -764,8 +769,8 @@ export const registry: Record<string, RegistryEntry> = {
         pills: isPill,
         vertical: isVertical,
         tabs: isPill ? pills : isVertical ? verticalTabs : useBadges ? labelled : plain,
-        active: 0,
-        onChange: () => {},
+        active: (s.demoTab as number) ?? 0,
+        onChange: (i: number) => demo?.set("demoTab", i),
       };
     },
   },
@@ -835,10 +840,12 @@ export const registry: Record<string, RegistryEntry> = {
   navbars: {
     name: "Navbar",
     Component: Navbar as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       brand: "Canvas",
       links: ["Dashboard", "Users", "Settings"],
-      active: 0,
+      active: (s.demoNav as number) ?? 0,
+      onSelect: (i: number) => demo?.set("demoNav", i),
+      onAction: () => demo?.fire("New"),
       actionLabel: s.layout === "search" ? undefined : "New",
       avatar: "RC",
       bordered: s.layout !== "mobile",
@@ -864,14 +871,15 @@ export const registry: Record<string, RegistryEntry> = {
   calendar: {
     name: "Calendar",
     Component: Calendar as AnyComponent,
-    mapProps: () => ({ month: "May 2026", today: 23, selected: 24, daysInMonth: 31, startWeekday: 4 }),
+    mapProps: (s, demo) => ({ month: "May 2026", today: 23, selected: (s.demoDay as number) ?? 24, onSelect: (d: number) => demo?.set("demoDay", d), daysInMonth: 31, startWeekday: 4 }),
   },
 
   sidebar: {
     name: "Sidebar",
     Component: Sidebar as AnyComponent,
-    mapProps: (s) => ({
-      active: "Dashboard",
+    mapProps: (s, demo) => ({
+      active: (s.demoSide as string) ?? "Dashboard",
+      onSelect: (item: { label: string }) => demo?.set("demoSide", item.label),
       sections: [
         {
           title: s.groupLabels ? "Main" : undefined,
@@ -1098,7 +1106,7 @@ export const registry: Record<string, RegistryEntry> = {
   listbox: {
     name: "Listbox",
     Component: Listbox as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const items = s.withIcon
         ? [
             { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
@@ -1114,10 +1122,28 @@ export const registry: Record<string, RegistryEntry> = {
             { label: "Security" },
           ];
       const multi = s.mode === "multi";
-      const selectedItems = multi ? items.map((it, i) => ({ ...it, selected: i === 0 || i === 2 })) : items;
+      let selectedItems;
+      if (multi) {
+        const picks = (s.demoMulti as number[]) ?? [0, 2];
+        selectedItems = items.map((it, i) => ({ ...it, selected: picks.includes(i) }));
+      } else {
+        const fallback = items.findIndex((it) => it.selected);
+        const sel = (s.demoSel as number) ?? (fallback < 0 ? 0 : fallback);
+        selectedItems = items.map((it, i) => ({ ...it, selected: i === sel }));
+      }
+      // Demo: clicking a row moves the selection (single) or toggles it (multi).
+      const onSelect = (i: number) => {
+        if (multi) {
+          const cur = (demo?.state.demoMulti as number[]) ?? [0, 2];
+          demo?.set("demoMulti", cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]);
+        } else {
+          demo?.set("demoSel", i);
+        }
+      };
       return {
         items: selectedItems,
         multi,
+        onSelect,
         bordered: true,
         small: s.size === "sm",
         large: s.size === "lg",
@@ -1129,10 +1155,8 @@ export const registry: Record<string, RegistryEntry> = {
   "filter-panel": {
     name: "FilterPanel",
     Component: FilterPanel as AnyComponent,
-    mapProps: () => ({
-      bordered: true,
-      activeCount: 2,
-      groups: [
+    mapProps: (s, demo) => {
+      const base = [
         {
           title: "Status",
           options: [
@@ -1155,8 +1179,24 @@ export const registry: Record<string, RegistryEntry> = {
             { label: "Disabled", count: "58" },
           ],
         },
-      ],
-    }),
+      ];
+      // Demo: clicking an option toggles its checkbox (controlled via demo state).
+      let activeCount = 0;
+      const groups = base.map((g, gi) => ({
+        ...g,
+        options: g.options.map((o, oi) => {
+          const checked = (s[`flt-${gi}-${oi}`] as boolean) ?? Boolean((o as { checked?: boolean }).checked);
+          if (checked) activeCount++;
+          return { ...o, checked };
+        }),
+      }));
+      return {
+        bordered: true,
+        activeCount,
+        groups,
+        onChange: (gi: number, oi: number, next: boolean) => demo?.set(`flt-${gi}-${oi}`, next),
+      };
+    },
   },
 
   overlays: {

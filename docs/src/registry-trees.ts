@@ -148,7 +148,7 @@ export const TREES: Record<string, TreeFn> = {
   return null;
 },
 
-  breadcrumb: (s) => {
+  breadcrumb: (s, demo) => {
   if (s.pageHeader === true) {
     return {
       type: "Box",
@@ -163,7 +163,7 @@ export const TREES: Record<string, TreeFn> = {
               children: [
                 {
                   type: "Breadcrumb",
-                  props: { items: ["Users", "Rachel Chen"] },
+                  props: { items: ["Users", "Rachel Chen"], onItemPress: (label: string) => demo?.fire("→ " + label) },
                 },
               ],
             },
@@ -178,8 +178,8 @@ export const TREES: Record<string, TreeFn> = {
           type: "Box",
           props: { className: "flex-row items-center gap-2" },
           children: [
-            { type: "Button", props: { outline: true, small: true }, children: "Edit" },
-            { type: "Button", props: { primary: true, small: true }, children: "Save" },
+            { type: "Button", props: { outline: true, small: true, onPress: () => demo?.fire("Edit") }, children: "Edit" },
+            { type: "Button", props: { primary: true, small: true, onPress: () => demo?.fire("Save") }, children: "Save" },
           ],
         },
       ],
@@ -188,7 +188,7 @@ export const TREES: Record<string, TreeFn> = {
   return null;
 },
 
-  calendar: (s) => {
+  calendar: (s, demo) => {
   if (s.variant === "events") {
     const events = [
       { title: "Sprint planning", time: "9:00 AM" },
@@ -204,7 +204,8 @@ export const TREES: Record<string, TreeFn> = {
           props: {
             month: "May 2026",
             today: 23,
-            selected: 24,
+            selected: (s.demoDay as number) ?? 24,
+            onSelect: (d: number) => demo?.set("demoDay", d),
             daysInMonth: 31,
             startWeekday: 4,
           },
