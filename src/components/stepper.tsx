@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { Box, Pressable, Text } from "../engine/index.js";
 
 // Stepper: an ordered list of steps showing progress through a flow. Each step
 // is a numbered circle (or a check once completed) with a label, and the steps
@@ -30,6 +30,8 @@ export interface StepperProps {
   value?: number;
   /** Progress mode only: caption shown left of the percentage. */
   label?: string;
+  /** When set, each step circle is pressable, reporting the step index. */
+  onStepPress?: (index: number) => void;
   className?: string;
 }
 
@@ -81,18 +83,24 @@ function connectorBg(done: boolean): string {
   return done ? "bg-primary" : "bg-border";
 }
 
-function Circle({ index, state }: { index: number; state: State }) {
-  return (
-    <Box className={cn(CIRCLE_BASE, CIRCLE_STATE[state])}>
-      <Text className={cn(GLYPH_BASE, GLYPH_STATE[state])}>
-        {state === "completed" ? "✓" : String(index + 1)}
-      </Text>
-    </Box>
+function Circle({ index, state, onPress }: { index: number; state: State; onPress?: () => void }) {
+  const glyph = (
+    <Text className={cn(GLYPH_BASE, GLYPH_STATE[state])}>
+      {state === "completed" ? "✓" : String(index + 1)}
+    </Text>
   );
+  if (onPress) {
+    return (
+      <Pressable className={cn(CIRCLE_BASE, CIRCLE_STATE[state], "active:opacity-90")} onPress={onPress} accessibilityRole="button">
+        {glyph}
+      </Pressable>
+    );
+  }
+  return <Box className={cn(CIRCLE_BASE, CIRCLE_STATE[state])}>{glyph}</Box>;
 }
 
 export function Stepper(props: StepperProps) {
-  const { steps, current, value, label, className } = props;
+  const { steps, current, value, label, onStepPress, className } = props;
   const layout = layoutOf(props);
 
   if (layout === "progress") {
@@ -124,7 +132,7 @@ export function Stepper(props: StepperProps) {
           return (
             <Box key={i} className="flex-row gap-3">
               <Box className="items-center">
-                <Circle index={i} state={state} />
+                <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
                 {!isLast ? (
                   <Box
                     className={cn(
@@ -160,7 +168,7 @@ export function Stepper(props: StepperProps) {
         return (
           <Box key={i} className={cn("flex-row items-start", !isLast && "flex-1")}>
             <Box className="items-center gap-1.5">
-              <Circle index={i} state={state} />
+              <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
               <Text className={cn("text-xs font-medium", LABEL_STATE[state])}>
                 {step.label}
               </Text>

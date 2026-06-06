@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { Box, Pressable, Text } from "../engine/index.js";
 
 // Card: a surface container. The base surface gives you the border, radius, and
 // shadow; you bring the content. Structure is composed from the subcomponents
@@ -43,6 +43,8 @@ export interface CardProps {
   // Interaction and padding (orthogonal booleans).
   interactive?: boolean;
   padded?: boolean;
+  /** When set, the whole card becomes pressable (a card that behaves as a control). */
+  onPress?: () => void;
   // Density (pick one; default is the standard inset). Scales the card's own
   // content padding and the gap between flat children.
   compact?: boolean;
@@ -95,7 +97,7 @@ const CARD_DENSITY: Record<Density, string> = {
 };
 
 export function Card(props: CardProps) {
-  const { children, title, description, body, footer, interactive, padded, className } = props;
+  const { children, title, description, body, footer, interactive, padded, onPress, className } = props;
   const surface = surfaceOf(props);
   const elevation = elevationOf(props);
   const density = densityOf(props);
@@ -104,22 +106,26 @@ export function Card(props: CardProps) {
     CARD_BASE,
     CARD_SURFACE[surface],
     CARD_ELEVATION[elevation],
-    interactive && "active:opacity-90",
+    (interactive || onPress) && "active:opacity-90",
     // Density pads + gaps on its own and wins over `padded`; otherwise `padded`
     // applies the standard inset, and a bare card stays unpadded for composition.
     density !== "default" ? CARD_DENSITY[density] : padded && "p-6",
     className,
   );
 
+  // A pressable card swaps Box for Pressable; otherwise it is a plain surface.
+  const Wrapper = onPress ? Pressable : Box;
+  const wrapperProps = onPress ? { onPress, accessibilityRole: "button" as const } : {};
+
   // Children win: when composed, render exactly what the caller passed.
   if (children != null) {
-    return <Box className={container}>{children}</Box>;
+    return <Wrapper className={container} {...wrapperProps}>{children}</Wrapper>;
   }
 
   // Otherwise build a representative structure from the simple string props.
   const hasHeader = title != null || description != null;
   return (
-    <Box className={container}>
+    <Wrapper className={container} {...wrapperProps}>
       {hasHeader ? (
         <CardHeader>
           {title != null ? <CardTitle>{title}</CardTitle> : null}
@@ -140,7 +146,7 @@ export function Card(props: CardProps) {
           </CardFooter>
         </>
       ) : null}
-    </Box>
+    </Wrapper>
   );
 }
 

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { Box, Pressable, Text } from "../engine/index.js";
 
 // A bordered banner that surfaces an inline notification: a leading icon glyph,
 // a bold title, and a description. Configured by a tone axis (info / success /
@@ -23,6 +23,10 @@ export interface AlertProps {
   success?: boolean;
   warning?: boolean;
   error?: boolean;
+  /** Shows a trailing dismiss control. */
+  dismissible?: boolean;
+  /** Fired when the dismiss control is pressed. */
+  onDismiss?: () => void;
   children?: ReactNode;
   className?: string;
 }
@@ -73,7 +77,7 @@ const BODY: Record<Tone, string> = {
 };
 
 export function Alert(props: AlertProps) {
-  const { title, description, icon, children, className } = props;
+  const { title, description, icon, children, dismissible, onDismiss, className } = props;
   const tone = toneOf(props);
 
   return (
@@ -90,6 +94,16 @@ export function Alert(props: AlertProps) {
         ) : null}
         {children}
       </Box>
+      {dismissible ? (
+        <Pressable
+          onPress={onDismiss}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss"
+          className="-mr-1 -mt-0.5 h-6 w-6 items-center justify-center rounded-md active:opacity-70"
+        >
+          <Text className={cn("text-base leading-none", ICON[tone])}>×</Text>
+        </Pressable>
+      ) : null}
     </Box>
   );
 }

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { Box, Pressable, Text } from "../engine/index.js";
 import { Checkbox } from "./checkbox.js";
 
 // The data table lays a grid out as flex rows of equal-width flex-1 cells (the
@@ -28,6 +28,8 @@ export interface DataTableProps {
   compact?: boolean;
   /** Prepend a leading checkbox column (header gets an empty selector cell). */
   selectable?: boolean;
+  /** When set, each data row is pressable, reporting the row data and index. */
+  onRowPress?: (row: string[], index: number) => void;
   className?: string;
 }
 
@@ -55,7 +57,7 @@ const CELL_PAD: Record<Density, string> = {
 const SELECT_COL = "w-10 items-center justify-center";
 
 export function DataTable(props: DataTableProps) {
-  const { columns, rows, striped, bordered, selectable, className } = props;
+  const { columns, rows, striped, bordered, selectable, onRowPress, className } = props;
   const density = densityOf(props);
 
   const wrap = cn(
@@ -84,20 +86,29 @@ export function DataTable(props: DataTableProps) {
           </Text>
         ))}
       </Box>
-      {rows.map((row, r) => (
-        <Box key={`r-${r}`} className={dataRow(r)}>
-          {selectable ? (
-            <Box className={cn(SELECT_COL, "flex-none", CELL_PAD[density])}>
-              <Checkbox />
-            </Box>
-          ) : null}
-          {columns.map((_col, c) => (
-            <Box key={`c-${r}-${c}`} className={cn("flex-1", CELL_PAD[density])}>
-              <Text className="text-sm text-foreground">{cellOf(row, c)}</Text>
-            </Box>
-          ))}
-        </Box>
-      ))}
+      {rows.map((row, r) => {
+        const cells = (
+          <>
+            {selectable ? (
+              <Box className={cn(SELECT_COL, "flex-none", CELL_PAD[density])}>
+                <Checkbox />
+              </Box>
+            ) : null}
+            {columns.map((_col, c) => (
+              <Box key={`c-${r}-${c}`} className={cn("flex-1", CELL_PAD[density])}>
+                <Text className="text-sm text-foreground">{cellOf(row, c)}</Text>
+              </Box>
+            ))}
+          </>
+        );
+        return onRowPress ? (
+          <Pressable key={`r-${r}`} className={cn(dataRow(r), "active:bg-accent")} onPress={() => onRowPress(row, r)}>
+            {cells}
+          </Pressable>
+        ) : (
+          <Box key={`r-${r}`} className={dataRow(r)}>{cells}</Box>
+        );
+      })}
     </Box>
   );
 }

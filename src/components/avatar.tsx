@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { Image, type ImageStyle } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Text, useStyles } from "../engine/index.js";
+import { Box, Pressable, Text, useStyles } from "../engine/index.js";
 
 // The avatar shows an account's photo when it has one, falling back to one or
 // two initials on a muted surface. It is a circle by default (the consistent
@@ -30,6 +30,8 @@ export interface AvatarProps {
   rounded?: boolean;
   /** Separator outline, for avatars that overlap in a stack. */
   ring?: boolean;
+  /** When set, the avatar becomes pressable (e.g. a topbar account trigger). */
+  onPress?: () => void;
   className?: string;
 }
 
@@ -82,7 +84,7 @@ function initialsFrom(text: string): string {
 }
 
 export function Avatar(props: AvatarProps) {
-  const { src, uri, name, children, ring, className } = props;
+  const { src, uri, name, children, ring, onPress, className } = props;
   const size = sizeOf(props);
   const shape = shapeOf(props);
   const photo = src ?? uri;
@@ -94,6 +96,7 @@ export function Avatar(props: AvatarProps) {
     // The engine has no ring-* utility; a 2px background-colored border is the
     // RN-supported equivalent of ring-2 ring-background for stacked separation.
     ring && "border-2 border-background",
+    onPress && "active:opacity-90",
     className,
   );
 
@@ -102,26 +105,29 @@ export function Avatar(props: AvatarProps) {
   // it to the circle (RN clips children to a parent's borderRadius).
   const imageStyle = useStyles(cn("w-full h-full", SHAPE_RADIUS[shape]));
 
+  let inner: ReactNode;
   if (photo) {
-    return (
-      <Box className={container}>
-        <Image
-          source={{ uri: photo }}
-          accessibilityLabel={name}
-          resizeMode="cover"
-          style={imageStyle as unknown as ImageStyle}
-        />
-      </Box>
+    inner = (
+      <Image
+        source={{ uri: photo }}
+        accessibilityLabel={name}
+        resizeMode="cover"
+        style={imageStyle as unknown as ImageStyle}
+      />
     );
+  } else {
+    const source = name ?? (typeof children === "string" ? children : "");
+    const initials = source ? initialsFrom(source) : "";
+    const label = cn("font-medium text-muted-foreground", SIZE_LABEL[size]);
+    inner = initials ? <Text className={label}>{initials}</Text> : null;
   }
 
-  const source = name ?? (typeof children === "string" ? children : "");
-  const initials = source ? initialsFrom(source) : "";
-  const label = cn("font-medium text-muted-foreground", SIZE_LABEL[size]);
-
-  return (
-    <Box className={container}>
-      {initials ? <Text className={label}>{initials}</Text> : null}
-    </Box>
-  );
+  if (onPress) {
+    return (
+      <Pressable className={container} onPress={onPress} accessibilityRole="button">
+        {inner}
+      </Pressable>
+    );
+  }
+  return <Box className={container}>{inner}</Box>;
 }

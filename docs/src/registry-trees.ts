@@ -251,7 +251,7 @@ export const TREES: Record<string, TreeFn> = {
   return null;
 },
 
-  card: (s) => {
+  card: (s, demo) => {
   if (s.type === "stat") {
     const tone = (s.tone) || "blue";
     const toneClass = {
@@ -286,7 +286,7 @@ export const TREES: Record<string, TreeFn> = {
     };
     return {
       type: "Card",
-      props: { className: "w-[280px] p-5" },
+      props: { className: "w-[280px] p-5", onPress: () => demo?.fire("Card pressed") },
       children: row,
     };
   }

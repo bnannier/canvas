@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { Box, Pressable, Text } from "../engine/index.js";
 import { Avatar } from "./avatar.js";
 
 // An activity feed is a vertical timeline of events. Each item is a row with a
@@ -42,6 +42,8 @@ export interface FeedProps {
   avatar?: boolean;
   // Density modifier: tightens the row padding and connector spacing.
   compact?: boolean;
+  /** When set, each event row is pressable, reporting the row index. */
+  onItemPress?: (index: number) => void;
   className?: string;
 }
 
@@ -75,10 +77,15 @@ const TIME_LABEL = "text-xs text-muted-foreground";
 const NODE_BASE = "h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card";
 
 export function Feed(props: FeedProps) {
-  const { items = [], className } = props;
+  const { items = [], onItemPress, className } = props;
   const lead = leadOf(props);
   const compact = !!props.compact;
   const lastIndex = items.length - 1;
+
+  // A pressable feed swaps each row's Box for a Pressable that reports its index.
+  const RowComp = onItemPress ? Pressable : Box;
+  const rowExtra = (index: number) =>
+    onItemPress ? { onPress: () => onItemPress(index), accessibilityRole: "button" as const } : {};
 
   const renderContent = (item: FeedItem) => (
     <Box className="flex-1">
@@ -98,12 +105,12 @@ export function Feed(props: FeedProps) {
     const rows = items.map((item, index) => {
       const divider = index < lastIndex && "border-b border-border";
       return (
-        <Box key={index} className={cn("flex-row items-start gap-3", rowPad, divider)}>
+        <RowComp key={index} className={cn("flex-row items-start gap-3", rowPad, divider, onItemPress && "active:bg-accent")} {...rowExtra(index)}>
           <Avatar src={item.avatar} name={item.actor}>
             {item.actor ? initialsFrom(item.actor) : ""}
           </Avatar>
           {renderContent(item)}
-        </Box>
+        </RowComp>
       );
     });
     return <Box className={cn(CARD_SURFACE, className)}>{rows}</Box>;
@@ -116,7 +123,7 @@ export function Feed(props: FeedProps) {
   const rows = items.map((item, index) => {
     const isLast = index === lastIndex;
     return (
-      <Box key={index} className={cn("relative flex-row gap-3", !isLast && rowGap)}>
+      <RowComp key={index} className={cn("relative flex-row gap-3", !isLast && rowGap, onItemPress && "active:bg-accent")} {...rowExtra(index)}>
         {!isLast ? (
           // Vertical connector: a 1px border-colored line running from just below
           // the node down to the next row. Absolutely placed under the node's
@@ -134,7 +141,7 @@ export function Feed(props: FeedProps) {
           )}
         </Box>
         <Box className="flex-1 pt-0.5">{renderContent(item)}</Box>
-      </Box>
+      </RowComp>
     );
   });
 

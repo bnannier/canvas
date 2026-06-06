@@ -251,12 +251,13 @@ export const registry: Record<string, RegistryEntry> = {
   avatar: {
     name: "Avatar",
     Component: Avatar as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       large: (s.size as number) >= 48,
       small: (s.size as number) <= 28,
       ring: s.ring === true,
       src: s.variant === "single" ? undefined : "https://i.pravatar.cc/100",
       name: ((s.initials as string) || "AO").slice(0, 2).toUpperCase(),
+      onPress: () => demo?.fire("Avatar"),
     }),
   },
 
@@ -403,30 +404,31 @@ export const registry: Record<string, RegistryEntry> = {
   card: {
     name: "Card",
     Component: Card as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const type = s.type as string;
+      const onPress = () => demo?.fire("Card pressed");
       if (type === "generic") {
-        return { padded: true, title: "Anything goes here", body: "The card surface gives you the border, radius, and shadow. You bring the content." };
+        return { padded: true, onPress, title: "Anything goes here", body: "The card surface gives you the border, radius, and shadow. You bring the content." };
       }
       if (type === "section") {
         return s.header
-          ? { title: "Recent activity", body: "A labeled content surface. Drop fields, a list, or any module of content here." }
-          : { body: "A labeled content surface. Drop fields, a list, or any module of content here." };
+          ? { onPress, title: "Recent activity", body: "A labeled content surface. Drop fields, a list, or any module of content here." }
+          : { onPress, body: "A labeled content surface. Drop fields, a list, or any module of content here." };
       }
-      return { padded: true, title: s.label as string, body: `${s.value} (+142 today)` };
+      return { padded: true, onPress, title: s.label as string, body: `${s.value} (+142 today)` };
     },
   },
 
   alert: {
     name: "Alert",
     Component: Alert as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const v = s.variant as string;
       const tone = v === "destructive" ? "error" : v;
       const titles: Record<string, string> = { info: "Heads up", success: "All set", warning: "Action required", destructive: "Something went wrong" };
       const descs: Record<string, string> = { info: "Maintenance window scheduled for Sunday 2:00 UTC.", success: "Your changes have been saved successfully.", warning: "Your trial expires in 3 days.", destructive: "Could not save your changes. Please try again." };
       const glyphs: Record<string, string> = { info: "ℹ", success: "✓", warning: "⚠", destructive: "✕" };
-      return { [tone]: true, icon: glyphs[v], title: s.title ? titles[v] : undefined, description: descs[v] };
+      return { [tone]: true, icon: glyphs[v], title: s.title ? titles[v] : undefined, description: descs[v], dismissible: true, onDismiss: () => demo?.fire("Dismissed") };
     },
   },
 
@@ -778,14 +780,15 @@ export const registry: Record<string, RegistryEntry> = {
   stepper: {
     name: "Stepper",
     Component: Stepper as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       steps: [
         { label: "Account", description: "Email verified and password set." },
         { label: "Profile", description: "Add your name and avatar." },
         { label: "Review", description: "Invite collaborators to your workspace." },
         { label: "Done", description: "You're all set." },
       ],
-      current: 1,
+      current: (s.demoStep as number) ?? 1,
+      onStepPress: (i: number) => demo?.set("demoStep", i),
       vertical: s.type === "Vertical",
       progress: s.type === "Progress bar",
       value: s.progress as number,
@@ -796,7 +799,7 @@ export const registry: Record<string, RegistryEntry> = {
   feeds: {
     name: "Feed",
     Component: Feed as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const items =
         s.variant === "avatar"
           ? [
@@ -809,7 +812,7 @@ export const registry: Record<string, RegistryEntry> = {
               { actor: "Ada Lovelace", action: "updated the description", time: "5 hours ago" },
               { actor: "System", action: "created the project", time: "3 days ago" },
             ];
-      return { connector: s.variant === "connector", avatar: s.variant === "avatar", items };
+      return { connector: s.variant === "connector", avatar: s.variant === "avatar", items, onItemPress: (i: number) => demo?.fire("Event " + (i + 1)) };
     },
   },
 
@@ -855,7 +858,7 @@ export const registry: Record<string, RegistryEntry> = {
   "data-table": {
     name: "DataTable",
     Component: DataTable as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       columns: ["Name", "Email", "Role", "Status"],
       rows: [
         ["Alice Johnson", "alice@example.com", "Admin", "Active"],
@@ -865,6 +868,7 @@ export const registry: Record<string, RegistryEntry> = {
       bordered: true,
       compact: s.density === "compact",
       selectable: s.variant === "bulk",
+      onRowPress: (row: string[]) => demo?.fire("Row: " + row[0]),
     }),
   },
 
