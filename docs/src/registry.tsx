@@ -435,13 +435,13 @@ export const registry: Record<string, RegistryEntry> = {
   "empty-state": {
     name: "EmptyState",
     Component: EmptyState as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const v = s.variant as string;
       const icons: Record<string, string> = { search: "🔍", users: "👥", files: "📄", activity: "📈", notifications: "🔔", errors: "✅", "all-clear": "✅" };
       const titles: Record<string, string> = { search: "No results found", users: "No users", files: "No files", activity: "No activity", notifications: "All caught up", errors: "No errors", "all-clear": "All clear" };
       const descs: Record<string, string> = { search: "Try adjusting your search filters.", users: "Invite your first team member.", files: "Upload or drag files here.", activity: "Events will appear as they happen.", notifications: "No new notifications.", errors: "Everything is running smoothly.", "all-clear": "No locked accounts or pending reviews." };
       const positive = v === "errors" || v === "all-clear";
-      return { icon: icons[v], title: titles[v], description: descs[v], actionLabel: s.action ? "Create identity" : undefined, positive, bordered: true, compact: Boolean(s.inTable) };
+      return { icon: icons[v], title: titles[v], description: descs[v], actionLabel: s.action ? "Create identity" : undefined, onAction: () => demo?.fire("Create identity"), positive, bordered: true, compact: Boolean(s.inTable) };
     },
   },
 

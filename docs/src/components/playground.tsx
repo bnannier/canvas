@@ -81,6 +81,14 @@ export function Playground({ config, slug }: PlaygroundProps) {
   // `tree` (multi-component preview) which takes precedence over its single
   // Component; otherwise the resolved props drive a single <Component/>.
   const entry = slug ? registry[slug] : undefined;
+  // Display components with no interaction of their own (or no affordance in
+  // every variant) get a baseline: the preview surface is clickable and flashes
+  // "Fired", so every component responds to a click even when purely visual.
+  const STATIC_SLUGS = new Set([
+    "badge", "divider", "skeleton", "spinner", "icon", "kbd", "typography",
+    "stats", "charts", "description-lists", "code-block", "grid-lists", "media-objects",
+  ]);
+  const isStatic = !!slug && STATIC_SLUGS.has(slug);
   const treeFn = slug ? TREES[slug] : undefined;
   const treeEl = treeFn ? treeFn(state, demo) : null;
   const resolvedProps = entry && !treeEl ? entry.mapProps(state, demo) : null;
@@ -95,13 +103,18 @@ export function Playground({ config, slug }: PlaygroundProps) {
     <div>
       <div className="playground-grid">
         <div>
-          <div className="section-card" style={{
-            padding: "2rem",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            minHeight: 180,
-          }}>
+          <div
+            className="section-card"
+            onClick={isStatic ? () => fire(entry?.name ?? slug ?? "Component") : undefined}
+            style={{
+              padding: "2rem",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              minHeight: 180,
+              cursor: isStatic ? "pointer" : undefined,
+            }}
+          >
             {treeEl ? (
               renderTree(treeEl)
             ) : entry && resolvedProps ? (
