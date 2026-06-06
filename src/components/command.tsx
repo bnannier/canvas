@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Text, Pressable } from "../engine/index.js";
 import { Icon } from "./icon.js";
@@ -40,8 +41,10 @@ export interface CommandProps {
   groups?: CommandGroup[];
   /** Flat index of the highlighted row, counted across all groups. */
   active?: number;
-  /** Whether the palette card renders. */
+  /** Controlled open state. Omit for uncontrolled (the search trigger toggles it). */
   open?: boolean;
+  /** Fired when the open state changes. */
+  onOpenChange?: (open: boolean) => void;
   /**
    * Render a collapsed full-width search trigger above the palette (a search
    * glyph + "Search..." + a trailing kbd cap). The palette card still renders
@@ -83,12 +86,22 @@ export function Command(props: CommandProps) {
     placeholder = "Type a command or search...",
     groups = [],
     active = 0,
-    open = true,
+    open: openProp,
     trigger,
     footer,
+    onOpenChange,
     onSelect,
     className,
   } = props;
+
+  // Uncontrolled by default: in trigger mode the palette starts closed and the
+  // collapsed search trigger toggles it; the bare card (no trigger) starts open.
+  const [internalOpen, setInternalOpen] = useState(() => !trigger);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   // In trigger mode the collapsed search button is always shown; the palette
   // card below it is still gated by `open`. Otherwise the bare card is gated by
@@ -119,7 +132,7 @@ export function Command(props: CommandProps) {
                 <Pressable
                   key={`item-${gi}-${ii}`}
                   className={cn(ROW_BASE, isActive && ROW_ACTIVE)}
-                  onPress={() => onSelect?.(item, index)}
+                  onPress={() => { onSelect?.(item, index); setOpen(false); }}
                 >
                   {item.icon != null ? (
                     <Text className={ROW_ICON}>{item.icon}</Text>
@@ -156,7 +169,7 @@ export function Command(props: CommandProps) {
 
   return (
     <Box className={cn("w-full", className)}>
-      <Pressable className={TRIGGER_ROW}>
+      <Pressable className={TRIGGER_ROW} onPress={() => setOpen(!open)}>
         <Icon search muted size={14} />
         <Text className={TRIGGER_LABEL}>Search...</Text>
         <Kbd className="ml-auto">⌘K</Kbd>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
 
@@ -24,6 +25,8 @@ export interface ComboboxProps {
    * visible inline (the docs render it this way; there is no portal/Modal).
    */
   open?: boolean;
+  /** Fired when the open state changes (field tap, select). */
+  onOpenChange?: (open: boolean) => void;
   /** Optional stacked field label rendered above the field. */
   label?: string;
   /** Optional muted helper line rendered below the option list. */
@@ -70,12 +73,20 @@ export function Combobox(props: ComboboxProps) {
     label,
     helperText,
     placeholder = "Search…",
-    open = true,
+    open: openProp,
+    onOpenChange,
     disabled,
     onSelect,
     className,
   } = props;
   const size = sizeOf(props);
+  // Uncontrolled by default: the field opens/closes the list, a select closes it.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   // What the field shows: the typed query, then the selected value, else the
   // placeholder. The first two read as foreground text; the placeholder is muted.
@@ -103,7 +114,7 @@ export function Combobox(props: ComboboxProps) {
           {label}
         </Text>
       ) : null}
-      <Pressable className={field} disabled={disabled} accessibilityRole="button">
+      <Pressable className={field} disabled={disabled} onPress={() => setOpen(!open)} accessibilityRole="button">
         <Text
           className={cn(
             TEXT_SIZE[size],
@@ -134,7 +145,7 @@ export function Combobox(props: ComboboxProps) {
                 <Pressable
                   key={option}
                   className={row}
-                  onPress={onSelect ? () => onSelect(option) : undefined}
+                  onPress={() => { onSelect?.(option); setOpen(false); }}
                   accessibilityRole="button"
                 >
                   <Text

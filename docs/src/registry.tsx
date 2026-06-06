@@ -1022,10 +1022,9 @@ export const registry: Record<string, RegistryEntry> = {
   command: {
     name: "Command",
     Component: Command as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const sc = s.shortcuts === true;
       return {
-        open: true,
         active: 0,
         placeholder: "Type a command...",
         trigger: s.mode === "trigger",
@@ -1047,7 +1046,7 @@ export const registry: Record<string, RegistryEntry> = {
             ],
           },
         ],
-        onSelect: () => {},
+        onSelect: (item: { label: string }) => demo?.fire(item.label),
       };
     },
   },
@@ -1058,13 +1057,14 @@ export const registry: Record<string, RegistryEntry> = {
     // A hardcoded query/value used to mask the Placeholder control (the
     // placeholder only shows when the field is empty); drop them so the control
     // works.
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       options: ["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Marcus Allen", "Noor Park", "Rachel Chen"],
       label: s.withLabel ? "Assigned to" : undefined,
       helperText: s.withHelper ? "The person responsible for this account." : undefined,
       placeholder: (s.placeholder as string) || "Search a person…",
       disabled: Boolean(s.disabled),
-      open: true,
+      value: s.demoPerson as string,
+      onSelect: (option: string) => { demo?.set("demoPerson", option); demo?.fire(option); },
       className: "max-w-[300px]",
     }),
   },
