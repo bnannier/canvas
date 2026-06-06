@@ -292,7 +292,7 @@ export const TREES: Record<string, TreeFn> = {
   return null;
 },
 
-  checkbox: (s) => {
+  checkbox: (s, demo) => {
   if (s.withDesc) {
     const checked = s.state === "checked";
     const disabled = s.state === "disabled";
@@ -303,7 +303,8 @@ export const TREES: Record<string, TreeFn> = {
       children: [
         {
           type: "Checkbox",
-          props: { checked, disabled },
+          // Demo: clicking toggles the State control between checked and unchecked.
+          props: { checked, disabled, onChange: (next: boolean) => demo?.set("state", next ? "checked" : "unchecked") },
         },
         {
           type: "Box",
@@ -541,19 +542,21 @@ export const TREES: Record<string, TreeFn> = {
   return null;
 },
 
-  radio: (s) => {
+  radio: (s, demo) => {
   const opts = [
     { val: "hobby", label: "Hobby", desc: "For personal projects and experiments." },
     { val: "pro", label: "Pro", desc: "For growing teams that need more control." },
     { val: "enterprise", label: "Enterprise", desc: "Advanced security, compliance, and support." },
   ];
+  // Demo: clicking an option moves the selection (Catalyst RadioGroup behavior).
+  const pick = (s.demoPick as string) || "pro";
 
   if (s.variant === "card") {
     return {
       type: "Box",
       props: { className: "grid grid-cols-3 gap-2" },
       children: opts.map((o) => {
-        const sel = o.val === "pro";
+        const sel = o.val === pick;
         return {
           type: "Box",
           props: {
@@ -562,7 +565,7 @@ export const TREES: Record<string, TreeFn> = {
               (sel ? "border-2 border-primary bg-primary/5" : "border border-border"),
           },
           children: [
-            { type: "Radio", props: { checked: sel, className: "mb-2" } },
+            { type: "Radio", props: { checked: sel, className: "mb-2", onChange: () => demo?.set("demoPick", o.val) } },
             {
               type: "Text",
               props: { className: "text-[13px] font-semibold text-foreground" },
@@ -588,12 +591,12 @@ export const TREES: Record<string, TreeFn> = {
       type: "Box",
       props: { className: "flex-col gap-2.5" },
       children: opts.map((o) => {
-        const sel = o.val === "pro";
+        const sel = o.val === pick;
         return {
           type: "Box",
           props: { className: "flex-row gap-2" },
           children: [
-            { type: "Radio", props: { checked: sel, className: "mt-[3px]" } },
+            { type: "Radio", props: { checked: sel, className: "mt-[3px]", onChange: () => demo?.set("demoPick", o.val) } },
             {
               type: "Box",
               children: [

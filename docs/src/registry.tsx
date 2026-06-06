@@ -156,7 +156,7 @@ const BUTTON_SIZE: Record<string, string | null> = {
   icon: "icon",
 };
 
-function buttonProps(s: Record<string, unknown>): Record<string, unknown> {
+function buttonProps(s: Record<string, unknown>, demo?: DemoApi): Record<string, unknown> {
   const props: Record<string, unknown> = {};
   props[BUTTON_VARIANT[String(s.variant)] ?? "primary"] = true;
   const size = BUTTON_SIZE[String(s.size)];
@@ -164,6 +164,14 @@ function buttonProps(s: Record<string, unknown>): Record<string, unknown> {
   if (s.disabled) props.disabled = true;
   const label = (s.label as string) || "Button";
   props.children = s.size === "icon" ? "+" : s.withIcon ? `+  ${label}` : label;
+  // Demo: pressing flashes the real loading spinner for ~700ms.
+  props.loading = s.demoBusy === true;
+  props.onPress = () => {
+    if (s.disabled) return;
+    demo?.set("demoBusy", true);
+    demo?.fire("Button pressed");
+    setTimeout(() => demo?.set("demoBusy", false), 700);
+  };
   return props;
 }
 
@@ -266,9 +274,11 @@ export const registry: Record<string, RegistryEntry> = {
   checkbox: {
     name: "Checkbox",
     Component: Checkbox as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       checked: s.state === "checked",
       disabled: s.state === "disabled",
+      // Demo: clicking toggles the State control between checked and unchecked.
+      onChange: (next: boolean) => demo?.set("state", next ? "checked" : "unchecked"),
       children: s.withDesc
         ? `${s.label}: get notified when activity happens on your account.`
         : s.label,
@@ -278,9 +288,11 @@ export const registry: Record<string, RegistryEntry> = {
   radio: {
     name: "Radio",
     Component: Radio as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       checked: true,
       small: s.variant === "inline",
+      // Demo: a single radio is always selected; clicking flashes feedback.
+      onChange: () => demo?.fire("Selected Pro"),
       children: s.withDesc ? "Pro, for growing teams that need more control." : "Pro",
     }),
   },
@@ -288,9 +300,11 @@ export const registry: Record<string, RegistryEntry> = {
   switch: {
     name: "Switch",
     Component: Switch as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       checked: s.state === "on",
       disabled: Boolean(s.disabled),
+      // Demo: clicking flips the State control between on and off.
+      onChange: (next: boolean) => demo?.set("state", next ? "on" : "off"),
       children: s.label || undefined,
       description: s.withDesc ? "Show your availability to teammates." : undefined,
     }),
