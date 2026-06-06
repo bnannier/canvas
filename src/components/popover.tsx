@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Text } from "../engine/index.js";
 import { Button } from "./button.js";
@@ -47,8 +48,10 @@ export interface PopoverProps {
    * `open` is ignored.
    */
   inline?: boolean;
-  /** Whether the floating card is shown. Defaults to open. */
+  /** Controlled open state. Omit for uncontrolled (the trigger toggles it). */
   open?: boolean;
+  /** Fired when the open state changes. */
+  onOpenChange?: (open: boolean) => void;
   className?: string;
 }
 
@@ -61,9 +64,15 @@ function placementOf(p: PopoverProps): Placement {
 }
 
 export function Popover(props: PopoverProps) {
-  const { trigger, title, description, actionLabel, inline, className } = props;
-  // In static mode the card is always shown; otherwise `open` controls it.
-  const open = inline ? true : props.open ?? true;
+  const { trigger, title, description, actionLabel, inline, onOpenChange, className } = props;
+  const [internalOpen, setInternalOpen] = useState(false);
+  // In static (inline) mode the card is always shown; otherwise it is
+  // uncontrolled (the trigger toggles it) unless a controlled `open` is passed.
+  const open = inline ? true : (props.open ?? internalOpen);
+  const setOpen = (next: boolean) => {
+    if (props.open === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
   // Resolve the placement axis (documented, presentational in this rendering).
   placementOf(props);
 
@@ -78,7 +87,7 @@ export function Popover(props: PopoverProps) {
     <Box>
       {inline ? null : (
         <Box className="self-start">
-          <Button outline small>
+          <Button outline small onPress={() => setOpen(!open)}>
             {trigger ?? "Open popover"}
           </Button>
         </Box>
@@ -93,7 +102,7 @@ export function Popover(props: PopoverProps) {
           ) : null}
           {actionLabel != null ? (
             <Box className="mt-3 flex-row justify-end">
-              <Button primary small>
+              <Button primary small onPress={() => setOpen(false)}>
                 {actionLabel}
               </Button>
             </Box>

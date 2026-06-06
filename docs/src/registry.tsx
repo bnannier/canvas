@@ -974,7 +974,6 @@ export const registry: Record<string, RegistryEntry> = {
       title: "Popover",
       description: (s.content as string) ?? "Place your rich content, form fields, or secondary actions here.",
       actionLabel: s.trigger ? "Close" : "Action",
-      open: true,
     }),
   },
 
@@ -986,8 +985,9 @@ export const registry: Record<string, RegistryEntry> = {
       // Icon trigger renders the settings glyph; text/button triggers use a label.
       iconTrigger: s.trigger === "icon",
       trigger: s.trigger === "text" ? "hover this text" : "Hover me",
-      // "on hover" starts hidden (open=false); "always" keeps the bubble shown.
-      open: s.reveal !== "on hover",
+      // "always" keeps the bubble shown (controlled); otherwise it is
+      // uncontrolled and tapping the trigger toggles it.
+      open: s.reveal === "always" ? true : undefined,
       top: s.side === "top",
       bottom: s.side === "bottom",
       left: s.side === "left",
@@ -1072,7 +1072,7 @@ export const registry: Record<string, RegistryEntry> = {
   "row-menu": {
     name: "RowMenu",
     Component: RowMenu as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const isLinks = s.kind === "links";
       const ico = (g: string) => (s.icons ? g : undefined);
       const items = isLinks
@@ -1087,7 +1087,7 @@ export const registry: Record<string, RegistryEntry> = {
             { label: "Duplicate", icon: ico("⧉") },
             ...(s.destructive ? [{ label: "Delete", icon: ico("🗑"), destructive: true, separatorBefore: true }] : []),
           ];
-      return { open: true, links: isLinks, sectionLabel: s.label ? (isLinks ? "Account" : "Actions") : undefined, items };
+      return { links: isLinks, sectionLabel: s.label ? (isLinks ? "Account" : "Actions") : undefined, items, onSelect: (item: { label: string }) => demo?.fire(item.label) };
     },
   },
 

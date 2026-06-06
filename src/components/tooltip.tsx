@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
 import { Button } from "./button.js";
@@ -19,8 +20,10 @@ export interface TooltipProps {
   // Render the trigger as a ghost icon button (a settings glyph) instead of the
   // text Button. When set, `trigger` (the label string) is ignored.
   iconTrigger?: boolean;
-  // Whether the bubble is shown. Defaults to true so the open state renders.
+  // Controlled visibility. Omit for uncontrolled (tap the trigger to toggle).
   open?: boolean;
+  // Fired when the bubble is shown/hidden.
+  onOpenChange?: (open: boolean) => void;
   // Placement (pick one; default is top).
   top?: boolean;
   bottom?: boolean;
@@ -67,8 +70,16 @@ const BUBBLE_FIRST: Record<Placement, boolean> = {
 };
 
 export function Tooltip(props: TooltipProps) {
-  const { label, trigger, iconTrigger, open = true, className } = props;
+  const { label, trigger, iconTrigger, onOpenChange, className } = props;
   const placement = placementOf(props);
+  // Uncontrolled by default: tapping the trigger toggles the bubble (a touch
+  // analogue of hover); a controlled `open` prop overrides this.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = props.open ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (props.open === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const wrapper = cn(WRAPPER[placement], className);
   const bubble = cn("rounded-md bg-foreground px-2 py-1 shadow-md", BUBBLE_GAP[placement]);
@@ -86,13 +97,14 @@ export function Tooltip(props: TooltipProps) {
   const triggerEl = iconTrigger ? (
     <Pressable
       className="h-10 w-10 items-center justify-center rounded-md active:opacity-90"
+      onPress={() => setOpen(!open)}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
       <Icon settings size={16} />
     </Pressable>
   ) : (
-    <Button outline small>
+    <Button outline small onPress={() => setOpen(!open)}>
       {trigger}
     </Button>
   );

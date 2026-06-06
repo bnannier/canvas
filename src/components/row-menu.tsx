@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
 
@@ -31,8 +32,10 @@ export interface RowMenuItem {
 export interface RowMenuProps {
   /** The menu rows, top to bottom. */
   items: RowMenuItem[];
-  /** Whether the menu is shown below the trigger. Open by default for the docs. */
+  /** Controlled open state. Omit for uncontrolled (the trigger toggles it). */
   open?: boolean;
+  /** Fired when the open state changes. */
+  onOpenChange?: (open: boolean) => void;
   /** Render rows as navigation links rather than action buttons. */
   links?: boolean;
   /** Show a muted section label heading the menu. */
@@ -56,13 +59,21 @@ function rowTextColor(item: RowMenuItem, links: boolean): string {
 }
 
 export function RowMenu(props: RowMenuProps) {
-  const { items, open = true, links = false, sectionLabel, onSelect, className } =
+  const { items, links = false, sectionLabel, onSelect, onOpenChange, className } =
     props;
+  // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
+  // closes it; a controlled `open` prop overrides this.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = props.open ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (props.open === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
     <Box className={cn("relative self-start", className)}>
-      <Pressable className={TRIGGER} accessibilityRole="button">
+      <Pressable className={TRIGGER} onPress={() => setOpen(!open)} accessibilityRole="button">
         <Text className="text-base text-foreground">⋯</Text>
       </Pressable>
 
@@ -78,7 +89,7 @@ export function RowMenu(props: RowMenuProps) {
               ) : null}
               <Pressable
                 className={ITEM_ROW}
-                onPress={() => onSelect?.(item, index)}
+                onPress={() => { onSelect?.(item, index); setOpen(false); }}
                 accessibilityRole={links ? "link" : "menuitem"}
               >
                 {item.icon ? (
