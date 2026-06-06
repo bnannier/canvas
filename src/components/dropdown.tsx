@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
 import { Button } from "./button.js";
@@ -37,8 +38,10 @@ export interface DropdownProps {
   label?: string;
   /** The menu rows, top to bottom. */
   items: DropdownItem[];
-  /** Whether the menu is shown below the trigger. Open by default for the docs. */
+  /** Controlled open state. Omit for uncontrolled (the trigger opens/closes it). */
   open?: boolean;
+  /** Fired when the open state changes (trigger press, select, etc.). */
+  onOpenChange?: (open: boolean) => void;
   /** Fired with the selected item and its index when a row is pressed. */
   onSelect?: (item: DropdownItem, index: number) => void;
   className?: string;
@@ -50,12 +53,20 @@ const ITEM_ROW =
   "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent";
 
 export function Dropdown(props: DropdownProps) {
-  const { trigger, label, items, open = true, onSelect, className } = props;
+  const { trigger, label, items, open: openProp, onOpenChange, onSelect, className } = props;
+  // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
+  // menu and a select closes it; a controlled `open` prop overrides this.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
     <Box className={cn("relative self-start", className)}>
-      <Button outline small>
+      <Button outline small onPress={() => setOpen(!open)}>
         {trigger}
       </Button>
 
@@ -73,7 +84,7 @@ export function Dropdown(props: DropdownProps) {
               ) : null}
               <Pressable
                 className={cn(ITEM_ROW, item.disabled && "opacity-50")}
-                onPress={item.disabled ? undefined : () => onSelect?.(item, index)}
+                onPress={item.disabled ? undefined : () => { onSelect?.(item, index); setOpen(false); }}
                 disabled={item.disabled}
                 accessibilityRole="menuitem"
                 accessibilityState={{ disabled: item.disabled }}

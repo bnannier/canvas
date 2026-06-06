@@ -925,11 +925,11 @@ export const registry: Record<string, RegistryEntry> = {
   dropdown: {
     name: "Dropdown",
     Component: Dropdown as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       trigger: "Actions",
-      // The Trigger control toggles whether the menu starts open; the trigger
-      // Button always renders, the menu only when open.
-      open: !s.trigger,
+      // Uncontrolled: the trigger opens the menu (closed by default); selecting a
+      // row closes it and flashes feedback.
+      onSelect: (item: { label: string }) => demo?.fire(item.label),
       // Section heading above the rows when "Section label" is on.
       label: s.label ? "Actions" : undefined,
       items: [
