@@ -1,31 +1,28 @@
 import { Link } from "react-router-dom";
-import { Card, Field, Button } from "@olympusoss/canvas";
 import { CanvasMark } from "@/components/canvas-mark";
-import { CodeBlock } from "@/components/code-block";
+import { Playground } from "@/components/playground";
+import type { PlaygroundConfig } from "@/data/types";
 import { COMPONENTS } from "@/data/components";
 import {
   Layers, CheckCircle, Copy, ChevronRight,
   Plus, Shield, AppWindow, Home as HomeIcon, Check,
 } from "lucide-react";
 
-// The styling API, shown before it is explained. The left panel is the source;
-// the same SaveBar renders live on the right from real Canvas components, so the
-// page shows the boolean-prop API and its rendered result side by side. Keep the
-// SaveBar component below in sync with this string.
-const API_SAMPLE = `import { Card, Field, Button } from "@olympusoss/canvas";
-
-function SaveBar({ saving }) {
-  return (
-    <Card glass compact>
-      <Field label="Workspace name" />
-      <Button primary large loading={saving} block>
-        Save changes
-      </Button>
-      <Button ghost small>Cancel</Button>
-      <Button destructive>Delete workspace</Button>
-    </Card>
-  );
-}`;
+// The styling API, shown before it is explained, as a live playground: the same
+// <Playground> widget every component page uses, driven by the `save-bar`
+// composite tree (registry-trees.ts). Toggle the booleans and the live SaveBar
+// plus the shown code update together, so they never drift. Defaults match the
+// canonical SaveBar (glass, compact, full-width Save).
+const SAVE_BAR_PLAYGROUND: PlaygroundConfig = {
+  controls: [
+    { type: "check", key: "glass", label: "Glass surface" },
+    { type: "pills", key: "density", label: "Density", options: ["compact", "comfortable"], cols: 2 },
+    { type: "check", key: "saving", label: "Saving (spinner)" },
+    { type: "check", key: "block", label: "Full-width Save" },
+  ],
+  defaults: { glass: true, density: "compact", saving: false, block: true },
+  render: () => "",
+};
 
 const API_CAPTION =
   "This is the entire styling API. Style props group into orthogonal axes (intent, size, surface, density): within an axis you pass at most one, across axes they stack freely. The same component, the same props, on iOS, Android, and web. No enum strings, no className soup, no platform forks.";
@@ -162,7 +159,7 @@ export function Home() {
           and on the web through React Native Web, so the same components ship everywhere with no per-platform
           forks. You style them with flat, semantic boolean props that read like a sentence, theme them from
           design tokens, and watch all {COMPONENTS.length} components render live in the playground as real
-          React Native components. Read the snippet below; that is the whole API.
+          React Native components. Toggle the props on the example below; that is the whole API.
         </p>
         <div style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
           <Link to="/components" className="btn btn-default">Browse all components</Link>
@@ -170,32 +167,11 @@ export function Home() {
         </div>
       </section>
 
-      {/* The API, shown before it is told: source on the left, the same SaveBar
-          rendered live from real Canvas components on the right. */}
+      {/* The API, shown before it is told: the SaveBar as a live playground, the
+          same widget every component page uses. Toggle the booleans to watch the
+          preview and the code update together. */}
       <section style={{ marginBottom: "2.5rem" }}>
-        <div className="home-api-grid">
-          <div style={{
-            borderRadius: "var(--radius-lg, 12px)",
-            border: "1px solid var(--border)",
-            background: "var(--card)",
-            overflow: "hidden",
-          }}>
-            <CodeBlock code={API_SAMPLE} language="tsx" />
-          </div>
-          <div style={{
-            borderRadius: "var(--radius-lg, 12px)",
-            border: "1px solid var(--border)",
-            background: "var(--card)",
-            padding: "1.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <div style={{ width: "100%" }}>
-              <SaveBar saving={false} />
-            </div>
-          </div>
-        </div>
+        <Playground config={SAVE_BAR_PLAYGROUND} slug="save-bar" />
         <p style={{
           marginTop: "0.75rem",
           marginBottom: 0,
@@ -357,22 +333,6 @@ export function Home() {
         <span>Universal React Native, native iOS and Android plus web</span>
       </footer>
     </div>
-  );
-}
-
-// The live counterpart to API_SAMPLE: the exact SaveBar from the snippet,
-// rendered from real Canvas components beside the source above. Keep in sync
-// with the API_SAMPLE string.
-function SaveBar({ saving }: { saving?: boolean }) {
-  return (
-    <Card glass compact>
-      <Field label="Workspace name" />
-      <Button primary large loading={saving} block>
-        Save changes
-      </Button>
-      <Button ghost small>Cancel</Button>
-      <Button destructive>Delete workspace</Button>
-    </Card>
   );
 }
 

@@ -694,4 +694,36 @@ export const TREES: Record<string, TreeFn> = {
   return null;
 },
 
+  // The home hero: a SaveBar (Card surface composing a Field and three Buttons).
+  // Exercises the Surface (glass), Density (compact/comfortable), loading, and
+  // block axes. A Box carries the layout width so the Card itself stays pure
+  // semantic props. The smaller buttons stretch full-width because a Card lays
+  // its children out as a vertical stack.
+  "save-bar": (s) => {
+    const density =
+      s.density === "comfortable"
+        ? { comfortable: true }
+        : s.density === "compact"
+          ? { compact: true }
+          : {};
+    return {
+      type: "Box",
+      props: { className: "w-[320px]" },
+      children: {
+        type: "Card",
+        props: { glass: s.glass === true, ...density },
+        children: [
+          { type: "Field", props: { label: "Workspace name" } },
+          {
+            type: "Button",
+            props: { primary: true, large: true, loading: s.saving === true, block: s.block === true },
+            children: "Save changes",
+          },
+          { type: "Button", props: { ghost: true, small: true }, children: "Cancel" },
+          { type: "Button", props: { destructive: true }, children: "Delete workspace" },
+        ],
+      },
+    };
+  },
+
 };
