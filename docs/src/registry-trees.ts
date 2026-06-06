@@ -13,8 +13,9 @@
 // playground shows <DataTable .../> etc., never a hand-rebuilt primitive tree.
 
 import type { El } from "@/jsx-code";
+import type { DemoApi } from "@/registry";
 
-type TreeFn = (s: Record<string, unknown>) => El | null;
+type TreeFn = (s: Record<string, unknown>, demo?: DemoApi) => El | null;
 
 export const TREES: Record<string, TreeFn> = {
 

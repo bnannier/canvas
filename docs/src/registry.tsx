@@ -64,10 +64,23 @@ import {
 // and serializes that SAME props object into the code panel (see jsx-code.ts), so
 // the shown code always matches the render. `name` is the JSX tag used in the
 // serialized code. Unregistered slugs fall back to the legacy HTML-string render.
+// A small controller the playground passes to mapProps/treeFn so a preview can
+// wire demo-only handlers (toggle state, open overlays, flash feedback). These
+// are function-valued props, which jsx-code.ts strips from the code panel, so
+// demo wiring never changes the shown code.
+export interface DemoApi {
+  /** The same setter the controls use; lets a preview drive demo-only state. */
+  set: (key: string, value: unknown) => void;
+  /** Flash the muted "Fired:" line under the preview, for clicks with no other visible result. */
+  fire: (label: string) => void;
+  /** Current playground state, for read-back convenience. */
+  state: Record<string, unknown>;
+}
+
 export interface RegistryEntry {
   name: string;
   Component: ComponentType<Record<string, unknown>>;
-  mapProps: (state: Record<string, unknown>) => Record<string, unknown>;
+  mapProps: (state: Record<string, unknown>, demo?: DemoApi) => Record<string, unknown>;
 }
 
 type AnyComponent = ComponentType<Record<string, unknown>>;

@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Code, ChevronDown } from "lucide-react";
 import { CodeBlock } from "./code-block";
 import type { PlaygroundConfig, PlaygroundControl } from "@/data/types";
-import { registry, renderTree } from "@/registry";
+import { registry, renderTree, type DemoApi } from "@/registry";
 import { TREES } from "@/registry-trees";
 import { propsToJsx, serializeTree } from "@/jsx-code";
 
@@ -60,6 +60,21 @@ export function Playground({ config, slug }: PlaygroundProps) {
     setState(prev => ({ ...prev, [key]: value }));
   }, []);
 
+  // Transient "Fired:" feedback for demo clicks that have no other visible
+  // result (a button press, a copy, a breadcrumb nav). Auto-clears after 1.4s.
+  const [fired, setFired] = useState<string | null>(null);
+  const firedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const fire = useCallback((label: string) => {
+    setFired(label);
+    clearTimeout(firedTimer.current);
+    firedTimer.current = setTimeout(() => setFired(null), 1400);
+  }, []);
+
+  // The controller handed to mapProps/treeFn so a preview can wire demo-only
+  // click handlers. Handlers are function-valued props, stripped by jsx-code
+  // from the code panel, so the shown code is unaffected.
+  const demo = useMemo<DemoApi>(() => ({ set, fire, state }), [set, fire, state]);
+
   // Single source of truth: derive one description of the preview, then both
   // render it and serialize the same description into the code panel, so the
   // shown code always matches the render. An entry may expose a composite
@@ -67,8 +82,8 @@ export function Playground({ config, slug }: PlaygroundProps) {
   // Component; otherwise the resolved props drive a single <Component/>.
   const entry = slug ? registry[slug] : undefined;
   const treeFn = slug ? TREES[slug] : undefined;
-  const treeEl = treeFn ? treeFn(state) : null;
-  const resolvedProps = entry && !treeEl ? entry.mapProps(state) : null;
+  const treeEl = treeFn ? treeFn(state, demo) : null;
+  const resolvedProps = entry && !treeEl ? entry.mapProps(state, demo) : null;
   const code = treeEl
     ? serializeTree(treeEl)
     : entry && resolvedProps
@@ -79,20 +94,35 @@ export function Playground({ config, slug }: PlaygroundProps) {
   return (
     <div>
       <div className="playground-grid">
-        <div className="section-card" style={{
-          padding: "2rem",
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "center",
-          minHeight: 180,
-        }}>
-          {treeEl ? (
-            renderTree(treeEl)
-          ) : entry && resolvedProps ? (
-            <entry.Component {...resolvedProps} />
-          ) : (
-            <div dangerouslySetInnerHTML={{ __html: config.render(state) }} />
-          )}
+        <div>
+          <div className="section-card" style={{
+            padding: "2rem",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            minHeight: 180,
+          }}>
+            {treeEl ? (
+              renderTree(treeEl)
+            ) : entry && resolvedProps ? (
+              <entry.Component {...resolvedProps} />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: config.render(state) }} />
+            )}
+          </div>
+          <div
+            aria-live="polite"
+            style={{
+              minHeight: 18,
+              marginTop: 8,
+              fontSize: 12,
+              color: "var(--muted-foreground)",
+              opacity: fired ? 1 : 0,
+              transition: "opacity 150ms ease",
+            }}
+          >
+            {fired ? `Fired: ${fired}` : " "}
+          </div>
         </div>
 
         <div className="section-card" style={{
