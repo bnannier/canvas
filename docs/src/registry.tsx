@@ -947,14 +947,16 @@ export const registry: Record<string, RegistryEntry> = {
   select: {
     name: "Select",
     Component: Select as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       small: s.size === "sm",
       large: s.size === "lg",
       disabled: Boolean(s.disabled),
       label: s.withLabel ? "Country" : undefined,
       icon: Boolean(s.withIcon),
-      open: true,
-      value: "United States",
+      // Uncontrolled: the trigger opens the list (closed by default); selecting
+      // updates the value and flashes feedback.
+      value: (s.demoCountry as string) ?? "United States",
+      onSelect: (option: string) => { demo?.set("demoCountry", option); demo?.fire(option); },
       options: ["United States", "Canada", "Mexico", "United Kingdom"],
       placeholder: "Select a country",
       className: "max-w-[280px]",

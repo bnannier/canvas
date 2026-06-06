@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
 import { Icon } from "./icon.js";
@@ -18,6 +19,8 @@ export interface SelectProps {
    * visible inline (the docs render it this way; there is no portal/Modal).
    */
   open?: boolean;
+  /** Fired when the open state changes (trigger press, select). */
+  onOpenChange?: (open: boolean) => void;
   /** Dims the control and blocks interaction. */
   disabled?: boolean;
   /** Called with the chosen option label when a row is pressed. */
@@ -59,12 +62,21 @@ export function Select(props: SelectProps) {
     label,
     icon,
     placeholder = "Select an option",
-    open = true,
+    open: openProp,
+    onOpenChange,
     disabled,
     onSelect,
     className,
   } = props;
   const size = sizeOf(props);
+  // Uncontrolled by default: the trigger opens/closes the list, a select closes
+  // it; a controlled `open` prop overrides this.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const hasValue = value != null && value !== "";
 
@@ -86,7 +98,7 @@ export function Select(props: SelectProps) {
           {label}
         </Text>
       ) : null}
-      <Pressable className={trigger} disabled={disabled} accessibilityRole="button">
+      <Pressable className={trigger} disabled={disabled} onPress={() => setOpen(!open)} accessibilityRole="button">
         <Box className="flex-row items-center gap-2">
           {icon ? <Icon globe muted size={14} /> : null}
           <Text className={triggerText}>{hasValue ? value : placeholder}</Text>
@@ -106,7 +118,7 @@ export function Select(props: SelectProps) {
               <Pressable
                 key={option}
                 className={row}
-                onPress={onSelect ? () => onSelect(option) : undefined}
+                onPress={() => { onSelect?.(option); setOpen(false); }}
                 accessibilityRole="button"
               >
                 <Text
