@@ -998,8 +998,10 @@ export const registry: Record<string, RegistryEntry> = {
   dialog: {
     name: "Dialog",
     Component: Dialog as AnyComponent,
-    mapProps: (s) => ({
-      open: true,
+    mapProps: (s, demo) => ({
+      open: s.demoOpen === true,
+      onConfirm: () => { demo?.set("demoOpen", false); demo?.fire("Confirmed"); },
+      onCancel: () => demo?.set("demoOpen", false),
       title: "Refund payment",
       description: s.withDescription
         ? "The refund will be reflected in the customer's bank account within 2 to 3 business days."
@@ -1094,7 +1096,7 @@ export const registry: Record<string, RegistryEntry> = {
   "alert-dialog": {
     name: "AlertDialog",
     Component: AlertDialog as AnyComponent,
-    mapProps: (s) => ({
+    mapProps: (s, demo) => ({
       title: "Delete this identity?",
       description: s.withDescription
         ? "This permanently removes the identity and revokes any active sessions. This action cannot be undone."
@@ -1105,7 +1107,9 @@ export const registry: Record<string, RegistryEntry> = {
       small: s.size === "sm",
       large: s.size === "lg",
       withInput: !!s.withInput,
-      open: true,
+      open: s.demoOpen === true,
+      onConfirm: () => { demo?.set("demoOpen", false); demo?.fire("Confirmed"); },
+      onCancel: () => demo?.set("demoOpen", false),
     }),
   },
 
@@ -1208,11 +1212,12 @@ export const registry: Record<string, RegistryEntry> = {
   overlays: {
     name: "Overlay",
     Component: Overlay as AnyComponent,
-    mapProps: (s) => {
+    mapProps: (s, demo) => {
       const placement =
         s.kind === "modal" ? { modal: true } : s.kind === "toast" || s.kind === "menu" ? { sheet: true } : { drawer: true };
       return {
-        open: true,
+        open: s.demoOpen === true,
+        onDone: () => { demo?.set("demoOpen", false); demo?.fire("Done"); },
         title: (s.title as string) || "Edit Identity",
         description: s.withDescription ? "Visible above the parent page so the user can compare." : undefined,
         ...placement,
