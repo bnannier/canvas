@@ -58,8 +58,10 @@ export interface DropdownProps {
   className?: string;
 }
 
-const MENU_CARD =
-  "min-w-[200px] rounded-md border border-border bg-popover p-1 shadow-lg";
+// The menu's width floor. A menu under a small trigger (e.g. an outline button)
+// stays at least this wide; a wider trigger (an account chip) sets the width.
+const MENU_MIN_WIDTH = 200;
+const MENU_CARD = "rounded-md border border-border bg-popover p-1 shadow-lg";
 const ITEM_ROW =
   "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent";
 
@@ -74,9 +76,18 @@ export function Dropdown(props: DropdownProps) {
     onOpenChange?.(next);
   };
 
+  // Match the menu width to the trigger (and let longer rows grow past it), so a
+  // wide trigger like a topbar account chip gets a menu of the same width.
+  // Measured via the wrapper's layout; the menu is absolute, so it never feeds
+  // back into this width.
+  const [triggerWidth, setTriggerWidth] = useState(0);
+
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
-    <Box className={cn("relative self-start", className)}>
+    <Box
+      className={cn("relative self-start", className)}
+      onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+    >
       {children != null ? (
         <Pressable
           className="self-start"
@@ -93,7 +104,10 @@ export function Dropdown(props: DropdownProps) {
       )}
 
       {open ? (
-        <Box className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}>
+        <Box
+          className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}
+          style={{ minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }}
+        >
           {label ? (
             <Text className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
               {label}
