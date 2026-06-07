@@ -102,6 +102,7 @@ const COMPONENT_MAP: Record<string, AnyComponent> = {
   CardSeparator: CardSeparator as AnyComponent,
   Checkbox: Checkbox as AnyComponent,
   Divider: Divider as AnyComponent,
+  Dropdown: Dropdown as AnyComponent,
   EmptyState: EmptyState as AnyComponent,
   Field: Field as AnyComponent,
   Icon: Icon as AnyComponent,

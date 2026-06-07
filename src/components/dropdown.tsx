@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 
-// Dropdown: a trigger button plus a floating menu of action rows. The menu is a
+// Dropdown: a trigger plus a floating menu of action rows. The menu is a
 // popover-surfaced card with item rows (each an optional leading icon glyph, a
 // label, and an optional trailing keyboard shortcut), hairline separators
 // between groups, and red-tinted destructive rows.
+//
+// The trigger defaults to an outline button labelled by `trigger`. Pass
+// `children` to supply a CUSTOM trigger instead (e.g. an avatar account chip in
+// a topbar): the children render in place of the button, inside a Pressable that
+// toggles the menu. Either way the menu rows still come from `items`.
 //
 // Overlay note: a real dropdown portals its menu over the page and dismisses on
 // outside click. Here, for the docs playground (which has no portal/Modal), the
@@ -33,8 +38,13 @@ export interface DropdownItem {
 }
 
 export interface DropdownProps {
-  /** Label for the outline trigger button. */
-  trigger: string;
+  /** Label for the default outline trigger button. Omit when supplying a custom
+   *  trigger via `children`. */
+  trigger?: string;
+  /** A custom trigger rendered in place of the default outline button, e.g. an
+   *  avatar account chip. It is wrapped in a Pressable that toggles the menu;
+   *  the menu itself still comes from `items`. */
+  children?: ReactNode;
   /** Optional muted section heading rendered above the rows (e.g. "Actions"). */
   label?: string;
   /** The menu rows, top to bottom. */
@@ -54,7 +64,7 @@ const ITEM_ROW =
   "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent";
 
 export function Dropdown(props: DropdownProps) {
-  const { trigger, label, items, open: openProp, onOpenChange, onSelect, className } = props;
+  const { trigger, children, label, items, open: openProp, onOpenChange, onSelect, className } = props;
   // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
   // menu and a select closes it; a controlled `open` prop overrides this.
   const [internalOpen, setInternalOpen] = useState(false);
@@ -67,9 +77,20 @@ export function Dropdown(props: DropdownProps) {
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
     <Box className={cn("relative self-start", className)}>
-      <Button outline small onPress={() => setOpen(!open)}>
-        {trigger}
-      </Button>
+      {children != null ? (
+        <Pressable
+          className="self-start"
+          onPress={() => setOpen(!open)}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open }}
+        >
+          {children}
+        </Pressable>
+      ) : (
+        <Button outline small onPress={() => setOpen(!open)}>
+          {trigger}
+        </Button>
+      )}
 
       {open ? (
         <Box className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}>

@@ -46,7 +46,7 @@ export const TREES: Record<string, TreeFn> = {
     return null;
   },
 
-  avatar: (s) => {
+  avatar: (s, demo) => {
   if (s.variant === "stacked") {
     const people = [
       { name: "RC", src: "/rachel-chen.jpg" },
@@ -80,21 +80,34 @@ export const TREES: Record<string, TreeFn> = {
     };
   }
   if (s.variant === "topbar") {
+    // A real account menu: the chip is the Dropdown's custom trigger (children),
+    // so clicking it opens the menu and the chevron finally means something.
     return {
-      type: "Box",
+      type: "Dropdown",
       props: {
-        className:
-          "flex-row items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5",
+        onSelect: (item: { label: string }) => demo?.fire(item.label),
+        items: [
+          { label: "Your profile", icon: "👤" },
+          { label: "Settings", icon: "⚙" },
+          { label: "Sign out", icon: "↩", separatorBefore: true },
+        ],
       },
-      children: [
-        { type: "Avatar", props: { small: true, src: "/marcus-allen.jpg", name: "MA" } },
-        {
-          type: "Text",
-          props: { className: "text-sm font-medium text-foreground" },
-          children: "admin@example.com",
+      children: {
+        type: "Box",
+        props: {
+          className:
+            "flex-row items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5",
         },
-        { type: "Icon", props: { chevronDown: true, muted: true, size: 12 } },
-      ],
+        children: [
+          { type: "Avatar", props: { small: true, src: "/marcus-allen.jpg", name: "MA" } },
+          {
+            type: "Text",
+            props: { className: "text-sm font-medium text-foreground" },
+            children: "admin@example.com",
+          },
+          { type: "Icon", props: { chevronDown: true, muted: true, size: 12 } },
+        ],
+      },
     };
   }
   if (s.variant === "identity") {
