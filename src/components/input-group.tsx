@@ -1,7 +1,14 @@
+import { useState } from "react";
 import { type GestureResponderEvent, TextInput, type TextStyle } from "react-native";
 import { cn } from "../cn.js";
 import { Box, Pressable, Text, useStyles, useTheme } from "../engine/index.js";
 import { Icon } from "./icon.js";
+
+// react-native-web paints a default focus outline on the inner field; the group
+// shows focus on its own shared border instead (see `focused` below), so this
+// suppresses the inner one. The clipped, off-brand default ring was the
+// "half-baked" outline. No-op on native, which has no CSS outline.
+const FIELD_OUTLINE_RESET = { outlineStyle: "none", outlineWidth: 0 } as unknown as TextStyle;
 
 // Glyphs an overlaid leading/trailing icon can name. Maps the scalar `icon`
 // string the registry passes to the Icon atom's flat boolean prop, so the
@@ -111,6 +118,11 @@ export function InputGroup(props: InputGroupProps) {
   const size = sizeOf(props);
   const { tokens } = useTheme();
 
+  // The whole group shares one border, so it owns the focus state: on focus the
+  // outer border recolors to `border-ring`, mirroring the Input component, so
+  // prefix + field + suffix light up together as one control.
+  const [focused, setFocused] = useState(false);
+
   const height = FIELD_HEIGHT[size];
   const textSize = TEXT_SIZE[size];
   const iconName = icon != null ? ICON_BOOL[icon] : undefined;
@@ -129,7 +141,8 @@ export function InputGroup(props: InputGroupProps) {
   return (
     <Box
       className={cn(
-        "flex-row items-stretch w-full border border-input rounded-md overflow-hidden bg-background",
+        "flex-row items-stretch w-full border rounded-md overflow-hidden bg-background",
+        focused ? "border-ring" : "border-input",
         disabled && "opacity-50",
         className,
       )}
@@ -147,12 +160,14 @@ export function InputGroup(props: InputGroupProps) {
       ) : null}
 
       <TextInput
-        style={fieldStyle as unknown as TextStyle}
+        style={[fieldStyle as unknown as TextStyle, FIELD_OUTLINE_RESET]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={tokens["muted-foreground"]}
         editable={!disabled && !readOnly}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       />
 
       {trailingIcon && iconName != null ? (
