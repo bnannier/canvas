@@ -78,7 +78,7 @@ export function RowMenu(props: RowMenuProps) {
       </Pressable>
 
       {open ? (
-        <Box className={cn(MENU_CARD, "mt-1")}>
+        <Box className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}>
           {sectionLabel ? (
             <Text className={MENU_LABEL}>{sectionLabel}</Text>
           ) : null}

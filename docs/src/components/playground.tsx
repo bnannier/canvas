@@ -107,8 +107,14 @@ export function Playground({ config, slug }: PlaygroundProps) {
 
   return (
     <div>
-      <div className="playground-grid">
-        <div>
+      {/* The grid and its stage column are raised above the later controls and
+          code sections so a floating subcomponent (dropdown / popover / combobox
+          / command panel) overflows the stage and paints OVER them. In glass mode
+          the section cards carry a backdrop-filter, which creates stacking
+          contexts; without these z-indexes the floating panel is trapped in the
+          stage's context and hidden behind the code section below. */}
+      <div className="playground-grid" style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ position: "relative", zIndex: 1 }}>
           <div
             className="section-card"
             onClick={isStatic ? () => fire(entry?.name ?? slug ?? "Component") : undefined}

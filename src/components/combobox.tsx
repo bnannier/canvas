@@ -108,7 +108,7 @@ export function Combobox(props: ComboboxProps) {
   );
 
   return (
-    <Box className={cn("w-full", className)}>
+    <Box className={cn("relative w-full", className)}>
       {label != null && label !== "" ? (
         <Text className={cn("mb-1.5 font-medium text-foreground", TEXT_SIZE[size])}>
           {label}
@@ -127,7 +127,7 @@ export function Combobox(props: ComboboxProps) {
       </Pressable>
 
       {open ? (
-        <Box className="mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
+        <Box className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
           {matches.length === 0 ? (
             <Box className="px-2 py-1.5">
               <Text className={cn(TEXT_SIZE[size], "text-muted-foreground")}>

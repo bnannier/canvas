@@ -10,8 +10,9 @@ import { Button } from "./button.js";
 //
 // Overlay note: a real dropdown portals its menu over the page and dismisses on
 // outside click. Here, for the docs playground (which has no portal/Modal), the
-// open menu renders INLINE directly below the trigger via a floating card so the
-// preview is never covered. The `open` boolean (default true) keeps it shown.
+// open menu renders as a floating card positioned absolutely below the trigger
+// (the wrapper is `relative`), so it overflows its container, e.g. the playground
+// stage, instead of growing it.
 //
 // There are no visual style axes on the menu itself, so there is no boolean-prop
 // precedence to resolve; the per-item `destructive` flag is the only variant and
@@ -71,7 +72,7 @@ export function Dropdown(props: DropdownProps) {
       </Button>
 
       {open ? (
-        <Box className={cn(MENU_CARD, "mt-1")}>
+        <Box className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}>
           {label ? (
             <Text className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
               {label}

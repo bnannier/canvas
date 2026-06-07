@@ -113,7 +113,7 @@ export function Command(props: CommandProps) {
 
   const card =
     open ? (
-      <Box className={cn(CARD, trigger && "mt-3")}>
+      <Box className={cn(CARD, trigger && "absolute top-full left-0 z-50 mt-3")}>
         <Box className={SEARCH_ROW}>
           <Text className={SEARCH_GLYPH}>🔍</Text>
           <Text className={SEARCH_PLACEHOLDER}>{placeholder}</Text>
@@ -168,7 +168,7 @@ export function Command(props: CommandProps) {
   if (!trigger) return card;
 
   return (
-    <Box className={cn("w-full", className)}>
+    <Box className={cn("relative w-full", className)}>
       <Pressable className={TRIGGER_ROW} onPress={() => setOpen(!open)}>
         <Icon search muted size={14} />
         <Text className={TRIGGER_LABEL}>Search...</Text>

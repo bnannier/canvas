@@ -78,13 +78,15 @@ export function Popover(props: PopoverProps) {
 
   const card = cn(
     "w-[260px] rounded-lg border border-border bg-popover p-4 shadow-lg",
-    // Space the card below the trigger only when a trigger is present.
-    !inline && "mt-2",
+    // With a trigger, the card floats (absolute) below it (the wrapper is
+    // `relative`), so it overflows its container instead of growing it. In
+    // inline mode it is a standalone in-flow panel.
+    !inline && "absolute top-full left-0 z-50 mt-2",
     className,
   );
 
   return (
-    <Box>
+    <Box className={cn(!inline && "relative self-start")}>
       {inline ? null : (
         <Box className="self-start">
           <Button outline small onPress={() => setOpen(!open)}>
