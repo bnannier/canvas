@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { cn } from "../cn.js";
 import { Box, Text } from "../engine/index.js";
 import { Button } from "./button.js";
@@ -28,11 +28,16 @@ export interface DialogProps {
   // Body: render a short form (Amount + Reason fields) inside the panel for
   // the data-driven case.
   withBody?: boolean;
+  // Trigger button label. When set, the dialog renders the button and opens
+  // itself on press (uncontrolled). Omit when you drive `open` yourself.
+  trigger?: string;
   // Action labels.
   confirmLabel?: string;
   cancelLabel?: string;
-  // Visibility: render the open dialog when true (default).
+  // Controlled open state. Omit for uncontrolled (the trigger opens it).
   open?: boolean;
+  // Fired when the open state changes (trigger press, confirm, cancel).
+  onOpenChange?: (open: boolean) => void;
   // Confirm intent (default is a primary confirm).
   destructive?: boolean;
   // Width (pick one; default is the standard panel width). First-match
@@ -81,69 +86,88 @@ export function Dialog(props: DialogProps) {
     withBody,
     confirmLabel = "Confirm",
     cancelLabel = "Cancel",
-    open = true,
+    trigger,
+    open: openProp,
+    onOpenChange,
     destructive,
     onConfirm,
     onCancel,
     className,
   } = props;
 
-  if (!open) return null;
+  // Uncontrolled by default: the trigger opens the dialog and an action closes
+  // it; a controlled `open` prop overrides this.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const size = sizeOf(props);
 
-  // Contained dim backdrop: a centered, rounded scrim with presence in the
-  // preview (explicit minHeight) so the panel reads as a modal within the area.
+  // Optional trigger button plus the modal. The modal is a contained dim
+  // backdrop: a centered, rounded scrim with presence in the preview (explicit
+  // minHeight) so the panel reads as a modal within the area.
   return (
-    <Box
-      className="items-center justify-center rounded-lg bg-black/50 p-8"
-      style={{ minHeight: 220 }}
-    >
-      <Box
-        className={cn(
-          "w-full rounded-lg border border-border bg-popover p-6 shadow-xl",
-          PANEL_SIZE[size],
-          className,
-        )}
-      >
-        {children != null ? (
-          children
-        ) : (
-          <>
-            {title != null ? (
-              <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
-            ) : null}
-            {description != null ? (
-              <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
-            ) : null}
-            {withBody ? (
-              <Box className="mt-5">
-                <Text className="text-sm font-medium text-foreground mb-1.5">Amount</Text>
-                <Box className="flex-row items-center">
-                  <Text className="text-sm text-muted-foreground mr-2">$</Text>
-                  <Input value="90.00" className="flex-1" />
+    <Box className="self-start">
+      {trigger != null ? (
+        <Button outline small onPress={() => setOpen(true)}>
+          {trigger}
+        </Button>
+      ) : null}
+      {open ? (
+        <Box
+          className={cn(trigger != null && "mt-3", "items-center justify-center rounded-lg bg-black/50 p-8")}
+          style={{ minHeight: 220 }}
+        >
+          <Box
+            className={cn(
+              "w-full rounded-lg border border-border bg-popover p-6 shadow-xl",
+              PANEL_SIZE[size],
+              className,
+            )}
+          >
+            {children != null ? (
+              children
+            ) : (
+              <>
+                {title != null ? (
+                  <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
+                ) : null}
+                {description != null ? (
+                  <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
+                ) : null}
+                {withBody ? (
+                  <Box className="mt-5">
+                    <Text className="text-sm font-medium text-foreground mb-1.5">Amount</Text>
+                    <Box className="flex-row items-center">
+                      <Text className="text-sm text-muted-foreground mr-2">$</Text>
+                      <Input value="90.00" className="flex-1" />
+                    </Box>
+                    <Text className="text-sm font-medium text-foreground mb-1.5 mt-4">Reason</Text>
+                    <Input placeholder="Duplicate charge" />
+                  </Box>
+                ) : null}
+                <Box className="flex-row justify-end gap-2 mt-6">
+                  <Button outline small onPress={() => { onCancel?.(); setOpen(false); }}>
+                    {cancelLabel}
+                  </Button>
+                  {destructive ? (
+                    <Button destructive small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                      {confirmLabel}
+                    </Button>
+                  ) : (
+                    <Button primary small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                      {confirmLabel}
+                    </Button>
+                  )}
                 </Box>
-                <Text className="text-sm font-medium text-foreground mb-1.5 mt-4">Reason</Text>
-                <Input placeholder="Duplicate charge" />
-              </Box>
-            ) : null}
-            <Box className="flex-row justify-end gap-2 mt-6">
-              <Button outline small onPress={onCancel}>
-                {cancelLabel}
-              </Button>
-              {destructive ? (
-                <Button destructive small onPress={onConfirm}>
-                  {confirmLabel}
-                </Button>
-              ) : (
-                <Button primary small onPress={onConfirm}>
-                  {confirmLabel}
-                </Button>
-              )}
-            </Box>
-          </>
-        )}
-      </Box>
+              </>
+            )}
+          </Box>
+        </Box>
+      ) : null}
     </Box>
   );
 }

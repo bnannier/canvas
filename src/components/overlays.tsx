@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Text } from "../engine/index.js";
 import { Button } from "./button.js";
@@ -19,8 +20,13 @@ export interface OverlayProps {
   // Content (strings).
   title?: string;
   description?: string;
-  // Visibility: render the open overlay when true (default).
+  // Trigger button label. When set, the overlay renders the button and opens
+  // itself on press (uncontrolled). Omit when you drive `open` yourself.
+  trigger?: string;
+  // Controlled open state. Omit for uncontrolled (the trigger opens it).
   open?: boolean;
+  // Fired when the open state changes (trigger press, done).
+  onOpenChange?: (open: boolean) => void;
   // Placement (pick one; first match wins, default is the right-side drawer).
   drawer?: boolean;
   sheet?: boolean;
@@ -59,32 +65,55 @@ const SURFACE_PLACEMENT: Record<Placement, string> = {
 };
 
 export function Overlay(props: OverlayProps) {
-  const { title, description, open = true, doneLabel = "Done", onDone, className } = props;
+  const { title, description, trigger, open: openProp, onOpenChange, doneLabel = "Done", onDone, className } = props;
 
-  if (!open) return null;
+  // Uncontrolled by default: the trigger opens the overlay and Done closes it;
+  // a controlled `open` prop overrides this.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const placement = placementOf(props);
 
-  // Contained dim backdrop: a rounded, clipped scrim with explicit presence in
-  // the preview (minHeight) so the surface reads as an overlay within the area.
+  // Optional trigger button plus the overlay. The overlay is a contained dim
+  // backdrop: a rounded, clipped scrim with explicit presence in the preview
+  // (minHeight) so the surface reads as an overlay within the area.
   return (
-    <Box
-      className={cn("relative w-full overflow-hidden rounded-lg bg-black/50", BACKDROP_PLACEMENT[placement])}
-      style={{ minHeight: 280 }}
-    >
-      <Box className={cn(SURFACE_PLACEMENT[placement], className)}>
-        {title != null ? (
-          <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
-        ) : null}
-        {description != null ? (
-          <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
-        ) : null}
-        <Box className="flex-row justify-end mt-6">
-          <Button primary small onPress={onDone}>
-            {doneLabel}
+    <Box className="w-full">
+      {trigger != null ? (
+        <Box className="self-start">
+          <Button outline small onPress={() => setOpen(true)}>
+            {trigger}
           </Button>
         </Box>
-      </Box>
+      ) : null}
+      {open ? (
+        <Box
+          className={cn(
+            trigger != null && "mt-3",
+            "relative w-full overflow-hidden rounded-lg bg-black/50",
+            BACKDROP_PLACEMENT[placement],
+          )}
+          style={{ minHeight: 280 }}
+        >
+          <Box className={cn(SURFACE_PLACEMENT[placement], className)}>
+            {title != null ? (
+              <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
+            ) : null}
+            {description != null ? (
+              <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
+            ) : null}
+            <Box className="flex-row justify-end mt-6">
+              <Button primary small onPress={() => { onDone?.(); setOpen(false); }}>
+                {doneLabel}
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      ) : null}
     </Box>
   );
 }

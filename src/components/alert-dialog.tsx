@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../cn.js";
 import { Box, Text } from "../engine/index.js";
 import { Button } from "./button.js";
@@ -25,11 +26,16 @@ export interface AlertDialogProps {
   // Content (strings).
   title?: string;
   description?: string;
+  // Trigger button label. When set, the dialog renders the button and opens
+  // itself on press (uncontrolled). Omit when you drive `open` yourself.
+  trigger?: string;
   // Action labels.
   confirmLabel?: string;
   cancelLabel?: string;
-  // Visibility: render the open dialog when true (default).
+  // Controlled open state. Omit for uncontrolled (the trigger opens it).
   open?: boolean;
+  // Fired when the open state changes (trigger press, confirm, cancel).
+  onOpenChange?: (open: boolean) => void;
   // Width (pick one; default is the medium panel).
   narrow?: boolean;
   small?: boolean;
@@ -69,7 +75,9 @@ export function AlertDialog(props: AlertDialogProps) {
     description,
     confirmLabel = "Continue",
     cancelLabel = "Cancel",
-    open = true,
+    trigger,
+    open: openProp,
+    onOpenChange,
     withInput,
     destructive,
     onConfirm,
@@ -77,53 +85,70 @@ export function AlertDialog(props: AlertDialogProps) {
     className,
   } = props;
 
-  if (!open) return null;
+  // Uncontrolled by default: the trigger opens the dialog and an action closes
+  // it; a controlled `open` prop overrides this.
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const width = widthOf(props);
 
-  // Contained dim backdrop: a centered, rounded scrim with presence in the
-  // preview (explicit minHeight) so the card reads as a modal within the area.
+  // Optional trigger button plus the modal. The modal is a contained dim
+  // backdrop: a centered, rounded scrim with presence in the preview (explicit
+  // minHeight) so the card reads as a modal within the area.
   return (
-    <Box
-      className="items-center justify-center rounded-lg bg-black/50 p-8"
-      style={{ minHeight: 200 }}
-    >
-      <Box
-        className={cn(
-          "w-full rounded-lg border border-border bg-popover p-6 shadow-xl",
-          PANEL_WIDTH[width],
-          className,
-        )}
-      >
-        {title != null ? (
-          <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
-        ) : null}
-        {description != null ? (
-          <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
-        ) : null}
-        {withInput ? (
-          <Box className="mt-4">
-            <Text className="text-sm font-medium text-foreground mb-1.5">
-              Type DELETE to confirm
-            </Text>
-            <Input placeholder="DELETE" />
+    <Box className="self-start">
+      {trigger != null ? (
+        <Button outline small onPress={() => setOpen(true)}>
+          {trigger}
+        </Button>
+      ) : null}
+      {open ? (
+        <Box
+          className={cn(trigger != null && "mt-3", "items-center justify-center rounded-lg bg-black/50 p-8")}
+          style={{ minHeight: 200 }}
+        >
+          <Box
+            className={cn(
+              "w-full rounded-lg border border-border bg-popover p-6 shadow-xl",
+              PANEL_WIDTH[width],
+              className,
+            )}
+          >
+            {title != null ? (
+              <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
+            ) : null}
+            {description != null ? (
+              <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
+            ) : null}
+            {withInput ? (
+              <Box className="mt-4">
+                <Text className="text-sm font-medium text-foreground mb-1.5">
+                  Type DELETE to confirm
+                </Text>
+                <Input placeholder="DELETE" />
+              </Box>
+            ) : null}
+            <Box className="flex-row justify-end gap-2 mt-6">
+              <Button outline small onPress={() => { onCancel?.(); setOpen(false); }}>
+                {cancelLabel}
+              </Button>
+              {destructive ? (
+                <Button destructive small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                  {confirmLabel}
+                </Button>
+              ) : (
+                <Button primary small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                  {confirmLabel}
+                </Button>
+              )}
+            </Box>
           </Box>
-        ) : null}
-        <Box className="flex-row justify-end gap-2 mt-6">
-          <Button outline small onPress={onCancel}>
-            {cancelLabel}
-          </Button>
-          {destructive ? (
-            <Button destructive small onPress={onConfirm}>
-              {confirmLabel}
-            </Button>
-          ) : (
-            <Button primary small onPress={onConfirm}>
-              {confirmLabel}
-            </Button>
-          )}
         </Box>
-      </Box>
+      ) : null}
     </Box>
   );
 }

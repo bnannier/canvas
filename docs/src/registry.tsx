@@ -999,9 +999,8 @@ export const registry: Record<string, RegistryEntry> = {
     name: "Dialog",
     Component: Dialog as AnyComponent,
     mapProps: (s, demo) => ({
-      open: s.demoOpen === true,
-      onConfirm: () => { demo?.set("demoOpen", false); demo?.fire("Confirmed"); },
-      onCancel: () => demo?.set("demoOpen", false),
+      trigger: "Open dialog",
+      onConfirm: () => demo?.fire("Confirmed"),
       title: "Refund payment",
       description: s.withDescription
         ? "The refund will be reflected in the customer's bank account within 2 to 3 business days."
@@ -1107,9 +1106,8 @@ export const registry: Record<string, RegistryEntry> = {
       small: s.size === "sm",
       large: s.size === "lg",
       withInput: !!s.withInput,
-      open: s.demoOpen === true,
-      onConfirm: () => { demo?.set("demoOpen", false); demo?.fire("Confirmed"); },
-      onCancel: () => demo?.set("demoOpen", false),
+      trigger: "Delete identity…",
+      onConfirm: () => demo?.fire("Confirmed"),
     }),
   },
 
@@ -1216,8 +1214,8 @@ export const registry: Record<string, RegistryEntry> = {
       const placement =
         s.kind === "modal" ? { modal: true } : s.kind === "toast" || s.kind === "menu" ? { sheet: true } : { drawer: true };
       return {
-        open: s.demoOpen === true,
-        onDone: () => { demo?.set("demoOpen", false); demo?.fire("Done"); },
+        trigger: "Open panel",
+        onDone: () => demo?.fire("Done"),
         title: (s.title as string) || "Edit Identity",
         description: s.withDescription ? "Visible above the parent page so the user can compare." : undefined,
         ...placement,

@@ -90,11 +90,6 @@ export function Playground({ config, slug }: PlaygroundProps) {
     "action-panels", "field",
   ]);
   const isStatic = !!slug && STATIC_SLUGS.has(slug);
-  // Trigger-less overlays render nothing until opened; the playground supplies a
-  // trigger button that toggles demo open state (the component reads `open` from
-  // it via mapProps), so they demonstrate click-to-open like the others.
-  const TRIGGER_SLUGS: Record<string, string> = { dialog: "Open dialog", "alert-dialog": "Delete identity…", overlays: "Open panel" };
-  const triggerLabel = slug ? TRIGGER_SLUGS[slug] : undefined;
   const treeFn = slug ? TREES[slug] : undefined;
   const treeEl = treeFn ? treeFn(state, demo) : null;
   const resolvedProps = entry && !treeEl ? entry.mapProps(state, demo) : null;
@@ -127,18 +122,7 @@ export function Playground({ config, slug }: PlaygroundProps) {
               cursor: isStatic ? "pointer" : undefined,
             }}
           >
-            {triggerLabel ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%" }}>
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={() => set("demoOpen", !(state.demoOpen as boolean))}
-                >
-                  {triggerLabel}
-                </button>
-                {entry && resolvedProps ? <entry.Component {...resolvedProps} /> : null}
-              </div>
-            ) : treeEl ? (
+            {treeEl ? (
               renderTree(treeEl)
             ) : entry && resolvedProps ? (
               <entry.Component {...resolvedProps} />
