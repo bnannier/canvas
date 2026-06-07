@@ -87,7 +87,7 @@ export function Playground({ config, slug }: PlaygroundProps) {
   const STATIC_SLUGS = new Set([
     "badge", "divider", "skeleton", "spinner", "icon", "kbd", "typography",
     "stats", "charts", "description-lists", "code-block", "grid-lists", "media-objects",
-    "action-panels",
+    "action-panels", "field",
   ]);
   const isStatic = !!slug && STATIC_SLUGS.has(slug);
   // Trigger-less overlays render nothing until opened; the playground supplies a
