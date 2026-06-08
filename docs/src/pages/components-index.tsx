@@ -356,29 +356,6 @@ export function ComponentsIndex() {
             ))}
           </div>
         </Tile>
-        <Tile title="Input Groups" to="/components/input-group">
-          <div style={{ display: "flex", width: "100%", maxWidth: 200 }}>
-            <span style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "0 8px",
-              borderRadius: "var(--radius-md, 6px) 0 0 var(--radius-md, 6px)",
-              border: "1px solid var(--input)",
-              borderRight: 0,
-              background: "var(--muted)",
-              fontSize: 10,
-              color: "var(--muted-foreground)",
-            }}>
-              https://
-            </span>
-            <input className="input" defaultValue="example.com" style={{
-              height: 32,
-              fontSize: 12,
-              borderTopLeftRadius: 0,
-              borderBottomLeftRadius: 0,
-            }} />
-          </div>
-        </Tile>
         <Tile title="Inputs & Forms" to="/components/input">
           <input className="input" placeholder="email@example.com" style={{ height: 32, fontSize: 12, width: "100%", maxWidth: 180 }} />
         </Tile>

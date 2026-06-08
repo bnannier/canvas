@@ -13,7 +13,6 @@ export * from "./switch.js";
 export * from "./button-group.js";
 export * from "./input.js";
 export * from "./textarea.js";
-export * from "./input-group.js";
 export * from "./pagination.js";
 export * from "./typography.js";
 export * from "./card.js";

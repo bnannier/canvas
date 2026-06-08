@@ -340,40 +340,6 @@ export const registry: Record<string, RegistryEntry> = {
     }),
   },
 
-  "input-group": {
-    name: "Input",
-    Component: Input as AnyComponent,
-    mapProps: (s) => {
-      const v = s.variant as string;
-      const isAction = v === "action";
-      return {
-        small: s.size === "sm",
-        large: s.size === "lg",
-        disabled: Boolean(s.disabled),
-        prefix: v === "lead-text" ? "https://" : v === "currency" ? "$" : undefined,
-        suffix:
-          v === "trail-text" ? "@canvas.dev"
-            : v === "currency" ? "USD"
-              : isAction ? "Copy"
-                : undefined,
-        action: isAction,
-        readOnly: isAction,
-        leadingIcon: v === "lead-icon",
-        trailingIcon: v === "trail-icon",
-        icon: v === "lead-icon" ? "search" : v === "trail-icon" ? "mail" : undefined,
-        value: isAction ? "sk_live_••••••••4242" : undefined,
-        placeholder:
-          v === "lead-text" ? "example.com"
-            : v === "trail-text" ? "ada"
-              : v === "lead-icon" ? "Quick search…"
-                : v === "trail-icon" ? "you@example.com"
-                  : v === "currency" ? "0.00"
-                    : undefined,
-        className: "max-w-[320px]",
-      };
-    },
-  },
-
   pagination: {
     name: "Pagination",
     Component: Pagination as AnyComponent,

@@ -63,7 +63,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "divider", label: "Dividers", to: "/components/divider", icon: Minus },
       { slug: "dropdown", label: "Dropdowns", to: "/components/dropdown", icon: ChevronDown },
       { slug: "icon", label: "Icons", to: "/components/icon", icon: Info },
-      { slug: "input-group", label: "Input Groups", to: "/components/input-group", icon: Columns2 },
       { slug: "input", label: "Inputs & Forms", to: "/components/input", icon: TextCursorInput },
       { slug: "kbd", label: "Kbd", to: "/components/kbd", icon: Keyboard },
       { slug: "listbox", label: "Listboxes", to: "/components/listbox", icon: ListChecks },
