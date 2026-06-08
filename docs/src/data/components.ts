@@ -1285,7 +1285,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "input-group",
     name: "Input Groups",
-    description: "Inputs with leading/trailing addons, currency, action buttons.",
+    description: "Addon props on Input: leading/trailing text, icons, currency, action buttons. (The separate InputGroup is deprecated; pass these as props on Input.)",
     category: "Atoms",
     playground: {
       controls: [

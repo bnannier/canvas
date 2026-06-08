@@ -35,7 +35,6 @@ import {
   GridList,
   Icon,
   Input,
-  InputGroup,
   Kbd,
   Listbox,
   MediaObject,
@@ -107,7 +106,6 @@ const COMPONENT_MAP: Record<string, AnyComponent> = {
   Field: Field as AnyComponent,
   Icon: Icon as AnyComponent,
   Input: Input as AnyComponent,
-  InputGroup: InputGroup as AnyComponent,
   Kbd: Kbd as AnyComponent,
   MediaObject: MediaObject as AnyComponent,
   Radio: Radio as AnyComponent,
@@ -343,8 +341,8 @@ export const registry: Record<string, RegistryEntry> = {
   },
 
   "input-group": {
-    name: "InputGroup",
-    Component: InputGroup as AnyComponent,
+    name: "Input",
+    Component: Input as AnyComponent,
     mapProps: (s) => {
       const v = s.variant as string;
       const isAction = v === "action";
