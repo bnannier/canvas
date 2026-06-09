@@ -5,8 +5,8 @@ const GUIDE_ENTRIES: SearchEntry[] = [
   { title: "Home", description: "Canvas design system overview", path: "/", category: "Pages", keywords: ["overview", "getting started", "install"] },
   { title: "Tokens", description: "Design token reference (colors, typography, spacing)", path: "/tokens", category: "Foundations", keywords: ["colors", "fonts", "spacing", "radius", "shadows", "custom properties", "variables"] },
   { title: "Theming", description: "Light/dark mode, glass surface, density controls", path: "/theming", category: "Guides", keywords: ["dark mode", "light mode", "glass", "compact", "comfy", "theme"] },
-  { title: "Integration", description: "Consumer integration guide for downstream packages", path: "/integration", category: "Guides", keywords: ["react", "vue", "downstream", "consumer"] },
-  { title: "Browser Support", description: "CSS feature matrix and minimum browser versions", path: "/browser-support", category: "Guides", keywords: ["browsers", "compatibility", "css features"] },
+  { title: "Integration", description: "Install and consume Canvas, the universal React Native kit, on native and the web", path: "/integration", category: "Guides", keywords: ["react", "react native", "react-native-web", "install", "setup", "native", "web"] },
+  { title: "Browser Support", description: "Supported platforms (iOS, Android, web) and the web browser baseline", path: "/browser-support", category: "Guides", keywords: ["platforms", "ios", "android", "web", "react-native-web", "browsers", "compatibility"] },
   { title: "React Native primitives", description: "Engine-styled primitives (View, Text, Pressable, Image, TextInput, ScrollView) and the react-native boundary", path: "/rn-primitives", category: "Guides", keywords: ["react native", "react-native-web", "rnw", "primitives", "scroll", "image", "textinput", "view", "native", "peer dependency"] },
 ];
 

@@ -2,18 +2,18 @@ import { CodeBlock } from "@/components/code-block";
 import { PageNav } from "@/components/page-nav";
 
 const SEMANTIC_PAIRS = [
-  { name: "Background", varName: "--background", light: "oklch(1 0 0)", dark: "oklch(0.141 0.005 285.8)", bgVar: "var(--background)" },
-  { name: "Foreground", varName: "--foreground", light: "oklch(0.141 0.005 285.8)", dark: "oklch(0.985 0 0)", bgVar: "var(--foreground)" },
-  { name: "Card", varName: "--card", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.9)", bgVar: "var(--card)" },
-  { name: "Popover", varName: "--popover", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.9)", bgVar: "var(--popover)" },
-  { name: "Primary", varName: "--primary", light: "oklch(0.511 0.262 277)", dark: "oklch(0.585 0.233 277)", bgVar: "var(--primary)" },
-  { name: "Secondary", varName: "--secondary", light: "oklch(0.967 0.001 286.4)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--secondary)" },
-  { name: "Muted", varName: "--muted", light: "oklch(0.967 0.001 286.4)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--muted)" },
-  { name: "Accent", varName: "--accent", light: "oklch(0.967 0.001 286.4)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--accent)" },
-  { name: "Destructive", varName: "--destructive", light: "oklch(0.577 0.245 27.3)", dark: "oklch(0.704 0.191 22.2)", bgVar: "var(--destructive)" },
-  { name: "Border", varName: "--border", light: "oklch(0.92 0.004 286.3)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--border)" },
-  { name: "Input", varName: "--input", light: "oklch(0.92 0.004 286.3)", dark: "oklch(0.274 0.006 286)", bgVar: "var(--input)" },
-  { name: "Ring", varName: "--ring", light: "oklch(0.585 0.233 277)", dark: "oklch(0.585 0.233 277)", bgVar: "var(--ring)" },
+  { name: "Background", varName: "--background", light: "oklch(1 0 0)", dark: "oklch(0.141 0.005 285.823)", bgVar: "var(--background)" },
+  { name: "Foreground", varName: "--foreground", light: "oklch(0.141 0.005 285.823)", dark: "oklch(0.985 0 0)", bgVar: "var(--foreground)" },
+  { name: "Card", varName: "--card", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.885)", bgVar: "var(--card)" },
+  { name: "Popover", varName: "--popover", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.885)", bgVar: "var(--popover)" },
+  { name: "Primary", varName: "--primary", light: "oklch(0.511 0.262 276.966)", dark: "oklch(0.585 0.233 277.117)", bgVar: "var(--primary)" },
+  { name: "Secondary", varName: "--secondary", light: "oklch(0.967 0.001 286.375)", dark: "oklch(0.274 0.006 286.033)", bgVar: "var(--secondary)" },
+  { name: "Muted", varName: "--muted", light: "oklch(0.967 0.001 286.375)", dark: "oklch(0.274 0.006 286.033)", bgVar: "var(--muted)" },
+  { name: "Accent", varName: "--accent", light: "oklch(0.967 0.001 286.375)", dark: "oklch(0.274 0.006 286.033)", bgVar: "var(--accent)" },
+  { name: "Destructive", varName: "--destructive", light: "oklch(0.577 0.245 27.325)", dark: "oklch(0.704 0.191 22.216)", bgVar: "var(--destructive)" },
+  { name: "Border", varName: "--border", light: "oklch(0.92 0.004 286.32)", dark: "oklch(0.274 0.006 286.033)", bgVar: "var(--border)" },
+  { name: "Input", varName: "--input", light: "oklch(0.92 0.004 286.32)", dark: "oklch(0.274 0.006 286.033)", bgVar: "var(--input)" },
+  { name: "Ring", varName: "--ring", light: "oklch(0.585 0.233 277.117)", dark: "oklch(0.585 0.233 277.117)", bgVar: "var(--ring)" },
 ];
 
 const ACCENT_OPTIONS = [

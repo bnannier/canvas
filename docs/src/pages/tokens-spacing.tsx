@@ -8,9 +8,8 @@ const SPACING = [
 const RADII = [
   { name: "sm", px: 4, use: "Inline code, kbd, micro chips", varName: "--radius-sm" },
   { name: "md", px: 6, use: "Inputs, buttons, badges", varName: "--radius-md" },
-  { name: "lg", px: 8, use: "Default, set by --radius", varName: "--radius" },
+  { name: "lg", px: 8, use: "Default radius", varName: "--radius-lg" },
   { name: "xl", px: 12, use: "Cards, sections", varName: "--radius-xl" },
-  { name: "2xl", px: 16, use: "Hero panels, splashes", varName: "--radius-2xl" },
   { name: "full", px: 0, label: "∞", use: "Avatars, pills, status dots" },
 ];
 
@@ -98,8 +97,8 @@ export function SpacingPage() {
           color: "var(--muted-foreground)",
         }}>
           The 4px grid governs all of Canvas. Every padding, margin, gap, width, and height is a multiple
-          of 4. Radii follow a strict ramp set by <code>--radius</code> (which the Tweaks panel mutates
-          live). Shadows come from Tailwind's defaults; we don't ship a custom shadow set.
+          of 4. Radii follow a fixed four-tier scale (sm, md, lg, xl) plus full for pills; components
+          reference rounded-sm/md/lg/xl, which map to the radius tokens. Shadows come from Tailwind's defaults; we don't ship a custom shadow set.
         </p>
       </section>
 
@@ -133,10 +132,10 @@ export function SpacingPage() {
 
       <Section
         title="Radius scale"
-        description="Driven by --radius (default 8px). Components don't hardcode pixel radii; they reference rounded-md, rounded-lg, rounded-xl which all bend with the token."
-        anatomy="The default --radius is what Tweaks → Radius mutates. Components pin to a relative size (sm/md/lg/xl/full) so the system stays proportional when the user dials radius up or down."
+        description="Four fixed tiers, sm through xl, plus full for pills. Components reference the rounded-sm/md/lg/xl utilities, which map to the --radius-* tokens, so radii stay consistent across the kit."
+        anatomy="Components pin to a relative tier (sm/md/lg/xl/full) rather than hardcoding pixels, so radii stay proportional across the kit. The tiers are fixed tokens, not a runtime-adjustable knob."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
           {RADII.map((r) => (
             <div key={r.name} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
               <div style={{
@@ -212,7 +211,7 @@ export function SpacingPage() {
         </div>
       </Section>
 
-      <Section title="Component density" description="Three density modes affect padding/font on tables and content. Toggle in the Tweaks panel.">
+      <Section title="Component density" description="Three density modes affect padding and font size on tables and content. Set density with setDensity() on the web, or with per-component density props like Card compact on native.">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {DENSITY.map((d) => (
             <div key={d.name} style={{

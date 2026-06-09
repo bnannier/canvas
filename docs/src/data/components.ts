@@ -420,7 +420,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "badge",
     name: "Badges",
-    description: "Two families. <code>.badge</code> = rectangular pill for metadata (schema, role, tag). <code>.status-badge</code> = pill with dot for live state (active, pending, failed).",
+    description: "Two families on one Badge component, picked by boolean props. The metadata badge is a rectangular pill for labels like schema, role, or tag (tones: default, secondary, outline, destructive; add <code>mono</code> for token names). The status badge (<code>status</code>) is a rounded pill with a leading dot for live state like active, pending, or failed (tones: success, warning, error, info, neutral).",
     category: "Atoms",
     playground: {
       controls: [
@@ -1285,7 +1285,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "input",
     name: "Inputs & Forms",
-    description: "One <code>.input</code> primitive drives text inputs, selects, textareas, and the search field. Every form composes <code>.label</code> + control + <code>.field-helper</code> in that order.",
+    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>block</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons; <code>multiline</code> turns it into a textarea. Select and the search field share its look, and Field and Form compose a label, the control, and helper text.",
     category: "Atoms",
     playground: {
       controls: [
@@ -4101,11 +4101,11 @@ npm run build</pre></div>`,
       {
         title: "h3",
         dont: {
-          html: `<p class="${typeScale.h3} max-w-[340px]">Canvas is a CSS-first design system for building consistent product interfaces.</p>`,
+          html: `<p class="${typeScale.h3} max-w-[340px]">Canvas is a universal React Native UI kit for building consistent product interfaces.</p>`,
           caption: "Body copy set in a heading style is hard to read in bulk and flattens the hierarchy.",
         },
         do: {
-          html: `<div class="max-w-[340px]"><h3 class="${typeScale.h3}">About Canvas</h3><p class="${typeScale.body} mt-1">Canvas is a CSS-first design system for building consistent product interfaces.</p></div>`,
+          html: `<div class="max-w-[340px]"><h3 class="${typeScale.h3}">About Canvas</h3><p class="${typeScale.body} mt-1">Canvas is a universal React Native UI kit for building consistent product interfaces.</p></div>`,
           caption: "Reserve heading styles for titles; set running text in a small body utility.",
         },
       },

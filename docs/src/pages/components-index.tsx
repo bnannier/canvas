@@ -215,7 +215,7 @@ export function ComponentsIndex() {
       </CatGroup>
 
       {/* ─── Atoms ──────────────────────────────────────────── */}
-      <CatGroup id="atoms" label="Atoms" count={19}>
+      <CatGroup id="atoms" label="Atoms" count={18}>
         <Tile title="Avatars" to="/components/avatar">
           <div style={{ display: "flex" }}>
             {["AL", "GH", "RC", "LB"].map((s, i) => (
@@ -653,7 +653,7 @@ export function ComponentsIndex() {
       </CatGroup>
 
       {/* ─── Organisms ──────────────────────────────────────── */}
-      <CatGroup id="organisms" label="Organisms" count={10}>
+      <CatGroup id="organisms" label="Organisms" count={11}>
         <Tile title="Calendars" to="/components/calendar">
           <div style={{ width: "100%", maxWidth: 160, display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
             {Array.from({ length: 28 }).map((_, i) => (

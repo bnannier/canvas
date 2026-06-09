@@ -55,7 +55,7 @@ export function ComponentPage() {
               maxWidth: 640,
               lineHeight: 1.6,
             }}>
-              Combine variant, size, and state. The preview updates live; open Show code to copy the markup.
+              Mix intent and size with state and layout booleans. The preview updates live; open Show code to copy the markup.
             </p>
           </header>
           <Playground key={comp.slug} slug={comp.slug} config={comp.playground} />
