@@ -1,5 +1,10 @@
-import { CodeBlock } from "@/components/code-block";
+import { Markdown } from "@/components/markdown";
 import { PageNav } from "@/components/page-nav";
+import cssVarsCode from "./snippets/tokens/css-vars.md?raw";
+import themeBridgeCode from "./snippets/tokens/theme-bridge.md?raw";
+import dynamicCode from "./snippets/tokens/dynamic.md?raw";
+import dontCode from "./snippets/tokens/dont.md?raw";
+import doCode from "./snippets/tokens/do.md?raw";
 
 const SEMANTIC_PAIRS = [
   { name: "Background", varName: "--background", light: "oklch(1 0 0)", dark: "oklch(0.141 0.005 285.823)", bgVar: "var(--background)" },
@@ -208,33 +213,6 @@ function Section({ title, description, anatomy, children }: {
   );
 }
 
-const cssVarsCode = `:root {
-  --primary: oklch(0.511 0.262 277);
-  --background: oklch(1 0 0);
-  /* … */
-}
-.dark {
-  --primary: oklch(0.585 0.233 277);
-  --background: oklch(0.141 0.005 285.8);
-  /* … */
-}`;
-
-const themeBridgeCode = `@theme inline {
-  --color-primary:    var(--primary);
-  --color-background: var(--background);
-  /* … */
-}`;
-
-const dynamicCode = `<button className="bg-primary text-primary-foreground">Save</button>
-
-// Same markup, different theme:
-//   light → background-color: oklch(0.511 0.262 277)
-//   dark  → background-color: oklch(0.585 0.233 277)
-//   accent=teal → background-color: hsl(173 70% 42%)`;
-
-const dontCode = `<button style={{ background: '#6366f1' }}>`;
-const doCode = `<button className="bg-primary text-primary-foreground">`;
-
 export function TokensPage() {
   return (
     <div>
@@ -381,7 +359,7 @@ export function TokensPage() {
             <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--foreground)", marginBottom: 8 }}>
               1 · CSS variables (tokens.css)
             </div>
-            <CodeBlock code={cssVarsCode} language="css" />
+            <Markdown source={cssVarsCode} />
           </div>
           <div style={{
             borderRadius: "var(--radius-xl, 12px)",
@@ -392,7 +370,7 @@ export function TokensPage() {
             <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--foreground)", marginBottom: 8 }}>
               2 · Tailwind theme bridge
             </div>
-            <CodeBlock code={themeBridgeCode} language="css" />
+            <Markdown source={themeBridgeCode} />
           </div>
         </div>
         <div style={{
@@ -405,7 +383,7 @@ export function TokensPage() {
           <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--foreground)", marginBottom: 8 }}>
             3 · Utilities resolve dynamically
           </div>
-          <CodeBlock code={dynamicCode} language="tsx" />
+          <Markdown source={dynamicCode} />
           <p style={{
             marginTop: 12,
             marginBottom: 0,
@@ -431,7 +409,7 @@ export function TokensPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--destructive)", fontWeight: 600, marginBottom: 4 }}>
               Don't
             </div>
-            <CodeBlock code={dontCode} language="tsx" />
+            <Markdown source={dontCode} />
             <p style={{ marginTop: 8, fontSize: "12.5px", color: "var(--muted-foreground)", margin: "8px 0 0" }}>
               Hard-coded hex bypasses the theme. Won't follow accent changes; will look wrong in dark mode.
             </p>
@@ -445,7 +423,7 @@ export function TokensPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: "hsl(143 60% 38%)", fontWeight: 600, marginBottom: 4 }}>
               Do
             </div>
-            <CodeBlock code={doCode} language="tsx" />
+            <Markdown source={doCode} />
             <p style={{ marginTop: 8, fontSize: "12.5px", color: "var(--muted-foreground)", margin: "8px 0 0" }}>
               Always token-routed. Theme changes are free.
             </p>

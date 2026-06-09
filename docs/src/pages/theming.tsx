@@ -1,6 +1,17 @@
-import { CodeBlock } from "@/components/code-block";
+import { Markdown } from "@/components/markdown";
 import { Toc } from "@/components/toc";
 import { setTheme, setSurface, setDensity } from "../../../src/theme";
+import nativeProviderCode from "./snippets/theming/native-provider.md?raw";
+import useThemeCode from "./snippets/theming/use-theme.md?raw";
+import darkToggleCode from "./snippets/theming/dark-toggle.md?raw";
+import jsThemeCode from "./snippets/theming/js-theme.md?raw";
+import systemPrefCode from "./snippets/theming/system-pref.md?raw";
+import glassCode from "./snippets/theming/glass.md?raw";
+import jsSurfaceCode from "./snippets/theming/js-surface.md?raw";
+import densityCode from "./snippets/theming/density.md?raw";
+import jsDensityCode from "./snippets/theming/js-density.md?raw";
+import combiningCode from "./snippets/theming/combining.md?raw";
+import jsCombineCode from "./snippets/theming/js-combine.md?raw";
 
 const tocItems = [
   { id: "native", label: "Native (ThemeProvider)" },
@@ -9,77 +20,6 @@ const tocItems = [
   { id: "density", label: "Density" },
   { id: "combining", label: "Combining Axes" },
 ];
-
-const nativeProviderCode = `import { ThemeProvider } from "@olympusoss/canvas";
-
-// Wrap the app once. ThemeProvider follows the OS appearance by default;
-// pass scheme to force one, and surface="glass" for the frosted surfaces.
-export function App() {
-  return (
-    <ThemeProvider scheme="dark" surface="glass">
-      <Screens />
-    </ThemeProvider>
-  );
-}`;
-
-const useThemeCode = `import { useTheme } from "@olympusoss/canvas";
-
-// Read the active theme anywhere under the provider.
-const { scheme, surface, tokens, dark } = useTheme();
-// scheme:  "light" | "dark"      surface: "default" | "glass"
-// tokens:  active color tokens   dark:    scheme === "dark"`;
-
-const darkToggleCode = `<!-- Light (default) -->
-<html>
-
-<!-- Dark -->
-<html class="dark">`;
-
-const jsThemeCode = `import { getTheme, setTheme, toggleTheme } from "@olympusoss/canvas";
-
-getTheme();        // "light" | "dark"
-setTheme("dark");  // applies .dark to <html>, persists to localStorage
-toggleTheme();     // switches and returns the new theme`;
-
-const systemPrefCode = `import { setTheme } from "@olympusoss/canvas";
-
-// Web only. On native, ThemeProvider already follows the OS appearance.
-const mq = window.matchMedia("(prefers-color-scheme: dark)");
-setTheme(mq.matches ? "dark" : "light");
-mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
-
-const glassCode = `<html data-surface="glass">
-<html class="dark" data-surface="glass">`;
-
-const jsSurfaceCode = `import { getSurface, setSurface } from "@olympusoss/canvas";
-
-getSurface();            // "default" | "glass"
-setSurface("glass");     // sets data-surface="glass"
-setSurface("default");   // removes the attribute`;
-
-const densityCode = `<!-- Regular (default, no attribute needed) -->
-<html>
-
-<!-- Compact -->
-<html data-density="compact">
-
-<!-- Comfy -->
-<html data-density="comfy">`;
-
-const jsDensityCode = `import { getDensity, setDensity } from "@olympusoss/canvas";
-
-getDensity();            // "compact" | "regular" | "comfy"
-setDensity("compact");   // sets data-density="compact"
-setDensity("regular");   // removes the attribute`;
-
-const combiningCode = `<!-- Web: the three axes are independent HTML hooks -->
-<html class="dark" data-surface="glass" data-density="compact">`;
-
-const jsCombineCode = `import { setTheme, setSurface, setDensity } from "@olympusoss/canvas";
-
-setTheme("dark");
-setSurface("glass");
-setDensity("compact");`;
 
 export function ThemingPage() {
   return (
@@ -100,11 +40,11 @@ export function ThemingPage() {
             {" "}<code className="code">"dark"</code>) to force one, and <code className="code">surface="glass"</code> for the
             frosted surfaces. No CSS and no <code className="code">&lt;html&gt;</code> attributes are involved on native.
           </p>
-          <CodeBlock code={nativeProviderCode} language="tsx" />
+          <Markdown source={nativeProviderCode} />
           <p className="body" style={{ margin: "1rem 0 0.5rem" }}>
             Read the active theme anywhere under the provider with <code className="code">useTheme()</code>.
           </p>
-          <CodeBlock code={useThemeCode} language="tsx" />
+          <Markdown source={useThemeCode} />
           <div className="alert alert-default" style={{ marginTop: "1rem" }}>
             <p className="small"><strong>Density on native</strong> is a per-component choice, not a provider prop: pass a
             density boolean to the components that support it (for example <code className="code">&lt;Card compact&gt;</code>
@@ -123,7 +63,7 @@ export function ThemingPage() {
             so components never change. (On native, pass <code className="code">scheme</code> to
             {" "}<code className="code">ThemeProvider</code> instead.)
           </p>
-          <CodeBlock code={darkToggleCode} language="html" />
+          <Markdown source={darkToggleCode} />
 
           <div style={{ display: "flex", gap: "0.5rem", margin: "1rem 0" }}>
             <button className="btn btn-outline btn-sm" onClick={() => setTheme("light")}>Light</button>
@@ -131,11 +71,11 @@ export function ThemingPage() {
           </div>
 
           <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web helpers</h3>
-          <CodeBlock code={jsThemeCode} language="javascript" />
+          <Markdown source={jsThemeCode} />
 
           <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Respecting system preference</h3>
           <p className="small muted" style={{ marginBottom: "0.5rem" }}>On the web the helpers do not auto-detect <code className="code">prefers-color-scheme</code>. Wire it yourself:</p>
-          <CodeBlock code={systemPrefCode} language="javascript" />
+          <Markdown source={systemPrefCode} />
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
@@ -148,7 +88,7 @@ export function ThemingPage() {
             per-component prop: <code className="code">surface="glass"</code> on <code className="code">ThemeProvider</code> on
             native, or <code className="code">data-surface="glass"</code> on <code className="code">&lt;html&gt;</code> on the web.
           </p>
-          <CodeBlock code={glassCode} language="html" />
+          <Markdown source={glassCode} />
 
           <div style={{ display: "flex", gap: "0.5rem", margin: "1rem 0" }}>
             <button className="btn btn-outline btn-sm" onClick={() => setSurface("default")}>Default</button>
@@ -163,7 +103,7 @@ export function ThemingPage() {
           </ul>
 
           <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web helpers</h3>
-          <CodeBlock code={jsSurfaceCode} language="javascript" />
+          <Markdown source={jsSurfaceCode} />
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
@@ -176,7 +116,7 @@ export function ThemingPage() {
             {" "}<code className="code">data-density</code>-aware components key off; on native, components expose per-component
             density props (for example <code className="code">&lt;Card compact&gt;</code>).
           </p>
-          <CodeBlock code={densityCode} language="html" />
+          <Markdown source={densityCode} />
 
           <div style={{ display: "flex", gap: "0.5rem", margin: "1rem 0" }}>
             <button className="btn btn-outline btn-sm" onClick={() => setDensity("compact")}>Compact</button>
@@ -188,7 +128,7 @@ export function ThemingPage() {
           </p>
 
           <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web helpers</h3>
-          <CodeBlock code={jsDensityCode} language="javascript" />
+          <Markdown source={jsDensityCode} />
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
@@ -200,9 +140,9 @@ export function ThemingPage() {
             {" "}<code className="code">&lt;html&gt;</code> hooks; on native, scheme and surface are
             {" "}<code className="code">ThemeProvider</code> props and density is per component.
           </p>
-          <CodeBlock code={combiningCode} language="html" />
+          <Markdown source={combiningCode} />
           <div style={{ marginTop: "0.75rem" }}>
-            <CodeBlock code={jsCombineCode} language="javascript" />
+            <Markdown source={jsCombineCode} />
           </div>
         </section>
       </div>

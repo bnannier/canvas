@@ -1,6 +1,10 @@
 import { ScrollView, View, Text } from "@olympusoss/canvas";
-import { CodeBlock } from "@/components/code-block";
+import { Markdown } from "@/components/markdown";
 import { Toc } from "@/components/toc";
+import scrollCode from "./snippets/rn-primitives/scroll.md?raw";
+import imageCode from "./snippets/rn-primitives/image.md?raw";
+import textInputCode from "./snippets/rn-primitives/text-input.md?raw";
+import escapeCode from "./snippets/rn-primitives/escape.md?raw";
 
 const tocItems = [
   { id: "two-layers", label: "Two layers" },
@@ -32,64 +36,6 @@ const NOT_WRAPPED = [
   { from: "Dimensions / useWindowDimensions", why: "The engine already consumes useWindowDimensions for responsive resolution.", instead: "React with responsive className variants, or import for raw values." },
   { from: "KeyboardAvoidingView / SafeAreaView / RefreshControl", why: "Behavior primitives whose value is platform behavior, not styling.", instead: "Import from react-native (or react-native-safe-area-context)." },
 ];
-
-const scrollCode = `import { ScrollView, View, Text } from "@olympusoss/canvas";
-
-// className styles the FRAME (give it a bounded height so it scrolls);
-// contentClassName styles the inner content container (padding, gap, centering).
-<ScrollView
-  className="max-h-[160px] rounded-md border border-border"
-  contentClassName="p-3 gap-2"
->
-  {rows.map((label) => (
-    <View key={label} className="rounded-md bg-muted px-3 py-2">
-      <Text className="text-sm text-foreground">{label}</Text>
-    </View>
-  ))}
-</ScrollView>`;
-
-const imageCode = `import { Image, View } from "@olympusoss/canvas";
-
-// className carries size + radius; source / resizeMode are normal RN ImageProps.
-// RN clips a photo to the circle via an overflow-hidden parent.
-<View className="w-12 h-12 overflow-hidden rounded-full">
-  <Image className="w-full h-full" source={{ uri: photo }} resizeMode="cover" />
-</View>`;
-
-const textInputCode = `import { TextInput, useTheme } from "@olympusoss/canvas";
-
-// Low-level primitive: no focus border and no react-native-web outline reset.
-// Prefer the Input / Textarea COMPONENTS for real form fields. RN does not take
-// the placeholder color through style, so pass placeholderTextColor directly.
-function PinField() {
-  const { tokens } = useTheme();
-  return (
-    <TextInput
-      className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-      placeholder="000000"
-      placeholderTextColor={tokens["muted-foreground"]}
-      keyboardType="number-pad"
-    />
-  );
-}`;
-
-const escapeCode = `import { useStyles } from "@olympusoss/canvas";
-import { FlatList } from "react-native";
-
-// For any RN component Canvas does not wrap, resolve a className yourself and
-// spread it onto the component's style. The missing-wrapper case is never a dead end.
-function Rows({ data }) {
-  const frame = useStyles("flex-1");
-  const content = useStyles("p-4 gap-2");
-  return (
-    <FlatList
-      style={frame}
-      contentContainerStyle={content}
-      data={data}
-      renderItem={({ item }) => <Row item={item} />}
-    />
-  );
-}`;
 
 const SCROLL_ROWS = ["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Marcus Allen", "Noor Park", "Rachel Chen"];
 
@@ -172,7 +118,7 @@ export function RnPrimitivesPage() {
               ))}
             </ScrollView>
           </div>
-          <CodeBlock code={scrollCode} language="tsx" />
+          <Markdown source={scrollCode} />
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
@@ -187,7 +133,7 @@ export function RnPrimitivesPage() {
             pattern); <code className="code">resizeMode="cover"</code> maps to <code className="code">object-fit: cover</code> on
             react-native-web.
           </p>
-          <CodeBlock code={imageCode} language="tsx" />
+          <Markdown source={imageCode} />
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
@@ -202,7 +148,7 @@ export function RnPrimitivesPage() {
             {" "}<code className="code">large</code>, addons, the outline reset, the focus border). Reach for
             {" "}<code className="code">TextInput</code> only when building a field Canvas does not ship.
           </p>
-          <CodeBlock code={textInputCode} language="tsx" />
+          <Markdown source={textInputCode} />
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
@@ -238,7 +184,7 @@ export function RnPrimitivesPage() {
             not on new primitives, so add a styled primitive only when a real component is already styling a raw RN
             component via <code className="code">useStyles</code> and a wrapper would remove that boilerplate.
           </p>
-          <CodeBlock code={escapeCode} language="tsx" />
+          <Markdown source={escapeCode} />
         </section>
       </div>
 
