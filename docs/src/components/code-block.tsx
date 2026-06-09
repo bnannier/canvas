@@ -8,7 +8,11 @@ async function getHighlighter(): Promise<Highlighter> {
     highlighterPromise = import("shiki").then((mod) =>
       mod.createHighlighter({
         themes: ["github-dark", "github-light"],
-        langs: ["html", "css", "javascript", "bash", "tsx"],
+        // Every language the docs pass to <CodeBlock language="...">. A lang that
+        // is used but not loaded here makes Shiki throw, which the effect below
+        // catches; keep this list in sync so blocks highlight rather than fall
+        // back to plaintext.
+        langs: ["html", "css", "javascript", "jsx", "typescript", "tsx", "json", "bash"],
       }),
     );
   }
@@ -29,11 +33,18 @@ export function CodeBlock({ code, language = "html" }: CodeBlockProps) {
     let cancelled = false;
     getHighlighter().then((h) => {
       if (cancelled) return;
-      const isDark = document.documentElement.classList.contains("dark");
-      const result = h.codeToHtml(code.trim(), {
-        lang: language,
-        theme: isDark ? "github-dark" : "github-light",
-      });
+      const theme = document.documentElement.classList.contains("dark")
+        ? "github-dark"
+        : "github-light";
+      let result: string;
+      try {
+        result = h.codeToHtml(code.trim(), { lang: language, theme });
+      } catch {
+        // Unknown / unloaded language: render as plaintext (a built-in lang,
+        // always available) so the block still gets the themed container instead
+        // of silently dropping to an unstyled <pre>.
+        result = h.codeToHtml(code.trim(), { lang: "text", theme });
+      }
       setHtml(result);
     });
     return () => { cancelled = true; };
