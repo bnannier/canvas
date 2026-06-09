@@ -14,7 +14,7 @@ import {
   ChartLine, Lock, Settings, Check, Eye,
   Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid, Code,
   Group, ListChecks, MessageSquareWarning,
-  BookOpen, Plug, Moon, Globe, ArrowLeftRight,
+  BookOpen, Plug, Moon, Globe,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -58,7 +58,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "theming", label: "Theming", to: "/theming", icon: Moon },
       { slug: "rn-primitives", label: "React Native", to: "/rn-primitives", icon: Smartphone },
       { slug: "browser-support", label: "Browser Support", to: "/browser-support", icon: Globe },
-      { slug: "migration", label: "Migration", to: "/migration", icon: ArrowLeftRight },
     ],
   },
   {

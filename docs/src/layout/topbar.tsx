@@ -24,7 +24,6 @@ function getPageInfo(pathname: string): { title: string; subtitle?: string } {
   if (pathname === "/tokens/typography") return { title: "Typography", subtitle: "Tokens" };
   if (pathname === "/utilities") return { title: "Layout utilities", subtitle: "Utilities" };
   if (pathname === "/theming") return { title: "Theming", subtitle: "Foundations" };
-  if (pathname === "/migration") return { title: "Migration", subtitle: "Guides" };
   if (pathname === "/integration") return { title: "Integration", subtitle: "Guides" };
   if (pathname === "/browser-support") return { title: "Browser Support", subtitle: "Guides" };
 

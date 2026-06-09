@@ -9,7 +9,6 @@ import { SpacingPage } from "./pages/tokens-spacing";
 import { TypographyPage } from "./pages/tokens-typography";
 import { UtilitiesPage } from "./pages/utilities";
 import { ThemingPage } from "./pages/theming";
-import { MigrationPage } from "./pages/migration";
 import { IntegrationPage } from "./pages/integration";
 import { BrowserSupportPage } from "./pages/browser-support";
 import { RnPrimitivesPage } from "./pages/rn-primitives";
@@ -26,7 +25,6 @@ const router = createBrowserRouter([
       { path: "tokens/typography", element: <TypographyPage /> },
       { path: "utilities", element: <UtilitiesPage /> },
       { path: "theming", element: <ThemingPage /> },
-      { path: "migration", element: <MigrationPage /> },
       { path: "integration", element: <IntegrationPage /> },
       { path: "browser-support", element: <BrowserSupportPage /> },
       { path: "rn-primitives", element: <RnPrimitivesPage /> },
