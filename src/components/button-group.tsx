@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
 import { View, Pressable, Text } from "../engine/index.js";
+import { Icon } from "./icon.js";
 
 // A button group is a horizontal row of buttons that read as one control.
 //
@@ -180,7 +181,9 @@ function SplitButton({
         accessibilityState={{ expanded: open }}
         accessibilityLabel="More actions"
       >
-        <Text className={cn("text-primary-foreground", SIZE_LABEL[size])}>{open ? "▴" : "▾"}</Text>
+        <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
+          <Icon chevronDown primaryForeground size={size === "small" ? 14 : 16} />
+        </View>
       </Pressable>
       {open ? (
         <View className="absolute top-full right-0 z-50 mt-1 min-w-[180px] rounded-md border border-border bg-popover p-1 shadow-lg">

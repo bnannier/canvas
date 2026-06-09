@@ -16,7 +16,8 @@ import type { ColorTokens } from "../engine/index.js";
 //
 // Axes (pass at most one per axis; first match wins):
 //   - Name:  one boolean per glyph (activity, bell, search, shield, …). Default shield.
-//   - Color: primary, destructive, muted. Default foreground.
+//   - Color: primary, primaryForeground, destructive, muted. Default foreground.
+//     (primaryForeground is the contrast color for a glyph on a primary surface.)
 // Dimensions/layout (orthogonal): `size` (px, single glyph) and `set` (gallery).
 
 type Shape =
@@ -216,6 +217,8 @@ export interface IconProps {
   zap?: boolean;
   // Color axis: pass one (default foreground). First match wins.
   primary?: boolean;
+  /** Contrast color for a glyph on a primary surface (e.g. a primary button). */
+  primaryForeground?: boolean;
   destructive?: boolean;
   muted?: boolean;
   // Single-glyph size in px (default 24).
@@ -236,6 +239,7 @@ function nameOf(p: IconProps): string {
 // First-match color precedence; defaults to foreground.
 function strokeOf(p: IconProps, tokens: ColorTokens): string {
   if (p.primary) return tokens.primary;
+  if (p.primaryForeground) return tokens["primary-foreground"];
   if (p.destructive) return tokens.destructive;
   if (p.muted) return tokens["muted-foreground"];
   return tokens.foreground;
