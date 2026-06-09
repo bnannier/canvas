@@ -54,6 +54,8 @@ const ICONS: Record<string, Shape[]> = {
   ],
   check: [{ t: "polyline", points: "20 6 9 17 4 12" }],
   chevronDown: [{ t: "path", d: "m6 9 6 6 6-6" }],
+  chevronLeft: [{ t: "path", d: "m15 18-6-6 6-6" }],
+  chevronRight: [{ t: "path", d: "m9 18 6-6-6-6" }],
   code: [
     { t: "polyline", points: "16 18 22 12 16 6" },
     { t: "polyline", points: "8 6 2 12 8 18" },
@@ -156,6 +158,8 @@ const NAMES: { key: string; label: string }[] = [
   { key: "calendar", label: "calendar" },
   { key: "check", label: "check" },
   { key: "chevronDown", label: "chevron-down" },
+  { key: "chevronLeft", label: "chevron-left" },
+  { key: "chevronRight", label: "chevron-right" },
   { key: "code", label: "code" },
   { key: "copy", label: "copy" },
   { key: "database", label: "database" },
@@ -191,6 +195,8 @@ export interface IconProps {
   calendar?: boolean;
   check?: boolean;
   chevronDown?: boolean;
+  chevronLeft?: boolean;
+  chevronRight?: boolean;
   code?: boolean;
   copy?: boolean;
   database?: boolean;
