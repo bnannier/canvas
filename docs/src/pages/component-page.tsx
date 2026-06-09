@@ -1,15 +1,35 @@
+import type { ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import { getComponent } from "@/data/components";
+import { DONTS } from "@/data/donts";
+import { renderTree } from "@/registry";
+import type { El } from "@/jsx-code";
 import { ExampleCard } from "@/components/example-card";
 import { Playground } from "@/components/playground";
 import { PageNav } from "@/components/page-nav";
 import { NotFound } from "./not-found";
+
+// A Do/Don't side is either a real-component tree (rendered through the registry)
+// or a static HTML mock for an anti-pattern the real component can't produce.
+type GuidanceSide = { tree?: El; html?: string; caption: string };
+
+function renderSide(side: GuidanceSide): ReactNode {
+  return side.tree ? renderTree(side.tree) : <span dangerouslySetInnerHTML={{ __html: side.html ?? "" }} />;
+}
 
 export function ComponentPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = slug ? getComponent(slug) : undefined;
 
   if (!comp) return <NotFound />;
+
+  // Prefer the real-component Do/Don'ts (data/donts.ts); fall back to a
+  // component's legacy HTML donts for slugs not migrated yet.
+  const dontList = ((slug && DONTS[slug]) ?? comp.donts ?? []) as Array<{
+    title?: string;
+    dont: GuidanceSide;
+    do: GuidanceSide;
+  }>;
 
   return (
     <div>
@@ -121,7 +141,7 @@ export function ComponentPage() {
         </section>
       ))}
 
-      {comp.donts && comp.donts.length > 0 && (
+      {dontList.length > 0 && (
         <section style={{ marginBottom: "2.5rem" }}>
           <header style={{ marginBottom: "1rem" }}>
             <h2 style={{
@@ -135,7 +155,7 @@ export function ComponentPage() {
             </h2>
           </header>
           <div className="donts-grid">
-            {comp.donts.map((d, i) => (
+            {dontList.map((d, i) => (
               <div key={`dont-${i}`} style={{
                 display: "contents",
               }}>
@@ -168,8 +188,9 @@ export function ComponentPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
                     Don&rsquo;t
                   </div>
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}
-                    dangerouslySetInnerHTML={{ __html: d.dont.html }} />
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                    {renderSide(d.dont)}
+                  </div>
                   <p style={{
                     margin: 0,
                     fontSize: "12px",
@@ -197,8 +218,9 @@ export function ComponentPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
                     Do
                   </div>
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}
-                    dangerouslySetInnerHTML={{ __html: d.do.html }} />
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                    {renderSide(d.do)}
+                  </div>
                   <p style={{
                     margin: 0,
                     fontSize: "12px",
