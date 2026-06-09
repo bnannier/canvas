@@ -3,12 +3,31 @@ import { Toc } from "@/components/toc";
 import { setTheme, setSurface, setDensity } from "../../../src/theme";
 
 const tocItems = [
+  { id: "native", label: "Native (ThemeProvider)" },
   { id: "light-dark", label: "Light / Dark" },
   { id: "glass", label: "Glass Surface" },
   { id: "density", label: "Density" },
   { id: "combining", label: "Combining Axes" },
-  { id: "patterns", label: "Additional Patterns" },
 ];
+
+const nativeProviderCode = `import { ThemeProvider } from "@olympusoss/canvas";
+
+// Wrap the app once. ThemeProvider follows the OS appearance by default;
+// pass scheme to force one, and surface="glass" for the frosted surfaces.
+export function App() {
+  return (
+    <ThemeProvider scheme="dark" surface="glass">
+      <Screens />
+    </ThemeProvider>
+  );
+}`;
+
+const useThemeCode = `import { useTheme } from "@olympusoss/canvas";
+
+// Read the active theme anywhere under the provider.
+const { scheme, surface, tokens, dark } = useTheme();
+// scheme:  "light" | "dark"      surface: "default" | "glass"
+// tokens:  active color tokens   dark:    scheme === "dark"`;
 
 const darkToggleCode = `<!-- Light (default) -->
 <html>
@@ -19,11 +38,12 @@ const darkToggleCode = `<!-- Light (default) -->
 const jsThemeCode = `import { getTheme, setTheme, toggleTheme } from "@olympusoss/canvas";
 
 getTheme();        // "light" | "dark"
-setTheme("dark");  // applies .dark to <html>
+setTheme("dark");  // applies .dark to <html>, persists to localStorage
 toggleTheme();     // switches and returns the new theme`;
 
 const systemPrefCode = `import { setTheme } from "@olympusoss/canvas";
 
+// Web only. On native, ThemeProvider already follows the OS appearance.
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
 setTheme(mq.matches ? "dark" : "light");
 mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
@@ -52,7 +72,8 @@ getDensity();            // "compact" | "regular" | "comfy"
 setDensity("compact");   // sets data-density="compact"
 setDensity("regular");   // removes the attribute`;
 
-const combiningCode = `<html class="dark" data-surface="glass" data-density="compact">`;
+const combiningCode = `<!-- Web: the three axes are independent HTML hooks -->
+<html class="dark" data-surface="glass" data-density="compact">`;
 
 const jsCombineCode = `import { setTheme, setSurface, setDensity } from "@olympusoss/canvas";
 
@@ -67,14 +88,40 @@ export function ThemingPage() {
         <div className="page-header" style={{ marginBottom: "1.5rem" }}>
           <div>
             <div className="page-header-title"><h1>Theming</h1></div>
-            <p className="sub">Three independent theming axes: light/dark mode, glass surface, and density. All controlled via HTML attributes.</p>
+            <p className="sub">Three theming axes (light/dark, glass surface, density) on one model: <code className="code">ThemeProvider</code> on native, the matching <code className="code">&lt;html&gt;</code> hooks and helpers on the web.</p>
           </div>
         </div>
+
+        <section id="native" className="docs-section" style={{ marginBottom: "2rem" }}>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Native (ThemeProvider)</h2>
+          <p className="body" style={{ marginBottom: "1rem" }}>
+            On iOS and Android, wrap the app once in <code className="code">ThemeProvider</code>. It follows the OS
+            appearance by default; pass <code className="code">scheme</code> (<code className="code">"light"</code> or
+            {" "}<code className="code">"dark"</code>) to force one, and <code className="code">surface="glass"</code> for the
+            frosted surfaces. No CSS and no <code className="code">&lt;html&gt;</code> attributes are involved on native.
+          </p>
+          <CodeBlock code={nativeProviderCode} language="tsx" />
+          <p className="body" style={{ margin: "1rem 0 0.5rem" }}>
+            Read the active theme anywhere under the provider with <code className="code">useTheme()</code>.
+          </p>
+          <CodeBlock code={useThemeCode} language="tsx" />
+          <div className="alert alert-default" style={{ marginTop: "1rem" }}>
+            <p className="small"><strong>Density on native</strong> is a per-component choice, not a provider prop: pass a
+            density boolean to the components that support it (for example <code className="code">&lt;Card compact&gt;</code>
+            {" "}or <code className="code">&lt;Card comfortable&gt;</code>). The <code className="code">data-density</code> hook
+            below is the web equivalent.</p>
+          </div>
+        </section>
+
+        <div className="sep" style={{ margin: "1.5rem 0" }} />
 
         <section id="light-dark" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Light / Dark Mode</h2>
           <p className="body" style={{ marginBottom: "1rem" }}>
-            Light mode is the default. Toggle dark mode by adding the <code className="code">dark</code> class to <code className="code">&lt;html&gt;</code>. All color tokens flip automatically; components never change.
+            Light mode is the default. On the web, dark mode is the <code className="code">dark</code> class on
+            {" "}<code className="code">&lt;html&gt;</code>; the helpers toggle it and the token layer flips every color token,
+            so components never change. (On native, pass <code className="code">scheme</code> to
+            {" "}<code className="code">ThemeProvider</code> instead.)
           </p>
           <CodeBlock code={darkToggleCode} language="html" />
 
@@ -83,11 +130,11 @@ export function ThemingPage() {
             <button className="btn btn-outline btn-sm" onClick={() => setTheme("dark")}>Dark</button>
           </div>
 
-          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>JS utilities</h3>
+          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web helpers</h3>
           <CodeBlock code={jsThemeCode} language="javascript" />
 
           <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Respecting system preference</h3>
-          <p className="small muted" style={{ marginBottom: "0.5rem" }}>Canvas does not auto-detect <code className="code">prefers-color-scheme</code>. Wire it yourself:</p>
+          <p className="small muted" style={{ marginBottom: "0.5rem" }}>On the web the helpers do not auto-detect <code className="code">prefers-color-scheme</code>. Wire it yourself:</p>
           <CodeBlock code={systemPrefCode} language="javascript" />
         </section>
 
@@ -96,7 +143,10 @@ export function ThemingPage() {
         <section id="glass" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Glass Surface</h2>
           <p className="body" style={{ marginBottom: "1rem" }}>
-            Glass mode adds frosted-pane effects to cards, sidebars, topbars, inputs, and overlays. It also replaces the default body gradient with an aurora-style multi-color backdrop.
+            Glass makes every surface fill translucent, so cards, popovers, sidebars, navbars, inputs, and overlays read as
+            frosted panes. It is a theming-level switch (the engine swaps in translucent surface tokens), not a
+            per-component prop: <code className="code">surface="glass"</code> on <code className="code">ThemeProvider</code> on
+            native, or <code className="code">data-surface="glass"</code> on <code className="code">&lt;html&gt;</code> on the web.
           </p>
           <CodeBlock code={glassCode} language="html" />
 
@@ -107,14 +157,12 @@ export function ThemingPage() {
 
           <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>What changes</h3>
           <ul style={{ paddingLeft: "1.25rem", fontSize: "0.875rem", lineHeight: 1.75 }}>
-            <li>Cards, stat-cards, topbar, sidebar gain <code className="code">backdrop-filter: blur(18px)</code></li>
-            <li>Inputs get a lighter blur (8px)</li>
-            <li>Overlays (popover, menus, sheets) get a stronger blur (20px)</li>
-            <li>Border colors switch to white-alpha edges</li>
-            <li>Body background becomes a multi-orb gradient</li>
+            <li>Surface fills (cards, popovers, sidebars, navbars, inputs, overlays) become translucent</li>
+            <li>Border colors shift to white-alpha edges</li>
+            <li>On the web, the body background becomes a multi-color aurora gradient and surfaces add a frosted blur</li>
           </ul>
 
-          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>JS utilities</h3>
+          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web helpers</h3>
           <CodeBlock code={jsSurfaceCode} language="javascript" />
         </section>
 
@@ -124,6 +172,9 @@ export function ThemingPage() {
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Density</h2>
           <p className="body" style={{ marginBottom: "1rem" }}>
             Density controls spacing in content areas and data tables. Three levels: compact, regular (default), and comfy.
+            On the web it is the <code className="code">data-density</code> attribute, which your content CSS and the
+            {" "}<code className="code">data-density</code>-aware components key off; on native, components expose per-component
+            density props (for example <code className="code">&lt;Card compact&gt;</code>).
           </p>
           <CodeBlock code={densityCode} language="html" />
 
@@ -132,22 +183,11 @@ export function ThemingPage() {
             <button className="btn btn-outline btn-sm" onClick={() => setDensity("regular")}>Regular</button>
             <button className="btn btn-outline btn-sm" onClick={() => setDensity("comfy")}>Comfy</button>
           </div>
+          <p className="small muted" style={{ marginBottom: "0.75rem" }}>
+            The buttons set <code className="code">data-density</code> on this page; watch the content and table padding shift.
+          </p>
 
-          <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>What changes</h3>
-          <table className="dt-table">
-            <thead>
-              <tr><th>Element</th><th>Compact</th><th>Regular</th><th>Comfy</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><code className="code">.app-content</code> padding</td><td>0.75rem</td><td>1rem / 1.75rem</td><td>1.5rem / 2.25rem</td></tr>
-              <tr><td><code className="code">.dt-toolbar</code> padding</td><td>0.75rem</td><td>1rem</td><td>1.25rem</td></tr>
-              <tr><td><code className="code">.dt-table th</code> padding</td><td>0.75rem / 0.5rem</td><td>1rem / 0.625rem</td><td>18px / 0.875rem</td></tr>
-              <tr><td><code className="code">.dt-table td</code> padding</td><td>0.75rem / 0.5rem</td><td>1rem / 0.75rem</td><td>18px / 1rem</td></tr>
-              <tr><td><code className="code">.dt-table td</code> font-size</td><td>12.5px</td><td>13px</td><td>13.5px</td></tr>
-            </tbody>
-          </table>
-
-          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>JS utilities</h3>
+          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web helpers</h3>
           <CodeBlock code={jsDensityCode} language="javascript" />
         </section>
 
@@ -155,43 +195,14 @@ export function ThemingPage() {
 
         <section id="combining" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Combining Axes</h2>
-          <p className="body" style={{ marginBottom: "1rem" }}>All three axes are independent and composable.</p>
+          <p className="body" style={{ marginBottom: "1rem" }}>
+            All three axes are independent and composable. On the web they are three separate
+            {" "}<code className="code">&lt;html&gt;</code> hooks; on native, scheme and surface are
+            {" "}<code className="code">ThemeProvider</code> props and density is per component.
+          </p>
           <CodeBlock code={combiningCode} language="html" />
           <div style={{ marginTop: "0.75rem" }}>
             <CodeBlock code={jsCombineCode} language="javascript" />
-          </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="patterns" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Additional Patterns</h2>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <div className="card" style={{ padding: "1rem" }}>
-              <h3 className="h5">Reduced Motion</h3>
-              <p className="small muted" style={{ marginTop: "0.25rem" }}>
-                <code className="code">patterns/reduced-motion.css</code> respects <code className="code">prefers-reduced-motion: reduce</code> by collapsing all animation and transition durations. No opt-in needed.
-              </p>
-            </div>
-            <div className="card" style={{ padding: "1rem" }}>
-              <h3 className="h5">High Contrast</h3>
-              <p className="small muted" style={{ marginTop: "0.25rem" }}>
-                <code className="code">patterns/high-contrast.css</code> responds to <code className="code">prefers-contrast: more</code> by increasing border widths, removing shadows, and boosting muted-foreground contrast.
-              </p>
-            </div>
-            <div className="card" style={{ padding: "1rem" }}>
-              <h3 className="h5">Focus ring &amp; pulse</h3>
-              <p className="small muted" style={{ marginTop: "0.25rem" }}>
-                <code className="code">patterns/focus.css</code> gives every interactive element a static keyboard-only ring (<code className="code">:focus-visible</code>) drawn with <code className="code">outline</code>, so it survives forced-colors mode. Buttons and text inputs add a one-shot pulse on top, suppressed under <code className="code">prefers-reduced-motion</code>.
-              </p>
-            </div>
-            <div className="card" style={{ padding: "1rem" }}>
-              <h3 className="h5">Scrollbar</h3>
-              <p className="small muted" style={{ marginTop: "0.25rem" }}>
-                Thin scrollbar styling applied globally via <code className="code">patterns/scrollbar.css</code>. Glass mode uses white-alpha scrollbar colors.
-              </p>
-            </div>
           </div>
         </section>
       </div>

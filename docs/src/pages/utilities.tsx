@@ -1,9 +1,10 @@
+import { View } from "@olympusoss/canvas";
 import { PageNav } from "@/components/page-nav";
 
 /**
- * Documents the canvas.utilities layer. The demos below use the real shipped
- * utility classes (canvas.css is imported app-wide), so this page also serves as
- * a live smoke test of the layer.
+ * Documents the layout utility vocabulary. The demos render real Canvas <View>
+ * primitives, so the engine resolves each className to a React Native style the
+ * same way it does in the kit, and the page doubles as a live smoke test.
  */
 
 function Section({ title, description, anatomy, children }: {
@@ -61,7 +62,7 @@ function Demo({ code, children, minHeight }: { code: string; children: React.Rea
   );
 }
 
-/** A small labelled tile. Color comes from inline style (Canvas ships no color utilities). */
+/** A small labelled swatch used as demo content. */
 function Tile({ children, full }: { children?: React.ReactNode; full?: boolean }) {
   return (
     <div style={{
@@ -97,7 +98,7 @@ function Chip({ children }: { children: React.ReactNode }) {
   );
 }
 
-const GAP_SCALE = ["0", "px", "0-5", "1", "1-5", "2", "2-5", "3", "4", "5", "6", "8", "10", "12", "16"];
+const GAP_SCALE = ["0", "px", "0.5", "1", "1.5", "2", "3", "4", "6", "8"];
 
 export function UtilitiesPage() {
   return (
@@ -119,125 +120,126 @@ export function UtilitiesPage() {
           lineHeight: 1.6,
           color: "var(--muted-foreground)",
         }}>
-          Canvas ships a layout utility layer, display, flexbox, grid, gap, sizing,
-          and position, as real static CSS. The vocabulary follows Tailwind so it is
-          instantly familiar, but the classes are generated and committed (no build
-          step, no Tailwind dependency). Gap utilities reference the
-          {" "}<Chip>--space-*</Chip> tokens, so spacing stays themeable.
+          Canvas lays out with a Tailwind-style utility vocabulary passed as a
+          {" "}<Chip>className</Chip>. The engine resolves it to a React Native style for the active theme and
+          viewport, so the same utilities work on iOS, Android, and the web. Layout is flexbox: React Native has
+          no CSS grid, so there are no grid utilities. On the web the same vocabulary is also generated as Tailwind
+          v4 CSS through <Chip>canvas.css</Chip>.
         </p>
       </section>
 
       <Section
         title="How it works"
-        description="Utilities live in the canvas.utilities cascade layer, declared last, so a utility always wins over a component or pattern default for the same property. Every utility also has responsive variants using mobile-first breakpoint prefixes."
-        anatomy="Layer order: canvas.reset, canvas.tokens, canvas.base, canvas.components, canvas.patterns, canvas.utilities. Breakpoints (min-width): sm 640, md 768, lg 1024, xl 1280, 2xl 1536. Prefix any class: md:flex, lg:grid-cols-3, xl:gap-8."
+        description="className -> the engine (useStyles) -> a resolved React Native style; primitives render style={[resolved, style]}, so a caller-supplied style always wins. The same path runs on native and on react-native-web."
+        anatomy="Responsive prefixes are desktop-first: the unprefixed utility is the desktop base, and a prefixed utility (sm/md/lg/xl/2xl) applies at that width AND BELOW, with the smallest matching breakpoint winning. This is the inverse of mobile-first. Breakpoints (and below): sm 640, md 768, lg 1024, xl 1280, 2xl 1536."
       >
-        <div className="flex flex-wrap gap-2">
-          <Chip>flex</Chip><Chip>sm:flex</Chip><Chip>md:grid</Chip><Chip>lg:grid-cols-3</Chip>
-          <Chip>xl:gap-8</Chip><Chip>2xl:flex-row</Chip>
+        <div className="flex flex-wrap gap-2" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <Chip>flex</Chip><Chip>flex-row</Chip><Chip>md:flex-col</Chip><Chip>lg:gap-2</Chip>
+          <Chip>md:hidden</Chip><Chip>xl:w-1/2</Chip>
         </div>
       </Section>
 
-      <Section title="Display" description="block, inline-block, inline, flex, inline-flex, grid, inline-grid, hidden.">
-        <Demo code='<div class="flex items-center gap-3">'>
-          <div className="flex items-center gap-3">
-            <Tile>flex</Tile><Tile>item</Tile><Tile>item</Tile>
-          </div>
+      <Section title="Display & direction" description="flex turns on a flex container; hidden removes it. React Native defaults a flex container to a column, so set flex-row for a row (plus flex-row-reverse, flex-col, flex-wrap).">
+        <Demo code='<View className="flex flex-row items-center gap-3">'>
+          <View className="flex flex-row items-center gap-3">
+            <Tile>flex-row</Tile><Tile>item</Tile><Tile>item</Tile>
+          </View>
         </Demo>
-        <Demo code='<div class="grid grid-cols-3 gap-3">'>
-          <div className="grid grid-cols-3 gap-3">
-            <Tile>grid</Tile><Tile>cols-3</Tile><Tile>gap-3</Tile>
-          </div>
+        <Demo code='<View className="flex flex-col gap-2">'>
+          <View className="flex flex-col gap-2">
+            <Tile>flex-col</Tile><Tile>stacks</Tile><Tile>vertically</Tile>
+          </View>
         </Demo>
       </Section>
 
-      <Section title="Flexbox alignment" description="justify-* controls the main axis; items-* the cross axis. Plus direction, wrap, grow, shrink, and self-*.">
-        <Demo code='<div class="flex justify-between items-center gap-3">'>
-          <div className="flex justify-between items-center gap-3">
+      <Section title="Alignment" description="justify-* controls the main axis; items-* the cross axis. Plus self-* for a single child, and grow / shrink.">
+        <Demo code='<View className="flex flex-row justify-between items-center gap-3">'>
+          <View className="flex flex-row justify-between items-center gap-3">
             <Tile>start</Tile><Tile>middle</Tile><Tile>end</Tile>
-          </div>
+          </View>
         </Demo>
-        <Demo code='<div class="flex justify-center gap-2">'>
-          <div className="flex justify-center gap-2">
+        <Demo code='<View className="flex flex-row justify-center gap-2">'>
+          <View className="flex flex-row justify-center gap-2">
             <Tile>centered</Tile><Tile>row</Tile>
-          </div>
-        </Demo>
-        <Demo code='<div class="flex flex-col gap-2">'>
-          <div className="flex flex-col gap-2">
-            <Tile>flex-col</Tile><Tile>stacks</Tile><Tile>vertically</Tile>
-          </div>
+          </View>
         </Demo>
       </Section>
 
       <Section
-        title="Gap (token-backed)"
-        description="gap, gap-x, and gap-y across the full spacing scale. Each references a --space-* token rather than a hardcoded rem, so changing a token reflows every gap that uses it."
+        title="Gap"
+        description="gap, gap-x, and gap-y across the spacing scale. Each maps to a value in Tailwind's 4px-based scale (gap-4 = 16px), the same scale padding and margin use."
       >
-        <div className="flex flex-col gap-2">
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {GAP_SCALE.map((v) => (
-            <div key={v} className={`flex items-center gap-${v}`} style={{
+            <div key={v} style={{
+              display: "flex",
+              alignItems: "center",
               padding: "8px 12px",
               border: "1px dashed var(--border)",
               borderRadius: "var(--radius-md, 6px)",
             }}>
               <span style={{ width: 84, flexShrink: 0 }}><Chip>gap-{v}</Chip></span>
-              <div className={`flex gap-${v}`}>
+              <View className={`flex flex-row gap-${v}`}>
                 <Tile> </Tile><Tile> </Tile><Tile> </Tile>
-              </div>
+              </View>
             </div>
           ))}
         </div>
       </Section>
 
-      <Section title="Grid" description="grid-cols-1..6, grid-cols-none, col-span-*, grid-flow-*, plus grid-cols-auto-fit / auto-fill for responsive tiling without media queries.">
-        <Demo code='<div class="grid grid-cols-4 gap-3">'>
-          <div className="grid grid-cols-4 gap-3">
-            <Tile>1</Tile><Tile>2</Tile><Tile>3</Tile><Tile>4</Tile>
-          </div>
+      <Section title="Flex sizing" description="flex-1 makes a child fill the remaining space; grow / shrink / flex-none tune how children flex. Combine with the sizing utilities below.">
+        <Demo code='<View className="flex flex-row gap-2"> ... <View className="flex-1">'>
+          <View className="flex flex-row gap-2">
+            <Tile>auto</Tile>
+            <View className="flex-1"><Tile full>flex-1 fills the rest</Tile></View>
+            <Tile>auto</Tile>
+          </View>
         </Demo>
-        <Demo code='<div class="grid grid-cols-3 gap-3"> ... col-span-2'>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2"><Tile full>col-span-2</Tile></div>
-            <Tile>1</Tile>
-          </div>
+      </Section>
+
+      <Section title="Sizing" description="w / h take the spacing scale, fractions (w-1/2, w-1/3), full (100%), auto, or an arbitrary value (w-[200px]). min-w / max-w / min-h / max-h and size-* round it out.">
+        <Demo code='<View className="flex flex-row gap-2"> ... w-1/2 / w-1/4'>
+          <View className="flex flex-row gap-2">
+            <View className="w-1/2"><Tile full>w-1/2</Tile></View>
+            <View className="w-1/4"><Tile full>w-1/4</Tile></View>
+            <View className="w-1/4"><Tile full>w-1/4</Tile></View>
+          </View>
         </Demo>
-        <Demo code='<div class="grid grid-cols-auto-fit gap-3">'>
-          <div className="grid grid-cols-auto-fit gap-3">
-            <Tile>auto</Tile><Tile>fit</Tile><Tile>wraps</Tile><Tile>to fit</Tile>
-          </div>
+        <Demo code='<View className="w-full"> / <View className="w-40">'>
+          <View className="flex flex-col gap-2">
+            <View className="w-full"><Tile full>w-full</Tile></View>
+            <View className="w-40"><Tile full>w-40 (160px)</Tile></View>
+          </View>
         </Demo>
       </Section>
 
       <Section
-        title="Responsive prefixes"
-        description="Prefix any utility with a breakpoint. Resize the window to watch these change at the md (768px) boundary."
+        title="Responsive (desktop-first)"
+        description="Prefix any utility with a breakpoint. Because the model is desktop-first, a prefixed utility applies at that width and BELOW. Resize the window across the md (768px) boundary to watch these change."
       >
-        <Demo code='<div class="grid grid-cols-1 md:grid-cols-3 gap-3">'>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Tile>1 col on mobile</Tile><Tile>3 cols at md</Tile><Tile>and up</Tile>
-          </div>
+        <Demo code='<View className="flex flex-row md:flex-col gap-3">'>
+          <View className="flex flex-row md:flex-col gap-3">
+            <Tile>a row on desktop</Tile><Tile>that stacks at md</Tile><Tile>and below</Tile>
+          </View>
         </Demo>
-        <Demo code='<span class="hidden md:flex"> / <span class="flex md:hidden">'>
-          <div className="flex items-center gap-3">
-            <span className="hidden md:flex"><Tile>visible at md and up</Tile></span>
-            <span className="flex md:hidden"><Tile>visible below md</Tile></span>
-          </div>
+        <Demo code='<View className="flex md:hidden"> / <View className="hidden md:flex">'>
+          <View className="flex flex-row items-center gap-3">
+            <View className="flex md:hidden"><Tile>wide screens only</Tile></View>
+            <View className="hidden md:flex"><Tile>md and below only</Tile></View>
+          </View>
         </Demo>
       </Section>
 
       <Section
-        title="Layer precedence"
-        description="Because canvas.utilities is the last layer, a utility overrides a component's own value for the same property, no !important needed."
-        anatomy="Below, .btn-icon sets a fixed square width in canvas.components. Adding w-full (canvas.utilities) overrides it. Same specificity, later layer wins."
+        title="Precedence & overrides"
+        description="Within one className, a higher-priority utility wins for the same property (state > dark > breakpoint > base, smaller breakpoint first). And because every primitive renders style={[resolved, style]}, a caller-supplied style always wins over the className."
+        anatomy="Below, w-40 sets a fixed 160px width; the inline style={{ width: '100%' }} overrides it, because the resolved className style is applied first and the caller style last."
       >
-        <Demo code='<button class="btn btn-outline btn-icon"> vs <button class="btn btn-outline btn-icon w-full">'>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <button className="btn btn-outline btn-icon">★</button>
-              <span style={{ fontSize: "12px", color: "var(--muted-foreground)" }}>.btn-icon, fixed square width</span>
-            </div>
-            <button className="btn btn-outline btn-icon w-full">★ &nbsp; .btn-icon.w-full, utility wins</button>
-          </div>
+        <Demo code={'<View className="w-40" /> vs <View className="w-40" style={{ width: "100%" }} />'}>
+          <View className="flex flex-col gap-3">
+            <View className="w-40"><Tile full>w-40, 160px</Tile></View>
+            <View className="w-40" style={{ width: "100%" }}><Tile full>w-40 + style width 100%, style wins</Tile></View>
+          </View>
         </Demo>
       </Section>
 

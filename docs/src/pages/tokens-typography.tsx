@@ -1,14 +1,19 @@
 import { PageNav } from "@/components/page-nav";
 
+// The Canvas type scale is the Typography component's roles. Each row mirrors a
+// role's Tailwind class set from src/components/typography.tsx (text-5xl down to
+// text-xs), so the preview reflects the real package sizes rather than the docs
+// site's own heading chrome.
 const SCALE = [
-  { name: "Display / H1", cls: "h1", spec: "36px / 40px · bold", use: "Hero titles. One per page max.", px: 36 },
-  { name: "H2", cls: "h2", spec: "30px / 36px · bold", use: "Major page sections.", px: 30 },
-  { name: "H3 / Page", cls: "h3", spec: "24px / 32px · bold", use: "Page titles inside the app shell.", px: 24 },
-  { name: "H4 / Card", cls: "h4", spec: "18px / 28px · semibold", use: "Card titles, dialog headings.", px: 18 },
-  { name: "H5", cls: "h5", spec: "16px / 24px · semibold", use: "Subgroup headers, form section labels.", px: 16 },
-  { name: "Body", cls: "body", spec: "16px / 24px · regular", use: "Default reading text.", px: 16 },
-  { name: "Small", cls: "small", spec: "14px / 20px · regular", use: "Secondary text, helpers, captions.", px: 14 },
-  { name: "Tiny", cls: "tiny", spec: "12px / 16px · regular", use: "Metadata, timestamps, labels.", px: 12 },
+  { name: "Display", role: "display", spec: "48 / 48 · bold", fontSize: 48, lineHeight: 48, weight: 700, tracking: "-0.025em", use: "Hero titles. One per screen, at most." },
+  { name: "H1", role: "h1", spec: "36 / 40 · bold", fontSize: 36, lineHeight: 40, weight: 700, tracking: "-0.025em", use: "Top-level page titles." },
+  { name: "H2", role: "h2", spec: "30 / 36 · semibold", fontSize: 30, lineHeight: 36, weight: 600, tracking: "-0.02em", use: "Major page sections." },
+  { name: "H3", role: "h3", spec: "24 / 32 · semibold", fontSize: 24, lineHeight: 32, weight: 600, tracking: "-0.02em", use: "Subsections; in-app page titles." },
+  { name: "H4", role: "h4", spec: "20 / 28 · semibold", fontSize: 20, lineHeight: 28, weight: 600, tracking: "-0.015em", use: "Card titles, dialog headings." },
+  { name: "H5", role: "h5", spec: "18 / 28 · semibold", fontSize: 18, lineHeight: 28, weight: 600, tracking: "0", use: "Subgroup headers, form section labels." },
+  { name: "Body", role: "body", spec: "14 / 1.6 · regular", fontSize: 14, lineHeight: 22, weight: 400, tracking: "0", use: "Default reading text." },
+  { name: "Small", role: "small", spec: "14 / 20 · muted", fontSize: 14, lineHeight: 20, weight: 400, tracking: "0", muted: true, use: "Secondary text, helpers." },
+  { name: "Tiny", role: "tiny", spec: "12 / 16 · muted", fontSize: 12, lineHeight: 16, weight: 400, tracking: "0", muted: true, use: "Metadata, timestamps, labels." },
 ];
 
 const WEIGHTS = [
@@ -76,8 +81,9 @@ export function TypographyPage() {
           color: "var(--muted-foreground)",
         }}>
           Two families do all the work. Geist Sans for prose and chrome; Geist Mono for code,
-          IDs, timestamps, and any value the user might copy. The scale is a strict 8-step ramp; anything
-          outside it gets flagged in review.
+          IDs, timestamps, and any value the user might copy. The scale runs display down to tiny as
+          boolean roles on the <code style={{ fontFamily: "var(--font-mono)" }}>Typography</code> component; helper
+          roles (muted, caption, code, mono) cover the rest.
         </p>
       </section>
 
@@ -149,8 +155,8 @@ export function TypographyPage() {
 
       <Section
         title="Type scale"
-        description="Sizes pair with line-heights; never set one without the other. The Tweaks font-scale slider multiplies the rem base, so the entire scale grows together."
-        anatomy="Display & H1 share a class so we don't ship two near-identical rules. H3 doubles as the in-app page-title."
+        description="Each role pairs a size with a line-height. Select one with a boolean prop on Typography (e.g. <Typography h2>), never a raw font-size."
+        anatomy="display and h1 are distinct roles (text-5xl vs text-4xl), not a shared rule; h3 doubles as the in-app page title. Roles are mutually exclusive, first-match precedence."
       >
         <div style={{
           borderRadius: "var(--radius-xl, 12px)",
@@ -159,7 +165,7 @@ export function TypographyPage() {
           overflow: "hidden",
         }}>
           {SCALE.map((s, i) => (
-            <div key={s.cls} style={{
+            <div key={s.role} style={{
               display: "flex",
               alignItems: "baseline",
               gap: 24,
@@ -168,12 +174,19 @@ export function TypographyPage() {
             }}>
               <div style={{ width: 140, flexShrink: 0 }}>
                 <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>{s.name}</div>
-                <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>.{s.cls}</code>
+                <code style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "var(--font-mono)" }}>{s.role}</code>
               </div>
-              <div className={s.cls} style={{ flex: 1 }}>
+              <div style={{
+                flex: 1,
+                fontSize: s.fontSize,
+                lineHeight: `${s.lineHeight}px`,
+                fontWeight: s.weight,
+                letterSpacing: s.tracking,
+                color: s.muted ? "var(--muted-foreground)" : "var(--foreground)",
+              }}>
                 Sphinx of black quartz, judge my vow.
               </div>
-              <div style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", textAlign: "right" as const, width: 200 }}>
+              <div style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", textAlign: "right" as const, width: 160 }}>
                 {s.spec}
               </div>
             </div>
@@ -181,8 +194,8 @@ export function TypographyPage() {
         </div>
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, fontSize: "12.5px", color: "var(--muted-foreground)" }}>
           {SCALE.map((s) => (
-            <div key={s.cls} style={{ display: "flex", gap: 8 }}>
-              <code style={{ color: "var(--foreground)" }}>.{s.cls}</code>
+            <div key={s.role} style={{ display: "flex", gap: 8 }}>
+              <code style={{ color: "var(--foreground)", fontFamily: "var(--font-mono)" }}>{s.role}</code>
               <span>· {s.use}</span>
             </div>
           ))}
@@ -268,7 +281,7 @@ export function TypographyPage() {
               Inline code
             </div>
             <p style={{ margin: 0, fontSize: "13.5px", color: "var(--foreground)", lineHeight: 1.6 }}>
-              The token <code>--primary</code> drives the accent. Mutate it on <code>&lt;html&gt;</code> to retheme live.
+              The token <code>--primary</code> drives the accent; override it on <code>&lt;html&gt;</code> to retint on the web.
             </p>
           </div>
         </div>

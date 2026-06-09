@@ -1,61 +1,43 @@
 import { Toc } from "@/components/toc";
 
 const tocItems = [
-  { id: "feature-matrix", label: "Feature Matrix" },
-  { id: "minimum-versions", label: "Minimum Versions" },
-  { id: "feature-details", label: "Feature Details" },
-  { id: "degradation", label: "Graceful Degradation" },
+  { id: "platforms", label: "Platforms" },
+  { id: "peers", label: "Peer Dependencies" },
+  { id: "web-baseline", label: "Web Browser Baseline" },
+  { id: "notes", label: "Notes" },
 ];
 
-const FEATURES = [
-  { feature: "Custom Properties", usage: "All tokens and theming", chrome: "49+", firefox: "31+", safari: "9.1+", edge: "15+" },
-  { feature: "@layer", usage: "Cascade control (5 layers)", chrome: "99+", firefox: "97+", safari: "15.4+", edge: "99+" },
-  { feature: "color-mix()", usage: "Not used directly (reserved)", chrome: "111+", firefox: "113+", safari: "16.2+", edge: "111+" },
-  { feature: "light-dark()", usage: "Not used directly (reserved)", chrome: "123+", firefox: "120+", safari: "17.5+", edge: "123+" },
-  { feature: "backdrop-filter", usage: "Glass surface, topbar blur", chrome: "76+", firefox: "103+", safari: "9+", edge: "17+" },
-  { feature: ":has()", usage: "Checkbox label disabled state", chrome: "105+", firefox: "121+", safari: "15.4+", edge: "105+" },
-  { feature: "@container", usage: "Not currently used (reserved)", chrome: "105+", firefox: "110+", safari: "16+", edge: "105+" },
-  { feature: "scrollbar-width", usage: "Thin scrollbar pattern", chrome: "64+", firefox: "64+", safari: "N/A", edge: "79+" },
-  { feature: "scrollbar-color", usage: "Scrollbar theming", chrome: "64+", firefox: "64+", safari: "N/A", edge: "79+" },
+const PLATFORMS = [
+  { platform: "iOS", runtime: "React Native (native)", min: "iOS 13.4+" },
+  { platform: "Android", runtime: "React Native (native)", min: "Android 6.0+ (API 23)" },
+  { platform: "Web", runtime: "react-native-web + the canvas.css token layer", min: "Modern browsers (see baseline below)" },
 ];
 
-const MIN_VERSIONS = [
-  { browser: "Chrome", version: "105+", reason: ":has() selector" },
-  { browser: "Firefox", version: "121+", reason: ":has() selector" },
-  { browser: "Safari", version: "15.4+", reason: "@layer, :has()" },
-  { browser: "Edge", version: "105+", reason: ":has() selector" },
+const PEERS = [
+  { pkg: "react", range: ">=18", role: "The React runtime Canvas builds on." },
+  { pkg: "react-native", range: ">=0.74", role: "Native iOS / Android host, and the module aliased to react-native-web on the web." },
+  { pkg: "react-native-svg", range: ">=13", role: "Vector icons and the chart primitives." },
 ];
 
-const DETAILS = [
-  {
-    title: "CSS Custom Properties",
-    description: "Foundation of the entire token system. All visual decisions (colors, spacing, typography, radius, shadows, z-index, motion) are custom properties.",
-  },
-  {
-    title: "@layer",
-    description: "Canvas declares five cascade layers in strict order. Without @layer support, all styles collapse into the default layer and specificity is determined solely by source order. The visual result will still work in most cases.",
-  },
-  {
-    title: "backdrop-filter",
-    description: "Used for the glass surface pattern and the sticky topbar blur. When unsupported, glass surfaces fall back to their translucent background colors without the blur effect.",
-  },
-  {
-    title: ":has()",
-    description: "Used in checkbox.css for .checkbox-label:has(.checkbox:disabled). When unsupported, disabled checkbox labels will not dim automatically. This is a progressive enhancement; functionality is unaffected.",
-  },
-  {
-    title: "scrollbar-width / scrollbar-color",
-    description: "Used for thin scrollbar styling. Safari does not support these properties as of Safari 17. On Safari, the system default scrollbar appearance is used.",
-  },
+const WEB_BASELINE = [
+  { browser: "Chrome / Edge", version: "111+", reason: "Tailwind v4 token layer (canvas.css)" },
+  { browser: "Safari", version: "16.4+", reason: "Tailwind v4 token layer (canvas.css)" },
+  { browser: "Firefox", version: "128+", reason: "Tailwind v4 token layer (canvas.css)" },
 ];
 
-const DEGRADATION = [
-  { scenario: "No glass support", behavior: "Translucent backgrounds still render; the blur is skipped." },
-  { scenario: "No @layer support", behavior: "Styles still apply via source order. Overrides may need higher specificity." },
-  { scenario: "No :has() support", behavior: "Minor cosmetic differences (disabled labels not dimming)." },
-  { scenario: "No scrollbar styling", behavior: "System default scrollbars appear." },
-  { scenario: "Reduced motion", behavior: "prefers-reduced-motion: reduce disables all animations and transitions automatically." },
-  { scenario: "High contrast", behavior: "prefers-contrast: more increases border widths, removes shadows." },
+const NOTES = [
+  {
+    title: "Native uses no CSS",
+    description: "On iOS and Android there is no browser and no CSS feature floor. Theming is the engine resolving classNames to React Native styles; the native minimums above come from React Native 0.74 and react-native-svg, the package's peer dependencies.",
+  },
+  {
+    title: "The web floor comes from the stylesheet, not the components",
+    description: "Canvas components resolve to inline styles through react-native-web and run in much older browsers. It is the single shipped stylesheet, canvas.css (a Tailwind v4 token layer), that sets the modern-browser baseline above. If you must support older browsers, supply the design tokens as plain CSS custom properties yourself; canvas.css is the only stylesheet Canvas ships.",
+  },
+  {
+    title: "Accessibility and motion",
+    description: "Reduced-motion and other accessibility preferences are handled at the platform layer (React Native on native, react-native-web in the browser), not through bundled CSS pattern files.",
+  },
 ];
 
 export function BrowserSupportPage() {
@@ -64,54 +46,68 @@ export function BrowserSupportPage() {
       <div style={{ minWidth: 0 }}>
         <div className="page-header" style={{ marginBottom: "1.5rem" }}>
           <div>
-            <div className="page-header-title"><h1>Browser Support</h1></div>
-            <p className="sub">CSS feature matrix and minimum browser versions for Canvas.</p>
+            <div className="page-header-title"><h1>Platform &amp; Browser Support</h1></div>
+            <p className="sub">The platforms Canvas runs on (iOS, Android, and the web through react-native-web) and the web browser baseline.</p>
           </div>
         </div>
 
-        <section id="feature-matrix" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Feature Matrix</h2>
-          <div style={{ overflowX: "auto" }}>
-            <table className="dt-table">
-              <thead>
-                <tr>
-                  <th>CSS Feature</th>
-                  <th>Usage in Canvas</th>
-                  <th>Chrome</th>
-                  <th>Firefox</th>
-                  <th>Safari</th>
-                  <th>Edge</th>
+        <section id="platforms" className="docs-section" style={{ marginBottom: "2rem" }}>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Platforms</h2>
+          <p className="small muted" style={{ marginBottom: "0.75rem" }}>
+            Canvas is a universal React Native UI kit. It runs natively on iOS and Android, and on the web through
+            {" "}<code className="code">react-native-web</code>.
+          </p>
+          <table className="dt-table">
+            <thead><tr><th>Platform</th><th>Runtime</th><th>Minimum</th></tr></thead>
+            <tbody>
+              {PLATFORMS.map((p) => (
+                <tr key={p.platform}>
+                  <td style={{ fontWeight: 500 }}>{p.platform}</td>
+                  <td className="small">{p.runtime}</td>
+                  <td>{p.min}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {FEATURES.map((f) => (
-                  <tr key={f.feature}>
-                    <td><code className="code">{f.feature}</code></td>
-                    <td className="small">{f.usage}</td>
-                    <td>{f.chrome}</td>
-                    <td>{f.firefox}</td>
-                    <td>{f.safari}</td>
-                    <td>{f.edge}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
 
-        <section id="minimum-versions" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Minimum Versions</h2>
-          <p className="small muted" style={{ marginBottom: "0.75rem" }}>Based on the features actively used, the effective minimum browser versions are:</p>
+        <section id="peers" className="docs-section" style={{ marginBottom: "2rem" }}>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Peer Dependencies</h2>
+          <p className="small muted" style={{ marginBottom: "0.75rem" }}>
+            These peers set the platform floor. Install them alongside <code className="code">@olympusoss/canvas</code>.
+          </p>
+          <table className="dt-table">
+            <thead><tr><th>Package</th><th>Range</th><th>Role</th></tr></thead>
+            <tbody>
+              {PEERS.map((p) => (
+                <tr key={p.pkg}>
+                  <td><code className="code">{p.pkg}</code></td>
+                  <td>{p.range}</td>
+                  <td className="small muted">{p.role}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <div className="sep" style={{ margin: "1.5rem 0" }} />
+
+        <section id="web-baseline" className="docs-section" style={{ marginBottom: "2rem" }}>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Web Browser Baseline</h2>
+          <p className="small muted" style={{ marginBottom: "0.75rem" }}>
+            On the web, the modern-browser floor is set by the <code className="code">canvas.css</code> token layer, which is
+            {" "}<strong>Tailwind v4</strong>. Tailwind v4 targets these versions:
+          </p>
           <table className="dt-table">
             <thead><tr><th>Browser</th><th>Minimum Version</th><th>Reason</th></tr></thead>
             <tbody>
-              {MIN_VERSIONS.map((v) => (
-                <tr key={v.browser}>
-                  <td style={{ fontWeight: 500 }}>{v.browser}</td>
-                  <td>{v.version}</td>
-                  <td className="small muted">{v.reason}</td>
+              {WEB_BASELINE.map((b) => (
+                <tr key={b.browser}>
+                  <td style={{ fontWeight: 500 }}>{b.browser}</td>
+                  <td>{b.version}</td>
+                  <td className="small muted">{b.reason}</td>
                 </tr>
               ))}
             </tbody>
@@ -120,34 +116,16 @@ export function BrowserSupportPage() {
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
 
-        <section id="feature-details" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Feature Details</h2>
+        <section id="notes" className="docs-section" style={{ marginBottom: "2rem" }}>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Notes</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {DETAILS.map((d) => (
-              <div key={d.title} className="card" style={{ padding: "1rem" }}>
-                <h3 className="h5">{d.title}</h3>
-                <p className="small muted" style={{ marginTop: "0.25rem" }}>{d.description}</p>
+            {NOTES.map((n) => (
+              <div key={n.title} className="card" style={{ padding: "1rem" }}>
+                <h3 className="h5">{n.title}</h3>
+                <p className="small muted" style={{ marginTop: "0.25rem" }}>{n.description}</p>
               </div>
             ))}
           </div>
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="degradation" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Graceful Degradation</h2>
-          <p className="small muted" style={{ marginBottom: "0.75rem" }}>Canvas is designed to degrade gracefully:</p>
-          <table className="dt-table">
-            <thead><tr><th>Scenario</th><th>Behavior</th></tr></thead>
-            <tbody>
-              {DEGRADATION.map((d) => (
-                <tr key={d.scenario}>
-                  <td style={{ fontWeight: 500 }}>{d.scenario}</td>
-                  <td className="small">{d.behavior}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </section>
       </div>
 
