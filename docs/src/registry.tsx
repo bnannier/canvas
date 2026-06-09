@@ -3,6 +3,10 @@ import { isElLike, type ElChild } from "@/jsx-code";
 import {
   View,
   Text,
+  Pressable,
+  Image,
+  TextInput,
+  ScrollView,
   ActionPanel,
   Alert,
   AlertDialog,
@@ -93,6 +97,10 @@ type AnyComponent = ComponentType<Record<string, unknown>>;
 const COMPONENT_MAP: Record<string, AnyComponent> = {
   View: View as AnyComponent,
   Text: Text as AnyComponent,
+  Pressable: Pressable as AnyComponent,
+  Image: Image as AnyComponent,
+  TextInput: TextInput as AnyComponent,
+  ScrollView: ScrollView as AnyComponent,
   ActionPanel: ActionPanel as AnyComponent,
   Alert: Alert as AnyComponent,
   AlertDialog: AlertDialog as AnyComponent,

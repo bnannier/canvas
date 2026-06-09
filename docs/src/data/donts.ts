@@ -36,44 +36,107 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Segmented",
       dont: {
-        tree: { type: "ButtonGroup", props: { segmented: true, active: 0, items: ["Day", "Week", "Month", "Quarter", "Year", "5Y", "All"] } },
-        caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.",
+        tree: {
+          type: "ButtonGroup",
+          props: {
+            segmented: true,
+            active: 0,
+            items: ["Day", "Week", "Month", "Quarter", "Year", "5Y", "All"]
+          }
+        },
+        caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select."
       },
       do: {
-        tree: { type: "ButtonGroup", props: { segmented: true, active: 0, items: ["Day", "Week", "Month"] } },
-        caption: "Keep a segmented control to a few mutually-exclusive views.",
-      },
+        tree: {
+          type: "ButtonGroup",
+          props: { segmented: true, active: 0, items: ["Day", "Week", "Month"] }
+        },
+        caption: "Keep a segmented control to a few mutually-exclusive views."
+      }
     },
     {
       title: "Attached",
       dont: {
-        tree: { type: "ButtonGroup", props: { segmented: true, active: -1, items: ["Save", "Delete", "Export"] } },
-        caption: "Attaching unrelated actions implies they belong to one control.",
+        tree: {
+          type: "ButtonGroup",
+          props: { segmented: true, active: -1, items: ["Save", "Delete", "Export"] }
+        },
+        caption: "Attaching unrelated actions implies they belong to one control."
       },
       do: {
-        tree: { type: "ButtonGroup", props: { stepper: true, active: 1, items: ["Yesterday", "Today", "Tomorrow"] } },
-        caption: "Reserve attached groups for closely-related actions like prev / today / next.",
-      },
+        tree: {
+          type: "ButtonGroup",
+          props: { stepper: true, active: 1, items: ["Yesterday", "Today", "Tomorrow"] }
+        },
+        caption: "Reserve attached groups for closely-related actions like prev / today / next."
+      }
     },
     {
       title: "Split",
       dont: {
-        // The real ButtonGroup split always draws the hairline divider, so the
-        // anti-pattern (a split with no divider) can only be a static mock.
-        html: `<div class="inline-flex"><button class="inline-flex items-center justify-center h-9 px-4 rounded-l-md bg-primary text-primary-foreground text-sm font-medium">Save</button><button class="inline-flex items-center justify-center h-9 px-2 rounded-r-md bg-primary text-primary-foreground"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button></div>`,
-        caption: "With no divider the chevron looks like part of one button, hiding the menu.",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-center self-start" },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 px-4 rounded-l-md rounded-r-none bg-primary active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "font-medium text-sm text-primary-foreground" },
+                  children: "Save"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 px-2 rounded-r-md rounded-l-none bg-primary active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Icon",
+                  props: { chevronDown: true, primaryForeground: true, size: 16 }
+                }
+              ]
+            }
+          ]
+        },
+        caption: "With no divider the chevron looks like part of one button, hiding the menu."
       },
       do: {
-        tree: { type: "ButtonGroup", props: { split: true, items: ["Save"], menu: ["Save as draft", "Save and close", "Save a copy"] } },
-        caption: "Separate the chevron with a hairline so the secondary menu reads as distinct.",
-      },
-    },
+        tree: {
+          type: "ButtonGroup",
+          props: {
+            split: true,
+            items: ["Save"],
+            menu: ["Save as draft", "Save and close", "Save a copy"]
+          }
+        },
+        caption: "Separate the chevron with a hairline so the secondary menu reads as distinct."
+      }
+    }
   ],
   avatar: [
     {
       title: "Single",
       dont: {
-        html: "<span class=\"inline-flex h-10 w-10 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted text-[12px] font-medium text-muted-foreground\">ABCD</span>",
+        tree: {
+          type: "View",
+          props: {
+            className: "shrink-0 items-center justify-center overflow-hidden bg-muted w-10 h-10 rounded-full"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "font-medium text-muted-foreground text-[12px]" },
+              children: "ABCD"
+            }
+          ]
+        },
         caption: "Cramming in a full set of initials shrinks the type and crowds the circle."
       },
       do: {
@@ -525,7 +588,55 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Current page",
       dont: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Projects</a><span class=\"select-none text-muted-foreground/60\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Identity Platform</a><span class=\"select-none text-muted-foreground/60\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Settings</a></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Projects"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "/"
+            },
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Identity Platform"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "/"
+            },
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Settings"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Linking the current page implies there's somewhere to go; it's a dead link to itself."
       },
       do: {
@@ -548,14 +659,108 @@ export const DONTS: Record<string, DontDoExample[]> = {
         caption: "A fully expanded deep path wraps and competes with the page."
       },
       do: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Projects</a><span class=\"select-none text-muted-foreground/60\">›</span><span class=\"px-1 text-muted-foreground\">…</span><span class=\"select-none text-muted-foreground/60\">›</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Avatar</a><span class=\"select-none text-muted-foreground/60\">›</span><span class=\"font-medium text-foreground\">Edit</span></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Projects"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "›"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground px-1" },
+              children: "…"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "›"
+            },
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Avatar"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "›"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Edit"
+            }
+          ]
+        },
         caption: "Collapse the middle to an ellipsis; keep the root and the last couple of levels."
       }
     },
     {
       title: "Separator",
       dont: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Projects</a><span class=\"select-none text-muted-foreground/60\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Identity Platform</a><span class=\"select-none text-muted-foreground/60\">›</span><span class=\"font-medium text-foreground\">Settings</span></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Projects"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "/"
+            },
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Identity Platform"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "›"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Settings"
+            }
+          ]
+        },
         caption: "Mixing separators in one trail looks broken."
       },
       do: {
@@ -569,7 +774,27 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Home root",
       dont: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg></a><span class=\"select-none text-muted-foreground/60\">/</span><span class=\"font-medium text-foreground\">Settings</span></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link", className: "active:opacity-70" },
+              children: [{ type: "Icon", props: { home: true, muted: true, size: 14 } }]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "/"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Settings"
+            }
+          ]
+        },
         caption: "An icon-only root with no label is unclear to screen readers."
       },
       do: {
@@ -580,7 +805,49 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Chevron",
       dont: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Projects</a><span class=\"select-none text-muted-foreground/60\"><svg width=\"11\" height=\"11\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"/></svg></span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Identity Platform</a><span class=\"select-none text-muted-foreground/60\"><svg width=\"11\" height=\"11\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"/></svg></span><span class=\"font-medium text-foreground\">Settings</span></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Projects"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "⌄"
+            },
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Identity Platform"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "⌄"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Settings"
+            }
+          ]
+        },
         caption: "A down (or back) chevron reads as a dropdown or a back affordance, not progression down the hierarchy."
       },
       do: {
@@ -594,7 +861,49 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Slash",
       dont: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Projects</a><span class=\"px-1 font-medium text-foreground\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Identity Platform</a><span class=\"px-1 font-medium text-foreground\">/</span><span class=\"font-medium text-foreground\">Settings</span></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Projects"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground px-1" },
+              children: "/"
+            },
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Identity Platform"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground px-1" },
+              children: "/"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Settings"
+            }
+          ]
+        },
         caption: "A full-weight, foreground slash competes with the labels and can read as part of a link."
       },
       do: {
@@ -608,7 +917,49 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Dot",
       dont: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Projects</a><span class=\"select-none text-muted-foreground/60\">.</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Identity Platform</a><span class=\"select-none text-muted-foreground/60\">.</span><span class=\"font-medium text-foreground\">Settings</span></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Projects"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "."
+            },
+            {
+              type: "Pressable",
+              props: { accessibilityRole: "link" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground active:opacity-70" },
+                  children: "Identity Platform"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "."
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Settings"
+            }
+          ]
+        },
         caption: "A baseline period looks like a typo or end-of-sentence, not a separator between crumbs."
       },
       do: {
@@ -869,11 +1220,47 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "With description",
       dont: {
-        html: "<div class=\"flex gap-2 text-sm\"><input type=\"checkbox\" checked class=\"mt-0.5 size-4 accent-primary\"><div><div class=\"font-medium\">Email notifications</div><div class=\"text-xs text-muted-foreground\">Get notified when activity happens on your account.</div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-start gap-2" },
+          children: [
+            { type: "Checkbox", props: { checked: true } },
+            {
+              type: "View",
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Email notifications"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "Get notified when activity happens on your account."
+                }
+              ]
+            }
+          ]
+        },
         caption: "A bare div makes only the 16px box clickable; the label text does nothing."
       },
       do: {
-        html: "<label class=\"flex cursor-pointer gap-2 text-sm\"><input type=\"checkbox\" checked class=\"mt-0.5 size-4 accent-primary\"><div><div class=\"font-medium\">Email notifications</div><div class=\"text-xs text-muted-foreground\">Get notified when activity happens on your account.</div></div></label>",
+        tree: {
+          type: "Checkbox",
+          props: { checked: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Email notifications"
+            },
+            {
+              type: "Text",
+              props: { className: "text-xs font-normal text-muted-foreground" },
+              children: "\nGet notified when activity happens on your account."
+            }
+          ]
+        },
         caption: "Wrap the box, label, and description in a <label> so the whole row toggles."
       }
     }
@@ -911,7 +1298,139 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Filtering",
       dont: {
-        html: "<div class=\"max-w-[280px]\"><label class=\"mb-1.5 block text-sm font-medium\">Assigned to</label><div class=\"relative\"><div class=\"flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm\"><span class=\"text-foreground\">co</span><span class=\"text-muted-foreground\">▾</span></div><div class=\"absolute left-0 top-full z-20 mt-1 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Wade Cooper</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Arlene Mccoy</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Devon Webb</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Tom Cook</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Tanya Fox</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Hellen Schmidt</div></div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "relative w-full max-w-[280px]" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "mb-1.5 font-medium text-foreground text-sm" },
+              children: "Assigned to"
+            },
+            {
+              type: "View",
+              props: {
+                className: "flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-foreground" },
+                  children: "co"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-muted-foreground text-sm" },
+                  children: "▾"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: {
+                className: "absolute top-full left-0 right-0 z-50 mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg"
+              },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Wade Cooper"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Arlene Mccoy"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Devon Webb"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Tom Cook"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Tanya Fox"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Hellen Schmidt"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Try typing: a search box that ignores input is just a dropdown wearing a costume."
       },
       do: {
@@ -938,7 +1457,107 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Selection",
       dont: {
-        html: "<div class=\"max-w-[280px]\"><label class=\"mb-1.5 block text-sm font-medium\">Assigned to</label><div class=\"relative\"><div class=\"flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm\"><span class=\"text-muted-foreground\">Pick a person…</span><span class=\"text-muted-foreground\">▾</span></div><div class=\"absolute left-0 top-full z-20 mt-1 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Wade Cooper</span></div><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Arlene Mccoy</span></div><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Devon Webb</span></div><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Tom Cook</span></div></div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "relative w-full max-w-[280px]" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "mb-1.5 font-medium text-foreground text-sm" },
+              children: "Assigned to"
+            },
+            {
+              type: "View",
+              props: {
+                className: "flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Pick a person…"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-muted-foreground text-sm" },
+                  children: "▾"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: {
+                className: "absolute top-full left-0 right-0 z-50 mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg"
+              },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Wade Cooper"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Arlene Mccoy"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Devon Webb"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground", style: { width: 14 } },
+                      children: " "
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-popover-foreground" },
+                      children: "Tom Cook"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Click an option: it flashes but the field stays empty, so you can't tell what you picked."
       },
       do: {
@@ -1354,7 +1973,54 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Disabled item",
       dont: {
-        html: "<div class=\"self-start rounded-md border border-border bg-popover p-1 shadow-lg\" style=\"min-width:200px\"><div class=\"flex flex-row items-center gap-2 rounded-sm px-2 py-1.5\"><span class=\"text-sm text-popover-foreground\">Edit</span></div><div class=\"flex flex-row items-center gap-2 rounded-sm px-2 py-1.5 opacity-50 cursor-pointer hover:bg-accent\" onclick=\"this.classList.add('bg-accent');var el=this;setTimeout(function(){el.classList.remove('bg-accent')},300)\"><span class=\"text-sm text-popover-foreground\">Archive</span></div><div class=\"flex flex-row items-center gap-2 rounded-sm px-2 py-1.5\"><span class=\"text-sm text-popover-foreground\">Duplicate</span></div></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "self-start rounded-md border border-border bg-popover p-1 shadow-lg",
+            style: { minWidth: 200 }
+          },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-popover-foreground" },
+                  children: "Edit"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5 opacity-50 active:bg-accent"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-popover-foreground" },
+                  children: "Archive"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-popover-foreground" },
+                  children: "Duplicate"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Click Archive: it looks disabled but still fires, a greyed item that works is a trap."
       },
       do: {
@@ -1407,7 +2073,15 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Stroke coherence",
       dont: {
-        html: "<div class=\"flex items-center gap-5\">\n  <svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg>\n  <svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg>\n  <svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"none\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"/></svg>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-center gap-5" },
+          children: [
+            { type: "Icon", props: { home: true, muted: true, size: 20 } },
+            { type: "Icon", props: { search: true, destructive: true, size: 34 } },
+            { type: "Icon", props: { bell: true, primary: true, size: 28 } }
+          ]
+        },
         caption: "Mixed stroke weights and a stray filled glyph make a set look incoherent."
       },
       do: {
@@ -1426,7 +2100,13 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "foreground",
       dont: {
-        html: "<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#0a0a0a\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z\"/><polyline points=\"22,6 12,13 2,6\"/></svg>",
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-center justify-center rounded-md bg-foreground p-3"
+          },
+          children: [{ type: "Icon", props: { mail: true, size: 28 } }]
+        },
         caption: "Hard-coding a hex stroke pins the icon to one theme; it stays black on a dark surface and disappears."
       },
       do: {
@@ -1475,7 +2155,20 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "muted",
       dont: {
-        html: "<button class=\"inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground\"><span class=\"text-muted-foreground\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg></span>New project</button>",
+        tree: {
+          type: "Pressable",
+          props: {
+            className: "flex-row items-center justify-center gap-2 rounded-md bg-primary px-4 py-2"
+          },
+          children: [
+            { type: "Icon", props: { plus: true, muted: true, size: 16 } },
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-primary-foreground" },
+              children: "New project"
+            }
+          ]
+        },
         caption: "A muted icon inside a solid primary button reads as disabled and clashes with the high-contrast label."
       },
       do: {
@@ -1567,7 +2260,26 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "textarea",
       dont: {
-        html: "<div class=\"max-w-[320px]\"><label class=\"mb-1.5 block text-sm font-medium\">Notes</label><textarea class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none resize-none\">Describe the change in enough detail that a teammate could follow it…</textarea></div>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[320px]" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+              children: "Notes"
+            },
+            {
+              type: "TextInput",
+              props: {
+                multiline: true,
+                value: "Describe the change in enough detail that a teammate could follow it…",
+                editable: false,
+                className: "h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground overflow-hidden"
+              }
+            }
+          ]
+        },
         caption: "A one-line, resize-none textarea clips multi-line input so users cannot review what they wrote."
       },
       do: {
@@ -1597,7 +2309,42 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "compact",
       dont: {
-        html: "<div class=\"flex items-center justify-end gap-1 text-sm\"><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">‹</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">›</button></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-center justify-end gap-1" },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Previous page"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "‹"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Next page"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "›"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Bare Previous/Next with no range label leaves the user unable to tell where they are or how much is left."
       },
       do: {
@@ -1608,7 +2355,222 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "numbered",
       dont: {
-        html: "<nav class=\"flex items-center gap-1\"><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground opacity-50\">‹</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-primary bg-primary text-sm font-medium text-primary-foreground\">1</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">2</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">3</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">4</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">5</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">6</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">7</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">8</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">9</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">10</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">11</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">12</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">›</button></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-center gap-1" },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background opacity-50",
+                accessibilityRole: "button",
+                accessibilityLabel: "Previous page"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "‹"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-primary bg-primary",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 1"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-primary-foreground" },
+                  children: "1"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 2"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "2"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "3"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 4"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "4"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 5"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "5"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 6"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "6"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 7"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "7"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 8"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "8"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 9"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "9"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 10"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "10"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 11"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "11"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Page 12"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "12"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                accessibilityRole: "button",
+                accessibilityLabel: "Next page"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "›"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Rendering every page number overflows and stops being scannable past a handful."
       },
       do: {
@@ -1619,7 +2581,79 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "with-size",
       dont: {
-        html: "<div class=\"flex items-center gap-4 text-sm\"><div class=\"flex items-center gap-2\"><span class=\"text-muted-foreground\">Rows per page</span><div class=\"inline-flex items-center justify-between gap-1 h-9 min-w-9 px-2.5 rounded-md border border-input bg-background\"><span class=\"text-sm font-medium text-foreground\">10</span><span class=\"text-sm text-muted-foreground\">▾</span></div></div><div class=\"flex gap-1\"><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground opacity-50\">‹</button><button class=\"inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background text-sm font-medium text-foreground\">›</button></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-center gap-4" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-2" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Rows per page"
+                },
+                {
+                  type: "Pressable",
+                  props: {
+                    className: "flex-row items-center justify-between gap-1 h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                    accessibilityRole: "button",
+                    accessibilityLabel: "Rows per page"
+                  },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm font-medium text-foreground" },
+                      children: "10"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-muted-foreground" },
+                      children: "▾"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-1" },
+              children: [
+                {
+                  type: "Pressable",
+                  props: {
+                    className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background opacity-50",
+                    accessibilityRole: "button",
+                    accessibilityLabel: "Previous page"
+                  },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm font-medium text-foreground" },
+                      children: "‹"
+                    }
+                  ]
+                },
+                {
+                  type: "Pressable",
+                  props: {
+                    className: "flex-row items-center justify-center h-9 min-w-9 px-2.5 rounded-md border border-input bg-background",
+                    accessibilityRole: "button",
+                    accessibilityLabel: "Next page"
+                  },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm font-medium text-foreground" },
+                      children: "›"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Offering a page-size selector without a page indicator hides which page the new size landed on."
       },
       do: {
@@ -1671,7 +2705,34 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Stacked",
       dont: {
-        html: "<div class=\"flex flex-col gap-2.5\">\n  <label class=\"flex cursor-pointer items-center gap-2\"><span class=\"mt-0 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-primary\"><span class=\"h-2 w-2 rounded-full bg-primary\"></span></span><div><div class=\"text-[13px] font-medium text-foreground\">Pro</div><div class=\"text-xs text-muted-foreground\">For growing teams that need more control.</div></div></label>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-col gap-2.5" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-2" },
+              children: [
+                { type: "Radio", props: { checked: true } },
+                {
+                  type: "View",
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-[13px] font-medium text-foreground" },
+                      children: "Pro"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs text-muted-foreground" },
+                      children: "For growing teams that need more control."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "With items-center the input floats to the vertical middle of a two-line label, leaving it visually unattached to the title it controls."
       },
       do: {
@@ -1960,7 +3021,36 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "lg",
       dont: {
-        html: "<div class=\"max-w-[320px]\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Plan</label>\n  <div class=\"flex h-10 items-center justify-between rounded-md border border-input bg-background px-3\">\n    <span class=\"text-xs text-foreground\">Starter</span>\n    <span class=\"text-xs text-muted-foreground\">▾</span>\n  </div>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[320px]" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+              children: "Plan"
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-10 flex-row items-center justify-between rounded-md border border-input bg-background px-3",
+                accessibilityRole: "button"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-foreground" },
+                  children: "Starter"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "▾"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Tiny option text inside a tall control wastes the height and looks like an accidental mismatch."
       },
       do: {
@@ -2027,7 +3117,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "avatar",
       dont: {
-        html: "<div class=\"bg-muted animate-pulse rounded-md\" style=\"width:40px;height:40px\"></div>",
+        tree: {
+          type: "View",
+          props: { className: "bg-muted animate-pulse rounded-md w-10 h-10" }
+        },
         caption: "A square placeholder for a round avatar snaps shape the instant the image loads."
       },
       do: {
@@ -2038,7 +3131,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "button",
       dont: {
-        html: "<div class=\"bg-muted animate-pulse w-[320px] rounded-md\" style=\"height:72px\"></div>",
+        tree: {
+          type: "View",
+          props: { className: "bg-muted animate-pulse w-[320px] h-[72px] rounded-md" }
+        },
         caption: "An oversized bar overstates a button and the layout jumps when the real control mounts."
       },
       do: {
@@ -2049,7 +3145,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "card",
       dont: {
-        html: "<div class=\"bg-muted animate-pulse rounded-md\" style=\"width:320px;height:88px\"></div>",
+        tree: {
+          type: "View",
+          props: { className: "bg-muted animate-pulse rounded-md w-[320px] h-[88px]" }
+        },
         caption: "A generic block that ignores the content's shape causes a jarring shift when it loads."
       },
       do: {
@@ -2060,7 +3159,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "list",
       dont: {
-        html: "<div class=\"bg-muted animate-pulse w-[400px] rounded-md\" style=\"height:120px\"></div>",
+        tree: {
+          type: "View",
+          props: { className: "bg-muted animate-pulse w-[400px] h-[120px] rounded-md" }
+        },
         caption: "One tall block hides the row rhythm, so the list reflows when each item appears."
       },
       do: {
@@ -2071,7 +3173,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "table",
       dont: {
-        html: "<div class=\"bg-muted animate-pulse w-[400px] rounded-md\" style=\"height:120px\"></div>",
+        tree: {
+          type: "View",
+          props: { className: "bg-muted animate-pulse w-[400px] h-[120px] rounded-md" }
+        },
         caption: "A single rectangle gives no column structure; cells shift sideways once data lands."
       },
       do: {
@@ -2084,7 +3189,26 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "With label",
       dont: {
-        html: "<div class=\"max-w-[400px]\"><label class=\"mb-1.5 block text-sm font-medium\">Description</label><textarea class=\"flex w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50\" style=\"height:32px;resize:none\">This is a longer description that runs past one line and gets clipped.</textarea></div>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[400px] flex-col gap-1.5" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Description"
+            },
+            {
+              type: "TextInput",
+              props: {
+                editable: false,
+                numberOfLines: 1,
+                value: "This is a longer description that runs past one line and gets clipped.",
+                className: "h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground"
+              }
+            }
+          ]
+        },
         caption: "A locked, single-line textarea hides long content with no way to expand."
       },
       do: {
@@ -2259,7 +3383,27 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Disabled",
       dont: {
-        html: "<div class=\"max-w-[400px]\"><label class=\"mb-1.5 block text-sm font-medium\">Description</label><textarea class=\"flex w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y\" style=\"min-height:80px;opacity:0.5\" readonly>Read-only content the user must not change.</textarea></div>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[400px] flex-col gap-1.5" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Description"
+            },
+            {
+              type: "TextInput",
+              props: {
+                multiline: true,
+                editable: true,
+                textAlignVertical: "top",
+                value: "Read-only content the user must not change.",
+                className: "min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground opacity-50"
+              }
+            }
+          ]
+        },
         caption: "Dimming a textarea while leaving it editable looks disabled but still accepts input."
       },
       do: {
@@ -2290,7 +3434,27 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Off",
       dont: {
-        html: "<label class=\"flex max-w-[280px] items-center justify-between gap-4\"><span class=\"text-[13px]\">Two-factor auth</span><span class=\"relative inline-flex shrink-0 items-center\"><input type=\"checkbox\" role=\"switch\" class=\"peer sr-only\"><span class=\"relative h-5 w-9 rounded-full bg-muted/30 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-muted after:content-['']\"></span></span></label>",
+        tree: {
+          type: "Pressable",
+          props: { className: "max-w-[280px] flex-row items-center justify-between gap-4" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-foreground" },
+              children: "Two-factor auth"
+            },
+            {
+              type: "View",
+              props: { className: "relative shrink-0 rounded-full w-9 h-5 bg-muted/30" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "absolute top-0.5 left-0.5 rounded-full w-4 h-4 bg-muted" }
+                }
+              ]
+            }
+          ]
+        },
         caption: "A washed-out off track reads as disabled, so users can't tell the switch is simply off versus locked."
       },
       do: {
@@ -2305,7 +3469,29 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "On",
       dont: {
-        html: "<label class=\"flex max-w-[280px] items-center justify-between gap-4\"><span class=\"text-[13px] text-destructive\">Permanently delete account</span><span class=\"relative inline-flex shrink-0 items-center\"><input type=\"checkbox\" role=\"switch\" class=\"peer sr-only\" checked><span class=\"relative h-5 w-9 rounded-full bg-input transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-background after:shadow after:transition-transform after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-4\"></span></span></label>",
+        tree: {
+          type: "Pressable",
+          props: { className: "max-w-[280px] flex-row items-center justify-between gap-4" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm font-medium text-destructive" },
+              children: "Permanently delete account"
+            },
+            {
+              type: "View",
+              props: { className: "relative shrink-0 rounded-full w-9 h-5 bg-primary" },
+              children: [
+                {
+                  type: "View",
+                  props: {
+                    className: "absolute top-0.5 right-0.5 rounded-full w-4 h-4 bg-background shadow"
+                  }
+                }
+              ]
+            }
+          ]
+        },
         caption: "A switch applies instantly; wiring an on toggle to an irreversible action invites accidental, unconfirmed data loss."
       },
       do: {
@@ -2391,7 +3577,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "top",
       dont: {
-        html: "<div class=\"pt-2\"><div class=\"relative inline-flex\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Save</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"bottom:calc(100% + 8px);left:50%;transform:translateX(-50%)\">Saves your changes</div></div></div>",
+        tree: {
+          type: "Tooltip",
+          props: { trigger: "Save", top: true, open: true, label: "Saves your changes" }
+        },
         caption: "A top tooltip on a trigger near the top edge clips above the viewport and goes unread."
       },
       do: {
@@ -2405,7 +3594,16 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "right",
       dont: {
-        html: "<div class=\"flex justify-end\"><div class=\"relative inline-flex\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9\">i</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"left:calc(100% + 8px);top:50%;transform:translateY(-50%)\">More info</div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "items-end" },
+          children: [
+            {
+              type: "Tooltip",
+              props: { iconTrigger: true, right: true, open: true, label: "More info" }
+            }
+          ]
+        },
         caption: "A right tooltip on a control flush against the right edge is cut off by the container."
       },
       do: {
@@ -2419,7 +3617,21 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "bottom",
       dont: {
-        html: "<div class=\"flex flex-col gap-2\"><div class=\"relative inline-flex w-fit\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Filters</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"top:calc(100% + 4px);left:50%;transform:translateX(-50%)\">Refine results</div></div><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs w-fit\">Clear all</button></div>",
+        tree: {
+          type: "View",
+          props: { className: "items-start gap-0" },
+          children: [
+            {
+              type: "Tooltip",
+              props: { trigger: "Filters", bottom: true, open: true, label: "Refine results" }
+            },
+            {
+              type: "Button",
+              props: { outline: true, small: true, className: "-mt-3" },
+              children: "Clear all"
+            }
+          ]
+        },
         caption: "A bottom tooltip sits right on top of the next row, masking the control beneath it."
       },
       do: {
@@ -2433,7 +3645,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "left",
       dont: {
-        html: "<div class=\"relative inline-flex\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9\">?</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"right:calc(100% + 8px);top:50%;transform:translateY(-50%)\">Need help?</div></div>",
+        tree: {
+          type: "Tooltip",
+          props: { iconTrigger: true, left: true, open: true, label: "Need help?" }
+        },
         caption: "A left tooltip on a trigger at the left edge is clipped by the container's left boundary."
       },
       do: {
@@ -2460,7 +3675,10 @@ export const DONTS: Record<string, DontDoExample[]> = {
         caption: "A custom listbox for two short options is heavier than it needs to be and worse on mobile."
       },
       do: {
-        html: "<select class=\"flex h-9 w-48 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50\"><option>Yes</option><option>No</option></select>",
+        tree: {
+          type: "Select",
+          props: { open: true, value: "Yes", options: ["Yes", "No"], className: "w-48" }
+        },
         caption: "For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile."
       }
     },
@@ -2502,11 +3720,83 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "multi",
       dont: {
-        html: "<div class=\"w-56 rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Backend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Frontend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Design</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0 invisible\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Platform</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"px-2 pb-1 pt-1.5 text-xs text-muted-foreground\">Backend</div></div>",
+        tree: {
+          type: "View",
+          props: { className: "w-56 gap-1" },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-foreground" },
+                  children: "Backend"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "▾"
+                }
+              ]
+            },
+            {
+              type: "Listbox",
+              props: {
+                multi: true,
+                bordered: true,
+                items: [
+                  { label: "Backend", selected: true },
+                  { label: "Frontend", selected: true },
+                  { label: "Design" },
+                  { label: "Platform", selected: true }
+                ]
+              }
+            }
+          ]
+        },
         caption: "Don't close on each pick or echo only the last choice: multi-select needs to keep all selections visible."
       },
       do: {
-        html: "<div class=\"w-56 rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Backend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Frontend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Design</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0 invisible\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Platform</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"px-2 pb-1 pt-1.5 text-xs text-muted-foreground\">3 selected</div></div>",
+        tree: {
+          type: "View",
+          props: { className: "w-56 gap-1" },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-foreground" },
+                  children: "3 selected"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "▾"
+                }
+              ]
+            },
+            {
+              type: "Listbox",
+              props: {
+                multi: true,
+                bordered: true,
+                items: [
+                  { label: "Backend", selected: true },
+                  { label: "Frontend", selected: true },
+                  { label: "Design" },
+                  { label: "Platform", selected: true }
+                ]
+              }
+            }
+          ]
+        },
         caption: "Keep the panel open, toggle each option's own checkmark, and summarize the count in the trigger."
       }
     }
@@ -2847,7 +4137,18 @@ export const DONTS: Record<string, DontDoExample[]> = {
         caption: "A primary, clickable action in muted-foreground reads as disabled and is easy to miss."
       },
       do: {
-        html: "<p class=\"text-sm leading-relaxed\">Payment due May 31. <a href=\"#\" class=\"text-primary underline-offset-4 hover:underline\">View invoices</a></p>",
+        tree: {
+          type: "Typography",
+          props: { body: true, className: "max-w-[340px]" },
+          children: [
+            "Payment due May 31. ",
+            {
+              type: "Typography",
+              props: { body: true, className: "text-primary underline" },
+              children: "View invoices"
+            }
+          ]
+        },
         caption: "Keep muted for de-emphasized context; give the actual action full foreground or primary color."
       }
     },
@@ -2972,7 +4273,18 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "default",
       dont: {
-        html: "<div class=\"rounded-md bg-muted p-3\"><div class=\"w-12 h-5 animate-spin rounded-full border-2 border-muted border-t-foreground\"></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "rounded-md bg-muted p-3" },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "w-12 h-5 animate-spin rounded-full border-2 border-muted border-t-foreground"
+              }
+            }
+          ]
+        },
         caption: "Don't stretch it with conflicting w/h utilities; a spinner must stay a perfect circle to spin cleanly."
       },
       do: {
@@ -2996,7 +4308,13 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "lg",
       dont: {
-        html: "<button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-xs font-medium h-8 px-3 bg-primary text-primary-foreground opacity-50\" disabled><div class=\"h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-foreground\"></div></button>",
+        tree: {
+          type: "Pressable",
+          props: {
+            className: "flex-row items-center justify-center h-8 rounded-md px-3 bg-primary opacity-50"
+          },
+          children: [{ type: "Spinner", props: { large: true } }]
+        },
         caption: "The 8×8 spinner overflows a small control; cramming the large size into a button breaks its height."
       },
       do: {
@@ -3021,18 +4339,108 @@ export const DONTS: Record<string, DontDoExample[]> = {
   popover: [
     {
       dont: {
-        html: "<div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md relative inline-block min-w-[260px]\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Name</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Email</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Role</label><select class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\"><option>Engineer</option></select>\n  <label class=\"mb-1.5 block text-sm font-medium\">Team</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <div class=\"flex justify-end gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 rounded-md px-3 text-xs\">Save</button></div>\n</div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-md border border-border bg-popover p-4 shadow-md self-start min-w-[260px]"
+          },
+          children: [
+            {
+              type: "Field",
+              props: { label: "Name", placeholder: "Ada Lovelace", className: "mb-2" }
+            },
+            {
+              type: "Field",
+              props: { label: "Email", placeholder: "ada@canvas.dev", className: "mb-2" }
+            },
+            {
+              type: "View",
+              props: { className: "mb-2" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                  children: "Role"
+                },
+                {
+                  type: "Select",
+                  props: {
+                    value: "Engineer",
+                    options: ["Engineer", "Designer", "Manager"],
+                    open: false
+                  }
+                }
+              ]
+            },
+            {
+              type: "Field",
+              props: { label: "Team", placeholder: "Identity Platform", className: "mb-2" }
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                { type: "Button", props: { primary: true, small: true }, children: "Save" }
+              ]
+            }
+          ]
+        },
         caption: "A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident."
       },
       do: {
-        html: "<div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md relative inline-block min-w-[240px]\">\n  <p class=\"mb-2 text-sm\">Rename this project?</p>\n  <input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\" value=\"Identity Platform\">\n  <div class=\"flex justify-end gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 rounded-md px-3 text-xs\">Rename</button></div>\n</div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-md border border-border bg-popover p-4 shadow-md self-start min-w-[240px]"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "mb-2 text-sm text-popover-foreground" },
+              children: "Rename this project?"
+            },
+            { type: "Input", props: { value: "Identity Platform", className: "mb-2" } },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                { type: "Button", props: { primary: true, small: true }, children: "Rename" }
+              ]
+            }
+          ]
+        },
         caption: "Keep popovers compact: a focused prompt with one input and a clear action."
       }
     },
     {
       title: "Triggered",
       dont: {
-        html: "<div class=\"inline-block\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Open popover</button><div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md mt-2 min-w-[240px]\"><p class=\"text-sm\">No anchor, no dismiss, no Close.</p></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "self-start" },
+          children: [
+            {
+              type: "Button",
+              props: { outline: true, small: true },
+              children: "Open popover"
+            },
+            {
+              type: "View",
+              props: {
+                className: "rounded-md border border-border bg-popover p-4 shadow-md mt-2 min-w-[240px]"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-popover-foreground" },
+                  children: "No anchor, no dismiss, no Close."
+                }
+              ]
+            }
+          ]
+        },
         caption: "A trigger with no relative anchor and no way to dismiss leaves the panel floating loose and stuck open."
       },
       do: {
@@ -3051,7 +4459,36 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Inline",
       dont: {
-        html: "<div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md max-h-[120px] min-w-[260px] overflow-auto\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Street</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">City</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Region</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Postal code</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n</div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-md border border-border bg-popover p-4 shadow-md max-h-[120px] min-w-[260px] overflow-hidden"
+          },
+          children: [
+            {
+              type: "ScrollView",
+              props: { className: "max-h-[88px]" },
+              children: [
+                {
+                  type: "Field",
+                  props: { label: "Street", placeholder: "100 Market St", className: "mb-2" }
+                },
+                {
+                  type: "Field",
+                  props: { label: "City", placeholder: "San Francisco", className: "mb-2" }
+                },
+                {
+                  type: "Field",
+                  props: { label: "Region", placeholder: "California", className: "mb-2" }
+                },
+                {
+                  type: "Field",
+                  props: { label: "Postal code", placeholder: "94105", className: "mb-2" }
+                }
+              ]
+            }
+          ]
+        },
         caption: "An always-visible panel that scrolls internally is doing a card's or section's job; use the panel chrome only for short content."
       },
       do: {
@@ -3291,7 +4728,79 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "sm",
       dont: {
-        html: "<div class=\"w-full max-w-[384px] rounded-lg border border-border bg-popover p-6 text-popover-foreground shadow-xl\"><h2 class=\"text-base font-semibold\">Transfer ownership</h2><div class=\"mt-4 space-y-4\"><div><label class=\"mb-1.5 block text-sm font-medium\">New owner email</label><input class=\"h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm\" placeholder=\"owner@example.com\"></div><div><label class=\"mb-1.5 block text-sm font-medium\">Reason</label><input class=\"h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm\" placeholder=\"Optional note\"></div><div><label class=\"mb-1.5 block text-sm font-medium\">Type TRANSFER to confirm</label><input class=\"h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm\" placeholder=\"TRANSFER\"></div></div><div class=\"mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end\"><button class=\"inline-flex h-8 items-center justify-center rounded-md border border-input bg-transparent px-3 text-sm font-medium\">Cancel</button><button class=\"inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground\">Transfer</button></div></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "items-center justify-center rounded-lg bg-black/50 p-8",
+            style: { minHeight: 200 }
+          },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "w-full max-w-[384px] rounded-lg border border-border bg-popover p-6 shadow-xl"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-base font-semibold text-popover-foreground" },
+                  children: "Transfer ownership"
+                },
+                {
+                  type: "View",
+                  props: { className: "mt-4 gap-4" },
+                  children: [
+                    {
+                      type: "View",
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                          children: "New owner email"
+                        },
+                        { type: "Input", props: { placeholder: "owner@example.com" } }
+                      ]
+                    },
+                    {
+                      type: "View",
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                          children: "Reason"
+                        },
+                        { type: "Input", props: { placeholder: "Optional note" } }
+                      ]
+                    },
+                    {
+                      type: "View",
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                          children: "Type TRANSFER to confirm"
+                        },
+                        { type: "Input", props: { placeholder: "TRANSFER" } }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row justify-end gap-2 mt-6" },
+                  children: [
+                    { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                    {
+                      type: "Button",
+                      props: { primary: true, small: true },
+                      children: "Transfer"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Packing a multi-field form into sm makes it feel like a form crammed into a confirmation popup."
       },
       do: {
@@ -3624,7 +5133,17 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Plain",
       dont: {
-        html: "<p class=\"max-w-[360px] font-mono text-[13px]\">const theme = getTheme(); setTheme(theme === \"dark\" ? \"light\" : \"dark\");</p>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[360px]" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-[13px]", style: { fontFamily: "monospace" } },
+              children: "const theme = getTheme(); setTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+            }
+          ]
+        },
         caption: "A paragraph collapses the line breaks and indentation, so multi-line code reads as one run-on string."
       },
       do: {
@@ -3640,7 +5159,17 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Terminal",
       dont: {
-        html: "<div class=\"w-full overflow-x-auto rounded-lg bg-zinc-900 p-4 font-mono text-[13px] text-zinc-100\">npm install @olympusoss/canvas</div>",
+        tree: {
+          type: "View",
+          props: { className: "w-full self-start rounded-lg bg-zinc-900 p-4" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-[13px] text-zinc-100", style: { fontFamily: "monospace" } },
+              children: "$ npm install @olympusoss/canvas"
+            }
+          ]
+        },
         caption: "Selectable prompt text means a reader who copies the line drags the $ marker into their shell."
       },
       do: {
@@ -3654,7 +5183,58 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Numbered",
       dont: {
-        html: "<pre class=\"w-full self-start overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-sm leading-relaxed text-foreground\"><div class=\"grid grid-cols-[2ch_1fr] gap-x-1\"><span class=\"pr-4 text-right text-muted-foreground/50\">1</span><span>const theme = getTheme();</span><span class=\"pr-4 text-right text-muted-foreground/50\">2</span><span>setTheme(theme);</span></div></pre>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-full self-start flex-row rounded-lg border border-border bg-muted/50 p-4"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "mr-4 items-end" },
+              children: [
+                {
+                  type: "Text",
+                  props: {
+                    className: "text-sm leading-relaxed text-muted-foreground/50",
+                    style: { fontFamily: "monospace" }
+                  },
+                  children: "1"
+                },
+                {
+                  type: "Text",
+                  props: {
+                    className: "text-sm leading-relaxed text-muted-foreground/50",
+                    style: { fontFamily: "monospace" }
+                  },
+                  children: "2"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: {
+                    className: "text-sm leading-relaxed text-foreground",
+                    style: { fontFamily: "monospace" }
+                  },
+                  children: "const theme = getTheme();"
+                },
+                {
+                  type: "Text",
+                  props: {
+                    className: "text-sm leading-relaxed text-foreground",
+                    style: { fontFamily: "monospace" }
+                  },
+                  children: "setTheme(theme);"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Selectable line numbers get swept into the selection and pasted as 1 2 ahead of every line."
       },
       do: {
@@ -3668,7 +5248,38 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Inline",
       dont: {
-        html: "<p class=\"max-w-[360px] text-sm leading-relaxed\">Run <code class=\"rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[13px] text-foreground\">npm install @olympusoss/canvas &amp;&amp; npm run build &amp;&amp; npm run preview</code> to start.</p>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[360px] flex-row flex-wrap items-center" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm leading-relaxed text-foreground" },
+              children: "Run "
+            },
+            {
+              type: "View",
+              props: {
+                className: "self-start rounded border border-border bg-muted px-1.5 py-0.5"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: {
+                    className: "text-[13px] text-foreground",
+                    style: { fontFamily: "monospace" }
+                  },
+                  children: "npm install @olympusoss/canvas && npm run build && npm run preview"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm leading-relaxed text-foreground" },
+              children: " to start."
+            }
+          ]
+        },
         caption: "A long, multi-step command crammed inline wraps mid-token and offers no horizontal scroll."
       },
       do: {
@@ -3777,7 +5388,35 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "activity",
       dont: {
-        html: "<div class=\"rounded-lg border border-border px-6 py-8 text-center items-center\"><div class=\"mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"text-destructive\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 8v4\"/><path d=\"M12 16h.01\"/></svg></div><div class=\"text-base font-semibold text-foreground\">No activity</div><p class=\"mt-1 text-sm text-muted-foreground\">Events will appear as they happen.</p></div>",
+        tree: {
+          type: "View",
+          props: { className: "items-center rounded-lg border border-border px-6 py-8" },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "mb-3 h-12 w-12 items-center justify-center rounded-full bg-destructive/10"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xl text-destructive" },
+                  children: "⚠️"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-center text-base font-semibold text-foreground" },
+              children: "No activity"
+            },
+            {
+              type: "Text",
+              props: { className: "mt-1 text-center text-sm text-muted-foreground" },
+              children: "Events will appear as they happen."
+            }
+          ]
+        },
         caption: "An alarming red icon turns a calm, expected empty feed into a false error."
       },
       do: {
@@ -3882,7 +5521,28 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Basic",
       dont: {
-        html: "<div class=\"flex max-w-[400px] flex-col gap-1\">\n  <div class=\"text-sm\"><span class=\"font-semibold\">Name:</span> Rachel Chen</div>\n  <div class=\"text-sm\"><span class=\"font-semibold\">Role:</span> Admin</div>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[400px] flex-col gap-1" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm" },
+              children: [
+                { type: "Text", props: { className: "font-semibold" }, children: "Name:" },
+                " Rachel Chen"
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm" },
+              children: [
+                { type: "Text", props: { className: "font-semibold" }, children: "Role:" },
+                " Admin"
+              ]
+            }
+          ]
+        },
         caption: "Inline label-colon-value with no shared column makes values ragged and impossible to scan down a list."
       },
       do: {
@@ -3995,7 +5655,54 @@ export const DONTS: Record<string, DontDoExample[]> = {
         caption: "Putting a wide field next to a tiny one in the same two-column row leaves the short input awkwardly oversized."
       },
       do: {
-        html: "<div class=\"max-w-[560px]\">\n  <div class=\"mb-3\"><label class=\"mb-1.5 block text-sm font-medium text-foreground\">Street address</label><input class=\"h-9 w-full rounded-md border border-input bg-background px-3 text-sm\" placeholder=\"123 Market St\" /></div>\n  <div class=\"grid grid-cols-2 gap-3\">\n    <div><label class=\"mb-1.5 block text-sm font-medium text-foreground\">City</label><input class=\"h-9 w-full rounded-md border border-input bg-background px-3 text-sm\" placeholder=\"San Francisco\" /></div>\n    <div><label class=\"mb-1.5 block text-sm font-medium text-foreground\">ZIP</label><input class=\"h-9 w-full rounded-md border border-input bg-background px-3 text-sm\" placeholder=\"94103\" /></div>\n  </div>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[560px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "mb-3" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                  children: "Street address"
+                },
+                { type: "Input", props: { placeholder: "123 Market St" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row gap-3" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "flex-1" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                      children: "City"
+                    },
+                    { type: "Input", props: { placeholder: "San Francisco" } }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                      children: "ZIP"
+                    },
+                    { type: "Input", props: { placeholder: "94103" } }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Pair fields of similar width (city / ZIP) in a row and give a full-width field like the street its own line."
       }
     },
@@ -4076,22 +5783,151 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "With form inline",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[420px] p-6\">\n  <div class=\"mb-1 text-[15px] font-semibold\">Subscribe to updates</div>\n  <div class=\"mb-4 text-sm text-muted-foreground\">We'll send you a weekly digest of what changed.</div>\n  <input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50\" type=\"email\" placeholder=\"you@example.com\" />\n  <div class=\"mt-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2\">Subscribe</button></div>\n</div>",
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[420px] gap-4" },
+          children: [
+            {
+              type: "View",
+              props: { className: "gap-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-[15px] font-semibold text-card-foreground" },
+                  children: "Subscribe to updates"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "We'll send you a weekly digest of what changed."
+                }
+              ]
+            },
+            { type: "Input", props: { placeholder: "you@example.com" } },
+            {
+              type: "View",
+              props: { className: "items-start" },
+              children: [{ type: "Button", props: { primary: true }, children: "Subscribe" }]
+            }
+          ]
+        },
         caption: "Stacking the field above its button breaks the single-decision rhythm and adds a row of dead space."
       },
       do: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[420px] p-6\">\n  <div class=\"mb-1 text-[15px] font-semibold\">Subscribe to updates</div>\n  <div class=\"mb-4 text-sm text-muted-foreground\">We'll send you a weekly digest of what changed.</div>\n  <div class=\"flex gap-2\">\n    <input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 flex-1\" type=\"email\" placeholder=\"you@example.com\" />\n    <button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2\">Subscribe</button>\n  </div>\n</div>",
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[420px] gap-4" },
+          children: [
+            {
+              type: "View",
+              props: { className: "gap-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-[15px] font-semibold text-card-foreground" },
+                  children: "Subscribe to updates"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "We'll send you a weekly digest of what changed."
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-2" },
+              children: [
+                {
+                  type: "Input",
+                  props: { placeholder: "you@example.com", className: "flex-1" }
+                },
+                { type: "Button", props: { primary: true }, children: "Subscribe" }
+              ]
+            }
+          ]
+        },
         caption: "Keep the input and its submit button on one row so the input + action reads as one step."
       }
     },
     {
       title: "Side-by-side",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[460px] items-start gap-6 p-6\">\n  <div class=\"flex-1\">\n    <div class=\"mb-1 text-[15px] font-semibold\">Discard unsaved changes?</div>\n    <div class=\"text-sm text-muted-foreground\">You have unsaved edits in this form. Leaving now will lose all progress.</div>\n  </div>\n  <div class=\"flex shrink-0 gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Discard</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Cancel</button></div>\n</div>",
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[460px] flex-row items-start gap-6" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-1 gap-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-[15px] font-semibold text-card-foreground" },
+                  children: "Discard unsaved changes?"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "You have unsaved edits in this form. Leaving now will lose all progress."
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "shrink-0 flex-row gap-2" },
+              children: [
+                {
+                  type: "Button",
+                  props: { destructive: true, small: true },
+                  children: "Discard"
+                },
+                {
+                  type: "Button",
+                  props: { destructive: true, small: true },
+                  children: "Cancel"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Two destructive-styled buttons make the safe escape (Cancel) look as dangerous as the discard."
       },
       do: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[460px] items-start gap-6 p-6\">\n  <div class=\"flex-1\">\n    <div class=\"mb-1 text-[15px] font-semibold\">Discard unsaved changes?</div>\n    <div class=\"text-sm text-muted-foreground\">You have unsaved edits in this form. Leaving now will lose all progress.</div>\n  </div>\n  <div class=\"flex shrink-0 gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Discard</button></div>\n</div>",
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[460px] flex-row items-start gap-6" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-1 gap-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-[15px] font-semibold text-card-foreground" },
+                  children: "Discard unsaved changes?"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "You have unsaved edits in this form. Leaving now will lose all progress."
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "shrink-0 flex-row gap-2" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                {
+                  type: "Button",
+                  props: { destructive: true, small: true },
+                  children: "Discard"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Style only the irreversible action as destructive; keep the cancel/escape as a quiet outline button."
       }
     },
@@ -4128,7 +5964,49 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Two-column",
       dont: {
-        html: "<dl class=\"max-w-[420px]\">\n  <div class=\"grid grid-cols-[64px_1fr] gap-4 border-b border-border py-3 text-sm\"><dt class=\"text-muted-foreground\">Client identifier</dt><dd class=\"break-all font-mono text-[12.5px]\">clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF</dd></div>\n  <div class=\"grid grid-cols-[64px_1fr] gap-4 py-3 text-sm\"><dt class=\"text-muted-foreground\">Status</dt><dd><span class=\"inline-flex items-center gap-1.5 rounded-full border border-transparent bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-600\"><span class=\"h-1.5 w-1.5 rounded-full bg-emerald-500\"></span>Active</span></dd></div>\n</dl>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[420px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-baseline gap-4 border-b border-border py-3" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "w-16 text-sm text-muted-foreground" },
+                  children: "Client identifier"
+                },
+                {
+                  type: "Text",
+                  props: {
+                    className: "flex-1 break-all text-[12.5px] font-medium text-foreground",
+                    style: { fontFamily: "monospace" }
+                  },
+                  children: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row items-baseline gap-4 py-3" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "w-16 text-sm text-muted-foreground" },
+                  children: "Status"
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1" },
+                  children: [
+                    { type: "Badge", props: { status: true, success: true }, children: "Active" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "A too-narrow label column wraps the longest term and knocks the two columns out of alignment."
       },
       do: {
@@ -4185,7 +6063,44 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Stacked",
       dont: {
-        html: "<dl class=\"max-w-[320px] flex flex-col gap-4\">\n  <div><dt class=\"mb-1 text-sm\">Full name</dt><dd class=\"text-sm text-muted-foreground\">Rachel Chen</dd></div>\n  <div><dt class=\"mb-1 text-sm\">Email</dt><dd class=\"text-sm text-muted-foreground\">rachel.chen@example.com</dd></div>\n</dl>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[320px] gap-4" },
+          children: [
+            {
+              type: "View",
+              props: { className: "gap-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-foreground" },
+                  children: "Full name"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Rachel Chen"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "gap-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-foreground" },
+                  children: "Email"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "rachel.chen@example.com"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Muting the value and bolding nothing inverts the hierarchy; the label outweighs the data it describes."
       },
       do: {
@@ -4208,7 +6123,110 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Connector",
       dont: {
-        html: "<div class=\"w-full max-w-[420px] rounded-lg border border-border bg-card overflow-hidden p-6\"><ul class=\"m-0 list-none p-0\"><li class=\"relative flex gap-3 pb-6\"><div class=\"absolute -bottom-6 left-[13px] top-7 w-px bg-border\"></div><div class=\"flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card\"><span class=\"text-xs font-medium text-muted-foreground\">RC</span></div><div class=\"flex-1 pt-0.5\"><div class=\"text-sm\"><span class=\"font-medium\">Rachel Chen</span> <span class=\"text-muted-foreground\">approved the request</span></div><div class=\"mt-0.5 text-xs text-muted-foreground\">2 hours ago</div></div></li><li class=\"relative flex gap-3\"><div class=\"absolute -bottom-6 left-[13px] top-7 w-px bg-border\"></div><div class=\"flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card\"><span class=\"text-xs font-medium text-muted-foreground\">SY</span></div><div class=\"flex-1 pt-0.5\"><div class=\"text-sm\"><span class=\"font-medium\">System</span> <span class=\"text-muted-foreground\">created the project</span></div><div class=\"mt-0.5 text-xs text-muted-foreground\">3 days ago</div></div></li></ul></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-full max-w-[420px] rounded-lg border border-border bg-card overflow-hidden p-6"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "relative flex-row gap-3 pb-6" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "absolute -bottom-6 left-[13px] top-7 w-px bg-border" }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card"
+                  },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-xs font-medium text-muted-foreground" },
+                      children: "RC"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 pt-0.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm" },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "font-medium" },
+                          children: "Rachel Chen "
+                        },
+                        {
+                          type: "Text",
+                          props: { className: "text-muted-foreground" },
+                          children: "approved the request"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "mt-0.5 text-xs text-muted-foreground" },
+                      children: "2 hours ago"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "relative flex-row gap-3" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "absolute -bottom-6 left-[13px] top-7 w-px bg-border" }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card"
+                  },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-xs font-medium text-muted-foreground" },
+                      children: "SY"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 pt-0.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm" },
+                      children: [
+                        { type: "Text", props: { className: "font-medium" }, children: "System " },
+                        {
+                          type: "Text",
+                          props: { className: "text-muted-foreground" },
+                          children: "created the project"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "mt-0.5 text-xs text-muted-foreground" },
+                      children: "3 days ago"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Running the connector line past the final event leaves a dangling tail pointing at nothing."
       },
       do: {
@@ -4228,7 +6246,44 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Avatar",
       dont: {
-        html: "<div class=\"w-full max-w-[420px] rounded-lg border border-border bg-card overflow-hidden\"><div class=\"flex items-start gap-3 px-5 py-4\"><span class=\"inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-medium text-muted-foreground\">?</span><div class=\"min-w-0 flex-1\"><div class=\"text-sm text-muted-foreground\">Pushed 3 commits</div></div></div></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-full max-w-[420px] rounded-lg border border-border bg-card overflow-hidden"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-start gap-3 px-5 py-4" },
+              children: [
+                {
+                  type: "View",
+                  props: {
+                    className: "h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted"
+                  },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-base font-medium text-muted-foreground" },
+                      children: "?"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "min-w-0 flex-1" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-muted-foreground" },
+                      children: "Pushed 3 commits"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "An anonymous avatar with no actor name and no timestamp strips the row of the who and the when."
       },
       do: {
@@ -4254,7 +6309,81 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "People (card grid)",
       dont: {
-        html: "<div class=\"grid grid-cols-4 gap-3.5\"><div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex w-[200px] flex-col items-center gap-2 p-5 text-center\"><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-16 w-16 text-2xl\">RC</span><div class=\"text-sm font-semibold\">Rachel Chen</div><div class=\"text-xs text-muted-foreground\">Engineering Lead</div></div><div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex w-[200px] flex-col items-center gap-2 p-5 text-center\"><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-16 w-16 text-2xl\">AL</span><div class=\"text-sm font-semibold\">Ada Lovelace</div><div class=\"text-xs text-muted-foreground\">Staff Engineer</div></div><div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex w-[200px] flex-col items-center gap-2 p-5 text-center\"><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-16 w-16 text-2xl\">KT</span><div class=\"text-sm font-semibold\">Kevin Turner</div><div class=\"text-xs text-muted-foreground\">Product Designer</div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row gap-3.5" },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "w-[200px] items-center gap-2 p-5 rounded-lg border border-border bg-card shadow-sm"
+              },
+              children: [
+                {
+                  type: "Avatar",
+                  props: { large: true, name: "Rachel Chen" },
+                  children: "RC"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-card-foreground" },
+                  children: "Rachel Chen"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "Engineering Lead"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: {
+                className: "w-[200px] items-center gap-2 p-5 rounded-lg border border-border bg-card shadow-sm"
+              },
+              children: [
+                {
+                  type: "Avatar",
+                  props: { large: true, name: "Ada Lovelace" },
+                  children: "AL"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-card-foreground" },
+                  children: "Ada Lovelace"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "Staff Engineer"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: {
+                className: "w-[200px] items-center gap-2 p-5 rounded-lg border border-border bg-card shadow-sm"
+              },
+              children: [
+                {
+                  type: "Avatar",
+                  props: { large: true, name: "Kevin Turner" },
+                  children: "KT"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-card-foreground" },
+                  children: "Kevin Turner"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "Product Designer"
+                }
+              ]
+            }
+          ]
+        },
         caption: "A fixed column count with hard-width cards overflows the row on narrow viewports instead of reflowing."
       },
       do: {
@@ -4275,7 +6404,69 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Image gallery",
       dont: {
-        html: "<div class=\"grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3\"><div><div class=\"h-24 overflow-hidden rounded-md bg-gradient-to-br from-primary/30 to-primary/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">hero-banner.png</div></div><div><div class=\"h-40 overflow-hidden rounded-md bg-gradient-to-br from-blue-500/30 to-blue-500/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">icon-set.svg</div></div><div><div class=\"h-16 overflow-hidden rounded-md bg-gradient-to-br from-emerald-500/30 to-emerald-500/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">product-shot.jpg</div></div><div><div class=\"h-32 overflow-hidden rounded-md bg-gradient-to-br from-amber-500/30 to-amber-500/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">avatar-default.png</div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap gap-3" },
+          children: [
+            {
+              type: "View",
+              props: { className: "w-[140px]" },
+              children: [
+                { type: "View", props: { className: "w-full h-24 rounded-md bg-primary/20" } },
+                {
+                  type: "Text",
+                  props: { className: "mt-2 text-[12.5px] font-medium text-card-foreground" },
+                  children: "hero-banner.png"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "w-[140px]" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "w-full h-40 rounded-md bg-blue-500/20" }
+                },
+                {
+                  type: "Text",
+                  props: { className: "mt-2 text-[12.5px] font-medium text-card-foreground" },
+                  children: "icon-set.svg"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "w-[140px]" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "w-full h-16 rounded-md bg-emerald-500/20" }
+                },
+                {
+                  type: "Text",
+                  props: { className: "mt-2 text-[12.5px] font-medium text-card-foreground" },
+                  children: "product-shot.jpg"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "w-[140px]" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "w-full h-32 rounded-md bg-amber-500/20" }
+                },
+                {
+                  type: "Text",
+                  props: { className: "mt-2 text-[12.5px] font-medium text-card-foreground" },
+                  children: "avatar-default.png"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Letting each thumbnail keep its intrinsic height makes a ragged grid and shifts the layout as images load."
       },
       do: {
@@ -4333,7 +6524,37 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Icon",
       dont: {
-        html: "<div class=\"flex max-w-[480px] items-start gap-3 rounded-lg border border-border bg-card p-4\">\n  <div class=\"inline-flex shrink-0 items-center justify-center rounded-md bg-primary/15 p-2 text-primary\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z\"/></svg></div>\n  <div class=\"min-w-0 flex-1\"><div class=\"text-sm font-semibold\">Security first</div><div class=\"mt-0.5 text-xs leading-snug text-muted-foreground\">End-to-end encryption with automatic key rotation.</div></div>\n</div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-start gap-3 rounded-lg border border-border bg-card p-4 max-w-[480px]"
+          },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "shrink-0 items-center justify-center rounded-md bg-primary/15 p-2"
+              },
+              children: [{ type: "Icon", props: { shield: true, primary: true, size: 32 } }]
+            },
+            {
+              type: "View",
+              props: { className: "min-w-0 flex-1 gap-0.5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-foreground" },
+                  children: "Security first"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs leading-snug text-muted-foreground" },
+                  children: "End-to-end encryption with automatic key rotation."
+                }
+              ]
+            }
+          ]
+        },
         caption: "An oversized icon box throws off the optical balance with the two-line text."
       },
       do: {
@@ -4390,7 +6611,37 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Two-line with avatar",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card overflow-hidden shadow-sm max-w-[560px]\"><div class=\"flex items-center gap-3 px-5 py-3\"><span class=\"inline-flex h-10 w-10 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted text-[12px] font-medium text-muted-foreground\">RC</span><div class=\"min-w-0 flex-1\"><div class=\"text-[13.5px] font-semibold\">Rachel Chen</div><div class=\"text-[13.5px] font-semibold\">rachel.chen@example.com</div></div></div></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-lg border border-border bg-card overflow-hidden shadow-sm w-full max-w-[560px]"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-3 px-5 py-3" },
+              children: [
+                { type: "Avatar", props: { name: "Rachel Chen" }, children: "RC" },
+                {
+                  type: "View",
+                  props: { className: "min-w-0 flex-1" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-[13.5px] font-semibold text-foreground" },
+                      children: "Rachel Chen"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-[13.5px] font-semibold text-foreground" },
+                      children: "rachel.chen@example.com"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Equal weight on both lines flattens the hierarchy; the email competes with the name."
       },
       do: {
@@ -4442,7 +6693,48 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Card surface group",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card overflow-hidden shadow-sm max-w-[560px]\"><div class=\"flex items-center justify-between px-5 py-3\"><span class=\"text-sm font-semibold\">Team members</span></div><div class=\"flex items-center gap-3 px-5 py-3\"><span class=\"inline-flex h-10 w-10 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted text-[12px] font-medium text-muted-foreground\">RC</span><div class=\"min-w-0 flex-1\"><div class=\"text-[13.5px] font-semibold\">Rachel Chen</div><div class=\"text-xs text-muted-foreground\">Engineering Lead</div></div></div></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-lg border border-border bg-card overflow-hidden shadow-sm w-full max-w-[560px]"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-center justify-between px-5 py-3" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-foreground" },
+                  children: "Team members"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-3 px-5 py-3" },
+              children: [
+                { type: "Avatar", props: { name: "Rachel Chen" }, children: "RC" },
+                {
+                  type: "View",
+                  props: { className: "min-w-0 flex-1" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-[13.5px] font-semibold text-foreground" },
+                      children: "Rachel Chen"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs text-muted-foreground" },
+                      children: "Engineering Lead"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "A header with no rule blends into the rows, and dropping the per-row action removes the affordance."
       },
       do: {
@@ -4544,11 +6836,114 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "With sparkline",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[220px] p-5\"><div class=\"text-xs text-muted-foreground\">Requests</div><div class=\"mt-1 text-2xl font-semibold\">24.5k</div><svg width=\"100%\" height=\"24\" viewBox=\"0 0 200 24\" preserveAspectRatio=\"none\" class=\"mt-2 block\"><polyline points=\"0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/></svg></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-lg border border-border bg-card shadow-sm max-w-[220px] p-5"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "Requests"
+            },
+            {
+              type: "Text",
+              props: { className: "mt-1 text-2xl font-semibold tracking-tight text-foreground" },
+              children: "24.5k"
+            },
+            {
+              type: "View",
+              props: { className: "mt-3 flex-row items-end gap-0.5 h-6" },
+              children: [
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-1" } },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-2" } },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-1.5" }
+                },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-3" } },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-2.5" }
+                },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-4" } },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-3.5" }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-[18px]" }
+                },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-4" } },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-5" } },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-6" } }
+              ]
+            }
+          ]
+        },
         caption: "A trend line with no current delta makes you eyeball the slope to guess the direction."
       },
       do: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[220px] p-5\"><div class=\"text-xs text-muted-foreground\">Requests</div><div class=\"mt-1 flex items-baseline justify-between\"><span class=\"text-2xl font-semibold\">24.5k</span><span class=\"font-mono text-[11px] text-emerald-600\">+8.2%</span></div><svg width=\"100%\" height=\"24\" viewBox=\"0 0 200 24\" preserveAspectRatio=\"none\" class=\"mt-2 block\"><defs><linearGradient id=\"sgd\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"var(--primary)\" stop-opacity=\"0.3\"/><stop offset=\"100%\" stop-color=\"var(--primary)\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2 200,24 0,24\" fill=\"url(#sgd)\"/><polyline points=\"0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/></svg></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-lg border border-border bg-card shadow-sm max-w-[220px] p-5"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "Requests"
+            },
+            {
+              type: "View",
+              props: { className: "mt-1 flex-row items-baseline justify-between" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-2xl font-semibold tracking-tight text-foreground" },
+                  children: "24.5k"
+                },
+                {
+                  type: "Text",
+                  props: { className: "font-mono text-[11px] text-emerald-600 dark:text-emerald-400" },
+                  children: "+8.2%"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "mt-3 flex-row items-end gap-0.5 h-6" },
+              children: [
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-1" } },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-2" } },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-1.5" }
+                },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-3" } },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-2.5" }
+                },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-4" } },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-3.5" }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-sm bg-primary/70 h-[18px]" }
+                },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-4" } },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-5" } },
+                { type: "View", props: { className: "flex-1 rounded-sm bg-primary/70 h-6" } }
+              ]
+            }
+          ]
+        },
         caption: "Pair the sparkline with an explicit delta so the headline reads without decoding the curve."
       }
     }
@@ -4557,22 +6952,238 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Sidebar",
       dont: {
-        html: "<div class=\"flex flex-wrap gap-2\"><span class=\"inline-flex items-center rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Active</span><span class=\"inline-flex items-center rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Default</span></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap gap-2" },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "flex-row items-center self-start rounded-full bg-primary px-2.5 py-1"
+              },
+              children: {
+                type: "Text",
+                props: { className: "text-xs font-medium text-primary-foreground" },
+                children: "Active"
+              }
+            },
+            {
+              type: "View",
+              props: {
+                className: "flex-row items-center self-start rounded-full bg-primary px-2.5 py-1"
+              },
+              children: {
+                type: "Text",
+                props: { className: "text-xs font-medium text-primary-foreground" },
+                children: "Default"
+              }
+            }
+          ]
+        },
         caption: "Active-filter chips with no remove affordance leave no way to clear one filter without hunting back through the sidebar."
       },
       do: {
-        html: "<div class=\"flex flex-wrap gap-2\"><span class=\"inline-flex cursor-pointer items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Active &#215;</span><span class=\"inline-flex cursor-pointer items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Default &#215;</span></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap gap-2" },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center self-start gap-1 rounded-full bg-primary px-2.5 py-1"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-primary-foreground" },
+                  children: "Active"
+                },
+                { type: "Icon", props: { x: true, primaryForeground: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center self-start gap-1 rounded-full bg-primary px-2.5 py-1"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-primary-foreground" },
+                  children: "Default"
+                },
+                { type: "Icon", props: { x: true, primaryForeground: true, size: 12 } }
+              ]
+            }
+          ]
+        },
         caption: "Give each chip a × so a single filter can be removed in place, and keep it in sync with the sidebar checkbox."
       }
     },
     {
       title: "Inline",
       dont: {
-        html: "<div class=\"flex flex-wrap items-center gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Status <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Role <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Schema <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">MFA <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Region <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Created <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Last seen <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Team <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-2" },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Status"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Role"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Schema"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "MFA"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Region"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Created"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Last seen"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Team"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            }
+          ]
+        },
         caption: "Eight inline dropdowns wrap into a wall of buttons, which defeats the compact bar; that volume of filtering belongs in the sidebar rail."
       },
       do: {
-        html: "<div class=\"flex flex-wrap items-center gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 rounded-md px-3 text-xs\">Status <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Role <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs text-primary\">+ Add filter</button></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-2" },
+          children: [
+            {
+              type: "Pressable",
+              props: { className: "h-8 flex-row items-center gap-2 rounded-md bg-primary px-3" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-primary-foreground" },
+                  children: "Status"
+                },
+                {
+                  type: "Icon",
+                  props: { chevronDown: true, primaryForeground: true, size: 12 }
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs font-medium text-foreground" },
+                  children: "Role"
+                },
+                { type: "Icon", props: { chevronDown: true, size: 12 } }
+              ]
+            },
+            {
+              type: "Button",
+              props: { ghost: true, small: true, className: "text-primary" },
+              children: "+ Add filter"
+            }
+          ]
+        },
         caption: "Surface two or three primary filters and tuck the rest behind \"+ Add filter\" so the bar stays one scannable row."
       }
     }
@@ -4581,11 +7192,83 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Single date",
       dont: {
-        html: "<div class=\"w-fit rounded-lg border border-border p-3\"><div class=\"grid grid-cols-7 gap-0.5\"><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">8</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">14</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">23</button></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "w-fit rounded-lg border border-border p-3" },
+          children: {
+            type: "View",
+            props: { className: "flex-row gap-0.5" },
+            children: [
+              {
+                type: "Pressable",
+                props: { className: "h-9 w-9 items-center justify-center rounded-md bg-primary" },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm text-primary-foreground" },
+                  children: "8"
+                }
+              },
+              {
+                type: "Pressable",
+                props: { className: "h-9 w-9 items-center justify-center rounded-md bg-primary" },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm text-primary-foreground" },
+                  children: "14"
+                }
+              },
+              {
+                type: "Pressable",
+                props: { className: "h-9 w-9 items-center justify-center rounded-md bg-primary" },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm text-primary-foreground" },
+                  children: "23"
+                }
+              }
+            ]
+          }
+        },
         caption: "Painting several days with the primary selected style makes a single-date picker look like a multi-select."
       },
       do: {
-        html: "<div class=\"w-fit rounded-lg border border-border p-3\"><div class=\"grid grid-cols-7 gap-0.5\"><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent\">8</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-accent font-medium text-accent-foreground\">23</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">24</button></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "w-fit rounded-lg border border-border p-3" },
+          children: {
+            type: "View",
+            props: { className: "flex-row gap-0.5" },
+            children: [
+              {
+                type: "Pressable",
+                props: { className: "h-9 w-9 items-center justify-center rounded-md" },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm text-foreground" },
+                  children: "8"
+                }
+              },
+              {
+                type: "Pressable",
+                props: { className: "h-9 w-9 items-center justify-center rounded-md bg-accent" },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-accent-foreground" },
+                  children: "23"
+                }
+              },
+              {
+                type: "Pressable",
+                props: { className: "h-9 w-9 items-center justify-center rounded-md bg-primary" },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm text-primary-foreground" },
+                  children: "24"
+                }
+              }
+            ]
+          }
+        },
         caption: "Exactly one selected day (primary), with today marked separately in the accent tone."
       }
     },
@@ -4679,7 +7362,20 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Trigger",
       dont: {
-        html: "<button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3\">\n  <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n  Search...\n</button>",
+        tree: {
+          type: "Pressable",
+          props: {
+            className: "flex-row items-center gap-2 self-start rounded-md border border-input bg-transparent px-3 py-1.5"
+          },
+          children: [
+            { type: "Icon", props: { search: true, muted: true, size: 14 } },
+            {
+              type: "Text",
+              props: { className: "text-sm text-foreground" },
+              children: "Search..."
+            }
+          ]
+        },
         caption: "A bare search button hides the keyboard shortcut, so power users never learn the &#8984;K entry point."
       },
       do: {
@@ -4960,18 +7656,72 @@ export const DONTS: Record<string, DontDoExample[]> = {
         caption: "Hiding the body entirely on no results collapses the table and looks broken."
       },
       do: {
-        html: "<div class=\"overflow-hidden rounded-lg border border-border max-w-[520px]\"><div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Name</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Email</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Status</th></tr></thead><tbody><tr><td colspan=\"3\" class=\"px-4 py-8 text-center text-sm text-muted-foreground\">No results found.</td></tr></tbody></table></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "overflow-hidden rounded-lg border border-border max-w-[520px]" },
+          children: [
+            {
+              type: "DataTable",
+              props: { columns: ["Name", "Email", "Status"], rows: [] }
+            },
+            {
+              type: "View",
+              props: { className: "items-center px-4 py-8" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "No results found."
+                }
+              ]
+            }
+          ]
+        },
         caption: "Keep the header and span a single centered message row so the structure stays intact."
       }
     },
     {
       title: "loading",
       dont: {
-        html: "<div class=\"overflow-hidden rounded-lg border border-border max-w-[520px]\"><div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Name</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Email</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Status</th></tr></thead><tbody><tr><td colspan=\"3\" class=\"px-4 py-8 text-center text-sm text-muted-foreground\">Loading…</td></tr></tbody></table></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "overflow-hidden rounded-lg border border-border max-w-[520px]" },
+          children: [
+            {
+              type: "DataTable",
+              props: { columns: ["Name", "Email", "Status"], rows: [] }
+            },
+            {
+              type: "View",
+              props: { className: "items-center px-4 py-8" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Loading…"
+                }
+              ]
+            }
+          ]
+        },
         caption: "A bare \"Loading…\" string gives no sense of progress and reads like static content."
       },
       do: {
-        html: "<div class=\"overflow-hidden rounded-lg border border-border max-w-[520px]\"><div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Name</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Email</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Status</th></tr></thead><tbody><tr><td colspan=\"3\" class=\"px-4 py-8 text-center\"><div class=\"inline-block h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-foreground\"></div></td></tr></tbody></table></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "overflow-hidden rounded-lg border border-border max-w-[520px]" },
+          children: [
+            {
+              type: "DataTable",
+              props: { columns: ["Name", "Email", "Status"], rows: [] }
+            },
+            {
+              type: "View",
+              props: { className: "items-center px-4 py-8" },
+              children: [{ type: "Spinner", props: { small: true } }]
+            }
+          ]
+        },
         caption: "Show a spinner in a centered spanning row so the load reads as active and in place."
       }
     }
@@ -5422,18 +8172,95 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Toast",
       dont: {
-        html: "<div class=\"flex items-start justify-between gap-3 rounded-lg border border-destructive/30 bg-popover px-4 py-3 shadow-lg\"><div><div class=\"text-sm font-medium\">Delete this identity?</div><div class=\"mt-2 flex gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Delete</button></div></div><button class=\"text-muted-foreground hover:text-foreground\">&times;</button></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-start justify-between gap-3 rounded-lg border border-destructive/30 bg-popover px-4 py-3 shadow-lg"
+          },
+          children: [
+            {
+              type: "View",
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-popover-foreground" },
+                  children: "Delete this identity?"
+                },
+                {
+                  type: "View",
+                  props: { className: "mt-2 flex-row gap-2" },
+                  children: [
+                    { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                    {
+                      type: "Button",
+                      props: { destructive: true, small: true },
+                      children: "Delete"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: { className: "active:opacity-70" },
+              children: [
+                { type: "Text", props: { className: "text-muted-foreground" }, children: "×" }
+              ]
+            }
+          ]
+        },
         caption: "A toast that demands a decision can be auto-dismissed before the user acts, and steals focus from a transient surface."
       },
       do: {
-        html: "<div class=\"flex items-start justify-between gap-3 rounded-lg border border-border bg-popover px-4 py-3 shadow-lg\"><div><div class=\"text-sm font-medium\">Identity deleted</div><div class=\"text-xs text-muted-foreground\">You can undo this for 10 seconds.</div></div><button class=\"text-muted-foreground hover:text-foreground\">&times;</button></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-start justify-between gap-3 rounded-lg border border-border bg-popover px-4 py-3 shadow-lg"
+          },
+          children: [
+            {
+              type: "View",
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-popover-foreground" },
+                  children: "Identity deleted"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "You can undo this for 10 seconds."
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: { className: "active:opacity-70" },
+              children: [
+                { type: "Text", props: { className: "text-muted-foreground" }, children: "×" }
+              ]
+            }
+          ]
+        },
         caption: "Keep toasts to passive confirmation of something already done; offer Undo, not a blocking choice."
       }
     },
     {
       title: "Row menu",
       dont: {
-        html: "<div class=\"flex flex-wrap gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Edit</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Duplicate</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Delete</button></div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap gap-2" },
+          children: [
+            { type: "Button", props: { ghost: true, small: true }, children: "Edit" },
+            { type: "Button", props: { ghost: true, small: true }, children: "Duplicate" },
+            {
+              type: "Button",
+              props: { destructive: true, small: true },
+              children: "Delete"
+            }
+          ]
+        },
         caption: "Splaying every row action inline multiplies visual noise across every table row."
       },
       do: {
@@ -5457,7 +8284,64 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Sidebar",
       dont: {
-        html: "<nav class=\"w-60 overflow-hidden rounded-lg border border-border bg-card\">\n  <div class=\"flex h-14 items-center border-b border-border px-4 font-semibold\">Acme</div>\n  <div class=\"p-2\">\n    <button class=\"flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium bg-accent text-accent-foreground\">Dashboard</button>\n    <button class=\"flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium bg-accent text-accent-foreground\">Users</button>\n    <button class=\"flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium text-muted-foreground\">Settings</button>\n  </div>\n</nav>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-[240px] overflow-hidden rounded-lg border border-border bg-background"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "h-14 flex-row items-center border-b border-border px-4" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-base font-semibold text-foreground" },
+                  children: "Acme"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "gap-1 p-2" },
+              children: [
+                {
+                  type: "Pressable",
+                  props: { className: "flex-row items-center gap-3 rounded-md bg-accent px-3 py-2" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm font-medium text-foreground" },
+                      children: "Dashboard"
+                    }
+                  ]
+                },
+                {
+                  type: "Pressable",
+                  props: { className: "flex-row items-center gap-3 rounded-md bg-accent px-3 py-2" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm font-medium text-foreground" },
+                      children: "Users"
+                    }
+                  ]
+                },
+                {
+                  type: "Pressable",
+                  props: { className: "flex-row items-center gap-3 rounded-md px-3 py-2" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm text-muted-foreground" },
+                      children: "Settings"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Click an item: two rows wearing the active background means the nav can't tell you which page you're on."
       },
       do: {
@@ -5546,14 +8430,73 @@ export const DONTS: Record<string, DontDoExample[]> = {
         caption: "A 36px display heading on the page body competes with the topbar and screams louder than the content beneath it."
       },
       do: {
-        html: "<div class=\"w-[420px] max-w-full\">\n  <h1 class=\"text-[22px] font-semibold tracking-tight\">Users</h1>\n  <p class=\"mt-1 text-sm text-muted-foreground\">Manage your team members.</p>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "w-[420px] max-w-full" },
+          children: [
+            { type: "Typography", props: { h4: true }, children: "Users" },
+            {
+              type: "Typography",
+              props: { muted: true, className: "mt-1" },
+              children: "Manage your team members."
+            }
+          ]
+        },
         caption: "Page-header titles are 20-22px semibold: clearly the page label, never larger than the topbar brand."
       }
     },
     {
       title: "Breadcrumbs",
       dont: {
-        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Home</a><span class=\"select-none text-muted-foreground/60\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Team</a><span class=\"select-none text-muted-foreground/60\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Rachel Chen</a></nav>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-center gap-1.5" },
+          children: [
+            {
+              type: "Pressable",
+              props: { className: "active:opacity-70" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Home"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "/"
+            },
+            {
+              type: "Pressable",
+              props: { className: "active:opacity-70" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Team"
+                }
+              ]
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground/60" },
+              children: "/"
+            },
+            {
+              type: "Pressable",
+              props: { className: "active:opacity-70" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Rachel Chen"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Making the last crumb a link implies the current page is somewhere else to navigate to."
       },
       do: {
@@ -5567,7 +8510,65 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Tabs",
       dont: {
-        html: "<div class=\"w-[420px] max-w-full border-b border-border\">\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Overview</button>\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Sessions</button>\n  <button class=\"border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground\">Audit log</button>\n</div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-[420px] max-w-full flex-row items-center border-b border-border"
+          },
+          children: [
+            {
+              type: "Pressable",
+              props: { className: "flex-row items-center justify-center px-4 py-2.5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Overview"
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary"
+                  }
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: { className: "flex-row items-center justify-center px-4 py-2.5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Sessions"
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary"
+                  }
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: { className: "flex-row items-center justify-center px-4 py-2.5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-muted-foreground" },
+                  children: "Audit log"
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-transparent"
+                  }
+                }
+              ]
+            }
+          ]
+        },
         caption: "Two underlined tabs at once breaks the one-active-facet contract and hides which view you're reading."
       },
       do: {
@@ -5581,7 +8582,53 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Command palette",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[480px] overflow-hidden\">\n  <div class=\"flex items-center gap-2 border-b border-border px-3.5 py-3\">\n    <span class=\"text-sm text-muted-foreground\">Type a command or search...</span>\n  </div>\n  <div class=\"p-1.5\">\n    <div class=\"flex items-center gap-2.5 rounded-md bg-accent px-2.5 py-2 text-sm\">Create identity</div>\n    <div class=\"flex items-center gap-2.5 rounded-md bg-accent px-2.5 py-2 text-sm\">Invite teammate</div>\n  </div>\n</div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-[420px] max-w-[480px] overflow-hidden rounded-lg border border-border bg-popover shadow-xl"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-2 border-b border-border px-3 py-3" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Type a command or search..."
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "p-1.5" },
+              children: [
+                {
+                  type: "Pressable",
+                  props: { className: "flex-row items-center gap-3 rounded-md bg-accent px-3 py-2" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm text-foreground" },
+                      children: "Create identity"
+                    }
+                  ]
+                },
+                {
+                  type: "Pressable",
+                  props: { className: "flex-row items-center gap-3 rounded-md bg-accent px-3 py-2" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm text-foreground" },
+                      children: "Invite teammate"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "No search affordance and two highlighted rows: nothing tells you to type or which result Enter will run."
       },
       do: {
@@ -5607,7 +8654,104 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Horizontal",
       dont: {
-        html: "<div class=\"flex items-start\">\n    <div class=\"flex flex-col items-center gap-1.5\"><div class=\"flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium border-primary text-primary\">1</div><span class=\"text-xs font-medium\">Account</span></div>\n    <div class=\"mx-2 mt-4 h-0.5 flex-1 bg-border\"></div>\n    <div class=\"flex flex-col items-center gap-1.5\"><div class=\"flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium border-primary text-primary\">2</div><span class=\"text-xs font-medium\">Profile</span></div>\n    <div class=\"mx-2 mt-4 h-0.5 flex-1 bg-border\"></div>\n    <div class=\"flex flex-col items-center gap-1.5\"><div class=\"flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium border-primary text-primary\">3</div><span class=\"text-xs font-medium\">Review</span></div>\n  </div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-start" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-start flex-1" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "items-center gap-1.5" },
+                  children: [
+                    {
+                      type: "View",
+                      props: {
+                        className: "h-8 w-8 shrink-0 flex-row items-center justify-center rounded-full border-2 border-primary bg-transparent"
+                      },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-primary" },
+                          children: "1"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs font-medium text-foreground" },
+                      children: "Account"
+                    }
+                  ]
+                },
+                { type: "View", props: { className: "mx-2 mt-4 h-px flex-1 bg-border" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row items-start flex-1" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "items-center gap-1.5" },
+                  children: [
+                    {
+                      type: "View",
+                      props: {
+                        className: "h-8 w-8 shrink-0 flex-row items-center justify-center rounded-full border-2 border-primary bg-transparent"
+                      },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-primary" },
+                          children: "2"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs font-medium text-foreground" },
+                      children: "Profile"
+                    }
+                  ]
+                },
+                { type: "View", props: { className: "mx-2 mt-4 h-px flex-1 bg-border" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row items-start" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "items-center gap-1.5" },
+                  children: [
+                    {
+                      type: "View",
+                      props: {
+                        className: "h-8 w-8 shrink-0 flex-row items-center justify-center rounded-full border-2 border-primary bg-transparent"
+                      },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-primary" },
+                          children: "3"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs font-medium text-foreground" },
+                      children: "Review"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Styling several steps as active at once hides which step the user is actually on."
       },
       do: {
@@ -5674,7 +8818,22 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Progress bar",
       dont: {
-        html: "<div class=\"max-w-[320px]\">\n  <div class=\"h-1.5 overflow-hidden rounded-full bg-muted\">\n    <div class=\"h-full rounded-full bg-primary\" style=\"width:68%\"></div>\n  </div>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "max-w-[320px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "h-1.5 overflow-hidden rounded-full bg-muted" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "h-full rounded-full bg-primary w-[68%]" }
+                }
+              ]
+            }
+          ]
+        },
         caption: "A bare progress bar with no percentage leaves users guessing how far along they are."
       },
       do: {
@@ -5696,7 +8855,69 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Underline",
       dont: {
-        html: "<div class=\"flex border-b border-border\">\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Overview</button>\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Activity</button>\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Settings</button>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-center border-b border-border self-start" },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center px-4 py-2.5 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Overview"
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary"
+                  }
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center px-4 py-2.5 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Activity"
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary"
+                  }
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center px-4 py-2.5 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Settings"
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary"
+                  }
+                }
+              ]
+            }
+          ]
+        },
         caption: "Underlining every tab erases the active indicator: there is no way to tell which view is current."
       },
       do: {
@@ -5710,7 +8931,53 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Pill",
       dont: {
-        html: "<div class=\"inline-flex gap-1 rounded-lg bg-muted p-1\">\n  <button class=\"rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm\">All</button>\n  <button class=\"rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm\">Active</button>\n  <button class=\"rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm\">Archived</button>\n</div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-center gap-1 self-start rounded-lg bg-muted p-1"
+          },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center rounded-md bg-background shadow-sm px-3 py-1.5 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "All"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center rounded-md bg-background shadow-sm px-3 py-1.5 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Active"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "flex-row items-center justify-center rounded-md bg-background shadow-sm px-3 py-1.5 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground" },
+                  children: "Archived"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Giving every pill the raised background makes the group read as three buttons, not one selection."
       },
       do: {
@@ -5724,7 +8991,51 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Vertical",
       dont: {
-        html: "<div class=\"flex w-[180px] flex-col gap-1\">\n  <button class=\"w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground\">General</button>\n  <button class=\"w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground\">Security</button>\n  <button class=\"w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground\">Notifications</button>\n</div>",
+        tree: {
+          type: "View",
+          props: { className: "flex-col items-stretch gap-1 w-[180px]" },
+          children: [
+            {
+              type: "Pressable",
+              props: {
+                className: "w-full flex-row items-center rounded-md bg-transparent px-3 py-2 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-muted-foreground" },
+                  children: "General"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "w-full flex-row items-center rounded-md bg-transparent px-3 py-2 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-muted-foreground" },
+                  children: "Security"
+                }
+              ]
+            },
+            {
+              type: "Pressable",
+              props: {
+                className: "w-full flex-row items-center rounded-md bg-transparent px-3 py-2 active:opacity-90"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-muted-foreground" },
+                  children: "Notifications"
+                }
+              ]
+            }
+          ]
+        },
         caption: "With no filled active item the rail collapses into a plain link list and loses its current selection."
       },
       do: {
@@ -5797,7 +9108,44 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "Bar",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[560px] p-5\"><div class=\"flex h-[140px] items-end gap-[3px]\"><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:45%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:60%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:35%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:70%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:55%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:80%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:95%\"></div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card p-5 max-w-[560px]" },
+          children: {
+            type: "View",
+            props: { className: "flex-row items-end gap-1", style: { height: 120, width: 520 } },
+            children: [
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 63 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 84 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 49 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 98 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 77 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 112 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 118 } }
+              }
+            ]
+          }
+        },
         caption: "Every bar the same full-strength fill and no labels: nothing is emphasized and the axis is unreadable."
       },
       do: {
@@ -5818,50 +9166,749 @@ export const DONTS: Record<string, DontDoExample[]> = {
             ]
           }
         },
-        caption: "Mute past bars, brighten the current one, and keep an axis row so the buckets read."
+        caption: "Keep a labelled axis row and a single bar tone so the buckets read at a glance."
       }
     },
     {
       title: "Sparkline",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[200px] p-5\"><svg width=\"100%\" height=\"34\" viewBox=\"0 0 200 34\" preserveAspectRatio=\"none\" class=\"block\"><polyline points=\"0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/></svg></div>",
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card p-5 max-w-[200px]" },
+          children: {
+            type: "View",
+            props: { className: "flex-row items-end gap-px", style: { height: 34, width: 180 } },
+            children: [
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 6 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 8 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 12 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 10 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 16 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 20 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 18 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 25 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 23 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 29 } }
+              },
+              {
+                type: "View",
+                props: { className: "flex-1 rounded-t bg-primary", style: { height: 31 } }
+              }
+            ]
+          }
+        },
         caption: "A bare line with no value or end dot reads as decoration: you cannot tell the current figure or where it ends."
       },
       do: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[200px] p-5\"><div class=\"text-xs text-muted-foreground\">Tokens issued</div><div class=\"mt-1 flex items-baseline justify-between\"><span class=\"text-[22px] font-semibold\">4,847</span><span class=\"font-mono text-[11px] text-foreground\">+12%</span></div><svg width=\"100%\" height=\"34\" viewBox=\"0 0 200 34\" preserveAspectRatio=\"none\" class=\"mt-2 block overflow-visible\"><defs><linearGradient id=\"dospk\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"var(--primary)\" stop-opacity=\"0.3\"/><stop offset=\"100%\" stop-color=\"var(--primary)\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3 200,34 0,34\" fill=\"url(#dospk)\"/><polyline points=\"0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/><circle cx=\"200\" cy=\"3\" r=\"2.5\" fill=\"var(--primary)\"/></svg></div>",
-        caption: "Pair the line with the current value and delta, add the gradient fill and an end dot so it anchors a stat."
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card p-5 max-w-[200px]" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "Tokens issued"
+            },
+            {
+              type: "View",
+              props: { className: "mt-1 flex-row items-baseline justify-between" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-2xl font-semibold text-card-foreground" },
+                  children: "4,847"
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-primary" },
+                  children: "+12%"
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: {
+                className: "mt-2 flex-row items-end gap-px",
+                style: { height: 34, width: 180 }
+              },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 6 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 8 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 12 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 10 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 16 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 20 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 18 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 25 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 23 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-1 rounded-t bg-primary", style: { height: 29 } }
+                },
+                {
+                  type: "View",
+                  props: { className: "h-2 w-2 self-start rounded-full bg-primary" }
+                }
+              ]
+            }
+          ]
+        },
+        caption: "Pair the line with the current value and delta and an end dot so it anchors a stat."
       }
     },
     {
       title: "Stacked bar",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[560px] p-5\"><div class=\"flex h-2.5 overflow-hidden rounded-full bg-muted\"><div class=\"bg-chart-1\" style=\"width:42%\"></div><div class=\"bg-chart-2\" style=\"width:28%\"></div><div class=\"bg-chart-3\" style=\"width:18%\"></div><div class=\"bg-chart-4\" style=\"width:12%\"></div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card p-5 max-w-[560px]" },
+          children: {
+            type: "View",
+            props: {
+              className: "flex-row overflow-hidden rounded-full",
+              style: { height: 10, width: 520 }
+            },
+            children: [
+              {
+                type: "View",
+                props: { style: { width: "42%", backgroundColor: "#6366f1" } }
+              },
+              {
+                type: "View",
+                props: { style: { width: "28%", backgroundColor: "#14b8a6" } }
+              },
+              {
+                type: "View",
+                props: { style: { width: "18%", backgroundColor: "#f59e0b" } }
+              },
+              {
+                type: "View",
+                props: { style: { width: "12%", backgroundColor: "#f43f5e" } }
+              }
+            ]
+          }
+        },
         caption: "Colored segments with no legend force the reader to guess which channel each band represents."
       },
       do: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[560px] p-5\"><div class=\"mb-3.5 flex h-2.5 overflow-hidden rounded-full bg-muted\"><div class=\"bg-chart-1\" style=\"width:42%\"></div><div class=\"bg-chart-2\" style=\"width:28%\"></div><div class=\"bg-chart-3\" style=\"width:18%\"></div><div class=\"bg-chart-4\" style=\"width:12%\"></div></div><div class=\"flex flex-col gap-2\"><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-1\"></span><span class=\"flex-1\">Direct</span><span class=\"font-mono text-xs text-muted-foreground\">42%</span></div><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-2\"></span><span class=\"flex-1\">Organic search</span><span class=\"font-mono text-xs text-muted-foreground\">28%</span></div><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-3\"></span><span class=\"flex-1\">Social</span><span class=\"font-mono text-xs text-muted-foreground\">18%</span></div><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-4\"></span><span class=\"flex-1\">Referral</span><span class=\"font-mono text-xs text-muted-foreground\">12%</span></div></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card p-5 max-w-[560px]" },
+          children: [
+            {
+              type: "View",
+              props: {
+                className: "mb-3 flex-row overflow-hidden rounded-full",
+                style: { height: 10, width: 520 }
+              },
+              children: [
+                {
+                  type: "View",
+                  props: { style: { width: "42%", backgroundColor: "#6366f1" } }
+                },
+                {
+                  type: "View",
+                  props: { style: { width: "28%", backgroundColor: "#14b8a6" } }
+                },
+                {
+                  type: "View",
+                  props: { style: { width: "18%", backgroundColor: "#f59e0b" } }
+                },
+                {
+                  type: "View",
+                  props: { style: { width: "12%", backgroundColor: "#f43f5e" } }
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-col gap-2" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2.5" },
+                  children: [
+                    {
+                      type: "View",
+                      props: {
+                        className: "rounded-full",
+                        style: { height: 8, width: 8, backgroundColor: "#6366f1" }
+                      }
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm text-card-foreground" },
+                      children: "Direct"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs text-muted-foreground" },
+                      children: "42%"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2.5" },
+                  children: [
+                    {
+                      type: "View",
+                      props: {
+                        className: "rounded-full",
+                        style: { height: 8, width: 8, backgroundColor: "#14b8a6" }
+                      }
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm text-card-foreground" },
+                      children: "Organic search"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs text-muted-foreground" },
+                      children: "28%"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2.5" },
+                  children: [
+                    {
+                      type: "View",
+                      props: {
+                        className: "rounded-full",
+                        style: { height: 8, width: 8, backgroundColor: "#f59e0b" }
+                      }
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm text-card-foreground" },
+                      children: "Social"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs text-muted-foreground" },
+                      children: "18%"
+                    }
+                  ]
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center gap-2.5" },
+                  children: [
+                    {
+                      type: "View",
+                      props: {
+                        className: "rounded-full",
+                        style: { height: 8, width: 8, backgroundColor: "#f43f5e" }
+                      }
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "flex-1 text-sm text-card-foreground" },
+                      children: "Referral"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-xs text-muted-foreground" },
+                      children: "12%"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Always ship a legend with a colored dot, label, and percentage per segment."
       }
     },
     {
       title: "Gauge",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[200px] items-center justify-center p-5\"><svg width=\"140\" height=\"140\" viewBox=\"0 0 140 140\"><circle cx=\"70\" cy=\"70\" r=\"56\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"12\" stroke-dasharray=\"351.8583772\" stroke-dashoffset=\"95.00176184\" stroke-linecap=\"round\" transform=\"rotate(-90 70 70)\"/></svg></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-lg border border-border bg-card p-5 max-w-[200px] items-center"
+          },
+          children: {
+            type: "View",
+            props: {
+              className: "rounded-full border-8 border-primary",
+              style: { height: 120, width: 120 }
+            }
+          }
+        },
         caption: "An arc with no track and no number: there is no baseline to read the fill against and no exact value."
       },
       do: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[200px] items-center justify-center p-5\"><svg width=\"140\" height=\"140\" viewBox=\"0 0 140 140\"><circle cx=\"70\" cy=\"70\" r=\"56\" fill=\"none\" stroke=\"var(--muted)\" stroke-width=\"12\"/><circle cx=\"70\" cy=\"70\" r=\"56\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"12\" stroke-dasharray=\"351.8583772\" stroke-dashoffset=\"95.00176184\" stroke-linecap=\"round\" transform=\"rotate(-90 70 70)\"/><text x=\"70\" y=\"66\" text-anchor=\"middle\" font-size=\"28\" font-weight=\"700\" fill=\"var(--foreground)\">73%</text><text x=\"70\" y=\"84\" text-anchor=\"middle\" font-size=\"11\" fill=\"var(--muted-foreground)\">Uptime</text></svg></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "rounded-lg border border-border bg-card p-5 max-w-[200px] items-center"
+          },
+          children: {
+            type: "View",
+            props: { className: "items-center justify-center" },
+            children: [
+              {
+                type: "View",
+                props: {
+                  className: "rounded-full border-8 border-muted",
+                  style: { height: 120, width: 120 }
+                }
+              },
+              {
+                type: "View",
+                props: { className: "absolute items-center justify-center" },
+                children: [
+                  {
+                    type: "Text",
+                    props: { className: "text-2xl font-semibold text-card-foreground" },
+                    children: "72%"
+                  },
+                  {
+                    type: "Text",
+                    props: { className: "text-xs text-muted-foreground" },
+                    children: "Uptime"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         caption: "Put a muted track behind the fill and the numeric value plus label in the center."
       }
     },
     {
       title: "Heatmap",
       dont: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[480px] p-5\"><div class=\"grid grid-cols-[repeat(14,1fr)] gap-[3px]\"><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.12\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.49\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.86\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.23\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.60\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.97\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.34\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.71\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.57\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.92\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.31\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.68\"></span></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card p-5 max-w-[260px]" },
+          children: {
+            type: "View",
+            props: { className: "flex-row flex-wrap gap-1", style: { maxWidth: 220 } },
+            children: [
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.15)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.4)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.7)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,1)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.55)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.25)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.85)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.35)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.6)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.9)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.2)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.5)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.75)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.3)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.95)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.45)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.65)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.1)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.8)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.4)" }
+                }
+              },
+              {
+                type: "View",
+                props: {
+                  className: "rounded-sm",
+                  style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.7)" }
+                }
+              }
+            ]
+          }
+        },
         caption: "A density grid with no legend leaves the alpha-to-value mapping a mystery."
       },
       do: {
-        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[480px] p-5\"><div class=\"grid grid-cols-[repeat(14,1fr)] gap-[3px]\"><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.12\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.49\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.86\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.23\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.60\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.97\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.34\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.71\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.57\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.92\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.31\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.68\"></span></div><div class=\"mt-3 flex items-center justify-between font-mono text-[11.5px] text-muted-foreground\"><span>14d ago</span><span class=\"inline-flex items-center gap-1.5\"><span>less</span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.1\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.3\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.55\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.8\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:1\"></span><span>more</span></span></div></div>",
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card p-5 max-w-[260px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row flex-wrap gap-1", style: { maxWidth: 220 } },
+              children: [
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.15)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.4)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.7)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,1)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.55)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.25)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.85)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.35)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.6)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.9)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.2)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.5)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.75)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.3)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.95)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.45)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.65)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.1)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.8)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.4)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.7)" }
+                  }
+                }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "mt-3 flex-row items-center gap-2" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "Less"
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.2)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.4)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.6)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.8)" }
+                  }
+                },
+                {
+                  type: "View",
+                  props: {
+                    className: "rounded-sm",
+                    style: { height: 12, width: 12, backgroundColor: "rgba(99,102,241,1)" }
+                  }
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-xs text-muted-foreground" },
+                  children: "More"
+                }
+              ]
+            }
+          ]
+        },
         caption: "Pair the grid with a discrete less-to-more legend so the density scale is legible."
       }
     }
@@ -5909,22 +9956,205 @@ export const DONTS: Record<string, DontDoExample[]> = {
     {
       title: "With search bar",
       dont: {
-        html: "<div class=\"w-full overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-2 bg-card px-4\"><span class=\"text-sm font-semibold\">Canvas</span><div class=\"mx-4 max-w-[400px] flex-1\"><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\" placeholder=\"Search…\"></div></header></div>",
+        tree: {
+          type: "View",
+          props: { className: "w-full overflow-hidden rounded-lg border border-border" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row h-14 items-center gap-2 bg-card px-4" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-foreground" },
+                  children: "Canvas"
+                },
+                {
+                  type: "View",
+                  props: { className: "mx-4 max-w-[400px] flex-1" },
+                  children: [
+                    {
+                      type: "TextInput",
+                      props: {
+                        placeholder: "Search…",
+                        className: "h-9 w-full rounded-md border border-border bg-background px-3 py-1 text-sm text-foreground"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "A live text field in the bar reads as a form input and offers no keyboard affordance."
       },
       do: {
-        html: "<div class=\"w-full overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-2 bg-card px-4\"><span class=\"text-sm font-semibold\">Canvas</span><div class=\"mx-4 max-w-[400px] flex-1\"><button class=\"flex h-[34px] w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 text-sm text-muted-foreground\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><span class=\"flex-1 text-left\">Search…</span><kbd class=\"inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted px-1.5 font-mono text-[11px] font-medium text-muted-foreground\">⌘K</kbd></button></div></header></div>",
+        tree: {
+          type: "View",
+          props: { className: "w-full overflow-hidden rounded-lg border border-border" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row h-14 items-center gap-2 bg-card px-4" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-foreground" },
+                  children: "Canvas"
+                },
+                {
+                  type: "View",
+                  props: { className: "mx-4 max-w-[400px] flex-1" },
+                  children: [
+                    {
+                      type: "Pressable",
+                      props: {
+                        className: "flex-row h-[34px] w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 active:opacity-90"
+                      },
+                      children: [
+                        { type: "Icon", props: { search: true, muted: true, size: 13 } },
+                        {
+                          type: "Text",
+                          props: { className: "flex-1 text-left text-sm text-muted-foreground" },
+                          children: "Search…"
+                        },
+                        { type: "Kbd", children: "⌘K" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "Use a button that opens the command palette and advertise the ⌘K shortcut."
       }
     },
     {
       title: "Mobile",
       dont: {
-        html: "<div class=\"w-full max-w-[360px] overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-1 bg-card px-3\"><span class=\"text-[13px] font-semibold\">Canvas</span><nav class=\"ml-2 flex flex-wrap gap-1\"><a class=\"rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-foreground\" href=\"#\">Dashboard</a><a class=\"rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground\" href=\"#\">Users</a><a class=\"rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground\" href=\"#\">Settings</a><a class=\"rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground\" href=\"#\">Billing</a></nav></header></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-full max-w-[360px] overflow-hidden rounded-lg border border-border"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row h-14 items-center gap-1 bg-card px-3" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-[13px] font-semibold text-foreground" },
+                  children: "Canvas"
+                },
+                {
+                  type: "View",
+                  props: { className: "ml-2 flex-row flex-wrap gap-1" },
+                  children: [
+                    {
+                      type: "Pressable",
+                      props: { className: "rounded-md bg-accent px-3 py-1.5 active:opacity-90" },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-foreground" },
+                          children: "Dashboard"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Pressable",
+                      props: { className: "rounded-md px-3 py-1.5 active:opacity-90" },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-muted-foreground" },
+                          children: "Users"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Pressable",
+                      props: { className: "rounded-md px-3 py-1.5 active:opacity-90" },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-muted-foreground" },
+                          children: "Settings"
+                        }
+                      ]
+                    },
+                    {
+                      type: "Pressable",
+                      props: { className: "rounded-md px-3 py-1.5 active:opacity-90" },
+                      children: [
+                        {
+                          type: "Text",
+                          props: { className: "text-sm font-medium text-muted-foreground" },
+                          children: "Billing"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         caption: "A full horizontal nav at phone width wraps onto a second row and crowds out the logo."
       },
       do: {
-        html: "<div class=\"w-full max-w-[360px] overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-2 bg-card px-3\"><button class=\"inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"4\" y1=\"6\" x2=\"20\" y2=\"6\"/><line x1=\"4\" y1=\"12\" x2=\"20\" y2=\"12\"/><line x1=\"4\" y1=\"18\" x2=\"20\" y2=\"18\"/></svg></button><span class=\"text-[13px] font-semibold\">Canvas</span><div class=\"flex-1\"></div><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-7 w-7 text-[11px]\"><img src=\"/rachel-chen.jpg\" alt=\"RC\" class=\"h-full w-full object-cover\"></span></header></div>",
+        tree: {
+          type: "View",
+          props: {
+            className: "w-full max-w-[360px] overflow-hidden rounded-lg border border-border"
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row h-14 items-center gap-2 bg-card px-3" },
+              children: [
+                {
+                  type: "Pressable",
+                  props: {
+                    className: "h-9 w-9 items-center justify-center rounded-md active:bg-accent"
+                  },
+                  children: [
+                    {
+                      type: "View",
+                      props: { className: "w-[18px] gap-[4px]" },
+                      children: [
+                        {
+                          type: "View",
+                          props: { className: "h-[2px] w-full rounded-full bg-muted-foreground" }
+                        },
+                        {
+                          type: "View",
+                          props: { className: "h-[2px] w-full rounded-full bg-muted-foreground" }
+                        },
+                        {
+                          type: "View",
+                          props: { className: "h-[2px] w-full rounded-full bg-muted-foreground" }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  type: "Text",
+                  props: { className: "text-[13px] font-semibold text-foreground" },
+                  children: "Canvas"
+                },
+                { type: "View", props: { className: "flex-1" } },
+                {
+                  type: "Avatar",
+                  props: { small: true, src: "/rachel-chen.jpg", name: "RC" }
+                }
+              ]
+            }
+          ]
+        },
         caption: "Collapse the links into a hamburger and keep only the logo and avatar in the bar."
       }
     }
