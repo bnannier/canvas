@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from "react";
+import { Fragment, createElement, type ReactNode } from "react";
 import { CodeBlock } from "./code-block";
 
 // Minimal markdown renderer. The only rich feature is fenced ```lang code blocks,
@@ -96,8 +96,8 @@ function Prose({ lines }: { lines: string[] }) {
     if (h) {
       flushPara(); flushList();
       const lvl = Math.min(h[1].length, 4);
-      const Tag = (`h${lvl}` as keyof JSX.IntrinsicElements);
-      out.push(<Tag key={out.length} style={{ ...HEADING_STYLE[lvl], color: "var(--foreground)" }}>{inline(h[2])}</Tag>);
+      const tag = `h${lvl}` as "h1" | "h2" | "h3" | "h4";
+      out.push(createElement(tag, { key: out.length, style: { ...HEADING_STYLE[lvl], color: "var(--foreground)" } }, inline(h[2])));
       continue;
     }
     const ul = /^[-*]\s+(.*)$/.exec(line);
