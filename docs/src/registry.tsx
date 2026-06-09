@@ -188,11 +188,12 @@ export const registry: Record<string, RegistryEntry> = {
     Component: ButtonGroup as AnyComponent,
     mapProps: (s, demo) => {
       const size = s.size === "sm" ? { small: true } : s.size === "lg" ? { large: true } : {};
+      const disabled = s.disabled === true;
       const fireItem = (_i: number, item: string) => demo?.fire(item);
-      if (s.variant === "split") return { split: true, items: ["Save", "More"], onSelect: fireItem, ...size };
-      if (s.variant === "attached") return { segmented: true, active: -1, items: ["‹", "Today", "›"], onSelect: fireItem, ...size };
+      if (s.variant === "split") return { split: true, items: ["Save", "More"], onSelect: fireItem, disabled, ...size };
+      if (s.variant === "attached") return { segmented: true, active: -1, items: ["‹", "Today", "›"], onSelect: fireItem, disabled, ...size };
       const n = (s.buttons as number) ?? 3;
-      return { segmented: true, active: (s.demoSeg as number) ?? 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), onSelect: (i: number) => demo?.set("demoSeg", i), ...size };
+      return { segmented: true, active: (s.demoSeg as number) ?? 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), onSelect: (i: number) => demo?.set("demoSeg", i), disabled, ...size };
     },
   },
 

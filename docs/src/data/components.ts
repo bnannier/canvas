@@ -651,10 +651,11 @@ export const COMPONENTS: ComponentDoc[] = [
     playground: {
       controls: [
         { type: "pills", key: "variant", label: "Variant", options: ["segmented", "attached", "split"], cols: 3 },
-        { type: "pills", key: "size", label: "Size", options: ["sm", "default", "lg"], cols: 3, disabledWhen: (s) => s.variant === "attached" },
+        { type: "pills", key: "size", label: "Size", options: ["sm", "default", "lg"], cols: 3 },
         { type: "range", key: "buttons", label: "Buttons", min: 2, max: 5, step: 1, disabledWhen: (s) => s.variant !== "segmented" },
+        { type: "check", key: "disabled", label: "Disabled" },
       ],
-      defaults: { variant: "segmented", size: "sm", buttons: 3 },
+      defaults: { variant: "segmented", size: "sm", buttons: 3, disabled: false },
       render: (s) => {
         const sz = s.size as string;
         if (s.variant === "split") {
