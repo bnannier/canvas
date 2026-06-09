@@ -12,6 +12,7 @@ import { ThemingPage } from "./pages/theming";
 import { MigrationPage } from "./pages/migration";
 import { IntegrationPage } from "./pages/integration";
 import { BrowserSupportPage } from "./pages/browser-support";
+import { RnPrimitivesPage } from "./pages/rn-primitives";
 import { ComponentsIndex } from "./pages/components-index";
 import { NotFound } from "./pages/not-found";
 
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: "migration", element: <MigrationPage /> },
       { path: "integration", element: <IntegrationPage /> },
       { path: "browser-support", element: <BrowserSupportPage /> },
+      { path: "rn-primitives", element: <RnPrimitivesPage /> },
       { path: "components", element: <ComponentsIndex /> },
       { path: "components/:slug", element: <ComponentPage /> },
       { path: "templates/:slug", element: <TemplatePage /> },

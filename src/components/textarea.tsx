@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { TextInput, type TextStyle } from "react-native";
 import { cn } from "../cn.js";
-import { useStyles, useTheme } from "../engine/index.js";
+import { TextInput, useTheme } from "../engine/index.js";
 
 export interface TextareaProps {
   /** Controlled text value. */
@@ -56,17 +55,6 @@ export function Textarea(props: TextareaProps) {
       ? "border-ring"
       : "border-input";
 
-  const style = useStyles(
-    cn(
-      "w-full rounded-md border bg-background px-3 py-2 text-foreground",
-      sizeText(props),
-      minHeightClass(rows),
-      borderColor,
-      disabled && "opacity-50",
-      className,
-    ),
-  );
-
   return (
     <TextInput
       multiline
@@ -78,7 +66,14 @@ export function Textarea(props: TextareaProps) {
       textAlignVertical="top"
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      style={style as unknown as TextStyle}
+      className={cn(
+        "w-full rounded-md border bg-background px-3 py-2 text-foreground",
+        sizeText(props),
+        minHeightClass(rows),
+        borderColor,
+        disabled && "opacity-50",
+        className,
+      )}
     />
   );
 }

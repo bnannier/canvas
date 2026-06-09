@@ -9,15 +9,22 @@ import {
   View,
   Text as RNText,
   Pressable as RNPressable,
+  Image as RNImage,
+  TextInput as RNTextInput,
+  ScrollView as RNScrollView,
   useWindowDimensions,
   useColorScheme,
   type ViewProps,
   type TextProps as RNTextProps,
   type PressableProps as RNPressableProps,
   type PressableStateCallbackType,
+  type ImageProps as RNImageProps,
+  type TextInputProps as RNTextInputProps,
+  type ScrollViewProps as RNScrollViewProps,
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  type ImageStyle,
 } from "react-native";
 import { resolve, type InteractionState, type RNStyle } from "./resolve.js";
 import { colorsByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
@@ -95,6 +102,64 @@ export function Pressable({ className = "", style, disabled, ...rest }: Pressabl
         (state.pressed ? pressedStyle : base) as StyleProp<ViewStyle>,
         typeof style === "function" ? style(state) : style,
       ]}
+      {...rest}
+    />
+  );
+}
+
+export interface ImageProps extends RNImageProps {
+  className?: string;
+}
+
+// A styled Image: className carries sizing/radius/aspect; source, resizeMode,
+// accessibilityLabel, onLoad, etc. pass through as normal RN ImageProps.
+export function Image({ className = "", style, ...rest }: ImageProps) {
+  const resolved = useStyles(className);
+  return <RNImage style={[resolved as StyleProp<ImageStyle>, style]} {...rest} />;
+}
+
+export interface TextInputProps extends RNTextInputProps {
+  className?: string;
+}
+
+// A low-level styled TextInput: a thin className wrapper over RN's TextInput.
+// value/onChangeText/placeholder/placeholderTextColor/editable/multiline all flow
+// through unchanged, preserving controlled-input semantics. This is the bare
+// primitive; reach for the Input or Textarea COMPONENTS for a real form field
+// (semantic props, the focus border, and the react-native-web outline reset).
+export function TextInput({ className = "", style, ...rest }: TextInputProps) {
+  const resolved = useStyles(className);
+  return <RNTextInput style={[resolved as StyleProp<TextStyle>, style]} {...rest} />;
+}
+
+export interface ScrollProps extends RNScrollViewProps {
+  /** Styles the scroll FRAME (the clipped viewport): height, max-height, border. */
+  className?: string;
+  /**
+   * Styles the inner content container via contentContainerStyle: padding, gap,
+   * min-height, and centering (justify/items) of the scrolled children. This is
+   * the prop you usually want for spacing, NOT className.
+   */
+  contentClassName?: string;
+}
+
+// A styled ScrollView. ScrollView has two distinct style surfaces and Scroll
+// exposes both: `className` styles the scroll frame (the clipped viewport) and
+// `contentClassName` styles the inner content container (where padding/gap/
+// centering belong). Named `Scroll`, not `ScrollView`, to mirror Box-not-View.
+export function Scroll({
+  className = "",
+  contentClassName = "",
+  style,
+  contentContainerStyle,
+  ...rest
+}: ScrollProps) {
+  const resolved = useStyles(className);
+  const resolvedContent = useStyles(contentClassName);
+  return (
+    <RNScrollView
+      style={[resolved as StyleProp<ViewStyle>, style]}
+      contentContainerStyle={[resolvedContent as StyleProp<ViewStyle>, contentContainerStyle]}
       {...rest}
     />
   );

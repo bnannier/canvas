@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { type GestureResponderEvent, TextInput, type TextStyle } from "react-native";
+import { type GestureResponderEvent, type TextStyle } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text, useStyles, useTheme } from "../engine/index.js";
+import { Box, Pressable, Text, TextInput, useTheme } from "../engine/index.js";
 import { Icon } from "./icon.js";
 
 // Glyphs an overlaid leading/trailing icon can name. Maps the scalar `icon`
@@ -125,27 +125,6 @@ export function Input(props: InputProps) {
   const hasAddons =
     prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action;
 
-  // Both field styles resolve every render (no conditional hooks); only one
-  // layout is returned below.
-  const bareStyle = useStyles(
-    cn(
-      "w-full rounded-md border bg-background px-3 py-2 text-foreground",
-      sizeBox(props),
-      textSize,
-      border,
-      disabled && "opacity-50",
-      className,
-    ),
-  );
-  const fieldStyle = useStyles(
-    cn(
-      "flex-1 h-full px-3 py-2 text-foreground",
-      textSize,
-      leadingIcon && "pl-9",
-      trailingIcon && "pr-9",
-    ),
-  );
-
   const common = {
     value,
     onChangeText,
@@ -160,7 +139,14 @@ export function Input(props: InputProps) {
   if (!hasAddons) {
     return (
       <TextInput
-        style={bareStyle as unknown as TextStyle}
+        className={cn(
+          "w-full rounded-md border bg-background px-3 py-2 text-foreground",
+          sizeBox(props),
+          textSize,
+          border,
+          disabled && "opacity-50",
+          className,
+        )}
         multiline={multiline}
         textAlignVertical={multiline ? "top" : "center"}
         {...common}
@@ -193,7 +179,16 @@ export function Input(props: InputProps) {
         </Box>
       ) : null}
 
-      <TextInput style={[fieldStyle as unknown as TextStyle, FIELD_OUTLINE_RESET]} {...common} />
+      <TextInput
+        className={cn(
+          "flex-1 h-full px-3 py-2 text-foreground",
+          textSize,
+          leadingIcon && "pl-9",
+          trailingIcon && "pr-9",
+        )}
+        style={FIELD_OUTLINE_RESET}
+        {...common}
+      />
 
       {trailingIcon && iconName != null ? (
         <Box className="absolute inset-y-0 right-0 z-10 justify-center pr-3" pointerEvents="none">

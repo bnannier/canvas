@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
-import { Image, type ImageStyle } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text, useStyles } from "../engine/index.js";
+import { Box, Image, Pressable, Text } from "../engine/index.js";
 
 // The avatar shows an account's photo when it has one, falling back to one or
 // two initials on a muted surface. It is a circle by default (the consistent
@@ -100,19 +99,16 @@ export function Avatar(props: AvatarProps) {
     className,
   );
 
-  // Resolve the container sizing/radius so the photo fills it exactly. Using the
-  // resolved width/height keeps the image square and lets overflow-hidden clip
-  // it to the circle (RN clips children to a parent's borderRadius).
-  const imageStyle = useStyles(cn("w-full h-full", SHAPE_RADIUS[shape]));
-
+  // The photo fills the container exactly (w-full h-full); overflow-hidden on the
+  // parent clips it to the circle (RN clips children to a parent's borderRadius).
   let inner: ReactNode;
   if (photo) {
     inner = (
       <Image
+        className={cn("w-full h-full", SHAPE_RADIUS[shape])}
         source={{ uri: photo }}
         accessibilityLabel={name}
         resizeMode="cover"
-        style={imageStyle as unknown as ImageStyle}
       />
     );
   } else {

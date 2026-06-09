@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
-import { Image, type ImageStyle } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Text, useStyles } from "../engine/index.js";
+import { Box, Image, Text } from "../engine/index.js";
 import { Avatar } from "./avatar.js";
 
 // A media object is a horizontal row: a leading media element (avatar, image, or
@@ -111,19 +110,16 @@ export function MediaObject(props: MediaObjectProps) {
     className,
   );
 
-  // Resolve the avatar image fill so a photo clips to the avatar circle.
-  const avatarImageStyle = useStyles("w-full h-full rounded-full");
-
   // Leading media: photo > initials avatar > icon box. Only one renders.
   let media: ReactNode = null;
   if (src) {
     media = (
       <Box className="shrink-0 w-10 h-10 overflow-hidden rounded-full bg-muted">
         <Image
+          className="w-full h-full rounded-full"
           source={{ uri: src }}
           accessibilityLabel={title}
           resizeMode="cover"
-          style={avatarImageStyle as unknown as ImageStyle}
         />
       </Box>
     );

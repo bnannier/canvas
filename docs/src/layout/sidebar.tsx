@@ -37,6 +37,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { slug: "", label: "About Canvas", to: "/", icon: Home },
       { slug: "components", label: "All components", to: "/components", icon: Layers },
+      { slug: "rn-primitives", label: "React Native", to: "/rn-primitives", icon: Smartphone },
     ],
   },
   {
