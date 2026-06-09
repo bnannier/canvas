@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { Code, ChevronDown } from "lucide-react";
-import { CodeBlock } from "./code-block";
+import { Markdown } from "./markdown";
 import type { PlaygroundConfig, PlaygroundControl } from "@/data/types";
 import { registry, renderTree, type DemoApi } from "@/registry";
 import { TREES } from "@/registry-trees";
@@ -178,7 +178,7 @@ export function Playground({ config, slug }: PlaygroundProps) {
             </button>
             <div className={`docs-code-collapse ${showCode ? "open" : ""}`}>
               <div style={{ minHeight: 0, overflow: "hidden" }}>
-                <CodeBlock code={code} language={codeLanguage} />
+                <Markdown source={"```" + codeLanguage + "\n" + code + "\n```"} />
               </div>
             </div>
           </div>
