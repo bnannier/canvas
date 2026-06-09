@@ -1,62 +1,90 @@
+import { Link } from "react-router-dom";
 import { CodeBlock } from "@/components/code-block";
 import { Toc } from "@/components/toc";
+
+const linkStyle = { color: "var(--primary)", textDecoration: "underline", textUnderlineOffset: "2px" } as const;
 
 const tocItems = [
   { id: "what-changed", label: "What Changed" },
   { id: "architecture", label: "Architecture" },
-  { id: "downstream", label: "Downstream Packages" },
+  { id: "styling-model", label: "Styling Model" },
   { id: "mapping", label: "Component Mappings" },
-  { id: "theming-migration", label: "Theming Migration" },
+  { id: "theming-migration", label: "Theming" },
+  { id: "web-setup", label: "React Native Web" },
   { id: "steps", label: "Migration Steps" },
 ];
 
-const v2Code = `import { Button } from "@olympusoss/canvas";
+// The original React library (v2): string-enum variant / size props.
+const reactLibCode = `import { Button } from "@olympusoss/canvas";
 <Button variant="outline" size="sm">Cancel</Button>`;
 
-const v3CssCode = `<button class="btn btn-outline btn-sm">Cancel</button>`;
+// The intermediate CSS-first design system: assemble component + modifier classes.
+const cssFrameworkCode = `<button class="btn btn-outline btn-sm">Cancel</button>`;
 
-const v3ReactCode = `import { Button } from "@olympusoss/canvas-react";
-<Button variant="outline" size="sm">Cancel</Button>`;
+// The current universal RN kit: a React Native component, flat boolean props.
+const currentCode = `import { Button } from "@olympusoss/canvas";
 
-const v3ThemeCode = `<html class="dark" data-surface="glass" data-density="compact">`;
+// One flat boolean prop per style choice, not a class string and not a
+// variant="..." / size="..." enum. The prop name is the value.
+<Button outline small>Cancel</Button>`;
 
+const themeNativeCode = `import { ThemeProvider, Button } from "@olympusoss/canvas";
+
+// Native: wrap the app once. ThemeProvider follows the OS appearance by default
+// (pass scheme="light" | "dark" to force one). No CSS, no .dark class.
+export function App() {
+  return (
+    <ThemeProvider>
+      <Button primary large>Save</Button>
+    </ThemeProvider>
+  );
+}`;
+
+const themeWebCode = `import { setTheme, toggleTheme, setSurface, setDensity } from "@olympusoss/canvas";
+
+// Web: these helpers replace setting <html> attributes by hand. They toggle
+// (and persist) the same hooks the canvas.css token layer keys off.
+setTheme("dark");       // was: <html class="dark">
+toggleTheme();          // flips light <-> dark, returns the next theme
+setSurface("glass");    // was: <html data-surface="glass">
+setDensity("compact");  // was: <html data-density="compact">`;
+
+// Old CSS-first classes mapped to the current React Native component, with a
+// semantic-prop example where the component exposes style axes.
 const COMPONENT_MAPPINGS = [
-  { v2: "<Button>", v3: ".btn + .btn-default, .btn-outline, etc." },
-  { v2: "<Input>", v3: ".input" },
-  { v2: "<Card>", v3: ".card, .card-header, .card-content, .card-footer" },
-  { v2: "<Badge>", v3: ".badge + .badge-default, .badge-secondary, etc." },
-  { v2: "<Avatar>", v3: ".avatar" },
-  { v2: "<Separator>", v3: ".sep, .sep-v" },
-  { v2: "<Dialog>", v3: ".dialog-overlay, .dialog, .dialog-header, etc." },
-  { v2: "<Sheet>", v3: ".sheet-overlay, .sheet, .sheet-right, etc." },
-  { v2: "<Tabs>", v3: ".tabs-list, .tab, .tabs-content" },
-  { v2: "<Alert>", v3: ".alert + .alert-default, .alert-destructive, etc." },
-  { v2: "<Toast>", v3: ".toast-viewport, .toast, etc." },
-  { v2: "<Select>", v3: ".select or .select-trigger" },
-  { v2: "<Checkbox>", v3: ".checkbox, .checkbox-label" },
-  { v2: "<Switch>", v3: ".switch" },
-  { v2: "<DataTable>", v3: ".dt-wrap, .dt-table, .dt-toolbar, etc." },
-  { v2: "<Sidebar>", v3: ".sidebar, .sidebar-item, etc." },
-  { v2: "<Tooltip>", v3: ".tooltip, .tooltip-arrow" },
-  { v2: "<Popover>", v3: ".popover" },
-  { v2: "<DropdownMenu>", v3: ".dropdown, .dropdown-item" },
-  { v2: "<Breadcrumb>", v3: ".breadcrumb, .breadcrumb-item" },
-  { v2: "<Pagination>", v3: ".pagination, .page-btn" },
-  { v2: "<Skeleton>", v3: ".skeleton, .skeleton-text, .skeleton-circle" },
-  { v2: "<Spinner>", v3: ".spinner" },
-  { v2: "<Command>", v3: ".command-dialog, .command-input, .command-item" },
+  { old: ".btn, .btn-outline, .btn-sm", now: "<Button>", props: "<Button outline small>" },
+  { old: ".input", now: "<Input>", props: "<Input error large>" },
+  { old: ".card, .card-header, .card-content, .card-footer", now: "<Card> + <CardHeader> / <CardContent> / <CardFooter>", props: "<Card raised compact>" },
+  { old: ".badge, .badge-secondary", now: "<Badge>", props: "<Badge secondary>, <Badge success>" },
+  { old: ".alert, .alert-destructive", now: "<Alert>", props: "<Alert error> (intents: info / success / warning / error)" },
+  { old: ".avatar", now: "<Avatar>", props: "<Avatar large ring>" },
+  { old: ".sep, .sep-v", now: "<Divider>", props: "<Divider vertical>, <Divider soft>" },
+  { old: ".checkbox, .checkbox-label", now: "<Checkbox>", props: "" },
+  { old: ".switch", now: "<Switch>", props: "" },
+  { old: ".tabs-list, .tab, .tabs-content", now: "<Tabs>", props: "" },
+  { old: ".select, .select-trigger", now: "<Select>", props: "" },
+  { old: ".dialog, .dialog-header, .dialog-overlay", now: "<Dialog>", props: "" },
+  { old: ".popover", now: "<Popover>", props: "" },
+  { old: ".tooltip, .tooltip-arrow", now: "<Tooltip>", props: "" },
+  { old: ".dropdown, .dropdown-item", now: "<Dropdown>", props: "" },
+  { old: ".dt-wrap, .dt-table, .dt-toolbar", now: "<DataTable>", props: "" },
+  { old: ".sidebar, .sidebar-item", now: "<Sidebar>", props: "" },
+  { old: ".pagination, .page-btn", now: "<Pagination>", props: "" },
+  { old: ".command-dialog, .command-input, .command-item", now: "<Command>", props: "" },
+  { old: ".breadcrumb, .breadcrumb-item", now: "<Breadcrumb>", props: "" },
+  { old: ".skeleton, .skeleton-text, .skeleton-circle", now: "<Skeleton>", props: "" },
+  { old: ".spinner", now: "<Spinner>", props: "" },
 ];
 
 const ARCH_COMPARISON = [
-  { concern: "Components", v2: "React (JSX/TSX)", v3: "CSS classes (plain HTML)" },
-  { concern: "Styling", v2: "Tailwind utilities", v3: "Semantic CSS custom properties" },
-  { concern: "Theming", v2: "Tailwind config + CSS vars", v3: "CSS custom properties only" },
-  { concern: "Primitives", v2: "Radix UI", v3: "None (bring your own)" },
-  { concern: "Charts", v2: "Recharts", v3: "None (bring your own)" },
-  { concern: "Tables", v2: "TanStack Table", v3: 'CSS only (.dt-* classes)' },
-  { concern: "Editor", v2: "TipTap", v3: "None" },
-  { concern: "Framework", v2: "React only", v3: "Framework-agnostic" },
-  { concern: "Build", v2: "Required (Tailwind JIT)", v3: "None (valid CSS)" },
+  { concern: "Components", prior: "CSS classes (plain HTML)", current: "React Native components" },
+  { concern: "Styling API", prior: "Semantic CSS + utility classes", current: "Semantic boolean props" },
+  { concern: "Platforms", prior: "Web only (any framework)", current: "iOS, Android, and web (react-native-web)" },
+  { concern: "Primitives", prior: "None (bring your own markup)", current: "Box, Text, Pressable, Image, TextInput, Scroll" },
+  { concern: "Theming", prior: ".dark class + data-attrs, set by hand", current: "ThemeProvider (native); setTheme / setSurface / setDensity (web)" },
+  { concern: "Stylesheet", prior: "Modular CSS (atoms / molecules / organisms)", current: "One token layer: styles/canvas.css (web only)" },
+  { concern: "Build", prior: "None (static CSS)", current: "RN / JS bundler; web aliases react-native to react-native-web" },
+  { concern: "Framework", prior: "Framework-agnostic", current: "React and React Native" },
 ];
 
 export function MigrationPage() {
@@ -66,20 +94,31 @@ export function MigrationPage() {
         <div className="page-header" style={{ marginBottom: "1.5rem" }}>
           <div>
             <div className="page-header-title"><h1>Migration Guide</h1></div>
-            <p className="sub">Migrating from Canvas v2 (React component library) to v3 (CSS-first design system).</p>
+            <p className="sub">Moving to Canvas, the universal React Native UI kit, from the earlier CSS-first design system.</p>
           </div>
           <div className="page-header-actions">
-            <span className="badge badge-secondary">v2 &rarr; v3</span>
+            <span className="badge badge-secondary">CSS &rarr; React Native</span>
           </div>
         </div>
 
         <section id="what-changed" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>What Changed</h2>
           <p className="body" style={{ marginBottom: "0.75rem" }}>
-            Canvas v2 was a React component library with 80+ components, Tailwind integration, Radix primitives, Recharts, TanStack Table, TipTap, and other runtime dependencies.
+            Canvas has had three shapes. It began as a React component library (string-enum
+            {" "}<code className="code">variant</code> / <code className="code">size</code> props, with Radix, Recharts,
+            and TanStack Table as runtime dependencies). It then became a framework-agnostic, CSS-first design system:
+            plain HTML styled with <code className="code">.btn</code>, <code className="code">.card</code>, and
+            {" "}<code className="code">.input</code> classes, no framework code at all.
           </p>
           <p className="body">
-            Canvas v3 is a clean break. It is a pure CSS design system with optional JS utilities. There are no React components, no framework code, and no Tailwind. The dependency arrow reversed: framework-specific component libraries are now separate packages that depend on Canvas.
+            Canvas is now a <strong>universal React Native UI kit</strong>. The components are React Native components
+            again, styled with semantic boolean props, and they run natively on iOS and Android and on the web through
+            react-native-web. The bare <code className="code">.btn</code> / <code className="code">.card</code> component
+            classes are gone: the package ships exactly one stylesheet, <code className="code">styles/canvas.css</code>, a
+            Tailwind v4 token layer (custom properties plus the <code className="code">.dark</code> /
+            {" "}<code className="code">[data-surface]</code> / <code className="code">[data-density]</code> hooks), and no
+            component CSS. If you are on the CSS-first design system, this guide is the path forward; the same mappings
+            apply if you are coming from the original React library.
           </p>
         </section>
 
@@ -88,13 +127,13 @@ export function MigrationPage() {
         <section id="architecture" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Architecture Comparison</h2>
           <table className="dt-table">
-            <thead><tr><th>Concern</th><th>v2</th><th>v3</th></tr></thead>
+            <thead><tr><th>Concern</th><th>CSS-first design system (prior)</th><th>Universal RN kit (current)</th></tr></thead>
             <tbody>
               {ARCH_COMPARISON.map((row) => (
                 <tr key={row.concern}>
                   <td style={{ fontWeight: 500 }}>{row.concern}</td>
-                  <td>{row.v2}</td>
-                  <td>{row.v3}</td>
+                  <td>{row.prior}</td>
+                  <td>{row.current}</td>
                 </tr>
               ))}
             </tbody>
@@ -103,43 +142,50 @@ export function MigrationPage() {
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
 
-        <section id="downstream" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Downstream Packages</h2>
+        <section id="styling-model" className="docs-section" style={{ marginBottom: "2rem" }}>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>The Styling Model</h2>
           <p className="body" style={{ marginBottom: "0.75rem" }}>
-            Framework-specific component libraries now live in dedicated packages:
+            This is the change that touches every call site. The CSS-first system styled a component by assembling a
+            class string (<code className="code">class="btn btn-outline btn-sm"</code>). The current kit exposes each
+            style choice as its own flat boolean prop, named for the meaning it carries; passing the prop turns it on. The
+            prop name is the value.
           </p>
-          <ul style={{ paddingLeft: "1.25rem", fontSize: "0.875rem", lineHeight: 1.75 }}>
-            <li><code className="code">canvas-react</code> &ndash; React components for web</li>
-            <li><code className="code">canvas-react-native</code> &ndash; React Native components</li>
-            <li><code className="code">canvas-vue</code> &ndash; Vue components</li>
-          </ul>
+
+          <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>Original React library</h3>
+          <CodeBlock code={reactLibCode} language="tsx" />
+
+          <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>CSS-first design system</h3>
+          <CodeBlock code={cssFrameworkCode} language="html" />
+
+          <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>Universal RN kit (current)</h3>
+          <CodeBlock code={currentCode} language="tsx" />
+
           <p className="body" style={{ marginTop: "0.75rem" }}>
-            These packages depend on Canvas for tokens and CSS. If your app used v2 React components directly, migrate to the appropriate framework package or build your own components on Canvas CSS.
+            Props are grouped into orthogonal axes (intent, size, surface, density, plus stacking state and layout
+            booleans). You pass at most one prop per axis, and props from different axes combine freely, so
+            {" "}<code className="code">&lt;Button primary large block&gt;</code> is three axes applied together. There is no
+            {" "}<code className="code">variant="..."</code> or <code className="code">size="lg"</code> string-enum API, no CSS
+            classes, and no raw utility-class soup passed in to restyle a component: every visual variation is a boolean
+            prop.
           </p>
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
 
         <section id="mapping" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Mapping v2 Imports to v3</h2>
-
-          <h3 className="h5" style={{ marginBottom: "0.5rem" }}>Before (v2)</h3>
-          <CodeBlock code={v2Code} language="html" />
-
-          <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>After (v3, plain CSS)</h3>
-          <CodeBlock code={v3CssCode} language="html" />
-
-          <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>After (v3, via canvas-react)</h3>
-          <CodeBlock code={v3ReactCode} language="html" />
-
-          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Component Mappings</h3>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Component Mappings</h2>
+          <p className="body" style={{ marginBottom: "0.75rem" }}>
+            Each former CSS class set maps to a React Native component imported from
+            {" "}<code className="code">@olympusoss/canvas</code>. Modifier classes become semantic boolean props.
+          </p>
           <table className="dt-table">
-            <thead><tr><th>v2 React Component</th><th>v3 CSS Classes</th></tr></thead>
+            <thead><tr><th>CSS-first classes</th><th>Current component</th><th>Semantic props</th></tr></thead>
             <tbody>
               {COMPONENT_MAPPINGS.map((row) => (
-                <tr key={row.v2}>
-                  <td><code className="code">{row.v2}</code></td>
-                  <td><code className="code" style={{ fontSize: "0.75rem" }}>{row.v3}</code></td>
+                <tr key={row.old}>
+                  <td><code className="code" style={{ fontSize: "0.75rem" }}>{row.old}</code></td>
+                  <td><code className="code">{row.now}</code></td>
+                  <td>{row.props ? <code className="code" style={{ fontSize: "0.75rem" }}>{row.props}</code> : <span className="muted small">&ndash;</span>}</td>
                 </tr>
               ))}
             </tbody>
@@ -149,31 +195,59 @@ export function MigrationPage() {
         <div className="sep" style={{ margin: "1.5rem 0" }} />
 
         <section id="theming-migration" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Theming Migration</h2>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Theming</h2>
           <p className="body" style={{ marginBottom: "0.75rem" }}>
-            v2 used Tailwind config extensions and <code className="code">tailwind.config.js</code> color mappings. Dark mode was Tailwind's <code className="code">dark:</code> variant.
+            The CSS-first system themed itself by setting attributes on <code className="code">&lt;html&gt;</code> by hand:
+            the <code className="code">.dark</code> class for dark mode, <code className="code">data-surface="glass"</code> for
+            the glass surface, and <code className="code">data-density</code> for density. Components now theme themselves
+            through <code className="code">ThemeProvider</code>, and the web helpers drive those same hooks for you.
           </p>
-          <p className="body" style={{ marginBottom: "0.75rem" }}>
-            v3 uses CSS custom properties exclusively. Dark mode is the <code className="code">.dark</code> class on <code className="code">&lt;html&gt;</code>. Glass surface and density are HTML data attributes.
+          <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>Native</h3>
+          <CodeBlock code={themeNativeCode} language="tsx" />
+          <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web</h3>
+          <p className="body" style={{ marginBottom: "0.5rem" }}>
+            On the web you also import <code className="code">@olympusoss/canvas/styles/canvas.css</code> so the token layer
+            and any custom <code className="code">var()</code> CSS stay in sync. The helpers set and persist the
+            {" "}<code className="code">&lt;html&gt;</code> attributes (they touch <code className="code">document</code> and
+            {" "}<code className="code">localStorage</code>, so they are web-only).
           </p>
-          <CodeBlock code={v3ThemeCode} language="html" />
+          <CodeBlock code={themeWebCode} language="tsx" />
+          <p className="small muted" style={{ marginTop: "0.5rem" }}>
+            See the <Link to="/theming" style={linkStyle}>Theming</Link> guide for the full surface and density model.
+          </p>
+        </section>
+
+        <div className="sep" style={{ margin: "1.5rem 0" }} />
+
+        <section id="web-setup" className="docs-section" style={{ marginBottom: "2rem" }}>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>React Native Web</h2>
+          <p className="body">
+            On the web the kit runs through react-native-web. The one required change in your bundler is aliasing
+            {" "}<code className="code">react-native</code> to <code className="code">react-native-web</code>; a small hook
+            mirrors the <code className="code">&lt;html&gt;</code> theme back into <code className="code">ThemeProvider</code> so
+            the components follow the page. The <Link to="/integration" style={linkStyle}>Integration</Link> guide has the
+            complete Vite config and the scheme-sync hook, and the
+            {" "}<Link to="/rn-primitives" style={linkStyle}>React Native</Link> guide covers building custom UI on the engine
+            primitives.
+          </p>
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
 
         <section id="steps" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Migration Steps</h2>
-          <ol style={{ paddingLeft: "1.25rem", fontSize: "0.875rem", lineHeight: 2 }}>
-            <li><strong>Choose your path.</strong> Adopt a downstream package (<code className="code">canvas-react</code>, etc.) or build components directly on Canvas CSS classes.</li>
-            <li><strong>Replace imports.</strong> Swap <code className="code">@olympusoss/canvas</code> React imports for CSS class usage or the new downstream package.</li>
-            <li><strong>Remove Tailwind.</strong> v3 does not use Tailwind. Remove Canvas-related Tailwind config and replace utility classes with Canvas custom properties or component classes.</li>
-            <li><strong>Import CSS.</strong> Add <code className="code">@import "@olympusoss/canvas/styles/canvas.css"</code> to your entry point, or import individual files.</li>
-            <li><strong>Update theming.</strong> Replace Tailwind dark-mode config with the <code className="code">.dark</code> class and data attributes.</li>
-            <li><strong>Handle primitives yourself.</strong> v3 has no Radix dependency. If you need accessible primitives (focus trapping, ARIA, keyboard nav), bring your own or use a downstream package.</li>
+          <ol style={{ paddingLeft: "1.25rem", fontSize: "0.875rem", lineHeight: 2, listStyleType: "decimal" }}>
+            <li><strong>Install the peers.</strong> <code className="code">npm install @olympusoss/canvas react react-native react-native-svg</code>. The kit lists react, react-native, and react-native-svg as peer dependencies.</li>
+            <li><strong>Wrap the app in ThemeProvider.</strong> Once, at the root. It follows the OS appearance by default (pass <code className="code">scheme</code> to force one) and replaces the <code className="code">.dark</code> class you used to set on <code className="code">&lt;html&gt;</code>.</li>
+            <li><strong>Replace classes with components.</strong> Swap <code className="code">class="btn btn-outline btn-sm"</code> markup for the React Native component with boolean props (<code className="code">&lt;Button outline small&gt;</code>). Use the mapping table above.</li>
+            <li><strong>Drop the component CSS.</strong> The <code className="code">.btn</code> / <code className="code">.card</code> classes and the modular CSS files are gone. On native you import no CSS at all; on the web, import the single token layer <code className="code">@olympusoss/canvas/styles/canvas.css</code>.</li>
+            <li><strong>Set up react-native-web (web only).</strong> Alias <code className="code">react-native</code> to <code className="code">react-native-web</code> in your bundler and mirror the <code className="code">&lt;html&gt;</code> theme into the provider. See the Integration guide.</li>
+            <li><strong>Move theming to the helpers.</strong> Replace hand-set <code className="code">&lt;html&gt;</code> attributes with <code className="code">setTheme</code> / <code className="code">setSurface</code> / <code className="code">setDensity</code> on the web, or <code className="code">ThemeProvider</code> props on native.</li>
+            <li><strong>Build custom UI on the engine primitives.</strong> Where you wrote bespoke markup against CSS classes, compose <code className="code">Box</code> / <code className="code">Text</code> / <code className="code">Pressable</code> (and Image / TextInput / Scroll) with <code className="code">className</code>, the way Canvas builds its own components.</li>
           </ol>
 
           <div className="alert alert-default" style={{ marginTop: "1rem" }}>
-            <p className="small"><strong>Pinning v2:</strong> The v2 branch/tag remains available. Pin your dependency to the last v2 release if you need time to migrate.</p>
+            <p className="small"><strong>Need time to migrate?</strong> The earlier releases stay on npm. Pin your dependency to the last CSS-first release (the <code className="code">.btn</code> / <code className="code">.card</code> design system) or the original v2 React library, and upgrade when you are ready.</p>
           </div>
         </section>
       </div>
