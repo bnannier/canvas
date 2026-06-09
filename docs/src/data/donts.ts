@@ -3067,4 +3067,2866 @@ export const DONTS: Record<string, DontDoExample[]> = {
       }
     }
   ],
+  alert: [
+    {
+      title: "info",
+      dont: {
+        tree: {
+          type: "Alert",
+          props: {
+            info: true,
+            icon: "ℹ",
+            title: "Trial expires today",
+            description: "Upgrade now or you'll lose access to your projects."
+          }
+        },
+        caption: "Dressing an act-now message in the neutral info tone hides the urgency; users skim past it like an FYI."
+      },
+      do: {
+        tree: {
+          type: "Alert",
+          props: {
+            info: true,
+            icon: "ℹ",
+            title: "Heads up",
+            description: "Maintenance window scheduled for Sunday 2:00 UTC."
+          }
+        },
+        caption: "Reserve info for passive, non-urgent context (notices, tips); escalate to warning or destructive when action is required."
+      }
+    },
+    {
+      title: "success",
+      dont: {
+        tree: {
+          type: "Alert",
+          props: {
+            success: true,
+            icon: "✓",
+            title: "Saved",
+            description: "Your changes have been saved successfully."
+          }
+        },
+        caption: "A success banner pinned with no way to dismiss it lingers as visual noise long after the action is done."
+      },
+      do: {
+        tree: {
+          type: "Alert",
+          props: {
+            success: true,
+            icon: "✓",
+            title: "Saved",
+            description: "Your changes have been saved successfully."
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "mt-3 flex-row gap-2" },
+              children: [{ type: "Button", props: { ghost: true, small: true }, children: "Dismiss" }]
+            }
+          ]
+        },
+        caption: "Make confirmations transient: auto-dismiss or give a Dismiss control so the success state clears once acknowledged."
+      }
+    },
+    {
+      title: "warning",
+      dont: {
+        tree: {
+          type: "Alert",
+          props: {
+            warning: true,
+            icon: "⚠",
+            title: "Action required",
+            description: "Something needs your attention."
+          }
+        },
+        caption: "A warning with no specifics or next step leaves the user guessing what to fix and by when."
+      },
+      do: {
+        tree: {
+          type: "Alert",
+          props: {
+            warning: true,
+            icon: "⚠",
+            title: "Action required",
+            description: "Your trial expires in 3 days. Upgrade to keep your projects."
+          },
+          children: [
+            {
+              type: "View",
+              props: { className: "mt-3 flex-row gap-2" },
+              children: [
+                {
+                  type: "Button",
+                  props: { primary: true, small: true },
+                  children: "Upgrade plan"
+                }
+              ]
+            }
+          ]
+        },
+        caption: "State the consequence, the deadline, and the action: name what's wrong and give a button to resolve it."
+      }
+    },
+    {
+      title: "destructive",
+      dont: {
+        tree: {
+          type: "Alert",
+          props: {
+            error: true,
+            icon: "✕",
+            title: "Saved",
+            description: "Your changes have been saved successfully."
+          }
+        },
+        caption: "Using the destructive variant for non-errors cries wolf; users learn to tune out red and miss real failures."
+      },
+      do: {
+        tree: {
+          type: "Alert",
+          props: {
+            error: true,
+            icon: "✕",
+            title: "Something went wrong",
+            description: "Could not save your changes. Please try again."
+          }
+        },
+        caption: "Match the variant to the severity: reserve destructive for genuine failures, success for confirmations."
+      }
+    }
+  ],
+  "alert-dialog": [
+    {
+      title: "Reserve the dialog for blocking decisions",
+      dont: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            small: true,
+            title: "Saved",
+            description: "Your changes have been saved.",
+            confirmLabel: "OK"
+          }
+        },
+        caption: "A blocking alert dialog for passive confirmation interrupts the user for no reason."
+      },
+      do: {
+        tree: {
+          type: "Alert",
+          props: {
+            success: true,
+            title: "Saved",
+            description: "Your changes have been saved."
+          }
+        },
+        caption: "Use an inline banner or toast for passive feedback; reserve the dialog for decisions that must be confirmed."
+      }
+    },
+    {
+      title: "Name the action on the confirm button",
+      dont: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            small: true,
+            destructive: true,
+            title: "Delete this identity?",
+            cancelLabel: "No",
+            confirmLabel: "Yes"
+          }
+        },
+        caption: "Generic Yes / No forces the user to re-read the title to know what they are confirming."
+      },
+      do: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            small: true,
+            destructive: true,
+            title: "Delete this identity?",
+            cancelLabel: "Cancel",
+            confirmLabel: "Delete"
+          }
+        },
+        caption: "Label the confirm button with the verb it performs (Delete, Archive, Sign out)."
+      }
+    },
+    {
+      title: "xs",
+      dont: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            narrow: true,
+            destructive: true,
+            title: "Remove this trusted device?",
+            description: "It will need to re-authenticate, and any pending background syncs from it will be cancelled the next time it connects.",
+            cancelLabel: "Cancel",
+            confirmLabel: "Remove device"
+          }
+        },
+        caption: "A long title, multi-line description, and wordy buttons get cramped in the xs width and wrap awkwardly."
+      },
+      do: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            narrow: true,
+            destructive: true,
+            title: "Remove device?",
+            cancelLabel: "Cancel",
+            confirmLabel: "Remove"
+          }
+        },
+        caption: "Reserve xs for a terse one-line question with short button labels and no body content."
+      }
+    },
+    {
+      title: "sm",
+      dont: {
+        html: "<div class=\"w-full max-w-[384px] rounded-lg border border-border bg-popover p-6 text-popover-foreground shadow-xl\"><h2 class=\"text-base font-semibold\">Transfer ownership</h2><div class=\"mt-4 space-y-4\"><div><label class=\"mb-1.5 block text-sm font-medium\">New owner email</label><input class=\"h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm\" placeholder=\"owner@example.com\"></div><div><label class=\"mb-1.5 block text-sm font-medium\">Reason</label><input class=\"h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm\" placeholder=\"Optional note\"></div><div><label class=\"mb-1.5 block text-sm font-medium\">Type TRANSFER to confirm</label><input class=\"h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm\" placeholder=\"TRANSFER\"></div></div><div class=\"mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end\"><button class=\"inline-flex h-8 items-center justify-center rounded-md border border-input bg-transparent px-3 text-sm font-medium\">Cancel</button><button class=\"inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground\">Transfer</button></div></div>",
+        caption: "Packing a multi-field form into sm makes it feel like a form crammed into a confirmation popup."
+      },
+      do: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            small: true,
+            title: "Transfer ownership?",
+            description: "You will lose admin access to this workspace.",
+            cancelLabel: "Cancel",
+            confirmLabel: "Transfer"
+          }
+        },
+        caption: "Use sm for a single short confirmation with a one-line description; move real forms to a full dialog."
+      }
+    },
+    {
+      title: "md",
+      dont: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            narrow: true,
+            destructive: true,
+            title: "Delete this identity?",
+            description: "This permanently removes the identity and revokes any active sessions. This action cannot be undone.",
+            cancelLabel: "Cancel",
+            confirmLabel: "Delete"
+          }
+        },
+        caption: "Squeezing a description-carrying confirm into a smaller width crowds the copy against the edges."
+      },
+      do: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            destructive: true,
+            title: "Delete this identity?",
+            description: "This permanently removes the identity and revokes any active sessions. This action cannot be undone.",
+            cancelLabel: "Cancel",
+            confirmLabel: "Delete"
+          }
+        },
+        caption: "md is the default home for a typical destructive confirm with a sentence or two of description."
+      }
+    },
+    {
+      title: "lg",
+      dont: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            large: true,
+            title: "Sign out?",
+            cancelLabel: "Cancel",
+            confirmLabel: "Sign out"
+          }
+        },
+        caption: "A bare yes/no in lg leaves a wide, empty panel that reads as heavier than the trivial decision it asks for."
+      },
+      do: {
+        tree: {
+          type: "AlertDialog",
+          props: {
+            open: true,
+            large: true,
+            destructive: true,
+            withInput: true,
+            title: "Delete this identity?",
+            description: "This permanently removes the identity and revokes any active sessions. This action cannot be undone.",
+            cancelLabel: "Cancel",
+            confirmLabel: "Delete"
+          }
+        },
+        caption: "Reserve lg for dialogs that earn the width: a body field or a longer explanation to read."
+      }
+    }
+  ],
+  fieldset: [
+    {
+      title: "Text fields",
+      dont: {
+        tree: {
+          type: "Fieldset",
+          props: {
+            legend: "Shipping details",
+            items: [{ label: "", placeholder: "Full name" }, { label: "", placeholder: "Email" }]
+          }
+        },
+        caption: "A placeholder is not a label: it vanishes on focus and is skipped by many screen readers, leaving the field unnamed."
+      },
+      do: {
+        tree: {
+          type: "Fieldset",
+          props: {
+            legend: "Shipping details",
+            items: [
+              { label: "Full name", placeholder: "Ada Lovelace" },
+              {
+                label: "Email",
+                placeholder: "ada@example.com",
+                help: "We'll only use this for order updates."
+              }
+            ]
+          }
+        },
+        caption: "Give every field a persistent label; use the placeholder only for an example value or format hint."
+      }
+    },
+    {
+      title: "Checkbox group",
+      dont: {
+        tree: {
+          type: "Fieldset",
+          props: { checkboxes: [{ label: "Email" }, { label: "SMS" }, { label: "Push" }] }
+        },
+        caption: "Without a legend the relationship between the controls is implicit; screen readers announce them as unrelated."
+      },
+      do: {
+        tree: {
+          type: "Fieldset",
+          props: {
+            legend: "Notify me by",
+            checkboxes: [{ label: "Email" }, { label: "SMS" }, { label: "Push" }]
+          }
+        },
+        caption: "A legend names the group so its checkboxes read as one labeled unit."
+      }
+    },
+    {
+      title: "Two-column",
+      dont: {
+        tree: {
+          type: "Fieldset",
+          props: {
+            legend: "Account",
+            twoColumn: true,
+            items: [
+              { label: "Bio", value: "Engineering lead." },
+              { label: "Country", value: "United States" }
+            ]
+          }
+        },
+        caption: "Splitting unrelated or full-width fields across two columns crams the form and breaks the reading order."
+      },
+      do: {
+        tree: {
+          type: "Fieldset",
+          props: {
+            legend: "Card details",
+            twoColumn: true,
+            items: [
+              { label: "Expiry", placeholder: "MM / YY" },
+              { label: "CVC", placeholder: "123" }
+            ]
+          }
+        },
+        caption: "Pair only naturally adjacent, short fields side by side; the grid stacks to one column on small screens."
+      }
+    }
+  ],
+  card: [
+    {
+      title: "stat",
+      dont: {
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[280px]" },
+          children: [
+            {
+              type: "Text",
+              props: {
+                className: "text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              },
+              children: "This month"
+            },
+            {
+              type: "Text",
+              props: { className: "mt-1 text-sm font-medium text-card-foreground" },
+              children: "We onboarded 12,348 active identities, up 142 today, with churn holding steady."
+            }
+          ]
+        },
+        caption: "Prose where the number should be: the eye has nothing big to land on, so the card stops being a stat."
+      },
+      do: {
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[280px]" },
+          children: {
+            type: "View",
+            props: { className: "flex-row items-start justify-between" },
+            children: [
+              {
+                type: "View",
+                children: [
+                  {
+                    type: "Text",
+                    props: {
+                      className: "text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                    },
+                    children: "Active identities"
+                  },
+                  {
+                    type: "Text",
+                    props: { className: "mt-1 text-2xl font-bold text-card-foreground" },
+                    children: "12,348"
+                  },
+                  {
+                    type: "Text",
+                    props: { className: "mt-0.5 text-[11px] text-muted-foreground" },
+                    children: "+142 today"
+                  }
+                ]
+              },
+              {
+                type: "View",
+                props: {
+                  className: "h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10"
+                },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm font-semibold text-blue-600" },
+                  children: "U"
+                }
+              }
+            ]
+          }
+        },
+        caption: "One big number, a short label, a small delta. The metric is scannable in a glance."
+      }
+    },
+    {
+      title: "section",
+      dont: {
+        tree: {
+          type: "Card",
+          props: { className: "max-w-[360px]" },
+          children: [
+            {
+              type: "CardHeader",
+              children: { type: "CardTitle", children: "Recent activity" }
+            },
+            {
+              type: "CardContent",
+              children: {
+                type: "Text",
+                props: { className: "text-sm text-card-foreground" },
+                children: "Two events today."
+              }
+            }
+          ]
+        },
+        caption: "Without the divider the header floats and stops reading as a header."
+      },
+      do: {
+        tree: {
+          type: "Card",
+          props: { className: "max-w-[360px]" },
+          children: [
+            {
+              type: "CardHeader",
+              children: { type: "CardTitle", children: "Recent activity" }
+            },
+            { type: "CardSeparator" },
+            {
+              type: "CardContent",
+              children: {
+                type: "Text",
+                props: { className: "text-sm text-card-foreground" },
+                children: "Two events today."
+              }
+            }
+          ]
+        },
+        caption: "Keep the divider between header and body; it anchors the title."
+      }
+    },
+    {
+      title: "generic",
+      dont: {
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[360px]" },
+          children: {
+            type: "Card",
+            props: { padded: true },
+            children: [
+              {
+                type: "Text",
+                props: { className: "mb-1 text-[15px] font-semibold text-card-foreground" },
+                children: "Nested surface"
+              },
+              {
+                type: "Text",
+                props: { className: "text-sm text-muted-foreground" },
+                children: "A card inside a card doubles the border and shadow."
+              }
+            ]
+          }
+        },
+        caption: "Nesting one card surface inside another stacks border on border and shadow on shadow; the inner block looks dropped in."
+      },
+      do: {
+        tree: {
+          type: "Card",
+          props: { padded: true, className: "max-w-[360px]" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "mb-1 text-[15px] font-semibold text-card-foreground" },
+              children: "Anything goes here"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground" },
+              children: "The card surface gives you the border, radius, and shadow. You bring the content."
+            }
+          ]
+        },
+        caption: "Use the surface once and layout the content with plain spacing inside it."
+      }
+    }
+  ],
+  "code-block": [
+    {
+      title: "Plain",
+      dont: {
+        html: "<p class=\"max-w-[360px] font-mono text-[13px]\">const theme = getTheme(); setTheme(theme === \"dark\" ? \"light\" : \"dark\");</p>",
+        caption: "A paragraph collapses the line breaks and indentation, so multi-line code reads as one run-on string."
+      },
+      do: {
+        tree: {
+          type: "CodeBlock",
+          props: {
+            code: "const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+          }
+        },
+        caption: "Use a pre element so whitespace, line breaks, and indentation survive verbatim."
+      }
+    },
+    {
+      title: "Terminal",
+      dont: {
+        html: "<div class=\"w-full overflow-x-auto rounded-lg bg-zinc-900 p-4 font-mono text-[13px] text-zinc-100\">npm install @olympusoss/canvas</div>",
+        caption: "Selectable prompt text means a reader who copies the line drags the $ marker into their shell."
+      },
+      do: {
+        tree: {
+          type: "CodeBlock",
+          props: { terminal: true, code: "npm install @olympusoss/canvas" }
+        },
+        caption: "Mark the prompt select-none so a copy yields only the command, not the shell glyph."
+      }
+    },
+    {
+      title: "Numbered",
+      dont: {
+        html: "<pre class=\"w-full self-start overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-sm leading-relaxed text-foreground\"><div class=\"grid grid-cols-[2ch_1fr] gap-x-1\"><span class=\"pr-4 text-right text-muted-foreground/50\">1</span><span>const theme = getTheme();</span><span class=\"pr-4 text-right text-muted-foreground/50\">2</span><span>setTheme(theme);</span></div></pre>",
+        caption: "Selectable line numbers get swept into the selection and pasted as 1 2 ahead of every line."
+      },
+      do: {
+        tree: {
+          type: "CodeBlock",
+          props: { numbered: true, code: "const theme = getTheme();\nsetTheme(theme);" }
+        },
+        caption: "Keep the gutter select-none so copying the block returns clean, runnable code."
+      }
+    },
+    {
+      title: "Inline",
+      dont: {
+        html: "<p class=\"max-w-[360px] text-sm leading-relaxed\">Run <code class=\"rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[13px] text-foreground\">npm install @olympusoss/canvas &amp;&amp; npm run build &amp;&amp; npm run preview</code> to start.</p>",
+        caption: "A long, multi-step command crammed inline wraps mid-token and offers no horizontal scroll."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: { className: "max-w-[360px] gap-1.5" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-sm leading-relaxed" },
+              children: "Run the setup command:"
+            },
+            {
+              type: "CodeBlock",
+              props: { code: "npm install @olympusoss/canvas\nnpm run build" }
+            }
+          ]
+        },
+        caption: "Reserve inline code for short tokens; move anything multi-line into a block."
+      }
+    }
+  ],
+  "empty-state": [
+    {
+      title: "search",
+      dont: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "🔍",
+            title: "Nothing matched",
+            description: "You searched for the wrong thing. Check your spelling and try again."
+          }
+        },
+        caption: "Blaming the searcher for an empty result set makes a normal outcome feel like a mistake."
+      },
+      do: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "🔍",
+            title: "No results found",
+            description: "Try adjusting your search filters."
+          }
+        },
+        caption: "State the result neutrally and point at the lever the user can pull (filters, query)."
+      }
+    },
+    {
+      title: "users",
+      dont: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "👥",
+            title: "No users",
+            description: "There are no team members in this workspace."
+          }
+        },
+        caption: "A dead-end that only restates the emptiness leaves the user with nowhere to go."
+      },
+      do: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "👥",
+            title: "No users",
+            description: "Invite your first team member.",
+            actionLabel: "Invite member"
+          }
+        },
+        caption: "When the user can fix it, give them the one action that does (Invite, Create)."
+      }
+    },
+    {
+      title: "files",
+      dont: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "📄",
+            title: "Nothing here",
+            description: "This folder is empty."
+          }
+        },
+        caption: "Generic 'nothing here' copy never tells the user how files would get into the folder."
+      },
+      do: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "📄",
+            title: "No files",
+            description: "Upload or drag files here."
+          }
+        },
+        caption: "Name the gesture that fills the empty space so the next step is obvious."
+      }
+    },
+    {
+      title: "activity",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border px-6 py-8 text-center items-center\"><div class=\"mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"text-destructive\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 8v4\"/><path d=\"M12 16h.01\"/></svg></div><div class=\"text-base font-semibold text-foreground\">No activity</div><p class=\"mt-1 text-sm text-muted-foreground\">Events will appear as they happen.</p></div>",
+        caption: "An alarming red icon turns a calm, expected empty feed into a false error."
+      },
+      do: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "📈",
+            title: "No activity",
+            description: "Events will appear as they happen."
+          }
+        },
+        caption: "Keep a routinely-empty state calm: muted icon, reassuring copy, no urgency."
+      }
+    },
+    {
+      title: "notifications",
+      dont: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "🔔",
+            title: "Nothing to see",
+            description: "You have no notifications. Sorry, it's quiet in here."
+          }
+        },
+        caption: "Apologetic, sad-toned copy frames an inbox-zero win as a letdown."
+      },
+      do: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "🔔",
+            title: "All caught up",
+            description: "No new notifications."
+          }
+        },
+        caption: "Celebrate a cleared queue: 'All caught up' reads as success, not absence."
+      }
+    },
+    {
+      title: "errors",
+      dont: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            icon: "🔍",
+            title: "No errors",
+            description: "Nothing was found."
+          }
+        },
+        caption: "A grey 'nothing found' disc reads as a failed query, not as a healthy, error-free system."
+      },
+      do: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            positive: true,
+            icon: "✅",
+            title: "No errors",
+            description: "Everything is running smoothly."
+          }
+        },
+        caption: "Signal the good news with a green check: zero errors is a passing state, not an empty one."
+      }
+    },
+    {
+      title: "all-clear",
+      dont: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            positive: true,
+            icon: "✅",
+            title: "No pending reviews",
+            description: "3 accounts are locked and waiting on you."
+          }
+        },
+        caption: "A green all-clear over copy that admits work is pending hides the action the user must take."
+      },
+      do: {
+        tree: {
+          type: "EmptyState",
+          props: {
+            bordered: true,
+            positive: true,
+            icon: "✅",
+            title: "All clear",
+            description: "No locked accounts or pending reviews."
+          }
+        },
+        caption: "Reserve the green all-clear for genuinely empty queues: nothing locked, nothing waiting."
+      }
+    }
+  ],
+  field: [
+    {
+      title: "Basic",
+      dont: {
+        html: "<div class=\"flex max-w-[400px] flex-col gap-1\">\n  <div class=\"text-sm\"><span class=\"font-semibold\">Name:</span> Rachel Chen</div>\n  <div class=\"text-sm\"><span class=\"font-semibold\">Role:</span> Admin</div>\n</div>",
+        caption: "Inline label-colon-value with no shared column makes values ragged and impossible to scan down a list."
+      },
+      do: {
+        tree: {
+          type: "Field",
+          props: {
+            className: "max-w-[400px]",
+            rows: [{ label: "Name", value: "Rachel Chen" }, { label: "Role", value: "Admin" }]
+          }
+        },
+        caption: "Use the fixed 180px label column so every value aligns to one baseline."
+      }
+    },
+    {
+      title: "Mono",
+      dont: {
+        tree: {
+          type: "Field",
+          props: {
+            className: "max-w-[400px]",
+            rows: [
+              { label: "Client ID", value: "clt_8f2a9b4c7e1d" },
+              { label: "Fingerprint", value: "sha256:xK9v..." }
+            ]
+          }
+        },
+        caption: "Rendering IDs and hashes in proportional type makes look-alike characters (l/1, O/0) hard to compare."
+      },
+      do: {
+        tree: {
+          type: "Field",
+          props: {
+            className: "max-w-[400px]",
+            rows: [
+              { label: "Client ID", value: "clt_8f2a9b4c7e1d", mono: true },
+              { label: "Fingerprint", value: "sha256:xK9v...", mono: true }
+            ]
+          }
+        },
+        caption: "Wrap IDs, hashes, and timestamps in font-mono so every glyph is fixed-width and copy-able."
+      }
+    },
+    {
+      title: "Composed",
+      dont: {
+        tree: {
+          type: "Field",
+          props: {
+            className: "max-w-[400px]",
+            rows: [{ label: "Status", value: "Active" }, { label: "Plan", value: "Pro" }]
+          }
+        },
+        caption: "Flattening a live status or plan tier to plain text drops the color and shape that signal state at a glance."
+      },
+      do: {
+        tree: {
+          type: "Field",
+          props: {
+            className: "max-w-[400px]",
+            rows: [{ label: "Status", status: "Active" }, { label: "Plan", badge: "Pro" }]
+          }
+        },
+        caption: "Compose real nodes into the value slot: a status badge for state, a badge for the plan tier."
+      }
+    }
+  ],
+  form: [
+    {
+      title: "Stacked",
+      dont: {
+        tree: {
+          type: "Form",
+          props: {
+            twoColumn: true,
+            submitLabel: "Sign in",
+            className: "max-w-[360px]",
+            fields: [{ label: "Email", placeholder: "you@example.com" }, { label: "Password" }]
+          }
+        },
+        caption: "Pairing an email and password side by side cramps a sign-in form and breaks the natural top-to-bottom reading order."
+      },
+      do: {
+        tree: {
+          type: "Form",
+          props: {
+            stacked: true,
+            submitLabel: "Sign in",
+            className: "max-w-[360px]",
+            fields: [{ label: "Email", placeholder: "you@example.com" }, { label: "Password" }]
+          }
+        },
+        caption: "Keep short forms one field per row so each label sits directly above its input and the eye flows straight down."
+      }
+    },
+    {
+      title: "Two-column",
+      dont: {
+        tree: {
+          type: "Form",
+          props: {
+            twoColumn: true,
+            submitLabel: "Save",
+            className: "max-w-[560px]",
+            fields: [
+              { label: "Street address", placeholder: "123 Market St" },
+              { label: "ZIP", placeholder: "94103" }
+            ]
+          }
+        },
+        caption: "Putting a wide field next to a tiny one in the same two-column row leaves the short input awkwardly oversized."
+      },
+      do: {
+        html: "<div class=\"max-w-[560px]\">\n  <div class=\"mb-3\"><label class=\"mb-1.5 block text-sm font-medium text-foreground\">Street address</label><input class=\"h-9 w-full rounded-md border border-input bg-background px-3 text-sm\" placeholder=\"123 Market St\" /></div>\n  <div class=\"grid grid-cols-2 gap-3\">\n    <div><label class=\"mb-1.5 block text-sm font-medium text-foreground\">City</label><input class=\"h-9 w-full rounded-md border border-input bg-background px-3 text-sm\" placeholder=\"San Francisco\" /></div>\n    <div><label class=\"mb-1.5 block text-sm font-medium text-foreground\">ZIP</label><input class=\"h-9 w-full rounded-md border border-input bg-background px-3 text-sm\" placeholder=\"94103\" /></div>\n  </div>\n</div>",
+        caption: "Pair fields of similar width (city / ZIP) in a row and give a full-width field like the street its own line."
+      }
+    },
+    {
+      title: "Sidebar",
+      dont: {
+        tree: {
+          type: "Form",
+          props: {
+            sidebar: true,
+            submitLabel: "Save",
+            className: "max-w-[720px]",
+            sections: [
+              {
+                title: "Personal info",
+                fields: [{ label: "Full name", value: "Rachel Chen" }]
+              },
+              { title: "Billing", fields: [{ label: "Card number", value: "•••• 4242" }] }
+            ]
+          }
+        },
+        caption: "A bare section heading with no helper text wastes the sidebar column and gives the user no context for the group."
+      },
+      do: {
+        tree: {
+          type: "Form",
+          props: {
+            sidebar: true,
+            submitLabel: "Save",
+            className: "max-w-[720px]",
+            sections: [
+              {
+                title: "Personal info",
+                description: "Displayed on your public profile.",
+                fields: [{ label: "Full name", value: "Rachel Chen" }]
+              },
+              {
+                title: "Billing",
+                description: "Used for invoices and receipts.",
+                fields: [{ label: "Card number", value: "•••• 4242" }]
+              }
+            ]
+          }
+        },
+        caption: "Pair each sidebar heading with a line of helper text so the left column explains what the section's fields are for."
+      }
+    }
+  ],
+  "action-panels": [
+    {
+      title: "Simple",
+      dont: {
+        tree: {
+          type: "ActionPanel",
+          props: {
+            title: "Delete this project",
+            actionLabel: "Delete project",
+            destructive: true,
+            className: "max-w-[420px]"
+          }
+        },
+        caption: "A destructive action with no consequence copy invites accidental, irreversible clicks."
+      },
+      do: {
+        tree: {
+          type: "ActionPanel",
+          props: {
+            title: "Delete this project",
+            description: "Once you delete a project, there is no going back. Please be certain.",
+            actionLabel: "Delete project",
+            destructive: true,
+            className: "max-w-[420px]"
+          }
+        },
+        caption: "Spell out the consequence above the button so the stakes are clear before the click."
+      }
+    },
+    {
+      title: "With form inline",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[420px] p-6\">\n  <div class=\"mb-1 text-[15px] font-semibold\">Subscribe to updates</div>\n  <div class=\"mb-4 text-sm text-muted-foreground\">We'll send you a weekly digest of what changed.</div>\n  <input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50\" type=\"email\" placeholder=\"you@example.com\" />\n  <div class=\"mt-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2\">Subscribe</button></div>\n</div>",
+        caption: "Stacking the field above its button breaks the single-decision rhythm and adds a row of dead space."
+      },
+      do: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[420px] p-6\">\n  <div class=\"mb-1 text-[15px] font-semibold\">Subscribe to updates</div>\n  <div class=\"mb-4 text-sm text-muted-foreground\">We'll send you a weekly digest of what changed.</div>\n  <div class=\"flex gap-2\">\n    <input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 flex-1\" type=\"email\" placeholder=\"you@example.com\" />\n    <button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2\">Subscribe</button>\n  </div>\n</div>",
+        caption: "Keep the input and its submit button on one row so the input + action reads as one step."
+      }
+    },
+    {
+      title: "Side-by-side",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[460px] items-start gap-6 p-6\">\n  <div class=\"flex-1\">\n    <div class=\"mb-1 text-[15px] font-semibold\">Discard unsaved changes?</div>\n    <div class=\"text-sm text-muted-foreground\">You have unsaved edits in this form. Leaving now will lose all progress.</div>\n  </div>\n  <div class=\"flex shrink-0 gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Discard</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Cancel</button></div>\n</div>",
+        caption: "Two destructive-styled buttons make the safe escape (Cancel) look as dangerous as the discard."
+      },
+      do: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[460px] items-start gap-6 p-6\">\n  <div class=\"flex-1\">\n    <div class=\"mb-1 text-[15px] font-semibold\">Discard unsaved changes?</div>\n    <div class=\"text-sm text-muted-foreground\">You have unsaved edits in this form. Leaving now will lose all progress.</div>\n  </div>\n  <div class=\"flex shrink-0 gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Discard</button></div>\n</div>",
+        caption: "Style only the irreversible action as destructive; keep the cancel/escape as a quiet outline button."
+      }
+    },
+    {
+      title: "With toggle",
+      dont: {
+        tree: {
+          type: "ActionPanel",
+          props: {
+            title: "Two-factor authentication",
+            toggle: true,
+            checked: true,
+            className: "max-w-[460px]"
+          }
+        },
+        caption: "A bare switch with no description leaves the user guessing what flipping it actually changes."
+      },
+      do: {
+        tree: {
+          type: "ActionPanel",
+          props: {
+            title: "Two-factor authentication",
+            description: "Add an extra layer of security to your account by requiring a verification code on login.",
+            toggle: true,
+            checked: true,
+            className: "max-w-[460px]"
+          }
+        },
+        caption: "Pair the switch with a one-line explanation of what turning it on or off does."
+      }
+    }
+  ],
+  "description-lists": [
+    {
+      title: "Two-column",
+      dont: {
+        html: "<dl class=\"max-w-[420px]\">\n  <div class=\"grid grid-cols-[64px_1fr] gap-4 border-b border-border py-3 text-sm\"><dt class=\"text-muted-foreground\">Client identifier</dt><dd class=\"break-all font-mono text-[12.5px]\">clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF</dd></div>\n  <div class=\"grid grid-cols-[64px_1fr] gap-4 py-3 text-sm\"><dt class=\"text-muted-foreground\">Status</dt><dd><span class=\"inline-flex items-center gap-1.5 rounded-full border border-transparent bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-600\"><span class=\"h-1.5 w-1.5 rounded-full bg-emerald-500\"></span>Active</span></dd></div>\n</dl>",
+        caption: "A too-narrow label column wraps the longest term and knocks the two columns out of alignment."
+      },
+      do: {
+        tree: {
+          type: "DescriptionList",
+          props: {
+            twoColumn: true,
+            divided: true,
+            className: "max-w-[420px]",
+            items: [
+              {
+                term: "Client identifier",
+                value: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF",
+                mono: true
+              },
+              { term: "Status", value: "Active", status: true }
+            ]
+          }
+        },
+        caption: "Fix the label column wide enough for the longest term so every value lines up on one edge."
+      }
+    },
+    {
+      title: "Inline-edit",
+      dont: {
+        tree: {
+          type: "DescriptionList",
+          props: {
+            twoColumn: true,
+            className: "max-w-[420px]",
+            items: [
+              { term: "Name", value: "Rachel Chen" },
+              { term: "Email", value: "rachel.chen@example.com" }
+            ]
+          }
+        },
+        caption: "Editable rows that look identical to read-only ones give no hint a value can be changed."
+      },
+      do: {
+        tree: {
+          type: "DescriptionList",
+          props: {
+            twoColumn: true,
+            className: "max-w-[420px]",
+            items: [
+              { term: "Name", value: "Rachel Chen", update: true },
+              { term: "Email", value: "rachel.chen@example.com", update: true }
+            ]
+          }
+        },
+        caption: "Give every editable row a trailing Update affordance so the inline editor is discoverable."
+      }
+    },
+    {
+      title: "Stacked",
+      dont: {
+        html: "<dl class=\"max-w-[320px] flex flex-col gap-4\">\n  <div><dt class=\"mb-1 text-sm\">Full name</dt><dd class=\"text-sm text-muted-foreground\">Rachel Chen</dd></div>\n  <div><dt class=\"mb-1 text-sm\">Email</dt><dd class=\"text-sm text-muted-foreground\">rachel.chen@example.com</dd></div>\n</dl>",
+        caption: "Muting the value and bolding nothing inverts the hierarchy; the label outweighs the data it describes."
+      },
+      do: {
+        tree: {
+          type: "DescriptionList",
+          props: {
+            stacked: true,
+            className: "max-w-[320px]",
+            items: [
+              { term: "Full name", value: "Rachel Chen" },
+              { term: "Email", value: "rachel.chen@example.com" }
+            ]
+          }
+        },
+        caption: "Keep the label small, uppercase, and muted above a full-weight value so the data stays primary."
+      }
+    }
+  ],
+  feeds: [
+    {
+      title: "Connector",
+      dont: {
+        html: "<div class=\"w-full max-w-[420px] rounded-lg border border-border bg-card overflow-hidden p-6\"><ul class=\"m-0 list-none p-0\"><li class=\"relative flex gap-3 pb-6\"><div class=\"absolute -bottom-6 left-[13px] top-7 w-px bg-border\"></div><div class=\"flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card\"><span class=\"text-xs font-medium text-muted-foreground\">RC</span></div><div class=\"flex-1 pt-0.5\"><div class=\"text-sm\"><span class=\"font-medium\">Rachel Chen</span> <span class=\"text-muted-foreground\">approved the request</span></div><div class=\"mt-0.5 text-xs text-muted-foreground\">2 hours ago</div></div></li><li class=\"relative flex gap-3\"><div class=\"absolute -bottom-6 left-[13px] top-7 w-px bg-border\"></div><div class=\"flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card\"><span class=\"text-xs font-medium text-muted-foreground\">SY</span></div><div class=\"flex-1 pt-0.5\"><div class=\"text-sm\"><span class=\"font-medium\">System</span> <span class=\"text-muted-foreground\">created the project</span></div><div class=\"mt-0.5 text-xs text-muted-foreground\">3 days ago</div></div></li></ul></div>",
+        caption: "Running the connector line past the final event leaves a dangling tail pointing at nothing."
+      },
+      do: {
+        tree: {
+          type: "Feed",
+          props: {
+            connector: true,
+            items: [
+              { actor: "Rachel Chen", action: "approved the request", time: "2 hours ago" },
+              { actor: "System", action: "created the project", time: "3 days ago" }
+            ]
+          }
+        },
+        caption: "Drop the connector on the last item so the line terminates cleanly at the final event."
+      }
+    },
+    {
+      title: "Avatar",
+      dont: {
+        html: "<div class=\"w-full max-w-[420px] rounded-lg border border-border bg-card overflow-hidden\"><div class=\"flex items-start gap-3 px-5 py-4\"><span class=\"inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-medium text-muted-foreground\">?</span><div class=\"min-w-0 flex-1\"><div class=\"text-sm text-muted-foreground\">Pushed 3 commits</div></div></div></div>",
+        caption: "An anonymous avatar with no actor name and no timestamp strips the row of the who and the when."
+      },
+      do: {
+        tree: {
+          type: "Feed",
+          props: {
+            avatar: true,
+            items: [
+              {
+                actor: "Ada Lovelace",
+                action: "pushed 3 commits",
+                time: "5 hours ago",
+                avatar: "/ada-lovelace.jpg"
+              }
+            ]
+          }
+        },
+        caption: "Lead with the person's avatar, bold the actor, and keep the action plus a relative timestamp muted."
+      }
+    }
+  ],
+  "grid-lists": [
+    {
+      title: "People (card grid)",
+      dont: {
+        html: "<div class=\"grid grid-cols-4 gap-3.5\"><div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex w-[200px] flex-col items-center gap-2 p-5 text-center\"><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-16 w-16 text-2xl\">RC</span><div class=\"text-sm font-semibold\">Rachel Chen</div><div class=\"text-xs text-muted-foreground\">Engineering Lead</div></div><div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex w-[200px] flex-col items-center gap-2 p-5 text-center\"><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-16 w-16 text-2xl\">AL</span><div class=\"text-sm font-semibold\">Ada Lovelace</div><div class=\"text-xs text-muted-foreground\">Staff Engineer</div></div><div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex w-[200px] flex-col items-center gap-2 p-5 text-center\"><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-16 w-16 text-2xl\">KT</span><div class=\"text-sm font-semibold\">Kevin Turner</div><div class=\"text-xs text-muted-foreground\">Product Designer</div></div></div>",
+        caption: "A fixed column count with hard-width cards overflows the row on narrow viewports instead of reflowing."
+      },
+      do: {
+        tree: {
+          type: "GridList",
+          props: {
+            cols2: true,
+            items: [
+              { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC" },
+              { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL" },
+              { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT" }
+            ]
+          }
+        },
+        caption: "Let auto-fill minmax columns size to the available width so cards wrap cleanly at any breakpoint."
+      }
+    },
+    {
+      title: "Image gallery",
+      dont: {
+        html: "<div class=\"grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3\"><div><div class=\"h-24 overflow-hidden rounded-md bg-gradient-to-br from-primary/30 to-primary/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">hero-banner.png</div></div><div><div class=\"h-40 overflow-hidden rounded-md bg-gradient-to-br from-blue-500/30 to-blue-500/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">icon-set.svg</div></div><div><div class=\"h-16 overflow-hidden rounded-md bg-gradient-to-br from-emerald-500/30 to-emerald-500/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">product-shot.jpg</div></div><div><div class=\"h-32 overflow-hidden rounded-md bg-gradient-to-br from-amber-500/30 to-amber-500/10\"></div><div class=\"mt-2 truncate text-[12.5px] font-medium\">avatar-default.png</div></div></div>",
+        caption: "Letting each thumbnail keep its intrinsic height makes a ragged grid and shifts the layout as images load."
+      },
+      do: {
+        tree: {
+          type: "GridList",
+          props: {
+            gallery: true,
+            cols3: true,
+            items: [
+              { title: "hero-banner.png", subtitle: "1.2 MB", color: "primary" },
+              { title: "icon-set.svg", subtitle: "340 KB", color: "blue-500" },
+              { title: "product-shot.jpg", subtitle: "2.8 MB", color: "emerald-500" },
+              { title: "avatar-default.png", subtitle: "96 KB", color: "amber-500" }
+            ]
+          }
+        },
+        caption: "Lock a consistent aspect ratio so the grid stays even and nothing reflows once thumbnails load."
+      }
+    }
+  ],
+  "media-objects": [
+    {
+      title: "Avatar",
+      dont: {
+        tree: {
+          type: "MediaObject",
+          props: {
+            bordered: true,
+            center: true,
+            className: "max-w-[480px]",
+            src: "/rachel-chen.jpg",
+            title: "Rachel Chen",
+            description: "Engineering Lead",
+            body: "Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging."
+          }
+        },
+        caption: "Centering the avatar against a multi-line body leaves it floating beside the middle of the text."
+      },
+      do: {
+        tree: {
+          type: "MediaObject",
+          props: {
+            bordered: true,
+            start: true,
+            className: "max-w-[480px]",
+            src: "/rachel-chen.jpg",
+            title: "Rachel Chen",
+            description: "Engineering Lead",
+            body: "Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging."
+          }
+        },
+        caption: "Top-align with items-start so the avatar anchors to the first line of the title."
+      }
+    },
+    {
+      title: "Icon",
+      dont: {
+        html: "<div class=\"flex max-w-[480px] items-start gap-3 rounded-lg border border-border bg-card p-4\">\n  <div class=\"inline-flex shrink-0 items-center justify-center rounded-md bg-primary/15 p-2 text-primary\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z\"/></svg></div>\n  <div class=\"min-w-0 flex-1\"><div class=\"text-sm font-semibold\">Security first</div><div class=\"mt-0.5 text-xs leading-snug text-muted-foreground\">End-to-end encryption with automatic key rotation.</div></div>\n</div>",
+        caption: "An oversized icon box throws off the optical balance with the two-line text."
+      },
+      do: {
+        tree: {
+          type: "MediaObject",
+          props: {
+            bordered: true,
+            start: true,
+            className: "max-w-[480px]",
+            title: "Security first",
+            description: "End-to-end encryption with automatic key rotation.",
+            icon: { type: "Icon", props: { shield: true, primary: true, size: 18 } }
+          }
+        },
+        caption: "Fix the icon box at h-9 w-9 with an 18px glyph so it reads as a tidy lead affordance."
+      }
+    },
+    {
+      title: "Action",
+      dont: {
+        tree: {
+          type: "MediaObject",
+          props: {
+            bordered: true,
+            center: true,
+            className: "max-w-[480px]",
+            src: "/ada-lovelace.jpg",
+            title: "Ada Lovelace",
+            description: "ada.lovelace@analytical-engine.example.com",
+            action: { type: "Button", props: { outline: true, small: true }, children: "Invite" }
+          }
+        },
+        caption: "Without truncation a long email wraps and pushes the trailing button out of alignment."
+      },
+      do: {
+        tree: {
+          type: "MediaObject",
+          props: {
+            bordered: true,
+            center: true,
+            truncate: true,
+            className: "max-w-[480px]",
+            src: "/ada-lovelace.jpg",
+            title: "Ada Lovelace",
+            description: "ada.lovelace@analytical-engine.example.com",
+            action: { type: "Button", props: { outline: true, small: true }, children: "Invite" }
+          }
+        },
+        caption: "Use min-w-0 + truncate on the text and shrink-0 on the button to keep the action pinned right."
+      }
+    }
+  ],
+  "stacked-lists": [
+    {
+      title: "Two-line with avatar",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card overflow-hidden shadow-sm max-w-[560px]\"><div class=\"flex items-center gap-3 px-5 py-3\"><span class=\"inline-flex h-10 w-10 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted text-[12px] font-medium text-muted-foreground\">RC</span><div class=\"min-w-0 flex-1\"><div class=\"text-[13.5px] font-semibold\">Rachel Chen</div><div class=\"text-[13.5px] font-semibold\">rachel.chen@example.com</div></div></div></div>",
+        caption: "Equal weight on both lines flattens the hierarchy; the email competes with the name."
+      },
+      do: {
+        tree: {
+          type: "StackedList",
+          props: {
+            items: [{ name: "Rachel Chen", detail: "rachel.chen@example.com", initials: "RC" }]
+          }
+        },
+        caption: "Primary line bold; secondary line smaller and muted, truncated so long values never wrap."
+      }
+    },
+    {
+      title: "Clickable",
+      dont: {
+        tree: {
+          type: "StackedList",
+          props: {
+            items: [
+              {
+                name: "Ada Lovelace",
+                detail: "ada@example.com",
+                meta: "5h ago",
+                initials: "AL"
+              }
+            ]
+          }
+        },
+        caption: "A drilldown row with no hover state and no chevron gives no hint it is interactive."
+      },
+      do: {
+        tree: {
+          type: "StackedList",
+          props: {
+            clickable: true,
+            items: [
+              {
+                name: "Ada Lovelace",
+                detail: "ada@example.com",
+                meta: "5h ago",
+                initials: "AL"
+              }
+            ]
+          }
+        },
+        caption: "Wrap the row in a link with a hover background and a trailing chevron to signal drilldown."
+      }
+    },
+    {
+      title: "Card surface group",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card overflow-hidden shadow-sm max-w-[560px]\"><div class=\"flex items-center justify-between px-5 py-3\"><span class=\"text-sm font-semibold\">Team members</span></div><div class=\"flex items-center gap-3 px-5 py-3\"><span class=\"inline-flex h-10 w-10 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted text-[12px] font-medium text-muted-foreground\">RC</span><div class=\"min-w-0 flex-1\"><div class=\"text-[13.5px] font-semibold\">Rachel Chen</div><div class=\"text-xs text-muted-foreground\">Engineering Lead</div></div></div></div>",
+        caption: "A header with no rule blends into the rows, and dropping the per-row action removes the affordance."
+      },
+      do: {
+        tree: {
+          type: "StackedList",
+          props: {
+            card: true,
+            title: "Team members",
+            addAction: "Add",
+            rowMenu: true,
+            items: [{ name: "Rachel Chen", detail: "Engineering Lead", initials: "RC" }]
+          }
+        },
+        caption: "Separate the titled header with a rule and give each row a trailing action menu."
+      }
+    }
+  ],
+  stats: [
+    {
+      title: "Single",
+      dont: {
+        tree: {
+          type: "Stats",
+          props: {
+            className: "max-w-[280px]",
+            items: [{ label: "Active users", value: "71,897", delta: "+12.3%" }]
+          }
+        },
+        caption: "A bare delta with no baseline leaves the reader asking: up against what, and over what window?"
+      },
+      do: {
+        tree: {
+          type: "Stats",
+          props: {
+            className: "max-w-[280px]",
+            items: [{ label: "Active users", value: "71,897", delta: "+12.3% vs. last 30 days" }]
+          }
+        },
+        caption: "Name the comparison and the period so the delta is unambiguous."
+      }
+    },
+    {
+      title: "Group",
+      dont: {
+        tree: {
+          type: "Stats",
+          props: {
+            items: [
+              { label: "Revenue", value: "$48,250.00", delta: "+12.5%" },
+              { label: "Orders", value: "842", delta: "+3.2%" },
+              { label: "Conversion", value: "3.6%", delta: "+0.4%" }
+            ]
+          }
+        },
+        caption: "A fixed flex row of full-precision numbers overflows on narrow viewports and crowds the cards."
+      },
+      do: {
+        tree: {
+          type: "Stats",
+          props: {
+            items: [
+              { label: "Revenue", value: "$48.2k", delta: "+12.5%" },
+              { label: "Orders", value: "842", delta: "+3.2%" },
+              { label: "Conversion", value: "3.6%", delta: "+0.4%" }
+            ]
+          }
+        },
+        caption: "Use the auto-fit grid and round headline numbers so cards wrap and stay scannable."
+      }
+    },
+    {
+      title: "Plain (no border)",
+      dont: {
+        tree: {
+          type: "View",
+          props: { className: "rounded-lg border border-border bg-card shadow-sm p-6" },
+          children: [
+            {
+              type: "Stats",
+              props: {
+                items: [{ label: "Revenue", value: "$48.2k" }, { label: "Orders", value: "842" }]
+              }
+            }
+          ]
+        },
+        caption: "Bordered cards inside a card surface double the chrome: a box drawn around boxes."
+      },
+      do: {
+        tree: {
+          type: "Stats",
+          props: {
+            plain: true,
+            items: [{ label: "Revenue", value: "$48.2k" }, { label: "Orders", value: "842" }]
+          }
+        },
+        caption: "On a parent surface drop the border and radius; let the number stacks stand on their own."
+      }
+    },
+    {
+      title: "With sparkline",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[220px] p-5\"><div class=\"text-xs text-muted-foreground\">Requests</div><div class=\"mt-1 text-2xl font-semibold\">24.5k</div><svg width=\"100%\" height=\"24\" viewBox=\"0 0 200 24\" preserveAspectRatio=\"none\" class=\"mt-2 block\"><polyline points=\"0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/></svg></div>",
+        caption: "A trend line with no current delta makes you eyeball the slope to guess the direction."
+      },
+      do: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[220px] p-5\"><div class=\"text-xs text-muted-foreground\">Requests</div><div class=\"mt-1 flex items-baseline justify-between\"><span class=\"text-2xl font-semibold\">24.5k</span><span class=\"font-mono text-[11px] text-emerald-600\">+8.2%</span></div><svg width=\"100%\" height=\"24\" viewBox=\"0 0 200 24\" preserveAspectRatio=\"none\" class=\"mt-2 block\"><defs><linearGradient id=\"sgd\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"var(--primary)\" stop-opacity=\"0.3\"/><stop offset=\"100%\" stop-color=\"var(--primary)\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2 200,24 0,24\" fill=\"url(#sgd)\"/><polyline points=\"0,20 20,16 40,18 60,12 80,14 100,8 120,10 140,6 160,8 180,4 200,2\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/></svg></div>",
+        caption: "Pair the sparkline with an explicit delta so the headline reads without decoding the curve."
+      }
+    }
+  ],
+  "filter-panel": [
+    {
+      title: "Sidebar",
+      dont: {
+        html: "<div class=\"flex flex-wrap gap-2\"><span class=\"inline-flex items-center rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Active</span><span class=\"inline-flex items-center rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Default</span></div>",
+        caption: "Active-filter chips with no remove affordance leave no way to clear one filter without hunting back through the sidebar."
+      },
+      do: {
+        html: "<div class=\"flex flex-wrap gap-2\"><span class=\"inline-flex cursor-pointer items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Active &#215;</span><span class=\"inline-flex cursor-pointer items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground\">Default &#215;</span></div>",
+        caption: "Give each chip a × so a single filter can be removed in place, and keep it in sync with the sidebar checkbox."
+      }
+    },
+    {
+      title: "Inline",
+      dont: {
+        html: "<div class=\"flex flex-wrap items-center gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Status <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Role <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Schema <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">MFA <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Region <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Created <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Last seen <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Team <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button></div>",
+        caption: "Eight inline dropdowns wrap into a wall of buttons, which defeats the compact bar; that volume of filtering belongs in the sidebar rail."
+      },
+      do: {
+        html: "<div class=\"flex flex-wrap items-center gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 rounded-md px-3 text-xs\">Status <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Role <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m6 9 6 6 6-6\"/></svg></button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs text-primary\">+ Add filter</button></div>",
+        caption: "Surface two or three primary filters and tuck the rest behind \"+ Add filter\" so the bar stays one scannable row."
+      }
+    }
+  ],
+  calendar: [
+    {
+      title: "Single date",
+      dont: {
+        html: "<div class=\"w-fit rounded-lg border border-border p-3\"><div class=\"grid grid-cols-7 gap-0.5\"><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">8</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">14</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">23</button></div></div>",
+        caption: "Painting several days with the primary selected style makes a single-date picker look like a multi-select."
+      },
+      do: {
+        html: "<div class=\"w-fit rounded-lg border border-border p-3\"><div class=\"grid grid-cols-7 gap-0.5\"><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent\">8</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-accent font-medium text-accent-foreground\">23</button><button class=\"flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent bg-primary text-primary-foreground hover:bg-primary\">24</button></div></div>",
+        caption: "Exactly one selected day (primary), with today marked separately in the accent tone."
+      }
+    },
+    {
+      title: "With event list",
+      dont: {
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-start gap-6" },
+          children: [
+            {
+              type: "Calendar",
+              props: {
+                month: "May 2026",
+                today: 23,
+                selected: 24,
+                daysInMonth: 31,
+                startWeekday: 4
+              }
+            },
+            {
+              type: "Card",
+              props: { className: "min-w-[240px] flex-1" },
+              children: {
+                type: "View",
+                props: { className: "px-4 py-3" },
+                children: {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Pick a date to see events."
+                }
+              }
+            }
+          ]
+        },
+        caption: "Selecting May 24 but leaving the panel on a placeholder breaks the link between the grid and its day."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: { className: "flex-row flex-wrap items-start gap-6" },
+          children: [
+            {
+              type: "Calendar",
+              props: {
+                month: "May 2026",
+                today: 23,
+                selected: 24,
+                daysInMonth: 31,
+                startWeekday: 4
+              }
+            },
+            {
+              type: "Card",
+              props: { className: "min-w-[240px] flex-1" },
+              children: [
+                {
+                  type: "View",
+                  props: { className: "border-b border-border px-5 py-3" },
+                  children: {
+                    type: "Text",
+                    props: { className: "text-sm font-semibold text-card-foreground" },
+                    children: "May 24"
+                  }
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row items-center justify-between px-4 py-2.5" },
+                  children: [
+                    {
+                      type: "Text",
+                      props: { className: "text-sm font-medium text-foreground" },
+                      children: "Sprint planning"
+                    },
+                    {
+                      type: "Text",
+                      props: { className: "text-sm text-muted-foreground" },
+                      children: "9:00 AM"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        caption: "Keep the panel header and rows in sync with the selected day so the two views always agree."
+      }
+    }
+  ],
+  command: [
+    {
+      title: "Trigger",
+      dont: {
+        html: "<button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3\">\n  <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n  Search...\n</button>",
+        caption: "A bare search button hides the keyboard shortcut, so power users never learn the &#8984;K entry point."
+      },
+      do: {
+        tree: { type: "Command", props: { trigger: true, open: false } },
+        caption: "Surface the shortcut in a trailing kbd so the trigger advertises the faster keyboard path."
+      }
+    },
+    {
+      title: "Inline",
+      dont: {
+        tree: {
+          type: "Command",
+          props: {
+            open: true,
+            placeholder: "Type a command...",
+            active: -1,
+            groups: [
+              {
+                items: [
+                  { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
+                  { label: "Save", icon: "💾", shortcut: "Ctrl+S" },
+                  { label: "Go to Dashboard", icon: "▸" },
+                  { label: "Go to Settings", icon: "▸" }
+                ]
+              }
+            ]
+          }
+        },
+        caption: "Dumping every command into one flat list with no labels makes the palette hard to scan."
+      },
+      do: {
+        tree: {
+          type: "Command",
+          props: {
+            open: true,
+            placeholder: "Type a command...",
+            active: 0,
+            groups: [
+              {
+                heading: "Actions",
+                items: [
+                  { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
+                  { label: "Save", icon: "💾", shortcut: "Ctrl+S" }
+                ]
+              },
+              {
+                heading: "Navigation",
+                items: [
+                  { label: "Go to Dashboard", icon: "▸" },
+                  { label: "Go to Settings", icon: "▸" }
+                ]
+              }
+            ]
+          }
+        },
+        caption: "Group commands under labels with separators and highlight the first match so results stay scannable."
+      }
+    }
+  ],
+  "data-table": [
+    {
+      title: "default",
+      dont: {
+        tree: {
+          type: "View",
+          props: { className: "overflow-hidden rounded-lg border border-border max-w-[520px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-2 border-b border-border p-3" },
+              children: [
+                {
+                  type: "Input",
+                  props: { small: true, placeholder: "Search users...", className: "max-w-[240px]" }
+                },
+                { type: "View", props: { className: "flex-1" } },
+                { type: "Button", props: { outline: true, small: true }, children: "Export" }
+              ]
+            },
+            {
+              type: "DataTable",
+              props: {
+                columns: ["Name", "Email"],
+                rows: [
+                  ["Alice Johnson", "alice@example.com"],
+                  ["Bob Smith", "bob@example.com"],
+                  ["Rachel Chen", "rachel@example.com"]
+                ]
+              }
+            }
+          ]
+        },
+        caption: "Wiring search but dropping the footer leaves the user with no result count or way to page through 142 rows."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: { className: "overflow-hidden rounded-lg border border-border max-w-[520px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-row items-center gap-2 border-b border-border p-3" },
+              children: [
+                {
+                  type: "Input",
+                  props: { small: true, placeholder: "Search users...", className: "max-w-[240px]" }
+                },
+                { type: "View", props: { className: "flex-1" } },
+                { type: "Button", props: { outline: true, small: true }, children: "Export" }
+              ]
+            },
+            {
+              type: "DataTable",
+              props: {
+                columns: ["Name", "Email"],
+                rows: [
+                  ["Alice Johnson", "alice@example.com"],
+                  ["Bob Smith", "bob@example.com"],
+                  ["Rachel Chen", "rachel@example.com"]
+                ]
+              }
+            },
+            {
+              type: "View",
+              props: {
+                className: "flex-row items-center justify-between border-t border-border px-4 py-2.5"
+              },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm text-muted-foreground" },
+                  children: "Showing 1–3 of 142"
+                },
+                {
+                  type: "View",
+                  props: { className: "flex-row gap-1" },
+                  children: [
+                    {
+                      type: "Button",
+                      props: { outline: true, small: true, disabled: true },
+                      children: "«"
+                    },
+                    { type: "Button", props: { outline: true, small: true }, children: "»" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        caption: "Keep the count + pagination footer so the search result is always anchored to the total."
+      }
+    },
+    {
+      title: "bulk",
+      dont: {
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-center gap-2 rounded-lg border border-border p-3 max-w-[520px]"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "3 selected"
+            },
+            { type: "View", props: { className: "flex-1" } },
+            {
+              type: "Button",
+              props: { destructive: true, small: true },
+              children: "Delete"
+            }
+          ]
+        },
+        caption: "Surfacing only the destructive Delete on a selection invites accidental data loss with no safer path."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-center gap-2 rounded-lg border border-border p-3 max-w-[520px]"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "3 selected"
+            },
+            { type: "View", props: { className: "flex-1" } },
+            {
+              type: "Button",
+              props: { outline: true, small: true },
+              children: "Bulk edit"
+            },
+            {
+              type: "Button",
+              props: { destructive: true, small: true },
+              children: "Delete"
+            }
+          ]
+        },
+        caption: "Lead with the non-destructive bulk action and keep Delete visually distinct on the right."
+      }
+    },
+    {
+      title: "filter",
+      dont: {
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-center gap-2 rounded-lg border border-border p-3 max-w-[520px]"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "Status:"
+            },
+            {
+              type: "Select",
+              props: {
+                open: false,
+                value: "All",
+                options: ["All", "Active", "Inactive"],
+                small: true,
+                className: "w-[120px]"
+              }
+            }
+          ]
+        },
+        caption: "A filter control with no result count leaves the user guessing whether the filter narrowed anything."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: {
+            className: "flex-row items-center gap-2 rounded-lg border border-border p-3 max-w-[520px]"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "Status:"
+            },
+            {
+              type: "Select",
+              props: {
+                open: false,
+                value: "All",
+                options: ["All", "Active", "Inactive"],
+                small: true,
+                className: "w-[120px]"
+              }
+            },
+            { type: "View", props: { className: "flex-1" } },
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "142 results"
+            }
+          ]
+        },
+        caption: "Echo the live result count next to the filter so its effect is visible."
+      }
+    },
+    {
+      title: "empty",
+      dont: {
+        tree: {
+          type: "DataTable",
+          props: {
+            bordered: true,
+            columns: ["Name", "Email", "Status"],
+            rows: [],
+            className: "max-w-[520px]"
+          }
+        },
+        caption: "Hiding the body entirely on no results collapses the table and looks broken."
+      },
+      do: {
+        html: "<div class=\"overflow-hidden rounded-lg border border-border max-w-[520px]\"><div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Name</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Email</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Status</th></tr></thead><tbody><tr><td colspan=\"3\" class=\"px-4 py-8 text-center text-sm text-muted-foreground\">No results found.</td></tr></tbody></table></div></div>",
+        caption: "Keep the header and span a single centered message row so the structure stays intact."
+      }
+    },
+    {
+      title: "loading",
+      dont: {
+        html: "<div class=\"overflow-hidden rounded-lg border border-border max-w-[520px]\"><div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Name</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Email</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Status</th></tr></thead><tbody><tr><td colspan=\"3\" class=\"px-4 py-8 text-center text-sm text-muted-foreground\">Loading…</td></tr></tbody></table></div></div>",
+        caption: "A bare \"Loading…\" string gives no sense of progress and reads like static content."
+      },
+      do: {
+        html: "<div class=\"overflow-hidden rounded-lg border border-border max-w-[520px]\"><div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Name</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Email</th><th class=\"border-b border-border bg-muted/40 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground\">Status</th></tr></thead><tbody><tr><td colspan=\"3\" class=\"px-4 py-8 text-center\"><div class=\"inline-block h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-foreground\"></div></td></tr></tbody></table></div></div>",
+        caption: "Show a spinner in a centered spanning row so the load reads as active and in place."
+      }
+    }
+  ],
+  dialog: [
+    {
+      title: "When to use",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            title: "Delete file?",
+            small: true,
+            destructive: true,
+            confirmLabel: "Delete",
+            cancelLabel: "Cancel"
+          }
+        },
+        caption: "A bare yes/no question does not need the roomier Dialog; that is what the Alert Dialog is for."
+      },
+      do: {
+        tree: {
+          type: "Dialog",
+          props: { open: true, large: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-popover-foreground" },
+              children: "Edit profile"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground mt-2" },
+              children: "Update how your name and email appear to teammates."
+            },
+            {
+              type: "View",
+              props: { className: "mt-5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                  children: "Name"
+                },
+                { type: "Input", props: { value: "Ada Lovelace" } },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-4" },
+                  children: "Email"
+                },
+                { type: "Input", props: { value: "ada@example.com" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2 mt-6" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                {
+                  type: "Button",
+                  props: { primary: true, small: true },
+                  children: "Save changes"
+                }
+              ]
+            }
+          ]
+        },
+        caption: "Use the Dialog for a focused task with real content, like a short form."
+      }
+    },
+    {
+      title: "Description",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            title: "Refund payment",
+            description: "Refunds are processed through the original payment method. Depending on the bank, the amount can take 2 to 3 business days to appear. Partial refunds are supported. Once submitted a refund cannot be cancelled, and the payout for this period will be adjusted on your next statement.",
+            medium: true,
+            confirmLabel: "Refund",
+            cancelLabel: "Cancel"
+          }
+        },
+        caption: "A multi-sentence policy dump in the description buries the task under reading."
+      },
+      do: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            title: "Refund payment",
+            description: "The refund posts to the original card in 2 to 3 business days.",
+            medium: true,
+            confirmLabel: "Refund",
+            cancelLabel: "Cancel"
+          }
+        },
+        caption: "Keep the description to one supporting line; link out for the full policy."
+      }
+    },
+    {
+      title: "Body form",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: { open: true, small: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-popover-foreground" },
+              children: "Create project"
+            },
+            {
+              type: "View",
+              props: { className: "mt-5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                  children: "Name"
+                },
+                { type: "Input", props: {} },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-3" },
+                  children: "Key"
+                },
+                { type: "Input", props: {} },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-3" },
+                  children: "Description"
+                },
+                { type: "Input", props: {} },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-3" },
+                  children: "Lead"
+                },
+                { type: "Input", props: {} },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-3" },
+                  children: "Team"
+                },
+                { type: "Input", props: {} },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-3" },
+                  children: "Visibility"
+                },
+                { type: "Input", props: {} },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-3" },
+                  children: "Template"
+                },
+                { type: "Input", props: {} }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2 mt-6" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                { type: "Button", props: { primary: true, small: true }, children: "Create" }
+              ]
+            }
+          ]
+        },
+        caption: "A seven-field form crammed into a small dialog feels like a page stuffed into a popup."
+      },
+      do: {
+        tree: {
+          type: "Dialog",
+          props: { open: true, large: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-popover-foreground" },
+              children: "Create project"
+            },
+            {
+              type: "View",
+              props: { className: "mt-5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                  children: "Name"
+                },
+                { type: "Input", props: { placeholder: "Acme website" } },
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5 mt-4" },
+                  children: "Key"
+                },
+                { type: "Input", props: { placeholder: "ACME" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2 mt-6" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                { type: "Button", props: { primary: true, small: true }, children: "Create" }
+              ]
+            }
+          ]
+        },
+        caption: "Keep the body to the few fields the task needs; send long forms to a full page."
+      }
+    },
+    {
+      title: "Actions",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: { open: true, medium: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-popover-foreground" },
+              children: "Unsaved changes"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground mt-2" },
+              children: "You have edits that are not saved."
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2 mt-6" },
+              children: [
+                { type: "Button", props: { primary: true, small: true }, children: "Save" },
+                { type: "Button", props: { primary: true, small: true }, children: "Discard" },
+                {
+                  type: "Button",
+                  props: { primary: true, small: true },
+                  children: "Keep editing"
+                }
+              ]
+            }
+          ]
+        },
+        caption: "Three look-alike primary buttons give no signal about the default, safe choice."
+      },
+      do: {
+        tree: {
+          type: "Dialog",
+          props: { open: true, medium: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-popover-foreground" },
+              children: "Unsaved changes"
+            },
+            {
+              type: "Text",
+              props: { className: "text-sm text-muted-foreground mt-2" },
+              children: "You have edits that are not saved."
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2 mt-6" },
+              children: [
+                { type: "Button", props: { ghost: true, small: true }, children: "Discard" },
+                {
+                  type: "Button",
+                  props: { outline: true, small: true },
+                  children: "Keep editing"
+                },
+                { type: "Button", props: { primary: true, small: true }, children: "Save" }
+              ]
+            }
+          ]
+        },
+        caption: "One primary plus quieter secondaries, right-aligned and labeled with their verb."
+      }
+    },
+    {
+      title: "Destructive action",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            title: "Save changes",
+            description: "Update the profile with your edits.",
+            medium: true,
+            destructive: true,
+            confirmLabel: "Save",
+            cancelLabel: "Cancel"
+          }
+        },
+        caption: "A red button on a routine Save trains users to ignore the colour that should mean danger."
+      },
+      do: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            title: "Delete workspace",
+            description: "This removes all projects and cannot be undone.",
+            medium: true,
+            destructive: true,
+            confirmLabel: "Delete",
+            cancelLabel: "Cancel"
+          }
+        },
+        caption: "Reserve the destructive tone for the irreversible action it names."
+      }
+    },
+    {
+      title: "Size",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: { open: true, wide: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-popover-foreground" },
+              children: "Rename"
+            },
+            {
+              type: "View",
+              props: { className: "mt-5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                  children: "Name"
+                },
+                { type: "Input", props: { value: "Untitled" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2 mt-6" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                { type: "Button", props: { primary: true, small: true }, children: "Save" }
+              ]
+            }
+          ]
+        },
+        caption: "A 2xl panel around a single field leaves a vast empty expanse beside the input."
+      },
+      do: {
+        tree: {
+          type: "Dialog",
+          props: { open: true, small: true },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-popover-foreground" },
+              children: "Rename"
+            },
+            {
+              type: "View",
+              props: { className: "mt-5" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "text-sm font-medium text-foreground mb-1.5" },
+                  children: "Name"
+                },
+                { type: "Input", props: { value: "Untitled" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-row justify-end gap-2 mt-6" },
+              children: [
+                { type: "Button", props: { outline: true, small: true }, children: "Cancel" },
+                { type: "Button", props: { primary: true, small: true }, children: "Save" }
+              ]
+            }
+          ]
+        },
+        caption: "Size the dialog to its content: a single field belongs in xs or sm."
+      }
+    }
+  ],
+  overlays: [
+    {
+      title: "Drawer (SlideOver)",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            destructive: true,
+            title: "Delete identity?",
+            description: "This cannot be undone.",
+            confirmLabel: "Delete",
+            cancelLabel: "Cancel"
+          }
+        },
+        caption: "A centered, page-blocking modal for a routine edit hides the very record the user wants to reference."
+      },
+      do: {
+        tree: {
+          type: "Overlay",
+          props: {
+            open: true,
+            drawer: true,
+            title: "Edit Identity",
+            description: "Visible above the parent page so the user can compare.",
+            doneLabel: "Save"
+          }
+        },
+        caption: "Slide the form in from the edge so the parent page stays visible beneath it."
+      }
+    },
+    {
+      title: "Modal (Confirm)",
+      dont: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            title: "Delete identity?",
+            confirmLabel: "Yes",
+            cancelLabel: "No"
+          }
+        },
+        caption: "Generic Yes/No on a default-styled button hides both the stakes and what is being confirmed."
+      },
+      do: {
+        tree: {
+          type: "Dialog",
+          props: {
+            open: true,
+            destructive: true,
+            title: "Delete identity?",
+            description: "This cannot be undone.",
+            confirmLabel: "Delete",
+            cancelLabel: "Cancel"
+          }
+        },
+        caption: "Name the verb (Delete) and flag destructive actions with the danger style."
+      }
+    },
+    {
+      title: "Toast",
+      dont: {
+        html: "<div class=\"flex items-start justify-between gap-3 rounded-lg border border-destructive/30 bg-popover px-4 py-3 shadow-lg\"><div><div class=\"text-sm font-medium\">Delete this identity?</div><div class=\"mt-2 flex gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Delete</button></div></div><button class=\"text-muted-foreground hover:text-foreground\">&times;</button></div>",
+        caption: "A toast that demands a decision can be auto-dismissed before the user acts, and steals focus from a transient surface."
+      },
+      do: {
+        html: "<div class=\"flex items-start justify-between gap-3 rounded-lg border border-border bg-popover px-4 py-3 shadow-lg\"><div><div class=\"text-sm font-medium\">Identity deleted</div><div class=\"text-xs text-muted-foreground\">You can undo this for 10 seconds.</div></div><button class=\"text-muted-foreground hover:text-foreground\">&times;</button></div>",
+        caption: "Keep toasts to passive confirmation of something already done; offer Undo, not a blocking choice."
+      }
+    },
+    {
+      title: "Row menu",
+      dont: {
+        html: "<div class=\"flex flex-wrap gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Edit</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Duplicate</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 rounded-md px-3 text-xs\">Delete</button></div>",
+        caption: "Splaying every row action inline multiplies visual noise across every table row."
+      },
+      do: {
+        tree: {
+          type: "RowMenu",
+          props: {
+            open: true,
+            sectionLabel: "Actions",
+            items: [
+              { label: "Edit", icon: "✎" },
+              { label: "Duplicate", icon: "⧉" },
+              { label: "Delete", icon: "🗑", destructive: true, separatorBefore: true }
+            ]
+          }
+        },
+        caption: "Collapse per-row actions behind a ··· trigger; keep Delete separated and danger-colored."
+      }
+    }
+  ],
+  sidebar: [
+    {
+      title: "Sidebar",
+      dont: {
+        html: "<nav class=\"w-60 overflow-hidden rounded-lg border border-border bg-card\">\n  <div class=\"flex h-14 items-center border-b border-border px-4 font-semibold\">Acme</div>\n  <div class=\"p-2\">\n    <button class=\"flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium bg-accent text-accent-foreground\">Dashboard</button>\n    <button class=\"flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium bg-accent text-accent-foreground\">Users</button>\n    <button class=\"flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium text-muted-foreground\">Settings</button>\n  </div>\n</nav>",
+        caption: "Click an item: two rows wearing the active background means the nav can't tell you which page you're on."
+      },
+      do: {
+        tree: {
+          type: "Sidebar",
+          props: {
+            bordered: true,
+            active: "Dashboard",
+            sections: [
+              {
+                title: "Main",
+                items: [
+                  { label: "Dashboard", icon: "◉" },
+                  { label: "Users", icon: "○", badge: "12" },
+                  { label: "Settings", icon: "◇" }
+                ]
+              }
+            ]
+          }
+        },
+        caption: "Exactly one item carries the accent background; clicking moves it so the active page is always unambiguous."
+      }
+    },
+    {
+      title: "Topbar",
+      dont: {
+        tree: {
+          type: "View",
+          props: {
+            className: "h-14 w-[420px] max-w-full flex-row items-center gap-2 rounded-lg border border-border bg-card px-4"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-foreground" },
+              children: "Dashboard"
+            },
+            { type: "Button", props: { primary: true, small: true }, children: "Search" },
+            { type: "Button", props: { primary: true, small: true }, children: "Filter" },
+            { type: "Button", props: { primary: true, small: true }, children: "Export" },
+            { type: "Button", props: { primary: true, small: true }, children: "New" }
+          ]
+        },
+        caption: "Four solid primary buttons crammed left-to-right give the topbar no focal action and no breathing room."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: {
+            className: "h-14 w-[420px] max-w-full flex-row items-center rounded-lg border border-border bg-card px-4"
+          },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-base font-semibold text-foreground" },
+              children: "Dashboard"
+            },
+            {
+              type: "View",
+              props: { className: "ml-auto flex-row gap-2" },
+              children: [
+                { type: "Button", props: { ghost: true, small: true }, children: "Search" },
+                { type: "Button", props: { primary: true, small: true }, children: "New" }
+              ]
+            }
+          ]
+        },
+        caption: "Push utilities to the right, keep one primary button, and demote the rest to ghost so the New action leads."
+      }
+    },
+    {
+      title: "Page header",
+      dont: {
+        tree: {
+          type: "View",
+          props: { className: "w-[420px] max-w-full" },
+          children: [
+            { type: "Typography", props: { h1: true }, children: "Users" },
+            {
+              type: "Typography",
+              props: { muted: true, className: "mt-1" },
+              children: "Manage your team members."
+            }
+          ]
+        },
+        caption: "A 36px display heading on the page body competes with the topbar and screams louder than the content beneath it."
+      },
+      do: {
+        html: "<div class=\"w-[420px] max-w-full\">\n  <h1 class=\"text-[22px] font-semibold tracking-tight\">Users</h1>\n  <p class=\"mt-1 text-sm text-muted-foreground\">Manage your team members.</p>\n</div>",
+        caption: "Page-header titles are 20-22px semibold: clearly the page label, never larger than the topbar brand."
+      }
+    },
+    {
+      title: "Breadcrumbs",
+      dont: {
+        html: "<nav class=\"flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground\"><a href=\"#\" class=\"transition-colors hover:text-foreground\">Home</a><span class=\"select-none text-muted-foreground/60\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Team</a><span class=\"select-none text-muted-foreground/60\">/</span><a href=\"#\" class=\"transition-colors hover:text-foreground\">Rachel Chen</a></nav>",
+        caption: "Making the last crumb a link implies the current page is somewhere else to navigate to."
+      },
+      do: {
+        tree: {
+          type: "Breadcrumb",
+          props: { slash: true, items: ["Home", "Team", "Rachel Chen"] }
+        },
+        caption: "The final crumb is plain current-page text, not a link: it marks where you are, not where you can go."
+      }
+    },
+    {
+      title: "Tabs",
+      dont: {
+        html: "<div class=\"w-[420px] max-w-full border-b border-border\">\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Overview</button>\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Sessions</button>\n  <button class=\"border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground\">Audit log</button>\n</div>",
+        caption: "Two underlined tabs at once breaks the one-active-facet contract and hides which view you're reading."
+      },
+      do: {
+        tree: {
+          type: "Tabs",
+          props: { underline: true, active: 0, tabs: ["Overview", "Sessions", "Audit log"] }
+        },
+        caption: "Click a tab: exactly one carries the primary underline so the active facet is always singular."
+      }
+    },
+    {
+      title: "Command palette",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[480px] overflow-hidden\">\n  <div class=\"flex items-center gap-2 border-b border-border px-3.5 py-3\">\n    <span class=\"text-sm text-muted-foreground\">Type a command or search...</span>\n  </div>\n  <div class=\"p-1.5\">\n    <div class=\"flex items-center gap-2.5 rounded-md bg-accent px-2.5 py-2 text-sm\">Create identity</div>\n    <div class=\"flex items-center gap-2.5 rounded-md bg-accent px-2.5 py-2 text-sm\">Invite teammate</div>\n  </div>\n</div>",
+        caption: "No search affordance and two highlighted rows: nothing tells you to type or which result Enter will run."
+      },
+      do: {
+        tree: {
+          type: "Command",
+          props: {
+            open: true,
+            active: 0,
+            placeholder: "Type a command or search...",
+            groups: [
+              {
+                heading: "Actions",
+                items: [{ label: "Create identity", shortcut: "C" }, { label: "Invite teammate" }]
+              }
+            ]
+          }
+        },
+        caption: "A search icon and esc hint signal input, and a single highlighted row shows exactly what Enter will run."
+      }
+    }
+  ],
+  stepper: [
+    {
+      title: "Horizontal",
+      dont: {
+        html: "<div class=\"flex items-start\">\n    <div class=\"flex flex-col items-center gap-1.5\"><div class=\"flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium border-primary text-primary\">1</div><span class=\"text-xs font-medium\">Account</span></div>\n    <div class=\"mx-2 mt-4 h-0.5 flex-1 bg-border\"></div>\n    <div class=\"flex flex-col items-center gap-1.5\"><div class=\"flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium border-primary text-primary\">2</div><span class=\"text-xs font-medium\">Profile</span></div>\n    <div class=\"mx-2 mt-4 h-0.5 flex-1 bg-border\"></div>\n    <div class=\"flex flex-col items-center gap-1.5\"><div class=\"flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium border-primary text-primary\">3</div><span class=\"text-xs font-medium\">Review</span></div>\n  </div>",
+        caption: "Styling several steps as active at once hides which step the user is actually on."
+      },
+      do: {
+        tree: {
+          type: "Stepper",
+          props: {
+            current: 1,
+            steps: [{ label: "Account" }, { label: "Profile" }, { label: "Review" }]
+          }
+        },
+        caption: "Mark exactly one step active; show completed steps filled and the rest pending."
+      }
+    },
+    {
+      title: "Vertical",
+      dont: {
+        tree: {
+          type: "View",
+          props: { className: "max-w-[320px]" },
+          children: [
+            {
+              type: "Stepper",
+              props: {
+                vertical: true,
+                current: 1,
+                steps: [
+                  { label: "Account created" },
+                  { label: "Profile setup" },
+                  { label: "Team invite" },
+                  { label: "Done" }
+                ]
+              }
+            }
+          ]
+        },
+        caption: "A vertical step with only a title wastes the space the layout is built to use."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: { className: "max-w-[320px]" },
+          children: [
+            {
+              type: "Stepper",
+              props: {
+                vertical: true,
+                current: 1,
+                steps: [
+                  { label: "Account created", description: "Email verified and password set." },
+                  { label: "Profile setup", description: "Add your name and avatar." },
+                  {
+                    label: "Team invite",
+                    description: "Invite collaborators to your workspace."
+                  },
+                  { label: "Done", description: "You're all set." }
+                ]
+              }
+            }
+          ]
+        },
+        caption: "Pair each vertical step with a one-line description so the extra width earns its place."
+      }
+    },
+    {
+      title: "Progress bar",
+      dont: {
+        html: "<div class=\"max-w-[320px]\">\n  <div class=\"h-1.5 overflow-hidden rounded-full bg-muted\">\n    <div class=\"h-full rounded-full bg-primary\" style=\"width:68%\"></div>\n  </div>\n</div>",
+        caption: "A bare progress bar with no percentage leaves users guessing how far along they are."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: { className: "max-w-[320px]" },
+          children: [
+            {
+              type: "Stepper",
+              props: { progress: true, current: 0, steps: [], label: "Setup progress", value: 68 }
+            }
+          ]
+        },
+        caption: "Label the bar and show the exact percentage so progress is legible at a glance."
+      }
+    }
+  ],
+  tabs: [
+    {
+      title: "Underline",
+      dont: {
+        html: "<div class=\"flex border-b border-border\">\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Overview</button>\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Activity</button>\n  <button class=\"border-b-2 border-primary px-4 py-2.5 text-sm font-medium text-foreground\">Settings</button>\n</div>",
+        caption: "Underlining every tab erases the active indicator: there is no way to tell which view is current."
+      },
+      do: {
+        tree: {
+          type: "Tabs",
+          props: { tabs: ["Overview", "Activity", "Settings"], active: 0 }
+        },
+        caption: "Underline and foreground-color only the active tab; leave the rest muted with no rule."
+      }
+    },
+    {
+      title: "Pill",
+      dont: {
+        html: "<div class=\"inline-flex gap-1 rounded-lg bg-muted p-1\">\n  <button class=\"rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm\">All</button>\n  <button class=\"rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm\">Active</button>\n  <button class=\"rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm\">Archived</button>\n</div>",
+        caption: "Giving every pill the raised background makes the group read as three buttons, not one selection."
+      },
+      do: {
+        tree: {
+          type: "Tabs",
+          props: { tabs: ["All", "Active", "Archived"], active: 0, pills: true }
+        },
+        caption: "Exactly one pill gets the elevated background; the rest sit flat on the muted track."
+      }
+    },
+    {
+      title: "Vertical",
+      dont: {
+        html: "<div class=\"flex w-[180px] flex-col gap-1\">\n  <button class=\"w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground\">General</button>\n  <button class=\"w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground\">Security</button>\n  <button class=\"w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground\">Notifications</button>\n</div>",
+        caption: "With no filled active item the rail collapses into a plain link list and loses its current selection."
+      },
+      do: {
+        tree: {
+          type: "Tabs",
+          props: { tabs: ["General", "Security", "Notifications"], active: 0, vertical: true }
+        },
+        caption: "Fill the active rail item with the accent background so the selected pane is unmistakable."
+      }
+    }
+  ],
+  "row-menu": [
+    {
+      title: "Actions",
+      dont: {
+        tree: {
+          type: "RowMenu",
+          props: {
+            open: true,
+            items: [
+              { label: "Edit" },
+              { label: "Delete", destructive: true },
+              { label: "Duplicate" }
+            ]
+          }
+        },
+        caption: "Click an item: a destructive action sandwiched between routine ones invites a costly misclick."
+      },
+      do: {
+        tree: {
+          type: "RowMenu",
+          props: {
+            open: true,
+            items: [
+              { label: "Edit" },
+              { label: "Duplicate" },
+              { label: "Delete", destructive: true, separatorBefore: true }
+            ]
+          }
+        },
+        caption: "Click an item: place destructive actions last, color them, and split them off with a divider."
+      }
+    },
+    {
+      title: "Links",
+      dont: {
+        tree: {
+          type: "RowMenu",
+          props: {
+            open: true,
+            items: [{ label: "Profile" }, { label: "Billing" }, { label: "Members" }]
+          }
+        },
+        caption: "Buttons can't be opened in a new tab, bookmarked, or middle-clicked, navigation needs real links."
+      },
+      do: {
+        tree: {
+          type: "RowMenu",
+          props: {
+            open: true,
+            links: true,
+            items: [{ label: "Profile" }, { label: "Billing" }, { label: "Members" }]
+          }
+        },
+        caption: "Use <a href> anchors so links behave like links, and mark the current page with an active highlight."
+      }
+    }
+  ],
+  charts: [
+    {
+      title: "Bar",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[560px] p-5\"><div class=\"flex h-[140px] items-end gap-[3px]\"><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:45%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:60%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:35%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:70%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:55%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:80%\"></div><div class=\"flex-1 rounded-sm bg-primary\" style=\"height:95%\"></div></div></div>",
+        caption: "Every bar the same full-strength fill and no labels: nothing is emphasized and the axis is unreadable."
+      },
+      do: {
+        tree: {
+          type: "Chart",
+          props: {
+            title: "Signups",
+            max: 100,
+            className: "max-w-[560px]",
+            data: [
+              { label: "Mon", value: 45 },
+              { label: "Tue", value: 60 },
+              { label: "Wed", value: 35 },
+              { label: "Thu", value: 70 },
+              { label: "Fri", value: 55 },
+              { label: "Sat", value: 80 },
+              { label: "Sun", value: 95 }
+            ]
+          }
+        },
+        caption: "Mute past bars, brighten the current one, and keep an axis row so the buckets read."
+      }
+    },
+    {
+      title: "Sparkline",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[200px] p-5\"><svg width=\"100%\" height=\"34\" viewBox=\"0 0 200 34\" preserveAspectRatio=\"none\" class=\"block\"><polyline points=\"0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/></svg></div>",
+        caption: "A bare line with no value or end dot reads as decoration: you cannot tell the current figure or where it ends."
+      },
+      do: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[200px] p-5\"><div class=\"text-xs text-muted-foreground\">Tokens issued</div><div class=\"mt-1 flex items-baseline justify-between\"><span class=\"text-[22px] font-semibold\">4,847</span><span class=\"font-mono text-[11px] text-foreground\">+12%</span></div><svg width=\"100%\" height=\"34\" viewBox=\"0 0 200 34\" preserveAspectRatio=\"none\" class=\"mt-2 block overflow-visible\"><defs><linearGradient id=\"dospk\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"var(--primary)\" stop-opacity=\"0.3\"/><stop offset=\"100%\" stop-color=\"var(--primary)\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3 200,34 0,34\" fill=\"url(#dospk)\"/><polyline points=\"0,28 20,26 40,22 60,24 80,18 100,14 120,16 140,9 160,11 180,5 200,3\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"1.5\"/><circle cx=\"200\" cy=\"3\" r=\"2.5\" fill=\"var(--primary)\"/></svg></div>",
+        caption: "Pair the line with the current value and delta, add the gradient fill and an end dot so it anchors a stat."
+      }
+    },
+    {
+      title: "Stacked bar",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[560px] p-5\"><div class=\"flex h-2.5 overflow-hidden rounded-full bg-muted\"><div class=\"bg-chart-1\" style=\"width:42%\"></div><div class=\"bg-chart-2\" style=\"width:28%\"></div><div class=\"bg-chart-3\" style=\"width:18%\"></div><div class=\"bg-chart-4\" style=\"width:12%\"></div></div></div>",
+        caption: "Colored segments with no legend force the reader to guess which channel each band represents."
+      },
+      do: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[560px] p-5\"><div class=\"mb-3.5 flex h-2.5 overflow-hidden rounded-full bg-muted\"><div class=\"bg-chart-1\" style=\"width:42%\"></div><div class=\"bg-chart-2\" style=\"width:28%\"></div><div class=\"bg-chart-3\" style=\"width:18%\"></div><div class=\"bg-chart-4\" style=\"width:12%\"></div></div><div class=\"flex flex-col gap-2\"><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-1\"></span><span class=\"flex-1\">Direct</span><span class=\"font-mono text-xs text-muted-foreground\">42%</span></div><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-2\"></span><span class=\"flex-1\">Organic search</span><span class=\"font-mono text-xs text-muted-foreground\">28%</span></div><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-3\"></span><span class=\"flex-1\">Social</span><span class=\"font-mono text-xs text-muted-foreground\">18%</span></div><div class=\"flex items-center gap-2.5 text-sm\"><span class=\"h-2 w-2 shrink-0 rounded-full bg-chart-4\"></span><span class=\"flex-1\">Referral</span><span class=\"font-mono text-xs text-muted-foreground\">12%</span></div></div></div>",
+        caption: "Always ship a legend with a colored dot, label, and percentage per segment."
+      }
+    },
+    {
+      title: "Gauge",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[200px] items-center justify-center p-5\"><svg width=\"140\" height=\"140\" viewBox=\"0 0 140 140\"><circle cx=\"70\" cy=\"70\" r=\"56\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"12\" stroke-dasharray=\"351.8583772\" stroke-dashoffset=\"95.00176184\" stroke-linecap=\"round\" transform=\"rotate(-90 70 70)\"/></svg></div>",
+        caption: "An arc with no track and no number: there is no baseline to read the fill against and no exact value."
+      },
+      do: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm flex max-w-[200px] items-center justify-center p-5\"><svg width=\"140\" height=\"140\" viewBox=\"0 0 140 140\"><circle cx=\"70\" cy=\"70\" r=\"56\" fill=\"none\" stroke=\"var(--muted)\" stroke-width=\"12\"/><circle cx=\"70\" cy=\"70\" r=\"56\" fill=\"none\" stroke=\"var(--primary)\" stroke-width=\"12\" stroke-dasharray=\"351.8583772\" stroke-dashoffset=\"95.00176184\" stroke-linecap=\"round\" transform=\"rotate(-90 70 70)\"/><text x=\"70\" y=\"66\" text-anchor=\"middle\" font-size=\"28\" font-weight=\"700\" fill=\"var(--foreground)\">73%</text><text x=\"70\" y=\"84\" text-anchor=\"middle\" font-size=\"11\" fill=\"var(--muted-foreground)\">Uptime</text></svg></div>",
+        caption: "Put a muted track behind the fill and the numeric value plus label in the center."
+      }
+    },
+    {
+      title: "Heatmap",
+      dont: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[480px] p-5\"><div class=\"grid grid-cols-[repeat(14,1fr)] gap-[3px]\"><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.12\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.49\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.86\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.23\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.60\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.97\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.34\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.71\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.57\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.92\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.31\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.68\"></span></div></div>",
+        caption: "A density grid with no legend leaves the alpha-to-value mapping a mystery."
+      },
+      do: {
+        html: "<div class=\"rounded-lg border border-border bg-card text-card-foreground shadow-sm max-w-[480px] p-5\"><div class=\"grid grid-cols-[repeat(14,1fr)] gap-[3px]\"><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.12\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.49\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.86\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.23\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.60\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.97\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.34\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.71\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.57\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.20\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.92\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.31\"></span><span class=\"aspect-square rounded-sm\" style=\"background:var(--primary);opacity:0.68\"></span></div><div class=\"mt-3 flex items-center justify-between font-mono text-[11.5px] text-muted-foreground\"><span>14d ago</span><span class=\"inline-flex items-center gap-1.5\"><span>less</span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.1\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.3\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.55\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:0.8\"></span><span class=\"h-3 w-3 rounded-[3px]\" style=\"background:var(--primary);opacity:1\"></span><span>more</span></span></div></div>",
+        caption: "Pair the grid with a discrete less-to-more legend so the density scale is legible."
+      }
+    }
+  ],
+  navbars: [
+    {
+      title: "Standard topbar",
+      dont: {
+        tree: {
+          type: "Navbar",
+          props: {
+            bordered: true,
+            brand: "Canvas",
+            active: 0,
+            links: [
+              "Dashboard",
+              "Users",
+              "Settings",
+              "Billing",
+              "Reports",
+              "Integrations",
+              "Audit",
+              "Webhooks"
+            ],
+            avatar: "RC"
+          }
+        },
+        caption: "Cramming every destination into the bar wraps the row and buries the primary links."
+      },
+      do: {
+        tree: {
+          type: "Navbar",
+          props: {
+            bordered: true,
+            brand: "Canvas",
+            active: 0,
+            links: ["Dashboard", "Users", "Settings"],
+            actionLabel: "New",
+            avatar: "RC"
+          }
+        },
+        caption: "Keep a few primary links inline and fold the rest behind a More menu."
+      }
+    },
+    {
+      title: "With search bar",
+      dont: {
+        html: "<div class=\"w-full overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-2 bg-card px-4\"><span class=\"text-sm font-semibold\">Canvas</span><div class=\"mx-4 max-w-[400px] flex-1\"><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\" placeholder=\"Search…\"></div></header></div>",
+        caption: "A live text field in the bar reads as a form input and offers no keyboard affordance."
+      },
+      do: {
+        html: "<div class=\"w-full overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-2 bg-card px-4\"><span class=\"text-sm font-semibold\">Canvas</span><div class=\"mx-4 max-w-[400px] flex-1\"><button class=\"flex h-[34px] w-full items-center gap-2 rounded-md border border-border bg-card px-2.5 text-sm text-muted-foreground\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><span class=\"flex-1 text-left\">Search…</span><kbd class=\"inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted px-1.5 font-mono text-[11px] font-medium text-muted-foreground\">⌘K</kbd></button></div></header></div>",
+        caption: "Use a button that opens the command palette and advertise the ⌘K shortcut."
+      }
+    },
+    {
+      title: "Mobile",
+      dont: {
+        html: "<div class=\"w-full max-w-[360px] overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-1 bg-card px-3\"><span class=\"text-[13px] font-semibold\">Canvas</span><nav class=\"ml-2 flex flex-wrap gap-1\"><a class=\"rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-foreground\" href=\"#\">Dashboard</a><a class=\"rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground\" href=\"#\">Users</a><a class=\"rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground\" href=\"#\">Settings</a><a class=\"rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground\" href=\"#\">Billing</a></nav></header></div>",
+        caption: "A full horizontal nav at phone width wraps onto a second row and crowds out the logo."
+      },
+      do: {
+        html: "<div class=\"w-full max-w-[360px] overflow-hidden rounded-lg border border-border\"><header class=\"flex h-14 items-center gap-2 bg-card px-3\"><button class=\"inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"4\" y1=\"6\" x2=\"20\" y2=\"6\"/><line x1=\"4\" y1=\"12\" x2=\"20\" y2=\"12\"/><line x1=\"4\" y1=\"18\" x2=\"20\" y2=\"18\"/></svg></button><span class=\"text-[13px] font-semibold\">Canvas</span><div class=\"flex-1\"></div><span class=\"inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-muted font-medium text-muted-foreground h-7 w-7 text-[11px]\"><img src=\"/rachel-chen.jpg\" alt=\"RC\" class=\"h-full w-full object-cover\"></span></header></div>",
+        caption: "Collapse the links into a hamburger and keep only the logo and avatar in the bar."
+      }
+    }
+  ],
 };
