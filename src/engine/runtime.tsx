@@ -151,7 +151,7 @@ export function TextInput({ className = "", style, ...rest }: TextInputProps) {
   return <RNTextInput style={[resolved as StyleProp<TextStyle>, style]} {...rest} />;
 }
 
-export interface ScrollProps extends RNScrollViewProps {
+export interface ScrollViewProps extends RNScrollViewProps {
   /** Styles the scroll FRAME (the clipped viewport): height, max-height, border. */
   className?: string;
   /**
@@ -162,17 +162,17 @@ export interface ScrollProps extends RNScrollViewProps {
   contentClassName?: string;
 }
 
-// A styled ScrollView. ScrollView has two distinct style surfaces and Scroll
-// exposes both: `className` styles the scroll frame (the clipped viewport) and
-// `contentClassName` styles the inner content container (where padding/gap/
-// centering belong). Named `Scroll`, not `ScrollView`, to mirror Box-not-View.
-export function Scroll({
+// A styled ScrollView, mirroring RN's name. ScrollView has two distinct style
+// surfaces and this primitive exposes both: `className` styles the scroll frame
+// (the clipped viewport) and `contentClassName` styles the inner content
+// container (where padding/gap/centering belong), mapped to contentContainerStyle.
+export function ScrollView({
   className = "",
   contentClassName = "",
   style,
   contentContainerStyle,
   ...rest
-}: ScrollProps) {
+}: ScrollViewProps) {
   const resolved = useStyles(className);
   const resolvedContent = useStyles(contentClassName);
   return (

@@ -2,12 +2,12 @@
 "@olympusoss/canvas": minor
 ---
 
-Add engine-styled Image, TextInput, and Scroll primitives
+Add engine-styled Image, TextInput, and ScrollView primitives
 
 These className-aware wrappers (matching Box, Text, and Pressable) let you style
 react-native's Image, TextInput, and ScrollView the Canvas way: each extends the
 RN component's props, adds a `className`, and renders `style={[resolved, style]}`
-so a caller-supplied style still wins. Scroll adds a `contentClassName` prop for
+so a caller-supplied style still wins. ScrollView adds a `contentClassName` prop for
 the content container (RN's contentContainerStyle), where padding/gap/centering
 belong; `className` styles the scroll frame.
 

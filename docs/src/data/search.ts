@@ -7,7 +7,7 @@ const GUIDE_ENTRIES: SearchEntry[] = [
   { title: "Theming", description: "Light/dark mode, glass surface, density controls", path: "/theming", category: "Guides", keywords: ["dark mode", "light mode", "glass", "compact", "comfy", "theme"] },
   { title: "Integration", description: "Consumer integration guide for downstream packages", path: "/integration", category: "Guides", keywords: ["react", "vue", "downstream", "consumer"] },
   { title: "Browser Support", description: "CSS feature matrix and minimum browser versions", path: "/browser-support", category: "Guides", keywords: ["browsers", "compatibility", "css features"] },
-  { title: "React Native primitives", description: "Engine-styled primitives (Box, Text, Pressable, Image, TextInput, Scroll) and the react-native boundary", path: "/rn-primitives", category: "Guides", keywords: ["react native", "react-native-web", "rnw", "primitives", "scroll", "image", "textinput", "view", "native", "peer dependency"] },
+  { title: "React Native primitives", description: "Engine-styled primitives (Box, Text, Pressable, Image, TextInput, ScrollView) and the react-native boundary", path: "/rn-primitives", category: "Guides", keywords: ["react native", "react-native-web", "rnw", "primitives", "scroll", "image", "textinput", "view", "native", "peer dependency"] },
 ];
 
 const ALL_ENTRIES: SearchEntry[] = [

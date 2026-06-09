@@ -1,11 +1,11 @@
-import { Scroll, Box, Text } from "@olympusoss/canvas";
+import { ScrollView, Box, Text } from "@olympusoss/canvas";
 import { CodeBlock } from "@/components/code-block";
 import { Toc } from "@/components/toc";
 
 const tocItems = [
   { id: "two-layers", label: "Two layers" },
   { id: "primitives", label: "The styled primitives" },
-  { id: "scroll", label: "Scroll" },
+  { id: "scroll", label: "ScrollView" },
   { id: "image", label: "Image" },
   { id: "textinput", label: "TextInput vs Input" },
   { id: "not-wrapped", label: "What Canvas does not wrap" },
@@ -20,7 +20,7 @@ const PRIproprietaryIVES = [
   { name: "Pressable", wraps: "Pressable", styles: "The pressable surface, plus a pressed-state restyle (active:*)." },
   { name: "Image", wraps: "Image", styles: "Size, radius, aspect. source / resizeMode pass through." },
   { name: "TextInput", wraps: "TextInput", styles: "The field text and box. A low-level primitive (see below)." },
-  { name: "Scroll", wraps: "ScrollView", styles: "The scroll frame; contentClassName styles the content." },
+  { name: "ScrollView", wraps: "ScrollView", styles: "The scroll frame; contentClassName styles the content." },
 ];
 
 // Things Canvas deliberately does NOT wrap, with the principled reason and the
@@ -33,11 +33,11 @@ const NOT_WRAPPED = [
   { from: "KeyboardAvoidingView / SafeAreaView / RefreshControl", why: "Behavior primitives whose value is platform behavior, not styling.", instead: "Import from react-native (or react-native-safe-area-context)." },
 ];
 
-const scrollCode = `import { Scroll, Box, Text } from "@olympusoss/canvas";
+const scrollCode = `import { ScrollView, Box, Text } from "@olympusoss/canvas";
 
 // className styles the FRAME (give it a bounded height so it scrolls);
 // contentClassName styles the inner content container (padding, gap, centering).
-<Scroll
+<ScrollView
   className="max-h-[160px] rounded-md border border-border"
   contentClassName="p-3 gap-2"
 >
@@ -46,7 +46,7 @@ const scrollCode = `import { Scroll, Box, Text } from "@olympusoss/canvas";
       <Text className="text-sm text-foreground">{label}</Text>
     </Box>
   ))}
-</Scroll>`;
+</ScrollView>`;
 
 const imageCode = `import { Image, Box } from "@olympusoss/canvas";
 
@@ -108,7 +108,7 @@ export function RnPrimitivesPage() {
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Two layers, one rule</h2>
           <p className="small muted" style={{ marginBottom: "0.5rem" }}>
             Canvas ships semantic-prop <strong>components</strong> (Button, Input, Card) on top of a thin set of
-            className-driven engine <strong>primitives</strong> (Box, Text, Pressable, Image, TextInput, Scroll).
+            className-driven engine <strong>primitives</strong> (Box, Text, Pressable, Image, TextInput, ScrollView).
             Components carry flat boolean style props; primitives carry a <code className="code">className</code> and
             nothing semantic. The boolean-prop philosophy applies to components, not these low-level primitives.
           </p>
@@ -127,9 +127,10 @@ export function RnPrimitivesPage() {
         <section id="primitives" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>The styled primitives</h2>
           <p className="small muted" style={{ marginBottom: "0.75rem" }}>
-            Primitives use Canvas names, not RN names (<code className="code">Box</code> not
-            {" "}<code className="code">View</code>, <code className="code">Scroll</code> not
-            {" "}<code className="code">ScrollView</code>). Import them from <code className="code">@olympusoss/canvas</code>.
+            Each primitive mirrors its react-native counterpart's name (Text, Pressable,
+            Image, TextInput, ScrollView); the one exception is <code className="code">Box</code>,
+            the styled container that wraps react-native's <code className="code">View</code>.
+            Import them from <code className="code">@olympusoss/canvas</code>.
           </p>
           <table className="dt-table">
             <thead><tr><th>Primitive</th><th>Wraps (react-native)</th><th>className styles</th></tr></thead>
@@ -148,9 +149,9 @@ export function RnPrimitivesPage() {
         <div className="sep" style={{ margin: "1.5rem 0" }} />
 
         <section id="scroll" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Scroll: two style surfaces</h2>
+          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>ScrollView: two style surfaces</h2>
           <p className="small muted" style={{ marginBottom: "0.75rem" }}>
-            ScrollView has two style targets and <code className="code">Scroll</code> exposes both:
+            ScrollView has two style targets and <code className="code">ScrollView</code> exposes both:
             {" "}<code className="code">className</code> styles the scroll <strong>frame</strong> (the clipped viewport:
             height, max-height, border) and <code className="code">contentClassName</code> styles the inner
             <strong> content</strong> container (padding, gap, centering), mapped to RN's
@@ -159,7 +160,7 @@ export function RnPrimitivesPage() {
             frame needs a bounded height (a fixed/max height or a flex parent) to actually scroll.
           </p>
           <div className="card" style={{ padding: "1rem", marginBottom: "0.75rem" }}>
-            <Scroll
+            <ScrollView
               className="max-h-[160px] rounded-md border border-border"
               contentClassName="p-3 gap-2"
             >
@@ -168,7 +169,7 @@ export function RnPrimitivesPage() {
                   <Text className="text-sm text-foreground">{label}</Text>
                 </Box>
               ))}
-            </Scroll>
+            </ScrollView>
           </div>
           <CodeBlock code={scrollCode} language="tsx" />
         </section>

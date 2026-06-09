@@ -116,7 +116,7 @@ token("radius-md");   // "0.375rem"
 const buildingCode = `import { Box, Text, cn } from "@olympusoss/canvas";
 
 // Build your own components on the engine primitives the same way Canvas does:
-// a className-driven Box/Text/Pressable/Image/TextInput/Scroll, with flat boolean
+// a className-driven Box/Text/Pressable/Image/TextInput/ScrollView, with flat boolean
 // props for each style choice (not string enums).
 interface CalloutProps {
   children: React.ReactNode;
@@ -135,7 +135,7 @@ export function Callout({ children, primary }: CalloutProps) {
 }`;
 
 const EXPORTS = [
-  { path: "@olympusoss/canvas", content: "Components, the engine (ThemeProvider, Box, Text, Pressable, Image, TextInput, Scroll, useStyles, useTheme), and the cn / token / theme utilities. Ships as TypeScript source." },
+  { path: "@olympusoss/canvas", content: "Components, the engine (ThemeProvider, Box, Text, Pressable, Image, TextInput, ScrollView, useStyles, useTheme), and the cn / token / theme utilities. Ships as TypeScript source." },
   { path: "@olympusoss/canvas/styles/canvas.css", content: "Tailwind v4 token layer: the CSS custom properties plus the .dark / [data-surface] / [data-density] theme hooks. Web only." },
 ];
 
@@ -239,7 +239,7 @@ export function IntegrationPage() {
           <p className="body" style={{ marginBottom: "0.75rem" }}>
             Compose Canvas components directly, or build your own on the engine primitives
             (<code className="code">Box</code>, <code className="code">Text</code>, <code className="code">Pressable</code>,
-            {" "}<code className="code">Image</code>, <code className="code">TextInput</code>, <code className="code">Scroll</code>).
+            {" "}<code className="code">Image</code>, <code className="code">TextInput</code>, <code className="code">ScrollView</code>).
             Follow the Canvas convention: one flat boolean prop per style choice, not string-enum
             {" "}<code className="code">variant</code>/<code className="code">size</code> props.
           </p>
