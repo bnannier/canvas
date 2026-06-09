@@ -102,24 +102,29 @@ export function Playground({ config, slug }: PlaygroundProps) {
 
   return (
     <div>
-      {/* The grid and its stage column are raised above the later controls and
-          code sections so a floating subcomponent (dropdown / popover / combobox
-          / command panel) overflows the stage and paints OVER them. In glass mode
-          the section cards carry a backdrop-filter, which creates stacking
-          contexts; without these z-indexes the floating panel is trapped in the
-          stage's context and hidden behind the code section below. */}
+      {/* The code block is attached flush to the bottom of the preview stage as
+          one connected panel; the controls sit beside it. The stage is raised
+          (z-index) above the attached code and the column above the controls, so
+          a floating subcomponent (dropdown / popover / combobox / command) paints
+          over them. In glass mode the section cards carry a backdrop-filter, which
+          creates stacking contexts, so without these z-indexes the floating panel
+          would be trapped behind the code. */}
       <div className="playground-grid" style={{ position: "relative", zIndex: 1 }}>
-        <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column" }}>
           <div
             className="section-card"
             onClick={isStatic ? () => fire(entry?.name ?? slug ?? "Component") : undefined}
             style={{
+              position: "relative",
+              zIndex: 1,
               padding: "2rem",
               display: "flex",
               alignItems: "flex-start",
               justifyContent: "center",
               minHeight: 180,
               cursor: isStatic ? "pointer" : undefined,
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
             }}
           >
             {treeEl ? (
@@ -129,23 +134,58 @@ export function Playground({ config, slug }: PlaygroundProps) {
             ) : (
               <div dangerouslySetInnerHTML={{ __html: config.render(state) }} />
             )}
+            <div
+              aria-live="polite"
+              style={{
+                position: "absolute",
+                left: 16,
+                bottom: 6,
+                fontSize: 12,
+                color: "var(--muted-foreground)",
+                opacity: fired ? 1 : 0,
+                transition: "opacity 150ms ease",
+                pointerEvents: "none",
+              }}
+            >
+              {fired ? `Fired: ${fired}` : " "}
+            </div>
           </div>
           <div
-            aria-live="polite"
+            className="section-card"
             style={{
-              minHeight: 18,
-              marginTop: 8,
-              fontSize: 12,
-              color: "var(--muted-foreground)",
-              opacity: fired ? 1 : 0,
-              transition: "opacity 150ms ease",
+              overflow: "hidden",
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              borderTop: "none",
             }}
           >
-            {fired ? `Fired: ${fired}` : " "}
+            <button
+              onClick={() => setShowCode((v) => !v)}
+              className="docs-code-toggle"
+              aria-expanded={showCode}
+              style={{ borderTop: "none" }}
+            >
+              <Code size={13} />
+              <span>{showCode ? "Hide code" : "Show code"}</span>
+              <ChevronDown
+                size={13}
+                style={{
+                  marginLeft: "auto",
+                  transition: "transform 200ms ease",
+                  transform: showCode ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              />
+            </button>
+            <div className={`docs-code-collapse ${showCode ? "open" : ""}`}>
+              <div style={{ minHeight: 0, overflow: "hidden" }}>
+                <CodeBlock code={code} language={codeLanguage} />
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="section-card" style={{
+          alignSelf: "start",
           padding: "1rem",
           display: "flex",
           flexDirection: "column",
@@ -161,31 +201,6 @@ export function Playground({ config, slug }: PlaygroundProps) {
               disabled={ctrl.disabledWhen?.(state) ?? false}
             />
           ))}
-        </div>
-      </div>
-
-      <div className="section-card" style={{ overflow: "hidden", marginTop: "1rem" }}>
-        <button
-          onClick={() => setShowCode((v) => !v)}
-          className="docs-code-toggle"
-          aria-expanded={showCode}
-          style={{ borderTop: "none" }}
-        >
-          <Code size={13} />
-          <span>{showCode ? "Hide code" : "Show code"}</span>
-          <ChevronDown
-            size={13}
-            style={{
-              marginLeft: "auto",
-              transition: "transform 200ms ease",
-              transform: showCode ? "rotate(180deg)" : "rotate(0deg)",
-            }}
-          />
-        </button>
-        <div className={`docs-code-collapse ${showCode ? "open" : ""}`}>
-          <div style={{ minHeight: 0, overflow: "hidden" }}>
-            <CodeBlock code={code} language={codeLanguage} />
-          </div>
         </div>
       </div>
     </div>
