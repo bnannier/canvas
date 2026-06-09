@@ -12,6 +12,25 @@ Keyboard shortcut indicator badge.
 </View>
 ```
 
+## Variants
+
+### Mode - single
+
+```tsx
+<Kbd>⌘</Kbd>
+```
+
+### Mode - in a sentence
+
+```tsx
+<View className="flex-row flex-wrap items-center gap-1">
+  <Text className="text-sm text-foreground">Press </Text>
+  <Kbd>⌘</Kbd>
+  <Kbd>K</Kbd>
+  <Text className="text-sm text-foreground"> to search.</Text>
+</View>
+```
+
 ## Do & Don't
 
 ### Single

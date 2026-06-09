@@ -8,6 +8,38 @@ Placeholders for loading content.
 <Skeleton text animate className="w-[60%]" />
 ```
 
+## Variants
+
+### Shape - avatar
+
+```tsx
+<Skeleton avatar animate />
+```
+
+### Shape - button
+
+```tsx
+<Skeleton button animate className="w-[60%]" />
+```
+
+### Shape - card
+
+```tsx
+<Skeleton card animate />
+```
+
+### Shape - list
+
+```tsx
+<Skeleton list animate />
+```
+
+### Shape - table
+
+```tsx
+<Skeleton table animate />
+```
+
 ## Do & Don't
 
 ### text

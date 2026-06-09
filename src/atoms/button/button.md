@@ -8,6 +8,68 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 <Button primary>Save changes</Button>
 ```
 
+## Variants
+
+### Variant - outline
+
+```tsx
+<Button outline>Save changes</Button>
+```
+
+### Variant - secondary
+
+```tsx
+<Button secondary>Save changes</Button>
+```
+
+### Variant - ghost
+
+```tsx
+<Button ghost>Save changes</Button>
+```
+
+### Variant - destructive
+
+```tsx
+<Button destructive>Save changes</Button>
+```
+
+### Variant - link
+
+```tsx
+<Button link>Save changes</Button>
+```
+
+### Size - sm
+
+```tsx
+<Button primary small>Save changes</Button>
+```
+
+### Size - lg
+
+```tsx
+<Button primary large>Save changes</Button>
+```
+
+### Size - icon
+
+```tsx
+<Button primary icon>+</Button>
+```
+
+### Disabled
+
+```tsx
+<Button primary disabled>Save changes</Button>
+```
+
+### With icon
+
+```tsx
+<Button primary>+  Save changes</Button>
+```
+
 ## Do & Don't
 
 ### Default (primary)

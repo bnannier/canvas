@@ -14,6 +14,44 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 />
 ```
 
+## Variants
+
+### Variant - success
+
+```tsx
+<Alert
+  success
+  icon="✓"
+  title="All set"
+  description="Your changes have been saved successfully."
+  dismissible
+/>
+```
+
+### Variant - warning
+
+```tsx
+<Alert
+  warning
+  icon="⚠"
+  title="Action required"
+  description="Your trial expires in 3 days."
+  dismissible
+/>
+```
+
+### Variant - destructive
+
+```tsx
+<Alert
+  error
+  icon="✕"
+  title="Something went wrong"
+  description="Could not save your changes. Please try again."
+  dismissible
+/>
+```
+
 ## Do & Don't
 
 ### info

@@ -23,6 +23,50 @@ Cmd+K search: navigation, actions, recent items.
 />
 ```
 
+## Variants
+
+### Mode - inline
+
+```tsx
+<Command
+  active={0}
+  placeholder="Type a command..."
+  groups={[
+    { heading: "Actions", items: [
+      { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
+      { label: "Open File", icon: "📂", shortcut: "Ctrl+O" },
+      { label: "Save", icon: "💾", shortcut: "Ctrl+S" }
+    ] },
+    { heading: "Navigation", items: [
+      { label: "Go to Dashboard", icon: "▸" },
+      { label: "Go to Settings", icon: "▸" }
+    ] }
+  ]}
+/>
+```
+
+### Footer with key hints
+
+```tsx
+<Command
+  active={0}
+  placeholder="Type a command..."
+  trigger
+  footer
+  groups={[
+    { heading: "Actions", items: [
+      { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
+      { label: "Open File", icon: "📂", shortcut: "Ctrl+O" },
+      { label: "Save", icon: "💾", shortcut: "Ctrl+S" }
+    ] },
+    { heading: "Navigation", items: [
+      { label: "Go to Dashboard", icon: "▸" },
+      { label: "Go to Settings", icon: "▸" }
+    ] }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Trigger

@@ -13,6 +13,104 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 />
 ```
 
+## Variants
+
+### Variant - users
+
+```tsx
+<EmptyState
+  icon="👥"
+  title="No users"
+  description="Invite your first team member."
+  bordered
+/>
+```
+
+### Variant - files
+
+```tsx
+<EmptyState
+  icon="📄"
+  title="No files"
+  description="Upload or drag files here."
+  bordered
+/>
+```
+
+### Variant - activity
+
+```tsx
+<EmptyState
+  icon="📈"
+  title="No activity"
+  description="Events will appear as they happen."
+  bordered
+/>
+```
+
+### Variant - notifications
+
+```tsx
+<EmptyState
+  icon="🔔"
+  title="All caught up"
+  description="No new notifications."
+  bordered
+/>
+```
+
+### Variant - errors
+
+```tsx
+<EmptyState
+  icon="✅"
+  title="No errors"
+  description="Everything is running smoothly."
+  positive
+  bordered
+/>
+```
+
+### Variant - all-clear
+
+```tsx
+<EmptyState
+  icon="✅"
+  title="All clear"
+  description="No locked accounts or pending reviews."
+  positive
+  bordered
+/>
+```
+
+### Single action
+
+```tsx
+<EmptyState
+  icon="🔍"
+  title="No results found"
+  description="Try adjusting your search filters."
+  actionLabel="Create identity"
+  bordered
+/>
+```
+
+### Inside a table
+
+```tsx
+<View className="overflow-x-auto rounded-lg border border-border">
+  <View className="flex-row border-b border-border">
+    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Name</Text>
+    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Email</Text>
+    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Role</Text>
+    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</Text>
+  </View>
+  <View className="px-4 py-10">
+    <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." />
+  </View>
+</View>
+```
+
 ## Do & Don't
 
 ### search

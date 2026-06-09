@@ -18,6 +18,42 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 />
 ```
 
+## Variants
+
+### Type - Vertical
+
+```tsx
+<Stepper
+  steps={[
+    { label: "Account", description: "Email verified and password set." },
+    { label: "Profile", description: "Add your name and avatar." },
+    { label: "Review", description: "Invite collaborators to your workspace." },
+    { label: "Done", description: "You're all set." }
+  ]}
+  current={1}
+  vertical
+  value={68}
+  label="Setup progress"
+/>
+```
+
+### Type - Progress bar
+
+```tsx
+<Stepper
+  steps={[
+    { label: "Account", description: "Email verified and password set." },
+    { label: "Profile", description: "Add your name and avatar." },
+    { label: "Review", description: "Invite collaborators to your workspace." },
+    { label: "Done", description: "You're all set." }
+  ]}
+  current={1}
+  progress
+  value={68}
+  label="Setup progress"
+/>
+```
+
 ## Do & Don't
 
 ### Horizontal

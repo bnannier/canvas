@@ -16,6 +16,38 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 />
 ```
 
+## Variants
+
+### Value mode - mono
+
+```tsx
+<Field
+  rows={[
+    { label: "Client ID", value: "clt_8f2a9b4c7e1d", mono: true },
+    { label: "Created", value: "2026-05-24T14:32:00Z", mono: true },
+    { label: "Fingerprint", value: "sha256:xK9v...", mono: true }
+  ]}
+  className="max-w-[400px]"
+/>
+```
+
+### Value mode - composed
+
+```tsx
+<Field
+  rows={[
+    { label: "Status", status: "Active" },
+    { label: "Plan", badge: "Pro" },
+    { label: "Token", value: "sk_live_a8f2...c9e1", mono: true, copyValue: "sk_live_a8f2c9e1" },
+    { label: "Members", avatars: [
+      { src: "/rachel-chen.jpg", name: "RC" },
+      { name: "AJ" }
+    ], overflow: 3 }
+  ]}
+  className="max-w-[400px]"
+/>
+```
+
 ## Do & Don't
 
 ### Basic

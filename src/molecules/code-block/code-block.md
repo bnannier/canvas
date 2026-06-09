@@ -12,6 +12,63 @@ Preformatted code block with monospace font and padding.
 />
 ```
 
+## Variants
+
+### Variant - terminal
+
+```tsx
+<CodeBlock
+  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  filename="theme.ts"
+  language="ts"
+  terminal
+/>
+```
+
+### Variant - numbered
+
+```tsx
+<CodeBlock
+  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  filename="theme.ts"
+  language="ts"
+  numbered
+/>
+```
+
+### Variant - inline
+
+```tsx
+<CodeBlock
+  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  filename="theme.ts"
+  language="ts"
+  inline
+/>
+```
+
+### Copy button
+
+```tsx
+<CodeBlock
+  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  filename="theme.ts"
+  language="ts"
+  copy
+/>
+```
+
+### Wrap long lines
+
+```tsx
+<CodeBlock
+  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  filename="theme.ts"
+  language="ts"
+  wrap
+/>
+```
+
 ## Do & Don't
 
 ### Plain

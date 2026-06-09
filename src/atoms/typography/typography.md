@@ -8,6 +8,80 @@ Type scale classes for headings, body text, and helper styles.
 <Typography h1>The quick brown fox</Typography>
 ```
 
+## Variants
+
+### Style - display
+
+```tsx
+<Typography display>The quick brown fox</Typography>
+```
+
+### Style - h2
+
+```tsx
+<Typography h2>The quick brown fox</Typography>
+```
+
+### Style - h3
+
+```tsx
+<Typography h3>The quick brown fox</Typography>
+```
+
+### Style - h4
+
+```tsx
+<Typography h4>The quick brown fox</Typography>
+```
+
+### Style - h5
+
+```tsx
+<Typography h5>The quick brown fox</Typography>
+```
+
+### Style - body
+
+```tsx
+<Typography body>The quick brown fox</Typography>
+```
+
+### Style - small
+
+```tsx
+<Typography small>The quick brown fox</Typography>
+```
+
+### Style - tiny
+
+```tsx
+<Typography tiny>The quick brown fox</Typography>
+```
+
+### Style - muted
+
+```tsx
+<Typography muted>The quick brown fox</Typography>
+```
+
+### Style - caption
+
+```tsx
+<Typography caption>The quick brown fox</Typography>
+```
+
+### Style - code
+
+```tsx
+<Typography code>The quick brown fox</Typography>
+```
+
+### Style - mono
+
+```tsx
+<Typography mono>The quick brown fox</Typography>
+```
+
 ## Do & Don't
 
 ### display

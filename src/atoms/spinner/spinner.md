@@ -8,6 +8,20 @@ Animated loading spinner in three sizes.
 <Spinner />
 ```
 
+## Variants
+
+### Size - sm
+
+```tsx
+<Spinner small />
+```
+
+### Size - lg
+
+```tsx
+<Spinner large />
+```
+
 ## Do & Don't
 
 **Do** — Pair longer waits with a short label so the spinner has context.

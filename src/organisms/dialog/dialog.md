@@ -15,6 +15,92 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 />
 ```
 
+## Variants
+
+### Size - xs
+
+```tsx
+<Dialog
+  trigger="Open dialog"
+  title="Refund payment"
+  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  withBody
+  confirmLabel="Confirm"
+  cancelLabel="Cancel"
+  xs
+/>
+```
+
+### Size - sm
+
+```tsx
+<Dialog
+  trigger="Open dialog"
+  title="Refund payment"
+  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  withBody
+  confirmLabel="Confirm"
+  cancelLabel="Cancel"
+  small
+/>
+```
+
+### Size - md
+
+```tsx
+<Dialog
+  trigger="Open dialog"
+  title="Refund payment"
+  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  withBody
+  confirmLabel="Confirm"
+  cancelLabel="Cancel"
+  medium
+/>
+```
+
+### Size - xl
+
+```tsx
+<Dialog
+  trigger="Open dialog"
+  title="Refund payment"
+  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  withBody
+  confirmLabel="Confirm"
+  cancelLabel="Cancel"
+  large
+/>
+```
+
+### Size - 2xl
+
+```tsx
+<Dialog
+  trigger="Open dialog"
+  title="Refund payment"
+  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  withBody
+  confirmLabel="Confirm"
+  cancelLabel="Cancel"
+  wide
+/>
+```
+
+### Destructive action
+
+```tsx
+<Dialog
+  trigger="Open dialog"
+  title="Refund payment"
+  description="The refund will be reflected in the customer's bank account within 2 to 3 business days."
+  withBody
+  confirmLabel="Refund"
+  cancelLabel="Cancel"
+  destructive
+/>
+```
+
 ## Do & Don't
 
 ### When to use

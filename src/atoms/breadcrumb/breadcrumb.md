@@ -11,6 +11,50 @@ Hierarchical navigation showing where you are.
 />
 ```
 
+## Variants
+
+### Separator - slash
+
+```tsx
+<Breadcrumb
+  items={["Projects", "Identity Platform", "Settings", "Profile"]}
+  slash
+/>
+```
+
+### Separator - dot
+
+```tsx
+<Breadcrumb items={["Projects", "Identity Platform", "Settings", "Profile"]} dot />
+```
+
+### Leading home icon
+
+```tsx
+<Breadcrumb
+  items={["Projects", "Identity Platform", "Settings", "Profile"]}
+  chevron
+  homeIcon
+/>
+```
+
+### In a page header
+
+```tsx
+<View className="flex-row flex-wrap items-start justify-between gap-4">
+  <View>
+    <View className="mb-2">
+      <Breadcrumb items={["Users", "Rachel Chen"]} />
+    </View>
+    <Text className="text-2xl font-semibold tracking-tight text-foreground">Rachel Chen</Text>
+  </View>
+  <View className="flex-row items-center gap-2">
+    <Button outline small>Edit</Button>
+    <Button primary small>Save</Button>
+  </View>
+</View>
+```
+
 ## Do & Don't
 
 ### Current page

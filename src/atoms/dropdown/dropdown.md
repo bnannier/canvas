@@ -15,6 +15,63 @@ Floating menus triggered by a button: actions, options, navigation.
 />
 ```
 
+## Variants
+
+### Section label
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  label="Actions"
+  items={[
+    { label: "Edit profile", icon: "✎" },
+    { label: "Duplicate", icon: "⧉" },
+    { label: "Settings", icon: "⚙" }
+  ]}
+/>
+```
+
+### Keyboard shortcuts
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile", icon: "✎", shortcut: "⌘E" },
+    { label: "Duplicate", icon: "⧉", shortcut: "⌘D" },
+    { label: "Settings", icon: "⚙", shortcut: "⌘," }
+  ]}
+/>
+```
+
+### Disabled item
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile", icon: "✎" },
+    { label: "Duplicate", icon: "⧉" },
+    { label: "Settings", icon: "⚙" },
+    { label: "Archive", icon: "📦", disabled: true }
+  ]}
+/>
+```
+
+### Destructive item
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile", icon: "✎" },
+    { label: "Duplicate", icon: "⧉" },
+    { label: "Settings", icon: "⚙" },
+    { label: "Delete…", icon: "🗑", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Trigger

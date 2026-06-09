@@ -8,6 +8,20 @@ Page-of-N navigation for tables and lists.
 <Pagination page={2} total={12} compact pageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
+## Variants
+
+### Variant - numbered
+
+```tsx
+<Pagination page={2} total={12} pageSize={10} pageSizes={[10, 25, 50]} />
+```
+
+### Variant - with-size
+
+```tsx
+<Pagination page={2} total={12} withSize pageSize={10} pageSizes={[10, 25, 50]} />
+```
+
 ## Do & Don't
 
 ### compact

@@ -8,6 +8,26 @@ On / off switch, isolated or grouped in a settings list.
 <Switch checked>Available to chat</Switch>
 ```
 
+## Variants
+
+### State - off
+
+```tsx
+<Switch>Available to chat</Switch>
+```
+
+### With description
+
+```tsx
+<Switch checked description="Show your availability to teammates.">Available to chat</Switch>
+```
+
+### Disabled
+
+```tsx
+<Switch checked disabled>Available to chat</Switch>
+```
+
 ## Do & Don't
 
 ### Off

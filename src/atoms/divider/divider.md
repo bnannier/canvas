@@ -8,6 +8,36 @@ Horizontal, vertical, with label, with action.
 <Divider />
 ```
 
+## Variants
+
+### Orientation - vertical
+
+```tsx
+<Divider vertical />
+```
+
+### Variant - label
+
+```tsx
+<Divider>Or continue with</Divider>
+```
+
+### Variant - action
+
+```tsx
+<View className="w-80">
+  <View className="gap-2">
+    <View className="rounded-md border border-border px-3 py-2">
+      <Text className="text-sm text-foreground">Ada commented on the draft</Text>
+    </View>
+    <View className="rounded-md border border-border px-3 py-2">
+      <Text className="text-sm text-foreground">Grace approved the request</Text>
+    </View>
+  </View>
+  <Divider className="mt-3" children={<Button ghost small>Show more</Button>} />
+</View>
+```
+
 ## Do & Don't
 
 ### Plain

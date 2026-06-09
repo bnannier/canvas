@@ -8,6 +8,32 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 <Icon shield size={24} />
 ```
 
+## Variants
+
+### View - set
+
+```tsx
+<Icon set />
+```
+
+### Color - primary
+
+```tsx
+<Icon shield size={24} primary />
+```
+
+### Color - destructive
+
+```tsx
+<Icon shield size={24} destructive />
+```
+
+### Color - muted
+
+```tsx
+<Icon shield size={24} muted />
+```
+
 ## Do & Don't
 
 ### Stroke coherence

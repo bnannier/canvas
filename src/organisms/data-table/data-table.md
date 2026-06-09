@@ -16,6 +16,38 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
 />
 ```
 
+## Variants
+
+### Variant - bulk
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role", "Status"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
+    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
+    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+  ]}
+  bordered
+  selectable
+/>
+```
+
+### Density - compact
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role", "Status"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
+    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
+    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+  ]}
+  bordered
+  compact
+/>
+```
+
 ## Do & Don't
 
 ### default

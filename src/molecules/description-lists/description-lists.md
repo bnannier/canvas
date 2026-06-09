@@ -20,6 +20,38 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 />
 ```
 
+## Variants
+
+### Layout - inline-edit
+
+```tsx
+<DescriptionList
+  card
+  twoColumn
+  divided
+  title="Profile"
+  items={[
+    { term: "Name", value: "Rachel Chen", update: true },
+    { term: "Email", value: "rachel.chen@example.com", update: true },
+    { term: "Title", value: "Senior Engineer", update: true }
+  ]}
+/>
+```
+
+### Layout - stacked
+
+```tsx
+<DescriptionList
+  card
+  stacked
+  items={[
+    { term: "Full name", value: "Rachel Chen" },
+    { term: "Email", value: "rachel.chen@example.com" },
+    { term: "Client ID", value: "clnt_01H2X8K9P3Q7VN4W6R5T0JYMZF", mono: true }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Two-column

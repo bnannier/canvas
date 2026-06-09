@@ -13,6 +13,31 @@ Section card with headline, body text, and a primary action. Used to surface a s
 />
 ```
 
+## Variants
+
+### Variant - side-by-side
+
+```tsx
+<ActionPanel
+  title="Delete this project"
+  description="You have unsaved edits in this form. Leaving now will lose all progress."
+  actionLabel="Discard"
+  destructive
+  inline
+/>
+```
+
+### Variant - toggle
+
+```tsx
+<ActionPanel
+  title="Delete this project"
+  description="Add an extra layer of security to your account by requiring a verification code on login."
+  toggle
+  checked
+/>
+```
+
 ## Do & Don't
 
 ### Simple

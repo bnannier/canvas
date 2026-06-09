@@ -8,6 +8,65 @@ A photo when the account has one, falling back to two initials on a brand gradie
 <Avatar name="AO" />
 ```
 
+## Variants
+
+### Variant - stacked
+
+```tsx
+<View className="flex-row items-center">
+  <Avatar ring src="/rachel-chen.jpg" name="RC" />
+  <Avatar ring src="/liang-bao.jpg" name="LB" className="-ml-3" />
+  <Avatar ring name="AO" className="-ml-3" />
+  <Avatar ring src="/kira-tanaka.jpg" name="KT" className="-ml-3" />
+</View>
+```
+
+### Variant - topbar
+
+```tsx
+<Dropdown items={[
+    { label: "Your profile", icon: "👤" },
+    { label: "Settings", icon: "⚙" },
+    { label: "Sign out", icon: "↩", separatorBefore: true }
+  ]}>
+  <View className="flex-row items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5">
+    <Avatar small src="/marcus-allen.jpg" name="MA" />
+    <Text className="text-sm font-medium text-foreground">admin@example.com</Text>
+    <Icon chevronDown muted size={12} />
+  </View>
+</Dropdown>
+```
+
+### Variant - identity
+
+```tsx
+<View className="flex-row items-center gap-4">
+  <Avatar src="/rachel-chen.jpg" name="RC" />
+  <View>
+    <Text className="text-base font-semibold text-foreground">Rachel Chen</Text>
+    <Text className="text-sm text-muted-foreground">rachel.chen@example.com</Text>
+  </View>
+</View>
+```
+
+### Variant - menu
+
+```tsx
+<View className="flex-row items-center gap-3 border-b border-border pb-3">
+  <Avatar src="/ada-lovelace.jpg" name="AL" />
+  <View>
+    <Text className="text-sm font-semibold text-foreground">Ada Lovelace</Text>
+    <Text className="text-xs text-muted-foreground">admin@example.com</Text>
+  </View>
+</View>
+```
+
+### Ring outline
+
+```tsx
+<Avatar ring name="AO" />
+```
+
 ## Do & Don't
 
 ### Single

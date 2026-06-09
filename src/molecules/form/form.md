@@ -16,6 +16,44 @@ Stacked, two-column, with sidebar description.
 />
 ```
 
+## Variants
+
+### Layout - two-column
+
+```tsx
+<Form
+  twoColumn
+  fields={[
+    { label: "First name", placeholder: "Ada" },
+    { label: "Last name", placeholder: "King" },
+    { label: "Email", placeholder: "ada@example.com" }
+  ]}
+  submitLabel="Create"
+  cancelLabel="Cancel"
+  className="max-w-[560px]"
+/>
+```
+
+### Layout - sidebar
+
+```tsx
+<Form
+  sidebar
+  sections={[
+    { title: "Personal info", description: "This information will be displayed on your public profile.", fields: [
+      { label: "Full name", value: "Rachel Chen" },
+      { label: "Email", value: "rachel@example.com" }
+    ] },
+    { title: "Notifications", description: "Choose how you'd like to be notified.", checkboxes: [
+      { label: "Email notifications", checked: true },
+      { label: "SMS alerts" }
+    ] }
+  ]}
+  submitLabel="Save"
+  className="max-w-[720px]"
+/>
+```
+
 ## Do & Don't
 
 ### Stacked

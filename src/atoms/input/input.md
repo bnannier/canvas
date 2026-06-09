@@ -8,6 +8,48 @@ The Input component is a React Native text field with semantic boolean props (`e
 <Input placeholder="rachel.chen@example.com" className="max-w-[320px]" />
 ```
 
+## Variants
+
+### Control - number
+
+```tsx
+<Input placeholder="1024" className="max-w-[320px]" />
+```
+
+### Control - select
+
+```tsx
+<View className="max-w-[320px] flex-col gap-1.5">
+  <Text className="text-sm font-medium text-foreground">Status</Text>
+  <Select value="Active" options={["Active", "Inactive", "Pending"]} />
+  <Text className="text-xs text-muted-foreground">We'll use this for account recovery.</Text>
+</View>
+```
+
+### Control - textarea
+
+```tsx
+<Input multiline placeholder="Describe the change" className="max-w-[320px]" />
+```
+
+### State - error
+
+```tsx
+<Input error placeholder="rachel.chen@example.com" className="max-w-[320px]" />
+```
+
+### State - disabled
+
+```tsx
+<Input disabled placeholder="rachel.chen@example.com" className="max-w-[320px]" />
+```
+
+### State - readonly
+
+```tsx
+<Input readOnly placeholder="rachel.chen@example.com" className="max-w-[320px]" />
+```
+
 ## Do & Don't
 
 ### text

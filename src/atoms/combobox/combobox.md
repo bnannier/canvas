@@ -21,6 +21,48 @@ Text input + dropdown: searchable single-select.
 />
 ```
 
+## Variants
+
+### With helper text
+
+```tsx
+<Combobox
+  options={[
+    "Ada Lovelace",
+    "Grace Hopper",
+    "Kira Tanaka",
+    "Liang Bao",
+    "Marcus Allen",
+    "Noor Park",
+    "Rachel Chen"
+  ]}
+  label="Assigned to"
+  helperText="The person responsible for this account."
+  placeholder="Search a person…"
+  className="max-w-[300px]"
+/>
+```
+
+### Disabled
+
+```tsx
+<Combobox
+  options={[
+    "Ada Lovelace",
+    "Grace Hopper",
+    "Kira Tanaka",
+    "Liang Bao",
+    "Marcus Allen",
+    "Noor Park",
+    "Rachel Chen"
+  ]}
+  label="Assigned to"
+  placeholder="Search a person…"
+  disabled
+  className="max-w-[300px]"
+/>
+```
+
 ## Do & Don't
 
 ### When to use

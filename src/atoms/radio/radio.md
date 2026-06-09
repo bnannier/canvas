@@ -30,6 +30,36 @@ Single-pick selection: stacked, inline, card-style.
 </View>
 ```
 
+## Variants
+
+### Variant - inline
+
+```tsx
+<Radio checked small>Pro, for growing teams that need more control.</Radio>
+```
+
+### Variant - card
+
+```tsx
+<View className="grid grid-cols-3 gap-2">
+  <View className="flex-col rounded-md p-3.5 border border-border">
+    <Radio className="mb-2" />
+    <Text className="text-[13px] font-semibold text-foreground">Hobby</Text>
+    <Text className="text-xs text-muted-foreground">For personal projects and experiments.</Text>
+  </View>
+  <View className="flex-col rounded-md p-3.5 border-2 border-primary bg-primary/5">
+    <Radio checked className="mb-2" />
+    <Text className="text-[13px] font-semibold text-foreground">Pro</Text>
+    <Text className="text-xs text-muted-foreground">For growing teams that need more control.</Text>
+  </View>
+  <View className="flex-col rounded-md p-3.5 border border-border">
+    <Radio className="mb-2" />
+    <Text className="text-[13px] font-semibold text-foreground">Enterprise</Text>
+    <Text className="text-xs text-muted-foreground">Advanced security, compliance, and support.</Text>
+  </View>
+</View>
+```
+
 ## Do & Don't
 
 **Do** — Pre-select a sensible default so the common path needs no clicks.

@@ -19,6 +19,95 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 </Card>
 ```
 
+## Variants
+
+### Type - section
+
+```tsx
+<Card
+  title="Recent activity"
+  body="A labeled content surface. Drop fields, a list, or any module of content here."
+/>
+```
+
+### Type - generic
+
+```tsx
+<Card
+  padded
+  title="Anything goes here"
+  body="The card surface gives you the border, radius, and shadow. You bring the content."
+/>
+```
+
+### Icon tone - success
+
+```tsx
+<Card className="w-[280px] p-5">
+  <View className="flex-row items-start justify-between">
+    <View>
+      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
+      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
+      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+    </View>
+    <View className="h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 text-green-600">
+      <Text className="text-sm font-semibold text-green-600">S</Text>
+    </View>
+  </View>
+</Card>
+```
+
+### Icon tone - purple
+
+```tsx
+<Card className="w-[280px] p-5">
+  <View className="flex-row items-start justify-between">
+    <View>
+      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
+      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
+      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+    </View>
+    <View className="h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600">
+      <Text className="text-sm font-semibold text-purple-600">O</Text>
+    </View>
+  </View>
+</Card>
+```
+
+### Icon tone - destructive
+
+```tsx
+<Card className="w-[280px] p-5">
+  <View className="flex-row items-start justify-between">
+    <View>
+      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
+      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
+      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+    </View>
+    <View className="h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+      <Text className="text-sm font-semibold text-destructive">!</Text>
+    </View>
+  </View>
+</Card>
+```
+
+### Icon tone - amber
+
+```tsx
+<Card className="w-[280px] p-5">
+  <View className="flex-row items-start justify-between">
+    <View>
+      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
+      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
+      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+    </View>
+    <View className="h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+      <Text className="text-sm font-semibold text-amber-600">T</Text>
+    </View>
+  </View>
+</Card>
+```
+
 ## Do & Don't
 
 ### stat

@@ -15,6 +15,25 @@ Image or icon paired with text content. The fundamental building block for list 
 />
 ```
 
+## Variants
+
+### Variant - icon
+
+```tsx
+<View className="max-w-[560px] grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+  <MediaObject bordered start title="Real-time analytics" description="Live dashboards with sub-second refresh latency." icon={<Icon activity primary size={18} />} />
+</View>
+```
+
+### Variant - action
+
+```tsx
+<View className="max-w-[480px]">
+  <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
+</View>
+```
+
 ## Do & Don't
 
 ### Avatar

@@ -13,6 +13,30 @@ Floating surfaces: drawers, modals, popovers, toasts.
 />
 ```
 
+## Variants
+
+### Surface - modal
+
+```tsx
+<Overlay
+  trigger="Open panel"
+  title="Edit Identity"
+  description="Visible above the parent page so the user can compare."
+  modal
+/>
+```
+
+### Surface - toast
+
+```tsx
+<Overlay
+  trigger="Open panel"
+  title="Edit Identity"
+  description="Visible above the parent page so the user can compare."
+  sheet
+/>
+```
+
 ## Do & Don't
 
 ### Drawer (SlideOver)

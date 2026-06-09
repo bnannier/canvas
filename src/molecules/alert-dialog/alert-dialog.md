@@ -14,6 +14,60 @@ Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred back
 />
 ```
 
+## Variants
+
+### Size - xs
+
+```tsx
+<AlertDialog
+  title="Delete this identity?"
+  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
+  confirmLabel="Delete"
+  destructive
+  narrow
+  trigger="Delete identity…"
+/>
+```
+
+### Size - sm
+
+```tsx
+<AlertDialog
+  title="Delete this identity?"
+  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
+  confirmLabel="Delete"
+  destructive
+  small
+  trigger="Delete identity…"
+/>
+```
+
+### Size - lg
+
+```tsx
+<AlertDialog
+  title="Delete this identity?"
+  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
+  confirmLabel="Delete"
+  destructive
+  large
+  trigger="Delete identity…"
+/>
+```
+
+### Body field
+
+```tsx
+<AlertDialog
+  title="Delete this identity?"
+  description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
+  confirmLabel="Delete"
+  destructive
+  withInput
+  trigger="Delete identity…"
+/>
+```
+
 ## Do & Don't
 
 ### Reserve the dialog for blocking decisions

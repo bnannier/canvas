@@ -24,6 +24,23 @@ Tiled card grids for people directories, item collections, and image galleries.
 />
 ```
 
+## Variants
+
+### Variant - gallery
+
+```tsx
+<GridList
+  items={[
+    { title: "hero-banner.png", subtitle: "1.2 MB", color: "primary" },
+    { title: "icon-set.svg", subtitle: "340 KB", color: "blue-500" },
+    { title: "product-shot.jpg", subtitle: "2.8 MB", color: "emerald-500" },
+    { title: "avatar-default.png", subtitle: "96 KB", color: "amber-500" }
+  ]}
+  gallery
+  cols3
+/>
+```
+
 ## Do & Don't
 
 ### People (card grid)

@@ -15,6 +15,32 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 />
 ```
 
+## Variants
+
+### Layout - search
+
+```tsx
+<Navbar
+  brand="Canvas"
+  links={["Dashboard", "Users", "Settings"]}
+  active={0}
+  avatar="RC"
+  bordered
+/>
+```
+
+### Layout - mobile
+
+```tsx
+<Navbar
+  brand="Canvas"
+  links={["Dashboard", "Users", "Settings"]}
+  active={0}
+  actionLabel="New"
+  avatar="RC"
+/>
+```
+
 ## Do & Don't
 
 ### Standard topbar

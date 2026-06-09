@@ -20,6 +20,85 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
 />
 ```
 
+## Variants
+
+### Chart type - sparkline
+
+```tsx
+<Chart
+  title="Signups"
+  data={[
+    { label: "Mon", value: 45 },
+    { label: "Tue", value: 60 },
+    { label: "Wed", value: 35 },
+    { label: "Thu", value: 70 },
+    { label: "Fri", value: 55 },
+    { label: "Sat", value: 80 },
+    { label: "Sun", value: 95 }
+  ]}
+  max={100}
+  horizontal
+/>
+```
+
+### Chart type - stacked
+
+```tsx
+<Chart
+  title="Signups"
+  data={[
+    { label: "Mon", value: 45 },
+    { label: "Tue", value: 60 },
+    { label: "Wed", value: 35 },
+    { label: "Thu", value: 70 },
+    { label: "Fri", value: 55 },
+    { label: "Sat", value: 80 },
+    { label: "Sun", value: 95 }
+  ]}
+  max={100}
+  success
+/>
+```
+
+### Chart type - gauge
+
+```tsx
+<Chart
+  title="Signups"
+  data={[
+    { label: "Mon", value: 45 },
+    { label: "Tue", value: 60 },
+    { label: "Wed", value: 35 },
+    { label: "Thu", value: 70 },
+    { label: "Fri", value: 55 },
+    { label: "Sat", value: 80 },
+    { label: "Sun", value: 95 }
+  ]}
+  max={100}
+  success
+  horizontal
+/>
+```
+
+### Chart type - heatmap
+
+```tsx
+<Chart
+  title="Signups"
+  data={[
+    { label: "Mon", value: 45 },
+    { label: "Tue", value: 60 },
+    { label: "Wed", value: 35 },
+    { label: "Thu", value: 70 },
+    { label: "Fri", value: 55 },
+    { label: "Sat", value: 80 },
+    { label: "Sun", value: 95 }
+  ]}
+  max={100}
+  destructive
+/>
+```
+
 ## Do & Don't
 
 ### Bar

@@ -14,6 +14,60 @@ Native select restyled to match Canvas inputs.
 />
 ```
 
+## Variants
+
+### Size - sm
+
+```tsx
+<Select
+  small
+  label="Country"
+  value="United States"
+  options={["United States", "Canada", "Mexico", "United Kingdom"]}
+  placeholder="Select a country"
+  className="max-w-[280px]"
+/>
+```
+
+### Size - lg
+
+```tsx
+<Select
+  large
+  label="Country"
+  value="United States"
+  options={["United States", "Canada", "Mexico", "United Kingdom"]}
+  placeholder="Select a country"
+  className="max-w-[280px]"
+/>
+```
+
+### With leading icon
+
+```tsx
+<Select
+  label="Country"
+  icon
+  value="United States"
+  options={["United States", "Canada", "Mexico", "United Kingdom"]}
+  placeholder="Select a country"
+  className="max-w-[280px]"
+/>
+```
+
+### Disabled
+
+```tsx
+<Select
+  disabled
+  label="Country"
+  value="United States"
+  options={["United States", "Canada", "Mexico", "United Kingdom"]}
+  placeholder="Select a country"
+  className="max-w-[280px]"
+/>
+```
+
 ## Do & Don't
 
 **Do** — Mark the placeholder disabled and selected so it prompts without being a valid choice.

@@ -17,6 +17,86 @@ A custom (non-native) select: single or multi-select, optional avatars or icons 
 />
 ```
 
+## Variants
+
+### Mode - multi
+
+```tsx
+<Listbox
+  items={[
+    { label: "Backend", selected: true },
+    { label: "Frontend", selected: false },
+    { label: "Design", selected: true },
+    { label: "Platform", selected: false },
+    { label: "Security", selected: false }
+  ]}
+  multi
+  bordered
+/>
+```
+
+### Size - sm
+
+```tsx
+<Listbox
+  items={[
+    { label: "Backend", selected: true },
+    { label: "Frontend", selected: false },
+    { label: "Design", selected: false },
+    { label: "Platform", selected: false },
+    { label: "Security", selected: false }
+  ]}
+  bordered
+  small
+/>
+```
+
+### Size - lg
+
+```tsx
+<Listbox
+  items={[
+    { label: "Backend", selected: true },
+    { label: "Frontend", selected: false },
+    { label: "Design", selected: false },
+    { label: "Platform", selected: false },
+    { label: "Security", selected: false }
+  ]}
+  bordered
+  large
+/>
+```
+
+### Avatars
+
+```tsx
+<Listbox
+  items={[
+    { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
+    { label: "Ada Lovelace", detail: "ada@acme.io", selected: false },
+    { label: "Kevin Turner", detail: "kevin@acme.io", selected: false },
+    { label: "Linus Berg", detail: "linus@acme.io", selected: false }
+  ]}
+  bordered
+/>
+```
+
+### Disabled
+
+```tsx
+<Listbox
+  items={[
+    { label: "Backend", selected: true },
+    { label: "Frontend", selected: false },
+    { label: "Design", selected: false },
+    { label: "Platform", selected: false },
+    { label: "Security", selected: false }
+  ]}
+  bordered
+  disabled
+/>
+```
+
 ## Do & Don't
 
 ### Prefer a native select for simple lists

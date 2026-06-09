@@ -17,6 +17,38 @@ Underline, pill, vertical, with badges.
 />
 ```
 
+## Variants
+
+### Variant - pill
+
+```tsx
+<Tabs pills tabs={["All", "Active", "Archived", "Deleted"]} active={0} />
+```
+
+### Variant - vertical
+
+```tsx
+<Tabs
+  vertical
+  tabs={["General", "Security", "Notifications", "API Keys", "Billing"]}
+  active={0}
+/>
+```
+
+### Badge counts
+
+```tsx
+<Tabs
+  tabs={[
+    { label: "All", badge: "142" },
+    { label: "Active", badge: "89" },
+    { label: "Pending", badge: "12" },
+    { label: "Archived", badge: "53" }
+  ]}
+  active={0}
+/>
+```
+
 ## Do & Don't
 
 ### Underline

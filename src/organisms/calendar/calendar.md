@@ -14,6 +14,33 @@ Date picker, event list. Production: wrap react-day-picker.
 />
 ```
 
+## Variants
+
+### Variant - events
+
+```tsx
+<View className="flex-row flex-wrap items-start gap-6">
+  <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
+  <Card className="min-w-[240px] flex-1">
+    <View className="border-b border-border px-5 py-3">
+      <Text className="text-sm font-semibold text-card-foreground">May 24</Text>
+    </View>
+    <View className="flex-row items-center justify-between px-4 py-2.5 border-b border-border">
+      <Text className="text-sm font-medium text-foreground">Sprint planning</Text>
+      <Text className="text-sm text-muted-foreground">9:00 AM</Text>
+    </View>
+    <View className="flex-row items-center justify-between px-4 py-2.5 border-b border-border">
+      <Text className="text-sm font-medium text-foreground">Design review</Text>
+      <Text className="text-sm text-muted-foreground">11:30 AM</Text>
+    </View>
+    <View className="flex-row items-center justify-between px-4 py-2.5">
+      <Text className="text-sm font-medium text-foreground">1:1 with manager</Text>
+      <Text className="text-sm text-muted-foreground">2:00 PM</Text>
+    </View>
+  </Card>
+</View>
+```
+
 ## Do & Don't
 
 ### Single date

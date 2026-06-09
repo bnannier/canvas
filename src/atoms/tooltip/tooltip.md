@@ -8,6 +8,44 @@ Small floating helper text on hover or focus.
 <Tooltip label="Open settings" iconTrigger trigger="Hover me" open top />
 ```
 
+## Variants
+
+### Side - right
+
+```tsx
+<Tooltip label="Open settings" iconTrigger trigger="Hover me" open right />
+```
+
+### Side - bottom
+
+```tsx
+<Tooltip label="Open settings" iconTrigger trigger="Hover me" open bottom />
+```
+
+### Side - left
+
+```tsx
+<Tooltip label="Open settings" iconTrigger trigger="Hover me" open left />
+```
+
+### Trigger - button
+
+```tsx
+<Tooltip label="Open settings" trigger="Hover me" open top />
+```
+
+### Trigger - text
+
+```tsx
+<Tooltip label="Open settings" trigger="hover this text" open top />
+```
+
+### Reveal - on hover
+
+```tsx
+<Tooltip label="Open settings" iconTrigger trigger="Hover me" top />
+```
+
 ## Do & Don't
 
 **Do** — Keep tooltips short and supplementary; put essential steps in visible copy.

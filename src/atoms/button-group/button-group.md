@@ -8,6 +8,56 @@ Segmented controls, split buttons, attached groups.
 <ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} small />
 ```
 
+## Variants
+
+### Variant - attached
+
+```tsx
+<ButtonGroup
+  stepper
+  items={[
+    "May 21",
+    "May 22",
+    "May 23",
+    "Today",
+    "May 25",
+    "May 26",
+    "May 27"
+  ]}
+  active={3}
+  small
+/>
+```
+
+### Variant - split
+
+```tsx
+<ButtonGroup
+  split
+  items={["Save"]}
+  menu={["Save as draft", "Save and close", "Save a copy"]}
+  small
+/>
+```
+
+### Size - default
+
+```tsx
+<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} />
+```
+
+### Size - lg
+
+```tsx
+<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} large />
+```
+
+### Disabled
+
+```tsx
+<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} disabled small />
+```
+
 ## Do & Don't
 
 ### Segmented

@@ -8,6 +8,41 @@ Multi-line input, with character count, with toolbar.
 <Textarea rows={4} placeholder="A few words about this project" />
 ```
 
+## Variants
+
+### Character counter
+
+```tsx
+<View className="max-w-[400px]">
+  <Text className="mb-1.5 text-sm font-medium text-foreground">Description</Text>
+  <Textarea rows={4} placeholder="A few words about this project…" />
+  <View className="mt-1 flex-row justify-end">
+    <Text className="text-[11px] text-muted-foreground">0 / 280</Text>
+  </View>
+</View>
+```
+
+### Formatting toolbar
+
+```tsx
+<View className="max-w-[400px] overflow-hidden rounded-md border border-border">
+  <View className="flex-row items-center gap-1 border-b border-border bg-muted/30 px-3 py-2">
+    <Button ghost small className="min-w-8 px-2">B</Button>
+    <Button ghost small className="min-w-8 px-2">I</Button>
+    <Button ghost small className="min-w-8 px-2"></></Button>
+    <View className="mx-1 h-4 w-px bg-border" />
+    <Button ghost small className="px-3">Comment</Button>
+  </View>
+  <Textarea rows={4} placeholder="Leave a comment…" className="min-h-[104px] w-full rounded-none border-0" />
+</View>
+```
+
+### Disabled
+
+```tsx
+<Textarea rows={4} disabled placeholder="A few words about this project" />
+```
+
 ## Do & Don't
 
 ### With label

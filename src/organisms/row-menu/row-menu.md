@@ -14,6 +14,47 @@ Vertical action menu items and navigation links.
 />
 ```
 
+## Variants
+
+### Kind - links
+
+```tsx
+<RowMenu
+  links
+  items={[
+    { label: "Profile" },
+    { label: "Billing" },
+    { label: "Members" },
+    { label: "Settings" }
+  ]}
+/>
+```
+
+### Section label
+
+```tsx
+<RowMenu
+  sectionLabel="Actions"
+  items={[
+    { label: "Edit" },
+    { label: "Duplicate" },
+    { label: "Delete", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
+### Leading icons
+
+```tsx
+<RowMenu
+  items={[
+    { label: "Edit", icon: "✎" },
+    { label: "Duplicate", icon: "⧉" },
+    { label: "Delete", icon: "🗑", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Actions

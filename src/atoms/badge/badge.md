@@ -8,6 +8,59 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 <Badge secondary>admin</Badge>
 ```
 
+## Variants
+
+### Type - status
+
+```tsx
+<Badge status success>admin</Badge>
+```
+
+### Type - identity
+
+```tsx
+<View className="flex-row flex-wrap items-center gap-2">
+  <Text className="text-[15px] font-semibold text-foreground">Rachel Chen</Text>
+  <Badge status success>active</Badge>
+  <Badge status info>Verified</Badge>
+  <Badge secondary>employee</Badge>
+</View>
+```
+
+### Type - grants
+
+```tsx
+<View className="flex-row flex-wrap gap-1">
+  <Badge secondary mono>authorization_code</Badge>
+  <Badge secondary mono>refresh_token</Badge>
+  <Badge secondary mono>client_credentials</Badge>
+</View>
+```
+
+### Badge variant - default
+
+```tsx
+<Badge default>admin</Badge>
+```
+
+### Badge variant - outline
+
+```tsx
+<Badge outline>admin</Badge>
+```
+
+### Badge variant - destructive
+
+```tsx
+<Badge destructive>admin</Badge>
+```
+
+### Mono (token / event names)
+
+```tsx
+<Badge secondary mono>admin</Badge>
+```
+
 ## Do & Don't
 
 ### Metadata badge

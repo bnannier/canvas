@@ -14,6 +14,36 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 />
 ```
 
+## Variants
+
+### Variant - clickable
+
+```tsx
+<StackedList
+  items={[
+    { name: "Rachel Chen", detail: "rachel.chen@example.com", meta: "2h ago" },
+    { name: "Ada Lovelace", detail: "ada@example.com", meta: "5h ago" },
+    { name: "Kevin Turner", detail: "kevin@example.com", meta: "1d ago" }
+  ]}
+  clickable
+/>
+```
+
+### Variant - card
+
+```tsx
+<StackedList
+  items={[
+    { name: "Rachel Chen", detail: "Engineering Lead" },
+    { name: "Ada Lovelace", detail: "Staff Engineer" }
+  ]}
+  card
+  title="Team members"
+  addAction="Add"
+  rowMenu
+/>
+```
+
 ## Do & Don't
 
 ### Two-line with avatar

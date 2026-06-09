@@ -14,6 +14,32 @@ Multi-select option, single yes/no, grouped lists.
 </View>
 ```
 
+## Variants
+
+### State - unchecked
+
+```tsx
+<View className="flex-row items-start gap-2">
+  <Checkbox />
+  <View className="gap-0.5">
+    <Text className="text-sm font-medium text-foreground">Email notifications</Text>
+    <Text className="text-xs text-muted-foreground">Get notified when activity happens on your account.</Text>
+  </View>
+</View>
+```
+
+### State - disabled
+
+```tsx
+<View className="flex-row items-start gap-2">
+  <Checkbox disabled />
+  <View className="gap-0.5">
+    <Text className="text-sm font-medium text-foreground">Email notifications</Text>
+    <Text className="text-xs text-muted-foreground">Get notified when activity happens on your account.</Text>
+  </View>
+</View>
+```
+
 ## Do & Don't
 
 ### Unchecked

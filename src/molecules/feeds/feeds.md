@@ -15,6 +15,21 @@ Vertical activity streams with icons and timestamps. Used for audit logs, change
 />
 ```
 
+## Variants
+
+### Variant - avatar
+
+```tsx
+<Feed
+  avatar
+  items={[
+    { actor: "Rachel Chen", action: "commented on the pull request", time: "2 hours ago" },
+    { actor: "Ada Lovelace", action: "pushed 3 commits", time: "5 hours ago" },
+    { actor: "Kevin Turner", action: "opened the pull request", time: "1 day ago" }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Connector
