@@ -1,12 +1,12 @@
 // Engine runtime: the React Native bindings around the pure resolver.
 // A ThemeProvider supplies the active color scheme and token map; useStyles
 // turns a className into a resolved RN style for the current theme and viewport
-// (desktop-first responsive); Box/Text/Pressable are the styled primitives
+// (desktop-first responsive); View/Text/Pressable are the styled primitives
 // components compose from.
 
 import { type ReactNode, createContext, useContext, useMemo } from "react";
 import {
-  View,
+  View as RNView,
   Text as RNText,
   Pressable as RNPressable,
   Image as RNImage,
@@ -14,7 +14,7 @@ import {
   ScrollView as RNScrollView,
   useWindowDimensions,
   useColorScheme,
-  type ViewProps,
+  type ViewProps as RNViewProps,
   type TextProps as RNTextProps,
   type PressableProps as RNPressableProps,
   type PressableStateCallbackType,
@@ -89,13 +89,13 @@ export function useStyles(className: string, state?: InteractionState): RNStyle 
 
 // --- styled primitives ------------------------------------------------------
 
-export interface BoxProps extends ViewProps {
+export interface ViewProps extends RNViewProps {
   className?: string;
 }
 
-export function Box({ className = "", style, ...rest }: BoxProps) {
+export function View({ className = "", style, ...rest }: ViewProps) {
   const resolved = useStyles(className);
-  return <View style={[resolved as StyleProp<ViewStyle>, style]} {...rest} />;
+  return <RNView style={[resolved as StyleProp<ViewStyle>, style]} {...rest} />;
 }
 
 export interface TextProps extends RNTextProps {

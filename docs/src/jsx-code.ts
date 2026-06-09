@@ -103,7 +103,7 @@ export function propsToJsx(name: string, props: Record<string, unknown>): string
 export type ElChild = string | number | El;
 
 export interface El {
-  /** Component name resolved against the registry's COMPONENT_MAP, e.g. "Box", "Badge". */
+  /** Component name resolved against the registry's COMPONENT_MAP, e.g. "View", "Badge". */
   type: string;
   props?: Record<string, unknown>;
   children?: ElChild | ElChild[];

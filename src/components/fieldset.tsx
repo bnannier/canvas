@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Input } from "./input.js";
 import { Checkbox } from "./checkbox.js";
 
@@ -88,7 +88,7 @@ function Field({
 }) {
   const msg = item.error ?? (error ? "Enter a valid value" : "");
   return (
-    <Box className="w-full">
+    <View className="w-full">
       {item.label ? <Text className={FIELD_LABEL}>{item.label}</Text> : null}
       <Input
         value={item.value}
@@ -102,7 +102,7 @@ function Field({
       ) : item.help ? (
         <Text className={FIELD_HELP}>{item.help}</Text>
       ) : null}
-    </Box>
+    </View>
   );
 }
 
@@ -120,35 +120,35 @@ export function Fieldset(props: FieldsetProps) {
 
   const header =
     legend != null || description != null ? (
-      <Box className="mb-4">
+      <View className="mb-4">
         {legend != null ? <Text className={LEGEND}>{legend}</Text> : null}
         {description != null ? <Text className={DESCRIPTION}>{description}</Text> : null}
-      </Box>
+      </View>
     ) : null;
 
   // Children win: when composed, render exactly what the caller passed.
   if (children != null) {
     return (
-      <Box className={container}>
+      <View className={container}>
         {header}
         {children}
-      </Box>
+      </View>
     );
   }
 
   // Checkbox group: a stacked set of labeled checkboxes.
   if (checkboxes != null) {
     return (
-      <Box className={container}>
+      <View className={container}>
         {header}
-        <Box className="gap-2">
+        <View className="gap-2">
           {checkboxes.map((c, i) => (
             <Checkbox key={i} checked={c.checked} disabled={disabled}>
               {c.label}
             </Checkbox>
           ))}
-        </Box>
-      </Box>
+        </View>
+      </View>
     );
   }
 
@@ -160,15 +160,15 @@ export function Fieldset(props: FieldsetProps) {
   );
 
   return (
-    <Box className={container}>
+    <View className={container}>
       {header}
-      <Box className={group}>
+      <View className={group}>
         {rows.map((item, i) => (
-          <Box key={i} className={twoColumn ? "w-[47%] grow sm:w-full" : "w-full"}>
+          <View key={i} className={twoColumn ? "w-[47%] grow sm:w-full" : "w-full"}>
             <Field item={item} disabled={disabled} error={error} />
-          </Box>
+          </View>
         ))}
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }

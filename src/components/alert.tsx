@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // A bordered banner that surfaces an inline notification: a leading icon glyph,
 // a bold title, and a description. Configured by a tone axis (info / success /
@@ -81,11 +81,11 @@ export function Alert(props: AlertProps) {
   const tone = toneOf(props);
 
   return (
-    <Box className={cn(ALERT_BASE, CONTAINER[tone], className)}>
+    <View className={cn(ALERT_BASE, CONTAINER[tone], className)}>
       {icon != null ? (
         <Text className={cn("text-base leading-5", ICON[tone])}>{icon}</Text>
       ) : null}
-      <Box className="flex-1 gap-1">
+      <View className="flex-1 gap-1">
         {title != null && title !== "" ? (
           <Text className={cn("text-sm font-semibold", TITLE[tone])}>{title}</Text>
         ) : null}
@@ -93,7 +93,7 @@ export function Alert(props: AlertProps) {
           <Text className={cn("text-sm", BODY[tone])}>{description}</Text>
         ) : null}
         {children}
-      </Box>
+      </View>
       {dismissible ? (
         <Pressable
           onPress={onDismiss}
@@ -104,6 +104,6 @@ export function Alert(props: AlertProps) {
           <Text className={cn("text-base leading-none", ICON[tone])}>×</Text>
         </Pressable>
       ) : null}
-    </Box>
+    </View>
   );
 }

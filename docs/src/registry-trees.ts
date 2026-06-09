@@ -22,7 +22,7 @@ export const TREES: Record<string, TreeFn> = {
   badge: (s) => {
     if (s.kind === "identity") {
       return {
-        type: "Box",
+        type: "View",
         props: { className: "flex-row flex-wrap items-center gap-2" },
         children: [
           { type: "Text", props: { className: "text-[15px] font-semibold text-foreground" }, children: "Rachel Chen" },
@@ -34,7 +34,7 @@ export const TREES: Record<string, TreeFn> = {
     }
     if (s.kind === "grants") {
       return {
-        type: "Box",
+        type: "View",
         props: { className: "flex-row flex-wrap gap-1" },
         children: ["authorization_code", "refresh_token", "client_credentials"].map((g) => ({
           type: "Badge",
@@ -55,7 +55,7 @@ export const TREES: Record<string, TreeFn> = {
       { name: "KT", src: "/kira-tanaka.jpg" },
     ];
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row items-center" },
       children: [
         ...people.map((p, i) => ({
@@ -93,7 +93,7 @@ export const TREES: Record<string, TreeFn> = {
         ],
       },
       children: {
-        type: "Box",
+        type: "View",
         props: {
           className:
             "flex-row items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5",
@@ -112,12 +112,12 @@ export const TREES: Record<string, TreeFn> = {
   }
   if (s.variant === "identity") {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row items-center gap-4" },
       children: [
         { type: "Avatar", props: { src: "/rachel-chen.jpg", name: "RC" } },
         {
-          type: "Box",
+          type: "View",
           children: [
             {
               type: "Text",
@@ -136,12 +136,12 @@ export const TREES: Record<string, TreeFn> = {
   }
   if (s.variant === "menu") {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row items-center gap-3 border-b border-border pb-3" },
       children: [
         { type: "Avatar", props: { src: "/ada-lovelace.jpg", name: "AL" } },
         {
-          type: "Box",
+          type: "View",
           children: [
             {
               type: "Text",
@@ -164,14 +164,14 @@ export const TREES: Record<string, TreeFn> = {
   breadcrumb: (s, demo) => {
   if (s.pageHeader === true) {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row flex-wrap items-start justify-between gap-4" },
       children: [
         {
-          type: "Box",
+          type: "View",
           children: [
             {
-              type: "Box",
+              type: "View",
               props: { className: "mb-2" },
               children: [
                 {
@@ -188,7 +188,7 @@ export const TREES: Record<string, TreeFn> = {
           ],
         },
         {
-          type: "Box",
+          type: "View",
           props: { className: "flex-row items-center gap-2" },
           children: [
             { type: "Button", props: { outline: true, small: true, onPress: () => demo?.fire("Edit") }, children: "Edit" },
@@ -209,7 +209,7 @@ export const TREES: Record<string, TreeFn> = {
       { title: "1:1 with manager", time: "2:00 PM" },
     ];
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row flex-wrap items-start gap-6" },
       children: [
         {
@@ -228,7 +228,7 @@ export const TREES: Record<string, TreeFn> = {
           props: { className: "min-w-[240px] flex-1" },
           children: [
             {
-              type: "Box",
+              type: "View",
               props: { className: "border-b border-border px-5 py-3" },
               children: {
                 type: "Text",
@@ -237,7 +237,7 @@ export const TREES: Record<string, TreeFn> = {
               },
             },
             ...events.map((ev, i) => ({
-              type: "Box",
+              type: "View",
               props: {
                 className:
                   "flex-row items-center justify-between px-4 py-2.5" +
@@ -276,7 +276,7 @@ export const TREES: Record<string, TreeFn> = {
     }[tone] || "bg-blue-500/10 text-blue-600";
     const letter = { blue: "U", success: "S", purple: "O", destructive: "!", amber: "T" }[tone] || "U";
     const left = {
-      type: "Box",
+      type: "View",
       children: [
         { type: "Text", props: { className: "text-xs font-medium uppercase tracking-wide text-muted-foreground" }, children: (s.label) || "Active identities" },
         { type: "Text", props: { className: "mt-1 text-2xl font-bold text-card-foreground" }, children: (s.value) || "12,348" },
@@ -284,13 +284,13 @@ export const TREES: Record<string, TreeFn> = {
       ],
     };
     const row = {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row items-start justify-between" },
       children: s.icon
         ? [
             left,
             {
-              type: "Box",
+              type: "View",
               props: { className: "h-10 w-10 items-center justify-center rounded-lg " + toneClass },
               children: { type: "Text", props: { className: "text-sm font-semibold " + toneClass.split(" ")[1] }, children: letter },
             },
@@ -312,7 +312,7 @@ export const TREES: Record<string, TreeFn> = {
     const disabled = s.state === "disabled";
     const label = (typeof s.label === "string" && s.label) || "Email notifications";
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row items-start gap-2" },
       children: [
         {
@@ -321,7 +321,7 @@ export const TREES: Record<string, TreeFn> = {
           props: { checked, disabled, onChange: (next: boolean) => demo?.set("state", next ? "checked" : "unchecked") },
         },
         {
-          type: "Box",
+          type: "View",
           props: { className: "gap-0.5" },
           children: [
             { type: "Text", props: { className: "text-sm font-medium text-foreground" }, children: label },
@@ -341,20 +341,20 @@ export const TREES: Record<string, TreeFn> = {
   divider: (s) => {
   if (s.variant === "action") {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "w-80" },
       children: [
         {
-          type: "Box",
+          type: "View",
           props: { className: "gap-2" },
           children: [
             {
-              type: "Box",
+              type: "View",
               props: { className: "rounded-md border border-border px-3 py-2" },
               children: { type: "Text", props: { className: "text-sm text-foreground" }, children: "Ada commented on the draft" },
             },
             {
-              type: "Box",
+              type: "View",
               props: { className: "rounded-md border border-border px-3 py-2" },
               children: { type: "Text", props: { className: "text-sm text-foreground" }, children: "Grace approved the request" },
             },
@@ -381,11 +381,11 @@ export const TREES: Record<string, TreeFn> = {
     const descs = { search: "Try adjusting your search filters.", users: "Invite your first team member.", files: "Upload or drag files here.", activity: "Events will appear as they happen.", notifications: "No new notifications.", errors: "Everything is running smoothly.", "all-clear": "No locked accounts or pending reviews." };
     const positive = v === "errors" || v === "all-clear";
     return {
-      type: "Box",
+      type: "View",
       props: { className: "overflow-x-auto rounded-lg border border-border" },
       children: [
         {
-          type: "Box",
+          type: "View",
           props: { className: "flex-row border-b border-border" },
           children: ["Name", "Email", "Role", "Status"].map((h) => ({
             type: "Text",
@@ -394,7 +394,7 @@ export const TREES: Record<string, TreeFn> = {
           })),
         },
         {
-          type: "Box",
+          type: "View",
           props: { className: "px-4 py-10" },
           children: {
             type: "EmptyState",
@@ -448,7 +448,7 @@ export const TREES: Record<string, TreeFn> = {
       });
     }
     return {
-      type: "Box",
+      type: "View",
       props: { className: "max-w-[320px] flex-col gap-1.5" },
       children,
     };
@@ -474,7 +474,7 @@ export const TREES: Record<string, TreeFn> = {
       children.push({ type: "Kbd", children: k });
     });
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row items-center gap-1" },
       children,
     };
@@ -495,7 +495,7 @@ export const TREES: Record<string, TreeFn> = {
       children: " to search.",
     });
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-row flex-wrap items-center gap-1" },
       children,
     };
@@ -507,7 +507,7 @@ export const TREES: Record<string, TreeFn> = {
   "media-objects": (s) => {
   if (s.variant === "icon") {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "max-w-[560px] grid grid-cols-1 gap-3 sm:grid-cols-2" },
       children: [
         {
@@ -535,7 +535,7 @@ export const TREES: Record<string, TreeFn> = {
   }
   if (s.variant === "action") {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "max-w-[480px]" },
       children: [
         {
@@ -567,12 +567,12 @@ export const TREES: Record<string, TreeFn> = {
 
   if (s.variant === "card") {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "grid grid-cols-3 gap-2" },
       children: opts.map((o) => {
         const sel = o.val === pick;
         return {
-          type: "Box",
+          type: "View",
           props: {
             className:
               "flex-col rounded-md p-3.5 " +
@@ -602,17 +602,17 @@ export const TREES: Record<string, TreeFn> = {
 
   if (s.variant === "stacked") {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "flex-col gap-2.5" },
       children: opts.map((o) => {
         const sel = o.val === pick;
         return {
-          type: "Box",
+          type: "View",
           props: { className: "flex-row gap-2" },
           children: [
             { type: "Radio", props: { checked: sel, className: "mt-[3px]", onChange: () => demo?.set("demoPick", o.val) } },
             {
-              type: "Box",
+              type: "View",
               children: [
                 {
                   type: "Text",
@@ -648,17 +648,17 @@ export const TREES: Record<string, TreeFn> = {
   // a separator, a Comment ghost button, and a "Leave a comment" textarea.
   if (s.toolbar === true) {
     return {
-      type: "Box",
+      type: "View",
       props: { className: "max-w-[400px] overflow-hidden rounded-md border border-border" },
       children: [
         {
-          type: "Box",
+          type: "View",
           props: { className: "flex-row items-center gap-1 border-b border-border bg-muted/30 px-3 py-2" },
           children: [
             { type: "Button", props: { ghost: true, small: true, className: "min-w-8 px-2" }, children: "B" },
             { type: "Button", props: { ghost: true, small: true, className: "min-w-8 px-2" }, children: "I" },
             { type: "Button", props: { ghost: true, small: true, className: "min-w-8 px-2" }, children: "</>" },
-            { type: "Box", props: { className: "mx-1 h-4 w-px bg-border" } },
+            { type: "View", props: { className: "mx-1 h-4 w-px bg-border" } },
             { type: "Button", props: { ghost: true, small: true, className: "px-3" }, children: "Comment" },
           ],
         },
@@ -694,7 +694,7 @@ export const TREES: Record<string, TreeFn> = {
       },
     });
     children.push({
-      type: "Box",
+      type: "View",
       props: { className: "mt-1 flex-row justify-end" },
       children: {
         type: "Text",
@@ -703,7 +703,7 @@ export const TREES: Record<string, TreeFn> = {
       },
     });
     return {
-      type: "Box",
+      type: "View",
       props: { className: "max-w-[400px]" },
       children: children,
     };
@@ -714,7 +714,7 @@ export const TREES: Record<string, TreeFn> = {
 
   // The home hero: a SaveBar (Card surface composing a Field and three Buttons).
   // Exercises the Surface (glass), Density (compact/comfortable), loading, and
-  // block axes. A Box carries the layout width so the Card itself stays pure
+  // block axes. A View carries the layout width so the Card itself stays pure
   // semantic props. The smaller buttons stretch full-width because a Card lays
   // its children out as a vertical stack.
   "save-bar": (s) => {
@@ -725,7 +725,7 @@ export const TREES: Record<string, TreeFn> = {
           ? { compact: true }
           : {};
     return {
-      type: "Box",
+      type: "View",
       props: { className: "w-[320px]" },
       children: {
         type: "Card",

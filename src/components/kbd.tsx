@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 
 // Kbd: a keyboard shortcut indicator. Renders a single key cap, a small
 // bordered, slightly raised label with monospace-ish small text. The key label
@@ -24,8 +24,8 @@ export function Kbd({ children, className }: KbdProps) {
   const label = "text-xs font-medium text-muted-foreground";
 
   return (
-    <Box className={container}>
+    <View className={container}>
       {children != null ? <Text className={label}>{children}</Text> : null}
-    </Box>
+    </View>
   );
 }

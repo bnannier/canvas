@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // Stepper: an ordered list of steps showing progress through a flow. Each step
 // is a numbered circle (or a check once completed) with a label, and the steps
@@ -96,7 +96,7 @@ function Circle({ index, state, onPress }: { index: number; state: State; onPres
       </Pressable>
     );
   }
-  return <Box className={cn(CIRCLE_BASE, CIRCLE_STATE[state])}>{glyph}</Box>;
+  return <View className={cn(CIRCLE_BASE, CIRCLE_STATE[state])}>{glyph}</View>;
 }
 
 export function Stepper(props: StepperProps) {
@@ -106,43 +106,43 @@ export function Stepper(props: StepperProps) {
   if (layout === "progress") {
     const pct = Math.max(0, Math.min(100, Math.round(value ?? 0)));
     return (
-      <Box className={cn("w-full", className)}>
-        <Box className="mb-1.5 flex-row items-center justify-between">
+      <View className={cn("w-full", className)}>
+        <View className="mb-1.5 flex-row items-center justify-between">
           <Text className="text-xs font-medium text-foreground">
             {label ?? "Setup progress"}
           </Text>
           <Text className="text-xs text-muted-foreground">{pct}%</Text>
-        </Box>
-        <Box className="h-1.5 overflow-hidden rounded-full bg-muted">
-          <Box
+        </View>
+        <View className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <View
             className="h-full rounded-full bg-primary"
             style={{ width: `${pct}%` }}
           />
-        </Box>
-      </Box>
+        </View>
+      </View>
     );
   }
 
   if (layout === "vertical") {
     return (
-      <Box className={cn("w-full", className)}>
+      <View className={cn("w-full", className)}>
         {steps.map((step, i) => {
           const state = stateOf(i, current);
           const isLast = i === steps.length - 1;
           return (
-            <Box key={i} className="flex-row gap-3">
-              <Box className="items-center">
+            <View key={i} className="flex-row gap-3">
+              <View className="items-center">
                 <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
                 {!isLast ? (
-                  <Box
+                  <View
                     className={cn(
                       "my-1 w-px flex-1",
                       connectorBg(state === "completed"),
                     )}
                   />
                 ) : null}
-              </Box>
-              <Box className={cn("flex-1", !isLast && "pb-6")}>
+              </View>
+              <View className={cn("flex-1", !isLast && "pb-6")}>
                 <Text className={cn(LABEL_BASE, LABEL_STATE[state])}>
                   {step.label}
                 </Text>
@@ -151,30 +151,30 @@ export function Stepper(props: StepperProps) {
                     {step.description}
                   </Text>
                 ) : null}
-              </Box>
-            </Box>
+              </View>
+            </View>
           );
         })}
-      </Box>
+      </View>
     );
   }
 
   // Horizontal: a row of circle + label columns, joined by flex-filling rules.
   return (
-    <Box className={cn("flex-row items-start", className)}>
+    <View className={cn("flex-row items-start", className)}>
       {steps.map((step, i) => {
         const state = stateOf(i, current);
         const isLast = i === steps.length - 1;
         return (
-          <Box key={i} className={cn("flex-row items-start", !isLast && "flex-1")}>
-            <Box className="items-center gap-1.5">
+          <View key={i} className={cn("flex-row items-start", !isLast && "flex-1")}>
+            <View className="items-center gap-1.5">
               <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
               <Text className={cn("text-xs font-medium", LABEL_STATE[state])}>
                 {step.label}
               </Text>
-            </Box>
+            </View>
             {!isLast ? (
-              <Box
+              <View
                 className={cn(
                   "mx-2 mt-4 h-px flex-1",
                   // The connector after a step is "filled" once that step is
@@ -183,9 +183,9 @@ export function Stepper(props: StepperProps) {
                 )}
               />
             ) : null}
-          </Box>
+          </View>
         );
       })}
-    </Box>
+    </View>
   );
 }

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 
 // Two families of badge.
 //
@@ -107,10 +107,10 @@ export function Badge(props: BadgeProps) {
     const container = cn(STATUS_BASE, STATUS_CONTAINER[tone], className);
     const label = cn(labelType, STATUS_LABEL[tone]);
     return (
-      <Box className={container}>
-        <Box className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[tone])} />
+      <View className={container}>
+        <View className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[tone])} />
         {children != null ? <Text className={label}>{children}</Text> : null}
-      </Box>
+      </View>
     );
   }
 
@@ -122,12 +122,12 @@ export function Badge(props: BadgeProps) {
   const monoStyle = mono ? { fontFamily: "monospace" } : undefined;
 
   return (
-    <Box className={container}>
+    <View className={container}>
       {children != null ? (
         <Text className={label} style={monoStyle}>
           {children}
         </Text>
       ) : null}
-    </Box>
+    </View>
   );
 }

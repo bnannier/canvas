@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 export interface SwitchProps {
   /** Controlled on/off state. The component renders exactly this value. */
@@ -104,14 +104,14 @@ export function Switch(props: SwitchProps) {
       accessibilityState={{ checked, disabled: !!disabled }}
     >
       {children != null || description != null ? (
-        <Box>
+        <View>
           {children != null ? <Text className={labelClass}>{children}</Text> : null}
           {description != null ? <Text className={descClass}>{description}</Text> : null}
-        </Box>
+        </View>
       ) : null}
-      <Box className={track}>
-        <Box className={thumb} />
-      </Box>
+      <View className={track}>
+        <View className={thumb} />
+      </View>
     </Pressable>
   );
 }

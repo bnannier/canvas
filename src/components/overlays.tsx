@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 
 // Overlay: a dim backdrop with a surface anchored to a side or the center,
 // rendered INLINE for the docs preview. Rather than a full-screen portal/Modal,
-// this is a CONTAINED backdrop Box (a rounded, clipped scrim with explicit
+// this is a CONTAINED backdrop View (a rounded, clipped scrim with explicit
 // presence in the preview) that holds the overlay surface positioned inside it:
 // a right-side drawer, a bottom sheet, or a centered modal/panel.
 //
@@ -82,16 +82,16 @@ export function Overlay(props: OverlayProps) {
   // backdrop: a rounded, clipped scrim with explicit presence in the preview
   // (minHeight) so the surface reads as an overlay within the area.
   return (
-    <Box className="w-full">
+    <View className="w-full">
       {trigger != null ? (
-        <Box className="self-start">
+        <View className="self-start">
           <Button outline small onPress={() => setOpen(true)}>
             {trigger}
           </Button>
-        </Box>
+        </View>
       ) : null}
       {open ? (
-        <Box
+        <View
           className={cn(
             trigger != null && "mt-3",
             "relative w-full overflow-hidden rounded-lg bg-black/50",
@@ -99,21 +99,21 @@ export function Overlay(props: OverlayProps) {
           )}
           style={{ minHeight: 280 }}
         >
-          <Box className={cn(SURFACE_PLACEMENT[placement], className)}>
+          <View className={cn(SURFACE_PLACEMENT[placement], className)}>
             {title != null ? (
               <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
             ) : null}
             {description != null ? (
               <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
             ) : null}
-            <Box className="flex-row justify-end mt-6">
+            <View className="flex-row justify-end mt-6">
               <Button primary small onPress={() => { onDone?.(); setOpen(false); }}>
                 {doneLabel}
               </Button>
-            </Box>
-          </Box>
-        </Box>
+            </View>
+          </View>
+        </View>
       ) : null}
-    </Box>
+    </View>
   );
 }

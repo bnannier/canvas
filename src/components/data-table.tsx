@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Checkbox } from "./checkbox.js";
 
 // The data table lays a grid out as flex rows of equal-width flex-1 cells (the
@@ -77,27 +77,27 @@ export function DataTable(props: DataTableProps) {
     );
 
   return (
-    <Box className={wrap}>
-      <Box className={headerRow}>
-        {selectable ? <Box className={cn(SELECT_COL, "flex-none")} /> : null}
+    <View className={wrap}>
+      <View className={headerRow}>
+        {selectable ? <View className={cn(SELECT_COL, "flex-none")} /> : null}
         {columns.map((label, i) => (
           <Text key={`h-${i}`} className={headerCell}>
             {label}
           </Text>
         ))}
-      </Box>
+      </View>
       {rows.map((row, r) => {
         const cells = (
           <>
             {selectable ? (
-              <Box className={cn(SELECT_COL, "flex-none", CELL_PAD[density])}>
+              <View className={cn(SELECT_COL, "flex-none", CELL_PAD[density])}>
                 <Checkbox />
-              </Box>
+              </View>
             ) : null}
             {columns.map((_col, c) => (
-              <Box key={`c-${r}-${c}`} className={cn("flex-1", CELL_PAD[density])}>
+              <View key={`c-${r}-${c}`} className={cn("flex-1", CELL_PAD[density])}>
                 <Text className="text-sm text-foreground">{cellOf(row, c)}</Text>
-              </Box>
+              </View>
             ))}
           </>
         );
@@ -106,10 +106,10 @@ export function DataTable(props: DataTableProps) {
             {cells}
           </Pressable>
         ) : (
-          <Box key={`r-${r}`} className={dataRow(r)}>{cells}</Box>
+          <View key={`r-${r}`} className={dataRow(r)}>{cells}</View>
         );
       })}
-    </Box>
+    </View>
   );
 }
 

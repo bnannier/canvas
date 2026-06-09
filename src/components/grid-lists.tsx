@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Card } from "./card.js";
 import { Avatar } from "./avatar.js";
 import { Badge } from "./badge.js";
@@ -99,31 +99,31 @@ export function GridList(props: GridListProps) {
   const tilePad = compact ? "p-4" : "p-5";
 
   return (
-    <Box className={container}>
+    <View className={container}>
       {items.map((item, index) =>
         gallery ? (
-          <Box
+          <View
             key={`${item.title}-${index}`}
             className={cn("grow", TILE_WIDTH[columns])}
           >
             {/* Square color block. The engine has no bg-gradient, so a single
                 translucent tint stands in for the legacy gradient swatch. */}
-            <Box
+            <View
               className={cn("w-full h-32 rounded-md", item.color ? `bg-${item.color}/20` : "bg-muted")}
             />
-            <Box className="mt-2">
+            <View className="mt-2">
               <Text className="text-xs font-medium text-card-foreground">{item.title}</Text>
               {item.subtitle != null ? (
                 <Text className="text-xs text-muted-foreground">{item.subtitle}</Text>
               ) : null}
-            </Box>
-          </Box>
+            </View>
+          </View>
         ) : (
           <Card
             key={`${item.title}-${index}`}
             className={cn("grow items-center", TILE_WIDTH[columns], tilePad)}
           >
-            <Box className="items-center gap-2">
+            <View className="items-center gap-2">
               <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
                 {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
               </Avatar>
@@ -132,24 +132,24 @@ export function GridList(props: GridListProps) {
                 <Text className="text-xs text-muted-foreground">{item.subtitle}</Text>
               ) : null}
               {item.badge != null ? (
-                <Box className="mt-1">
+                <View className="mt-1">
                   <Badge secondary>{item.badge}</Badge>
-                </Box>
+                </View>
               ) : null}
               {item.actions != null && item.actions.length > 0 ? (
-                <Box className="flex-row gap-2 mt-2">
+                <View className="flex-row gap-2 mt-2">
                   {item.actions.map((action, i) => (
                     <Button key={`${action.label}-${i}`} small outline={action.outline} ghost={action.ghost}>
                       {action.label}
                     </Button>
                   ))}
-                </Box>
+                </View>
               ) : null}
-            </Box>
+            </View>
           </Card>
         ),
       )}
-    </Box>
+    </View>
   );
 }
 

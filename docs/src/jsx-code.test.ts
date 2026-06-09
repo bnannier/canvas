@@ -72,7 +72,7 @@ test("serializeTree: a self-closing element has no children", () => {
 
 test("serializeTree: a composite row nests and indents children", () => {
   const code = serializeTree({
-    type: "Box",
+    type: "View",
     props: { className: "flex-row items-center gap-2" },
     children: [
       { type: "Text", props: { className: "font-semibold" }, children: "Rachel Chen" },
@@ -82,11 +82,11 @@ test("serializeTree: a composite row nests and indents children", () => {
   });
   expect(code).toBe(
     [
-      '<Box className="flex-row items-center gap-2">',
+      '<View className="flex-row items-center gap-2">',
       '  <Text className="font-semibold">Rachel Chen</Text>',
       "  <Badge status success>active</Badge>",
       "  <Badge secondary>employee</Badge>",
-      "</Box>",
+      "</View>",
     ].join("\n"),
   );
 });

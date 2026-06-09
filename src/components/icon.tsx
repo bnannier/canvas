@@ -1,5 +1,5 @@
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
-import { Box, Text, useTheme } from "../engine/index.js";
+import { View, Text, useTheme } from "../engine/index.js";
 import type { ColorTokens } from "../engine/index.js";
 
 // Icon: a Lucide-style outline glyph rendered with react-native-svg, so it draws
@@ -284,16 +284,16 @@ export function Icon(props: IconProps) {
 
   if (props.set) {
     return (
-      <Box className="w-full flex-row flex-wrap">
+      <View className="w-full flex-row flex-wrap">
         {NAMES.map(({ key, label }) => (
-          <Box key={key} className="items-center gap-1.5 rounded-lg px-1 py-2.5" style={{ width: 80 }}>
+          <View key={key} className="items-center gap-1.5 rounded-lg px-1 py-2.5" style={{ width: 80 }}>
             <Glyph shapes={ICONS[key]} size={20} stroke={tokens.foreground} />
             <Text className="text-muted-foreground" style={{ fontSize: 10 }}>
               {label}
             </Text>
-          </Box>
+          </View>
         ))}
-      </Box>
+      </View>
     );
   }
 

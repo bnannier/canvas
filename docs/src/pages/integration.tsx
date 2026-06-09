@@ -113,10 +113,10 @@ token("radius-md");   // "0.375rem"
 // For an alpha variant, compose in CSS:
 //   color-mix(in oklch, var(--primary) 50%, transparent)`;
 
-const buildingCode = `import { Box, Text, cn } from "@olympusoss/canvas";
+const buildingCode = `import { View, Text, cn } from "@olympusoss/canvas";
 
 // Build your own components on the engine primitives the same way Canvas does:
-// a className-driven Box/Text/Pressable/Image/TextInput/ScrollView, with flat boolean
+// a className-driven View/Text/Pressable/Image/TextInput/ScrollView, with flat boolean
 // props for each style choice (not string enums).
 interface CalloutProps {
   children: React.ReactNode;
@@ -126,16 +126,16 @@ interface CalloutProps {
 
 export function Callout({ children, primary }: CalloutProps) {
   return (
-    <Box className={cn("rounded-md border border-border p-4", primary ? "bg-primary" : "bg-card")}>
+    <View className={cn("rounded-md border border-border p-4", primary ? "bg-primary" : "bg-card")}>
       <Text className={cn("text-sm", primary ? "text-primary-foreground" : "text-foreground")}>
         {children}
       </Text>
-    </Box>
+    </View>
   );
 }`;
 
 const EXPORTS = [
-  { path: "@olympusoss/canvas", content: "Components, the engine (ThemeProvider, Box, Text, Pressable, Image, TextInput, ScrollView, useStyles, useTheme), and the cn / token / theme utilities. Ships as TypeScript source." },
+  { path: "@olympusoss/canvas", content: "Components, the engine (ThemeProvider, View, Text, Pressable, Image, TextInput, ScrollView, useStyles, useTheme), and the cn / token / theme utilities. Ships as TypeScript source." },
   { path: "@olympusoss/canvas/styles/canvas.css", content: "Tailwind v4 token layer: the CSS custom properties plus the .dark / [data-surface] / [data-density] theme hooks. Web only." },
 ];
 
@@ -238,7 +238,7 @@ export function IntegrationPage() {
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Building on Canvas</h2>
           <p className="body" style={{ marginBottom: "0.75rem" }}>
             Compose Canvas components directly, or build your own on the engine primitives
-            (<code className="code">Box</code>, <code className="code">Text</code>, <code className="code">Pressable</code>,
+            (<code className="code">View</code>, <code className="code">Text</code>, <code className="code">Pressable</code>,
             {" "}<code className="code">Image</code>, <code className="code">TextInput</code>, <code className="code">ScrollView</code>).
             Follow the Canvas convention: one flat boolean prop per style choice, not string-enum
             {" "}<code className="code">variant</code>/<code className="code">size</code> props.

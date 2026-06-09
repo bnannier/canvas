@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 
 // Empty state: a centered, calm column that explains why a region is empty and,
@@ -64,11 +64,11 @@ export function EmptyState(props: EmptyStateProps) {
   );
 
   return (
-    <Box className={container}>
+    <View className={container}>
       {icon != null ? (
-        <Box className={cn(DISC_BASE, DISC_TONE[tone])}>
+        <View className={cn(DISC_BASE, DISC_TONE[tone])}>
           <Text className={cn("text-xl", GLYPH_TONE[tone])}>{icon}</Text>
-        </Box>
+        </View>
       ) : null}
       {title != null ? (
         <Text className="text-center text-base font-semibold text-foreground">{title}</Text>
@@ -77,12 +77,12 @@ export function EmptyState(props: EmptyStateProps) {
         <Text className="mt-1 text-center text-sm text-muted-foreground">{description}</Text>
       ) : null}
       {actionLabel != null ? (
-        <Box className="mt-4">
+        <View className="mt-4">
           <Button primary small onPress={onAction}>
             {actionLabel}
           </Button>
-        </Box>
+        </View>
       ) : null}
-    </Box>
+    </View>
   );
 }

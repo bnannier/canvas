@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 
 // Dropdown: a trigger plus a floating menu of action rows. The menu is a
@@ -84,7 +84,7 @@ export function Dropdown(props: DropdownProps) {
 
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
-    <Box
+    <View
       className={cn("relative self-start", className)}
       onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
     >
@@ -104,7 +104,7 @@ export function Dropdown(props: DropdownProps) {
       )}
 
       {open ? (
-        <Box
+        <View
           className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}
           style={{ minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }}
         >
@@ -114,9 +114,9 @@ export function Dropdown(props: DropdownProps) {
             </Text>
           ) : null}
           {items.map((item, index) => (
-            <Box key={`${item.label}-${index}`}>
+            <View key={`${item.label}-${index}`}>
               {item.separatorBefore ? (
-                <Box className="my-1 h-px bg-border" />
+                <View className="my-1 h-px bg-border" />
               ) : null}
               <Pressable
                 className={cn(ITEM_ROW, item.disabled && "opacity-50")}
@@ -153,10 +153,10 @@ export function Dropdown(props: DropdownProps) {
                   </Text>
                 ) : null}
               </Pressable>
-            </Box>
+            </View>
           ))}
-        </Box>
+        </View>
       ) : null}
-    </Box>
+    </View>
   );
 }

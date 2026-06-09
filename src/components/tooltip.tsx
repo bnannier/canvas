@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 import { Icon } from "./icon.js";
 
@@ -86,9 +86,9 @@ export function Tooltip(props: TooltipProps) {
   const bubbleLabel = "text-xs font-medium text-background";
 
   const tip = open ? (
-    <Box className={bubble}>
+    <View className={bubble}>
       <Text className={bubbleLabel}>{label}</Text>
-    </Box>
+    </View>
   ) : null;
 
   // Icon trigger: a ghost icon button (40px square) holding the settings glyph,
@@ -110,10 +110,10 @@ export function Tooltip(props: TooltipProps) {
   );
 
   return (
-    <Box className={wrapper}>
+    <View className={wrapper}>
       {BUBBLE_FIRST[placement] ? tip : null}
       {triggerEl}
       {BUBBLE_FIRST[placement] ? null : tip}
-    </Box>
+    </View>
   );
 }

@@ -1,4 +1,4 @@
-import { ScrollView, Box, Text } from "@olympusoss/canvas";
+import { ScrollView, View, Text } from "@olympusoss/canvas";
 import { CodeBlock } from "@/components/code-block";
 import { Toc } from "@/components/toc";
 
@@ -15,7 +15,7 @@ const tocItems = [
 // One row per styled primitive: the Canvas name, the react-native component it
 // wraps, and what its className styles.
 const PRIproprietaryIVES = [
-  { name: "Box", wraps: "View", styles: "The view box: layout, background, border, radius." },
+  { name: "View", wraps: "View", styles: "The view box: layout, background, border, radius." },
   { name: "Text", wraps: "Text", styles: "The text run: color, size, weight, alignment." },
   { name: "Pressable", wraps: "Pressable", styles: "The pressable surface, plus a pressed-state restyle (active:*)." },
   { name: "Image", wraps: "Image", styles: "Size, radius, aspect. source / resizeMode pass through." },
@@ -26,14 +26,14 @@ const PRIproprietaryIVES = [
 // Things Canvas deliberately does NOT wrap, with the principled reason and the
 // thing to reach for instead. Keeps the boundary explicit, not arbitrary.
 const NOT_WRAPPED = [
-  { from: "FlatList / SectionList", why: "Virtualization; the styling surface is your renderItem cells.", instead: "Import from react-native; build cells with Box / Text." },
+  { from: "FlatList / SectionList", why: "Virtualization; the styling surface is your renderItem cells.", instead: "Import from react-native; build cells with View / Text." },
   { from: "Modal", why: "Canvas overlays render their open state inline, so there is no Modal to dogfood.", instead: "Use Dialog / Popover / Tooltip, or import Modal." },
   { from: "Animated, Animated.View", why: "Animation is a behavior driven by Animated.Value, not a static className.", instead: "Spread a resolved useStyles() value onto Animated.View (the Skeleton recipe)." },
   { from: "Dimensions / useWindowDimensions", why: "The engine already consumes useWindowDimensions for responsive resolution.", instead: "React with responsive className variants, or import for raw values." },
   { from: "KeyboardAvoidingView / SafeAreaView / RefreshControl", why: "Behavior primitives whose value is platform behavior, not styling.", instead: "Import from react-native (or react-native-safe-area-context)." },
 ];
 
-const scrollCode = `import { ScrollView, Box, Text } from "@olympusoss/canvas";
+const scrollCode = `import { ScrollView, View, Text } from "@olympusoss/canvas";
 
 // className styles the FRAME (give it a bounded height so it scrolls);
 // contentClassName styles the inner content container (padding, gap, centering).
@@ -42,19 +42,19 @@ const scrollCode = `import { ScrollView, Box, Text } from "@olympusoss/canvas";
   contentClassName="p-3 gap-2"
 >
   {rows.map((label) => (
-    <Box key={label} className="rounded-md bg-muted px-3 py-2">
+    <View key={label} className="rounded-md bg-muted px-3 py-2">
       <Text className="text-sm text-foreground">{label}</Text>
-    </Box>
+    </View>
   ))}
 </ScrollView>`;
 
-const imageCode = `import { Image, Box } from "@olympusoss/canvas";
+const imageCode = `import { Image, View } from "@olympusoss/canvas";
 
 // className carries size + radius; source / resizeMode are normal RN ImageProps.
 // RN clips a photo to the circle via an overflow-hidden parent.
-<Box className="w-12 h-12 overflow-hidden rounded-full">
+<View className="w-12 h-12 overflow-hidden rounded-full">
   <Image className="w-full h-full" source={{ uri: photo }} resizeMode="cover" />
-</Box>`;
+</View>`;
 
 const textInputCode = `import { TextInput, useTheme } from "@olympusoss/canvas";
 
@@ -108,7 +108,7 @@ export function RnPrimitivesPage() {
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Two layers, one rule</h2>
           <p className="small muted" style={{ marginBottom: "0.5rem" }}>
             Canvas ships semantic-prop <strong>components</strong> (Button, Input, Card) on top of a thin set of
-            className-driven engine <strong>primitives</strong> (Box, Text, Pressable, Image, TextInput, ScrollView).
+            className-driven engine <strong>primitives</strong> (View, Text, Pressable, Image, TextInput, ScrollView).
             Components carry flat boolean style props; primitives carry a <code className="code">className</code> and
             nothing semantic. The boolean-prop philosophy applies to components, not these low-level primitives.
           </p>
@@ -117,7 +117,7 @@ export function RnPrimitivesPage() {
             {" "}<code className="code">className</code>, resolves it with <code className="code">useStyles</code> for the
             active theme and viewport (desktop-first responsive), and renders
             {" "}<code className="code">style=&#123;[resolved, style]&#125;</code> so a caller-supplied style always wins. This is
-            the same wrapper that <code className="code">Box</code>, <code className="code">Text</code>, and
+            the same wrapper that <code className="code">View</code>, <code className="code">Text</code>, and
             {" "}<code className="code">Pressable</code> already use.
           </p>
         </section>
@@ -127,10 +127,11 @@ export function RnPrimitivesPage() {
         <section id="primitives" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>The styled primitives</h2>
           <p className="small muted" style={{ marginBottom: "0.75rem" }}>
-            Each primitive mirrors its react-native counterpart's name (Text, Pressable,
-            Image, TextInput, ScrollView); the one exception is <code className="code">Box</code>,
-            the styled container that wraps react-native's <code className="code">View</code>.
-            Import them from <code className="code">@olympusoss/canvas</code>.
+            Each primitive mirrors its react-native counterpart's name and props:
+            {" "}<code className="code">View</code>, <code className="code">Text</code>,
+            {" "}<code className="code">Pressable</code>, <code className="code">Image</code>,
+            {" "}<code className="code">TextInput</code>, <code className="code">ScrollView</code>.
+            Import them from <code className="code">@olympusoss/canvas</code>, not from react-native.
           </p>
           <table className="dt-table">
             <thead><tr><th>Primitive</th><th>Wraps (react-native)</th><th>className styles</th></tr></thead>
@@ -165,9 +166,9 @@ export function RnPrimitivesPage() {
               contentClassName="p-3 gap-2"
             >
               {SCROLL_ROWS.map((label) => (
-                <Box key={label} className="rounded-md bg-muted px-3 py-2">
+                <View key={label} className="rounded-md bg-muted px-3 py-2">
                   <Text className="text-sm text-foreground">{label}</Text>
-                </Box>
+                </View>
               ))}
             </ScrollView>
           </div>

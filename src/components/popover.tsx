@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 
 // Popover: a trigger paired with a floating card of rich content (a heading,
@@ -86,16 +86,16 @@ export function Popover(props: PopoverProps) {
   );
 
   return (
-    <Box className={cn(!inline && "relative self-start")}>
+    <View className={cn(!inline && "relative self-start")}>
       {inline ? null : (
-        <Box className="self-start">
+        <View className="self-start">
           <Button outline small onPress={() => setOpen(!open)}>
             {trigger ?? "Open popover"}
           </Button>
-        </Box>
+        </View>
       )}
       {open ? (
-        <Box className={card}>
+        <View className={card}>
           {title != null ? (
             <Text className="text-sm font-semibold text-popover-foreground">{title}</Text>
           ) : null}
@@ -103,14 +103,14 @@ export function Popover(props: PopoverProps) {
             <Text className="mt-1 text-sm text-muted-foreground">{description}</Text>
           ) : null}
           {actionLabel != null ? (
-            <Box className="mt-3 flex-row justify-end">
+            <View className="mt-3 flex-row justify-end">
               <Button primary small onPress={() => setOpen(false)}>
                 {actionLabel}
               </Button>
-            </Box>
+            </View>
           ) : null}
-        </Box>
+        </View>
       ) : null}
-    </Box>
+    </View>
   );
 }

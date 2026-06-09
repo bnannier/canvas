@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // Pagination is page-of-N navigation for tables and lists: a horizontal row of
 // page-number buttons flanked by Prev/Next controls, with the current page
@@ -178,13 +178,13 @@ export function Pagination(props: PaginationProps) {
   // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
   if (variant === "compact") {
     return (
-      <Box className={cn("flex-row items-center gap-2", className)}>
+      <View className={cn("flex-row items-center gap-2", className)}>
         {prev}
         <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>
           {`Page ${current} of ${total}`}
         </Text>
         {next}
-      </Box>
+      </View>
     );
   }
 
@@ -206,8 +206,8 @@ export function Pagination(props: PaginationProps) {
       disabled && "opacity-50",
     );
     return (
-      <Box className={cn("flex-row items-center gap-4", className)}>
-        <Box className="flex-row items-center gap-2">
+      <View className={cn("flex-row items-center gap-4", className)}>
+        <View className="flex-row items-center gap-2">
           <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>Rows per page</Text>
           <Pressable
             className={selector}
@@ -219,15 +219,15 @@ export function Pagination(props: PaginationProps) {
             <Text className={cn("font-medium text-foreground", LABEL_SIZE[size])}>{pageSize}</Text>
             <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>▾</Text>
           </Pressable>
-        </Box>
+        </View>
         <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>
           {`Page ${current} of ${total}`}
         </Text>
-        <Box className="flex-row items-center gap-1">
+        <View className="flex-row items-center gap-1">
           {prev}
           {next}
-        </Box>
-      </Box>
+        </View>
+      </View>
     );
   }
 
@@ -235,7 +235,7 @@ export function Pagination(props: PaginationProps) {
   const window = pageWindow(current, total);
 
   return (
-    <Box className={cn("flex-row items-center gap-1", className)}>
+    <View className={cn("flex-row items-center gap-1", className)}>
       {prev}
       {window.map((p, i) => {
         if (p === GAP) {
@@ -276,6 +276,6 @@ export function Pagination(props: PaginationProps) {
         );
       })}
       {next}
-    </Box>
+    </View>
   );
 }

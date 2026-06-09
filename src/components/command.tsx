@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../cn.js";
-import { Box, Text, Pressable } from "../engine/index.js";
+import { View, Text, Pressable } from "../engine/index.js";
 import { Icon } from "./icon.js";
 import { Kbd } from "./kbd.js";
 
@@ -113,14 +113,14 @@ export function Command(props: CommandProps) {
 
   const card =
     open ? (
-      <Box className={cn(CARD, trigger && "absolute top-full left-0 z-50 mt-3")}>
-        <Box className={SEARCH_ROW}>
+      <View className={cn(CARD, trigger && "absolute top-full left-0 z-50 mt-3")}>
+        <View className={SEARCH_ROW}>
           <Text className={SEARCH_GLYPH}>🔍</Text>
           <Text className={SEARCH_PLACEHOLDER}>{placeholder}</Text>
-        </Box>
+        </View>
 
         {groups.map((group, gi) => (
-          <Box key={`group-${gi}`}>
+          <View key={`group-${gi}`}>
             {group.heading != null ? (
               <Text className={GROUP_HEADING}>{group.heading}</Text>
             ) : null}
@@ -142,39 +142,39 @@ export function Command(props: CommandProps) {
                 </Pressable>
               );
             })}
-          </Box>
+          </View>
         ))}
 
         {footer ? (
-          <Box className={FOOTER_BAR}>
-            <Box className={FOOTER_HINT}>
+          <View className={FOOTER_BAR}>
+            <View className={FOOTER_HINT}>
               <Kbd>↑</Kbd>
               <Kbd>↓</Kbd>
               <Text className={FOOTER_TEXT}>to navigate</Text>
-            </Box>
-            <Box className={FOOTER_HINT}>
+            </View>
+            <View className={FOOTER_HINT}>
               <Kbd>↵</Kbd>
               <Text className={FOOTER_TEXT}>to select</Text>
-            </Box>
-            <Box className={FOOTER_HINT}>
+            </View>
+            <View className={FOOTER_HINT}>
               <Kbd>esc</Kbd>
               <Text className={FOOTER_TEXT}>to close</Text>
-            </Box>
-          </Box>
+            </View>
+          </View>
         ) : null}
-      </Box>
+      </View>
     ) : null;
 
   if (!trigger) return card;
 
   return (
-    <Box className={cn("relative w-full", className)}>
+    <View className={cn("relative w-full", className)}>
       <Pressable className={TRIGGER_ROW} onPress={() => setOpen(!open)}>
         <Icon search muted size={14} />
         <Text className={TRIGGER_LABEL}>Search...</Text>
         <Kbd className="ml-auto">⌘K</Kbd>
       </Pressable>
       {card}
-    </Box>
+    </View>
   );
 }

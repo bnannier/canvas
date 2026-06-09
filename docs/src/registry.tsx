@@ -1,7 +1,7 @@
 import { createElement, type ComponentType, type ReactNode } from "react";
 import { isElLike, type ElChild } from "@/jsx-code";
 import {
-  Box,
+  View,
   Text,
   ActionPanel,
   Alert,
@@ -85,10 +85,10 @@ export interface RegistryEntry {
 type AnyComponent = ComponentType<Record<string, unknown>>;
 
 // Components a composite `tree` may reference by name. Layout containers are
-// Box/Text from the engine; the rest are real Canvas components. serializeTree
+// View/Text from the engine; the rest are real Canvas components. serializeTree
 // (jsx-code.ts) emits these same names, so preview and code stay identical.
 const COMPONENT_MAP: Record<string, AnyComponent> = {
-  Box: Box as AnyComponent,
+  View: View as AnyComponent,
   Text: Text as AnyComponent,
   Avatar: Avatar as AnyComponent,
   Badge: Badge as AnyComponent,

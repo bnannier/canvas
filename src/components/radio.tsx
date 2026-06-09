@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // A radio is a single circular control that fills with a centered dot when it is
 // the chosen option in its group. It pairs with an optional label and supports a
@@ -99,7 +99,7 @@ export function Radio(props: RadioProps) {
       accessibilityRole="radio"
       accessibilityState={{ checked: isChecked, disabled: !!disabled }}
     >
-      <Box className={ring}>{isChecked ? <Box className={dot} /> : null}</Box>
+      <View className={ring}>{isChecked ? <View className={dot} /> : null}</View>
       {children != null ? <Text className={label}>{children}</Text> : null}
     </Pressable>
   );

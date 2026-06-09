@@ -1,6 +1,6 @@
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // A button group is a horizontal row of buttons that read as one control.
 //
@@ -135,7 +135,7 @@ export function ButtonGroup(props: ButtonGroupProps) {
   // Spaced: detached peers separated by a gap, each with full rounding.
   if (kind === "spaced") {
     return (
-      <Box className={cn("flex-row items-center gap-2", className)}>
+      <View className={cn("flex-row items-center gap-2", className)}>
         {items.map((item, i) => (
           <Segment
             key={`${item}-${i}`}
@@ -148,7 +148,7 @@ export function ButtonGroup(props: ButtonGroupProps) {
             onPress={(e) => onSelect?.(i, item, e)}
           />
         ))}
-      </Box>
+      </View>
     );
   }
 
@@ -159,7 +159,7 @@ export function ButtonGroup(props: ButtonGroupProps) {
     const primary = labels[0] ?? "Save";
     const secondary = labels[1] ?? "More";
     return (
-      <Box className={cn("flex-row items-center", className)}>
+      <View className={cn("flex-row items-center", className)}>
         <Pressable
           className={cn(
             "flex-row items-center justify-center rounded-l-md rounded-r-none bg-primary active:opacity-90",
@@ -176,7 +176,7 @@ export function ButtonGroup(props: ButtonGroupProps) {
         </Pressable>
         {/* Hairline divider: the engine has no border-l-{color}, so the
             separator is an explicit 1px sliver tinted with the label color. */}
-        <Box
+        <View
           className={cn(
             "w-px bg-primary-foreground/20",
             size === "small" ? "h-8" : size === "large" ? "h-10" : "h-9",
@@ -196,14 +196,14 @@ export function ButtonGroup(props: ButtonGroupProps) {
             {secondary}
           </Text>
         </Pressable>
-      </Box>
+      </View>
     );
   }
 
   // Segmented (default): attached segments, one selected.
   const count = items.length;
   return (
-    <Box className={cn("flex-row items-center", className)}>
+    <View className={cn("flex-row items-center", className)}>
       {items.map((item, i) => (
         <Segment
           key={`${item}-${i}`}
@@ -216,6 +216,6 @@ export function ButtonGroup(props: ButtonGroupProps) {
           onPress={(e) => onSelect?.(i, item, e)}
         />
       ))}
-    </Box>
+    </View>
   );
 }

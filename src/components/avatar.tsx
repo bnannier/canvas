@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Image, Pressable, Text } from "../engine/index.js";
+import { View, Image, Pressable, Text } from "../engine/index.js";
 
 // The avatar shows an account's photo when it has one, falling back to one or
 // two initials on a muted surface. It is a circle by default (the consistent
@@ -125,5 +125,5 @@ export function Avatar(props: AvatarProps) {
       </Pressable>
     );
   }
-  return <Box className={container}>{inner}</Box>;
+  return <View className={container}>{inner}</View>;
 }

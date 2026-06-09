@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 import { Input } from "./input.js";
 
 // Dialog: a modal panel centered over a dimmed backdrop, with a title, an
 // optional description, and a right-aligned action row (a primary confirm plus
 // an outline cancel). In the docs preview the overlay is rendered INLINE: a
-// contained dim backdrop Box wraps the centered card, so it reads as a modal
+// contained dim backdrop View wraps the centered card, so it reads as a modal
 // within the preview area rather than a full-screen portal that would cover it.
 //
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
@@ -110,18 +110,18 @@ export function Dialog(props: DialogProps) {
   // backdrop: a centered, rounded scrim with presence in the preview (explicit
   // minHeight) so the panel reads as a modal within the area.
   return (
-    <Box className="self-start">
+    <View className="self-start">
       {trigger != null ? (
         <Button outline small onPress={() => setOpen(true)}>
           {trigger}
         </Button>
       ) : null}
       {open ? (
-        <Box
+        <View
           className={cn(trigger != null && "mt-3", "items-center justify-center rounded-lg bg-black/50 p-8")}
           style={{ minHeight: 220 }}
         >
-          <Box
+          <View
             className={cn(
               "w-full rounded-lg border border-border bg-popover p-6 shadow-xl",
               PANEL_SIZE[size],
@@ -139,17 +139,17 @@ export function Dialog(props: DialogProps) {
                   <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
                 ) : null}
                 {withBody ? (
-                  <Box className="mt-5">
+                  <View className="mt-5">
                     <Text className="text-sm font-medium text-foreground mb-1.5">Amount</Text>
-                    <Box className="flex-row items-center">
+                    <View className="flex-row items-center">
                       <Text className="text-sm text-muted-foreground mr-2">$</Text>
                       <Input value="90.00" className="flex-1" />
-                    </Box>
+                    </View>
                     <Text className="text-sm font-medium text-foreground mb-1.5 mt-4">Reason</Text>
                     <Input placeholder="Duplicate charge" />
-                  </Box>
+                  </View>
                 ) : null}
-                <Box className="flex-row justify-end gap-2 mt-6">
+                <View className="flex-row justify-end gap-2 mt-6">
                   <Button outline small onPress={() => { onCancel?.(); setOpen(false); }}>
                     {cancelLabel}
                   </Button>
@@ -162,12 +162,12 @@ export function Dialog(props: DialogProps) {
                       {confirmLabel}
                     </Button>
                   )}
-                </Box>
+                </View>
               </>
             )}
-          </Box>
-        </Box>
+          </View>
+        </View>
       ) : null}
-    </Box>
+    </View>
   );
 }

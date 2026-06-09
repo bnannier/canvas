@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Checkbox } from "./checkbox.js";
 
 // An inline, selectable list of options rendered directly (not a popover). Each
@@ -90,7 +90,7 @@ export function Listbox(props: ListboxProps) {
   const container = cn(bordered && CONTAINER_BORDERED, disabled && "opacity-50", className);
 
   return (
-    <Box className={container} accessibilityRole="list">
+    <View className={container} accessibilityRole="list">
       {items.map((item, index) => {
         const selected = !!item.selected;
         // Single-select fills the chosen row; multi-select leaves the row plain
@@ -120,15 +120,15 @@ export function Listbox(props: ListboxProps) {
                 {selected ? "✓" : ""}
               </Text>
             )}
-            <Box className="flex-1">
+            <View className="flex-1">
               <Text className={cn("text-foreground", LABEL_SIZE[size])}>{item.label}</Text>
               {item.detail != null ? (
                 <Text className="text-xs text-muted-foreground">{item.detail}</Text>
               ) : null}
-            </Box>
+            </View>
           </Pressable>
         );
       })}
-    </Box>
+    </View>
   );
 }

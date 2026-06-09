@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // Combobox: a searchable single-select. It mirrors Select's structure (a field
 // plus an open option list) and adds text filtering: the field shows the typed
@@ -108,7 +108,7 @@ export function Combobox(props: ComboboxProps) {
   );
 
   return (
-    <Box className={cn("relative w-full", className)}>
+    <View className={cn("relative w-full", className)}>
       {label != null && label !== "" ? (
         <Text className={cn("mb-1.5 font-medium text-foreground", TEXT_SIZE[size])}>
           {label}
@@ -127,13 +127,13 @@ export function Combobox(props: ComboboxProps) {
       </Pressable>
 
       {open ? (
-        <Box className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
+        <View className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
           {matches.length === 0 ? (
-            <Box className="px-2 py-1.5">
+            <View className="px-2 py-1.5">
               <Text className={cn(TEXT_SIZE[size], "text-muted-foreground")}>
                 No results
               </Text>
-            </Box>
+            </View>
           ) : (
             matches.map((option) => {
               const selected = option === value;
@@ -161,12 +161,12 @@ export function Combobox(props: ComboboxProps) {
               );
             })
           )}
-        </Box>
+        </View>
       ) : null}
 
       {helperText != null && helperText !== "" ? (
         <Text className="mt-1.5 text-xs text-muted-foreground">{helperText}</Text>
       ) : null}
-    </Box>
+    </View>
   );
 }

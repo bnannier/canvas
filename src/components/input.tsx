@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { type GestureResponderEvent, type TextStyle } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text, TextInput, useTheme } from "../engine/index.js";
+import { View, Pressable, Text, TextInput, useTheme } from "../engine/index.js";
 import { Icon } from "./icon.js";
 
 // Glyphs an overlaid leading/trailing icon can name. Maps the scalar `icon`
@@ -159,7 +159,7 @@ export function Input(props: InputProps) {
   // field's default outline is suppressed (see FIELD_OUTLINE_RESET).
   const height = fieldHeight(props);
   return (
-    <Box
+    <View
       className={cn(
         "flex-row items-stretch w-full border rounded-md overflow-hidden bg-background",
         border,
@@ -168,15 +168,15 @@ export function Input(props: InputProps) {
       )}
     >
       {prefix != null ? (
-        <Box className={cn("justify-center bg-muted px-3 border-r border-border", height)}>
+        <View className={cn("justify-center bg-muted px-3 border-r border-border", height)}>
           <Text className={cn("text-muted-foreground", textSize)}>{prefix}</Text>
-        </Box>
+        </View>
       ) : null}
 
       {leadingIcon && iconName != null ? (
-        <Box className="absolute inset-y-0 left-0 z-10 justify-center pl-3" pointerEvents="none">
+        <View className="absolute inset-y-0 left-0 z-10 justify-center pl-3" pointerEvents="none">
           <Icon {...{ [iconName]: true }} muted size={16} />
-        </Box>
+        </View>
       ) : null}
 
       <TextInput
@@ -191,9 +191,9 @@ export function Input(props: InputProps) {
       />
 
       {trailingIcon && iconName != null ? (
-        <Box className="absolute inset-y-0 right-0 z-10 justify-center pr-3" pointerEvents="none">
+        <View className="absolute inset-y-0 right-0 z-10 justify-center pr-3" pointerEvents="none">
           <Icon {...{ [iconName]: true }} muted size={16} />
-        </Box>
+        </View>
       ) : null}
 
       {suffix != null ? (
@@ -210,11 +210,11 @@ export function Input(props: InputProps) {
             <Text className={cn("font-medium text-foreground", textSize)}>{suffix}</Text>
           </Pressable>
         ) : (
-          <Box className={cn("justify-center bg-muted px-3 border-l border-border", height)}>
+          <View className={cn("justify-center bg-muted px-3 border-l border-border", height)}>
             <Text className={cn("text-muted-foreground", textSize)}>{suffix}</Text>
-          </Box>
+          </View>
         )
       ) : null}
-    </Box>
+    </View>
   );
 }

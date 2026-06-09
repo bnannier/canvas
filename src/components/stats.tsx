@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 
 // Stats: a row/grid of metric items, each a small label, a large headline value,
 // and an optional delta (e.g. +12.5% in green, -3% in red). Used for dashboard
@@ -78,13 +78,13 @@ function StatItemView({ item, surface }: { item: StatItem; surface: Surface }): 
   const deltaTone = item.down ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400";
   const cell = cn(surface === "card" ? CARD : "", ITEM[surface]);
   return (
-    <Box className={cell}>
+    <View className={cell}>
       <Text className="text-sm text-muted-foreground">{item.label}</Text>
       <Text className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{item.value}</Text>
       {item.delta != null && item.delta !== "" ? (
         <Text className={cn("mt-1 text-xs font-medium", deltaTone)}>{item.delta}</Text>
       ) : null}
-    </Box>
+    </View>
   );
 }
 
@@ -103,13 +103,13 @@ export function Stats(props: StatsProps) {
   const row = cn(ROW, isPlain ? "gap-6" : "gap-3.5");
 
   return (
-    <Box className={outer}>
+    <View className={outer}>
       {title != null && title !== "" ? <Text className={TITLE[surface]}>{title}</Text> : null}
-      <Box className={row}>
+      <View className={row}>
         {items.map((item, i) => (
           <StatItemView key={i} item={item} surface={surface} />
         ))}
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }

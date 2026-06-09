@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Avatar } from "./avatar.js";
 import { Badge } from "./badge.js";
 import { Button } from "./button.js";
@@ -104,10 +104,10 @@ export function StackedList(props: StackedListProps) {
       action
     ) : addAction != null ? (
       <Button outline small>
-        <Box className="flex-row items-center gap-1.5">
+        <View className="flex-row items-center gap-1.5">
           <Icon plus size={13} />
           <Text className="text-xs font-medium text-foreground">{addAction}</Text>
-        </Box>
+        </View>
       </Button>
     ) : null;
 
@@ -118,14 +118,14 @@ export function StackedList(props: StackedListProps) {
   const lastIndex = items.length - 1;
 
   const renderColumn = (item: StackedListItem) => (
-    <Box className="flex-1">
+    <View className="flex-1">
       <Text className={NAME_LABEL} numberOfLines={1}>
         {item.name}
       </Text>
       <Text className={DETAIL_LABEL} numberOfLines={1}>
         {item.detail}
       </Text>
-    </Box>
+    </View>
   );
 
   const renderTrailing = (item: StackedListItem) => {
@@ -143,9 +143,9 @@ export function StackedList(props: StackedListProps) {
       accessibilityRole="button"
       accessibilityLabel="Actions"
     >
-      <Box className="h-1 w-1 rounded-full bg-foreground" />
-      <Box className="h-1 w-1 rounded-full bg-foreground" />
-      <Box className="h-1 w-1 rounded-full bg-foreground" />
+      <View className="h-1 w-1 rounded-full bg-foreground" />
+      <View className="h-1 w-1 rounded-full bg-foreground" />
+      <View className="h-1 w-1 rounded-full bg-foreground" />
     </Pressable>
   );
 
@@ -176,27 +176,27 @@ export function StackedList(props: StackedListProps) {
     }
 
     return (
-      <Box key={index} className={cn(ROW_BASE, divider)}>
+      <View key={index} className={cn(ROW_BASE, divider)}>
         {renderAvatar(item)}
         {renderColumn(item)}
         {renderTrailing(item)}
         {rowMenu ? renderMenu(index) : null}
-      </Box>
+      </View>
     );
   });
 
   const header =
     title != null ? (
-      <Box className="flex-row items-center justify-between border-b border-border px-5 py-3">
+      <View className="flex-row items-center justify-between border-b border-border px-5 py-3">
         <Text className="text-sm font-semibold text-foreground">{title}</Text>
-        {headerAction != null ? <Box>{headerAction}</Box> : null}
-      </Box>
+        {headerAction != null ? <View>{headerAction}</View> : null}
+      </View>
     ) : null;
 
   return (
-    <Box className={cn("w-full max-w-[560px]", framed && CARD_SURFACE, className)}>
+    <View className={cn("w-full max-w-[560px]", framed && CARD_SURFACE, className)}>
       {header}
       {rows}
-    </Box>
+    </View>
   );
 }

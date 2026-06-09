@@ -1,6 +1,6 @@
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // CodeBlock: a muted, rounded surface that shows preformatted code in a
 // monospace face. Newlines in `code` survive verbatim because RN Text honors
@@ -108,11 +108,11 @@ export function CodeBlock(props: CodeBlockProps) {
   // Inline: a short token rendered as an inline pill. No header, copy, or wrap.
   if (variant === "inline") {
     return (
-      <Box className={cn("self-start rounded border border-border bg-muted px-1.5 py-0.5", className)}>
+      <View className={cn("self-start rounded border border-border bg-muted px-1.5 py-0.5", className)}>
         <Text className="text-foreground" style={[MONO, { fontSize: 13 }]}>
           {code}
         </Text>
-      </Box>
+      </View>
     );
   }
 
@@ -120,20 +120,20 @@ export function CodeBlock(props: CodeBlockProps) {
   if (variant === "terminal") {
     const label = language ?? filename ?? "bash";
     return (
-      <Box className={cn("relative w-full self-start overflow-hidden rounded-lg border border-border shadow-sm", className)}>
+      <View className={cn("relative w-full self-start overflow-hidden rounded-lg border border-border shadow-sm", className)}>
         {/* Chrome bar: three traffic-light dots and a faint label. */}
-        <Box className="flex-row items-center gap-1.5 border-b border-zinc-700 bg-zinc-800 px-4 py-2.5">
-          <Box className="h-3 w-3 rounded-full bg-red-500" />
-          <Box className="h-3 w-3 rounded-full bg-amber-500" />
-          <Box className="h-3 w-3 rounded-full bg-green-500" />
+        <View className="flex-row items-center gap-1.5 border-b border-zinc-700 bg-zinc-800 px-4 py-2.5">
+          <View className="h-3 w-3 rounded-full bg-red-500" />
+          <View className="h-3 w-3 rounded-full bg-amber-500" />
+          <View className="h-3 w-3 rounded-full bg-green-500" />
           <Text className="ml-2 text-xs text-zinc-400" style={MONO}>
             {label}
           </Text>
-        </Box>
+        </View>
         {/* Body: each line gets a non-selectable "$ " prompt. */}
-        <Box className="bg-zinc-900 p-4">
+        <View className="bg-zinc-900 p-4">
           {lines.map((line, i) => (
-            <Box key={i} className="flex-row">
+            <View key={i} className="flex-row">
               <Text className="text-emerald-400" style={MONO}>
                 {"$ "}
               </Text>
@@ -144,29 +144,29 @@ export function CodeBlock(props: CodeBlockProps) {
               >
                 {line}
               </Text>
-            </Box>
+            </View>
           ))}
-        </Box>
+        </View>
         {copy ? <CopyButton text={code} onCopy={onCopy} dark /> : null}
-      </Box>
+      </View>
     );
   }
 
   // Numbered: the plain surface with a right-aligned line-number gutter.
   if (variant === "numbered") {
     return (
-      <Box className={cn("relative", className)}>
-        <Box className={cn(SURFACE, "flex-row p-4")}>
+      <View className={cn("relative", className)}>
+        <View className={cn(SURFACE, "flex-row p-4")}>
           {/* Gutter: right-aligned, dimmed line numbers. */}
-          <Box className="mr-4 items-end">
+          <View className="mr-4 items-end">
             {lines.map((_, i) => (
               <Text key={i} className={cn(CODE_TYPE, "text-muted-foreground")} style={MONO}>
                 {String(i + 1)}
               </Text>
             ))}
-          </Box>
+          </View>
           {/* Code column: one Text per line so the gutter stays aligned. */}
-          <Box className="flex-1">
+          <View className="flex-1">
             {lines.map((line, i) => (
               <Text
                 key={i}
@@ -177,17 +177,17 @@ export function CodeBlock(props: CodeBlockProps) {
                 {line}
               </Text>
             ))}
-          </Box>
-        </Box>
+          </View>
+        </View>
         {copy ? <CopyButton text={code} onCopy={onCopy} /> : null}
-      </Box>
+      </View>
     );
   }
 
   // Plain (default): the muted code surface, padded, monospace.
   return (
-    <Box className={cn("relative", className)}>
-      <Box className={cn(SURFACE, "p-4")}>
+    <View className={cn("relative", className)}>
+      <View className={cn(SURFACE, "p-4")}>
         <Text
           className={cn(CODE_TYPE, CODE_TEXT)}
           style={MONO}
@@ -195,8 +195,8 @@ export function CodeBlock(props: CodeBlockProps) {
         >
           {code}
         </Text>
-      </Box>
+      </View>
       {copy ? <CopyButton text={code} onCopy={onCopy} /> : null}
-    </Box>
+    </View>
   );
 }

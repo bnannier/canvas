@@ -1,6 +1,6 @@
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // A month calendar: a header (month/year label flanked by prev/next chevrons),
 // a weekday label row, and a 6x7 grid of day cells. Today and the selected day
@@ -63,9 +63,9 @@ export function Calendar(props: CalendarProps) {
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
-    <Box className={cn("self-start rounded-lg border border-border bg-card p-3", className)}>
+    <View className={cn("self-start rounded-lg border border-border bg-card p-3", className)}>
       {/* Header: month label between two ghost chevron buttons. */}
-      <Box className="mb-2 flex-row items-center justify-between">
+      <View className="mb-2 flex-row items-center justify-between">
         <Pressable
           className="h-7 w-7 items-center justify-center rounded-md bg-transparent active:opacity-90"
           onPress={onPrev}
@@ -83,21 +83,21 @@ export function Calendar(props: CalendarProps) {
         >
           <Text className="text-sm text-foreground">{"›"}</Text>
         </Pressable>
-      </Box>
+      </View>
 
       {/* Weekday label row. */}
-      <Box className={cn("flex-row flex-wrap", metrics.grid)}>
+      <View className={cn("flex-row flex-wrap", metrics.grid)}>
         {WEEKDAYS.map((wd) => (
-          <Box key={wd} className={cn("items-center justify-center", metrics.head)}>
+          <View key={wd} className={cn("items-center justify-center", metrics.head)}>
             <Text className="text-xs font-medium text-muted-foreground">{wd}</Text>
-          </Box>
+          </View>
         ))}
-      </Box>
+      </View>
 
       {/* Day grid: leading blanks, then one cell per day. */}
-      <Box className={cn("flex-row flex-wrap", metrics.grid)}>
+      <View className={cn("flex-row flex-wrap", metrics.grid)}>
         {Array.from({ length: lead }, (_, i) => (
-          <Box key={`blank-${i}`} className={cn("items-center justify-center", metrics.cell)} />
+          <View key={`blank-${i}`} className={cn("items-center justify-center", metrics.cell)} />
         ))}
         {days.map((day) => {
           const isSelected = selected != null && day === selected;
@@ -124,7 +124,7 @@ export function Calendar(props: CalendarProps) {
             </Pressable>
           );
         })}
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }

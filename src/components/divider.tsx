@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 
 export interface DividerProps {
   /**
@@ -49,7 +49,7 @@ export function Divider(props: DividerProps) {
 
   if (orientation === "vertical") {
     // A thin vertical rule that adapts to the row height it sits in.
-    return <Box className={cn("w-px self-stretch", ruleBg, className)} />;
+    return <View className={cn("w-px self-stretch", ruleBg, className)} />;
   }
 
   // Horizontal with a label/action in the middle: a centered node flanked by
@@ -57,18 +57,18 @@ export function Divider(props: DividerProps) {
   if (children != null) {
     const isText = typeof children === "string" || typeof children === "number";
     return (
-      <Box className={cn("flex-row items-center gap-3", className)}>
-        <Box className={cn("h-px flex-1", ruleBg)} />
+      <View className={cn("flex-row items-center gap-3", className)}>
+        <View className={cn("h-px flex-1", ruleBg)} />
         {isText ? (
           <Text className="text-xs text-muted-foreground">{children}</Text>
         ) : (
           children
         )}
-        <Box className={cn("h-px flex-1", ruleBg)} />
-      </Box>
+        <View className={cn("h-px flex-1", ruleBg)} />
+      </View>
     );
   }
 
   // Plain horizontal hairline spanning the full width.
-  return <Box className={cn("h-px w-full", ruleBg, className)} />;
+  return <View className={cn("h-px w-full", ruleBg, className)} />;
 }

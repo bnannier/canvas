@@ -1,7 +1,7 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 
-// Chart: a token-themed bar chart built entirely from Box views, no SVG and no
+// Chart: a token-themed bar chart built entirely from View views, no SVG and no
 // CSS grid. Each datum is a vertical (or horizontal) bar whose length is a
 // pixel height computed in JS from its value against the axis max, so the
 // engine only ever sees concrete arbitrary-length utilities (h-[Npx] / w-[Npx])
@@ -93,7 +93,7 @@ export function Chart(props: ChartProps) {
   const gap = compact ? "gap-1.5" : "gap-2";
 
   return (
-    <Box className={surface}>
+    <View className={surface}>
       {title != null && title !== "" ? (
         <Text className={cn("font-semibold text-card-foreground", compact ? "mb-3 text-sm" : "mb-4 text-base")}>
           {title}
@@ -102,41 +102,41 @@ export function Chart(props: ChartProps) {
 
       {horizontal ? (
         // Horizontal: each row is a label, a track-aligned bar, and the value.
-        <Box className={cn("flex-col", gap)}>
+        <View className={cn("flex-col", gap)}>
           {data.map((d, i) => (
-            <Box key={i} className="flex-row items-center gap-2">
+            <View key={i} className="flex-row items-center gap-2">
               <Text className="w-16 text-xs text-muted-foreground">{d.label}</Text>
-              <Box className="flex-1 flex-row items-center">
-                <Box className={cn("h-3 rounded-r", fill, `w-[${lengthPx(d.value)}px]`)} />
-              </Box>
+              <View className="flex-1 flex-row items-center">
+                <View className={cn("h-3 rounded-r", fill, `w-[${lengthPx(d.value)}px]`)} />
+              </View>
               <Text className="text-xs font-medium text-card-foreground">{d.value}</Text>
-            </Box>
+            </View>
           ))}
-        </Box>
+        </View>
       ) : (
         // Vertical: a baseline-aligned row of columns, each a bar over its label.
-        <Box>
-          <Box
+        <View>
+          <View
             className={cn("flex-row items-end", gap)}
             style={{ height: plot }}
           >
             {data.map((d, i) => (
-              <Box key={i} className="flex-1 items-stretch">
-                <Box className={cn("rounded-t", fill, `h-[${lengthPx(d.value)}px]`)} />
-              </Box>
+              <View key={i} className="flex-1 items-stretch">
+                <View className={cn("rounded-t", fill, `h-[${lengthPx(d.value)}px]`)} />
+              </View>
             ))}
-          </Box>
+          </View>
           {/* Baseline under the bars. */}
-          <Box className="h-px w-full bg-border" />
-          <Box className={cn("mt-2 flex-row", gap)}>
+          <View className="h-px w-full bg-border" />
+          <View className={cn("mt-2 flex-row", gap)}>
             {data.map((d, i) => (
               <Text key={i} className="flex-1 text-center text-xs text-muted-foreground">
                 {d.label}
               </Text>
             ))}
-          </Box>
-        </Box>
+          </View>
+        </View>
       )}
-    </Box>
+    </View>
   );
 }

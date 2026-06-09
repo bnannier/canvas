@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Icon } from "./icon.js";
 
 export interface SelectProps {
@@ -92,22 +92,22 @@ export function Select(props: SelectProps) {
   );
 
   return (
-    <Box className={cn("w-full", className)}>
+    <View className={cn("w-full", className)}>
       {label != null && label !== "" ? (
         <Text className={cn("mb-1.5 font-medium text-foreground", TEXT_SIZE[size])}>
           {label}
         </Text>
       ) : null}
       <Pressable className={trigger} disabled={disabled} onPress={() => setOpen(!open)} accessibilityRole="button">
-        <Box className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-2">
           {icon ? <Icon globe muted size={14} /> : null}
           <Text className={triggerText}>{hasValue ? value : placeholder}</Text>
-        </Box>
+        </View>
         <Text className={cn("text-muted-foreground", TEXT_SIZE[size])}>▾</Text>
       </Pressable>
 
       {open ? (
-        <Box className="mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
+        <View className="mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
           {options.map((option) => {
             const selected = option === value;
             const row = cn(
@@ -133,8 +133,8 @@ export function Select(props: SelectProps) {
               </Pressable>
             );
           })}
-        </Box>
+        </View>
       ) : null}
-    </Box>
+    </View>
   );
 }

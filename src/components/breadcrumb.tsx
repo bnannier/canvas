@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Icon } from "./icon.js";
 
 // A breadcrumb is a horizontal trail of links separated by a divider glyph, with
@@ -92,9 +92,9 @@ export function Breadcrumb(props: BreadcrumbProps) {
   const glyph = SEPARATOR_GLYPH[separator];
 
   return (
-    <Box className={cn(NAV, className)} accessibilityRole="header">
+    <View className={cn(NAV, className)} accessibilityRole="header">
       {homeIcon ? (
-        <Box className="flex-row items-center gap-1.5">
+        <View className="flex-row items-center gap-1.5">
           <Pressable
             onPress={() => onItemPress?.("Home", 0)}
             accessibilityRole="link"
@@ -108,12 +108,12 @@ export function Breadcrumb(props: BreadcrumbProps) {
               {glyph}
             </Text>
           )}
-        </Box>
+        </View>
       ) : null}
       {trail.map((item, index) => {
         const last = index === trail.length - 1;
         return (
-          <Box key={`${index}-${item}`} className="flex-row items-center gap-1.5">
+          <View key={`${index}-${item}`} className="flex-row items-center gap-1.5">
             <BreadcrumbItem
               current={last}
               onPress={last ? undefined : () => onItemPress?.(item, index)}
@@ -125,9 +125,9 @@ export function Breadcrumb(props: BreadcrumbProps) {
                 {glyph}
               </Text>
             )}
-          </Box>
+          </View>
         );
       })}
-    </Box>
+    </View>
   );
 }

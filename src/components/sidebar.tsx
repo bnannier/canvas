@@ -1,6 +1,6 @@
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Badge } from "./badge.js";
 
 // A sidebar is the vertical app-navigation panel that runs down the left of a
@@ -115,9 +115,9 @@ export function Sidebar(props: SidebarProps) {
   let flat = -1;
 
   return (
-    <Box className={cn("gap-4 p-2", container)}>
+    <View className={cn("gap-4 p-2", container)}>
       {groups.map((section, gi) => (
-        <Box key={gi} className="gap-1">
+        <View key={gi} className="gap-1">
           {section.title != null ? (
             <Text className="px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {section.title}
@@ -162,8 +162,8 @@ export function Sidebar(props: SidebarProps) {
               </Pressable>
             );
           })}
-        </Box>
+        </View>
       ))}
-    </Box>
+    </View>
   );
 }

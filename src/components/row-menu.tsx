@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // RowMenu: the per-row "⋯" actions menu found in tables and lists. A small
 // square icon-button trigger surfaces a floating card of action rows: each row
@@ -72,20 +72,20 @@ export function RowMenu(props: RowMenuProps) {
 
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
-    <Box className={cn("relative self-start", className)}>
+    <View className={cn("relative self-start", className)}>
       <Pressable className={TRIGGER} onPress={() => setOpen(!open)} accessibilityRole="button">
         <Text className="text-base text-foreground">⋯</Text>
       </Pressable>
 
       {open ? (
-        <Box className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}>
+        <View className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}>
           {sectionLabel ? (
             <Text className={MENU_LABEL}>{sectionLabel}</Text>
           ) : null}
           {items.map((item, index) => (
-            <Box key={`${item.label}-${index}`}>
+            <View key={`${item.label}-${index}`}>
               {item.separatorBefore ? (
-                <Box className="my-1 h-px bg-border" />
+                <View className="my-1 h-px bg-border" />
               ) : null}
               <Pressable
                 className={ITEM_ROW}
@@ -101,10 +101,10 @@ export function RowMenu(props: RowMenuProps) {
                   {item.label}
                 </Text>
               </Pressable>
-            </Box>
+            </View>
           ))}
-        </Box>
+        </View>
       ) : null}
-    </Box>
+    </View>
   );
 }

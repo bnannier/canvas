@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Badge } from "./badge.js";
 import { Button } from "./button.js";
 
@@ -125,31 +125,31 @@ export function DescriptionList(props: DescriptionListProps) {
       divided && !last && "border-b border-border",
     );
     return (
-      <Box key={`${item.term}-${index}`} className={row}>
+      <View key={`${item.term}-${index}`} className={row}>
         <Text className={cn(layout === "stacked" ? TERM_STACKED : TERM_LABEL, layout === "twoColumn" && "w-40")}>
           {item.term}
         </Text>
-        <Box className={cn(layout === "twoColumn" && "flex-1 flex-row items-baseline justify-between gap-4")}>
+        <View className={cn(layout === "twoColumn" && "flex-1 flex-row items-baseline justify-between gap-4")}>
           <Value item={item} align={layout === "inline"} />
           {item.update ? (
             <Button link small>
               Update
             </Button>
           ) : null}
-        </Box>
-      </Box>
+        </View>
+      </View>
     );
   });
 
   return (
-    <Box className={container}>
+    <View className={container}>
       {hasHeader ? (
-        <Box className="border-b border-border px-6 py-4 gap-0.5">
+        <View className="border-b border-border px-6 py-4 gap-0.5">
           <Text className="text-base font-semibold text-foreground">{title}</Text>
           {subtitle ? <Text className="text-xs text-muted-foreground">{subtitle}</Text> : null}
-        </Box>
+        </View>
       ) : null}
-      {rowsWrap ? <Box className={rowsWrap}>{rows}</Box> : rows}
-    </Box>
+      {rowsWrap ? <View className={rowsWrap}>{rows}</View> : rows}
+    </View>
   );
 }

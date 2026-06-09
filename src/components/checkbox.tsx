@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 export interface CheckboxProps {
   children?: ReactNode;
@@ -33,7 +33,7 @@ function sizeOf(p: CheckboxProps): Size {
   return "base";
 }
 
-// Box dimensions per size. size-* sets width + height together.
+// View dimensions per size. size-* sets width + height together.
 const BOX_SIZE: Record<Size, string> = {
   small: "size-3.5",
   base: "size-4",
@@ -90,9 +90,9 @@ export function Checkbox(props: CheckboxProps) {
       accessibilityRole="checkbox"
       accessibilityState={{ checked: indeterminate ? "mixed" : !!checked, disabled: !!disabled }}
     >
-      <Box className={box}>
+      <View className={box}>
         {filled ? <Text className={glyphClass}>{glyph}</Text> : null}
-      </Box>
+      </View>
       {children != null ? <Text className={labelClass}>{children}</Text> : null}
     </Pressable>
   );

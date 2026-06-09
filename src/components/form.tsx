@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 import { Checkbox } from "./checkbox.js";
 import { Input } from "./input.js";
@@ -88,11 +88,11 @@ function Helper({ text }: { text?: string }) {
 // A label sitting above its input (stacked and two-column layouts).
 function StackedField({ field }: { field: FormField }) {
   return (
-    <Box>
+    <View>
       <Text className={cn(LABEL, "mb-1.5")}>{field.label}</Text>
       <Input placeholder={field.placeholder} value={field.value} />
       <Helper text={field.helper} />
-    </Box>
+    </View>
   );
 }
 
@@ -102,19 +102,19 @@ function StackedField({ field }: { field: FormField }) {
 // hairline divider sits on every section except the last.
 function Section({ section, last }: { section: FormSection; last: boolean }) {
   return (
-    <Box
+    <View
       className={cn(
         "flex-row items-start gap-8 sm:flex-col sm:gap-3",
         last ? "" : "border-b border-border pb-6",
       )}
     >
-      <Box className="w-[200px] sm:w-full">
+      <View className="w-[200px] sm:w-full">
         <Text className={cn(LABEL, "font-semibold")}>{section.title}</Text>
         {section.description ? (
           <Text className="mt-1 text-xs text-muted-foreground">{section.description}</Text>
         ) : null}
-      </Box>
-      <Box className="flex-1 gap-3 sm:w-full">
+      </View>
+      <View className="flex-1 gap-3 sm:w-full">
         {section.checkboxes
           ? section.checkboxes.map((c, i) => (
               <Checkbox key={i} checked={c.checked}>
@@ -122,14 +122,14 @@ function Section({ section, last }: { section: FormSection; last: boolean }) {
               </Checkbox>
             ))
           : (section.fields ?? []).map((field, i) => (
-              <Box key={i}>
+              <View key={i}>
                 <Text className={cn(LABEL, "mb-1.5")}>{field.label}</Text>
                 <Input placeholder={field.placeholder} value={field.value} />
                 <Helper text={field.helper} />
-              </Box>
+              </View>
             ))}
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }
 
@@ -137,15 +137,15 @@ function Section({ section, last }: { section: FormSection; last: boolean }) {
 // side-by-side on wide viewports, collapsing to stacked on small screens.
 function SidebarField({ field }: { field: FormField }) {
   return (
-    <Box className="flex-row items-start gap-8 sm:flex-col sm:gap-1.5">
-      <Box className="w-1/3 sm:w-full">
+    <View className="flex-row items-start gap-8 sm:flex-col sm:gap-1.5">
+      <View className="w-1/3 sm:w-full">
         <Text className={cn(LABEL, "font-semibold")}>{field.label}</Text>
         <Helper text={field.helper} />
-      </Box>
-      <Box className="flex-1 sm:w-full">
+      </View>
+      <View className="flex-1 sm:w-full">
         <Input placeholder={field.placeholder} value={field.value} />
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }
 
@@ -161,7 +161,7 @@ function Actions({
   onCancel?: () => void;
 }): ReactNode {
   return (
-    <Box className="mt-2 flex-row justify-end gap-2">
+    <View className="mt-2 flex-row justify-end gap-2">
       {cancelLabel ? (
         <Button outline onPress={onCancel}>
           {cancelLabel}
@@ -170,7 +170,7 @@ function Actions({
       <Button primary onPress={onSubmit}>
         {submitLabel}
       </Button>
-    </Box>
+    </View>
   );
 }
 
@@ -187,21 +187,21 @@ export function Form(props: FormProps) {
 
   if (layout === "twoColumn") {
     return (
-      <Box className={cn("gap-4", className)}>
-        <Box className="flex-row flex-wrap gap-4 sm:flex-col">
+      <View className={cn("gap-4", className)}>
+        <View className="flex-row flex-wrap gap-4 sm:flex-col">
           {fields.map((field, i) => (
-            <Box key={i} className="flex-1 sm:flex-auto min-w-[200px]">
+            <View key={i} className="flex-1 sm:flex-auto min-w-[200px]">
               <StackedField field={field} />
-            </Box>
+            </View>
           ))}
-        </Box>
+        </View>
         <Actions
           submitLabel={submitLabel}
           cancelLabel={cancelLabel}
           onSubmit={onSubmit}
           onCancel={onCancel}
         />
-      </Box>
+      </View>
     );
   }
 
@@ -211,7 +211,7 @@ export function Form(props: FormProps) {
     const sections = props.sections;
     if (sections && sections.length > 0) {
       return (
-        <Box className={cn("gap-6", className)}>
+        <View className={cn("gap-6", className)}>
           {sections.map((section, i) => (
             <Section key={i} section={section} last={i === sections.length - 1} />
           ))}
@@ -221,11 +221,11 @@ export function Form(props: FormProps) {
             onSubmit={onSubmit}
             onCancel={onCancel}
           />
-        </Box>
+        </View>
       );
     }
     return (
-      <Box className={cn("gap-6", className)}>
+      <View className={cn("gap-6", className)}>
         {fields.map((field, i) => (
           <SidebarField key={i} field={field} />
         ))}
@@ -235,13 +235,13 @@ export function Form(props: FormProps) {
           onSubmit={onSubmit}
           onCancel={onCancel}
         />
-      </Box>
+      </View>
     );
   }
 
   // stacked (default): one field per row, full width, label above input.
   return (
-    <Box className={cn("gap-4", className)}>
+    <View className={cn("gap-4", className)}>
       {fields.map((field, i) => (
         <StackedField key={i} field={field} />
       ))}
@@ -251,6 +251,6 @@ export function Form(props: FormProps) {
         onSubmit={onSubmit}
         onCancel={onCancel}
       />
-    </Box>
+    </View>
   );
 }

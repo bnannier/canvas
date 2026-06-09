@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Badge } from "./badge.js";
 import { Button } from "./button.js";
 import { Checkbox } from "./checkbox.js";
@@ -63,25 +63,25 @@ export function FilterPanel(props: FilterPanelProps) {
   const groupGap = compact ? "gap-1.5" : "gap-2";
 
   return (
-    <Box className={cn("flex-col", stack, panel)}>
-      <Box className="flex-row items-center justify-between">
-        <Box className="flex-row items-center gap-2">
+    <View className={cn("flex-col", stack, panel)}>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
           <Text className="text-sm font-semibold text-foreground">Filters</Text>
           {activeCount != null ? <Badge secondary>{String(activeCount)}</Badge> : null}
-        </Box>
+        </View>
         <Button ghost small onPress={onClear}>
           Clear
         </Button>
-      </Box>
+      </View>
 
       {groups.map((group, gi) => (
-        <Box key={gi} className={cn("flex-col", groupGap)}>
+        <View key={gi} className={cn("flex-col", groupGap)}>
           <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {group.title}
           </Text>
-          <Box className={cn("flex-col", groupGap)}>
+          <View className={cn("flex-col", groupGap)}>
             {group.options.map((option, oi) => (
-              <Box key={oi} className="flex-row items-center justify-between gap-2">
+              <View key={oi} className="flex-row items-center justify-between gap-2">
                 <Checkbox
                   checked={option.checked}
                   onChange={(next) => onChange?.(gi, oi, next)}
@@ -89,11 +89,11 @@ export function FilterPanel(props: FilterPanelProps) {
                   {option.label}
                 </Checkbox>
                 {option.count != null ? <Badge secondary>{option.count}</Badge> : null}
-              </Box>
+              </View>
             ))}
-          </Box>
-        </Box>
+          </View>
+        </View>
       ))}
-    </Box>
+    </View>
   );
 }

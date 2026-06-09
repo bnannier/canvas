@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // Tabs: a horizontal row of pressable triggers above panel content, with the
 // active trigger emphasized so the current view is unmistakable.
@@ -23,7 +23,7 @@ import { Box, Pressable, Text } from "../engine/index.js";
 // shape), rendered as a small secondary pill after the label.
 //
 // Because the engine has no `border-b-2` utility, the active underline is drawn
-// as an explicit 2px sliver Box under the trigger rather than as a bottom
+// as an explicit 2px sliver View under the trigger rather than as a bottom
 // border in markup (mirroring how ButtonGroup hand-rolls its hairline divider).
 
 /** A tab is either a bare label or a label paired with a count badge. */
@@ -73,11 +73,11 @@ function badgeOf(item: TabItem): string | undefined {
 // A small secondary count pill shown after a trigger label.
 function CountBadge({ children, muted }: { children: string; muted: boolean }) {
   return (
-    <Box className="flex-row items-center self-start rounded-md border border-transparent bg-secondary px-1.5 py-0.5">
+    <View className="flex-row items-center self-start rounded-md border border-transparent bg-secondary px-1.5 py-0.5">
       <Text className={cn("text-xs font-medium", muted ? "text-muted-foreground" : "text-secondary-foreground")}>
         {children}
       </Text>
-    </Box>
+    </View>
   );
 }
 
@@ -164,7 +164,7 @@ function Trigger({ label, badge, selected, variant, block, disabled, onPress }: 
     >
       <Text className={labelCls}>{label}</Text>
       {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
-      <Box
+      <View
         className={cn(
           "absolute bottom-0 left-0 right-0 h-0.5 rounded-full",
           selected ? "bg-primary" : "bg-transparent",
@@ -182,7 +182,7 @@ export function Tabs(props: TabsProps) {
     // A left-aligned column rail of stacked triggers; width hugs its content
     // unless `block` stretches it to fill the available column.
     return (
-      <Box className={cn("flex-col items-stretch gap-1", props.block ? "w-full" : "w-[180px]", className)}>
+      <View className={cn("flex-col items-stretch gap-1", props.block ? "w-full" : "w-[180px]", className)}>
         {tabs.map((item, i) => (
           <Trigger
             key={`${labelOf(item)}-${i}`}
@@ -195,13 +195,13 @@ export function Tabs(props: TabsProps) {
             onPress={() => onChange?.(i)}
           />
         ))}
-      </Box>
+      </View>
     );
   }
 
   if (variant === "pills") {
     return (
-      <Box className={cn("flex-row items-center gap-1 self-start rounded-lg bg-muted p-1", block(props), className)}>
+      <View className={cn("flex-row items-center gap-1 self-start rounded-lg bg-muted p-1", block(props), className)}>
         {tabs.map((item, i) => (
           <Trigger
             key={`${labelOf(item)}-${i}`}
@@ -214,13 +214,13 @@ export function Tabs(props: TabsProps) {
             onPress={() => onChange?.(i)}
           />
         ))}
-      </Box>
+      </View>
     );
   }
 
   // Underline: the row sits on a hairline bottom border.
   return (
-    <Box className={cn("flex-row items-center border-b border-border", block(props), className)}>
+    <View className={cn("flex-row items-center border-b border-border", block(props), className)}>
       {tabs.map((item, i) => (
         <Trigger
           key={`${labelOf(item)}-${i}`}
@@ -233,7 +233,7 @@ export function Tabs(props: TabsProps) {
           onPress={() => onChange?.(i)}
         />
       ))}
-    </Box>
+    </View>
   );
 }
 

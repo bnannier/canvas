@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 
 // Card: a surface container. The base surface gives you the border, radius, and
 // shadow; you bring the content. Structure is composed from the subcomponents
@@ -100,8 +100,8 @@ export function Card(props: CardProps) {
     className,
   );
 
-  // A pressable card swaps Box for Pressable; otherwise it is a plain surface.
-  const Wrapper = onPress ? Pressable : Box;
+  // A pressable card swaps View for Pressable; otherwise it is a plain surface.
+  const Wrapper = onPress ? Pressable : View;
   const wrapperProps = onPress ? { onPress, accessibilityRole: "button" as const } : {};
 
   // Children win: when composed, render exactly what the caller passed.
@@ -144,7 +144,7 @@ export interface CardSectionProps {
 
 // Header: the labeled top of the card, holding the title and description.
 export function CardHeader({ children, className }: CardSectionProps) {
-  return <Box className={cn("gap-1.5 px-5 pb-4 pt-5", className)}>{children}</Box>;
+  return <View className={cn("gap-1.5 px-5 pb-4 pt-5", className)}>{children}</View>;
 }
 
 // Title: the card's heading. Semibold, tight tracking, card foreground.
@@ -163,16 +163,16 @@ export function CardDescription({ children, className }: CardSectionProps) {
 
 // Content: the card body region. Carries the standard surface padding.
 export function CardContent({ children, className }: CardSectionProps) {
-  return <Box className={cn("px-5 py-5", className)}>{children}</Box>;
+  return <View className={cn("px-5 py-5", className)}>{children}</View>;
 }
 
 // Footer: the bottom region for actions or a summary line.
 export function CardFooter({ children, className }: CardSectionProps) {
-  return <Box className={cn("flex-row items-center gap-2 px-5 pb-5 pt-4", className)}>{children}</Box>;
+  return <View className={cn("flex-row items-center gap-2 px-5 pb-5 pt-4", className)}>{children}</View>;
 }
 
 // Separator: the hairline that anchors a header above a body. A card composing
 // a header and body keeps this divider between them.
 export function CardSeparator({ className }: { className?: string }) {
-  return <Box className={cn("h-px w-full bg-border", className)} />;
+  return <View className={cn("h-px w-full bg-border", className)} />;
 }

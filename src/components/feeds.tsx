@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Avatar } from "./avatar.js";
 
 // An activity feed is a vertical timeline of events. Each item is a row with a
@@ -82,20 +82,20 @@ export function Feed(props: FeedProps) {
   const compact = !!props.compact;
   const lastIndex = items.length - 1;
 
-  // A pressable feed swaps each row's Box for a Pressable that reports its index.
-  const RowComp = onItemPress ? Pressable : Box;
+  // A pressable feed swaps each row's View for a Pressable that reports its index.
+  const RowComp = onItemPress ? Pressable : View;
   const rowExtra = (index: number) =>
     onItemPress ? { onPress: () => onItemPress(index), accessibilityRole: "button" as const } : {};
 
   const renderContent = (item: FeedItem) => (
-    <Box className="flex-1">
+    <View className="flex-1">
       <Text className="text-sm">
         {item.actor ? <Text className={ACTOR_LABEL}>{item.actor} </Text> : null}
         <Text className={ACTION_LABEL}>{item.action}</Text>
         {item.target ? <Text className={ACTION_LABEL}> {item.target}</Text> : null}
       </Text>
       <Text className={cn(TIME_LABEL, "mt-0.5")}>{item.time}</Text>
-    </Box>
+    </View>
   );
 
   if (lead === "avatar") {
@@ -113,7 +113,7 @@ export function Feed(props: FeedProps) {
         </RowComp>
       );
     });
-    return <Box className={cn(CARD_SURFACE, className)}>{rows}</Box>;
+    return <View className={cn(CARD_SURFACE, className)}>{rows}</View>;
   }
 
   // Connector lead: a bordered node per row with a vertical line linking each
@@ -129,21 +129,21 @@ export function Feed(props: FeedProps) {
           // the node down to the next row. Absolutely placed under the node's
           // horizontal center (node is 28px wide -> center at 14px, minus the
           // 0.5px line half-width lands at 13px).
-          <Box className="absolute bottom-0 left-[13px] top-7 w-px bg-border" />
+          <View className="absolute bottom-0 left-[13px] top-7 w-px bg-border" />
         ) : null}
-        <Box className={NODE_BASE}>
+        <View className={NODE_BASE}>
           {item.actor ? (
             <Text className="text-xs font-medium text-muted-foreground">
               {initialsFrom(item.actor)}
             </Text>
           ) : (
-            <Box className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+            <View className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
           )}
-        </Box>
-        <Box className="flex-1 pt-0.5">{renderContent(item)}</Box>
+        </View>
+        <View className="flex-1 pt-0.5">{renderContent(item)}</View>
       </RowComp>
     );
   });
 
-  return <Box className={cn(CARD_SURFACE, pad, className)}>{rows}</Box>;
+  return <View className={cn(CARD_SURFACE, pad, className)}>{rows}</View>;
 }

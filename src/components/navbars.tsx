@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Pressable, Text } from "../engine/index.js";
+import { View, Pressable, Text } from "../engine/index.js";
 import { Button } from "./button.js";
 import { Avatar } from "./avatar.js";
 
@@ -65,10 +65,10 @@ export function Navbar(props: NavbarProps) {
   );
 
   return (
-    <Box className={container}>
-      <Box className="flex-row items-center gap-4">
+    <View className={container}>
+      <View className="flex-row items-center gap-4">
         <Text className="text-base font-semibold text-foreground">{brand}</Text>
-        <Box className="flex-row items-center gap-1">
+        <View className="flex-row items-center gap-1">
           {links.map((link, index) => {
             const isActive = index === active;
             const label = cn(
@@ -89,16 +89,16 @@ export function Navbar(props: NavbarProps) {
               </Pressable>
             );
           })}
-        </Box>
-      </Box>
-      <Box className="flex-row items-center gap-2">
+        </View>
+      </View>
+      <View className="flex-row items-center gap-2">
         {actionLabel ? (
           <Button primary small onPress={onAction}>
             {actionLabel}
           </Button>
         ) : null}
         {avatar ? <Avatar small name={avatar} /> : null}
-      </Box>
-    </Box>
+      </View>
+    </View>
   );
 }

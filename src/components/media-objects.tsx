@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "../cn.js";
-import { Box, Image, Text } from "../engine/index.js";
+import { View, Image, Text } from "../engine/index.js";
 import { Avatar } from "./avatar.js";
 
 // A media object is a horizontal row: a leading media element (avatar, image, or
@@ -114,31 +114,31 @@ export function MediaObject(props: MediaObjectProps) {
   let media: ReactNode = null;
   if (src) {
     media = (
-      <Box className="shrink-0 w-10 h-10 overflow-hidden rounded-full bg-muted">
+      <View className="shrink-0 w-10 h-10 overflow-hidden rounded-full bg-muted">
         <Image
           className="w-full h-full rounded-full"
           source={{ uri: src }}
           accessibilityLabel={title}
           resizeMode="cover"
         />
-      </Box>
+      </View>
     );
   } else if (avatar) {
     media = <Avatar name={avatar}>{avatar}</Avatar>;
   } else if (icon != null) {
     media = (
-      <Box className={ICON_BOX}>
+      <View className={ICON_BOX}>
         {typeof icon === "string" ? <Text className={ICON_GLYPH}>{icon}</Text> : icon}
-      </Box>
+      </View>
     );
   }
 
   // The engine has no truncate utility; RN clamps text via numberOfLines, which
   // is the supported equivalent (single line with an ellipsis on overflow).
   return (
-    <Box className={container}>
+    <View className={container}>
       {media}
-      <Box className={CONTENT}>
+      <View className={CONTENT}>
         {title != null ? (
           <Text className={TITLE} numberOfLines={truncate ? 1 : undefined}>
             {title}
@@ -150,9 +150,9 @@ export function MediaObject(props: MediaObjectProps) {
           </Text>
         ) : null}
         {body != null ? <Text className={BODY}>{body}</Text> : null}
-      </Box>
+      </View>
       {meta != null ? <Text className={META}>{meta}</Text> : null}
-      {action != null ? <Box className="shrink-0">{action}</Box> : null}
-    </Box>
+      {action != null ? <View className="shrink-0">{action}</View> : null}
+    </View>
   );
 }

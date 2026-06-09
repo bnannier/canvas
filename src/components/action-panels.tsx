@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Card } from "./card.js";
 import { Button } from "./button.js";
 import { Switch } from "./switch.js";
@@ -84,41 +84,41 @@ export function ActionPanel(props: ActionPanelProps) {
   // The copy block: title above its consequence line. In the inline layout it
   // grows to push the action to the right; stacked, it sits above the action.
   const copy = (
-    <Box className={cn("gap-1", layout === "inline" && "flex-1")}>
+    <View className={cn("gap-1", layout === "inline" && "flex-1")}>
       {title != null ? (
         <Text className={cn(TITLE, TITLE_TONE[tone])}>{title}</Text>
       ) : null}
       {description != null ? <Text className={DESCRIPTION}>{description}</Text> : null}
-    </Box>
+    </View>
   );
 
   // The action. In toggle mode it is an on/off Switch pinned to the right;
   // otherwise a destructive (red) Button in the danger zone or a primary Button
   // otherwise, small to sit comfortably inside the panel.
   const action = toggle ? (
-    <Box className="shrink-0">
+    <View className="shrink-0">
       <Switch checked={checked} onValueChange={onToggle} />
-    </Box>
+    </View>
   ) : actionLabel != null ? (
-    <Box className={layout === "inline" ? "shrink-0" : "items-start"}>
+    <View className={layout === "inline" ? "shrink-0" : "items-start"}>
       <Button small destructive={tone === "destructive"} primary={tone !== "destructive"} onPress={onAction}>
         {actionLabel}
       </Button>
-    </Box>
+    </View>
   ) : null;
 
   return (
     <Card padded className={cn("max-w-[560px]", className)}>
       {layout === "inline" ? (
-        <Box className="flex-row items-start gap-6">
+        <View className="flex-row items-start gap-6">
           {copy}
           {action}
-        </Box>
+        </View>
       ) : (
-        <Box className="gap-4">
+        <View className="gap-4">
           {copy}
           {action}
-        </Box>
+        </View>
       )}
     </Card>
   );

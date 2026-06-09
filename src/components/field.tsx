@@ -1,5 +1,5 @@
 import { cn } from "../cn.js";
-import { Box, Text } from "../engine/index.js";
+import { View, Text } from "../engine/index.js";
 import { Avatar } from "./avatar.js";
 import { Badge } from "./badge.js";
 import { Button } from "./button.js";
@@ -78,32 +78,32 @@ const FIELD_VALUE = "text-sm font-medium text-foreground";
 function FieldValue(row: FieldRow) {
   if (row.avatars && row.avatars.length > 0) {
     return (
-      <Box className="flex-row items-center">
+      <View className="flex-row items-center">
         {row.avatars.map((a, i) => (
-          <Box key={i} className={i > 0 ? "-ml-2" : undefined}>
+          <View key={i} className={i > 0 ? "-ml-2" : undefined}>
             <Avatar small ring src={a.src} name={a.name}>
               {a.name}
             </Avatar>
-          </Box>
+          </View>
         ))}
         {typeof row.overflow === "number" && row.overflow > 0 ? (
-          <Box className="-ml-2 h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted">
+          <View className="-ml-2 h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted">
             <Text className="text-xs font-medium text-muted-foreground">{`+${row.overflow}`}</Text>
-          </Box>
+          </View>
         ) : null}
-      </Box>
+      </View>
     );
   }
   if (row.copyValue != null) {
     return (
-      <Box className="flex-row items-center gap-2">
+      <View className="flex-row items-center gap-2">
         <Text className={FIELD_VALUE} style={row.mono ? MONO_STYLE : undefined}>
           {row.value ?? row.copyValue}
         </Text>
         <Button ghost small>
           Copy
         </Button>
-      </Box>
+      </View>
     );
   }
   if (row.status != null) {
@@ -144,14 +144,14 @@ export function Field(props: FieldProps) {
   if (rows) {
     const display = cn("flex-col gap-3", disabled && "opacity-50", className);
     return (
-      <Box className={display}>
+      <View className={display}>
         {rows.map((row, index) => (
-          <Box key={`${row.label}-${index}`} className="flex-row items-center gap-4">
+          <View key={`${row.label}-${index}`} className="flex-row items-center gap-4">
             <Text className={FIELD_LABEL}>{row.label}</Text>
-            <Box className="flex-1">{FieldValue(row)}</Box>
-          </Box>
+            <View className="flex-1">{FieldValue(row)}</View>
+          </View>
         ))}
-      </Box>
+      </View>
     );
   }
 
@@ -164,7 +164,7 @@ export function Field(props: FieldProps) {
   const labelClass = "text-sm font-medium text-foreground";
 
   return (
-    <Box className={wrapper}>
+    <View className={wrapper}>
       {label != null ? (
         <Text className={labelClass}>
           {label}
@@ -179,6 +179,6 @@ export function Field(props: FieldProps) {
         error={invalid}
       />
       {message != null ? <Text className={messageClass}>{message}</Text> : null}
-    </Box>
+    </View>
   );
 }

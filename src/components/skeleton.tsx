@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Animated, type ViewStyle } from "react-native";
 import { cn } from "../cn.js";
-import { Box, useStyles } from "../engine/index.js";
+import { View, useStyles } from "../engine/index.js";
 
 export interface SkeletonProps {
   // Shape (pick one; default is a single text line).
@@ -59,7 +59,7 @@ function buttonSize(p: SkeletonProps): string {
 
 /** A pulsing or static muted block. The resolved width/height/fill go on the
  *  Animated.View itself so percentage widths resolve against the real parent
- *  (a nested Box would collapse `w-[60%]` against an auto-width wrapper). */
+ *  (a nested View would collapse `w-[60%]` against an auto-width wrapper). */
 function Pulse({ animate, className }: { animate?: boolean; className: string }) {
   const opacity = useRef(new Animated.Value(1)).current;
   const resolved = useStyles(className);
@@ -101,54 +101,54 @@ export function Skeleton(props: SkeletonProps) {
 
   if (shape === "card") {
     return (
-      <Box className={cn("rounded-lg border border-border bg-card max-w-[320px] p-4", className)}>
-        <Box className="flex-row items-center gap-3 mb-4">
+      <View className={cn("rounded-lg border border-border bg-card max-w-[320px] p-4", className)}>
+        <View className="flex-row items-center gap-3 mb-4">
           <Pulse animate={animate} className={cn(FILL, "shrink-0 rounded-full w-10 h-10")} />
-          <Box className="flex-1">
+          <View className="flex-1">
             <Line animate={animate} className="w-[70%]" />
             <Line animate={animate} className="w-[40%] mt-1.5" />
-          </Box>
-        </Box>
+          </View>
+        </View>
         <Line animate={animate} className="w-full" />
         <Line animate={animate} className="w-[80%] mt-1.5" />
-      </Box>
+      </View>
     );
   }
 
   if (shape === "list") {
     const Row = ({ a, b }: { a: string; b: string }) => (
-      <Box className="flex-row items-center gap-3">
+      <View className="flex-row items-center gap-3">
         <Pulse animate={animate} className={cn(FILL, "rounded-full w-8 h-8")} />
-        <Box className="flex-1">
+        <View className="flex-1">
           <Line animate={animate} className={cn("mb-1.5", a)} />
           <Line animate={animate} className={b} />
-        </Box>
+        </View>
         <Line animate={animate} className="w-10" />
-      </Box>
+      </View>
     );
     return (
-      <Box className={cn("flex-col gap-4 max-w-[400px]", className)}>
+      <View className={cn("flex-col gap-4 max-w-[400px]", className)}>
         <Row a="w-[70%]" b="w-[50%]" />
         <Row a="w-[55%]" b="w-[35%]" />
-      </Box>
+      </View>
     );
   }
 
   if (shape === "table") {
     const Row = ({ a, b, last }: { a: string; b: string; last?: boolean }) => (
-      <Box className={cn("flex-row items-center gap-3 py-3", !last && "border-b border-border")}>
+      <View className={cn("flex-row items-center gap-3 py-3", !last && "border-b border-border")}>
         <Line animate={animate} className="w-10" />
         <Line animate={animate} className={cn("flex-1", a)} />
         <Line animate={animate} className={cn("flex-1", b)} />
         <Line animate={animate} className="w-20" />
-      </Box>
+      </View>
     );
     return (
-      <Box className={cn("max-w-[560px]", className)}>
+      <View className={cn("max-w-[560px]", className)}>
         <Row a="w-[70%]" b="w-[50%]" />
         <Row a="w-[80%]" b="w-[60%]" />
         <Row a="w-[65%]" b="w-[45%]" last />
-      </Box>
+      </View>
     );
   }
 
