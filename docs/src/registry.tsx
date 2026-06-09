@@ -191,7 +191,25 @@ export const registry: Record<string, RegistryEntry> = {
       const disabled = s.disabled === true;
       const fireItem = (_i: number, item: string) => demo?.fire(item);
       if (s.variant === "split") return { split: true, items: ["Save"], menu: ["Save as draft", "Save and close", "Save a copy"], onSelect: fireItem, disabled, ...size };
-      if (s.variant === "attached") return { segmented: true, active: -1, items: ["‹", "Today", "›"], onSelect: fireItem, disabled, ...size };
+      if (s.variant === "attached") {
+        // A prev / current / next date nav: the chevrons step through the list
+        // and the middle label tracks the position, so there is something to
+        // cycle through. The middle re-fires the current date as feedback.
+        const dates = ["May 21", "May 22", "May 23", "Today", "May 25", "May 26", "May 27"];
+        const idx = (s.demoNav as number) ?? 3;
+        return {
+          segmented: true,
+          active: -1,
+          items: ["‹", dates[idx], "›"],
+          onSelect: (i: number) => {
+            const next = i === 0 ? Math.max(0, idx - 1) : i === 2 ? Math.min(dates.length - 1, idx + 1) : idx;
+            demo?.set("demoNav", next);
+            demo?.fire(dates[next]);
+          },
+          disabled,
+          ...size,
+        };
+      }
       const n = (s.buttons as number) ?? 3;
       return { segmented: true, active: (s.demoSeg as number) ?? 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), onSelect: (i: number, item: string) => { demo?.set("demoSeg", i); demo?.fire(item); }, disabled, ...size };
     },
