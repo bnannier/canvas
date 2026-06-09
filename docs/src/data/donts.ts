@@ -878,6 +878,174 @@ export const DONTS: Record<string, DontDoExample[]> = {
       }
     }
   ],
+  combobox: [
+    {
+      title: "When to use",
+      dont: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Size",
+            options: ["Small", "Medium", "Large"],
+            open: true,
+            placeholder: "Search…",
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "Type or click: a search field for three fixed options is overhead with nothing to filter."
+      },
+      do: {
+        tree: {
+          type: "Select",
+          props: {
+            label: "Size",
+            options: ["Small", "Medium", "Large"],
+            open: true,
+            placeholder: "Select a size",
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "A plain select for short, fixed lists; reserve the combobox for long, searchable ones."
+      }
+    },
+    {
+      title: "Filtering",
+      dont: {
+        html: "<div class=\"max-w-[280px]\"><label class=\"mb-1.5 block text-sm font-medium\">Assigned to</label><div class=\"relative\"><div class=\"flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm\"><span class=\"text-foreground\">co</span><span class=\"text-muted-foreground\">▾</span></div><div class=\"absolute left-0 top-full z-20 mt-1 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Wade Cooper</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Arlene Mccoy</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Devon Webb</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Tom Cook</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Tanya Fox</div><div class=\"rounded-sm px-2 py-1.5 text-sm text-popover-foreground\">Hellen Schmidt</div></div></div></div>",
+        caption: "Try typing: a search box that ignores input is just a dropdown wearing a costume."
+      },
+      do: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Assigned to",
+            options: [
+              "Wade Cooper",
+              "Arlene Mccoy",
+              "Devon Webb",
+              "Tom Cook",
+              "Tanya Fox",
+              "Hellen Schmidt"
+            ],
+            query: "co",
+            open: true,
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "Type a few letters: the list narrows as you go, so a long list stays usable."
+      }
+    },
+    {
+      title: "Selection",
+      dont: {
+        html: "<div class=\"max-w-[280px]\"><label class=\"mb-1.5 block text-sm font-medium\">Assigned to</label><div class=\"relative\"><div class=\"flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm\"><span class=\"text-muted-foreground\">Pick a person…</span><span class=\"text-muted-foreground\">▾</span></div><div class=\"absolute left-0 top-full z-20 mt-1 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Wade Cooper</span></div><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Arlene Mccoy</span></div><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Devon Webb</span></div><div class=\"flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground\"><span style=\"width:14px\">&nbsp;</span><span>Tom Cook</span></div></div></div></div>",
+        caption: "Click an option: it flashes but the field stays empty, so you can't tell what you picked."
+      },
+      do: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Assigned to",
+            options: ["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"],
+            value: "Devon Webb",
+            open: true,
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "Click an option: it fills the input and stays marked as selected."
+      }
+    },
+    {
+      title: "With label",
+      dont: {
+        tree: {
+          type: "Combobox",
+          props: {
+            options: ["Wade Cooper", "Arlene Mccoy", "Devon Webb"],
+            value: "Devon Webb",
+            open: true,
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "Once a value replaces the placeholder, an unlabeled field has nothing left to name it."
+      },
+      do: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Assigned to",
+            options: ["Wade Cooper", "Arlene Mccoy", "Devon Webb"],
+            value: "Devon Webb",
+            open: true,
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "A persistent label keeps the field named after a selection has filled the input."
+      }
+    },
+    {
+      title: "With helper text",
+      dont: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Assigned to",
+            options: ["Wade Cooper", "Arlene Mccoy", "Devon Webb"],
+            open: true,
+            placeholder: "Pick an active teammate; deactivated users are hidden",
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "Type a letter: guidance crammed into the placeholder vanishes the moment you start."
+      },
+      do: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Assigned to",
+            options: ["Wade Cooper", "Arlene Mccoy", "Devon Webb"],
+            open: true,
+            placeholder: "Search a person…",
+            helperText: "Deactivated users are hidden from the list.",
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "A short placeholder plus persistent helper text keeps the rule visible while you type."
+      }
+    },
+    {
+      title: "Disabled",
+      dont: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Assigned to",
+            options: ["Wade Cooper", "Arlene Mccoy", "Devon Webb"],
+            open: false,
+            disabled: true,
+            placeholder: "Search a person…",
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "An empty, dimmed field with no value reads as broken, not as intentionally locked."
+      },
+      do: {
+        tree: {
+          type: "Combobox",
+          props: {
+            label: "Assigned to",
+            options: ["Wade Cooper", "Arlene Mccoy", "Devon Webb"],
+            value: "Devon Webb",
+            open: false,
+            disabled: true,
+            helperText: "Set by the project owner and can't be changed here.",
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "Show the locked value and say why it's fixed, so disabled reads as a settled choice."
+      }
+    }
+  ],
   divider: [
     {
       title: "Plain",
@@ -1047,6 +1215,191 @@ export const DONTS: Record<string, DontDoExample[]> = {
           ]
         },
         caption: "Click an action: the vertical rule separates inline actions in a row."
+      }
+    }
+  ],
+  dropdown: [
+    {
+      title: "Trigger",
+      dont: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [{ label: "Edit profile" }, { label: "Duplicate" }, { label: "Settings" }]
+          }
+        },
+        caption: "Always open: it clutters the page and there's no way to dismiss it."
+      },
+      do: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            items: [{ label: "Edit profile" }, { label: "Duplicate" }, { label: "Settings" }]
+          }
+        },
+        caption: "Click Actions to open; click outside to dismiss."
+      }
+    },
+    {
+      title: "Sectioning",
+      dont: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [
+              { label: "New file" },
+              { label: "New folder" },
+              { label: "Upload" },
+              { label: "Rename" },
+              { label: "Duplicate" },
+              { label: "Move to…" },
+              { label: "Download" },
+              { label: "Delete" }
+            ]
+          }
+        },
+        caption: "Click an item: a long, flat menu of eight actions is hard to scan."
+      },
+      do: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            label: "Create",
+            items: [
+              { label: "New file" },
+              { label: "New folder" },
+              { label: "Upload" },
+              { label: "Rename", separatorBefore: true },
+              { label: "Move to…" },
+              { label: "Download" }
+            ]
+          }
+        },
+        caption: "Click an item: group related actions under labels with a separator."
+      }
+    },
+    {
+      title: "Leading icons",
+      dont: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [
+              { label: "Edit", icon: "✎" },
+              { label: "Duplicate" },
+              { label: "Settings", icon: "⚙" }
+            ]
+          }
+        },
+        caption: "Click an item: icons on some rows but not others leave labels misaligned and the column ragged."
+      },
+      do: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [
+              { label: "Edit", icon: "✎" },
+              { label: "Duplicate", icon: "⧉" },
+              { label: "Settings", icon: "⚙" }
+            ]
+          }
+        },
+        caption: "Click an item: give every row a leading icon so labels share one start column."
+      }
+    },
+    {
+      title: "Keyboard shortcuts",
+      dont: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [
+              { label: "Edit profile ⌘E" },
+              { label: "Duplicate ⌘D" },
+              { label: "Settings ⌘," }
+            ]
+          }
+        },
+        caption: "Click an item: hints inline after the label crowd the text and never line up into a readable column."
+      },
+      do: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [
+              { label: "Edit profile", shortcut: "⌘E" },
+              { label: "Duplicate", shortcut: "⌘D" },
+              { label: "Settings", shortcut: "⌘," }
+            ]
+          }
+        },
+        caption: "Click an item: push shortcuts to a muted, right-aligned column so the eye can scan them."
+      }
+    },
+    {
+      title: "Disabled item",
+      dont: {
+        html: "<div class=\"self-start rounded-md border border-border bg-popover p-1 shadow-lg\" style=\"min-width:200px\"><div class=\"flex flex-row items-center gap-2 rounded-sm px-2 py-1.5\"><span class=\"text-sm text-popover-foreground\">Edit</span></div><div class=\"flex flex-row items-center gap-2 rounded-sm px-2 py-1.5 opacity-50 cursor-pointer hover:bg-accent\" onclick=\"this.classList.add('bg-accent');var el=this;setTimeout(function(){el.classList.remove('bg-accent')},300)\"><span class=\"text-sm text-popover-foreground\">Archive</span></div><div class=\"flex flex-row items-center gap-2 rounded-sm px-2 py-1.5\"><span class=\"text-sm text-popover-foreground\">Duplicate</span></div></div>",
+        caption: "Click Archive: it looks disabled but still fires, a greyed item that works is a trap."
+      },
+      do: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [
+              { label: "Edit" },
+              { label: "Archive", disabled: true },
+              { label: "Duplicate" }
+            ]
+          }
+        },
+        caption: "Click Archive: nothing happens; a real disabled item doesn't respond."
+      }
+    },
+    {
+      title: "Destructive item",
+      dont: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [{ label: "Edit" }, { label: "Delete" }, { label: "Duplicate" }]
+          }
+        },
+        caption: "Click an item: a destructive action wedged between routine ones invites a costly misclick."
+      },
+      do: {
+        tree: {
+          type: "Dropdown",
+          props: {
+            trigger: "Actions",
+            open: true,
+            items: [
+              { label: "Edit" },
+              { label: "Duplicate" },
+              { label: "Delete", destructive: true, separatorBefore: true }
+            ]
+          }
+        },
+        caption: "Click an item: separate destructive actions with a divider, color them, and place them last."
       }
     }
   ],
@@ -1472,6 +1825,159 @@ export const DONTS: Record<string, DontDoExample[]> = {
       }
     }
   ],
+  select: [
+    {
+      dont: {
+        tree: {
+          type: "Select",
+          props: {
+            open: true,
+            label: "Country",
+            value: "Choose a country…",
+            options: ["Choose a country…", "United States", "Canada", "Mexico"],
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "A placeholder as a normal option can be submitted as a real value."
+      },
+      do: {
+        tree: {
+          type: "Select",
+          props: {
+            open: true,
+            label: "Country",
+            placeholder: "Choose a country…",
+            options: ["United States", "Canada", "Mexico"],
+            className: "max-w-[280px]"
+          }
+        },
+        caption: "Mark the placeholder disabled and selected so it prompts without being a valid choice."
+      }
+    },
+    {
+      title: "sm",
+      dont: {
+        tree: {
+          type: "Select",
+          props: {
+            small: true,
+            label: "Rows per page",
+            value: "10",
+            options: ["10", "25", "50"],
+            className: "max-w-[200px]"
+          }
+        },
+        caption: "A stacked block label towers over the small control and breaks the dense row it belongs in."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-center gap-2" },
+          children: [
+            {
+              type: "Text",
+              props: { className: "text-xs text-muted-foreground" },
+              children: "Rows"
+            },
+            {
+              type: "Select",
+              props: { small: true, value: "10", options: ["10", "25", "50"], className: "w-auto" }
+            }
+          ]
+        },
+        caption: "Keep the small select inline with a short label so it stays compact inside toolbars and table footers."
+      }
+    },
+    {
+      title: "default",
+      dont: {
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-end gap-3 max-w-[420px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                  children: "City"
+                },
+                { type: "Input", props: { large: true, value: "Austin" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                  children: "State"
+                },
+                { type: "Select", props: { value: "Texas", options: ["Texas", "Oregon"] } }
+              ]
+            }
+          ]
+        },
+        caption: "A default select next to a taller lg input leaves the row baselines misaligned."
+      },
+      do: {
+        tree: {
+          type: "View",
+          props: { className: "flex-row items-end gap-3 max-w-[420px]" },
+          children: [
+            {
+              type: "View",
+              props: { className: "flex-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                  children: "City"
+                },
+                { type: "Input", props: { value: "Austin" } }
+              ]
+            },
+            {
+              type: "View",
+              props: { className: "flex-1" },
+              children: [
+                {
+                  type: "Text",
+                  props: { className: "mb-1.5 text-sm font-medium text-foreground" },
+                  children: "State"
+                },
+                { type: "Select", props: { value: "Texas", options: ["Texas", "Oregon"] } }
+              ]
+            }
+          ]
+        },
+        caption: "Match the default select to sibling inputs at the same height so the form row lines up."
+      }
+    },
+    {
+      title: "lg",
+      dont: {
+        html: "<div class=\"max-w-[320px]\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Plan</label>\n  <div class=\"flex h-10 items-center justify-between rounded-md border border-input bg-background px-3\">\n    <span class=\"text-xs text-foreground\">Starter</span>\n    <span class=\"text-xs text-muted-foreground\">▾</span>\n  </div>\n</div>",
+        caption: "Tiny option text inside a tall control wastes the height and looks like an accidental mismatch."
+      },
+      do: {
+        tree: {
+          type: "Select",
+          props: {
+            large: true,
+            label: "Plan",
+            value: "Starter",
+            options: ["Starter", "Pro", "Enterprise"],
+            className: "max-w-[320px]"
+          }
+        },
+        caption: "Scale the text up with the height so the large select reads as a deliberate, touch-friendly target."
+      }
+    }
+  ],
   skeleton: [
     {
       title: "text",
@@ -1857,6 +2363,151 @@ export const DONTS: Record<string, DontDoExample[]> = {
           children: "Notifications"
         },
         caption: "Label the setting, not the state; the switch communicates on or off."
+      }
+    }
+  ],
+  tooltip: [
+    {
+      dont: {
+        tree: {
+          type: "Tooltip",
+          props: {
+            iconTrigger: true,
+            bottom: true,
+            open: true,
+            label: "To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours."
+          }
+        },
+        caption: "Long, essential instructions hidden in a tooltip are missed on touch and by screen readers."
+      },
+      do: {
+        tree: {
+          type: "Tooltip",
+          props: { iconTrigger: true, bottom: true, open: true, label: "Rotate key" }
+        },
+        caption: "Keep tooltips short and supplementary; put essential steps in visible copy."
+      }
+    },
+    {
+      title: "top",
+      dont: {
+        html: "<div class=\"pt-2\"><div class=\"relative inline-flex\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Save</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"bottom:calc(100% + 8px);left:50%;transform:translateX(-50%)\">Saves your changes</div></div></div>",
+        caption: "A top tooltip on a trigger near the top edge clips above the viewport and goes unread."
+      },
+      do: {
+        tree: {
+          type: "Tooltip",
+          props: { trigger: "Save", top: true, open: true, label: "Saves your changes" }
+        },
+        caption: "Leave headroom above (or flip to bottom) so a top-placed tooltip stays fully on screen."
+      }
+    },
+    {
+      title: "right",
+      dont: {
+        html: "<div class=\"flex justify-end\"><div class=\"relative inline-flex\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9\">i</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"left:calc(100% + 8px);top:50%;transform:translateY(-50%)\">More info</div></div></div>",
+        caption: "A right tooltip on a control flush against the right edge is cut off by the container."
+      },
+      do: {
+        tree: {
+          type: "Tooltip",
+          props: { iconTrigger: true, right: true, open: true, label: "More info" }
+        },
+        caption: "Keep room to the right, or flip the tooltip to the left when the trigger hugs the edge."
+      }
+    },
+    {
+      title: "bottom",
+      dont: {
+        html: "<div class=\"flex flex-col gap-2\"><div class=\"relative inline-flex w-fit\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Filters</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"top:calc(100% + 4px);left:50%;transform:translateX(-50%)\">Refine results</div></div><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs w-fit\">Clear all</button></div>",
+        caption: "A bottom tooltip sits right on top of the next row, masking the control beneath it."
+      },
+      do: {
+        tree: {
+          type: "Tooltip",
+          props: { trigger: "Filters", bottom: true, open: true, label: "Refine results" }
+        },
+        caption: "Give a bottom tooltip clearance so it never overlaps the interactive content below."
+      }
+    },
+    {
+      title: "left",
+      dont: {
+        html: "<div class=\"relative inline-flex\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9\">?</button><div class=\"z-10 rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md absolute whitespace-nowrap\" style=\"right:calc(100% + 8px);top:50%;transform:translateY(-50%)\">Need help?</div></div>",
+        caption: "A left tooltip on a trigger at the left edge is clipped by the container's left boundary."
+      },
+      do: {
+        tree: {
+          type: "Tooltip",
+          props: { iconTrigger: true, left: true, open: true, label: "Need help?" }
+        },
+        caption: "Reserve space on the left, or flip to the right, so a left-placed tooltip is never cut off."
+      }
+    }
+  ],
+  listbox: [
+    {
+      title: "Prefer a native select for simple lists",
+      dont: {
+        tree: {
+          type: "Listbox",
+          props: {
+            bordered: true,
+            className: "w-48",
+            items: [{ label: "Yes", selected: true }, { label: "No" }]
+          }
+        },
+        caption: "A custom listbox for two short options is heavier than it needs to be and worse on mobile."
+      },
+      do: {
+        html: "<select class=\"flex h-9 w-48 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50\"><option>Yes</option><option>No</option></select>",
+        caption: "For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile."
+      }
+    },
+    {
+      title: "single",
+      dont: {
+        tree: {
+          type: "Listbox",
+          props: {
+            bordered: true,
+            className: "w-56",
+            items: [
+              { label: "Backend", selected: true },
+              { label: "Frontend", selected: true },
+              { label: "Design" },
+              { label: "Platform" }
+            ]
+          }
+        },
+        caption: "Single-select with two checkmarks lies about state: only one option can be the value."
+      },
+      do: {
+        tree: {
+          type: "Listbox",
+          props: {
+            bordered: true,
+            className: "w-56",
+            items: [
+              { label: "Backend", selected: true },
+              { label: "Frontend" },
+              { label: "Design" },
+              { label: "Platform" }
+            ]
+          }
+        },
+        caption: "Show exactly one checkmark, mirror it in the trigger value, and close the panel on pick."
+      }
+    },
+    {
+      title: "multi",
+      dont: {
+        html: "<div class=\"w-56 rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Backend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Frontend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Design</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0 invisible\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Platform</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"px-2 pb-1 pt-1.5 text-xs text-muted-foreground\">Backend</div></div>",
+        caption: "Don't close on each pick or echo only the last choice: multi-select needs to keep all selections visible."
+      },
+      do: {
+        html: "<div class=\"w-56 rounded-md border border-border bg-popover p-1 shadow-md\"><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Backend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Frontend</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Design</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0 invisible\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground\"><span>Platform</span><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"ml-auto shrink-0\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"px-2 pb-1 pt-1.5 text-xs text-muted-foreground\">3 selected</div></div>",
+        caption: "Keep the panel open, toggle each option's own checkmark, and summarize the count in the trigger."
       }
     }
   ],
@@ -2364,6 +3015,55 @@ export const DONTS: Record<string, DontDoExample[]> = {
           ]
         },
         caption: "Reserve the large size for section- or page-level loading, centered in the empty content area."
+      }
+    }
+  ],
+  popover: [
+    {
+      dont: {
+        html: "<div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md relative inline-block min-w-[260px]\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Name</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Email</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Role</label><select class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\"><option>Engineer</option></select>\n  <label class=\"mb-1.5 block text-sm font-medium\">Team</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <div class=\"flex justify-end gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 rounded-md px-3 text-xs\">Save</button></div>\n</div>",
+        caption: "A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident."
+      },
+      do: {
+        html: "<div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md relative inline-block min-w-[240px]\">\n  <p class=\"mb-2 text-sm\">Rename this project?</p>\n  <input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\" value=\"Identity Platform\">\n  <div class=\"flex justify-end gap-2\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Cancel</button><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 rounded-md px-3 text-xs\">Rename</button></div>\n</div>",
+        caption: "Keep popovers compact: a focused prompt with one input and a clear action."
+      }
+    },
+    {
+      title: "Triggered",
+      dont: {
+        html: "<div class=\"inline-block\"><button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs\">Open popover</button><div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md mt-2 min-w-[240px]\"><p class=\"text-sm\">No anchor, no dismiss, no Close.</p></div></div>",
+        caption: "A trigger with no relative anchor and no way to dismiss leaves the panel floating loose and stuck open."
+      },
+      do: {
+        tree: {
+          type: "Popover",
+          props: {
+            trigger: "Open popover",
+            open: true,
+            description: "Anchored to the trigger, closes on outside click.",
+            actionLabel: "Close"
+          }
+        },
+        caption: "Wrap the trigger in a relative anchor and dismiss on outside click so the panel positions and closes predictably."
+      }
+    },
+    {
+      title: "Inline",
+      dont: {
+        html: "<div class=\"rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md max-h-[120px] min-w-[260px] overflow-auto\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Street</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">City</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Region</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n  <label class=\"mb-1.5 block text-sm font-medium\">Postal code</label><input class=\"flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-2\">\n</div>",
+        caption: "An always-visible panel that scrolls internally is doing a card's or section's job; use the panel chrome only for short content."
+      },
+      do: {
+        tree: {
+          type: "Popover",
+          props: {
+            inline: true,
+            description: "Saved to drafts. Publish when ready.",
+            actionLabel: "Publish"
+          }
+        },
+        caption: "Reserve the static panel for a brief always-on message with a single follow-up action."
       }
     }
   ],
