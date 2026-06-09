@@ -105,7 +105,10 @@ function color(name: string, tokens: ColorTokens): string | undefined {
   }
   const hex = (tokens as unknown as Record<string, string>)[key] ?? baseColors[key] ?? palette[key];
   if (!hex) return undefined;
-  if (alpha === undefined || hex === "transparent") return hex;
+  // Only the #rrggbb form can take a /alpha suffix. Token values that are
+  // already non-hex (e.g. the translucent rgba() glass surfaces) are returned
+  // as-is, so the suffix is a no-op rather than feeding garbage to hexToRgba.
+  if (alpha === undefined || hex === "transparent" || hex[0] !== "#") return hex;
   return hexToRgba(hex, alpha);
 }
 

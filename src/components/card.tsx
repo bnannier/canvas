@@ -10,7 +10,6 @@ import { Box, Pressable, Text } from "../engine/index.js";
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). Axes:
 //
-// - Surface: `glass` (translucent popover tint) vs. the solid card default.
 // - Elevation (pick one): `raised` > `flat` > default (shadow-sm). `flat`
 //   drops the shadow; `raised` lifts it to shadow-md.
 // - Interaction: `interactive` adds a pressed-affordance (active:opacity-90),
@@ -35,8 +34,6 @@ export interface CardProps {
   description?: string;
   body?: string;
   footer?: string;
-  // Surface (pick one; default is the solid card fill).
-  glass?: boolean;
   // Elevation (pick one; default is a soft shadow-sm).
   raised?: boolean;
   flat?: boolean;
@@ -52,15 +49,8 @@ export interface CardProps {
   className?: string;
 }
 
-type Surface = "solid" | "glass";
 type Elevation = "raised" | "flat" | "default";
 type Density = "compact" | "comfortable" | "default";
-
-// Surface precedence when more than one is passed: first match wins.
-function surfaceOf(p: CardProps): Surface {
-  if (p.glass) return "glass";
-  return "solid";
-}
 
 // Elevation precedence when more than one is passed: first match wins.
 function elevationOf(p: CardProps): Elevation {
@@ -77,12 +67,10 @@ function densityOf(p: CardProps): Density {
 }
 
 const CARD_BASE = "rounded-lg border";
-const CARD_SURFACE: Record<Surface, string> = {
-  // Solid: the card token surface with its matching foreground and border.
-  solid: "border-border bg-card",
-  // Glass: a translucent popover tint that reads against busy backdrops.
-  glass: "border-border/60 bg-popover/80",
-};
+// The card surface fill: bg-card with its matching border. The engine renders
+// bg-card translucent when the ThemeProvider's surface is "glass", so a card
+// reads as glass at the theming level, with no per-card prop.
+const CARD_SURFACE = "border-border bg-card";
 const CARD_ELEVATION: Record<Elevation, string> = {
   raised: "shadow-md",
   flat: "shadow-none",
@@ -98,13 +86,12 @@ const CARD_DENSITY: Record<Density, string> = {
 
 export function Card(props: CardProps) {
   const { children, title, description, body, footer, interactive, padded, onPress, className } = props;
-  const surface = surfaceOf(props);
   const elevation = elevationOf(props);
   const density = densityOf(props);
 
   const container = cn(
     CARD_BASE,
-    CARD_SURFACE[surface],
+    CARD_SURFACE,
     CARD_ELEVATION[elevation],
     (interactive || onPress) && "active:opacity-90",
     // Density pads + gaps on its own and wins over `padded`; otherwise `padded`

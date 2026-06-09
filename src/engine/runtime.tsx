@@ -27,29 +27,48 @@ import {
   type ImageStyle,
 } from "react-native";
 import { resolve, type InteractionState, type RNStyle } from "./resolve.js";
-import { colorsByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
+import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
+
+// Surface treatment. "glass" makes surface fills translucent across every
+// component (see glassByScheme). It is a theming dimension, like the color
+// scheme, not a per-component prop.
+type Surface = "default" | "glass";
 
 interface ThemeValue {
   scheme: ColorScheme;
+  surface: Surface;
   tokens: ColorTokens;
   dark: boolean;
 }
 
 const ThemeContext = createContext<ThemeValue | null>(null);
-const FALLBACK: ThemeValue = { scheme: "light", tokens: colorsByScheme.light, dark: false };
+const FALLBACK: ThemeValue = { scheme: "light", surface: "default", tokens: colorsByScheme.light, dark: false };
 
 export interface ThemeProviderProps {
   /** Force a color scheme. Omit to follow the OS appearance. */
   scheme?: ColorScheme;
+  /**
+   * Surface treatment. "glass" makes every surface fill (card, popover)
+   * translucent, so all surface components read as glass; "default" is solid.
+   * This is the theming-level glass switch, no per-component glass prop.
+   */
+  surface?: Surface;
   children: ReactNode;
 }
 
-export function ThemeProvider({ scheme, children }: ThemeProviderProps) {
+export function ThemeProvider({ scheme, surface = "default", children }: ThemeProviderProps) {
   const system = useColorScheme();
   const active: ColorScheme = scheme ?? (system === "dark" ? "dark" : "light");
   const value = useMemo<ThemeValue>(
-    () => ({ scheme: active, tokens: colorsByScheme[active], dark: active === "dark" }),
-    [active],
+    () => ({
+      scheme: active,
+      surface,
+      tokens: surface === "glass"
+        ? { ...colorsByScheme[active], ...glassByScheme[active] }
+        : colorsByScheme[active],
+      dark: active === "dark",
+    }),
+    [active, surface],
   );
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

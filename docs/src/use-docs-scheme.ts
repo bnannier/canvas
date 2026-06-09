@@ -17,3 +17,20 @@ function getSnapshot(): "light" | "dark" {
 export function useDocsScheme(): "light" | "dark" {
   return useSyncExternalStore(subscribe, getSnapshot, () => "light");
 }
+
+// Mirror the docs' Solid/Glass toggle (data-surface="glass" on <html>, set by
+// setSurface) into the value the Canvas ThemeProvider consumes, so the RN
+// components go translucent with the toggle, not just the docs chrome.
+function subscribeSurface(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-surface"] });
+  return () => observer.disconnect();
+}
+
+function getSurfaceSnapshot(): "default" | "glass" {
+  return document.documentElement.dataset.surface === "glass" ? "glass" : "default";
+}
+
+export function useDocsSurface(): "default" | "glass" {
+  return useSyncExternalStore(subscribeSurface, getSurfaceSnapshot, () => "default");
+}

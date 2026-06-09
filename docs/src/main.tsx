@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@olympusoss/canvas";
 import { App } from "./app";
-import { useDocsScheme } from "./use-docs-scheme";
+import { useDocsScheme, useDocsSurface } from "./use-docs-scheme";
 import "./fonts.css";
 import "../../styles/canvas.css";
 import "./docs-chrome.css";
@@ -10,8 +10,9 @@ import "./docs.css";
 
 function Root() {
   const scheme = useDocsScheme();
+  const surface = useDocsSurface();
   return (
-    <ThemeProvider scheme={scheme}>
+    <ThemeProvider scheme={scheme} surface={surface}>
       <App />
     </ThemeProvider>
   );

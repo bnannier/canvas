@@ -729,7 +729,7 @@ export const TREES: Record<string, TreeFn> = {
       props: { className: "w-[320px]" },
       children: {
         type: "Card",
-        props: { glass: s.glass === true, ...density },
+        props: { ...density },
         children: [
           { type: "Field", props: { label: "Workspace name" } },
           {

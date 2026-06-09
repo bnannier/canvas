@@ -25,7 +25,7 @@ Do this:
 <Button primary large>Save</Button>
 <Button destructive>Delete</Button>
 <Button ghost small>Cancel</Button>
-<Card glass>...</Card>
+<Card raised>...</Card>
 ```
 
 Not this:
@@ -33,12 +33,12 @@ Not this:
 ```jsx
 <Button variant="primary" size="lg">Save</Button>
 <Button tone="destructive">Delete</Button>
-<Card surface="glass">...</Card>
+<Card elevation="raised">...</Card>
 ```
 
 The boolean form reads like natural language ("a primary, large button") and is
 the only accepted styling API. String-valued enum props (`variant="..."`,
-`size="lg"`, `tone="..."`, `surface="..."`) are rejected: do not add them and do
+`size="lg"`, `tone="..."`, `elevation="..."`) are rejected: do not add them and do
 not document them.
 
 ### Axes
@@ -50,13 +50,18 @@ one:
 - Intent: `primary`, `secondary`, `destructive`, `ghost`, `outline`, `link`
   (pass none for the default look).
 - Size: `small`, `large` (pass none for the default, medium size).
-- Surface: `glass` (omit for the solid default).
 - Density: `compact`, `comfortable` (omit for the default density).
 - State and layout, orthogonal booleans that stack: `loading`, `disabled`,
   `block` (full width), `rounded`, and the like.
 
 So `<Button primary large loading block>` is four props drawn from four axes, all
 applied together.
+
+Glass is NOT a per-component axis: it is a theming-level surface mode, like the
+light/dark scheme. Turn it on with the engine `ThemeProvider`'s `surface="glass"`
+prop (or `setSurface("glass")` on the web), which swaps the card and popover
+tokens to translucent so every surface component reads as glass at once. Do not
+add a per-component `glass` prop.
 
 ### Conflicts
 
