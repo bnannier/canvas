@@ -4,7 +4,7 @@ import type { SearchEntry } from "./types";
 const GUIDE_ENTRIES: SearchEntry[] = [
   { title: "Home", description: "Canvas design system overview", path: "/", category: "Pages", keywords: ["overview", "getting started", "install"] },
   { title: "Tokens", description: "Design token reference (colors, typography, spacing)", path: "/tokens", category: "Foundations", keywords: ["colors", "fonts", "spacing", "radius", "shadows", "custom properties", "variables"] },
-  { title: "Theming", description: "Light/dark mode, glass surface, density controls", path: "/theming", category: "Foundations", keywords: ["dark mode", "light mode", "glass", "compact", "comfy", "theme"] },
+  { title: "Theming", description: "Light/dark mode, glass surface, density controls", path: "/theming", category: "Guides", keywords: ["dark mode", "light mode", "glass", "compact", "comfy", "theme"] },
   { title: "Migration", description: "Migrating from Canvas v2 to v3", path: "/migration", category: "Guides", keywords: ["upgrade", "v2", "v3", "breaking changes"] },
   { title: "Integration", description: "Consumer integration guide for downstream packages", path: "/integration", category: "Guides", keywords: ["react", "vue", "downstream", "consumer"] },
   { title: "Browser Support", description: "CSS feature matrix and minimum browser versions", path: "/browser-support", category: "Guides", keywords: ["browsers", "compatibility", "css features"] },

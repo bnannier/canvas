@@ -14,6 +14,7 @@ import {
   ChartLine, Lock, Settings, Check, Eye,
   Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid, Code,
   Group, ListChecks, MessageSquareWarning,
+  BookOpen, Plug, Moon, Globe, ArrowLeftRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -37,7 +38,6 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { slug: "", label: "About Canvas", to: "/", icon: Home },
       { slug: "components", label: "All components", to: "/components", icon: Layers },
-      { slug: "rn-primitives", label: "React Native", to: "/rn-primitives", icon: Smartphone },
     ],
   },
   {
@@ -48,6 +48,17 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "tokens-spacing", label: "Spacing & Shape", to: "/tokens/spacing", icon: Layers },
       { slug: "tokens-typography", label: "Typography", to: "/tokens/typography", icon: Type },
       { slug: "utilities", label: "Layout & Flexbox", to: "/utilities", icon: LayoutGrid },
+    ],
+  },
+  {
+    label: "Guides",
+    icon: BookOpen,
+    items: [
+      { slug: "integration", label: "Integration", to: "/integration", icon: Plug },
+      { slug: "theming", label: "Theming", to: "/theming", icon: Moon },
+      { slug: "rn-primitives", label: "React Native", to: "/rn-primitives", icon: Smartphone },
+      { slug: "browser-support", label: "Browser Support", to: "/browser-support", icon: Globe },
+      { slug: "migration", label: "Migration", to: "/migration", icon: ArrowLeftRight },
     ],
   },
   {
