@@ -1,0 +1,61 @@
+# Row Menu
+
+Vertical action menu items and navigation links.
+
+## Usage
+
+```tsx
+<RowMenu
+  items={[
+    { label: "Edit" },
+    { label: "Duplicate" },
+    { label: "Delete", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
+## Do & Don't
+
+### Actions
+
+**Do** — Click an item: place destructive actions last, color them, and split them off with a divider.
+
+```tsx
+<RowMenu open items={[
+    { label: "Edit" },
+    { label: "Duplicate" },
+    { label: "Delete", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+**Don't** — Click an item: a destructive action sandwiched between routine ones invites a costly misclick.
+
+```tsx
+<RowMenu open items={[
+    { label: "Edit" },
+    { label: "Delete", destructive: true },
+    { label: "Duplicate" }
+  ]} />
+```
+
+### Links
+
+**Do** — Use <a href> anchors so links behave like links, and mark the current page with an active highlight.
+
+```tsx
+<RowMenu open links items={[
+    { label: "Profile" },
+    { label: "Billing" },
+    { label: "Members" }
+  ]} />
+```
+
+**Don't** — Buttons can't be opened in a new tab, bookmarked, or middle-clicked, navigation needs real links.
+
+```tsx
+<RowMenu open items={[
+    { label: "Profile" },
+    { label: "Billing" },
+    { label: "Members" }
+  ]} />
+```

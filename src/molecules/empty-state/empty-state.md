@@ -1,0 +1,120 @@
+# Empty States
+
+Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.
+
+## Usage
+
+```tsx
+<EmptyState
+  icon="🔍"
+  title="No results found"
+  description="Try adjusting your search filters."
+  bordered
+/>
+```
+
+## Do & Don't
+
+### search
+
+**Do** — State the result neutrally and point at the lever the user can pull (filters, query).
+
+```tsx
+<EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." />
+```
+
+**Don't** — Blaming the searcher for an empty result set makes a normal outcome feel like a mistake.
+
+```tsx
+<EmptyState bordered icon="🔍" title="Nothing matched" description="You searched for the wrong thing. Check your spelling and try again." />
+```
+
+### users
+
+**Do** — When the user can fix it, give them the one action that does (Invite, Create).
+
+```tsx
+<EmptyState bordered icon="👥" title="No users" description="Invite your first team member." actionLabel="Invite member" />
+```
+
+**Don't** — A dead-end that only restates the emptiness leaves the user with nowhere to go.
+
+```tsx
+<EmptyState bordered icon="👥" title="No users" description="There are no team members in this workspace." />
+```
+
+### files
+
+**Do** — Name the gesture that fills the empty space so the next step is obvious.
+
+```tsx
+<EmptyState bordered icon="📄" title="No files" description="Upload or drag files here." />
+```
+
+**Don't** — Generic 'nothing here' copy never tells the user how files would get into the folder.
+
+```tsx
+<EmptyState bordered icon="📄" title="Nothing here" description="This folder is empty." />
+```
+
+### activity
+
+**Do** — Keep a routinely-empty state calm: muted icon, reassuring copy, no urgency.
+
+```tsx
+<EmptyState bordered icon="📈" title="No activity" description="Events will appear as they happen." />
+```
+
+**Don't** — An alarming red icon turns a calm, expected empty feed into a false error.
+
+```tsx
+<View className="items-center rounded-lg border border-border px-6 py-8">
+  <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+    <Text className="text-xl text-destructive">⚠️</Text>
+  </View>
+  <Text className="text-center text-base font-semibold text-foreground">No activity</Text>
+  <Text className="mt-1 text-center text-sm text-muted-foreground">Events will appear as they happen.</Text>
+</View>
+```
+
+### notifications
+
+**Do** — Celebrate a cleared queue: 'All caught up' reads as success, not absence.
+
+```tsx
+<EmptyState bordered icon="🔔" title="All caught up" description="No new notifications." />
+```
+
+**Don't** — Apologetic, sad-toned copy frames an inbox-zero win as a letdown.
+
+```tsx
+<EmptyState bordered icon="🔔" title="Nothing to see" description="You have no notifications. Sorry, it's quiet in here." />
+```
+
+### errors
+
+**Do** — Signal the good news with a green check: zero errors is a passing state, not an empty one.
+
+```tsx
+<EmptyState bordered positive icon="✅" title="No errors" description="Everything is running smoothly." />
+```
+
+**Don't** — A grey 'nothing found' disc reads as a failed query, not as a healthy, error-free system.
+
+```tsx
+<EmptyState bordered icon="🔍" title="No errors" description="Nothing was found." />
+```
+
+### all-clear
+
+**Do** — Reserve the green all-clear for genuinely empty queues: nothing locked, nothing waiting.
+
+```tsx
+<EmptyState bordered positive icon="✅" title="All clear" description="No locked accounts or pending reviews." />
+```
+
+**Don't** — A green all-clear over copy that admits work is pending hides the action the user must take.
+
+```tsx
+<EmptyState bordered positive icon="✅" title="No pending reviews" description="3 accounts are locked and waiting on you." />
+```
