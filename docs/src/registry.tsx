@@ -190,10 +190,10 @@ export const registry: Record<string, RegistryEntry> = {
       const size = s.size === "sm" ? { small: true } : s.size === "lg" ? { large: true } : {};
       const disabled = s.disabled === true;
       const fireItem = (_i: number, item: string) => demo?.fire(item);
-      if (s.variant === "split") return { split: true, items: ["Save", "More"], onSelect: fireItem, disabled, ...size };
+      if (s.variant === "split") return { split: true, items: ["Save"], menu: ["Save as draft", "Save and close", "Save a copy"], onSelect: fireItem, disabled, ...size };
       if (s.variant === "attached") return { segmented: true, active: -1, items: ["‹", "Today", "›"], onSelect: fireItem, disabled, ...size };
       const n = (s.buttons as number) ?? 3;
-      return { segmented: true, active: (s.demoSeg as number) ?? 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), onSelect: (i: number) => demo?.set("demoSeg", i), disabled, ...size };
+      return { segmented: true, active: (s.demoSeg as number) ?? 0, items: ["Day", "Week", "Month", "Year", "All"].slice(0, n), onSelect: (i: number, item: string) => { demo?.set("demoSeg", i); demo?.fire(item); }, disabled, ...size };
     },
   },
 
