@@ -19,7 +19,9 @@
   overflow-x: auto;
   font-size: 0.8125rem;
   line-height: 1.6;
-  background: var(--card) !important;
+  /* --muted, not --card: gives the code a subtly distinct surface from the --card
+     preview stage it attaches to (a touch lighter in dark, a faint gray in light). */
+  background: var(--muted) !important;
 }
 
 .docs-code-wrap code {
