@@ -101,7 +101,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Do** — Click an item: group related actions under labels with a separator.
 
 ```tsx
-<Dropdown trigger="Actions" open label="Create" items={[
+<Dropdown trigger="Actions" label="Create" items={[
     { label: "New file" },
     { label: "New folder" },
     { label: "Upload" },
@@ -114,7 +114,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Don't** — Click an item: a long, flat menu of eight actions is hard to scan.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "New file" },
     { label: "New folder" },
     { label: "Upload" },
@@ -131,7 +131,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Do** — Click an item: give every row a leading icon so labels share one start column.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "Edit", icon: "✎" },
     { label: "Duplicate", icon: "⧉" },
     { label: "Settings", icon: "⚙" }
@@ -141,7 +141,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Don't** — Click an item: icons on some rows but not others leave labels misaligned and the column ragged.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "Edit", icon: "✎" },
     { label: "Duplicate" },
     { label: "Settings", icon: "⚙" }
@@ -153,7 +153,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Do** — Click an item: push shortcuts to a muted, right-aligned column so the eye can scan them.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "Edit profile", shortcut: "⌘E" },
     { label: "Duplicate", shortcut: "⌘D" },
     { label: "Settings", shortcut: "⌘," }
@@ -163,7 +163,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Don't** — Click an item: hints inline after the label crowd the text and never line up into a readable column.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "Edit profile ⌘E" },
     { label: "Duplicate ⌘D" },
     { label: "Settings ⌘," }
@@ -175,7 +175,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Do** — Click Archive: nothing happens; a real disabled item doesn't respond.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "Edit" },
     { label: "Archive", disabled: true },
     { label: "Duplicate" }
@@ -203,7 +203,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Do** — Click an item: separate destructive actions with a divider, color them, and place them last.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "Edit" },
     { label: "Duplicate" },
     { label: "Delete", destructive: true, separatorBefore: true }
@@ -213,7 +213,7 @@ Floating menus triggered by a button: actions, options, navigation.
 **Don't** — Click an item: a destructive action wedged between routine ones invites a costly misclick.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
+<Dropdown trigger="Actions" items={[
     { label: "Edit" },
     { label: "Delete" },
     { label: "Duplicate" }
