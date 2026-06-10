@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Platform, type StyleProp, type ViewStyle } from "react-native";
 import { cn } from "../../cn.js";
 import { View, Pressable, Text } from "../../engine/index.js";
 import { Button } from "../button/button.js";
@@ -13,11 +14,12 @@ import { Button } from "../button/button.js";
 // a topbar): the children render in place of the button, inside a Pressable that
 // toggles the menu. Either way the menu rows still come from `items`.
 //
-// Overlay note: a real dropdown portals its menu over the page and dismisses on
-// outside click. Here, for the docs playground (which has no portal/Modal), the
-// open menu renders as a floating card positioned absolutely below the trigger
-// (the wrapper is `relative`), so it overflows its container, e.g. the playground
-// stage, instead of growing it.
+// Overlay note: the open menu renders as a floating card positioned absolutely
+// below the trigger (the wrapper is `relative`), so it overflows its container
+// (e.g. a docs card or the playground stage) instead of growing it, with no
+// portal/Modal. On the web, an UNCONTROLLED menu also lays down a transparent
+// full-viewport backdrop so a press anywhere off the menu dismisses it; a
+// controlled `open` menu and native get no backdrop (native would use a Modal).
 //
 // There are no visual style axes on the menu itself, so there is no boolean-prop
 // precedence to resolve; the per-item `destructive` flag is the only variant and
@@ -65,6 +67,19 @@ const MENU_CARD = "rounded-md border border-border bg-popover p-1 shadow-lg";
 const ITEM_ROW =
   "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent";
 
+// A transparent full-viewport layer behind the open menu (web only): a press off
+// the menu dismisses it. `position: fixed` is not in RN's ViewStyle type but
+// react-native-web honors it; cast through unknown. zIndex sits below the menu's
+// z-50 so the menu and its items stay clickable above the backdrop.
+const DISMISS_BACKDROP = {
+  position: "fixed",
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  zIndex: 40,
+} as unknown as StyleProp<ViewStyle>;
+
 export function Dropdown(props: DropdownProps) {
   const { trigger, children, label, items, open: openProp, onOpenChange, onSelect, className } = props;
   // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
@@ -102,6 +117,10 @@ export function Dropdown(props: DropdownProps) {
           {trigger}
         </Button>
       )}
+
+      {open && openProp === undefined && Platform.OS === "web" ? (
+        <Pressable accessible={false} onPress={() => setOpen(false)} style={DISMISS_BACKDROP} />
+      ) : null}
 
       {open ? (
         <View
