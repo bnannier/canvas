@@ -104,21 +104,25 @@
 
 .sidebar-item {
   display: flex;
-  align-items: center;
+  /* flex-start, not center: a text flex item's box sits a few px above the icon's
+     box when centered (the line-box vs the 16px icon), which reads as misaligned.
+     Aligning to the start lines the icon up with the first text line; line-height:1
+     trims the flex line so the row still reads as vertically centered. */
+  align-items: flex-start;
   gap: 0.5rem;
   width: 100%;
   padding: 0.4rem 0.625rem;
   border-radius: var(--radius-md);
   font-size: 0.8125rem;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1;
   color: var(--muted-foreground);
   text-decoration: none;
   transition: background 150ms ease, color 150ms ease;
 }
 
 .sidebar-item > svg { flex-shrink: 0; }
-.sidebar-item .label { flex: 1; min-width: 0; }
+.sidebar-item .label { flex: 1; min-width: 0; line-height: 1.25; }
 
 .sidebar-item:hover {
   background: var(--accent);

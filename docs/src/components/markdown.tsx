@@ -125,9 +125,15 @@ export function Markdown({ source, live }: { source: string; live?: boolean }) {
         return (
           <Fragment key={i}>
             {isLive && (
+              // position+zIndex raise the preview above the code block below, so a
+              // floating subcomponent (dropdown, popover, combobox, tooltip) that
+              // overflows the preview bounds paints over the code instead of being
+              // covered by it.
               <div
                 className="section-card"
                 style={{
+                  position: "relative",
+                  zIndex: 1,
                   padding: "2rem",
                   display: "flex",
                   alignItems: "flex-start",
