@@ -28,7 +28,7 @@ const WEB_BASELINE = [
 const NOTES = [
   {
     title: "Native uses no CSS",
-    description: "On iOS and Android there is no browser and no CSS feature floor. Theming is the engine resolving classNames to React Native styles; the native minimums above come from React Native 0.74 and react-native-svg, the package's peer dependencies.",
+    description: "On iOS and Android there is no browser and no CSS feature floor. Components read the active design tokens with useTheme and build their React Native styles from them; the native minimums above come from React Native 0.74 and react-native-svg, the package's peer dependencies.",
   },
   {
     title: "The web floor comes from the stylesheet, not the components",

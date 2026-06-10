@@ -84,7 +84,7 @@ export function ThemingPage() {
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Glass Surface</h2>
           <p className="body" style={{ marginBottom: "1rem" }}>
             Glass makes every surface fill translucent, so cards, popovers, sidebars, navbars, inputs, and overlays read as
-            frosted panes. It is a theming-level switch (the engine swaps in translucent surface tokens), not a
+            frosted panes. It is a theming-level switch (the ThemeProvider swaps in translucent surface tokens), not a
             per-component prop: <code className="code">surface="glass"</code> on <code className="code">ThemeProvider</code> on
             native, or <code className="code">data-surface="glass"</code> on <code className="code">&lt;html&gt;</code> on the web.
           </p>

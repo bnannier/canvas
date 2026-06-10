@@ -8,7 +8,16 @@ function PinField() {
   const { tokens } = useTheme();
   return (
     <TextInput
-      className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+      style={{
+        width: "100%",
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: tokens.input,
+        backgroundColor: tokens.background,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        color: tokens.foreground,
+      }}
       placeholder="000000"
       placeholderTextColor={tokens["muted-foreground"]}
       keyboardType="number-pad"

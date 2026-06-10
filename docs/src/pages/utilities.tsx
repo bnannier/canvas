@@ -1,10 +1,10 @@
-import { View } from "@olympusoss/canvas";
+import { View, useResponsive } from "@olympusoss/canvas";
 import { PageNav } from "@/components/page-nav";
 
 /**
- * Documents the layout utility vocabulary. The demos render real Canvas <View>
- * primitives, so the engine resolves each className to a React Native style the
- * same way it does in the kit, and the page doubles as a live smoke test.
+ * The layout guide. Canvas lays out with plain React Native style objects on the
+ * raw View primitive (flexbox), so the demos here render real <View> elements
+ * with the same style objects a consumer writes, and double as a live smoke test.
  */
 
 function Section({ title, description, anatomy, children }: {
@@ -44,7 +44,7 @@ function Section({ title, description, anatomy, children }: {
   );
 }
 
-/** A live demo box: renders the children, then shows the class string used. */
+/** A live demo box: renders the children, then shows the style used. */
 function Demo({ code, children, minHeight }: { code: string; children: React.ReactNode; minHeight?: number }) {
   return (
     <div style={{
@@ -98,7 +98,21 @@ function Chip({ children }: { children: React.ReactNode }) {
   );
 }
 
-const GAP_SCALE = ["0", "px", "0.5", "1", "1.5", "2", "3", "4", "6", "8"];
+// The spacing scale (Tailwind's 4px base) as the px values gap/padding/margin take.
+const GAP_SCALE: Array<[string, number]> = [
+  ["0", 0], ["px", 1], ["0.5", 2], ["1", 4], ["1.5", 6], ["2", 8], ["3", 12], ["4", 16], ["6", 24], ["8", 32],
+];
+
+// useResponsive is a hook, so the responsive demo lives in its own component.
+// It collapses from a row on desktop to a column at the md breakpoint and below.
+function ResponsiveDemo() {
+  const direction = useResponsive<"row" | "column">({ base: "row", md: "column" });
+  return (
+    <View style={{ flexDirection: direction, gap: 12 }}>
+      <Tile>a row on desktop</Tile><Tile>that stacks at md</Tile><Tile>and below</Tile>
+    </View>
+  );
+}
 
 export function UtilitiesPage() {
   return (
@@ -111,7 +125,7 @@ export function UtilitiesPage() {
           letterSpacing: "-0.025em",
           color: "var(--foreground)",
         }}>
-          Layout utilities
+          Layout & flexbox
         </h1>
         <p style={{
           marginTop: 12,
@@ -120,46 +134,46 @@ export function UtilitiesPage() {
           lineHeight: 1.6,
           color: "var(--muted-foreground)",
         }}>
-          Canvas lays out with a Tailwind-style utility vocabulary passed as a
-          {" "}<Chip>className</Chip>. The engine resolves it to a React Native style for the active theme and
-          viewport, so the same utilities work on iOS, Android, and the web. Layout is flexbox: React Native has
-          no CSS grid, so there are no grid utilities. On the web the same vocabulary is also generated as Tailwind
-          v4 CSS through <Chip>canvas.css</Chip>.
+          Canvas lays out with plain React Native style objects on the raw
+          {" "}<Chip>View</Chip> primitive, so the same code runs on iOS, Android, and the web. Layout is flexbox:
+          React Native has no CSS grid. The spacing scale is Tailwind's 4px base expressed as numbers
+          ({" "}<Chip>gap: 16</Chip> is Tailwind's <Chip>gap-4</Chip>), and the <Chip>useResponsive</Chip> hook
+          handles breakpoints, so a value can change with the viewport.
         </p>
       </section>
 
       <Section
-        title="How it works"
-        description="className -> the engine (useStyles) -> a resolved React Native style; primitives render style={[resolved, style]}, so a caller-supplied style always wins. The same path runs on native and on react-native-web."
-        anatomy="Responsive prefixes are desktop-first: the unprefixed utility is the desktop base, and a prefixed utility (sm/md/lg/xl/2xl) applies at that width AND BELOW, with the smallest matching breakpoint winning. This is the inverse of mobile-first. Breakpoints (and below): sm 640, md 768, lg 1024, xl 1280, 2xl 1536."
+        title="How layout works"
+        description="A View is a flex container; you set its layout with a style object (flexDirection, alignItems, justifyContent, gap, ...). Numbers are density-independent pixels. A style array merges left to right, so the last entry wins, which is how a component's style escape-hatch prop overrides its own layout."
+        anatomy="Responsive values come from useResponsive({ base, sm, md, ... }), which is desktop-first: base is the desktop value, and a breakpoint entry applies at that width AND BELOW, with the smallest matching breakpoint winning. This is the inverse of mobile-first. Breakpoints (and below): sm 640, md 768, lg 1024, xl 1280, 2xl 1536."
       >
-        <div className="flex flex-wrap gap-2" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <Chip>flex</Chip><Chip>flex-row</Chip><Chip>md:flex-col</Chip><Chip>lg:gap-2</Chip>
-          <Chip>md:hidden</Chip><Chip>xl:w-1/2</Chip>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <Chip>flexDirection: "row"</Chip><Chip>alignItems: "center"</Chip><Chip>gap: 8</Chip>
+          <Chip>flex: 1</Chip><Chip>width: "50%"</Chip>
         </div>
       </Section>
 
-      <Section title="Display & direction" description="flex turns on a flex container; hidden removes it. React Native defaults a flex container to a column, so set flex-row for a row (plus flex-row-reverse, flex-col, flex-wrap).">
-        <Demo code='<View className="flex flex-row items-center gap-3">'>
-          <View className="flex flex-row items-center gap-3">
-            <Tile>flex-row</Tile><Tile>item</Tile><Tile>item</Tile>
+      <Section title="Display & direction" description="React Native defaults a View to a column, so set flexDirection: 'row' for a row. There is no display:flex toggle (every View is already a flex container); use display:'none' to hide.">
+        <Demo code={'<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>'}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Tile>row</Tile><Tile>item</Tile><Tile>item</Tile>
           </View>
         </Demo>
-        <Demo code='<View className="flex flex-col gap-2">'>
-          <View className="flex flex-col gap-2">
-            <Tile>flex-col</Tile><Tile>stacks</Tile><Tile>vertically</Tile>
+        <Demo code={'<View style={{ flexDirection: "column", gap: 8 }}>'}>
+          <View style={{ flexDirection: "column", gap: 8 }}>
+            <Tile>column</Tile><Tile>stacks</Tile><Tile>vertically</Tile>
           </View>
         </Demo>
       </Section>
 
-      <Section title="Alignment" description="justify-* controls the main axis; items-* the cross axis. Plus self-* for a single child, and grow / shrink.">
-        <Demo code='<View className="flex flex-row justify-between items-center gap-3">'>
-          <View className="flex flex-row justify-between items-center gap-3">
+      <Section title="Alignment" description="justifyContent controls the main axis; alignItems the cross axis. Use alignSelf for a single child, and flexGrow / flexShrink to tune how children flex.">
+        <Demo code={'<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>'}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
             <Tile>start</Tile><Tile>middle</Tile><Tile>end</Tile>
           </View>
         </Demo>
-        <Demo code='<View className="flex flex-row justify-center gap-2">'>
-          <View className="flex flex-row justify-center gap-2">
+        <Demo code={'<View style={{ flexDirection: "row", justifyContent: "center", gap: 8 }}>'}>
+          <View style={{ flexDirection: "row", justifyContent: "center", gap: 8 }}>
             <Tile>centered</Tile><Tile>row</Tile>
           </View>
         </Demo>
@@ -167,19 +181,19 @@ export function UtilitiesPage() {
 
       <Section
         title="Gap"
-        description="gap, gap-x, and gap-y across the spacing scale. Each maps to a value in Tailwind's 4px-based scale (gap-4 = 16px), the same scale padding and margin use."
+        description="gap (and columnGap / rowGap) takes a number from the spacing scale. The same scale backs padding and margin, so a layout reads in one vocabulary: gap: 16 is Tailwind's gap-4."
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {GAP_SCALE.map((v) => (
-            <div key={v} style={{
+          {GAP_SCALE.map(([label, px]) => (
+            <div key={label} style={{
               display: "flex",
               alignItems: "center",
               padding: "8px 12px",
               border: "1px dashed var(--border)",
               borderRadius: "var(--radius-md, 6px)",
             }}>
-              <span style={{ width: 84, flexShrink: 0 }}><Chip>gap-{v}</Chip></span>
-              <View className={`flex flex-row gap-${v}`}>
+              <span style={{ width: 96, flexShrink: 0 }}><Chip>gap: {px}</Chip></span>
+              <View style={{ flexDirection: "row", gap: px }}>
                 <Tile> </Tile><Tile> </Tile><Tile> </Tile>
               </View>
             </div>
@@ -187,58 +201,50 @@ export function UtilitiesPage() {
         </div>
       </Section>
 
-      <Section title="Flex sizing" description="flex-1 makes a child fill the remaining space; grow / shrink / flex-none tune how children flex. Combine with the sizing utilities below.">
-        <Demo code='<View className="flex flex-row gap-2"> ... <View className="flex-1">'>
-          <View className="flex flex-row gap-2">
+      <Section title="Flex sizing" description="flex: 1 makes a child fill the remaining space; flexGrow / flexShrink / flexBasis tune how children flex. Combine with the sizing properties below.">
+        <Demo code={'<View style={{ flexDirection: "row", gap: 8 }}> ... <View style={{ flex: 1 }}>'}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
             <Tile>auto</Tile>
-            <View className="flex-1"><Tile full>flex-1 fills the rest</Tile></View>
+            <View style={{ flex: 1 }}><Tile full>flex: 1 fills the rest</Tile></View>
             <Tile>auto</Tile>
           </View>
         </Demo>
       </Section>
 
-      <Section title="Sizing" description="w / h take the spacing scale, fractions (w-1/2, w-1/3), full (100%), auto, or an arbitrary value (w-[200px]). min-w / max-w / min-h / max-h and size-* round it out.">
-        <Demo code='<View className="flex flex-row gap-2"> ... w-1/2 / w-1/4'>
-          <View className="flex flex-row gap-2">
-            <View className="w-1/2"><Tile full>w-1/2</Tile></View>
-            <View className="w-1/4"><Tile full>w-1/4</Tile></View>
-            <View className="w-1/4"><Tile full>w-1/4</Tile></View>
+      <Section title="Sizing" description="width / height take a number (px), a percentage string ('50%', '100%'), or 'auto'. minWidth / maxWidth / minHeight / maxHeight round it out. There are no fraction utilities: write the percentage you want.">
+        <Demo code={'<View style={{ flexDirection: "row", gap: 8 }}> ... width: "50%" / "25%"'}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <View style={{ width: "50%" }}><Tile full>width 50%</Tile></View>
+            <View style={{ width: "25%" }}><Tile full>25%</Tile></View>
+            <View style={{ width: "25%" }}><Tile full>25%</Tile></View>
           </View>
         </Demo>
-        <Demo code='<View className="w-full"> / <View className="w-40">'>
-          <View className="flex flex-col gap-2">
-            <View className="w-full"><Tile full>w-full</Tile></View>
-            <View className="w-40"><Tile full>w-40 (160px)</Tile></View>
+        <Demo code={'<View style={{ width: "100%" }}> / <View style={{ width: 160 }}>'}>
+          <View style={{ flexDirection: "column", gap: 8 }}>
+            <View style={{ width: "100%" }}><Tile full>width 100%</Tile></View>
+            <View style={{ width: 160 }}><Tile full>width 160</Tile></View>
           </View>
         </Demo>
       </Section>
 
       <Section
         title="Responsive (desktop-first)"
-        description="Prefix any utility with a breakpoint. Because the model is desktop-first, a prefixed utility applies at that width and BELOW. Resize the window across the md (768px) boundary to watch these change."
+        description="useResponsive({ base, md, ... }) returns the active value for the viewport. Because the model is desktop-first, a breakpoint entry applies at that width and BELOW. Resize the window across the md (768px) boundary to watch this change."
       >
-        <Demo code='<View className="flex flex-row md:flex-col gap-3">'>
-          <View className="flex flex-row md:flex-col gap-3">
-            <Tile>a row on desktop</Tile><Tile>that stacks at md</Tile><Tile>and below</Tile>
-          </View>
-        </Demo>
-        <Demo code='<View className="flex md:hidden"> / <View className="hidden md:flex">'>
-          <View className="flex flex-row items-center gap-3">
-            <View className="flex md:hidden"><Tile>wide screens only</Tile></View>
-            <View className="hidden md:flex"><Tile>md and below only</Tile></View>
-          </View>
+        <Demo code={'const direction = useResponsive({ base: "row", md: "column" });'}>
+          <ResponsiveDemo />
         </Demo>
       </Section>
 
       <Section
-        title="Precedence & overrides"
-        description="Within one className, a higher-priority utility wins for the same property (state > dark > breakpoint > base, smaller breakpoint first). And because every primitive renders style={[resolved, style]}, a caller-supplied style always wins over the className."
-        anatomy="Below, w-40 sets a fixed 160px width; the inline style={{ width: '100%' }} overrides it, because the resolved className style is applied first and the caller style last."
+        title="Composing styles"
+        description="Pass an array of style objects and the later entries win, the same merge React Native uses. Every Canvas component also takes a style prop applied last, so a caller can nudge layout (a margin, a width) without restyling the component."
+        anatomy="Below, the base sets a fixed 160px width; the second entry in the array overrides it to 100%, because a style array is applied left to right and the last value wins."
       >
-        <Demo code={'<View className="w-40" /> vs <View className="w-40" style={{ width: "100%" }} />'}>
-          <View className="flex flex-col gap-3">
-            <View className="w-40"><Tile full>w-40, 160px</Tile></View>
-            <View className="w-40" style={{ width: "100%" }}><Tile full>w-40 + style width 100%, style wins</Tile></View>
+        <Demo code={'<View style={[{ width: 160 }, { width: "100%" }]} />'}>
+          <View style={{ flexDirection: "column", gap: 12 }}>
+            <View style={{ width: 160 }}><Tile full>width 160</Tile></View>
+            <View style={[{ width: 160 }, { width: "100%" }]}><Tile full>[160, 100%] -&gt; last wins</Tile></View>
           </View>
         </Demo>
       </Section>

@@ -1,4 +1,3 @@
-export { cn } from "./cn.js";
 export { token, hsl } from "./tokens.js";
 export {
   getTheme,
@@ -10,10 +9,13 @@ export {
   setDensity,
 } from "./theme.js";
 
-export type { Theme, Surface, Density } from "./theme.js";
+export type { Theme, Density } from "./theme.js";
 
-// The React Native engine: tokens, resolver, runtime, and styled primitives.
-export * from "./engine/index.js";
+// The style foundation: design tokens, the theme runtime (ThemeProvider/useTheme),
+// desktop-first responsive helpers, the shadow/alpha helpers, and the raw React
+// Native primitives (View/Text/Pressable/Image/TextInput/ScrollView). This also
+// exports the Surface type (the glass/default theming switch).
+export * from "./style/index.js";
 
 // Components, grouped by atomic-design level (atoms / molecules / organisms).
 export * from "./atoms/index.js";

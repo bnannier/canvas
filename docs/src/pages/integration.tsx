@@ -6,7 +6,6 @@ import viteConfigCode from "./snippets/integration/vite-config.md?raw";
 import webEntryCode from "./snippets/integration/web-entry.md?raw";
 import schemeHookCode from "./snippets/integration/scheme-hook.md?raw";
 import themeApiCode from "./snippets/integration/theme-api.md?raw";
-import cnCode from "./snippets/integration/cn.md?raw";
 import tokenCode from "./snippets/integration/token.md?raw";
 import buildingCode from "./snippets/integration/building.md?raw";
 
@@ -15,14 +14,13 @@ const tocItems = [
   { id: "quick-start", label: "Quick start" },
   { id: "web-setup", label: "React Native Web" },
   { id: "web-theming", label: "Theming on the web" },
-  { id: "utilities", label: "cn() utility" },
   { id: "tokens", label: "Reading tokens" },
   { id: "building", label: "Building on Canvas" },
   { id: "exports", label: "Package exports" },
 ];
 
 const EXPORTS = [
-  { path: "@olympusoss/canvas", content: "Components, the engine (ThemeProvider, View, Text, Pressable, Image, TextInput, ScrollView, useStyles, useTheme), and the cn / token / theme utilities. Ships as TypeScript source." },
+  { path: "@olympusoss/canvas", content: "Components, the style foundation (ThemeProvider, useTheme, useResponsive, shadow, alpha, and the View / Text / Pressable / Image / TextInput / ScrollView primitives), and the token / theme utilities. Ships as TypeScript source." },
   { path: "@olympusoss/canvas/styles/canvas.css", content: "Tailwind v4 token layer: the CSS custom properties plus the .dark / [data-surface] / [data-density] theme hooks. Web only." },
 ];
 
@@ -78,8 +76,8 @@ export function IntegrationPage() {
         <section id="web-theming" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Theming on the web</h2>
           <p className="small muted" style={{ marginBottom: "0.75rem" }}>
-            Components theme themselves through <code className="code">ThemeProvider</code> (the engine resolves
-            classNames to styles for the active scheme). On the web you also import the CSS token layer so the DOM
+            Components theme themselves through <code className="code">ThemeProvider</code> (they read the active
+            scheme's tokens with <code className="code">useTheme</code>). On the web you also import the CSS token layer so the DOM
             theme helpers and any custom CSS you write stay in sync. The helpers toggle attributes on
             {" "}<code className="code">&lt;html&gt;</code>; a small hook mirrors the <code className="code">.dark</code> class back
             into the provider so the React Native components follow the page.
@@ -93,17 +91,6 @@ export function IntegrationPage() {
             They are web-only (they touch <code className="code">document</code> and <code className="code">localStorage</code>).
           </p>
           <Markdown source={themeApiCode} />
-        </section>
-
-        <div className="sep" style={{ margin: "1.5rem 0" }} />
-
-        <section id="utilities" className="docs-section" style={{ marginBottom: "2rem" }}>
-          <h2 className="h4" style={{ marginBottom: "0.75rem" }}>The cn() utility</h2>
-          <p className="small muted" style={{ marginBottom: "0.5rem" }}>
-            <code className="code">cn()</code> joins classNames and drops falsy values, the same helper Canvas
-            components use internally to compose the engine className.
-          </p>
-          <Markdown source={cnCode} />
         </section>
 
         <div className="sep" style={{ margin: "1.5rem 0" }} />
@@ -124,7 +111,7 @@ export function IntegrationPage() {
         <section id="building" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Building on Canvas</h2>
           <p className="body" style={{ marginBottom: "0.75rem" }}>
-            Compose Canvas components directly, or build your own on the engine primitives
+            Compose Canvas components directly, or build your own on the React Native primitives
             (<code className="code">View</code>, <code className="code">Text</code>, <code className="code">Pressable</code>,
             {" "}<code className="code">Image</code>, <code className="code">TextInput</code>, <code className="code">ScrollView</code>).
             Follow the Canvas convention: one flat boolean prop per style choice, not string-enum

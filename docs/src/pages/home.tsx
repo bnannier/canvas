@@ -37,7 +37,7 @@ const PRINCIPLES = [
   },
   {
     title: "Tokens, themes, and atomic design",
-    body: "Built with atomic design (Atoms, Molecules, Organisms, plus Templates and Patterns), all driven by design tokens: light and dark color schemes, a glass surface mode, and density controls. Theming is a token change, not a rewrite. An in-house engine resolves it under the hood; the boolean props stay your only API.",
+    body: "Built with atomic design (Atoms, Molecules, Organisms, plus Templates and Patterns), all driven by design tokens: light and dark color schemes, a glass surface mode, and density controls. Theming is a token change, not a rewrite: components read the active tokens and build their React Native styles from them, so the boolean props stay your only API.",
   },
 ];
 
