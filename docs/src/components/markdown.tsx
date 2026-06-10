@@ -1,5 +1,6 @@
 import { Fragment, createElement, type ReactNode } from "react";
 import { CodeBlock } from "./code-block";
+import { LiveExample } from "./live-example";
 
 // Minimal markdown renderer. The only rich feature is fenced ```lang code blocks,
 // each delegated to <CodeBlock> so Shiki highlighting, dual themes, the copy
@@ -111,15 +112,37 @@ function Prose({ lines }: { lines: string[] }) {
   return <>{out}</>;
 }
 
-export function Markdown({ source }: { source: string }) {
+// `live` turns each tsx/jsx fence into a real rendered preview (above its code),
+// so a component page renders straight from its `.md`. Guide pages omit it and get
+// code-only highlighting, unchanged.
+export function Markdown({ source, live }: { source: string; live?: boolean }) {
   const blocks = parse(source);
   return (
     <>
-      {blocks.map((b, i) =>
-        b.kind === "code"
-          ? <CodeBlock key={i} code={b.body} language={b.lang} />
-          : <Fragment key={i}><Prose lines={b.lines} /></Fragment>,
-      )}
+      {blocks.map((b, i) => {
+        if (b.kind !== "code") return <Fragment key={i}><Prose lines={b.lines} /></Fragment>;
+        const isLive = live && (b.lang === "tsx" || b.lang === "jsx");
+        return (
+          <Fragment key={i}>
+            {isLive && (
+              <div
+                className="section-card"
+                style={{
+                  padding: "2rem",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "center",
+                  minHeight: 120,
+                  marginBottom: "0.5rem",
+                }}
+              >
+                <LiveExample code={b.body} />
+              </div>
+            )}
+            <CodeBlock code={b.body} language={b.lang} />
+          </Fragment>
+        );
+      })}
     </>
   );
 }

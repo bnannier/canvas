@@ -1,20 +1,66 @@
-import type { ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import { getComponent } from "@/data/components";
-import { DONTS } from "@/data/donts";
-import { renderTree } from "@/registry";
-import type { El } from "@/jsx-code";
-import { ExampleCard } from "@/components/example-card";
-import { Playground } from "@/components/playground";
+import { Markdown } from "@/components/markdown";
+import { LiveExample } from "@/components/live-example";
 import { PageNav } from "@/components/page-nav";
 import { NotFound } from "./not-found";
 
-// A Do/Don't side is either a real-component tree (rendered through the registry)
-// or a static HTML mock for an anti-pattern the real component can't produce.
-type GuidanceSide = { tree?: El; html?: string; caption: string };
+// Each component page renders straight from its co-located markdown
+// (src/<level>/<slug>/<slug>.md), so editing the .md changes the page. The whole
+// `src/` tree of `.md` is inlined as raw strings at build time and HMR-tracked, so
+// a saved edit re-renders. The head (Usage + Variants) renders through
+// <Markdown live>; the Do/Don't section is parsed into the red/green cards below,
+// each side rendered live.
+const RAW = import.meta.glob("../../../src/*/*/*.md", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const LEVEL: Record<string, string> = { Atoms: "atoms", Molecules: "molecules", Organisms: "organisms" };
 
-function renderSide(side: GuidanceSide): ReactNode {
-  return side.tree ? renderTree(side.tree) : <span dangerouslySetInnerHTML={{ __html: side.html ?? "" }} />;
+type DontSide = { caption: string; code: string };
+type DontPair = { title?: string; do: DontSide; dont: DontSide };
+
+// Split the raw .md into the head (everything before "## Do & Don't", with the
+// leading "# Name" + description dropped since the page header already shows them)
+// and the parsed Do/Don't pairs.
+function splitDoc(src: string): { head: string; donts: DontPair[] } {
+  const md = src.replace(/\r\n/g, "\n");
+  const dontsAt = md.indexOf("\n## Do & Don't");
+  const body = dontsAt === -1 ? md : md.slice(0, dontsAt);
+  const section = dontsAt === -1 ? "" : md.slice(dontsAt);
+  // Head begins at the first "## " (Usage), dropping the "# Name" + description.
+  const firstSection = body.indexOf("\n## ");
+  const head = firstSection === -1 ? "" : body.slice(firstSection + 1);
+  return { head, donts: parseDonts(section) };
+}
+
+// The Do/Don't markdown is regular: "### title" groups, each with "**Do** — caption"
+// + a ```tsx fence and "**Don't** — caption" + a ```tsx fence (Do emitted first).
+// Pair by marker name, not position, so order does not matter.
+function parseDonts(section: string): DontPair[] {
+  const lines = section.split("\n");
+  const pairs: DontPair[] = [];
+  let title: string | undefined;
+  let cur: { do?: DontSide; dont?: DontSide } = {};
+  let side: "do" | "dont" | null = null;
+  let caption = "";
+  for (let i = 0; i < lines.length; i++) {
+    const h = /^###\s+(.*)$/.exec(lines[i]);
+    if (h) { title = h[1].trim(); cur = {}; side = null; continue; }
+    const m = /^\*\*(Do|Don['’]t)\*\*\s*(.*)$/.exec(lines[i]);
+    if (m) {
+      side = m[1] === "Do" ? "do" : "dont";
+      // Strip the leading separator (an em/en dash, colon, or hyphen) + spaces.
+      caption = m[2].replace(/^[\s\p{P}]+/u, "").trim();
+      continue;
+    }
+    if (/^```(\w+)?\s*$/.test(lines[i]) && side) {
+      const code: string[] = [];
+      i++;
+      while (i < lines.length && !/^```\s*$/.test(lines[i])) code.push(lines[i++]);
+      cur[side] = { caption, code: code.join("\n") };
+      side = null;
+      if (cur.do && cur.dont) { pairs.push({ title, do: cur.do, dont: cur.dont }); cur = {}; }
+    }
+  }
+  return pairs;
 }
 
 export function ComponentPage() {
@@ -23,13 +69,8 @@ export function ComponentPage() {
 
   if (!comp) return <NotFound />;
 
-  // Prefer the real-component Do/Don'ts (data/donts.ts); fall back to a
-  // component's legacy HTML donts for slugs not migrated yet.
-  const dontList = ((slug && DONTS[slug]) ?? comp.donts ?? []) as Array<{
-    title?: string;
-    dont: GuidanceSide;
-    do: GuidanceSide;
-  }>;
+  const src = RAW[`../../../src/${LEVEL[comp.category]}/${comp.slug}/${comp.slug}.md`];
+  const { head, donts } = src ? splitDoc(src) : { head: "", donts: [] as DontPair[] };
 
   return (
     <div>
@@ -55,93 +96,13 @@ export function ComponentPage() {
         />
       </header>
 
-      {comp.playground && (
+      {head && (
         <section style={{ marginBottom: "2.5rem" }}>
-          <header style={{ marginBottom: "1rem" }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: 20,
-              fontWeight: 600,
-              letterSpacing: "-0.015em",
-              color: "var(--foreground)",
-            }}>
-              Playground
-            </h2>
-            <p style={{
-              marginTop: 4,
-              marginBottom: 0,
-              fontSize: "13.5px",
-              color: "var(--muted-foreground)",
-              maxWidth: 640,
-              lineHeight: 1.6,
-            }}>
-              Mix intent and size with state and layout booleans. The preview updates live; open Show code to copy the markup.
-            </p>
-          </header>
-          <Playground key={comp.slug} slug={comp.slug} config={comp.playground} />
+          <Markdown source={head} live />
         </section>
       )}
 
-      {comp.sections.map((section, i) => (
-        <section key={i} style={{ marginBottom: "2.5rem" }}>
-          <header style={{ marginBottom: "1rem" }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: 20,
-              fontWeight: 600,
-              letterSpacing: "-0.015em",
-              color: "var(--foreground)",
-            }}>
-              {section.title}
-            </h2>
-            {section.description && (
-              <p style={{
-                marginTop: 4,
-                marginBottom: 0,
-                fontSize: "13.5px",
-                color: "var(--muted-foreground)",
-                maxWidth: 640,
-                lineHeight: 1.6,
-              }}
-                dangerouslySetInnerHTML={{ __html: section.description }}
-              />
-            )}
-          </header>
-          {section.anatomy && (
-            <div style={{
-              marginBottom: "1rem",
-              padding: "0.75rem 1rem",
-              borderRadius: 8,
-              background: "color-mix(in oklch, var(--muted) 40%, transparent)",
-              border: "1px solid var(--border)",
-              fontSize: "12.5px",
-              color: "var(--muted-foreground)",
-            }}>
-              <span style={{
-                fontWeight: 600,
-                color: "var(--foreground)",
-                marginRight: 8,
-              }}>
-                Anatomy.
-              </span>
-              <span dangerouslySetInnerHTML={{ __html: section.anatomy }} />
-            </div>
-          )}
-          {section.columns && section.columns > 1 ? (
-            <div className={`section-col-grid cols-${section.columns}`}>
-              {section.examples.map((ex, j) => (
-                <ExampleCard key={j} example={ex} compact />
-              ))}
-            </div>
-          ) : (
-            section.examples.map((ex, j) => (
-              <ExampleCard key={j} example={ex} />
-            ))
-          )}
-        </section>
-      ))}
-
-      {dontList.length > 0 && (
+      {donts.length > 0 && (
         <section style={{ marginBottom: "2.5rem" }}>
           <header style={{ marginBottom: "1rem" }}>
             <h2 style={{
@@ -155,7 +116,7 @@ export function ComponentPage() {
             </h2>
           </header>
           <div className="donts-grid">
-            {dontList.map((d, i) => (
+            {donts.map((d, i) => (
               <div key={`dont-${i}`} style={{
                 display: "contents",
               }}>
@@ -189,7 +150,7 @@ export function ComponentPage() {
                     Don&rsquo;t
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
-                    {renderSide(d.dont)}
+                    <LiveExample code={d.dont.code} />
                   </div>
                   <p style={{
                     margin: 0,
@@ -219,7 +180,7 @@ export function ComponentPage() {
                     Do
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
-                    {renderSide(d.do)}
+                    <LiveExample code={d.do.code} />
                   </div>
                   <p style={{
                     margin: 0,

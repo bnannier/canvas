@@ -1,28 +1,23 @@
 import { Link } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
-import { Playground } from "@/components/playground";
-import type { PlaygroundConfig } from "@/data/types";
+import { Markdown } from "@/components/markdown";
 import { COMPONENTS } from "@/data/components";
 import {
   Layers, CheckCircle, Copy, ChevronRight,
   Plus, Shield, AppWindow, Home as HomeIcon, Check,
 } from "lucide-react";
 
-// The styling API, shown before it is explained, as a live playground: the same
-// <Playground> widget every component page uses, driven by the `save-bar`
-// composite tree (registry-trees.ts). Toggle the booleans and the live SaveBar
-// plus the shown code update together, so they never drift. Defaults match the
-// canonical SaveBar (glass, compact, full-width Save).
-const SAVE_BAR_PLAYGROUND: PlaygroundConfig = {
-  controls: [
-    { type: "check", key: "glass", label: "Glass surface" },
-    { type: "pills", key: "density", label: "Density", options: ["compact", "comfortable"], cols: 2 },
-    { type: "check", key: "saving", label: "Saving (spinner)" },
-    { type: "check", key: "block", label: "Full-width Save" },
-  ],
-  defaults: { glass: true, density: "compact", saving: false, block: true },
-  render: () => "",
-};
+// The styling API, shown before it is explained: a SaveBar rendered live as real
+// Canvas components through the same markdown example path every component page
+// uses (a tsx fence -> <LiveExample>). Edit it like any component's example doc.
+const SAVE_BAR_CODE = `<View className="w-[320px]">
+  <Card compact>
+    <Field label="Workspace name" />
+    <Button primary large block>Save changes</Button>
+    <Button ghost small>Cancel</Button>
+    <Button destructive>Delete workspace</Button>
+  </Card>
+</View>`;
 
 const API_CAPTION =
   "This is the entire styling API. Style props group into orthogonal axes (intent, size, surface, density): within an axis you pass at most one, across axes they stack freely. The same component, the same props, on iOS, Android, and web. No enum strings, no className soup, no platform forks.";
@@ -158,8 +153,8 @@ export function Home() {
           <code style={{ fontSize: "13px" }}>@olympusoss/canvas</code>. It runs natively on iOS and Android
           and on the web through React Native Web, so the same components ship everywhere with no per-platform
           forks. You style them with flat, semantic boolean props that read like a sentence, theme them from
-          design tokens, and watch all {COMPONENTS.length} components render live in the playground as real
-          React Native components. Toggle the props on the example below; that is the whole API.
+          design tokens, and see all {COMPONENTS.length} components render live as real React Native
+          components, straight from their markdown example docs. The example below is the whole API.
         </p>
         <div style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
           <Link to="/components" className="btn btn-default">Browse all components</Link>
@@ -167,11 +162,10 @@ export function Home() {
         </div>
       </section>
 
-      {/* The API, shown before it is told: the SaveBar as a live playground, the
-          same widget every component page uses. Toggle the booleans to watch the
-          preview and the code update together. */}
+      {/* The API, shown before it is told: the SaveBar rendered live as real
+          Canvas components, straight from the markdown example path. */}
       <section style={{ marginBottom: "2.5rem" }}>
-        <Playground config={SAVE_BAR_PLAYGROUND} slug="save-bar" />
+        <Markdown source={"```tsx\n" + SAVE_BAR_CODE + "\n```"} live />
         <p style={{
           marginTop: "0.75rem",
           marginBottom: 0,
@@ -299,7 +293,7 @@ export function Home() {
             icon={<CheckCircle size={18} />}
             iconBg="rgb(16 185 129 / 0.1)"
             iconColor="#10b981"
-            title="Playground"
+            title="Live theming"
             body={`Toggle dark mode, the glass surface, and density, then resize to watch each page respond desktop-first. All ${COMPONENTS.length} components render as real React Native components, so what you see is exactly what ships to native and web.`}
           />
           <FeatureCard
@@ -307,7 +301,7 @@ export function Home() {
             iconBg="rgb(139 92 246 / 0.1)"
             iconColor="#8b5cf6"
             title="Handoff"
-            body="Click Show code on any example to see idiomatic JSX with its semantic boolean props, ready to paste. Pair it with the integration guide for end-to-end implementation across native and web."
+            body="Every example shows its idiomatic JSX with semantic boolean props, ready to paste. Pair it with the integration guide for end-to-end implementation across native and web."
           />
         </div>
       </Section>
