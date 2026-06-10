@@ -99,11 +99,21 @@ Segmented controls, split buttons, attached groups.
 **Don't** — With no divider the chevron looks like part of one button, hiding the menu.
 
 ```tsx
-<View className="flex-row items-center self-start">
-  <Pressable className="flex-row items-center justify-center h-9 px-4 rounded-l-md rounded-r-none bg-primary active:opacity-90">
-    <Text className="font-medium text-sm text-primary-foreground">Save</Text>
+<View style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start" }}>
+  <Pressable
+    style={({ pressed }) => [
+      { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, paddingHorizontal: 16, borderTopLeftRadius: 6, borderBottomLeftRadius: 6, borderTopRightRadius: 0, borderBottomRightRadius: 0, backgroundColor: tokens.primary },
+      pressed ? { opacity: 0.9 } : null
+    ]}
+  >
+    <Text style={{ fontWeight: "500", fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>Save</Text>
   </Pressable>
-  <Pressable className="flex-row items-center justify-center h-9 px-2 rounded-r-md rounded-l-none bg-primary active:opacity-90">
+  <Pressable
+    style={({ pressed }) => [
+      { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 36, paddingHorizontal: 8, borderTopRightRadius: 6, borderBottomRightRadius: 6, borderTopLeftRadius: 0, borderBottomLeftRadius: 0, backgroundColor: tokens.primary },
+      pressed ? { opacity: 0.9 } : null
+    ]}
+  >
     <Icon chevronDown primaryForeground size={16} />
   </Pressable>
 </View>

@@ -5,7 +5,7 @@ Placeholders for loading content.
 ## Usage
 
 ```tsx
-<Skeleton text animate className="w-[60%]" />
+<Skeleton text animate style={{ width: "60%" }} />
 ```
 
 ## Variants
@@ -19,7 +19,7 @@ Placeholders for loading content.
 ### Shape - button
 
 ```tsx
-<Skeleton button animate className="w-[60%]" />
+<Skeleton button animate style={{ width: "60%" }} />
 ```
 
 ### Shape - card
@@ -47,20 +47,20 @@ Placeholders for loading content.
 **Do** — Vary the line widths and shorten the last line so it reads like real wrapped text.
 
 ```tsx
-<View className="w-[320px] flex-col gap-1.5">
-  <Skeleton text animate className="w-full" />
-  <Skeleton text animate className="w-[95%]" />
-  <Skeleton text animate className="w-[60%]" />
+<View style={{ width: 320, flexDirection: "column", gap: 6 }}>
+  <Skeleton text animate style={{ width: "100%" }} />
+  <Skeleton text animate style={{ width: "95%" }} />
+  <Skeleton text animate style={{ width: "60%" }} />
 </View>
 ```
 
 **Don't** — Three full-width lines read as a solid block, not as a paragraph of prose.
 
 ```tsx
-<View className="w-[320px] flex-col gap-1.5">
-  <Skeleton text animate className="w-full" />
-  <Skeleton text animate className="w-full" />
-  <Skeleton text animate className="w-full" />
+<View style={{ width: 320, flexDirection: "column", gap: 6 }}>
+  <Skeleton text animate style={{ width: "100%" }} />
+  <Skeleton text animate style={{ width: "100%" }} />
+  <Skeleton text animate style={{ width: "100%" }} />
 </View>
 ```
 
@@ -75,7 +75,7 @@ Placeholders for loading content.
 **Don't** — A square placeholder for a round avatar snaps shape the instant the image loads.
 
 ```tsx
-<View className="bg-muted animate-pulse rounded-md w-10 h-10" />
+<View style={{ backgroundColor: tokens.muted, borderRadius: 6, width: 40, height: 40 }} />
 ```
 
 ### button
@@ -89,7 +89,7 @@ Placeholders for loading content.
 **Don't** — An oversized bar overstates a button and the layout jumps when the real control mounts.
 
 ```tsx
-<View className="bg-muted animate-pulse w-[320px] h-[72px] rounded-md" />
+<View style={{ backgroundColor: tokens.muted, width: 320, height: 72, borderRadius: 6 }} />
 ```
 
 ### card
@@ -103,7 +103,7 @@ Placeholders for loading content.
 **Don't** — A generic block that ignores the content's shape causes a jarring shift when it loads.
 
 ```tsx
-<View className="bg-muted animate-pulse rounded-md w-[320px] h-[88px]" />
+<View style={{ backgroundColor: tokens.muted, borderRadius: 6, width: 320, height: 88 }} />
 ```
 
 ### list
@@ -117,7 +117,7 @@ Placeholders for loading content.
 **Don't** — One tall block hides the row rhythm, so the list reflows when each item appears.
 
 ```tsx
-<View className="bg-muted animate-pulse w-[400px] h-[120px] rounded-md" />
+<View style={{ backgroundColor: tokens.muted, width: 400, height: 120, borderRadius: 6 }} />
 ```
 
 ### table
@@ -131,5 +131,5 @@ Placeholders for loading content.
 **Don't** — A single rectangle gives no column structure; cells shift sideways once data lands.
 
 ```tsx
-<View className="bg-muted animate-pulse w-[400px] h-[120px] rounded-md" />
+<View style={{ backgroundColor: tokens.muted, width: 400, height: 120, borderRadius: 6 }} />
 ```

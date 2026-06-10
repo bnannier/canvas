@@ -62,18 +62,18 @@ Underline, pill, vertical, with badges.
 **Don't** — Underlining every tab erases the active indicator: there is no way to tell which view is current.
 
 ```tsx
-<View className="flex-row items-center border-b border-border self-start">
-  <Pressable className="flex-row items-center justify-center px-4 py-2.5 active:opacity-90">
-    <Text className="text-sm font-medium text-foreground">Overview</Text>
-    <View className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary" />
+<View style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderColor: tokens.border, alignSelf: "flex-start" }}>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 16, paddingVertical: 10 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Overview</Text>
+    <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, borderRadius: 9999, backgroundColor: tokens.primary }} />
   </Pressable>
-  <Pressable className="flex-row items-center justify-center px-4 py-2.5 active:opacity-90">
-    <Text className="text-sm font-medium text-foreground">Activity</Text>
-    <View className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary" />
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 16, paddingVertical: 10 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Activity</Text>
+    <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, borderRadius: 9999, backgroundColor: tokens.primary }} />
   </Pressable>
-  <Pressable className="flex-row items-center justify-center px-4 py-2.5 active:opacity-90">
-    <Text className="text-sm font-medium text-foreground">Settings</Text>
-    <View className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-primary" />
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 16, paddingVertical: 10 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Settings</Text>
+    <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, borderRadius: 9999, backgroundColor: tokens.primary }} />
   </Pressable>
 </View>
 ```
@@ -89,15 +89,15 @@ Underline, pill, vertical, with badges.
 **Don't** — Giving every pill the raised background makes the group read as three buttons, not one selection.
 
 ```tsx
-<View className="flex-row items-center gap-1 self-start rounded-lg bg-muted p-1">
-  <Pressable className="flex-row items-center justify-center rounded-md bg-background shadow-sm px-3 py-1.5 active:opacity-90">
-    <Text className="text-sm font-medium text-foreground">All</Text>
+<View style={{ flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", borderRadius: 8, backgroundColor: tokens.muted, padding: 4 }}>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.background, ...shadow("sm"), paddingHorizontal: 12, paddingVertical: 6 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>All</Text>
   </Pressable>
-  <Pressable className="flex-row items-center justify-center rounded-md bg-background shadow-sm px-3 py-1.5 active:opacity-90">
-    <Text className="text-sm font-medium text-foreground">Active</Text>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.background, ...shadow("sm"), paddingHorizontal: 12, paddingVertical: 6 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Active</Text>
   </Pressable>
-  <Pressable className="flex-row items-center justify-center rounded-md bg-background shadow-sm px-3 py-1.5 active:opacity-90">
-    <Text className="text-sm font-medium text-foreground">Archived</Text>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.background, ...shadow("sm"), paddingHorizontal: 12, paddingVertical: 6 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Archived</Text>
   </Pressable>
 </View>
 ```
@@ -113,15 +113,15 @@ Underline, pill, vertical, with badges.
 **Don't** — With no filled active item the rail collapses into a plain link list and loses its current selection.
 
 ```tsx
-<View className="flex-col items-stretch gap-1 w-[180px]">
-  <Pressable className="w-full flex-row items-center rounded-md bg-transparent px-3 py-2 active:opacity-90">
-    <Text className="text-sm font-medium text-muted-foreground">General</Text>
+<View style={{ flexDirection: "column", alignItems: "stretch", gap: 4, width: 180 }}>
+  <Pressable style={({ pressed }) => [{ width: "100%", flexDirection: "row", alignItems: "center", borderRadius: 6, backgroundColor: "transparent", paddingHorizontal: 12, paddingVertical: 8 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["muted-foreground"] }}>General</Text>
   </Pressable>
-  <Pressable className="w-full flex-row items-center rounded-md bg-transparent px-3 py-2 active:opacity-90">
-    <Text className="text-sm font-medium text-muted-foreground">Security</Text>
+  <Pressable style={({ pressed }) => [{ width: "100%", flexDirection: "row", alignItems: "center", borderRadius: 6, backgroundColor: "transparent", paddingHorizontal: 12, paddingVertical: 8 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["muted-foreground"] }}>Security</Text>
   </Pressable>
-  <Pressable className="w-full flex-row items-center rounded-md bg-transparent px-3 py-2 active:opacity-90">
-    <Text className="text-sm font-medium text-muted-foreground">Notifications</Text>
+  <Pressable style={({ pressed }) => [{ width: "100%", flexDirection: "row", alignItems: "center", borderRadius: 6, backgroundColor: "transparent", paddingHorizontal: 12, paddingVertical: 8 }, pressed ? { opacity: 0.9 } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["muted-foreground"] }}>Notifications</Text>
   </Pressable>
 </View>
 ```

@@ -91,14 +91,14 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography display>Welcome</Typography>
-  <Typography muted className="mt-2">Sign in to pick up where you left off.</Typography>
+  <Typography muted style={{ marginTop: 8 }}>Sign in to pick up where you left off.</Typography>
 </View>
 ```
 
 **Don't** — Two display-size lines in one view fight for attention and leave no clear focal point.
 
 ```tsx
-<View className="gap-2">
+<View style={{ gap: 8 }}>
   <Typography display>Welcome</Typography>
   <Typography display>Get started</Typography>
 </View>
@@ -111,14 +111,14 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography h1>Billing</Typography>
-  <Typography h2 className="mt-4">Invoices</Typography>
+  <Typography h2 style={{ marginTop: 16 }}>Invoices</Typography>
 </View>
 ```
 
 **Don't** — Two h1 titles on a page break the document outline and confuse assistive tech.
 
 ```tsx
-<View className="gap-1">
+<View style={{ gap: 4 }}>
   <Typography h1>Billing</Typography>
   <Typography h1>Invoices</Typography>
 </View>
@@ -131,7 +131,7 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography h1>Settings</Typography>
-  <Typography h2 className="mt-4">Profile</Typography>
+  <Typography h2 style={{ marginTop: 16 }}>Profile</Typography>
 </View>
 ```
 
@@ -140,7 +140,7 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography h1>Settings</Typography>
-  <Typography h4 className="mt-4">Profile</Typography>
+  <Typography h4 style={{ marginTop: 16 }}>Profile</Typography>
 </View>
 ```
 
@@ -149,16 +149,16 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Reserve heading styles for titles; set running text in a small body utility.
 
 ```tsx
-<View className="max-w-[340px]">
+<View style={{ maxWidth: 340 }}>
   <Typography h3>About Canvas</Typography>
-  <Typography body className="mt-1">Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+  <Typography body style={{ marginTop: 4 }}>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
 </View>
 ```
 
 **Don't** — Body copy set in a heading style is hard to read in bulk and flattens the hierarchy.
 
 ```tsx
-<Typography h3 className="max-w-[340px]">Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+<Typography h3 style={{ maxWidth: 340 }}>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
 ```
 
 ### h4
@@ -168,14 +168,14 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography h4>Notifications</Typography>
-  <Typography small className="mt-1">Choose how and when we reach you.</Typography>
+  <Typography small style={{ marginTop: 4 }}>Choose how and when we reach you.</Typography>
 </View>
 ```
 
 **Don't** — h4 is a minor heading, not a place for full sentences; long text at this weight reads as a wall.
 
 ```tsx
-<View className="gap-1">
+<View style={{ gap: 4 }}>
   <Typography h4>Notifications</Typography>
   <Typography h4>A long descriptive sentence that explains everything in detail.</Typography>
 </View>
@@ -188,14 +188,14 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography h5>Members</Typography>
-  <Typography body className="mt-0.5">Aisha, Bao, Cleo, and 9 others have access.</Typography>
+  <Typography body style={{ marginTop: 2 }}>Aisha, Bao, Cleo, and 9 others have access.</Typography>
 </View>
 ```
 
 **Don't** — Setting the value in h5 too makes the label and its data indistinguishable.
 
 ```tsx
-<View className="gap-1">
+<View style={{ gap: 4 }}>
   <Typography h5>Members</Typography>
   <Typography h5>Aisha, Bao, Cleo, and 9 others have access.</Typography>
 </View>
@@ -206,7 +206,7 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Keep body copy in sentence case and let inline code carry the technical emphasis.
 
 ```tsx
-<Typography body className="max-w-[340px]">
+<Typography body style={{ maxWidth: 340 }}>
   Run 
   <Typography code>npm install</Typography>
   , then restart the dev server before you continue.
@@ -216,7 +216,7 @@ Type scale classes for headings, body text, and helper styles.
 **Don't** — All-caps emphasis inside body copy shouts and undercuts the relaxed reading rhythm.
 
 ```tsx
-<Typography body className="max-w-[340px]">
+<Typography body style={{ maxWidth: 340 }}>
   <Typography code>npm install</Typography>
    THEN restart the dev server BEFORE you continue.
 </Typography>
@@ -229,7 +229,7 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography body>Save changes</Typography>
-  <Typography small className="mt-0.5">Last saved 2 minutes ago.</Typography>
+  <Typography small style={{ marginTop: 2 }}>Last saved 2 minutes ago.</Typography>
 </View>
 ```
 
@@ -246,7 +246,7 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Reserve tiny for short metadata like timestamps and counts beside the main text.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Typography body>Deploy succeeded</Typography>
   <Typography tiny>3m ago</Typography>
 </View>
@@ -255,7 +255,7 @@ Type scale classes for headings, body text, and helper styles.
 **Don't** — tiny is for metadata, not legal prose; long copy at 12px strains the eye.
 
 ```tsx
-<Typography tiny className="max-w-[300px]">These terms govern your use of the service and your data; please read them carefully before you continue past this screen.</Typography>
+<Typography tiny style={{ maxWidth: 300 }}>These terms govern your use of the service and your data; please read them carefully before you continue past this screen.</Typography>
 ```
 
 ### muted
@@ -263,16 +263,16 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Keep muted for de-emphasized context; give the actual action full foreground or primary color.
 
 ```tsx
-<Typography body className="max-w-[340px]">
+<Typography body style={{ maxWidth: 340 }}>
   Payment due May 31. 
-  <Typography body className="text-primary underline">View invoices</Typography>
+  <Typography body style={{ color: tokens.primary, textDecorationLine: "underline" }}>View invoices</Typography>
 </Typography>
 ```
 
 **Don't** — A primary, clickable action in muted-foreground reads as disabled and is easy to miss.
 
 ```tsx
-<Typography muted className="self-start underline">View your invoices</Typography>
+<Typography muted style={{ alignSelf: "flex-start", textDecorationLine: "underline" }}>View your invoices</Typography>
 ```
 
 ### caption
@@ -282,14 +282,14 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <View>
   <Typography caption>Billing</Typography>
-  <Typography body className="mt-1">Your subscription renews automatically each month.</Typography>
+  <Typography body style={{ marginTop: 4 }}>Your subscription renews automatically each month.</Typography>
 </View>
 ```
 
 **Don't** — Uppercase, letter-spaced caption text is illegible for anything longer than a label.
 
 ```tsx
-<Typography caption className="max-w-[320px]">Your subscription renews automatically each month unless you cancel from the billing page.</Typography>
+<Typography caption style={{ maxWidth: 320 }}>Your subscription renews automatically each month unless you cancel from the billing page.</Typography>
 ```
 
 ### code
@@ -317,7 +317,7 @@ git commit -m "wip"</Typography>
 **Do** — Use mono for identifiers, hashes, and tabular values where character alignment matters.
 
 ```tsx
-<View className="flex-row items-center justify-between gap-4">
+<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
   <Typography small>Request ID</Typography>
   <Typography mono>req_8f2c10ab</Typography>
 </View>
@@ -326,5 +326,5 @@ git commit -m "wip"</Typography>
 **Don't** — Mono spacing makes prose sentences sparse and slow to read; it is meant for fixed-width data.
 
 ```tsx
-<Typography mono className="max-w-[320px]">We could not process your request because the upstream service returned an unexpected response.</Typography>
+<Typography mono style={{ maxWidth: 320 }}>We could not process your request because the upstream service returned an unexpected response.</Typography>
 ```

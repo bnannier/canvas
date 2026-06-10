@@ -13,11 +13,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 ### Variant - stacked
 
 ```tsx
-<View className="flex-row items-center">
+<View style={{ flexDirection: "row", alignItems: "center" }}>
   <Avatar ring src="/rachel-chen.jpg" name="RC" />
-  <Avatar ring src="/liang-bao.jpg" name="LB" className="-ml-3" />
-  <Avatar ring src="/marcus-allen.jpg" name="LB" className="-ml-3" />
-  <Avatar ring src="/kira-tanaka.jpg" name="KT" className="-ml-3" />
+  <Avatar ring src="/liang-bao.jpg" name="LB" style={{ marginLeft: -12 }} />
+  <Avatar ring src="/marcus-allen.jpg" name="LB" style={{ marginLeft: -12 }} />
+  <Avatar ring src="/kira-tanaka.jpg" name="KT" style={{ marginLeft: -12 }} />
 </View>
 ```
 
@@ -29,9 +29,9 @@ A photo when the account has one, falling back to two initials on a brand gradie
     { label: "Settings", icon: "⚙" },
     { label: "Sign out", icon: "↩", separatorBefore: true }
   ]}>
-  <View className="flex-row items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5">
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
     <Avatar small src="/marcus-allen.jpg" name="MA" />
-    <Text className="text-sm font-medium text-foreground">admin@example.com</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>admin@example.com</Text>
     <Icon chevronDown muted size={12} />
   </View>
 </Dropdown>
@@ -40,11 +40,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 ### Variant - identity
 
 ```tsx
-<View className="flex-row items-center gap-4">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
   <Avatar src="/rachel-chen.jpg" name="RC" />
   <View>
-    <Text className="text-base font-semibold text-foreground">Rachel Chen</Text>
-    <Text className="text-sm text-muted-foreground">rachel.chen@example.com</Text>
+    <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>rachel.chen@example.com</Text>
   </View>
 </View>
 ```
@@ -52,11 +52,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 ### Variant - menu
 
 ```tsx
-<View className="flex-row items-center gap-3 border-b border-border pb-3">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderColor: tokens.border, paddingBottom: 12 }}>
   <Avatar src="/ada-lovelace.jpg" name="AL" />
   <View>
-    <Text className="text-sm font-semibold text-foreground">Ada Lovelace</Text>
-    <Text className="text-xs text-muted-foreground">admin@example.com</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Ada Lovelace</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>admin@example.com</Text>
   </View>
 </View>
 ```
@@ -80,8 +80,8 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Don't** — Cramming in a full set of initials shrinks the type and crowds the circle.
 
 ```tsx
-<View className="shrink-0 items-center justify-center overflow-hidden bg-muted w-10 h-10 rounded-full">
-  <Text className="font-medium text-muted-foreground text-[12px]">ABCD</Text>
+<View style={{ flexShrink: 0, alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: tokens.muted, width: 40, height: 40, borderRadius: 9999 }}>
+  <Text style={{ fontWeight: "500", color: tokens["muted-foreground"], fontSize: 12 }}>ABCD</Text>
 </View>
 ```
 
@@ -90,27 +90,27 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Do** — Cap the stack and summarize the rest with a +N count.
 
 ```tsx
-<View className="flex-row items-center">
+<View style={{ flexDirection: "row", alignItems: "center" }}>
   <Avatar small ring name="AO" />
-  <Avatar small ring name="RC" className="-ml-2.5" />
-  <Avatar small ring name="LB" className="-ml-2.5" />
-  <Avatar small ring name="KT" className="-ml-2.5" />
-  <Text className="ml-1.5 text-xs text-muted-foreground">+12</Text>
+  <Avatar small ring name="RC" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="LB" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="KT" style={{ marginLeft: -10 }} />
+  <Text style={{ marginLeft: 6, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+12</Text>
 </View>
 ```
 
 **Don't** — An unbounded stack runs off the row and stops being scannable.
 
 ```tsx
-<View className="flex-row items-center">
+<View style={{ flexDirection: "row", alignItems: "center" }}>
   <Avatar small ring name="AO" />
-  <Avatar small ring name="RC" className="-ml-2.5" />
-  <Avatar small ring name="LB" className="-ml-2.5" />
-  <Avatar small ring name="KT" className="-ml-2.5" />
-  <Avatar small ring name="JD" className="-ml-2.5" />
-  <Avatar small ring name="MA" className="-ml-2.5" />
-  <Avatar small ring name="AL" className="-ml-2.5" />
-  <Avatar small ring name="SK" className="-ml-2.5" />
+  <Avatar small ring name="RC" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="LB" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="KT" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="JD" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="MA" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="AL" style={{ marginLeft: -10 }} />
+  <Avatar small ring name="SK" style={{ marginLeft: -10 }} />
 </View>
 ```
 
@@ -119,9 +119,9 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Do** — Pair it with the account name and a chevron so it reads as a trigger.
 
 ```tsx
-<View className="flex-row items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
   <Avatar small src="/marcus-allen.jpg" name="MA" />
-  <Text className="text-sm font-medium text-foreground">admin@example.com</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>admin@example.com</Text>
   <Icon chevronDown muted size={12} />
 </View>
 ```
@@ -137,11 +137,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Do** — Name primary; email muted and secondary.
 
 ```tsx
-<View className="flex-row items-center gap-4">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
   <Avatar src="/rachel-chen.jpg" name="RC" />
   <View>
-    <Text className="text-base font-semibold text-foreground">Rachel Chen</Text>
-    <Text className="text-sm text-muted-foreground">rachel.chen@example.com</Text>
+    <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>rachel.chen@example.com</Text>
   </View>
 </View>
 ```
@@ -149,11 +149,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Don't** — Equal weight on the name and email flattens the hierarchy.
 
 ```tsx
-<View className="flex-row items-center gap-4">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
   <Avatar src="/rachel-chen.jpg" name="RC" />
   <View>
-    <Text className="text-sm text-foreground">Rachel Chen</Text>
-    <Text className="text-sm text-foreground">rachel.chen@example.com</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Rachel Chen</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>rachel.chen@example.com</Text>
   </View>
 </View>
 ```
@@ -163,11 +163,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Do** — Keep one consistent circular avatar shape across contexts.
 
 ```tsx
-<View className="flex-row items-center gap-3">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
   <Avatar src="/ada-lovelace.jpg" name="AL" />
   <View>
-    <Text className="text-sm font-semibold text-foreground">Ada Lovelace</Text>
-    <Text className="text-xs text-muted-foreground">admin@example.com</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Ada Lovelace</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>admin@example.com</Text>
   </View>
 </View>
 ```
@@ -175,11 +175,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Don't** — Squaring the avatar here clashes with the circular avatars everywhere else.
 
 ```tsx
-<View className="flex-row items-center gap-3">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
   <Avatar rounded src="/ada-lovelace.jpg" name="AL" />
   <View>
-    <Text className="text-sm font-semibold text-foreground">Ada Lovelace</Text>
-    <Text className="text-xs text-muted-foreground">admin@example.com</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Ada Lovelace</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>admin@example.com</Text>
   </View>
 </View>
 ```

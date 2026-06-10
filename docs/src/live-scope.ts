@@ -70,6 +70,13 @@ import {
 import { Switch as SwitchIOS } from "../../src/atoms/switch/switch.ios.js";
 import { Switch as SwitchAndroid } from "../../src/atoms/switch/switch.android.js";
 
+// Style helpers an example fence can reference when it styles a raw View/Text.
+// These model how a real consumer builds RN styles: `tokens` (the active,
+// theme-aware color set, injected live by <LiveExample>), `alpha`/`shadow`
+// helpers, and the `palette` of fixed Tailwind hues. Imported from src/style so
+// they're available regardless of what the package barrel currently re-exports.
+import { alpha, shadow, palette } from "../../src/style/index.js";
+
 // The names a component `.md` example fence may reference as a JSX tag, mapped to
 // the real Canvas components. This is the eval scope for <LiveExample>: the live
 // JSX renderer transpiles each ```tsx fence and evaluates it with these names in
@@ -78,6 +85,13 @@ import { Switch as SwitchAndroid } from "../../src/atoms/switch/switch.android.j
 // values are opaque to the type system (handed to a runtime evaluator), hence
 // `unknown`.
 export const LIVE_SCOPE: Record<string, unknown> = {
+  // Theme/style helpers for example fences that style a raw View/Text. `tokens`
+  // is a placeholder here; <LiveExample> swaps in the live, theme-aware value
+  // (so token colors follow the docs light/dark + glass toggles).
+  tokens: {},
+  alpha,
+  shadow,
+  palette,
   View,
   Text,
   Pressable,

@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from "react";
 import * as React from "react";
 import { transform } from "sucrase";
+import { useTheme } from "@olympusoss/canvas";
 import { LIVE_SCOPE, SCOPE_BY_PLATFORM } from "@/live-scope";
 import { useDocsPlatform } from "@/use-docs-scheme";
 
@@ -20,6 +21,8 @@ const SCOPE_VALUES_BY_PLATFORM = {
   ios: SCOPE_KEYS.map((k) => SCOPE_BY_PLATFORM.ios[k]),
   android: SCOPE_KEYS.map((k) => SCOPE_BY_PLATFORM.android[k]),
 } as const;
+// `tokens` is a live value (the active theme), injected per render at this slot.
+const TOKENS_INDEX = SCOPE_KEYS.indexOf("tokens");
 
 type Factory = (react: typeof React, ...scope: unknown[]) => ReactNode;
 type Compiled = { factory: Factory } | { error: string };
@@ -88,12 +91,18 @@ class LiveErrorBoundary extends Component<{ children: ReactNode }, { error: stri
 // a Do/Don't card without nested borders.
 export function LiveExample({ code }: { code: string }) {
   const platform = useDocsPlatform();
+  const { tokens } = useTheme();
   const compiled = compile(code);
   if ("error" in compiled) return <ErrorBlock message={compiled.error} />;
 
+  // Inject the live, theme-aware tokens at the `tokens` slot so an example that
+  // reads tokens["muted-foreground"] follows the docs light/dark + glass toggles.
+  const values = SCOPE_VALUES_BY_PLATFORM[platform].slice();
+  if (TOKENS_INDEX >= 0) values[TOKENS_INDEX] = tokens;
+
   let element: ReactNode;
   try {
-    element = compiled.factory(React, ...SCOPE_VALUES_BY_PLATFORM[platform]);
+    element = compiled.factory(React, ...values);
   } catch (e) {
     return <ErrorBlock message={e instanceof Error ? e.message : String(e)} />;
   }

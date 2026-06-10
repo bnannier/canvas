@@ -74,7 +74,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 
 ```tsx
 <Alert success icon="✓" title="Saved" description="Your changes have been saved successfully.">
-  <View className="mt-3 flex-row gap-2">
+  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
     <Button ghost small>Dismiss</Button>
   </View>
 </Alert>
@@ -92,7 +92,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 
 ```tsx
 <Alert warning icon="⚠" title="Action required" description="Your trial expires in 3 days. Upgrade to keep your projects.">
-  <View className="mt-3 flex-row gap-2">
+  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
     <Button primary small>Upgrade plan</Button>
   </View>
 </Alert>

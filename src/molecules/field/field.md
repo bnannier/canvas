@@ -12,7 +12,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
     { label: "Role", value: "Admin" },
     { label: "Status", status: "Active" }
   ]}
-  className="max-w-[400px]"
+  style={{ maxWidth: 400 }}
 />
 ```
 
@@ -27,7 +27,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
     { label: "Created", value: "2026-05-24T14:32:00Z", mono: true },
     { label: "Fingerprint", value: "sha256:xK9v...", mono: true }
   ]}
-  className="max-w-[400px]"
+  style={{ maxWidth: 400 }}
 />
 ```
 
@@ -44,7 +44,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
       { name: "AJ" }
     ], overflow: 3 }
   ]}
-  className="max-w-[400px]"
+  style={{ maxWidth: 400 }}
 />
 ```
 
@@ -55,7 +55,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 **Do** — Use the fixed 180px label column so every value aligns to one baseline.
 
 ```tsx
-<Field className="max-w-[400px]" rows={[
+<Field style={{ maxWidth: 400 }} rows={[
     { label: "Name", value: "Rachel Chen" },
     { label: "Role", value: "Admin" }
   ]} />
@@ -64,13 +64,13 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 **Don't** — Inline label-colon-value with no shared column makes values ragged and impossible to scan down a list.
 
 ```tsx
-<View className="max-w-[400px] flex-col gap-1">
-  <Text className="text-sm">
-    <Text className="font-semibold">Name:</Text>
+<View style={{ maxWidth: 400, flexDirection: "column", gap: 4 }}>
+  <Text style={{ fontSize: 14, lineHeight: 20 }}>
+    <Text style={{ fontWeight: "600" }}>Name:</Text>
      Rachel Chen
   </Text>
-  <Text className="text-sm">
-    <Text className="font-semibold">Role:</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20 }}>
+    <Text style={{ fontWeight: "600" }}>Role:</Text>
      Admin
   </Text>
 </View>
@@ -81,7 +81,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 **Do** — Wrap IDs, hashes, and timestamps in font-mono so every glyph is fixed-width and copy-able.
 
 ```tsx
-<Field className="max-w-[400px]" rows={[
+<Field style={{ maxWidth: 400 }} rows={[
     { label: "Client ID", value: "clt_8f2a9b4c7e1d", mono: true },
     { label: "Fingerprint", value: "sha256:xK9v...", mono: true }
   ]} />
@@ -90,7 +90,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 **Don't** — Rendering IDs and hashes in proportional type makes look-alike characters (l/1, O/0) hard to compare.
 
 ```tsx
-<Field className="max-w-[400px]" rows={[
+<Field style={{ maxWidth: 400 }} rows={[
     { label: "Client ID", value: "clt_8f2a9b4c7e1d" },
     { label: "Fingerprint", value: "sha256:xK9v..." }
   ]} />
@@ -101,7 +101,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 **Do** — Compose real nodes into the value slot: a status badge for state, a badge for the plan tier.
 
 ```tsx
-<Field className="max-w-[400px]" rows={[
+<Field style={{ maxWidth: 400 }} rows={[
     { label: "Status", status: "Active" },
     { label: "Plan", badge: "Pro" }
   ]} />
@@ -110,7 +110,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 **Don't** — Flattening a live status or plan tier to plain text drops the color and shape that signal state at a glance.
 
 ```tsx
-<Field className="max-w-[400px]" rows={[
+<Field style={{ maxWidth: 400 }} rows={[
     { label: "Status", value: "Active" },
     { label: "Plan", value: "Pro" }
   ]} />

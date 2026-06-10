@@ -17,7 +17,7 @@ Text input + dropdown: searchable single-select.
   ]}
   label="Assigned to"
   placeholder="Search a person…"
-  className="max-w-[300px]"
+  style={{ maxWidth: 300 }}
 />
 ```
 
@@ -39,7 +39,7 @@ Text input + dropdown: searchable single-select.
   label="Assigned to"
   helperText="The person responsible for this account."
   placeholder="Search a person…"
-  className="max-w-[300px]"
+  style={{ maxWidth: 300 }}
 />
 ```
 
@@ -59,7 +59,7 @@ Text input + dropdown: searchable single-select.
   label="Assigned to"
   placeholder="Search a person…"
   disabled
-  className="max-w-[300px]"
+  style={{ maxWidth: 300 }}
 />
 ```
 
@@ -70,13 +70,13 @@ Text input + dropdown: searchable single-select.
 **Do** — A plain select for short, fixed lists; reserve the combobox for long, searchable ones.
 
 ```tsx
-<Select label="Size" options={["Small", "Medium", "Large"]} open placeholder="Select a size" className="max-w-[280px]" />
+<Select label="Size" options={["Small", "Medium", "Large"]} open placeholder="Select a size" style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — Type or click: a search field for three fixed options is overhead with nothing to filter.
 
 ```tsx
-<Combobox label="Size" options={["Small", "Medium", "Large"]} open placeholder="Search…" className="max-w-[280px]" />
+<Combobox label="Size" options={["Small", "Medium", "Large"]} open placeholder="Search…" style={{ maxWidth: 280 }} />
 ```
 
 ### Filtering
@@ -91,42 +91,42 @@ Text input + dropdown: searchable single-select.
     "Tom Cook",
     "Tanya Fox",
     "Hellen Schmidt"
-  ]} query="co" open className="max-w-[280px]" />
+  ]} query="co" open style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — Try typing: a search box that ignores input is just a dropdown wearing a costume.
 
 ```tsx
-<View className="relative w-full max-w-[280px]">
-  <Text className="mb-1.5 font-medium text-foreground text-sm">Assigned to</Text>
-  <View className="flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9">
-    <Text className="text-sm text-foreground">co</Text>
-    <Text className="text-muted-foreground text-sm">▾</Text>
+<View style={{ position: "relative", width: "100%", maxWidth: 280 }}>
+  <Text style={{ marginBottom: 6, fontWeight: "500", color: tokens.foreground, fontSize: 14, lineHeight: 20 }}>Assigned to</Text>
+  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>co</Text>
+    <Text style={{ color: tokens["muted-foreground"], fontSize: 14, lineHeight: 20 }}>▾</Text>
   </View>
-  <View className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Wade Cooper</Text>
+  <View style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, marginTop: 4, maxHeight: 240, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4, ...shadow("lg") }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Wade Cooper</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Arlene Mccoy</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Arlene Mccoy</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Devon Webb</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Devon Webb</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Tom Cook</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tom Cook</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Tanya Fox</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tanya Fox</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Hellen Schmidt</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Hellen Schmidt</Text>
     </View>
   </View>
 </View>
@@ -137,34 +137,34 @@ Text input + dropdown: searchable single-select.
 **Do** — Click an option: it fills the input and stays marked as selected.
 
 ```tsx
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"]} value="Devon Webb" open className="max-w-[280px]" />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"]} value="Devon Webb" open style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — Click an option: it flashes but the field stays empty, so you can't tell what you picked.
 
 ```tsx
-<View className="relative w-full max-w-[280px]">
-  <Text className="mb-1.5 font-medium text-foreground text-sm">Assigned to</Text>
-  <View className="flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9">
-    <Text className="text-sm text-muted-foreground">Pick a person…</Text>
-    <Text className="text-muted-foreground text-sm">▾</Text>
+<View style={{ position: "relative", width: "100%", maxWidth: 280 }}>
+  <Text style={{ marginBottom: 6, fontWeight: "500", color: tokens.foreground, fontSize: 14, lineHeight: 20 }}>Assigned to</Text>
+  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Pick a person…</Text>
+    <Text style={{ color: tokens["muted-foreground"], fontSize: 14, lineHeight: 20 }}>▾</Text>
   </View>
-  <View className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Wade Cooper</Text>
+  <View style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, marginTop: 4, maxHeight: 240, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4, ...shadow("lg") }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Wade Cooper</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Arlene Mccoy</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Arlene Mccoy</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Devon Webb</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Devon Webb</Text>
     </View>
-    <View className="flex-row items-center gap-2 rounded-sm px-2 py-1.5">
-      <Text className="text-sm text-popover-foreground" style={{ width: 14 }}> </Text>
-      <Text className="text-sm text-popover-foreground">Tom Cook</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tom Cook</Text>
     </View>
   </View>
 </View>
@@ -175,13 +175,13 @@ Text input + dropdown: searchable single-select.
 **Do** — A persistent label keeps the field named after a selection has filled the input.
 
 ```tsx
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} value="Devon Webb" open className="max-w-[280px]" />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} value="Devon Webb" open style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — Once a value replaces the placeholder, an unlabeled field has nothing left to name it.
 
 ```tsx
-<Combobox options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} value="Devon Webb" open className="max-w-[280px]" />
+<Combobox options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} value="Devon Webb" open style={{ maxWidth: 280 }} />
 ```
 
 ### With helper text
@@ -189,13 +189,13 @@ Text input + dropdown: searchable single-select.
 **Do** — A short placeholder plus persistent helper text keeps the rule visible while you type.
 
 ```tsx
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Search a person…" helperText="Deactivated users are hidden from the list." className="max-w-[280px]" />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Search a person…" helperText="Deactivated users are hidden from the list." style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — Type a letter: guidance crammed into the placeholder vanishes the moment you start.
 
 ```tsx
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Pick an active teammate; deactivated users are hidden" className="max-w-[280px]" />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Pick an active teammate; deactivated users are hidden" style={{ maxWidth: 280 }} />
 ```
 
 ### Disabled
@@ -203,11 +203,11 @@ Text input + dropdown: searchable single-select.
 **Do** — Show the locked value and say why it's fixed, so disabled reads as a settled choice.
 
 ```tsx
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} value="Devon Webb" disabled helperText="Set by the project owner and can't be changed here." className="max-w-[280px]" />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} value="Devon Webb" disabled helperText="Set by the project owner and can't be changed here." style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — An empty, dimmed field with no value reads as broken, not as intentionally locked.
 
 ```tsx
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} disabled placeholder="Search a person…" className="max-w-[280px]" />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} disabled placeholder="Search a person…" style={{ maxWidth: 280 }} />
 ```

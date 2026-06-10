@@ -80,9 +80,9 @@ Cmd+K search: navigation, actions, recent items.
 **Don't** — A bare search button hides the keyboard shortcut, so power users never learn the &#8984;K entry point.
 
 ```tsx
-<Pressable className="flex-row items-center gap-2 self-start rounded-md border border-input bg-transparent px-3 py-1.5">
+<Pressable style={{ flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: "transparent", paddingHorizontal: 12, paddingVertical: 6 }}>
   <Icon search muted size={14} />
-  <Text className="text-sm text-foreground">Search...</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Search...</Text>
 </Pressable>
 ```
 

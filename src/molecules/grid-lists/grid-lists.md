@@ -58,21 +58,21 @@ Tiled card grids for people directories, item collections, and image galleries.
 **Don't** — A fixed column count with hard-width cards overflows the row on narrow viewports instead of reflowing.
 
 ```tsx
-<View className="flex-row gap-3.5">
-  <View className="w-[200px] items-center gap-2 p-5 rounded-lg border border-border bg-card shadow-sm">
+<View style={{ flexDirection: "row", gap: 14 }}>
+  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm") }}>
     <Avatar large name="Rachel Chen">RC</Avatar>
-    <Text className="text-sm font-semibold text-card-foreground">Rachel Chen</Text>
-    <Text className="text-xs text-muted-foreground">Engineering Lead</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>Rachel Chen</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Engineering Lead</Text>
   </View>
-  <View className="w-[200px] items-center gap-2 p-5 rounded-lg border border-border bg-card shadow-sm">
+  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm") }}>
     <Avatar large name="Ada Lovelace">AL</Avatar>
-    <Text className="text-sm font-semibold text-card-foreground">Ada Lovelace</Text>
-    <Text className="text-xs text-muted-foreground">Staff Engineer</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>Ada Lovelace</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Staff Engineer</Text>
   </View>
-  <View className="w-[200px] items-center gap-2 p-5 rounded-lg border border-border bg-card shadow-sm">
+  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm") }}>
     <Avatar large name="Kevin Turner">KT</Avatar>
-    <Text className="text-sm font-semibold text-card-foreground">Kevin Turner</Text>
-    <Text className="text-xs text-muted-foreground">Product Designer</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>Kevin Turner</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Product Designer</Text>
   </View>
 </View>
 ```
@@ -93,22 +93,22 @@ Tiled card grids for people directories, item collections, and image galleries.
 **Don't** — Letting each thumbnail keep its intrinsic height makes a ragged grid and shifts the layout as images load.
 
 ```tsx
-<View className="flex-row flex-wrap gap-3">
-  <View className="w-[140px]">
-    <View className="w-full h-24 rounded-md bg-primary/20" />
-    <Text className="mt-2 text-[12.5px] font-medium text-card-foreground">hero-banner.png</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+  <View style={{ width: 140 }}>
+    <View style={{ width: "100%", height: 96, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.2) }} />
+    <Text style={{ marginTop: 8, fontSize: 12.5, fontWeight: "500", color: tokens["card-foreground"] }}>hero-banner.png</Text>
   </View>
-  <View className="w-[140px]">
-    <View className="w-full h-40 rounded-md bg-blue-500/20" />
-    <Text className="mt-2 text-[12.5px] font-medium text-card-foreground">icon-set.svg</Text>
+  <View style={{ width: 140 }}>
+    <View style={{ width: "100%", height: 160, borderRadius: 6, backgroundColor: alpha(palette["blue-500"], 0.2) }} />
+    <Text style={{ marginTop: 8, fontSize: 12.5, fontWeight: "500", color: tokens["card-foreground"] }}>icon-set.svg</Text>
   </View>
-  <View className="w-[140px]">
-    <View className="w-full h-16 rounded-md bg-emerald-500/20" />
-    <Text className="mt-2 text-[12.5px] font-medium text-card-foreground">product-shot.jpg</Text>
+  <View style={{ width: 140 }}>
+    <View style={{ width: "100%", height: 64, borderRadius: 6, backgroundColor: alpha(palette["emerald-500"], 0.2) }} />
+    <Text style={{ marginTop: 8, fontSize: 12.5, fontWeight: "500", color: tokens["card-foreground"] }}>product-shot.jpg</Text>
   </View>
-  <View className="w-[140px]">
-    <View className="w-full h-32 rounded-md bg-amber-500/20" />
-    <Text className="mt-2 text-[12.5px] font-medium text-card-foreground">avatar-default.png</Text>
+  <View style={{ width: 140 }}>
+    <View style={{ width: "100%", height: 128, borderRadius: 6, backgroundColor: alpha(palette["amber-500"], 0.2) }} />
+    <Text style={{ marginTop: 8, fontSize: 12.5, fontWeight: "500", color: tokens["card-foreground"] }}>avatar-default.png</Text>
   </View>
 </View>
 ```

@@ -59,12 +59,12 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 **Don't** — Equal weight on both lines flattens the hierarchy; the email competes with the name.
 
 ```tsx
-<View className="rounded-lg border border-border bg-card overflow-hidden shadow-sm w-full max-w-[560px]">
-  <View className="flex-row items-center gap-3 px-5 py-3">
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", ...shadow("sm"), width: "100%", maxWidth: 560 }}>
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 12 }}>
     <Avatar name="Rachel Chen">RC</Avatar>
-    <View className="min-w-0 flex-1">
-      <Text className="text-[13.5px] font-semibold text-foreground">Rachel Chen</Text>
-      <Text className="text-[13.5px] font-semibold text-foreground">rachel.chen@example.com</Text>
+    <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+      <Text style={{ fontSize: 13.5, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
+      <Text style={{ fontSize: 13.5, fontWeight: "600", color: tokens.foreground }}>rachel.chen@example.com</Text>
     </View>
   </View>
 </View>
@@ -101,15 +101,15 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 **Don't** — A header with no rule blends into the rows, and dropping the per-row action removes the affordance.
 
 ```tsx
-<View className="rounded-lg border border-border bg-card overflow-hidden shadow-sm w-full max-w-[560px]">
-  <View className="flex-row items-center justify-between px-5 py-3">
-    <Text className="text-sm font-semibold text-foreground">Team members</Text>
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", ...shadow("sm"), width: "100%", maxWidth: 560 }}>
+  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 12 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Team members</Text>
   </View>
-  <View className="flex-row items-center gap-3 px-5 py-3">
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 12 }}>
     <Avatar name="Rachel Chen">RC</Avatar>
-    <View className="min-w-0 flex-1">
-      <Text className="text-[13.5px] font-semibold text-foreground">Rachel Chen</Text>
-      <Text className="text-xs text-muted-foreground">Engineering Lead</Text>
+    <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+      <Text style={{ fontSize: 13.5, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
+      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Engineering Lead</Text>
     </View>
   </View>
 </View>

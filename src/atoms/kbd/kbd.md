@@ -5,9 +5,9 @@ Keyboard shortcut indicator badge.
 ## Usage
 
 ```tsx
-<View className="flex-row items-center gap-1">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
   <Kbd>⌘</Kbd>
-  <Text className="text-xs text-muted-foreground">+</Text>
+  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
   <Kbd>K</Kbd>
 </View>
 ```
@@ -23,11 +23,11 @@ Keyboard shortcut indicator badge.
 ### Mode - in a sentence
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1">
-  <Text className="text-sm text-foreground">Press </Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 4 }}>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Press </Text>
   <Kbd>⌘</Kbd>
   <Kbd>K</Kbd>
-  <Text className="text-sm text-foreground"> to search.</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}> to search.</Text>
 </View>
 ```
 
@@ -52,11 +52,11 @@ Keyboard shortcut indicator badge.
 **Do** — Separate each key with a + so the combo reads as keys pressed together.
 
 ```tsx
-<View className="flex-row items-center gap-1">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
   <Kbd>⌘</Kbd>
-  <Text className="text-xs text-muted-foreground">+</Text>
+  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
   <Kbd>⇧</Kbd>
-  <Text className="text-xs text-muted-foreground">+</Text>
+  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
   <Kbd>P</Kbd>
 </View>
 ```
@@ -64,7 +64,7 @@ Keyboard shortcut indicator badge.
 **Don't** — Caps butted together with no separator blur into one token and hide that it is a chord.
 
 ```tsx
-<View className="flex-row items-center">
+<View style={{ flexDirection: "row", alignItems: "center" }}>
   <Kbd>⌘</Kbd>
   <Kbd>⇧</Kbd>
   <Kbd>P</Kbd>
@@ -76,16 +76,16 @@ Keyboard shortcut indicator badge.
 **Do** — Wrap each key in a kbd so shortcuts read as physical keys.
 
 ```tsx
-<View className="flex-row items-center gap-1">
-  <Text className="text-sm">Press</Text>
+<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+  <Text style={{ fontSize: 14, lineHeight: 20 }}>Press</Text>
   <Kbd>Ctrl</Kbd>
   <Kbd>K</Kbd>
-  <Text className="text-sm">to search.</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20 }}>to search.</Text>
 </View>
 ```
 
 **Don't** — Plain-text shortcuts blend into the prose and are easy to miss.
 
 ```tsx
-<Text className="text-sm">Press Ctrl+K to search.</Text>
+<Text style={{ fontSize: 14, lineHeight: 20 }}>Press Ctrl+K to search.</Text>
 ```

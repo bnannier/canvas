@@ -104,13 +104,13 @@ A custom (non-native) select: single or multi-select, optional avatars or icons 
 **Do** — For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.
 
 ```tsx
-<Select open value="Yes" options={["Yes", "No"]} className="w-48" />
+<Select open value="Yes" options={["Yes", "No"]} style={{ width: 192 }} />
 ```
 
 **Don't** — A custom listbox for two short options is heavier than it needs to be and worse on mobile.
 
 ```tsx
-<Listbox bordered className="w-48" items={[
+<Listbox bordered style={{ width: 192 }} items={[
     { label: "Yes", selected: true },
     { label: "No" }
   ]} />
@@ -121,7 +121,7 @@ A custom (non-native) select: single or multi-select, optional avatars or icons 
 **Do** — Show exactly one checkmark, mirror it in the trigger value, and close the panel on pick.
 
 ```tsx
-<Listbox bordered className="w-56" items={[
+<Listbox bordered style={{ width: 224 }} items={[
     { label: "Backend", selected: true },
     { label: "Frontend" },
     { label: "Design" },
@@ -132,7 +132,7 @@ A custom (non-native) select: single or multi-select, optional avatars or icons 
 **Don't** — Single-select with two checkmarks lies about state: only one option can be the value.
 
 ```tsx
-<Listbox bordered className="w-56" items={[
+<Listbox bordered style={{ width: 224 }} items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },
     { label: "Design" },
@@ -145,10 +145,10 @@ A custom (non-native) select: single or multi-select, optional avatars or icons 
 **Do** — Keep the panel open, toggle each option's own checkmark, and summarize the count in the trigger.
 
 ```tsx
-<View className="w-56 gap-1">
-  <View className="flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9">
-    <Text className="text-sm text-foreground">3 selected</Text>
-    <Text className="text-sm text-muted-foreground">▾</Text>
+<View style={{ width: 224, gap: 4 }}>
+  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>3 selected</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>▾</Text>
   </View>
   <Listbox multi bordered items={[
     { label: "Backend", selected: true },
@@ -162,10 +162,10 @@ A custom (non-native) select: single or multi-select, optional avatars or icons 
 **Don't** — Don't close on each pick or echo only the last choice: multi-select needs to keep all selections visible.
 
 ```tsx
-<View className="w-56 gap-1">
-  <View className="flex-row items-center justify-between rounded-md border border-input bg-background px-3 h-9">
-    <Text className="text-sm text-foreground">Backend</Text>
-    <Text className="text-sm text-muted-foreground">▾</Text>
+<View style={{ width: 224, gap: 4 }}>
+  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Backend</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>▾</Text>
   </View>
   <Listbox multi bordered items={[
     { label: "Backend", selected: true },

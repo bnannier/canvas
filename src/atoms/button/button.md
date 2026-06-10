@@ -77,7 +77,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — One clear primary action; everything else is supporting.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Button primary>Save</Button>
   <Button outline>Cancel</Button>
 </View>
@@ -86,7 +86,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Don't** — Multiple primaries compete; nothing stands out.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Button primary>Save</Button>
   <Button primary>Apply</Button>
   <Button primary>Continue</Button>
@@ -98,7 +98,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Promote the main action to default; keep the rest outline.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Button primary>Publish</Button>
   <Button outline>Save draft</Button>
   <Button outline>Schedule</Button>
@@ -108,7 +108,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Don't** — All-outline leaves no signal which action is primary.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Button outline>Save</Button>
   <Button outline>Publish</Button>
   <Button outline>Schedule</Button>
@@ -120,7 +120,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Default for the primary action; secondary for the next one down.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Button primary>Create account</Button>
   <Button secondary>Import instead</Button>
 </View>
@@ -137,7 +137,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Use ghost for tertiary and toolbar actions; keep the CTA filled.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Button ghost>Cancel</Button>
   <Button primary>Save changes</Button>
 </View>
@@ -154,7 +154,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Reserve the destructive variant for irreversible actions like delete.
 
 ```tsx
-<View className="flex-row items-center gap-2">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
   <Button primary>Save changes</Button>
   <Button destructive>Delete account</Button>
 </View>
@@ -171,7 +171,7 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Link variant for inline navigation; a filled button for the submit.
 
 ```tsx
-<View className="flex-row items-center gap-3">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
   <Button primary>Submit</Button>
   <Button link>Learn more</Button>
 </View>

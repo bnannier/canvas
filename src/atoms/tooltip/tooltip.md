@@ -85,7 +85,7 @@ Small floating helper text on hover or focus.
 **Don't** — A right tooltip on a control flush against the right edge is cut off by the container.
 
 ```tsx
-<View className="items-end">
+<View style={{ alignItems: "flex-end" }}>
   <Tooltip iconTrigger right open label="More info" />
 </View>
 ```
@@ -101,9 +101,9 @@ Small floating helper text on hover or focus.
 **Don't** — A bottom tooltip sits right on top of the next row, masking the control beneath it.
 
 ```tsx
-<View className="items-start gap-0">
+<View style={{ alignItems: "flex-start", gap: 0 }}>
   <Tooltip trigger="Filters" bottom open label="Refine results" />
-  <Button outline small className="-mt-3">Clear all</Button>
+  <Button outline small style={{ marginTop: -12 }}>Clear all</Button>
 </View>
 ```
 

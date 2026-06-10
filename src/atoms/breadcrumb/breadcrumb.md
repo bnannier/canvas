@@ -41,14 +41,14 @@ Hierarchical navigation showing where you are.
 ### In a page header
 
 ```tsx
-<View className="flex-row flex-wrap items-start justify-between gap-4">
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
   <View>
-    <View className="mb-2">
+    <View style={{ marginBottom: 8 }}>
       <Breadcrumb items={["Users", "Rachel Chen"]} />
     </View>
-    <Text className="text-2xl font-semibold tracking-tight text-foreground">Rachel Chen</Text>
+    <Text style={{ fontSize: 24, lineHeight: 32, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground }}>Rachel Chen</Text>
   </View>
-  <View className="flex-row items-center gap-2">
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
     <Button outline small>Edit</Button>
     <Button primary small>Save</Button>
   </View>
@@ -68,17 +68,17 @@ Hierarchical navigation showing where you are.
 **Don't** — Linking the current page implies there's somewhere to go; it's a dead link to itself.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1.5">
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Projects</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">/</Text>
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Identity Platform</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>/</Text>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Identity Platform</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">/</Text>
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Settings</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>/</Text>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Settings</Text>
   </Pressable>
 </View>
 ```
@@ -88,18 +88,18 @@ Hierarchical navigation showing where you are.
 **Do** — Collapse the middle to an ellipsis; keep the root and the last couple of levels.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1.5">
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Projects</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">›</Text>
-  <Text className="text-sm text-muted-foreground px-1">…</Text>
-  <Text className="text-sm text-muted-foreground/60">›</Text>
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Avatar</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], paddingHorizontal: 4 }}>…</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Avatar</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">›</Text>
-  <Text className="text-sm font-medium text-foreground">Edit</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Edit</Text>
 </View>
 ```
 
@@ -127,16 +127,16 @@ Hierarchical navigation showing where you are.
 **Don't** — Mixing separators in one trail looks broken.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1.5">
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Projects</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">/</Text>
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Identity Platform</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>/</Text>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Identity Platform</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">›</Text>
-  <Text className="text-sm font-medium text-foreground">Settings</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Settings</Text>
 </View>
 ```
 
@@ -151,12 +151,12 @@ Hierarchical navigation showing where you are.
 **Don't** — An icon-only root with no label is unclear to screen readers.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1.5">
-  <Pressable accessibilityRole="link" className="active:opacity-70">
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
     <Icon home muted size={14} />
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">/</Text>
-  <Text className="text-sm font-medium text-foreground">Settings</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>/</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Settings</Text>
 </View>
 ```
 
@@ -171,16 +171,16 @@ Hierarchical navigation showing where you are.
 **Don't** — A down (or back) chevron reads as a dropdown or a back affordance, not progression down the hierarchy.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1.5">
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Projects</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">⌄</Text>
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Identity Platform</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>⌄</Text>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Identity Platform</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">⌄</Text>
-  <Text className="text-sm font-medium text-foreground">Settings</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>⌄</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Settings</Text>
 </View>
 ```
 
@@ -195,16 +195,16 @@ Hierarchical navigation showing where you are.
 **Don't** — A full-weight, foreground slash competes with the labels and can read as part of a link.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1.5">
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Projects</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
   </Pressable>
-  <Text className="text-sm font-medium text-foreground px-1">/</Text>
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Identity Platform</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, paddingHorizontal: 4 }}>/</Text>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Identity Platform</Text>
   </Pressable>
-  <Text className="text-sm font-medium text-foreground px-1">/</Text>
-  <Text className="text-sm font-medium text-foreground">Settings</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, paddingHorizontal: 4 }}>/</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Settings</Text>
 </View>
 ```
 
@@ -219,15 +219,15 @@ Hierarchical navigation showing where you are.
 **Don't** — A baseline period looks like a typo or end-of-sentence, not a separator between crumbs.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-1.5">
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Projects</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">.</Text>
-  <Pressable accessibilityRole="link">
-    <Text className="text-sm text-muted-foreground active:opacity-70">Identity Platform</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>.</Text>
+  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Identity Platform</Text>
   </Pressable>
-  <Text className="text-sm text-muted-foreground/60">.</Text>
-  <Text className="text-sm font-medium text-foreground">Settings</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>.</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Settings</Text>
 </View>
 ```

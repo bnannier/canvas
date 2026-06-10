@@ -5,15 +5,15 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ## Usage
 
 ```tsx
-<Card className="w-[280px] p-5">
-  <View className="flex-row items-start justify-between">
+<Card style={{ width: 280, padding: 20 }}>
+  <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
     <View>
-      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
-      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
-      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Active identities</Text>
+      <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
+      <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View className="h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">
-      <Text className="text-sm font-semibold text-blue-600">U</Text>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["blue-500"], 0.1), color: palette["blue-600"] }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["blue-600"] }}>U</Text>
     </View>
   </View>
 </Card>
@@ -43,15 +43,15 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Icon tone - success
 
 ```tsx
-<Card className="w-[280px] p-5">
-  <View className="flex-row items-start justify-between">
+<Card style={{ width: 280, padding: 20 }}>
+  <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
     <View>
-      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
-      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
-      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Active identities</Text>
+      <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
+      <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View className="h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 text-green-600">
-      <Text className="text-sm font-semibold text-green-600">S</Text>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["green-500"], 0.1), color: palette["green-600"] }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["green-600"] }}>S</Text>
     </View>
   </View>
 </Card>
@@ -60,15 +60,15 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Icon tone - purple
 
 ```tsx
-<Card className="w-[280px] p-5">
-  <View className="flex-row items-start justify-between">
+<Card style={{ width: 280, padding: 20 }}>
+  <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
     <View>
-      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
-      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
-      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Active identities</Text>
+      <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
+      <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View className="h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600">
-      <Text className="text-sm font-semibold text-purple-600">O</Text>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["purple-500"], 0.1), color: palette["purple-600"] }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["purple-600"] }}>O</Text>
     </View>
   </View>
 </Card>
@@ -77,15 +77,15 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Icon tone - destructive
 
 ```tsx
-<Card className="w-[280px] p-5">
-  <View className="flex-row items-start justify-between">
+<Card style={{ width: 280, padding: 20 }}>
+  <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
     <View>
-      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
-      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
-      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Active identities</Text>
+      <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
+      <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View className="h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-      <Text className="text-sm font-semibold text-destructive">!</Text>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(tokens.destructive, 0.1), color: tokens.destructive }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.destructive }}>!</Text>
     </View>
   </View>
 </Card>
@@ -94,15 +94,15 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Icon tone - amber
 
 ```tsx
-<Card className="w-[280px] p-5">
-  <View className="flex-row items-start justify-between">
+<Card style={{ width: 280, padding: 20 }}>
+  <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
     <View>
-      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
-      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
-      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Active identities</Text>
+      <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
+      <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View className="h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
-      <Text className="text-sm font-semibold text-amber-600">T</Text>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["amber-500"], 0.1), color: palette["amber-600"] }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["amber-600"] }}>T</Text>
     </View>
   </View>
 </Card>
@@ -115,15 +115,15 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Do** — One big number, a short label, a small delta. The metric is scannable in a glance.
 
 ```tsx
-<Card padded className="max-w-[280px]">
-  <View className="flex-row items-start justify-between">
+<Card padded style={{ maxWidth: 280 }}>
+  <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
     <View>
-      <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active identities</Text>
-      <Text className="mt-1 text-2xl font-bold text-card-foreground">12,348</Text>
-      <Text className="mt-0.5 text-[11px] text-muted-foreground">+142 today</Text>
+      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Active identities</Text>
+      <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
+      <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View className="h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-      <Text className="text-sm font-semibold text-blue-600">U</Text>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["blue-500"], 0.1) }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["blue-600"] }}>U</Text>
     </View>
   </View>
 </Card>
@@ -132,9 +132,9 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Don't** — Prose where the number should be: the eye has nothing big to land on, so the card stops being a stat.
 
 ```tsx
-<Card padded className="max-w-[280px]">
-  <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">This month</Text>
-  <Text className="mt-1 text-sm font-medium text-card-foreground">We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>
+<Card padded style={{ maxWidth: 280 }}>
+  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>This month</Text>
+  <Text style={{ marginTop: 4, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["card-foreground"] }}>We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>
 </Card>
 ```
 
@@ -143,13 +143,13 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Do** — Keep the divider between header and body; it anchors the title.
 
 ```tsx
-<Card className="max-w-[360px]">
+<Card style={{ maxWidth: 360 }}>
   <CardHeader>
     <CardTitle>Recent activity</CardTitle>
   </CardHeader>
   <CardSeparator />
   <CardContent>
-    <Text className="text-sm text-card-foreground">Two events today.</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
   </CardContent>
 </Card>
 ```
@@ -157,12 +157,12 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Don't** — Without the divider the header floats and stops reading as a header.
 
 ```tsx
-<Card className="max-w-[360px]">
+<Card style={{ maxWidth: 360 }}>
   <CardHeader>
     <CardTitle>Recent activity</CardTitle>
   </CardHeader>
   <CardContent>
-    <Text className="text-sm text-card-foreground">Two events today.</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
   </CardContent>
 </Card>
 ```
@@ -172,19 +172,19 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 **Do** — Use the surface once and layout the content with plain spacing inside it.
 
 ```tsx
-<Card padded className="max-w-[360px]">
-  <Text className="mb-1 text-[15px] font-semibold text-card-foreground">Anything goes here</Text>
-  <Text className="text-sm text-muted-foreground">The card surface gives you the border, radius, and shadow. You bring the content.</Text>
+<Card padded style={{ maxWidth: 360 }}>
+  <Text style={{ marginBottom: 4, fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Anything goes here</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>The card surface gives you the border, radius, and shadow. You bring the content.</Text>
 </Card>
 ```
 
 **Don't** — Nesting one card surface inside another stacks border on border and shadow on shadow; the inner block looks dropped in.
 
 ```tsx
-<Card padded className="max-w-[360px]">
+<Card padded style={{ maxWidth: 360 }}>
   <Card padded>
-    <Text className="mb-1 text-[15px] font-semibold text-card-foreground">Nested surface</Text>
-    <Text className="text-sm text-muted-foreground">A card inside a card doubles the border and shadow.</Text>
+    <Text style={{ marginBottom: 4, fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Nested surface</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>A card inside a card doubles the border and shadow.</Text>
   </Card>
 </Card>
 ```

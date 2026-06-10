@@ -10,7 +10,7 @@ Native select restyled to match Canvas inputs.
   value="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  className="max-w-[280px]"
+  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -25,7 +25,7 @@ Native select restyled to match Canvas inputs.
   value="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  className="max-w-[280px]"
+  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -38,7 +38,7 @@ Native select restyled to match Canvas inputs.
   value="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  className="max-w-[280px]"
+  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -51,7 +51,7 @@ Native select restyled to match Canvas inputs.
   value="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  className="max-w-[280px]"
+  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -64,7 +64,7 @@ Native select restyled to match Canvas inputs.
   value="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  className="max-w-[280px]"
+  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -73,13 +73,13 @@ Native select restyled to match Canvas inputs.
 **Do** — Mark the placeholder disabled and selected so it prompts without being a valid choice.
 
 ```tsx
-<Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} className="max-w-[280px]" />
+<Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — A placeholder as a normal option can be submitted as a real value.
 
 ```tsx
-<Select open label="Country" value="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} className="max-w-[280px]" />
+<Select open label="Country" value="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
 ```
 
 ### sm
@@ -87,16 +87,16 @@ Native select restyled to match Canvas inputs.
 **Do** — Keep the small select inline with a short label so it stays compact inside toolbars and table footers.
 
 ```tsx
-<View className="flex-row items-center gap-2">
-  <Text className="text-xs text-muted-foreground">Rows</Text>
-  <Select small value="10" options={["10", "25", "50"]} className="w-auto" />
+<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Rows</Text>
+  <Select small value="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
 </View>
 ```
 
 **Don't** — A stacked block label towers over the small control and breaks the dense row it belongs in.
 
 ```tsx
-<Select small label="Rows per page" value="10" options={["10", "25", "50"]} className="max-w-[200px]" />
+<Select small label="Rows per page" value="10" options={["10", "25", "50"]} style={{ maxWidth: 200 }} />
 ```
 
 ### default
@@ -104,13 +104,13 @@ Native select restyled to match Canvas inputs.
 **Do** — Match the default select to sibling inputs at the same height so the form row lines up.
 
 ```tsx
-<View className="flex-row items-end gap-3 max-w-[420px]">
-  <View className="flex-1">
-    <Text className="mb-1.5 text-sm font-medium text-foreground">City</Text>
+<View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, maxWidth: 420 }}>
+  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
     <Input value="Austin" />
   </View>
-  <View className="flex-1">
-    <Text className="mb-1.5 text-sm font-medium text-foreground">State</Text>
+  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>State</Text>
     <Select value="Texas" options={["Texas", "Oregon"]} />
   </View>
 </View>
@@ -119,13 +119,13 @@ Native select restyled to match Canvas inputs.
 **Don't** — A default select next to a taller lg input leaves the row baselines misaligned.
 
 ```tsx
-<View className="flex-row items-end gap-3 max-w-[420px]">
-  <View className="flex-1">
-    <Text className="mb-1.5 text-sm font-medium text-foreground">City</Text>
+<View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, maxWidth: 420 }}>
+  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
     <Input large value="Austin" />
   </View>
-  <View className="flex-1">
-    <Text className="mb-1.5 text-sm font-medium text-foreground">State</Text>
+  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>State</Text>
     <Select value="Texas" options={["Texas", "Oregon"]} />
   </View>
 </View>
@@ -136,17 +136,17 @@ Native select restyled to match Canvas inputs.
 **Do** — Scale the text up with the height so the large select reads as a deliberate, touch-friendly target.
 
 ```tsx
-<Select large label="Plan" value="Starter" options={["Starter", "Pro", "Enterprise"]} className="max-w-[320px]" />
+<Select large label="Plan" value="Starter" options={["Starter", "Pro", "Enterprise"]} style={{ maxWidth: 320 }} />
 ```
 
 **Don't** — Tiny option text inside a tall control wastes the height and looks like an accidental mismatch.
 
 ```tsx
-<View className="max-w-[320px]">
-  <Text className="mb-1.5 text-sm font-medium text-foreground">Plan</Text>
-  <Pressable className="h-10 flex-row items-center justify-between rounded-md border border-input bg-background px-3" accessibilityRole="button">
-    <Text className="text-xs text-foreground">Starter</Text>
-    <Text className="text-xs text-muted-foreground">▾</Text>
+<View style={{ maxWidth: 320 }}>
+  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Plan</Text>
+  <Pressable style={{ height: 40, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }} accessibilityRole="button">
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens.foreground }}>Starter</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>▾</Text>
   </Pressable>
 </View>
 ```

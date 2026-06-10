@@ -5,11 +5,11 @@ Multi-select option, single yes/no, grouped lists.
 ## Usage
 
 ```tsx
-<View className="flex-row items-start gap-2">
+<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
   <Checkbox checked />
-  <View className="gap-0.5">
-    <Text className="text-sm font-medium text-foreground">Email notifications</Text>
-    <Text className="text-xs text-muted-foreground">Get notified when activity happens on your account.</Text>
+  <View style={{ gap: 2 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
   </View>
 </View>
 ```
@@ -19,11 +19,11 @@ Multi-select option, single yes/no, grouped lists.
 ### State - unchecked
 
 ```tsx
-<View className="flex-row items-start gap-2">
+<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
   <Checkbox />
-  <View className="gap-0.5">
-    <Text className="text-sm font-medium text-foreground">Email notifications</Text>
-    <Text className="text-xs text-muted-foreground">Get notified when activity happens on your account.</Text>
+  <View style={{ gap: 2 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
   </View>
 </View>
 ```
@@ -31,11 +31,11 @@ Multi-select option, single yes/no, grouped lists.
 ### State - disabled
 
 ```tsx
-<View className="flex-row items-start gap-2">
+<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
   <Checkbox disabled />
-  <View className="gap-0.5">
-    <Text className="text-sm font-medium text-foreground">Email notifications</Text>
-    <Text className="text-xs text-muted-foreground">Get notified when activity happens on your account.</Text>
+  <View style={{ gap: 2 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
   </View>
 </View>
 ```
@@ -61,9 +61,9 @@ Multi-select option, single yes/no, grouped lists.
 **Do** — Show the parent indeterminate (a dash, not a tick) when only some children are checked.
 
 ```tsx
-<View className="gap-2">
+<View style={{ gap: 8 }}>
   <Checkbox indeterminate>Select all</Checkbox>
-  <View className="ml-6 gap-2">
+  <View style={{ marginLeft: 24, gap: 8 }}>
     <Checkbox checked>Read</Checkbox>
     <Checkbox>Write</Checkbox>
     <Checkbox>Delete</Checkbox>
@@ -74,9 +74,9 @@ Multi-select option, single yes/no, grouped lists.
 **Don't** — A fully checked parent claims every child is selected when only one is, so the state reads as a lie.
 
 ```tsx
-<View className="gap-2">
+<View style={{ gap: 8 }}>
   <Checkbox checked>Select all</Checkbox>
-  <View className="ml-6 gap-2">
+  <View style={{ marginLeft: 24, gap: 8 }}>
     <Checkbox checked>Read</Checkbox>
     <Checkbox>Write</Checkbox>
     <Checkbox>Delete</Checkbox>
@@ -89,9 +89,9 @@ Multi-select option, single yes/no, grouped lists.
 **Do** — Say why it's unavailable, like a plan gate, or don't show it at all.
 
 ```tsx
-<View className="flex-row items-center gap-1.5">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
   <Checkbox disabled>Export to CSV</Checkbox>
-  <Text className="text-xs text-muted-foreground">(Pro plan)</Text>
+  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>(Pro plan)</Text>
 </View>
 ```
 
@@ -106,8 +106,8 @@ Multi-select option, single yes/no, grouped lists.
 **Do** — Radios for one-of-many; reserve checkboxes for independent multi-select.
 
 ```tsx
-<View className="gap-2">
-  <Text className="mb-1 text-sm font-semibold text-foreground">Plan</Text>
+<View style={{ gap: 8 }}>
+  <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Plan</Text>
   <Radio>Free</Radio>
   <Radio checked>Pro</Radio>
   <Radio>Enterprise</Radio>
@@ -117,8 +117,8 @@ Multi-select option, single yes/no, grouped lists.
 **Don't** — Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.
 
 ```tsx
-<View className="gap-2">
-  <Text className="mb-1 text-sm font-semibold text-foreground">Plan</Text>
+<View style={{ gap: 8 }}>
+  <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Plan</Text>
   <Checkbox>Free</Checkbox>
   <Checkbox checked>Pro</Checkbox>
   <Checkbox>Enterprise</Checkbox>
@@ -131,8 +131,8 @@ Multi-select option, single yes/no, grouped lists.
 
 ```tsx
 <Checkbox checked>
-  <Text className="text-sm font-medium text-foreground">Email notifications</Text>
-  <Text className="text-xs font-normal text-muted-foreground">
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
+  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "400", color: tokens["muted-foreground"] }}>
 Get notified when activity happens on your account.</Text>
 </Checkbox>
 ```
@@ -140,11 +140,11 @@ Get notified when activity happens on your account.</Text>
 **Don't** — A bare div makes only the 16px box clickable; the label text does nothing.
 
 ```tsx
-<View className="flex-row items-start gap-2">
+<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
   <Checkbox checked />
   <View>
-    <Text className="text-sm font-medium text-foreground">Email notifications</Text>
-    <Text className="text-xs text-muted-foreground">Get notified when activity happens on your account.</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
+    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
   </View>
 </View>
 ```

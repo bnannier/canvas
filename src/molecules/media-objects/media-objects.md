@@ -20,7 +20,7 @@ Image or icon paired with text content. The fundamental building block for list 
 ### Variant - icon
 
 ```tsx
-<View className="max-w-[560px] grid grid-cols-1 gap-3 sm:grid-cols-2">
+<View style={{ maxWidth: 560, gap: 12 }}>
   <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
   <MediaObject bordered start title="Real-time analytics" description="Live dashboards with sub-second refresh latency." icon={<Icon activity primary size={18} />} />
 </View>
@@ -29,7 +29,7 @@ Image or icon paired with text content. The fundamental building block for list 
 ### Variant - action
 
 ```tsx
-<View className="max-w-[480px]">
+<View style={{ maxWidth: 480 }}>
   <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
 </View>
 ```
@@ -41,13 +41,13 @@ Image or icon paired with text content. The fundamental building block for list 
 **Do** — Top-align with items-start so the avatar anchors to the first line of the title.
 
 ```tsx
-<MediaObject bordered start className="max-w-[480px]" src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
+<MediaObject bordered start style={{ maxWidth: 480 }} src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
 ```
 
 **Don't** — Centering the avatar against a multi-line body leaves it floating beside the middle of the text.
 
 ```tsx
-<MediaObject bordered center className="max-w-[480px]" src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
+<MediaObject bordered center style={{ maxWidth: 480 }} src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
 ```
 
 ### Icon
@@ -55,19 +55,19 @@ Image or icon paired with text content. The fundamental building block for list 
 **Do** — Fix the icon box at h-9 w-9 with an 18px glyph so it reads as a tidy lead affordance.
 
 ```tsx
-<MediaObject bordered start className="max-w-[480px]" title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
+<MediaObject bordered start style={{ maxWidth: 480 }} title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
 ```
 
 **Don't** — An oversized icon box throws off the optical balance with the two-line text.
 
 ```tsx
-<View className="flex-row items-start gap-3 rounded-lg border border-border bg-card p-4 max-w-[480px]">
-  <View className="shrink-0 items-center justify-center rounded-md bg-primary/15 p-2">
+<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 16, maxWidth: 480 }}>
+  <View style={{ flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15), padding: 8 }}>
     <Icon shield primary size={32} />
   </View>
-  <View className="min-w-0 flex-1 gap-0.5">
-    <Text className="text-sm font-semibold text-foreground">Security first</Text>
-    <Text className="text-xs leading-snug text-muted-foreground">End-to-end encryption with automatic key rotation.</Text>
+  <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Security first</Text>
+    <Text style={{ fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>End-to-end encryption with automatic key rotation.</Text>
   </View>
 </View>
 ```
@@ -77,11 +77,11 @@ Image or icon paired with text content. The fundamental building block for list 
 **Do** — Use min-w-0 + truncate on the text and shrink-0 on the button to keep the action pinned right.
 
 ```tsx
-<MediaObject bordered center truncate className="max-w-[480px]" src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
+<MediaObject bordered center truncate style={{ maxWidth: 480 }} src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
 ```
 
 **Don't** — Without truncation a long email wraps and pushes the trailing button out of alignment.
 
 ```tsx
-<MediaObject bordered center className="max-w-[480px]" src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
+<MediaObject bordered center style={{ maxWidth: 480 }} src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
 ```

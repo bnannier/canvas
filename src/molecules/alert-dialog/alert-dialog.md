@@ -123,24 +123,24 @@ Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred back
 **Don't** — Packing a multi-field form into sm makes it feel like a form crammed into a confirmation popup.
 
 ```tsx
-<View className="items-center justify-center rounded-lg bg-black/50 p-8" style={{ minHeight: 200 }}>
-  <View className="w-full max-w-[384px] rounded-lg border border-border bg-popover p-6 shadow-xl">
-    <Text className="text-base font-semibold text-popover-foreground">Transfer ownership</Text>
-    <View className="mt-4 gap-4">
+<View style={{ alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha("#000000", 0.5), padding: 32, minHeight: 200 }}>
+  <View style={{ width: "100%", maxWidth: 384, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 24, ...shadow("xl") }}>
+    <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Transfer ownership</Text>
+    <View style={{ marginTop: 16, gap: 16 }}>
       <View>
-        <Text className="text-sm font-medium text-foreground mb-1.5">New owner email</Text>
+        <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>New owner email</Text>
         <Input placeholder="owner@example.com" />
       </View>
       <View>
-        <Text className="text-sm font-medium text-foreground mb-1.5">Reason</Text>
+        <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Reason</Text>
         <Input placeholder="Optional note" />
       </View>
       <View>
-        <Text className="text-sm font-medium text-foreground mb-1.5">Type TRANSFER to confirm</Text>
+        <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Type TRANSFER to confirm</Text>
         <Input placeholder="TRANSFER" />
       </View>
     </View>
-    <View className="flex-row justify-end gap-2 mt-6">
+    <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
       <Button outline small>Cancel</Button>
       <Button primary small>Transfer</Button>
     </View>

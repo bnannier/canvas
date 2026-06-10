@@ -185,15 +185,15 @@ Floating menus triggered by a button: actions, options, navigation.
 **Don't** — Click Archive: it looks disabled but still fires, a greyed item that works is a trap.
 
 ```tsx
-<View className="self-start rounded-md border border-border bg-popover p-1 shadow-lg" style={{ minWidth: 200 }}>
-  <Pressable className="flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent">
-    <Text className="text-sm text-popover-foreground">Edit</Text>
+<View style={{ alignSelf: "flex-start", borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4, ...shadow("lg"), minWidth: 200 }}>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Edit</Text>
   </Pressable>
-  <Pressable className="flex-row items-center gap-2 rounded-sm px-2 py-1.5 opacity-50 active:bg-accent">
-    <Text className="text-sm text-popover-foreground">Archive</Text>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6, opacity: 0.5 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Archive</Text>
   </Pressable>
-  <Pressable className="flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent">
-    <Text className="text-sm text-popover-foreground">Duplicate</Text>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Duplicate</Text>
   </Pressable>
 </View>
 ```

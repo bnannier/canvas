@@ -6,7 +6,8 @@ Preformatted code block with monospace font and padding.
 
 ```tsx
 <CodeBlock
-  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
   filename="theme.ts"
   language="ts"
 />
@@ -18,7 +19,8 @@ Preformatted code block with monospace font and padding.
 
 ```tsx
 <CodeBlock
-  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
   filename="theme.ts"
   language="ts"
   terminal
@@ -29,7 +31,8 @@ Preformatted code block with monospace font and padding.
 
 ```tsx
 <CodeBlock
-  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
   filename="theme.ts"
   language="ts"
   numbered
@@ -40,7 +43,8 @@ Preformatted code block with monospace font and padding.
 
 ```tsx
 <CodeBlock
-  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
   filename="theme.ts"
   language="ts"
   inline
@@ -51,7 +55,8 @@ Preformatted code block with monospace font and padding.
 
 ```tsx
 <CodeBlock
-  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
   filename="theme.ts"
   language="ts"
   copy
@@ -62,7 +67,8 @@ Preformatted code block with monospace font and padding.
 
 ```tsx
 <CodeBlock
-  code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");"
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
   filename="theme.ts"
   language="ts"
   wrap
@@ -76,14 +82,15 @@ Preformatted code block with monospace font and padding.
 **Do** — Use a pre element so whitespace, line breaks, and indentation survive verbatim.
 
 ```tsx
-<CodeBlock code="const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");" />
+<CodeBlock code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`} />
 ```
 
 **Don't** — A paragraph collapses the line breaks and indentation, so multi-line code reads as one run-on string.
 
 ```tsx
-<View className="max-w-[360px]">
-  <Text className="text-[13px]" style={{ fontFamily: "monospace" }}>const theme = getTheme(); setTheme(theme === "dark" ? "light" : "dark");</Text>
+<View style={{ maxWidth: 360 }}>
+  <Text style={{ fontSize: 13, fontFamily: "monospace" }}>const theme = getTheme(); setTheme(theme === "dark" ? "light" : "dark");</Text>
 </View>
 ```
 
@@ -98,8 +105,8 @@ Preformatted code block with monospace font and padding.
 **Don't** — Selectable prompt text means a reader who copies the line drags the $ marker into their shell.
 
 ```tsx
-<View className="w-full self-start rounded-lg bg-zinc-900 p-4">
-  <Text className="text-[13px] text-zinc-100" style={{ fontFamily: "monospace" }}>$ npm install @olympusoss/canvas</Text>
+<View style={{ width: "100%", alignSelf: "flex-start", borderRadius: 8, backgroundColor: palette["zinc-900"], padding: 16 }}>
+  <Text style={{ fontSize: 13, color: palette["zinc-100"], fontFamily: "monospace" }}>$ npm install @olympusoss/canvas</Text>
 </View>
 ```
 
@@ -108,20 +115,21 @@ Preformatted code block with monospace font and padding.
 **Do** — Keep the gutter select-none so copying the block returns clean, runnable code.
 
 ```tsx
-<CodeBlock numbered code="const theme = getTheme();\nsetTheme(theme);" />
+<CodeBlock numbered code={`const theme = getTheme();
+setTheme(theme);`} />
 ```
 
 **Don't** — Selectable line numbers get swept into the selection and pasted as 1 2 ahead of every line.
 
 ```tsx
-<View className="w-full self-start flex-row rounded-lg border border-border bg-muted/50 p-4">
-  <View className="mr-4 items-end">
-    <Text className="text-sm leading-relaxed text-muted-foreground/50" style={{ fontFamily: "monospace" }}>1</Text>
-    <Text className="text-sm leading-relaxed text-muted-foreground/50" style={{ fontFamily: "monospace" }}>2</Text>
+<View style={{ width: "100%", alignSelf: "flex-start", flexDirection: "row", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.5), padding: 16 }}>
+  <View style={{ marginRight: 16, alignItems: "flex-end" }}>
+    <Text style={{ fontSize: 14, lineHeight: 28, color: alpha(tokens["muted-foreground"], 0.5), fontFamily: "monospace" }}>1</Text>
+    <Text style={{ fontSize: 14, lineHeight: 28, color: alpha(tokens["muted-foreground"], 0.5), fontFamily: "monospace" }}>2</Text>
   </View>
-  <View className="flex-1">
-    <Text className="text-sm leading-relaxed text-foreground" style={{ fontFamily: "monospace" }}>const theme = getTheme();</Text>
-    <Text className="text-sm leading-relaxed text-foreground" style={{ fontFamily: "monospace" }}>setTheme(theme);</Text>
+  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground, fontFamily: "monospace" }}>const theme = getTheme();</Text>
+    <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground, fontFamily: "monospace" }}>setTheme(theme);</Text>
   </View>
 </View>
 ```
@@ -131,20 +139,21 @@ Preformatted code block with monospace font and padding.
 **Do** — Reserve inline code for short tokens; move anything multi-line into a block.
 
 ```tsx
-<View className="max-w-[360px] gap-1.5">
-  <Text className="text-sm leading-relaxed">Run the setup command:</Text>
-  <CodeBlock code="npm install @olympusoss/canvas\nnpm run build" />
+<View style={{ maxWidth: 360, gap: 6 }}>
+  <Text style={{ fontSize: 14, lineHeight: 28 }}>Run the setup command:</Text>
+  <CodeBlock code={`npm install @olympusoss/canvas
+npm run build`} />
 </View>
 ```
 
 **Don't** — A long, multi-step command crammed inline wraps mid-token and offers no horizontal scroll.
 
 ```tsx
-<View className="max-w-[360px] flex-row flex-wrap items-center">
-  <Text className="text-sm leading-relaxed text-foreground">Run </Text>
-  <View className="self-start rounded border border-border bg-muted px-1.5 py-0.5">
-    <Text className="text-[13px] text-foreground" style={{ fontFamily: "monospace" }}>npm install @olympusoss/canvas && npm run build && npm run preview</Text>
+<View style={{ maxWidth: 360, flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}>Run </Text>
+  <View style={{ alignSelf: "flex-start", borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.muted, paddingHorizontal: 6, paddingVertical: 2 }}>
+    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @olympusoss/canvas && npm run build && npm run preview</Text>
   </View>
-  <Text className="text-sm leading-relaxed text-foreground"> to start.</Text>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}> to start.</Text>
 </View>
 ```

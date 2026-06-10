@@ -19,23 +19,23 @@ Date picker, event list. Production: wrap react-day-picker.
 ### Variant - events
 
 ```tsx
-<View className="flex-row flex-wrap items-start gap-6">
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
   <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
-  <Card className="min-w-[240px] flex-1">
-    <View className="border-b border-border px-5 py-3">
-      <Text className="text-sm font-semibold text-card-foreground">May 24</Text>
+  <Card style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <View style={{ borderBottomWidth: 1, borderColor: tokens.border, paddingHorizontal: 20, paddingVertical: 12 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>May 24</Text>
     </View>
-    <View className="flex-row items-center justify-between px-4 py-2.5 border-b border-border">
-      <Text className="text-sm font-medium text-foreground">Sprint planning</Text>
-      <Text className="text-sm text-muted-foreground">9:00 AM</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderColor: tokens.border }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Sprint planning</Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>9:00 AM</Text>
     </View>
-    <View className="flex-row items-center justify-between px-4 py-2.5 border-b border-border">
-      <Text className="text-sm font-medium text-foreground">Design review</Text>
-      <Text className="text-sm text-muted-foreground">11:30 AM</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderColor: tokens.border }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Design review</Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>11:30 AM</Text>
     </View>
-    <View className="flex-row items-center justify-between px-4 py-2.5">
-      <Text className="text-sm font-medium text-foreground">1:1 with manager</Text>
-      <Text className="text-sm text-muted-foreground">2:00 PM</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>1:1 with manager</Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>2:00 PM</Text>
     </View>
   </Card>
 </View>
@@ -48,16 +48,16 @@ Date picker, event list. Production: wrap react-day-picker.
 **Do** — Exactly one selected day (primary), with today marked separately in the accent tone.
 
 ```tsx
-<View className="w-fit rounded-lg border border-border p-3">
-  <View className="flex-row gap-0.5">
-    <Pressable className="h-9 w-9 items-center justify-center rounded-md">
-      <Text className="text-sm text-foreground">8</Text>
+<View style={{ width: "auto", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12 }}>
+  <View style={{ flexDirection: "row", gap: 2 }}>
+    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>8</Text>
     </Pressable>
-    <Pressable className="h-9 w-9 items-center justify-center rounded-md bg-accent">
-      <Text className="text-sm font-medium text-accent-foreground">23</Text>
+    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.accent }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["accent-foreground"] }}>23</Text>
     </Pressable>
-    <Pressable className="h-9 w-9 items-center justify-center rounded-md bg-primary">
-      <Text className="text-sm text-primary-foreground">24</Text>
+    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.primary }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>24</Text>
     </Pressable>
   </View>
 </View>
@@ -66,16 +66,16 @@ Date picker, event list. Production: wrap react-day-picker.
 **Don't** — Painting several days with the primary selected style makes a single-date picker look like a multi-select.
 
 ```tsx
-<View className="w-fit rounded-lg border border-border p-3">
-  <View className="flex-row gap-0.5">
-    <Pressable className="h-9 w-9 items-center justify-center rounded-md bg-primary">
-      <Text className="text-sm text-primary-foreground">8</Text>
+<View style={{ width: "auto", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12 }}>
+  <View style={{ flexDirection: "row", gap: 2 }}>
+    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.primary }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>8</Text>
     </Pressable>
-    <Pressable className="h-9 w-9 items-center justify-center rounded-md bg-primary">
-      <Text className="text-sm text-primary-foreground">14</Text>
+    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.primary }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>14</Text>
     </Pressable>
-    <Pressable className="h-9 w-9 items-center justify-center rounded-md bg-primary">
-      <Text className="text-sm text-primary-foreground">23</Text>
+    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.primary }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>23</Text>
     </Pressable>
   </View>
 </View>
@@ -86,15 +86,15 @@ Date picker, event list. Production: wrap react-day-picker.
 **Do** — Keep the panel header and rows in sync with the selected day so the two views always agree.
 
 ```tsx
-<View className="flex-row flex-wrap items-start gap-6">
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
   <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
-  <Card className="min-w-[240px] flex-1">
-    <View className="border-b border-border px-5 py-3">
-      <Text className="text-sm font-semibold text-card-foreground">May 24</Text>
+  <Card style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <View style={{ borderBottomWidth: 1, borderColor: tokens.border, paddingHorizontal: 20, paddingVertical: 12 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>May 24</Text>
     </View>
-    <View className="flex-row items-center justify-between px-4 py-2.5">
-      <Text className="text-sm font-medium text-foreground">Sprint planning</Text>
-      <Text className="text-sm text-muted-foreground">9:00 AM</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Sprint planning</Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>9:00 AM</Text>
     </View>
   </Card>
 </View>
@@ -103,11 +103,11 @@ Date picker, event list. Production: wrap react-day-picker.
 **Don't** — Selecting May 24 but leaving the panel on a placeholder breaks the link between the grid and its day.
 
 ```tsx
-<View className="flex-row flex-wrap items-start gap-6">
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
   <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
-  <Card className="min-w-[240px] flex-1">
-    <View className="px-4 py-3">
-      <Text className="text-sm text-muted-foreground">Pick a date to see events.</Text>
+  <Card style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Pick a date to see events.</Text>
     </View>
   </Card>
 </View>

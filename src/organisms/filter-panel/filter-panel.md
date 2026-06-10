@@ -33,13 +33,13 @@ Sidebar filter rail with chip pills for active filters.
 **Do** — Give each chip a × so a single filter can be removed in place, and keep it in sync with the sidebar checkbox.
 
 ```tsx
-<View className="flex-row flex-wrap gap-2">
-  <Pressable className="flex-row items-center self-start gap-1 rounded-full bg-primary px-2.5 py-1">
-    <Text className="text-xs font-medium text-primary-foreground">Active</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+  <Pressable style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 4, borderRadius: 9999, backgroundColor: tokens.primary, paddingHorizontal: 10, paddingVertical: 4 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Active</Text>
     <Icon x primaryForeground size={12} />
   </Pressable>
-  <Pressable className="flex-row items-center self-start gap-1 rounded-full bg-primary px-2.5 py-1">
-    <Text className="text-xs font-medium text-primary-foreground">Default</Text>
+  <Pressable style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 4, borderRadius: 9999, backgroundColor: tokens.primary, paddingHorizontal: 10, paddingVertical: 4 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Default</Text>
     <Icon x primaryForeground size={12} />
   </Pressable>
 </View>
@@ -48,12 +48,12 @@ Sidebar filter rail with chip pills for active filters.
 **Don't** — Active-filter chips with no remove affordance leave no way to clear one filter without hunting back through the sidebar.
 
 ```tsx
-<View className="flex-row flex-wrap gap-2">
-  <View className="flex-row items-center self-start rounded-full bg-primary px-2.5 py-1">
-    <Text className="text-xs font-medium text-primary-foreground">Active</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+  <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start", borderRadius: 9999, backgroundColor: tokens.primary, paddingHorizontal: 10, paddingVertical: 4 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Active</Text>
   </View>
-  <View className="flex-row items-center self-start rounded-full bg-primary px-2.5 py-1">
-    <Text className="text-xs font-medium text-primary-foreground">Default</Text>
+  <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start", borderRadius: 9999, backgroundColor: tokens.primary, paddingHorizontal: 10, paddingVertical: 4 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Default</Text>
   </View>
 </View>
 ```
@@ -63,53 +63,53 @@ Sidebar filter rail with chip pills for active filters.
 **Do** — Surface two or three primary filters and tuck the rest behind "+ Add filter" so the bar stays one scannable row.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-2">
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md bg-primary px-3">
-    <Text className="text-xs font-medium text-primary-foreground">Status</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, backgroundColor: tokens.primary, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Status</Text>
     <Icon chevronDown primaryForeground size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Role</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Role</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Button ghost small className="text-primary">+ Add filter</Button>
+  <Button ghost small style={{ color: tokens.primary }}>+ Add filter</Button>
 </View>
 ```
 
 **Don't** — Eight inline dropdowns wrap into a wall of buttons, which defeats the compact bar; that volume of filtering belongs in the sidebar rail.
 
 ```tsx
-<View className="flex-row flex-wrap items-center gap-2">
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Status</Text>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Status</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Role</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Role</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Schema</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Schema</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">MFA</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>MFA</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Region</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Region</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Created</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Created</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Last seen</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Last seen</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Pressable className="h-8 flex-row items-center gap-2 rounded-md border border-input bg-background px-3">
-    <Text className="text-xs font-medium text-foreground">Team</Text>
+  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
+    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Team</Text>
     <Icon chevronDown size={12} />
   </Pressable>
 </View>

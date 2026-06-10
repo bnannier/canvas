@@ -98,14 +98,14 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 ### Inside a table
 
 ```tsx
-<View className="overflow-x-auto rounded-lg border border-border">
-  <View className="flex-row border-b border-border">
-    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Name</Text>
-    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Email</Text>
-    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Role</Text>
-    <Text className="flex-1 px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</Text>
+<View style={{ overflow: "scroll", borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
+  <View style={{ flexDirection: "row", borderBottomWidth: 1, borderColor: tokens.border }}>
+    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Name</Text>
+    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Email</Text>
+    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Role</Text>
+    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Status</Text>
   </View>
-  <View className="px-4 py-10">
+  <View style={{ paddingHorizontal: 16, paddingVertical: 40 }}>
     <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." />
   </View>
 </View>
@@ -166,12 +166,12 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 **Don't** — An alarming red icon turns a calm, expected empty feed into a false error.
 
 ```tsx
-<View className="items-center rounded-lg border border-border px-6 py-8">
-  <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-    <Text className="text-xl text-destructive">⚠️</Text>
+<View style={{ alignItems: "center", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 24, paddingVertical: 32 }}>
+  <View style={{ marginBottom: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: alpha(tokens.destructive, 0.1) }}>
+    <Text style={{ fontSize: 20, lineHeight: 28, color: tokens.destructive }}>⚠️</Text>
   </View>
-  <Text className="text-center text-base font-semibold text-foreground">No activity</Text>
-  <Text className="mt-1 text-center text-sm text-muted-foreground">Events will appear as they happen.</Text>
+  <Text style={{ textAlign: "center", fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>No activity</Text>
+  <Text style={{ marginTop: 4, textAlign: "center", fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Events will appear as they happen.</Text>
 </View>
 ```
 

@@ -18,10 +18,10 @@ Floating panel for rich content triggered by a click.
 **Do** — Keep popovers compact: a focused prompt with one input and a clear action.
 
 ```tsx
-<View className="rounded-md border border-border bg-popover p-4 shadow-md self-start min-w-[240px]">
-  <Text className="mb-2 text-sm text-popover-foreground">Rename this project?</Text>
-  <Input value="Identity Platform" className="mb-2" />
-  <View className="flex-row justify-end gap-2">
+<View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), alignSelf: "flex-start", minWidth: 240 }}>
+  <Text style={{ marginBottom: 8, fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Rename this project?</Text>
+  <Input value="Identity Platform" style={{ marginBottom: 8 }} />
+  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
     <Button outline small>Cancel</Button>
     <Button primary small>Rename</Button>
   </View>
@@ -31,15 +31,15 @@ Floating panel for rich content triggered by a click.
 **Don't** — A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident.
 
 ```tsx
-<View className="rounded-md border border-border bg-popover p-4 shadow-md self-start min-w-[260px]">
-  <Field label="Name" placeholder="Ada Lovelace" className="mb-2" />
-  <Field label="Email" placeholder="ada@canvas.dev" className="mb-2" />
-  <View className="mb-2">
-    <Text className="mb-1.5 text-sm font-medium text-foreground">Role</Text>
+<View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), alignSelf: "flex-start", minWidth: 260 }}>
+  <Field label="Name" placeholder="Ada Lovelace" style={{ marginBottom: 8 }} />
+  <Field label="Email" placeholder="ada@canvas.dev" style={{ marginBottom: 8 }} />
+  <View style={{ marginBottom: 8 }}>
+    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Role</Text>
     <Select value="Engineer" options={["Engineer", "Designer", "Manager"]} />
   </View>
-  <Field label="Team" placeholder="Identity Platform" className="mb-2" />
-  <View className="flex-row justify-end gap-2">
+  <Field label="Team" placeholder="Identity Platform" style={{ marginBottom: 8 }} />
+  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
     <Button outline small>Cancel</Button>
     <Button primary small>Save</Button>
   </View>
@@ -57,10 +57,10 @@ Floating panel for rich content triggered by a click.
 **Don't** — A trigger with no relative anchor and no way to dismiss leaves the panel floating loose and stuck open.
 
 ```tsx
-<View className="self-start">
+<View style={{ alignSelf: "flex-start" }}>
   <Button outline small>Open popover</Button>
-  <View className="rounded-md border border-border bg-popover p-4 shadow-md mt-2 min-w-[240px]">
-    <Text className="text-sm text-popover-foreground">No anchor, no dismiss, no Close.</Text>
+  <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), marginTop: 8, minWidth: 240 }}>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>No anchor, no dismiss, no Close.</Text>
   </View>
 </View>
 ```
@@ -76,12 +76,12 @@ Floating panel for rich content triggered by a click.
 **Don't** — An always-visible panel that scrolls internally is doing a card's or section's job; use the panel chrome only for short content.
 
 ```tsx
-<View className="rounded-md border border-border bg-popover p-4 shadow-md max-h-[120px] min-w-[260px] overflow-hidden">
-  <ScrollView className="max-h-[88px]">
-    <Field label="Street" placeholder="100 Market St" className="mb-2" />
-    <Field label="City" placeholder="San Francisco" className="mb-2" />
-    <Field label="Region" placeholder="California" className="mb-2" />
-    <Field label="Postal code" placeholder="94105" className="mb-2" />
+<View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), maxHeight: 120, minWidth: 260, overflow: "hidden" }}>
+  <ScrollView style={{ maxHeight: 88 }}>
+    <Field label="Street" placeholder="100 Market St" style={{ marginBottom: 8 }} />
+    <Field label="City" placeholder="San Francisco" style={{ marginBottom: 8 }} />
+    <Field label="Region" placeholder="California" style={{ marginBottom: 8 }} />
+    <Field label="Postal code" placeholder="94105" style={{ marginBottom: 8 }} />
   </ScrollView>
 </View>
 ```

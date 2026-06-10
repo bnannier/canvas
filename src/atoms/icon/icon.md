@@ -41,7 +41,7 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Do** — One outline style at 1.75 stroke across the whole set.
 
 ```tsx
-<View className="flex-row items-center gap-5">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
   <Icon home size={28} />
   <Icon search size={28} />
   <Icon bell size={28} />
@@ -51,7 +51,7 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Don't** — Mixed stroke weights and a stray filled glyph make a set look incoherent.
 
 ```tsx
-<View className="flex-row items-center gap-5">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
   <Icon home muted size={20} />
   <Icon search destructive size={34} />
   <Icon bell primary size={28} />
@@ -69,7 +69,7 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Don't** — Hard-coding a hex stroke pins the icon to one theme; it stays black on a dark surface and disappears.
 
 ```tsx
-<View className="flex-row items-center justify-center rounded-md bg-foreground p-3">
+<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.foreground, padding: 12 }}>
   <Icon mail size={28} />
 </View>
 ```
@@ -79,7 +79,7 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Do** — Reserve text-primary for the one active or selected icon; keep the rest muted.
 
 ```tsx
-<View className="flex-row items-center gap-5">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
   <Icon home muted size={22} />
   <Icon star primary size={22} />
   <Icon settings muted size={22} />
@@ -89,7 +89,7 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Don't** — Painting a whole toolbar primary spends the accent on everything, so nothing reads as emphasized.
 
 ```tsx
-<View className="flex-row items-center gap-5">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
   <Icon home primary size={22} />
   <Icon search primary size={22} />
   <Icon settings primary size={22} />
@@ -115,17 +115,17 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Do** — Use text-muted-foreground for secondary, inline hint icons where its color matches the helper text.
 
 ```tsx
-<View className="flex-row items-center gap-1.5">
+<View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
   <Icon info muted size={16} />
-  <Text className="text-sm text-muted-foreground">Optional, used only for recovery</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Optional, used only for recovery</Text>
 </View>
 ```
 
 **Don't** — A muted icon inside a solid primary button reads as disabled and clashes with the high-contrast label.
 
 ```tsx
-<Pressable className="flex-row items-center justify-center gap-2 rounded-md bg-primary px-4 py-2">
+<Pressable style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 6, backgroundColor: tokens.primary, paddingHorizontal: 16, paddingVertical: 8 }}>
   <Icon plus muted size={16} />
-  <Text className="text-sm font-medium text-primary-foreground">New project</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["primary-foreground"] }}>New project</Text>
 </Pressable>
 ```
