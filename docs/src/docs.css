@@ -389,6 +389,19 @@
   border-radius: 0;
 }
 
+/* Live component example: the preview stage and its code read as one attached
+   panel, the stage rounded on top, the code flush and rounded on the bottom. */
+.live-example { margin-bottom: 1.5rem; }
+.live-example-stage {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.live-example .docs-code-wrap {
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 /* ── Example inner: force wrap on all flex children ─── */
 
 .example-inner {

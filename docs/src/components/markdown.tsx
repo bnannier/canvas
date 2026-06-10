@@ -122,31 +122,30 @@ export function Markdown({ source, live }: { source: string; live?: boolean }) {
       {blocks.map((b, i) => {
         if (b.kind !== "code") return <Fragment key={i}><Prose lines={b.lines} /></Fragment>;
         const isLive = live && (b.lang === "tsx" || b.lang === "jsx");
+        if (!isLive) return <CodeBlock key={i} code={b.body} language={b.lang} />;
+        // The preview stage and its code render as one attached panel: the stage is
+        // rounded on top, the code is flush and rounded on the bottom (see the
+        // .live-example rules in docs.css). position+zIndex raise the stage above the
+        // code, so a floating subcomponent (dropdown, popover, combobox, tooltip)
+        // that overflows the stage paints over the code instead of being covered.
         return (
-          <Fragment key={i}>
-            {isLive && (
-              // position+zIndex raise the preview above the code block below, so a
-              // floating subcomponent (dropdown, popover, combobox, tooltip) that
-              // overflows the preview bounds paints over the code instead of being
-              // covered by it.
-              <div
-                className="section-card"
-                style={{
-                  position: "relative",
-                  zIndex: 1,
-                  padding: "2rem",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "center",
-                  minHeight: 120,
-                  marginBottom: "0.5rem",
-                }}
-              >
-                <LiveExample code={b.body} />
-              </div>
-            )}
+          <div className="live-example" key={i}>
+            <div
+              className="section-card live-example-stage"
+              style={{
+                position: "relative",
+                zIndex: 1,
+                padding: "2rem",
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "center",
+                minHeight: 120,
+              }}
+            >
+              <LiveExample code={b.body} />
+            </div>
             <CodeBlock code={b.body} language={b.lang} />
-          </Fragment>
+          </div>
         );
       })}
     </>
