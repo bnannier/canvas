@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Highlighter } from "shiki";
+import { useDocsScheme } from "@/use-docs-scheme";
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 
@@ -28,14 +29,15 @@ export function CodeBlock({ code, language = "html" }: CodeBlockProps) {
   const [html, setHtml] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Re-highlight when the docs light/dark toggle flips, so the syntax theme always
+  // matches the current scheme (otherwise a toggle leaves stale, low-contrast code).
+  const scheme = useDocsScheme();
 
   useEffect(() => {
     let cancelled = false;
     getHighlighter().then((h) => {
       if (cancelled) return;
-      const theme = document.documentElement.classList.contains("dark")
-        ? "github-dark"
-        : "github-light";
+      const theme = scheme === "dark" ? "github-dark" : "github-light";
       let result: string;
       try {
         result = h.codeToHtml(code.trim(), { lang: language, theme });
@@ -48,7 +50,7 @@ export function CodeBlock({ code, language = "html" }: CodeBlockProps) {
       setHtml(result);
     });
     return () => { cancelled = true; };
-  }, [code, language]);
+  }, [code, language, scheme]);
 
   const copy = useCallback(() => {
     navigator.clipboard.writeText(code.trim());
