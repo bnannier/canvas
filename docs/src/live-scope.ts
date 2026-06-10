@@ -63,12 +63,9 @@ import {
   Typography,
 } from "@olympusoss/canvas";
 
-// Platform skins, imported by LITERAL path so Vite loads the real `.ios`/`.android`
-// files (a bare/barrel import would only ever resolve the web file). This is how the
-// docs preview every platform without the UI kit doing anything for the docs. The
-// base `Switch` above (from the barrel) is the web skin.
-import { Switch as SwitchIOS } from "../../src/atoms/switch/switch.ios.js";
-import { Switch as SwitchAndroid } from "../../src/atoms/switch/switch.android.js";
+// Platform skins live in a registry (one import pair + two lines per skinned
+// component). The base components above (from the barrel) are the web skins.
+import { PLATFORM_OVERRIDES } from "./platform-components.js";
 
 // Style helpers an example fence can reference when it styles a raw View/Text.
 // These model how a real consumer builds RN styles: `tokens` (the active,
@@ -157,11 +154,11 @@ export const LIVE_SCOPE: Record<string, unknown> = {
 };
 
 // The same scope keyed by docs preview platform: web is the base, iOS/Android swap in
-// the per-platform skins. <LiveExample> evaluates each fence against the active
-// platform's values (the keys, i.e. tag names, are identical, so the compiled factory
-// is shared). Add a key here whenever an atom gains a platform skin.
+// the per-platform skins from the registry. <LiveExample> evaluates each fence against
+// the active platform's values (the keys, i.e. tag names, are identical, so the
+// compiled factory is shared). To add a skinned component, edit platform-components.ts.
 export const SCOPE_BY_PLATFORM: Record<"web" | "ios" | "android", Record<string, unknown>> = {
   web: LIVE_SCOPE,
-  ios: { ...LIVE_SCOPE, Switch: SwitchIOS },
-  android: { ...LIVE_SCOPE, Switch: SwitchAndroid },
+  ios: { ...LIVE_SCOPE, ...PLATFORM_OVERRIDES.ios },
+  android: { ...LIVE_SCOPE, ...PLATFORM_OVERRIDES.android },
 };
