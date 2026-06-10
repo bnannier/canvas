@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./alert.styles.js";
+import { type Tone } from "./alert.styles.js";
 
 // A bordered banner that surfaces an inline notification: a leading icon glyph,
 // a bold title, and a description. Configured by a tone axis (info / success /
@@ -9,14 +10,14 @@ import { View, Pressable, Text } from "../../engine/index.js";
 // Boolean-prop API: one boolean per tone, first-match precedence within the
 // axis (mirrors Button's intentOf / Badge's statusOf). Each tone is theme-aware:
 // a soft 50/200 surface with a 600/700/800 type ramp in light mode, and a
-// 950/800 surface with a 200/300/400 ramp in dark mode (via the dark: variant).
-// The neutral default uses the semantic card / border / foreground tokens.
+// 950/800 surface with a 200/300/400 ramp in dark mode (branching on the active
+// scheme). The neutral default uses the semantic card / border / foreground tokens.
 
 export interface AlertProps {
   // Content.
   title?: string;
   description?: string;
-  // A leading glyph (a single Text character; the engine has no icon set).
+  // A leading glyph (a single Text character; the foundation has no icon set).
   icon?: ReactNode;
   // Tone (pick one; omit for the neutral default).
   info?: boolean;
@@ -28,10 +29,9 @@ export interface AlertProps {
   /** Fired when the dismiss control is pressed. */
   onDismiss?: () => void;
   children?: ReactNode;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Tone = "info" | "success" | "warning" | "error" | "neutral";
 
 // Tone precedence when more than one is passed: first match wins.
 function toneOf(p: AlertProps): Tone {
@@ -42,55 +42,20 @@ function toneOf(p: AlertProps): Tone {
   return "neutral";
 }
 
-const ALERT_BASE = "flex-row items-start gap-3 rounded-lg border px-4 py-3";
-
-const CONTAINER: Record<Tone, string> = {
-  info: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950",
-  success: "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950",
-  warning: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950",
-  error: "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950",
-  neutral: "border-border bg-card",
-};
-
-const ICON: Record<Tone, string> = {
-  info: "text-blue-600 dark:text-blue-400",
-  success: "text-green-600 dark:text-green-400",
-  warning: "text-amber-600 dark:text-amber-400",
-  error: "text-red-600 dark:text-red-400",
-  neutral: "text-muted-foreground",
-};
-
-const TITLE: Record<Tone, string> = {
-  info: "text-blue-800 dark:text-blue-200",
-  success: "text-green-800 dark:text-green-200",
-  warning: "text-amber-800 dark:text-amber-200",
-  error: "text-red-800 dark:text-red-200",
-  neutral: "text-foreground",
-};
-
-const BODY: Record<Tone, string> = {
-  info: "text-blue-700 dark:text-blue-300",
-  success: "text-green-700 dark:text-green-300",
-  warning: "text-amber-700 dark:text-amber-300",
-  error: "text-red-700 dark:text-red-300",
-  neutral: "text-muted-foreground",
-};
-
 export function Alert(props: AlertProps) {
-  const { title, description, icon, children, dismissible, onDismiss, className } = props;
+  const { title, description, icon, children, dismissible, onDismiss, style } = props;
+  const { tokens, dark } = useTheme();
   const tone = toneOf(props);
 
   return (
-    <View className={cn(ALERT_BASE, CONTAINER[tone], className)}>
-      {icon != null ? (
-        <Text className={cn("text-base leading-5", ICON[tone])}>{icon}</Text>
-      ) : null}
-      <View className="flex-1 gap-1">
+    <View style={[s.alertBase, s.container(tokens, dark, tone), style]}>
+      {icon != null ? <Text style={[s.iconType, s.iconColor(tokens, dark, tone)]}>{icon}</Text> : null}
+      <View style={s.content}>
         {title != null && title !== "" ? (
-          <Text className={cn("text-sm font-semibold", TITLE[tone])}>{title}</Text>
+          <Text style={[s.titleType, s.titleColor(tokens, dark, tone)]}>{title}</Text>
         ) : null}
         {description != null && description !== "" ? (
-          <Text className={cn("text-sm", BODY[tone])}>{description}</Text>
+          <Text style={[s.bodyType, s.bodyColor(tokens, dark, tone)]}>{description}</Text>
         ) : null}
         {children}
       </View>
@@ -99,9 +64,9 @@ export function Alert(props: AlertProps) {
           onPress={onDismiss}
           accessibilityRole="button"
           accessibilityLabel="Dismiss"
-          className="-mr-1 -mt-0.5 h-6 w-6 items-center justify-center rounded-md active:opacity-70"
+          style={({ pressed }) => [s.dismissButton, pressed ? { opacity: 0.7 } : null]}
         >
-          <Text className={cn("text-base leading-none", ICON[tone])}>×</Text>
+          <Text style={[s.dismissType, s.iconColor(tokens, dark, tone)]}>×</Text>
         </Pressable>
       ) : null}
     </View>

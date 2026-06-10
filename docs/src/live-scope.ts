@@ -63,6 +63,13 @@ import {
   Typography,
 } from "@olympusoss/canvas";
 
+// Platform skins, imported by LITERAL path so Vite loads the real `.ios`/`.android`
+// files (a bare/barrel import would only ever resolve the web file). This is how the
+// docs preview every platform without the UI kit doing anything for the docs. The
+// base `Switch` above (from the barrel) is the web skin.
+import { Switch as SwitchIOS } from "../../src/atoms/switch/switch.ios.js";
+import { Switch as SwitchAndroid } from "../../src/atoms/switch/switch.android.js";
+
 // The names a component `.md` example fence may reference as a JSX tag, mapped to
 // the real Canvas components. This is the eval scope for <LiveExample>: the live
 // JSX renderer transpiles each ```tsx fence and evaluates it with these names in
@@ -133,4 +140,14 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   Textarea,
   Tooltip,
   Typography,
+};
+
+// The same scope keyed by docs preview platform: web is the base, iOS/Android swap in
+// the per-platform skins. <LiveExample> evaluates each fence against the active
+// platform's values (the keys, i.e. tag names, are identical, so the compiled factory
+// is shared). Add a key here whenever an atom gains a platform skin.
+export const SCOPE_BY_PLATFORM: Record<"web" | "ios" | "android", Record<string, unknown>> = {
+  web: LIVE_SCOPE,
+  ios: { ...LIVE_SCOPE, Switch: SwitchIOS },
+  android: { ...LIVE_SCOPE, Switch: SwitchAndroid },
 };

@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
+import * as s from "./dialog.styles.js";
+import { type Size } from "./dialog.styles.js";
 
 // Dialog: a modal panel centered over a dimmed backdrop, with a title, an
 // optional description, and a right-aligned action row (a primary confirm plus
@@ -50,10 +51,9 @@ export interface DialogProps {
   // Action handlers.
   onConfirm?: () => void;
   onCancel?: () => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition on the panel (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Size = "xs" | "small" | "medium" | "default" | "large" | "wide";
 
 // Size precedence when more than one is passed: first match wins.
 function sizeOf(p: DialogProps): Size {
@@ -64,19 +64,6 @@ function sizeOf(p: DialogProps): Size {
   if (p.wide) return "wide";
   return "default";
 }
-
-// The dialog card's max width per size, narrowest to widest. The default sits
-// one step wider than `medium`, roomy enough for a short form; `xs`/`small`
-// tighten the panel for a terse message, `large`/`wide` open it up for a longer
-// form. Pixel widths mirror Tailwind's max-w-xs..2xl scale.
-const PANEL_SIZE: Record<Size, string> = {
-  xs: "max-w-[320px]",
-  small: "max-w-[384px]",
-  medium: "max-w-[448px]",
-  default: "max-w-[512px]",
-  large: "max-w-[576px]",
-  wide: "max-w-[672px]",
-};
 
 export function Dialog(props: DialogProps) {
   const {
@@ -92,8 +79,9 @@ export function Dialog(props: DialogProps) {
     destructive,
     onConfirm,
     onCancel,
-    className,
+    style,
   } = props;
+  const { tokens } = useTheme();
 
   // Uncontrolled by default: the trigger opens the dialog and an action closes
   // it; a controlled `open` prop overrides this.
@@ -110,55 +98,63 @@ export function Dialog(props: DialogProps) {
   // backdrop: a centered, rounded scrim with presence in the preview (explicit
   // minHeight) so the panel reads as a modal within the area.
   return (
-    <View className="self-start">
+    <View style={s.root}>
       {trigger != null ? (
         <Button outline small onPress={() => setOpen(true)}>
           {trigger}
         </Button>
       ) : null}
       {open ? (
-        <View
-          className={cn(trigger != null && "mt-3", "items-center justify-center rounded-lg bg-black/50 p-8")}
-          style={{ minHeight: 220 }}
-        >
-          <View
-            className={cn(
-              "w-full rounded-lg border border-border bg-popover p-6 shadow-xl",
-              PANEL_SIZE[size],
-              className,
-            )}
-          >
+        <View style={[trigger != null ? s.backdropTriggerGap : null, s.backdrop]}>
+          <View style={[s.panelBase, s.panelSurface(tokens), s.panelWidth(size), style]}>
             {children != null ? (
               children
             ) : (
               <>
-                {title != null ? (
-                  <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
-                ) : null}
-                {description != null ? (
-                  <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
-                ) : null}
+                {title != null ? <Text style={s.title(tokens)}>{title}</Text> : null}
+                {description != null ? <Text style={s.description(tokens)}>{description}</Text> : null}
                 {withBody ? (
-                  <View className="mt-5">
-                    <Text className="text-sm font-medium text-foreground mb-1.5">Amount</Text>
-                    <View className="flex-row items-center">
-                      <Text className="text-sm text-muted-foreground mr-2">$</Text>
-                      <Input value="90.00" className="flex-1" />
+                  <View style={s.body}>
+                    <Text style={s.amountLabel(tokens)}>Amount</Text>
+                    <View style={s.amountRow}>
+                      <Text style={s.currency(tokens)}>$</Text>
+                      <Input value="90.00" style={s.amountInput} />
                     </View>
-                    <Text className="text-sm font-medium text-foreground mb-1.5 mt-4">Reason</Text>
+                    <Text style={s.reasonLabel(tokens)}>Reason</Text>
                     <Input placeholder="Duplicate charge" />
                   </View>
                 ) : null}
-                <View className="flex-row justify-end gap-2 mt-6">
-                  <Button outline small onPress={() => { onCancel?.(); setOpen(false); }}>
+                <View style={s.actions}>
+                  <Button
+                    outline
+                    small
+                    onPress={() => {
+                      onCancel?.();
+                      setOpen(false);
+                    }}
+                  >
                     {cancelLabel}
                   </Button>
                   {destructive ? (
-                    <Button destructive small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                    <Button
+                      destructive
+                      small
+                      onPress={() => {
+                        onConfirm?.();
+                        setOpen(false);
+                      }}
+                    >
                       {confirmLabel}
                     </Button>
                   ) : (
-                    <Button primary small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                    <Button
+                      primary
+                      small
+                      onPress={() => {
+                        onConfirm?.();
+                        setOpen(false);
+                      }}
+                    >
                       {confirmLabel}
                     </Button>
                   )}

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./row-menu.styles.js";
+import { type RowMenuItem } from "./row-menu.styles.js";
 
 // RowMenu: the per-row "⋯" actions menu found in tables and lists. A small
 // square icon-button trigger surfaces a floating card of action rows: each row
@@ -19,15 +20,7 @@ import { View, Pressable, Text } from "../../engine/index.js";
 // the per-item `destructive` flag is the only row-level variant and it is scoped
 // to its own row.
 
-export interface RowMenuItem {
-  label: string;
-  /** Optional leading glyph rendered before the label (a single character). */
-  icon?: string;
-  /** Red-tinted row for destructive actions (e.g. Delete). */
-  destructive?: boolean;
-  /** Draw a hairline separator above this row to start a new group. */
-  separatorBefore?: boolean;
-}
+export type { RowMenuItem };
 
 export interface RowMenuProps {
   /** The menu rows, top to bottom. */
@@ -42,25 +35,13 @@ export interface RowMenuProps {
   sectionLabel?: string;
   /** Fired with the selected item and its index when a row is pressed. */
   onSelect?: (item: RowMenuItem, index: number) => void;
-  className?: string;
-}
-
-const TRIGGER =
-  "w-8 h-8 items-center justify-center rounded-md active:bg-accent";
-const MENU_CARD =
-  "min-w-[180px] rounded-md border border-border bg-popover p-1 shadow-lg";
-const ITEM_ROW =
-  "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent";
-const MENU_LABEL = "px-2 py-1.5 text-xs font-medium text-muted-foreground";
-
-function rowTextColor(item: RowMenuItem, links: boolean): string {
-  if (item.destructive) return "text-red-600 dark:text-red-400";
-  return links ? "text-foreground" : "text-popover-foreground";
+  /** Escape hatch for layout/positioning composition. */
+  style?: StyleProp<ViewStyle>;
 }
 
 export function RowMenu(props: RowMenuProps) {
-  const { items, links = false, sectionLabel, onSelect, onOpenChange, className } =
-    props;
+  const { items, links = false, sectionLabel, onSelect, onOpenChange, style } = props;
+  const { tokens, dark } = useTheme();
   // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
   // closes it; a controlled `open` prop overrides this.
   const [internalOpen, setInternalOpen] = useState(false);
@@ -72,34 +53,33 @@ export function RowMenu(props: RowMenuProps) {
 
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
-    <View className={cn("relative self-start", className)}>
-      <Pressable className={TRIGGER} onPress={() => setOpen(!open)} accessibilityRole="button">
-        <Text className="text-base text-foreground">⋯</Text>
+    <View style={[s.anchor, style]}>
+      <Pressable
+        style={({ pressed }) => [s.trigger, pressed ? { backgroundColor: tokens.accent } : null]}
+        onPress={() => setOpen(!open)}
+        accessibilityRole="button"
+      >
+        <Text style={s.triggerGlyph(tokens)}>⋯</Text>
       </Pressable>
 
       {open ? (
-        <View className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}>
-          {sectionLabel ? (
-            <Text className={MENU_LABEL}>{sectionLabel}</Text>
-          ) : null}
+        <View style={s.menuCard(tokens)}>
+          {sectionLabel ? <Text style={s.menuLabel(tokens)}>{sectionLabel}</Text> : null}
           {items.map((item, index) => (
             <View key={`${item.label}-${index}`}>
-              {item.separatorBefore ? (
-                <View className="my-1 h-px bg-border" />
-              ) : null}
+              {item.separatorBefore ? <View style={s.separator(tokens)} /> : null}
               <Pressable
-                className={ITEM_ROW}
-                onPress={() => { onSelect?.(item, index); setOpen(false); }}
+                style={({ pressed }) => [s.itemRow, pressed ? { backgroundColor: tokens.accent } : null]}
+                onPress={() => {
+                  onSelect?.(item, index);
+                  setOpen(false);
+                }}
                 accessibilityRole={links ? "link" : "menuitem"}
               >
                 {item.icon ? (
-                  <Text className={cn("text-sm", rowTextColor(item, links))}>
-                    {item.icon}
-                  </Text>
+                  <Text style={[s.rowTextSize, s.rowTextColor(item, links, tokens, dark)]}>{item.icon}</Text>
                 ) : null}
-                <Text className={cn("text-sm", rowTextColor(item, links))}>
-                  {item.label}
-                </Text>
+                <Text style={[s.rowTextSize, s.rowTextColor(item, links, tokens, dark)]}>{item.label}</Text>
               </Pressable>
             </View>
           ))}

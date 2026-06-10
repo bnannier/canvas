@@ -1,6 +1,6 @@
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
-import { View, Text, useTheme } from "../../engine/index.js";
-import type { ColorTokens } from "../../engine/index.js";
+import { View, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./icon.styles.js";
 
 // Icon: a Lucide-style outline glyph rendered with react-native-svg, so it draws
 // crisply on native and web and inherits color the same way everywhere. Stroke is
@@ -231,7 +231,8 @@ export interface IconProps {
   size?: number;
   // Render the whole gallery instead of a single glyph.
   set?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  style?: StyleProp<ViewStyle>;
 }
 
 // First-match name precedence; defaults to shield (the demo glyph).
@@ -272,7 +273,17 @@ function renderShape(sh: Shape, k: number) {
 
 // One glyph: an SVG that sets the shared presentation attributes (stroke, weight,
 // caps) on the root; the primitive children inherit them.
-function Glyph({ shapes, size, stroke }: { shapes: Shape[]; size: number; stroke: string }) {
+function Glyph({
+  shapes,
+  size,
+  stroke,
+  style,
+}: {
+  shapes: Shape[];
+  size: number;
+  stroke: string;
+  style?: StyleProp<ViewStyle>;
+}) {
   return (
     <Svg
       width={size}
@@ -283,6 +294,7 @@ function Glyph({ shapes, size, stroke }: { shapes: Shape[]; size: number; stroke
       strokeWidth={1.75}
       strokeLinecap="round"
       strokeLinejoin="round"
+      style={style}
     >
       {shapes.map((sh, i) => renderShape(sh, i))}
     </Svg>
@@ -294,18 +306,23 @@ export function Icon(props: IconProps) {
 
   if (props.set) {
     return (
-      <View className="w-full flex-row flex-wrap">
+      <View style={[s.setGrid, props.style]}>
         {NAMES.map(({ key, label }) => (
-          <View key={key} className="items-center gap-1.5 rounded-lg px-1 py-2.5" style={{ width: 80 }}>
+          <View key={key} style={[s.setCell, { width: 80 }]}>
             <Glyph shapes={ICONS[key]} size={20} stroke={tokens.foreground} />
-            <Text className="text-muted-foreground" style={{ fontSize: 10 }}>
-              {label}
-            </Text>
+            <Text style={[s.setLabel(tokens), { fontSize: 10 }]}>{label}</Text>
           </View>
         ))}
       </View>
     );
   }
 
-  return <Glyph shapes={ICONS[nameOf(props)]} size={props.size ?? 24} stroke={strokeOf(props, tokens)} />;
+  return (
+    <Glyph
+      shapes={ICONS[nameOf(props)]}
+      size={props.size ?? 24}
+      stroke={strokeOf(props, tokens)}
+      style={props.style}
+    />
+  );
 }

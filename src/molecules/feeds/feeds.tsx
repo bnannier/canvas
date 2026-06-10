@@ -1,6 +1,7 @@
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { type ReactNode } from "react";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
+import * as s from "./feeds.styles.js";
 
 // An activity feed is a vertical timeline of events. Each item is a row with a
 // leading mark (a small dot/initials node or a person's avatar), a content
@@ -44,7 +45,8 @@ export interface FeedProps {
   compact?: boolean;
   /** When set, each event row is pressable, reporting the row index. */
   onItemPress?: (index: number) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
 
 type Lead = "connector" | "avatar";
@@ -56,9 +58,6 @@ function leadOf(p: FeedProps): Lead {
   return "connector";
 }
 
-// The card surface framing the feed (mirrors the docs cardCls).
-const CARD_SURFACE = "w-full max-w-[560px] rounded-lg border border-border bg-card overflow-hidden";
-
 // Two initials from an actor name, used for the avatar/node fallback when no
 // photo is supplied (e.g. "Rachel Chen" -> "RC").
 function initialsFrom(name: string): string {
@@ -68,82 +67,101 @@ function initialsFrom(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-const ACTOR_LABEL = "text-sm font-medium text-foreground";
-const ACTION_LABEL = "text-sm text-muted-foreground";
-const TIME_LABEL = "text-xs text-muted-foreground";
-
-// The leading node for the connector variant: a small bordered circle carrying
-// the actor's initials, sized to sit on the connector line.
-const NODE_BASE = "h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card";
-
 export function Feed(props: FeedProps) {
-  const { items = [], onItemPress, className } = props;
+  const { items = [], onItemPress, style } = props;
+  const { tokens } = useTheme();
   const lead = leadOf(props);
   const compact = !!props.compact;
   const lastIndex = items.length - 1;
 
-  // A pressable feed swaps each row's View for a Pressable that reports its index.
-  const RowComp = onItemPress ? Pressable : View;
-  const rowExtra = (index: number) =>
-    onItemPress ? { onPress: () => onItemPress(index), accessibilityRole: "button" as const } : {};
-
   const renderContent = (item: FeedItem) => (
-    <View className="flex-1">
-      <Text className="text-sm">
-        {item.actor ? <Text className={ACTOR_LABEL}>{item.actor} </Text> : null}
-        <Text className={ACTION_LABEL}>{item.action}</Text>
-        {item.target ? <Text className={ACTION_LABEL}> {item.target}</Text> : null}
+    <View style={s.contentColumn}>
+      <Text style={s.lineText}>
+        {item.actor ? <Text style={s.actorLabel(tokens)}>{item.actor} </Text> : null}
+        <Text style={s.actionLabel(tokens)}>{item.action}</Text>
+        {item.target ? <Text style={s.actionLabel(tokens)}> {item.target}</Text> : null}
       </Text>
-      <Text className={cn(TIME_LABEL, "mt-0.5")}>{item.time}</Text>
+      <Text style={s.timeLabel(tokens)}>{item.time}</Text>
     </View>
   );
 
   if (lead === "avatar") {
     // Avatar lead: each row leads with the actor's avatar; rows are ruled by a
     // hairline between items (the last row keeps no rule).
-    const rowPad = compact ? "px-5 py-3" : "px-5 py-4";
     const rows = items.map((item, index) => {
-      const divider = index < lastIndex && "border-b border-border";
-      return (
-        <RowComp key={index} className={cn("flex-row items-start gap-3", rowPad, divider, onItemPress && "active:bg-accent")} {...rowExtra(index)}>
+      const divider = index < lastIndex ? s.avatarDivider(tokens) : null;
+      const rowStyle: StyleProp<ViewStyle> = [s.avatarRow, s.avatarRowPad(compact), divider];
+      const inner: ReactNode = (
+        <>
           <Avatar src={item.avatar} name={item.actor}>
             {item.actor ? initialsFrom(item.actor) : ""}
           </Avatar>
           {renderContent(item)}
-        </RowComp>
+        </>
+      );
+      if (onItemPress) {
+        return (
+          <Pressable
+            key={index}
+            accessibilityRole="button"
+            onPress={() => onItemPress(index)}
+            style={({ pressed }) => [rowStyle, pressed ? { backgroundColor: tokens.accent } : null]}
+          >
+            {inner}
+          </Pressable>
+        );
+      }
+      return (
+        <View key={index} style={rowStyle}>
+          {inner}
+        </View>
       );
     });
-    return <View className={cn(CARD_SURFACE, className)}>{rows}</View>;
+    return <View style={[s.cardSurface(tokens), style]}>{rows}</View>;
   }
 
   // Connector lead: a bordered node per row with a vertical line linking each
   // event to the next. The line is dropped on the final item.
-  const pad = compact ? "p-5" : "p-6";
-  const rowGap = compact ? "pb-4" : "pb-6";
   const rows = items.map((item, index) => {
     const isLast = index === lastIndex;
-    return (
-      <RowComp key={index} className={cn("relative flex-row gap-3", !isLast && rowGap, onItemPress && "active:bg-accent")} {...rowExtra(index)}>
+    const rowStyle: StyleProp<ViewStyle> = [s.connectorRow, isLast ? null : s.connectorRowGap(compact)];
+    const inner: ReactNode = (
+      <>
         {!isLast ? (
           // Vertical connector: a 1px border-colored line running from just below
           // the node down to the next row. Absolutely placed under the node's
           // horizontal center (node is 28px wide -> center at 14px, minus the
           // 0.5px line half-width lands at 13px).
-          <View className="absolute bottom-0 left-[13px] top-7 w-px bg-border" />
+          <View style={s.connectorLine(tokens)} />
         ) : null}
-        <View className={NODE_BASE}>
+        <View style={s.node(tokens)}>
           {item.actor ? (
-            <Text className="text-xs font-medium text-muted-foreground">
-              {initialsFrom(item.actor)}
-            </Text>
+            <Text style={s.nodeInitials(tokens)}>{initialsFrom(item.actor)}</Text>
           ) : (
-            <View className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+            <View style={s.nodeDot(tokens)} />
           )}
         </View>
-        <View className="flex-1 pt-0.5">{renderContent(item)}</View>
-      </RowComp>
+        <View style={s.connectorContentColumn}>{renderContent(item)}</View>
+      </>
+    );
+    if (onItemPress) {
+      return (
+        <Pressable
+          key={index}
+          accessibilityRole="button"
+          onPress={() => onItemPress(index)}
+          style={({ pressed }) => [rowStyle, pressed ? { backgroundColor: tokens.accent } : null]}
+        >
+          {inner}
+        </Pressable>
+      );
+    }
+    return (
+      <View key={index} style={rowStyle}>
+        {inner}
+      </View>
     );
   });
 
-  return <View className={cn(CARD_SURFACE, pad, className)}>{rows}</View>;
+  return <View style={[s.cardSurface(tokens), s.connectorPad(compact), style]}>{rows}</View>;
 }

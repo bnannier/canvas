@@ -1,7 +1,8 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./radio.styles.js";
+import { type Size } from "./radio.styles.js";
 
 // A radio is a single circular control that fills with a centered dot when it is
 // the chosen option in its group. It pairs with an optional label and supports a
@@ -29,10 +30,9 @@ export interface RadioProps {
   large?: boolean;
   /** Dim the control and block presses. */
   disabled?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition. */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Size = "small" | "default" | "large";
 
 // Size precedence when more than one is passed: first match wins.
 function sizeOf(p: RadioProps): Size {
@@ -41,66 +41,24 @@ function sizeOf(p: RadioProps): Size {
   return "default";
 }
 
-// Ring diameter per size. Default is the 16px form control; small pairs with
-// dense rows, large with touch-first layouts.
-const RING_BOX: Record<Size, string> = {
-  small: "w-3.5 h-3.5",
-  default: "w-4 h-4",
-  large: "w-5 h-5",
-};
-
-// Inner dot diameter per size, ~half the ring so the fill reads as a dot.
-const DOT_BOX: Record<Size, string> = {
-  small: "w-1.5 h-1.5",
-  default: "w-2 h-2",
-  large: "w-2.5 h-2.5",
-};
-
-// Label type per size, matched to the surrounding body text scale.
-const LABEL_TEXT: Record<Size, string> = {
-  small: "text-xs",
-  default: "text-sm",
-  large: "text-base",
-};
-
 export function Radio(props: RadioProps) {
-  const { checked, selected, onChange, children, disabled, className } = props;
+  const { checked, selected, onChange, children, disabled, style } = props;
   const isChecked = !!(checked ?? selected);
   const size = sizeOf(props);
-
-  const ring = cn(
-    "shrink-0 items-center justify-center rounded-full border-2",
-    RING_BOX[size],
-    // Selected swaps the neutral input border for primary; unselected keeps a
-    // transparent fill so only the ring shows until a dot is revealed.
-    isChecked ? "border-primary bg-transparent" : "border-input bg-transparent",
-    // Nudge the ring onto the first text line so it sits beside the label's
-    // title rather than floating to the vertical middle of a wrapped label.
-    children != null ? "mt-[3px]" : null,
-  );
-
-  const dot = cn("rounded-full bg-primary", DOT_BOX[size]);
-
-  const label = cn(
-    "font-medium",
-    LABEL_TEXT[size],
-    disabled ? "text-muted-foreground" : "text-foreground",
-  );
+  const { tokens } = useTheme();
 
   return (
     <Pressable
-      className={cn(
-        "flex-row items-start gap-2",
-        disabled && "opacity-50",
-        className,
-      )}
+      style={[s.root, disabled ? { opacity: 0.5 } : null, style]}
       onPress={(event) => onChange?.(true, event)}
       disabled={disabled}
       accessibilityRole="radio"
       accessibilityState={{ checked: isChecked, disabled: !!disabled }}
     >
-      <View className={ring}>{isChecked ? <View className={dot} /> : null}</View>
-      {children != null ? <Text className={label}>{children}</Text> : null}
+      <View style={s.ring(tokens, size, isChecked, children != null)}>
+        {isChecked ? <View style={s.dot(tokens, size)} /> : null}
+      </View>
+      {children != null ? <Text style={s.label(tokens, size, !!disabled)}>{children}</Text> : null}
     </Pressable>
   );
 }

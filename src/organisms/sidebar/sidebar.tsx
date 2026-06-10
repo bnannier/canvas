@@ -1,7 +1,8 @@
 import { type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
+import * as s from "./sidebar.styles.js";
+import { type Density, type Frame } from "./sidebar.styles.js";
 
 // A sidebar is the vertical app-navigation panel that runs down the left of a
 // layout: an optional list of titled sections, each holding nav rows. A row is
@@ -51,11 +52,9 @@ export interface SidebarProps {
   // Frame (pick one; default is the flush right-bordered column).
   bordered?: boolean;
   floating?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Density = "default" | "compact";
-type Frame = "flush" | "bordered";
 
 // Density precedence when more than one is passed: first match wins.
 function densityOf(p: SidebarProps): Density {
@@ -70,39 +69,15 @@ function frameOf(p: SidebarProps): Frame {
   return "flush";
 }
 
-// Fixed-width navigation column. The flush frame docks against the page with a
-// single right hairline; the bordered/floating frame lifts it into a fully
-// ruled, rounded card.
-const COLUMN_BASE = "w-[240px] bg-background";
-const COLUMN_FRAME: Record<Frame, string> = {
-  flush: "border-r border-border",
-  bordered: "rounded-lg border border-border overflow-hidden",
-};
-
-// Row padding per density. The comfortable row matches the documented px-3 py-2;
-// compact tightens it for dense navigation.
-const ROW_DENSITY: Record<Density, string> = {
-  default: "px-3 py-2",
-  compact: "px-3 py-1.5",
-};
-
-// Label type per density.
-const LABEL_DENSITY: Record<Density, string> = {
-  default: "text-sm",
-  compact: "text-xs",
-};
-
 export function Sidebar(props: SidebarProps) {
-  const { sections, items, active, onSelect, className } = props;
+  const { sections, items, active, onSelect, style } = props;
   const density = densityOf(props);
   const frame = frameOf(props);
+  const { tokens } = useTheme();
 
   // Normalize to a sections list; a flat `items` array becomes one untitled
   // section. Sections always win when both are supplied.
-  const groups: SidebarSection[] =
-    sections ?? (items ? [{ items }] : []);
-
-  const container = cn(COLUMN_BASE, COLUMN_FRAME[frame], className);
+  const groups: SidebarSection[] = sections ?? (items ? [{ items }] : []);
 
   // Active match is by label or by flat index across every row in order.
   const isActive = (item: SidebarItem, flatIndex: number): boolean => {
@@ -115,47 +90,34 @@ export function Sidebar(props: SidebarProps) {
   let flat = -1;
 
   return (
-    <View className={cn("gap-4 p-2", container)}>
+    <View style={[s.column(tokens, frame), style]}>
       {groups.map((section, gi) => (
-        <View key={gi} className="gap-1">
+        <View key={gi} style={s.group}>
           {section.title != null ? (
-            <Text className="px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {section.title}
-            </Text>
+            <Text style={s.sectionTitle(tokens)}>{section.title}</Text>
           ) : null}
           {section.items.map((item) => {
             flat += 1;
             const index = flat;
             const activeRow = isActive(item, index);
-            const row = cn(
-              "flex-row items-center gap-3 rounded-md active:bg-accent",
-              ROW_DENSITY[density],
-              activeRow ? "bg-accent" : null,
-            );
-            const label = cn(
-              "flex-1",
-              LABEL_DENSITY[density],
-              activeRow ? "font-medium text-foreground" : "text-muted-foreground",
-            );
             return (
               <Pressable
                 key={index}
-                className={row}
+                style={({ pressed }) => [
+                  s.rowBase,
+                  s.rowDensity[density],
+                  // The active row carries the accent fill persistently; a press
+                  // applies it too (the old `active:bg-accent`).
+                  activeRow || pressed ? s.rowAccentFill(tokens) : null,
+                ]}
                 onPress={(event) => onSelect?.(item, index, event)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: activeRow }}
               >
                 {item.icon != null ? (
-                  <Text
-                    className={cn(
-                      "text-base",
-                      activeRow ? "text-foreground" : "text-muted-foreground",
-                    )}
-                  >
-                    {item.icon}
-                  </Text>
+                  <Text style={s.iconText(tokens, activeRow)}>{item.icon}</Text>
                 ) : null}
-                <Text className={label} numberOfLines={1}>
+                <Text style={[s.labelBase, s.labelDensity[density], s.labelColor(tokens, activeRow)]} numberOfLines={1}>
                   {item.label}
                 </Text>
                 {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}

@@ -1,5 +1,6 @@
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./tabs.styles.js";
+import { type Variant } from "./tabs.styles.js";
 
 // Tabs: a horizontal row of pressable triggers above panel content, with the
 // active trigger emphasized so the current view is unmistakable.
@@ -22,9 +23,9 @@ import { View, Pressable, Text } from "../../engine/index.js";
 // Each tab may carry an optional count badge (the `{ label, badge }` item
 // shape), rendered as a small secondary pill after the label.
 //
-// Because the engine has no `border-b-2` utility, the active underline is drawn
-// as an explicit 2px sliver View under the trigger rather than as a bottom
-// border in markup (mirroring how ButtonGroup hand-rolls its hairline divider).
+// The active underline is drawn as an explicit 2px sliver View under the trigger
+// rather than as a bottom border in markup (mirroring how ButtonGroup hand-rolls
+// its hairline divider).
 
 /** A tab is either a bare label or a label paired with a count badge. */
 export type TabItem = string | { label: string; badge?: string };
@@ -47,10 +48,9 @@ export interface TabsProps {
   block?: boolean;
 
   disabled?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Variant = "underline" | "pills" | "vertical";
 
 // Variant precedence when more than one is passed: first match wins.
 function variantOf(p: TabsProps): Variant {
@@ -72,11 +72,10 @@ function badgeOf(item: TabItem): string | undefined {
 
 // A small secondary count pill shown after a trigger label.
 function CountBadge({ children, muted }: { children: string; muted: boolean }) {
+  const { tokens } = useTheme();
   return (
-    <View className="flex-row items-center self-start rounded-md border border-transparent bg-secondary px-1.5 py-0.5">
-      <Text className={cn("text-xs font-medium", muted ? "text-muted-foreground" : "text-secondary-foreground")}>
-        {children}
-      </Text>
+    <View style={s.countBadgeBox(tokens)}>
+      <Text style={[s.countBadgeLabelType, s.countBadgeLabelColor(tokens, muted)]}>{children}</Text>
     </View>
   );
 }
@@ -92,52 +91,46 @@ interface TriggerProps {
 }
 
 function Trigger({ label, badge, selected, variant, block, disabled, onPress }: TriggerProps) {
+  const { tokens } = useTheme();
+
   if (variant === "vertical") {
     // Vertical rail: a full-width, left-aligned row; the active item is filled
     // with an accent background rather than carrying an underline rule.
-    const container = cn(
-      "w-full flex-row items-center gap-1.5 rounded-md px-3 py-2 active:opacity-90",
-      selected ? "bg-accent" : "bg-transparent",
-      disabled && "opacity-50",
-    );
-    const labelCls = cn(
-      "text-sm font-medium",
-      selected ? "text-accent-foreground" : "text-muted-foreground",
-    );
+    const container: StyleProp<ViewStyle> = [
+      s.verticalTriggerBase,
+      s.verticalTriggerFill(tokens, selected),
+      disabled ? s.disabledDim : null,
+    ];
     return (
       <Pressable
-        className={container}
         onPress={onPress}
         disabled={disabled}
         accessibilityRole="tab"
         accessibilityState={{ selected, disabled: !!disabled }}
+        style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
       >
-        <Text className={labelCls}>{label}</Text>
+        <Text style={[s.triggerLabel, s.triggerLabelColor(tokens, "vertical", selected)]}>{label}</Text>
         {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
       </Pressable>
     );
   }
 
   if (variant === "pills") {
-    const container = cn(
-      "flex-row items-center justify-center gap-1.5 rounded-md px-3 py-1.5 active:opacity-90",
-      block && "flex-1",
-      selected ? "bg-background shadow-sm" : "bg-transparent",
-      disabled && "opacity-50",
-    );
-    const labelCls = cn(
-      "text-sm font-medium",
-      selected ? "text-foreground" : "text-muted-foreground",
-    );
+    const container: StyleProp<ViewStyle> = [
+      s.pillsTriggerBase,
+      block ? s.flex1 : null,
+      s.pillsTriggerFill(tokens, selected),
+      disabled ? s.disabledDim : null,
+    ];
     return (
       <Pressable
-        className={container}
         onPress={onPress}
         disabled={disabled}
         accessibilityRole="tab"
         accessibilityState={{ selected, disabled: !!disabled }}
+        style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
       >
-        <Text className={labelCls}>{label}</Text>
+        <Text style={[s.triggerLabel, s.triggerLabelColor(tokens, "pills", selected)]}>{label}</Text>
         {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
       </Pressable>
     );
@@ -145,44 +138,36 @@ function Trigger({ label, badge, selected, variant, block, disabled, onPress }: 
 
   // Underline: the active trigger gets foreground text and a 2px primary rule
   // drawn as an explicit sliver pinned to the trigger's bottom edge.
-  const container = cn(
-    "flex-row items-center justify-center gap-1.5 px-4 py-2.5 active:opacity-90",
-    block && "flex-1",
-    disabled && "opacity-50",
-  );
-  const labelCls = cn(
-    "text-sm font-medium",
-    selected ? "text-foreground" : "text-muted-foreground",
-  );
+  const container: StyleProp<ViewStyle> = [
+    s.underlineTriggerBase,
+    block ? s.flex1 : null,
+    disabled ? s.disabledDim : null,
+  ];
   return (
     <Pressable
-      className={container}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="tab"
       accessibilityState={{ selected, disabled: !!disabled }}
+      style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
     >
-      <Text className={labelCls}>{label}</Text>
+      <Text style={[s.triggerLabel, s.triggerLabelColor(tokens, "underline", selected)]}>{label}</Text>
       {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
-      <View
-        className={cn(
-          "absolute bottom-0 left-0 right-0 h-0.5 rounded-full",
-          selected ? "bg-primary" : "bg-transparent",
-        )}
-      />
+      <View style={s.underlineSliver(tokens, selected)} />
     </Pressable>
   );
 }
 
 export function Tabs(props: TabsProps) {
-  const { tabs = DEFAULT_TABS, active = 0, onChange, disabled, className } = props;
+  const { tabs = DEFAULT_TABS, active = 0, onChange, disabled, style } = props;
   const variant = variantOf(props);
+  const { tokens } = useTheme();
 
   if (variant === "vertical") {
     // A left-aligned column rail of stacked triggers; width hugs its content
     // unless `block` stretches it to fill the available column.
     return (
-      <View className={cn("flex-col items-stretch gap-1", props.block ? "w-full" : "w-[180px]", className)}>
+      <View style={[s.verticalRail(!!props.block), style]}>
         {tabs.map((item, i) => (
           <Trigger
             key={`${labelOf(item)}-${i}`}
@@ -201,7 +186,7 @@ export function Tabs(props: TabsProps) {
 
   if (variant === "pills") {
     return (
-      <View className={cn("flex-row items-center gap-1 self-start rounded-lg bg-muted p-1", block(props), className)}>
+      <View style={[s.pillsRow(tokens), s.blockWidth(!!props.block), style]}>
         {tabs.map((item, i) => (
           <Trigger
             key={`${labelOf(item)}-${i}`}
@@ -220,7 +205,7 @@ export function Tabs(props: TabsProps) {
 
   // Underline: the row sits on a hairline bottom border.
   return (
-    <View className={cn("flex-row items-center border-b border-border", block(props), className)}>
+    <View style={[s.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
       {tabs.map((item, i) => (
         <Trigger
           key={`${labelOf(item)}-${i}`}
@@ -235,10 +220,4 @@ export function Tabs(props: TabsProps) {
       ))}
     </View>
   );
-}
-
-// In block mode the row stretches to the full available width so equal-flex
-// triggers fill it; otherwise the row hugs its triggers at the leading edge.
-function block(p: TabsProps): string {
-  return p.block ? "w-full" : "self-start";
 }

@@ -1,16 +1,15 @@
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./charts.styles.js";
+import { type Tone } from "./charts.styles.js";
 
 // Chart: a token-themed bar chart built entirely from View views, no SVG and no
 // CSS grid. Each datum is a vertical (or horizontal) bar whose length is a
-// pixel height computed in JS from its value against the axis max, so the
-// engine only ever sees concrete arbitrary-length utilities (h-[Npx] / w-[Npx])
-// that the resolver supports. A label sits under (or beside) each bar.
+// pixel height computed in JS from its value against the axis max. A label sits
+// under (or beside) each bar.
 //
 // This is Canvas's faithful, SVG-free take on the docs "charts" organism: the
 // other chart types in that entry (sparkline, gauge, heatmap, stacked) lean on
-// SVG and grid, which the engine has no utilities for, so they are approximated
-// by the bar chart here.
+// SVG and grid, so they are approximated by the bar chart here.
 //
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). Axes:
@@ -43,10 +42,9 @@ export interface ChartProps {
   horizontal?: boolean;
   // Density (default is the standard plot size).
   compact?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Tone = "primary" | "success" | "destructive";
 
 // Tone precedence when more than one is passed: first match wins.
 function toneOf(p: ChartProps): Tone {
@@ -55,29 +53,18 @@ function toneOf(p: ChartProps): Tone {
   return "primary";
 }
 
-// The fill for each bar, by tone. Token primary by default; saturated palette
-// hues for the success / destructive tones so the chart reads in either scheme.
-const BAR_FILL: Record<Tone, string> = {
-  primary: "bg-primary",
-  success: "bg-green-500",
-  destructive: "bg-red-500",
-};
-
-// The bordered, shadowed card surface, mirroring the docs `cardCls` plus its
-// padding.
-const SURFACE = "rounded-lg border border-border bg-card shadow-sm";
-
 // Plot length in px (bar travel: chart height for vertical, bar width for
-// horizontal), and the per-bar gap, by density.
+// horizontal), by density.
 const PLOT_LENGTH = { default: 140, compact: 96 } as const;
 
 export function Chart(props: ChartProps) {
-  const { data, title, className } = props;
+  const { data, title, style } = props;
   const tone = toneOf(props);
   const horizontal = !!props.horizontal;
   const compact = !!props.compact;
+  const { tokens } = useTheme();
 
-  const fill = BAR_FILL[tone];
+  const fill = s.barFill(tokens, tone);
   const plot = compact ? PLOT_LENGTH.compact : PLOT_LENGTH.default;
   // Axis max: the caller's, else the largest value, else 1 to avoid /0.
   const values = data.map((d) => d.value);
@@ -89,48 +76,43 @@ export function Chart(props: ChartProps) {
     return Math.max(2, Math.round(ratio * plot));
   };
 
-  const surface = cn(SURFACE, compact ? "p-4" : "p-5", className);
-  const gap = compact ? "gap-1.5" : "gap-2";
+  // Per-bar gap by density: gap-1.5 (6) compact, gap-2 (8) default.
+  const gap = compact ? 6 : 8;
 
   return (
-    <View className={surface}>
+    <View style={[s.surface(tokens), compact ? s.surfacePadCompact : s.surfacePadDefault, style]}>
       {title != null && title !== "" ? (
-        <Text className={cn("font-semibold text-card-foreground", compact ? "mb-3 text-sm" : "mb-4 text-base")}>
-          {title}
-        </Text>
+        <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
       ) : null}
 
       {horizontal ? (
         // Horizontal: each row is a label, a track-aligned bar, and the value.
-        <View className={cn("flex-col", gap)}>
+        <View style={[s.horizontalStack, { gap }]}>
           {data.map((d, i) => (
-            <View key={i} className="flex-row items-center gap-2">
-              <Text className="w-16 text-xs text-muted-foreground">{d.label}</Text>
-              <View className="flex-1 flex-row items-center">
-                <View className={cn("h-3 rounded-r", fill, `w-[${lengthPx(d.value)}px]`)} />
+            <View key={i} style={s.horizontalRow}>
+              <Text style={s.horizontalLabel(tokens)}>{d.label}</Text>
+              <View style={s.horizontalTrack}>
+                <View style={s.horizontalBar(fill, lengthPx(d.value))} />
               </View>
-              <Text className="text-xs font-medium text-card-foreground">{d.value}</Text>
+              <Text style={s.horizontalValue(tokens)}>{d.value}</Text>
             </View>
           ))}
         </View>
       ) : (
         // Vertical: a baseline-aligned row of columns, each a bar over its label.
         <View>
-          <View
-            className={cn("flex-row items-end", gap)}
-            style={{ height: plot }}
-          >
+          <View style={[s.verticalBars, { gap, height: plot }]}>
             {data.map((d, i) => (
-              <View key={i} className="flex-1 items-stretch">
-                <View className={cn("rounded-t", fill, `h-[${lengthPx(d.value)}px]`)} />
+              <View key={i} style={s.verticalColumn}>
+                <View style={s.verticalBar(fill, lengthPx(d.value))} />
               </View>
             ))}
           </View>
           {/* Baseline under the bars. */}
-          <View className="h-px w-full bg-border" />
-          <View className={cn("mt-2 flex-row", gap)}>
+          <View style={s.baseline(tokens)} />
+          <View style={[s.verticalLabelsRow, { gap }]}>
             {data.map((d, i) => (
-              <Text key={i} className="flex-1 text-center text-xs text-muted-foreground">
+              <Text key={i} style={s.verticalLabel(tokens)}>
                 {d.label}
               </Text>
             ))}

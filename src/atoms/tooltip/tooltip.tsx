@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
+import * as s from "./tooltip.styles.js";
+import { type Placement } from "./tooltip.styles.js";
 
 // Tooltip: a small dark bubble of helper text shown beside a trigger on hover
 // or focus. This RN port renders the open state inline (no portal/Modal): a
@@ -29,10 +30,9 @@ export interface TooltipProps {
   bottom?: boolean;
   left?: boolean;
   right?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Placement = "top" | "bottom" | "left" | "right";
 
 // Placement precedence when more than one is passed: first match wins.
 function placementOf(p: TooltipProps): Placement {
@@ -42,23 +42,6 @@ function placementOf(p: TooltipProps): Placement {
   if (p.right) return "right";
   return "top";
 }
-
-// Wrapper layout per placement: column for top/bottom, row for left/right.
-const WRAPPER: Record<Placement, string> = {
-  top: "flex-col items-center self-start",
-  bottom: "flex-col items-center self-start",
-  left: "flex-row items-center self-start",
-  right: "flex-row items-center self-start",
-};
-
-// Gap between bubble and trigger, applied to the bubble on the trigger-facing
-// side. top -> mb-1.5, bottom -> mt-1.5, left -> mr-1.5, right -> ml-1.5.
-const BUBBLE_GAP: Record<Placement, string> = {
-  top: "mb-1.5",
-  bottom: "mt-1.5",
-  left: "mr-1.5",
-  right: "ml-1.5",
-};
 
 // Whether the bubble renders before the trigger in source order. top and left
 // place the bubble first; bottom and right place it after.
@@ -70,8 +53,9 @@ const BUBBLE_FIRST: Record<Placement, boolean> = {
 };
 
 export function Tooltip(props: TooltipProps) {
-  const { label, trigger, iconTrigger, onOpenChange, className } = props;
+  const { label, trigger, iconTrigger, onOpenChange, style } = props;
   const placement = placementOf(props);
+  const { tokens } = useTheme();
   // Uncontrolled by default: tapping the trigger toggles the bubble (a touch
   // analogue of hover); a controlled `open` prop overrides this.
   const [internalOpen, setInternalOpen] = useState(false);
@@ -81,13 +65,9 @@ export function Tooltip(props: TooltipProps) {
     onOpenChange?.(next);
   };
 
-  const wrapper = cn(WRAPPER[placement], className);
-  const bubble = cn("rounded-md bg-foreground px-2 py-1 shadow-md", BUBBLE_GAP[placement]);
-  const bubbleLabel = "text-xs font-medium text-background";
-
   const tip = open ? (
-    <View className={bubble}>
-      <Text className={bubbleLabel}>{label}</Text>
+    <View style={[s.bubble(tokens), s.bubbleGap[placement]]}>
+      <Text style={s.bubbleLabel(tokens)}>{label}</Text>
     </View>
   ) : null;
 
@@ -96,7 +76,7 @@ export function Tooltip(props: TooltipProps) {
   // Pressable (not via Button's <Text> children, which can't host an SVG).
   const triggerEl = iconTrigger ? (
     <Pressable
-      className="h-10 w-10 items-center justify-center rounded-md active:opacity-90"
+      style={({ pressed }) => [s.iconTrigger, pressed ? { opacity: 0.9 } : null]}
       onPress={() => setOpen(!open)}
       accessibilityRole="button"
       accessibilityLabel={label}
@@ -110,7 +90,7 @@ export function Tooltip(props: TooltipProps) {
   );
 
   return (
-    <View className={wrapper}>
+    <View style={[s.wrapper[placement], style]}>
       {BUBBLE_FIRST[placement] ? tip : null}
       {triggerEl}
       {BUBBLE_FIRST[placement] ? null : tip}

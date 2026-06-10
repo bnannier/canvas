@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from "react";
-import { Platform, type StyleProp, type ViewStyle } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { Platform } from "react-native";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
+import * as s from "./dropdown.styles.js";
 
 // Dropdown: a trigger plus a floating menu of action rows. The menu is a
 // popover-surfaced card with item rows (each an optional leading icon glyph, a
@@ -57,15 +57,13 @@ export interface DropdownProps {
   onOpenChange?: (open: boolean) => void;
   /** Fired with the selected item and its index when a row is pressed. */
   onSelect?: (item: DropdownItem, index: number) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
 
 // The menu's width floor. A menu under a small trigger (e.g. an outline button)
 // stays at least this wide; a wider trigger (an account chip) sets the width.
 const MENU_MIN_WIDTH = 200;
-const MENU_CARD = "rounded-md border border-border bg-popover p-1 shadow-lg";
-const ITEM_ROW =
-  "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent";
 
 // A transparent full-viewport layer behind the open menu (web only): a press off
 // the menu dismisses it. `position: fixed` is not in RN's ViewStyle type but
@@ -81,7 +79,8 @@ const DISMISS_BACKDROP = {
 } as unknown as StyleProp<ViewStyle>;
 
 export function Dropdown(props: DropdownProps) {
-  const { trigger, children, label, items, open: openProp, onOpenChange, onSelect, className } = props;
+  const { trigger, children, label, items, open: openProp, onOpenChange, onSelect, style } = props;
+  const { tokens, dark } = useTheme();
   // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
   // menu and a select closes it; a controlled `open` prop overrides this.
   const [internalOpen, setInternalOpen] = useState(false);
@@ -100,12 +99,12 @@ export function Dropdown(props: DropdownProps) {
   return (
     // self-start keeps the trigger from stretching; relative anchors the menu.
     <View
-      className={cn("relative self-start", className)}
+      style={[s.wrapper, style]}
       onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
     >
       {children != null ? (
         <Pressable
-          className="self-start"
+          style={s.customTrigger}
           onPress={() => setOpen(!open)}
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
@@ -124,50 +123,39 @@ export function Dropdown(props: DropdownProps) {
 
       {open ? (
         <View
-          className={cn(MENU_CARD, "absolute top-full left-0 z-50 mt-1")}
-          style={{ minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }}
+          style={[s.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
         >
           {label ? (
-            <Text className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+            <Text style={s.menuLabel(tokens)}>
               {label}
             </Text>
           ) : null}
           {items.map((item, index) => (
             <View key={`${item.label}-${index}`}>
               {item.separatorBefore ? (
-                <View className="my-1 h-px bg-border" />
+                <View style={s.separator(tokens)} />
               ) : null}
               <Pressable
-                className={cn(ITEM_ROW, item.disabled && "opacity-50")}
+                style={({ pressed }) => [
+                  s.itemRow,
+                  pressed ? s.itemPressed(tokens) : null,
+                  item.disabled ? { opacity: 0.5 } : null,
+                ]}
                 onPress={item.disabled ? undefined : () => { onSelect?.(item, index); setOpen(false); }}
                 disabled={item.disabled}
                 accessibilityRole="menuitem"
                 accessibilityState={{ disabled: item.disabled }}
               >
                 {item.icon ? (
-                  <Text
-                    className={cn(
-                      "text-sm",
-                      item.destructive
-                        ? "text-red-600 dark:text-red-400"
-                        : "text-popover-foreground",
-                    )}
-                  >
+                  <Text style={[s.itemTextType, s.itemTextColor(tokens, dark, !!item.destructive)]}>
                     {item.icon}
                   </Text>
                 ) : null}
-                <Text
-                  className={cn(
-                    "text-sm",
-                    item.destructive
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-popover-foreground",
-                  )}
-                >
+                <Text style={[s.itemTextType, s.itemTextColor(tokens, dark, !!item.destructive)]}>
                   {item.label}
                 </Text>
                 {item.shortcut ? (
-                  <Text className="ml-auto text-xs tracking-widest text-muted-foreground">
+                  <Text style={s.shortcut(tokens)}>
                     {item.shortcut}
                   </Text>
                 ) : null}

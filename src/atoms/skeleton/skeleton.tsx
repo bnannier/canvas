@@ -1,7 +1,15 @@
 import { useEffect, useRef } from "react";
-import { Animated, type ViewStyle } from "react-native";
-import { cn } from "../../cn.js";
-import { View, useStyles } from "../../engine/index.js";
+import { Animated } from "react-native";
+import { View, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./skeleton.styles.js";
+
+// Skeleton: muted placeholder blocks shown while content loads. A single shape
+// (text line, avatar, button, or a composite card/list/table scaffold) built
+// from one muted fill, optionally pulsing. The size axis scales the line height
+// and the avatar/button footprint.
+//
+// Boolean-prop API: one boolean per option, grouped by axis, first-match
+// precedence within an axis (mirrors Button's intentOf).
 
 export interface SkeletonProps {
   // Shape (pick one; default is a single text line).
@@ -16,11 +24,11 @@ export interface SkeletonProps {
   large?: boolean;
   /** Subtle opacity pulse while content loads. */
   animate?: boolean;
-  /** Extra utilities, mainly for sizing (e.g. "w-1/2", "w-[120px]"). */
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly sizing, e.g. width). */
+  style?: StyleProp<ViewStyle>;
 }
 
-type Shape = "text" | "avatar" | "button" | "card" | "list" | "table";
+type Shape = s.Shape;
 
 // Shape precedence when more than one is passed: first match wins.
 function shapeOf(p: SkeletonProps): Shape {
@@ -33,36 +41,11 @@ function shapeOf(p: SkeletonProps): Shape {
   return "text";
 }
 
-// The muted fill every placeholder shares.
-const FILL = "bg-muted";
-
-// Line height per size; the default line reads like a single row of text.
-function lineHeight(p: SkeletonProps): string {
-  if (p.large) return "h-4";
-  if (p.small) return "h-3";
-  return "h-3.5";
-}
-
-// Avatar diameter per size.
-function avatarSize(p: SkeletonProps): string {
-  if (p.large) return "w-12 h-12";
-  if (p.small) return "w-8 h-8";
-  return "w-10 h-10";
-}
-
-// Button placeholder footprint per size; mirrors the real control's height.
-function buttonSize(p: SkeletonProps): string {
-  if (p.large) return "h-12 w-32";
-  if (p.small) return "h-8 w-20";
-  return "h-9 w-28";
-}
-
 /** A pulsing or static muted block. The resolved width/height/fill go on the
  *  Animated.View itself so percentage widths resolve against the real parent
  *  (a nested View would collapse `w-[60%]` against an auto-width wrapper). */
-function Pulse({ animate, className }: { animate?: boolean; className: string }) {
+function Pulse({ animate, style }: { animate?: boolean; style: StyleProp<ViewStyle> }) {
   const opacity = useRef(new Animated.Value(1)).current;
-  const resolved = useStyles(className);
 
   useEffect(() => {
     if (!animate) {
@@ -79,79 +62,84 @@ function Pulse({ animate, className }: { animate?: boolean; className: string })
     return () => loop.stop();
   }, [animate, opacity]);
 
-  return <Animated.View style={[resolved as unknown as ViewStyle, { opacity: animate ? opacity : 1 }]} />;
+  return <Animated.View style={[style, { opacity: animate ? opacity : 1 }]} />;
 }
 
 // A single muted line; the building block for text and the composite shapes.
-function Line({ animate, className }: { animate?: boolean; className?: string }) {
-  return <Pulse animate={animate} className={cn(FILL, "h-3.5 rounded w-full", className)} />;
+// The muted fill + the line base (`h-3.5 rounded w-full`), then any width/margin
+// overrides the caller layers on.
+function Line({ animate, style }: { animate?: boolean; style?: StyleProp<ViewStyle> }) {
+  const { tokens } = useTheme();
+  return <Pulse animate={animate} style={[s.fill(tokens), s.lineBase, style]} />;
 }
 
 export function Skeleton(props: SkeletonProps) {
-  const { animate, className } = props;
+  const { animate, style } = props;
+  const { tokens } = useTheme();
   const shape = shapeOf(props);
 
   if (shape === "avatar") {
-    return <Pulse animate={animate} className={cn(FILL, "rounded-full", avatarSize(props), className)} />;
+    return <Pulse animate={animate} style={[s.fill(tokens), s.avatarSize(props), style]} />;
   }
 
   if (shape === "button") {
-    return <Pulse animate={animate} className={cn(FILL, "rounded-md", buttonSize(props), className)} />;
+    return <Pulse animate={animate} style={[s.fill(tokens), s.buttonSize(props), style]} />;
   }
 
   if (shape === "card") {
     return (
-      <View className={cn("rounded-lg border border-border bg-card max-w-[320px] p-4", className)}>
-        <View className="flex-row items-center gap-3 mb-4">
-          <Pulse animate={animate} className={cn(FILL, "shrink-0 rounded-full w-10 h-10")} />
-          <View className="flex-1">
-            <Line animate={animate} className="w-[70%]" />
-            <Line animate={animate} className="w-[40%] mt-1.5" />
+      <View style={[s.cardSurface(tokens), style]}>
+        <View style={s.cardRow}>
+          <Pulse animate={animate} style={[s.fill(tokens), s.cardAvatar]} />
+          <View style={s.flexFill}>
+            <Line animate={animate} style={s.cardLine70} />
+            <Line animate={animate} style={s.cardLine40} />
           </View>
         </View>
-        <Line animate={animate} className="w-full" />
-        <Line animate={animate} className="w-[80%] mt-1.5" />
+        <Line animate={animate} />
+        <Line animate={animate} style={s.cardLine80} />
       </View>
     );
   }
 
   if (shape === "list") {
-    const Row = ({ a, b }: { a: string; b: string }) => (
-      <View className="flex-row items-center gap-3">
-        <Pulse animate={animate} className={cn(FILL, "rounded-full w-8 h-8")} />
-        <View className="flex-1">
-          <Line animate={animate} className={cn("mb-1.5", a)} />
-          <Line animate={animate} className={b} />
+    const Row = ({ a, b }: { a: StyleProp<ViewStyle>; b: StyleProp<ViewStyle> }) => (
+      <View style={s.listRow}>
+        <Pulse animate={animate} style={[s.fill(tokens), s.listAvatar]} />
+        <View style={s.flexFill}>
+          <Line animate={animate} style={[s.listLineGap, a]} />
+          <Line animate={animate} style={b} />
         </View>
-        <Line animate={animate} className="w-10" />
+        <Line animate={animate} style={s.w10} />
       </View>
     );
     return (
-      <View className={cn("flex-col gap-4 max-w-[400px]", className)}>
-        <Row a="w-[70%]" b="w-[50%]" />
-        <Row a="w-[55%]" b="w-[35%]" />
+      <View style={[s.listContainer, style]}>
+        <Row a={{ width: "70%" }} b={{ width: "50%" }} />
+        <Row a={{ width: "55%" }} b={{ width: "35%" }} />
       </View>
     );
   }
 
   if (shape === "table") {
-    const Row = ({ a, b, last }: { a: string; b: string; last?: boolean }) => (
-      <View className={cn("flex-row items-center gap-3 py-3", !last && "border-b border-border")}>
-        <Line animate={animate} className="w-10" />
-        <Line animate={animate} className={cn("flex-1", a)} />
-        <Line animate={animate} className={cn("flex-1", b)} />
-        <Line animate={animate} className="w-20" />
+    const Row = ({ a, b, last }: { a: StyleProp<ViewStyle>; b: StyleProp<ViewStyle>; last?: boolean }) => (
+      <View style={[s.tableRow, !last ? s.tableDivider(tokens) : null]}>
+        <Line animate={animate} style={s.w10} />
+        <Line animate={animate} style={[s.flexFill, a]} />
+        <Line animate={animate} style={[s.flexFill, b]} />
+        <Line animate={animate} style={s.w20} />
       </View>
     );
     return (
-      <View className={cn("max-w-[560px]", className)}>
-        <Row a="w-[70%]" b="w-[50%]" />
-        <Row a="w-[80%]" b="w-[60%]" />
-        <Row a="w-[65%]" b="w-[45%]" last />
+      <View style={[s.tableContainer, style]}>
+        <Row a={{ width: "70%" }} b={{ width: "50%" }} />
+        <Row a={{ width: "80%" }} b={{ width: "60%" }} />
+        <Row a={{ width: "65%" }} b={{ width: "45%" }} last />
       </View>
     );
   }
 
-  // Default: a single text line. className carries the width (e.g. "w-[60%]").
-  return <Pulse animate={animate} className={cn(FILL, lineHeight(props), "rounded", className ?? "w-full")} />;
+  // Default: a single text line, full width by default; style carries the width
+  // override (e.g. width: "60%") and any other layout.
+  return <Pulse animate={animate} style={[s.fill(tokens), s.lineHeight(props), s.textBase, style]} />;
 }

@@ -1,7 +1,17 @@
 import { type ReactNode } from "react";
-import { ActivityIndicator, type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { Pressable, Text, useTheme, type ColorTokens } from "../../engine/index.js";
+import { ActivityIndicator, Platform, type GestureResponderEvent } from "react-native";
+import { Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import {
+  type Intent,
+  type Size,
+  FG_TOKEN,
+  containerBase,
+  sizePad,
+  intentContainer,
+  labelBase,
+  sizeLabel,
+  intentLabel,
+} from "./button.styles.js";
 
 export interface ButtonProps {
   children?: ReactNode;
@@ -21,10 +31,9 @@ export interface ButtonProps {
   block?: boolean;
   loading?: boolean;
   disabled?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghost" | "link";
 
 // Intent precedence when more than one is passed: first match wins.
 function intentOf(p: ButtonProps): Intent {
@@ -37,70 +46,51 @@ function intentOf(p: ButtonProps): Intent {
   return "primary";
 }
 
-const CONTAINER_INTENT: Record<Intent, string> = {
-  primary: "bg-primary",
-  secondary: "bg-secondary",
-  destructive: "bg-destructive",
-  outline: "border border-input bg-transparent",
-  ghost: "bg-transparent",
-  link: "bg-transparent",
-};
-
-const LABEL_INTENT: Record<Intent, string> = {
-  primary: "text-primary-foreground",
-  secondary: "text-secondary-foreground",
-  destructive: "text-destructive-foreground",
-  outline: "text-foreground",
-  ghost: "text-foreground",
-  link: "text-primary underline",
-};
-
-const FG_TOKEN: Record<Intent, keyof ColorTokens> = {
-  primary: "primary-foreground",
-  secondary: "secondary-foreground",
-  destructive: "destructive-foreground",
-  outline: "foreground",
-  ghost: "foreground",
-  link: "primary",
-};
-
-function sizeContainer(p: ButtonProps): string {
-  if (p.icon) return p.small ? "w-8 h-8" : p.large ? "w-12 h-12" : "w-10 h-10";
-  if (p.small) return "px-3 py-1.5";
-  if (p.large) return "px-6 py-3";
-  return "px-4 py-2";
+// Size precedence when more than one is passed: first match wins.
+function sizeOf(p: ButtonProps): Size {
+  if (p.small) return "small";
+  if (p.large) return "large";
+  return "base";
 }
 
-function sizeLabel(p: ButtonProps): string {
-  if (p.large) return "text-base";
-  if (p.small) return "text-xs";
-  return "text-sm";
-}
+// Intents with a dark fill take a light ripple; the rest (light/transparent fills)
+// take a dark one, so the Android press ripple reads on every variant.
+const DARK_FILL = new Set<Intent>(["primary", "destructive"]);
 
 export function Button(props: ButtonProps) {
-  const { children, onPress, loading, disabled, block, className } = props;
+  const { children, onPress, loading, disabled, block, icon, style } = props;
   const intent = intentOf(props);
+  const size = sizeOf(props);
   const { tokens } = useTheme();
 
-  const container = cn(
-    "flex-row items-center justify-center gap-2 rounded-md active:opacity-90",
-    sizeContainer(props),
-    CONTAINER_INTENT[intent],
-    block && "w-full",
-    (disabled || loading) && "opacity-50",
-    className,
-  );
-  const label = cn("font-medium", sizeLabel(props), LABEL_INTENT[intent]);
+  // Native Android press feedback (the Material ripple), brand look otherwise.
+  // No-op on iOS/web, which get the pressed-opacity swap below.
+  const androidRipple =
+    Platform.OS === "android"
+      ? { color: DARK_FILL.has(intent) ? "rgba(255, 255, 255, 0.24)" : "rgba(0, 0, 0, 0.1)", borderless: false }
+      : undefined;
+
+  const container: StyleProp<ViewStyle> = [
+    containerBase,
+    sizePad(size, !!icon),
+    intentContainer(tokens, intent),
+    block ? { width: "100%" } : null,
+    disabled || loading ? { opacity: 0.5 } : null,
+    style,
+  ];
 
   return (
     <Pressable
-      className={container}
       onPress={onPress}
       disabled={disabled || loading}
       accessibilityRole="button"
+      android_ripple={androidRipple}
+      style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
     >
       {loading ? <ActivityIndicator size="small" color={tokens[FG_TOKEN[intent]]} /> : null}
-      {children != null ? <Text className={label}>{children}</Text> : null}
+      {children != null ? (
+        <Text style={[labelBase, sizeLabel(size), intentLabel(tokens, intent)]}>{children}</Text>
+      ) : null}
     </Pressable>
   );
 }

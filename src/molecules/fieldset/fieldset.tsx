@@ -1,8 +1,10 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { type DimensionValue } from "react-native";
+import { View, Text, useTheme, useResponsive, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Input } from "../../atoms/input/input.js";
 import { Checkbox } from "../../atoms/checkbox/checkbox.js";
+import * as s from "./fieldset.styles.js";
+import { type Surface } from "./fieldset.styles.js";
 
 // Fieldset: a labeled group of related form controls. A legend names the group,
 // an optional description explains it, and a field group stacks the controls so
@@ -52,29 +54,15 @@ export interface FieldsetProps {
   disabled?: boolean;
   /** Flags a validation problem on the group. */
   error?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Surface = "bordered" | "plain";
 
 // Surface precedence when more than one is passed: first match wins.
 function surfaceOf(p: FieldsetProps): Surface {
   if (p.bordered) return "bordered";
   return "plain";
 }
-
-const SURFACE: Record<Surface, string> = {
-  // Bordered: a card-like section with border, radius, and padding.
-  bordered: "rounded-lg border border-border bg-card p-5",
-  // Plain: no chrome, just the stacked content.
-  plain: "",
-};
-
-const LEGEND = "text-base font-semibold text-foreground";
-const DESCRIPTION = "mt-1 text-xs text-muted-foreground";
-const FIELD_LABEL = "mb-1.5 text-sm font-medium text-foreground";
-const FIELD_HELP = "mt-1.5 text-xs text-muted-foreground";
-const FIELD_ERROR = "mt-1.5 text-xs text-destructive";
 
 // One labeled field: label + control + optional help/error.
 function Field({
@@ -86,50 +74,70 @@ function Field({
   disabled?: boolean;
   error?: boolean;
 }) {
+  const { tokens } = useTheme();
   const msg = item.error ?? (error ? "Enter a valid value" : "");
   return (
-    <View className="w-full">
-      {item.label ? <Text className={FIELD_LABEL}>{item.label}</Text> : null}
-      <Input
-        value={item.value}
-        placeholder={item.placeholder}
-        disabled={disabled}
-        error={!!msg}
-        block
-      />
+    <View style={s.fieldWrap}>
+      {item.label ? <Text style={s.fieldLabel(tokens)}>{item.label}</Text> : null}
+      <Input value={item.value} placeholder={item.placeholder} disabled={disabled} error={!!msg} block />
       {msg ? (
-        <Text className={FIELD_ERROR}>{msg}</Text>
+        <Text style={s.fieldError(tokens)}>{msg}</Text>
       ) : item.help ? (
-        <Text className={FIELD_HELP}>{item.help}</Text>
+        <Text style={s.fieldHelp(tokens)}>{item.help}</Text>
       ) : null}
     </View>
   );
 }
 
+// The two-column field group: rows flow into a wrapping row that collapses to a
+// single column on small screens (flex-row flex-wrap sm:flex-col), and each item
+// takes ~47% width and grows, going full width when stacked (w-[47%] grow sm:w-full).
+function TwoColumnGroup({
+  rows,
+  disabled,
+  error,
+}: {
+  rows: FieldsetItem[];
+  disabled?: boolean;
+  error?: boolean;
+}) {
+  const direction = useResponsive<"row" | "column">({ base: "row", sm: "column" });
+  const itemWidth = useResponsive<DimensionValue>({ base: "47%", sm: "100%" });
+  return (
+    <View style={{ flexDirection: direction, flexWrap: "wrap", gap: 16 }}>
+      {rows.map((item, i) => (
+        <View key={i} style={[{ width: itemWidth }, s.itemGrow]}>
+          <Field item={item} disabled={disabled} error={error} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function Fieldset(props: FieldsetProps) {
-  const { children, legend, description, items, checkboxes, twoColumn, disabled, error, className } =
-    props;
+  const { children, legend, description, items, checkboxes, twoColumn, disabled, error, style } = props;
+  const { tokens } = useTheme();
   const surface = surfaceOf(props);
 
-  const container = cn(
-    "w-full max-w-[576px]",
-    SURFACE[surface],
-    disabled && "opacity-60",
-    className,
-  );
+  const container: StyleProp<ViewStyle> = [
+    s.containerBase,
+    s.surface(tokens, surface),
+    disabled ? s.disabledDim : null,
+    style,
+  ];
 
   const header =
     legend != null || description != null ? (
-      <View className="mb-4">
-        {legend != null ? <Text className={LEGEND}>{legend}</Text> : null}
-        {description != null ? <Text className={DESCRIPTION}>{description}</Text> : null}
+      <View style={s.header}>
+        {legend != null ? <Text style={s.legend(tokens)}>{legend}</Text> : null}
+        {description != null ? <Text style={s.description(tokens)}>{description}</Text> : null}
       </View>
     ) : null;
 
   // Children win: when composed, render exactly what the caller passed.
   if (children != null) {
     return (
-      <View className={container}>
+      <View style={container}>
         {header}
         {children}
       </View>
@@ -139,9 +147,9 @@ export function Fieldset(props: FieldsetProps) {
   // Checkbox group: a stacked set of labeled checkboxes.
   if (checkboxes != null) {
     return (
-      <View className={container}>
+      <View style={container}>
         {header}
-        <View className="gap-2">
+        <View style={s.checkboxGroup}>
           {checkboxes.map((c, i) => (
             <Checkbox key={i} checked={c.checked} disabled={disabled}>
               {c.label}
@@ -154,21 +162,21 @@ export function Fieldset(props: FieldsetProps) {
 
   // Field group: stacked rows, or a two-column wrap that collapses when narrow.
   const rows = items ?? [];
-  const group = cn(
-    twoColumn ? "flex-row flex-wrap sm:flex-col" : "flex-col",
-    "gap-4",
-  );
 
   return (
-    <View className={container}>
+    <View style={container}>
       {header}
-      <View className={group}>
-        {rows.map((item, i) => (
-          <View key={i} className={twoColumn ? "w-[47%] grow sm:w-full" : "w-full"}>
-            <Field item={item} disabled={disabled} error={error} />
-          </View>
-        ))}
-      </View>
+      {twoColumn ? (
+        <TwoColumnGroup rows={rows} disabled={disabled} error={error} />
+      ) : (
+        <View style={s.groupColumn}>
+          {rows.map((item, i) => (
+            <View key={i} style={s.fieldWrap}>
+              <Field item={item} disabled={disabled} error={error} />
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }

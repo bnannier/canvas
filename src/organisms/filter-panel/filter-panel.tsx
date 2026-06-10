@@ -1,8 +1,8 @@
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Button } from "../../atoms/button/button.js";
 import { Checkbox } from "../../atoms/checkbox/checkbox.js";
+import * as s from "./filter-panel.styles.js";
 
 export interface FilterOption {
   /** Row label, shown beside the checkbox. */
@@ -33,40 +33,37 @@ export interface FilterPanelProps {
   bordered?: boolean;
   // Density (pick one): tighten the panel's padding and row spacing.
   compact?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
 
 // Density precedence when more than one is passed: first match wins. There is a
 // single density flag today, so this collapses to compact vs. the default.
-function densityOf(p: FilterPanelProps): "compact" | "base" {
+function densityOf(p: FilterPanelProps): s.Density {
   if (p.compact) return "compact";
   return "base";
 }
 
 export function FilterPanel(props: FilterPanelProps) {
-  const { groups, activeCount, onClear, onChange, bordered, className } = props;
+  const { groups, activeCount, onClear, onChange, bordered, style } = props;
+  const { tokens } = useTheme();
   const density = densityOf(props);
-  const compact = density === "compact";
-
-  // The panel surface. `bordered` wraps it as a rounded card with a border and
-  // a card fill; the bare panel keeps the same width but drops the chrome.
-  const panel = cn(
-    "w-[280px]",
-    bordered ? "rounded-lg border border-border bg-card" : "",
-    compact ? "p-3" : "p-4",
-    className,
-  );
-
-  // Vertical rhythm between the header and groups, and between groups.
-  const stack = compact ? "gap-3" : "gap-5";
-  // Row spacing inside a group, and between a group's title and its options.
-  const groupGap = compact ? "gap-1.5" : "gap-2";
 
   return (
-    <View className={cn("flex-col", stack, panel)}>
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-2">
-          <Text className="text-sm font-semibold text-foreground">Filters</Text>
+    <View
+      style={[
+        s.panelBase,
+        // `bordered` wraps it as a rounded card with a border and a card fill;
+        // the bare panel keeps the same width but drops the chrome.
+        bordered ? s.borderedSurface(tokens) : null,
+        s.panelPad[density],
+        s.panelStack[density],
+        style,
+      ]}
+    >
+      <View style={s.headerRow}>
+        <View style={s.titleCluster}>
+          <Text style={s.titleText(tokens)}>Filters</Text>
           {activeCount != null ? <Badge secondary>{String(activeCount)}</Badge> : null}
         </View>
         <Button ghost small onPress={onClear}>
@@ -75,17 +72,12 @@ export function FilterPanel(props: FilterPanelProps) {
       </View>
 
       {groups.map((group, gi) => (
-        <View key={gi} className={cn("flex-col", groupGap)}>
-          <Text className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {group.title}
-          </Text>
-          <View className={cn("flex-col", groupGap)}>
+        <View key={gi} style={[s.groupColumn, s.groupGap[density]]}>
+          <Text style={s.groupTitle(tokens)}>{group.title}</Text>
+          <View style={[s.groupColumn, s.groupGap[density]]}>
             {group.options.map((option, oi) => (
-              <View key={oi} className="flex-row items-center justify-between gap-2">
-                <Checkbox
-                  checked={option.checked}
-                  onChange={(next) => onChange?.(gi, oi, next)}
-                >
+              <View key={oi} style={s.optionRow}>
+                <Checkbox checked={option.checked} onChange={(next) => onChange?.(gi, oi, next)}>
                   {option.label}
                 </Checkbox>
                 {option.count != null ? <Badge secondary>{option.count}</Badge> : null}

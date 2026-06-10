@@ -1,8 +1,9 @@
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Card } from "../card/card.js";
 import { Button } from "../../atoms/button/button.js";
 import { Switch } from "../../atoms/switch/switch.js";
+import * as s from "./action-panels.styles.js";
+import { type Tone, type Layout } from "./action-panels.styles.js";
 
 // An action panel is a settings card: a headline and a line of consequence copy
 // on one side, and a single action (a Button) that acts on it. It surfaces one
@@ -47,11 +48,9 @@ export interface ActionPanelProps {
   checked?: boolean;
   /** Fired with the next checked value when the toggle Switch is flipped. */
   onToggle?: (next: boolean) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Tone = "destructive" | "neutral";
-type Layout = "inline" | "stacked";
 
 // Tone precedence when more than one flag is passed: first match wins.
 function toneOf(p: ActionPanelProps): Tone {
@@ -65,18 +64,9 @@ function layoutOf(p: ActionPanelProps): Layout {
   return "stacked";
 }
 
-// The title color per tone: red for the danger zone, card foreground otherwise.
-const TITLE_TONE: Record<Tone, string> = {
-  destructive: "text-red-700 dark:text-red-400",
-  neutral: "text-card-foreground",
-};
-
-// Title and description share Canvas's settings-row type scale.
-const TITLE = "text-sm font-semibold";
-const DESCRIPTION = "text-sm text-muted-foreground";
-
 export function ActionPanel(props: ActionPanelProps) {
-  const { title, description, actionLabel, onAction, toggle, checked, onToggle, className } = props;
+  const { title, description, actionLabel, onAction, toggle, checked, onToggle, style } = props;
+  const { tokens, dark } = useTheme();
   const tone = toneOf(props);
   // The toggle affordance always reads as an inline settings row.
   const layout = toggle ? "inline" : layoutOf(props);
@@ -84,11 +74,9 @@ export function ActionPanel(props: ActionPanelProps) {
   // The copy block: title above its consequence line. In the inline layout it
   // grows to push the action to the right; stacked, it sits above the action.
   const copy = (
-    <View className={cn("gap-1", layout === "inline" && "flex-1")}>
-      {title != null ? (
-        <Text className={cn(TITLE, TITLE_TONE[tone])}>{title}</Text>
-      ) : null}
-      {description != null ? <Text className={DESCRIPTION}>{description}</Text> : null}
+    <View style={[s.copyBlock, layout === "inline" ? s.copyGrow : null]}>
+      {title != null ? <Text style={s.titleText(tokens, dark, tone)}>{title}</Text> : null}
+      {description != null ? <Text style={s.descriptionText(tokens)}>{description}</Text> : null}
     </View>
   );
 
@@ -96,11 +84,11 @@ export function ActionPanel(props: ActionPanelProps) {
   // otherwise a destructive (red) Button in the danger zone or a primary Button
   // otherwise, small to sit comfortably inside the panel.
   const action = toggle ? (
-    <View className="shrink-0">
+    <View style={s.actionPinned}>
       <Switch checked={checked} onValueChange={onToggle} />
     </View>
   ) : actionLabel != null ? (
-    <View className={layout === "inline" ? "shrink-0" : "items-start"}>
+    <View style={layout === "inline" ? s.actionPinned : s.actionStacked}>
       <Button small destructive={tone === "destructive"} primary={tone !== "destructive"} onPress={onAction}>
         {actionLabel}
       </Button>
@@ -108,14 +96,14 @@ export function ActionPanel(props: ActionPanelProps) {
   ) : null;
 
   return (
-    <Card padded className={cn("max-w-[560px]", className)}>
+    <Card padded style={[s.cardWidth, style]}>
       {layout === "inline" ? (
-        <View className="flex-row items-start gap-6">
+        <View style={s.inlineBody}>
           {copy}
           {action}
         </View>
       ) : (
-        <View className="gap-4">
+        <View style={s.stackedBody}>
           {copy}
           {action}
         </View>

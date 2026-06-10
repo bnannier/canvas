@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { View, Text, Pressable } from "../../engine/index.js";
+import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
+import * as s from "./command.styles.js";
 
 // Command: a Cmd+K style command palette rendered as a floating card. A search
 // row sits at the top (a leading magnifier glyph + a muted placeholder), then
@@ -59,27 +59,9 @@ export interface CommandProps {
   footer?: boolean;
   /** Called with the chosen item and its flat index when a row is pressed. */
   onSelect?: (item: CommandItem, index: number) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-const CARD =
-  "w-[420px] rounded-lg border border-border bg-popover shadow-xl overflow-hidden";
-const SEARCH_ROW = "flex-row items-center gap-2 border-b border-border px-3 py-3";
-const SEARCH_GLYPH = "text-sm text-muted-foreground";
-const SEARCH_PLACEHOLDER = "text-sm text-muted-foreground";
-const GROUP_HEADING = "uppercase text-xs text-muted-foreground px-3 pt-3 pb-1";
-const ROW_BASE = "flex-row items-center gap-3 px-3 py-2 active:bg-accent";
-const ROW_ACTIVE = "bg-accent";
-const ROW_ICON = "text-sm text-foreground";
-const ROW_LABEL = "text-sm text-foreground flex-1";
-
-const TRIGGER_ROW =
-  "flex-row items-center gap-2 w-full justify-start rounded-md border border-input bg-transparent px-3 py-1.5";
-const TRIGGER_LABEL = "text-sm text-foreground";
-const FOOTER_BAR =
-  "flex-row items-center gap-3 border-t border-border px-4 py-2.5";
-const FOOTER_HINT = "flex-row items-center gap-1";
-const FOOTER_TEXT = "text-xs text-muted-foreground";
 
 export function Command(props: CommandProps) {
   const {
@@ -91,8 +73,9 @@ export function Command(props: CommandProps) {
     footer,
     onOpenChange,
     onSelect,
-    className,
+    style,
   } = props;
+  const { tokens } = useTheme();
 
   // Uncontrolled by default: in trigger mode the palette starts closed and the
   // collapsed search trigger toggles it; the bare card (no trigger) starts open.
@@ -111,68 +94,69 @@ export function Command(props: CommandProps) {
   // Walk a flat counter across every group so `active` indexes the whole list.
   let flat = -1;
 
-  const card =
-    open ? (
-      <View className={cn(CARD, trigger && "absolute top-full left-0 z-50 mt-3")}>
-        <View className={SEARCH_ROW}>
-          <Text className={SEARCH_GLYPH}>🔍</Text>
-          <Text className={SEARCH_PLACEHOLDER}>{placeholder}</Text>
-        </View>
-
-        {groups.map((group, gi) => (
-          <View key={`group-${gi}`}>
-            {group.heading != null ? (
-              <Text className={GROUP_HEADING}>{group.heading}</Text>
-            ) : null}
-            {group.items.map((item, ii) => {
-              flat += 1;
-              const index = flat;
-              const isActive = index === active;
-              return (
-                <Pressable
-                  key={`item-${gi}-${ii}`}
-                  className={cn(ROW_BASE, isActive && ROW_ACTIVE)}
-                  onPress={() => { onSelect?.(item, index); setOpen(false); }}
-                >
-                  {item.icon != null ? (
-                    <Text className={ROW_ICON}>{item.icon}</Text>
-                  ) : null}
-                  <Text className={ROW_LABEL}>{item.label}</Text>
-                  {item.shortcut != null ? <Kbd>{item.shortcut}</Kbd> : null}
-                </Pressable>
-              );
-            })}
-          </View>
-        ))}
-
-        {footer ? (
-          <View className={FOOTER_BAR}>
-            <View className={FOOTER_HINT}>
-              <Kbd>↑</Kbd>
-              <Kbd>↓</Kbd>
-              <Text className={FOOTER_TEXT}>to navigate</Text>
-            </View>
-            <View className={FOOTER_HINT}>
-              <Kbd>↵</Kbd>
-              <Text className={FOOTER_TEXT}>to select</Text>
-            </View>
-            <View className={FOOTER_HINT}>
-              <Kbd>esc</Kbd>
-              <Text className={FOOTER_TEXT}>to close</Text>
-            </View>
-          </View>
-        ) : null}
+  const card = open ? (
+    <View style={[s.card(tokens), trigger ? s.cardFloating : null]}>
+      <View style={s.searchRow(tokens)}>
+        <Text style={s.searchGlyph(tokens)}>🔍</Text>
+        <Text style={s.searchPlaceholder(tokens)}>{placeholder}</Text>
       </View>
-    ) : null;
+
+      {groups.map((group, gi) => (
+        <View key={`group-${gi}`}>
+          {group.heading != null ? <Text style={s.groupHeading(tokens)}>{group.heading}</Text> : null}
+          {group.items.map((item, ii) => {
+            flat += 1;
+            const index = flat;
+            const isActive = index === active;
+            return (
+              <Pressable
+                key={`item-${gi}-${ii}`}
+                style={({ pressed }) => [
+                  s.rowBase,
+                  isActive || pressed ? s.rowAccent(tokens) : null,
+                ]}
+                onPress={() => {
+                  onSelect?.(item, index);
+                  setOpen(false);
+                }}
+              >
+                {item.icon != null ? <Text style={s.rowIcon(tokens)}>{item.icon}</Text> : null}
+                <Text style={s.rowLabel(tokens)}>{item.label}</Text>
+                {item.shortcut != null ? <Kbd>{item.shortcut}</Kbd> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      ))}
+
+      {footer ? (
+        <View style={s.footerBar(tokens)}>
+          <View style={s.footerHint}>
+            <Kbd>↑</Kbd>
+            <Kbd>↓</Kbd>
+            <Text style={s.footerText(tokens)}>to navigate</Text>
+          </View>
+          <View style={s.footerHint}>
+            <Kbd>↵</Kbd>
+            <Text style={s.footerText(tokens)}>to select</Text>
+          </View>
+          <View style={s.footerHint}>
+            <Kbd>esc</Kbd>
+            <Text style={s.footerText(tokens)}>to close</Text>
+          </View>
+        </View>
+      ) : null}
+    </View>
+  ) : null;
 
   if (!trigger) return card;
 
   return (
-    <View className={cn("relative w-full", className)}>
-      <Pressable className={TRIGGER_ROW} onPress={() => setOpen(!open)}>
+    <View style={[s.triggerWrapper, style]}>
+      <Pressable style={s.triggerRow(tokens)} onPress={() => setOpen(!open)}>
         <Icon search muted size={14} />
-        <Text className={TRIGGER_LABEL}>Search...</Text>
-        <Kbd className="ml-auto">⌘K</Kbd>
+        <Text style={s.triggerLabel(tokens)}>Search...</Text>
+        <Kbd style={s.triggerKbd}>⌘K</Kbd>
       </Pressable>
       {card}
     </View>

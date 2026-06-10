@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import * as s from "./card.styles.js";
+import { type Elevation, type Density } from "./card.styles.js";
 
 // Card: a surface container. The base surface gives you the border, radius, and
 // shadow; you bring the content. Structure is composed from the subcomponents
@@ -12,8 +13,8 @@ import { View, Pressable, Text } from "../../engine/index.js";
 //
 // - Elevation (pick one): `raised` > `flat` > default (shadow-sm). `flat`
 //   drops the shadow; `raised` lifts it to shadow-md.
-// - Interaction: `interactive` adds a pressed-affordance (active:opacity-90),
-//   for a card that behaves like a control.
+// - Interaction: `interactive` (with onPress) gives a pressed affordance, for a
+//   card that behaves like a control.
 // - Padding: `padded` pads the surface itself (good for a single block of
 //   content); omit when you compose CardHeader/CardContent, which carry their
 //   own padding.
@@ -46,11 +47,9 @@ export interface CardProps {
   // content padding and the gap between flat children.
   compact?: boolean;
   comfortable?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Elevation = "raised" | "flat" | "default";
-type Density = "compact" | "comfortable" | "default";
 
 // Elevation precedence when more than one is passed: first match wins.
 function elevationOf(p: CardProps): Elevation {
@@ -66,113 +65,112 @@ function densityOf(p: CardProps): Density {
   return "default";
 }
 
-const CARD_BASE = "rounded-lg border";
-// The card surface fill: bg-card with its matching border. The engine renders
-// bg-card translucent when the ThemeProvider's surface is "glass", so a card
-// reads as glass at the theming level, with no per-card prop.
-const CARD_SURFACE = "border-border bg-card";
-const CARD_ELEVATION: Record<Elevation, string> = {
-  raised: "shadow-md",
-  flat: "shadow-none",
-  default: "shadow-sm",
-};
-// Density sets the card's own content padding and the gap between flat children.
-// It pads the surface on its own (no `padded` needed) and wins over `padded`.
-const CARD_DENSITY: Record<Density, string> = {
-  compact: "p-4 gap-3",
-  comfortable: "p-8 gap-6",
-  default: "",
-};
-
 export function Card(props: CardProps) {
-  const { children, title, description, body, footer, interactive, padded, onPress, className } = props;
-  const elevation = elevationOf(props);
-  const density = densityOf(props);
+  const { children, title, description, body, footer, padded, onPress, style } = props;
+  const { tokens } = useTheme();
+  const elev = elevationOf(props);
+  const dens = densityOf(props);
 
-  const container = cn(
-    CARD_BASE,
-    CARD_SURFACE,
-    CARD_ELEVATION[elevation],
-    (interactive || onPress) && "active:opacity-90",
+  const container: StyleProp<ViewStyle> = [
+    s.cardBase,
+    s.cardSurface(tokens),
+    s.elevation(elev),
     // Density pads + gaps on its own and wins over `padded`; otherwise `padded`
     // applies the standard inset, and a bare card stays unpadded for composition.
-    density !== "default" ? CARD_DENSITY[density] : padded && "p-6",
-    className,
-  );
-
-  // A pressable card swaps View for Pressable; otherwise it is a plain surface.
-  const Wrapper = onPress ? Pressable : View;
-  const wrapperProps = onPress ? { onPress, accessibilityRole: "button" as const } : {};
+    dens !== "default" ? s.density[dens] : padded ? s.padded : null,
+    style,
+  ];
 
   // Children win: when composed, render exactly what the caller passed.
+  // Otherwise build a representative structure from the simple string props.
+  let inner: ReactNode;
   if (children != null) {
-    return <Wrapper className={container} {...wrapperProps}>{children}</Wrapper>;
+    inner = children;
+  } else {
+    const hasHeader = title != null || description != null;
+    inner = (
+      <>
+        {hasHeader ? (
+          <CardHeader>
+            {title != null ? <CardTitle>{title}</CardTitle> : null}
+            {description != null ? <CardDescription>{description}</CardDescription> : null}
+          </CardHeader>
+        ) : null}
+        {hasHeader && body != null ? <CardSeparator /> : null}
+        {body != null ? (
+          <CardContent>
+            <Text style={s.bodyText(tokens)}>{body}</Text>
+          </CardContent>
+        ) : null}
+        {footer != null ? (
+          <>
+            <CardSeparator />
+            <CardFooter>
+              <Text style={s.footerText(tokens)}>{footer}</Text>
+            </CardFooter>
+          </>
+        ) : null}
+      </>
+    );
   }
 
-  // Otherwise build a representative structure from the simple string props.
-  const hasHeader = title != null || description != null;
-  return (
-    <Wrapper className={container} {...wrapperProps}>
-      {hasHeader ? (
-        <CardHeader>
-          {title != null ? <CardTitle>{title}</CardTitle> : null}
-          {description != null ? <CardDescription>{description}</CardDescription> : null}
-        </CardHeader>
-      ) : null}
-      {hasHeader && body != null ? <CardSeparator /> : null}
-      {body != null ? (
-        <CardContent>
-          <Text className="text-sm text-card-foreground">{body}</Text>
-        </CardContent>
-      ) : null}
-      {footer != null ? (
-        <>
-          <CardSeparator />
-          <CardFooter>
-            <Text className="text-sm text-muted-foreground">{footer}</Text>
-          </CardFooter>
-        </>
-      ) : null}
-    </Wrapper>
-  );
+  // A pressable card swaps View for Pressable, adding the pressed affordance.
+  if (onPress) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
+      >
+        {inner}
+      </Pressable>
+    );
+  }
+  return <View style={container}>{inner}</View>;
 }
 
 export interface CardSectionProps {
   children?: ReactNode;
-  className?: string;
+  /** Escape hatch for layout/positioning composition. */
+  style?: StyleProp<ViewStyle>;
+}
+
+export interface CardTextProps {
+  children?: ReactNode;
+  /** Escape hatch for layout/positioning composition. */
+  style?: StyleProp<TextStyle>;
 }
 
 // Header: the labeled top of the card, holding the title and description.
-export function CardHeader({ children, className }: CardSectionProps) {
-  return <View className={cn("gap-1.5 px-5 pb-4 pt-5", className)}>{children}</View>;
+export function CardHeader({ children, style }: CardSectionProps) {
+  return <View style={[s.header, style]}>{children}</View>;
 }
 
 // Title: the card's heading. Semibold, tight tracking, card foreground.
-export function CardTitle({ children, className }: CardSectionProps) {
-  return (
-    <Text className={cn("text-xl font-semibold tracking-tight text-card-foreground", className)}>
-      {children}
-    </Text>
-  );
+export function CardTitle({ children, style }: CardTextProps) {
+  const { tokens } = useTheme();
+  return <Text style={[s.title(tokens), style]}>{children}</Text>;
 }
 
 // Description: the muted supporting line beneath the title.
-export function CardDescription({ children, className }: CardSectionProps) {
-  return <Text className={cn("text-sm text-muted-foreground", className)}>{children}</Text>;
+export function CardDescription({ children, style }: CardTextProps) {
+  const { tokens } = useTheme();
+  return <Text style={[s.description(tokens), style]}>{children}</Text>;
 }
 
 // Content: the card body region. Carries the standard surface padding.
-export function CardContent({ children, className }: CardSectionProps) {
-  return <View className={cn("px-5 py-5", className)}>{children}</View>;
+export function CardContent({ children, style }: CardSectionProps) {
+  return <View style={[s.content, style]}>{children}</View>;
 }
 
 // Footer: the bottom region for actions or a summary line.
-export function CardFooter({ children, className }: CardSectionProps) {
-  return <View className={cn("flex-row items-center gap-2 px-5 pb-5 pt-4", className)}>{children}</View>;
+export function CardFooter({ children, style }: CardSectionProps) {
+  return <View style={[s.footer, style]}>{children}</View>;
 }
 
 // Separator: the hairline that anchors a header above a body. A card composing
 // a header and body keeps this divider between them.
-export function CardSeparator({ className }: { className?: string }) {
-  return <View className={cn("h-px w-full bg-border", className)} />;
+export function CardSeparator({ style }: { style?: StyleProp<ViewStyle> }) {
+  const { tokens } = useTheme();
+  return <View style={[s.separator(tokens), style]} />;
 }

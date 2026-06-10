@@ -1,10 +1,11 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Checkbox } from "../../atoms/checkbox/checkbox.js";
+import * as s from "./data-table.styles.js";
+import { type Density } from "./data-table.styles.js";
 
-// The data table lays a grid out as flex rows of equal-width flex-1 cells (the
-// engine has no CSS table primitive; tables are flex rows/columns). A header row
+// The data table lays a grid out as flex rows of equal-width flex-1 cells (RN
+// has no CSS table primitive; tables are flex rows/columns). A header row
 // carries small, muted, uppercase column labels on a tinted surface, and the
 // data rows sit beneath it separated by hairlines.
 //
@@ -30,10 +31,9 @@ export interface DataTableProps {
   selectable?: boolean;
   /** When set, each data row is pressable, reporting the row data and index. */
   onRowPress?: (row: string[], index: number) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Density = "compact" | "regular";
 
 // Density precedence when more than one is passed: first match wins.
 function densityOf(p: DataTableProps): Density {
@@ -41,47 +41,24 @@ function densityOf(p: DataTableProps): Density {
   return "regular";
 }
 
-// Vertical padding per density. Header sits a touch tighter than the body so the
-// label band reads as a header, matching the documented compact/regular modes.
-const HEADER_PAD: Record<Density, string> = {
-  compact: "px-4 py-1.5",
-  regular: "px-4 py-2",
-};
-const CELL_PAD: Record<Density, string> = {
-  compact: "px-4 py-2",
-  regular: "px-4 py-3",
-};
-
-// Width of the leading checkbox column, kept narrow and fixed so it does not eat
-// into the flex-1 content cells.
-const SELECT_COL = "w-10 items-center justify-center";
-
 export function DataTable(props: DataTableProps) {
-  const { columns, rows, striped, bordered, selectable, onRowPress, className } = props;
+  const { columns, rows, striped, bordered, selectable, onRowPress, style } = props;
   const density = densityOf(props);
+  const { tokens } = useTheme();
 
-  const wrap = cn(
-    "overflow-hidden",
-    // The engine has no ring; a rounded 1px border is the bordered outline.
-    bordered && "rounded-lg border border-border",
-    className,
-  );
-
-  const headerRow = cn("flex-row bg-muted", HEADER_PAD[density]);
-  const headerCell = "flex-1 text-xs font-medium uppercase tracking-wide text-muted-foreground";
-
-  const dataRow = (index: number) =>
-    cn(
-      "flex-row items-center border-b border-border",
-      striped && index % 2 === 1 && "bg-muted/30",
-    );
+  const wrap: StyleProp<ViewStyle> = [
+    s.wrap,
+    // RN has no ring; a rounded 1px border is the bordered outline.
+    bordered ? s.borderedOutline(tokens) : null,
+    style,
+  ];
 
   return (
-    <View className={wrap}>
-      <View className={headerRow}>
-        {selectable ? <View className={cn(SELECT_COL, "flex-none")} /> : null}
+    <View style={wrap}>
+      <View style={[s.headerRow(tokens), s.headerPad[density]]}>
+        {selectable ? <View style={s.selectCol} /> : null}
         {columns.map((label, i) => (
-          <Text key={`h-${i}`} className={headerCell}>
+          <Text key={`h-${i}`} style={s.headerCell(tokens)}>
             {label}
           </Text>
         ))}
@@ -90,23 +67,31 @@ export function DataTable(props: DataTableProps) {
         const cells = (
           <>
             {selectable ? (
-              <View className={cn(SELECT_COL, "flex-none", CELL_PAD[density])}>
+              <View style={[s.selectCell, s.cellPad[density]]}>
                 <Checkbox />
               </View>
             ) : null}
             {columns.map((_col, c) => (
-              <View key={`c-${r}-${c}`} className={cn("flex-1", CELL_PAD[density])}>
-                <Text className="text-sm text-foreground">{cellOf(row, c)}</Text>
+              <View key={`c-${r}-${c}`} style={[s.dataCell, s.cellPad[density]]}>
+                <Text style={s.cellText(tokens)}>{cellOf(row, c)}</Text>
               </View>
             ))}
           </>
         );
+        // The striped tint sits on odd-index rows for either layout.
+        const stripe = striped && r % 2 === 1 ? s.stripeTint(tokens) : null;
         return onRowPress ? (
-          <Pressable key={`r-${r}`} className={cn(dataRow(r), "active:bg-accent")} onPress={() => onRowPress(row, r)}>
+          <Pressable
+            key={`r-${r}`}
+            onPress={() => onRowPress(row, r)}
+            style={({ pressed }) => [s.dataRow(tokens), stripe, pressed ? s.pressTint(tokens) : null]}
+          >
             {cells}
           </Pressable>
         ) : (
-          <View key={`r-${r}`} className={dataRow(r)}>{cells}</View>
+          <View key={`r-${r}`} style={[s.dataRow(tokens), stripe]}>
+            {cells}
+          </View>
         );
       })}
     </View>

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { TextInput, useTheme } from "../../engine/index.js";
+import { TextInput, useTheme, type StyleProp, type TextStyle } from "../../style/index.js";
+import * as s from "./textarea.styles.js";
 
 export interface TextareaProps {
   /** Controlled text value. */
@@ -23,37 +23,20 @@ export interface TextareaProps {
   large?: boolean;
   /** Blocks editing and focus, and dims the field. */
   disabled?: boolean;
-  className?: string;
-}
-
-// Text scale per size; mirrors the height the larger control reads as.
-function sizeText(p: TextareaProps): string {
-  if (p.large) return "text-base";
-  if (p.small) return "text-xs";
-  return "text-sm";
-}
-
-// Derived min height from the row count: each row ~22px plus the vertical
-// padding. Falls back to the 80px floor when no rows are given.
-function minHeightClass(rows?: number): string {
-  if (rows == null) return "min-h-[80px]";
-  return `min-h-[${rows * 22 + 16}px]`;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<TextStyle>;
 }
 
 export function Textarea(props: TextareaProps) {
-  const { value, onChangeText, placeholder, rows, disabled, className } = props;
+  const { value, onChangeText, placeholder, rows, disabled, style } = props;
   const isError = !!props.error || !!props.invalid;
   const [focused, setFocused] = useState(false);
   const { tokens } = useTheme();
 
-  // Border precedence: error (destructive) wins; focus raises to the ring
+  // Border color precedence: error (destructive) wins; focus raises to the ring
   // color (RN has no box-shadow ring, so the border carries the focus cue);
   // otherwise the resting input border.
-  const borderColor = isError
-    ? "border-destructive"
-    : focused
-      ? "border-ring"
-      : "border-input";
+  const borderColor = isError ? tokens.destructive : focused ? tokens.ring : tokens.input;
 
   return (
     <TextInput
@@ -66,14 +49,13 @@ export function Textarea(props: TextareaProps) {
       textAlignVertical="top"
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      className={cn(
-        "w-full rounded-md border bg-background px-3 py-2 text-foreground",
-        sizeText(props),
-        minHeightClass(rows),
-        borderColor,
-        disabled && "opacity-50",
-        className,
-      )}
+      style={[
+        s.field(tokens, borderColor),
+        s.sizeText(props),
+        s.minHeight(rows),
+        disabled ? { opacity: 0.5 } : null,
+        style,
+      ]}
     />
   );
 }

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
+import * as s from "./popover.styles.js";
+import { type Placement } from "./popover.styles.js";
 
 // Popover: a trigger paired with a floating card of rich content (a heading,
 // supporting text, and an optional action). The card is an overlay surface;
@@ -52,10 +53,9 @@ export interface PopoverProps {
   open?: boolean;
   /** Fired when the open state changes. */
   onOpenChange?: (open: boolean) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Placement = "top" | "bottom";
 
 // Placement precedence when more than one is passed: first match wins.
 function placementOf(p: PopoverProps): Placement {
@@ -64,7 +64,8 @@ function placementOf(p: PopoverProps): Placement {
 }
 
 export function Popover(props: PopoverProps) {
-  const { trigger, title, description, actionLabel, inline, onOpenChange, className } = props;
+  const { trigger, title, description, actionLabel, inline, onOpenChange, style } = props;
+  const { tokens } = useTheme();
   const [internalOpen, setInternalOpen] = useState(false);
   // In static (inline) mode the card is always shown; otherwise it is
   // uncontrolled (the trigger toggles it) unless a controlled `open` is passed.
@@ -76,34 +77,32 @@ export function Popover(props: PopoverProps) {
   // Resolve the placement axis (documented, presentational in this rendering).
   placementOf(props);
 
-  const card = cn(
-    "w-[260px] rounded-lg border border-border bg-popover p-4 shadow-lg",
-    // With a trigger, the card floats (absolute) below it (the wrapper is
-    // `relative`), so it overflows its container instead of growing it. In
-    // inline mode it is a standalone in-flow panel.
-    !inline && "absolute top-full left-0 z-50 mt-2",
-    className,
-  );
+  // With a trigger, the card floats (absolute) below it (the wrapper is
+  // `relative`), so it overflows its container instead of growing it. In
+  // inline mode it is a standalone in-flow panel. The `style` escape hatch
+  // applies last.
+  const card: StyleProp<ViewStyle> = [
+    s.cardBase,
+    s.cardSurface(tokens),
+    !inline ? s.cardFloating : null,
+    style,
+  ];
 
   return (
-    <View className={cn(!inline && "relative self-start")}>
+    <View style={inline ? null : s.wrapper}>
       {inline ? null : (
-        <View className="self-start">
+        <View style={s.triggerWrap}>
           <Button outline small onPress={() => setOpen(!open)}>
             {trigger ?? "Open popover"}
           </Button>
         </View>
       )}
       {open ? (
-        <View className={card}>
-          {title != null ? (
-            <Text className="text-sm font-semibold text-popover-foreground">{title}</Text>
-          ) : null}
-          {description != null ? (
-            <Text className="mt-1 text-sm text-muted-foreground">{description}</Text>
-          ) : null}
+        <View style={card}>
+          {title != null ? <Text style={s.title(tokens)}>{title}</Text> : null}
+          {description != null ? <Text style={s.description(tokens)}>{description}</Text> : null}
           {actionLabel != null ? (
-            <View className="mt-3 flex-row justify-end">
+            <View style={s.actionRow}>
               <Button primary small onPress={() => setOpen(false)}>
                 {actionLabel}
               </Button>

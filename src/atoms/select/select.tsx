@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
+import * as s from "./select.styles.js";
+import { type Size } from "./select.styles.js";
 
 export interface SelectProps {
   /** The currently selected option label. Empty shows the placeholder. */
@@ -28,11 +29,9 @@ export interface SelectProps {
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
-  /** Extra utilities, mainly for width (e.g. "max-w-[280px]"). */
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Size = "small" | "default" | "large";
 
 // First match wins when more than one size flag is passed.
 function sizeOf(p: SelectProps): Size {
@@ -40,20 +39,6 @@ function sizeOf(p: SelectProps): Size {
   if (p.large) return "large";
   return "default";
 }
-
-// Trigger height per size; mirrors the Input control's footprint.
-const TRIGGER_BOX: Record<Size, string> = {
-  small: "h-8",
-  default: "h-9",
-  large: "h-10",
-};
-
-// Type scale per size, shared by the trigger value and the option rows.
-const TEXT_SIZE: Record<Size, string> = {
-  small: "text-xs",
-  default: "text-sm",
-  large: "text-base",
-};
 
 export function Select(props: SelectProps) {
   const {
@@ -66,9 +51,10 @@ export function Select(props: SelectProps) {
     onOpenChange,
     disabled,
     onSelect,
-    className,
+    style,
   } = props;
   const size = sizeOf(props);
+  const { tokens } = useTheme();
   // Uncontrolled by default: the trigger opens/closes the list, a select closes
   // it; a controlled `open` prop overrides this.
   const [internalOpen, setInternalOpen] = useState(false);
@@ -80,54 +66,42 @@ export function Select(props: SelectProps) {
 
   const hasValue = value != null && value !== "";
 
-  const trigger = cn(
-    "flex-row items-center justify-between rounded-md border border-input bg-background px-3",
-    TRIGGER_BOX[size],
-    disabled && "opacity-50",
-  );
-
-  const triggerText = cn(
-    TEXT_SIZE[size],
-    hasValue ? "text-foreground" : "text-muted-foreground",
-  );
-
   return (
-    <View className={cn("w-full", className)}>
+    <View style={[s.root, style]}>
       {label != null && label !== "" ? (
-        <Text className={cn("mb-1.5 font-medium text-foreground", TEXT_SIZE[size])}>
-          {label}
-        </Text>
+        <Text style={s.labelText(tokens, size)}>{label}</Text>
       ) : null}
-      <Pressable className={trigger} disabled={disabled} onPress={() => setOpen(!open)} accessibilityRole="button">
-        <View className="flex-row items-center gap-2">
+      <Pressable
+        style={[s.trigger(tokens, size), disabled ? { opacity: 0.5 } : null]}
+        disabled={disabled}
+        onPress={() => setOpen(!open)}
+        accessibilityRole="button"
+      >
+        <View style={s.triggerValue}>
           {icon ? <Icon globe muted size={14} /> : null}
-          <Text className={triggerText}>{hasValue ? value : placeholder}</Text>
+          <Text style={s.valueText(tokens, size, hasValue)}>{hasValue ? value : placeholder}</Text>
         </View>
-        <Text className={cn("text-muted-foreground", TEXT_SIZE[size])}>▾</Text>
+        <Text style={s.chevron(tokens, size)}>▾</Text>
       </Pressable>
 
       {open ? (
-        <View className="mt-1 max-h-[240px] rounded-md border border-border bg-popover p-1 shadow-lg">
+        <View style={s.panel(tokens)}>
           {options.map((option) => {
             const selected = option === value;
-            const row = cn(
-              "flex-row items-center gap-2 rounded-sm px-2 py-1.5 active:bg-accent",
-              selected && "bg-accent",
-            );
             return (
               <Pressable
                 key={option}
-                className={row}
+                style={({ pressed }) => [
+                  s.optionRow(tokens, selected),
+                  pressed ? s.optionPressed(tokens) : null,
+                ]}
                 onPress={() => { onSelect?.(option); setOpen(false); }}
                 accessibilityRole="button"
               >
-                <Text
-                  className={cn(TEXT_SIZE[size], "text-popover-foreground")}
-                  style={{ width: 14 }}
-                >
+                <Text style={[s.optionText(tokens, size), { width: 14 }]}>
                   {selected ? "✓" : " "}
                 </Text>
-                <Text className={cn(TEXT_SIZE[size], "text-popover-foreground")}>
+                <Text style={s.optionText(tokens, size)}>
                   {option}
                 </Text>
               </Pressable>

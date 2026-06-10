@@ -1,7 +1,8 @@
 import { Component, type ReactNode } from "react";
 import * as React from "react";
 import { transform } from "sucrase";
-import { LIVE_SCOPE } from "@/live-scope";
+import { LIVE_SCOPE, SCOPE_BY_PLATFORM } from "@/live-scope";
+import { useDocsPlatform } from "@/use-docs-scheme";
 
 // Renders a single ```tsx example fence from a component's markdown as a real,
 // live preview. The fence is the canonical source: editing the `.md` re-renders
@@ -11,8 +12,14 @@ import { LIVE_SCOPE } from "@/live-scope";
 // page's own React so the rendered tree shares its hooks dispatcher and the
 // package ThemeProvider context. A bad fence shows an error block, never a crash.
 
+// Tag names are identical across platforms, so the compiled factory is shared; only
+// the VALUES passed in differ. Precompute the value list per docs preview platform.
 const SCOPE_KEYS = Object.keys(LIVE_SCOPE);
-const SCOPE_VALUES = SCOPE_KEYS.map((k) => LIVE_SCOPE[k]);
+const SCOPE_VALUES_BY_PLATFORM = {
+  web: SCOPE_KEYS.map((k) => SCOPE_BY_PLATFORM.web[k]),
+  ios: SCOPE_KEYS.map((k) => SCOPE_BY_PLATFORM.ios[k]),
+  android: SCOPE_KEYS.map((k) => SCOPE_BY_PLATFORM.android[k]),
+} as const;
 
 type Factory = (react: typeof React, ...scope: unknown[]) => ReactNode;
 type Compiled = { factory: Factory } | { error: string };
@@ -80,15 +87,16 @@ class LiveErrorBoundary extends Component<{ children: ReactNode }, { error: stri
 // error boundary, so callers can place it inside a stage card (Usage/Variants) or
 // a Do/Don't card without nested borders.
 export function LiveExample({ code }: { code: string }) {
+  const platform = useDocsPlatform();
   const compiled = compile(code);
   if ("error" in compiled) return <ErrorBlock message={compiled.error} />;
 
   let element: ReactNode;
   try {
-    element = compiled.factory(React, ...SCOPE_VALUES);
+    element = compiled.factory(React, ...SCOPE_VALUES_BY_PLATFORM[platform]);
   } catch (e) {
     return <ErrorBlock message={e instanceof Error ? e.message : String(e)} />;
   }
 
-  return <LiveErrorBoundary key={code}>{element}</LiveErrorBoundary>;
+  return <LiveErrorBoundary key={`${platform}:${code}`}>{element}</LiveErrorBoundary>;
 }

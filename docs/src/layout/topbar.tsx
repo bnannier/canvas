@@ -10,6 +10,7 @@ import {
 } from "../../../src/theme";
 import { useState, useCallback } from "react";
 import { getComponent } from "@/data/components";
+import type { DocsPlatform } from "@/use-docs-scheme";
 
 interface TopbarProps {
   onMenuToggle: () => void;
@@ -77,6 +78,17 @@ export function Topbar({ onMenuToggle, onCollapseToggle, onSearchOpen }: TopbarP
     setSurfaceState(s);
   }, []);
 
+  // Docs-only platform preview: write `data-platform` on <html>; the live renderer
+  // (useDocsPlatform) picks up the per-platform skin. Nothing in the UI kit is touched.
+  const [platform, setPlatformState] = useState<DocsPlatform>(() => {
+    const p = document.documentElement.dataset.platform;
+    return p === "ios" || p === "android" ? p : "web";
+  });
+  const switchPlatform = useCallback((p: DocsPlatform) => {
+    document.documentElement.dataset.platform = p;
+    setPlatformState(p);
+  }, []);
+
   return (
     <header className="topbar">
       <button
@@ -112,6 +124,27 @@ export function Topbar({ onMenuToggle, onCollapseToggle, onSearchOpen }: TopbarP
       </button>
 
       <div style={{ flex: 1 }} />
+
+      <div className="topbar-surface-toggle">
+        <button
+          onClick={() => switchPlatform("web")}
+          className={platform === "web" ? "active" : ""}
+        >
+          Web
+        </button>
+        <button
+          onClick={() => switchPlatform("ios")}
+          className={platform === "ios" ? "active" : ""}
+        >
+          iOS
+        </button>
+        <button
+          onClick={() => switchPlatform("android")}
+          className={platform === "android" ? "active" : ""}
+        >
+          Android
+        </button>
+      </div>
 
       <div className="topbar-surface-toggle">
         <button

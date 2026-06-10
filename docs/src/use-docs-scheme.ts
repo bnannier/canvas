@@ -34,3 +34,24 @@ function getSurfaceSnapshot(): "default" | "glass" {
 export function useDocsSurface(): "default" | "glass" {
   return useSyncExternalStore(subscribeSurface, getSurfaceSnapshot, () => "default");
 }
+
+// Docs-only platform preview: a `data-platform` attribute on <html>, set by the
+// topbar switcher, lets the live renderer pick the iOS / Android / web skin of each
+// component. This lives entirely in the docs (the UI kit is never told which
+// platform the docs are previewing); on a real device the bundler picks the file.
+export type DocsPlatform = "web" | "ios" | "android";
+
+function subscribePlatform(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-platform"] });
+  return () => observer.disconnect();
+}
+
+function getPlatformSnapshot(): DocsPlatform {
+  const p = document.documentElement.dataset.platform;
+  return p === "ios" || p === "android" ? p : "web";
+}
+
+export function useDocsPlatform(): DocsPlatform {
+  return useSyncExternalStore(subscribePlatform, getPlatformSnapshot, () => "web");
+}

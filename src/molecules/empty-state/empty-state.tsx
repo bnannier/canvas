@@ -1,6 +1,6 @@
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, type StyleProp, type ViewStyle, useTheme } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
+import * as s from "./empty-state.styles.js";
 
 // Empty state: a centered, calm column that explains why a region is empty and,
 // when the user can act, offers the one action that fills it. Anatomy mirrors
@@ -34,7 +34,8 @@ export interface EmptyStateProps {
   bordered?: boolean;
   // Density axis (only affects the bordered card's padding).
   compact?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
 
 // Tone precedence: first match wins.
@@ -42,42 +43,30 @@ function isPositive(p: EmptyStateProps): boolean {
   return !!p.positive;
 }
 
-const DISC_BASE = "mb-3 h-12 w-12 items-center justify-center rounded-full";
-const DISC_TONE = {
-  positive: "bg-green-600/10",
-  default: "bg-muted",
-};
-const GLYPH_TONE = {
-  positive: "text-green-600",
-  default: "text-muted-foreground",
-};
-
 export function EmptyState(props: EmptyStateProps) {
-  const { icon, title, description, actionLabel, onAction, bordered, compact, className } = props;
-  const tone = isPositive(props) ? "positive" : "default";
+  const { icon, title, description, actionLabel, onAction, bordered, compact, style } = props;
+  const { tokens } = useTheme();
+  const tone: s.Tone = isPositive(props) ? "positive" : "default";
 
-  const container = cn(
-    "items-center",
-    bordered && "rounded-lg border border-border",
-    bordered && (compact ? "px-4 py-6" : "px-6 py-8"),
-    className,
-  );
+  const container: StyleProp<ViewStyle> = [
+    s.container,
+    bordered ? s.borderedBase : null,
+    bordered ? s.borderedSurface(tokens) : null,
+    bordered ? s.borderedPad[compact ? "compact" : "default"] : null,
+    style,
+  ];
 
   return (
-    <View className={container}>
+    <View style={container}>
       {icon != null ? (
-        <View className={cn(DISC_BASE, DISC_TONE[tone])}>
-          <Text className={cn("text-xl", GLYPH_TONE[tone])}>{icon}</Text>
+        <View style={[s.discBase, s.discTone(tokens, tone)]}>
+          <Text style={[s.glyphBase, s.glyphTone(tokens, tone)]}>{icon}</Text>
         </View>
       ) : null}
-      {title != null ? (
-        <Text className="text-center text-base font-semibold text-foreground">{title}</Text>
-      ) : null}
-      {description != null ? (
-        <Text className="mt-1 text-center text-sm text-muted-foreground">{description}</Text>
-      ) : null}
+      {title != null ? <Text style={s.title(tokens)}>{title}</Text> : null}
+      {description != null ? <Text style={s.description(tokens)}>{description}</Text> : null}
       {actionLabel != null ? (
-        <View className="mt-4">
+        <View style={s.actionSpacing}>
           <Button primary small onPress={onAction}>
             {actionLabel}
           </Button>

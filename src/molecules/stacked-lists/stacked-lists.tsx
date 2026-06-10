@@ -1,11 +1,11 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Button } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import * as s from "./stacked-lists.styles.js";
 
 // A stacked list is a vertical list of rows separated by hairlines, each row a
 // leading avatar, a primary + secondary text column, and trailing meta/badge/
@@ -63,7 +63,8 @@ export interface StackedListProps {
   card?: boolean;
   // Divider modifier: rows are ruled by default; `flush` removes the hairlines.
   flush?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
 
 type Variant = "two-line" | "clickable" | "card";
@@ -84,18 +85,10 @@ function initialsFrom(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-// The card surface used by the `card` variant and as the optional frame for the
-// other variants when a title is supplied (mirrors the docs `cardCls`).
-const CARD_SURFACE = "rounded-lg border border-border bg-card overflow-hidden shadow-sm";
-
-const ROW_BASE = "flex-row items-center gap-3 px-5 py-3";
-const NAME_LABEL = "text-sm font-medium text-foreground";
-const DETAIL_LABEL = "text-xs text-muted-foreground";
-const META_LABEL = "text-xs text-muted-foreground";
-
 export function StackedList(props: StackedListProps) {
-  const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, className } = props;
+  const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, style } = props;
   const variant = variantOf(props);
+  const { tokens } = useTheme();
 
   // The header action: an explicit ReactNode wins; otherwise a small outlined
   // button with a leading plus icon when `addAction` supplies a label.
@@ -104,9 +97,9 @@ export function StackedList(props: StackedListProps) {
       action
     ) : addAction != null ? (
       <Button outline small>
-        <View className="flex-row items-center gap-1.5">
+        <View style={s.addActionRow}>
           <Icon plus size={13} />
-          <Text className="text-xs font-medium text-foreground">{addAction}</Text>
+          <Text style={s.addActionLabel(tokens)}>{addAction}</Text>
         </View>
       </Button>
     ) : null;
@@ -118,11 +111,11 @@ export function StackedList(props: StackedListProps) {
   const lastIndex = items.length - 1;
 
   const renderColumn = (item: StackedListItem) => (
-    <View className="flex-1">
-      <Text className={NAME_LABEL} numberOfLines={1}>
+    <View style={s.column}>
+      <Text style={s.nameLabel(tokens)} numberOfLines={1}>
         {item.name}
       </Text>
-      <Text className={DETAIL_LABEL} numberOfLines={1}>
+      <Text style={s.mutedLabel(tokens)} numberOfLines={1}>
         {item.detail}
       </Text>
     </View>
@@ -130,7 +123,7 @@ export function StackedList(props: StackedListProps) {
 
   const renderTrailing = (item: StackedListItem) => {
     if (item.badge != null) return <Badge secondary>{item.badge}</Badge>;
-    if (item.meta != null) return <Text className={META_LABEL}>{item.meta}</Text>;
+    if (item.meta != null) return <Text style={s.mutedLabel(tokens)}>{item.meta}</Text>;
     return null;
   };
 
@@ -138,14 +131,14 @@ export function StackedList(props: StackedListProps) {
   // the Icon set has no more-horizontal glyph, so the dots are primitives.
   const renderMenu = (index: number) => (
     <Pressable
-      className="h-7 w-7 flex-row items-center justify-center gap-1 rounded-md bg-transparent active:bg-accent"
+      style={({ pressed }) => [s.menuButton, pressed ? s.pressedSurface(tokens) : null]}
       onPress={(event) => onPressItemMenu?.(index, event)}
       accessibilityRole="button"
       accessibilityLabel="Actions"
     >
-      <View className="h-1 w-1 rounded-full bg-foreground" />
-      <View className="h-1 w-1 rounded-full bg-foreground" />
-      <View className="h-1 w-1 rounded-full bg-foreground" />
+      <View style={s.menuDot(tokens)} />
+      <View style={s.menuDot(tokens)} />
+      <View style={s.menuDot(tokens)} />
     </Pressable>
   );
 
@@ -156,13 +149,13 @@ export function StackedList(props: StackedListProps) {
   );
 
   const rows = items.map((item, index) => {
-    const divider = ruled && index < lastIndex && "border-b border-border";
+    const divider = ruled && index < lastIndex ? s.rowDivider(tokens) : null;
 
     if (variant === "clickable") {
       return (
         <Pressable
           key={index}
-          className={cn(ROW_BASE, "active:bg-accent", divider)}
+          style={({ pressed }) => [s.rowBase, pressed ? s.pressedSurface(tokens) : null, divider]}
           onPress={(event) => onPressItem?.(index, event)}
           accessibilityRole="button"
         >
@@ -170,13 +163,13 @@ export function StackedList(props: StackedListProps) {
           {renderColumn(item)}
           {renderTrailing(item)}
           {rowMenu ? renderMenu(index) : null}
-          <Text className="text-xs text-muted-foreground">{"›"}</Text>
+          <Text style={s.mutedLabel(tokens)}>{"›"}</Text>
         </Pressable>
       );
     }
 
     return (
-      <View key={index} className={cn(ROW_BASE, divider)}>
+      <View key={index} style={[s.rowBase, divider]}>
         {renderAvatar(item)}
         {renderColumn(item)}
         {renderTrailing(item)}
@@ -187,14 +180,14 @@ export function StackedList(props: StackedListProps) {
 
   const header =
     title != null ? (
-      <View className="flex-row items-center justify-between border-b border-border px-5 py-3">
-        <Text className="text-sm font-semibold text-foreground">{title}</Text>
+      <View style={s.header(tokens)}>
+        <Text style={s.headerTitle(tokens)}>{title}</Text>
         {headerAction != null ? <View>{headerAction}</View> : null}
       </View>
     ) : null;
 
   return (
-    <View className={cn("w-full max-w-[560px]", framed && CARD_SURFACE, className)}>
+    <View style={[s.outer, framed ? s.cardSurface(tokens) : null, style]}>
       {header}
       {rows}
     </View>

@@ -1,5 +1,7 @@
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { type DimensionValue } from "react-native";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./stepper.styles.js";
+import { type State } from "./stepper.styles.js";
 
 // Stepper: an ordered list of steps showing progress through a flow. Each step
 // is a numbered circle (or a check once completed) with a label, and the steps
@@ -32,11 +34,11 @@ export interface StepperProps {
   label?: string;
   /** When set, each step circle is pressable, reporting the step index. */
   onStepPress?: (index: number) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
 
 type Layout = "horizontal" | "vertical" | "progress";
-type State = "completed" | "current" | "upcoming";
 
 // First match wins when more than one layout flag is passed.
 function layoutOf(p: StepperProps): Layout {
@@ -52,72 +54,42 @@ function stateOf(index: number, current: number): State {
   return "upcoming";
 }
 
-// The numbered/check circle. Completed fills primary; current is outlined in
-// primary; upcoming sits on the muted token behind a border-toned ring.
-const CIRCLE_BASE =
-  "h-8 w-8 shrink-0 flex-row items-center justify-center rounded-full border-2";
-const CIRCLE_STATE: Record<State, string> = {
-  completed: "border-primary bg-primary",
-  current: "border-primary bg-transparent",
-  upcoming: "border-border bg-muted",
-};
-
-// The glyph inside the circle (check for completed, number otherwise).
-const GLYPH_BASE = "text-sm font-medium";
-const GLYPH_STATE: Record<State, string> = {
-  completed: "text-primary-foreground",
-  current: "text-primary",
-  upcoming: "text-muted-foreground",
-};
-
-// The step label. Upcoming steps drop to the muted foreground.
-const LABEL_BASE = "text-sm font-medium";
-const LABEL_STATE: Record<State, string> = {
-  completed: "text-foreground",
-  current: "text-foreground",
-  upcoming: "text-muted-foreground",
-};
-
-// A connector fills primary once the step it leads out of is completed.
-function connectorBg(done: boolean): string {
-  return done ? "bg-primary" : "bg-border";
-}
-
 function Circle({ index, state, onPress }: { index: number; state: State; onPress?: () => void }) {
+  const { tokens } = useTheme();
   const glyph = (
-    <Text className={cn(GLYPH_BASE, GLYPH_STATE[state])}>
+    <Text style={[s.glyphBase, s.glyphState(tokens, state)]}>
       {state === "completed" ? "✓" : String(index + 1)}
     </Text>
   );
   if (onPress) {
     return (
-      <Pressable className={cn(CIRCLE_BASE, CIRCLE_STATE[state], "active:opacity-90")} onPress={onPress} accessibilityRole="button">
+      <Pressable
+        style={({ pressed }) => [s.circleBase, s.circleState(tokens, state), pressed ? { opacity: 0.9 } : null]}
+        onPress={onPress}
+        accessibilityRole="button"
+      >
         {glyph}
       </Pressable>
     );
   }
-  return <View className={cn(CIRCLE_BASE, CIRCLE_STATE[state])}>{glyph}</View>;
+  return <View style={[s.circleBase, s.circleState(tokens, state)]}>{glyph}</View>;
 }
 
 export function Stepper(props: StepperProps) {
-  const { steps, current, value, label, onStepPress, className } = props;
+  const { steps, current, value, label, onStepPress, style } = props;
+  const { tokens } = useTheme();
   const layout = layoutOf(props);
 
   if (layout === "progress") {
     const pct = Math.max(0, Math.min(100, Math.round(value ?? 0)));
     return (
-      <View className={cn("w-full", className)}>
-        <View className="mb-1.5 flex-row items-center justify-between">
-          <Text className="text-xs font-medium text-foreground">
-            {label ?? "Setup progress"}
-          </Text>
-          <Text className="text-xs text-muted-foreground">{pct}%</Text>
+      <View style={[s.fullWidth, style]}>
+        <View style={s.progressHeader}>
+          <Text style={s.progressCaption(tokens)}>{label ?? "Setup progress"}</Text>
+          <Text style={s.progressPercent(tokens)}>{pct}%</Text>
         </View>
-        <View className="h-1.5 overflow-hidden rounded-full bg-muted">
-          <View
-            className="h-full rounded-full bg-primary"
-            style={{ width: `${pct}%` }}
-          />
+        <View style={s.progressTrack(tokens)}>
+          <View style={[s.progressFill(tokens), { width: `${pct}%` as DimensionValue }]} />
         </View>
       </View>
     );
@@ -125,31 +97,22 @@ export function Stepper(props: StepperProps) {
 
   if (layout === "vertical") {
     return (
-      <View className={cn("w-full", className)}>
+      <View style={[s.fullWidth, style]}>
         {steps.map((step, i) => {
           const state = stateOf(i, current);
           const isLast = i === steps.length - 1;
           return (
-            <View key={i} className="flex-row gap-3">
-              <View className="items-center">
+            <View key={i} style={s.verticalRow}>
+              <View style={s.verticalRail}>
                 <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
                 {!isLast ? (
-                  <View
-                    className={cn(
-                      "my-1 w-px flex-1",
-                      connectorBg(state === "completed"),
-                    )}
-                  />
+                  <View style={[s.verticalConnector, s.connectorBg(tokens, state === "completed")]} />
                 ) : null}
               </View>
-              <View className={cn("flex-1", !isLast && "pb-6")}>
-                <Text className={cn(LABEL_BASE, LABEL_STATE[state])}>
-                  {step.label}
-                </Text>
+              <View style={[s.flex1, !isLast ? s.verticalContentSpacing : null]}>
+                <Text style={[s.labelBase, s.labelState(tokens, state)]}>{step.label}</Text>
                 {step.description != null ? (
-                  <Text className="text-xs text-muted-foreground">
-                    {step.description}
-                  </Text>
+                  <Text style={s.verticalDescription(tokens)}>{step.description}</Text>
                 ) : null}
               </View>
             </View>
@@ -161,27 +124,20 @@ export function Stepper(props: StepperProps) {
 
   // Horizontal: a row of circle + label columns, joined by flex-filling rules.
   return (
-    <View className={cn("flex-row items-start", className)}>
+    <View style={[s.horizontalRow, style]}>
       {steps.map((step, i) => {
         const state = stateOf(i, current);
         const isLast = i === steps.length - 1;
         return (
-          <View key={i} className={cn("flex-row items-start", !isLast && "flex-1")}>
-            <View className="items-center gap-1.5">
+          <View key={i} style={[s.horizontalRow, !isLast ? s.flex1 : null]}>
+            <View style={s.horizontalColumn}>
               <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
-              <Text className={cn("text-xs font-medium", LABEL_STATE[state])}>
-                {step.label}
-              </Text>
+              <Text style={[s.labelBaseXs, s.labelState(tokens, state)]}>{step.label}</Text>
             </View>
             {!isLast ? (
-              <View
-                className={cn(
-                  "mx-2 mt-4 h-px flex-1",
-                  // The connector after a step is "filled" once that step is
-                  // completed (i.e. the next step has been reached).
-                  connectorBg(i < current),
-                )}
-              />
+              // The connector after a step is "filled" once that step is
+              // completed (i.e. the next step has been reached).
+              <View style={[s.horizontalConnector, s.connectorBg(tokens, i < current)]} />
             ) : null}
           </View>
         );

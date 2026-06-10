@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
+import * as s from "./button-group.styles.js";
+import { type Kind, type Size } from "./button-group.styles.js";
 
 // A button group is a horizontal row of buttons that read as one control.
 //
@@ -19,7 +20,7 @@ import { Icon } from "../icon/icon.js";
 //   - `spaced`: a plain row of detached buttons separated by a gap. Use for
 //     a few peer actions that do not form a single control.
 //
-// Because the engine has no `first:` / `last:` variants, the joined-corner and
+// Because there are no `first:` / `last:` style variants, the joined-corner and
 // shared-border math is computed per segment here in JS rather than in markup.
 
 export interface ButtonGroupProps {
@@ -44,11 +45,9 @@ export interface ButtonGroupProps {
   large?: boolean;
 
   disabled?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Kind = "segmented" | "split" | "stepper" | "spaced";
-type Size = "small" | "default" | "large";
 
 // Kind precedence when more than one is passed: first match wins.
 function kindOf(p: ButtonGroupProps): Kind {
@@ -66,82 +65,39 @@ function sizeOf(p: ButtonGroupProps): Size {
   return "default";
 }
 
-// Height + horizontal padding per size, mirroring the docs segSize scale.
-const SIZE_CONTAINER: Record<Size, string> = {
-  small: "h-8 px-3",
-  default: "h-9 px-4",
-  large: "h-10 px-5",
-};
-
-const SIZE_LABEL: Record<Size, string> = {
-  small: "text-xs",
-  default: "text-sm",
-  large: "text-sm",
-};
-
-// Height-only per size, for segments whose padding differs from SIZE_CONTAINER
-// (the stepper's chevron cells).
-const SIZE_HEIGHT: Record<Size, string> = {
-  small: "h-8",
-  default: "h-9",
-  large: "h-10",
-};
-
 const DEFAULT_ITEMS = ["Day", "Week", "Month"];
-
-// Corner classes for an attached segment given its position in the row.
-function joinCorners(index: number, count: number): string {
-  if (count === 1) return "rounded-md";
-  if (index === 0) return "rounded-l-md rounded-r-none";
-  if (index === count - 1) return "rounded-r-md rounded-l-none";
-  return "rounded-none";
-}
 
 interface SegmentProps {
   label: string;
   selected: boolean;
-  corners: string;
+  /** Corner radii for this segment given its position in the row. */
+  corners: ViewStyle;
   /** All but the leading segment overlap the previous border by 1px. */
   overlap: boolean;
   size: Size;
   disabled?: boolean;
-  extraContainer?: string;
   onPress?: (event: GestureResponderEvent) => void;
 }
 
-function Segment({
-  label,
-  selected,
-  corners,
-  overlap,
-  size,
-  disabled,
-  extraContainer,
-  onPress,
-}: SegmentProps) {
-  const container = cn(
-    "flex-row items-center justify-center border active:opacity-90",
-    SIZE_CONTAINER[size],
+function Segment({ label, selected, corners, overlap, size, disabled, onPress }: SegmentProps) {
+  const { tokens } = useTheme();
+  const container: StyleProp<ViewStyle> = [
+    s.segmentBase,
+    s.sizeContainer[size],
     corners,
-    overlap && "-ml-px",
-    selected ? "z-10 border-primary bg-primary" : "border-input bg-background",
-    disabled && "opacity-50",
-    extraContainer,
-  );
-  const labelCls = cn(
-    "font-medium",
-    SIZE_LABEL[size],
-    selected ? "text-primary-foreground" : "text-foreground",
-  );
+    overlap ? s.overlap : null,
+    s.segmentSurface(tokens, selected),
+    disabled ? s.dim : null,
+  ];
   return (
     <Pressable
-      className={container}
+      style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ selected, disabled: !!disabled }}
     >
-      <Text className={labelCls}>{label}</Text>
+      <Text style={[s.sizeLabel[size], s.segmentLabel(tokens, selected)]}>{label}</Text>
     </Pressable>
   );
 }
@@ -157,37 +113,32 @@ function SplitButton({
   size,
   disabled,
   onSelect,
-  className,
+  style,
 }: {
   primary: string;
   menu: string[];
   size: Size;
   disabled?: boolean;
   onSelect?: (index: number, item: string, event: GestureResponderEvent) => void;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }) {
+  const { tokens } = useTheme();
   const [open, setOpen] = useState(false);
-  const triggerHeight = size === "small" ? "h-8" : size === "large" ? "h-10" : "h-9";
+  const triggerHeight = s.sizeHeight[size];
   return (
-    <View className={cn("relative flex-row items-center self-start", disabled && "opacity-50", className)}>
+    <View style={[s.splitContainer, disabled ? s.dim : null, style]}>
       <Pressable
-        className={cn(
-          "flex-row items-center justify-center rounded-l-md rounded-r-none bg-primary active:opacity-90",
-          SIZE_CONTAINER[size],
-        )}
+        style={({ pressed }) => [s.splitPrimary(tokens), s.sizeContainer[size], pressed ? { opacity: 0.9 } : null]}
         onPress={(e) => onSelect?.(0, primary, e)}
         disabled={disabled}
         accessibilityRole="button"
       >
-        <Text className={cn("font-medium text-primary-foreground", SIZE_LABEL[size])}>{primary}</Text>
+        <Text style={[s.splitPrimaryLabel(tokens), s.sizeLabel[size]]}>{primary}</Text>
       </Pressable>
       {/* Hairline divider so the chevron reads as a distinct trigger. */}
-      <View className={cn("w-px bg-primary-foreground/20", triggerHeight)} />
+      <View style={s.splitDivider(tokens, triggerHeight)} />
       <Pressable
-        className={cn(
-          "flex-row items-center justify-center rounded-r-md rounded-l-none bg-primary px-2 active:opacity-90",
-          triggerHeight,
-        )}
+        style={({ pressed }) => [s.splitTrigger(tokens, triggerHeight), pressed ? { opacity: 0.9 } : null]}
         onPress={() => setOpen((o) => !o)}
         disabled={disabled}
         accessibilityRole="button"
@@ -195,22 +146,22 @@ function SplitButton({
         accessibilityLabel="More actions"
       >
         <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
-          <Icon chevronDown primaryForeground size={size === "small" ? 14 : 16} />
+          <Icon chevronDown primaryForeground size={s.chevronSize[size]} />
         </View>
       </Pressable>
       {open ? (
-        <View className="absolute top-full right-0 z-50 mt-1 min-w-[180px] rounded-md border border-border bg-popover p-1 shadow-lg">
+        <View style={s.splitMenu(tokens)}>
           {menu.map((item, i) => (
             <Pressable
               key={`${item}-${i}`}
-              className="flex-row items-center rounded-sm px-2 py-1.5 active:bg-accent"
+              style={({ pressed }) => [s.splitMenuItem, pressed ? s.splitMenuItemPressed(tokens) : null]}
               onPress={(e) => {
                 onSelect?.(i + 1, item, e);
                 setOpen(false);
               }}
               accessibilityRole="menuitem"
             >
-              <Text className="text-sm text-popover-foreground">{item}</Text>
+              <Text style={s.splitMenuText(tokens)}>{item}</Text>
             </Pressable>
           ))}
         </View>
@@ -229,77 +180,70 @@ function Stepper({
   size,
   disabled,
   onSelect,
-  className,
+  style,
 }: {
   items: string[];
   initial: number;
   size: Size;
   disabled?: boolean;
   onSelect?: (index: number, item: string, event: GestureResponderEvent) => void;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }) {
+  const { tokens } = useTheme();
   const count = items.length;
   const clamp = (n: number) => (count > 0 ? Math.min(Math.max(0, n), count - 1) : 0);
   const [index, setIndex] = useState(() => clamp(initial));
   const i = clamp(index);
-  const chevronSize = size === "small" ? 14 : 16;
+  const chevron = s.chevronSize[size];
+  const height = s.sizeHeight[size];
   const step = (dir: number, e: GestureResponderEvent) => {
     if (count === 0) return;
     const next = (i + dir + count) % count;
     setIndex(next);
     onSelect?.(next, items[next], e);
   };
-  const arrow = cn(
-    "flex-row items-center justify-center border border-input bg-background px-2 active:opacity-90",
-    SIZE_HEIGHT[size],
-  );
   return (
-    <View className={cn("flex-row items-center self-start", disabled && "opacity-50", className)}>
+    <View style={[s.stepperContainer, disabled ? s.dim : null, style]}>
       <Pressable
-        className={cn(arrow, "rounded-l-md rounded-r-none")}
+        style={({ pressed }) => [s.stepperArrow(tokens, height), s.stepperArrowLeft, pressed ? { opacity: 0.9 } : null]}
         onPress={(e) => step(-1, e)}
         disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel="Previous"
       >
-        <Icon chevronLeft muted size={chevronSize} />
+        <Icon chevronLeft muted size={chevron} />
       </Pressable>
-      <View
-        className={cn(
-          "flex-row items-center justify-center border -ml-px border-input bg-background",
-          SIZE_CONTAINER[size],
-        )}
-      >
-        <Text className={cn("font-medium text-foreground", SIZE_LABEL[size])}>{items[i] ?? ""}</Text>
+      <View style={[s.stepperMiddle(tokens), s.sizeContainer[size]]}>
+        <Text style={[s.stepperLabel(tokens), s.sizeLabel[size]]}>{items[i] ?? ""}</Text>
       </View>
       <Pressable
-        className={cn(arrow, "-ml-px rounded-r-md rounded-l-none")}
+        style={({ pressed }) => [s.stepperArrow(tokens, height), s.stepperArrowRight, pressed ? { opacity: 0.9 } : null]}
         onPress={(e) => step(1, e)}
         disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel="Next"
       >
-        <Icon chevronRight muted size={chevronSize} />
+        <Icon chevronRight muted size={chevron} />
       </Pressable>
     </View>
   );
 }
 
 export function ButtonGroup(props: ButtonGroupProps) {
-  const { items = DEFAULT_ITEMS, active = 0, onSelect, disabled, className } = props;
+  const { items = DEFAULT_ITEMS, active = 0, onSelect, disabled, style } = props;
   const kind = kindOf(props);
   const size = sizeOf(props);
 
   // Spaced: detached peers separated by a gap, each with full rounding.
   if (kind === "spaced") {
     return (
-      <View className={cn("flex-row items-center gap-2", className)}>
+      <View style={[s.spacedContainer, style]}>
         {items.map((item, i) => (
           <Segment
             key={`${item}-${i}`}
             label={item}
             selected={false}
-            corners="rounded-md"
+            corners={{ borderRadius: 6 }}
             overlap={false}
             size={size}
             disabled={disabled}
@@ -322,7 +266,7 @@ export function ButtonGroup(props: ButtonGroupProps) {
         size={size}
         disabled={disabled}
         onSelect={onSelect}
-        className={className}
+        style={style}
       />
     );
   }
@@ -338,7 +282,7 @@ export function ButtonGroup(props: ButtonGroupProps) {
         size={size}
         disabled={disabled}
         onSelect={onSelect}
-        className={className}
+        style={style}
       />
     );
   }
@@ -346,13 +290,13 @@ export function ButtonGroup(props: ButtonGroupProps) {
   // Segmented (default): attached segments, one selected.
   const count = items.length;
   return (
-    <View className={cn("flex-row items-center", className)}>
+    <View style={[s.segmentedContainer, style]}>
       {items.map((item, i) => (
         <Segment
           key={`${item}-${i}`}
           label={item}
           selected={i === active}
-          corners={joinCorners(i, count)}
+          corners={s.joinCorners(i, count)}
           overlap={i > 0}
           size={size}
           disabled={disabled}

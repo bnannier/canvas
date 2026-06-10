@@ -1,7 +1,8 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Image, Text } from "../../engine/index.js";
+import { View, Image, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
+import * as s from "./media-objects.styles.js";
+import { type Align, type Direction } from "./media-objects.styles.js";
 
 // A media object is a horizontal row: a leading media element (avatar, image, or
 // icon glyph) sits beside a content column (a bold title, a muted description,
@@ -52,11 +53,9 @@ export interface MediaObjectProps {
   bordered?: boolean;
   // Layout.
   truncate?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Align = "center" | "start";
-type Direction = "reversed" | "leading";
 
 // Alignment precedence when more than one is passed: first match wins. Default is
 // start (items-start) so the media anchors to the first line of a multi-line body.
@@ -73,62 +72,33 @@ function directionOf(p: MediaObjectProps): Direction {
   return "leading";
 }
 
-const ALIGN_ITEMS: Record<Align, string> = {
-  center: "items-center",
-  start: "items-start",
-};
-
-const DIRECTION_ROW: Record<Direction, string> = {
-  leading: "flex-row",
-  reversed: "flex-row-reverse",
-};
-
-// The leading icon box: a fixed h-9 w-9 tinted square with the glyph centered, so
-// it reads as a tidy lead affordance next to the two-line text.
-const ICON_BOX =
-  "shrink-0 items-center justify-center w-9 h-9 rounded-md bg-primary/15";
-const ICON_GLYPH = "text-primary text-base font-semibold";
-
-// Content column: min-w-0 + flex-1 lets the text truncate instead of pushing a
-// trailing action out of alignment.
-const CONTENT = "min-w-0 flex-1 gap-0.5";
-const TITLE = "text-sm font-semibold text-foreground";
-const DESCRIPTION = "text-xs text-muted-foreground";
-const BODY = "text-sm text-foreground leading-relaxed";
-const META = "shrink-0 text-xs text-muted-foreground";
-
 export function MediaObject(props: MediaObjectProps) {
-  const { title, description, body, meta, avatar, src, icon, action, truncate, className } = props;
+  const { title, description, body, meta, avatar, src, icon, action, truncate, style } = props;
+  const { tokens } = useTheme();
   const align = alignOf(props);
   const direction = directionOf(props);
 
-  const container = cn(
-    DIRECTION_ROW[direction],
-    "gap-3",
-    ALIGN_ITEMS[align],
-    props.bordered && "rounded-lg border border-border bg-card p-4",
-    className,
-  );
+  const container: StyleProp<ViewStyle> = [
+    s.containerBase,
+    { flexDirection: s.DIRECTION_ROW[direction], alignItems: s.ALIGN_ITEMS[align] },
+    props.bordered ? s.borderedSurface(tokens) : null,
+    style,
+  ];
 
   // Leading media: photo > initials avatar > icon box. Only one renders.
   let media: ReactNode = null;
   if (src) {
     media = (
-      <View className="shrink-0 w-10 h-10 overflow-hidden rounded-full bg-muted">
-        <Image
-          className="w-full h-full rounded-full"
-          source={{ uri: src }}
-          accessibilityLabel={title}
-          resizeMode="cover"
-        />
+      <View style={s.photoBox(tokens)}>
+        <Image style={s.photoImage} source={{ uri: src }} accessibilityLabel={title} resizeMode="cover" />
       </View>
     );
   } else if (avatar) {
     media = <Avatar name={avatar}>{avatar}</Avatar>;
   } else if (icon != null) {
     media = (
-      <View className={ICON_BOX}>
-        {typeof icon === "string" ? <Text className={ICON_GLYPH}>{icon}</Text> : icon}
+      <View style={s.iconBox(tokens)}>
+        {typeof icon === "string" ? <Text style={s.iconGlyph(tokens)}>{icon}</Text> : icon}
       </View>
     );
   }
@@ -136,23 +106,23 @@ export function MediaObject(props: MediaObjectProps) {
   // The engine has no truncate utility; RN clamps text via numberOfLines, which
   // is the supported equivalent (single line with an ellipsis on overflow).
   return (
-    <View className={container}>
+    <View style={container}>
       {media}
-      <View className={CONTENT}>
+      <View style={s.content}>
         {title != null ? (
-          <Text className={TITLE} numberOfLines={truncate ? 1 : undefined}>
+          <Text style={s.title(tokens)} numberOfLines={truncate ? 1 : undefined}>
             {title}
           </Text>
         ) : null}
         {description != null ? (
-          <Text className={DESCRIPTION} numberOfLines={truncate ? 1 : undefined}>
+          <Text style={s.description(tokens)} numberOfLines={truncate ? 1 : undefined}>
             {description}
           </Text>
         ) : null}
-        {body != null ? <Text className={BODY}>{body}</Text> : null}
+        {body != null ? <Text style={s.body(tokens)}>{body}</Text> : null}
       </View>
-      {meta != null ? <Text className={META}>{meta}</Text> : null}
-      {action != null ? <View className="shrink-0">{action}</View> : null}
+      {meta != null ? <Text style={s.meta(tokens)}>{meta}</Text> : null}
+      {action != null ? <View style={s.actionBox}>{action}</View> : null}
     </View>
   );
 }

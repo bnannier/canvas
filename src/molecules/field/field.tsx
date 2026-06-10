@@ -1,9 +1,9 @@
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
+import * as s from "./field.styles.js";
 
 /** One avatar in a Members stack: a photo (`src`) or initials (`name`). */
 export interface FieldAvatar {
@@ -61,34 +61,29 @@ export interface FieldProps {
   disabled?: boolean;
   /** Invalid state: shows the error message (red) and flags the Input. */
   invalid?: boolean;
-  /** Extra utilities, mainly for width (e.g. "max-w-[320px]", "w-1/2"). */
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-// The engine has no font-family utility, so request RN's cross-platform
-// monospace alias via inline style (the same technique Badge uses for `mono`).
-const MONO_STYLE = { fontFamily: "monospace" } as const;
-
-const FIELD_LABEL = "w-[180px] shrink-0 text-sm text-muted-foreground";
-const FIELD_VALUE = "text-sm font-medium text-foreground";
 
 // Render a row's value slot from its data descriptor. Precedence: an avatar
 // stack, then a copyable value, then a status badge, then a metadata badge,
 // then plain (optionally monospace) text.
 function FieldValue(row: FieldRow) {
+  const { tokens } = useTheme();
+
   if (row.avatars && row.avatars.length > 0) {
     return (
-      <View className="flex-row items-center">
+      <View style={s.avatarRow}>
         {row.avatars.map((a, i) => (
-          <View key={i} className={i > 0 ? "-ml-2" : undefined}>
+          <View key={i} style={i > 0 ? s.avatarOverlap : undefined}>
             <Avatar small ring src={a.src} name={a.name}>
               {a.name}
             </Avatar>
           </View>
         ))}
         {typeof row.overflow === "number" && row.overflow > 0 ? (
-          <View className="-ml-2 h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted">
-            <Text className="text-xs font-medium text-muted-foreground">{`+${row.overflow}`}</Text>
+          <View style={s.overflowChip(tokens)}>
+            <Text style={s.overflowText(tokens)}>{`+${row.overflow}`}</Text>
           </View>
         ) : null}
       </View>
@@ -96,8 +91,8 @@ function FieldValue(row: FieldRow) {
   }
   if (row.copyValue != null) {
     return (
-      <View className="flex-row items-center gap-2">
-        <Text className={FIELD_VALUE} style={row.mono ? MONO_STYLE : undefined}>
+      <View style={s.copyRow}>
+        <Text style={[s.fieldValue(tokens), row.mono ? s.monoStyle : null]}>
           {row.value ?? row.copyValue}
         </Text>
         <Button ghost small>
@@ -117,7 +112,7 @@ function FieldValue(row: FieldRow) {
     return <Badge secondary>{row.badge}</Badge>;
   }
   return (
-    <Text className={FIELD_VALUE} style={row.mono ? MONO_STYLE : undefined}>
+    <Text style={[s.fieldValue(tokens), row.mono ? s.monoStyle : null]}>
       {row.value}
     </Text>
   );
@@ -135,20 +130,20 @@ export function Field(props: FieldProps) {
     required,
     disabled,
     invalid,
-    className,
+    style,
   } = props;
+  const { tokens } = useTheme();
 
   // Display mode: a read-only stack of label/value rows. Each row aligns its
-  // label to a fixed 180px column (flex, not grid, which the engine can't
-  // parse) so every value lines up to one baseline.
+  // label to a fixed 180px column (flex, not grid) so every value lines up to
+  // one baseline.
   if (rows) {
-    const display = cn("flex-col gap-3", disabled && "opacity-50", className);
     return (
-      <View className={display}>
+      <View style={[s.displayStack, disabled ? s.dimmed : null, style]}>
         {rows.map((row, index) => (
-          <View key={`${row.label}-${index}`} className="flex-row items-center gap-4">
-            <Text className={FIELD_LABEL}>{row.label}</Text>
-            <View className="flex-1">{FieldValue(row)}</View>
+          <View key={`${row.label}-${index}`} style={s.displayRow}>
+            <Text style={s.fieldLabel(tokens)}>{row.label}</Text>
+            <View style={s.valueFill}>{FieldValue(row)}</View>
           </View>
         ))}
       </View>
@@ -157,18 +152,14 @@ export function Field(props: FieldProps) {
 
   // Error takes precedence over the resting helper below the control.
   const showError = !!invalid && !!error;
-  const message = showError ? error : helper;
-  const messageClass = cn("text-xs", showError ? "text-destructive" : "text-muted-foreground");
-
-  const wrapper = cn("flex-col gap-1.5", disabled && "opacity-50", className);
-  const labelClass = "text-sm font-medium text-foreground";
+  const messageText = showError ? error : helper;
 
   return (
-    <View className={wrapper}>
+    <View style={[s.controlStack, disabled ? s.dimmed : null, style]}>
       {label != null ? (
-        <Text className={labelClass}>
+        <Text style={s.label(tokens)}>
           {label}
-          {required ? <Text className="text-destructive"> *</Text> : null}
+          {required ? <Text style={s.requiredMark(tokens)}> *</Text> : null}
         </Text>
       ) : null}
       <Input
@@ -178,7 +169,7 @@ export function Field(props: FieldProps) {
         disabled={disabled}
         error={invalid}
       />
-      {message != null ? <Text className={messageClass}>{message}</Text> : null}
+      {messageText != null ? <Text style={s.message(tokens, showError)}>{messageText}</Text> : null}
     </View>
   );
 }

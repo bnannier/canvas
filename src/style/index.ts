@@ -1,0 +1,14 @@
+// The Canvas style foundation: design tokens, the theme runtime (ThemeProvider +
+// useTheme), desktop-first responsive selection, and the small style helpers
+// (shadow, alpha) components build their RN style objects from. Components import
+// their primitives and helpers from here:
+//
+//   import { View, Text, Pressable, useTheme, useResponsive, shadow, alpha,
+//            type ColorTokens } from "../../style/index.js";
+
+export * from "./tokens.js";
+export * from "./theme.js";
+export * from "./responsive.js";
+export * from "./shadow.js";
+export * from "./color.js";
+export * from "./primitives.js";

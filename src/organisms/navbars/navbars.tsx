@@ -1,8 +1,9 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
+import * as s from "./navbars.styles.js";
+import { type Surface } from "./navbars.styles.js";
 
 // The navbar is the primary app-level topbar: a brand on the left, a row of
 // navigation links in the middle with one active, and actions on the right
@@ -34,10 +35,9 @@ export interface NavbarProps {
   bordered?: boolean;
   floating?: boolean;
   children?: ReactNode;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Surface = "default" | "bordered" | "floating";
 
 // Surface precedence when more than one is passed: first match wins.
 function surfaceOf(p: NavbarProps): Surface {
@@ -46,52 +46,43 @@ function surfaceOf(p: NavbarProps): Surface {
   return "default";
 }
 
-// The default bar sits flush and is separated by a bottom hairline; bordered
-// boxes it in a rounded outline; floating lifts it as a rounded, shadowed card.
-const SURFACE_CONTAINER: Record<Surface, string> = {
-  default: "border-b border-border",
-  bordered: "rounded-lg border border-border",
-  floating: "rounded-lg border border-border shadow-md",
-};
-
 export function Navbar(props: NavbarProps) {
-  const { brand, links, active = 0, actionLabel, onAction, avatar, onSelect, className } = props;
+  const { brand, links, active = 0, actionLabel, onAction, avatar, onSelect, style } = props;
+  const { tokens } = useTheme();
   const surface = surfaceOf(props);
 
-  const container = cn(
-    "flex-row items-center justify-between h-14 bg-background px-4",
-    SURFACE_CONTAINER[surface],
-    className,
-  );
+  const container: StyleProp<ViewStyle> = [
+    s.barBase,
+    s.barSurface(tokens),
+    s.surfaceContainer(tokens, surface),
+    style,
+  ];
 
   return (
-    <View className={container}>
-      <View className="flex-row items-center gap-4">
-        <Text className="text-base font-semibold text-foreground">{brand}</Text>
-        <View className="flex-row items-center gap-1">
+    <View style={container}>
+      <View style={s.leftGroup}>
+        <Text style={s.brand(tokens)}>{brand}</Text>
+        <View style={s.linksRow}>
           {links.map((link, index) => {
             const isActive = index === active;
-            const label = cn(
-              "text-sm",
-              isActive ? "font-medium text-foreground" : "font-medium text-muted-foreground",
-            );
             return (
               <Pressable
                 key={`${link}-${index}`}
-                className={cn(
-                  "rounded-md px-3 py-1.5 active:opacity-90",
-                  isActive && "bg-accent",
-                )}
+                style={({ pressed }) => [
+                  s.linkBase,
+                  isActive ? s.linkActive(tokens) : null,
+                  pressed ? { opacity: 0.9 } : null,
+                ]}
                 onPress={onSelect ? () => onSelect(index) : undefined}
                 accessibilityRole="link"
               >
-                <Text className={label}>{link}</Text>
+                <Text style={[s.linkLabelBase, s.linkLabelColor(tokens, isActive)]}>{link}</Text>
               </Pressable>
             );
           })}
         </View>
       </View>
-      <View className="flex-row items-center gap-2">
+      <View style={s.rightGroup}>
         {actionLabel ? (
           <Button primary small onPress={onAction}>
             {actionLabel}

@@ -1,7 +1,8 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./checkbox.styles.js";
+import { type Size } from "./checkbox.styles.js";
 
 export interface CheckboxProps {
   children?: ReactNode;
@@ -21,10 +22,9 @@ export interface CheckboxProps {
   large?: boolean;
   // State.
   disabled?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition. */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Size = "small" | "base" | "large";
 
 // Size precedence when more than one is passed: first match wins.
 function sizeOf(p: CheckboxProps): Size {
@@ -33,30 +33,10 @@ function sizeOf(p: CheckboxProps): Size {
   return "base";
 }
 
-// View dimensions per size. size-* sets width + height together.
-const BOX_SIZE: Record<Size, string> = {
-  small: "size-3.5",
-  base: "size-4",
-  large: "size-5",
-};
-
-// Glyph (check / dash) type scale, tuned to sit inside the box.
-const GLYPH_SIZE: Record<Size, string> = {
-  small: "text-xs",
-  base: "text-xs",
-  large: "text-sm",
-};
-
-// Label type scale, matching the box height.
-const LABEL_SIZE: Record<Size, string> = {
-  small: "text-xs",
-  base: "text-sm",
-  large: "text-base",
-};
-
 export function Checkbox(props: CheckboxProps) {
-  const { children, checked, indeterminate, onChange, onValueChange, disabled, className } = props;
+  const { children, checked, indeterminate, onChange, onValueChange, disabled, style } = props;
   const size = sizeOf(props);
+  const { tokens } = useTheme();
   // Indeterminate reads as "selected-ish": fill the box like a checked state.
   const filled = indeterminate || !!checked;
   const glyph = indeterminate ? "–" : "✓"; // en dash : check mark
@@ -67,33 +47,20 @@ export function Checkbox(props: CheckboxProps) {
     onValueChange?.(next);
   };
 
-  const row = cn(
-    "flex-row items-start gap-2 active:opacity-90",
-    disabled && "opacity-50",
-    className,
-  );
-
-  const box = cn(
-    "mt-0.5 shrink-0 items-center justify-center rounded-[3px] border",
-    BOX_SIZE[size],
-    filled ? "border-primary bg-primary" : "border-input bg-transparent",
-  );
-
-  const glyphClass = cn("font-medium leading-none text-primary-foreground", GLYPH_SIZE[size]);
-  const labelClass = cn("font-medium text-foreground", LABEL_SIZE[size]);
+  const row: StyleProp<ViewStyle> = [s.row, disabled ? { opacity: 0.5 } : null, style];
 
   return (
     <Pressable
-      className={row}
       onPress={handlePress}
       disabled={disabled}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: indeterminate ? "mixed" : !!checked, disabled: !!disabled }}
+      style={({ pressed }) => [row, pressed ? { opacity: 0.9 } : null]}
     >
-      <View className={box}>
-        {filled ? <Text className={glyphClass}>{glyph}</Text> : null}
+      <View style={[s.boxBase, s.boxSize(size), s.boxFill(tokens, filled)]}>
+        {filled ? <Text style={s.glyph(tokens, size)}>{glyph}</Text> : null}
       </View>
-      {children != null ? <Text className={labelClass}>{children}</Text> : null}
+      {children != null ? <Text style={s.label(tokens, size)}>{children}</Text> : null}
     </Pressable>
   );
 }

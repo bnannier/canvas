@@ -1,7 +1,8 @@
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Button } from "../../atoms/button/button.js";
+import * as s from "./description-lists.styles.js";
+import { type Layout } from "./description-lists.styles.js";
 
 // DescriptionList: term/value pairs for detail panels, settings, and profile
 // views. Each item is a { term, value } pair. The term is the small muted
@@ -56,10 +57,9 @@ export interface DescriptionListProps {
   divided?: boolean;
   // Surface: wrap the list in a card surface.
   card?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Layout = "inline" | "twoColumn" | "stacked";
 
 // Layout precedence when more than one is passed: first match wins.
 function layoutOf(p: DescriptionListProps): Layout {
@@ -68,68 +68,46 @@ function layoutOf(p: DescriptionListProps): Layout {
   return "stacked";
 }
 
-// Card surface. When a header band is present the card carries no padding (the
-// header and rows supply their own px-6) so the header rule spans the full
-// width; otherwise the card pads itself.
-const CARD_SURFACE = "rounded-lg border border-border bg-card shadow-sm";
-const CARD_PAD = "p-6";
-
-// Term: small, muted label. The stacked layout uppercases and tracks it so the
-// label reads as secondary above a full-weight value. Value: full-weight data.
-const TERM_LABEL = "text-sm text-muted-foreground";
-const TERM_STACKED = "text-xs font-medium uppercase tracking-wide text-muted-foreground";
-const VALUE_LABEL = "text-sm font-medium text-foreground";
-
 // Render a value cell: a badge family, a monospace token, or plain text.
 function Value({ item, align }: { item: DescriptionListItem; align?: boolean }) {
+  const { tokens } = useTheme();
   if (item.status) return <Badge status success>{item.value}</Badge>;
   if (item.badge) return <Badge secondary>{item.value}</Badge>;
   if (item.mono) {
-    return (
-      <Text className={VALUE_LABEL} style={{ fontFamily: "monospace" }}>
-        {item.value}
-      </Text>
-    );
+    return <Text style={[s.valueLabel(tokens), s.valueMono]}>{item.value}</Text>;
   }
-  return (
-    <Text className={cn(VALUE_LABEL, align && "text-right")}>{item.value}</Text>
-  );
+  return <Text style={[s.valueLabel(tokens), align ? s.valueAlignRight : null]}>{item.value}</Text>;
 }
 
 export function DescriptionList(props: DescriptionListProps) {
-  const { items, title, subtitle, divided, card, className } = props;
+  const { items, title, subtitle, divided, card, style } = props;
+  const { tokens } = useTheme();
   const layout = layoutOf(props);
   const hasHeader = card && !!title;
 
-  const container = cn(
-    card ? CARD_SURFACE : null,
+  const container: StyleProp<ViewStyle> = [
+    card ? s.cardSurface(tokens) : null,
     // No global padding when a header band supplies its own px-6 per section.
-    card && !hasHeader ? CARD_PAD : null,
-    !hasHeader && "gap-3",
-    className,
-  );
-  // With a header, rows sit in their own px-6 group beneath the bordered band.
-  const rowsWrap = hasHeader ? "px-6 gap-3" : null;
+    card && !hasHeader ? s.cardPad : null,
+    !hasHeader ? s.stackGap : null,
+    style,
+  ];
 
   const rows = items.map((item, index) => {
     const last = index === items.length - 1;
     // A divided list draws a hairline under each row except the last, and pads
     // the row vertically so the rule sits clear of the text.
-    const row = cn(
-      layout === "inline"
-        ? "flex-row items-baseline justify-between gap-4"
-        : layout === "twoColumn"
-          ? "flex-row items-baseline gap-4"
-          : "gap-1",
-      divided && "pb-3",
-      divided && !last && "border-b border-border",
-    );
+    const row: StyleProp<ViewStyle> = [
+      s.rowLayout[layout],
+      divided ? s.rowDividedPad : null,
+      divided && !last ? s.rowDivider(tokens) : null,
+    ];
     return (
-      <View key={`${item.term}-${index}`} className={row}>
-        <Text className={cn(layout === "stacked" ? TERM_STACKED : TERM_LABEL, layout === "twoColumn" && "w-40")}>
+      <View key={`${item.term}-${index}`} style={row}>
+        <Text style={[layout === "stacked" ? s.termStacked(tokens) : s.termLabel(tokens), layout === "twoColumn" ? s.termColumn : null]}>
           {item.term}
         </Text>
-        <View className={cn(layout === "twoColumn" && "flex-1 flex-row items-baseline justify-between gap-4")}>
+        <View style={layout === "twoColumn" ? s.twoColumnValueCell : null}>
           <Value item={item} align={layout === "inline"} />
           {item.update ? (
             <Button link small>
@@ -142,14 +120,14 @@ export function DescriptionList(props: DescriptionListProps) {
   });
 
   return (
-    <View className={container}>
+    <View style={container}>
       {hasHeader ? (
-        <View className="border-b border-border px-6 py-4 gap-0.5">
-          <Text className="text-base font-semibold text-foreground">{title}</Text>
-          {subtitle ? <Text className="text-xs text-muted-foreground">{subtitle}</Text> : null}
+        <View style={s.headerBand(tokens)}>
+          <Text style={s.headerTitle(tokens)}>{title}</Text>
+          {subtitle ? <Text style={s.headerSubtitle(tokens)}>{subtitle}</Text> : null}
         </View>
       ) : null}
-      {rowsWrap ? <View className={rowsWrap}>{rows}</View> : rows}
+      {hasHeader ? <View style={s.rowsWrap}>{rows}</View> : rows}
     </View>
   );
 }

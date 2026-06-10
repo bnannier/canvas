@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./divider.styles.js";
+import { type Orientation, type Emphasis } from "./divider.styles.js";
 
 export interface DividerProps {
   /**
@@ -16,11 +17,9 @@ export interface DividerProps {
   // Emphasis (pick one; default tracks the border token).
   soft?: boolean;
   strong?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (width, margins, alignment). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Orientation = "horizontal" | "vertical";
-type Emphasis = "soft" | "strong";
 
 // First match wins when more than one orientation flag is passed.
 function orientationOf(p: DividerProps): Orientation {
@@ -34,22 +33,16 @@ function emphasisOf(p: DividerProps): Emphasis {
   return "strong";
 }
 
-// The hairline fill color, token-backed. `strong` is the standard border;
-// `soft` steps down to the muted token for a quieter rule.
-const RULE_BG: Record<Emphasis, string> = {
-  strong: "bg-border",
-  soft: "bg-muted",
-};
-
 export function Divider(props: DividerProps) {
-  const { children, className } = props;
+  const { children, style } = props;
   const orientation = orientationOf(props);
   const emphasis = emphasisOf(props);
-  const ruleBg = RULE_BG[emphasis];
+  const { tokens } = useTheme();
+  const ruleFill = s.ruleFill(tokens, emphasis);
 
   if (orientation === "vertical") {
     // A thin vertical rule that adapts to the row height it sits in.
-    return <View className={cn("w-px self-stretch", ruleBg, className)} />;
+    return <View style={[s.verticalRule, ruleFill, style]} />;
   }
 
   // Horizontal with a label/action in the middle: a centered node flanked by
@@ -57,18 +50,18 @@ export function Divider(props: DividerProps) {
   if (children != null) {
     const isText = typeof children === "string" || typeof children === "number";
     return (
-      <View className={cn("flex-row items-center gap-3", className)}>
-        <View className={cn("h-px flex-1", ruleBg)} />
+      <View style={[s.labelRow, style]}>
+        <View style={[s.flankRule, ruleFill]} />
         {isText ? (
-          <Text className="text-xs text-muted-foreground">{children}</Text>
+          <Text style={s.labelText(tokens)}>{children}</Text>
         ) : (
           children
         )}
-        <View className={cn("h-px flex-1", ruleBg)} />
+        <View style={[s.flankRule, ruleFill]} />
       </View>
     );
   }
 
   // Plain horizontal hairline spanning the full width.
-  return <View className={cn("h-px w-full", ruleBg, className)} />;
+  return <View style={[s.horizontalRule, ruleFill, style]} />;
 }

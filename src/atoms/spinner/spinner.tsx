@@ -1,5 +1,6 @@
 import { ActivityIndicator } from "react-native";
-import { useTheme, type ColorTokens } from "../../engine/index.js";
+import { useTheme } from "../../style/index.js";
+import { type Tone, TONE_TOKEN } from "./spinner.styles.js";
 
 export interface SpinnerProps {
   // Size (pick one; default sits between small and large).
@@ -13,8 +14,6 @@ export interface SpinnerProps {
   accessibilityLabel?: string;
 }
 
-type Tone = "primary" | "muted" | "foreground";
-
 // Tone precedence when more than one is passed: first match wins.
 function toneOf(p: SpinnerProps): Tone {
   if (p.primary) return "primary";
@@ -22,12 +21,6 @@ function toneOf(p: SpinnerProps): Tone {
   if (p.foreground) return "foreground";
   return "foreground";
 }
-
-const TONE_TOKEN: Record<Tone, keyof ColorTokens> = {
-  primary: "primary",
-  muted: "muted-foreground",
-  foreground: "foreground",
-};
 
 // Three distinct diameters (px) so each size axis value renders a different
 // arc; ActivityIndicator accepts a numeric size on native and RN-Web.

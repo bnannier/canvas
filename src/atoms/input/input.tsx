@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { type GestureResponderEvent, type TextStyle } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text, TextInput, useTheme } from "../../engine/index.js";
+import { View, Pressable, Text, TextInput, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
+import * as s from "./input.styles.js";
 
 // Glyphs an overlaid leading/trailing icon can name. Maps the scalar `icon`
 // string to the Icon atom's flat boolean prop, so the playground stays
@@ -67,32 +67,8 @@ export interface InputProps {
   /** Called when the action suffix is pressed (action only). */
   onActionPress?: (event: GestureResponderEvent) => void;
 
-  /** Extra utilities, mainly for width (e.g. "max-w-[320px]", "w-1/2"). */
-  className?: string;
-}
-
-// Height per size; mirrors the real control's footprint. Multiline grows the
-// minimum height instead.
-function sizeBox(p: InputProps): string {
-  if (p.multiline) return p.large ? "min-h-24" : p.small ? "min-h-16" : "min-h-20";
-  if (p.large) return "h-10";
-  if (p.small) return "h-8";
-  return "h-9";
-}
-
-// Type scale per size; the field and its addons share it so they line up.
-function sizeText(p: InputProps): string {
-  if (p.large) return "text-base";
-  if (p.small) return "text-xs";
-  return "text-sm";
-}
-
-// Fixed field height per size for the grouped layout (the addon boxes set the
-// row height and the field stretches to it). No multiline in this layout.
-function fieldHeight(p: InputProps): string {
-  if (p.large) return "h-10";
-  if (p.small) return "h-8";
-  return "h-9";
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
 
 export function Input(props: InputProps) {
@@ -110,7 +86,7 @@ export function Input(props: InputProps) {
     icon,
     action,
     onActionPress,
-    className,
+    style,
   } = props;
   const isError = !!(props.error || props.invalid);
   const [focused, setFocused] = useState(false);
@@ -119,11 +95,10 @@ export function Input(props: InputProps) {
   // Border color precedence: error > focus > default input border. Shared by
   // both layouts; in the grouped layout it lives on the outer border so prefix
   // + field + suffix light up together as one control.
-  const border = isError ? "border-destructive" : focused ? "border-ring" : "border-input";
-  const textSize = sizeText(props);
+  const borderColor = isError ? tokens.destructive : focused ? tokens.ring : tokens.input;
+  const text = s.textType(props);
   const iconName = icon != null ? ICON_BOOL[icon] : undefined;
-  const hasAddons =
-    prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action;
+  const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action;
 
   const common = {
     value,
@@ -139,14 +114,7 @@ export function Input(props: InputProps) {
   if (!hasAddons) {
     return (
       <TextInput
-        className={cn(
-          "w-full rounded-md border bg-background px-3 py-2 text-foreground",
-          sizeBox(props),
-          textSize,
-          border,
-          disabled && "opacity-50",
-          className,
-        )}
+        style={[s.bareField(tokens, borderColor), s.bareBox(props), text, disabled ? { opacity: 0.5 } : null, style]}
         multiline={multiline}
         textAlignVertical={multiline ? "top" : "center"}
         {...common}
@@ -157,41 +125,25 @@ export function Input(props: InputProps) {
   // Grouped field: prefix/suffix addons, overlaid icons, optional action button.
   // The whole group shares one border, so it owns the focus state and the inner
   // field's default outline is suppressed (see FIELD_OUTLINE_RESET).
-  const height = fieldHeight(props);
+  const height = s.groupedHeight(props);
   return (
-    <View
-      className={cn(
-        "flex-row items-stretch w-full border rounded-md overflow-hidden bg-background",
-        border,
-        disabled && "opacity-50",
-        className,
-      )}
-    >
+    <View style={[s.groupContainer(tokens, borderColor), disabled ? { opacity: 0.5 } : null, style]}>
       {prefix != null ? (
-        <View className={cn("justify-center bg-muted px-3 border-r border-border", height)}>
-          <Text className={cn("text-muted-foreground", textSize)}>{prefix}</Text>
+        <View style={s.addonBox(tokens, "left", height)}>
+          <Text style={[s.addonText(tokens), text]}>{prefix}</Text>
         </View>
       ) : null}
 
       {leadingIcon && iconName != null ? (
-        <View className="absolute inset-y-0 left-0 z-10 justify-center pl-3" pointerEvents="none">
+        <View style={s.iconOverlay("left")} pointerEvents="none">
           <Icon {...{ [iconName]: true }} muted size={16} />
         </View>
       ) : null}
 
-      <TextInput
-        className={cn(
-          "flex-1 h-full px-3 py-2 text-foreground",
-          textSize,
-          leadingIcon && "pl-9",
-          trailingIcon && "pr-9",
-        )}
-        style={FIELD_OUTLINE_RESET}
-        {...common}
-      />
+      <TextInput style={[s.groupField(tokens, !!leadingIcon, !!trailingIcon), text, FIELD_OUTLINE_RESET]} {...common} />
 
       {trailingIcon && iconName != null ? (
-        <View className="absolute inset-y-0 right-0 z-10 justify-center pr-3" pointerEvents="none">
+        <View style={s.iconOverlay("right")} pointerEvents="none">
           <Icon {...{ [iconName]: true }} muted size={16} />
         </View>
       ) : null}
@@ -199,19 +151,16 @@ export function Input(props: InputProps) {
       {suffix != null ? (
         action ? (
           <Pressable
-            className={cn(
-              "justify-center bg-muted px-3 border-l border-border active:opacity-90",
-              height,
-            )}
+            style={({ pressed }) => [s.addonBox(tokens, "right", height), pressed ? { opacity: 0.9 } : null]}
             onPress={onActionPress}
             disabled={disabled}
             accessibilityRole="button"
           >
-            <Text className={cn("font-medium text-foreground", textSize)}>{suffix}</Text>
+            <Text style={[s.actionText(tokens), text]}>{suffix}</Text>
           </Pressable>
         ) : (
-          <View className={cn("justify-center bg-muted px-3 border-l border-border", height)}>
-            <Text className={cn("text-muted-foreground", textSize)}>{suffix}</Text>
+          <View style={s.addonBox(tokens, "right", height)}>
+            <Text style={[s.addonText(tokens), text]}>{suffix}</Text>
           </View>
         )
       ) : null}

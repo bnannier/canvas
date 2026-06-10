@@ -1,21 +1,22 @@
 import { type ReactNode } from "react";
-import { cn } from "../../cn.js";
-import { Text } from "../../engine/index.js";
+import { Text, useTheme, type StyleProp, type TextStyle } from "../../style/index.js";
+import { type Role, roleType, roleColor, MONO_ROLES } from "./typography.styles.js";
 
 // Typography: the Canvas type scale as a single styled Text. One boolean role
 // prop per style (display / h1..h5 / body / small / tiny / muted / caption /
-// code / mono) selects a token-backed class set; omit all for the plain body
-// look. The engine's `Text` primitive is the host element, so the public
-// component is named `Typography` (the bare `Text` name belongs to the engine).
+// code / mono) selects a token-backed style set; omit all for the plain body
+// look. The foundation's `Text` primitive is the host element, so the public
+// component is named `Typography` (the bare `Text` name belongs to the
+// foundation).
 //
 // Boolean-prop API: one boolean per role on a single axis, first-match
 // precedence (mirrors Button's intentOf / Badge's toneOf). Roles are mutually
 // exclusive; pass at most one. The text content comes from children.
 //
-// Two roles want a monospace face (code, mono). The engine ships no font-family
+// Two roles want a monospace face (code, mono). There is no font-family
 // utility, so each requests RN's cross-platform monospace alias via inline
 // style, the same pattern Badge's `mono` modifier uses. The docs set `code` at
-// text-[13px]; the engine resolves only token sizes, so it falls back to the
+// text-[13px]; the type scale resolves only token sizes, so it falls back to the
 // nearest one (text-sm), as Kbd does for its 11px label.
 
 export interface TypographyProps {
@@ -34,23 +35,9 @@ export interface TypographyProps {
   caption?: boolean;
   code?: boolean;
   mono?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  style?: StyleProp<TextStyle>;
 }
-
-type Role =
-  | "display"
-  | "h1"
-  | "h2"
-  | "h3"
-  | "h4"
-  | "h5"
-  | "body"
-  | "small"
-  | "tiny"
-  | "muted"
-  | "caption"
-  | "code"
-  | "mono";
 
 // Role precedence when more than one is passed: first match wins. Order runs
 // largest-to-smallest, headings before helper styles, so a conflicting pair
@@ -72,37 +59,17 @@ function roleOf(p: TypographyProps): Role {
   return "body";
 }
 
-// Token-backed class set per role. Mirrors the docs' typeScale, with explicit
-// text-foreground where the docs relied on inherited page color (RN text does
-// not cascade), and font-mono dropped in favor of the inline style below.
-const ROLE_CLASS: Record<Role, string> = {
-  display: "text-5xl font-bold tracking-tight text-foreground",
-  h1: "text-4xl font-bold tracking-tight text-foreground",
-  h2: "text-3xl font-semibold tracking-tight text-foreground",
-  h3: "text-2xl font-semibold tracking-tight text-foreground",
-  h4: "text-xl font-semibold tracking-tight text-foreground",
-  h5: "text-lg font-semibold text-foreground",
-  body: "text-sm leading-relaxed text-foreground",
-  small: "text-sm text-muted-foreground",
-  tiny: "text-xs text-muted-foreground",
-  muted: "text-sm text-muted-foreground",
-  caption: "text-xs uppercase tracking-wide text-muted-foreground",
-  code: "self-start rounded bg-muted px-1.5 py-0.5 text-sm text-foreground",
-  mono: "text-sm text-foreground",
-};
-
-// Roles whose face is monospace; the engine has no font-family utility, so
-// supply RN's cross-platform alias inline (matches Badge's mono modifier).
-const MONO_ROLES = new Set<Role>(["code", "mono"]);
-
 export function Typography(props: TypographyProps) {
-  const { children, className } = props;
+  const { children, style } = props;
+  const { tokens } = useTheme();
   const role = roleOf(props);
-  const label = cn(ROLE_CLASS[role], className);
-  const monoStyle = MONO_ROLES.has(role) ? { fontFamily: "monospace" } : undefined;
+
+  // The mono/code roles ask for a monospace face; there is no font-family
+  // utility, so request the cross-platform monospace alias via inline style.
+  const monoStyle = MONO_ROLES.has(role) ? { fontFamily: "monospace" as const } : null;
 
   return (
-    <Text className={label} style={monoStyle}>
+    <Text style={[roleType[role], roleColor(tokens, role), monoStyle, style]}>
       {children}
     </Text>
   );

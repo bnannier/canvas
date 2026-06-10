@@ -1,5 +1,6 @@
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle, type ColorTokens } from "../../style/index.js";
+import * as s from "./pagination.styles.js";
+import { type Size } from "./pagination.styles.js";
 
 // Pagination is page-of-N navigation for tables and lists: a horizontal row of
 // page-number buttons flanked by Prev/Next controls, with the current page
@@ -16,9 +17,9 @@ import { View, Pressable, Text } from "../../engine/index.js";
 //     compact, then the numbered default.
 //   - Size: `small`, `large` (omit for the default, medium size).
 //
-// The engine has no icon utility, so Prev/Next use reading-direction single
-// guillemet glyphs ("‹" / "›") rendered as Text rather than SVG chevrons, the
-// size selector uses a "▾" caret glyph, and the truncation gap is an ellipsis
+// There is no icon utility at this layer, so Prev/Next use reading-direction
+// single guillemet glyphs ("‹" / "›") rendered as Text rather than SVG chevrons,
+// the size selector uses a "▾" caret glyph, and the truncation gap is an ellipsis
 // glyph ("…").
 
 export interface PaginationProps {
@@ -51,10 +52,9 @@ export interface PaginationProps {
   large?: boolean;
 
   disabled?: boolean;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Size = "small" | "default" | "large";
 
 // Size precedence when more than one is passed: first match wins.
 function sizeOf(p: PaginationProps): Size {
@@ -71,19 +71,6 @@ function variantOf(p: PaginationProps): Variant {
   if (p.compact) return "compact";
   return "numbered";
 }
-
-// Square-ish button footprint per size (height + matching min width).
-const ITEM_SIZE: Record<Size, string> = {
-  small: "h-8 min-w-8 px-2",
-  default: "h-9 min-w-9 px-2.5",
-  large: "h-10 min-w-10 px-3",
-};
-
-const LABEL_SIZE: Record<Size, string> = {
-  small: "text-xs",
-  default: "text-sm",
-  large: "text-sm",
-};
 
 // Sentinel inserted into the page list for a truncation gap.
 const GAP = -1;
@@ -112,36 +99,38 @@ function pageWindow(current: number, total: number): number[] {
 interface ControlProps {
   glyph: string;
   size: Size;
+  tokens: ColorTokens;
   disabled: boolean;
   accessibilityLabel: string;
   onPress: () => void;
 }
 
 // A Prev/Next chevron control. Reads as a square page button without a number.
-function Control({ glyph, size, disabled, accessibilityLabel, onPress }: ControlProps) {
-  const container = cn(
-    "flex-row items-center justify-center rounded-md border border-input bg-background active:opacity-90",
-    ITEM_SIZE[size],
-    disabled && "opacity-50",
-  );
+function Control({ glyph, size, tokens, disabled, accessibilityLabel, onPress }: ControlProps) {
   return (
     <Pressable
-      className={container}
+      style={({ pressed }) => [
+        s.controlBox(tokens),
+        s.itemSize[size],
+        disabled ? { opacity: 0.5 } : null,
+        pressed ? { opacity: 0.9 } : null,
+      ]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
     >
-      <Text className={cn("font-medium text-foreground", LABEL_SIZE[size])}>{glyph}</Text>
+      <Text style={[s.controlLabel(tokens), s.labelSize[size]]}>{glyph}</Text>
     </Pressable>
   );
 }
 
 export function Pagination(props: PaginationProps) {
-  const { onChange, disabled, className } = props;
+  const { onChange, disabled, style } = props;
   const size = sizeOf(props);
   const variant = variantOf(props);
+  const { tokens } = useTheme();
 
   // Clamp inputs so the control never renders an out-of-range current page.
   const total = Math.max(1, Math.floor(props.total ?? 1));
@@ -160,6 +149,7 @@ export function Pagination(props: PaginationProps) {
     <Control
       glyph="‹"
       size={size}
+      tokens={tokens}
       disabled={disabled || atStart}
       accessibilityLabel="Previous page"
       onPress={() => go(current - 1)}
@@ -169,6 +159,7 @@ export function Pagination(props: PaginationProps) {
     <Control
       glyph="›"
       size={size}
+      tokens={tokens}
       disabled={disabled || atEnd}
       accessibilityLabel="Next page"
       onPress={() => go(current + 1)}
@@ -178,9 +169,9 @@ export function Pagination(props: PaginationProps) {
   // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
   if (variant === "compact") {
     return (
-      <View className={cn("flex-row items-center gap-2", className)}>
+      <View style={[s.compactRow, style]}>
         {prev}
-        <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>
+        <Text style={[s.mutedLabel(tokens), s.labelSize[size]]}>
           {`Page ${current} of ${total}`}
         </Text>
         {next}
@@ -189,8 +180,8 @@ export function Pagination(props: PaginationProps) {
   }
 
   // With-size: a "Rows per page" selector ahead of the compact indicator and the
-  // Prev/Next controls. The engine has no native select, so the selector is a
-  // closed trigger (value + caret) that advances through `pageSizes` on press.
+  // Prev/Next controls. There is no native select, so the selector is a closed
+  // trigger (value + caret) that advances through `pageSizes` on press.
   if (variant === "withSize") {
     const sizes = props.pageSizes ?? [10, 25, 50];
     const pageSize = props.pageSize ?? sizes[0] ?? 10;
@@ -200,30 +191,25 @@ export function Pagination(props: PaginationProps) {
       const nextSize = sizes[(i + 1) % sizes.length];
       if (nextSize !== undefined && nextSize !== pageSize) props.onPageSizeChange?.(nextSize);
     };
-    const selector = cn(
-      "flex-row items-center justify-between gap-1 rounded-md border border-input bg-background",
-      ITEM_SIZE[size],
-      disabled && "opacity-50",
-    );
     return (
-      <View className={cn("flex-row items-center gap-4", className)}>
-        <View className="flex-row items-center gap-2">
-          <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>Rows per page</Text>
+      <View style={[s.withSizeRow, style]}>
+        <View style={s.selectorCluster}>
+          <Text style={[s.mutedLabel(tokens), s.labelSize[size]]}>Rows per page</Text>
           <Pressable
-            className={selector}
+            style={[s.selectorBox(tokens), s.itemSize[size], disabled ? { opacity: 0.5 } : null]}
             onPress={cycleSize}
             disabled={disabled}
             accessibilityRole="button"
             accessibilityLabel="Rows per page"
           >
-            <Text className={cn("font-medium text-foreground", LABEL_SIZE[size])}>{pageSize}</Text>
-            <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>▾</Text>
+            <Text style={[s.controlLabel(tokens), s.labelSize[size]]}>{pageSize}</Text>
+            <Text style={[s.mutedLabel(tokens), s.labelSize[size]]}>▾</Text>
           </Pressable>
         </View>
-        <Text className={cn("text-muted-foreground", LABEL_SIZE[size])}>
+        <Text style={[s.mutedLabel(tokens), s.labelSize[size]]}>
           {`Page ${current} of ${total}`}
         </Text>
-        <View className="flex-row items-center gap-1">
+        <View style={s.controlPair}>
           {prev}
           {next}
         </View>
@@ -235,14 +221,14 @@ export function Pagination(props: PaginationProps) {
   const window = pageWindow(current, total);
 
   return (
-    <View className={cn("flex-row items-center gap-1", className)}>
+    <View style={[s.numberedRow, style]}>
       {prev}
       {window.map((p, i) => {
         if (p === GAP) {
           return (
             <Text
               key={`gap-${i}`}
-              className={cn("px-1 text-muted-foreground", LABEL_SIZE[size])}
+              style={[s.gapLabel(tokens), s.labelSize[size]]}
               accessibilityElementsHidden
             >
               …
@@ -250,28 +236,22 @@ export function Pagination(props: PaginationProps) {
           );
         }
         const selected = p === current;
-        const container = cn(
-          "flex-row items-center justify-center rounded-md border active:opacity-90",
-          ITEM_SIZE[size],
-          selected ? "border-primary bg-primary" : "border-input bg-background",
-          disabled && "opacity-50",
-        );
-        const label = cn(
-          "font-medium",
-          LABEL_SIZE[size],
-          selected ? "text-primary-foreground" : "text-foreground",
-        );
         return (
           <Pressable
             key={`page-${p}`}
-            className={container}
+            style={({ pressed }) => [
+              s.pageBox(tokens, selected),
+              s.itemSize[size],
+              disabled ? { opacity: 0.5 } : null,
+              pressed ? { opacity: 0.9 } : null,
+            ]}
             onPress={() => go(p)}
             disabled={disabled}
             accessibilityRole="button"
             accessibilityLabel={`Page ${p}`}
             accessibilityState={{ selected, disabled: !!disabled }}
           >
-            <Text className={label}>{p}</Text>
+            <Text style={[s.pageLabel(tokens, selected), s.labelSize[size]]}>{p}</Text>
           </Pressable>
         );
       })}

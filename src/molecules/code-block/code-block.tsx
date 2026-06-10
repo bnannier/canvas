@@ -1,6 +1,7 @@
 import { type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import * as s from "./code-block.styles.js";
+import { type Variant } from "./code-block.styles.js";
 
 // CodeBlock: a muted, rounded surface that shows preformatted code in a
 // monospace face. Newlines in `code` survive verbatim because RN Text honors
@@ -24,9 +25,8 @@ import { View, Pressable, Text } from "../../engine/index.js";
 // - `wrap` (orthogonal): let long lines wrap instead of overflowing. Ignored by
 //   the inline variant.
 //
-// The engine has no font-mono utility, so the monospace face is requested via
-// an inline `style={{ fontFamily: "monospace" }}` on each code Text (the same
-// approach Badge's `mono` modifier uses).
+// RN has no font-mono utility, so the monospace face is requested via an inline
+// `style={s.MONO}` on each code Text (the same approach Badge's `mono` uses).
 
 export interface CodeBlockProps {
   /** The code to render. Newlines are preserved (RN Text honors "\n"). */
@@ -47,10 +47,9 @@ export interface CodeBlockProps {
   /** Called when the copy affordance is pressed (text is passed back). */
   onCopy?: (code: string, event: GestureResponderEvent) => void;
 
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width, margins). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Variant = "terminal" | "numbered" | "inline" | "plain";
 
 // Variant precedence when more than one is passed: first match wins.
 function variantOf(p: CodeBlockProps): Variant {
@@ -62,15 +61,6 @@ function variantOf(p: CodeBlockProps): Variant {
 
 const DEFAULT_CODE = 'const theme = getTheme();\nsetTheme(theme === "dark" ? "light" : "dark");';
 
-// Monospace face: requested inline since the engine has no font-mono utility.
-const MONO = { fontFamily: "monospace" } as const;
-
-// The shared code surface: a muted, bordered, rounded card with comfortable
-// padding (mirrors the docs codeblockCls, minus the web-only font-mono/overflow).
-const SURFACE = "w-full self-start rounded-lg border border-border bg-muted/50";
-const CODE_TEXT = "text-foreground";
-const CODE_TYPE = "text-sm leading-relaxed";
-
 // A small, neutral chip pinned to the top-right corner for the copy affordance.
 function CopyButton({
   text,
@@ -81,37 +71,31 @@ function CopyButton({
   onCopy?: (code: string, event: GestureResponderEvent) => void;
   dark?: boolean;
 }) {
+  const { tokens } = useTheme();
+  const isDark = !!dark;
   return (
     <Pressable
-      className={cn(
-        "absolute right-2 top-2 z-10 flex-row items-center self-start rounded-md border px-2.5 py-1 active:opacity-80",
-        dark
-          ? "border-zinc-700 bg-zinc-800"
-          : "border-border bg-background shadow-sm",
-      )}
+      style={({ pressed }) => [s.copyButton(tokens, isDark), pressed ? { opacity: 0.8 } : null]}
       onPress={(e) => onCopy?.(text, e)}
       accessibilityRole="button"
       accessibilityLabel="Copy code"
     >
-      <Text className={cn("text-xs font-medium", dark ? "text-zinc-300" : "text-muted-foreground")}>
-        Copy
-      </Text>
+      <Text style={s.copyText(tokens, isDark)}>Copy</Text>
     </Pressable>
   );
 }
 
 export function CodeBlock(props: CodeBlockProps) {
-  const { code = DEFAULT_CODE, filename, language, copy, wrap, onCopy, className } = props;
+  const { code = DEFAULT_CODE, filename, language, copy, wrap, onCopy, style } = props;
   const variant = variantOf(props);
+  const { tokens } = useTheme();
   const lines = code.split("\n");
 
   // Inline: a short token rendered as an inline pill. No header, copy, or wrap.
   if (variant === "inline") {
     return (
-      <View className={cn("self-start rounded border border-border bg-muted px-1.5 py-0.5", className)}>
-        <Text className="text-foreground" style={[MONO, { fontSize: 13 }]}>
-          {code}
-        </Text>
+      <View style={[s.inlineBox(tokens), style]}>
+        <Text style={[s.codeText(tokens), s.MONO, { fontSize: 13 }]}>{code}</Text>
       </View>
     );
   }
@@ -120,28 +104,20 @@ export function CodeBlock(props: CodeBlockProps) {
   if (variant === "terminal") {
     const label = language ?? filename ?? "bash";
     return (
-      <View className={cn("relative w-full self-start overflow-hidden rounded-lg border border-border shadow-sm", className)}>
+      <View style={[s.terminalOuter(tokens), style]}>
         {/* Chrome bar: three traffic-light dots and a faint label. */}
-        <View className="flex-row items-center gap-1.5 border-b border-zinc-700 bg-zinc-800 px-4 py-2.5">
-          <View className="h-3 w-3 rounded-full bg-red-500" />
-          <View className="h-3 w-3 rounded-full bg-amber-500" />
-          <View className="h-3 w-3 rounded-full bg-green-500" />
-          <Text className="ml-2 text-xs text-zinc-400" style={MONO}>
-            {label}
-          </Text>
+        <View style={s.terminalChrome}>
+          <View style={s.trafficDot("red")} />
+          <View style={s.trafficDot("amber")} />
+          <View style={s.trafficDot("green")} />
+          <Text style={[s.terminalLabel, s.MONO]}>{label}</Text>
         </View>
         {/* Body: each line gets a non-selectable "$ " prompt. */}
-        <View className="bg-zinc-900 p-4">
+        <View style={s.terminalBody}>
           {lines.map((line, i) => (
-            <View key={i} className="flex-row">
-              <Text className="text-emerald-400" style={MONO}>
-                {"$ "}
-              </Text>
-              <Text
-                className="flex-1 text-zinc-100"
-                style={MONO}
-                numberOfLines={wrap ? undefined : 1}
-              >
+            <View key={i} style={s.terminalRow}>
+              <Text style={[s.terminalPrompt, s.MONO]}>{"$ "}</Text>
+              <Text style={[s.terminalLine, s.MONO]} numberOfLines={wrap ? undefined : 1}>
                 {line}
               </Text>
             </View>
@@ -155,23 +131,22 @@ export function CodeBlock(props: CodeBlockProps) {
   // Numbered: the plain surface with a right-aligned line-number gutter.
   if (variant === "numbered") {
     return (
-      <View className={cn("relative", className)}>
-        <View className={cn(SURFACE, "flex-row p-4")}>
+      <View style={[s.relative, style]}>
+        <View style={[s.surface(tokens), s.numberedSurface]}>
           {/* Gutter: right-aligned, dimmed line numbers. */}
-          <View className="mr-4 items-end">
+          <View style={s.numberedGutter}>
             {lines.map((_, i) => (
-              <Text key={i} className={cn(CODE_TYPE, "text-muted-foreground")} style={MONO}>
+              <Text key={i} style={[s.codeType, s.gutterText(tokens), s.MONO]}>
                 {String(i + 1)}
               </Text>
             ))}
           </View>
           {/* Code column: one Text per line so the gutter stays aligned. */}
-          <View className="flex-1">
+          <View style={s.numberedCodeCol}>
             {lines.map((line, i) => (
               <Text
                 key={i}
-                className={cn(CODE_TYPE, CODE_TEXT)}
-                style={MONO}
+                style={[s.codeType, s.codeText(tokens), s.MONO]}
                 numberOfLines={wrap ? undefined : 1}
               >
                 {line}
@@ -186,11 +161,10 @@ export function CodeBlock(props: CodeBlockProps) {
 
   // Plain (default): the muted code surface, padded, monospace.
   return (
-    <View className={cn("relative", className)}>
-      <View className={cn(SURFACE, "p-4")}>
+    <View style={[s.relative, style]}>
+      <View style={[s.surface(tokens), s.surfacePad]}>
         <Text
-          className={cn(CODE_TYPE, CODE_TEXT)}
-          style={MONO}
+          style={[s.codeType, s.codeText(tokens), s.MONO]}
           numberOfLines={wrap ? undefined : lines.length}
         >
           {code}

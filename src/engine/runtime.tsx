@@ -4,7 +4,7 @@
 // (desktop-first responsive); View/Text/Pressable are the styled primitives
 // components compose from.
 
-import { type ReactNode, createContext, useContext, useMemo } from "react";
+import { useMemo } from "react";
 import {
   View as RNView,
   Text as RNText,
@@ -13,7 +13,6 @@ import {
   TextInput as RNTextInput,
   ScrollView as RNScrollView,
   useWindowDimensions,
-  useColorScheme,
   type ViewProps as RNViewProps,
   type TextProps as RNTextProps,
   type PressableProps as RNPressableProps,
@@ -27,55 +26,10 @@ import {
   type ImageStyle,
 } from "react-native";
 import { resolve, type InteractionState, type RNStyle } from "./resolve.js";
-import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
-
-// Surface treatment. "glass" makes surface fills translucent across every
-// component (see glassByScheme). It is a theming dimension, like the color
-// scheme, not a per-component prop.
-type Surface = "default" | "glass";
-
-interface ThemeValue {
-  scheme: ColorScheme;
-  surface: Surface;
-  tokens: ColorTokens;
-  dark: boolean;
-}
-
-const ThemeContext = createContext<ThemeValue | null>(null);
-const FALLBACK: ThemeValue = { scheme: "light", surface: "default", tokens: colorsByScheme.light, dark: false };
-
-export interface ThemeProviderProps {
-  /** Force a color scheme. Omit to follow the OS appearance. */
-  scheme?: ColorScheme;
-  /**
-   * Surface treatment. "glass" makes every surface fill (card, popover)
-   * translucent, so all surface components read as glass; "default" is solid.
-   * This is the theming-level glass switch, no per-component glass prop.
-   */
-  surface?: Surface;
-  children: ReactNode;
-}
-
-export function ThemeProvider({ scheme, surface = "default", children }: ThemeProviderProps) {
-  const system = useColorScheme();
-  const active: ColorScheme = scheme ?? (system === "dark" ? "dark" : "light");
-  const value = useMemo<ThemeValue>(
-    () => ({
-      scheme: active,
-      surface,
-      tokens: surface === "glass"
-        ? { ...colorsByScheme[active], ...glassByScheme[active] }
-        : colorsByScheme[active],
-      dark: active === "dark",
-    }),
-    [active, surface],
-  );
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-}
-
-export function useTheme(): ThemeValue {
-  return useContext(ThemeContext) ?? FALLBACK;
-}
+// The theme runtime has moved to src/style; re-export it so engine consumers
+// still resolve ThemeProvider/useTheme during the migration.
+import { useTheme, ThemeProvider, type ThemeProviderProps } from "../style/theme.js";
+export { useTheme, ThemeProvider, type ThemeProviderProps };
 
 /** Resolve a className string to an RN style for the active theme and viewport. */
 export function useStyles(className: string, state?: InteractionState): RNStyle {

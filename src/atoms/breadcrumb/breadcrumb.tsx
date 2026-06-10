@@ -1,8 +1,8 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
+import * as s from "./breadcrumb.styles.js";
 
 // A breadcrumb is a horizontal trail of links separated by a divider glyph, with
 // the last item current (non-link, emphasized). Ancestors are muted links; the
@@ -10,9 +10,9 @@ import { Icon } from "../icon/icon.js";
 //
 // Boolean-prop API, one axis: the separator style. Pick one of `chevron`
 // (default), `slash`, or `dot`; first match wins (mirrors Button's intentOf). The
-// engine has no SVG utility, so the chevron is a reading-direction glyph (the
-// single-guillemet "›") rather than an icon, keeping every separator a Text glyph
-// pointing in the reading direction.
+// foundation has no SVG utility here, so the chevron is a reading-direction glyph
+// (the single-guillemet "›") rather than an icon, keeping every separator a Text
+// glyph pointing in the reading direction.
 
 export interface BreadcrumbProps {
   /**
@@ -31,7 +31,8 @@ export interface BreadcrumbProps {
   homeIcon?: boolean;
   /** Fired with the crumb label and its index when a link (non-last) is pressed. */
   onItemPress?: (item: string, index: number) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition. */
+  style?: StyleProp<ViewStyle>;
 }
 
 type Separator = "chevron" | "slash" | "dot";
@@ -46,65 +47,61 @@ function separatorOf(p: BreadcrumbProps): Separator {
 
 // The divider glyph per style. A centered middot for `dot`, a forward slash for
 // `slash`, and a reading-direction single guillemet for `chevron` (stands in for
-// the SVG chevron the engine cannot render).
+// the SVG chevron not rendered here).
 const SEPARATOR_GLYPH: Record<Separator, string> = {
   chevron: "›",
   slash: "/",
   dot: "·",
 };
 
-// The nav row: wrapping horizontal trail, small muted type as the baseline.
-const NAV = "flex-row flex-wrap items-center gap-1.5";
-// A muted ancestor link; presses dim it for press feedback (RN has no hover).
-const LINK = "text-sm text-muted-foreground active:opacity-70";
-// The current page: emphasized foreground text, not a link.
-const CURRENT = "text-sm font-medium text-foreground";
-// The divider glyph: quieter than the labels so it reads as a path divider.
-const SEPARATOR = "text-sm text-muted-foreground/60";
-
 export interface BreadcrumbItemProps {
   children?: ReactNode;
   /** Render as the current page: emphasized foreground text, non-interactive. */
   current?: boolean;
   onPress?: (event: GestureResponderEvent) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition. */
+  style?: StyleProp<TextStyle>;
 }
 
 // A single crumb. Current crumbs are plain emphasized text; ancestors are muted,
 // pressable links.
 export function BreadcrumbItem(props: BreadcrumbItemProps) {
-  const { children, current, onPress, className } = props;
+  const { children, current, onPress, style } = props;
+  const { tokens } = useTheme();
   if (children == null) return null;
   if (current) {
-    return <Text className={cn(CURRENT, className)} accessibilityRole="text">{children}</Text>;
+    return <Text style={[s.current(tokens), style]} accessibilityRole="text">{children}</Text>;
   }
   return (
     <Pressable onPress={onPress} accessibilityRole="link">
-      <Text className={cn(LINK, className)}>{children}</Text>
+      {({ pressed }) => (
+        <Text style={[s.link(tokens), pressed ? { opacity: 0.7 } : null, style]}>{children}</Text>
+      )}
     </Pressable>
   );
 }
 
 export function Breadcrumb(props: BreadcrumbProps) {
-  const { items, homeIcon, onItemPress, className } = props;
+  const { items, homeIcon, onItemPress, style } = props;
+  const { tokens } = useTheme();
   const trail = items ?? [];
   const separator = separatorOf(props);
   const glyph = SEPARATOR_GLYPH[separator];
 
   return (
-    <View className={cn(NAV, className)} accessibilityRole="header">
+    <View style={[s.nav, style]} accessibilityRole="header">
       {homeIcon ? (
-        <View className="flex-row items-center gap-1.5">
+        <View style={s.crumb}>
           <Pressable
             onPress={() => onItemPress?.("Home", 0)}
             accessibilityRole="link"
             accessibilityLabel="Home"
-            className="active:opacity-70"
+            style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}
           >
             <Icon home muted size={14} />
           </Pressable>
           {trail.length === 0 ? null : (
-            <Text className={SEPARATOR} accessibilityElementsHidden>
+            <Text style={s.separator(tokens)} accessibilityElementsHidden>
               {glyph}
             </Text>
           )}
@@ -113,7 +110,7 @@ export function Breadcrumb(props: BreadcrumbProps) {
       {trail.map((item, index) => {
         const last = index === trail.length - 1;
         return (
-          <View key={`${index}-${item}`} className="flex-row items-center gap-1.5">
+          <View key={`${index}-${item}`} style={s.crumb}>
             <BreadcrumbItem
               current={last}
               onPress={last ? undefined : () => onItemPress?.(item, index)}
@@ -121,7 +118,7 @@ export function Breadcrumb(props: BreadcrumbProps) {
               {item}
             </BreadcrumbItem>
             {last ? null : (
-              <Text className={SEPARATOR} accessibilityElementsHidden>
+              <Text style={s.separator(tokens)} accessibilityElementsHidden>
                 {glyph}
               </Text>
             )}

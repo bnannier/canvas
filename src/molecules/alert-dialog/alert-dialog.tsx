@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
+import * as s from "./alert-dialog.styles.js";
+import { type Width } from "./alert-dialog.styles.js";
 
 // AlertDialog: a terse yes/no confirmation modal, the compact sibling of Dialog.
 // It poses a question (title), an optional short description, and a right-aligned
@@ -47,10 +48,9 @@ export interface AlertDialogProps {
   // Action handlers.
   onConfirm?: () => void;
   onCancel?: () => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Width = "narrow" | "small" | "medium" | "large";
 
 // Width precedence when more than one is passed: first match wins.
 function widthOf(p: AlertDialogProps): Width {
@@ -59,15 +59,6 @@ function widthOf(p: AlertDialogProps): Width {
   if (p.large) return "large";
   return "medium";
 }
-
-// The engine has no named max-w scale, so widths are explicit pixels
-// (mirroring Tailwind's max-w-xs..lg: 320 / 384 / 448 / 512).
-const PANEL_WIDTH: Record<Width, string> = {
-  narrow: "max-w-[320px]",
-  small: "max-w-[384px]",
-  medium: "max-w-[448px]",
-  large: "max-w-[512px]",
-};
 
 export function AlertDialog(props: AlertDialogProps) {
   const {
@@ -82,8 +73,10 @@ export function AlertDialog(props: AlertDialogProps) {
     destructive,
     onConfirm,
     onCancel,
-    className,
+    style,
   } = props;
+
+  const { tokens } = useTheme();
 
   // Uncontrolled by default: the trigger opens the dialog and an action closes
   // it; a controlled `open` prop overrides this.
@@ -100,48 +93,54 @@ export function AlertDialog(props: AlertDialogProps) {
   // backdrop: a centered, rounded scrim with presence in the preview (explicit
   // minHeight) so the card reads as a modal within the area.
   return (
-    <View className="self-start">
+    <View style={s.root}>
       {trigger != null ? (
         <Button outline small onPress={() => setOpen(true)}>
           {trigger}
         </Button>
       ) : null}
       {open ? (
-        <View
-          className={cn(trigger != null && "mt-3", "items-center justify-center rounded-lg bg-black/50 p-8")}
-          style={{ minHeight: 200 }}
-        >
-          <View
-            className={cn(
-              "w-full rounded-lg border border-border bg-popover p-6 shadow-xl",
-              PANEL_WIDTH[width],
-              className,
-            )}
-          >
-            {title != null ? (
-              <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
-            ) : null}
-            {description != null ? (
-              <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
-            ) : null}
+        <View style={[s.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}>
+          <View style={[s.panelBase, s.panelSurface(tokens), s.panelWidth[width], style]}>
+            {title != null ? <Text style={s.title(tokens)}>{title}</Text> : null}
+            {description != null ? <Text style={s.description(tokens)}>{description}</Text> : null}
             {withInput ? (
-              <View className="mt-4">
-                <Text className="text-sm font-medium text-foreground mb-1.5">
-                  Type DELETE to confirm
-                </Text>
+              <View style={s.inputBlock}>
+                <Text style={s.inputLabel(tokens)}>Type DELETE to confirm</Text>
                 <Input placeholder="DELETE" />
               </View>
             ) : null}
-            <View className="flex-row justify-end gap-2 mt-6">
-              <Button outline small onPress={() => { onCancel?.(); setOpen(false); }}>
+            <View style={s.actions}>
+              <Button
+                outline
+                small
+                onPress={() => {
+                  onCancel?.();
+                  setOpen(false);
+                }}
+              >
                 {cancelLabel}
               </Button>
               {destructive ? (
-                <Button destructive small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                <Button
+                  destructive
+                  small
+                  onPress={() => {
+                    onConfirm?.();
+                    setOpen(false);
+                  }}
+                >
                   {confirmLabel}
                 </Button>
               ) : (
-                <Button primary small onPress={() => { onConfirm?.(); setOpen(false); }}>
+                <Button
+                  primary
+                  small
+                  onPress={() => {
+                    onConfirm?.();
+                    setOpen(false);
+                  }}
+                >
                   {confirmLabel}
                 </Button>
               )}

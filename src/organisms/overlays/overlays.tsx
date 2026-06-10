@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { cn } from "../../cn.js";
-import { View, Text } from "../../engine/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
+import * as s from "./overlays.styles.js";
+import { type Placement } from "./overlays.styles.js";
 
 // Overlay: a dim backdrop with a surface anchored to a side or the center,
 // rendered INLINE for the docs preview. Rather than a full-screen portal/Modal,
@@ -35,10 +36,9 @@ export interface OverlayProps {
   doneLabel?: string;
   // Action handler.
   onDone?: () => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition on the overlay surface. */
+  style?: StyleProp<ViewStyle>;
 }
-
-type Placement = "drawer" | "sheet" | "modal";
 
 // Placement precedence when more than one is passed: first match wins.
 function placementOf(p: OverlayProps): Placement {
@@ -48,24 +48,9 @@ function placementOf(p: OverlayProps): Placement {
   return "drawer";
 }
 
-// The backdrop's alignment per placement. The modal centers its card; the
-// drawer and sheet let the absolutely-positioned surface anchor itself.
-const BACKDROP_PLACEMENT: Record<Placement, string> = {
-  drawer: "",
-  sheet: "",
-  modal: "items-center justify-center",
-};
-
-// The overlay surface per placement: drawer anchors right + full height, sheet
-// anchors to the bottom edge, modal is a self-centered floating card.
-const SURFACE_PLACEMENT: Record<Placement, string> = {
-  drawer: "absolute top-0 right-0 bottom-0 w-[300px] bg-popover border-l border-border p-5 shadow-xl",
-  sheet: "absolute left-0 right-0 bottom-0 bg-popover border-t border-border rounded-t-lg p-5 shadow-xl",
-  modal: "self-center my-12 w-full max-w-[420px] bg-popover border border-border rounded-lg p-6 shadow-xl",
-};
-
 export function Overlay(props: OverlayProps) {
-  const { title, description, trigger, open: openProp, onOpenChange, doneLabel = "Done", onDone, className } = props;
+  const { title, description, trigger, open: openProp, onOpenChange, doneLabel = "Done", onDone, style } = props;
+  const { tokens } = useTheme();
 
   // Uncontrolled by default: the trigger opens the overlay and Done closes it;
   // a controlled `open` prop overrides this.
@@ -82,9 +67,9 @@ export function Overlay(props: OverlayProps) {
   // backdrop: a rounded, clipped scrim with explicit presence in the preview
   // (minHeight) so the surface reads as an overlay within the area.
   return (
-    <View className="w-full">
+    <View style={s.root}>
       {trigger != null ? (
-        <View className="self-start">
+        <View style={s.triggerWrap}>
           <Button outline small onPress={() => setOpen(true)}>
             {trigger}
           </Button>
@@ -92,22 +77,25 @@ export function Overlay(props: OverlayProps) {
       ) : null}
       {open ? (
         <View
-          className={cn(
-            trigger != null && "mt-3",
-            "relative w-full overflow-hidden rounded-lg bg-black/50",
-            BACKDROP_PLACEMENT[placement],
-          )}
-          style={{ minHeight: 280 }}
+          style={[
+            trigger != null ? s.backdropWithTrigger : null,
+            s.backdrop(),
+            s.backdropPlacement[placement],
+            { minHeight: 280 },
+          ]}
         >
-          <View className={cn(SURFACE_PLACEMENT[placement], className)}>
-            {title != null ? (
-              <Text className="text-base font-semibold text-popover-foreground">{title}</Text>
-            ) : null}
-            {description != null ? (
-              <Text className="text-sm text-muted-foreground mt-2">{description}</Text>
-            ) : null}
-            <View className="flex-row justify-end mt-6">
-              <Button primary small onPress={() => { onDone?.(); setOpen(false); }}>
+          <View style={[s.surface(tokens, placement), style]}>
+            {title != null ? <Text style={s.title(tokens)}>{title}</Text> : null}
+            {description != null ? <Text style={s.description(tokens)}>{description}</Text> : null}
+            <View style={s.footer}>
+              <Button
+                primary
+                small
+                onPress={() => {
+                  onDone?.();
+                  setOpen(false);
+                }}
+              >
                 {doneLabel}
               </Button>
             </View>

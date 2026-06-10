@@ -1,11 +1,12 @@
-import { cn } from "../../cn.js";
-import { View, Pressable, Text } from "../../engine/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Checkbox } from "../checkbox/checkbox.js";
+import * as s from "./listbox.styles.js";
+import { type Mode, type Size } from "./listbox.styles.js";
 
 // An inline, selectable list of options rendered directly (not a popover). Each
 // row is a Pressable. Two selection modes, mutually exclusive:
 //
-// 1. Single-select (default): the chosen row is filled with bg-accent and shows
+// 1. Single-select (default): the chosen row is filled with the accent and shows
 //    a leading checkmark ("✓"); at most one row is the value.
 // 2. Multi-select (`multi`): every row carries a leading Checkbox reflecting its
 //    own selected state, and any number of rows may be selected at once.
@@ -39,12 +40,12 @@ export interface ListboxProps {
   disabled?: boolean;
   /** Fired with the pressed option's index. */
   onSelect?: (index: number) => void;
-  className?: string;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
 }
 
 // Selection mode precedence when more than one axis prop is passed: first match
 // wins. Only `multi` competes here; the default is single-select.
-type Mode = "single" | "multi";
 function modeOf(p: ListboxProps): Mode {
   if (p.multi) return "multi";
   return "single";
@@ -52,60 +53,42 @@ function modeOf(p: ListboxProps): Mode {
 
 // Size precedence when more than one is passed: first match wins (small over
 // large). The default is medium.
-type Size = "small" | "medium" | "large";
 function sizeOf(p: ListboxProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "medium";
 }
 
-// Per-row vertical padding by size: small reads like the legacy h-8 trigger,
-// medium like h-9, large like h-10.
-const ROW_SIZE: Record<Size, string> = {
-  small: "px-2 py-1.5",
-  medium: "px-2 py-2",
-  large: "px-2 py-2.5",
-};
-
-// Label text size tracks the row size.
-const LABEL_SIZE: Record<Size, string> = {
-  small: "text-xs",
-  medium: "text-sm",
-  large: "text-sm",
-};
-
-// A bordered container reads as a popover surface: rounded card, hairline
-// border, popover fill, and a 4px inset so rows don't touch the edge.
-const CONTAINER_BORDERED = "rounded-md border border-border bg-popover p-1";
-
-// Each row: a horizontal Pressable with a leading control, the label/detail
-// stack, and a subtle press-state fill. Size adds the vertical padding.
-const ROW_BASE = "flex-row items-center gap-2 rounded-sm";
-
 export function Listbox(props: ListboxProps) {
-  const { items, bordered, disabled, onSelect, className } = props;
+  const { items, bordered, disabled, onSelect, style } = props;
   const mode = modeOf(props);
   const size = sizeOf(props);
+  const { tokens } = useTheme();
 
-  const container = cn(bordered && CONTAINER_BORDERED, disabled && "opacity-50", className);
+  const container: StyleProp<ViewStyle> = [
+    bordered ? s.containerBordered(tokens) : null,
+    disabled ? { opacity: 0.5 } : null,
+    style,
+  ];
 
   return (
-    <View className={container} accessibilityRole="list">
+    <View style={container} accessibilityRole="list">
       {items.map((item, index) => {
         const selected = !!item.selected;
         // Single-select fills the chosen row; multi-select leaves the row plain
         // and reflects state in the leading Checkbox instead.
-        const row = cn(
-          ROW_BASE,
-          ROW_SIZE[size],
-          !disabled && "active:bg-accent",
-          mode === "single" && selected && "bg-accent",
-        );
+        const rowBase: StyleProp<ViewStyle> = [
+          s.rowBase,
+          s.rowSize[size],
+          mode === "single" && selected ? s.rowSelected(tokens) : null,
+        ];
 
         return (
           <Pressable
             key={index}
-            className={row}
+            // The press fill (the old `active:bg-accent`) is the accent, applied
+            // only when the list is enabled.
+            style={({ pressed }) => [rowBase, !disabled && pressed ? s.rowSelected(tokens) : null]}
             onPress={disabled ? undefined : () => onSelect?.(index)}
             disabled={disabled}
             accessibilityRole={mode === "multi" ? "checkbox" : "menuitem"}
@@ -116,15 +99,11 @@ export function Listbox(props: ListboxProps) {
             ) : (
               // Reserve the checkmark column on every row so labels stay aligned
               // whether or not the row is selected.
-              <Text className="w-4 text-sm font-medium text-foreground">
-                {selected ? "✓" : ""}
-              </Text>
+              <Text style={s.checkmark(tokens)}>{selected ? "✓" : ""}</Text>
             )}
-            <View className="flex-1">
-              <Text className={cn("text-foreground", LABEL_SIZE[size])}>{item.label}</Text>
-              {item.detail != null ? (
-                <Text className="text-xs text-muted-foreground">{item.detail}</Text>
-              ) : null}
+            <View style={s.textStack}>
+              <Text style={s.label(tokens, size)}>{item.label}</Text>
+              {item.detail != null ? <Text style={s.detail(tokens)}>{item.detail}</Text> : null}
             </View>
           </Pressable>
         );
