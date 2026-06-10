@@ -58,7 +58,7 @@ So `<Button primary large loading block>` is four props drawn from four axes, al
 applied together.
 
 Glass is NOT a per-component axis: it is a theming-level surface mode, like the
-light/dark scheme. Turn it on with the engine `ThemeProvider`'s `surface="glass"`
+light/dark scheme. Turn it on with the `src/style` `ThemeProvider`'s `surface="glass"`
 prop (or `setSurface("glass")` on the web), which swaps the card and popover
 tokens to translucent so every surface component reads as glass at once. Do not
 add a per-component `glass` prop.

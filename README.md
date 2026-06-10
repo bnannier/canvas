@@ -23,7 +23,7 @@ does.
 
 ## Quick Start
 
-Wrap your app in the engine `ThemeProvider`, then compose components imported
+Wrap your app in the `ThemeProvider`, then compose components imported
 from `@olympusoss/canvas`. The provider supplies the active color scheme and
 token map; omit `scheme` to follow the OS appearance, or force it with
 `scheme="light"` / `scheme="dark"`.
@@ -97,9 +97,9 @@ need to:
 - A full component kit: buttons, inputs, cards, tables, tabs, dialogs,
   dropdowns, calendars, charts, sidebars, and more, all exported from
   `@olympusoss/canvas`.
-- The Canvas engine: design tokens, a className-to-React-Native-style resolver,
-  and the runtime (`ThemeProvider`, `useTheme`, `useStyles`, and the styled
-  `Box` / `Text` / `Pressable` primitives).
+- The style foundation: design tokens, the theme runtime (`ThemeProvider`,
+  `useTheme`), the `useResponsive` / `shadow` / `alpha` helpers, and the raw React
+  Native `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView` primitives.
 - Light and dark color schemes resolved through theme tokens.
 - Desktop-first responsiveness built into every component.
 
