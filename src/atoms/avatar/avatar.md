@@ -16,7 +16,7 @@ A photo when the account has one, falling back to two initials on a brand gradie
 <View className="flex-row items-center">
   <Avatar ring src="/rachel-chen.jpg" name="RC" />
   <Avatar ring src="/liang-bao.jpg" name="LB" className="-ml-3" />
-  <Avatar ring name="AO" className="-ml-3" />
+  <Avatar ring src="/marcus-allen.jpg" name="LB" className="-ml-3" />
   <Avatar ring src="/kira-tanaka.jpg" name="KT" className="-ml-3" />
 </View>
 ```
