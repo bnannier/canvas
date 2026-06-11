@@ -103,6 +103,18 @@ const ENTRIES: Entry[] = [
     android: { url: "https://m3.material.io/components", note: "no Material 3 stepper" },
     ios: { url: "https://developer.apple.com/design/human-interface-guidelines/", note: "no native iOS stepper" },
     web: { url: "https://tailwindui.com/components/application-ui/navigation/steps" } } },
+  { slug: "navbars", name: "Navbar", level: "organisms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/app-bars", img: `${AND}/components/appbar-small.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/navigation-bars", note: "HIG nav/toolbars (no clean control image)" },
+    web: { url: "https://catalyst.tailwindui.com/docs/navbar" } } },
+  { slug: "sidebar", name: "Sidebar", level: "organisms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/drawer", img: `${AND}/layouts/material/m3-navigation-drawer.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/sidebars", img: `${IOS}/1b09f6354f299abe909c0aa868ce701a/components-sidebars-thumbnail%402x.png` },
+    web: { url: "https://catalyst.tailwindui.com/docs/sidebar" } } },
+  { slug: "calendar", name: "Calendar (date picker)", level: "organisms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/datepickers", img: `${AND}/components/datepicker-modal.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers", img: `${IOS}/65d6693bf614da95dde6a82006037c86/pickers-date-picker-compact-expanded%402x.png` },
+    web: { url: "https://ui.shadcn.com/docs/components/calendar" } } },
 ];
 
 const PLATFORMS: Platform[] = ["android", "ios", "web"];

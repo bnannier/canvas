@@ -1,0 +1,167 @@
+import { type GestureResponderEvent } from "react-native";
+import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { Badge } from "../../atoms/badge/badge.js";
+import { type Density, type Frame } from "./sidebar.styles.js";
+
+// Shared Sidebar shell. The structure (the outer column, the titled sections, the
+// nav rows with their leading icon / label / trailing badge, the single active
+// highlight), the section normalization, the flat-index active matching, the
+// density/frame precedence, the accessibility, and the select handler live here
+// once; a platform file supplies only its skin (the row shape, the selected-row
+// highlight + label/icon color, the section heading, the frame, the press
+// feedback) and calls createSidebar.
+//
+// A sidebar is the vertical app-navigation panel that runs down the left of a
+// layout: an optional list of titled sections, each holding nav rows. A row is a
+// leading icon glyph + label, with at most one row carrying the active highlight
+// and the rest sitting inactive. Rows may carry a trailing count <Badge>.
+//
+// Boolean-prop API: one boolean per option, grouped by axis, first-match
+// precedence within an axis (mirrors Button's intentOf).
+//
+// - Density axis (pick one; default is the comfortable row): `compact` tightens
+//   each row's padding and drops the type a step for dense navigation.
+// - Frame axis (pick one; default is the flush, right-bordered column that docks
+//   against the page): `bordered`/`floating` lift the panel into a fully bordered,
+//   rounded card surface. `bordered` wins over `floating` when both are passed.
+
+// The platform-varying surface. Everything color/shape-bearing the rows, the
+// frame, and the section heading need lives here, built from the active tokens
+// (so each follows light/dark and the glass surface).
+export interface SidebarSkin {
+  /** Web paints the accent fill on a pressed (non-active) row; iOS/Android don't. */
+  pressedFill: boolean;
+  /** iOS dims the row on press; web/Android don't (null). */
+  pressedOpacity: number | null;
+  /** Android ripple over a pressed row; null on iOS/web. */
+  ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+
+  /** The outer navigation column, per frame. */
+  column: (t: ColorTokens, frame: Frame) => ViewStyle;
+  /** A titled group of nav rows. */
+  group: ViewStyle;
+  /** The section heading above a group. */
+  sectionTitle: (t: ColorTokens) => TextStyle;
+  /** The nav-row container (shape + density padding). */
+  row: (t: ColorTokens, density: Density) => ViewStyle;
+  /** The selected-row highlight fill (null when not active). */
+  rowFill: (t: ColorTokens, active: boolean) => ViewStyle | null;
+  /** The row label (flex, type, color), per active state + density. */
+  label: (t: ColorTokens, active: boolean, density: Density) => TextStyle;
+  /** The leading icon glyph color/size, per active state. */
+  icon: (t: ColorTokens, active: boolean) => TextStyle;
+}
+
+/** One nav row: a label, an optional leading icon glyph, an optional count. */
+export interface SidebarItem {
+  /** Row label (e.g. "Dashboard"). */
+  label: string;
+  /** Leading icon glyph rendered before the label (e.g. an emoji or symbol). */
+  icon?: string;
+  /** Trailing count rendered as a <Badge> (e.g. "12"). */
+  badge?: string;
+}
+
+/** A titled group of nav rows. */
+export interface SidebarSection {
+  /** Optional muted heading shown above the group. */
+  title?: string;
+  /** Rows in this group. */
+  items: SidebarItem[];
+}
+
+export interface SidebarProps {
+  /** Titled sections of nav rows. Use this or the flat `items` array. */
+  sections?: SidebarSection[];
+  /** Flat list of nav rows, wrapped into a single untitled section. */
+  items?: SidebarItem[];
+  /** The active row, by label or by flat index across all rows. */
+  active?: string | number;
+  /** Fired with the selected row and its flat index across all sections. */
+  onSelect?: (item: SidebarItem, index: number, event: GestureResponderEvent) => void;
+  // Density (pick one; default is the comfortable row).
+  compact?: boolean;
+  // Frame (pick one; default is the flush right-bordered column).
+  bordered?: boolean;
+  floating?: boolean;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
+}
+
+// Density precedence when more than one is passed: first match wins.
+function densityOf(p: SidebarProps): Density {
+  if (p.compact) return "compact";
+  return "default";
+}
+
+// Frame precedence when more than one is passed: first match wins.
+function frameOf(p: SidebarProps): Frame {
+  if (p.bordered) return "bordered";
+  if (p.floating) return "bordered";
+  return "flush";
+}
+
+/** Build a Sidebar component from a platform skin. */
+export function createSidebar(skin: SidebarSkin) {
+  return function Sidebar(props: SidebarProps) {
+    const { sections, items, active, onSelect, style } = props;
+    const density = densityOf(props);
+    const frame = frameOf(props);
+    const { tokens } = useTheme();
+
+    // Normalize to a sections list; a flat `items` array becomes one untitled
+    // section. Sections always win when both are supplied.
+    const groups: SidebarSection[] = sections ?? (items ? [{ items }] : []);
+
+    // Active match is by label or by flat index across every row in order.
+    const isActive = (item: SidebarItem, flatIndex: number): boolean => {
+      if (active == null) return false;
+      if (typeof active === "number") return active === flatIndex;
+      return active === item.label;
+    };
+
+    // Running flat index so label/index matching and onSelect agree across groups.
+    let flat = -1;
+
+    return (
+      <View style={[skin.column(tokens, frame), style]}>
+        {groups.map((section, gi) => (
+          <View key={gi} style={skin.group}>
+            {section.title != null ? (
+              <Text style={skin.sectionTitle(tokens)}>{section.title}</Text>
+            ) : null}
+            {section.items.map((item) => {
+              flat += 1;
+              const index = flat;
+              const activeRow = isActive(item, index);
+              return (
+                <Pressable
+                  key={index}
+                  android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+                  style={({ pressed }) => [
+                    skin.row(tokens, density),
+                    // The active row carries its highlight persistently; on web a
+                    // press paints it too (the old `active:bg-accent`).
+                    skin.rowFill(tokens, activeRow || (skin.pressedFill && pressed)),
+                    skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                  ]}
+                  onPress={(event) => onSelect?.(item, index, event)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activeRow }}
+                >
+                  {item.icon != null ? (
+                    <Text style={skin.icon(tokens, activeRow)}>{item.icon}</Text>
+                  ) : null}
+                  <Text style={skin.label(tokens, activeRow, density)} numberOfLines={1}>
+                    {item.label}
+                  </Text>
+                  {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        ))}
+      </View>
+    );
+  };
+}

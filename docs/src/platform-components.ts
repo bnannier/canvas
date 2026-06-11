@@ -45,6 +45,12 @@ import { Pagination as PaginationIOS } from "../../src/atoms/pagination/paginati
 import { Pagination as PaginationAndroid } from "../../src/atoms/pagination/pagination.android.js";
 import { Stepper as StepperIOS } from "../../src/organisms/stepper/stepper.ios.js";
 import { Stepper as StepperAndroid } from "../../src/organisms/stepper/stepper.android.js";
+import { Navbar as NavbarIOS } from "../../src/organisms/navbars/navbars.ios.js";
+import { Navbar as NavbarAndroid } from "../../src/organisms/navbars/navbars.android.js";
+import { Sidebar as SidebarIOS } from "../../src/organisms/sidebar/sidebar.ios.js";
+import { Sidebar as SidebarAndroid } from "../../src/organisms/sidebar/sidebar.android.js";
+import { Calendar as CalendarIOS } from "../../src/organisms/calendar/calendar.ios.js";
+import { Calendar as CalendarAndroid } from "../../src/organisms/calendar/calendar.android.js";
 
 export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -68,6 +74,9 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Tabs: TabsIOS,
     Pagination: PaginationIOS,
     Stepper: StepperIOS,
+    Navbar: NavbarIOS,
+    Sidebar: SidebarIOS,
+    Calendar: CalendarIOS,
   },
   android: {
     Switch: SwitchAndroid,
@@ -90,5 +99,8 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Tabs: TabsAndroid,
     Pagination: PaginationAndroid,
     Stepper: StepperAndroid,
+    Navbar: NavbarAndroid,
+    Sidebar: SidebarAndroid,
+    Calendar: CalendarAndroid,
   },
 };
