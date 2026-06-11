@@ -109,3 +109,24 @@ export function LiveExample({ code }: { code: string }) {
 
   return <LiveErrorBoundary key={`${platform}:${code}`}>{element}</LiveErrorBoundary>;
 }
+
+// Like LiveExample, but renders the fence at an EXPLICIT platform (not the global
+// docs toggle). Used by the /compare QA view to render the same example under web,
+// iOS, and Android side by side.
+export function LiveExampleFor({ code, platform }: { code: string; platform: "web" | "ios" | "android" }) {
+  const { tokens } = useTheme();
+  const compiled = compile(code);
+  if ("error" in compiled) return <ErrorBlock message={compiled.error} />;
+
+  const values = SCOPE_VALUES_BY_PLATFORM[platform].slice();
+  if (TOKENS_INDEX >= 0) values[TOKENS_INDEX] = tokens;
+
+  let element: ReactNode;
+  try {
+    element = compiled.factory(React, ...values);
+  } catch (e) {
+    return <ErrorBlock message={e instanceof Error ? e.message : String(e)} />;
+  }
+
+  return <LiveErrorBoundary key={`${platform}:${code}`}>{element}</LiveErrorBoundary>;
+}

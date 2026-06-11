@@ -13,6 +13,7 @@ import { IntegrationPage } from "./pages/integration";
 import { BrowserSupportPage } from "./pages/browser-support";
 import { RnPrimitivesPage } from "./pages/rn-primitives";
 import { ComponentsIndex } from "./pages/components-index";
+import { ComparePage } from "./pages/compare";
 import { NotFound } from "./pages/not-found";
 
 const router = createBrowserRouter([
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
       { path: "browser-support", element: <BrowserSupportPage /> },
       { path: "rn-primitives", element: <RnPrimitivesPage /> },
       { path: "components", element: <ComponentsIndex /> },
+      { path: "compare", element: <ComparePage /> },
       { path: "components/:slug", element: <ComponentPage /> },
       { path: "templates/:slug", element: <TemplatePage /> },
       { path: "patterns/:slug", element: <PatternPage /> },
