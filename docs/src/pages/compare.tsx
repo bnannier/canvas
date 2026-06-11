@@ -1,124 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LiveExampleFor } from "@/components/live-example";
+import { useDocsScheme } from "@/use-docs-scheme";
+import {
+  REFERENCE_STATES,
+  type ComponentRefs,
+  type PlatformRefs,
+  type RefPlatform,
+  type RefRow,
+  type RefState,
+} from "@/data/reference-states";
 
-// QA harness: for each platform-skinned component, put our live Canvas render beside
-// the real platform reference, per platform, in a table (rows = Android / iOS / Web,
-// columns = Canvas | Reference). Use the global topbar light/dark + Solid toggles to
-// check both schemes. Reference images live in docs/public/refs/<slug>-<platform>.png
-// (gitignored, captured from the iOS HIG / Material 3 / Catalyst links in
-// PLATFORM-REFERENCES.md); a missing image falls back to a link to the reference.
+// QA harness: for each platform-skinned component, put our live Canvas render
+// beside the real platform reference, per platform, in a table (rows = Android /
+// iOS / Web, columns = Canvas | Reference), so each platform's reference sits
+// directly beside that platform's Canvas render. The Reference cell holds inner
+// rows, one per VARIANT the platform documents, each showing that variant's
+// STATES, per the manifest in docs/src/data/reference-states.ts (iOS imagery is
+// exclusively Apple iOS 27 UI Kit symbol captures). Images live in
+// docs/public/refs/<platform>/<slug>/ (gitignored, captured in a browser
+// session: the kit's thumbnails are signed and cannot be hotlinked). Use the
+// global topbar light/dark + Solid toggles to check both schemes; reference
+// panels follow the active scheme where the platform publishes both renders.
 
 const RAW = import.meta.glob("../../../src/*/*/*.md", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
-type Platform = "android" | "ios" | "web";
-type Ref = { url: string; img?: string; note?: string } | null;
-type Entry = { slug: string; name: string; level: string; refs: Record<Platform, Ref> };
-
-// CDN bases for the hotlinked reference screenshots (the real control images served
-// by each design system; Apple + Android allow cross-origin <img> hotlinking). Catalyst
-// (web) renders its components as HTML with no image asset, so web stays a link.
-const AND = "https://developer.android.com/static/develop/ui/compose/images";
-const IOS = "https://docs-assets.developer.apple.com/published";
-
-// The platform-skinned components (extend as more are skinned). `url` = the reference
-// doc from PLATFORM-REFERENCES.md; `img` = a hotlinked screenshot of the real control.
-const ENTRIES: Entry[] = [
-  { slug: "button", name: "Button", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/button", img: `${AND}/components/button-filled.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/buttons", img: `${IOS}/a28d01e0e86313ce083d5db066815a5a/components-buttons-thumbnail%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/button" } } },
-  { slug: "checkbox", name: "Checkbox", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/checkbox", img: `${AND}/components/checkbox-minimal-checked.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/toggles", img: `${IOS}/ffd72e78175dc69a27016e8454030b71/checkbox-deselected%402x.png`, note: "no native iOS checkbox" },
-    web: { url: "https://catalyst.tailwindui.com/docs/checkbox" } } },
-  { slug: "radio", name: "Radio", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/radio-button", img: `${AND}/components/radiobutton2.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers", img: `${IOS}/91c45b3934ecd18b42b2bb72e64ca702/radio-button-selected%402x.png`, note: "no native iOS radio" },
-    web: { url: "https://catalyst.tailwindui.com/docs/radio" } } },
-  { slug: "switch", name: "Switch", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/switch", img: `${AND}/components/switch.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/toggles", img: `${IOS}/f4a1d653777ba4f0b6b4b7d97d704f9f/components-toggles-intro%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/switch" } } },
-  { slug: "input", name: "Input", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/text/user-input", img: `${AND}/text-textfield-hello.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/text-fields", img: `${IOS}/76a27a49c4c007b35b9564e1efc83446/components-text-field-intro%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/input" } } },
-  { slug: "textarea", name: "Textarea", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/text/user-input", img: `${AND}/text-textfield-multiline.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/text-views", img: `${IOS}/43a1eb50d986f3b2dc0765b6beca6ae9/components-text-views-thumbnail%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/textarea" } } },
-  { slug: "button-group", name: "Button Group (segmented)", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/segmented-button", img: `${AND}/components/SingleChoiceSegmentedButton.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/segmented-controls", img: `${IOS}/f82bafe0f162b0181f6d50661109464b/segmented-controls-activity-charts%402x.png` },
-    web: { url: "https://ui.shadcn.com/docs/components/toggle-group" } } },
-  { slug: "select", name: "Select", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/basicmenu1.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers", img: `${IOS}/65d6693bf614da95dde6a82006037c86/pickers-date-picker-compact-expanded%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/select" } } },
-  { slug: "combobox", name: "Combobox", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/MinimalDropdownMenu.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/combo-boxes", img: `${IOS}/34898e39063208aa3706d50629eb3ad3/components-combobox-intro%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/combobox" } } },
-  { slug: "dropdown", name: "Dropdown", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/basicmenu1.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/menus", img: `${IOS}/004bc60431be4d2765469b56e47d4781/menus-groups-visual-treatment%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/dropdown" } } },
-  { slug: "row-menu", name: "Row Menu (context menu)", level: "organisms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/basicmenu1.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/context-menus", img: `${IOS}/a330aca1a1e1f0dc65837ecb74014561/components-context-menu-intro%402x.png` },
-    web: { url: "https://www.radix-ui.com/primitives/docs/components/context-menu" } } },
-  { slug: "popover", name: "Popover", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", note: "no native Material popover" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/popovers", img: `${IOS}/ef05d3cb071e4c11209cce39b596ca99/attached-popover%402x.png` },
-    web: { url: "https://ui.shadcn.com/docs/components/popover" } } },
-  { slug: "tooltip", name: "Tooltip", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/tooltip", img: `${AND}/PlainTooltipExample.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/", note: "no native iOS tooltip" },
-    web: { url: "https://www.radix-ui.com/primitives/docs/components/tooltip" } } },
-  { slug: "dialog", name: "Dialog", level: "organisms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/dialog", img: `${AND}/components/dialog-alert.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/sheets", img: `${IOS}/56b1f2417f35468434a5cb9bb0ea6653/components-sheet-intro%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/dialog" } } },
-  { slug: "alert-dialog", name: "Alert Dialog", level: "molecules", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/dialog", img: `${AND}/components/dialog-alert.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/alerts", img: `${IOS}/e74ac90d149b111c3f2c7d21e3484100/components-alert-intro%402x.png` },
-    web: { url: "https://ui.shadcn.com/docs/components/alert-dialog" } } },
-  { slug: "overlays", name: "Overlays (sheet / drawer)", level: "organisms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/bottom-sheets", img: `${AND}/layouts/material/m3-bottom-sheet.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/sheets", img: `${IOS}/56b1f2417f35468434a5cb9bb0ea6653/components-sheet-intro%402x.png` },
-    web: { url: "https://ui.shadcn.com/docs/components/sheet" } } },
-  { slug: "spinner", name: "Spinner", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/progress", note: "M3 circular progress" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/progress-indicators", img: `${IOS}/6c1e23fcc6e04603423dacd5df6c48a3/progress-indicator-intermediate-spinner%402x.png` },
-    web: { url: "https://www.radix-ui.com/primitives/docs/components/progress" } } },
-  { slug: "tabs", name: "Tabs", level: "organisms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/tabs", img: `${AND}/primary-secondary-tab.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/tab-bars", img: `${IOS}/29a93bc69eaa415e2e3d5440474a8d36/tab-bar-badges-iphone%402x.png` },
-    web: { url: "https://headlessui.com/react/tabs" } } },
-  { slug: "pagination", name: "Pagination (light touch)", level: "atoms", refs: {
-    android: { url: "https://m3.material.io/components", note: "no Material pagination" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/page-controls", note: "iOS uses dot page controls" },
-    web: { url: "https://catalyst.tailwindui.com/docs/pagination" } } },
-  { slug: "stepper", name: "Stepper (light touch)", level: "organisms", refs: {
-    android: { url: "https://m3.material.io/components", note: "no Material 3 stepper" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/", note: "no native iOS stepper" },
-    web: { url: "https://tailwindui.com/components/application-ui/navigation/steps" } } },
-  { slug: "navbars", name: "Navbar", level: "organisms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/app-bars", img: `${AND}/components/appbar-small.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/navigation-bars", note: "HIG nav/toolbars (no clean control image)" },
-    web: { url: "https://catalyst.tailwindui.com/docs/navbar" } } },
-  { slug: "sidebar", name: "Sidebar", level: "organisms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/drawer", img: `${AND}/layouts/material/m3-navigation-drawer.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/sidebars", img: `${IOS}/1b09f6354f299abe909c0aa868ce701a/components-sidebars-thumbnail%402x.png` },
-    web: { url: "https://catalyst.tailwindui.com/docs/sidebar" } } },
-  { slug: "calendar", name: "Calendar (date picker)", level: "organisms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/datepickers", img: `${AND}/components/datepicker-modal.png` },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers", img: `${IOS}/65d6693bf614da95dde6a82006037c86/pickers-date-picker-compact-expanded%402x.png` },
-    web: { url: "https://ui.shadcn.com/docs/components/calendar" } } },
-];
-
-const PLATFORMS: Platform[] = ["android", "ios", "web"];
-const PLATFORM_LABEL: Record<Platform, string> = { android: "Android (Material 3)", ios: "iOS (HIG)", web: "Web (Catalyst)" };
+const PLATFORMS: RefPlatform[] = ["android", "ios", "web"];
+const PLATFORM_LABEL: Record<RefPlatform, string> = { android: "Android (Material 3)", ios: "iOS (iOS 27 UI Kit)", web: "Web" };
 
 // Pull the first ```tsx fence under "## Usage" from a component's markdown.
 function usageFence(md: string): string {
@@ -128,25 +35,103 @@ function usageFence(md: string): string {
   return m ? m[1].trim() : "";
 }
 
-function RefCell({ slug, platform, ref }: { slug: string; platform: Platform; ref: Ref }) {
-  const [errored, setErrored] = useState(false);
-  // Prefer the hotlinked CDN screenshot; fall back to a locally-dropped image, then a link.
-  const src = ref?.img ?? `/refs/${slug}-${platform}.png`;
+function refImage(platform: RefPlatform, slug: string, rowKey: string, stateKey: string, scheme: "light" | "dark"): string {
+  return `/refs/${platform}/${slug}/${rowKey}-${stateKey}-${scheme}.png`;
+}
+
+/**
+ * One reference state: the captured image plus its platform-native state
+ * label. In dark mode, falls back to the light capture (tagged "light only")
+ * when the platform has no dark render; if nothing is captured, shows a hint.
+ */
+function StatePanel({ platform, slug, rowKey, state, scheme }: {
+  platform: RefPlatform;
+  slug: string;
+  rowKey: string;
+  state: RefState;
+  scheme: "light" | "dark";
+}) {
+  // "exact" = scheme-matching file, "light" = light fallback in dark mode.
+  const [tier, setTier] = useState<"exact" | "light" | "missing">("exact");
+  useEffect(() => setTier("exact"), [scheme, slug, platform, rowKey, state.key]);
+
+  const src = refImage(platform, slug, rowKey, state.key, tier === "exact" ? scheme : "light");
+  const lightOnly = tier === "light" && scheme === "dark";
+
+  if (tier === "missing") {
+    return (
+      <figure style={panelStyle} title={state.note}>
+        <div style={{ ...panelImgBox, padding: "10px 8px" }}>
+          <span style={{ fontSize: 10.5, color: "var(--muted-foreground)", textAlign: "center" }}>
+            not captured
+          </span>
+        </div>
+        <figcaption style={panelLabel}>{state.label}</figcaption>
+      </figure>
+    );
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
-      {!errored ? (
-        <img src={src} alt={`${slug} ${platform} reference`} onError={() => setErrored(true)}
-          style={{ maxWidth: "100%", maxHeight: 150, borderRadius: 8, border: "1px solid var(--border)", background: "#fff" }} />
-      ) : (
-        <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
-          {ref?.note ? `${ref.note}. ` : ""}reference image not captured yet
+    <figure style={panelStyle} title={state.note}>
+      <div style={panelImgBox}>
+        <img
+          src={src}
+          alt={`${slug} ${platform} ${state.label} reference`}
+          onError={() => setTier(tier === "exact" && scheme === "dark" ? "light" : "missing")}
+          style={{ maxWidth: "100%", maxHeight: 110, display: "block" }}
+        />
+      </div>
+      <figcaption style={panelLabel}>
+        {state.label}
+        {lightOnly && <span style={{ marginLeft: 5, opacity: 0.65 }}>(light only)</span>}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** One variant's inner row: variant label + that variant's state panels. */
+function VariantRow({ slug, platform, row, scheme }: {
+  slug: string;
+  platform: RefPlatform;
+  row: RefRow;
+  scheme: "light" | "dark";
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <span style={{
+        fontSize: 10.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em",
+        color: "var(--muted-foreground)",
+      }}>
+        {row.variant}
+      </span>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {row.states.map((s) => (
+          <StatePanel key={s.key} platform={platform} slug={slug} rowKey={row.key} state={s} scheme={scheme} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** The Reference cell for one platform row: variant rows + the source link. */
+function RefCell({ slug, platform, refs }: { slug: string; platform: RefPlatform; refs?: PlatformRefs }) {
+  const scheme = useDocsScheme();
+  if (!refs) {
+    return <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>(none)</span>;
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
+      {refs.rows.map((row) => (
+        <VariantRow key={row.key} slug={slug} platform={platform} row={row} scheme={scheme} />
+      ))}
+      {refs.note && (
+        <span style={{ fontSize: 11, color: "var(--muted-foreground)", maxWidth: 460, lineHeight: 1.5 }}>
+          {refs.note}
         </span>
       )}
-      {ref && (
-        <a href={ref.url} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, color: "var(--primary)" }}>
-          ↗ {ref.note ? ref.note : "reference"}
-        </a>
-      )}
+      <a href={refs.url} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, color: "var(--primary)" }}>
+        ↗ reference
+      </a>
     </div>
   );
 }
@@ -160,12 +145,14 @@ export function ComparePage() {
         </h1>
         <p style={{ marginTop: 6, fontSize: "13.5px", color: "var(--muted-foreground)", maxWidth: 720, lineHeight: 1.6 }}>
           Each skinned component's live Canvas render beside the real platform reference, per
-          platform. Toggle light/dark and Solid/Glass in the topbar. A row's Canvas must match its
-          Reference, and the three rows must look distinct.
+          platform, across every variant and state the platform documents (iOS imagery comes
+          straight from the Apple iOS 27 UI Kit symbols). Toggle light/dark and Solid/Glass in
+          the topbar. A row's Canvas must match its Reference, and the three rows must look
+          distinct.
         </p>
       </header>
 
-      {ENTRIES.map((e) => {
+      {REFERENCE_STATES.map((e: ComponentRefs) => {
         const md = RAW[`../../../src/${e.level}/${e.slug}/${e.slug}.md`] ?? "";
         const code = usageFence(md);
         return (
@@ -190,7 +177,7 @@ export function ComparePage() {
                         {code ? <LiveExampleFor code={code} platform={p} /> : <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>no usage example</span>}
                       </div>
                     </td>
-                    <td style={td}><RefCell slug={e.slug} platform={p} ref={e.refs[p]} /></td>
+                    <td style={td}><RefCell slug={e.slug} platform={p} refs={e.refs[p]} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -201,6 +188,13 @@ export function ComparePage() {
     </div>
   );
 }
+
+const panelStyle: React.CSSProperties = { margin: 0, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" };
+const panelImgBox: React.CSSProperties = {
+  display: "flex", alignItems: "center", justifyContent: "center", minWidth: 56, minHeight: 40,
+  maxWidth: 220, borderRadius: 8, border: "1px solid var(--border)", background: "var(--card)", overflow: "hidden",
+};
+const panelLabel: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: "var(--muted-foreground)", letterSpacing: "0.02em" };
 
 function th(width?: number): React.CSSProperties {
   return { width, textAlign: "left", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--muted-foreground)", padding: "6px 10px", borderBottom: "1px solid var(--border)" };
