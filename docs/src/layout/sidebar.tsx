@@ -14,7 +14,7 @@ import {
   ChartLine, Lock, Settings, Check, Eye,
   Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid, Code,
   Group, ListChecks, MessageSquareWarning,
-  BookOpen, Plug, Moon, Globe,
+  BookOpen, Plug, Moon, Globe, GitCompare,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -408,6 +408,17 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
             );
           })}
         </nav>
+
+        {/* Platform compare, a fixed footer below the scrollable nav so it is
+            always visible at the very bottom of the sidebar. Kept out of
+            NAV_GROUPS so it stays a flat link (not a collapsible group) and
+            does not enter page-nav's prev/next chain. */}
+        <div
+          className="sidebar-group"
+          style={{ padding: "0.5rem", borderTop: "1px solid var(--border)" }}
+        >
+          {renderItem({ slug: "compare", label: "Compare", to: "/compare", icon: GitCompare })}
+        </div>
       </aside>
       <style>{`
         @media (min-width: 1024px) {
