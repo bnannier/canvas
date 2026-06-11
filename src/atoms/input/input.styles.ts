@@ -1,103 +1,273 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
 
-// Co-located Input styles. Field fragments are TextStyle (TextInput's style);
-// the grouped-layout container and addon boxes are ViewStyle. The border color
-// is resolved by the component (error > focus > default) and passed in.
+// Co-located Input skins, one per platform. The BRAND survives on every platform
+// (the cursor/selection is always the indigo `primary`, the focus accent is the
+// `ring`, never a platform default), and only the native SHAPE, sizing, fill,
+// border treatment, and press feedback change per OS:
+//   iOS (HIG): a rounded grouped field (~10 radius), light gray fill (the
+//     `secondary` token, like tertiarySystemFill), NO visible border at rest,
+//     ~44pt tall; focus/error are shown with a thin brand ring; press (action
+//     suffix) = opacity dim (~0.8).
+//   Android (Material 3 filled): a subtle fill (`muted`), TOP corners ~4 radius
+//     and a flat bottom, a bottom active-indicator underline (1dp `border` at
+//     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
+//     action suffix uses android_ripple; disabled opacity 0.38.
+//   Web: the established Canvas look (the current input, lifted verbatim) — full
+//     1px border (error > focus > input), 6 radius, background fill, 36/32/40
+//     tall, opacity 0.5 disabled, action press opacity 0.9.
 
-type SizeProps = { small?: boolean; large?: boolean; multiline?: boolean };
+export type Size = "small" | "base" | "large";
 
-// Type scale per size; the field and its addons share it so they line up.
-export function textType(p: SizeProps): TextStyle {
-  if (p.large) return { fontSize: 16, lineHeight: 24 };
-  if (p.small) return { fontSize: 12, lineHeight: 16 };
+// The contract a platform skin fulfills. Both layouts (bare field, grouped addon
+// row) and the size/state inputs the shell resolves are passed in; the skin maps
+// them to RN style objects. `borderColor` is a token key (error > focus > input)
+// the shell already resolved; the skin reads tokens[borderColor].
+export interface InputSkin {
+  /** Type scale per size; the field and its addons share it so they line up. */
+  text: (t: ColorTokens, size: Size) => TextStyle;
+  /** Height (single line) or min-height (multiline) of the bare field. */
+  bareBox: (size: Size, multiline: boolean) => TextStyle;
+  /** Fixed row height for the grouped layout (addon boxes set it). */
+  groupedHeight: (size: Size) => number;
+  /** The bare field surface: shape, fill, border/underline for the active state. */
+  bareField: (t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean) => TextStyle;
+  /** The grouped (addon) outer: the row that shares one border/underline. */
+  groupContainer: (t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean) => ViewStyle;
+  /** The inner field inside the group (grows to fill; pads away from icons). */
+  groupField: (t: ColorTokens, leadingIcon: boolean, trailingIcon: boolean) => TextStyle;
+  /** A prefix/suffix addon box. */
+  addonBox: (t: ColorTokens, side: "left" | "right", height: number) => ViewStyle;
+  addonText: (t: ColorTokens) => TextStyle;
+  actionText: (t: ColorTokens) => TextStyle;
+  /** Overlaid icon position inside the field (left or right gutter). */
+  iconOverlay: (side: "left" | "right") => ViewStyle;
+  /** Opacity applied to the field when disabled. */
+  disabledOpacity: number;
+  /** iOS/web dim the action suffix on press; Android uses a ripple instead (null). */
+  pressedOpacity: number | null;
+  /** Android ripple over the action suffix; null on iOS/web. */
+  ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+}
+
+// --- shared type scale (identical across platforms; brand type, not a face) --
+function webText(_t: ColorTokens, size: Size): TextStyle {
+  if (size === "large") return { fontSize: 16, lineHeight: 24 };
+  if (size === "small") return { fontSize: 12, lineHeight: 16 };
   return { fontSize: 14, lineHeight: 20 };
 }
 
-// Height (or min-height for multiline) of the bare field.
-export function bareBox(p: SizeProps): TextStyle {
-  if (p.multiline) return { minHeight: p.large ? 96 : p.small ? 64 : 80 };
-  return { height: p.large ? 40 : p.small ? 32 : 36 };
-}
-
-// Fixed row height for the grouped layout (addon boxes set it; field stretches).
-export function groupedHeight(p: SizeProps): number {
-  return p.large ? 40 : p.small ? 32 : 36;
-}
-
-// The bare field surface: full width, bordered, padded, on the background fill.
-export function bareField(tokens: ColorTokens, borderColor: string): TextStyle {
-  return {
+// ---------- Web: the established Canvas look ----------
+export const webSkin: InputSkin = {
+  text: webText,
+  bareBox: (size, multiline) => {
+    if (multiline) return { minHeight: size === "large" ? 96 : size === "small" ? 64 : 80 };
+    return { height: size === "large" ? 40 : size === "small" ? 32 : 36 };
+  },
+  groupedHeight: (size) => (size === "large" ? 40 : size === "small" ? 32 : 36),
+  bareField: (t, borderColor) => ({
     width: "100%",
     borderRadius: 6,
     borderWidth: 1,
-    borderColor,
-    backgroundColor: tokens.background,
+    borderColor: t[borderColor],
+    backgroundColor: t.background,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    color: tokens.foreground,
-  };
-}
-
-// The grouped (addon) outer: a row sharing one border, clipping the joined edges.
-export function groupContainer(tokens: ColorTokens, borderColor: string): ViewStyle {
-  return {
+    color: t.foreground,
+  }),
+  groupContainer: (t, borderColor) => ({
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
     borderWidth: 1,
-    borderColor,
+    borderColor: t[borderColor],
     borderRadius: 6,
     overflow: "hidden",
-    backgroundColor: tokens.background,
-  };
-}
-
-// The inner field inside the group: grows to fill, full height, padded; an
-// overlaid icon pads its side away (pl-9 / pr-9).
-export function groupField(tokens: ColorTokens, leadingIcon: boolean, trailingIcon: boolean): TextStyle {
-  return {
+    backgroundColor: t.background,
+  }),
+  groupField: (t, leadingIcon, trailingIcon) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
     height: "100%",
     paddingHorizontal: 12,
     paddingVertical: 8,
-    color: tokens.foreground,
+    color: t.foreground,
     ...(leadingIcon ? { paddingLeft: 36 } : null),
     ...(trailingIcon ? { paddingRight: 36 } : null),
-  };
-}
-
-// A prefix/suffix addon box. "left" is a leading prefix (separator on its right),
-// "right" is a trailing suffix (separator on its left).
-export function addonBox(tokens: ColorTokens, side: "left" | "right", height: number): ViewStyle {
-  return {
+  }),
+  addonBox: (t, side, height) => ({
     justifyContent: "center",
-    backgroundColor: tokens.muted,
+    backgroundColor: t.muted,
     paddingHorizontal: 12,
-    borderColor: tokens.border,
+    borderColor: t.border,
     ...(side === "left" ? { borderRightWidth: 1 } : { borderLeftWidth: 1 }),
     height,
-  };
-}
-
-export function addonText(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"] };
-}
-
-export function actionText(tokens: ColorTokens): TextStyle {
-  return { fontWeight: "500", color: tokens.foreground };
-}
-
-// Overlaid icon position inside the field (left or right gutter), behind input.
-export function iconOverlay(side: "left" | "right"): ViewStyle {
-  return {
+  }),
+  addonText: (t) => ({ color: t["muted-foreground"] }),
+  actionText: (t) => ({ fontWeight: "500", color: t.foreground }),
+  iconOverlay: (side) => ({
     position: "absolute",
     top: 0,
     bottom: 0,
     zIndex: 10,
     justifyContent: "center",
     ...(side === "left" ? { left: 0, paddingLeft: 12 } : { right: 0, paddingRight: 12 }),
+  }),
+  disabledOpacity: 0.5,
+  pressedOpacity: 0.9,
+  ripple: null,
+};
+
+// ---------- iOS (HIG): rounded grouped field, gray fill, no border, brand ring on focus ----------
+// Apple's rounded text field: a continuous-corner rounded rect (~10pt) over a
+// light gray fill (tertiarySystemFill ~ the `secondary` token), with no visible
+// border at rest. Canvas keeps the brand by lighting the field with a thin
+// `ring` border on focus and `destructive` on error; otherwise the border is
+// transparent so the rest state reads as a clean filled capsule. ~44pt tall.
+const IOS_RADIUS = 10;
+export const iosSkin: InputSkin = {
+  text: webText,
+  bareBox: (size, multiline) => {
+    if (multiline) return { minHeight: size === "large" ? 110 : size === "small" ? 76 : 92 };
+    return { height: size === "large" ? 50 : size === "small" ? 36 : 44 };
+  },
+  groupedHeight: (size) => (size === "large" ? 50 : size === "small" ? 36 : 44),
+  bareField: (t, borderColor, focused, error) => ({
+    width: "100%",
+    borderRadius: IOS_RADIUS,
+    // No visible border at rest; focus/error light a thin brand ring.
+    borderWidth: focused || error ? 1.5 : 0,
+    borderColor: focused || error ? t[borderColor] : "transparent",
+    backgroundColor: t.secondary,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    color: t.foreground,
+  }),
+  groupContainer: (t, borderColor, focused, error) => ({
+    flexDirection: "row",
+    alignItems: "stretch",
+    width: "100%",
+    borderWidth: focused || error ? 1.5 : 0,
+    borderColor: focused || error ? t[borderColor] : "transparent",
+    borderRadius: IOS_RADIUS,
+    overflow: "hidden",
+    backgroundColor: t.secondary,
+  }),
+  groupField: (t, leadingIcon, trailingIcon) => ({
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: "0%",
+    height: "100%",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    color: t.foreground,
+    ...(leadingIcon ? { paddingLeft: 38 } : null),
+    ...(trailingIcon ? { paddingRight: 38 } : null),
+  }),
+  // Addon boxes sit on a slightly deeper fill than the field, joined by a hairline.
+  addonBox: (t, side, height) => ({
+    justifyContent: "center",
+    backgroundColor: t.muted,
+    paddingHorizontal: 14,
+    borderColor: t.border,
+    ...(side === "left" ? { borderRightWidth: 1 } : { borderLeftWidth: 1 }),
+    height,
+  }),
+  addonText: (t) => ({ color: t["muted-foreground"] }),
+  actionText: (t) => ({ fontWeight: "600", color: t.primary }),
+  iconOverlay: (side) => ({
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    zIndex: 10,
+    justifyContent: "center",
+    ...(side === "left" ? { left: 0, paddingLeft: 14 } : { right: 0, paddingRight: 14 }),
+  }),
+  disabledOpacity: 0.5,
+  pressedOpacity: 0.8,
+  ripple: null,
+};
+
+// ---------- Android (Material 3 filled): subtle fill, top radius, bottom active indicator ----------
+// M3 filled text field: a ~56dp container with a subtle fill (`muted` ~
+// surface-container-highest), the TOP corners rounded ~4dp and a flat bottom,
+// and a bottom active-indicator underline — 1dp `border` at rest, 2dp `ring`
+// (brand) on focus, `destructive` on error. The brand survives via the focused
+// indicator color and the action suffix's primary label + ripple.
+const ANDROID_TOP_RADIUS = 4;
+function androidUnderline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean): ViewStyle {
+  return {
+    borderBottomWidth: focused || error ? 2 : 1,
+    borderBottomColor: t[borderColor],
   };
 }
+export const androidSkin: InputSkin = {
+  // M3 body input is 16sp; nudge the base/large up, keep small readable.
+  text: (_t, size) => {
+    if (size === "large") return { fontSize: 18, lineHeight: 26 };
+    if (size === "small") return { fontSize: 14, lineHeight: 20 };
+    return { fontSize: 16, lineHeight: 24 };
+  },
+  bareBox: (size, multiline) => {
+    if (multiline) return { minHeight: size === "large" ? 120 : size === "small" ? 88 : 104 };
+    return { height: size === "large" ? 60 : size === "small" ? 48 : 56 };
+  },
+  groupedHeight: (size) => (size === "large" ? 60 : size === "small" ? 48 : 56),
+  bareField: (t, borderColor, focused, error) => ({
+    width: "100%",
+    borderTopLeftRadius: ANDROID_TOP_RADIUS,
+    borderTopRightRadius: ANDROID_TOP_RADIUS,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    ...androidUnderline(t, borderColor, focused, error),
+    backgroundColor: t.muted,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    color: t.foreground,
+  }),
+  groupContainer: (t, borderColor, focused, error) => ({
+    flexDirection: "row",
+    alignItems: "stretch",
+    width: "100%",
+    borderTopLeftRadius: ANDROID_TOP_RADIUS,
+    borderTopRightRadius: ANDROID_TOP_RADIUS,
+    ...androidUnderline(t, borderColor, focused, error),
+    overflow: "hidden",
+    backgroundColor: t.muted,
+  }),
+  groupField: (t, leadingIcon, trailingIcon) => ({
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: "0%",
+    height: "100%",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    color: t.foreground,
+    ...(leadingIcon ? { paddingLeft: 44 } : null),
+    ...(trailingIcon ? { paddingRight: 44 } : null),
+  }),
+  // The addon shares the field fill (M3 leading/trailing content sits inside the
+  // filled container) with a hairline separator.
+  addonBox: (t, side, height) => ({
+    justifyContent: "center",
+    backgroundColor: t.muted,
+    paddingHorizontal: 16,
+    borderColor: t.border,
+    ...(side === "left" ? { borderRightWidth: 1 } : { borderLeftWidth: 1 }),
+    height,
+  }),
+  addonText: (t) => ({ color: t["muted-foreground"] }),
+  actionText: (t) => ({ fontWeight: "500", color: t.primary, textTransform: "uppercase", letterSpacing: 0.5 }),
+  iconOverlay: (side) => ({
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    zIndex: 10,
+    justifyContent: "center",
+    ...(side === "left" ? { left: 0, paddingLeft: 16 } : { right: 0, paddingRight: 16 }),
+  }),
+  disabledOpacity: 0.38, // M3 disabled opacity
+  pressedOpacity: null, // Android uses a ripple instead
+  ripple: (t) => ({ color: t.primary, borderless: false }),
+};

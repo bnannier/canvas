@@ -1,14 +1,25 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow } from "../../style/index.js";
+import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 
-// Co-located ButtonGroup styles. The group is laid out per segment in JS (the
-// engine had no `first:`/`last:` variants, so the joined-corner and shared-
-// border math is computed here). Layout-only fragments are static objects;
-// anything reading a color is a function of the active tokens (so segments,
-// borders, and the split dropdown follow light/dark and glass).
+// Co-located ButtonGroup skins, one per platform. The group is laid out per
+// segment in JS (there are no `first:`/`last:` style variants, so the joined-
+// corner and shared-border math is computed here). The BRAND survives on every
+// platform (the indigo `primary` token and the semantic tokens, never a platform
+// default), and only the native SHAPE, sizing, structure, and press feedback
+// change per OS:
+//   iOS (UISegmentedControl): a gray rounded CONTAINER (radius 8, muted fill,
+//     ~3px inset) holding segments; the SELECTED segment is a raised white pill
+//     (radius 6, small shadow) with NO visible dividers (iOS 13+ style); labels
+//     ~13pt. Press = opacity dim.
+//   Android (M3 SegmentedButton): the GROUP is a fully-rounded stadium (1dp
+//     `border` outline); segments share 1dp borders (no gap); the SELECTED
+//     segment is a tonal fill (alpha(primary, .12)) with a brand-indigo label and
+//     a leading check; press = android_ripple.
+//   Web: the established Canvas look (joined buttons; selected = solid primary
+//     fill; shared 1px borders overlapped by -1px), lifted verbatim.
 
-export type Kind = "segmented" | "split" | "stepper" | "spaced";
-export type Size = "small" | "default" | "large";
+// --- shared size scales (brand type/sizing, identical across platforms) ------
 
 // Height + horizontal padding per size, mirroring the docs segSize scale
 // (h-8 px-3 / h-9 px-4 / h-10 px-5).
@@ -40,47 +51,19 @@ export const chevronSize: Record<Size, number> = {
   large: 16,
 };
 
-// --- segment (segmented / spaced) -------------------------------------------
+// --- shared layout fragments (color-free; identical across platforms) --------
 
-// Row of a centered label inside a bordered cell. Press feedback (the old
-// `active:opacity-90`) is applied by the component's Pressable.
+// Row of a centered label inside a cell. Border width is supplied by the skin
+// (iOS segments are borderless; Android/web are 1px). Press feedback is applied
+// by the component's Pressable.
 export const segmentBase: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "center",
-  borderWidth: 1,
 };
-
-// Corner radii for an attached segment given its position in the row
-// (joinCorners): a lone segment is fully rounded; the ends round their outer
-// corners only; interior segments are square (rounded-md -> 6).
-export function joinCorners(index: number, count: number): ViewStyle {
-  if (count === 1) return { borderRadius: 6 };
-  if (index === 0) return { borderTopLeftRadius: 6, borderBottomLeftRadius: 6 };
-  if (index === count - 1) return { borderTopRightRadius: 6, borderBottomRightRadius: 6 };
-  return {};
-}
-
-// Selected vs. unselected segment fill/border. The selected segment lifts above
-// its neighbors (z-10) so its primary border wins on the shared edges.
-export function segmentSurface(tokens: ColorTokens, selected: boolean): ViewStyle {
-  return selected
-    ? { zIndex: 10, borderColor: tokens.primary, backgroundColor: tokens.primary }
-    : { borderColor: tokens.input, backgroundColor: tokens.background };
-}
-
-// Segment label: medium weight, primary-foreground when selected else foreground.
-export function segmentLabel(tokens: ColorTokens, selected: boolean): TextStyle {
-  return { fontWeight: "500", color: selected ? tokens["primary-foreground"] : tokens.foreground };
-}
-
-// All but the leading segment overlap the previous border by 1px (-ml-px).
-export const overlap: ViewStyle = { marginLeft: -1 };
 
 // The dimmed look applied to a disabled group/segment (opacity-50).
 export const dim: ViewStyle = { opacity: 0.5 };
-
-// --- split kind -------------------------------------------------------------
 
 // The split control's outer row, anchoring the (absolute) dropdown.
 export const splitContainer: ViewStyle = {
@@ -90,62 +73,7 @@ export const splitContainer: ViewStyle = {
   alignSelf: "flex-start",
 };
 
-// The primary action button: rounded on its leading edge only, primary fill.
-export function splitPrimary(tokens: ColorTokens): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopLeftRadius: 6,
-    borderBottomLeftRadius: 6,
-    backgroundColor: tokens.primary,
-  };
-}
-
-// Primary action label: medium weight on the primary surface.
-export function splitPrimaryLabel(tokens: ColorTokens): TextStyle {
-  return { fontWeight: "500", color: tokens["primary-foreground"] };
-}
-
-// Hairline divider so the chevron reads as a distinct trigger
-// (w-px bg-primary-foreground/20).
-export function splitDivider(tokens: ColorTokens, height: number): ViewStyle {
-  return { width: 1, height, backgroundColor: alpha(tokens["primary-foreground"], 0.2) };
-}
-
-// The chevron trigger: rounded on its trailing edge only, primary fill, px-2.
-export function splitTrigger(tokens: ColorTokens, height: number): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopRightRadius: 6,
-    borderBottomRightRadius: 6,
-    backgroundColor: tokens.primary,
-    paddingHorizontal: 8,
-    height,
-  };
-}
-
-// The floating dropdown of related actions, overflowing the group (absolute).
-export function splitMenu(tokens: ColorTokens): ViewStyle {
-  return {
-    position: "absolute",
-    top: "100%",
-    right: 0,
-    zIndex: 50,
-    marginTop: 4,
-    minWidth: 180,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.popover,
-    padding: 4,
-    ...shadow("lg"),
-  };
-}
-
-// A dropdown row: padded, rounded; the pressed branch tints it (active:bg-accent).
+// A split-menu dropdown row: padded, rounded; the pressed branch tints it.
 export const splitMenuItem: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
@@ -154,66 +82,12 @@ export const splitMenuItem: ViewStyle = {
   paddingVertical: 6,
 };
 
-export function splitMenuItemPressed(tokens: ColorTokens): ViewStyle {
-  return { backgroundColor: tokens.accent };
-}
-
-export function splitMenuText(tokens: ColorTokens): TextStyle {
-  return { fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] };
-}
-
-// --- stepper kind -----------------------------------------------------------
-
 // The stepper's outer row.
 export const stepperContainer: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   alignSelf: "flex-start",
 };
-
-// A chevron (prev/next) cell: bordered, background fill, px-2, fixed height.
-export function stepperArrow(tokens: ColorTokens, height: number): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: tokens.input,
-    backgroundColor: tokens.background,
-    paddingHorizontal: 8,
-    height,
-  };
-}
-
-// The previous arrow rounds its leading edge only.
-export const stepperArrowLeft: ViewStyle = { borderTopLeftRadius: 6, borderBottomLeftRadius: 6 };
-
-// The next arrow rounds its trailing edge only and overlaps the middle cell.
-export const stepperArrowRight: ViewStyle = {
-  marginLeft: -1,
-  borderTopRightRadius: 6,
-  borderBottomRightRadius: 6,
-};
-
-// The middle (current) cell: a passive bordered label, overlapping the prev arrow.
-export function stepperMiddle(tokens: ColorTokens): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    marginLeft: -1,
-    borderColor: tokens.input,
-    backgroundColor: tokens.background,
-  };
-}
-
-// The current-item label: medium weight, foreground.
-export function stepperLabel(tokens: ColorTokens): TextStyle {
-  return { fontWeight: "500", color: tokens.foreground };
-}
-
-// --- spaced kind ------------------------------------------------------------
 
 // A plain row of detached peers separated by a gap (gap-2).
 export const spacedContainer: ViewStyle = {
@@ -222,10 +96,378 @@ export const spacedContainer: ViewStyle = {
   gap: 8,
 };
 
-// --- segmented kind ---------------------------------------------------------
-
 // The attached-segment row (no gap; segments share borders).
 export const segmentedContainer: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
+};
+
+// =============================================================================
+// Web: the established Canvas look (lifted verbatim from the original file).
+// =============================================================================
+
+export const webSkin: ButtonGroupSkin = {
+  // No wrapper around segmented (the row is bare); selected lifts above its
+  // neighbors so its primary border wins on the shared edges.
+  segmentedWrap: () => null,
+  segmentBorderWidth: 1,
+  joinCorners(index, count) {
+    if (count === 1) return { borderRadius: 6 };
+    if (index === 0) return { borderTopLeftRadius: 6, borderBottomLeftRadius: 6 };
+    if (index === count - 1) return { borderTopRightRadius: 6, borderBottomRightRadius: 6 };
+    return {};
+  },
+  spacedCorners: { borderRadius: 6 },
+  // All but the leading segment overlap the previous border by 1px (-ml-px).
+  overlap: { marginLeft: -1 },
+  segmentSurface(t, selected) {
+    return selected
+      ? { zIndex: 10, borderColor: t.primary, backgroundColor: t.primary }
+      : { borderColor: t.input, backgroundColor: t.background };
+  },
+  segmentLabel(t, selected) {
+    return { fontWeight: "500", color: selected ? t["primary-foreground"] : t.foreground };
+  },
+  showSelectedCheck: false,
+
+  // --- split ---
+  splitPrimary(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderTopLeftRadius: 6,
+      borderBottomLeftRadius: 6,
+      backgroundColor: t.primary,
+    };
+  },
+  splitPrimaryLabel(t) {
+    return { fontWeight: "500", color: t["primary-foreground"] };
+  },
+  splitDivider(t, height) {
+    return { width: 1, height, backgroundColor: alpha(t["primary-foreground"], 0.2) };
+  },
+  splitTrigger(t, height) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderTopRightRadius: 6,
+      borderBottomRightRadius: 6,
+      backgroundColor: t.primary,
+      paddingHorizontal: 8,
+      height,
+    };
+  },
+  splitChevronColor: "primaryForeground",
+  splitMenu(t) {
+    return {
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      zIndex: 50,
+      marginTop: 4,
+      minWidth: 180,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: t.border,
+      backgroundColor: t.popover,
+      padding: 4,
+      ...shadow("lg"),
+    };
+  },
+  splitMenuItemPressed(t) {
+    return { backgroundColor: t.accent };
+  },
+  splitMenuText(t) {
+    return { fontSize: 14, lineHeight: 20, color: t["popover-foreground"] };
+  },
+
+  // --- stepper ---
+  stepperArrow(t, height) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: t.input,
+      backgroundColor: t.background,
+      paddingHorizontal: 8,
+      height,
+    };
+  },
+  stepperArrowLeft: { borderTopLeftRadius: 6, borderBottomLeftRadius: 6 },
+  stepperArrowRight: { marginLeft: -1, borderTopRightRadius: 6, borderBottomRightRadius: 6 },
+  stepperMiddle(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      marginLeft: -1,
+      borderColor: t.input,
+      backgroundColor: t.background,
+    };
+  },
+  stepperLabel(t) {
+    return { fontWeight: "500", color: t.foreground };
+  },
+  stepperChevronColor: "muted",
+
+  pressedOpacity: 0.9,
+};
+
+// =============================================================================
+// iOS (UISegmentedControl): gray rounded container, raised white selected pill.
+// =============================================================================
+
+const IOS_PILL_SHADOW: ViewStyle = {
+  shadowColor: "#000000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.18,
+  shadowRadius: 2,
+  elevation: 2,
+};
+
+export const iosSkin: ButtonGroupSkin = {
+  // The gray rounded track that holds the segments (radius 8, muted fill, a 3px
+  // inset so the selected pill floats inside).
+  segmentedWrap(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      padding: 3,
+      borderRadius: 8,
+      backgroundColor: t.muted,
+    };
+  },
+  segmentBorderWidth: 0, // iOS 13+ has no visible dividers/borders
+  joinCorners() {
+    // Every segment is an independent rounded pill (radius 6) inside the track.
+    return { borderRadius: 6 };
+  },
+  spacedCorners: { borderRadius: 8 },
+  overlap: null, // no shared borders; the track's padding spaces them
+  segmentSurface(t, selected) {
+    return selected
+      ? { ...IOS_PILL_SHADOW, backgroundColor: t.background }
+      : { backgroundColor: "transparent" };
+  },
+  segmentLabel(t, selected) {
+    // ~13pt SF label; selected reads slightly heavier. Both stay on-foreground
+    // (the selected pill is white/elevated, not a brand fill).
+    return { fontWeight: selected ? "600" : "500", color: t.foreground };
+  },
+  showSelectedCheck: false,
+
+  // --- split (HIG: primary action + chevron, brand fill, rounded ~8) ---
+  splitPrimary(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderTopLeftRadius: 8,
+      borderBottomLeftRadius: 8,
+      backgroundColor: t.primary,
+    };
+  },
+  splitPrimaryLabel(t) {
+    return { fontWeight: "600", color: t["primary-foreground"] };
+  },
+  splitDivider(t, height) {
+    return { width: 1, height, backgroundColor: alpha(t["primary-foreground"], 0.2) };
+  },
+  splitTrigger(t, height) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderTopRightRadius: 8,
+      borderBottomRightRadius: 8,
+      backgroundColor: t.primary,
+      paddingHorizontal: 10,
+      height,
+    };
+  },
+  splitChevronColor: "primaryForeground",
+  splitMenu(t) {
+    return {
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      zIndex: 50,
+      marginTop: 6,
+      minWidth: 200,
+      borderRadius: 12, // HIG menu sheet
+      borderWidth: 0,
+      borderColor: t.border,
+      backgroundColor: t.popover,
+      padding: 6,
+      ...shadow("lg"),
+    };
+  },
+  splitMenuItemPressed(t) {
+    return { backgroundColor: t.accent };
+  },
+  splitMenuText(t) {
+    return { fontSize: 15, lineHeight: 20, color: t["popover-foreground"] };
+  },
+
+  // --- stepper (HIG: gray-tracked prev/current/next, rounded 8) ---
+  stepperArrow(t, height) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 0,
+      backgroundColor: t.muted,
+      paddingHorizontal: 10,
+      height,
+    };
+  },
+  stepperArrowLeft: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8 },
+  stepperArrowRight: { marginLeft: 1, borderTopRightRadius: 8, borderBottomRightRadius: 8 },
+  stepperMiddle(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 0,
+      marginLeft: 1,
+      backgroundColor: t.muted,
+    };
+  },
+  stepperLabel(t) {
+    return { fontWeight: "600", color: t.foreground };
+  },
+  stepperChevronColor: "foreground",
+
+  pressedOpacity: 0.8,
+};
+
+// =============================================================================
+// Android (Material 3 SegmentedButton): stadium group, tonal selected fill.
+// =============================================================================
+
+export const androidSkin: ButtonGroupSkin = {
+  // The group is a fully-rounded stadium outlined in 1dp `border`; the segments
+  // sit inside and supply their own shared 1dp dividers.
+  segmentedWrap(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      borderRadius: 9999,
+      borderWidth: 1,
+      borderColor: t.border,
+      overflow: "hidden",
+    };
+  },
+  segmentBorderWidth: 0, // the wrap draws the outer outline; dividers are drawn below
+  joinCorners() {
+    // The stadium wrap clips the corners; segments themselves are square.
+    return {};
+  },
+  spacedCorners: { borderRadius: 9999 },
+  // Each segment after the first draws a 1dp leading divider in the outline color.
+  overlap: null,
+  segmentDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
+  segmentSurface(t, selected) {
+    // Selected = tonal fill (secondaryContainer ≈ alpha(primary, .12)).
+    return selected ? { backgroundColor: alpha(t.primary, 0.12) } : { backgroundColor: "transparent" };
+  },
+  segmentLabel(t, selected) {
+    // labelMedium; selected reads in brand indigo (onSecondaryContainer ≈ primary).
+    return { fontWeight: "500", color: selected ? t.primary : t.foreground };
+  },
+  showSelectedCheck: true,
+
+  // --- split (M3: brand-filled primary + chevron, stadium) ---
+  splitPrimary(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderTopLeftRadius: 9999,
+      borderBottomLeftRadius: 9999,
+      backgroundColor: t.primary,
+    };
+  },
+  splitPrimaryLabel(t) {
+    return { fontWeight: "500", color: t["primary-foreground"] };
+  },
+  splitDivider(t, height) {
+    return { width: 1, height, backgroundColor: alpha(t["primary-foreground"], 0.24) };
+  },
+  splitTrigger(t, height) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderTopRightRadius: 9999,
+      borderBottomRightRadius: 9999,
+      backgroundColor: t.primary,
+      paddingHorizontal: 10,
+      height,
+    };
+  },
+  splitChevronColor: "primaryForeground",
+  splitMenu(t) {
+    return {
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      zIndex: 50,
+      marginTop: 4,
+      minWidth: 200,
+      borderRadius: 4, // M3 menu container
+      borderWidth: 0,
+      borderColor: t.border,
+      backgroundColor: t.popover,
+      paddingVertical: 8,
+      ...shadow("lg"),
+    };
+  },
+  splitMenuItemPressed(t) {
+    return { backgroundColor: alpha(t.primary, 0.12) };
+  },
+  splitMenuText(t) {
+    return { fontSize: 14, lineHeight: 20, color: t["popover-foreground"] };
+  },
+
+  // --- stepper (M3: outlined stadium prev/current/next) ---
+  stepperArrow(t, height) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: t.border,
+      backgroundColor: "transparent",
+      paddingHorizontal: 10,
+      height,
+    };
+  },
+  stepperArrowLeft: { borderTopLeftRadius: 9999, borderBottomLeftRadius: 9999 },
+  stepperArrowRight: { marginLeft: -1, borderTopRightRadius: 9999, borderBottomRightRadius: 9999 },
+  stepperMiddle(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      marginLeft: -1,
+      borderColor: t.border,
+      backgroundColor: "transparent",
+    };
+  },
+  stepperLabel(t) {
+    return { fontWeight: "500", color: t.foreground };
+  },
+  stepperChevronColor: "muted",
+
+  pressedOpacity: null, // Android uses a ripple instead
+  ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };
