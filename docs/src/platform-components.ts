@@ -19,6 +19,10 @@ import { Textarea as TextareaIOS } from "../../src/atoms/textarea/textarea.ios.j
 import { Textarea as TextareaAndroid } from "../../src/atoms/textarea/textarea.android.js";
 import { ButtonGroup as ButtonGroupIOS } from "../../src/atoms/button-group/button-group.ios.js";
 import { ButtonGroup as ButtonGroupAndroid } from "../../src/atoms/button-group/button-group.android.js";
+import { Select as SelectIOS } from "../../src/atoms/select/select.ios.js";
+import { Select as SelectAndroid } from "../../src/atoms/select/select.android.js";
+import { Combobox as ComboboxIOS } from "../../src/atoms/combobox/combobox.ios.js";
+import { Combobox as ComboboxAndroid } from "../../src/atoms/combobox/combobox.android.js";
 
 export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -29,6 +33,8 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Input: InputIOS,
     Textarea: TextareaIOS,
     ButtonGroup: ButtonGroupIOS,
+    Select: SelectIOS,
+    Combobox: ComboboxIOS,
   },
   android: {
     Switch: SwitchAndroid,
@@ -38,5 +44,7 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Input: InputAndroid,
     Textarea: TextareaAndroid,
     ButtonGroup: ButtonGroupAndroid,
+    Select: SelectAndroid,
+    Combobox: ComboboxAndroid,
   },
 };

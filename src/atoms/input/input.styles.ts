@@ -197,9 +197,14 @@ export const iosSkin: InputSkin = {
 // indicator color and the action suffix's primary label + ripple.
 const ANDROID_TOP_RADIUS = 4;
 function androidUnderline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean): ViewStyle {
+  // M3 active indicator: a VISIBLE baseline at rest (on-surface-variant ~ the
+  // `muted-foreground` token), thickening to 2dp in the brand `ring` on focus /
+  // `destructive` on error. The rest color must read clearly so the filled field is
+  // distinct from the iOS lineless capsule (the regression this fixes).
+  const active = focused || error;
   return {
-    borderBottomWidth: focused || error ? 2 : 1,
-    borderBottomColor: t[borderColor],
+    borderBottomWidth: active ? 2 : 1,
+    borderBottomColor: active ? t[borderColor] : t["muted-foreground"],
   };
 }
 export const androidSkin: InputSkin = {

@@ -1,0 +1,160 @@
+import { useState } from "react";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { wrapper } from "./combobox.styles.js";
+import { type ComboboxSkin, type Size } from "./combobox.styles.js";
+
+// Shared Combobox shell. A Combobox is a searchable single-select: it mirrors
+// Select's structure (a field plus an open option list) and adds text filtering
+// — the field shows the typed query, and the list narrows to options matching
+// that query as you type.
+//
+// The structure (the field, the open/close state machine, the query filtering,
+// the highlighted selected/active option, the helper text), the public
+// boolean-prop API, the size precedence, accessibility, and handlers all live
+// here once. A platform file supplies only its skin (field shape, fill,
+// border/underline, popover elevation, row layout, press feedback) and calls
+// createCombobox.
+//
+// Like Select, the open state is rendered inline (the docs render it this way;
+// there is no portal/Modal). `open` defaults to true so the floating list is
+// visible. The selected option carries a leading "✓" and an accent surface; an
+// empty filtered list shows a muted "No results" row.
+
+export interface ComboboxProps {
+  /** The text typed into the field. Filters the option list when set. */
+  query?: string;
+  /** The full list of selectable option labels. */
+  options?: string[];
+  /** The currently selected option label, marked with a check in the list. */
+  value?: string;
+  /** Prompt shown in the field when there is no query or value. */
+  placeholder?: string;
+  /**
+   * Whether the option list is open. Defaults to true so the open state is
+   * visible inline (the docs render it this way; there is no portal/Modal).
+   */
+  open?: boolean;
+  /** Fired when the open state changes (field tap, select). */
+  onOpenChange?: (open: boolean) => void;
+  /** Optional stacked field label rendered above the field. */
+  label?: string;
+  /** Optional muted helper line rendered below the option list. */
+  helperText?: string;
+  /** Dims the control and blocks interaction. */
+  disabled?: boolean;
+  /** Called with the chosen option label when a row is pressed. */
+  onSelect?: (option: string) => void;
+  // Size (pick one; default is the medium field, matching Input's h-9).
+  small?: boolean;
+  large?: boolean;
+  /** Escape hatch for layout/positioning composition (mainly width). */
+  style?: StyleProp<ViewStyle>;
+}
+
+// First match wins when more than one size flag is passed.
+function sizeOf(p: ComboboxProps): Size {
+  if (p.small) return "small";
+  if (p.large) return "large";
+  return "default";
+}
+
+/** Build a Combobox component from a platform skin. */
+export function createCombobox(skin: ComboboxSkin) {
+  return function Combobox(props: ComboboxProps) {
+    const {
+      query,
+      options = [],
+      value,
+      label,
+      helperText,
+      placeholder = "Search…",
+      open: openProp,
+      onOpenChange,
+      disabled,
+      onSelect,
+      style,
+    } = props;
+    const size = sizeOf(props);
+    const { tokens } = useTheme();
+    // Uncontrolled by default: the field opens/closes the list, a select closes it.
+    const [internalOpen, setInternalOpen] = useState(false);
+    const open = openProp ?? internalOpen;
+    const setOpen = (next: boolean) => {
+      if (openProp === undefined) setInternalOpen(next);
+      onOpenChange?.(next);
+    };
+
+    // What the field shows: the typed query, then the selected value, else the
+    // placeholder. The first two read as foreground text; the placeholder is muted.
+    const hasQuery = query != null && query !== "";
+    const hasValue = value != null && value !== "";
+    const fieldText = hasQuery ? query : hasValue ? value : placeholder;
+    const fieldMuted = !hasQuery && !hasValue;
+
+    // Filter the list by the query (case-insensitive). With no query, show all.
+    const q = hasQuery ? (query as string).toLowerCase() : "";
+    const matches = hasQuery
+      ? options.filter((o) => o.toLowerCase().includes(q))
+      : options;
+
+    const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+
+    return (
+      <View style={[wrapper, style]}>
+        {label != null && label !== "" ? (
+          <Text style={skin.label(tokens, size)}>{label}</Text>
+        ) : null}
+        <Pressable
+          style={({ pressed }) => [
+            skin.field(tokens, size, open),
+            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            disabled ? { opacity: skin.disabledOpacity } : null,
+          ]}
+          disabled={disabled}
+          onPress={() => setOpen(!open)}
+          android_ripple={ripple}
+          accessibilityRole="button"
+        >
+          <Text style={skin.fieldText(tokens, size, fieldMuted)}>{fieldText}</Text>
+          <Text style={skin.chevron(tokens, size)}>▾</Text>
+        </Pressable>
+
+        {open ? (
+          <View style={skin.popover(tokens)}>
+            {matches.length === 0 ? (
+              <View style={skin.emptyRow}>
+                <Text style={skin.emptyText(tokens, size)}>No results</Text>
+              </View>
+            ) : (
+              matches.map((option) => {
+                const selected = option === value;
+                return (
+                  <Pressable
+                    key={option}
+                    style={({ pressed }) => [
+                      skin.row,
+                      selected || pressed ? skin.rowAccent(tokens) : null,
+                    ]}
+                    onPress={() => {
+                      onSelect?.(option);
+                      setOpen(false);
+                    }}
+                    android_ripple={ripple}
+                    accessibilityRole="button"
+                  >
+                    <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
+                    <Text style={skin.optionText(tokens, size)}>{option}</Text>
+                  </Pressable>
+                );
+              })
+            )}
+          </View>
+        ) : null}
+
+        {helperText != null && helperText !== "" ? (
+          <Text style={skin.helper(tokens)}>{helperText}</Text>
+        ) : null}
+      </View>
+    );
+  };
+}

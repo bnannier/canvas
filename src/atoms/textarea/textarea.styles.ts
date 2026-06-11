@@ -99,7 +99,9 @@ export const androidSkin: TextareaSkin = {
     backgroundColor: alpha(t["muted-foreground"], 0.08),
     // The active indicator: only the bottom edge is drawn.
     borderBottomWidth: st.focused || st.error ? 2 : 1,
-    borderBottomColor: st.error ? t.destructive : st.focused ? t.primary : t.input,
+    // Rest baseline must read clearly (on-surface-variant ~ muted-foreground) so the
+    // M3 filled field is distinct from the iOS lineless capsule.
+    borderBottomColor: st.error ? t.destructive : st.focused ? t.primary : t["muted-foreground"],
     paddingHorizontal: 12,
     paddingTop: 10,
     paddingBottom: 8,
