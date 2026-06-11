@@ -1,13 +1,49 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { type ColorTokens, alpha } from "../../style/index.js";
 
-// Co-located Pagination styles. The page buttons, Prev/Next controls, and the
-// size selector are square-ish bordered boxes whose footprint scales with the
-// size axis; labels scale on a smaller type ramp. Layout-only fragments are
-// static objects; anything reading a color is a function of the active tokens
-// (so fills/borders follow light/dark and the glass surface).
+// Co-located Pagination skins, one per platform. The page buttons, Prev/Next
+// controls, and the size selector are square-ish boxes whose footprint scales
+// with the size axis; labels scale on a smaller type ramp. The BRAND survives on
+// every platform (the active page reads the indigo `primary` token, never a
+// platform default), and only the native SHAPE (cell radius / border) and press
+// feedback change per OS. This is a LIGHT platform touch: neither iOS nor
+// Material 3 ships a true numbered pagination, so the prev/next/numbered
+// structure stays identical and each platform applies only its shape + feedback.
+//   iOS (HIG page controls): pill-rounded cells (radius 8), no cell border, the
+//     ACTIVE page filled `primary`; press = opacity dim 0.8.
+//   Android (M3): flat cells (radius 8), no border, the ACTIVE page a tonal
+//     alpha(primary, .12) fill with a brand-indigo label; press = android_ripple.
+//   Web: the established Canvas look (1px bordered boxes, radius 6, the active
+//     page a solid `primary` fill/border), lifted verbatim.
 
 export type Size = "small" | "default" | "large";
+
+// The platform-varying surface. Everything color/shape-bearing the cells need
+// lives here, built from the active tokens (so fills/borders follow light/dark
+// and the glass surface). Layout (gaps, rows) is shared and stays in this file's
+// static fragments below.
+export interface PaginationSkin {
+  /** A Prev/Next chevron control: the bordered/filled box behind the glyph. */
+  controlBox: (t: ColorTokens) => ViewStyle;
+  /** A numbered page cell. Selected reads the brand fill; the rest are plain. */
+  pageBox: (t: ColorTokens, selected: boolean) => ViewStyle;
+  /** The rows-per-page selector trigger box (value + caret). */
+  selectorBox: (t: ColorTokens) => ViewStyle;
+  /** Control glyph / selector value color (foreground). */
+  controlLabel: (t: ColorTokens) => TextStyle;
+  /** A numbered page label; brand-on-fill when selected, foreground otherwise. */
+  pageLabel: (t: ColorTokens, selected: boolean) => TextStyle;
+  /** Muted supporting text: the "Page X of N" indicator, "Rows per page", caret. */
+  mutedLabel: (t: ColorTokens) => TextStyle;
+  /** The truncation ellipsis: muted, with a small horizontal inset. */
+  gapLabel: (t: ColorTokens) => TextStyle;
+  /** iOS/web dim the cell on press; Android uses a ripple instead (null). */
+  pressedOpacity: number | null;
+  /** Android ripple over a pressed cell; null on iOS/web. */
+  ripple?: (t: ColorTokens, selected: boolean) => { color: string; borderless: boolean };
+}
+
+// --- shared size scales (brand type/sizing, identical across platforms) ------
 
 // Square-ish button footprint per size: height + matching min width + the
 // horizontal pad (`h-8 min-w-8 px-2` / `h-9 min-w-9 px-2.5` / `h-10 min-w-10 px-3`).
@@ -24,7 +60,7 @@ export const labelSize: Record<Size, TextStyle> = {
   large: { fontSize: 14, lineHeight: 20 },
 };
 
-// --- containers -------------------------------------------------------------
+// --- shared layout fragments (color-free; identical across platforms) --------
 
 // Row of [prev, numbers, next] for the numbered default (`gap-1`).
 export const numberedRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
@@ -41,72 +77,169 @@ export const selectorCluster: ViewStyle = { flexDirection: "row", alignItems: "c
 // The Prev/Next pair inside the with-size row (`gap-1`).
 export const controlPair: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
 
-// --- boxes (fill/border read tokens) ----------------------------------------
+// The centered-row base every cell shares (the skin layers fill/border/radius on top).
+const CELL_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "center" };
 
-// A Prev/Next chevron control: a square bordered box on the background fill
-// (`flex-row items-center justify-center rounded-md border border-input bg-background`).
-export function controlBox(tokens: ColorTokens): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: tokens.input,
-    backgroundColor: tokens.background,
-  };
-}
+// =============================================================================
+// Web: the established Canvas look (lifted verbatim from the original file).
+// =============================================================================
 
-// A numbered page button. Selected uses the primary fill/border; the rest match
-// the bordered background box (`border-primary bg-primary` vs `border-input bg-background`).
-export function pageBox(tokens: ColorTokens, selected: boolean): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: selected ? tokens.primary : tokens.input,
-    backgroundColor: selected ? tokens.primary : tokens.background,
-  };
-}
+export const webSkin: PaginationSkin = {
+  // A Prev/Next chevron control: a square bordered box on the background fill
+  // (`rounded-md border border-input bg-background`).
+  controlBox(t) {
+    return {
+      ...CELL_ROW,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: t.input,
+      backgroundColor: t.background,
+    };
+  },
+  // A numbered page button. Selected uses the primary fill/border; the rest match
+  // the bordered background box (`border-primary bg-primary` vs `border-input bg-background`).
+  pageBox(t, selected) {
+    return {
+      ...CELL_ROW,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: selected ? t.primary : t.input,
+      backgroundColor: selected ? t.primary : t.background,
+    };
+  },
+  // The size selector trigger: value + caret pushed apart in a bordered box
+  // (`flex-row items-center justify-between gap-1 rounded-md border border-input bg-background`).
+  selectorBox(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 4,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: t.input,
+      backgroundColor: t.background,
+    };
+  },
+  // Control glyph / selector value color (`font-medium text-foreground`).
+  controlLabel(t) {
+    return { fontWeight: "500", color: t.foreground };
+  },
+  // A numbered page label: medium weight, primary-foreground when selected
+  // (`font-medium` + `text-primary-foreground` / `text-foreground`).
+  pageLabel(t, selected) {
+    return { fontWeight: "500", color: selected ? t["primary-foreground"] : t.foreground };
+  },
+  // Muted supporting text (`text-muted-foreground`).
+  mutedLabel(t) {
+    return { color: t["muted-foreground"] };
+  },
+  // The truncation ellipsis: muted, with a small horizontal inset (`px-1`).
+  gapLabel(t) {
+    return { paddingHorizontal: 4, color: t["muted-foreground"] };
+  },
+  pressedOpacity: 0.9,
+};
 
-// The size selector trigger: value + caret in a bordered background box with the
-// pieces pushed apart (`flex-row items-center justify-between gap-1 rounded-md
-// border border-input bg-background`).
-export function selectorBox(tokens: ColorTokens): ViewStyle {
-  return {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 4,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: tokens.input,
-    backgroundColor: tokens.background,
-  };
-}
+// =============================================================================
+// iOS (HIG page controls): pill-rounded cells, the active page filled primary.
+// =============================================================================
 
-// --- labels -----------------------------------------------------------------
+export const iosSkin: PaginationSkin = {
+  // Pill-rounded (radius 8), no border; the chevron reads as a plain glyph on the
+  // background so the numbered cells carry the shape.
+  controlBox(t) {
+    return {
+      ...CELL_ROW,
+      borderRadius: 8,
+      backgroundColor: t.background,
+    };
+  },
+  // The active page is a filled `primary` pill (radius 8); inactive pages are
+  // plain background pills with no border (HIG dots: filled current, hollow rest).
+  pageBox(t, selected) {
+    return {
+      ...CELL_ROW,
+      borderRadius: 8,
+      backgroundColor: selected ? t.primary : t.background,
+    };
+  },
+  // The rows-per-page selector: a muted-filled pill trigger (radius 8), value +
+  // caret pushed apart, no border (iOS controls favor fills over outlines).
+  selectorBox(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 4,
+      borderRadius: 8,
+      backgroundColor: t.muted,
+    };
+  },
+  controlLabel(t) {
+    // SF-scale control glyph reads slightly heavier on iOS.
+    return { fontWeight: "600", color: t.foreground };
+  },
+  pageLabel(t, selected) {
+    return { fontWeight: "600", color: selected ? t["primary-foreground"] : t.foreground };
+  },
+  mutedLabel(t) {
+    return { color: t["muted-foreground"] };
+  },
+  gapLabel(t) {
+    return { paddingHorizontal: 4, color: t["muted-foreground"] };
+  },
+  pressedOpacity: 0.8,
+};
 
-// Control glyph / numbered label color (`font-medium text-foreground`).
-export function controlLabel(tokens: ColorTokens): TextStyle {
-  return { fontWeight: "500", color: tokens.foreground };
-}
+// =============================================================================
+// Android (Material 3): flat cells, the active page a tonal primary fill.
+// =============================================================================
 
-// A numbered page label: medium weight, primary-foreground when selected
-// (`font-medium` + `text-primary-foreground` / `text-foreground`).
-export function pageLabel(tokens: ColorTokens, selected: boolean): TextStyle {
-  return { fontWeight: "500", color: selected ? tokens["primary-foreground"] : tokens.foreground };
-}
-
-// Muted supporting text: the "Page X of N" indicator, "Rows per page", and the
-// selector caret (`text-muted-foreground`).
-export function mutedLabel(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"] };
-}
-
-// The truncation ellipsis: muted, with a small horizontal inset (`px-1`).
-export function gapLabel(tokens: ColorTokens): TextStyle {
-  return { paddingHorizontal: 4, color: tokens["muted-foreground"] };
-}
+export const androidSkin: PaginationSkin = {
+  // Flat cell (radius 8), no border, transparent over the surface; the ripple is
+  // the press feedback.
+  controlBox() {
+    return {
+      ...CELL_ROW,
+      borderRadius: 8,
+      backgroundColor: "transparent",
+    };
+  },
+  // The active page is a tonal fill (secondaryContainer ≈ alpha(primary, .12)),
+  // M3's selected-cell treatment; inactive pages are flat/transparent.
+  pageBox(t, selected) {
+    return {
+      ...CELL_ROW,
+      borderRadius: 8,
+      backgroundColor: selected ? alpha(t.primary, 0.12) : "transparent",
+    };
+  },
+  // The selector trigger: a flat tonal pill (alpha(primary, .08)) with the value
+  // and caret pushed apart; the ripple supplies the press feedback.
+  selectorBox(t) {
+    return {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 4,
+      borderRadius: 8,
+      backgroundColor: alpha(t.primary, 0.08),
+    };
+  },
+  controlLabel(t) {
+    return { fontWeight: "500", color: t.foreground };
+  },
+  pageLabel(t, selected) {
+    // labelMedium; the active page reads in brand indigo (onSecondaryContainer ≈ primary).
+    return { fontWeight: "500", color: selected ? t.primary : t.foreground };
+  },
+  mutedLabel(t) {
+    return { color: t["muted-foreground"] };
+  },
+  gapLabel(t) {
+    return { paddingHorizontal: 4, color: t["muted-foreground"] };
+  },
+  pressedOpacity: null, // Android uses a ripple instead
+  ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
+};

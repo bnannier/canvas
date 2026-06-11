@@ -37,6 +37,14 @@ import { AlertDialog as AlertDialogIOS } from "../../src/molecules/alert-dialog/
 import { AlertDialog as AlertDialogAndroid } from "../../src/molecules/alert-dialog/alert-dialog.android.js";
 import { Overlay as OverlayIOS } from "../../src/organisms/overlays/overlays.ios.js";
 import { Overlay as OverlayAndroid } from "../../src/organisms/overlays/overlays.android.js";
+import { Spinner as SpinnerIOS } from "../../src/atoms/spinner/spinner.ios.js";
+import { Spinner as SpinnerAndroid } from "../../src/atoms/spinner/spinner.android.js";
+import { Tabs as TabsIOS } from "../../src/organisms/tabs/tabs.ios.js";
+import { Tabs as TabsAndroid } from "../../src/organisms/tabs/tabs.android.js";
+import { Pagination as PaginationIOS } from "../../src/atoms/pagination/pagination.ios.js";
+import { Pagination as PaginationAndroid } from "../../src/atoms/pagination/pagination.android.js";
+import { Stepper as StepperIOS } from "../../src/organisms/stepper/stepper.ios.js";
+import { Stepper as StepperAndroid } from "../../src/organisms/stepper/stepper.android.js";
 
 export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -56,6 +64,10 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Dialog: DialogIOS,
     AlertDialog: AlertDialogIOS,
     Overlay: OverlayIOS,
+    Spinner: SpinnerIOS,
+    Tabs: TabsIOS,
+    Pagination: PaginationIOS,
+    Stepper: StepperIOS,
   },
   android: {
     Switch: SwitchAndroid,
@@ -74,5 +86,9 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Dialog: DialogAndroid,
     AlertDialog: AlertDialogAndroid,
     Overlay: OverlayAndroid,
+    Spinner: SpinnerAndroid,
+    Tabs: TabsAndroid,
+    Pagination: PaginationAndroid,
+    Stepper: StepperAndroid,
   },
 };

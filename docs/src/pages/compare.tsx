@@ -87,6 +87,22 @@ const ENTRIES: Entry[] = [
     android: { url: "https://developer.android.com/develop/ui/compose/components/bottom-sheets", img: `${AND}/layouts/material/m3-bottom-sheet.png` },
     ios: { url: "https://developer.apple.com/design/human-interface-guidelines/sheets", img: `${IOS}/56b1f2417f35468434a5cb9bb0ea6653/components-sheet-intro%402x.png` },
     web: { url: "https://ui.shadcn.com/docs/components/sheet" } } },
+  { slug: "spinner", name: "Spinner", level: "atoms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/progress", note: "M3 circular progress" },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/progress-indicators", img: `${IOS}/6c1e23fcc6e04603423dacd5df6c48a3/progress-indicator-intermediate-spinner%402x.png` },
+    web: { url: "https://www.radix-ui.com/primitives/docs/components/progress" } } },
+  { slug: "tabs", name: "Tabs", level: "organisms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/tabs", img: `${AND}/primary-secondary-tab.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/tab-bars", img: `${IOS}/29a93bc69eaa415e2e3d5440474a8d36/tab-bar-badges-iphone%402x.png` },
+    web: { url: "https://headlessui.com/react/tabs" } } },
+  { slug: "pagination", name: "Pagination (light touch)", level: "atoms", refs: {
+    android: { url: "https://m3.material.io/components", note: "no Material pagination" },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/page-controls", note: "iOS uses dot page controls" },
+    web: { url: "https://catalyst.tailwindui.com/docs/pagination" } } },
+  { slug: "stepper", name: "Stepper (light touch)", level: "organisms", refs: {
+    android: { url: "https://m3.material.io/components", note: "no Material 3 stepper" },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/", note: "no native iOS stepper" },
+    web: { url: "https://tailwindui.com/components/application-ui/navigation/steps" } } },
 ];
 
 const PLATFORMS: Platform[] = ["android", "ios", "web"];
