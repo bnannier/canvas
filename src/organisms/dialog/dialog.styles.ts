@@ -1,10 +1,27 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 
-// Co-located Dialog styles. Layout-only fragments are static objects; anything
-// that reads a color is a function of the active tokens (so the panel surface
-// follows light/dark, and reads as glass when the ThemeProvider's surface is
-// "glass", since tokens.popover is swapped translucent at the theming level).
+// Co-located Dialog skins, one per platform, all driven by the brand tokens
+// (passed in from useTheme so they follow light/dark and read as glass when
+// tokens.popover is swapped translucent at the theming level). The BRAND
+// survives on every platform (the indigo `primary` confirm action, the
+// `destructive` red for an irreversible confirm); only the native SHAPE, sizing,
+// title alignment, body type, footer layout, and backdrop dimming change per OS:
+//   iOS (HIG alert): a centered card (14 radius, `popover` fill, NO border, soft
+//     lg shadow) over a ~0.30 black backdrop; a centered ~17pt/600 title, a
+//     ~13pt muted body, and FULL-WIDTH footer button ROWS separated by hairline
+//     `border` dividers (the alert/action-sheet stack), the default/confirm
+//     action drawn at weight 600; press = opacity dim (~0.8).
+//   Android (Material 3 basic dialog): a card (28 radius, `popover` elevated
+//     surface, shadow lg) over a ~0.32 black scrim; a LEFT-aligned ~22pt title,
+//     a 14sp body, and TEXT-button actions (no fill) bottom-RIGHT in a row
+//     (Cancel then Confirm) in brand-indigo text, an android_ripple on each, and
+//     NO dividers.
+//   Web: the established Canvas look (the current dialog, lifted verbatim) — a
+//     bordered card (8 radius, `border`, `popover` fill, xl shadow) over a 0.50
+//     black backdrop; a 16pt/600 left title, a 14pt muted body, and a
+//     right-aligned action row of an outline Cancel + a primary/destructive
+//     Confirm Button.
 
 export type Size = "xs" | "small" | "medium" | "default" | "large" | "wide";
 
@@ -21,7 +38,65 @@ export const PANEL_MAX_WIDTH: Record<Size, number> = {
   wide: 672,
 };
 
-// --- outer shell ------------------------------------------------------------
+// How the footer renders its actions. The web/Android footer is a horizontal
+// row of Buttons (web) / text buttons (Android); iOS instead stacks FULL-WIDTH
+// rows separated by hairline dividers (the alert button stack). The shell reads
+// this to pick the footer structure.
+export type FooterKind = "buttons" | "stacked";
+
+// The contract a platform skin fulfills. The shell renders the backdrop, the
+// centered card (shape/fill/border/shadow from the skin), the title, the body,
+// the optional data-driven form, and the footer; the skin maps each piece onto
+// the active platform's look. The footer kind picks between a Button row
+// (web/Android) and iOS's full-width divider stack.
+export interface DialogSkin {
+  /** The dim backdrop behind the card (full black at the per-platform opacity). */
+  backdrop: (t: ColorTokens) => ViewStyle;
+  /** The card layout box: shape, fill, border (or lack of), shadow, padding. The
+   *  shell supplies the per-size maxWidth inline. */
+  card: (t: ColorTokens) => ViewStyle;
+  /** The title type: size, weight, alignment, color. */
+  title: (t: ColorTokens) => TextStyle;
+  /** The body/description type: size, color, alignment. */
+  body: (t: ColorTokens) => TextStyle;
+  /** Whether the footer is a Button row or iOS's full-width stacked rows. */
+  footerKind: FooterKind;
+  /** The footer container (the row, or the stacked block above which a top
+   *  divider may sit). */
+  footer: (t: ColorTokens) => ViewStyle;
+  // --- stacked (iOS) footer pieces; null on the Button-row platforms ---------
+  /** A single full-width action row (the touch target in the iOS stack). */
+  stackedRow: ViewStyle | null;
+  /** The hairline divider drawn above each stacked row. */
+  stackedDivider: ((t: ColorTokens) => ViewStyle) | null;
+  /** The label inside a stacked row; `emphasis` true for the default/confirm
+   *  action (weight 600), `destructive` true for an irreversible confirm. */
+  stackedLabel: ((t: ColorTokens, emphasis: boolean, destructive: boolean) => TextStyle) | null;
+  /** Opacity applied to a pressed stacked row (iOS dims; null elsewhere). */
+  stackedPressedOpacity: number | null;
+  // --- text-button (Android) footer pieces; null elsewhere -------------------
+  /** An Android text-button touch target (no fill, brand-indigo label). */
+  textButton: ViewStyle | null;
+  /** The Android text-button label; `destructive` reds an irreversible confirm. */
+  textButtonLabel: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
+  /** The Android ripple over a text button; null on the other platforms. */
+  textButtonRipple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  // --- data-driven body form (Amount + Reason) -------------------------------
+  /** Wrapper above the form fields. */
+  formBody: ViewStyle;
+  /** A field label above an input. */
+  fieldLabel: (t: ColorTokens) => TextStyle;
+  /** Extra top inset for the second field label. */
+  fieldLabelGap: ViewStyle;
+  /** The Amount row (currency glyph + input). */
+  amountRow: ViewStyle;
+  /** The leading currency glyph. */
+  currency: (t: ColorTokens) => TextStyle;
+  /** The Amount input grows to fill the row. */
+  amountInput: ViewStyle;
+}
+
+// --- outer shell (identical across platforms) -------------------------------
 
 // The outermost wrapper shrinks to its content so the inline trigger sits flush.
 export const root: ViewStyle = { alignSelf: "flex-start" };
@@ -29,88 +104,159 @@ export const root: ViewStyle = { alignSelf: "flex-start" };
 // Inset between the trigger button and the backdrop when a trigger is rendered.
 export const backdropTriggerGap: ViewStyle = { marginTop: 12 };
 
-// The contained dim backdrop: a centered, rounded scrim with presence in the
-// preview (explicit minHeight) so the panel reads as a modal within the area.
-// bg-black/50 -> a 50% black scrim.
-export const backdrop: ViewStyle = {
+// The contained backdrop sizing (centered, with presence in the docs preview via
+// an explicit minHeight). The per-platform fill/radius come from the skin.
+export const backdropLayout: ViewStyle = {
   alignItems: "center",
   justifyContent: "center",
-  borderRadius: 8,
-  backgroundColor: alpha("#000000", 0.5),
   padding: 32,
   minHeight: 220,
 };
 
-// --- panel ------------------------------------------------------------------
-
-// The panel layout box: full width up to its per-size cap, rounded, bordered,
-// lifted with the xl shadow. Color comes from panelSurface below.
-export const panelBase: ViewStyle = {
-  width: "100%",
-  borderRadius: 8,
-  borderWidth: 1,
-  padding: 24,
-  ...shadow("xl"),
-};
-
-// The panel surface fill + border. tokens.popover goes translucent under glass.
-export function panelSurface(tokens: ColorTokens): ViewStyle {
-  return { borderColor: tokens.border, backgroundColor: tokens.popover };
-}
+// The card layout box (width up to its per-size cap). Shape/fill/shadow come
+// from the skin; this owns the box-model that every platform shares.
+export const cardLayout: ViewStyle = { width: "100%", padding: 24 };
 
 // Per-size max width cap.
-export function panelWidth(size: Size): ViewStyle {
+export function cardWidth(size: Size): ViewStyle {
   return { maxWidth: PANEL_MAX_WIDTH[size] };
 }
 
-// --- content ----------------------------------------------------------------
+// ---------- Web: the established Canvas look (lifted verbatim) ----------
+// The current dialog: a card (rounded-lg border bg-popover p-6 shadow-xl) over a
+// bg-black/50 backdrop; a 16/24 600 title, a 14/20 muted-foreground body, and a
+// right-aligned action row (gap-2, mt-6) of an outline Cancel + a primary/
+// destructive Confirm Button.
+export const webSkin: DialogSkin = {
+  backdrop: () => ({ borderRadius: 8, backgroundColor: alpha("#000000", 0.5) }),
+  card: (t) => ({
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: t.border,
+    backgroundColor: t.popover,
+    ...shadow("xl"),
+  }),
+  title: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "600", color: t["popover-foreground"] }),
+  body: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginTop: 8 }),
+  footerKind: "buttons",
+  footer: () => ({ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }),
+  stackedRow: null,
+  stackedDivider: null,
+  stackedLabel: null,
+  stackedPressedOpacity: null,
+  textButton: null,
+  textButtonLabel: null,
+  textButtonRipple: null,
+  formBody: { marginTop: 20 },
+  fieldLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
+  fieldLabelGap: { marginTop: 16 },
+  amountRow: { flexDirection: "row", alignItems: "center" },
+  currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginRight: 8 }),
+  amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
+};
 
-export function title(tokens: ColorTokens): TextStyle {
-  return { fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] };
-}
+// ---------- iOS (HIG alert): centered card, no border, full-width divider stack ----------
+// Apple's alert: a centered card (14pt radius) over the `popover` fill with NO
+// border and a soft shadow, on a ~0.30 black backdrop; a CENTERED 17pt/600
+// title, a 13pt muted body, and FULL-WIDTH footer rows separated by hairline
+// `border` dividers (the alert button stack). The default/confirm action is
+// drawn at weight 600 and a destructive confirm in the `destructive` red; a
+// pressed row dims (no ripple) at opacity 0.8.
+const IOS_RADIUS = 14;
+export const iosSkin: DialogSkin = {
+  backdrop: () => ({ borderRadius: 8, backgroundColor: alpha("#000000", 0.3) }),
+  card: (t) => ({
+    borderRadius: IOS_RADIUS,
+    backgroundColor: t.popover,
+    ...shadow("lg"),
+  }),
+  title: (t) => ({
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: t["popover-foreground"],
+    textAlign: "center",
+  }),
+  body: (t) => ({
+    fontSize: 13,
+    lineHeight: 18,
+    color: t["muted-foreground"],
+    textAlign: "center",
+    marginTop: 6,
+  }),
+  footerKind: "stacked",
+  // The stack runs full-bleed: cancel the card's 24pt padding so the divider
+  // rows span edge to edge, and push the first divider down off the body.
+  footer: () => ({ marginTop: 20, marginHorizontal: -24, marginBottom: -24 }),
+  stackedRow: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minHeight: 44,
+  },
+  stackedDivider: (t) => ({ height: 1, backgroundColor: t.border }),
+  stackedLabel: (t, emphasis, destructive) => ({
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: emphasis ? "600" : "400",
+    color: destructive ? t.destructive : t.primary,
+    textAlign: "center",
+  }),
+  stackedPressedOpacity: 0.8,
+  textButton: null,
+  textButtonLabel: null,
+  textButtonRipple: null,
+  formBody: { marginTop: 16 },
+  fieldLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
+  fieldLabelGap: { marginTop: 14 },
+  amountRow: { flexDirection: "row", alignItems: "center" },
+  currency: (t) => ({ fontSize: 15, lineHeight: 20, color: t["muted-foreground"], marginRight: 8 }),
+  amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
+};
 
-export function description(tokens: ColorTokens): TextStyle {
-  return { fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 8 };
-}
-
-// --- body (the data-driven Amount + Reason form) ----------------------------
-
-export const body: ViewStyle = { marginTop: 20 };
-
-// Field label above the Amount input.
-export function amountLabel(tokens: ColorTokens): TextStyle {
-  return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 };
-}
-
-// The Amount row: currency glyph beside the input.
-export const amountRow: ViewStyle = { flexDirection: "row", alignItems: "center" };
-
-// The leading currency glyph.
-export function currency(tokens: ColorTokens): TextStyle {
-  return { fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], marginRight: 8 };
-}
-
-// The Amount input grows to fill the row (flex-1).
-export const amountInput: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
-
-// Field label above the Reason input (extra top inset from the Amount field).
-export function reasonLabel(tokens: ColorTokens): TextStyle {
-  return {
+// ---------- Android (Material 3 basic dialog): 28 radius, left title, text-button row ----------
+// M3 basic dialog: a card (28dp radius) over the `popover` ELEVATED surface (soft
+// shadow) on a ~0.32 black scrim; a LEFT-aligned ~22sp title, a 14sp body, and
+// TEXT-button actions (no fill) bottom-RIGHT in a row — Cancel then Confirm — in
+// brand-indigo text, an android_ripple on each, and NO dividers.
+const ANDROID_RADIUS = 28;
+export const androidSkin: DialogSkin = {
+  backdrop: () => ({ borderRadius: 8, backgroundColor: alpha("#000000", 0.32) }),
+  card: (t) => ({
+    borderRadius: ANDROID_RADIUS,
+    backgroundColor: t.popover,
+    ...shadow("lg"),
+  }),
+  title: (t) => ({ fontSize: 22, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
+  body: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginTop: 12 }),
+  footerKind: "buttons",
+  footer: () => ({ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: 24 }),
+  stackedRow: null,
+  stackedDivider: null,
+  stackedLabel: null,
+  stackedPressedOpacity: null,
+  // A flat text-button: no fill, comfortable touch target, rounded for the ripple.
+  textButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 20,
+    minHeight: 40,
+  },
+  textButtonLabel: (t, destructive) => ({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "500",
-    color: tokens.foreground,
-    marginBottom: 6,
-    marginTop: 16,
-  };
-}
-
-// --- actions ----------------------------------------------------------------
-
-// The right-aligned confirm/cancel row.
-export const actions: ViewStyle = {
-  flexDirection: "row",
-  justifyContent: "flex-end",
-  gap: 8,
-  marginTop: 24,
+    letterSpacing: 0.1,
+    color: destructive ? t.destructive : t.primary,
+  }),
+  textButtonRipple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
+  formBody: { marginTop: 20 },
+  fieldLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
+  fieldLabelGap: { marginTop: 16 },
+  amountRow: { flexDirection: "row", alignItems: "center" },
+  currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginRight: 8 }),
+  amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
 };

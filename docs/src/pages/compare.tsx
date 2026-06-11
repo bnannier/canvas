@@ -75,6 +75,18 @@ const ENTRIES: Entry[] = [
     android: { url: "https://developer.android.com/develop/ui/compose/components/tooltip", img: `${AND}/PlainTooltipExample.png` },
     ios: { url: "https://developer.apple.com/design/human-interface-guidelines/", note: "no native iOS tooltip" },
     web: { url: "https://www.radix-ui.com/primitives/docs/components/tooltip" } } },
+  { slug: "dialog", name: "Dialog", level: "organisms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/dialog", img: `${AND}/components/dialog-alert.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/sheets", img: `${IOS}/56b1f2417f35468434a5cb9bb0ea6653/components-sheet-intro%402x.png` },
+    web: { url: "https://catalyst.tailwindui.com/docs/dialog" } } },
+  { slug: "alert-dialog", name: "Alert Dialog", level: "molecules", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/dialog", img: `${AND}/components/dialog-alert.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/alerts", img: `${IOS}/e74ac90d149b111c3f2c7d21e3484100/components-alert-intro%402x.png` },
+    web: { url: "https://ui.shadcn.com/docs/components/alert-dialog" } } },
+  { slug: "overlays", name: "Overlays (sheet / drawer)", level: "organisms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/bottom-sheets", img: `${AND}/layouts/material/m3-bottom-sheet.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/sheets", img: `${IOS}/56b1f2417f35468434a5cb9bb0ea6653/components-sheet-intro%402x.png` },
+    web: { url: "https://ui.shadcn.com/docs/components/sheet" } } },
 ];
 
 const PLATFORMS: Platform[] = ["android", "ios", "web"];

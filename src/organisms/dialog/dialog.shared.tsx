@@ -1,0 +1,230 @@
+import { useState, type ReactNode } from "react";
+import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Button } from "../../atoms/button/button.js";
+import { Input } from "../../atoms/input/input.js";
+import * as s from "./dialog.styles.js";
+import { type Size, type DialogSkin } from "./dialog.styles.js";
+
+// Shared Dialog shell. The structure (an optional trigger plus a modal panel
+// centered over a dimmed backdrop, a title, an optional description, an optional
+// data-driven Amount/Reason form, and a confirm/cancel footer), the public
+// boolean-prop API, the size precedence, the controlled/uncontrolled open state,
+// and the action handlers all live here once. A platform file supplies only its
+// skin (the backdrop dimming, the card shape/fill/border/shadow, the title/body
+// type, and the footer layout) and calls createDialog.
+//
+// In the docs preview the overlay is rendered INLINE: a contained dim backdrop
+// View wraps the centered card, so it reads as a modal within the preview area
+// rather than a full-screen portal that would cover it.
+//
+// Boolean-prop API: one boolean per option, grouped by axis, first-match
+// precedence within an axis (mirrors Button's intentOf). Axes:
+//
+// - Confirm intent: `destructive` renders the confirm action for an irreversible
+//   action (a destructive Button on web, the `destructive` red on iOS/Android);
+//   omit for the default primary confirm.
+// - Width (pick one): from narrowest to widest, `xs`, `small`, `medium`,
+//   `large`, `wide`; omit for the default panel width (one step wider than
+//   `medium`). First-match precedence in that order, so a narrower prop wins if
+//   more than one is set.
+
+export interface DialogProps {
+  children?: ReactNode;
+  // Content (strings, for the children-less / data-driven case).
+  title?: string;
+  description?: string;
+  // Body: render a short form (Amount + Reason fields) inside the panel for
+  // the data-driven case.
+  withBody?: boolean;
+  // Trigger button label. When set, the dialog renders the button and opens
+  // itself on press (uncontrolled). Omit when you drive `open` yourself.
+  trigger?: string;
+  // Action labels.
+  confirmLabel?: string;
+  cancelLabel?: string;
+  // Controlled open state. Omit for uncontrolled (the trigger opens it).
+  open?: boolean;
+  // Fired when the open state changes (trigger press, confirm, cancel).
+  onOpenChange?: (open: boolean) => void;
+  // Confirm intent (default is a primary confirm).
+  destructive?: boolean;
+  // Width (pick one; default is the standard panel width). First-match
+  // precedence: xs, small, medium, large, wide.
+  xs?: boolean;
+  small?: boolean;
+  medium?: boolean;
+  large?: boolean;
+  wide?: boolean;
+  // Action handlers.
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  /** Escape hatch for layout/positioning composition on the panel (mainly width). */
+  style?: StyleProp<ViewStyle>;
+}
+
+// Size precedence when more than one is passed: first match wins.
+function sizeOf(p: DialogProps): Size {
+  if (p.xs) return "xs";
+  if (p.small) return "small";
+  if (p.medium) return "medium";
+  if (p.large) return "large";
+  if (p.wide) return "wide";
+  return "default";
+}
+
+/** Build a Dialog component from a platform skin. */
+export function createDialog(skin: DialogSkin) {
+  return function Dialog(props: DialogProps) {
+    const {
+      children,
+      title,
+      description,
+      withBody,
+      confirmLabel = "Confirm",
+      cancelLabel = "Cancel",
+      trigger,
+      open: openProp,
+      onOpenChange,
+      destructive,
+      onConfirm,
+      onCancel,
+      style,
+    } = props;
+    const { tokens } = useTheme();
+
+    // Uncontrolled by default: the trigger opens the dialog and an action closes
+    // it; a controlled `open` prop overrides this.
+    const [internalOpen, setInternalOpen] = useState(false);
+    const open = openProp ?? internalOpen;
+    const setOpen = (next: boolean) => {
+      if (openProp === undefined) setInternalOpen(next);
+      onOpenChange?.(next);
+    };
+
+    const size = sizeOf(props);
+
+    const confirm = () => {
+      onConfirm?.();
+      setOpen(false);
+    };
+    const cancel = () => {
+      onCancel?.();
+      setOpen(false);
+    };
+
+    // The confirm/cancel footer. Three platform shapes:
+    //   - web (footerKind "buttons", no skin.textButton): the outline Cancel +
+    //     primary/destructive Confirm Button row (verbatim Canvas look).
+    //   - Android (footerKind "buttons", skin.textButton set): flat text buttons,
+    //     Cancel then Confirm, brand-indigo, with a ripple.
+    //   - iOS (footerKind "stacked"): full-width rows separated by hairline
+    //     dividers, the confirm row emphasized (weight 600).
+    const footer =
+      skin.footerKind === "stacked" ? (
+        <View style={skin.footer(tokens)}>
+          {/* Cancel row, then the emphasized confirm row, each above a hairline. */}
+          {(
+            [
+              { label: cancelLabel, onPress: cancel, emphasis: false, dangerous: false },
+              { label: confirmLabel, onPress: confirm, emphasis: true, dangerous: !!destructive },
+            ] as const
+          ).map((row, i) => (
+            <View key={`${row.label}-${i}`}>
+              {skin.stackedDivider != null ? <View style={skin.stackedDivider(tokens)} /> : null}
+              <Pressable
+                accessibilityRole="button"
+                onPress={row.onPress}
+                style={({ pressed }) => [
+                  skin.stackedRow,
+                  skin.stackedPressedOpacity != null && pressed ? { opacity: skin.stackedPressedOpacity } : null,
+                ]}
+              >
+                {skin.stackedLabel != null ? (
+                  <Text style={skin.stackedLabel(tokens, row.emphasis, row.dangerous)}>{row.label}</Text>
+                ) : null}
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      ) : skin.textButton != null ? (
+        <View style={skin.footer(tokens)}>
+          {/* Android: flat text buttons, Cancel then Confirm. */}
+          <Pressable
+            accessibilityRole="button"
+            onPress={cancel}
+            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+            style={skin.textButton}
+          >
+            {skin.textButtonLabel != null ? (
+              <Text style={skin.textButtonLabel(tokens, false)}>{cancelLabel}</Text>
+            ) : null}
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={confirm}
+            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+            style={skin.textButton}
+          >
+            {skin.textButtonLabel != null ? (
+              <Text style={skin.textButtonLabel(tokens, !!destructive)}>{confirmLabel}</Text>
+            ) : null}
+          </Pressable>
+        </View>
+      ) : (
+        <View style={skin.footer(tokens)}>
+          {/* Web: outline Cancel + primary/destructive Confirm Button row. */}
+          <Button outline small onPress={cancel}>
+            {cancelLabel}
+          </Button>
+          {destructive ? (
+            <Button destructive small onPress={confirm}>
+              {confirmLabel}
+            </Button>
+          ) : (
+            <Button primary small onPress={confirm}>
+              {confirmLabel}
+            </Button>
+          )}
+        </View>
+      );
+
+    // Optional trigger button plus the modal. The modal is a contained dim
+    // backdrop: a centered scrim with presence in the preview (explicit
+    // minHeight) so the panel reads as a modal within the area.
+    return (
+      <View style={s.root}>
+        {trigger != null ? (
+          <Button outline small onPress={() => setOpen(true)}>
+            {trigger}
+          </Button>
+        ) : null}
+        {open ? (
+          <View style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}>
+            <View style={[s.cardLayout, skin.card(tokens), s.cardWidth(size), style]}>
+              {children != null ? (
+                children
+              ) : (
+                <>
+                  {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
+                  {description != null ? <Text style={skin.body(tokens)}>{description}</Text> : null}
+                  {withBody ? (
+                    <View style={skin.formBody}>
+                      <Text style={skin.fieldLabel(tokens)}>Amount</Text>
+                      <View style={skin.amountRow}>
+                        <Text style={skin.currency(tokens)}>$</Text>
+                        <Input value="90.00" style={skin.amountInput} />
+                      </View>
+                      <Text style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>
+                      <Input placeholder="Duplicate charge" />
+                    </View>
+                  ) : null}
+                  {footer}
+                </>
+              )}
+            </View>
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+}

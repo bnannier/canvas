@@ -31,6 +31,12 @@ import { Tooltip as TooltipIOS } from "../../src/atoms/tooltip/tooltip.ios.js";
 import { Tooltip as TooltipAndroid } from "../../src/atoms/tooltip/tooltip.android.js";
 import { RowMenu as RowMenuIOS } from "../../src/organisms/row-menu/row-menu.ios.js";
 import { RowMenu as RowMenuAndroid } from "../../src/organisms/row-menu/row-menu.android.js";
+import { Dialog as DialogIOS } from "../../src/organisms/dialog/dialog.ios.js";
+import { Dialog as DialogAndroid } from "../../src/organisms/dialog/dialog.android.js";
+import { AlertDialog as AlertDialogIOS } from "../../src/molecules/alert-dialog/alert-dialog.ios.js";
+import { AlertDialog as AlertDialogAndroid } from "../../src/molecules/alert-dialog/alert-dialog.android.js";
+import { Overlay as OverlayIOS } from "../../src/organisms/overlays/overlays.ios.js";
+import { Overlay as OverlayAndroid } from "../../src/organisms/overlays/overlays.android.js";
 
 export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -47,6 +53,9 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Popover: PopoverIOS,
     Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS,
+    Dialog: DialogIOS,
+    AlertDialog: AlertDialogIOS,
+    Overlay: OverlayIOS,
   },
   android: {
     Switch: SwitchAndroid,
@@ -62,5 +71,8 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     Popover: PopoverAndroid,
     Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid,
+    Dialog: DialogAndroid,
+    AlertDialog: AlertDialogAndroid,
+    Overlay: OverlayAndroid,
   },
 };
