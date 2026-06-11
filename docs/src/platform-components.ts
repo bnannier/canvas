@@ -9,14 +9,18 @@ import { Switch as SwitchIOS } from "../../src/atoms/switch/switch.ios.js";
 import { Switch as SwitchAndroid } from "../../src/atoms/switch/switch.android.js";
 import { Button as ButtonIOS } from "../../src/atoms/button/button.ios.js";
 import { Button as ButtonAndroid } from "../../src/atoms/button/button.android.js";
+import { Checkbox as CheckboxIOS } from "../../src/atoms/checkbox/checkbox.ios.js";
+import { Checkbox as CheckboxAndroid } from "../../src/atoms/checkbox/checkbox.android.js";
 
 export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
     Switch: SwitchIOS,
     Button: ButtonIOS,
+    Checkbox: CheckboxIOS,
   },
   android: {
     Switch: SwitchAndroid,
     Button: ButtonAndroid,
+    Checkbox: CheckboxAndroid,
   },
 };

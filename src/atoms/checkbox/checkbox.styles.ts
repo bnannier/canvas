@@ -1,81 +1,106 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
+import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 
-// Co-located Checkbox styles. Layout-only fragments are static objects; anything
-// that reads a color is a function of the active brand tokens (so the box fill
-// and glyph follow light/dark and the glass surface). The component resolves the
-// size axis by precedence and composes these per element (row View, box View,
-// glyph Text, label Text).
+// Co-located Checkbox skins, one per platform, all driven by the brand tokens
+// (passed in from useTheme so they follow light/dark and the glass surface). The
+// BRAND survives on every platform (the filled box is always the indigo `primary`,
+// never a platform default), and only the native SHAPE, sizing, border weight, and
+// press feedback change per OS:
+//   iOS (HIG): no native checkbox; the de-facto rounded square (~5 radius), a
+//     hairline 1px border when empty, brand fill + white check when checked, the
+//     control nudged to ~20pt; press = opacity dim (~0.8).
+//   Android (Material 3): an 18dp square with a 2dp corner radius and a 2dp outline
+//     when empty, brand fill + white check when checked; press = android_ripple over
+//     a 40dp state layer; disabled opacity 0.38.
+//   Web: the established Canvas look (the current checkbox, lifted verbatim) —
+//     14/16/20px box per size, 3 radius, 1px border, brand fill + foreground check.
 
-export type Size = "small" | "base" | "large";
+// Box dimensions per size.
+const WEB_BOX: Record<Size, number> = { small: 14, base: 16, large: 20 };
+const IOS_BOX: Record<Size, number> = { small: 18, base: 20, large: 24 };
+const ANDROID_BOX: Record<Size, number> = { small: 18, base: 18, large: 20 };
 
-// The row: box + optional label, top-aligned so a multi-line label hangs from
-// the box. Press feedback (the old `active:opacity-90`) is applied by the
-// component's Pressable; the disabled dim (`opacity-50`) is applied there too.
-export const row: ViewStyle = {
-  flexDirection: "row",
-  alignItems: "flex-start",
-  gap: 8,
-};
-
-// Box dimensions per size (`size-*` sets width + height together).
-const BOX: Record<Size, number> = {
-  small: 14, // size-3.5
-  base: 16, // size-4
-  large: 20, // size-5
-};
-
-// The box: a square, centered, nudged down to align with the label's first line
-// (`mt-0.5`), with the small 3px corner radius and a 1px border.
-export const boxBase: ViewStyle = {
-  marginTop: 2,
-  flexShrink: 0,
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 3,
-  borderWidth: 1,
-};
-
-export function boxSize(size: Size): ViewStyle {
-  return { width: BOX[size], height: BOX[size] };
+// Glyph (check / dash) type per box family. The check sits inside the box, so the
+// font tracks the box size; `lineHeight: fontSize` keeps it optically centered.
+function glyphType(fontSize: number): TextStyle {
+  return { fontSize, lineHeight: fontSize };
 }
+const WEB_GLYPH: Record<Size, number> = { small: 12, base: 12, large: 14 };
+const IOS_GLYPH: Record<Size, number> = { small: 13, base: 14, large: 17 };
+const ANDROID_GLYPH: Record<Size, number> = { small: 13, base: 13, large: 15 };
 
-// Box fill/border: filled (checked or indeterminate) takes the primary surface;
-// the empty box takes the input border on a transparent fill.
-export function boxFill(tokens: ColorTokens, filled: boolean): ViewStyle {
-  return filled
-    ? { borderColor: tokens.primary, backgroundColor: tokens.primary }
-    : { borderColor: tokens.input, backgroundColor: "transparent" };
-}
-
-// Glyph (check / dash) type per size, tuned to sit inside the box.
-const GLYPH_TYPE: Record<Size, TextStyle> = {
-  small: { fontSize: 12, lineHeight: 16 }, // text-xs
-  base: { fontSize: 12, lineHeight: 16 }, // text-xs
-  large: { fontSize: 14, lineHeight: 20 }, // text-sm
-};
-
-// Glyph: medium weight, on the primary foreground so the tick/dash reads on the
-// filled box. The per-size type sets the font size; `leading-none` then pins the
-// line height to 16 (it wins over the size's own line height, mirroring the
-// original class order `leading-none ... text-xs/text-sm`).
-export function glyph(tokens: ColorTokens, size: Size): TextStyle {
-  return {
-    fontWeight: "500",
-    color: tokens["primary-foreground"],
-    ...GLYPH_TYPE[size],
-    lineHeight: 16, // leading-none
-  };
-}
-
-// Label type per size, matching the box height.
+// Label type per size (shared across platforms; the label is brand type, not a
+// platform face). Matches the original Canvas label scale.
 const LABEL_TYPE: Record<Size, TextStyle> = {
   small: { fontSize: 12, lineHeight: 16 }, // text-xs
   base: { fontSize: 14, lineHeight: 20 }, // text-sm
   large: { fontSize: 16, lineHeight: 24 }, // text-base
 };
-
-// Label: medium weight on the foreground token.
-export function label(tokens: ColorTokens, size: Size): TextStyle {
+function label(tokens: ColorTokens, size: Size): TextStyle {
   return { fontWeight: "500", color: tokens.foreground, ...LABEL_TYPE[size] };
 }
+
+// Box base: a square, centered, nudged down (`marginTop: 2`) to align with the
+// label's first line. Per-platform radius/border weight is layered on by each skin.
+function boxBase(box: number): ViewStyle {
+  return {
+    marginTop: 2,
+    flexShrink: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    width: box,
+    height: box,
+  };
+}
+
+// ---------- Web: the established Canvas look ----------
+export const webSkin: CheckboxSkin = {
+  box: (t, filled, size) => ({
+    ...boxBase(WEB_BOX[size]),
+    borderRadius: 3,
+    borderWidth: 1,
+    ...(filled
+      ? { borderColor: t.primary, backgroundColor: t.primary }
+      : { borderColor: t.input, backgroundColor: "transparent" }),
+  }),
+  glyph: (t, size) => ({ fontWeight: "500", color: t["primary-foreground"], ...glyphType(WEB_GLYPH[size]) }),
+  label,
+  disabledOpacity: 0.5,
+  pressedOpacity: 0.9,
+  ripple: null,
+};
+
+// ---------- iOS (HIG): rounded square, hairline border, dim on press ----------
+export const iosSkin: CheckboxSkin = {
+  box: (t, filled, size) => ({
+    ...boxBase(IOS_BOX[size]),
+    borderRadius: size === "small" ? 4 : size === "large" ? 6 : 5,
+    borderWidth: 1, // hairline when empty; the fill hides it when checked
+    ...(filled
+      ? { borderColor: t.primary, backgroundColor: t.primary }
+      : { borderColor: t.input, backgroundColor: "transparent" }),
+  }),
+  glyph: (_t, size) => ({ fontWeight: "600", color: "#ffffff", ...glyphType(IOS_GLYPH[size]) }),
+  label,
+  disabledOpacity: 0.5,
+  pressedOpacity: 0.8,
+  ripple: null,
+};
+
+// ---------- Android (Material 3): 18dp square, 2dp radius/outline, ripple ----------
+export const androidSkin: CheckboxSkin = {
+  box: (t, filled, size) => ({
+    ...boxBase(ANDROID_BOX[size]),
+    borderRadius: 2,
+    borderWidth: 2,
+    ...(filled
+      ? { borderColor: t.primary, backgroundColor: t.primary }
+      : { borderColor: t["muted-foreground"], backgroundColor: "transparent" }),
+  }),
+  glyph: (_t, size) => ({ fontWeight: "700", color: "#ffffff", ...glyphType(ANDROID_GLYPH[size]) }),
+  label,
+  disabledOpacity: 0.38, // M3 disabled opacity
+  pressedOpacity: null, // Android uses a ripple instead
+  ripple: (t) => ({ color: t.primary, borderless: true, radius: 20 }), // 40dp state layer
+};
