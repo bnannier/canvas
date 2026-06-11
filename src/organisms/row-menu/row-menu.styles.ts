@@ -1,12 +1,26 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow } from "../../style/index.js";
+import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 
-// Co-located RowMenu styles. Layout-only fragments are static objects; anything
-// that reads a color is a function of the active tokens (so the popover surface,
-// hairlines, and label follow light/dark, and the card reads as glass when the
-// ThemeProvider's surface is "glass", since tokens.popover is swapped translucent
-// at the theming level). The destructive row color branches on the dark scheme
-// (a fixed Tailwind palette hue), so it takes `dark` as well.
+// Co-located RowMenu skins, one per platform, all driven by the brand tokens
+// (passed in from useTheme so they follow light/dark and the glass surface, since
+// tokens.popover is swapped translucent at the theming level). The BRAND survives
+// on every platform (the destructive red is a fixed Tailwind hue, the trigger and
+// rows take the brand foreground/popover tokens, never a platform default); only
+// the native SHAPE, sizing, structure, and interaction feedback change per OS:
+//   iOS (HIG context menu): the floating card is a rounded popover (~13 radius)
+//     over `popover` with a soft shadow, NO border; rows are ~44pt tall with a
+//     LEADING icon, groups split by hairline `separator` lines; destructive rows
+//     are red; pressed = a `secondary` highlight (no ripple). The ⋯ trigger dims
+//     to ~0.8 opacity on press.
+//   Android (Material 3 menu): the card is an elevated surface (4 radius,
+//     `popover`, soft shadow), NO border and NO separators between rows; rows are
+//     ~48dp tall with a LEADING icon; press = an android_ripple (alpha(primary,
+//     0.12) state layer). Destructive rows are red. The ⋯ trigger uses the same
+//     ripple.
+//   Web: the established Canvas look (the current row menu, lifted verbatim) — a
+//     bordered popover card (6 radius, `border`, shadow-lg, min-w 180), rounded-sm
+//     rows (px-2 py-1.5), hairline `border` separators, destructive red, and an
+//     `accent` fill on press for both the trigger and the rows.
 
 export interface RowMenuItem {
   label: string;
@@ -18,41 +32,63 @@ export interface RowMenuItem {
   separatorBefore?: boolean;
 }
 
-// --- trigger ----------------------------------------------------------------
-
-// The ⋯ icon-button: a 32x32 square, centered, with the menu radius. The press
-// fill (the old `active:bg-accent`) is applied by the component's Pressable.
-export const trigger: ViewStyle = {
-  width: 32,
-  height: 32,
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 6,
-};
-
-// `text-base text-foreground` for the ⋯ glyph.
-export function triggerGlyph(tokens: ColorTokens): TextStyle {
-  return { fontSize: 16, lineHeight: 24, color: tokens.foreground };
+// The contract a platform skin fulfills. The shell owns the structure (anchor +
+// ⋯ trigger + floating card of section label and item rows) and the open/close
+// state; the skin maps tokens and the active row state to RN style objects, and
+// declares its press-feedback mode (iOS/web dim or tint inline, Android ripples).
+export interface RowMenuSkin {
+  /** The relative anchor: keeps the trigger from stretching, positions the card. */
+  anchor: ViewStyle;
+  /** The ⋯ icon-button surface (square, centered, platform radius). */
+  trigger: ViewStyle;
+  /** The ⋯ glyph text. */
+  triggerGlyph: (t: ColorTokens) => TextStyle;
+  /** The fill applied to the trigger on press (web/iOS tint via this; Android ripples). */
+  triggerPressed: (t: ColorTokens) => ViewStyle;
+  /** The floating menu card surface (shape, fill, border, shadow, placement). */
+  menuCard: (t: ColorTokens) => ViewStyle;
+  /** The muted section heading above the rows. */
+  menuLabel: (t: ColorTokens) => TextStyle;
+  /** A single action/link row layout. */
+  itemRow: ViewStyle;
+  /** The fill applied to a row on press (web/iOS tint via this; Android ripples). */
+  itemPressed: (t: ColorTokens) => ViewStyle;
+  /** Whether this platform draws hairline separators between groups (iOS/web yes, Android no). */
+  showSeparators: boolean;
+  /** The hairline separator above a row that sets `separatorBefore`. */
+  separator: (t: ColorTokens) => ViewStyle;
+  /** The shared icon/label text size, so they line up in a row. */
+  rowTextSize: TextStyle;
+  /** The per-row text color (destructive red, link foreground, action popover fg). */
+  rowTextColor: (item: RowMenuItem, links: boolean, t: ColorTokens, dark: boolean) => TextStyle;
+  /** iOS/web dim the trigger on press; Android ripples instead (null). */
+  triggerPressedOpacity: number | null;
+  /** Android ripple over the trigger and rows; null on iOS/web. */
+  ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
-// --- outer anchor -----------------------------------------------------------
-
-// `relative self-start`: anchors the floating menu and keeps the trigger from
-// stretching to fill its parent.
-export const anchor: ViewStyle = { position: "relative", alignSelf: "flex-start" };
-
-// --- menu card --------------------------------------------------------------
-
-// `min-w-[180px] rounded-md border border-border bg-popover p-1 shadow-lg`, plus
-// the inline floating placement `absolute top-full left-0 z-50 mt-1`. The popover
-// fill + border go translucent under glass.
-export function menuCard(tokens: ColorTokens): ViewStyle {
-  return {
+// ---------- Web: the established Canvas look (lifted verbatim) ----------
+// A bordered popover card (min-w 180, 6 radius, 1px `border`, `popover` fill,
+// p-1, shadow-lg) placed inline below the trigger; rounded-sm rows (px-2 py-1.5)
+// with a 2-radius corner; hairline `border` separators split groups; destructive
+// rows are red-600/red-400; the trigger and rows tint with `accent` on press.
+export const webSkin: RowMenuSkin = {
+  anchor: { position: "relative", alignSelf: "flex-start" },
+  trigger: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 6,
+  },
+  triggerGlyph: (t) => ({ fontSize: 16, lineHeight: 24, color: t.foreground }),
+  triggerPressed: (t) => ({ backgroundColor: t.accent }),
+  menuCard: (t) => ({
     minWidth: 180,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.popover,
+    borderColor: t.border,
+    backgroundColor: t.popover,
     padding: 4,
     ...shadow("lg"),
     position: "absolute",
@@ -60,48 +96,153 @@ export function menuCard(tokens: ColorTokens): ViewStyle {
     left: 0,
     zIndex: 50,
     marginTop: 4,
-  };
-}
-
-// `px-2 py-1.5 text-xs font-medium text-muted-foreground`: the muted section
-// heading above the rows.
-export function menuLabel(tokens: ColorTokens): TextStyle {
-  return {
+  }),
+  menuLabel: (t) => ({
     paddingHorizontal: 8,
     paddingVertical: 6,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
-    color: tokens["muted-foreground"],
-  };
-}
-
-// --- rows -------------------------------------------------------------------
-
-// `flex-row items-center gap-2 rounded-sm px-2 py-1.5`: a single action/link row.
-// The press fill (the old `active:bg-accent`) is applied by the row's Pressable.
-export const itemRow: ViewStyle = {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 8,
-  borderRadius: 2,
-  paddingHorizontal: 8,
-  paddingVertical: 6,
+    color: t["muted-foreground"],
+  }),
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  itemPressed: (t) => ({ backgroundColor: t.accent }),
+  showSeparators: true,
+  separator: (t) => ({ marginVertical: 4, height: 1, backgroundColor: t.border }),
+  rowTextSize: { fontSize: 14, lineHeight: 20 },
+  rowTextColor: (item, links, t, dark) => {
+    if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
+    return { color: links ? t.foreground : t["popover-foreground"] };
+  },
+  triggerPressedOpacity: null,
+  ripple: null,
 };
 
-// `my-1 h-px bg-border`: the hairline that splits a group off (e.g. a trailing
-// Delete) above the row that sets `separatorBefore`.
-export function separator(tokens: ColorTokens): ViewStyle {
-  return { marginVertical: 4, height: 1, backgroundColor: tokens.border };
-}
+// ---------- iOS (HIG context menu): rounded popover, leading icons, hairlines ----------
+// Apple's context menu: a floating rounded card (~13pt) over `popover` with a soft
+// shadow and NO border; rows are ~44pt tall with comfortable horizontal padding
+// and a LEADING glyph; groups are split by full-bleed hairline separators; a
+// destructive row is red; the pressed row tints with the `secondary` system fill
+// (not a ripple). The ⋯ trigger dims to ~0.8 opacity on press.
+const IOS_RADIUS = 13;
+export const iosSkin: RowMenuSkin = {
+  anchor: { position: "relative", alignSelf: "flex-start" },
+  trigger: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+  },
+  triggerGlyph: (t) => ({ fontSize: 17, lineHeight: 22, color: t.foreground }),
+  // iOS dims the whole trigger on press (pressedOpacity); no fill tint.
+  triggerPressed: () => ({}),
+  menuCard: (t) => ({
+    minWidth: 220,
+    borderRadius: IOS_RADIUS,
+    backgroundColor: t.popover,
+    paddingVertical: 4,
+    ...shadow("lg"),
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    zIndex: 50,
+    marginTop: 6,
+  }),
+  menuLabel: (t) => ({
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 6,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: t["muted-foreground"],
+  }),
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    minHeight: 44,
+  },
+  // The selected/pressed row uses the iOS system highlight (the `secondary` fill).
+  itemPressed: (t) => ({ backgroundColor: t.secondary }),
+  showSeparators: true,
+  // A full-bleed hairline divider (no horizontal inset) splitting menu groups.
+  separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
+  rowTextSize: { fontSize: 17, lineHeight: 22 },
+  rowTextColor: (item, links, t, dark) => {
+    if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
+    return { color: links ? t.foreground : t["popover-foreground"] };
+  },
+  triggerPressedOpacity: 0.8,
+  ripple: null,
+};
 
-// `text-sm` plus the per-row color: destructive rows are red-tinted
-// (`text-red-600 dark:text-red-400`), link rows take the foreground, and action
-// rows take the popover foreground. The size fragment is shared by the icon and
-// label Texts so they line up.
-export const rowTextSize: TextStyle = { fontSize: 14, lineHeight: 20 };
-
-export function rowTextColor(item: RowMenuItem, links: boolean, tokens: ColorTokens, dark: boolean): TextStyle {
-  if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
-  return { color: links ? tokens.foreground : tokens["popover-foreground"] };
-}
+// ---------- Android (Material 3 menu): elevated surface, ripple rows, no dividers ----------
+// M3 dropdown/context menu: an elevated surface (4dp radius, `popover` fill, soft
+// shadow) with NO border; rows are ~48dp tall with a LEADING icon and a brand
+// ripple on press (alpha(primary, 0.12) state layer); M3 menus do NOT draw
+// dividers between every group, so separators are suppressed. Destructive rows
+// are red. The ⋯ trigger shares the ripple.
+const ANDROID_RADIUS = 4;
+export const androidSkin: RowMenuSkin = {
+  anchor: { position: "relative", alignSelf: "flex-start" },
+  trigger: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+  },
+  triggerGlyph: (t) => ({ fontSize: 20, lineHeight: 24, color: t.foreground }),
+  // Android tints the trigger via the ripple, not a fill.
+  triggerPressed: () => ({}),
+  menuCard: (t) => ({
+    minWidth: 200,
+    borderRadius: ANDROID_RADIUS,
+    backgroundColor: t.popover,
+    paddingVertical: 8,
+    ...shadow("md"),
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    zIndex: 50,
+    marginTop: 2,
+  }),
+  menuLabel: (t) => ({
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "500",
+    color: t["muted-foreground"],
+  }),
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 48,
+  },
+  // The M3 pressed state layer: the brand primary at ~12% alpha (the ripple tint).
+  itemPressed: (t) => ({ backgroundColor: alpha(t.primary, 0.12) }),
+  showSeparators: false,
+  separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
+  rowTextSize: { fontSize: 16, lineHeight: 24 },
+  rowTextColor: (item, links, t, dark) => {
+    if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
+    return { color: links ? t.foreground : t["popover-foreground"] };
+  },
+  triggerPressedOpacity: null,
+  ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
+};

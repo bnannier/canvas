@@ -59,6 +59,22 @@ const ENTRIES: Entry[] = [
     android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/MinimalDropdownMenu.png` },
     ios: { url: "https://developer.apple.com/design/human-interface-guidelines/combo-boxes", img: `${IOS}/34898e39063208aa3706d50629eb3ad3/components-combobox-intro%402x.png` },
     web: { url: "https://catalyst.tailwindui.com/docs/combobox" } } },
+  { slug: "dropdown", name: "Dropdown", level: "atoms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/basicmenu1.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/menus", img: `${IOS}/004bc60431be4d2765469b56e47d4781/menus-groups-visual-treatment%402x.png` },
+    web: { url: "https://catalyst.tailwindui.com/docs/dropdown" } } },
+  { slug: "row-menu", name: "Row Menu (context menu)", level: "organisms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/basicmenu1.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/context-menus", img: `${IOS}/a330aca1a1e1f0dc65837ecb74014561/components-context-menu-intro%402x.png` },
+    web: { url: "https://www.radix-ui.com/primitives/docs/components/context-menu" } } },
+  { slug: "popover", name: "Popover", level: "atoms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", note: "no native Material popover" },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/popovers", img: `${IOS}/ef05d3cb071e4c11209cce39b596ca99/attached-popover%402x.png` },
+    web: { url: "https://ui.shadcn.com/docs/components/popover" } } },
+  { slug: "tooltip", name: "Tooltip", level: "atoms", refs: {
+    android: { url: "https://developer.android.com/develop/ui/compose/components/tooltip", img: `${AND}/PlainTooltipExample.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/", note: "no native iOS tooltip" },
+    web: { url: "https://www.radix-ui.com/primitives/docs/components/tooltip" } } },
 ];
 
 const PLATFORMS: Platform[] = ["android", "ios", "web"];

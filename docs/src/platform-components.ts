@@ -23,6 +23,14 @@ import { Select as SelectIOS } from "../../src/atoms/select/select.ios.js";
 import { Select as SelectAndroid } from "../../src/atoms/select/select.android.js";
 import { Combobox as ComboboxIOS } from "../../src/atoms/combobox/combobox.ios.js";
 import { Combobox as ComboboxAndroid } from "../../src/atoms/combobox/combobox.android.js";
+import { Dropdown as DropdownIOS } from "../../src/atoms/dropdown/dropdown.ios.js";
+import { Dropdown as DropdownAndroid } from "../../src/atoms/dropdown/dropdown.android.js";
+import { Popover as PopoverIOS } from "../../src/atoms/popover/popover.ios.js";
+import { Popover as PopoverAndroid } from "../../src/atoms/popover/popover.android.js";
+import { Tooltip as TooltipIOS } from "../../src/atoms/tooltip/tooltip.ios.js";
+import { Tooltip as TooltipAndroid } from "../../src/atoms/tooltip/tooltip.android.js";
+import { RowMenu as RowMenuIOS } from "../../src/organisms/row-menu/row-menu.ios.js";
+import { RowMenu as RowMenuAndroid } from "../../src/organisms/row-menu/row-menu.android.js";
 
 export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -35,6 +43,10 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     ButtonGroup: ButtonGroupIOS,
     Select: SelectIOS,
     Combobox: ComboboxIOS,
+    Dropdown: DropdownIOS,
+    Popover: PopoverIOS,
+    Tooltip: TooltipIOS,
+    RowMenu: RowMenuIOS,
   },
   android: {
     Switch: SwitchAndroid,
@@ -46,5 +58,9 @@ export const PLATFORM_OVERRIDES: Record<"ios" | "android", Record<string, unknow
     ButtonGroup: ButtonGroupAndroid,
     Select: SelectAndroid,
     Combobox: ComboboxAndroid,
+    Dropdown: DropdownAndroid,
+    Popover: PopoverAndroid,
+    Tooltip: TooltipAndroid,
+    RowMenu: RowMenuAndroid,
   },
 };
