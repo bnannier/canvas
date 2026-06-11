@@ -227,10 +227,6 @@ export const REFERENCE_STATES: ComponentRefs[] = [
                 key: "default",
                 label: "default",
               },
-              {
-                key: "disabled",
-                label: "disabled",
-              },
             ],
           },
           {
@@ -241,10 +237,6 @@ export const REFERENCE_STATES: ComponentRefs[] = [
               {
                 key: "default",
                 label: "default",
-              },
-              {
-                key: "disabled",
-                label: "disabled",
               },
             ],
           },
@@ -374,10 +366,6 @@ export const REFERENCE_STATES: ComponentRefs[] = [
               {
                 key: "toggled-on",
                 label: "toggled on (data-state=on)",
-              },
-              {
-                key: "disabled",
-                label: "disabled",
               },
             ],
           },
@@ -1498,43 +1486,6 @@ export const REFERENCE_STATES: ComponentRefs[] = [
               },
             ],
           },
-          {
-            key: "disabled-tab",
-            variant: "Disabling a tab",
-            source: "https://headlessui.com/react/tabs#disabling-a-tab",
-            states: [
-              {
-                key: "default",
-                label: "default",
-              },
-              {
-                key: "disabled",
-                label: "data-disabled (styled e.g. disabled:opacity-50)",
-              },
-            ],
-          },
-          {
-            key: "vertical",
-            variant: "Displaying tabs vertically (vertical prop, up/down arrow navigation)",
-            source: "https://headlessui.com/react/tabs#displaying-tabs-vertically",
-            states: [
-              {
-                key: "default",
-                label: "default (vertical TabList, first tab selected)",
-              },
-            ],
-          },
-          {
-            key: "manual",
-            variant: "Manually activating tabs (manual prop, Enter/Space to select)",
-            source: "https://headlessui.com/react/tabs#manually-activating-tabs",
-            states: [
-              {
-                key: "default",
-                label: "default",
-              },
-            ],
-          },
         ],
         note: "Headless UI ships unstyled components; states are exposed as data attributes (data-selected, data-hover, data-focus, data-active, data-disab",
       },
@@ -2094,10 +2045,6 @@ export const REFERENCE_STATES: ComponentRefs[] = [
                 key: "sub-closed",
                 label: "submenu closed",
               },
-              {
-                key: "subtrigger-disabled",
-                label: "sub-trigger disabled",
-              },
             ],
           },
           {
@@ -2111,10 +2058,6 @@ export const REFERENCE_STATES: ComponentRefs[] = [
               {
                 key: "checked",
                 label: "checked",
-              },
-              {
-                key: "disabled",
-                label: "checkbox item disabled",
               },
             ],
           },
@@ -2491,14 +2434,6 @@ export const REFERENCE_STATES: ComponentRefs[] = [
               {
                 key: "loading",
                 label: "loading (data-state=\"loading\", 0 <= value < max)",
-              },
-              {
-                key: "complete",
-                label: "complete (data-state=\"complete\", value = max)",
-              },
-              {
-                key: "indeterminate",
-                label: "indeterminate (data-state=\"indeterminate\", value = null)",
               },
             ],
           },
