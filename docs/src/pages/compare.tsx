@@ -11,47 +11,53 @@ import { LiveExampleFor } from "@/components/live-example";
 const RAW = import.meta.glob("../../../src/*/*/*.md", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
 type Platform = "android" | "ios" | "web";
-type Ref = { url: string; note?: string } | null;
+type Ref = { url: string; img?: string; note?: string } | null;
 type Entry = { slug: string; name: string; level: string; refs: Record<Platform, Ref> };
 
-// The platform-skinned components (extend as more are skinned), each with its
-// reference URL per platform from PLATFORM-REFERENCES.md. `null` = no native equivalent.
+// CDN bases for the hotlinked reference screenshots (the real control images served
+// by each design system; Apple + Android allow cross-origin <img> hotlinking). Catalyst
+// (web) renders its components as HTML with no image asset, so web stays a link.
+const AND = "https://developer.android.com/static/develop/ui/compose/images";
+const IOS = "https://docs-assets.developer.apple.com/published";
+
+// The platform-skinned components (extend as more are skinned). `url` = the reference
+// doc from PLATFORM-REFERENCES.md; `img` = a hotlinked screenshot of the real control.
 const ENTRIES: Entry[] = [
   { slug: "button", name: "Button", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/button" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/buttons" },
+    android: { url: "https://developer.android.com/develop/ui/compose/components/button", img: `${AND}/components/button-filled.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/buttons", img: `${IOS}/a28d01e0e86313ce083d5db066815a5a/components-buttons-thumbnail%402x.png` },
     web: { url: "https://catalyst.tailwindui.com/docs/button" } } },
   { slug: "checkbox", name: "Checkbox", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/checkbox" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/toggles", note: "no native iOS checkbox" },
+    android: { url: "https://developer.android.com/develop/ui/compose/components/checkbox", img: `${AND}/components/checkbox-minimal-checked.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/toggles", img: `${IOS}/ffd72e78175dc69a27016e8454030b71/checkbox-deselected%402x.png`, note: "no native iOS checkbox" },
     web: { url: "https://catalyst.tailwindui.com/docs/checkbox" } } },
   { slug: "radio", name: "Radio", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/radio-button" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers", note: "no native iOS radio" },
+    android: { url: "https://developer.android.com/develop/ui/compose/components/radio-button", img: `${AND}/components/radiobutton2.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers", img: `${IOS}/91c45b3934ecd18b42b2bb72e64ca702/radio-button-selected%402x.png`, note: "no native iOS radio" },
     web: { url: "https://catalyst.tailwindui.com/docs/radio" } } },
   { slug: "switch", name: "Switch", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/switch" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/toggles" },
+    android: { url: "https://developer.android.com/develop/ui/compose/components/switch", img: `${AND}/components/switch.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/toggles", img: `${IOS}/f4a1d653777ba4f0b6b4b7d97d704f9f/components-toggles-intro%402x.png` },
     web: { url: "https://catalyst.tailwindui.com/docs/switch" } } },
   { slug: "input", name: "Input", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/text/user-input" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/text-fields" },
+    android: { url: "https://developer.android.com/develop/ui/compose/text/user-input", img: `${AND}/text-textfield-hello.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/text-fields", img: `${IOS}/76a27a49c4c007b35b9564e1efc83446/components-text-field-intro%402x.png` },
     web: { url: "https://catalyst.tailwindui.com/docs/input" } } },
   { slug: "textarea", name: "Textarea", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/text/user-input" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/text-views" },
+    android: { url: "https://developer.android.com/develop/ui/compose/text/user-input", img: `${AND}/text-textfield-multiline.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/text-views", img: `${IOS}/43a1eb50d986f3b2dc0765b6beca6ae9/components-text-views-thumbnail%402x.png` },
     web: { url: "https://catalyst.tailwindui.com/docs/textarea" } } },
   { slug: "button-group", name: "Button Group (segmented)", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/segmented-button" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/segmented-controls" },
+    android: { url: "https://developer.android.com/develop/ui/compose/components/segmented-button", img: `${AND}/components/SingleChoiceSegmentedButton.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/segmented-controls", img: `${IOS}/f82bafe0f162b0181f6d50661109464b/segmented-controls-activity-charts%402x.png` },
     web: { url: "https://ui.shadcn.com/docs/components/toggle-group" } } },
   { slug: "select", name: "Select", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/menu" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers" },
+    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/basicmenu1.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/pickers", img: `${IOS}/65d6693bf614da95dde6a82006037c86/pickers-date-picker-compact-expanded%402x.png` },
     web: { url: "https://catalyst.tailwindui.com/docs/select" } } },
   { slug: "combobox", name: "Combobox", level: "atoms", refs: {
-    android: { url: "https://developer.android.com/develop/ui/compose/components/menu" },
-    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/combo-boxes" },
+    android: { url: "https://developer.android.com/develop/ui/compose/components/menu", img: `${AND}/components/MinimalDropdownMenu.png` },
+    ios: { url: "https://developer.apple.com/design/human-interface-guidelines/combo-boxes", img: `${IOS}/34898e39063208aa3706d50629eb3ad3/components-combobox-intro%402x.png` },
     web: { url: "https://catalyst.tailwindui.com/docs/combobox" } } },
 ];
 
@@ -68,12 +74,13 @@ function usageFence(md: string): string {
 
 function RefCell({ slug, platform, ref }: { slug: string; platform: Platform; ref: Ref }) {
   const [errored, setErrored] = useState(false);
-  const src = `/refs/${slug}-${platform}.png`;
+  // Prefer the hotlinked CDN screenshot; fall back to a locally-dropped image, then a link.
+  const src = ref?.img ?? `/refs/${slug}-${platform}.png`;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
       {!errored ? (
         <img src={src} alt={`${slug} ${platform} reference`} onError={() => setErrored(true)}
-          style={{ maxWidth: "100%", maxHeight: 120, borderRadius: 8, border: "1px solid var(--border)" }} />
+          style={{ maxWidth: "100%", maxHeight: 150, borderRadius: 8, border: "1px solid var(--border)", background: "#fff" }} />
       ) : (
         <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
           {ref?.note ? `${ref.note}. ` : ""}reference image not captured yet
