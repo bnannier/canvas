@@ -44,16 +44,25 @@ export interface RefRow {
 export interface PlatformRefs {
   /** This platform's reference link from PLATFORM-REFERENCES.md. */
   url: string;
-  /** Row-level caveat, e.g. "no native iOS checkbox; toggle is the idiom". */
+  /** Row-level caveat, e.g. "M3 has no separate textarea". */
   note?: string;
   rows: RefRow[];
+}
+
+/**
+ * The platform has no such component. The statement says so plainly and may
+ * name what the platform uses instead, in words only; lookalike controls are
+ * never linked or captured as if they were the component.
+ */
+export interface PlatformNone {
+  none: string;
 }
 
 export interface ComponentRefs {
   slug: string;
   name: string;
   level: "atoms" | "molecules" | "organisms";
-  refs: Partial<Record<RefPlatform, PlatformRefs>>;
+  refs: Partial<Record<RefPlatform, PlatformRefs | PlatformNone>>;
 }
 
 export const REFERENCE_STATES: ComponentRefs[] = [
@@ -400,48 +409,7 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     level: "atoms",
     refs: {
       ios: {
-        url: "https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Toggles",
-        rows: [
-          {
-            key: "toggle-on",
-            variant: "Toggle On (idiom)",
-            source: "Toggles/{scheme}/On",
-            states: [
-              {
-                key: "idle",
-                label: "Idle",
-              },
-              {
-                key: "pressed",
-                label: "Pressed",
-              },
-              {
-                key: "disabled",
-                label: "Disabled",
-              },
-            ],
-          },
-          {
-            key: "toggle-off",
-            variant: "Toggle Off (idiom)",
-            source: "Toggles/{scheme}/Off",
-            states: [
-              {
-                key: "idle",
-                label: "Idle",
-              },
-              {
-                key: "pressed",
-                label: "Pressed",
-              },
-              {
-                key: "disabled",
-                label: "Disabled",
-              },
-            ],
-          },
-        ],
-        note: "no native iOS checkbox; the toggle is the idiom",
+        none: "iOS has no checkbox; the checkbox toggle style is macOS-only. iOS uses switches in list rows and toggle-style buttons elsewhere.",
       },
       android: {
         url: "https://developer.android.com/develop/ui/compose/components/checkbox",
@@ -569,21 +537,7 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     level: "atoms",
     refs: {
       ios: {
-        url: "https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Lists",
-        rows: [
-          {
-            key: "checkmark",
-            variant: "List Checkmark Accessory (idiom)",
-            source: "Lists/􀻃/{scheme}/Rows/Accessories - Trailing",
-            states: [
-              {
-                key: "checkmark",
-                label: "Checkmark",
-              },
-            ],
-          },
-        ],
-        note: "no native iOS radio; the list checkmark accessory is the idiom",
+        none: "iOS has no radio button; it is a macOS-only control. iOS apps use a single-select checkmark list or a picker instead.",
       },
       android: {
         url: "https://developer.android.com/develop/ui/compose/components/radio-button",
@@ -977,29 +931,9 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     level: "atoms",
     refs: {
       ios: {
-        url: "https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Text%2520Fields",
-        rows: [
-          {
-            key: "text-field",
-            variant: "Text Field (idiom)",
-            source: "Text Fields/{scheme}",
-            states: [
-              {
-                key: "default",
-                label: "Default",
-              },
-              {
-                key: "placeholder",
-                label: "Placeholder",
-              },
-              {
-                key: "typing",
-                label: "Typing",
-              },
-            ],
-          },
-        ],
-        note: "the kit has no multiline field; the text field is the idiom",
+        url: "https://developer.apple.com/design/human-interface-guidelines/text-views",
+        note: "text view: UITextView / SwiftUI TextEditor; the iOS 27 kit has no text view symbols, so there is no kit imagery to capture",
+        rows: [],
       },
       android: {
         url: "https://developer.android.com/develop/ui/compose/text/user-input",
@@ -1260,36 +1194,7 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     level: "atoms",
     refs: {
       ios: {
-        url: "https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Menus",
-        rows: [
-          {
-            key: "text-field",
-            variant: "Text Field",
-            source: "Text Fields/{scheme}",
-            states: [
-              {
-                key: "placeholder",
-                label: "Placeholder",
-              },
-              {
-                key: "typing",
-                label: "Typing",
-              },
-            ],
-          },
-          {
-            key: "menu",
-            variant: "Menu",
-            source: "Menus/{scheme}",
-            states: [
-              {
-                key: "iphone",
-                label: "iPhone",
-              },
-            ],
-          },
-        ],
-        note: "text field + menu; the kit has no combobox",
+        none: "combo boxes are macOS-only; iOS apps use a text field plus a menu or picker instead.",
       },
       android: {
         url: "https://developer.android.com/develop/ui/compose/components/menu",
@@ -1403,44 +1308,7 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     level: "organisms",
     refs: {
       ios: {
-        url: "https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Segmented%2520Controls",
-        rows: [
-          {
-            key: "large",
-            variant: "Segmented (Large)",
-            source: "Segmented Controls/{scheme}/Large",
-            states: [
-              {
-                key: "enabled",
-                label: "Enabled",
-              },
-              {
-                key: "disabled",
-                label: "Disabled",
-              },
-            ],
-          },
-          {
-            key: "segment",
-            variant: "Segment (single button)",
-            source: "Segmented Controls/􀻃/{scheme}",
-            states: [
-              {
-                key: "unselected",
-                label: "Unselected",
-              },
-              {
-                key: "touch",
-                label: "Touch",
-              },
-              {
-                key: "selected",
-                label: "Selected",
-              },
-            ],
-          },
-        ],
-        note: "in-page tabs use the segmented control idiom",
+        none: "iOS has no in-page tabs control; closely related subviews switch with a segmented control, and the tab bar is app-level navigation.",
       },
       android: {
         url: "https://developer.android.com/develop/ui/compose/components/tabs",
@@ -2021,62 +1889,25 @@ export const REFERENCE_STATES: ComponentRefs[] = [
         note: "The Compose menu page documents a single component, DropdownMenu, in four pictured configurations",
       },
       web: {
-        url: "https://www.radix-ui.com/primitives/docs/components/context-menu",
+        url: "https://www.radix-ui.com/primitives/docs/components/dropdown-menu",
+        note: "button-anchored row actions menu; Radix Context Menu covers only the right-click variant",
         rows: [
           {
             key: "basic",
-            variant: "Basic context menu (Anatomy)",
+            variant: "Dropdown Menu (hero demo)",
+            source: "https://www.radix-ui.com/primitives/docs/components/dropdown-menu",
             states: [
               {
-                key: "default",
-                label: "open, no item highlighted",
+                key: "closed",
+                label: "trigger (closed)",
               },
               {
-                key: "item-disabled",
-                label: "item disabled",
-              },
-            ],
-          },
-          {
-            key: "with-submenus",
-            variant: "With submenus (Sub / SubTrigger / SubContent)",
-            states: [
-              {
-                key: "sub-closed",
-                label: "submenu closed",
-              },
-            ],
-          },
-          {
-            key: "with-checkbox-items",
-            variant: "With checkbox items (CheckboxItem + ItemIndicator)",
-            states: [
-              {
-                key: "unchecked",
-                label: "unchecked",
-              },
-              {
-                key: "checked",
-                label: "checked",
-              },
-            ],
-          },
-          {
-            key: "with-radio-items",
-            variant: "With radio items (RadioGroup / RadioItem + ItemIndicator)",
-            states: [
-              {
-                key: "unselected",
-                label: "radio item unselected",
-              },
-              {
-                key: "selected",
-                label: "radio item selected",
+                key: "open",
+                label: "open menu",
               },
             ],
           },
         ],
-        note: "Radix Context Menu is an unstyled primitive; states are exposed as data attributes the consumer styles: [data-highlighted] on pointer hover ",
       },
     },
   },
@@ -2085,6 +1916,9 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     name: "Popover",
     level: "atoms",
     refs: {
+      android: {
+        none: "Material 3 has no popover component; the closest M3 patterns are the rich tooltip and menus.",
+      },
       ios: {
         url: "https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Popovers%2520%2528iPad%2520Only%2529",
         rows: [
@@ -2149,6 +1983,9 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     name: "Tooltip",
     level: "atoms",
     refs: {
+      ios: {
+        none: "iOS has no tooltip; the HIG scopes hover tooltips to apps running on a Mac and to visionOS. Apps surface hints with TipKit tips or popovers instead.",
+      },
       android: {
         url: "https://developer.android.com/develop/ui/compose/components/tooltip",
         rows: [
@@ -2424,21 +2261,21 @@ export const REFERENCE_STATES: ComponentRefs[] = [
         note: "Compose M3 docs depict each variant with an mp4 motion demo, not a still image",
       },
       web: {
-        url: "https://www.radix-ui.com/primitives/docs/components/progress",
+        url: "https://ui.shadcn.com/docs/components/spinner",
+        note: "Radix has no spinner primitive; its Progress is a progress bar, a different component",
         rows: [
           {
-            key: "progress",
-            variant: "Progress (Root + Indicator primitive)",
-            source: "https://www.radix-ui.com/primitives/docs/components/progress#api-reference",
+            key: "spinner",
+            variant: "Spinner",
+            source: "https://ui.shadcn.com/docs/components/spinner",
             states: [
               {
-                key: "loading",
-                label: "loading (data-state=\"loading\", 0 <= value < max)",
+                key: "default",
+                label: "default",
               },
             ],
           },
         ],
-        note: "Radix Progress is a single unstyled primitive (Progress.Root containing Progress.Indicator); the docs define no visual variants and no hover",
       },
     },
   },
@@ -2447,49 +2284,11 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     name: "Pagination",
     level: "atoms",
     refs: {
+      android: {
+        none: "Material 3 has no pagination component; M3 lists scroll continuously or load incrementally instead.",
+      },
       ios: {
-        url: "https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Page%2520Control",
-        rows: [
-          {
-            key: "background",
-            variant: "With Background",
-            source: "Page Control/{scheme}/Background",
-            states: [
-              {
-                key: "d5",
-                label: "5 Dots",
-              },
-              {
-                key: "d8-first",
-                label: "8+ Dots, First",
-              },
-              {
-                key: "d8-mid",
-                label: "8+ Dots, Middle",
-              },
-            ],
-          },
-          {
-            key: "no-background",
-            variant: "No Background",
-            source: "Page Control/{scheme}/No Background",
-            states: [
-              {
-                key: "d5",
-                label: "5 Dots",
-              },
-              {
-                key: "d8-first",
-                label: "8+ Dots, First",
-              },
-              {
-                key: "d8-mid",
-                label: "8+ Dots, Middle",
-              },
-            ],
-          },
-        ],
-        note: "iOS uses dot page controls",
+        none: "iOS has no numbered pagination; the dot page control is a swipe indicator for a handful of peer views, not page navigation for tables.",
       },
       web: {
         url: "https://catalyst.tailwindui.com/docs/pagination",
@@ -2548,6 +2347,12 @@ export const REFERENCE_STATES: ComponentRefs[] = [
     name: "Stepper",
     level: "organisms",
     refs: {
+      android: {
+        none: "steppers were a Material 1 pattern, dropped from the guidelines; Material 3 has no stepper component.",
+      },
+      ios: {
+        none: "iOS has no multi-step wizard component; the HIG steppers page and the kit Stepper group are the +/- increment control. Flows use page controls or progress indicators instead.",
+      },
       web: {
         url: "https://tailwindcss.com/plus/ui-blocks/application-ui/navigation/progress-bars",
         rows: [

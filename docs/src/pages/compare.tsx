@@ -4,6 +4,7 @@ import { useDocsScheme } from "@/use-docs-scheme";
 import {
   REFERENCE_STATES,
   type ComponentRefs,
+  type PlatformNone,
   type PlatformRefs,
   type RefPlatform,
   type RefRow,
@@ -114,10 +115,14 @@ function VariantRow({ slug, platform, row, scheme }: {
 }
 
 /** The Reference cell for one platform row: variant rows + the source link. */
-function RefCell({ slug, platform, refs }: { slug: string; platform: RefPlatform; refs?: PlatformRefs }) {
+function RefCell({ slug, platform, refs }: { slug: string; platform: RefPlatform; refs?: PlatformRefs | PlatformNone }) {
   const scheme = useDocsScheme();
-  if (!refs) {
-    return <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>(none)</span>;
+  if (!refs || "none" in refs) {
+    return (
+      <span style={{ fontSize: 12, color: "var(--muted-foreground)", maxWidth: 460, display: "inline-block", lineHeight: 1.55 }}>
+        {refs && "none" in refs ? `(none: ${refs.none})` : "(none)"}
+      </span>
+    );
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
