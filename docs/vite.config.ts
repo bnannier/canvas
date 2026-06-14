@@ -47,6 +47,14 @@ export default defineConfig({
     global: "globalThis",
   },
   resolve: {
+    // The docs app files resolve react from docs/node_modules, but the Canvas
+    // source (aliased to ../src) and react-native-web resolve it from the repo
+    // root node_modules, so the production Rollup build bundled two React copies
+    // (19.2.6 + 19.2.7). Two copies means two hooks dispatchers, and the second
+    // one is null at render: the deployed bundle white-screened with
+    // "Cannot read properties of null (reading 'useMemo')". Vite dev dedupes via
+    // optimizeDeps so it only showed in the production build. Force a single copy.
+    dedupe: ["react", "react-dom", "react-native-web", "react-native-svg"],
     alias: {
       "@": resolve(__dirname, "src"),
       "@olympusoss/canvas": resolve(__dirname, "../src/index.ts"),
