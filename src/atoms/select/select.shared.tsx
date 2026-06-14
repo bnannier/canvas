@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
-import { root, type SelectSkin, type Size } from "./select.styles.js";
+import { root, rootLifted, type SelectSkin, type Size } from "./select.styles.js";
 
 // Shared Select shell. The structure (the stacked label + the trigger row with
 // its optional leading icon, value/placeholder and trailing chevron, plus the
@@ -78,7 +78,7 @@ export function createSelect(skin: SelectSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View style={[root, style]}>
+      <View style={[root, open ? rootLifted : null, style]}>
         {label != null && label !== "" ? (
           <Text style={skin.label(tokens, size)}>{label}</Text>
         ) : null}

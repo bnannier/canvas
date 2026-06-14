@@ -73,13 +73,17 @@ Native select restyled to match Canvas inputs.
 **Do** — Mark the placeholder disabled and selected so it prompts without being a valid choice.
 
 ```tsx
-<Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+<View style={{ minHeight: 220 }}>
+  <Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+</View>
 ```
 
 **Don't** — A placeholder as a normal option can be submitted as a real value.
 
 ```tsx
-<Select open label="Country" value="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+<View style={{ minHeight: 260 }}>
+  <Select open label="Country" value="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+</View>
 ```
 
 ### sm

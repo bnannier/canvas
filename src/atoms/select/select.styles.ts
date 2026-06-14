@@ -85,9 +85,18 @@ export interface SelectSkin {
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
-// The control owns the full width of its slot; the escape-hatch `style` (mainly
-// width) is applied after this by the shell.
-export const root: ViewStyle = { width: "100%" };
+// The control owns the full width of its slot; `relative` makes it the
+// positioning context for the floating option list. The escape-hatch `style`
+// (mainly width) is applied after this by the shell.
+export const root: ViewStyle = { position: "relative", width: "100%" };
+
+// When the list is open, the root is lifted into its own stacking context above
+// sibling content. react-native-web gives every positioned View an implicit
+// stacking context, so the panel's own `zIndex` is scoped INSIDE the `relative`
+// root and cannot rise above a later sibling. Raising the root's zIndex while
+// open lifts the whole control — trigger and panel together — above everything
+// painted after it.
+export const rootLifted: ViewStyle = { zIndex: 50 };
 
 // --- shared layout fragments (identical across platforms) -------------------
 
@@ -96,6 +105,12 @@ const TRIGGER_ROW: ViewStyle = {
   alignItems: "center",
   justifyContent: "space-between",
 };
+
+// Every skin's option list floats below the trigger (the root is `relative`) so
+// it overlays the content beneath instead of reflowing the page, mirroring
+// Combobox. The per-skin `marginTop` adds the gap; `maxHeight`/fill/shape stay
+// per platform.
+const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50 };
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 // Trigger height per size; mirrors the Input control's footprint (h-8/h-9/h-10).
@@ -117,6 +132,7 @@ export const webSkin: SelectSkin = {
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevronGlyph: "▾",
   panel: (t) => ({
+    ...PANEL_ANCHOR,
     marginTop: 4,
     maxHeight: 240,
     borderRadius: 6,
@@ -191,6 +207,7 @@ export const iosSkin: SelectSkin = {
   // Android panels here keep their drop shadow); the inset hairline separators and
   // the subtle neutral press tint stay clear of the rounded corners.
   panel: (t) => ({
+    ...PANEL_ANCHOR,
     marginTop: 8,
     maxHeight: 320,
     borderRadius: IOS_MENU_RADIUS,
@@ -265,6 +282,7 @@ export const androidSkin: SelectSkin = {
   chevron: (t, size, open) => ({ color: open ? t.primary : t["muted-foreground"], ...ANDROID_TEXT[size] }),
   chevronGlyph: "⌄",
   panel: (t) => ({
+    ...PANEL_ANCHOR,
     marginTop: 2,
     maxHeight: 280,
     borderRadius: 4,
