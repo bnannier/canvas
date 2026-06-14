@@ -178,7 +178,7 @@ export function ComparePage() {
                       {PLATFORM_LABEL[p]}
                     </td>
                     <td style={td}>
-                      <div style={{ display: "flex", alignItems: "center", minHeight: 56, padding: 12, borderRadius: 8, background: "var(--card)", border: "1px solid var(--border)" }}>
+                      <div style={{ display: "flex", alignItems: "center", minHeight: 56, padding: 12, borderRadius: 8, border: "1px solid var(--border)" }}>
                         {code ? <LiveExampleFor code={code} platform={p} /> : <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>no usage example</span>}
                       </div>
                     </td>
