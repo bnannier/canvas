@@ -404,57 +404,48 @@
   border-top-right-radius: 0;
 }
 
-/* ── Playground: iOS / Android / Web side by side ───── */
+/* ── Playground: iOS / Android / Web stacked as rows ──── */
 
-/* The stage holds three platform cells. Stacked on narrow viewports, three
-   columns from 900px up. Cells keep overflow visible so a floating subcomponent
-   (dropdown, popover, tooltip) paints over the code below instead of clipping. */
+/* The stage holds three platform rows, each a left-aligned label cell plus its
+   preview, like the /compare view. Cells keep overflow visible so a floating
+   subcomponent (dropdown, popover, tooltip) paints over the row below or the code
+   instead of clipping. */
 .playground-platforms {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 900px) {
-  .playground-platforms {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  display: flex;
+  flex-direction: column;
 }
 
 .playground-platform {
   display: flex;
-  flex-direction: column;
+  align-items: stretch;
   min-width: 0;
 }
 
-/* Dividers between cells: horizontal when stacked, vertical when in columns. */
 .playground-platform + .playground-platform {
   border-top: 1px solid var(--border);
 }
 
-@media (min-width: 900px) {
-  .playground-platform + .playground-platform {
-    border-top: none;
-    border-left: 1px solid var(--border);
-  }
-}
-
 .playground-platform-label {
+  flex: 0 0 96px;
+  display: flex;
+  align-items: center;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted-foreground);
-  padding: 0.5rem 0.875rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0.875rem;
+  border-right: 1px solid var(--border);
 }
 
 .playground-platform-body {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.75rem 1rem;
-  min-height: 120px;
+  padding: 1.5rem 1rem;
+  min-height: 84px;
 }
 
 /* ── Example inner: force wrap on all flex children ─── */
@@ -520,27 +511,6 @@
 }
 
 .component-playground .live-example { margin-bottom: 0; }
-
-/* When the rail is present (.playground-grid), the preview's main column is ~280px
-   narrower than the page, so its three platform columns need more room: go three-up
-   only at a wider viewport, staying stacked (horizontal dividers) below it. This
-   overrides the global .playground-platforms breakpoint. A single-example
-   playground (no rail) keeps the global full-width breakpoint. */
-.component-playground.playground-grid .playground-platforms { grid-template-columns: 1fr; }
-.component-playground.playground-grid .playground-platform + .playground-platform {
-  border-top: 1px solid var(--border);
-  border-left: none;
-}
-
-@media (min-width: 1180px) {
-  .component-playground.playground-grid .playground-platforms {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .component-playground.playground-grid .playground-platform + .playground-platform {
-    border-top: none;
-    border-left: 1px solid var(--border);
-  }
-}
 
 /* ── Component index tile grid ──────────────────────── */
 

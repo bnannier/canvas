@@ -115,7 +115,7 @@ export function LiveExampleFor({ code, platform }: { code: string; platform: "we
 }
 
 // The component playground renders every live fence under all three platforms at
-// once, iOS / Android / Web side by side, so the per-OS skins compare directly
+// once, iOS / Android / Web stacked as rows, so the per-OS skins compare directly
 // without a top-bar platform toggle.
 export const PLAYGROUND_PLATFORMS = [
   { key: "ios", label: "iOS" },
@@ -123,12 +123,12 @@ export const PLAYGROUND_PLATFORMS = [
   { key: "web", label: "Web" },
 ] as const;
 
-// The shared 3-platform stage: a rounded-top card split into iOS / Android / Web
-// cells, each rendering the same fence at its own skin. Used by the Usage stage
-// (markdown.tsx) and the Variants playground (variants-playground.tsx). Callers
-// wrap it in `.live-example` and attach a <CodeBlock> below. position+zIndex
-// raise the stage above the code so a floating subcomponent (dropdown, popover,
-// tooltip) that overflows a column paints over the code instead of being covered.
+// The shared 3-platform stage: a rounded-top card with one iOS / Android / Web
+// row per platform, each rendering the same fence at its own skin. Used by the
+// playground (playground.tsx). Callers wrap it in `.live-example` and attach a
+// <CodeBlock> below. position+zIndex raise the stage above the code so a floating
+// subcomponent (dropdown, popover, tooltip) that overflows a row paints over the
+// code instead of being covered.
 export function PlatformPreview({ code }: { code: string }) {
   return (
     <div

@@ -125,8 +125,8 @@ export function Markdown({ source, live }: { source: string; live?: boolean }) {
         if (!isLive) return <CodeBlock key={i} code={b.body} language={b.lang} />;
         // The preview stage and its code render as one attached panel: the stage is
         // rounded on top, the code is flush and rounded on the bottom (see the
-        // .live-example rules in docs.css). The stage is split into three platform
-        // columns via <PlatformPreview>, shared with the Variants playground.
+        // .live-example rules in docs.css). The stage stacks the three platform
+        // rows via <PlatformPreview>, shared with the component playground.
         return (
           <div className="live-example" key={i}>
             <PlatformPreview code={b.body} />
