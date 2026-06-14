@@ -1,51 +1,77 @@
+import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
 import { Markdown } from "@/components/markdown";
+import { LiveExampleFor } from "@/components/live-example";
 import { COMPONENTS } from "@/data/components";
+import { getTheme, setTheme, type Theme } from "../../../src/theme";
 import {
-  Layers, CheckCircle, Copy, ChevronRight,
-  Plus, Shield, AppWindow, Home as HomeIcon, Check,
+  Layers, ChevronRight, Plus, Shield, AppWindow,
+  Home as HomeIcon, Check, Sun, Moon, ArrowRight,
 } from "lucide-react";
 
-// The styling API, shown before it is explained: a SaveBar rendered live as real
-// Canvas components through the same markdown example path every component page
-// uses (a tsx fence -> <LiveExample>). Edit it like any component's example doc.
-const SAVE_BAR_CODE = `<View className="w-[320px]">
-  <Card compact>
+// lucide-react dropped its brand glyphs, so ship the GitHub mark inline.
+function Github({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 .5C5.37.5 0 5.78 0 12.29c0 5.21 3.44 9.63 8.2 11.19.6.11.82-.25.82-.57v-2c-3.34.71-4.04-1.58-4.04-1.58-.55-1.36-1.33-1.73-1.33-1.73-1.09-.73.08-.72.08-.72 1.2.08 1.84 1.21 1.84 1.21 1.07 1.8 2.81 1.28 3.5.98.11-.76.42-1.28.76-1.57-2.67-.3-5.47-1.31-5.47-5.83 0-1.29.47-2.34 1.23-3.17-.12-.3-.53-1.51.12-3.15 0 0 1-.32 3.3 1.21a11.6 11.6 0 0 1 6 0c2.3-1.53 3.3-1.21 3.3-1.21.65 1.64.24 2.85.12 3.15.77.83 1.23 1.88 1.23 3.17 0 4.53-2.81 5.53-5.49 5.82.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.57 21.91 24 17.5 24 12.29 24 5.78 18.63.5 12 .5Z" />
+    </svg>
+  );
+}
+
+const REPO_URL = "https://github.com/OlympusOSS/canvas";
+const VERSION = "v5.0.0";
+
+// The whole styling API, shown before it is explained: a SaveBar rendered live as
+// real Canvas components through the same example path every component page uses.
+const SHOWCASE_CODE = `<View className="w-[320px]">
+  <Card>
     <Field label="Workspace name" />
     <Button primary large block>Save changes</Button>
     <Button ghost small>Cancel</Button>
-    <Button destructive>Delete workspace</Button>
   </Card>
 </View>`;
 
-const API_CAPTION =
-  "This is the entire styling API. Style props group into orthogonal axes (intent, size, surface, density): within an axis you pass at most one, across axes they stack freely. The same component, the same props, on iOS, Android, and web. No enum strings, no className soup, no platform forks.";
+const INSTALL_MD = [
+  "```bash",
+  "bun add @olympusoss/canvas",
+  "```",
+  "",
+  "```tsx",
+  'import "@olympusoss/canvas/styles/canvas.css";',
+  'import { Button } from "@olympusoss/canvas";',
+  "",
+  "// The prop name is the value: <Button primary large />",
+  "<Button primary large>Save changes</Button>",
+  "<Button destructive>Delete</Button>",
+  "<Button ghost small>Cancel</Button>",
+  "```",
+].join("\n");
+
+const PLATFORMS = ["iOS", "Android", "Web", "React Native"];
 
 const PRINCIPLES = [
   {
     title: "Universal React Native",
-    body: "One codebase, one component API, every platform. Canvas renders natively on iOS and Android, and on the web through React Native Web. You write a screen once and ship it everywhere; the same Button and Card components run wherever your app runs, with no per-platform forks to maintain.",
+    body: "One codebase, one component API, every platform. Canvas renders natively on iOS and Android, and on the web through React Native Web. Write a screen once and ship it everywhere, with no per-platform forks to maintain.",
   },
   {
     title: "Responsive, desktop-first",
-    body: "Every component is highly responsive by default, authored desktop-first: lay out and size for the desktop case, then add responsive variants that scale it down to tablet and phone. This is the inverse of mobile-first. Breakpoint variants apply at a given width and below, so the smallest matching variant wins.",
+    body: "Every component is highly responsive by default, authored desktop-first: size for the desktop case, then add the variants that scale it down to tablet and phone. The smallest matching breakpoint wins.",
   },
   {
     title: "Semantic boolean props",
-    body: "Change a component's style with flat boolean props. Each style choice is its own prop, named for its meaning; passing the prop turns it on, so the prop name is the value. You write <Button primary large>, never <Button variant=\"primary\" size=\"lg\">. String-valued enum props (variant, size, tone, surface) are rejected. It reads like natural language.",
+    body: "Change a component's style with flat boolean props. Each choice is its own prop, named for its meaning, so the prop name is the value. You write <Button primary large>, never variant=\"primary\". It reads like a sentence.",
   },
   {
-    title: "Tokens, themes, and atomic design",
-    body: "Built with atomic design (Atoms, Molecules, Organisms, plus Templates and Patterns), all driven by design tokens: light and dark color schemes, a glass surface mode, and density controls. Theming is a token change, not a rewrite: components read the active tokens and build their React Native styles from them, so the boolean props stay your only API.",
+    title: "Tokens, themes, density",
+    body: "Built with atomic design and driven by design tokens: light and dark schemes, a glass surface mode, and density controls. Theming is a token change, not a rewrite, so the boolean props stay your only API.",
   },
 ];
 
 const ATOMIC_LEVELS = [
   {
-    id: "tokens",
-    label: "Tokens",
-    icon: Layers,
+    id: "tokens", label: "Tokens", icon: Layers,
     blurb: "The lowest-level decisions: color schemes (light and dark), typography, spacing, radii, and density. Every component derives from these tokens, so theming is a token change, not a rewrite.",
     pages: [
       { label: "Colors & Theme", to: "/tokens" },
@@ -53,22 +79,17 @@ const ATOMIC_LEVELS = [
     ],
   },
   {
-    id: "atoms",
-    label: "Atoms",
-    icon: Plus,
-    blurb: "Indivisible building blocks like Button, Input, Badge, Icon, and Avatar. One job each, styled entirely through semantic boolean props, every state documented and identical on native and web.",
+    id: "atoms", label: "Atoms", icon: Plus,
+    blurb: "Indivisible building blocks like Button, Input, Badge, Icon, and Avatar. One job each, styled entirely through semantic boolean props, every state identical on native and web.",
     pages: [
       { label: "Buttons", to: "/components/button" },
       { label: "Inputs", to: "/components/input" },
       { label: "Badges", to: "/components/badge" },
-      { label: "Icons", to: "/components/icon" },
       { label: "Avatars", to: "/components/avatar" },
     ],
   },
   {
-    id: "molecules",
-    label: "Molecules",
-    icon: Shield,
+    id: "molecules", label: "Molecules", icon: Shield,
     blurb: "Small compositions of atoms with a single clear purpose: Card, Field, Empty State. Reusable across pages and built from the same boolean prop API.",
     pages: [
       { label: "Cards", to: "/components/card" },
@@ -77,9 +98,7 @@ const ATOMIC_LEVELS = [
     ],
   },
   {
-    id: "organisms",
-    label: "Organisms",
-    icon: AppWindow,
+    id: "organisms", label: "Organisms", icon: AppWindow,
     blurb: "Self-contained sections of a screen: Data Table, Sidebar, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
     pages: [
       { label: "Data Tables", to: "/components/data-table" },
@@ -89,9 +108,7 @@ const ATOMIC_LEVELS = [
     ],
   },
   {
-    id: "templates",
-    label: "Templates",
-    icon: HomeIcon,
+    id: "templates", label: "Templates", icon: HomeIcon,
     blurb: "Full screen compositions showing how atoms, molecules, and organisms assemble into real product surfaces, from a dashboard to a sign-in flow.",
     pages: [
       { label: "Dashboard", to: "/templates/dashboard" },
@@ -100,9 +117,7 @@ const ATOMIC_LEVELS = [
     ],
   },
   {
-    id: "patterns",
-    label: "Patterns",
-    icon: Check,
+    id: "patterns", label: "Patterns", icon: Check,
     blurb: "Cross-cutting treatments that span many components: responsive layout, glass surfaces, density, loading, form validation, and accessibility.",
     pages: [
       { label: "Responsive", to: "/patterns/responsive" },
@@ -112,291 +127,260 @@ const ATOMIC_LEVELS = [
   },
 ];
 
+function ThemeToggle() {
+  const [theme, setThemeState] = useState<Theme>(getTheme);
+  const toggle = useCallback(() => {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    setThemeState(next);
+  }, [theme]);
+  return (
+    <button
+      className="landing-icon-btn"
+      onClick={toggle}
+      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      title={theme === "dark" ? "Light mode" : "Dark mode"}
+    >
+      {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+    </button>
+  );
+}
+
+function LandingNav() {
+  return (
+    <header className="landing-nav">
+      <div className="landing-nav-inner">
+        <Link to="/" className="landing-brand">
+          <CanvasMark size={30} />
+          <span className="landing-brand-text">
+            <span className="landing-brand-name">Canvas</span>
+            <span className="landing-brand-sub">design system</span>
+          </span>
+        </Link>
+
+        <nav className="landing-nav-links">
+          <Link to="/components/button">Components</Link>
+          <Link to="/tokens">Tokens</Link>
+          <Link to="/templates/dashboard">Templates</Link>
+          <Link to="/compare">Compare</Link>
+        </nav>
+
+        <div className="landing-nav-actions">
+          <ThemeToggle />
+          <a className="landing-btn landing-btn-primary landing-btn-sm" href={REPO_URL} target="_blank" rel="noreferrer">
+            <Github size={15} />
+            <span>GitHub</span>
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 export function Home() {
   return (
-    <div>
-      {/* Hero */}
-      <section style={{ marginBottom: "2.5rem", paddingTop: "0.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-          <CanvasMark size={36} />
-          <span style={{
-            fontSize: "11px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-            color: "var(--muted-foreground)",
-          }}>
-            v3.2.1 · @olympusoss/canvas
-          </span>
-        </div>
-        <h1 style={{
-          margin: 0,
-          fontSize: "clamp(32px, 5vw, 56px)",
-          fontWeight: 700,
-          letterSpacing: "-0.03em",
-          lineHeight: 1.05,
-          color: "var(--foreground)",
-          maxWidth: "48rem",
-        }}>
-          One codebase.{" "}
-          <span style={{ color: "var(--primary)" }}>Every platform.</span>{" "}
-          One component API.
-        </h1>
-        <p style={{
-          marginTop: "1rem",
-          maxWidth: "44rem",
-          fontSize: "15px",
-          lineHeight: 1.6,
-          color: "var(--muted-foreground)",
-        }}>
-          Canvas is a Universal React Native UI kit, published as{" "}
-          <code style={{ fontSize: "13px" }}>@olympusoss/canvas</code>. It runs natively on iOS and Android
-          and on the web through React Native Web, so the same components ship everywhere with no per-platform
-          forks. You style them with flat, semantic boolean props that read like a sentence, theme them from
-          design tokens, and see all {COMPONENTS.length} components render live as real React Native
-          components, straight from their markdown example docs. The example below is the whole API.
-        </p>
-        <div style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
-          <Link to="/components" className="btn btn-default">Browse all components</Link>
-          <Link to="/tokens" className="btn btn-outline">Start with tokens</Link>
-        </div>
-      </section>
+    <div className="landing">
+      <LandingNav />
 
-      {/* The API, shown before it is told: the SaveBar rendered live as real
-          Canvas components, straight from the markdown example path. */}
-      <section style={{ marginBottom: "2.5rem" }}>
-        <Markdown source={"```tsx\n" + SAVE_BAR_CODE + "\n```"} live />
-        <p style={{
-          marginTop: "0.75rem",
-          marginBottom: 0,
-          maxWidth: "44rem",
-          fontSize: "13px",
-          lineHeight: 1.6,
-          color: "var(--muted-foreground)",
-        }}>
-          {API_CAPTION}
-        </p>
+      {/* Hero: split heading + live component window, aurora wash behind. */}
+      <section className="landing-hero">
+        <div className="landing-aurora" aria-hidden />
+        <div className="landing-wrap landing-hero-grid">
+          <div className="landing-hero-copy">
+            <span className="landing-badge">
+              <span className="landing-badge-dot" />
+              {VERSION} · @olympusoss/canvas
+            </span>
+            <h1 className="landing-h1">
+              One codebase.{" "}
+              <span className="landing-h1-accent">Every platform.</span>{" "}
+              One component API.
+            </h1>
+            <p className="landing-lede">
+              Canvas is a universal React Native UI kit. It runs natively on iOS and Android
+              and on the web through React Native Web, so the same components ship everywhere.
+              Style them with flat, semantic boolean props that read like a sentence.
+            </p>
+            <div className="landing-cta-row">
+              <Link to="/components/button" className="landing-btn landing-btn-primary landing-btn-lg">
+                Browse components <ArrowRight size={16} />
+              </Link>
+              <Link to="/tokens" className="landing-btn landing-btn-outline landing-btn-lg">
+                Explore tokens
+              </Link>
+            </div>
+            <div className="landing-checks">
+              {PLATFORMS.map((p) => (
+                <span key={p} className="landing-check">
+                  <Check size={13} /> {p}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="landing-hero-showcase">
+            <div className="landing-window">
+              <div className="landing-window-bar">
+                <span className="landing-window-dots">
+                  <i /><i /><i />
+                </span>
+                <span className="landing-window-title">Live preview · web skin</span>
+              </div>
+              <div className="landing-window-body">
+                <LiveExampleFor code={SHOWCASE_CODE} platform="web" />
+              </div>
+            </div>
+            <p className="landing-window-caption">
+              Real Canvas components, rendered live from their markdown example docs.
+              The same props render natively on iOS and Android.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Principles */}
-      <Section title="Principles" description="The non-negotiable rules of the system.">
-        <div style={{
-          display: "grid",
-          gap: "1rem",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-        }}>
+      <section className="landing-section landing-wrap">
+        <div className="landing-section-head">
+          <span className="landing-eyebrow">The system</span>
+          <h2 className="landing-section-title">Four principles, one API.</h2>
+          <p className="landing-section-desc">
+            The non-negotiable rules every component follows, so the styling stays predictable
+            from the smallest atom to a full template.
+          </p>
+        </div>
+        <div className="landing-card-grid landing-card-grid-2">
           {PRINCIPLES.map((p) => (
-            <div key={p.title} style={{
-              borderRadius: "var(--radius-lg, 12px)",
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              padding: "1.25rem",
-            }}>
-              <div style={{ fontSize: "15px", fontWeight: 600, color: "var(--foreground)", marginBottom: "0.375rem" }}>
-                {p.title}
-              </div>
-              <div style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.6 }}>
-                {p.body}
-              </div>
+            <div key={p.title} className="landing-card">
+              <h3 className="landing-card-title">{p.title}</h3>
+              <p className="landing-card-body">{p.body}</p>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
+
+      {/* Get started */}
+      <section className="landing-section landing-wrap">
+        <div className="landing-getstarted-grid">
+          <div className="landing-section-head landing-getstarted-copy">
+            <span className="landing-eyebrow">Get started</span>
+            <h2 className="landing-section-title">Three props to a styled button.</h2>
+            <p className="landing-section-desc">
+              Install the package, import the stylesheet once, and compose. No enum strings,
+              no className soup, no platform forks. Style props group into orthogonal axes
+              (intent, size, density): pass at most one per axis, stack the rest freely.
+            </p>
+            <Link to="/integration" className="landing-textlink">
+              Read the integration guide <ArrowRight size={15} />
+            </Link>
+          </div>
+          <div className="landing-window">
+            <div className="landing-window-bar">
+              <span className="landing-window-dots">
+                <i /><i /><i />
+              </span>
+              <span className="landing-window-title">app.tsx</span>
+            </div>
+            <div className="landing-window-body landing-window-body-code">
+              <Markdown source={INSTALL_MD} />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Atomic structure */}
-      <Section
-        title="Atomic structure"
-        description="The system follows atomic design. Every page in this site is one of six levels of abstraction, and every component renders as a real React Native component."
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      <section className="landing-section landing-wrap">
+        <div className="landing-section-head">
+          <span className="landing-eyebrow">Architecture</span>
+          <h2 className="landing-section-title">Atomic design, end to end.</h2>
+          <p className="landing-section-desc">
+            Every page in this site is one of six levels of abstraction, and all {COMPONENTS.length} components
+            render as real React Native components, straight from their markdown example docs.
+          </p>
+        </div>
+        <div className="landing-levels">
           {ATOMIC_LEVELS.map((lvl, i) => (
-            <div key={lvl.id} style={{
-              borderRadius: "var(--radius-lg, 12px)",
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              overflow: "hidden",
-            }}>
-              <div className="atomic-level-row">
-                <div className="atomic-level-index">
-                  <span style={{
-                    fontSize: "28px",
-                    fontFamily: "var(--font-mono)",
-                    fontWeight: 600,
-                    lineHeight: 1,
-                    color: "color-mix(in oklch, var(--muted-foreground) 70%, transparent)",
-                  }}>
-                    0{i + 1}
-                  </span>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <lvl.icon size={16} />
-                    <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--foreground)" }}>
-                      {lvl.label}
-                    </span>
-                  </div>
-                </div>
-                <div style={{ flex: 1, padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <p style={{
-                    margin: 0,
-                    fontSize: "13.5px",
-                    color: "var(--muted-foreground)",
-                    lineHeight: 1.6,
-                    maxWidth: "42rem",
-                  }}>
-                    {lvl.blurb}
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.375rem" }}>
-                    {lvl.pages.map((p) => (
-                      <Link
-                        key={p.to}
-                        to={p.to}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.25rem",
-                          padding: "0.25rem 0.625rem",
-                          borderRadius: "9999px",
-                          border: "1px solid var(--border)",
-                          background: "var(--background)",
-                          fontSize: "12px",
-                          color: "var(--foreground)",
-                          textDecoration: "none",
-                          transition: "background 150ms",
-                        }}
-                      >
-                        {p.label}
-                        <ChevronRight size={11} />
-                      </Link>
-                    ))}
-                  </div>
+            <div key={lvl.id} className="landing-level">
+              <div className="landing-level-index">
+                <span className="landing-level-num">0{i + 1}</span>
+                <span className="landing-level-name">
+                  <lvl.icon size={16} /> {lvl.label}
+                </span>
+              </div>
+              <div className="landing-level-body">
+                <p className="landing-level-blurb">{lvl.blurb}</p>
+                <div className="landing-level-links">
+                  {lvl.pages.map((p) => (
+                    <Link key={p.to} to={p.to} className="landing-pill">
+                      {p.label} <ChevronRight size={11} />
+                    </Link>
+                  ))}
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      {/* What lives here */}
-      <Section title="What lives here">
-        <div style={{
-          display: "grid",
-          gap: "1rem",
-          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-        }}>
-          <FeatureCard
-            icon={<Layers size={18} />}
-            iconBg="rgb(59 130 246 / 0.1)"
-            iconColor="#3b82f6"
-            title="Reference"
-            body="Every token value, every component, every state, documented and rendered live as real React Native components. The single source of truth designers and engineers compare against, with the semantic boolean prop for each variation spelled out."
-          />
-          <FeatureCard
-            icon={<CheckCircle size={18} />}
-            iconBg="rgb(16 185 129 / 0.1)"
-            iconColor="#10b981"
-            title="Live theming"
-            body={`Toggle dark mode, the glass surface, and density, then resize to watch each page respond desktop-first. All ${COMPONENTS.length} components render as real React Native components, so what you see is exactly what ships to native and web.`}
-          />
-          <FeatureCard
-            icon={<Copy size={18} />}
-            iconBg="rgb(139 92 246 / 0.1)"
-            iconColor="#8b5cf6"
-            title="Handoff"
-            body="Every example shows its idiomatic JSX with semantic boolean props, ready to paste. Pair it with the integration guide for end-to-end implementation across native and web."
-          />
-        </div>
-      </Section>
-
-      {/* Footer */}
-      <footer style={{
-        marginTop: "3rem",
-        paddingTop: "1.5rem",
-        borderTop: "1px solid var(--border)",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        fontSize: "12px",
-        color: "var(--muted-foreground)",
-        flexWrap: "wrap",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <CanvasMark size={16} /> Canvas v3.2.1
-        </div>
-        <span style={{ display: "inline-block", margin: "0 0.25rem" }}>·</span>
-        <span>@olympusoss/canvas</span>
-        <span style={{ display: "inline-block", margin: "0 0.25rem" }}>·</span>
-        <span>Universal React Native, native iOS and Android plus web</span>
-      </footer>
-    </div>
-  );
-}
-
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
-  return (
-    <section style={{ marginBottom: "2.5rem" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <h2 style={{
-          margin: 0,
-          fontSize: "20px",
-          fontWeight: 600,
-          letterSpacing: "-0.015em",
-          color: "var(--foreground)",
-        }}>
-          {title}
-        </h2>
-        {description && (
-          <p style={{
-            marginTop: "0.25rem",
-            marginBottom: 0,
-            fontSize: "13.5px",
-            color: "var(--muted-foreground)",
-            maxWidth: "640px",
-            lineHeight: 1.6,
-          }}>
-            {description}
+      {/* Closing CTA */}
+      <section className="landing-cta-band">
+        <div className="landing-wrap landing-cta-band-inner">
+          <h2 className="landing-cta-title">Build your first screen.</h2>
+          <p className="landing-cta-sub">
+            Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
           </p>
-        )}
-      </header>
-      {children}
-    </section>
-  );
-}
+          <div className="landing-cta-row">
+            <Link to="/components/button" className="landing-btn landing-btn-primary landing-btn-lg">
+              Browse components <ArrowRight size={16} />
+            </Link>
+            <a className="landing-btn landing-btn-outline landing-btn-lg" href={REPO_URL} target="_blank" rel="noreferrer">
+              <Github size={16} /> View on GitHub
+            </a>
+          </div>
+        </div>
+      </section>
 
-function FeatureCard({ icon, iconBg, iconColor, title, body }: {
-  icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div style={{
-      borderRadius: "var(--radius-lg, 12px)",
-      border: "1px solid var(--border)",
-      background: "var(--card)",
-      padding: "1.25rem",
-    }}>
-      <div style={{
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        background: iconBg,
-        color: iconColor,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: "0.75rem",
-      }}>
-        {icon}
-      </div>
-      <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "0.25rem" }}>{title}</div>
-      <p style={{
-        margin: 0,
-        fontSize: "13px",
-        color: "var(--muted-foreground)",
-        lineHeight: 1.6,
-      }}>
-        {body}
-      </p>
+      <footer className="landing-footer">
+        <div className="landing-wrap landing-footer-inner">
+          <div className="landing-footer-brand">
+            <Link to="/" className="landing-brand">
+              <CanvasMark size={26} />
+              <span className="landing-brand-text">
+                <span className="landing-brand-name">Canvas</span>
+                <span className="landing-brand-sub">design system</span>
+              </span>
+            </Link>
+            <p className="landing-footer-tag">
+              A universal React Native UI kit. Native iOS and Android, plus web.
+            </p>
+          </div>
+          <div className="landing-footer-cols">
+            <div className="landing-footer-col">
+              <span className="landing-footer-head">Components</span>
+              <Link to="/components/button">Buttons</Link>
+              <Link to="/components/card">Cards</Link>
+              <Link to="/components/data-table">Data Tables</Link>
+              <Link to="/components/dialog">Dialog</Link>
+            </div>
+            <div className="landing-footer-col">
+              <span className="landing-footer-head">Foundations</span>
+              <Link to="/tokens">Tokens</Link>
+              <Link to="/theming">Theming</Link>
+              <Link to="/patterns/responsive">Responsive</Link>
+              <Link to="/integration">Integration</Link>
+            </div>
+            <div className="landing-footer-col">
+              <span className="landing-footer-head">Project</span>
+              <a href={REPO_URL} target="_blank" rel="noreferrer">GitHub</a>
+              <a href="https://www.npmjs.com/package/@olympusoss/canvas" target="_blank" rel="noreferrer">npm</a>
+              <Link to="/compare">Compare</Link>
+            </div>
+          </div>
+        </div>
+        <div className="landing-wrap landing-footer-bottom">
+          <span>© 2026 Olympus · @olympusoss/canvas {VERSION}</span>
+          <span>Universal React Native, native iOS and Android plus web.</span>
+        </div>
+      </footer>
     </div>
   );
 }

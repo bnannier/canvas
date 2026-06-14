@@ -44,6 +44,18 @@ export function Shell() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // The landing page (home) is a full-bleed marketing page with its own top nav,
+  // matching olympus.nannier.com; it renders without the docs sidebar/topbar
+  // chrome. Every other route gets the standard docs shell.
+  if (pathname === "/") {
+    return (
+      <>
+        <Outlet />
+        <SearchDialog open={searchOpen} onClose={closeSearch} />
+      </>
+    );
+  }
+
   return (
     <div className="app-shell">
       <Sidebar

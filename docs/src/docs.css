@@ -598,3 +598,648 @@
     padding-right: 28px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   Marketing landing (home route, full-bleed, own top nav).
+   Modeled on olympus.nannier.com: light surface, tight 600-weight display
+   type, split hero with a live-component window, indigo accent, aurora wash.
+   Tokens come from styles/canvas.css so it tracks light/dark automatically.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.landing {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.landing-wrap {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* ── Top nav ─────────────────────────────────────────── */
+
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  background: color-mix(in oklch, var(--background) 80%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+}
+
+.landing-nav-inner {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.landing-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.landing-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.landing-brand-name {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.landing-brand-sub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted-foreground);
+}
+
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 auto;
+}
+
+.landing-nav-links a {
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color 140ms, background 140ms;
+}
+
+.landing-nav-links a:hover {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--muted) 50%, transparent);
+}
+
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.landing-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 140ms, background 140ms;
+}
+
+.landing-icon-btn:hover {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--muted) 55%, transparent);
+}
+
+/* ── Buttons ─────────────────────────────────────────── */
+
+.landing-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 550;
+  font-size: 14px;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 140ms, color 140ms, border-color 140ms, transform 140ms;
+}
+
+.landing-btn:active { transform: translateY(0.5px); }
+
+.landing-btn-sm { height: 36px; padding: 0 13px; }
+.landing-btn-lg { height: 46px; padding: 0 22px; font-size: 15px; border-radius: 11px; }
+
+/* Primary = solid foreground fill (near-black on light, near-white on dark),
+   echoing the reference's dark CTA. */
+.landing-btn-primary {
+  background: var(--foreground);
+  color: var(--background);
+}
+.landing-btn-primary:hover {
+  background: color-mix(in oklch, var(--foreground) 88%, var(--background));
+}
+
+.landing-btn-outline {
+  background: var(--background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.landing-btn-outline:hover {
+  background: color-mix(in oklch, var(--muted) 50%, transparent);
+  border-color: color-mix(in oklch, var(--foreground) 24%, var(--border));
+}
+
+/* ── Hero ────────────────────────────────────────────── */
+
+.landing-hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: 64px;
+  padding-bottom: 56px;
+}
+
+.landing-aurora {
+  position: absolute;
+  top: -260px;
+  right: -180px;
+  width: 760px;
+  height: 760px;
+  pointer-events: none;
+  background:
+    radial-gradient(closest-side, color-mix(in oklch, var(--primary) 30%, transparent), transparent 72%),
+    radial-gradient(closest-side, color-mix(in oklch, var(--orb-violet) 26%, transparent), transparent 70%);
+  background-position: 60% 30%, 30% 60%;
+  background-repeat: no-repeat;
+  background-size: 70% 70%, 60% 60%;
+  filter: blur(40px);
+  opacity: 0.7;
+}
+
+.landing-hero-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.landing-hero-copy { min-width: 0; }
+
+.landing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 70%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  margin-bottom: 22px;
+}
+
+.landing-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 22%, transparent);
+}
+
+.landing-h1 {
+  margin: 0;
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 600;
+  letter-spacing: -0.032em;
+  line-height: 1.04;
+  color: var(--foreground);
+}
+
+.landing-h1-accent { color: var(--primary); }
+
+.landing-lede {
+  margin: 22px 0 0;
+  max-width: 36rem;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+.landing-cta-row {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.landing-checks {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.landing-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.landing-check svg {
+  color: var(--primary);
+}
+
+/* ── Window frame (hero showcase + code panel) ───────── */
+
+.landing-hero-showcase { min-width: 0; }
+
+.landing-window {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px color-mix(in oklch, var(--foreground) 6%, transparent),
+    0 24px 48px -24px color-mix(in oklch, var(--foreground) 22%, transparent);
+}
+
+.landing-window-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklch, var(--muted) 35%, transparent);
+}
+
+.landing-window-dots {
+  display: inline-flex;
+  gap: 7px;
+}
+.landing-window-dots i {
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--muted-foreground) 35%, transparent);
+}
+
+.landing-window-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.landing-window-body {
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in oklch, var(--primary) 7%, transparent), transparent 60%),
+    var(--card);
+}
+
+.landing-window-body-code {
+  display: block;
+  padding: 4px 4px 8px;
+  background: var(--card);
+}
+
+/* Tighten the embedded markdown code blocks inside the window. */
+.landing-window-body-code .code-block,
+.landing-window-body-code pre {
+  margin: 0 !important;
+}
+.landing-window-body-code > div > *:first-child { margin-top: 0; }
+
+.landing-window-caption {
+  margin: 14px 2px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
+/* ── Sections ────────────────────────────────────────── */
+
+.landing-section {
+  padding-top: 56px;
+  padding-bottom: 8px;
+}
+
+.landing-section-head { margin-bottom: 28px; }
+
+.landing-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.landing-section-title {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--foreground);
+}
+
+.landing-section-desc {
+  margin: 12px 0 0;
+  max-width: 42rem;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+.landing-textlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 22px;
+  font-size: 14.5px;
+  font-weight: 550;
+  color: var(--primary);
+  text-decoration: none;
+}
+.landing-textlink:hover { text-decoration: underline; }
+
+/* ── Card grids (principles) ─────────────────────────── */
+
+.landing-card-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.landing-card-grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+.landing-card {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 22px;
+  transition: border-color 160ms, box-shadow 160ms;
+}
+.landing-card:hover {
+  border-color: color-mix(in oklch, var(--primary) 32%, var(--border));
+  box-shadow: 0 14px 30px -22px color-mix(in oklch, var(--foreground) 30%, transparent);
+}
+
+.landing-card-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.landing-card-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.62;
+  color: var(--muted-foreground);
+}
+
+/* ── Get started (two-column) ────────────────────────── */
+
+.landing-getstarted-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 48px;
+  align-items: center;
+}
+.landing-getstarted-copy { margin-bottom: 0; }
+
+/* ── Atomic levels ───────────────────────────────────── */
+
+.landing-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.landing-level {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.landing-level-index {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: 22px;
+  background: color-mix(in oklch, var(--muted) 28%, transparent);
+  border-right: 1px solid var(--border);
+}
+
+.landing-level-num {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  color: color-mix(in oklch, var(--muted-foreground) 60%, transparent);
+}
+
+.landing-level-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.landing-level-name svg { color: var(--primary); }
+
+.landing-level-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.landing-level-blurb {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  max-width: 44rem;
+}
+
+.landing-level-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.landing-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: background 140ms, border-color 140ms;
+}
+.landing-pill:hover {
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+  border-color: color-mix(in oklch, var(--primary) 35%, var(--border));
+}
+.landing-pill svg { color: var(--muted-foreground); }
+
+/* ── Closing CTA band ────────────────────────────────── */
+
+.landing-cta-band {
+  margin-top: 72px;
+  padding: 72px 0;
+  border-top: 1px solid var(--border);
+  background:
+    radial-gradient(closest-side at 50% 0%, color-mix(in oklch, var(--primary) 12%, transparent), transparent 70%),
+    color-mix(in oklch, var(--muted) 22%, transparent);
+}
+
+.landing-cta-band-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.landing-cta-title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  color: var(--foreground);
+}
+
+.landing-cta-sub {
+  margin: 14px 0 28px;
+  max-width: 34rem;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.landing-cta-band .landing-cta-row { justify-content: center; }
+
+/* ── Footer ──────────────────────────────────────────── */
+
+.landing-footer {
+  border-top: 1px solid var(--border);
+  background: var(--background);
+  padding-top: 48px;
+  padding-bottom: 32px;
+}
+
+.landing-footer-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 2fr;
+  gap: 40px;
+  padding-bottom: 40px;
+}
+
+.landing-footer-tag {
+  margin: 16px 0 0;
+  max-width: 22rem;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+.landing-footer-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.landing-footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.landing-footer-head {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  margin-bottom: 3px;
+}
+
+.landing-footer-col a {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color 140ms;
+}
+.landing-footer-col a:hover { color: var(--foreground); }
+
+.landing-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 920px) {
+  .landing-hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  .landing-getstarted-grid { grid-template-columns: 1fr; gap: 32px; }
+  .landing-card-grid-2 { grid-template-columns: 1fr; }
+  .landing-footer-inner { grid-template-columns: 1fr; gap: 32px; }
+}
+
+@media (max-width: 760px) {
+  .landing-nav-links { display: none; }
+  .landing-level { grid-template-columns: 1fr; }
+  .landing-level-index {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+  }
+  .landing-level-num { font-size: 22px; }
+}
+
+@media (max-width: 480px) {
+  .landing-footer-cols { grid-template-columns: 1fr 1fr; }
+  .landing-footer-bottom { flex-direction: column; }
+}
