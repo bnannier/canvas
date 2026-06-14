@@ -1,0 +1,79 @@
+{
+  "_comment": "Canonical Material 3 / Jetpack Compose doc image assets for the /compare Android reference column. Key = <slug>/<rowKey>-<stateKey>; value = direct developer.android.com/static asset URL. Rows omitted here have no clean canonical crop and keep their screenshot. Run docs/scripts/refs/fetch-android-refs.mjs to (re)download into docs/public/refs/android/<key>-light.png.",
+  "_base": "https://developer.android.com/static/develop/ui/compose/images",
+
+  "button/filled-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/button-filled.png",
+  "button/filled-tonal-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/button-tonal.png",
+  "button/outlined-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/button-outlined.png",
+  "button/elevated-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/button-elevated.png",
+
+  "checkbox/checkbox-checked": "https://developer.android.com/static/develop/ui/compose/images/components/checkbox-minimal-checked.png",
+  "checkbox/checkbox-unchecked": "https://developer.android.com/static/develop/ui/compose/images/components/checkbox-minimal-unchecked.png",
+  "checkbox/tri-state-checkbox-checked": "https://developer.android.com/static/develop/ui/compose/images/components/checkbox-parent-checked.png",
+  "checkbox/tri-state-checkbox-indeterminate": "https://developer.android.com/static/develop/ui/compose/images/components/checkbox-parent-indeterminate.png",
+  "checkbox/tri-state-checkbox-unchecked": "https://developer.android.com/static/develop/ui/compose/images/components/checkbox-parent-unchecked.png",
+
+  "switch/basic-checked": "https://developer.android.com/static/develop/ui/compose/images/components/switch.png",
+  "switch/basic-unchecked": "https://developer.android.com/static/develop/ui/compose/images/components/switch-deactivated.png",
+  "switch/custom-colors-checked": "https://developer.android.com/static/develop/ui/compose/images/components/switch-colors.png",
+  "switch/custom-thumb-checked": "https://developer.android.com/static/develop/ui/compose/images/components/switch-icon.png",
+  "switch/overview-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/switches.png",
+
+  "radio/radio-button-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/radiobutton2.png",
+
+  "button-group/single-select-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/SingleChoiceSegmentedButton.png",
+  "button-group/multi-select-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/Multi-Choice-Segmented-Button.png",
+
+  "input/filled-enabled": "https://developer.android.com/static/develop/ui/compose/images/text-textfield-hello.png",
+  "input/outlined-enabled": "https://developer.android.com/static/develop/ui/compose/images/text-outlinedtextfield.png",
+  "input/multiline-enabled": "https://developer.android.com/static/develop/ui/compose/images/text-textfield-multiline.png",
+
+  "textarea/filled-enabled": "https://developer.android.com/static/develop/ui/compose/images/text-textfield-multiline.png",
+  "textarea/multiline-enabled": "https://developer.android.com/static/develop/ui/compose/images/text-textfield-multiline.png",
+  "textarea/outlined-enabled": "https://developer.android.com/static/develop/ui/compose/images/text-outlinedtextfield.png",
+
+  "select/dropdown-menu-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/basicmenu1.png",
+  "select/minimal-dropdown-menu-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/MinimalDropdownMenu.png",
+  "select/long-dropdown-menu-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/LongBasicDropdownMenu.png",
+  "select/dropdown-menu-dividers-icons-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/DropdownMenuWithDetails.png",
+
+  "combobox/dropdown-menu-basic-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/basicmenu1.png",
+  "combobox/dropdown-menu-minimal-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/MinimalDropdownMenu.png",
+  "combobox/dropdown-menu-long-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/LongBasicDropdownMenu.png",
+  "combobox/dropdown-menu-with-details-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/DropdownMenuWithDetails.png",
+
+  "dropdown/basic-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/basicmenu1.png",
+  "dropdown/long-scrollable-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/LongBasicDropdownMenu.png",
+  "dropdown/with-dividers-icons-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/DropdownMenuWithDetails.png",
+
+  "row-menu/basic-dropdown-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/basicmenu1.png",
+  "row-menu/minimal-dropdown-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/MinimalDropdownMenu.png",
+  "row-menu/long-scrollable-dropdown-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/LongBasicDropdownMenu.png",
+  "row-menu/sectioned-dropdown-icons-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/DropdownMenuWithDetails.png",
+
+  "dialog/dialog-basic-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/dialog-alert.png",
+  "dialog/alert-dialog-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/dialog-alert.png",
+  "alert-dialog/alert-dialog-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/dialog-alert.png",
+  "alert-dialog/basic-dialog-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/dialog-alert.png",
+
+  "overlays/modal-bottom-sheet-enabled": "https://developer.android.com/static/develop/ui/compose/images/layouts/material/m3-bottom-sheet.png",
+
+  "calendar/docked-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/datepicker-docked.png",
+  "calendar/modal-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/datepicker-modal.png",
+  "calendar/modal-input-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/datepicker-modal-input.png",
+  "calendar/range-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/datepicker-range.png",
+
+  "tabs/primary-enabled": "https://developer.android.com/static/develop/ui/compose/images/primary-secondary-tab.png",
+  "tabs/secondary-enabled": "https://developer.android.com/static/develop/ui/compose/images/Tabs%20(1).png",
+
+  "tooltip/plain-enabled": "https://developer.android.com/static/develop/ui/compose/images/PlainTooltipExample.png",
+  "tooltip/rich-enabled": "https://developer.android.com/static/develop/ui/compose/images/RichTooltipExample.png",
+  "tooltip/rich-custom-enabled": "https://developer.android.com/static/develop/ui/compose/images/AdvancedRichTooltipExample.png",
+
+  "navbars/top-app-bar-small-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/appbar-small.png",
+  "navbars/top-app-bar-center-aligned-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/appbar-centered.png",
+  "navbars/top-app-bar-large-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/appbar-large.png",
+
+  "sidebar/modal-enabled": "https://developer.android.com/static/develop/ui/compose/images/layouts/material/m3-navigation-drawer.png",
+  "sidebar/modal-detailed-enabled": "https://developer.android.com/static/develop/ui/compose/images/components/drawer-detailed.png"
+}
