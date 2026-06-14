@@ -484,6 +484,62 @@
   }
 }
 
+/* ── Variants playground: preview + variant toggle rail ── */
+
+/* A vertical list of variant toggles beside the preview (below it when the grid
+   stacks under 768px). Active styling mirrors the topbar toggle. */
+.variant-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.variant-rail button {
+  text-align: left;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: color 150ms, background 150ms;
+}
+
+.variant-rail button:hover {
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.variant-rail button.active {
+  background: var(--foreground);
+  color: var(--background);
+  font-weight: 600;
+}
+
+/* The preview's main column is ~280px narrower than the page, so its three
+   platform columns need more room: go three-up only at a wider viewport, staying
+   stacked (horizontal dividers) below it. Overrides the global .playground-platforms
+   breakpoint via the .variants-playground scope. */
+.variants-playground .live-example { margin-bottom: 0; }
+.variants-playground .playground-platforms { grid-template-columns: 1fr; }
+.variants-playground .playground-platform + .playground-platform {
+  border-top: 1px solid var(--border);
+  border-left: none;
+}
+
+@media (min-width: 1180px) {
+  .variants-playground .playground-platforms {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .variants-playground .playground-platform + .playground-platform {
+    border-top: none;
+    border-left: 1px solid var(--border);
+  }
+}
+
 /* ── Component index tile grid ──────────────────────── */
 
 .cat-tile-grid {

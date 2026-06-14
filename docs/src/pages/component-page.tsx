@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { getComponent } from "@/data/components";
 import { Markdown } from "@/components/markdown";
 import { LiveExample } from "@/components/live-example";
+import { VariantsPlayground, type Variant } from "@/components/variants-playground";
 import { PageNav } from "@/components/page-nav";
 import { NotFound } from "./not-found";
 
@@ -17,10 +18,11 @@ const LEVEL: Record<string, string> = { Atoms: "atoms", Molecules: "molecules", 
 type DontSide = { caption: string; code: string };
 type DontPair = { title?: string; do: DontSide; dont: DontSide };
 
-// Split the raw .md into the head (everything before "## Do & Don't", with the
-// leading "# Name" + description dropped since the page header already shows them)
-// and the parsed Do/Don't pairs.
-function splitDoc(src: string): { head: string; donts: DontPair[] } {
+// Split the raw .md into the Usage markdown (rendered as a 3-platform stage), the
+// parsed Variants (rendered as one playground with a toggle rail), and the parsed
+// Do/Don't pairs. The leading "# Name" + description are dropped since the page
+// header already shows them.
+function splitDoc(src: string): { usageMd: string; variants: Variant[]; donts: DontPair[] } {
   const md = src.replace(/\r\n/g, "\n");
   const dontsAt = md.indexOf("\n## Do & Don't");
   const body = dontsAt === -1 ? md : md.slice(0, dontsAt);
@@ -28,7 +30,32 @@ function splitDoc(src: string): { head: string; donts: DontPair[] } {
   // Head begins at the first "## " (Usage), dropping the "# Name" + description.
   const firstSection = body.indexOf("\n## ");
   const head = firstSection === -1 ? "" : body.slice(firstSection + 1);
-  return { head, donts: parseDonts(section) };
+  // Usage is everything up to "## Variants"; the rest is parsed into variants.
+  const variantsAt = head.indexOf("\n## Variants");
+  const usageMd = variantsAt === -1 ? head : head.slice(0, variantsAt);
+  const variantsMd = variantsAt === -1 ? "" : head.slice(variantsAt);
+  return { usageMd, variants: parseVariants(variantsMd), donts: parseDonts(section) };
+}
+
+// The Variants section is a flat list of "### <label>" headings, each followed by
+// exactly one ```tsx fence (no intervening prose). The label is the heading text
+// verbatim; the code is the fence body.
+function parseVariants(section: string): Variant[] {
+  const lines = section.split("\n");
+  const out: Variant[] = [];
+  let label: string | null = null;
+  for (let i = 0; i < lines.length; i++) {
+    const h = /^###\s+(.*)$/.exec(lines[i]);
+    if (h) { label = h[1].trim(); continue; }
+    if (label && /^```(\w+)?\s*$/.test(lines[i])) {
+      const code: string[] = [];
+      i++;
+      while (i < lines.length && !/^```\s*$/.test(lines[i])) code.push(lines[i++]);
+      out.push({ label, code: code.join("\n") });
+      label = null;
+    }
+  }
+  return out;
 }
 
 // The Do/Don't markdown is regular: "### title" groups, each with "**Do** — caption"
@@ -70,7 +97,9 @@ export function ComponentPage() {
   if (!comp) return <NotFound />;
 
   const src = RAW[`../../../src/${LEVEL[comp.category]}/${comp.slug}/${comp.slug}.md`];
-  const { head, donts } = src ? splitDoc(src) : { head: "", donts: [] as DontPair[] };
+  const { usageMd, variants, donts } = src
+    ? splitDoc(src)
+    : { usageMd: "", variants: [] as Variant[], donts: [] as DontPair[] };
 
   return (
     <div>
@@ -96,9 +125,26 @@ export function ComponentPage() {
         />
       </header>
 
-      {head && (
+      {usageMd && (
         <section style={{ marginBottom: "2.5rem" }}>
-          <Markdown source={head} live />
+          <Markdown source={usageMd} live />
+        </section>
+      )}
+
+      {variants.length > 0 && (
+        <section style={{ marginBottom: "2.5rem" }}>
+          {/* Match the Markdown-rendered "## Usage" heading (18px) so the two
+              live-preview sections read as peers. */}
+          <h2 style={{
+            margin: "1.25rem 0 0.75rem",
+            fontSize: 18,
+            fontWeight: 600,
+            letterSpacing: "-0.015em",
+            color: "var(--foreground)",
+          }}>
+            Variants
+          </h2>
+          <VariantsPlayground variants={variants} />
         </section>
       )}
 
