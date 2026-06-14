@@ -519,22 +519,24 @@
   font-weight: 600;
 }
 
-/* The preview's main column is ~280px narrower than the page, so its three
-   platform columns need more room: go three-up only at a wider viewport, staying
-   stacked (horizontal dividers) below it. Overrides the global .playground-platforms
-   breakpoint via the .variants-playground scope. */
-.variants-playground .live-example { margin-bottom: 0; }
-.variants-playground .playground-platforms { grid-template-columns: 1fr; }
-.variants-playground .playground-platform + .playground-platform {
+.component-playground .live-example { margin-bottom: 0; }
+
+/* When the rail is present (.playground-grid), the preview's main column is ~280px
+   narrower than the page, so its three platform columns need more room: go three-up
+   only at a wider viewport, staying stacked (horizontal dividers) below it. This
+   overrides the global .playground-platforms breakpoint. A single-example
+   playground (no rail) keeps the global full-width breakpoint. */
+.component-playground.playground-grid .playground-platforms { grid-template-columns: 1fr; }
+.component-playground.playground-grid .playground-platform + .playground-platform {
   border-top: 1px solid var(--border);
   border-left: none;
 }
 
 @media (min-width: 1180px) {
-  .variants-playground .playground-platforms {
+  .component-playground.playground-grid .playground-platforms {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .variants-playground .playground-platform + .playground-platform {
+  .component-playground.playground-grid .playground-platform + .playground-platform {
     border-top: none;
     border-left: 1px solid var(--border);
   }

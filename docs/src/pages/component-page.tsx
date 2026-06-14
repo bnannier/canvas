@@ -1,28 +1,27 @@
 import { useParams } from "react-router-dom";
 import { getComponent } from "@/data/components";
-import { Markdown } from "@/components/markdown";
 import { LiveExample } from "@/components/live-example";
-import { VariantsPlayground, type Variant } from "@/components/variants-playground";
+import { Playground, type Example } from "@/components/playground";
 import { PageNav } from "@/components/page-nav";
 import { NotFound } from "./not-found";
 
 // Each component page renders straight from its co-located markdown
 // (src/<level>/<slug>/<slug>.md), so editing the .md changes the page. The whole
 // `src/` tree of `.md` is inlined as raw strings at build time and HMR-tracked, so
-// a saved edit re-renders. The head (Usage + Variants) renders through
-// <Markdown live>; the Do/Don't section is parsed into the red/green cards below,
-// each side rendered live.
+// a saved edit re-renders. The Usage fence and the Variants fences become the one
+// <Playground>'s examples (rail-switched); the Do/Don't section is parsed into the
+// red/green cards below, each side rendered live.
 const RAW = import.meta.glob("../../../src/*/*/*.md", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const LEVEL: Record<string, string> = { Atoms: "atoms", Molecules: "molecules", Organisms: "organisms" };
 
 type DontSide = { caption: string; code: string };
 type DontPair = { title?: string; do: DontSide; dont: DontSide };
 
-// Split the raw .md into the Usage markdown (rendered as a 3-platform stage), the
-// parsed Variants (rendered as one playground with a toggle rail), and the parsed
-// Do/Don't pairs. The leading "# Name" + description are dropped since the page
-// header already shows them.
-function splitDoc(src: string): { usageMd: string; variants: Variant[]; donts: DontPair[] } {
+// Split the raw .md into the playground examples (the Usage fence as "Default",
+// then each Variant) and the parsed Do/Don't pairs. The leading "# Name" +
+// description are dropped since the page header already shows them; the Usage
+// section carries no prose (only the heading + one fence), so nothing is lost.
+function splitDoc(src: string): { examples: Example[]; donts: DontPair[] } {
   const md = src.replace(/\r\n/g, "\n");
   const dontsAt = md.indexOf("\n## Do & Don't");
   const body = dontsAt === -1 ? md : md.slice(0, dontsAt);
@@ -30,19 +29,42 @@ function splitDoc(src: string): { usageMd: string; variants: Variant[]; donts: D
   // Head begins at the first "## " (Usage), dropping the "# Name" + description.
   const firstSection = body.indexOf("\n## ");
   const head = firstSection === -1 ? "" : body.slice(firstSection + 1);
-  // Usage is everything up to "## Variants"; the rest is parsed into variants.
+  // Usage is everything up to "## Variants"; the rest is the variant list.
   const variantsAt = head.indexOf("\n## Variants");
   const usageMd = variantsAt === -1 ? head : head.slice(0, variantsAt);
   const variantsMd = variantsAt === -1 ? "" : head.slice(variantsAt);
-  return { usageMd, variants: parseVariants(variantsMd), donts: parseDonts(section) };
+
+  const usageCode = firstFence(usageMd);
+  const variants = parseVariants(variantsMd);
+  const examples: Example[] = [];
+  if (usageCode) examples.push({ label: "Default", code: usageCode });
+  // Skip a variant whose fence is identical to Usage (e.g. typography's first
+  // "Style - display" duplicates the Usage example), so it shows once as Default.
+  for (const v of variants) if (v.code !== usageCode) examples.push(v);
+
+  return { examples, donts: parseDonts(section) };
+}
+
+// The body of the first ```tsx/jsx fence in a markdown slice (the Usage example).
+function firstFence(md: string): string | null {
+  const lines = md.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    if (/^```(\w+)?\s*$/.test(lines[i])) {
+      const code: string[] = [];
+      i++;
+      while (i < lines.length && !/^```\s*$/.test(lines[i])) code.push(lines[i++]);
+      return code.join("\n");
+    }
+  }
+  return null;
 }
 
 // The Variants section is a flat list of "### <label>" headings, each followed by
 // exactly one ```tsx fence (no intervening prose). The label is the heading text
 // verbatim; the code is the fence body.
-function parseVariants(section: string): Variant[] {
+function parseVariants(section: string): Example[] {
   const lines = section.split("\n");
-  const out: Variant[] = [];
+  const out: Example[] = [];
   let label: string | null = null;
   for (let i = 0; i < lines.length; i++) {
     const h = /^###\s+(.*)$/.exec(lines[i]);
@@ -97,9 +119,9 @@ export function ComponentPage() {
   if (!comp) return <NotFound />;
 
   const src = RAW[`../../../src/${LEVEL[comp.category]}/${comp.slug}/${comp.slug}.md`];
-  const { usageMd, variants, donts } = src
+  const { examples, donts } = src
     ? splitDoc(src)
-    : { usageMd: "", variants: [] as Variant[], donts: [] as DontPair[] };
+    : { examples: [] as Example[], donts: [] as DontPair[] };
 
   return (
     <div>
@@ -125,26 +147,9 @@ export function ComponentPage() {
         />
       </header>
 
-      {usageMd && (
+      {examples.length > 0 && (
         <section style={{ marginBottom: "2.5rem" }}>
-          <Markdown source={usageMd} live />
-        </section>
-      )}
-
-      {variants.length > 0 && (
-        <section style={{ marginBottom: "2.5rem" }}>
-          {/* Match the Markdown-rendered "## Usage" heading (18px) so the two
-              live-preview sections read as peers. */}
-          <h2 style={{
-            margin: "1.25rem 0 0.75rem",
-            fontSize: 18,
-            fontWeight: 600,
-            letterSpacing: "-0.015em",
-            color: "var(--foreground)",
-          }}>
-            Variants
-          </h2>
-          <VariantsPlayground variants={variants} />
+          <Playground examples={examples} />
         </section>
       )}
 
