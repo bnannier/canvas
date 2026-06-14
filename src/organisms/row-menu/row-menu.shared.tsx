@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
+import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
 // trigger, and the floating card of an optional section label plus the item
@@ -54,7 +54,7 @@ export function createRowMenu(skin: RowMenuSkin) {
 
     return (
       // self-start keeps the trigger from stretching; relative anchors the menu.
-      <View style={[skin.anchor, style]}>
+      <View style={[skin.anchor, open ? anchorLifted : null, style]}>
         <Pressable
           style={({ pressed }) => [
             skin.trigger,

@@ -65,6 +65,14 @@ export interface ComboboxSkin {
 // `relative w-full`: the positioning context for the absolutely-placed popover.
 export const wrapper: ViewStyle = { position: "relative", width: "100%" };
 
+// When the list is open, the wrapper is lifted into its own stacking context
+// above sibling content. react-native-web gives every positioned View an
+// implicit stacking context, so the popover's own `zIndex` is scoped INSIDE the
+// `relative` wrapper and cannot rise above a later sibling. Raising the wrapper's
+// zIndex while open lifts the whole control — field and popover together — above
+// everything painted after it.
+export const wrapperLifted: ViewStyle = { zIndex: 50 };
+
 // --- shared type scale (identical across platforms; brand type, not a face) --
 const TEXT_SIZE: Record<Size, TextStyle> = {
   small: { fontSize: 12, lineHeight: 16 },

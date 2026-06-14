@@ -59,6 +59,14 @@ export interface DropdownSkin {
 // self-start keeps the trigger from stretching; relative anchors the menu.
 export const wrapper: ViewStyle = { position: "relative", alignSelf: "flex-start" };
 
+// When the menu is open, the wrapper is lifted into its own stacking context
+// above sibling content. react-native-web gives every positioned View an
+// implicit stacking context, so the menu's own `zIndex` is scoped INSIDE the
+// `relative` wrapper and cannot rise above a later sibling. Raising the wrapper's
+// zIndex while open lifts the whole control — trigger and menu together — above
+// everything painted after it.
+export const wrapperLifted: ViewStyle = { zIndex: 50 };
+
 // The custom-trigger Pressable: keeps the chip from stretching.
 export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 

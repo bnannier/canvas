@@ -207,7 +207,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const [open, setOpen] = useState(false);
     const triggerHeight = s.sizeHeight[size];
     return (
-      <View style={[s.splitContainer, disabled ? s.dim : null, style]}>
+      <View style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}>
         <Pressable
           style={({ pressed }) => [skin.splitPrimary(tokens), s.sizeContainer[size], skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           onPress={(e) => onSelect?.(0, primary, e)}

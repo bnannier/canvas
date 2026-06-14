@@ -67,6 +67,14 @@ export interface RowMenuSkin {
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
+// When the menu is open, the anchor is lifted into its own stacking context above
+// sibling content. react-native-web gives every positioned View an implicit
+// stacking context, so the card's own `zIndex` is scoped INSIDE the `relative`
+// anchor and cannot rise above a later sibling. Raising the anchor's zIndex while
+// open lifts the whole control — trigger and card together — above everything
+// painted after it. Shared across platforms (the anchor shape is identical).
+export const anchorLifted: ViewStyle = { zIndex: 50 };
+
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 // A bordered popover card (min-w 180, 6 radius, 1px `border`, `popover` fill,
 // p-1, shadow-lg) placed inline below the trigger; rounded-sm rows (px-2 py-1.5)

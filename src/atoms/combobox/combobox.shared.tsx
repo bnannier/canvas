@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { wrapper } from "./combobox.styles.js";
+import { wrapper, wrapperLifted } from "./combobox.styles.js";
 import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 
 // Shared Combobox shell. A Combobox is a searchable single-select: it mirrors
@@ -100,7 +100,7 @@ export function createCombobox(skin: ComboboxSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View style={[wrapper, style]}>
+      <View style={[wrapper, open ? wrapperLifted : null, style]}>
         {label != null && label !== "" ? (
           <Text style={skin.label(tokens, size)}>{label}</Text>
         ) : null}

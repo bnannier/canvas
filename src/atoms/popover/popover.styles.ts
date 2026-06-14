@@ -43,6 +43,15 @@ export interface PopoverSkin {
 // positioned card (`relative`) and hugs its content (`self-start`).
 export const wrapper: ViewStyle = { position: "relative", alignSelf: "flex-start" };
 
+// When the popover is open, the wrapper itself is lifted into its own stacking
+// context above sibling content. react-native-web gives every positioned View an
+// implicit stacking context, so the card's own `zIndex` is scoped INSIDE the
+// `relative` wrapper and cannot rise above a later sibling (e.g. the next
+// platform row in the docs preview, or any following element on a real page).
+// Raising the wrapper's zIndex while open lifts the whole overlay — trigger and
+// card together — above everything painted after it.
+export const wrapperLifted: ViewStyle = { zIndex: 50 };
+
 // The trigger button is wrapped so it hugs its content rather than stretching.
 export const triggerWrap: ViewStyle = { alignSelf: "flex-start" };
 

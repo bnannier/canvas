@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
-import { wrapper, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
+import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
 
 // Shared Dropdown shell. The structure (the trigger plus a floating menu of
 // action rows, each with an optional leading icon glyph, a label, and an
@@ -112,7 +112,7 @@ export function createDropdown(skin: DropdownSkin) {
     return (
       // self-start keeps the trigger from stretching; relative anchors the menu.
       <View
-        style={[wrapper, style]}
+        style={[wrapper, open ? wrapperLifted : null, style]}
         onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
       >
         {children != null ? (

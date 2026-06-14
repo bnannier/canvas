@@ -73,6 +73,14 @@ export const splitContainer: ViewStyle = {
   alignSelf: "flex-start",
 };
 
+// When the split dropdown is open, the container is lifted into its own stacking
+// context above sibling content. react-native-web gives every positioned View an
+// implicit stacking context, so the menu's own `zIndex` is scoped INSIDE the
+// `relative` container and cannot rise above a later sibling. Raising the
+// container's zIndex while open lifts the whole control — buttons and menu
+// together — above everything painted after it.
+export const splitContainerLifted: ViewStyle = { zIndex: 50 };
+
 // A split-menu dropdown row: padded, rounded; the pressed branch tints it.
 export const splitMenuItem: ViewStyle = {
   flexDirection: "row",

@@ -152,7 +152,7 @@ export function Command(props: CommandProps) {
   if (!trigger) return card;
 
   return (
-    <View style={[s.triggerWrapper, style]}>
+    <View style={[s.triggerWrapper, open ? s.triggerWrapperLifted : null, style]}>
       <Pressable style={s.triggerRow(tokens)} onPress={() => setOpen(!open)}>
         <Icon search muted size={14} />
         <Text style={s.triggerLabel(tokens)}>Search...</Text>

@@ -118,6 +118,14 @@ export function rowLabel(tokens: ColorTokens): TextStyle {
 // (relative w-full.)
 export const triggerWrapper: ViewStyle = { position: "relative", width: "100%" };
 
+// When the palette is open in trigger mode, the wrapper is lifted into its own
+// stacking context above sibling content. react-native-web gives every
+// positioned View an implicit stacking context, so the floating card's own
+// `zIndex` is scoped INSIDE the `relative` wrapper and cannot rise above a later
+// sibling. Raising the wrapper's zIndex while open lifts the whole control —
+// trigger and palette together — above everything painted after it.
+export const triggerWrapperLifted: ViewStyle = { zIndex: 50 };
+
 // The collapsed full-width search trigger button.
 // (flex-row items-center gap-2 w-full justify-start rounded-md border
 //  border-input bg-transparent px-3 py-1.5.)
