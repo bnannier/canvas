@@ -197,7 +197,7 @@ export function ComparePage() {
 const panelStyle: React.CSSProperties = { margin: 0, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" };
 const panelImgBox: React.CSSProperties = {
   display: "flex", alignItems: "center", justifyContent: "center", minWidth: 56, minHeight: 40,
-  maxWidth: 220, borderRadius: 8, border: "1px solid var(--border)", background: "var(--card)", overflow: "hidden",
+  maxWidth: 220, borderRadius: 8, overflow: "hidden",
 };
 const panelLabel: React.CSSProperties = { fontSize: 10.5, fontWeight: 500, color: "var(--muted-foreground)", letterSpacing: "0.02em" };
 
