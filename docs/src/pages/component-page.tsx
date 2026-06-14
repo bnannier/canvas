@@ -149,7 +149,10 @@ export function ComponentPage() {
 
       {examples.length > 0 && (
         <section style={{ marginBottom: "2.5rem" }}>
-          <Playground examples={examples} />
+          {/* Key by slug so switching components remounts the playground and the
+              selected example resets to Default (React Router reuses this page
+              instance across slug changes, so state would otherwise persist). */}
+          <Playground key={comp.slug} examples={examples} />
         </section>
       )}
 
