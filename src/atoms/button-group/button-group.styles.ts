@@ -230,22 +230,24 @@ const IOS_PILL_SHADOW: ViewStyle = {
 };
 
 export const iosSkin: ButtonGroupSkin = {
-  // The gray rounded track that holds the segments (radius 8, muted fill, a 3px
-  // inset so the selected pill floats inside).
+  // The gray CAPSULE track that holds the segments (radius 9999, muted fill, a
+  // 3px inset so the selected pill floats inside). iOS 26+ (Liquid Glass) draws
+  // the segmented control as a capsule, not a rounded rectangle.
   segmentedWrap(t) {
     return {
       flexDirection: "row",
       alignItems: "center",
       alignSelf: "flex-start",
       padding: 3,
-      borderRadius: 8,
+      borderRadius: 9999,
       backgroundColor: t.muted,
     };
   },
   segmentBorderWidth: 0, // iOS 13+ has no visible dividers/borders
   joinCorners() {
-    // Every segment is an independent rounded pill (radius 6) inside the track.
-    return { borderRadius: 6 };
+    // Every segment is an independent CAPSULE pill (radius 9999) inside the
+    // track; the selected one floats as a raised white capsule.
+    return { borderRadius: 9999 };
   },
   spacedCorners: { borderRadius: 8 },
   overlap: null, // no shared borders; the track's padding spaces them

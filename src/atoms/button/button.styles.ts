@@ -4,7 +4,7 @@ import { type ColorTokens } from "../../style/index.js";
 // Co-located Button skins, one per platform. The BRAND survives on every platform
 // (fills/labels use the indigo `primary` and the semantic tokens, never a platform
 // default); only the native SHAPE, sizing, label weight, and press feedback change:
-//   iOS (HIG): rounded rect (~12), semibold SF-scale label, dim-on-press.
+//   iOS (HIG / iOS 26+ Liquid Glass): capsule (fully rounded), semibold SF-scale label, dim-on-press.
 //   Android (Material 3): fully-rounded pill, medium label, flat, ripple.
 //   Web: the established Canvas look (rounded-md, medium label, opacity press).
 
@@ -96,12 +96,12 @@ export const webSkin: ButtonSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG): rounded rect, semibold, dim on press ----------
+// ---------- iOS (HIG / iOS 26+ Liquid Glass): capsule, semibold, dim on press ----------
 export const iosSkin: ButtonSkin = {
   container: (t, intent, size, o) => ({
     ...ROW,
     gap: 6,
-    borderRadius: size === "small" ? 8 : size === "large" ? 14 : 12,
+    borderRadius: 9999, // iOS 27 prominent buttons are capsules (full pill at every size); icon = circle
     ...(o.icon
       ? sq(size === "small" ? 36 : size === "large" ? 52 : 44)
       : size === "small" ? { paddingHorizontal: 14, paddingVertical: 8 }

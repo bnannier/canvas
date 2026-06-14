@@ -1,4 +1,4 @@
-import { type ViewStyle, type TextStyle } from "react-native";
+import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
@@ -7,12 +7,12 @@ import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 // on every platform (the open/focus accent and the selected-row indicator are the
 // indigo `primary`, never a platform default); only the native SHAPE, sizing,
 // fill, border/underline treatment, and press feedback change per OS:
-//   iOS (HIG pop-up button): a rounded filled trigger (~10 radius) over a light
-//     gray fill (the `secondary` token, like tertiarySystemFill), NO visible
-//     border, ~44pt tall, with a trailing chevron-up-down glyph in `primary`;
-//     press = opacity dim (~0.8). The menu is a rounded popover (12 radius,
-//     `popover`, soft shadow, ~15pt rows); the selected row shows a TRAILING
-//     brand checkmark.
+//   iOS 26 (Liquid Glass pop-up button): a PLAIN hairline-outlined trigger
+//     (~12 radius, 1px `border`, `background` fill, NO heavy gray capsule), ~44pt
+//     tall, with a trailing chevron-up-down glyph in `primary`; press = opacity
+//     dim (~0.8). The menu is the very rounded Liquid Glass popover (26 radius,
+//     `popover`, soft shadow, ~17pt rows ~42pt tall, hairline group separators);
+//     the selected row shows a LEADING brand checkmark.
 //   Android (Material 3 exposed dropdown): a filled trigger (subtle `muted`
 //     fill, TOP corners ~4 radius, flat bottom) with a bottom active-indicator
 //     underline — 1dp `input` at rest -> 2dp `primary` when open — and a trailing
@@ -63,6 +63,12 @@ export interface SelectSkin {
   panel: (t: ColorTokens) => ViewStyle;
   /** An option row. `selected` carries the active tint. */
   optionRow: (t: ColorTokens, selected: boolean) => ViewStyle;
+  /**
+   * Optional hairline group separator applied to every row after the first, so
+   * the menu reads as iOS's separated item groups. Skins that omit it (web,
+   * Android) render borderless rows exactly as before.
+   */
+  rowSeparator?: (t: ColorTokens) => ViewStyle;
   /** The fill applied on press (web/iOS dim via this; Android uses a ripple). */
   optionPressed: (t: ColorTokens) => ViewStyle;
   /** Option row text (label + the indicator glyph). */
@@ -138,26 +144,39 @@ export const webSkin: SelectSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG pop-up button): rounded filled trigger, gray fill, no border ----------
-// Apple's pop-up button: a rounded rect (~10pt) over a light gray fill
-// (tertiarySystemFill ~ the `secondary` token) with NO visible border, ~44pt
-// tall, a trailing chevron-up-down disclosure glyph tinted with the brand
-// `primary`. The menu is a rounded popover (12pt) over `popover` with a soft
-// shadow and ~15pt rows; the SELECTED row shows a trailing brand checkmark.
-const IOS_RADIUS = 10;
+// ---------- iOS 26 (Liquid Glass) pop-up button + menu ----------
+// Apple's iOS 26 pop-up button is a PLAIN, lightly outlined row (not a heavy
+// filled gray capsule): the value text followed by a trailing chevron-up-down
+// disclosure tinted with the brand `primary`, over the `background` fill with a
+// single hairline `border`, ~44pt tall and only modestly rounded (~12pt). The
+// MENU it opens is the Liquid Glass surface from Apple's kit: a VERY rounded
+// popover (26pt continuous corners), `popover` fill, a soft drop shadow, ~17pt
+// rows that are ~42pt tall (the kit's iPhone "Menu Item, Title" is 198x42), with
+// a hairline group separator between rows. The SELECTED row is marked by a
+// LEADING brand checkmark (the kit's "Menu Item - Selectable" puts the check on
+// the leading edge), in `primary`.
+const IOS_TRIGGER_RADIUS = 12;
+const IOS_MENU_RADIUS = 26;
 const IOS_TRIGGER_BOX: Record<Size, number> = { small: 36, default: 44, large: 50 };
 const IOS_TEXT: Record<Size, TextStyle> = {
   small: { fontSize: 13, lineHeight: 18 },
   default: { fontSize: 15, lineHeight: 20 },
   large: { fontSize: 17, lineHeight: 22 },
 };
+// Menu rows hold the iOS body size (17pt) regardless of the trigger's size axis,
+// matching the kit's fixed menu type.
+const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: SelectSkin = {
   text: (size) => IOS_TEXT[size],
   label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
+  // A plain pop-up button: hairline-outlined row over `background`, NOT a filled
+  // capsule, so the value + primary chevron read as the iOS 26 pop-up control.
   trigger: (t, size) => ({
     ...TRIGGER_ROW,
-    borderRadius: IOS_RADIUS,
-    backgroundColor: t.secondary,
+    borderRadius: IOS_TRIGGER_RADIUS,
+    borderWidth: 1,
+    borderColor: t.border,
+    backgroundColor: t.background,
     paddingHorizontal: 14,
     height: IOS_TRIGGER_BOX[size],
   }),
@@ -167,28 +186,37 @@ export const iosSkin: SelectSkin = {
   // "⇅" reads as the chevron-up-down pop-up disclosure inline.
   chevron: (t, size) => ({ color: t.primary, fontWeight: "600", ...IOS_TEXT[size] }),
   chevronGlyph: "⇅",
+  // The Liquid Glass menu: very rounded (26pt), `popover`, soft shadow. No
+  // `overflow: hidden` (it would clip the shadow on iOS, matching how the web and
+  // Android panels here keep their drop shadow); the inset hairline separators and
+  // the subtle neutral press tint stay clear of the rounded corners.
   panel: (t) => ({
-    marginTop: 6,
-    maxHeight: 280,
-    borderRadius: 12,
+    marginTop: 8,
+    maxHeight: 320,
+    borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
-    paddingVertical: 6,
+    paddingVertical: 4,
     ...shadow("lg"),
   }),
-  // No row tint at rest on iOS; the selection is shown by the trailing check.
+  // No row tint at rest on iOS; the selection is shown by the leading check and
+  // rows are separated by hairlines (see rowSeparator). ~42pt tall per the kit.
   optionRow: (_t, _selected) => ({
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 11,
+    minHeight: 42,
   }),
+  // Hairline group separator between rows, in `border` (the iOS opaque-separator
+  // read), inset to clear the leading text gutter as the kit shows.
+  rowSeparator: (t) => ({ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.border }),
   optionPressed: (t) => ({ backgroundColor: t.secondary }),
-  optionText: (t, _size) => ({ color: t["popover-foreground"], ...IOS_TEXT["default"] }),
-  // The selected-row checkmark is the brand indigo, trailing-aligned (HIG).
-  indicator: (t, _size) => ({ color: t.primary, fontWeight: "600", ...IOS_TEXT["default"] }),
-  selectedSide: "trailing",
+  optionText: (t, _size) => ({ color: t["popover-foreground"], ...IOS_ROW_TEXT }),
+  // The selected-row checkmark is the brand indigo, LEADING-aligned (iOS 26
+  // selectable menu marks the leading edge).
+  indicator: (t, _size) => ({ color: t.primary, fontWeight: "600", ...IOS_ROW_TEXT }),
+  selectedSide: "leading",
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,
   ripple: null,

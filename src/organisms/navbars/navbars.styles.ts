@@ -9,9 +9,11 @@ import { type NavbarSkin } from "./navbars.shared.js";
 // indigo `primary` token and the semantic tokens, never a platform default), so
 // each follows light/dark and the glass surface.
 //
-//   iOS (HIG navigation bar): a slim 44pt bar with a 1px hairline bottom
-//     separator (no heavy shadow); the brand reads as a ~17pt weight-600 SF
-//     title; nav links and the active link tint the brand `primary`; press =
+//   iOS (iOS 26+ / Liquid Glass navigation bar): a slim 44pt bar with a 1px
+//     hairline bottom separator (no heavy shadow); the brand reads as a ~17pt
+//     weight-600 SF title. Bar-button items are CIRCULAR tinted toolbar buttons
+//     (a translucent neutral `secondary` circle), the glyph/label tints the
+//     brand `primary`; the active item reads as a brand-FILLED circle. Press =
 //     opacity dim 0.8.
 //   Android (M3 top app bar): a ~56dp bar with a ~22sp weight-500 LEADING title;
 //     no hairline border, a flat `background` surface (soft elevation only when
@@ -96,16 +98,18 @@ export const webSkin: NavbarSkin = {
 };
 
 // =============================================================================
-// iOS (HIG): a slim navigation bar. A 44pt bar with a 1px hairline bottom
-// separator and no heavy shadow; the brand is a ~17pt weight-600 SF title; nav
-// links and the active link tint the brand `primary`. Press = opacity dim 0.8.
+// iOS (iOS 26+ / Liquid Glass): a slim navigation bar. A 44pt bar with a 1px
+// hairline bottom separator and no heavy shadow; the brand is a ~17pt weight-600
+// SF title. Bar-button items are CIRCULAR tinted toolbar buttons: a translucent
+// neutral `secondary` circle that the brand `primary` glyph/label sits on; the
+// active destination reads as a brand-FILLED circle. Press = opacity dim 0.8.
 // =============================================================================
 
 export const iosSkin: NavbarSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
 
-  // Slim 44pt bar. HIG navigation bars are shorter than the Canvas web bar.
+  // Slim 44pt bar. iOS navigation bars are shorter than the Canvas web bar.
   bar() {
     return {
       flexDirection: "row",
@@ -134,30 +138,38 @@ export const iosSkin: NavbarSkin = {
   leftGroup() {
     return { flexDirection: "row", alignItems: "center", gap: 16 };
   },
-  // ~17pt SF title, weight 600 (HIG inline navigation title).
+  // ~17pt SF title, weight 600 (iOS inline navigation title).
   brand(tokens) {
     return { fontSize: 17, lineHeight: 22, fontWeight: "600", color: tokens.foreground };
   },
   linksRow() {
-    return { flexDirection: "row", alignItems: "center", gap: 2 };
+    return { flexDirection: "row", alignItems: "center", gap: 8 };
   },
-  // iOS bar button items are text-only and brand-tinted; the active item carries
-  // a faint tonal primary wash so the current destination still reads.
+  // iOS 26 bar-button items are CIRCULAR tinted toolbar buttons. Each chip is a
+  // 32pt fully-rounded pill on a translucent neutral `secondary` fill; the active
+  // destination flips to a solid brand `primary` fill (the filled-circle state).
+  // minWidth == height keeps a single short label reading as a true circle while
+  // a longer label grows the pill horizontally, matching the iOS capsule.
   linkTile(tokens, active) {
     return {
-      borderRadius: 8,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      backgroundColor: active ? alpha(tokens.primary, 0.12) : "transparent",
+      height: 32,
+      minWidth: 32,
+      borderRadius: 9999,
+      paddingHorizontal: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: active ? tokens.primary : alpha(tokens.secondary, 0.9),
     };
   },
-  // HIG tints actionable items the brand color; the active item reads heavier.
+  // The glyph/label tints the brand `primary` on the neutral chip; on the active
+  // filled circle it reads in the contrasting `primary-foreground`.
   linkLabel(tokens, active) {
     return {
       fontSize: 15,
       lineHeight: 20,
-      fontWeight: active ? "600" : "400",
-      color: active ? tokens.primary : alpha(tokens.primary, 0.85),
+      fontWeight: "600",
+      textAlign: "center",
+      color: active ? tokens["primary-foreground"] : tokens.primary,
     };
   },
 

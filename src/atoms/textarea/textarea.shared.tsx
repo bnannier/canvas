@@ -56,6 +56,7 @@ export function createTextarea(skin: TextareaSkin) {
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={tokens["muted-foreground"]}
+        selectionColor={tokens.primary} // brand cursor / selection on every platform
         editable={!disabled}
         textAlignVertical="top"
         onFocus={() => setFocused(true)}

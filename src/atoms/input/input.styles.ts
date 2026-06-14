@@ -5,10 +5,12 @@ import { type ColorTokens } from "../../style/index.js";
 // (the cursor/selection is always the indigo `primary`, the focus accent is the
 // `ring`, never a platform default), and only the native SHAPE, sizing, fill,
 // border treatment, and press feedback change per OS:
-//   iOS (HIG): a rounded grouped field (~10 radius), light gray fill (the
-//     `secondary` token, like tertiarySystemFill), NO visible border at rest,
-//     ~44pt tall; focus/error are shown with a thin brand ring; press (action
-//     suffix) = opacity dim (~0.8).
+//   iOS (HIG, iOS 26+/Liquid Glass): a PLAIN text field — the value text sits on
+//     a TRANSPARENT surface with a single bottom HAIRLINE rule (1pt `border`
+//     separator) and NO fill, NO surrounding box, NO rounded capsule. Focus
+//     thickens/tints the hairline to the brand (`ring`), error to `destructive`;
+//     press (action suffix) = opacity dim (~0.8). The cursor/selection stays the
+//     indigo `primary`.
 //   Android (Material 3 filled): a subtle fill (`muted`), TOP corners ~4 radius
 //     and a flat bottom, a bottom active-indicator underline (1dp `border` at
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
@@ -119,13 +121,22 @@ export const webSkin: InputSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG): rounded grouped field, gray fill, no border, brand ring on focus ----------
-// Apple's rounded text field: a continuous-corner rounded rect (~10pt) over a
-// light gray fill (tertiarySystemFill ~ the `secondary` token), with no visible
-// border at rest. Canvas keeps the brand by lighting the field with a thin
-// `ring` border on focus and `destructive` on error; otherwise the border is
-// transparent so the rest state reads as a clean filled capsule. ~44pt tall.
-const IOS_RADIUS = 10;
+// ---------- iOS (HIG, iOS 26+/Liquid Glass): plain field, transparent, bottom hairline ----------
+// Apple's plain text field on iOS 26+: the value text sits directly on a
+// TRANSPARENT surface with a single bottom HAIRLINE rule (1pt separator) and no
+// fill, no surrounding box, no rounded capsule. Canvas keeps the brand by
+// thickening + tinting that hairline to the brand `ring` on focus (and
+// `destructive` on error); at rest it is the faint `border` separator. The
+// cursor/selection is always the indigo `primary` (set in the shell).
+function iosHairline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean): ViewStyle {
+  // Rest = the faint `border` separator; focus/error thicken to 2pt and tint to
+  // the brand color the shell resolved (ring on focus, destructive on error).
+  const active = focused || error;
+  return {
+    borderBottomWidth: active ? 2 : 1,
+    borderBottomColor: active ? t[borderColor] : t.border,
+  };
+}
 export const iosSkin: InputSkin = {
   text: webText,
   bareBox: (size, multiline) => {
@@ -135,12 +146,12 @@ export const iosSkin: InputSkin = {
   groupedHeight: (size) => (size === "large" ? 50 : size === "small" ? 36 : 44),
   bareField: (t, borderColor, focused, error) => ({
     width: "100%",
-    borderRadius: IOS_RADIUS,
-    // No visible border at rest; focus/error light a thin brand ring.
-    borderWidth: focused || error ? 1.5 : 0,
-    borderColor: focused || error ? t[borderColor] : "transparent",
-    backgroundColor: t.secondary,
-    paddingHorizontal: 14,
+    // Plain field: transparent surface, no box/radius, only a bottom hairline.
+    backgroundColor: "transparent",
+    ...iosHairline(t, borderColor, focused, error),
+    // No horizontal inset so the value text aligns flush with the hairline edge,
+    // as in the iOS 27 render.
+    paddingHorizontal: 0,
     paddingVertical: 10,
     color: t.foreground,
   }),
@@ -148,30 +159,27 @@ export const iosSkin: InputSkin = {
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
-    borderWidth: focused || error ? 1.5 : 0,
-    borderColor: focused || error ? t[borderColor] : "transparent",
-    borderRadius: IOS_RADIUS,
-    overflow: "hidden",
-    backgroundColor: t.secondary,
+    // The whole row shares the single bottom hairline; no fill, no box, no radius.
+    backgroundColor: "transparent",
+    ...iosHairline(t, borderColor, focused, error),
   }),
   groupField: (t, leadingIcon, trailingIcon) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
     height: "100%",
-    paddingHorizontal: 14,
+    paddingHorizontal: 0,
     paddingVertical: 10,
     color: t.foreground,
-    ...(leadingIcon ? { paddingLeft: 38 } : null),
-    ...(trailingIcon ? { paddingRight: 38 } : null),
+    ...(leadingIcon ? { paddingLeft: 28 } : null),
+    ...(trailingIcon ? { paddingRight: 28 } : null),
   }),
-  // Addon boxes sit on a slightly deeper fill than the field, joined by a hairline.
-  addonBox: (t, side, height) => ({
+  // Addons are inline on the transparent field (no filled box, no separator) so
+  // the row reads as one plain line over the shared hairline.
+  addonBox: (_t, side, height) => ({
     justifyContent: "center",
-    backgroundColor: t.muted,
-    paddingHorizontal: 14,
-    borderColor: t.border,
-    ...(side === "left" ? { borderRightWidth: 1 } : { borderLeftWidth: 1 }),
+    backgroundColor: "transparent",
+    ...(side === "left" ? { paddingRight: 8 } : { paddingLeft: 8 }),
     height,
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
@@ -182,7 +190,7 @@ export const iosSkin: InputSkin = {
     bottom: 0,
     zIndex: 10,
     justifyContent: "center",
-    ...(side === "left" ? { left: 0, paddingLeft: 14 } : { right: 0, paddingRight: 14 }),
+    ...(side === "left" ? { left: 0 } : { right: 0 }),
   }),
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,

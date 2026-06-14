@@ -107,34 +107,36 @@ export function createAlertDialog(skin: AlertDialogSkin) {
       setOpen(false);
     };
 
-    // The action row. iOS renders a hairline-split horizontal pair drawn by the
-    // skin; web/Android render a right-aligned row of the shell's Buttons.
+    // The action row. iOS renders two capsule buttons side by side (no divider)
+    // drawn by the skin; web/Android render a right-aligned row of the shell's
+    // Buttons.
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const actionRow =
-      skin.actionLayout === "split" ? (
-        <View style={[skin.splitRow!, { borderTopColor: tokens.border }]}>
+      skin.actionLayout === "capsule" ? (
+        <View style={skin.capsuleRow!}>
           <Pressable
             onPress={handleCancel}
             accessibilityRole="button"
             android_ripple={ripple}
             style={({ pressed }) => [
-              skin.splitCell!,
+              skin.capsuleCell!,
+              skin.cancelFill!(tokens),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
           >
-            <Text style={skin.splitCancelText!(tokens)}>{cancelLabel}</Text>
+            <Text style={skin.cancelLabelStyle!(tokens)}>{cancelLabel}</Text>
           </Pressable>
-          <View style={skin.splitDivider!(tokens)} />
           <Pressable
             onPress={handleConfirm}
             accessibilityRole="button"
             android_ripple={ripple}
             style={({ pressed }) => [
-              skin.splitCell!,
+              skin.capsuleCell!,
+              skin.confirmFill!(tokens, !!destructive),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
           >
-            <Text style={skin.splitConfirmText!(tokens, !!destructive)}>{confirmLabel}</Text>
+            <Text style={skin.confirmLabelStyle!(tokens, !!destructive)}>{confirmLabel}</Text>
           </Pressable>
         </View>
       ) : (

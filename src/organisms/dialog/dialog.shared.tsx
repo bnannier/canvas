@@ -117,33 +117,33 @@ export function createDialog(skin: DialogSkin) {
     //     primary/destructive Confirm Button row (verbatim Canvas look).
     //   - Android (footerKind "buttons", skin.textButton set): flat text buttons,
     //     Cancel then Confirm, brand-indigo, with a ripple.
-    //   - iOS (footerKind "stacked"): full-width rows separated by hairline
-    //     dividers, the confirm row emphasized (weight 600).
+    //   - iOS (footerKind "capsules"): a side-by-side row of capsule buttons, a
+    //     gray Cancel capsule then a primary (or destructive-red-labeled) Confirm
+    //     capsule, no dividers; a pressed capsule dims.
     const footer =
-      skin.footerKind === "stacked" ? (
+      skin.footerKind === "capsules" ? (
         <View style={skin.footer(tokens)}>
-          {/* Cancel row, then the emphasized confirm row, each above a hairline. */}
+          {/* Cancel capsule (gray) on the left, Confirm capsule (indigo, or gray
+              with red label when destructive) on the right. */}
           {(
             [
-              { label: cancelLabel, onPress: cancel, emphasis: false, dangerous: false },
-              { label: confirmLabel, onPress: confirm, emphasis: true, dangerous: !!destructive },
+              { label: cancelLabel, onPress: cancel, confirm: false, dangerous: false },
+              { label: confirmLabel, onPress: confirm, confirm: true, dangerous: !!destructive },
             ] as const
-          ).map((row, i) => (
-            <View key={`${row.label}-${i}`}>
-              {skin.stackedDivider != null ? <View style={skin.stackedDivider(tokens)} /> : null}
-              <Pressable
-                accessibilityRole="button"
-                onPress={row.onPress}
-                style={({ pressed }) => [
-                  skin.stackedRow,
-                  skin.stackedPressedOpacity != null && pressed ? { opacity: skin.stackedPressedOpacity } : null,
-                ]}
-              >
-                {skin.stackedLabel != null ? (
-                  <Text style={skin.stackedLabel(tokens, row.emphasis, row.dangerous)}>{row.label}</Text>
-                ) : null}
-              </Pressable>
-            </View>
+          ).map((cap, i) => (
+            <Pressable
+              key={`${cap.label}-${i}`}
+              accessibilityRole="button"
+              onPress={cap.onPress}
+              style={({ pressed }) => [
+                skin.capsule != null ? skin.capsule(tokens, cap.confirm, cap.dangerous) : null,
+                skin.capsulePressedOpacity != null && pressed ? { opacity: skin.capsulePressedOpacity } : null,
+              ]}
+            >
+              {skin.capsuleLabel != null ? (
+                <Text style={skin.capsuleLabel(tokens, cap.confirm, cap.dangerous)}>{cap.label}</Text>
+              ) : null}
+            </Pressable>
           ))}
         </View>
       ) : skin.textButton != null ? (

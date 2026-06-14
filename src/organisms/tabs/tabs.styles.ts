@@ -9,10 +9,12 @@ import { type TabsSkin } from "./tabs.shared.js";
 // indigo `primary` token and the semantic tokens, never a platform default), so
 // each follows light/dark and the glass surface.
 //
-//   iOS (HIG segmented tab strip): the default underline look becomes a rounded
-//     gray CONTAINER (radius 8, muted fill, 3px padding); the SELECTED tab is a
-//     raised white/elevated pill (radius 6, small shadow); labels ~13pt; no
-//     underline rule. The selected label carries the brand indigo. Press = dim.
+//   iOS (iOS 27 / Liquid Glass segmented control): the default underline look
+//     becomes a CAPSULE gray track (radius 9999, muted fill, 3px inset); the
+//     SELECTED tab is a raised white/elevated CAPSULE pill (radius 9999, small
+//     shadow); labels ~13pt; no underline rule. Both labels stay on-foreground
+//     (the white pill is the selected affordance, not a brand fill), mirroring
+//     the button-group iOS 27 segmented treatment. Press = dim.
 //   Android (M3 underline tabs): no container; each tab is text with a 3px brand
 //     `primary` indicator bar under the active tab; inactive labels read in
 //     `muted-foreground`; title-case ~14sp; press = android_ripple.
@@ -151,9 +153,11 @@ export const webSkin: TabsSkin = {
 };
 
 // =============================================================================
-// iOS (HIG): segmented tab strip. The underline look becomes a gray rounded
-// track holding raised white pills; the pills look stays a segmented track too;
-// vertical stays a left rail. Press = opacity dim.
+// iOS (iOS 27 / Liquid Glass segmented control): the in-page tab strip is a
+// CAPSULE segmented control (mirroring button-group's iOS 27 treatment). A
+// capsule gray track (radius 9999) holds raised white CAPSULE pills (radius
+// 9999); the pills look stays a segmented track too; vertical stays a left
+// rail. Press = opacity dim.
 // =============================================================================
 
 const IOS_PILL_SHADOW: ViewStyle = {
@@ -168,49 +172,50 @@ export const iosSkin: TabsSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
 
-  // --- underline -> segmented track (gray container + raised white pill) ---
+  // --- underline -> capsule segmented control (gray track + raised pill) ---
   underlineRow(tokens) {
-    // The gray rounded container (radius 8, muted fill, 3px inset).
+    // The capsule gray track (radius 9999, muted fill, 3px inset).
     return {
       flexDirection: "row",
       alignItems: "center",
       gap: 0,
       padding: 3,
-      borderRadius: 8,
+      borderRadius: 9999,
       backgroundColor: tokens.muted,
     };
   },
   underlineTrigger(tokens, selected) {
-    // Each tab is an independent rounded pill (radius 6) inside the track; the
-    // selected one is raised white/elevated.
+    // Each tab is an independent capsule pill (radius 9999) inside the track;
+    // the selected one is raised white/elevated.
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      borderRadius: 6,
+      borderRadius: 9999,
       paddingHorizontal: 14,
       paddingVertical: 7,
       ...(selected ? { ...IOS_PILL_SHADOW, backgroundColor: tokens.background } : { backgroundColor: "transparent" }),
     };
   },
-  // No underline rule on iOS: the raised pill is the selected affordance.
+  // No underline rule on iOS: the raised capsule pill is the selected affordance.
   underlineIndicator() {
     return { display: "none" };
   },
   underlineLabel(tokens, selected) {
-    // ~13pt SF label; selected reads slightly heavier and carries brand indigo.
-    return { fontSize: 13, lineHeight: 18, fontWeight: selected ? "600" : "500", color: selected ? tokens.primary : tokens.foreground };
+    // ~13pt SF label; selected reads slightly heavier. Both stay on-foreground
+    // (the white pill is the selected affordance, not a brand fill).
+    return { fontSize: 13, lineHeight: 18, fontWeight: selected ? "600" : "500", color: tokens.foreground };
   },
 
-  // --- pills (segmented track, same gray-track + raised pill treatment) ---
+  // --- pills (capsule segmented track, same gray-track + raised pill) ---
   pillsRow(tokens) {
     return {
       flexDirection: "row",
       alignItems: "center",
       gap: 0,
       alignSelf: "flex-start",
-      borderRadius: 8,
+      borderRadius: 9999,
       backgroundColor: tokens.muted,
       padding: 3,
     };
@@ -221,7 +226,7 @@ export const iosSkin: TabsSkin = {
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      borderRadius: 6,
+      borderRadius: 9999,
       paddingHorizontal: 14,
       paddingVertical: 7,
     };
@@ -232,7 +237,7 @@ export const iosSkin: TabsSkin = {
       : { backgroundColor: "transparent" };
   },
   pillsLabel(tokens, selected) {
-    return { fontSize: 13, lineHeight: 18, fontWeight: selected ? "600" : "500", color: selected ? tokens.primary : tokens.foreground };
+    return { fontSize: 13, lineHeight: 18, fontWeight: selected ? "600" : "500", color: tokens.foreground };
   },
 
   // --- vertical (HIG grouped rail; active item is an accent-filled row) ---

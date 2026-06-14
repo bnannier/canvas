@@ -6,9 +6,13 @@ import { type ColorTokens, alpha } from "../../style/index.js";
 // platform (the focus/active cue is always the indigo `ring`/`primary` token,
 // the error cue the `destructive` token, never a platform default); only the
 // native SHAPE, fill, border/underline, and focus feedback change per OS:
-//   iOS (HIG text view): a filled rounded box (~10 radius, subtle gray fill,
-//     no border), multiline. Error raises a destructive border; focus needs no
-//     extra chrome on a filled iOS view.
+//   iOS (HIG, iOS 27 / Liquid Glass): the PLAIN multiline text view, a fully
+//     transparent field with NO fill and NO box, carrying only a subtle bottom
+//     hairline rule (the `input` token at rest), so it reads like the iOS 27
+//     plain text field rather than a filled gray capsule. The hairline brightens
+//     to the brand `primary` on focus and `destructive` on error; the brand
+//     cursor/selection is the indigo `primary` (set on the shell, never a system
+//     blue).
 //   Android (Material 3 filled): a subtle fill with a flat bottom active
 //     indicator (underline). Top corners ~4, square bottom. The indicator is a
 //     1px resting line that thickens to 2px indigo on focus (destructive on
@@ -66,20 +70,22 @@ export const webSkin: TextareaSkin = {
   }),
 };
 
-// ---------- iOS (HIG text view): filled rounded box, no border ----------
-// A subtle gray fill (the `muted` token) in a ~10-radius rounded rectangle with
-// no resting border. Focus adds no chrome (an iOS filled view does not show a
-// focus border); an error raises a hairline destructive border so the problem
-// still reads.
+// ---------- iOS (HIG, iOS 27 / Liquid Glass): plain transparent field, bottom hairline ----------
+// The iOS 27 plain multiline text view: no fill, no box, a transparent field
+// with a single subtle bottom hairline rule. The rule is the `input` token at
+// rest (1pt), brightening to the brand `primary` on focus and `destructive` on
+// error, mirroring the new plain single-line input. Horizontal padding drops to
+// 0 so the text and the rule align to the field's edges like the reference.
 export const iosSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
-    borderRadius: 10,
-    borderWidth: st.error ? 1 : 0,
-    borderColor: st.error ? t.destructive : "transparent",
-    backgroundColor: t.muted,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    backgroundColor: "transparent",
+    // The only chrome: a bottom hairline that carries focus/error.
+    borderBottomWidth: 1,
+    borderBottomColor: st.error ? t.destructive : st.focused ? t.primary : t.input,
+    paddingHorizontal: 0,
+    paddingTop: 8,
+    paddingBottom: 8,
     color: t.foreground,
   }),
 };

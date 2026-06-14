@@ -7,12 +7,16 @@ import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 // survives on every platform (the indigo `primary` Done action stays the same);
 // only the native SHAPE, sizing, surface treatment, and the grabber/handle change
 // per OS:
-//   iOS (HIG sheet): a sheet with the TOP corners rounded ~12 presenting from the
-//     bottom (flat bottom), a small grabber handle (a ~36x5 rounded
-//     `muted-foreground` pill) centered at the top; the centered `modal` becomes a
-//     rounded form-sheet card (~13 radius). Press feedback on the surface is none
-//     (the surface itself is not pressable); the Done action keeps the Button's
-//     iOS press = opacity dim.
+//   iOS (iOS 27 / Liquid Glass sheet): a sheet with the TOP corners rounded ~38
+//     presenting from the bottom (flat bottom), a small grabber handle (a ~36x5
+//     rounded `muted-foreground` pill) centered at the top, and an iOS 27 header
+//     toolbar directly below it: a leading CIRCULAR tinted button holding the close
+//     (X) glyph, a centered title, and a trailing CIRCULAR action button (a filled
+//     `primary` accent circle holding the action glyph) — both are ~40pt circles,
+//     not bare icons. The centered `modal` becomes a rounded form-sheet card
+//     (~13 radius). Press feedback on the surface is none (the surface itself is
+//     not pressable); the circular header buttons keep the Button's iOS press =
+//     opacity dim.
 //   Android (Material 3 bottom sheet): the `sheet` has its TOP corners rounded 28
 //     with a centered drag handle (~32x4 rounded `muted-foreground` pill), the
 //     `popover` surface, and M3 elevation; the `drawer` and `modal` keep the M3
@@ -42,6 +46,23 @@ export interface OverlaySkin {
   description: (t: ColorTokens) => TextStyle;
   /** The footer action row layout. */
   footer: ViewStyle;
+
+  // --- iOS 27 sheet header (optional; iOS skin only) ------------------------
+  // When a skin supplies `sheetHeader`, the shell renders an iOS 27 sheet header
+  // toolbar on the `sheet` placement instead of the title/description/footer
+  // stack: a leading CIRCULAR close (X) button, a centered title, and a trailing
+  // CIRCULAR action button. Web/Android leave these undefined and keep the plain
+  // title/description/footer layout byte-for-byte.
+
+  /** The header toolbar row (3-column: leading circle, centered title, trailing
+   *  circle). Present only on platforms that draw the iOS 27 sheet header. */
+  sheetHeader?: ViewStyle;
+  /** The circular tinted header button (a ~40pt `muted` circle behind a glyph). */
+  headerButton?: (t: ColorTokens) => ViewStyle;
+  /** The filled-accent trailing header button (a ~40pt `primary` circle). */
+  headerButtonAccent?: (t: ColorTokens) => ViewStyle;
+  /** The centered header title type/color (the iOS 27 sheet navigation title). */
+  headerTitle?: (t: ColorTokens) => TextStyle;
 }
 
 // --- outer wrapper + trigger (identical across platforms) -------------------
@@ -82,6 +103,12 @@ export const backdropPlacement: Record<Placement, ViewStyle> = {
 // supplies the pill dimensions/color; this centers it and spaces it from the
 // content below.
 export const handleWrap: ViewStyle = { alignItems: "center", marginBottom: 12 };
+
+// The centered title slot in the iOS 27 sheet header toolbar: it flexes to fill
+// the space between the two equal-size circular controls so the title stays
+// optically centered in the row. Used by the shell only when the active skin
+// draws the iOS sheet header.
+export const sheetHeaderTitleWrap: ViewStyle = { flex: 1, alignItems: "center", paddingHorizontal: 8 };
 
 // --- shared surface fragments -----------------------------------------------
 
@@ -145,14 +172,19 @@ export const webSkin: OverlaySkin = {
   footer: { flexDirection: "row", justifyContent: "flex-end", marginTop: 24 },
 };
 
-// ---------- iOS (HIG sheet): top corners ~12, bottom grabber, form-sheet card ----------
-// Apple's sheet presents from the bottom with the TOP corners rounded ~12 and a
-// flat bottom; a small grabber (a ~36x5 rounded muted-foreground pill) is centered
-// at the top. The right `drawer` keeps the same lineless rounded-left treatment;
-// the centered `modal` becomes a rounded form-sheet card (~13 radius). The iOS
-// sheet is lineless: no visible border, a soft elevation.
-const IOS_SHEET_RADIUS = 12;
+// ---------- iOS 27 (Liquid Glass sheet): top corners ~38, grabber + header toolbar ----------
+// The iOS 27 sheet presents from the bottom with the TOP corners rounded ~38 (the
+// large continuous-corner radius of the Liquid Glass sheet) and a flat bottom; a
+// small grabber (a ~36x5 rounded muted-foreground pill) is centered at the top,
+// and an iOS 27 header toolbar sits directly below it: a leading CIRCULAR close (X)
+// button, a centered title, and a trailing CIRCULAR action button (a filled
+// `primary` accent circle). The right `drawer` keeps the lineless rounded-left
+// treatment; the centered `modal` becomes a rounded form-sheet card (~13 radius).
+// The iOS sheet is lineless: no visible border, a soft elevation.
+const IOS_SHEET_RADIUS = 38;
 const IOS_CARD_RADIUS = 13;
+// The header toolbar's circular control: a ~40pt circle behind the glyph.
+const IOS_HEADER_BUTTON = 40;
 export const iosSkin: OverlaySkin = {
   surface: (t, placement) => {
     switch (placement) {
@@ -170,12 +202,12 @@ export const iosSkin: OverlaySkin = {
         return {
           ...SHEET_ANCHOR,
           backgroundColor: t.popover,
-          // Top corners rounded, flat bottom (presents from the bottom edge).
+          // Top corners rounded ~38, flat bottom (presents from the bottom edge).
           borderTopLeftRadius: IOS_SHEET_RADIUS,
           borderTopRightRadius: IOS_SHEET_RADIUS,
-          paddingHorizontal: 20,
-          // A little more top padding to seat the grabber.
-          paddingTop: 12,
+          paddingHorizontal: 16,
+          // A little more top padding to seat the grabber above the header toolbar.
+          paddingTop: 8,
           paddingBottom: 24,
           ...shadow("xl"),
         };
@@ -197,6 +229,29 @@ export const iosSkin: OverlaySkin = {
   // 15pt secondary text.
   description: (t) => ({ fontSize: 15, lineHeight: 20, color: t["muted-foreground"], marginTop: 8 }),
   footer: { flexDirection: "row", justifyContent: "flex-end", marginTop: 24 },
+  // iOS 27 sheet header toolbar: a 3-column row seating the leading/trailing
+  // circular controls and the centered title, just below the grabber.
+  sheetHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  // The circular tinted header button: a ~40pt `muted` circle centering its glyph.
+  headerButton: (t) => ({
+    width: IOS_HEADER_BUTTON,
+    height: IOS_HEADER_BUTTON,
+    borderRadius: IOS_HEADER_BUTTON / 2,
+    backgroundColor: t.muted,
+    alignItems: "center",
+    justifyContent: "center",
+  }),
+  // The filled-accent trailing header button: a ~40pt brand-`primary` circle.
+  headerButtonAccent: (t) => ({
+    width: IOS_HEADER_BUTTON,
+    height: IOS_HEADER_BUTTON,
+    borderRadius: IOS_HEADER_BUTTON / 2,
+    backgroundColor: t.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  }),
+  // The centered header title: 17pt semibold, the iOS 27 sheet navigation title.
+  headerTitle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", color: t["popover-foreground"] }),
 };
 
 // ---------- Android (Material 3 bottom sheet): top corners 28, drag handle ----------

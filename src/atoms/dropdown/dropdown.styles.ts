@@ -7,11 +7,11 @@ import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 // survives on every platform (the indigo `primary` press tint on Android, the
 // `destructive` red for destructive rows); only the native SHAPE, sizing, fill,
 // separators, and press feedback change per OS:
-//   iOS (HIG pull-down menu): a rounded popover panel (~13 radius, `popover`
-//     fill, NO border, soft shadow), rows ~40pt tall with ~15pt labels, hairline
-//     `border` separators between groups, a destructive row in `destructive`
-//     red, an optional trailing SF-style icon; a pressed row tints with a subtle
-//     `secondary` highlight (no ripple) at pressedOpacity 0.8.
+//   iOS (iOS 26 / Liquid Glass pull-down menu): a VERY rounded popover panel
+//     (~26 radius, `popover` fill, NO border, soft shadow), rows ~44pt tall with
+//     ~17pt labels, hairline `border` separators between groups, a destructive
+//     row in `destructive` red, an optional trailing SF-style icon; a pressed row
+//     tints with a subtle `secondary` highlight (no ripple) at pressedOpacity 0.8.
 //   Android (Material 3 menu): an ELEVATED surface (4 radius, `popover`, shadow
 //     md, paddingVertical 8), rows ~48dp tall with 14sp labels and a leading
 //     icon gutter, an android_ripple (alpha(primary, 0.12) state layer) on rows,
@@ -112,18 +112,27 @@ export const webSkin: DropdownSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG pull-down menu): rounded popover, no border, hairline groups ----------
-// Apple's pull-down/context menu: a rounded popover panel (~13pt radius) over the
-// `popover` fill with NO visible border and a soft shadow; rows ~40pt tall with
-// ~15pt labels, hairline `border` separators between groups, a destructive row in
-// the `destructive` red, and an optional trailing SF-style icon. A pressed row
+// ---------- iOS 26 (Liquid Glass pull-down menu): VERY rounded popover, no border, hairline groups ----------
+// Apple's iOS 26 pull-down/context menu: a very rounded popover panel (~26pt
+// continuous radius, matching the Liquid Glass kit render in
+// docs/public/refs/ios/dropdown/menu-iphone-light.png) over the `popover` fill
+// with NO visible border and a soft shadow; rows ~44pt tall with ~17pt labels,
+// full-bleed hairline `border` separators between groups, a destructive row in
+// the `destructive` red (icon + label), section titles in `muted-foreground`,
+// and an optional trailing SF-style icon (e.g. a submenu chevron). A pressed row
 // tints with a subtle `secondary` highlight (no ripple) at pressedOpacity 0.8.
-const IOS_RADIUS = 13;
+// iOS 26 menus are markedly rounder than legacy (~13pt) menus; the larger radius
+// is the headline shape change.
+const IOS_RADIUS = 26;
 export const iosSkin: DropdownSkin = {
   menuCard: (t) => ({
     borderRadius: IOS_RADIUS,
     backgroundColor: t.popover,
     paddingVertical: 6,
+    // Clip the pressed-row highlight and full-bleed separators to the heavily
+    // rounded panel so they don't poke past the ~26pt corners. iOS still draws
+    // the soft shadow outside these bounds.
+    overflow: "hidden",
     ...shadow("lg"),
   }),
   menuLabel: (t) => ({
@@ -134,28 +143,28 @@ export const iosSkin: DropdownSkin = {
     fontWeight: "600",
     color: t["muted-foreground"],
   }),
-  // Hairline group separators run full-bleed across the panel (HIG groups rows
-  // with a thin inset divider).
+  // Hairline group separators run full-bleed across the panel (iOS 26 groups
+  // rows with a thin divider).
   separator: (t) => ({ marginTop: 6, marginBottom: 6, height: 1, backgroundColor: t.border }),
   itemRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    minHeight: 40,
+    paddingVertical: 11,
+    minHeight: 44,
   },
   // Subtle highlight under a pressed row (no ripple on iOS).
   itemPressed: (t) => ({ backgroundColor: t.secondary }),
-  itemTextType: { fontSize: 15, lineHeight: 20 },
+  itemTextType: { fontSize: 17, lineHeight: 22 },
   itemTextColor: (t, _dark, destructive) => {
     if (destructive) return { color: t.destructive };
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({
     marginLeft: "auto",
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 15,
+    lineHeight: 20,
     letterSpacing: 0.5,
     color: t["muted-foreground"],
   }),

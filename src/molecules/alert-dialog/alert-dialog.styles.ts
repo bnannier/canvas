@@ -7,12 +7,12 @@ import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 // on every platform (the `primary` confirm and the `destructive` red); only the
 // native SHAPE, sizing, title alignment, action layout, and press feedback change
 // per OS:
-//   iOS (HIG UIAlertController): a compact centered card (~14 radius, `popover`
-//     fill, soft shadow), a CENTERED ~17pt/600 title and a centered ~13pt
-//     `muted-foreground` message; exactly two actions rendered as a HORIZONTAL
-//     row split by a hairline `border` divider — Cancel on the left (regular
-//     weight), Confirm on the right (weight 600), a destructive confirm in the
-//     `destructive` red. Press = opacity dim (~0.8).
+//   iOS (iOS 27 / Liquid Glass alert): a rounded card (~28 radius, `popover`
+//     fill, soft shadow, no border), a LEFT-aligned bold title and a left-aligned
+//     `muted-foreground` message; exactly two actions rendered as two CAPSULES
+//     side by side (no divider) — a gray Cancel capsule (`secondary` fill) and a
+//     filled Confirm capsule (`primary`, or `destructive` when destructive) with
+//     a white label. Press = opacity dim (~0.85).
 //   Android (Material 3 AlertDialog): an elevated surface (28 radius, `popover`
 //     fill, soft shadow), a LEFT-aligned title and left-aligned body; two M3 TEXT
 //     buttons bottom-right (Cancel then Confirm/Delete), the confirm tinted with
@@ -37,9 +37,9 @@ export const panelWidth: Record<Width, ViewStyle> = {
 };
 
 // How the action row is structured. "buttons" renders the shell's Button-based
-// right-aligned row (web/Android); "split" renders the iOS hairline-divided
-// horizontal pair drawn by the skin's own action styles.
-export type ActionLayout = "buttons" | "split";
+// right-aligned row (web/Android); "capsule" renders the iOS side-by-side pair of
+// pill buttons drawn by the skin's own action styles (no divider).
+export type ActionLayout = "buttons" | "capsule";
 
 // The contract a platform skin fulfills. The shell renders the wrapper, the dim
 // backdrop, the card, the title/description, the optional confirmation field, and
@@ -61,26 +61,28 @@ export interface AlertDialogSkin {
   /** Which action structure the shell renders. */
   actionLayout: ActionLayout;
   // --- "buttons" layout (web/Android): a right-aligned row of shell Buttons ----
-  /** The right-aligned Button row container. */
+  /** The right-aligned Button row container (the "buttons" layout). */
   actions: ViewStyle;
   /** The size prop passed to the shell's Cancel/Confirm Buttons. */
   buttonSmall: boolean;
   /** The intent props for the Cancel Button (web = outline; Android = ghost/text). */
   cancelButton: { outline?: boolean; ghost?: boolean };
-  // --- "split" layout (iOS): a hairline-divided horizontal action pair ---------
-  /** The full-bleed action row that sits flush against the card edges. */
-  splitRow: ViewStyle | null;
-  /** A single action cell (each takes 50% of the row). */
-  splitCell: ViewStyle | null;
-  /** The hairline vertical divider between the two cells. */
-  splitDivider: ((t: ColorTokens) => ViewStyle) | null;
-  /** Cancel action label (regular weight). */
-  splitCancelText: ((t: ColorTokens) => TextStyle) | null;
-  /** Confirm action label (weight 600); `destructive` swaps to the red. */
-  splitConfirmText: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
+  // --- "capsule" layout (iOS): two side-by-side pill buttons, no divider --------
+  /** The action row that holds the two equal-width capsules with a gap. */
+  capsuleRow: ViewStyle | null;
+  /** A single capsule cell base (shape/sizing); fill comes from the *Fill helpers. */
+  capsuleCell: ViewStyle | null;
+  /** The Cancel (gray) capsule fill. */
+  cancelFill: ((t: ColorTokens) => ViewStyle) | null;
+  /** The Confirm capsule fill; `destructive` swaps `primary` for `destructive`. */
+  confirmFill: ((t: ColorTokens, destructive: boolean) => ViewStyle) | null;
+  /** The Cancel capsule label (regular weight, on-secondary color). */
+  cancelLabelStyle: ((t: ColorTokens) => TextStyle) | null;
+  /** The Confirm capsule label (weight 600, on-fill foreground). */
+  confirmLabelStyle: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
   /** iOS/web dim on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
-  /** Android ripple over the split cells; null on iOS/web. */
+  /** Android ripple over the action cells; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
@@ -125,22 +127,27 @@ export const webSkin: AlertDialogSkin = {
   actions: { flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 },
   buttonSmall: true,
   cancelButton: { outline: true },
-  splitRow: null,
-  splitCell: null,
-  splitDivider: null,
-  splitCancelText: null,
-  splitConfirmText: null,
+  capsuleRow: null,
+  capsuleCell: null,
+  cancelFill: null,
+  confirmFill: null,
+  cancelLabelStyle: null,
+  confirmLabelStyle: null,
   pressedOpacity: null,
   ripple: null,
 };
 
-// ---------- iOS (HIG UIAlertController): compact centered card, split actions ----------
-// Apple's alert: a compact centered card (~14pt radius) over `popover` with a soft
-// shadow and a NARROW max-width (~270pt is the system width); a CENTERED 17pt/600
-// title and a centered 13pt `muted-foreground` message. Exactly two actions sit in
-// a HORIZONTAL row flush to the card edges, split by a hairline `border` divider —
-// Cancel on the left (regular weight), Confirm on the right (weight 600); a
-// destructive confirm uses the `destructive` red. Press = opacity dim (~0.8).
+// ---------- iOS 27 (Liquid Glass alert): rounded card, left text, capsule actions ----------
+// iOS 26+/27 alert (per Apple's design kit): a rounded card (~28pt radius) over the
+// `popover` fill with a soft shadow and NO border; a LEFT-aligned bold title and a
+// LEFT-aligned `muted-foreground` message. The two actions are CAPSULES side by
+// side (no hairline divider): a gray Cancel capsule (`secondary` fill,
+// `secondary-foreground` text) and a filled Confirm capsule (`primary`, or
+// `destructive` when destructive) with white/`*-foreground` label. The brand
+// survives: the iOS system blue becomes the indigo `primary` token. Press = opacity
+// dim (~0.85).
+const IOS_RADIUS = 28;
+const IOS_CAPSULE_RADIUS = 999;
 export const iosSkin: AlertDialogSkin = {
   backdrop: {
     alignItems: "center",
@@ -149,52 +156,53 @@ export const iosSkin: AlertDialogSkin = {
     backgroundColor: alpha("#000000", 0.4),
     padding: 32,
   },
-  // No border on iOS; the actions reach the card edges so padding lives on the
-  // content block, not the card itself (the split row is full-bleed).
+  // Rounded card with content padding; no border, soft shadow.
   card: (t) => ({
-    borderRadius: 14,
+    borderRadius: IOS_RADIUS,
     backgroundColor: t.popover,
-    overflow: "hidden",
-    paddingTop: 20,
+    padding: 24,
     ...shadow("lg"),
   }),
   title: (t) => ({
-    paddingHorizontal: 16,
-    fontSize: 17,
-    lineHeight: 22,
-    fontWeight: "600",
-    textAlign: "center",
+    fontSize: 20,
+    lineHeight: 25,
+    fontWeight: "700",
     color: t["popover-foreground"],
   }),
   description: (t) => ({
-    marginTop: 4,
-    paddingHorizontal: 16,
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: "center",
+    marginTop: 8,
+    fontSize: 16,
+    lineHeight: 21,
     color: t["muted-foreground"],
   }),
-  inputBlock: { marginTop: 16, paddingHorizontal: 16 },
-  inputLabel: (t) => ({ marginBottom: 6, fontSize: 13, lineHeight: 18, fontWeight: "600", textAlign: "center", color: t.foreground }),
-  actionLayout: "split",
-  // Unused in the split layout, but the contract requires concrete values.
+  inputBlock: { marginTop: 16 },
+  inputLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 18, fontWeight: "600", color: t.foreground }),
+  actionLayout: "capsule",
+  // Unused in the capsule layout, but the contract requires concrete values.
   actions: { flexDirection: "row" },
   buttonSmall: true,
   cancelButton: {},
-  // The action row sits flush against the card edges (full-bleed), separated from
-  // the content above by a hairline top border and split down the middle.
-  splitRow: { flexDirection: "row", marginTop: 20, borderTopWidth: 1 },
-  splitCell: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 11, minHeight: 44 },
-  splitDivider: (t) => ({ width: 1, backgroundColor: t.border }),
-  // The hairline top border color is set inline by the shell from this same token.
-  splitCancelText: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "400", color: t.primary }),
-  splitConfirmText: (t, destructive) => ({
+  // Two equal-width capsules side by side, separated by a gap (no divider).
+  capsuleRow: { flexDirection: "row", gap: 12, marginTop: 24 },
+  capsuleCell: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    minHeight: 50,
+    borderRadius: IOS_CAPSULE_RADIUS,
+  },
+  cancelFill: (t) => ({ backgroundColor: t.secondary }),
+  confirmFill: (t, destructive) => ({ backgroundColor: destructive ? t.destructive : t.primary }),
+  cancelLabelStyle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", color: t["secondary-foreground"] }),
+  confirmLabelStyle: (t, destructive) => ({
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: "600",
-    color: destructive ? t.destructive : t.primary,
+    fontWeight: "700",
+    color: destructive ? t["destructive-foreground"] : t["primary-foreground"],
   }),
-  pressedOpacity: 0.8,
+  pressedOpacity: 0.85,
   ripple: null,
 };
 
@@ -229,11 +237,12 @@ export const androidSkin: AlertDialogSkin = {
   buttonSmall: true,
   // M3 dialog actions are text (ghost) buttons, not outlined.
   cancelButton: { ghost: true },
-  splitRow: null,
-  splitCell: null,
-  splitDivider: null,
-  splitCancelText: null,
-  splitConfirmText: null,
+  capsuleRow: null,
+  capsuleCell: null,
+  cancelFill: null,
+  confirmFill: null,
+  cancelLabelStyle: null,
+  confirmLabelStyle: null,
   pressedOpacity: null,
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };

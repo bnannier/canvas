@@ -1,4 +1,4 @@
-import { type ViewStyle, type TextStyle } from "react-native";
+import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow } from "../../style/index.js";
 
 // Co-located Combobox skins, one per platform. A Combobox is a searchable
@@ -7,10 +7,10 @@ import { type ColorTokens, shadow } from "../../style/index.js";
 // focus accent is the `ring`, never a platform default) and only the native
 // SHAPE, sizing, fill, border/underline treatment, popover elevation, and press
 // feedback change per OS. The treatment mirrors Input/Select:
-//   iOS (HIG): a rounded filled field (~10 radius) over the light gray
-//     `secondary` fill, NO visible border at rest, a thin brand `ring` border on
-//     open; the trailing chevron is `muted-foreground`; the open list is a
-//     rounded `popover` card (~12 radius) with a soft shadow and ~8px gutter
+//   iOS 27 (iOS 26+/Liquid Glass): a plain field, transparent, no capsule, just
+//     a bottom hairline (`border` at rest -> brand `primary` when open); the
+//     trailing chevron is `muted-foreground`; the open list is a large
+//     continuous-corner `popover` card (~27 radius) with a soft shadow and roomy
 //     rows. Press = opacity dim (~0.8).
 //   Android (Material 3 filled): a subtle `muted` fill, TOP corners ~4 radius and
 //     a flat bottom, a bottom active-indicator underline (1dp `border` at rest ->
@@ -129,27 +129,31 @@ export const webSkin: ComboboxSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG): rounded filled field, gray fill, brand ring on open, rounded popover card ----------
-// The iOS combo box reads like the iOS Input: a continuous-corner rounded rect
-// (~10pt) over the light gray `secondary` fill with no visible border at rest;
-// opening the list lights a thin brand `ring`. The open list is a grouped,
-// rounded `popover` card (~12 radius) floating on a soft shadow, with roomier
-// rows. Press dims the surface (~0.8); no ripple.
-const IOS_FIELD_RADIUS = 10;
+// ---------- iOS 27 (iOS 26+/Liquid Glass): plain hairline field, large-radius glass menu ----------
+// The iOS 27 combo box reads like the new iOS text field: NO filled capsule and
+// no box, just the value text on a transparent surface above a thin bottom
+// hairline (`border` at rest, the brand indigo `primary` when the list is open,
+// echoing the field's blue caret in the reference). The open list is the iOS 26+
+// menu surface: a large continuous-corner `popover` card (~27 radius, up from the
+// old ~12) floating on a soft shadow, with roomy rows. Press dims the surface
+// (~0.8); no ripple. The brand survives: the open hairline, the leading check,
+// and the focus accent are all the indigo `primary`, never iOS system blue.
+const IOS_MENU_RADIUS = 27;
 const IOS_FIELD_BOX: Record<Size, number> = { small: 36, default: 44, large: 50 };
 export const iosSkin: ComboboxSkin = {
   text: webText,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...TEXT_SIZE[size] }),
+  // Plain field: transparent, square (no capsule), bottom hairline only. The
+  // hairline thickens and tints to the brand `primary` when the list is open.
   field: (t, size, open) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: IOS_FIELD_RADIUS,
-    // No visible border at rest; opening lights a thin brand ring.
-    borderWidth: open ? 1.5 : 0,
-    borderColor: open ? t.ring : "transparent",
-    backgroundColor: t.secondary,
-    paddingHorizontal: 14,
+    borderRadius: 0,
+    backgroundColor: "transparent",
+    borderBottomWidth: open ? 1.5 : StyleSheet.hairlineWidth,
+    borderBottomColor: open ? t.primary : t.border,
+    paddingHorizontal: 0,
     height: IOS_FIELD_BOX[size],
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
@@ -162,19 +166,19 @@ export const iosSkin: ComboboxSkin = {
     zIndex: 50,
     marginTop: 6,
     maxHeight: 260,
-    borderRadius: 12,
+    borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
     padding: 6,
     ...shadow("lg"),
   }),
-  emptyRow: { paddingHorizontal: 12, paddingVertical: 10 },
+  emptyRow: { paddingHorizontal: 14, paddingVertical: 10 },
   emptyText: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: 18,
+    paddingHorizontal: 14,
     paddingVertical: 10,
   },
   rowAccent: (t) => ({ backgroundColor: t.accent }),

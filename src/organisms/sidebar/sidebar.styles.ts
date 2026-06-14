@@ -10,8 +10,9 @@ import { type SidebarSkin } from "./sidebar.shared.js";
 // BRAND survives on every platform (the indigo `primary`/`accent` tokens, never a
 // platform default), so each follows light/dark and the glass surface.
 //
-//   iOS (HIG sidebar): grouped rows; the SELECTED row is a rounded-RECT highlight
-//     (radius 8) filled with `accent`, label + icon in `accent-foreground`;
+//   iOS 27 (Liquid Glass) sidebar: grouped rows; the SELECTED row is a CAPSULE
+//     highlight (radius 9999) filled with the light-gray `accent`, label in
+//     `accent-foreground`, while the leading icon stays TINTED in `primary`;
 //     section headers ~13pt 600 muted; ~36pt rows; press = opacity dim (0.8).
 //   Android (M3 navigation drawer): each nav item is a fully-rounded PILL (radius
 //     9999); the ACTIVE item is a tonal `alpha(primary, 0.12)` pill with the icon
@@ -106,9 +107,10 @@ export const webSkin: SidebarSkin = {
 };
 
 // =============================================================================
-// iOS (HIG sidebar): grouped rows; the selected row is a rounded-RECT highlight
-// (radius 8) filled `accent`, label + icon in `accent-foreground`. ~36pt rows,
-// ~13pt 600 section headers, press = opacity dim.
+// iOS 27 (Liquid Glass) sidebar: grouped rows; the selected row is a CAPSULE
+// highlight (radius 9999) filled with the light-gray `accent`, label in
+// `accent-foreground`, with the leading icon staying TINTED in `primary`. ~36pt
+// rows, ~13pt 600 section headers, press = opacity dim.
 // =============================================================================
 
 export const iosSkin: SidebarSkin = {
@@ -143,19 +145,19 @@ export const iosSkin: SidebarSkin = {
     };
   },
 
-  // ~36pt row, rounded-rect (radius 8).
+  // ~36pt row, fully-rounded CAPSULE (radius 9999) to match the iOS 27 highlight.
   row(_tokens, density) {
     return {
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
-      borderRadius: 8,
+      borderRadius: 9999,
       paddingHorizontal: 12,
       paddingVertical: density === "compact" ? 6 : 8,
     };
   },
 
-  // The selected row is a rounded-rect highlight filled with `accent`.
+  // The selected row is a capsule highlight filled with the light-gray `accent`.
   rowFill(tokens, active) {
     return active ? { backgroundColor: tokens.accent } : null;
   },
@@ -173,10 +175,10 @@ export const iosSkin: SidebarSkin = {
     };
   },
 
-  // Icon glyph: `accent-foreground` on the active highlight, brand `primary` when
-  // inactive (HIG sidebar glyphs carry the tint color).
-  icon(tokens, active) {
-    return { fontSize: 17, lineHeight: 22, color: active ? tokens["accent-foreground"] : tokens.primary };
+  // Icon glyph: always the brand `primary` tint, active or not. iOS 27 keeps the
+  // leading glyph tinted even on the selected capsule (HIG glyphs carry the tint).
+  icon(tokens, _active) {
+    return { fontSize: 17, lineHeight: 22, color: tokens.primary };
   },
 };
 

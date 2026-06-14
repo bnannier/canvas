@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import * as s from "./overlays.styles.js";
 import { type Placement, type OverlaySkin } from "./overlays.styles.js";
 
@@ -76,6 +77,20 @@ export function createOverlay(skin: OverlaySkin) {
     // when the platform skin draws one (iOS/Android, not the web).
     const showHandle = placement === "sheet" && skin.handle != null;
 
+    // The iOS 27 sheet header toolbar (leading circular close, centered title,
+    // trailing circular action) renders on the `sheet` placement only, and only
+    // when the platform skin supplies the header pieces (iOS, not web/Android).
+    // Web/Android leave `sheetHeader` undefined and keep the title/description/
+    // footer stack below unchanged.
+    const showSheetHeader =
+      placement === "sheet" && skin.sheetHeader != null && skin.headerButton != null;
+
+    const close = () => setOpen(false);
+    const done = () => {
+      onDone?.();
+      setOpen(false);
+    };
+
     // Optional trigger button plus the overlay. The overlay is a contained dim
     // backdrop: a rounded, clipped scrim with explicit presence in the preview
     // (minHeight) so the surface reads as an overlay within the area.
@@ -103,20 +118,54 @@ export function createOverlay(skin: OverlaySkin) {
                   <View style={skin.handle!(tokens)} />
                 </View>
               ) : null}
-              {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
-              {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
-              <View style={skin.footer}>
-                <Button
-                  primary
-                  small
-                  onPress={() => {
-                    onDone?.();
-                    setOpen(false);
-                  }}
-                >
-                  {doneLabel}
-                </Button>
-              </View>
+              {showSheetHeader ? (
+                // iOS 27 sheet header toolbar: leading circular close (X), centered
+                // title, trailing circular accent action. The title centers in the
+                // row; the side controls are equal-width slots so it stays centered.
+                <View style={skin.sheetHeader}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Close"
+                    onPress={close}
+                    style={({ pressed }) => [
+                      skin.headerButton!(tokens),
+                      pressed ? { opacity: 0.8 } : null,
+                    ]}
+                  >
+                    <Icon x muted size={20} />
+                  </Pressable>
+                  <View style={s.sheetHeaderTitleWrap}>
+                    {title != null ? (
+                      <Text numberOfLines={1} style={(skin.headerTitle ?? skin.title)(tokens)}>
+                        {title}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={doneLabel}
+                    onPress={done}
+                    style={({ pressed }) => [
+                      (skin.headerButtonAccent ?? skin.headerButton)!(tokens),
+                      pressed ? { opacity: 0.8 } : null,
+                    ]}
+                  >
+                    <Icon upload primaryForeground size={20} />
+                  </Pressable>
+                </View>
+              ) : (
+                <>
+                  {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
+                  {description != null ? (
+                    <Text style={skin.description(tokens)}>{description}</Text>
+                  ) : null}
+                  <View style={skin.footer}>
+                    <Button primary small onPress={done}>
+                      {doneLabel}
+                    </Button>
+                  </View>
+                </>
+              )}
             </View>
           </View>
         ) : null}

@@ -125,13 +125,16 @@ export const webSkin: RowMenuSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG context menu): rounded popover, leading icons, hairlines ----------
-// Apple's context menu: a floating rounded card (~13pt) over `popover` with a soft
-// shadow and NO border; rows are ~44pt tall with comfortable horizontal padding
-// and a LEADING glyph; groups are split by full-bleed hairline separators; a
-// destructive row is red; the pressed row tints with the `secondary` system fill
-// (not a ripple). The ⋯ trigger dims to ~0.8 opacity on press.
-const IOS_RADIUS = 13;
+// ---------- iOS 27 (Liquid Glass context menu): big-radius popover, leading icons, hairlines ----------
+// Apple's iOS 26+/iOS 27 context menu: a floating, deeply rounded card (~28pt
+// continuous corner, up from the old ~13pt) over `popover` with a soft shadow and
+// NO border; rows are ~44pt tall with comfortable horizontal padding and a LEADING
+// glyph; groups are split by full-bleed hairline separators; a destructive row is
+// red; the pressed row tints with the `secondary` system fill (not a ripple). The
+// ⋯ trigger dims to ~0.8 opacity on press. The larger radius is what reads as the
+// modern Liquid Glass menu; the rest of the structure (leading icons, hairlines,
+// destructive red, section titles) is unchanged from the HIG layout.
+const IOS_RADIUS = 28;
 export const iosSkin: RowMenuSkin = {
   anchor: { position: "relative", alignSelf: "flex-start" },
   trigger: {
@@ -145,20 +148,23 @@ export const iosSkin: RowMenuSkin = {
   // iOS dims the whole trigger on press (pressedOpacity); no fill tint.
   triggerPressed: () => ({}),
   menuCard: (t) => ({
-    minWidth: 220,
+    minWidth: 250,
     borderRadius: IOS_RADIUS,
     backgroundColor: t.popover,
-    paddingVertical: 4,
+    // The deep corner clips the first/last row fills cleanly; vertical inset keeps
+    // the top/bottom rows clear of the rounded corners.
+    paddingVertical: 6,
+    overflow: "hidden",
     ...shadow("lg"),
     position: "absolute",
     top: "100%",
     left: 0,
     zIndex: 50,
-    marginTop: 6,
+    marginTop: 8,
   }),
   menuLabel: (t) => ({
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 10,
     paddingBottom: 6,
     fontSize: 13,
     lineHeight: 18,

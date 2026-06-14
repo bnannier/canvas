@@ -102,13 +102,16 @@ export function createSelect(skin: SelectSkin) {
 
         {open ? (
           <View style={skin.panel(tokens)}>
-            {options.map((option) => {
+            {options.map((option, i) => {
               const selected = option === value;
               return (
                 <Pressable
                   key={option}
                   style={({ pressed }) => [
                     skin.optionRow(tokens, selected),
+                    // iOS draws a hairline group separator between rows (not above the
+                    // first); a skin that omits rowSeparator keeps every row borderless.
+                    i > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
                     // Web/iOS tint the row on press here; Android uses the ripple instead.
                     skin.ripple == null && pressed ? skin.optionPressed(tokens) : null,
                   ]}
