@@ -14,7 +14,14 @@ import { createRequire } from "node:module";
 const requireFrom = createRequire(resolve(__dirname, "package.json"));
 const reactNativeWeb = dirname(requireFrom.resolve("react-native-web/package.json"));
 
+// Allow overriding the base path at build time for GitHub Pages, where the docs
+// are served from https://olympusoss.github.io/canvas/. The deploy workflow sets
+// VITE_BASE_PATH=/canvas/; local dev keeps the root "/". The router reads the
+// same value via import.meta.env.BASE_URL (see src/app.tsx).
+const base = process.env.VITE_BASE_PATH ?? "/";
+
 export default defineConfig({
+  base,
   plugins: [react(), tailwindcss()],
   define: {
     __DEV__: JSON.stringify(process.env.NODE_ENV !== "production"),

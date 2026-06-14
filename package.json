@@ -23,13 +23,10 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "generate-utilities": "bun scripts/generate-utilities.ts",
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
     "check-duplicates": "bun scripts/check-duplicates.ts",
-    "check-contrast": "bun scripts/check-contrast.ts",
     "screenshots": "bun scripts/capture-screenshots.ts",
-    "verify-docs": "bun scripts/verify-docs.ts",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",

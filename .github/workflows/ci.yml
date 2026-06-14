@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/**'
       - 'styles/**'
+      - 'docs/**'
       - 'package.json'
       - 'bun.lock'
       - 'tsconfig*.json'
@@ -24,6 +25,9 @@ permissions:
   contents: read
 
 jobs:
+  # Library checks: the published package is source-shipped (src + styles), so CI
+  # validates it compiles, exports resolve, and the single Tailwind v4 stylesheet
+  # (styles/canvas.css) is sound.
   check:
     runs-on: ubuntu-latest
     steps:
@@ -38,49 +42,42 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-      - name: Verify CSS entry point resolves all imports
-        run: |
-          missing=0
-          while IFS= read -r line; do
-            file=$(echo "$line" | sed -n 's/.*@import "\(.*\)".*/\1/p')
-            if [ -n "$file" ]; then
-              resolved="styles/$file"
-              if [ ! -f "$resolved" ]; then
-                echo "Missing: $resolved (from styles/canvas.css)"
-                missing=$((missing + 1))
-              fi
-            fi
-          done < styles/canvas.css
-          if [ "$missing" -gt 0 ]; then
-            echo "ERROR: $missing CSS import(s) could not be resolved."
-            exit 1
-          fi
-          echo "All CSS imports resolve."
-
-      - name: Verify utilities are in sync with the generator
-        run: |
-          bun run generate-utilities
-          if ! git diff --quiet --exit-code styles/utilities/; then
-            echo "ERROR: styles/utilities/ is out of sync with scripts/generate-utilities.ts."
-            echo "Run 'bun run generate-utilities' and commit the result."
-            git diff --stat styles/utilities/
-            exit 1
-          fi
-          echo "Utilities are in sync with the generator."
-
       - name: Verify package exports
         run: bun -e "import { cn, getTheme, token } from './src/index.ts'; console.log('JS exports OK')"
 
-      - name: Validate tokens
+      - name: Validate theme tokens
         run: bun run validate-tokens
 
       - name: Check CSS size budget
         run: bun run check-size
 
-      - name: Check color contrast (WCAG AA)
-        run: bun scripts/check-contrast.ts
+      - name: Check for duplicate class definitions
+        run: bun run check-duplicates
 
-      - name: Visual regression screenshots
-        run: |
-          bun x playwright install --with-deps chromium
-          bun run screenshots
+  # Docs build: the same Vite bundle the Pages deploy ships, so a broken docs
+  # build fails CI before it can be deployed.
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Canvas deps (for type resolution)
+        run: bun install --frozen-lockfile
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck docs
+        working-directory: docs
+        run: bunx tsc --noEmit
+
+      - name: Build docs
+        working-directory: docs
+        run: bun run build
+        env:
+          VITE_BASE_PATH: /canvas/

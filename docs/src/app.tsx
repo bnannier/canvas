@@ -37,7 +37,12 @@ const router = createBrowserRouter([
       { path: "*", element: <NotFound /> },
     ],
   },
-]);
+], {
+  // On GitHub Pages the app is served under /canvas/; vite sets BASE_URL to the
+  // configured base, so the router resolves routes under the same prefix. Strip
+  // the trailing slash (react-router wants the basename without it); "/" -> "".
+  basename: import.meta.env.BASE_URL.replace(/\/$/, ""),
+});
 
 export function App() {
   return <RouterProvider router={router} />;
