@@ -1,6 +1,15 @@
 import { Fragment, createElement, type ReactNode } from "react";
 import { CodeBlock } from "./code-block";
-import { LiveExample } from "./live-example";
+import { LiveExampleFor } from "./live-example";
+
+// The component playground renders every live fence under all three platforms at
+// once, iOS / Android / Web side by side, so the per-OS skins compare directly
+// without a top-bar platform toggle.
+const PLAYGROUND_PLATFORMS = [
+  { key: "ios", label: "iOS" },
+  { key: "android", label: "Android" },
+  { key: "web", label: "Web" },
+] as const;
 
 // Minimal markdown renderer. The only rich feature is fenced ```lang code blocks,
 // each delegated to <CodeBlock> so Shiki highlighting, dual themes, the copy
@@ -127,22 +136,23 @@ export function Markdown({ source, live }: { source: string; live?: boolean }) {
         // rounded on top, the code is flush and rounded on the bottom (see the
         // .live-example rules in docs.css). position+zIndex raise the stage above the
         // code, so a floating subcomponent (dropdown, popover, combobox, tooltip)
-        // that overflows the stage paints over the code instead of being covered.
+        // that overflows a column paints over the code instead of being covered.
+        // The stage is split into three platform columns; each renders the same
+        // fence at its own skin via <LiveExampleFor>.
         return (
           <div className="live-example" key={i}>
             <div
-              className="section-card live-example-stage"
-              style={{
-                position: "relative",
-                zIndex: 1,
-                padding: "2rem",
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "center",
-                minHeight: 120,
-              }}
+              className="section-card live-example-stage playground-platforms"
+              style={{ position: "relative", zIndex: 1 }}
             >
-              <LiveExample code={b.body} />
+              {PLAYGROUND_PLATFORMS.map((p) => (
+                <div className="playground-platform" key={p.key}>
+                  <div className="playground-platform-label">{p.label}</div>
+                  <div className="playground-platform-body">
+                    <LiveExampleFor code={b.body} platform={p.key} />
+                  </div>
+                </div>
+              ))}
             </div>
             <CodeBlock code={b.body} language={b.lang} />
           </div>

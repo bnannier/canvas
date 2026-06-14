@@ -3,7 +3,6 @@ import * as React from "react";
 import { transform } from "sucrase";
 import { useTheme } from "@olympusoss/canvas";
 import { LIVE_SCOPE, SCOPE_BY_PLATFORM } from "@/live-scope";
-import { useDocsPlatform } from "@/use-docs-scheme";
 
 // Renders a single ```tsx example fence from a component's markdown as a real,
 // live preview. The fence is the canonical source: editing the `.md` re-renders
@@ -87,32 +86,16 @@ class LiveErrorBoundary extends Component<{ children: ReactNode }, { error: stri
 }
 
 // Renders the fence as a bare element (no surrounding chrome) wrapped in the
-// error boundary, so callers can place it inside a stage card (Usage/Variants) or
-// a Do/Don't card without nested borders.
+// error boundary, so callers can place it inside a Do/Don't card without nested
+// borders. Do/Don't examples are about correct usage, not platform looks, so they
+// render the neutral Web look. The component playground renders all three
+// platforms side by side via <LiveExampleFor>.
 export function LiveExample({ code }: { code: string }) {
-  const platform = useDocsPlatform();
-  const { tokens } = useTheme();
-  const compiled = compile(code);
-  if ("error" in compiled) return <ErrorBlock message={compiled.error} />;
-
-  // Inject the live, theme-aware tokens at the `tokens` slot so an example that
-  // reads tokens["muted-foreground"] follows the docs light/dark + glass toggles.
-  const values = SCOPE_VALUES_BY_PLATFORM[platform].slice();
-  if (TOKENS_INDEX >= 0) values[TOKENS_INDEX] = tokens;
-
-  let element: ReactNode;
-  try {
-    element = compiled.factory(React, ...values);
-  } catch (e) {
-    return <ErrorBlock message={e instanceof Error ? e.message : String(e)} />;
-  }
-
-  return <LiveErrorBoundary key={`${platform}:${code}`}>{element}</LiveErrorBoundary>;
+  return <LiveExampleFor code={code} platform="web" />;
 }
 
-// Like LiveExample, but renders the fence at an EXPLICIT platform (not the global
-// docs toggle). Used by the /compare QA view to render the same example under web,
-// iOS, and Android side by side.
+// Renders the fence at an EXPLICIT platform. Used by the component playground and
+// the /compare QA view to render the same example under iOS, Android, and Web.
 export function LiveExampleFor({ code, platform }: { code: string; platform: "web" | "ios" | "android" }) {
   const { tokens } = useTheme();
   const compiled = compile(code);

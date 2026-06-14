@@ -404,6 +404,59 @@
   border-top-right-radius: 0;
 }
 
+/* ── Playground: iOS / Android / Web side by side ───── */
+
+/* The stage holds three platform cells. Stacked on narrow viewports, three
+   columns from 900px up. Cells keep overflow visible so a floating subcomponent
+   (dropdown, popover, tooltip) paints over the code below instead of clipping. */
+.playground-platforms {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .playground-platforms {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.playground-platform {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Dividers between cells: horizontal when stacked, vertical when in columns. */
+.playground-platform + .playground-platform {
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 900px) {
+  .playground-platform + .playground-platform {
+    border-top: none;
+    border-left: 1px solid var(--border);
+  }
+}
+
+.playground-platform-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  padding: 0.5rem 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.playground-platform-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.75rem 1rem;
+  min-height: 120px;
+}
+
 /* ── Example inner: force wrap on all flex children ─── */
 
 .example-inner {
