@@ -1,8 +1,27 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, join } from "node:path";
 import { createRequire } from "node:module";
+import { copyFileSync } from "node:fs";
+
+// GitHub Pages has no SPA rewrite: a hard navigation or refresh on a client
+// route (e.g. /canvas/components/button) 404s unless a 404.html serves the app.
+// Emit 404.html as a copy of the built index.html so Pages falls back to it and
+// the router resolves the path client-side. Build-only (closeBundle).
+function spa404Fallback(): Plugin {
+  return {
+    name: "spa-404-fallback",
+    closeBundle() {
+      const dist = resolve(__dirname, "dist");
+      try {
+        copyFileSync(join(dist, "index.html"), join(dist, "404.html"));
+      } catch {
+        /* dev builds have no dist; ignore */
+      }
+    },
+  };
+}
 
 // The docs render real Canvas components through React Native Web: react-native
 // is aliased to react-native-web, and @olympusoss/canvas points at the package
@@ -22,7 +41,7 @@ const base = process.env.VITE_BASE_PATH ?? "/";
 
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), spa404Fallback()],
   define: {
     __DEV__: JSON.stringify(process.env.NODE_ENV !== "production"),
     global: "globalThis",
