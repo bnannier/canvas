@@ -919,11 +919,14 @@
 /* Rotating rainbow glow ring: a blurred conic rainbow disc behind the opaque
    core. The core covers its center, so the color shows only as a halo around the
    logo and sweeps around as the disc spins. Uses the mark's own six hues. */
-/* Layer 1: the soft outer glow behind the core (reads as a glow on dark). */
+/* A rotating rainbow flare: a conic rainbow that blooms from behind the logo and
+   fades out radially toward the edges (radial alpha mask: opaque near the center,
+   transparent at the rim), so it reads as a flare from the center rather than a
+   hard ring. Spins for the rotating effect; gently breathes for life. */
 .hero-orbit-core::before {
   content: "";
   position: absolute;
-  inset: -15px;
+  inset: -46px;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
@@ -935,35 +938,12 @@
     #b24dff,
     #27cdf2
   );
-  filter: blur(15px) saturate(1.2);
-  opacity: 0.8;
+  -webkit-mask: radial-gradient(closest-side, #000 0 46%, transparent 98%);
+  mask: radial-gradient(closest-side, #000 0 46%, transparent 98%);
+  filter: blur(8px) saturate(1.25);
+  opacity: 0.95;
   z-index: -1;
   animation: heroSpin 6s linear infinite, heroGlowPulse 3.2s ease-in-out infinite;
-}
-/* Layer 2: a crisp rainbow ring drawn AS the core's border via the conic
-   gradient-border trick (a masked annulus), so it stays a solid, saturated ring
-   on any background. Spins in sync with the glow so the two read as one. */
-.hero-orbit-core::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  padding: 4px;
-  background: conic-gradient(
-    from 0deg,
-    #27cdf2,
-    #46e082,
-    #ffb43d,
-    #ff6a4d,
-    #ff2d6e,
-    #b24dff,
-    #27cdf2
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  animation: heroSpin 6s linear infinite;
 }
 
 .orbit-badge {
@@ -1035,8 +1015,7 @@
     animation: none;
     transform: rotate(calc(var(--i) * 60deg)) translateX(var(--r)) rotate(calc(var(--i) * -60deg));
   }
-  .hero-orbit-core::before,
-  .hero-orbit-core::after { animation: none; }
+  .hero-orbit-core::before { animation: none; }
 }
 
 /* ── Sections ────────────────────────────────────────── */
