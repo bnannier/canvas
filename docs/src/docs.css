@@ -956,7 +956,7 @@
 .orbit-badge-react { --c: #149eca; }
 .orbit-badge-ts { --c: #3178c6; }
 .orbit-badge-android { --c: #3ddc84; }
-.orbit-badge-web { --c: var(--primary); }
+.orbit-badge-web { --c: #e34f26; }
 .orbit-badge-tailwind { --c: #38bdf8; }
 
 @keyframes heroOrbit {
