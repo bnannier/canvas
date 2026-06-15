@@ -911,20 +911,18 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  /* The solid disc the logo sits on: layered behind the logo and above the glow
-     (glow ::before z-index:-1 < this background < the logo content). */
-  background: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: 0 18px 40px -20px color-mix(in oklch, var(--foreground) 35%, transparent);
-  /* Establish a stacking context so the z-index:-1 glow paints in front of the
-     page background (behind the disc) instead of being hidden behind it. Without
-     this the glow renders below the opaque page bg and is invisible. */
+  background: transparent;
+  /* Establish a stacking context so the pseudo-layers stack in this order, all in
+     front of the page background and below the logo content:
+     glow (::before, z-index:-2) < white disc (::after, z-index:-1) < logo.
+     The disc can't be the core's own background: a stacking context paints its
+     root background FIRST (below negative-z children), so the glow would cover it. */
   isolation: isolate;
 }
-/* Rotating rainbow glow: a conic rainbow that blooms out from behind the solid
-   disc and fades to nothing at the rim. The disc covers its center, so the color
-   shows only as a halo around the disc and sweeps as it spins. Deeper, saturated
-   hues so it reads on light too. */
+/* Rotating rainbow glow (BOTTOM layer): a conic rainbow that blooms out from
+   behind the white disc and fades to nothing at the rim. The disc covers its
+   center, so the color shows only as a halo around the disc and sweeps as it
+   spins. Deeper, saturated hues so it reads on light too. */
 .hero-orbit-core::before {
   content: "";
   position: absolute;
@@ -944,8 +942,21 @@
   mask: radial-gradient(closest-side, #000 0 54%, transparent 92%);
   filter: blur(9px) saturate(1.25);
   opacity: 1;
-  z-index: -1;
+  z-index: -2;
   animation: heroSpin 6s linear infinite, heroGlowPulse 3.4s ease-in-out infinite;
+}
+/* The solid white disc (MIDDLE layer): the card-colored circle the logo sits on,
+   between the glow and the logo, so it shows as a clean disc with the glow
+   blooming from its edge. */
+.hero-orbit-core::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 40px -20px color-mix(in oklch, var(--foreground) 35%, transparent);
+  z-index: -1;
 }
 
 .orbit-badge {
