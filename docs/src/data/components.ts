@@ -1,6 +1,46 @@
 import type { ComponentDoc } from "./types";
 
 export const COMPONENTS: ComponentDoc[] = [
+  // Primitives: the raw React Native building blocks Canvas re-exports
+  // (@olympusoss/canvas). Styled with plain RN style objects, identical on every
+  // platform. The foundation every higher-level component is built from.
+  {
+    slug: "view",
+    name: "View",
+    description: "The layout primitive: a flex container that runs identically on iOS, Android, and the web. Set layout with a React Native style object (flexDirection, gap, alignItems, padding).",
+    category: "Atoms",
+  },
+  {
+    slug: "text",
+    name: "Text",
+    description: "Renders text. In React Native every string must live inside a Text element; style it with fontSize, fontWeight, and color, and truncate with numberOfLines.",
+    category: "Atoms",
+  },
+  {
+    slug: "pressable",
+    name: "Pressable",
+    description: "The touchable primitive: wraps content, fires onPress, and exposes the press state to its style for feedback.",
+    category: "Atoms",
+  },
+  {
+    slug: "image",
+    name: "Image",
+    description: "Displays a local or remote image with a source and resizeMode (cover, contain, stretch, center).",
+    category: "Atoms",
+  },
+  {
+    slug: "text-input",
+    name: "Text Input",
+    description: "Single-line or multiline text entry, controlled with value and onChangeText.",
+    category: "Atoms",
+  },
+  {
+    slug: "scroll-view",
+    name: "Scroll View",
+    description: "A scrollable container for content larger than its bounds; vertical by default, horizontal optional.",
+    category: "Atoms",
+  },
+
   {
     slug: "avatar",
     name: "Avatars",

@@ -15,6 +15,7 @@ import {
   Type, ChevronLeft, X, Gauge, Smartphone, LayoutGrid, Code,
   Group, ListChecks, MessageSquareWarning,
   BookOpen, Plug, Moon, Globe, GitCompare,
+  Box, Pointer, Image as ImageIcon, MoveVertical,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -64,6 +65,13 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Atoms",
     icon: MousePointerClick,
     items: [
+      // Primitives: the raw RN building blocks Canvas re-exports.
+      { slug: "view", label: "View", to: "/components/view", icon: Box },
+      { slug: "text", label: "Text", to: "/components/text", icon: Type },
+      { slug: "pressable", label: "Pressable", to: "/components/pressable", icon: Pointer },
+      { slug: "image", label: "Image", to: "/components/image", icon: ImageIcon },
+      { slug: "text-input", label: "Text Input", to: "/components/text-input", icon: TextCursorInput },
+      { slug: "scroll-view", label: "Scroll View", to: "/components/scroll-view", icon: MoveVertical },
       { slug: "avatar", label: "Avatars", to: "/components/avatar", icon: User },
       { slug: "badge", label: "Badges", to: "/components/badge", icon: Award },
       { slug: "breadcrumb", label: "Breadcrumbs", to: "/components/breadcrumb", icon: ChevronRight },
