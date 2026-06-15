@@ -78,20 +78,27 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
 };
 
 /**
- * Glass-surface token overrides per scheme. When the ThemeProvider's surface is
- * "glass", these are merged over the scheme's tokens so every surface fill
- * (card, popover) becomes translucent, and so every component that paints one
- * reads as glass without a per-component prop. Only the fills change; the
- * foreground and border tokens are untouched. Values are rgba so they compose
- * over whatever sits behind the surface, on native and on react-native-web.
+ * Glass-surface token overrides per scheme. Glass follows Apple's Liquid Glass
+ * model: it is a material for the FUNCTIONAL layer — controls, navigation, and
+ * overlays that float above content — and is deliberately NOT applied to the
+ * content layer (Apple: "don't use Liquid Glass in the content layer"). So only
+ * the `popover` fill (the overlay/menu/sheet/dialog material) goes translucent;
+ * `card` (the content-surface fill) stays solid, so content cards, lists, tables,
+ * calendars, and charts read as opaque content. Bars and sidebars join this same
+ * functional layer at the shell level (they paint `popover` in glass mode).
+ *
+ * This is Canvas's own cross-platform glassmorphism surface mode. Real iOS Liquid
+ * Glass is the OS's automatic, system-rendered material (standard bars/sheets/
+ * popovers adopt it on rebuild with the latest SDK); Canvas does not hand-paint
+ * or replicate that per component. Only the fill changes here; foreground and
+ * border tokens are untouched. Values are rgba so they compose over whatever sits
+ * behind the surface, on native and on react-native-web.
  */
 export const glassByScheme: Record<ColorScheme, Partial<ColorTokens>> = {
   light: {
-    card: "rgba(255, 255, 255, 0.6)",
     popover: "rgba(255, 255, 255, 0.72)",
   },
   dark: {
-    card: "rgba(24, 24, 27, 0.55)",
     popover: "rgba(30, 30, 34, 0.66)",
   },
 };

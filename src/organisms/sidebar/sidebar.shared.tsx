@@ -107,7 +107,7 @@ export function createSidebar(skin: SidebarSkin) {
     const { sections, items, active, onSelect, style } = props;
     const density = densityOf(props);
     const frame = frameOf(props);
-    const { tokens } = useTheme();
+    const { tokens, surface } = useTheme();
 
     // Normalize to a sections list; a flat `items` array becomes one untitled
     // section. Sections always win when both are supplied.
@@ -124,7 +124,15 @@ export function createSidebar(skin: SidebarSkin) {
     let flat = -1;
 
     return (
-      <View style={[skin.column(tokens, frame), style]}>
+      <View
+        style={[
+          skin.column(tokens, frame),
+          // Sidebar joins the functional glass layer: translucent overlay material
+          // (popover) instead of the solid background in glass mode.
+          surface === "glass" ? { backgroundColor: tokens.popover } : null,
+          style,
+        ]}
+      >
         {groups.map((section, gi) => (
           <View key={gi} style={skin.group}>
             {section.title != null ? (

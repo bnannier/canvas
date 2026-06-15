@@ -252,13 +252,13 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
   {
     slug: "glass",
     name: "Glass Surface",
-    description: "Backdrop-filter glassmorphism applied to all UI surfaces. Controlled via data-surface=\"glass\" on the document root.",
+    description: "Backdrop-filter glassmorphism on the functional layer (controls, navigation, overlays) — not content cards. Controlled via data-surface=\"glass\" on the document root.",
     sections: [
       {
         title: "What 'glass' means in Canvas",
-        description: "Glass mode is a single toggle (Surface: solid / glass) that re-skins every chrome surface: sidebar, topbar, cards, tables, popovers, drawers, inputs. The page background switches to a 3-radial-gradient aurora and each surface gets a backdrop-filter blur with a light edge highlight.",
+        description: "Glass follows Apple's Liquid Glass model: it is a material for the FUNCTIONAL layer — navigation and overlays that float above content — not the content layer. The single Surface: solid / glass toggle swaps the popover token translucent, so overlays (popovers, menus, dropdowns, selects, dialogs, sheets, drawers, command) and the bars/sidebar go glass, while content surfaces (cards, lists, tables, calendars, charts) stay solid. The page background switches to a 3-radial-gradient aurora and each functional surface gets a backdrop-filter blur with a light edge highlight.",
         anatomy: "Toggle with the Solid / Glass switch in the topbar (top right), or set the data-surface attribute to glass on the html element manually.",
-        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass. Only token values and a few backdrop-filter overrides switch on, keyed off the document's surface attribute. Any Canvas surface gets the frosted treatment for free.</p></div>`,
+        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Only token values and a few backdrop-filter overrides switch on, keyed off the document's surface attribute. Real iOS Liquid Glass is the OS's automatic system material; this is Canvas's own cross-platform glassmorphism for the functional layer.</p></div>`,
       },
       {
         title: "The four ingredients",

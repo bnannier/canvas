@@ -83,9 +83,12 @@ export function ThemingPage() {
         <section id="glass" className="docs-section" style={{ marginBottom: "2rem" }}>
           <h2 className="h4" style={{ marginBottom: "0.75rem" }}>Glass Surface</h2>
           <p className="body" style={{ marginBottom: "1rem" }}>
-            Glass makes every surface fill translucent, so cards, popovers, sidebars, navbars, inputs, and overlays read as
-            frosted panes. It is a theming-level switch (the ThemeProvider swaps in translucent surface tokens), not a
-            per-component prop: <code className="code">surface="glass"</code> on <code className="code">ThemeProvider</code> on
+            Following Apple&rsquo;s Liquid Glass model, glass is the material for the functional layer &mdash; overlays
+            (popovers, menus, dialogs, sheets) plus navbars and sidebars read as frosted panes, while content surfaces
+            (cards, lists, tables) stay solid (&ldquo;don&rsquo;t use glass in the content layer&rdquo;). It is a
+            theming-level switch (the ThemeProvider swaps the popover surface token translucent), not a per-component prop,
+            and Canvas never hand-paints glass per component &mdash; real iOS Liquid Glass is the OS&rsquo;s automatic system
+            material. Turn it on with <code className="code">surface="glass"</code> on <code className="code">ThemeProvider</code> on
             native, or <code className="code">data-surface="glass"</code> on <code className="code">&lt;html&gt;</code> on the web.
           </p>
           <Markdown source={glassCode} />
@@ -97,9 +100,9 @@ export function ThemingPage() {
 
           <h3 className="h5" style={{ margin: "1rem 0 0.5rem" }}>What changes</h3>
           <ul style={{ paddingLeft: "1.25rem", fontSize: "0.875rem", lineHeight: 1.75 }}>
-            <li>Surface fills (cards, popovers, sidebars, navbars, inputs, overlays) become translucent</li>
+            <li>Functional-layer fills (overlays, navbars, sidebars) become translucent; content cards, lists, and tables stay solid</li>
             <li>Border colors shift to white-alpha edges</li>
-            <li>On the web, the body background becomes a multi-color aurora gradient and surfaces add a frosted blur</li>
+            <li>On the web, the body background becomes a multi-color aurora gradient and the functional surfaces add a frosted blur</li>
           </ul>
 
           <h3 className="h5" style={{ margin: "1.5rem 0 0.5rem" }}>Web helpers</h3>

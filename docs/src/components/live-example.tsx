@@ -96,19 +96,18 @@ export function LiveExample({ code }: { code: string }) {
 
 const collapseSpace = (s: string) => s.replace(/\s+/g, "");
 
-// Glass is a token-level surface mode: it swaps the `card` and `popover` fills to
-// translucent, so a previewed surface goes see-through, but it does NOT carry the
-// frosted-blur + edge that the docs chrome (.section-card, .card, …) gets from
-// CSS classes — the rendered Canvas components are react-native-web nodes with
-// hashed atomic classes, not those semantic ones. This tags the surfaces that
-// actually paint the glass `card`/`popover` fill (matched against the live theme
-// tokens, so it tracks light/dark and any token change) with `data-glass-surface`,
-// which docs-chrome.css frosts to match the chrome. Non-surface previews (buttons,
-// inputs, badges) never match, so they are left untouched.
+// Glass is a functional-layer surface mode: it swaps only the `popover` fill
+// (overlays, menus, sheets, dialogs — plus bars/sidebar, which paint popover in
+// glass) to translucent, leaving content `card` surfaces solid. The previewed
+// Canvas components are react-native-web nodes with hashed atomic classes, not the
+// semantic .card/.section-card the docs chrome frost targets, so this tags the
+// elements that actually paint the glass `popover` fill (matched against the live
+// theme token, so it tracks light/dark) with `data-glass-surface`; docs-chrome.css
+// frosts those. Content cards (solid `card`) never match, so they stay opaque,
+// matching Apple's "don't use glass in the content layer."
 function useTagGlassSurfaces(
   ref: React.RefObject<HTMLElement | null>,
   surface: string,
-  cardFill: string,
   popoverFill: string,
   signal: string,
 ) {
@@ -116,13 +115,13 @@ function useTagGlassSurfaces(
     const root = ref.current;
     if (!root) return;
     const glass = surface === "glass";
-    const fills = new Set([collapseSpace(cardFill), collapseSpace(popoverFill)]);
+    const target = collapseSpace(popoverFill);
     root.querySelectorAll<HTMLElement>("*").forEach((el) => {
-      const isSurface = glass && fills.has(collapseSpace(getComputedStyle(el).backgroundColor));
+      const isSurface = glass && collapseSpace(getComputedStyle(el).backgroundColor) === target;
       if (isSurface) el.setAttribute("data-glass-surface", "");
       else el.removeAttribute("data-glass-surface");
     });
-  }, [ref, surface, cardFill, popoverFill, signal]);
+  }, [ref, surface, popoverFill, signal]);
 }
 
 // Renders the fence at an EXPLICIT platform. Used by the component playground and
@@ -130,10 +129,9 @@ function useTagGlassSurfaces(
 export function LiveExampleFor({ code, platform }: { code: string; platform: "web" | "ios" | "android" }) {
   const { tokens, surface } = useTheme();
   const ref = useRef<HTMLDivElement>(null);
-  // After each render, tag the glass surfaces in this preview so the chrome's
-  // frost reaches them too (see useTagGlassSurfaces). `display: contents` keeps
-  // the wrapper out of layout, so the component still flexes/centers as before.
-  useTagGlassSurfaces(ref, surface, tokens.card, tokens.popover, `${platform}:${code}`);
+  // Tag the functional glass surfaces in this preview so the docs frost reaches
+  // them. `display: contents` keeps the wrapper out of layout.
+  useTagGlassSurfaces(ref, surface, tokens.popover, `${platform}:${code}`);
 
   const compiled = compile(code);
   if ("error" in compiled) return <ErrorBlock message={compiled.error} />;

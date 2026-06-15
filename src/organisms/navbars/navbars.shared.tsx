@@ -88,13 +88,16 @@ function surfaceOf(p: NavbarProps): Surface {
 export function createNavbar(skin: NavbarSkin) {
   return function Navbar(props: NavbarProps) {
     const { brand, links, active = 0, actionLabel, onAction, avatar, onSelect, style } = props;
-    const { tokens } = useTheme();
+    const { tokens, surface: themeSurface } = useTheme();
     const surface = surfaceOf(props);
 
     const container: StyleProp<ViewStyle> = [
       skin.bar(tokens),
       skin.surface(tokens),
       skin.surfaceContainer(tokens, surface),
+      // The bar joins the functional glass layer: in glass mode it paints the
+      // translucent overlay material (popover) instead of the solid background.
+      themeSurface === "glass" ? { backgroundColor: tokens.popover } : null,
       style,
     ];
 
