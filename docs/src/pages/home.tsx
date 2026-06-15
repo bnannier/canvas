@@ -1,14 +1,14 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
 import { Markdown } from "@/components/markdown";
-import { LiveExampleFor } from "@/components/live-example";
 import { COMPONENTS } from "@/data/components";
 import {
   Layers, ChevronRight, Plus, Shield, AppWindow,
-  Home as HomeIcon, Check, ArrowRight,
+  Home as HomeIcon, Check, ArrowRight, Globe,
 } from "lucide-react";
 
-// lucide-react dropped its brand glyphs, so ship the GitHub mark inline.
+// lucide-react dropped its brand glyphs, so ship the marks we need inline.
 function Github({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -17,18 +17,26 @@ function Github({ size = 16 }: { size?: number }) {
   );
 }
 
+// Apple mark (iOS). fill=currentColor so it tracks the theme.
+function AppleLogo({ size = 26 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z" />
+    </svg>
+  );
+}
+
+// Android robot mark. Uses the brand green so it reads at a glance.
+function AndroidLogo({ size = 26 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0729L4.841 5.4207a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396" />
+    </svg>
+  );
+}
+
 const REPO_URL = "https://github.com/OlympusOSS/canvas";
 const VERSION = "v5.0.0";
-
-// The whole styling API, shown before it is explained: a SaveBar rendered live as
-// real Canvas components through the same example path every component page uses.
-const SHOWCASE_CODE = `<View className="w-[320px]">
-  <Card>
-    <Field label="Workspace name" />
-    <Button primary large block>Save changes</Button>
-    <Button ghost small>Cancel</Button>
-  </Card>
-</View>`;
 
 const INSTALL_MD = [
   "```bash",
@@ -46,7 +54,7 @@ const INSTALL_MD = [
   "```",
 ].join("\n");
 
-const PLATFORMS = ["iOS", "Android", "Web", "React Native"];
+const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
 
 const PRINCIPLES = [
   {
@@ -143,9 +151,13 @@ export function Home() {
               One component API.
             </h1>
             <p className="landing-lede">
-              Canvas is a universal React Native UI kit. It runs natively on iOS and Android
-              and on the web through React Native Web, so the same components ship everywhere.
-              Style them with flat, semantic boolean props that read like a sentence.
+              Canvas is a universal React Native UI kit. The same components render natively
+              on iOS and Android and on the web through React Native Web, styled with flat,
+              semantic boolean props that read like a sentence.
+            </p>
+            <p className="landing-prop-proof">
+              <code className="landing-prop-chip">&lt;Button primary large block&gt;</code>
+              <span>the prop name is the value.</span>
             </p>
             <div className="landing-cta-row">
               <Link to="/components/button" className="landing-btn landing-btn-primary landing-btn-lg">
@@ -164,21 +176,27 @@ export function Home() {
             </div>
           </div>
 
+          {/* Canvas at the core, the platforms it targets orbiting around it:
+              the same component API rendered on iOS, Android, and the web. */}
           <div className="landing-hero-showcase">
-            <div className="landing-window">
-              <div className="landing-window-bar">
-                <span className="landing-window-dots">
-                  <i /><i /><i />
-                </span>
-                <span className="landing-window-title">Live preview · web skin</span>
-              </div>
-              <div className="landing-window-body">
-                <LiveExampleFor code={SHOWCASE_CODE} platform="web" />
-              </div>
+            <div className="hero-orbit" aria-hidden>
+              <span className="hero-orbit-ring" />
+              <span className="hero-orbit-core">
+                <CanvasMark size={74} />
+              </span>
+              <span className="orbit-badge orbit-badge-ios" style={{ "--i": 0 } as CSSProperties}>
+                <span className="orbit-badge-inner"><AppleLogo size={26} /></span>
+              </span>
+              <span className="orbit-badge orbit-badge-android" style={{ "--i": 1 } as CSSProperties}>
+                <span className="orbit-badge-inner"><AndroidLogo size={26} /></span>
+              </span>
+              <span className="orbit-badge orbit-badge-web" style={{ "--i": 2 } as CSSProperties}>
+                <span className="orbit-badge-inner"><Globe size={25} strokeWidth={1.75} /></span>
+              </span>
             </div>
             <p className="landing-window-caption">
-              Real Canvas components, rendered live from their markdown example docs.
-              The same props render natively on iOS and Android.
+              Canvas at the core; iOS, Android, and the web as targets. One component API,
+              rendered natively on every platform.
             </p>
           </div>
         </div>
