@@ -44,17 +44,10 @@ export function Shell() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // The landing page (home) is a full-bleed marketing page with its own top nav,
-  // matching olympus.nannier.com; it renders without the docs sidebar/topbar
-  // chrome. Every other route gets the standard docs shell.
-  if (pathname === "/") {
-    return (
-      <>
-        <Outlet />
-        <SearchDialog open={searchOpen} onClose={closeSearch} />
-      </>
-    );
-  }
+  // The home route renders the redesigned landing inside the standard docs shell
+  // (sidebar + topbar) like every other page; it just gets a flush content
+  // container so the landing's full-bleed bands span the main column.
+  const isLanding = pathname === "/";
 
   return (
     <div className="app-shell">
@@ -67,7 +60,7 @@ export function Shell() {
       />
       <div className={`app-main ${sidebarCollapsed ? "collapsed" : "expanded"}`}>
         <Topbar onMenuToggle={() => setSidebarOpen((v) => !v)} onCollapseToggle={toggleCollapse} onSearchOpen={openSearch} />
-        <main className="app-content">
+        <main className={`app-content${isLanding ? " app-content--landing" : ""}`}>
           <Outlet />
         </main>
       </div>

@@ -1,13 +1,11 @@
-import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { CanvasMark } from "@/components/canvas-mark";
 import { Markdown } from "@/components/markdown";
 import { LiveExampleFor } from "@/components/live-example";
 import { COMPONENTS } from "@/data/components";
-import { getTheme, setTheme, type Theme } from "../../../src/theme";
 import {
   Layers, ChevronRight, Plus, Shield, AppWindow,
-  Home as HomeIcon, Check, Sun, Moon, ArrowRight,
+  Home as HomeIcon, Check, ArrowRight,
 } from "lucide-react";
 
 // lucide-react dropped its brand glyphs, so ship the GitHub mark inline.
@@ -127,61 +125,9 @@ const ATOMIC_LEVELS = [
   },
 ];
 
-function ThemeToggle() {
-  const [theme, setThemeState] = useState<Theme>(getTheme);
-  const toggle = useCallback(() => {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    setThemeState(next);
-  }, [theme]);
-  return (
-    <button
-      className="landing-icon-btn"
-      onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      title={theme === "dark" ? "Light mode" : "Dark mode"}
-    >
-      {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
-    </button>
-  );
-}
-
-function LandingNav() {
-  return (
-    <header className="landing-nav">
-      <div className="landing-nav-inner">
-        <Link to="/" className="landing-brand">
-          <CanvasMark size={30} />
-          <span className="landing-brand-text">
-            <span className="landing-brand-name">Canvas</span>
-            <span className="landing-brand-sub">design system</span>
-          </span>
-        </Link>
-
-        <nav className="landing-nav-links">
-          <Link to="/components/button">Components</Link>
-          <Link to="/tokens">Tokens</Link>
-          <Link to="/templates/dashboard">Templates</Link>
-          <Link to="/compare">Compare</Link>
-        </nav>
-
-        <div className="landing-nav-actions">
-          <ThemeToggle />
-          <a className="landing-btn landing-btn-primary landing-btn-sm" href={REPO_URL} target="_blank" rel="noreferrer">
-            <Github size={15} />
-            <span>GitHub</span>
-          </a>
-        </div>
-      </div>
-    </header>
-  );
-}
-
 export function Home() {
   return (
     <div className="landing">
-      <LandingNav />
-
       {/* Hero: split heading + live component window, aurora wash behind. */}
       <section className="landing-hero">
         <div className="landing-aurora" aria-hidden />

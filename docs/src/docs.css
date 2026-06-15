@@ -600,14 +600,21 @@
 }
 
 /* ════════════════════════════════════════════════════════════════════════
-   Marketing landing (home route, full-bleed, own top nav).
+   Marketing landing (home route, inside the docs shell beside the sidebar).
    Modeled on olympus.nannier.com: light surface, tight 600-weight display
    type, split hero with a live-component window, indigo accent, aurora wash.
    Tokens come from styles/canvas.css so it tracks light/dark automatically.
    ════════════════════════════════════════════════════════════════════════ */
 
+/* The home content area drops its padding/max-width so the landing controls its
+   own gutters via .landing-wrap and the full-bleed bands (CTA, footer) span the
+   full main column to the right of the sidebar. */
+.app-content--landing {
+  max-width: none;
+  padding: 0;
+}
+
 .landing {
-  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
 }
@@ -620,27 +627,7 @@
   padding-right: 24px;
 }
 
-/* ── Top nav ─────────────────────────────────────────── */
-
-.landing-nav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
-  background: color-mix(in oklch, var(--background) 80%, transparent);
-  backdrop-filter: saturate(180%) blur(12px);
-}
-
-.landing-nav-inner {
-  width: 100%;
-  max-width: 1140px;
-  margin: 0 auto;
-  height: 64px;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
+/* ── Brand lockup (footer) ───────────────────────────── */
 
 .landing-brand {
   display: inline-flex;
@@ -670,53 +657,6 @@
   color: var(--muted-foreground);
 }
 
-.landing-nav-links {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0 auto;
-}
-
-.landing-nav-links a {
-  padding: 7px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  text-decoration: none;
-  transition: color 140ms, background 140ms;
-}
-
-.landing-nav-links a:hover {
-  color: var(--foreground);
-  background: color-mix(in oklch, var(--muted) 50%, transparent);
-}
-
-.landing-nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.landing-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  transition: color 140ms, background 140ms;
-}
-
-.landing-icon-btn:hover {
-  color: var(--foreground);
-  background: color-mix(in oklch, var(--muted) 55%, transparent);
-}
-
 /* ── Buttons ─────────────────────────────────────────── */
 
 .landing-btn {
@@ -737,7 +677,6 @@
 
 .landing-btn:active { transform: translateY(0.5px); }
 
-.landing-btn-sm { height: 36px; padding: 0 13px; }
 .landing-btn-lg { height: 46px; padding: 0 22px; font-size: 15px; border-radius: 11px; }
 
 /* Primary = solid foreground fill (near-black on light, near-white on dark),
@@ -765,7 +704,7 @@
 .landing-hero {
   position: relative;
   overflow: hidden;
-  padding-top: 64px;
+  padding-top: 28px;
   padding-bottom: 56px;
 }
 
@@ -1225,7 +1164,6 @@
 }
 
 @media (max-width: 760px) {
-  .landing-nav-links { display: none; }
   .landing-level { grid-template-columns: 1fr; }
   .landing-level-index {
     flex-direction: row;
