@@ -936,7 +936,7 @@
   height: 60px;
   margin: -30px;
   animation: heroOrbit 30s linear infinite;
-  animation-delay: calc(var(--i) * -10s);
+  animation-delay: calc(var(--i) * -5s);
 }
 .orbit-badge-inner {
   display: flex;
@@ -953,8 +953,11 @@
     0 1px 2px color-mix(in oklch, var(--foreground) 10%, transparent);
 }
 .orbit-badge-ios { --c: var(--foreground); }
+.orbit-badge-react { --c: #149eca; }
+.orbit-badge-ts { --c: #3178c6; }
 .orbit-badge-android { --c: #3ddc84; }
 .orbit-badge-web { --c: var(--primary); }
+.orbit-badge-tailwind { --c: #38bdf8; }
 
 @keyframes heroOrbit {
   from { transform: rotate(0deg) translateX(var(--r)) rotate(0deg); }
@@ -986,10 +989,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Stop the orbit and pin the three badges statically at 120deg apart, upright. */
+  /* Stop the orbit and pin the six badges statically at 60deg apart, upright. */
   .orbit-badge {
     animation: none;
-    transform: rotate(calc(var(--i) * 120deg)) translateX(var(--r)) rotate(calc(var(--i) * -120deg));
+    transform: rotate(calc(var(--i) * 60deg)) translateX(var(--r)) rotate(calc(var(--i) * -60deg));
   }
   .hero-orbit-core::before { animation: none; }
 }
