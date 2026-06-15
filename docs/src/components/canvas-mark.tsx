@@ -25,14 +25,20 @@ const MARK_MASK = `url("data:image/svg+xml,${encodeURIComponent(
   ).join("")}</svg>`,
 )}")`;
 
+// One conic sweep around the C. The gradient's wrap seam (last stop → first
+// stop) is the only hard edge a conic can have, so we start `from 90deg` to put
+// that seam at 3 o'clock, inside the masked wedge gap. Every VISIBLE transition
+// is then a smooth blend, including blue→green across the top. Stop angles are
+// gap-relative (screen angle − 90°) but place each hue exactly where it sat
+// before: purple 144°, pink 187°, coral 229°, amber 275°, blue 330°, green 29°.
 const MARK_GRADIENT =
-  "conic-gradient(from 0deg," +
-  "#46e082 29deg," + // green (top-right)
-  "#b24dff 144deg," + // purple (lower-right, after the gap)
-  "#ff2d6e 187deg," + // pink (bottom)
-  "#ff6a4d 229deg," + // coral (lower-left)
-  "#ffb43d 275deg," + // amber (left)
-  "#27cdf2 330deg)"; // blue (upper-left), wraps back to green across the top
+  "conic-gradient(from 90deg," +
+  "#b24dff 54deg," + // purple (just below the gap)
+  "#ff2d6e 97deg," + // pink (bottom)
+  "#ff6a4d 139deg," + // coral (lower-left)
+  "#ffb43d 185deg," + // amber (left)
+  "#27cdf2 240deg," + // blue (upper-left)
+  "#46e082 299deg)"; // green (top-right); seam back to purple sits in the gap
 
 export function CanvasMark({ size = 22 }: CanvasMarkProps) {
   return (
