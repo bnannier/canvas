@@ -1,26 +1,38 @@
 import { PageNav } from "@/components/page-nav";
 
 // The Canvas type scale is the Typography component's roles. Each row mirrors a
-// role's Tailwind class set from src/components/typography.tsx (text-5xl down to
-// text-xs), so the preview reflects the real package sizes rather than the docs
-// site's own heading chrome.
+// role on the Typography atom (src/atoms/typography/typography.tsx), whose
+// `roleType` maps display..tiny to absolute, token-backed sizes, so the preview
+// reflects the real package values rather than the docs site's own chrome. Note
+// headings carry a flat -0.4px tracking (RN letterSpacing), not per-size em.
 const SCALE = [
-  { name: "Display", role: "display", spec: "48 / 48 · bold", fontSize: 48, lineHeight: 48, weight: 700, tracking: "-0.025em", use: "Hero titles. One per screen, at most." },
-  { name: "H1", role: "h1", spec: "36 / 40 · bold", fontSize: 36, lineHeight: 40, weight: 700, tracking: "-0.025em", use: "Top-level page titles." },
-  { name: "H2", role: "h2", spec: "30 / 36 · semibold", fontSize: 30, lineHeight: 36, weight: 600, tracking: "-0.02em", use: "Major page sections." },
-  { name: "H3", role: "h3", spec: "24 / 32 · semibold", fontSize: 24, lineHeight: 32, weight: 600, tracking: "-0.02em", use: "Subsections; in-app page titles." },
-  { name: "H4", role: "h4", spec: "20 / 28 · semibold", fontSize: 20, lineHeight: 28, weight: 600, tracking: "-0.015em", use: "Card titles, dialog headings." },
+  { name: "Display", role: "display", spec: "48 / 48 · bold", fontSize: 48, lineHeight: 48, weight: 700, tracking: "-0.4px", use: "Hero titles. One per screen, at most." },
+  { name: "H1", role: "h1", spec: "36 / 40 · bold", fontSize: 36, lineHeight: 40, weight: 700, tracking: "-0.4px", use: "Top-level page titles." },
+  { name: "H2", role: "h2", spec: "30 / 36 · semibold", fontSize: 30, lineHeight: 36, weight: 600, tracking: "-0.4px", use: "Major page sections." },
+  { name: "H3", role: "h3", spec: "24 / 32 · semibold", fontSize: 24, lineHeight: 32, weight: 600, tracking: "-0.4px", use: "Subsections; in-app page titles." },
+  { name: "H4", role: "h4", spec: "20 / 28 · semibold", fontSize: 20, lineHeight: 28, weight: 600, tracking: "-0.4px", use: "Card titles, dialog headings." },
   { name: "H5", role: "h5", spec: "18 / 28 · semibold", fontSize: 18, lineHeight: 28, weight: 600, tracking: "0", use: "Subgroup headers, form section labels." },
-  { name: "Body", role: "body", spec: "14 / 1.6 · regular", fontSize: 14, lineHeight: 22, weight: 400, tracking: "0", use: "Default reading text." },
+  { name: "Body", role: "body", spec: "14 / 28 · regular", fontSize: 14, lineHeight: 28, weight: 400, tracking: "0", use: "Default reading text." },
   { name: "Small", role: "small", spec: "14 / 20 · muted", fontSize: 14, lineHeight: 20, weight: 400, tracking: "0", muted: true, use: "Secondary text, helpers." },
   { name: "Tiny", role: "tiny", spec: "12 / 16 · muted", fontSize: 12, lineHeight: 16, weight: 400, tracking: "0", muted: true, use: "Metadata, timestamps, labels." },
 ];
 
+// Helper roles beyond the size scale, also boolean props on Typography: a muted
+// body, an uppercase caption/eyebrow, and two monospace roles (code carries the
+// muted pill fill; mono is bare). These mirror roleType + roleColor in
+// src/atoms/typography.
+const HELPERS = [
+  { name: "Muted", role: "muted", fontSize: 14, lineHeight: 20, sample: "Sphinx of black quartz, judge my vow.", use: "De-emphasised body text." },
+  { name: "Caption", role: "caption", fontSize: 12, lineHeight: 16, uppercase: true, tracking: "0.4px", sample: "Section label", use: "Eyebrows, uppercase section labels." },
+  { name: "Code", role: "code", fontSize: 14, lineHeight: 20, mono: true, fill: true, sample: "--primary", use: "Inline code, tokens, IDs (muted pill)." },
+  { name: "Mono", role: "mono", fontSize: 14, lineHeight: 20, mono: true, sample: "01HZK7M8N9P0Q1R2", use: "Monospace values, no fill." },
+];
+
 const WEIGHTS = [
-  { w: 400, name: "Regular", use: "Body text" },
+  { w: 400, name: "Regular", use: "Body text (the default role weight)" },
   { w: 500, name: "Medium", use: "Labels, table values, buttons" },
-  { w: 600, name: "Semibold", use: "Headings, card titles" },
-  { w: 700, name: "Bold", use: "Display / hero text only" },
+  { w: 600, name: "Semibold", use: "Headings h2-h5, card titles" },
+  { w: 700, name: "Bold", use: "Display and h1" },
 ];
 
 function Section({ title, description, anatomy, children }: {
@@ -156,7 +168,7 @@ export function TypographyPage() {
       <Section
         title="Type scale"
         description="Each role pairs a size with a line-height. Select one with a boolean prop on Typography (e.g. <Typography h2>), never a raw font-size."
-        anatomy="display and h1 are distinct roles (text-5xl vs text-4xl), not a shared rule; h3 doubles as the in-app page title. Roles are mutually exclusive, first-match precedence."
+        anatomy="display (48/48) and h1 (36/40) are distinct roles, not a shared rule; h3 doubles as the in-app page title. Roles are mutually exclusive, first-match precedence."
       >
         <div style={{
           borderRadius: "var(--radius-xl, 12px)",
@@ -197,6 +209,54 @@ export function TypographyPage() {
             <div key={s.role} style={{ display: "flex", gap: 8 }}>
               <code style={{ color: "var(--foreground)", fontFamily: "var(--font-mono)" }}>{s.role}</code>
               <span>· {s.use}</span>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        title="Helper roles"
+        description="Beyond the size scale, four roles handle muted text, eyebrows, and monospace values. Pick one with a boolean prop on Typography (e.g. <Typography caption>)."
+      >
+        <div style={{
+          borderRadius: "var(--radius-xl, 12px)",
+          border: "1px solid var(--border)",
+          background: "var(--card)",
+          overflow: "hidden",
+        }}>
+          {HELPERS.map((h, i) => (
+            <div key={h.role} style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 24,
+              padding: "16px 20px",
+              borderTop: i ? "1px solid var(--border)" : undefined,
+            }}>
+              <div style={{ width: 140, flexShrink: 0 }}>
+                <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>{h.name}</div>
+                <code style={{ fontSize: "11px", color: "var(--muted-foreground)", fontFamily: "var(--font-mono)" }}>{h.role}</code>
+              </div>
+              <div style={{ flex: 1 }}>
+                <span style={{
+                  fontSize: h.fontSize,
+                  lineHeight: `${h.lineHeight}px`,
+                  fontFamily: h.mono ? "var(--font-mono)" : undefined,
+                  textTransform: h.uppercase ? ("uppercase" as const) : undefined,
+                  letterSpacing: h.tracking,
+                  color: h.role === "muted" || h.role === "caption" ? "var(--muted-foreground)" : "var(--foreground)",
+                  background: h.fill ? "var(--muted)" : undefined,
+                  borderRadius: h.fill ? "var(--radius-sm, 4px)" : undefined,
+                  paddingLeft: h.fill ? 6 : undefined,
+                  paddingRight: h.fill ? 6 : undefined,
+                  paddingTop: h.fill ? 2 : undefined,
+                  paddingBottom: h.fill ? 2 : undefined,
+                }}>
+                  {h.sample}
+                </span>
+              </div>
+              <div style={{ fontSize: "11px", color: "var(--muted-foreground)", textAlign: "right" as const, width: 220 }}>
+                {h.use}
+              </div>
             </div>
           ))}
         </div>
