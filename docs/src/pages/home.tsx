@@ -102,7 +102,7 @@ const PRINCIPLES = [
     body: "Every component is highly responsive by default, authored desktop-first: size for the desktop case, then add the variants that scale it down to tablet and phone. The smallest matching breakpoint wins.",
   },
   {
-    title: "Semantic boolean props",
+    title: "Semantic UI",
     body: "Change a component's style with flat boolean props. Each choice is its own prop, named for its meaning, so the prop name is the value. You write <Button primary large>, never variant=\"primary\". It reads like a sentence.",
   },
   {
