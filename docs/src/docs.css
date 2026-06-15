@@ -923,7 +923,7 @@
 .hero-orbit-core::before {
   content: "";
   position: absolute;
-  inset: -44px;
+  inset: -56px;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
@@ -935,12 +935,14 @@
     #a855f7,
     #06b6d4
   );
-  -webkit-mask: radial-gradient(closest-side, transparent 30%, #000 42%, transparent 97%);
-  mask: radial-gradient(closest-side, transparent 30%, #000 42%, transparent 97%);
-  filter: blur(5px) saturate(1.25);
+  /* Transparent under the logo, then a wide, full-strength rainbow band around
+     it that fades to nothing at the rim, so the glow is unmistakable. */
+  -webkit-mask: radial-gradient(closest-side, transparent 16%, #000 28%, #000 64%, transparent 98%);
+  mask: radial-gradient(closest-side, transparent 16%, #000 28%, #000 64%, transparent 98%);
+  filter: blur(2px) saturate(1.7);
   opacity: 1;
   z-index: -1;
-  animation: heroSpin 6s linear infinite, heroGlowPulse 3.2s ease-in-out infinite;
+  animation: heroSpin 6s linear infinite, heroGlowPulse 3.4s ease-in-out infinite;
 }
 
 .orbit-badge {
@@ -982,8 +984,8 @@
   to { transform: rotate(360deg); }
 }
 @keyframes heroGlowPulse {
-  0%, 100% { opacity: 0.72; }
-  50% { opacity: 0.95; }
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
 }
 
 /* Inline prop-proof line under the lede. */
