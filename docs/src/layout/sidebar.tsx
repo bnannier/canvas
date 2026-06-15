@@ -65,7 +65,6 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Atoms",
     icon: MousePointerClick,
     items: [
-      // Primitives: the raw RN building blocks Canvas re-exports.
       { slug: "view", label: "View", to: "/components/view", icon: Box },
       { slug: "text", label: "Text", to: "/components/text", icon: Type },
       { slug: "pressable", label: "Pressable", to: "/components/pressable", icon: Pointer },
@@ -163,6 +162,12 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
+// Keep every category's items alphabetised by label, so the sidebar order stays
+// predictable as components are added (no manual re-sorting on each addition).
+for (const group of NAV_GROUPS) {
+  group.items.sort((a, b) => a.label.localeCompare(b.label));
+}
 
 function getActiveSlug(pathname: string): string {
   if (pathname === "/") return "";
