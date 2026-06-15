@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./card.styles.js";
 import { type Elevation, type Density } from "./card.styles.js";
 
@@ -120,7 +120,8 @@ export function Card(props: CardProps) {
       <Pressable
         accessibilityRole="button"
         onPress={onPress}
-        style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
+        android_ripple={surfaceRipple(tokens)}
+        style={({ pressed }) => [container, pressDim(pressed)]}
       >
         {inner}
       </Pressable>

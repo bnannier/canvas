@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, controlRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./alert.styles.js";
 import { type Tone } from "./alert.styles.js";
 
@@ -64,7 +64,8 @@ export function Alert(props: AlertProps) {
           onPress={onDismiss}
           accessibilityRole="button"
           accessibilityLabel="Dismiss"
-          style={({ pressed }) => [s.dismissButton, pressed ? { opacity: 0.7 } : null]}
+          android_ripple={controlRipple(tokens)}
+          style={({ pressed }) => [s.dismissButton, pressDim(pressed, 0.7)]}
         >
           <Text style={[s.dismissType, s.iconColor(tokens, dark, tone)]}>×</Text>
         </Pressable>

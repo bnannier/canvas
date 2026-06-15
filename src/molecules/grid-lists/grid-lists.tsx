@@ -1,5 +1,5 @@
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, useResponsive, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useResponsive, surfaceRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Card } from "../card/card.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Badge } from "../../atoms/badge/badge.js";
@@ -103,7 +103,7 @@ function GalleryTile({ item, columns, onPress }: { item: GridListItem; columns: 
   );
   if (onPress) {
     return (
-      <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [s.tileGrow, { width }, pressed ? { opacity: 0.9 } : null]}>
+      <Pressable accessibilityRole="button" onPress={onPress} android_ripple={surfaceRipple(tokens)} style={({ pressed }) => [s.tileGrow, { width }, pressDim(pressed)]}>
         {inner}
       </Pressable>
     );

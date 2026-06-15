@@ -1,4 +1,4 @@
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 import * as s from "./listbox.styles.js";
 import { type Mode, type Size } from "./listbox.styles.js";
@@ -86,8 +86,9 @@ export function Listbox(props: ListboxProps) {
         return (
           <Pressable
             key={index}
-            // The press fill (the old `active:bg-accent`) is the accent, applied
-            // only when the list is enabled.
+            // Android shows the Material ripple; the press fill (the old
+            // `active:bg-accent`) is the accent, applied only when enabled.
+            android_ripple={surfaceRipple(tokens)}
             style={({ pressed }) => [rowBase, !disabled && pressed ? s.rowSelected(tokens) : null]}
             onPress={disabled ? undefined : () => onSelect?.(index)}
             disabled={disabled}

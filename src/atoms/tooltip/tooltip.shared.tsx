@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, controlRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {
@@ -89,7 +89,8 @@ export function createTooltip(skin: TooltipSkin) {
     // Pressable (not via Button's <Text> children, which can't host an SVG).
     const triggerEl = isIconTrigger ? (
       <Pressable
-        style={({ pressed }) => [iconTrigger, pressed ? { opacity: 0.9 } : null]}
+        android_ripple={controlRipple(tokens)}
+        style={({ pressed }) => [iconTrigger, pressDim(pressed)]}
         onPress={() => setOpen(!open)}
         accessibilityRole="button"
         accessibilityLabel={label}

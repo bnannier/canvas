@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Image, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Image, Text, useTheme, surfaceRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import * as s from "./media-objects.styles.js";
 import { type Align, type Direction } from "./media-objects.styles.js";
@@ -137,7 +137,8 @@ export function MediaObject(props: MediaObjectProps) {
       <Pressable
         accessibilityRole="button"
         onPress={props.onPress}
-        style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
+        android_ripple={surfaceRipple(tokens)}
+        style={({ pressed }) => [container, pressDim(pressed)]}
       >
         {inner}
       </Pressable>

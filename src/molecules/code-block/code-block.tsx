@@ -1,5 +1,5 @@
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./code-block.styles.js";
 import { type Variant } from "./code-block.styles.js";
 
@@ -75,7 +75,8 @@ function CopyButton({
   const isDark = !!dark;
   return (
     <Pressable
-      style={({ pressed }) => [s.copyButton(tokens, isDark), pressed ? { opacity: 0.8 } : null]}
+      android_ripple={surfaceRipple(tokens)}
+      style={({ pressed }) => [s.copyButton(tokens, isDark), pressDim(pressed, 0.8)]}
       onPress={(e) => onCopy?.(text, e)}
       accessibilityRole="button"
       accessibilityLabel="Copy code"

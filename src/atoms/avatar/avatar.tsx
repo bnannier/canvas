@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Image, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Image, Pressable, Text, useTheme, controlRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./avatar.styles.js";
 import { type Size, type Shape } from "./avatar.styles.js";
 
@@ -87,7 +87,8 @@ export function Avatar(props: AvatarProps) {
   if (onPress) {
     return (
       <Pressable
-        style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
+        android_ripple={controlRipple(tokens)}
+        style={({ pressed }) => [container, pressDim(pressed)]}
         onPress={onPress}
         accessibilityRole="button"
       >

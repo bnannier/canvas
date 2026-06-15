@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, controlRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import * as s from "./overlays.styles.js";
@@ -127,9 +127,10 @@ export function createOverlay(skin: OverlaySkin) {
                     accessibilityRole="button"
                     accessibilityLabel="Close"
                     onPress={close}
+                    android_ripple={controlRipple(tokens)}
                     style={({ pressed }) => [
                       skin.headerButton!(tokens),
-                      pressed ? { opacity: 0.8 } : null,
+                      pressDim(pressed, 0.8),
                     ]}
                   >
                     <Icon x muted size={20} />
@@ -145,9 +146,10 @@ export function createOverlay(skin: OverlaySkin) {
                     accessibilityRole="button"
                     accessibilityLabel={doneLabel}
                     onPress={done}
+                    android_ripple={controlRipple(tokens)}
                     style={({ pressed }) => [
                       (skin.headerButtonAccent ?? skin.headerButton)!(tokens),
-                      pressed ? { opacity: 0.8 } : null,
+                      pressDim(pressed, 0.8),
                     ]}
                   >
                     <Icon upload primaryForeground size={20} />

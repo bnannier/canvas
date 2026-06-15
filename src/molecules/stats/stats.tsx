@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./stats.styles.js";
 import { type Surface } from "./stats.styles.js";
 
@@ -70,7 +70,7 @@ function StatItemView({ item, surface, onPress }: { item: StatItem; surface: Sur
   );
   if (onPress) {
     return (
-      <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}>
+      <Pressable accessibilityRole="button" onPress={onPress} android_ripple={surfaceRipple(tokens)} style={({ pressed }) => [container, pressDim(pressed)]}>
         {inner}
       </Pressable>
     );
