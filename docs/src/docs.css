@@ -914,6 +914,10 @@
   /* No disc: the logo sits directly over the flare so the bloom starts right at
      its edge (a disc would leave a dead gap between the logo and the glow). */
   background: transparent;
+  /* Establish a stacking context so the z-index:-1 flare paints in front of the
+     page background (behind the logo) instead of being hidden behind it. Without
+     this the glow renders below the opaque page bg and is invisible. */
+  isolation: isolate;
 }
 /* Rotating rainbow flare: a conic rainbow in deeper, saturated hues (so it reads
    on light too) that blooms out from right behind the logo and fades to nothing
@@ -923,7 +927,7 @@
 .hero-orbit-core::before {
   content: "";
   position: absolute;
-  inset: -56px;
+  inset: -44px;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
@@ -935,11 +939,12 @@
     #a855f7,
     #06b6d4
   );
-  /* Transparent under the logo, then a wide, full-strength rainbow band around
-     it that fades to nothing at the rim, so the glow is unmistakable. */
-  -webkit-mask: radial-gradient(closest-side, transparent 16%, #000 28%, #000 64%, transparent 98%);
-  mask: radial-gradient(closest-side, transparent 16%, #000 28%, #000 64%, transparent 98%);
-  filter: blur(2px) saturate(1.7);
+  /* Transparent under the logo, a saturated rainbow band just past its edge, then
+     a soft fade to nothing at the rim, so it reads as a flare blooming from the
+     logo and dissolving outward. */
+  -webkit-mask: radial-gradient(closest-side, transparent 24%, #000 38%, #000 54%, transparent 94%);
+  mask: radial-gradient(closest-side, transparent 24%, #000 38%, #000 54%, transparent 94%);
+  filter: blur(6px) saturate(1.35);
   opacity: 1;
   z-index: -1;
   animation: heroSpin 6s linear infinite, heroGlowPulse 3.4s ease-in-out infinite;
