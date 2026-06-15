@@ -19,10 +19,14 @@ const MARK_PATHS = [
   "M24 15.4 L24 3.5 A20.5 20.5 0 0 1 41.385 13.137 L31.293 19.443 A8.6 8.6 0 0 0 24 15.4 Z",
 ];
 
+// The wedge gap eats the rightmost arc, so the ink spans x≈3.5→41.4 (not 3.5→44.5)
+// and its bounding box sits ~1.56 units left of the SVG center. Nudge the shape
+// right by that much so the visible mark is OPTICALLY centered (the conic center
+// is moved to match, below). In viewBox units, so it scales at every size.
 const MARK_MASK = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">${MARK_PATHS.map(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g transform="translate(1.56 0)">${MARK_PATHS.map(
     (d) => `<path d="${d}" fill="#000"/>`,
-  ).join("")}</svg>`,
+  ).join("")}</g></svg>`,
 )}")`;
 
 // One conic sweep around the C. The gradient's wrap seam (last stop → first
@@ -32,7 +36,9 @@ const MARK_MASK = `url("data:image/svg+xml,${encodeURIComponent(
 // gap-relative (screen angle − 90°) but place each hue exactly where it sat
 // before: purple 144°, pink 187°, coral 229°, amber 275°, blue 330°, green 29°.
 const MARK_GRADIENT =
-  "conic-gradient(from 90deg," +
+  // Centered on the nudged ring center (24 + 1.56 = 25.56 → 53.25%) so the sweep
+  // and its hidden seam stay aligned with the shape after the optical shift.
+  "conic-gradient(from 90deg at 53.25% 50%," +
   "#b24dff 54deg," + // purple (just below the gap)
   "#ff2d6e 97deg," + // pink (bottom)
   "#ff6a4d 139deg," + // coral (lower-left)
