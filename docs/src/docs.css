@@ -911,23 +911,24 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  /* No disc: the logo sits directly over the flare so the bloom starts right at
-     its edge (a disc would leave a dead gap between the logo and the glow). */
-  background: transparent;
-  /* Establish a stacking context so the z-index:-1 flare paints in front of the
-     page background (behind the logo) instead of being hidden behind it. Without
+  /* The solid disc the logo sits on: layered behind the logo and above the glow
+     (glow ::before z-index:-1 < this background < the logo content). */
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 40px -20px color-mix(in oklch, var(--foreground) 35%, transparent);
+  /* Establish a stacking context so the z-index:-1 glow paints in front of the
+     page background (behind the disc) instead of being hidden behind it. Without
      this the glow renders below the opaque page bg and is invisible. */
   isolation: isolate;
 }
-/* Rotating rainbow flare: a conic rainbow in deeper, saturated hues (so it reads
-   on light too) that blooms out from right behind the logo and fades to nothing
-   at the rim. The radial mask is transparent under the logo, peaks just past its
-   edge, then fades — so the corona emanates from the logo without muddying the
-   (also rainbow) mark or poking through its open counter. Spins + breathes. */
+/* Rotating rainbow glow: a conic rainbow that blooms out from behind the solid
+   disc and fades to nothing at the rim. The disc covers its center, so the color
+   shows only as a halo around the disc and sweeps as it spins. Deeper, saturated
+   hues so it reads on light too. */
 .hero-orbit-core::before {
   content: "";
   position: absolute;
-  inset: -44px;
+  inset: -50px;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
@@ -939,12 +940,9 @@
     #a855f7,
     #06b6d4
   );
-  /* Transparent under the logo, a saturated rainbow band just past its edge, then
-     a soft fade to nothing at the rim, so it reads as a flare blooming from the
-     logo and dissolving outward. */
-  -webkit-mask: radial-gradient(closest-side, transparent 24%, #000 38%, #000 54%, transparent 94%);
-  mask: radial-gradient(closest-side, transparent 24%, #000 38%, #000 54%, transparent 94%);
-  filter: blur(6px) saturate(1.35);
+  -webkit-mask: radial-gradient(closest-side, #000 0 54%, transparent 92%);
+  mask: radial-gradient(closest-side, #000 0 54%, transparent 92%);
+  filter: blur(9px) saturate(1.25);
   opacity: 1;
   z-index: -1;
   animation: heroSpin 6s linear infinite, heroGlowPulse 3.4s ease-in-out infinite;
