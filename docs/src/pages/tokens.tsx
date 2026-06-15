@@ -35,6 +35,7 @@ const STATUS = [
   { name: "Warning", light: { bg: "#fef9c3", fg: "#854d0e" }, dark: { bg: "rgba(113,63,18,0.3)", fg: "#facc15" } },
   { name: "Error", light: { bg: "#fee2e2", fg: "#991b1b" }, dark: { bg: "rgba(127,29,29,0.3)", fg: "#f87171" } },
   { name: "Info", light: { bg: "#dbeafe", fg: "#1e40af" }, dark: { bg: "rgba(30,58,138,0.3)", fg: "#60a5fa" } },
+  { name: "Neutral", light: { bg: "#f4f4f5", fg: "#3f3f46" }, dark: { bg: "rgba(63,63,70,0.3)", fg: "#a1a1aa" } },
 ];
 
 const CHART_PALETTE = [
@@ -237,7 +238,8 @@ export function TokensPage() {
           Canvas uses a semantic token system. Every color is an oklch value bound to a CSS
           custom property. Tailwind utilities (<code>bg-primary</code>, <code>text-muted-foreground</code>,{" "}
           <code>border-border</code>, &#8230;) resolve through those vars via <code>@theme inline</code>, so
-          switching themes is just rewriting the variables.
+          switching themes is just rewriting the variables. On native, the same tokens ship as hex values
+          read through <code>useTheme()</code>.
         </p>
         <div style={{
           marginTop: 16,
@@ -280,7 +282,7 @@ export function TokensPage() {
         title="Semantic status colors"
         description="Five tones used by StatusBadge and inline alerts. Dark mode uses translucent backgrounds so they read on the deeper page palette without punching through."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
           {STATUS.map((s) => <StatusRow key={s.name} s={s} />)}
         </div>
         <div style={{ marginTop: 24, display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -341,6 +343,50 @@ export function TokensPage() {
               --orb-indigo → --orb-violet
             </code>
           </div>
+        </div>
+      </Section>
+
+      {/* Glass surface */}
+      <Section
+        title="Glass surface"
+        description={`Canvas ships a glass surface mode: set surface="glass" on the ThemeProvider, or call setSurface("glass") on the web (it sets data-surface="glass" on <html>). Following Apple's Liquid Glass model, only the functional layer goes translucent.`}
+        anatomy={`Glass overrides exactly one token: popover. Light becomes rgba(255, 255, 255, 0.72); dark becomes rgba(30, 30, 34, 0.66). The card token stays solid, so content surfaces (cards, lists, tables, charts) never turn to glass; only popover-backed overlays (popovers, menus, dropdowns, selects, dialogs, sheets, command) and the navbar/sidebar shells read as glass.`}
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+          {[
+            { label: "Light · popover", fill: "rgba(255, 255, 255, 0.72)", grad: "linear-gradient(135deg, var(--orb-indigo), var(--orb-cyan))" },
+            { label: "Dark · popover", fill: "rgba(30, 30, 34, 0.66)", grad: "linear-gradient(135deg, var(--orb-violet), var(--orb-indigo))" },
+          ].map((g) => (
+            <div key={g.label} style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{
+                height: 96,
+                borderRadius: "var(--radius-lg, 8px)",
+                border: "1px solid var(--border)",
+                background: g.grad,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}>
+                <div style={{
+                  width: "62%",
+                  height: "56%",
+                  borderRadius: "var(--radius-md, 6px)",
+                  background: g.fill,
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.35)",
+                  boxShadow: "0 8px 24px rgb(0 0 0 / 0.18)",
+                }} />
+              </div>
+              <div style={{ marginTop: 8, fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
+                {g.label}
+              </div>
+              <code style={{ fontSize: "11px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>
+                {g.fill}
+              </code>
+            </div>
+          ))}
         </div>
       </Section>
 

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { NAV_GROUPS } from "@/layout/sidebar";
+import { getComponentsByCategory } from "@/data/components";
 import { CanvasMark } from "@/components/canvas-mark";
 import { PageNav } from "@/components/page-nav";
 import { ChevronRight, ChevronLeft } from "lucide-react";
@@ -215,7 +216,53 @@ export function ComponentsIndex() {
       </CatGroup>
 
       {/* ─── Atoms ──────────────────────────────────────────── */}
-      <CatGroup id="atoms" label="Atoms" count={18}>
+      <CatGroup id="atoms" label="Atoms" count={getComponentsByCategory("Atoms").length}>
+        {/* Primitives: the raw React Native building blocks Canvas re-exports. */}
+        <Tile title="View" to="/components/view">
+          <div style={{ display: "flex", gap: 6, padding: 8, borderRadius: "var(--radius-md, 6px)", border: "1px dashed var(--border)" }}>
+            <div style={{ width: 28, height: 28, borderRadius: "var(--radius-sm, 4px)", background: "color-mix(in oklch, var(--primary) 22%, transparent)", border: "1px solid color-mix(in oklch, var(--primary) 45%, transparent)" }} />
+            <div style={{ width: 28, height: 28, borderRadius: "var(--radius-sm, 4px)", background: "color-mix(in oklch, var(--primary) 22%, transparent)", border: "1px solid color-mix(in oklch, var(--primary) 45%, transparent)" }} />
+          </div>
+        </Tile>
+        <Tile title="Text" to="/components/text">
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "center" }}>
+            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--foreground)" }}>Aa</span>
+            <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>The quick brown fox</span>
+          </div>
+        </Tile>
+        <Tile title="Pressable" to="/components/pressable">
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 88, height: 36, borderRadius: "var(--radius-md, 6px)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: "var(--foreground)", background: "color-mix(in oklch, var(--primary) 16%, transparent)", border: "1px solid color-mix(in oklch, var(--primary) 38%, transparent)" }}>
+              Press me
+            </div>
+            <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>onPress · pressed state</span>
+          </div>
+        </Tile>
+        <Tile title="Image" to="/components/image">
+          <div style={{ width: 64, height: 48, borderRadius: "var(--radius-md, 6px)", border: "1px solid var(--border)", background: "color-mix(in oklch, var(--muted) 50%, transparent)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            <svg width="60" height="44" viewBox="0 0 60 44" fill="var(--muted-foreground)" opacity="0.55">
+              <circle cx="18" cy="14" r="5" />
+              <path d="M4 40 L22 20 L34 32 L44 24 L56 40 Z" />
+            </svg>
+          </div>
+        </Tile>
+        <Tile title="Text Input" to="/components/text-input">
+          <div className="input" style={{ height: 32, fontSize: 12, maxWidth: 170, display: "flex", alignItems: "center", color: "var(--foreground)" }}>
+            Jane Doe<span style={{ width: 1, height: 14, background: "var(--primary)", marginLeft: 1 }} />
+          </div>
+        </Tile>
+        <Tile title="Scroll View" to="/components/scroll-view">
+          <div style={{ position: "relative", width: 120, height: 56, borderRadius: "var(--radius-md, 6px)", border: "1px solid var(--border)", overflow: "hidden", background: "var(--card)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: 6 }}>
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} style={{ height: 10, borderRadius: 3, background: "color-mix(in oklch, var(--muted) 70%, transparent)" }} />
+              ))}
+            </div>
+            <div style={{ position: "absolute", right: 3, top: 6, bottom: 6, width: 3, borderRadius: 3, background: "color-mix(in oklch, var(--muted-foreground) 25%, transparent)" }}>
+              <div style={{ position: "absolute", top: 0, height: "45%", width: "100%", borderRadius: 3, background: "color-mix(in oklch, var(--muted-foreground) 60%, transparent)" }} />
+            </div>
+          </div>
+        </Tile>
         <Tile title="Avatars" to="/components/avatar">
           <div style={{ display: "flex" }}>
             {["AL", "GH", "RC", "LB"].map((s, i) => (
@@ -474,7 +521,7 @@ export function ComponentsIndex() {
       </CatGroup>
 
       {/* ─── Molecules ──────────────────────────────────────── */}
-      <CatGroup id="molecules" label="Molecules" count={12}>
+      <CatGroup id="molecules" label="Molecules" count={getComponentsByCategory("Molecules").length}>
         <Tile title="Action Panels" to="/components/action-panels">
           <div className="section-card" style={{ width: "100%", maxWidth: 220, padding: 12 }}>
             <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4 }}>Delete account</div>
@@ -653,7 +700,7 @@ export function ComponentsIndex() {
       </CatGroup>
 
       {/* ─── Organisms ──────────────────────────────────────── */}
-      <CatGroup id="organisms" label="Organisms" count={11}>
+      <CatGroup id="organisms" label="Organisms" count={getComponentsByCategory("Organisms").length}>
         <Tile title="Calendars" to="/components/calendar">
           <div style={{ width: "100%", maxWidth: 160, display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
             {Array.from({ length: 28 }).map((_, i) => (

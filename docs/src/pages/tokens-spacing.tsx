@@ -13,30 +13,32 @@ const RADII = [
   { name: "full", px: 0, label: "∞", use: "Avatars, pills, status dots" },
 ];
 
+// The shadow() helper (src/style/shadow.ts) ships a fixed six-level elevation
+// preset; the CSS box-shadow here mirrors each RN preset, and elev is its
+// Android elevation. There is no "2xl".
 const SHADOWS = [
-  { name: "sm", shadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)", use: "Buttons, inputs at rest" },
-  { name: "", shadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)", use: "Cards" },
-  { name: "lg", shadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", use: "Popovers, dropdowns" },
-  { name: "xl", shadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)", use: "Modals, slide-overs" },
-  { name: "2xl", shadow: "0 25px 50px -12px rgb(0 0 0 / 0.25)", use: "Spotlight overlays" },
+  { name: "none", shadow: "none", elev: 0, use: "Flat; flush with the surface" },
+  { name: "sm", shadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)", elev: 1, use: "Buttons, inputs at rest" },
+  { name: "", shadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)", elev: 2, use: "Cards (the default)" },
+  { name: "md", shadow: "0 4px 6px 0 rgb(0 0 0 / 0.1)", elev: 4, use: "Raised cards, menus" },
+  { name: "lg", shadow: "0 10px 15px 0 rgb(0 0 0 / 0.1)", elev: 8, use: "Popovers, dropdowns" },
+  { name: "xl", shadow: "0 20px 25px 0 rgb(0 0 0 / 0.1)", elev: 12, use: "Modals, slide-overs" },
 ];
 
+// Canvas keeps a deliberately shallow z-index scale: components use only 10, 40,
+// and 50 (every overlay shares 50), so there are no escalating magic numbers.
 const ZINDEX = [
-  { z: 0, name: "Page content", note: "Default flow" },
-  { z: 20, name: "Topbar (sticky)", note: "Stays above page scroll" },
-  { z: 30, name: "Mobile sidebar backdrop", note: "Below the drawer" },
-  { z: 40, name: "Sidebar drawer", note: "Above backdrop" },
-  { z: 50, name: "Popovers / row menus", note: "In-page floating UI" },
-  { z: 9000, name: "SlideOver", note: "Drawer with focus trap" },
-  { z: 9999, name: "Command palette", note: "⌘K shortcut surface" },
-  { z: 99999, name: "Confirm modal", note: "Blocks everything" },
-  { z: 100000, name: "Toast", note: "Always-visible feedback" },
+  { z: 0, name: "Base content", note: "Default flow; no z-index" },
+  { z: 10, name: "In-component layering", note: "Input addons, button-group overlaps" },
+  { z: 40, name: "Open dropdown", note: "Floats above neighbouring content" },
+  { z: 50, name: "Overlays", note: "Popovers, menus, selects, dialogs, command" },
 ];
 
+// DataTable implements compact + regular only; values are the real cell paddings
+// (horizontal / vertical). comfy is a theme level other components opt into.
 const DENSITY = [
-  { name: "compact", padding: "8px 12px" },
-  { name: "regular", padding: "12px 16px" },
-  { name: "comfy", padding: "16px 18px" },
+  { name: "compact", padding: "16 / 8" },
+  { name: "regular", padding: "16 / 12" },
 ];
 
 function Section({ title, description, anatomy, children }: {
@@ -98,7 +100,7 @@ export function SpacingPage() {
         }}>
           The 4px grid governs all of Canvas. Every padding, margin, gap, width, and height is a multiple
           of 4. Radii follow a fixed four-tier scale (sm, md, lg, xl) plus full for pills; components
-          reference rounded-sm/md/lg/xl, which map to the radius tokens. Shadows come from Tailwind's defaults; we don't ship a custom shadow set.
+          reference rounded-sm/md/lg/xl, which map to the radius tokens. Shadows are a fixed elevation preset (none, sm, the default, md, lg, xl), shipped by the shadow() helper rather than Tailwind.
         </p>
       </section>
 
@@ -132,7 +134,7 @@ export function SpacingPage() {
 
       <Section
         title="Radius scale"
-        description="Four fixed tiers, sm through xl, plus full for pills. Components reference the rounded-sm/md/lg/xl utilities, which map to the --radius-* tokens, so radii stay consistent across the kit."
+        description="Four fixed tiers, sm through xl, plus full for pills. Components reference the rounded-sm/md/lg/xl utilities, which map to the --radius-* tokens, so radii stay consistent across the kit. Native and web agree on md/lg/xl (6/8/12px); they diverge only at sm, which is 4px via the web --radius-sm var but 2px in the native radius scale."
         anatomy="Components pin to a relative tier (sm/md/lg/xl/full) rather than hardcoding pixels, so radii stay proportional across the kit. The tiers are fixed tokens, not a runtime-adjustable knob."
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
@@ -165,10 +167,10 @@ export function SpacingPage() {
         </div>
       </Section>
 
-      <Section title="Shadows" description="From low to high; choose by elevation, not by style.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
+      <Section title="Shadows" description="A fixed elevation preset, low to high. Each level ships matching iOS shadow values and an Android elevation; choose by elevation, not by style.">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
           {SHADOWS.map((s) => (
-            <div key={s.shadow} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+            <div key={s.name || "default"} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
               <div style={{
                 width: "100%",
                 height: 80,
@@ -180,13 +182,14 @@ export function SpacingPage() {
               <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
                 shadow{s.name ? `-${s.name}` : ""}
               </div>
+              <code style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)" }}>elevation {s.elev}</code>
               <div style={{ fontSize: "10.5px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>{s.use}</div>
             </div>
           ))}
         </div>
       </Section>
 
-      <Section title="Z-index reserves" description="A handful of stack levels; keep them named, not magic numbers.">
+      <Section title="Z-index reserves" description="Canvas keeps a deliberately shallow z-index scale. Components reach for just three levels (10, 40, 50); every overlay shares 50 rather than escalating into magic numbers.">
         <div style={{
           borderRadius: "var(--radius-xl, 12px)",
           border: "1px solid var(--border)",
@@ -211,8 +214,8 @@ export function SpacingPage() {
         </div>
       </Section>
 
-      <Section title="Component density" description="Three density modes affect padding and font size on tables and content. Set density with setDensity() on the web, or with per-component density props like Card compact on native.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <Section title="Component density" description="Density is a theme-level setting (compact, regular, comfy) that each component maps to its own metrics; there is no single global padding token. Below are the DataTable cell paddings (horizontal / vertical) for the two densities it implements; comfy is a theme value other components opt into (a Card goes from 16px padding at compact to 32px when comfortable). Set it with setDensity() on the web, or per-component density props like Card compact on native.">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
           {DENSITY.map((d) => (
             <div key={d.name} style={{
               borderRadius: "var(--radius-xl, 12px)",
@@ -230,7 +233,7 @@ export function SpacingPage() {
               }}>
                 {d.name}
               </div>
-              <div style={{ fontSize: "13.5px", color: "var(--foreground)" }}>Row padding</div>
+              <div style={{ fontSize: "13.5px", color: "var(--foreground)" }}>Cell padding (h / v)</div>
               <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{d.padding}</code>
             </div>
           ))}

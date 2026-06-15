@@ -1,4 +1,5 @@
 import { View, useResponsive } from "@olympusoss/canvas";
+import { Link } from "react-router-dom";
 import { PageNav } from "@/components/page-nav";
 
 /**
@@ -139,6 +140,11 @@ export function UtilitiesPage() {
           React Native has no CSS grid. The spacing scale is Tailwind's 4px base expressed as numbers
           ({" "}<Chip>gap: 16</Chip> is Tailwind's <Chip>gap-4</Chip>), and the <Chip>useResponsive</Chip> hook
           handles breakpoints, so a value can change with the viewport.
+        </p>
+        <p style={{ marginTop: 10, fontSize: "13px", color: "var(--muted-foreground)" }}>
+          New to the building blocks? See{" "}
+          <Link to="/rn-primitives" style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 500 }}>React Native primitives</Link>{" "}
+          for View, Text, and the rest of the primitives this guide composes.
         </p>
       </section>
 
