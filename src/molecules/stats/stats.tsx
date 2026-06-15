@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./stats.styles.js";
 import { type Surface } from "./stats.styles.js";
 
@@ -41,6 +41,10 @@ export interface StatsProps {
   plain?: boolean;
   /** Optional heading shown above the metrics (mainly for the plain surface). */
   title?: string;
+  /** Make each metric a tappable target (drill into the underlying detail). When
+   *  set, every metric renders as a Pressable with a button role and a pressed
+   *  affordance, so a tappable stat needs no hand-rolled Pressable. */
+  onPressItem?: (index: number) => void;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -51,22 +55,31 @@ function surfaceOf(p: StatsProps): Surface {
   return "card";
 }
 
-// One metric: label, value, optional delta.
-function StatItemView({ item, surface }: { item: StatItem; surface: Surface }): ReactNode {
+// One metric: label, value, optional delta. Tappable when an onPress is given.
+function StatItemView({ item, surface, onPress }: { item: StatItem; surface: Surface; onPress?: () => void }): ReactNode {
   const { tokens, dark } = useTheme();
-  return (
-    <View style={[surface === "card" ? s.cardSurface(tokens) : null, s.item[surface]]}>
+  const container = [surface === "card" ? s.cardSurface(tokens) : null, s.item[surface]];
+  const inner = (
+    <>
       <Text style={s.labelText(tokens)}>{item.label}</Text>
       <Text style={s.valueText(tokens)}>{item.value}</Text>
       {item.delta != null && item.delta !== "" ? (
         <Text style={[s.deltaBase, s.deltaTone(dark, !!item.down)]}>{item.delta}</Text>
       ) : null}
-    </View>
+    </>
   );
+  if (onPress) {
+    return (
+      <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}>
+        {inner}
+      </Pressable>
+    );
+  }
+  return <View style={container}>{inner}</View>;
 }
 
 export function Stats(props: StatsProps) {
-  const { items, title, style } = props;
+  const { items, title, style, onPressItem } = props;
   const { tokens } = useTheme();
   const surface = surfaceOf(props);
 
@@ -80,7 +93,7 @@ export function Stats(props: StatsProps) {
       {title != null && title !== "" ? <Text style={s.title(tokens, surface)}>{title}</Text> : null}
       <View style={[s.row, s.rowGap[surface]]}>
         {items.map((item, i) => (
-          <StatItemView key={i} item={item} surface={surface} />
+          <StatItemView key={i} item={item} surface={surface} onPress={onPressItem ? () => onPressItem(i) : undefined} />
         ))}
       </View>
     </View>

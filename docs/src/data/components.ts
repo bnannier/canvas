@@ -19,7 +19,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "pressable",
     name: "Pressable",
-    description: "The touchable primitive: wraps content, fires onPress, and exposes the press state to its style for feedback.",
+    description: "The touchable primitive: wraps content, fires onPress, and exposes the press state to its style for feedback. Reach for the kit's interactive components first — Button, plus the tappable Card, Stats, GridList, and MediaObject (onPress / onPressItem) and StackedList rows. Pressable is the last resort, for an interaction the kit doesn't yet cover, and even then style it with tokens to stay on-brand.",
     category: "Atoms",
   },
   {

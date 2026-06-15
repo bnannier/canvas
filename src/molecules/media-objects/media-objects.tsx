@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Image, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Image, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import * as s from "./media-objects.styles.js";
 import { type Align, type Direction } from "./media-objects.styles.js";
@@ -43,6 +43,10 @@ export interface MediaObjectProps {
   icon?: ReactNode;
   /** A trailing action node (e.g. a <Button>), pinned to the right edge. */
   action?: ReactNode;
+  /** Make the whole row a tappable target (navigate to a detail, select a row).
+   *  When set, the row renders as a Pressable with a button role and a pressed
+   *  affordance, so you never hand-roll a Pressable for a tappable media row. */
+  onPress?: () => void;
   // Alignment (pick one; default top-aligns with items-start).
   center?: boolean;
   start?: boolean;
@@ -105,8 +109,8 @@ export function MediaObject(props: MediaObjectProps) {
 
   // The engine has no truncate utility; RN clamps text via numberOfLines, which
   // is the supported equivalent (single line with an ellipsis on overflow).
-  return (
-    <View style={container}>
+  const inner = (
+    <>
       {media}
       <View style={s.content}>
         {title != null ? (
@@ -123,6 +127,22 @@ export function MediaObject(props: MediaObjectProps) {
       </View>
       {meta != null ? <Text style={s.meta(tokens)}>{meta}</Text> : null}
       {action != null ? <View style={s.actionBox}>{action}</View> : null}
-    </View>
+    </>
   );
+
+  // A tappable row swaps the View for a Pressable with a button role and a pressed
+  // affordance, so a tappable media row needs no hand-rolled Pressable.
+  if (props.onPress) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={props.onPress}
+        style={({ pressed }) => [container, pressed ? { opacity: 0.9 } : null]}
+      >
+        {inner}
+      </Pressable>
+    );
+  }
+
+  return <View style={container}>{inner}</View>;
 }

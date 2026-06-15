@@ -17,6 +17,15 @@ Image or icon paired with text content. The fundamental building block for list 
 
 ## Variants
 
+### Tappable
+
+```tsx
+<View style={{ maxWidth: 480, gap: 8 }}>
+  <MediaObject onPress={() => {}} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
+  <MediaObject onPress={() => {}} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
+</View>
+```
+
 ### Variant - icon
 
 ```tsx

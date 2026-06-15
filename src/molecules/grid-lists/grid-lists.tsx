@@ -1,5 +1,5 @@
 import { type DimensionValue } from "react-native";
-import { View, Text, useTheme, useResponsive, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useResponsive, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Card } from "../card/card.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Badge } from "../../atoms/badge/badge.js";
@@ -70,6 +70,10 @@ export interface GridListProps {
   gallery?: boolean;
   // Density modifier: tighter gap and tile padding.
   compact?: boolean;
+  /** Make each tile a tappable target (open a detail, select a tile). When set,
+   *  every tile renders as a Pressable with a button role and a pressed
+   *  affordance, so a tappable grid needs no hand-rolled Pressable. */
+  onPressItem?: (index: number) => void;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -83,11 +87,11 @@ function columnsOf(p: GridListProps): Columns {
 
 // A borderless gallery thumbnail: a square color block with a filename and size
 // below. Owns the responsive width so it collapses to full width on phones.
-function GalleryTile({ item, columns }: { item: GridListItem; columns: Columns }) {
+function GalleryTile({ item, columns, onPress }: { item: GridListItem; columns: Columns; onPress?: () => void }) {
   const { tokens } = useTheme();
   const width = useResponsive<DimensionValue>({ base: s.TILE_WIDTH[columns], sm: "100%" });
-  return (
-    <View style={[s.tileGrow, { width }]}>
+  const inner = (
+    <>
       {/* Square color block. A single translucent tint stands in for the legacy
           gradient swatch. */}
       <View style={[s.galleryBlock, s.galleryBlockFill(tokens, item.color)]} />
@@ -95,18 +99,26 @@ function GalleryTile({ item, columns }: { item: GridListItem; columns: Columns }
         <Text style={s.galleryTitle(tokens)}>{item.title}</Text>
         {item.subtitle != null ? <Text style={s.gallerySubtitle(tokens)}>{item.subtitle}</Text> : null}
       </View>
-    </View>
+    </>
   );
+  if (onPress) {
+    return (
+      <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [s.tileGrow, { width }, pressed ? { opacity: 0.9 } : null]}>
+        {inner}
+      </Pressable>
+    );
+  }
+  return <View style={[s.tileGrow, { width }]}>{inner}</View>;
 }
 
 // A bordered people card tile: a leading avatar, a title, supporting text, an
 // optional badge, and an optional action row. Owns the responsive width so it
 // collapses to full width on phones.
-function PeopleTile({ item, columns, compact }: { item: GridListItem; columns: Columns; compact: boolean }) {
+function PeopleTile({ item, columns, compact, onPress }: { item: GridListItem; columns: Columns; compact: boolean; onPress?: () => void }) {
   const { tokens } = useTheme();
   const width = useResponsive<DimensionValue>({ base: s.TILE_WIDTH[columns], sm: "100%" });
   return (
-    <Card style={[s.tilePad(compact), { width }]}>
+    <Card onPress={onPress} style={[s.tilePad(compact), { width }]}>
       <View style={s.cardInner}>
         <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
           {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
@@ -133,18 +145,19 @@ function PeopleTile({ item, columns, compact }: { item: GridListItem; columns: C
 }
 
 export function GridList(props: GridListProps) {
-  const { items, gallery, compact, style } = props;
+  const { items, gallery, compact, style, onPressItem } = props;
   const columns = columnsOf(props);
 
   return (
     <View style={[s.container, s.containerGap(!!compact), style]}>
-      {items.map((item, index) =>
-        gallery ? (
-          <GalleryTile key={`${item.title}-${index}`} item={item} columns={columns} />
+      {items.map((item, index) => {
+        const onPress = onPressItem ? () => onPressItem(index) : undefined;
+        return gallery ? (
+          <GalleryTile key={`${item.title}-${index}`} item={item} columns={columns} onPress={onPress} />
         ) : (
-          <PeopleTile key={`${item.title}-${index}`} item={item} columns={columns} compact={!!compact} />
-        ),
-      )}
+          <PeopleTile key={`${item.title}-${index}`} item={item} columns={columns} compact={!!compact} onPress={onPress} />
+        );
+      })}
     </View>
   );
 }

@@ -26,6 +26,20 @@ Tiled card grids for people directories, item collections, and image galleries.
 
 ## Variants
 
+### Tappable
+
+```tsx
+<GridList
+  onPressItem={() => {}}
+  items={[
+    { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC", badge: "Active" },
+    { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL", badge: "Active" },
+    { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", badge: "Away" }
+  ]}
+  cols3
+/>
+```
+
 ### Variant - gallery
 
 ```tsx

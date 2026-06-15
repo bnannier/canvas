@@ -14,6 +14,19 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 
 ## Variants
 
+### Tappable
+
+```tsx
+<Stats
+  onPressItem={() => {}}
+  items={[
+    { label: "Active users", value: "71,897", delta: "+12.3%" },
+    { label: "Revenue", value: "$48.2k", delta: "+8.1%" },
+    { label: "Churn", value: "1.2%", delta: "-0.4%", down: true }
+  ]}
+/>
+```
+
 ### Variant - group
 
 ```tsx
