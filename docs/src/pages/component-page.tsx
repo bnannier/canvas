@@ -118,7 +118,10 @@ export function ComponentPage() {
 
   if (!comp) return <NotFound />;
 
-  const src = RAW[`../../../src/${LEVEL[comp.category]}/${comp.slug}/${comp.slug}.md`];
+  // The URL slug can differ from the source directory (see ComponentDoc.dir),
+  // so resolve the .md from the source dir, not the slug.
+  const dir = comp.dir ?? comp.slug;
+  const src = RAW[`../../../src/${LEVEL[comp.category]}/${dir}/${dir}.md`];
   const { examples, donts } = src
     ? splitDoc(src)
     : { examples: [] as Example[], donts: [] as DontPair[] };

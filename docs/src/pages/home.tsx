@@ -116,7 +116,7 @@ const ATOMIC_LEVELS = [
     id: "tokens", label: "Tokens", icon: Layers,
     blurb: "The lowest-level decisions: color schemes (light and dark), typography, spacing, radii, and density. Every component derives from these tokens, so theming is a token change, not a rewrite.",
     pages: [
-      { label: "Colors & Theme", to: "/tokens" },
+      { label: "Colors & Theme", to: "/tokens/colors" },
       { label: "Theming", to: "/theming" },
     ],
   },
@@ -141,10 +141,10 @@ const ATOMIC_LEVELS = [
   },
   {
     id: "organisms", label: "Organisms", icon: AppWindow,
-    blurb: "Self-contained sections of a screen: Data Table, Sidebar, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
+    blurb: "Self-contained sections of a screen: Data Table, Navigation, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
     pages: [
       { label: "Data Tables", to: "/components/data-table" },
-      { label: "Sidebar", to: "/components/sidebar" },
+      { label: "Navigation", to: "/components/navigation" },
       { label: "Dialog", to: "/components/dialog" },
       { label: "Tabs", to: "/components/tabs" },
     ],
@@ -199,7 +199,7 @@ export function Home() {
               <Link to="/components/button" className="landing-btn landing-btn-primary landing-btn-lg">
                 Browse components <ArrowRight size={16} />
               </Link>
-              <Link to="/tokens" className="landing-btn landing-btn-outline landing-btn-lg">
+              <Link to="/tokens/colors" className="landing-btn landing-btn-outline landing-btn-lg">
                 Explore tokens
               </Link>
             </div>
@@ -372,7 +372,7 @@ export function Home() {
             </div>
             <div className="landing-footer-col">
               <span className="landing-footer-head">Foundations</span>
-              <Link to="/tokens">Tokens</Link>
+              <Link to="/tokens/colors">Tokens</Link>
               <Link to="/theming">Theming</Link>
               <Link to="/patterns/responsive">Responsive</Link>
               <Link to="/integration">Integration</Link>

@@ -176,7 +176,7 @@ export function ComponentsIndex() {
 
       {/* ─── Tokens ─────────────────────────────────────────── */}
       <CatGroup id="tokens" label="Tokens" count={3}>
-        <Tile title="Colors & Theme" to="/tokens">
+        <Tile title="Colors & Theme" to="/tokens/colors">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 4, width: "100%", maxWidth: 220 }}>
             {[
               "var(--primary)", "var(--card)", "var(--muted)",
@@ -414,7 +414,7 @@ export function ComponentsIndex() {
             maxWidth: 180,
           }} />
         </Tile>
-        <Tile title="Toggles" to="/components/switch">
+        <Tile title="Toggles" to="/components/toggle">
           <div style={{ display: "flex", gap: 12 }}>
             <div style={{
               position: "relative",
@@ -759,7 +759,7 @@ export function ComponentsIndex() {
             </div>
           </div>
         </Tile>
-        <Tile title="Navigation" to="/components/sidebar">
+        <Tile title="Navigation" to="/components/navigation">
           <div style={{
             width: "100%",
             maxWidth: 160,

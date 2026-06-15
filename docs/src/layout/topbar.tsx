@@ -19,10 +19,10 @@ interface TopbarProps {
 
 function getPageInfo(pathname: string): { title: string; subtitle?: string } {
   if (pathname === "/") return { title: "Canvas", subtitle: "Design System" };
-  if (pathname === "/tokens") return { title: "Colors & Theme", subtitle: "Tokens" };
+  if (pathname === "/tokens/colors") return { title: "Colors & Theme", subtitle: "Tokens" };
   if (pathname === "/tokens/spacing") return { title: "Spacing & Shape", subtitle: "Tokens" };
   if (pathname === "/tokens/typography") return { title: "Typography", subtitle: "Tokens" };
-  if (pathname === "/utilities") return { title: "Layout utilities", subtitle: "Utilities" };
+  if (pathname === "/tokens/layout") return { title: "Layout & Flexbox", subtitle: "Tokens" };
   if (pathname === "/theming") return { title: "Theming", subtitle: "Foundations" };
   if (pathname === "/integration") return { title: "Integration", subtitle: "Guides" };
   if (pathname === "/browser-support") return { title: "Browser Support", subtitle: "Guides" };

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ScrollView, View, Text, useTheme } from "@olympusoss/canvas";
 import { Markdown } from "@/components/markdown";
 import { Toc } from "@/components/toc";
@@ -16,15 +17,15 @@ const tocItems = [
   { id: "escape-hatch", label: "Styling your own" },
 ];
 
-// One row per re-exported primitive: the name, the react-native component it IS,
-// and what its style object controls.
+// One row per re-exported primitive: the name (links to its reference page), the
+// react-native component it IS, and what its style object controls.
 const PRIproprietaryIVES = [
-  { name: "View", wraps: "View", styles: "The box: layout, background, border, radius. A flex container by default." },
-  { name: "Text", wraps: "Text", styles: "The text run: color, fontSize, fontWeight, textAlign." },
-  { name: "Pressable", wraps: "Pressable", styles: "A pressable surface; its style accepts ({ pressed }) => ... for press feedback." },
-  { name: "Image", wraps: "Image", styles: "Size, radius, aspect. source / resizeMode pass through." },
-  { name: "TextInput", wraps: "TextInput", styles: "The raw field text and box. A low-level primitive (see below)." },
-  { name: "ScrollView", wraps: "ScrollView", styles: "style is the scroll frame; contentContainerStyle is the content." },
+  { name: "View", wraps: "View", to: "/components/view", styles: "The box: layout, background, border, radius. A flex container by default." },
+  { name: "Text", wraps: "Text", to: "/components/text", styles: "The text run: color, fontSize, fontWeight, textAlign." },
+  { name: "Pressable", wraps: "Pressable", to: "/components/pressable", styles: "A pressable surface; its style accepts ({ pressed }) => ... for press feedback." },
+  { name: "Image", wraps: "Image", to: "/components/image", styles: "Size, radius, aspect. source / resizeMode pass through." },
+  { name: "TextInput", wraps: "TextInput", to: "/components/text-input", styles: "The raw field text and box. A low-level primitive (see below)." },
+  { name: "ScrollView", wraps: "ScrollView", to: "/components/scroll-view", styles: "style is the scroll frame; contentContainerStyle is the content." },
 ];
 
 // Things Canvas deliberately does NOT re-export, with the reason and the thing to
@@ -79,14 +80,15 @@ export function RnPrimitivesPage() {
             {" "}<code className="code">Pressable</code>, <code className="code">Image</code>,
             {" "}<code className="code">TextInput</code>, <code className="code">ScrollView</code>. They are
             react-native's own components, re-exported for a single import alongside the components and helpers; importing
-            them from <code className="code">react-native</code> is equivalent.
+            them from <code className="code">react-native</code> is equivalent. Each name below links to its full reference
+            page.
           </p>
           <table className="dt-table">
             <thead><tr><th>Primitive</th><th>Is (react-native)</th><th>style controls</th></tr></thead>
             <tbody>
               {PRIproprietaryIVES.map((p) => (
                 <tr key={p.name}>
-                  <td><code className="code">{p.name}</code></td>
+                  <td><Link to={p.to} className="rn-prim-link"><code className="code">{p.name}</code></Link></td>
                   <td><code className="code">{p.wraps}</code></td>
                   <td className="small muted">{p.styles}</td>
                 </tr>
@@ -195,6 +197,9 @@ export function RnPrimitivesPage() {
         @media (min-width: 1280px) {
           .docs-toc-col { display: block !important; }
         }
+        .rn-prim-link { text-decoration: none; }
+        .rn-prim-link code { color: var(--primary); }
+        .rn-prim-link:hover code { text-decoration: underline; }
       `}</style>
     </div>
   );

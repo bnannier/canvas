@@ -3,7 +3,7 @@ import type { SearchEntry } from "./types";
 
 const GUIDE_ENTRIES: SearchEntry[] = [
   { title: "Home", description: "Canvas design system overview", path: "/", category: "Pages", keywords: ["overview", "getting started", "install"] },
-  { title: "Tokens", description: "Design token reference (colors, typography, spacing)", path: "/tokens", category: "Foundations", keywords: ["colors", "fonts", "spacing", "radius", "shadows", "custom properties", "variables"] },
+  { title: "Tokens", description: "Design token reference (colors, typography, spacing)", path: "/tokens/colors", category: "Foundations", keywords: ["colors", "fonts", "spacing", "radius", "shadows", "custom properties", "variables"] },
   { title: "Theming", description: "Light/dark mode, glass surface, density controls", path: "/theming", category: "Guides", keywords: ["dark mode", "light mode", "glass", "compact", "comfy", "theme"] },
   { title: "Integration", description: "Install and consume Canvas, the universal React Native kit, on native and the web", path: "/integration", category: "Guides", keywords: ["react", "react native", "react-native-web", "install", "setup", "native", "web"] },
   { title: "Browser Support", description: "Supported platforms (iOS, Android, web) and the web browser baseline", path: "/browser-support", category: "Guides", keywords: ["platforms", "ios", "android", "web", "react-native-web", "browsers", "compatibility"] },
@@ -17,7 +17,9 @@ const ALL_ENTRIES: SearchEntry[] = [
     description: c.description,
     path: `/components/${c.slug}`,
     category: c.category,
-    keywords: [c.slug, ...c.slug.split("-")],
+    // Keep the source-dir name searchable too, so "sidebar"/"switch" still
+    // find the renamed Navigation/Toggle pages.
+    keywords: [c.slug, ...c.slug.split("-"), ...(c.dir ? [c.dir] : [])],
   })),
 ];
 
