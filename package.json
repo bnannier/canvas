@@ -1,6 +1,6 @@
 {
   "name": "@olympusoss/canvas",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "type": "module",
   "description": "Universal React Native UI kit styled with Tailwind",
   "main": "./src/index.ts",
