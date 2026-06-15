@@ -220,7 +220,7 @@ export function Home() {
               <span className="hero-orbit-core">
                 <CanvasMark size={74} />
               </span>
-              <span className="orbit-badge orbit-badge-ios" style={{ "--i": 0 } as CSSProperties}>
+              <span className="orbit-badge orbit-badge-ios" style={{ "--i": 5 } as CSSProperties}>
                 <span className="orbit-badge-inner"><AppleLogo size={26} /></span>
               </span>
               <span className="orbit-badge orbit-badge-react" style={{ "--i": 1 } as CSSProperties}>
@@ -235,7 +235,7 @@ export function Home() {
               <span className="orbit-badge orbit-badge-web" style={{ "--i": 4 } as CSSProperties}>
                 <span className="orbit-badge-inner"><Html5Logo size={25} /></span>
               </span>
-              <span className="orbit-badge orbit-badge-tailwind" style={{ "--i": 5 } as CSSProperties}>
+              <span className="orbit-badge orbit-badge-tailwind" style={{ "--i": 0 } as CSSProperties}>
                 <span className="orbit-badge-inner"><TailwindLogo size={26} /></span>
               </span>
             </div>
