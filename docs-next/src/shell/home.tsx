@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { ScrollView, useWindowDimensions, Linking } from "react-native";
+import { ScrollView, useWindowDimensions, Linking, Platform } from "react-native";
 import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
@@ -224,19 +224,25 @@ export function Home() {
                 <Text style={{ fontFamily: geist("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
               </View>
 
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
-                <LandingButton primary label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
-                <LandingButton label="Explore tokens" onPress={() => go("/tokens/colors")} />
-              </View>
-
-              <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
-                {PLATFORMS.map((p) => (
-                  <View key={p} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Check size={13} color={tokens.primary} />
-                    <Text style={{ fontFamily: geist("500"), fontSize: 13.5, color: tokens["muted-foreground"] }}>{p}</Text>
+              {/* On native (iOS/Android) the CTAs and platform checks are hidden so the
+                  rotating orbit surfaces sooner; the web hero keeps them. */}
+              {Platform.OS === "web" ? (
+                <>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
+                    <LandingButton primary label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
+                    <LandingButton label="Explore tokens" onPress={() => go("/tokens/colors")} />
                   </View>
-                ))}
-              </View>
+
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
+                    {PLATFORMS.map((p) => (
+                      <View key={p} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <Check size={13} color={tokens.primary} />
+                        <Text style={{ fontFamily: geist("500"), fontSize: 13.5, color: tokens["muted-foreground"] }}>{p}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </>
+              ) : null}
             </View>
 
             {/* Orbit showcase */}
