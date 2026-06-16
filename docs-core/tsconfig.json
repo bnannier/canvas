@@ -13,5 +13,5 @@
       "@olympusoss/canvas": ["../src/index.ts"]
     }
   },
-  "include": ["scope.ts", "registry.ts", "examples"]
+  "include": ["**/*.ts", "**/*.tsx"]
 }

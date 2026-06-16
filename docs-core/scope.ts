@@ -20,6 +20,15 @@ export type ExampleScope = typeof import("@olympusoss/canvas") & { tokens: Color
 // A generated example module's default export.
 export type ExampleRender = (scope: ExampleScope) => ReactNode;
 
+// One preview column for the Playground. The web build returns three (iOS / Android /
+// Web, each with the matching per-OS skins); the native build returns one (the running
+// device, whose skins Metro already resolved). See build-scopes.{web,native}.ts.
+export interface PreviewScope {
+  label: string;
+  platform: "ios" | "android" | "web";
+  scope: ExampleScope;
+}
+
 export interface DocExample {
   label: string;
   // The verbatim fence source, for the CodeBlock display beneath the preview.

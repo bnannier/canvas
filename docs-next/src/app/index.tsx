@@ -1,38 +1,68 @@
-import { ScrollView, View, Text } from "react-native";
-import * as Canvas from "@olympusoss/canvas";
-import { useTheme } from "@olympusoss/canvas";
-import type { ExampleScope } from "docs-core/scope";
-import ButtonUsage from "docs-core/examples/atoms/button/example-0";
-import AvatarUsage from "docs-core/examples/atoms/avatar/example-0";
+import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
+import { useRouter } from "expo-router";
+import { Page } from "../ui/page";
+import { H2 } from "../ui/prose";
 
-// Phase 2 smoke screen: proves the source-only Canvas library (../src) and the
-// generated example modules (../docs-core) bundle and render under Metro — both a
-// raw Canvas component and a generated fence module, rendered against a native
-// scope (every Canvas export + the live theme tokens). On a device, Metro resolves
-// each component's .ios/.android skin automatically, so this is the real per-OS look.
+const PRINCIPLES = [
+  { title: "Semantic props", body: "Flat boolean props named for meaning, so <Button primary large> reads like a sentence." },
+  { title: "Universal", body: "One component runs on iOS, Android, and the web — including this very docs app, rendered natively." },
+  { title: "Responsive by default", body: "Every component adapts from large desktop down to phone, authored desktop-first." },
+  { title: "Token-themed", body: "Light, dark, and glass surfaces all flow from one theme provider. No per-component restyling." },
+];
+
+const LEVELS = [
+  { name: "Atoms", body: "Primitives and the smallest UI: View, Text, Button, Input, Badge." },
+  { name: "Molecules", body: "Small compositions: Card, Field, Alert, Stats, Form." },
+  { name: "Organisms", body: "Full sections: Navbar, Sidebar, Tabs, Calendar, Charts." },
+];
+
+function Card({ title, body }: { title: string; body: string }) {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 16, gap: 4 }}>
+      <Text style={{ fontSize: 14, fontWeight: "600", color: tokens.foreground }}>{title}</Text>
+      <Text style={{ fontSize: 13, lineHeight: 19, color: tokens["muted-foreground"] }}>{body}</Text>
+    </View>
+  );
+}
+
 export default function Home() {
   const { tokens } = useTheme();
-  const scope = { ...Canvas, tokens } as unknown as ExampleScope;
-
+  const router = useRouter();
   return (
-    <ScrollView
-      style={{ backgroundColor: tokens.background }}
-      contentContainerStyle={{ padding: 24, gap: 18 }}
-    >
-      <Text style={{ fontSize: 20, fontWeight: "700", color: tokens.foreground }}>
-        Canvas docs — native Phase 2 smoke
-      </Text>
-
-      <Text style={{ color: tokens["muted-foreground"] }}>Raw Canvas Button:</Text>
-      <View style={{ alignItems: "flex-start" }}>
-        <Canvas.Button primary>Save changes</Canvas.Button>
+    <Page>
+      <View style={{ gap: 14, paddingTop: 8 }}>
+        <Text style={{ fontSize: 34, fontWeight: "800", letterSpacing: -0.6, color: tokens.foreground }}>Canvas</Text>
+        <Text style={{ fontSize: 16, lineHeight: 24, color: tokens["muted-foreground"], maxWidth: 620 }}>
+          A universal React Native UI kit. Native on iOS and Android, and on the web through React Native Web — including these docs.
+        </Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 2 }}>
+          <Pressable onPress={() => router.push("/components" as never)} style={{ borderRadius: 999, backgroundColor: tokens.primary, paddingHorizontal: 18, paddingVertical: 11 }}>
+            <Text style={{ color: tokens["primary-foreground"], fontWeight: "600", fontSize: 14 }}>Browse components</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push("/integration" as never)} style={{ borderRadius: 999, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 18, paddingVertical: 11 }}>
+            <Text style={{ color: tokens.foreground, fontWeight: "600", fontSize: 14 }}>Get started</Text>
+          </Pressable>
+        </View>
       </View>
 
-      <Text style={{ color: tokens["muted-foreground"] }}>Generated Button example:</Text>
-      <View style={{ alignItems: "flex-start" }}>{ButtonUsage(scope)}</View>
+      <View style={{ gap: 12 }}>
+        <H2>Principles</H2>
+        <View style={{ gap: 10 }}>
+          {PRINCIPLES.map((p) => (
+            <Card key={p.title} title={p.title} body={p.body} />
+          ))}
+        </View>
+      </View>
 
-      <Text style={{ color: tokens["muted-foreground"] }}>Generated Avatar example:</Text>
-      <View style={{ alignItems: "flex-start" }}>{AvatarUsage(scope)}</View>
-    </ScrollView>
+      <View style={{ gap: 12 }}>
+        <H2>Atomic design</H2>
+        <View style={{ gap: 10 }}>
+          {LEVELS.map((l) => (
+            <Card key={l.name} title={l.name} body={l.body} />
+          ))}
+        </View>
+      </View>
+    </Page>
   );
 }
