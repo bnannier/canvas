@@ -1,0 +1,476 @@
+import { type ReactNode, useMemo } from "react";
+import { View, Text, useTheme, type ColorTokens } from "@olympusoss/canvas";
+import Svg, { Path, Circle, Rect, Line } from "react-native-svg";
+import { geist, geistMono } from "./fonts";
+import { alpha } from "./color";
+
+// A focused HTML-to-React-Native renderer for the docs' pattern/template mockups. The
+// Vite docs render each section's `html` field with dangerouslySetInnerHTML; that cannot
+// run on native, so this interprets the SAME html string into RN Views/Texts. It covers
+// the bounded subset those mockups use: inline-styled div/span/p/h*/code/kbd/a/label/li,
+// the docs component classes (section-card, card, btn*, input, badge*, status-badge,
+// kbd, avatar, dot, sep, dt-table), tables, form controls, and small svgs. Colors come
+// from the live theme tokens, so the mockups track light/dark/glass like everything else.
+
+// ── Parsing ──────────────────────────────────────────────
+type Node = { type: "el"; tag: string; attrs: Record<string, string>; children: Node[] } | { type: "text"; text: string };
+
+const VOID = new Set(["br", "hr", "img", "input", "path", "circle", "rect", "line", "polyline", "polygon", "source", "use"]);
+const ENTITIES: Record<string, string> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
+  uarr: "↑", darr: "↓", larr: "←", rarr: "→", check: "✓",
+  ldquo: "“", rdquo: "”", lsquo: "‘", rsquo: "’", hellip: "…", mdash: "—", ndash: "–", times: "×", bull: "•",
+};
+function decode(s: string): string {
+  return s.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (_, e: string) => {
+    if (e[0] === "#") {
+      const code = e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+      return Number.isFinite(code) ? String.fromCodePoint(code) : _;
+    }
+    return ENTITIES[e] ?? _;
+  });
+}
+function parseAttrs(s: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  const re = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*"([^"]*)"|\s*=\s*'([^']*)')?/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) attrs[m[1].toLowerCase()] = decode(m[2] ?? m[3] ?? "");
+  return attrs;
+}
+function parseHtml(html: string): Node[] {
+  const root: Node = { type: "el", tag: "root", attrs: {}, children: [] };
+  const stack: Node[] = [root];
+  const re = /<!--[\s\S]*?-->|<\/([a-zA-Z][a-zA-Z0-9]*)\s*>|<([a-zA-Z][a-zA-Z0-9]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>|([^<]+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) {
+    const top = stack[stack.length - 1];
+    if (top.type !== "el") continue;
+    if (m[0].startsWith("<!--")) continue;
+    if (m[1]) {
+      const tag = m[1].toLowerCase();
+      for (let i = stack.length - 1; i > 0; i--) {
+        const n = stack[i];
+        if (n.type === "el" && n.tag === tag) { stack.length = i; break; }
+      }
+    } else if (m[2]) {
+      const tag = m[2].toLowerCase();
+      const el: Node = { type: "el", tag, attrs: parseAttrs(m[3] ?? ""), children: [] };
+      top.children.push(el);
+      if (!VOID.has(tag) && !m[4]) stack.push(el);
+    } else if (m[5]) {
+      const text = decode(m[5]);
+      if (text.trim() || /\s/.test(text)) top.children.push({ type: "text", text });
+    }
+  }
+  return root.children;
+}
+
+// ── CSS value helpers ────────────────────────────────────
+const RADIUS: Record<string, number> = { sm: 4, md: 8, lg: 12, xl: 16, full: 9999 };
+function len(v: string): number | string | undefined {
+  v = v.trim();
+  if (!v) return undefined;
+  if (v === "auto") return "auto";
+  if (v.endsWith("%")) return v;
+  if (v.endsWith("px")) return parseFloat(v);
+  if (v.endsWith("rem")) return parseFloat(v) * 16;
+  if (v.endsWith("em")) return parseFloat(v) * 16;
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : undefined;
+}
+function radius(v: string): number {
+  v = v.trim();
+  if (v === "50%" || v === "9999px") return 9999;
+  const mv = v.match(/var\(--radius-([a-z]+)\s*,\s*([0-9.]+)px\)/);
+  if (mv) return RADIUS[mv[1]] ?? parseFloat(mv[2]);
+  const mr = v.match(/var\(--radius-([a-z]+)\)/);
+  if (mr) return RADIUS[mr[1]] ?? 8;
+  const l = len(v);
+  return typeof l === "number" ? l : 8;
+}
+
+const COLOR_TOKENS = new Set<keyof ColorTokens>([
+  "background", "foreground", "card", "card-foreground", "popover", "popover-foreground",
+  "primary", "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground",
+  "accent", "accent-foreground", "destructive", "destructive-foreground", "border", "input", "ring",
+]);
+function color(v: string, tokens: ColorTokens): string | undefined {
+  v = v.trim();
+  if (!v || v === "currentColor" || v === "inherit") return undefined;
+  if (v === "transparent" || v === "none") return "transparent";
+  // color-mix(in oklch, var(--X) N%, transparent) -> alpha(token, N/100)
+  const mix = v.match(/color-mix\(in oklch,\s*var\(--([a-z-]+)\)\s*([0-9.]+)%/);
+  if (mix) {
+    const tok = mix[1] as keyof ColorTokens;
+    if (COLOR_TOKENS.has(tok)) return alpha(tokens[tok], parseFloat(mix[2]) / 100);
+  }
+  if (v.startsWith("linear-gradient") || v.startsWith("radial-gradient")) {
+    const inner = v.match(/var\(--([a-z-]+)\)|#[0-9a-fA-F]{3,8}|hsl\([^)]*\)|rgba?\([^)]*\)/);
+    return inner ? color(inner[0], tokens) : undefined;
+  }
+  const vm = v.match(/^var\(--([a-z-]+)/);
+  if (vm) {
+    const tok = vm[1] as keyof ColorTokens;
+    return COLOR_TOKENS.has(tok) ? tokens[tok] : undefined;
+  }
+  return v; // hex / hsl / rgb / named
+}
+
+const TEXT_PROPS = new Set(["color", "fontSize", "fontFamily", "lineHeight", "letterSpacing", "textAlign", "textTransform", "textDecorationLine", "fontWeight", "fontStyle"]);
+
+// Parse an inline style string into { view, text } RN style fragments. `text` props are
+// the inheritable typographic ones; `grid` carries grid-template info for child layout.
+function parseStyle(styleStr: string, tokens: ColorTokens) {
+  const view: Record<string, unknown> = {};
+  const text: Record<string, unknown> = {};
+  let grid: string | undefined;
+  let fontSize: number | undefined;
+  let lineH: { ratio?: number; px?: number } | undefined;
+  let isFlex = false;
+  let hasDir = false;
+
+  for (const decl of styleStr.split(";")) {
+    const idx = decl.indexOf(":");
+    if (idx < 0) continue;
+    const prop = decl.slice(0, idx).trim().toLowerCase();
+    const val = decl.slice(idx + 1).trim();
+    if (!val) continue;
+    switch (prop) {
+      case "display": if (val === "none") view.display = "none"; else if (val === "grid") grid = "grid"; else if (val === "flex" || val === "inline-flex") isFlex = true; break;
+      case "flex-direction": view.flexDirection = val; hasDir = true; break;
+      case "flex-wrap": view.flexWrap = val; break;
+      case "align-items": view.alignItems = val; break;
+      case "align-self": view.alignSelf = val; break;
+      case "justify-content": view.justifyContent = val; break;
+      case "gap": view.gap = len(val); break;
+      case "row-gap": view.rowGap = len(val); break;
+      case "column-gap": view.columnGap = len(val); break;
+      case "flex": view.flex = parseFloat(val) || (val === "1" ? 1 : undefined); break;
+      case "flex-grow": view.flexGrow = parseFloat(val); break;
+      case "flex-shrink": view.flexShrink = parseFloat(val); break;
+      case "width": view.width = len(val); break;
+      case "height": view.height = len(val); break;
+      case "min-width": view.minWidth = len(val); break;
+      case "max-width": view.maxWidth = len(val); break;
+      case "min-height": view.minHeight = len(val); break;
+      case "max-height": view.maxHeight = len(val); break;
+      case "padding": expand(val, "padding", view); break;
+      case "padding-top": view.paddingTop = len(val); break;
+      case "padding-right": view.paddingRight = len(val); break;
+      case "padding-bottom": view.paddingBottom = len(val); break;
+      case "padding-left": view.paddingLeft = len(val); break;
+      case "margin": expand(val, "margin", view); break;
+      case "margin-top": view.marginTop = len(val); break;
+      case "margin-right": view.marginRight = len(val); break;
+      case "margin-bottom": view.marginBottom = len(val); break;
+      case "margin-left": view.marginLeft = len(val); break;
+      case "background": case "background-color": { const c = color(val, tokens); if (c) view.backgroundColor = c; break; }
+      case "color": { const c = color(val, tokens); if (c) text.color = c; break; }
+      case "border": border(val, "", view, tokens); break;
+      case "border-top": border(val, "Top", view, tokens); break;
+      case "border-bottom": border(val, "Bottom", view, tokens); break;
+      case "border-left": border(val, "Left", view, tokens); break;
+      case "border-right": border(val, "Right", view, tokens); break;
+      case "border-color": { const c = color(val, tokens); if (c) view.borderColor = c; break; }
+      case "border-width": view.borderWidth = len(val); break;
+      case "border-radius": view.borderRadius = radius(val); break;
+      case "font-size": { const n = len(val); if (typeof n === "number") { fontSize = n; text.fontSize = n; } break; }
+      case "font-weight": text.fontWeight = val; break;
+      case "font-family": text.fontFamily = val.includes("mono") ? geistMono("400") : geist("400"); break;
+      case "font-style": text.fontStyle = val; break;
+      case "line-height": { const n = parseFloat(val); if (val.endsWith("px")) lineH = { px: n }; else if (Number.isFinite(n)) lineH = { ratio: n }; break; }
+      case "text-align": text.textAlign = val; break;
+      case "text-transform": text.textTransform = val; break;
+      case "letter-spacing": { const n = len(val); if (typeof n === "number") text.letterSpacing = n; break; }
+      case "text-decoration": text.textDecorationLine = val.includes("underline") ? "underline" : "none"; break;
+      case "opacity": view.opacity = parseFloat(val); break;
+      case "overflow": view.overflow = val === "hidden" ? "hidden" : "visible"; break;
+      case "box-shadow": {
+        // RN Web renders the boxShadow style string; resolve var() colors so the focus
+        // rings and card elevation track the theme. (Native ignores it gracefully.)
+        const resolved = val.replace(/var\(--([a-z-]+)\)/g, (_w, name: string) => (COLOR_TOKENS.has(name as keyof ColorTokens) ? tokens[name as keyof ColorTokens] : "transparent"));
+        view.boxShadow = resolved;
+        break;
+      }
+      default: break;
+    }
+  }
+  // CSS flex defaults to row; RN defaults to column. Force row when a flex container
+  // does not name its direction.
+  if (isFlex && !hasDir && view.flexDirection === undefined) view.flexDirection = "row";
+  return { view, text, grid, fontSize, lineH };
+}
+function expand(val: string, prefix: "padding" | "margin", out: Record<string, unknown>) {
+  const parts = val.split(/\s+/).map((p) => len(p) ?? 0);
+  const [a, b, c, d] = parts;
+  const T = a, R = b ?? a, B = c ?? a, L = d ?? b ?? a;
+  out[`${prefix}Top`] = T; out[`${prefix}Right`] = R; out[`${prefix}Bottom`] = B; out[`${prefix}Left`] = L;
+}
+function border(val: string, side: string, out: Record<string, unknown>, tokens: ColorTokens) {
+  const parts = val.split(/\s+/);
+  const w = len(parts[0]);
+  const c = color(parts.slice(2).join(" ") || parts[parts.length - 1], tokens);
+  if (side) { out[`border${side}Width`] = typeof w === "number" ? w : 1; if (c) out[`border${side}Color`] = c; }
+  else { out.borderWidth = typeof w === "number" ? w : 1; if (c) out.borderColor = c; }
+}
+
+// Parse `grid-template-columns` into per-child layout overrides.
+function gridChildren(tmpl: string, count: number): Record<string, unknown>[] {
+  const auto = tmpl.match(/repeat\(auto-fit,\s*minmax\(\s*([0-9.]+)px/);
+  if (auto) { const basis = parseFloat(auto[1]); return Array.from({ length: count }, () => ({ flexGrow: 1, flexBasis: basis, minWidth: basis })); }
+  const rep = tmpl.match(/repeat\((\d+),\s*1fr\)/);
+  if (rep) return Array.from({ length: count }, () => ({ flex: 1, minWidth: 0 }));
+  const tracks = tmpl.trim().split(/\s+/);
+  if (tracks.length > 1) return Array.from({ length: count }, (_, i) => {
+    const t = tracks[i % tracks.length];
+    if (t === "1fr" || t.endsWith("fr")) return { flex: parseFloat(t) || 1, minWidth: 0 };
+    const l = len(t); return { width: l, flexShrink: 0 };
+  });
+  return Array.from({ length: count }, () => ({ flex: 1, minWidth: 0 }));
+}
+
+// ── Class styles (mirror the docs component CSS) ─────────
+type Frag = { view?: Record<string, unknown>; text?: Record<string, unknown> };
+function classStyle(cls: string, t: ColorTokens, dark: boolean): Frag {
+  switch (cls) {
+    case "section-card":
+    case "card":
+    case "stat-card":
+      return { view: { borderWidth: 1, borderColor: t.border, borderRadius: 12, backgroundColor: t.card, ...(cls === "stat-card" ? { padding: 20 } : {}) } };
+    case "card-header": return { view: { padding: 20, paddingBottom: 12, gap: 4 } };
+    case "card-content": return { view: { padding: 20, paddingTop: 12 } };
+    case "card-footer": return { view: { padding: 20, paddingTop: 12 } };
+    case "section-card-header": return { view: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, paddingHorizontal: 20 } };
+    case "section-card-title": return { text: { fontFamily: geist("600"), fontSize: 15, color: t.foreground } };
+    case "section-card-body": return { view: { padding: 20 } };
+    case "stat-card-header": return { view: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } };
+    case "stat-card-label": return { text: { fontFamily: geist("500"), fontSize: 12, textTransform: "uppercase", letterSpacing: 0.48, color: t["muted-foreground"] } };
+    case "stat-card-value": return { text: { fontFamily: geist("600"), fontSize: 24, letterSpacing: -0.48, color: t.foreground } };
+    case "stat-card-delta": return { view: { marginTop: 4 }, text: { fontFamily: geist("500"), fontSize: 12, color: t["muted-foreground"] } };
+    case "positive": return { text: { color: dark ? "#4ade80" : "#16a34a" } };
+    case "negative": return { text: { color: dark ? "#f87171" : "#dc2626" } };
+    case "page-header": return { view: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 24 } };
+    case "page-header-title": return {};
+    case "page-header-text": return {};
+    case "page-header-sub": return { text: { fontFamily: geist("400"), fontSize: 13, color: t["muted-foreground"] } };
+    case "page-header-actions": return { view: { flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0 } };
+    case "field-label": return { text: { color: t["muted-foreground"] } };
+    case "field-value": return { text: { color: t.foreground } };
+    case "mono": return { text: { fontFamily: geistMono("400"), fontSize: 13 } };
+    case "dt-wrap": return {};
+    case "label": return { view: { marginBottom: 6 }, text: { fontFamily: geist("500"), fontSize: 13, color: t.foreground } };
+    case "input":
+      return { view: { borderWidth: 1, borderColor: t.input, borderRadius: 8, paddingVertical: 9, paddingHorizontal: 12, backgroundColor: t.background, minHeight: 38, justifyContent: "center" }, text: { fontSize: 13, color: t["muted-foreground"] } };
+    case "checkbox": return { view: { width: 16, height: 16, borderRadius: 4, borderWidth: 1, borderColor: t.border, backgroundColor: t.background } };
+    case "btn":
+      return { view: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.background }, text: { fontFamily: geist("500"), fontSize: 13, color: t.foreground } };
+    case "btn-primary": return { view: { backgroundColor: t.primary, borderColor: "transparent" }, text: { color: t["primary-foreground"] } };
+    case "btn-outline": return { view: { backgroundColor: t.background, borderColor: t.border }, text: { color: t.foreground } };
+    case "btn-ghost": return { view: { backgroundColor: "transparent", borderColor: "transparent" }, text: { color: t.foreground } };
+    case "btn-destructive": return { view: { backgroundColor: t.destructive, borderColor: "transparent" }, text: { color: "#ffffff" } };
+    case "btn-sm": return { view: { paddingVertical: 6, paddingHorizontal: 10, gap: 4 }, text: { fontSize: 12 } };
+    case "btn-icon": return { view: { paddingVertical: 7, paddingHorizontal: 7, width: 32, height: 32 } };
+    case "badge":
+      return { view: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: t.secondary }, text: { fontFamily: geist("500"), fontSize: 12, color: t["secondary-foreground"] } };
+    case "badge-secondary": return { view: { backgroundColor: t.secondary }, text: { color: t["secondary-foreground"] } };
+    case "badge-outline": return { view: { backgroundColor: "transparent", borderWidth: 1, borderColor: t.border }, text: { color: t.foreground } };
+    case "status-badge":
+      return { view: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 6, paddingVertical: 3, paddingHorizontal: 9, borderRadius: 9999, backgroundColor: alpha(t["muted-foreground"], 0.12) }, text: { fontFamily: geist("500"), fontSize: 12, color: t["muted-foreground"] } };
+    case "sb-success": return { view: { backgroundColor: dark ? "rgba(20,83,45,0.3)" : "#dcfce7" }, text: { color: dark ? "#4ade80" : "#166534" } };
+    case "sb-warning": return { view: { backgroundColor: dark ? "rgba(113,63,18,0.3)" : "#fef9c3" }, text: { color: dark ? "#facc15" : "#854d0e" } };
+    case "sb-error": return { view: { backgroundColor: dark ? "rgba(127,29,29,0.3)" : "#fee2e2" }, text: { color: dark ? "#f87171" : "#991b1b" } };
+    case "sb-info": return { view: { backgroundColor: dark ? "rgba(30,58,138,0.3)" : "#dbeafe" }, text: { color: dark ? "#60a5fa" : "#1e40af" } };
+    case "dot": return { view: { width: 6, height: 6, borderRadius: 9999, backgroundColor: "currentColor" } };
+    case "avatar":
+      return { view: { width: 32, height: 32, borderRadius: 9999, backgroundColor: t.muted, alignItems: "center", justifyContent: "center", overflow: "hidden" }, text: { fontFamily: geist("600"), fontSize: 12, color: t["muted-foreground"] } };
+    case "avatar-sm": return { view: { width: 24, height: 24 }, text: { fontSize: 10 } };
+    case "badge-default": return { view: { backgroundColor: t.primary }, text: { color: t["primary-foreground"] } };
+    case "kbd":
+      return { view: { borderWidth: 1, borderColor: t.border, borderRadius: 4, backgroundColor: t.muted, paddingHorizontal: 6, paddingVertical: 2, minWidth: 20, alignItems: "center" }, text: { fontFamily: geistMono("400"), fontSize: 11, color: t["muted-foreground"] } };
+    case "code":
+      return { view: { backgroundColor: alpha(t["muted-foreground"], 0.12), borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: "flex-start" }, text: { fontFamily: geistMono("400"), fontSize: 12, color: t.foreground } };
+    case "sep": return { view: { height: 1, backgroundColor: t.border, marginVertical: 8 } };
+    default: return {};
+  }
+}
+
+// ── Render ───────────────────────────────────────────────
+const HEADING: Record<string, Record<string, unknown>> = {
+  h1: { fontSize: 22, fontFamily: geist("600") },
+  h2: { fontSize: 24, fontFamily: geist("700") },
+  h3: { fontSize: 18, fontFamily: geist("600") },
+  h4: { fontSize: 16, fontFamily: geist("600") },
+  strong: { fontFamily: geist("700") },
+  b: { fontFamily: geist("700") },
+  code: { fontFamily: geistMono("400"), fontSize: 12 },
+};
+const BOX_KEYS = ["backgroundColor", "borderWidth", "borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth", "padding", "paddingTop", "paddingBottom", "paddingLeft", "paddingRight", "width", "height", "borderRadius", "minHeight", "minWidth"];
+
+function isTextOnly(node: Extract<Node, { type: "el" }>): boolean {
+  return node.children.length > 0 && node.children.every((c) => c.type === "text" || (c.type === "el" && c.tag === "br"));
+}
+function joinText(node: Extract<Node, { type: "el" }>): string {
+  return node.children.map((c) => (c.type === "text" ? c.text : "\n")).join("").replace(/\s+/g, " ").trim();
+}
+function finalizeText(text: Record<string, unknown>, inheritColor?: string): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...text };
+  const fam = typeof out.fontFamily === "string" ? out.fontFamily : "";
+  const mono = fam.startsWith("GeistMono");
+  if (out.fontWeight) {
+    const w = out.fontWeight === "bold" ? "700" : String(out.fontWeight);
+    out.fontFamily = mono ? geistMono(["400", "500", "600"].includes(w) ? (w as "400") : "400") : geist(["400", "500", "600", "700", "800"].includes(w) ? (w as "400") : "600");
+  } else if (!out.fontFamily) {
+    out.fontFamily = geist("400");
+  }
+  delete out.fontWeight;
+  if (out.color === "currentColor") out.color = inheritColor;
+  if (!out.color && inheritColor) out.color = inheritColor;
+  return out;
+}
+
+function SvgNode({ node, color: cur }: { node: Extract<Node, { type: "el" }>; color: string }) {
+  const w = parseFloat(node.attrs.width || "0") || 20;
+  const h = parseFloat(node.attrs.height || "0") || 20;
+  const vb = node.attrs.viewbox || `0 0 ${w} ${h}`;
+  const paint = (v?: string) => (!v || v === "currentColor" ? cur : v);
+  return (
+    <Svg width={w} height={h} viewBox={vb}>
+      {node.children.filter((c): c is Extract<Node, { type: "el" }> => c.type === "el").map((c, i) => {
+        const a = c.attrs;
+        const common = { fill: a.fill === "none" ? "none" : paint(a.fill), stroke: a.stroke ? paint(a.stroke) : undefined, strokeWidth: a["stroke-width"] ? parseFloat(a["stroke-width"]) : undefined };
+        if (c.tag === "path") return <Path key={i} d={a.d} {...common} />;
+        if (c.tag === "circle") return <Circle key={i} cx={a.cx} cy={a.cy} r={a.r} {...common} />;
+        if (c.tag === "rect") return <Rect key={i} x={a.x} y={a.y} width={a.width} height={a.height} rx={a.rx} {...common} />;
+        if (c.tag === "line") return <Line key={i} x1={a.x1} y1={a.y1} x2={a.x2} y2={a.y2} {...common} />;
+        return null;
+      })}
+    </Svg>
+  );
+}
+
+function renderNode(node: Node, key: string, inherited: Record<string, unknown>, t: ColorTokens, dark: boolean, override?: Record<string, unknown>): ReactNode {
+  if (node.type === "text") {
+    const txt = node.text.replace(/\s+/g, " ");
+    if (!txt.trim()) return null;
+    return <Text key={key} style={finalizeText({ ...inherited }) as object}>{txt}</Text>;
+  }
+  const { tag, attrs } = node;
+  if (tag === "script" || tag === "style" || tag === "br" || tag === "option") return null;
+  const inheritColor = (inherited.color as string) ?? t.foreground;
+  if (tag === "svg") return <SvgNode key={key} node={node} color={inheritColor} />;
+
+  const classes = (attrs.class || "").split(/\s+/).filter(Boolean);
+  const cv: Record<string, unknown> = {};
+  let ct: Record<string, unknown> = {};
+  for (const c of classes) { const f = classStyle(c, t, dark); Object.assign(cv, f.view); Object.assign(ct, f.text); }
+  const tagText = HEADING[tag] ?? {};
+  const parsed = parseStyle(attrs.style || "", t);
+  const view = { ...cv, ...parsed.view, ...override };
+  // Resolve "currentColor" backgrounds (dot) against the inherited text color.
+  if (view.backgroundColor === "currentColor") view.backgroundColor = inheritColor;
+
+  const fontSize = (parsed.text.fontSize as number) ?? (ct.fontSize as number) ?? (tagText.fontSize as number) ?? (inherited.fontSize as number) ?? 13;
+  let lineHeight: number | undefined;
+  if (parsed.lineH) lineHeight = parsed.lineH.px ?? (parsed.lineH.ratio ? parsed.lineH.ratio * fontSize : undefined);
+  const text: Record<string, unknown> = { ...inherited, ...tagText, ...ct, ...parsed.text, fontSize };
+  if (lineHeight) text.lineHeight = lineHeight;
+
+  // Form controls.
+  if (tag === "input") {
+    if (attrs.type === "checkbox" || attrs.type === "radio") return <View key={key} style={{ ...classStyle("checkbox", t, dark).view, ...parsed.view, borderRadius: attrs.type === "radio" ? 9999 : 4 } as object} />;
+    const ph = attrs.placeholder || attrs.value || "";
+    return (
+      <View key={key} style={{ ...classStyle("input", t, dark).view, ...parsed.view } as object}>
+        <Text style={finalizeText({ fontSize: 13, color: attrs.value ? t.foreground : t["muted-foreground"] }) as object} numberOfLines={1}>{ph}</Text>
+      </View>
+    );
+  }
+  if (tag === "select") {
+    const first = node.children.find((c): c is Extract<Node, { type: "el" }> => c.type === "el" && c.tag === "option");
+    const label = first ? joinText(first) : "";
+    return (
+      <View key={key} style={{ ...classStyle("input", t, dark).view, flexDirection: "row", alignItems: "center", justifyContent: "space-between", ...parsed.view } as object}>
+        <Text style={finalizeText({ fontSize: 13, color: t.foreground }) as object} numberOfLines={1}>{label}</Text>
+        <Text style={{ color: t["muted-foreground"], fontSize: 11 }}>▾</Text>
+      </View>
+    );
+  }
+  if (tag === "img") return <View key={key} style={{ backgroundColor: t.muted, borderRadius: (view.borderRadius as number) ?? 6, width: (view.width as number) ?? 40, height: (view.height as number) ?? 40, ...parsed.view } as object} />;
+  // A toggle switch (a span.switch with a .switch-slider): render the track + knob, on by default.
+  if (classes.includes("switch")) {
+    return (
+      <View key={key} style={{ width: 36, height: 20, borderRadius: 9999, backgroundColor: t.primary, padding: 2, justifyContent: "center" }}>
+        <View style={{ width: 16, height: 16, borderRadius: 9999, backgroundColor: "#ffffff", alignSelf: "flex-end" }} />
+      </View>
+    );
+  }
+  if (tag === "table") return <TableEl key={key} node={node} t={t} dark={dark} inherited={text} />;
+
+  // Text-only node.
+  if (isTextOnly(node)) {
+    const hasBox = BOX_KEYS.some((k) => view[k] !== undefined) || classes.some((c) => ["kbd", "code", "badge", "btn", "avatar", "input", "status-badge"].includes(c));
+    const label = joinText(node);
+    const textEl = <Text style={finalizeText(text, inheritColor) as object}>{label}</Text>;
+    if (!hasBox) return <Text key={key} style={finalizeText(text, inheritColor) as object}>{label}</Text>;
+    return <View key={key} style={view as object}>{textEl}</View>;
+  }
+
+  // sep with a centered label (data-content).
+  if (classes.includes("sep") && attrs["data-content"]) {
+    return (
+      <View key={key} style={{ flexDirection: "row", alignItems: "center", gap: 10, marginVertical: 8 }}>
+        <View style={{ flex: 1, height: 1, backgroundColor: t.border }} />
+        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: t["muted-foreground"] }}>{attrs["data-content"]}</Text>
+        <View style={{ flex: 1, height: 1, backgroundColor: t.border }} />
+      </View>
+    );
+  }
+
+  // Container with element children.
+  const els = node.children.filter((c) => !(c.type === "el" && (c.tag === "br")));
+  const overrides = parsed.grid ? gridChildren(attrs["data-grid"] || gridTemplate(attrs.style || ""), els.length) : undefined;
+  if (parsed.grid) { view.flexDirection = "row"; view.flexWrap = "wrap"; if (view.gap === undefined) view.gap = 12; }
+  return (
+    <View key={key} style={view as object}>
+      {els.map((c, i) => renderNode(c, `${key}.${i}`, text, t, dark, overrides?.[i]))}
+    </View>
+  );
+}
+function gridTemplate(style: string): string {
+  const m = style.match(/grid-template-columns:\s*([^;]+)/);
+  return m ? m[1] : "1fr 1fr";
+}
+
+function TableEl({ node, t, dark, inherited }: { node: Extract<Node, { type: "el" }>; t: ColorTokens; dark: boolean; inherited: Record<string, unknown> }) {
+  const rows: Extract<Node, { type: "el" }>[] = [];
+  const walk = (n: Extract<Node, { type: "el" }>) => n.children.forEach((c) => { if (c.type === "el") { if (c.tag === "tr") rows.push(c); else walk(c); } });
+  walk(node);
+  return (
+    <View style={{ borderWidth: 1, borderColor: t.border, borderRadius: 10, overflow: "hidden" }}>
+      {rows.map((tr, r) => {
+        const cells = tr.children.filter((c): c is Extract<Node, { type: "el" }> => c.type === "el" && (c.tag === "td" || c.tag === "th"));
+        const head = cells.some((c) => c.tag === "th");
+        return (
+          <View key={r} style={{ flexDirection: "row", backgroundColor: head ? t.muted : "transparent", borderTopWidth: r === 0 ? 0 : 1, borderColor: t.border }}>
+            {cells.map((cell, i) => (
+              <View key={i} style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 9 }}>
+                {isTextOnly(cell)
+                  ? <Text style={finalizeText({ ...inherited, fontSize: head ? 11 : 12, fontFamily: head ? geist("600") : geist("400"), color: head ? t.foreground : (i === 0 ? t.foreground : t["muted-foreground"]) }) as object}>{joinText(cell)}</Text>
+                  : renderNode(cell, `${r}.${i}`, { ...inherited, fontSize: 12 }, t, dark)}
+              </View>
+            ))}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+// The public renderer: parse the mockup html once and render it as RN.
+export function Mockup({ html }: { html: string }) {
+  const { tokens, dark } = useTheme();
+  const nodes = useMemo(() => parseHtml(html), [html]);
+  const inherited = { fontSize: 13, color: tokens.foreground, fontFamily: geist("400") };
+  return <View style={{ gap: 0 }}>{nodes.map((n, i) => renderNode(n, String(i), inherited, tokens, dark))}</View>;
+}
+
