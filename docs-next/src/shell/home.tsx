@@ -1,0 +1,419 @@
+import { type ReactNode } from "react";
+import { ScrollView, useWindowDimensions, Linking } from "react-native";
+import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
+import { useRouter } from "expo-router";
+import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
+import {
+  ArrowRight, Check, ChevronRight, Layers, Plus, Shield, AppWindow,
+  Home as HomeIcon, type LucideIcon,
+} from "lucide-react-native";
+import { CanvasMark } from "../brand/canvas-mark";
+import { Github } from "../brand/brand-logos";
+import { HeroOrbit } from "../brand/hero-orbit";
+import { CodeBlock } from "../ui/code-block";
+import { geist, geistMono } from "../ui/fonts";
+import { alpha } from "../ui/color";
+
+const REPO_URL = "https://github.com/OlympusOSS/canvas";
+const NPM_URL = "https://www.npmjs.com/package/@olympusoss/canvas";
+const VERSION = "v5.0.0";
+const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
+
+const INSTALL_BASH = "bun add @olympusoss/canvas";
+const INSTALL_TSX = [
+  'import "@olympusoss/canvas/styles/canvas.css";',
+  'import { Button } from "@olympusoss/canvas";',
+  "",
+  "// The prop name is the value: <Button primary large />",
+  "<Button primary large>Save changes</Button>",
+  "<Button destructive>Delete</Button>",
+  "<Button ghost small>Cancel</Button>",
+].join("\n");
+
+const PRINCIPLES = [
+  {
+    title: "Universal React Native",
+    body: "One codebase, one component API, every platform. Canvas renders natively on iOS and Android, and on the web through React Native Web. Write a screen once and ship it everywhere, with no per-platform forks to maintain.",
+  },
+  {
+    title: "Responsive, desktop-first",
+    body: "Every component is highly responsive by default, authored desktop-first: size for the desktop case, then add the variants that scale it down to tablet and phone. The smallest matching breakpoint wins.",
+  },
+  {
+    title: "Semantic UI",
+    body: "Change a component's style with flat boolean props. Each choice is its own prop, named for its meaning, so the prop name is the value. You write <Button primary large>, never variant=\"primary\". It reads like a sentence.",
+  },
+  {
+    title: "Tokens, themes, density",
+    body: "Built with atomic design and driven by design tokens: light and dark schemes, a glass surface mode, and density controls. Theming is a token change, not a rewrite, so the boolean props stay your only API.",
+  },
+];
+
+const ATOMIC_LEVELS: { id: string; label: string; icon: LucideIcon; blurb: string; pages: { label: string; to: string }[] }[] = [
+  {
+    id: "tokens", label: "Tokens", icon: Layers,
+    blurb: "The lowest-level decisions: color schemes (light and dark), typography, spacing, radii, and density. Every component derives from these tokens, so theming is a token change, not a rewrite.",
+    pages: [{ label: "Colors & Theme", to: "/tokens/colors" }, { label: "Theming", to: "/theming" }],
+  },
+  {
+    id: "atoms", label: "Atoms", icon: Plus,
+    blurb: "Indivisible building blocks like Button, Input, Badge, Icon, and Avatar. One job each, styled entirely through semantic boolean props, every state identical on native and web.",
+    pages: [
+      { label: "Buttons", to: "/components/button" }, { label: "Inputs", to: "/components/input" },
+      { label: "Badges", to: "/components/badge" }, { label: "Avatars", to: "/components/avatar" },
+    ],
+  },
+  {
+    id: "molecules", label: "Molecules", icon: Shield,
+    blurb: "Small compositions of atoms with a single clear purpose: Card, Field, Empty State. Reusable across pages and built from the same boolean prop API.",
+    pages: [
+      { label: "Cards", to: "/components/card" }, { label: "Field Display", to: "/components/field" },
+      { label: "Empty States", to: "/components/empty-state" },
+    ],
+  },
+  {
+    id: "organisms", label: "Organisms", icon: AppWindow,
+    blurb: "Self-contained sections of a screen: Data Table, Navigation, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
+    pages: [
+      { label: "Data Tables", to: "/components/data-table" }, { label: "Navigation", to: "/components/navigation" },
+      { label: "Dialog", to: "/components/dialog" }, { label: "Tabs", to: "/components/tabs" },
+    ],
+  },
+  {
+    id: "templates", label: "Templates", icon: HomeIcon,
+    blurb: "Full screen compositions showing how atoms, molecules, and organisms assemble into real product surfaces, from a dashboard to a sign-in flow.",
+    pages: [
+      { label: "Dashboard", to: "/templates/dashboard" }, { label: "Sign In", to: "/templates/signin" },
+      { label: "Settings", to: "/templates/settings" },
+    ],
+  },
+  {
+    id: "patterns", label: "Patterns", icon: Check,
+    blurb: "Cross-cutting treatments that span many components: responsive layout, glass surfaces, density, loading, form validation, and accessibility.",
+    pages: [
+      { label: "Responsive", to: "/patterns/responsive" }, { label: "Glass", to: "/patterns/glass" },
+      { label: "Density", to: "/patterns/density" },
+    ],
+  },
+];
+
+const FOOTER_COLS: { head: string; links: { label: string; to?: string; url?: string }[] }[] = [
+  { head: "Components", links: [
+    { label: "Buttons", to: "/components/button" }, { label: "Cards", to: "/components/card" },
+    { label: "Data Tables", to: "/components/data-table" }, { label: "Dialog", to: "/components/dialog" },
+  ] },
+  { head: "Foundations", links: [
+    { label: "Tokens", to: "/tokens/colors" }, { label: "Theming", to: "/theming" },
+    { label: "Responsive", to: "/patterns/responsive" }, { label: "Integration", to: "/integration" },
+  ] },
+  { head: "Project", links: [
+    { label: "GitHub", url: REPO_URL }, { label: "npm", url: NPM_URL }, { label: "Compare", to: "/compare" },
+  ] },
+];
+
+// .landing-wrap: the centered 1140 column with 24px gutters.
+function Wrap({ children, style }: { children: ReactNode; style?: object }) {
+  return <View style={[{ width: "100%", maxWidth: 1140, alignSelf: "center", paddingHorizontal: 24 }, style]}>{children}</View>;
+}
+
+// .landing-btn (-primary / -outline, -lg): solid foreground fill or bordered surface.
+function LandingButton({ label, icon, primary, onPress }: {
+  label: string; icon?: ReactNode; primary?: boolean; onPress: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+        height: 46, paddingHorizontal: 22, borderRadius: 11, borderWidth: 1,
+        backgroundColor: primary ? tokens.foreground : tokens.background,
+        borderColor: primary ? "transparent" : tokens.border,
+      }}
+    >
+      {icon}
+      <Text style={{ fontFamily: geist("500"), fontSize: 15, color: primary ? tokens.background : tokens.foreground }}>{label}</Text>
+    </Pressable>
+  );
+}
+
+// The blurred radial wash behind the hero (decorative). RN has no positioned blur, so
+// soft radial-gradient blobs stand in for the Vite `.landing-aurora`.
+function Aurora() {
+  const { tokens } = useTheme();
+  const blobs = [
+    { color: tokens.primary, cx: "62%", cy: "32%", r: "44%", o: 0.3 },
+    { color: "#8b5cf6", cx: "32%", cy: "58%", r: "40%", o: 0.26 },
+    { color: "#06b6d4", cx: "20%", cy: "80%", r: "32%", o: 0.2 },
+  ];
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", top: -260, right: -180, width: 760, height: 760, opacity: 0.7 }}>
+      <Svg width={760} height={760}>
+        <Defs>
+          {blobs.map((b, i) => (
+            <RadialGradient key={i} id={`aurora-${i}`} cx={b.cx} cy={b.cy} r={b.r}>
+              <Stop offset="0%" stopColor={b.color} stopOpacity={b.o} />
+              <Stop offset="72%" stopColor={b.color} stopOpacity={0} />
+            </RadialGradient>
+          ))}
+        </Defs>
+        {blobs.map((_, i) => (
+          <Circle key={i} cx={380} cy={380} r={380} fill={`url(#aurora-${i})`} />
+        ))}
+      </Svg>
+    </View>
+  );
+}
+
+function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; title: string; desc: string; titleSize: number }) {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ marginBottom: 28 }}>
+      <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>
+        {eyebrow}
+      </Text>
+      <Text style={{ fontFamily: geist("600"), fontSize: titleSize, letterSpacing: titleSize * -0.025, lineHeight: titleSize * 1.1, color: tokens.foreground }}>
+        {title}
+      </Text>
+      <Text style={{ fontFamily: geist("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
+        {desc}
+      </Text>
+    </View>
+  );
+}
+
+export function Home() {
+  const { tokens } = useTheme();
+  const { width } = useWindowDimensions();
+  const router = useRouter();
+  const go = (to: string) => router.push(to as never);
+
+  const wide = width > 920;
+  const levelStack = width <= 760;
+  const h1Size = Math.round(Math.min(58, Math.max(36, width * 0.05)));
+  const sectionTitle = Math.round(Math.min(36, Math.max(26, width * 0.034)));
+  const ctaTitle = Math.round(Math.min(42, Math.max(28, width * 0.04)));
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: tokens.background }}>
+      {/* ── Hero ── */}
+      <View style={{ overflow: "hidden", paddingTop: 28, paddingBottom: 56 }}>
+        <Aurora />
+        <Wrap>
+          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 40, alignItems: "center" }}>
+            {/* Copy */}
+            <View style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
+              <View style={{ flexDirection: "row", alignSelf: "flex-start", alignItems: "center", gap: 8, paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
+                <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
+                <Text style={{ fontFamily: geistMono("400"), fontSize: 12, color: tokens["muted-foreground"] }}>{VERSION} · @olympusoss/canvas</Text>
+              </View>
+
+              <Text style={{ fontFamily: geist("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
+                One codebase. <Text style={{ color: tokens.primary }}>Every platform.</Text> One component API.
+              </Text>
+
+              <Text style={{ fontFamily: geist("400"), fontSize: 16.5, lineHeight: 26.4, color: tokens["muted-foreground"], maxWidth: 576, marginTop: 22 }}>
+                Canvas is a universal React Native UI kit. The same components render natively on iOS and Android and on the web through React Native Web, styled with flat, semantic boolean props that read like a sentence.
+              </Text>
+
+              <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 18 }}>
+                <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
+                  <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
+                </View>
+                <Text style={{ fontFamily: geist("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
+              </View>
+
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
+                <LandingButton primary label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
+                <LandingButton label="Explore tokens" onPress={() => go("/tokens/colors")} />
+              </View>
+
+              <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
+                {PLATFORMS.map((p) => (
+                  <View key={p} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Check size={13} color={tokens.primary} />
+                    <Text style={{ fontFamily: geist("500"), fontSize: 13.5, color: tokens["muted-foreground"] }}>{p}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* Orbit showcase */}
+            <View style={{ flex: wide ? 0.95 : undefined, width: "100%", minWidth: 0 }}>
+              <HeroOrbit />
+              <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 14, paddingHorizontal: 2 }}>
+                Canvas at the core; iOS, Android, and the web as targets. One component API, rendered natively on every platform.
+              </Text>
+            </View>
+          </View>
+        </Wrap>
+      </View>
+
+      {/* ── Principles ── */}
+      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
+        <SectionHead
+          eyebrow="The system"
+          title="Four principles, one API."
+          desc="The non-negotiable rules every component follows, so the styling stays predictable from the smallest atom to a full template."
+          titleSize={sectionTitle}
+        />
+        <CardGrid cols={wide ? 2 : 1}>
+          {PRINCIPLES.map((p) => (
+            <View key={p.title} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 22 }}>
+              <Text style={{ fontFamily: geist("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground, marginBottom: 8 }}>{p.title}</Text>
+              <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.7, color: tokens["muted-foreground"] }}>{p.body}</Text>
+            </View>
+          ))}
+        </CardGrid>
+      </Wrap>
+
+      {/* ── Get started ── */}
+      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
+        <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 32, alignItems: "center" }}>
+          <View style={{ flex: wide ? 0.9 : undefined, width: "100%" }}>
+            <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>Get started</Text>
+            <Text style={{ fontFamily: geist("600"), fontSize: sectionTitle, letterSpacing: sectionTitle * -0.025, lineHeight: sectionTitle * 1.1, color: tokens.foreground }}>Three props to a styled button.</Text>
+            <Text style={{ fontFamily: geist("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
+              Install the package, import the stylesheet once, and compose. No enum strings, no className soup, no platform forks. Style props group into orthogonal axes (intent, size, density): pass at most one per axis, stack the rest freely.
+            </Text>
+            <Pressable onPress={() => go("/integration")} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 22 }}>
+              <Text style={{ fontFamily: geist("500"), fontSize: 14.5, color: tokens.primary }}>Read the integration guide</Text>
+              <ArrowRight size={15} color={tokens.primary} />
+            </Pressable>
+          </View>
+
+          <View style={{ flex: wide ? 1.1 : undefined, width: "100%", borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", shadowColor: tokens.foreground, shadowOpacity: 0.12, shadowRadius: 30, shadowOffset: { width: 0, height: 20 } }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, height: 40, paddingHorizontal: 14, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.35) }}>
+              <View style={{ flexDirection: "row", gap: 7 }}>
+                {[0, 1, 2].map((i) => <View key={i} style={{ width: 11, height: 11, borderRadius: 9999, backgroundColor: alpha(tokens["muted-foreground"], 0.35) }} />)}
+              </View>
+              <Text style={{ fontFamily: geistMono("400"), fontSize: 12, color: tokens["muted-foreground"] }}>app.tsx</Text>
+            </View>
+            <View style={{ padding: 8, gap: 8 }}>
+              <CodeBlock code={INSTALL_BASH} />
+              <CodeBlock code={INSTALL_TSX} />
+            </View>
+          </View>
+        </View>
+      </Wrap>
+
+      {/* ── Atomic levels ── */}
+      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
+        <SectionHead
+          eyebrow="Architecture"
+          title="Atomic design, end to end."
+          desc="Every page in this site is one of six levels of abstraction, and all components render as real React Native components, straight from their markdown example docs."
+          titleSize={sectionTitle}
+        />
+        <View style={{ gap: 12 }}>
+          {ATOMIC_LEVELS.map((lvl, i) => {
+            const Icon = lvl.icon;
+            return (
+              <View key={lvl.id} style={{ flexDirection: levelStack ? "column" : "row", borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden" }}>
+                <View style={{
+                  width: levelStack ? "100%" : 220,
+                  flexDirection: levelStack ? "row" : "column",
+                  alignItems: levelStack ? "center" : "flex-start",
+                  justifyContent: levelStack ? "flex-start" : "center",
+                  gap: levelStack ? 14 : 12,
+                  paddingVertical: levelStack ? 14 : 22,
+                  paddingHorizontal: levelStack ? 18 : 22,
+                  backgroundColor: alpha(tokens.muted, 0.28),
+                  borderRightWidth: levelStack ? 0 : 1,
+                  borderBottomWidth: levelStack ? 1 : 0,
+                  borderColor: tokens.border,
+                }}>
+                  <Text style={{ fontFamily: geistMono("600"), fontSize: levelStack ? 22 : 30, color: alpha(tokens["muted-foreground"], 0.6) }}>0{i + 1}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Icon size={16} color={tokens.primary} />
+                    <Text style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
+                  </View>
+                </View>
+                <View style={{ flex: 1, paddingVertical: 20, paddingHorizontal: 22, gap: 14 }}>
+                  <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 704 }}>{lvl.blurb}</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                    {lvl.pages.map((pg) => (
+                      <Pressable key={pg.to} onPress={() => go(pg.to)} style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 5, paddingHorizontal: 11, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
+                        <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{pg.label}</Text>
+                        <ChevronRight size={11} color={tokens["muted-foreground"]} />
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </Wrap>
+
+      {/* ── Closing CTA band ── */}
+      <View style={{ marginTop: 72, paddingVertical: 72, borderTopWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.22) }}>
+        <Wrap>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontFamily: geist("600"), fontSize: ctaTitle, letterSpacing: ctaTitle * -0.028, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
+            <Text style={{ fontFamily: geist("400"), fontSize: 16, lineHeight: 25.6, color: tokens["muted-foreground"], maxWidth: 544, textAlign: "center", marginTop: 14, marginBottom: 28 }}>
+              Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+              <LandingButton primary label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
+              <LandingButton label="View on GitHub" icon={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)} />
+            </View>
+          </View>
+        </Wrap>
+      </View>
+
+      {/* ── Footer ── */}
+      <View style={{ borderTopWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background, paddingTop: 48, paddingBottom: 32 }}>
+        <Wrap>
+          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 40 : 32, paddingBottom: 40 }}>
+            <View style={{ flex: wide ? 1.2 : undefined }}>
+              <Pressable onPress={() => go("/")} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <CanvasMark size={26} />
+                <View>
+                  <Text style={{ fontFamily: geist("600"), fontSize: 15, letterSpacing: -0.15, color: tokens.foreground }}>Canvas</Text>
+                  <Text style={{ fontFamily: geist("500"), fontSize: 11, letterSpacing: 0.22, color: tokens["muted-foreground"] }}>design system</Text>
+                </View>
+              </Pressable>
+              <Text style={{ fontFamily: geist("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 352, marginTop: 16 }}>
+                A universal React Native UI kit. Native iOS and Android, plus web.
+              </Text>
+            </View>
+            <View style={{ flex: wide ? 2 : undefined, flexDirection: "row", flexWrap: "wrap", gap: 28 }}>
+              {FOOTER_COLS.map((col) => (
+                <View key={col.head} style={{ flex: 1, minWidth: 130, gap: 11 }}>
+                  <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 0.96, textTransform: "uppercase", color: tokens.foreground, marginBottom: 3 }}>{col.head}</Text>
+                  {col.links.map((l) => (
+                    <Pressable key={l.label} onPress={() => (l.url ? Linking.openURL(l.url) : go(l.to!))}>
+                      <Text style={{ fontFamily: geist("400"), fontSize: 14, color: tokens["muted-foreground"] }}>{l.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ))}
+            </View>
+          </View>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8, paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
+            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Olympus · @olympusoss/canvas {VERSION}</Text>
+            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
+          </View>
+        </Wrap>
+      </View>
+    </ScrollView>
+  );
+}
+
+// A simple equal-width grid: chunk children into rows of `cols` and lay each row out
+// with flex:1 cells (RN has no CSS grid; this keeps the cards even).
+function CardGrid({ children, cols }: { children: ReactNode[]; cols: number }) {
+  const rows: ReactNode[][] = [];
+  for (let i = 0; i < children.length; i += cols) rows.push(children.slice(i, i + cols));
+  return (
+    <View style={{ gap: 16 }}>
+      {rows.map((row, i) => (
+        <View key={i} style={{ flexDirection: "row", gap: 16 }}>
+          {row}
+          {row.length < cols ? Array.from({ length: cols - row.length }).map((_, j) => <View key={`pad-${j}`} style={{ flex: 1 }} />) : null}
+        </View>
+      ))}
+    </View>
+  );
+}
