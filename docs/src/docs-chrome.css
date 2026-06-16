@@ -658,26 +658,23 @@ input.checkbox { width: 1rem; height: 1rem; accent-color: var(--primary); cursor
    tokens a touch more translucent and faintly cool-tinted, and adds edge
    definition so the low-contrast panes still separate from the backdrop. */
 
-/* Base (shared) tokens; dark overrides its own alphas below. */
+/* Functional-layer token. Only the popover material goes translucent (Apple's
+   model: glass is the functional layer); the card token stays solid so content
+   surfaces never frost. Dark overrides its own alpha below. */
 [data-surface="glass"] {
-  --card: oklch(1 0 0 / 0.62);
   --popover: oklch(1 0 0 / 0.74);
 }
 .dark[data-surface="glass"] {
   /* Dark glass already reads well (dark translucent over a dark aurora has real
-     contrast); leave its tokens exactly as-is. */
-  --card: oklch(0.24 0.006 285.885 / 0.5);
+     contrast); leave its popover alpha as-is. */
   --popover: oklch(0.25 0.006 285.885 / 0.62);
 }
 
-/* Light glass surfaces (light only). Drop the alpha modestly (0.62 -> 0.52,
-   0.74 -> 0.66) so more aurora transmits, and shift off pure white to a faint
-   cool tint (hue 286, the zinc/--border family) so the pane reads as cool glass,
-   not flat paper. Kept bright (L ~0.99) so near-black foreground stays
-   high-contrast and two stacked layers (~0.52) still composite to ~0.77,
-   bright and non-muddy. */
+/* Light glass popover (light only). Drop the alpha modestly (0.74 -> 0.66) so more
+   aurora transmits, and shift off pure white to a faint cool tint (hue 286, the
+   zinc/--border family) so the pane reads as cool glass, not flat paper. Kept
+   bright (L ~0.99) so near-black foreground stays high-contrast. */
 [data-surface="glass"]:not(.dark) {
-  --card: oklch(0.99 0.01 286 / 0.52);
   --popover: oklch(0.99 0.01 286 / 0.66);
 }
 
@@ -709,37 +706,20 @@ input.checkbox { width: 1rem; height: 1rem; accent-color: var(--primary); cursor
     radial-gradient(200% 200% at 50% 50%, oklch(0.985 0.012 286), oklch(0.985 0.012 286));
 }
 
-/* Frosting. Shared across both themes and the whole surface list (chrome and
-   content); this is the blur that makes the aurora read through every pane. */
-[data-surface="glass"] :where(
-  .sidebar, .topbar, .bg-card, .bg-popover, .section-card, .stat-card,
-  .card, .dt-wrap, .codeblock, [data-alert]
-) {
+/* Frosting. The blur that makes the aurora read through the functional surfaces
+   only: the bars and any popover-backed overlay. Content surfaces (.card,
+   .section-card, tables, code blocks, alerts) stay solid and unfrosted. */
+[data-surface="glass"] :where(.sidebar, .topbar, .bg-popover) {
   backdrop-filter: blur(16px) saturate(1.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
 }
 
-/* Edge definition (light only, CONTENT surfaces only). At low fill-vs-backdrop
-   contrast a frosted pane needs a defined edge to separate from the colorful
-   aurora; translucency alone cannot do it. Chrome is excluded: .sidebar (fixed,
-   full-height, square corners, border-right only) and .topbar (sticky,
-   border-bottom only) would read as a stray outline/halo if wrapped in a card
-   border. [data-alert] is excluded so its tone-colored semantic border survives;
-   .dt-wrap is excluded because it owns its border with overflow:hidden (an inset
-   rim would be clipped). This box-shadow replaces the base 5% card shadow
-   (intended); the base 1px var(--border) still applies under the inset rim. */
-[data-surface="glass"]:not(.dark) :where(
-  .section-card, .stat-card, .card, .codeblock
-) {
-  box-shadow:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.55),                 /* bright top rim */
-    0 1px 2px 0 oklch(0.4 0.02 286 / 0.08),              /* tight contact */
-    0 8px 24px -12px oklch(0.4 0.05 286 / 0.18);         /* soft cool ambient */
-}
-
-/* Topbar fill. Sticky bar gets the card token as its background so it frosts
-   with the rest; it keeps ONLY its native border-bottom (no card border/shadow). */
-[data-surface="glass"] .topbar { background-color: var(--card); }
+/* Bar fills. The sidebar and topbar are functional shells, so in glass they paint
+   the popover (glass) material rather than the now-solid card token, then frost
+   with the rule above. Content surfaces keep the solid card token and their normal
+   shadow, so they need no glass edge-definition rim. */
+[data-surface="glass"] .sidebar { background: var(--popover); }
+[data-surface="glass"] .topbar { background-color: var(--popover); }
 
 /* ── Live-preview surfaces (playground + Do/Don't) ────────────────────────────
    Canvas's glass is the FUNCTIONAL layer only: the token swap makes overlay
