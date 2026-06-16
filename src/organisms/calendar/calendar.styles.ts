@@ -6,9 +6,10 @@ import { type ColorTokens, alpha } from "../../style/index.js";
 // per-day selected/today/highlight state; the skin supplies only the native
 // SHAPE, sizing, weekday-label style, day-cell fill, today treatment, and press
 // feedback. The BRAND survives on every platform (the selected day fills with the
-// indigo `primary` token, never a platform default), so each follows light/dark
-// and reads as glass when the ThemeProvider's surface is "glass" (tokens.card is
-// swapped translucent).
+// indigo `primary` token, never a platform default), so each follows light/dark.
+// The calendar is a CONTENT surface that paints the opaque `card` token, so it
+// stays SOLID (does not frost) under the ThemeProvider's "glass" surface: glass
+// swaps only the `popover` token translucent, never `card`.
 //
 //   iOS (HIG date picker): the SELECTED day is a filled `primary` circle
 //     (radius 9999) with `primary-foreground` text; TODAY is `primary`-colored
@@ -61,7 +62,7 @@ export interface CalendarSkin {
   // --- container ---
   /** The outer surface: border, radius, padding (layout-only). */
   containerBase: ViewStyle;
-  /** The surface fill + border (tokens.card goes translucent under glass). */
+  /** The surface fill + border (paints the opaque `card` token; stays solid, does not frost, under glass). */
   containerSurface: (t: ColorTokens) => ViewStyle;
 
   // --- header (month label + prev/next chevrons) ---
