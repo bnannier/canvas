@@ -1,38 +1,51 @@
 // Metro config for the universal Canvas docs app.
 //
-// The Canvas library (`@olympusoss/canvas`) and the generated docs core
-// (`docs-core`) are consumed as `file:` dependencies (see package.json), so Metro
-// resolves them as normal linked packages and follows the symlinks into the repo.
-// The library and docs core ship TypeScript SOURCE (no build step), so:
-//   - watchFolders watches the whole repo root, so Metro indexes those linked
-//     source files (their real paths live outside docs-next/);
-//   - nodeModulesPaths + disableHierarchicalLookup force a SINGLE copy of react,
-//     react-native and react-native-svg — including for imports made from inside
-//     the linked library source (the Metro analogue of the Vite config's React
-//     `dedupe`; two copies break hooks / the renderer).
+// Native target: renders the RN components in src/. Web target: REUSES the existing
+// Vite docs components (docs/src) for exact visual parity, so their imports are
+// bridged here — react-router-dom -> an Expo Router shim, and "@/..." -> docs/src.
+//
+// The library + generated docs-core are consumed as source via live symlinks (see
+// package.json postinstall). watchFolders sees the out-of-tree source;
+// nodeModulesPaths + disableHierarchicalLookup force a single react/RN/svg copy.
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
+const fs = require("fs");
 
 const projectRoot = __dirname;
 const repoRoot = path.resolve(projectRoot, "..");
+const docsSrc = path.resolve(repoRoot, "docs", "src");
+const routerShim = path.resolve(projectRoot, "src", "web", "react-router-shim.tsx");
 
 const config = getDefaultConfig(projectRoot);
 
 config.watchFolders = [repoRoot];
-
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
 config.resolver.disableHierarchicalLookup = true;
 
-// The library ships TypeScript source with NodeNext-style ".js" import specifiers
-// (e.g. `from "./tokens.js"` where the file is tokens.ts). Vite remaps these; Metro
-// doesn't. Map a relative ".js" specifier that doesn't resolve to its source sibling
-// by stripping ".js" and letting Metro re-resolve — which also restores per-OS skin
-// resolution (./button/button -> button.ios.tsx / button.android.tsx / button.tsx).
+function asSourceFile(absNoExt) {
+  if (fs.existsSync(absNoExt) && fs.statSync(absNoExt).isFile()) return absNoExt;
+  for (const ext of [".tsx", ".ts", ".jsx", ".js", ".json"]) {
+    if (fs.existsSync(absNoExt + ext)) return absNoExt + ext;
+  }
+  for (const ext of [".tsx", ".ts", ".jsx", ".js"]) {
+    const idx = path.join(absNoExt, "index" + ext);
+    if (fs.existsSync(idx)) return idx;
+  }
+  return null;
+}
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (
-    moduleName.endsWith(".js") &&
-    (moduleName.startsWith("./") || moduleName.startsWith("../"))
-  ) {
+  // Reused Vite docs components (web target) → bridge their imports.
+  if (moduleName === "react-router-dom") {
+    return { type: "sourceFile", filePath: routerShim };
+  }
+  if (moduleName.startsWith("@/")) {
+    const fp = asSourceFile(path.join(docsSrc, moduleName.slice(2)));
+    if (fp) return { type: "sourceFile", filePath: fp };
+  }
+  // The library ships NodeNext-style ".js" specifiers that resolve to .ts/.tsx source,
+  // and this also restores per-OS .ios/.android skin resolution on native.
+  if (moduleName.endsWith(".js") && (moduleName.startsWith("./") || moduleName.startsWith("../"))) {
     try {
       return context.resolveRequest(context, moduleName, platform);
     } catch {

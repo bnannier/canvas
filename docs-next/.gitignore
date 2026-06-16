@@ -41,3 +41,5 @@ example
 # generated native folders
 /ios
 /android
+/public/refs
+src/web/_canvas-source.css

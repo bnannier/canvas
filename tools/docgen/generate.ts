@@ -24,6 +24,11 @@ type Category = (typeof CATEGORIES)[number];
 
 const EXAMPLES_DIR = path.join(REPO, "docs-core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs-core", "registry.ts");
+const RAW_MD_FILE = path.join(REPO, "docs-core", "raw-md.ts");
+
+// The raw markdown of every component, keyed exactly like the web docs' Vite
+// import.meta.glob (so the reused Compare page can read it on Metro instead).
+const rawMd: Record<string, string> = {};
 
 // The names an example fence may reference, taken straight from the docs runtime
 // scope so the destructure list never drifts from the single source of truth.
@@ -183,7 +188,9 @@ function main() {
     for (const dir of fs.readdirSync(catDir).sort()) {
       const md = path.join(catDir, dir, `${dir}.md`);
       if (!fs.existsSync(md)) continue;
-      const { examples, donts } = splitDoc(fs.readFileSync(md, "utf8"));
+      const content = fs.readFileSync(md, "utf8");
+      rawMd[`../../../src/${category}/${dir}/${dir}.md`] = content;
+      const { examples, donts } = splitDoc(content);
       if (examples.length === 0 && donts.length === 0) continue;
       entries.push(buildEntry(category, dir, examples, donts));
       exampleCount += examples.length;
@@ -202,6 +209,11 @@ function main() {
   }
 
   fs.writeFileSync(REGISTRY_FILE, renderRegistry(entries));
+  fs.writeFileSync(
+    RAW_MD_FILE,
+    `${GENERATED_HEADER}\n// Raw component markdown, keyed like the web docs' import.meta.glob.\n` +
+      `export const RAW: Record<string, string> = ${JSON.stringify(rawMd)};\n`,
+  );
 
   console.log(
     `docs:gen — ${entries.length} components, ${exampleCount} examples, ${dontCount} Do/Don't pairs ` +
