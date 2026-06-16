@@ -1,4 +1,5 @@
 import { PageNav } from "@/components/page-nav";
+import { Playground, type Example } from "@/components/playground";
 
 const SPACING = [
   { tw: "p-1", px: 4 }, { tw: "p-2", px: 8 }, { tw: "p-3", px: 12 }, { tw: "p-4", px: 16 },
@@ -6,39 +7,68 @@ const SPACING = [
 ];
 
 const RADII = [
-  { name: "sm", px: 4, use: "Inline code, kbd, micro chips", varName: "--radius-sm" },
-  { name: "md", px: 6, use: "Inputs, buttons, badges", varName: "--radius-md" },
-  { name: "lg", px: 8, use: "Default radius", varName: "--radius-lg" },
-  { name: "xl", px: 12, use: "Cards, sections", varName: "--radius-xl" },
-  { name: "full", px: 0, label: "∞", use: "Avatars, pills, status dots" },
+  { name: "sm", px: 4 }, { name: "md", px: 6 }, { name: "lg", px: 8 }, { name: "xl", px: 12 }, { name: "full", px: 9999 },
 ];
 
-// The shadow() helper (src/style/shadow.ts) ships a fixed six-level elevation
-// preset; the CSS box-shadow here mirrors each RN preset, and elev is its
-// Android elevation. There is no "2xl".
-const SHADOWS = [
-  { name: "none", shadow: "none", elev: 0, use: "Flat; flush with the surface" },
-  { name: "sm", shadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)", elev: 1, use: "Buttons, inputs at rest" },
-  { name: "", shadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)", elev: 2, use: "Cards (the default)" },
-  { name: "md", shadow: "0 4px 6px 0 rgb(0 0 0 / 0.1)", elev: 4, use: "Raised cards, menus" },
-  { name: "lg", shadow: "0 10px 15px 0 rgb(0 0 0 / 0.1)", elev: 8, use: "Popovers, dropdowns" },
-  { name: "xl", shadow: "0 20px 25px 0 rgb(0 0 0 / 0.1)", elev: 12, use: "Modals, slide-overs" },
+// The six-level shadow() preset (src/style/shadow.ts). "DEFAULT" is the unnamed
+// `shadow`; there is no "2xl".
+const SHADOW_LEVELS = [
+  { key: "none", label: "shadow-none" }, { key: "sm", label: "shadow-sm" }, { key: "DEFAULT", label: "shadow" },
+  { key: "md", label: "shadow-md" }, { key: "lg", label: "shadow-lg" }, { key: "xl", label: "shadow-xl" },
 ];
 
-// Canvas keeps a deliberately shallow z-index scale: components use only 10, 40,
-// and 50 (every overlay shares 50), so there are no escalating magic numbers.
-const ZINDEX = [
-  { z: 0, name: "Base content", note: "Default flow; no z-index" },
-  { z: 10, name: "In-component layering", note: "Input addons, button-group overlaps" },
-  { z: 40, name: "Open dropdown", note: "Floats above neighbouring content" },
-  { z: 50, name: "Overlays", note: "Popovers, menus, selects, dialogs, command" },
+// Shared swatch fills for the live demo boxes; the assembled fence string is what
+// renders live and shows in the code block.
+const FILL = `backgroundColor: alpha(tokens.primary, 0.2)`;
+const FILL2 = `backgroundColor: alpha(tokens.primary, 0.4)`;
+const EDGE = `borderWidth: 1, borderColor: alpha(tokens.primary, 0.4)`;
+
+// Spacing scale as live padding demos: the outer box is padded by the step, so the
+// inset between it and the inner box IS the spacing value.
+const spacingExamples: Example[] = SPACING.map((s) => ({
+  label: `${s.tw} · ${s.px}px`,
+  code: `<View style={{ alignSelf: "center", padding: ${s.px}, borderRadius: 8, ${FILL} }}>
+  <View style={{ width: 96, height: 48, borderRadius: 6, ${FILL2} }} />
+</View>`,
+}));
+
+const radiusExamples: Example[] = RADII.map((r) => ({
+  label: r.name === "full" ? "rounded-full" : `rounded-${r.name} · ${r.px}px`,
+  code: `<View style={{ width: 96, height: 96, borderRadius: ${r.px}, ${FILL}, ${EDGE} }} />`,
+}));
+
+// Each level renders the real shadow() helper, so the iOS / Android / Web rows show
+// the actual iOS shadow vs Android elevation the preset ships.
+const shadowExamples: Example[] = SHADOW_LEVELS.map((s) => ({
+  label: s.label,
+  code: `<View style={[{ width: 96, height: 96, borderRadius: 12, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border }, shadow("${s.key}")]} />`,
+}));
+
+// Three overlapping cards at the real reserve levels: the higher zIndex paints on
+// top, so z-50 covers z-40 covers z-10.
+const zIndexExamples: Example[] = [
+  {
+    label: "Stacking",
+    code: `<View style={{ width: 230, height: 116 }}>
+  <View style={{ position: "absolute", left: 0, top: 6, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5), zIndex: 10 }}>
+    <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>z-10</Text>
+  </View>
+  <View style={{ position: "absolute", left: 64, top: 24, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5), zIndex: 40 }}>
+    <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>z-40</Text>
+  </View>
+  <View style={{ position: "absolute", left: 128, top: 42, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5), zIndex: 50 }}>
+    <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>z-50</Text>
+  </View>
+</View>`,
+  },
 ];
 
-// DataTable implements compact + regular only; values are the real cell paddings
-// (horizontal / vertical). comfy is a theme level other components opt into.
-const DENSITY = [
-  { name: "compact", padding: "16 / 8" },
-  { name: "regular", padding: "16 / 12" },
+// Card carries a real density axis (compact / default / comfortable), so it shows
+// the spacing change on an actual component.
+const densityExamples: Example[] = [
+  { label: "compact", code: `<Card compact title="Storage" description="84% of 512 GB used." />` },
+  { label: "regular", code: `<Card padded title="Storage" description="84% of 512 GB used." />` },
+  { label: "comfortable", code: `<Card comfortable title="Storage" description="84% of 512 GB used." />` },
 ];
 
 function Section({ title, description, anatomy, children }: {
@@ -106,30 +136,9 @@ export function SpacingPage() {
 
       <Section
         title="Spacing ramp"
-        description="Tailwind's default 4px-based scale. We use 1-12 in practice; anything larger should probably be a layout decision instead of an in-component value."
+        description="Tailwind's default 4px-based scale (here applied as padding; the same numbers back margin and gap). We use 1-12 in practice; anything larger should probably be a layout decision instead of an in-component value. Switch the rail to compare the steps."
       >
-        <div style={{
-          borderRadius: "var(--radius-xl, 12px)",
-          border: "1px solid var(--border)",
-          background: "var(--card)",
-          padding: 20,
-        }}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
-            {SPACING.map((s) => (
-              <div key={s.tw} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                <div style={{
-                  width: s.px,
-                  height: s.px,
-                  background: "color-mix(in oklch, var(--primary) 20%, transparent)",
-                  border: "1px solid color-mix(in oklch, var(--primary) 40%, transparent)",
-                  borderRadius: "var(--radius-sm, 4px)",
-                }} />
-                <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{s.tw}</code>
-                <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)" }}>{s.px}px</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Playground examples={spacingExamples} />
       </Section>
 
       <Section
@@ -137,107 +146,26 @@ export function SpacingPage() {
         description="Four fixed tiers, sm through xl, plus full for pills. Components reference the rounded-sm/md/lg/xl utilities, which map to the --radius-* tokens, so radii stay consistent across the kit. Native and web agree on md/lg/xl (6/8/12px); they diverge only at sm, which is 4px via the web --radius-sm var but 2px in the native radius scale."
         anatomy="Components pin to a relative tier (sm/md/lg/xl/full) rather than hardcoding pixels, so radii stay proportional across the kit. The tiers are fixed tokens, not a runtime-adjustable knob."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
-          {RADII.map((r) => (
-            <div key={r.name} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
-              <div style={{
-                width: "100%",
-                height: 80,
-                background: "color-mix(in oklch, var(--primary) 20%, transparent)",
-                border: "1px solid color-mix(in oklch, var(--primary) 40%, transparent)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "20px",
-                fontFamily: "var(--font-mono)",
-                color: "var(--primary)",
-                borderRadius: r.px ? r.px : 9999,
-              }}>
-                {r.label}
-              </div>
-              <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
-                rounded-{r.name}
-              </div>
-              <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>
-                {r.px ? r.px + "px" : "9999px"}
-              </code>
-              <div style={{ fontSize: "10.5px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>{r.use}</div>
-            </div>
-          ))}
-        </div>
+        <Playground examples={radiusExamples} />
       </Section>
 
-      <Section title="Shadows" description="A fixed elevation preset, low to high. Each level ships matching iOS shadow values and an Android elevation; choose by elevation, not by style.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 16 }}>
-          {SHADOWS.map((s) => (
-            <div key={s.name || "default"} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
-              <div style={{
-                width: "100%",
-                height: 80,
-                background: "var(--card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-xl, 12px)",
-                boxShadow: s.shadow,
-              }} />
-              <div style={{ fontSize: "12.5px", fontWeight: 500, color: "var(--foreground)" }}>
-                shadow{s.name ? `-${s.name}` : ""}
-              </div>
-              <code style={{ fontSize: "10.5px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)" }}>elevation {s.elev}</code>
-              <div style={{ fontSize: "10.5px", color: "var(--muted-foreground)", lineHeight: 1.4 }}>{s.use}</div>
-            </div>
-          ))}
-        </div>
+      <Section title="Shadows" description="A fixed elevation preset, low to high, from the shadow() helper. Each level ships matching iOS shadow values and an Android elevation, so the three platform rows show the real per-OS rendering; choose by elevation, not by style.">
+        <Playground examples={shadowExamples} />
       </Section>
 
-      <Section title="Z-index reserves" description="Canvas keeps a deliberately shallow z-index scale. Components reach for just three levels (10, 40, 50); every overlay shares 50 rather than escalating into magic numbers.">
-        <div style={{
-          borderRadius: "var(--radius-xl, 12px)",
-          border: "1px solid var(--border)",
-          background: "var(--card)",
-          overflow: "hidden",
-        }}>
-          {ZINDEX.map((r, i) => (
-            <div key={r.z} style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 24,
-              padding: "12px 20px",
-              borderTop: i ? "1px solid var(--border)" : undefined,
-            }}>
-              <code style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--muted-foreground)", width: 80 }}>
-                z-{r.z}
-              </code>
-              <div style={{ flex: 1, fontSize: "13px", fontWeight: 500, color: "var(--foreground)" }}>{r.name}</div>
-              <div style={{ fontSize: "11.5px", color: "var(--muted-foreground)" }}>{r.note}</div>
-            </div>
-          ))}
-        </div>
+      <Section
+        title="Z-index reserves"
+        description="Canvas keeps a deliberately shallow z-index scale. Components reach for just three levels; every overlay shares the top one rather than escalating into magic numbers. The higher zIndex paints on top, so z-50 covers z-40 covers z-10."
+        anatomy="The reserves: 10 for in-component layering (input addons, button-group overlaps), 40 for an open dropdown, and 50 for every overlay (popovers, menus, selects, dialogs, command). Nothing escalates beyond 50."
+      >
+        <Playground examples={zIndexExamples} />
       </Section>
 
-      <Section title="Component density" description="Density is a theme-level setting (compact, regular, comfy) that each component maps to its own metrics; there is no single global padding token. Below are the DataTable cell paddings (horizontal / vertical) for the two densities it implements; comfy is a theme value other components opt into (a Card goes from 16px padding at compact to 32px when comfortable). Set it with setDensity() on the web, or per-component density props like Card compact on native.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-          {DENSITY.map((d) => (
-            <div key={d.name} style={{
-              borderRadius: "var(--radius-xl, 12px)",
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              padding: 20,
-            }}>
-              <div style={{
-                fontSize: "11px",
-                textTransform: "uppercase" as const,
-                letterSpacing: "0.08em",
-                color: "var(--muted-foreground)",
-                fontWeight: 500,
-                marginBottom: 8,
-              }}>
-                {d.name}
-              </div>
-              <div style={{ fontSize: "13.5px", color: "var(--foreground)" }}>Cell padding (h / v)</div>
-              <code style={{ fontSize: "11px", color: "var(--muted-foreground)" }}>{d.padding}</code>
-            </div>
-          ))}
-        </div>
+      <Section
+        title="Component density"
+        description="Density is a theme-level setting (compact, regular, comfy) that each component maps to its own metrics; there is no single global padding token. The Card below shows the levels: compact tightens to 16px padding and comfortable opens to 32px, bracketing the default. Set it with setDensity() on the web, or per-component density props like Card compact on native."
+      >
+        <Playground examples={densityExamples} />
       </Section>
 
       <PageNav />
