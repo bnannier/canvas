@@ -1,14 +1,16 @@
-import { ScrollView, View, Text, useTheme, palette } from "@olympusoss/canvas";
+import { useState } from "react";
+import { Platform } from "react-native";
+import { ScrollView, View, Text, Pressable, useTheme, palette } from "@olympusoss/canvas";
 import { MONO } from "./prose";
+import { geist } from "./fonts";
 
-// The web docs highlight code with Shiki (emits HTML), which can't run on native. This
-// is a small TSX tokenizer that colors strings, comments, JSX tag names, numbers, and a
-// few keywords — enough to make example source readable on a device, themed from tokens.
+// A token-themed TSX highlighter standing in for Shiki (which emits HTML and can't run
+// on native). Colors approximate github-dark/light. Matches `.docs-code-wrap`: bordered,
+// radius-lg, pre padding 16/20 at 13px/1.6 on the muted surface, with a Copy button.
 const KEYWORDS = new Set([
   "const", "let", "var", "return", "function", "import", "from", "export",
   "true", "false", "null", "undefined", "await", "async", "new", "if", "else",
 ]);
-
 const TOKEN_RE =
   /(\/\/[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(<\/?[A-Za-z][\w.]*)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)/g;
 
@@ -24,9 +26,10 @@ function useSyntaxColors() {
   };
 }
 
-export function CodeBlock({ code }: { code: string }) {
+export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
   const { tokens } = useTheme();
   const c = useSyntaxColors();
+  const [copied, setCopied] = useState(false);
 
   const spans: { text: string; color: string }[] = [];
   let last = 0;
@@ -44,18 +47,30 @@ export function CodeBlock({ code }: { code: string }) {
   }
   if (last < code.length) spans.push({ text: code.slice(last), color: c.text });
 
+  const copy = () => {
+    if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1200);
+      });
+    }
+  };
+
   return (
     <View
       style={{
-        borderRadius: 10,
         borderWidth: 1,
+        borderTopWidth: flush ? 0 : 1,
         borderColor: tokens.border,
+        borderRadius: 12,
+        borderTopLeftRadius: flush ? 0 : 12,
+        borderTopRightRadius: flush ? 0 : 12,
         backgroundColor: tokens.muted,
         overflow: "hidden",
       }}
     >
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 14 }}>
-        <Text style={{ fontFamily: MONO, fontSize: 12.5, lineHeight: 20 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 16, paddingHorizontal: 20 }}>
+        <Text style={{ fontFamily: MONO, fontSize: 13, lineHeight: 20.8 }}>
           {spans.map((s, i) => (
             <Text key={i} style={{ color: s.color }}>
               {s.text}
@@ -63,6 +78,22 @@ export function CodeBlock({ code }: { code: string }) {
           ))}
         </Text>
       </ScrollView>
+      <Pressable
+        onPress={copy}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          paddingVertical: 4,
+          paddingHorizontal: 8,
+          borderRadius: 6,
+          borderWidth: 1,
+          borderColor: tokens.border,
+          backgroundColor: tokens.card,
+        }}
+      >
+        <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens["muted-foreground"] }}>{copied ? "Copied" : "Copy"}</Text>
+      </Pressable>
     </View>
   );
 }

@@ -1,17 +1,13 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, alpha, palette } from "@olympusoss/canvas";
+import { useWindowDimensions } from "react-native";
+import { View, Text, useTheme } from "@olympusoss/canvas";
+import { CircleX, CircleCheck } from "lucide-react-native";
 import { buildScopes } from "docs-core/build-scopes";
 import type { DocDontPair, ExampleScope } from "docs-core/scope";
 import { ExampleErrorBoundary } from "./playground";
-import { H2 } from "./prose";
+import { geist } from "./fonts";
 
-function ResultCard({
-  kind,
-  caption,
-  scope,
-  render,
-  resetKey,
-}: {
+function ResultCard({ kind, caption, scope, render, resetKey }: {
   kind: "do" | "dont";
   caption: string;
   scope: ExampleScope;
@@ -19,45 +15,46 @@ function ResultCard({
   resetKey: string;
 }) {
   const { tokens } = useTheme();
-  const accent = kind === "dont" ? palette["red-500"] : palette["green-600"];
+  const isDont = kind === "dont";
+  const border = isDont ? "hsla(0, 70%, 60%, 0.3)" : "hsla(143, 70%, 45%, 0.3)";
+  const bg = isDont ? "hsla(0, 70%, 60%, 0.05)" : "hsla(143, 70%, 45%, 0.05)";
+  const labelColor = isDont ? "hsl(0, 84%, 60%)" : "hsl(143, 60%, 38%)";
+  const Icon = isDont ? CircleX : CircleCheck;
   return (
-    <View
-      style={{
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: alpha(accent, 0.3),
-        backgroundColor: alpha(accent, 0.05),
-        padding: 16,
-        gap: 8,
-      }}
-    >
-      <Text style={{ fontSize: 12, fontWeight: "700", color: accent }}>{kind === "dont" ? "Don’t" : "Do"}</Text>
-      <View style={{ alignItems: "flex-start", paddingVertical: 4 }}>
+    <View style={{ flex: 1, borderRadius: 12, borderWidth: 1, borderColor: border, backgroundColor: bg, padding: 20, gap: 8 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <Icon size={14} color={labelColor} />
+        <Text style={{ fontFamily: geist("600"), fontSize: 13, color: labelColor }}>{isDont ? "Don’t" : "Do"}</Text>
+      </View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
         <ExampleErrorBoundary key={resetKey}>{render(scope)}</ExampleErrorBoundary>
       </View>
-      <Text style={{ fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>{caption}</Text>
+      <Text style={{ fontFamily: geist("400"), fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>{caption}</Text>
     </View>
   );
 }
 
-// The Do/Don't section: each pair is a red Don't card over a green Do card (stacked for
-// the phone's narrow column). Examples render in the device skin on native (the neutral
-// Web look on the web build) — these are about correct usage, not platform comparison.
+// The Do/Don't section: each pair is the red Don't card beside the green Do card
+// (stacked on a phone), matching the component page's donts-grid.
 export function Donts({ donts }: { donts: DocDontPair[] }) {
   const { tokens } = useTheme();
+  const { width } = useWindowDimensions();
+  const wide = width >= 768;
   const previews = buildScopes(tokens);
   const scope = previews[previews.length - 1].scope;
 
   return (
-    <View style={{ gap: 18 }}>
-      <H2>Don’ts</H2>
+    <View style={{ gap: 16 }}>
+      <Text style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Don’ts</Text>
       {donts.map((d, i) => (
-        <View key={i} style={{ gap: 10 }}>
+        <View key={i} style={{ gap: 8 }}>
           {d.title ? (
-            <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>{d.title}</Text>
+            <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground }}>{d.title}</Text>
           ) : null}
-          <ResultCard kind="dont" caption={d.dont.caption} scope={scope} render={d.dont.render} resetKey={`dont-${i}`} />
-          <ResultCard kind="do" caption={d.do.caption} scope={scope} render={d.do.render} resetKey={`do-${i}`} />
+          <View style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
+            <ResultCard kind="dont" caption={d.dont.caption} scope={scope} render={d.dont.render} resetKey={`dont-${i}`} />
+            <ResultCard kind="do" caption={d.do.caption} scope={scope} render={d.do.render} resetKey={`do-${i}`} />
+          </View>
         </View>
       ))}
     </View>
