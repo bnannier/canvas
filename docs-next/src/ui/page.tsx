@@ -5,10 +5,10 @@ import { H1, Lead } from "./prose";
 // The standard scrollable content frame, mirroring `.app-content` (max-width 1400,
 // the 24/28/80 padding, centered).
 export function Page({ children }: { children: ReactNode }) {
-  const { tokens } = useTheme();
+  const { tokens, surface } = useTheme();
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: tokens.background }}
+      style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentContainerStyle={{
         paddingTop: 24,
         paddingHorizontal: 28,

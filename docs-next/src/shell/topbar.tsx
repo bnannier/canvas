@@ -5,6 +5,7 @@ import { Menu, Search, Sun, Moon } from "lucide-react-native";
 import { getComponent } from "docs-core/data/components";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
+import { webFrost } from "../ui/glass";
 
 function titleize(slug: string): string {
   return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
@@ -44,9 +45,11 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
   const { title, subtitle } = titleFor(pathname);
   const wideEnough = width >= 640;
 
+  const glass = surface === "glass";
+
   return (
     <View
-      style={{
+      style={[{
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
@@ -54,8 +57,8 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
         paddingHorizontal: wideEnough ? 24 : 16,
         borderBottomWidth: 1,
         borderColor: tokens.border,
-        backgroundColor: tokens.background,
-      }}
+        backgroundColor: glass ? tokens.popover : tokens.background,
+      }, webFrost(glass)]}
     >
       {showMenu ? (
         <Pressable onPress={onMenu} hitSlop={10} style={{ paddingRight: 2 }}>

@@ -7,6 +7,7 @@ import { DocsThemeProvider } from "../theme/docs-theme";
 import { Sidebar } from "../shell/sidebar";
 import { Topbar } from "../shell/topbar";
 import { useDocsFonts } from "../ui/fonts";
+import { GlassAurora, webFrost } from "../ui/glass";
 
 // The whole app renders inside Canvas's ThemeProvider (via DocsThemeProvider), so the
 // components AND the docs chrome are painted by the kit, and once the Geist faces load
@@ -24,14 +25,16 @@ export default function RootLayout() {
 // viewports (desktop web / tablet), a hamburger drawer on phones, the topbar + routed
 // content in the main column.
 function Shell() {
-  const { tokens } = useTheme();
+  const { tokens, surface } = useTheme();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const wide = width >= 1024;
+  const glass = surface === "glass";
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top", "bottom"]}>
+      {glass ? <GlassAurora /> : null}
       <View style={{ flex: 1, flexDirection: "row" }}>
         {wide ? (
           <View style={{ width: 240, borderRightWidth: 1, borderColor: tokens.border }}>
@@ -53,7 +56,7 @@ function Shell() {
             onPress={() => setDrawerOpen(false)}
           >
             <Pressable
-              style={{ width: 240, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: tokens.card }}
+              style={[{ width: 240, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: glass ? tokens.popover : tokens.card }, webFrost(glass)]}
               onPress={() => {}}
             >
               <Sidebar onNavigate={() => setDrawerOpen(false)} />

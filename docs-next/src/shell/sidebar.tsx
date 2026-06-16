@@ -5,12 +5,14 @@ import { ChevronRight } from "lucide-react-native";
 import { CanvasMark } from "../brand/canvas-mark";
 import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, getActiveGroup, type NavItem } from "../data/nav";
 import { geist } from "../ui/fonts";
+import { webFrost } from "../ui/glass";
 
 // The docs sidebar, matching the Vite chrome: brand (CanvasMark + Canvas / design
 // system), a pinned Overview, an always-open Tokens & Utilities section, the
 // collapsible category groups (accordion), and a Compare footer.
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const { tokens } = useTheme();
+  const { tokens, surface } = useTheme();
+  const glass = surface === "glass";
   const pathname = usePathname();
   const router = useRouter();
   const activeSlug = getActiveSlug(pathname);
@@ -66,7 +68,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: tokens.card }}>
+    <View style={[{ flex: 1, backgroundColor: glass ? tokens.popover : tokens.card }, webFrost(glass)]}>
       <View
         style={{
           height: 56,
