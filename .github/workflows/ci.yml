@@ -66,8 +66,43 @@ jobs:
       - name: Check for duplicate class definitions
         run: bun run check-duplicates
 
-  # Docs build: the same Vite bundle the Pages deploy ships, so a broken docs
-  # build fails CI before it can be deployed.
+  # Docs build (new): the universal RN app (docs-next) is what the Pages deploy now
+  # ships, so a broken web export fails CI before it can be deployed.
+  docs-next:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root deps (for source + docs-core symlinks)
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate docs-core
+        run: bun run docs:gen
+
+      - name: Install docs-next deps
+        working-directory: docs-next
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck docs-next
+        working-directory: docs-next
+        run: bunx tsc --noEmit
+
+      - name: Export web build
+        working-directory: docs-next
+        run: npx expo export -p web
+        env:
+          EXPO_BASE_URL: /canvas
+
+  # Docs build (legacy Vite): retained as the Pages rollback target, so CI still
+  # proves the old bundle builds until it is removed after the cutover is confirmed.
   docs:
     runs-on: ubuntu-latest
     steps:
