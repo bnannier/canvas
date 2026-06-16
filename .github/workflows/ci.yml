@@ -6,6 +6,8 @@ on:
       - 'src/**'
       - 'styles/**'
       - 'docs/**'
+      - 'docs-core/**'
+      - 'tools/**'
       - 'package.json'
       - 'bun.lock'
       - 'tsconfig*.json'
@@ -41,6 +43,16 @@ jobs:
 
       - name: Typecheck
         run: bun run typecheck
+
+      # The docs example modules are generated from each component's .md fences
+      # (tools/docgen). Fail if the committed output is stale, then type-check every
+      # generated fence against the real component prop types, so a breaking prop
+      # change or a forgotten `bun run docs:gen` is caught here, not at native build.
+      - name: Check generated docs examples are up to date
+        run: bun run docs:gen:check
+
+      - name: Typecheck generated docs examples
+        run: bunx tsc --noEmit -p docs-core/tsconfig.json
 
       - name: Verify package exports
         run: bun -e "import { cn, getTheme, token } from './src/index.ts'; console.log('JS exports OK')"
