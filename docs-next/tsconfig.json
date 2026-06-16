@@ -4,17 +4,23 @@
     "strict": true,
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["../docs/src/*"],
-      "react-router-dom": ["./src/web/react-router-shim.tsx"],
-      "@olympusoss/canvas": ["../src/index.ts"],
-      "docs-core/*": ["../docs-core/*"]
+      "@/*": [
+        "../docs/src/*"
+      ],
+      "react-router-dom": [
+        "./src/web/react-router-shim.tsx"
+      ],
+      "@olympusoss/canvas": [
+        "../src/index.ts"
+      ],
+      "docs-core/*": [
+        "../docs-core/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "types/**/*.d.ts",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "types/**/*.d.ts"
   ]
 }
