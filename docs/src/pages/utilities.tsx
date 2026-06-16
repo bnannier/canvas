@@ -172,6 +172,16 @@ const composingExamples: Example[] = [
   },
 ];
 
+// The spacing scale as live gap demos: one rail item per step (gap: 0 .. gap: 32).
+const gapExamples: Example[] = GAP_SCALE.map(([, px]) => ({
+  label: `gap: ${px}`,
+  code: `<View style={{ flexDirection: "row", gap: ${px} }}>
+  <View style={{ width: 56, height: 40, ${BOX} }} />
+  <View style={{ width: 56, height: 40, ${BOX} }} />
+  <View style={{ width: 56, height: 40, ${BOX} }} />
+</View>`,
+}));
+
 // useResponsive is a hook, so the responsive demo lives in its own component.
 // It collapses from a row on desktop to a column at the md breakpoint and below.
 function ResponsiveDemo() {
@@ -252,24 +262,9 @@ export function UtilitiesPage() {
 
       <Section
         title="Gap"
-        description="gap (and columnGap / rowGap) takes a number from the spacing scale. The same scale backs padding and margin, so a layout reads in one vocabulary: gap: 16 is Tailwind's gap-4."
+        description="gap (and columnGap / rowGap) takes a number from the spacing scale. The same scale backs padding and margin, so a layout reads in one vocabulary: gap: 16 is Tailwind's gap-4. Switch the rail to compare the steps."
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {GAP_SCALE.map(([label, px]) => (
-            <div key={label} style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "8px 12px",
-              border: "1px dashed var(--border)",
-              borderRadius: "var(--radius-md, 6px)",
-            }}>
-              <span style={{ width: 96, flexShrink: 0 }}><Chip>gap: {px}</Chip></span>
-              <View style={{ flexDirection: "row", gap: px }}>
-                <Tile> </Tile><Tile> </Tile><Tile> </Tile>
-              </View>
-            </div>
-          ))}
-        </div>
+        <Playground examples={gapExamples} />
       </Section>
 
       <Section title="Flex sizing" description="flex: 1 makes a child fill the remaining space; flexGrow / flexShrink / flexBasis tune how children flex. Combine with the sizing properties below.">
