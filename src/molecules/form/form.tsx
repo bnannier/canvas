@@ -42,8 +42,11 @@ export interface FormSection {
 }
 
 export interface FormProps {
-  /** The labeled fields to render, in order. */
-  fields: FormField[];
+  /**
+   * The labeled fields to render, in order. Optional: a sectioned sidebar form
+   * supplies its inputs per section (see `sections`) and omits `fields`.
+   */
+  fields?: FormField[];
   /** Label for the primary submit button (defaults to "Submit"). */
   submitLabel?: string;
   /** When set, renders an outline cancel button before the submit button. */
@@ -204,7 +207,7 @@ export function Form(props: FormProps) {
   if (layout === "twoColumn") {
     return (
       <View style={[s.stackGap4, style]}>
-        <TwoColumnBody fields={fields} />
+        <TwoColumnBody fields={fields ?? []} />
         <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
       </View>
     );
@@ -226,7 +229,7 @@ export function Form(props: FormProps) {
     }
     return (
       <View style={[s.stackGap6, style]}>
-        {fields.map((field, i) => (
+        {(fields ?? []).map((field, i) => (
           <SidebarField key={i} field={field} />
         ))}
         <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
@@ -237,7 +240,7 @@ export function Form(props: FormProps) {
   // stacked (default): one field per row, full width, label above input.
   return (
     <View style={[s.stackGap4, style]}>
-      {fields.map((field, i) => (
+      {(fields ?? []).map((field, i) => (
         <StackedField key={i} field={field} />
       ))}
       <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
