@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { ScrollView, useWindowDimensions, Linking, Platform } from "react-native";
+import { ScrollView, useWindowDimensions, Linking } from "react-native";
 import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
@@ -217,9 +217,9 @@ export function Home() {
                 Canvas is a universal React Native UI kit. The same components render natively on iOS and Android and on the web through React Native Web, styled with flat, semantic boolean props that read like a sentence.
               </Text>
 
-              {/* On native (iOS/Android) the prop-proof line, CTAs, and platform checks
-                  are hidden so the rotating orbit surfaces sooner; the web hero keeps them. */}
-              {Platform.OS === "web" ? (
+              {/* On the mobile (stacked) layout the prop-proof line, CTAs, and platform
+                  checks are hidden so the rotating orbit surfaces sooner; desktop keeps them. */}
+              {wide ? (
                 <>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 18 }}>
                     <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
