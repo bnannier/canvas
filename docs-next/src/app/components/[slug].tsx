@@ -2,11 +2,13 @@ import { Redirect, useLocalSearchParams } from "expo-router";
 import { View, Text, useTheme } from "@olympusoss/canvas";
 import { COMPONENTS, getComponent } from "docs-core/data/components";
 import { COMPONENT_DOCS } from "docs-core/registry";
-import { Page, PageHeader } from "../../ui/page";
+import { Page } from "../../ui/page";
+import { Lead } from "../../ui/prose";
 import { Playground } from "../../ui/playground";
 import { Donts } from "../../ui/dont";
 import { PageNav } from "../../ui/page-nav";
 import { stripHtml } from "../../lib/html";
+import { geist } from "../../ui/fonts";
 
 // Pre-render one static HTML page per component for the web export.
 export async function generateStaticParams() {
@@ -23,7 +25,11 @@ export default function ComponentScreen() {
 
   return (
     <Page>
-      <PageHeader title={comp.name} description={stripHtml(comp.description)} />
+      {/* Component pages use a larger title (28/700) than the generic page header. */}
+      <View style={{ gap: 6 }}>
+        <Text style={{ fontFamily: geist("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
+        <Lead>{stripHtml(comp.description)}</Lead>
+      </View>
       {entry && entry.examples.length > 0 ? (
         <Playground examples={entry.examples} />
       ) : (

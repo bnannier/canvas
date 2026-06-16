@@ -7,6 +7,7 @@ import {
   ArrowRight, Check, ChevronRight, Layers, Plus, Shield, AppWindow,
   Home as HomeIcon, type LucideIcon,
 } from "lucide-react-native";
+import { COMPONENTS } from "docs-core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
 import { HeroOrbit } from "../brand/hero-orbit";
@@ -302,7 +303,7 @@ export function Home() {
         <SectionHead
           eyebrow="Architecture"
           title="Atomic design, end to end."
-          desc="Every page in this site is one of six levels of abstraction, and all components render as real React Native components, straight from their markdown example docs."
+          desc={`Every page in this site is one of six levels of abstraction, and all ${COMPONENTS.length} components render as real React Native components, straight from their markdown example docs.`}
           titleSize={sectionTitle}
         />
         <View style={{ gap: 12 }}>

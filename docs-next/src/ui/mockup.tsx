@@ -67,6 +67,13 @@ function parseHtml(html: string): Node[] {
 
 // ── CSS value helpers ────────────────────────────────────
 const RADIUS: Record<string, number> = { sm: 4, md: 8, lg: 12, xl: 16, full: 9999 };
+// CSS box-alignment keywords map to RN/Yoga values (RN rejects raw start/end).
+const ALIGN: Record<string, string> = {
+  start: "flex-start", end: "flex-end", "self-start": "flex-start", "self-end": "flex-end",
+  "flex-start": "flex-start", "flex-end": "flex-end", center: "center", stretch: "stretch", baseline: "baseline",
+  "space-between": "space-between", "space-around": "space-around", "space-evenly": "space-evenly",
+};
+const al = (v: string) => ALIGN[v] ?? v;
 function len(v: string): number | string | undefined {
   v = v.trim();
   if (!v) return undefined;
@@ -128,6 +135,7 @@ function parseStyle(styleStr: string, tokens: ColorTokens) {
   let lineH: { ratio?: number; px?: number } | undefined;
   let isFlex = false;
   let hasDir = false;
+  let pre = false;
 
   for (const decl of styleStr.split(";")) {
     const idx = decl.indexOf(":");
@@ -139,9 +147,10 @@ function parseStyle(styleStr: string, tokens: ColorTokens) {
       case "display": if (val === "none") view.display = "none"; else if (val === "grid") grid = "grid"; else if (val === "flex" || val === "inline-flex") isFlex = true; break;
       case "flex-direction": view.flexDirection = val; hasDir = true; break;
       case "flex-wrap": view.flexWrap = val; break;
-      case "align-items": view.alignItems = val; break;
-      case "align-self": view.alignSelf = val; break;
-      case "justify-content": view.justifyContent = val; break;
+      case "align-items": view.alignItems = al(val); break;
+      case "align-self": view.alignSelf = al(val); break;
+      case "justify-content": view.justifyContent = al(val); break;
+      case "white-space": if (val.startsWith("pre")) pre = true; break;
       case "gap": view.gap = len(val); break;
       case "row-gap": view.rowGap = len(val); break;
       case "column-gap": view.columnGap = len(val); break;
@@ -198,7 +207,7 @@ function parseStyle(styleStr: string, tokens: ColorTokens) {
   // CSS flex defaults to row; RN defaults to column. Force row when a flex container
   // does not name its direction.
   if (isFlex && !hasDir && view.flexDirection === undefined) view.flexDirection = "row";
-  return { view, text, grid, fontSize, lineH };
+  return { view, text, grid, fontSize, lineH, pre };
 }
 function expand(val: string, prefix: "padding" | "margin", out: Record<string, unknown>) {
   const parts = val.split(/\s+/).map((p) => len(p) ?? 0);
@@ -309,8 +318,21 @@ const BOX_KEYS = ["backgroundColor", "borderWidth", "borderTopWidth", "borderBot
 function isTextOnly(node: Extract<Node, { type: "el" }>): boolean {
   return node.children.length > 0 && node.children.every((c) => c.type === "text" || (c.type === "el" && c.tag === "br"));
 }
-function joinText(node: Extract<Node, { type: "el" }>): string {
-  return node.children.map((c) => (c.type === "text" ? c.text : "\n")).join("").replace(/\s+/g, " ").trim();
+function joinText(node: Extract<Node, { type: "el" }>, pre = false): string {
+  // pre: preserve raw whitespace + newlines (white-space:pre code blocks), trimming only
+  // a single leading/trailing blank line. Otherwise collapse whitespace but honor <br> as
+  // a hard line break (split into runs at each <br>, collapse each run, join with "\n").
+  if (pre) {
+    return node.children.map((c) => (c.type === "text" ? c.text : c.tag === "br" ? "\n" : "")).join("").replace(/^\n/, "").replace(/\n$/, "");
+  }
+  const runs: string[] = [];
+  let cur = "";
+  for (const c of node.children) {
+    if (c.type === "el" && c.tag === "br") { runs.push(cur); cur = ""; }
+    else if (c.type === "text") cur += c.text;
+  }
+  runs.push(cur);
+  return runs.map((r) => r.replace(/\s+/g, " ").trim()).join("\n");
 }
 function finalizeText(text: Record<string, unknown>, inheritColor?: string): Record<string, unknown> {
   const out: Record<string, unknown> = { ...text };
@@ -398,9 +420,17 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
   if (tag === "img") return <View key={key} style={{ backgroundColor: t.muted, borderRadius: (view.borderRadius as number) ?? 6, width: (view.width as number) ?? 40, height: (view.height as number) ?? 40, ...parsed.view } as object} />;
   // A toggle switch (a span.switch with a .switch-slider): render the track + knob, on by default.
   if (classes.includes("switch")) {
+    const findInput = (n: Extract<Node, { type: "el" }>): Extract<Node, { type: "el" }> | null => {
+      for (const c of n.children) {
+        if (c.type === "el") { if (c.tag === "input") return c; const f = findInput(c); if (f) return f; }
+      }
+      return null;
+    };
+    const input = findInput(node);
+    const on = input ? "checked" in input.attrs : true;
     return (
-      <View key={key} style={{ width: 36, height: 20, borderRadius: 9999, backgroundColor: t.primary, padding: 2, justifyContent: "center" }}>
-        <View style={{ width: 16, height: 16, borderRadius: 9999, backgroundColor: "#ffffff", alignSelf: "flex-end" }} />
+      <View key={key} style={{ width: 36, height: 20, borderRadius: 9999, backgroundColor: on ? t.primary : t.input, padding: 2, justifyContent: "center" }}>
+        <View style={{ width: 16, height: 16, borderRadius: 9999, backgroundColor: "#ffffff", alignSelf: on ? "flex-end" : "flex-start" }} />
       </View>
     );
   }
@@ -409,7 +439,7 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
   // Text-only node.
   if (isTextOnly(node)) {
     const hasBox = BOX_KEYS.some((k) => view[k] !== undefined) || classes.some((c) => ["kbd", "code", "badge", "btn", "avatar", "input", "status-badge"].includes(c));
-    const label = joinText(node);
+    const label = joinText(node, parsed.pre);
     const textEl = <Text style={finalizeText(text, inheritColor) as object}>{label}</Text>;
     if (!hasBox) return <Text key={key} style={finalizeText(text, inheritColor) as object}>{label}</Text>;
     return <View key={key} style={view as object}>{textEl}</View>;

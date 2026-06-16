@@ -53,7 +53,7 @@ function PlatformRow({ label, scope, render, resetKey, first }: {
 // The component playground: the stacked iOS/Android/Web stage (one device row on
 // native) + flush source, with the example rail to the right on wide viewports.
 export function Playground({ examples }: { examples: DocExample[] }) {
-  const { tokens } = useTheme();
+  const { tokens, surface } = useTheme();
   const { width } = useWindowDimensions();
   const wide = width >= 1024;
   const [selected, setSelected] = useState(0);
@@ -71,7 +71,10 @@ export function Playground({ examples }: { examples: DocExample[] }) {
           borderColor: tokens.border,
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
-          backgroundColor: tokens.background,
+          // The stage is a content card (tokens.card, distinct from the page bg in dark
+          // mode); in glass it goes transparent so previewed glass overlays frost against
+          // the aurora, matching the Vite `.live-example-stage`.
+          backgroundColor: surface === "glass" ? "transparent" : tokens.card,
           overflow: "hidden",
         }}
       >

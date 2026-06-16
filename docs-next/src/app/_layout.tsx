@@ -1,11 +1,12 @@
 import { Slot } from "expo-router";
-import { useState } from "react";
-import { Modal, useWindowDimensions } from "react-native";
+import { useState, useEffect } from "react";
+import { Modal, Platform, useWindowDimensions } from "react-native";
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Pressable, useTheme } from "@olympusoss/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { Sidebar } from "../shell/sidebar";
 import { Topbar } from "../shell/topbar";
+import { SearchModal } from "../shell/search-modal";
 import { useDocsFonts } from "../ui/fonts";
 import { GlassAurora, webFrost } from "../ui/glass";
 
@@ -31,6 +32,21 @@ function Shell() {
   const wide = width >= 1024;
   const glass = surface === "glass";
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Global cmd-K / ctrl-K to toggle search, web only (the soft keyboard on native has
+  // no such shortcut and document/window are web-only globals).
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top", "bottom"]}>
@@ -42,7 +58,7 @@ function Shell() {
           </View>
         ) : null}
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Topbar showMenu={!wide} onMenu={() => setDrawerOpen(true)} />
+          <Topbar showMenu={!wide} onMenu={() => setDrawerOpen(true)} onSearch={() => setSearchOpen(true)} />
           <View style={{ flex: 1 }}>
             <Slot />
           </View>
@@ -64,6 +80,8 @@ function Shell() {
           </Pressable>
         </Modal>
       ) : null}
+
+      <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
     </SafeAreaView>
   );
 }

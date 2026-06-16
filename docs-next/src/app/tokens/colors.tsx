@@ -4,6 +4,7 @@ import { Page } from "../../ui/page";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { geist } from "../../ui/fonts";
+import { alpha } from "../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout, Swatch, SwatchLabel, MonoCaption, GradientSwatch, Grid, Surface } from "../../ui/tokens-kit";
 
 const SEMANTIC_PAIRS: { name: string; token: keyof ColorTokens; varName: string; light: string; dark: string }[] = [
@@ -118,14 +119,15 @@ function StatusCell({ s }: { s: typeof STATUS[number] }) {
   );
 }
 
+// Matches the Vite `.status-badge`: a pill with a TRANSPARENT fill, a 1px tone-tinted
+// border, and a tone-colored dot + label (brighter tone in dark mode), not a solid fill.
 function StatusBadge({ label, i }: { label: string; i: number }) {
   const { dark } = useTheme();
-  const s = STATUS[i];
-  const c = dark ? s.dark : s.light;
+  const tone = dark ? STATUS[i].dark.fg : STATUS[i].light.fg;
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 9999, backgroundColor: c.bg }}>
-      <View style={{ width: 6, height: 6, borderRadius: 9999, backgroundColor: c.fg }} />
-      <Text style={{ fontFamily: geist("500"), fontSize: 12, color: c.fg }}>{label}</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 2, paddingHorizontal: 8, borderRadius: 9999, borderWidth: 1, borderColor: alpha(tone, 0.3), backgroundColor: "transparent" }}>
+      <View style={{ width: 6, height: 6, borderRadius: 9999, backgroundColor: tone }} />
+      <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tone }}>{label}</Text>
     </View>
   );
 }

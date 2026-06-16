@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { ScrollView, View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
@@ -144,9 +145,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </ScrollView>
 
-      <View style={{ padding: 8, borderTopWidth: 1, borderColor: tokens.border }}>
-        <Item item={COMPARE_ITEM} />
-      </View>
+      {/* /compare is a web-only QA harness (reference imagery); on native it redirects
+          home, so the link is only surfaced on web to avoid a dead-end. */}
+      {Platform.OS === "web" ? (
+        <View style={{ padding: 8, borderTopWidth: 1, borderColor: tokens.border }}>
+          <Item item={COMPARE_ITEM} />
+        </View>
+      ) : null}
     </View>
   );
 }
