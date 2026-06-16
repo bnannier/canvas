@@ -1,7 +1,7 @@
 import { Slot } from "expo-router";
 import { useState } from "react";
 import { Modal, useWindowDimensions } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Pressable, useTheme } from "@olympusoss/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { Sidebar } from "../shell/sidebar";
@@ -24,6 +24,7 @@ export default function RootLayout() {
 function Shell() {
   const { tokens } = useTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const wide = width >= 1024;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -49,10 +50,11 @@ function Shell() {
             style={{ flex: 1, flexDirection: "row", backgroundColor: "rgba(0,0,0,0.45)" }}
             onPress={() => setDrawerOpen(false)}
           >
-            <Pressable style={{ width: 286, maxWidth: "86%" }} onPress={() => {}}>
-              <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
-                <Sidebar onNavigate={() => setDrawerOpen(false)} />
-              </SafeAreaView>
+            <Pressable
+              style={{ width: 286, maxWidth: "86%", paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: tokens.popover }}
+              onPress={() => {}}
+            >
+              <Sidebar onNavigate={() => setDrawerOpen(false)} />
             </Pressable>
           </Pressable>
         </Modal>
