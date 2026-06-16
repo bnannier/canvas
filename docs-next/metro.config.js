@@ -1,20 +1,15 @@
-// Metro config for the universal Canvas docs app.
-//
-// Native target: renders the RN components in src/. Web target: REUSES the existing
-// Vite docs components (docs/src) for exact visual parity, so their imports are
-// bridged here — react-router-dom -> an Expo Router shim, and "@/..." -> docs/src.
-//
-// The library + generated docs-core are consumed as source via live symlinks (see
-// package.json postinstall). watchFolders sees the out-of-tree source;
-// nodeModulesPaths + disableHierarchicalLookup force a single react/RN/svg copy.
+// Metro config for the universal Canvas docs app (iOS / Android / web from one
+// React Native codebase). It consumes the source-only @olympusoss/canvas library and
+// the generated docs-core as live symlinks (see package.json postinstall):
+//   - watchFolders sees the out-of-tree source;
+//   - nodeModulesPaths + disableHierarchicalLookup force a single react/RN/svg copy;
+//   - the resolver maps the library's NodeNext ".js" specifiers to their .ts/.tsx
+//     source (which also restores per-OS .ios/.android skin resolution on native).
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
-const fs = require("fs");
 
 const projectRoot = __dirname;
 const repoRoot = path.resolve(projectRoot, "..");
-const docsSrc = path.resolve(repoRoot, "docs", "src");
-const routerShim = path.resolve(projectRoot, "src", "web", "react-router-shim.tsx");
 
 const config = getDefaultConfig(projectRoot);
 
@@ -22,43 +17,7 @@ config.watchFolders = [repoRoot];
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
 config.resolver.disableHierarchicalLookup = true;
 
-function asSourceFile(absNoExt) {
-  if (fs.existsSync(absNoExt) && fs.statSync(absNoExt).isFile()) return absNoExt;
-  for (const ext of [".tsx", ".ts", ".jsx", ".js", ".json"]) {
-    if (fs.existsSync(absNoExt + ext)) return absNoExt + ext;
-  }
-  for (const ext of [".tsx", ".ts", ".jsx", ".js"]) {
-    const idx = path.join(absNoExt, "index" + ext);
-    if (fs.existsSync(idx)) return idx;
-  }
-  return null;
-}
-
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  const isWeb = platform === "web";
-
-  // The web target reuses the Vite docs (react-router-dom, "@/...", and .css imports).
-  // Those `.web.tsx` route files are still pulled into the NATIVE bundle by Expo Router's
-  // route require.context, but they are never rendered on native (the platform `.tsx`
-  // routes are). Resolve their web-only specifiers to an empty module on native so the
-  // reused docs source + stylesheets never enter the native bundle.
-  if (!isWeb) {
-    if (moduleName === "react-router-dom" || moduleName.startsWith("@/") || moduleName.endsWith(".css")) {
-      return { type: "empty" };
-    }
-  } else {
-    if (moduleName === "react-router-dom") {
-      return { type: "sourceFile", filePath: routerShim };
-    }
-    if (moduleName.startsWith("@/")) {
-      // Resolve through the symlinked docs-web-src package (node_modules/docs-web-src ->
-      // docs/src) so Metro registers the file (a raw sourceFile return intermittently
-      // fails the SHA-1 lookup for watch-folder files).
-      return context.resolveRequest(context, "docs-web-src/" + moduleName.slice(2), platform);
-    }
-  }
-  // The library ships NodeNext-style ".js" specifiers that resolve to .ts/.tsx source,
-  // and this also restores per-OS .ios/.android skin resolution on native.
   if (moduleName.endsWith(".js") && (moduleName.startsWith("./") || moduleName.startsWith("../"))) {
     try {
       return context.resolveRequest(context, moduleName, platform);

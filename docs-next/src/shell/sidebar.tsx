@@ -1,88 +1,150 @@
 import { useEffect, useState } from "react";
-import { ScrollView, View, Text, Pressable, useTheme, alpha } from "@olympusoss/canvas";
+import { ScrollView, View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
-import { NAV_GROUPS } from "../data/nav";
+import { ChevronRight } from "lucide-react-native";
+import { CanvasMark } from "../brand/canvas-mark";
+import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, getActiveGroup, type NavItem } from "../data/nav";
+import { geist } from "../ui/fonts";
 
-function isActive(pathname: string, href: string): boolean {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(href + "/");
-}
-
-// The docs navigation rail: fixed groups (Overview, Tokens) always open; the component
-// and guide groups are an accordion (one open at a time, the active group auto-opens).
+// The docs sidebar, matching the Vite chrome: brand (CanvasMark + Canvas / design
+// system), a pinned Overview, an always-open Tokens & Utilities section, the
+// collapsible category groups (accordion), and a Compare footer.
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { tokens } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
+  const activeSlug = getActiveSlug(pathname);
+  const activeGroup = getActiveGroup(pathname);
 
-  const activeGroup =
-    NAV_GROUPS.find((g) => g.collapsible && g.items.some((i) => isActive(pathname, i.href)))?.title ?? null;
   const [openGroup, setOpenGroup] = useState<string | null>(activeGroup);
   useEffect(() => {
     if (activeGroup) setOpenGroup(activeGroup);
-  }, [activeGroup]);
+  }, [activeGroup, pathname]);
 
   const go = (href: string) => {
     router.push(href as never);
     onNavigate?.();
   };
 
+  const Item = ({ item }: { item: NavItem }) => {
+    const active = item.slug === activeSlug;
+    const color = active ? tokens.foreground : tokens["muted-foreground"];
+    const Icon = item.icon;
+    return (
+      <Pressable
+        onPress={() => go(item.href)}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          paddingVertical: 6.4,
+          paddingHorizontal: 10,
+          borderRadius: 8,
+          backgroundColor: active ? tokens.accent : "transparent",
+        }}
+      >
+        <Icon size={16} color={color} />
+        <Text style={{ fontFamily: geist(active ? "600" : "500"), fontSize: 13, color }}>{item.label}</Text>
+      </Pressable>
+    );
+  };
+
+  const GroupHeader = ({ label }: { label: string }) => (
+    <Text
+      style={{
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        fontFamily: geist("500"),
+        fontSize: 11,
+        letterSpacing: 0.66,
+        textTransform: "uppercase",
+        color: tokens["muted-foreground"],
+      }}
+    >
+      {label}
+    </Text>
+  );
+
   return (
-    <View style={{ flex: 1, backgroundColor: tokens.popover }}>
-      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-        <Text style={{ fontSize: 17, fontWeight: "700", letterSpacing: -0.3, color: tokens.foreground }}>Canvas</Text>
-        <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>design system</Text>
+    <View style={{ flex: 1, backgroundColor: tokens.card }}>
+      <View
+        style={{
+          height: 56,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          paddingHorizontal: 14,
+          borderBottomWidth: 1,
+          borderColor: tokens.border,
+        }}
+      >
+        <CanvasMark size={26.62} />
+        <View>
+          <Text style={{ fontFamily: geist("600"), fontSize: 14, letterSpacing: -0.14, color: tokens.foreground }}>Canvas</Text>
+          <Text style={{ fontFamily: geist("500"), fontSize: 10, letterSpacing: 0.4, color: tokens["muted-foreground"], marginTop: 2 }}>
+            design system
+          </Text>
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 8, paddingBottom: 40, gap: 2 }}>
-        {NAV_GROUPS.map((group) => {
-          const open = !group.collapsible || openGroup === group.title;
-          return (
-            <View key={group.title} style={{ marginTop: 6 }}>
-              <Pressable
-                disabled={!group.collapsible}
-                onPress={() => setOpenGroup((o) => (o === group.title ? null : group.title))}
-                style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 10, paddingVertical: 6 }}
-              >
-                <Text style={{ fontSize: 11, fontWeight: "700", letterSpacing: 0.6, color: tokens["muted-foreground"], textTransform: "uppercase" }}>
-                  {group.title}
-                </Text>
-                {group.collapsible ? (
-                  <Text style={{ fontSize: 10, color: tokens["muted-foreground"] }}>{open ? "▾" : "▸"}</Text>
-                ) : null}
-              </Pressable>
+      <ScrollView contentContainerStyle={{ padding: 8, paddingBottom: 16 }}>
+        <View style={{ marginBottom: 2 }}>
+          {NAV_GROUPS[0].items.map((it) => (
+            <Item key={it.href} item={it} />
+          ))}
+        </View>
 
-              {open
-                ? group.items.map((item) => {
-                    const active = isActive(pathname, item.href);
-                    return (
-                      <Pressable
-                        key={item.href}
-                        onPress={() => go(item.href)}
-                        style={{
-                          paddingHorizontal: 10,
-                          paddingVertical: 7,
-                          borderRadius: 8,
-                          backgroundColor: active ? alpha(tokens.primary, 0.12) : "transparent",
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 13.5,
-                            color: active ? tokens.primary : tokens.foreground,
-                            fontWeight: active ? "600" : "400",
-                          }}
-                        >
-                          {item.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })
-                : null}
+        <View style={{ marginBottom: 2 }}>
+          <GroupHeader label={NAV_GROUPS[1].label} />
+          <View style={{ marginTop: 2 }}>
+            {NAV_GROUPS[1].items.map((it) => (
+              <Item key={it.href} item={it} />
+            ))}
+          </View>
+        </View>
+
+        {NAV_GROUPS.slice(2).map((g) => {
+          const isOpen = openGroup === g.label;
+          return (
+            <View key={g.label} style={{ marginBottom: 2 }}>
+              <Pressable
+                onPress={() => setOpenGroup((o) => (o === g.label ? null : g.label))}
+                style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6, paddingHorizontal: 10 }}
+              >
+                <Text
+                  style={{
+                    flex: 1,
+                    fontFamily: geist("500"),
+                    fontSize: 11,
+                    letterSpacing: 0.66,
+                    textTransform: "uppercase",
+                    color: tokens["muted-foreground"],
+                  }}
+                >
+                  {g.label}
+                </Text>
+                {isOpen ? (
+                  <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: tokens.primary, marginRight: 6 }} />
+                ) : null}
+                <View style={{ transform: [{ rotate: isOpen ? "90deg" : "0deg" }] }}>
+                  <ChevronRight size={11} color={tokens["muted-foreground"]} />
+                </View>
+              </Pressable>
+              {isOpen ? (
+                <View style={{ marginTop: 2 }}>
+                  {g.items.map((it) => (
+                    <Item key={it.href} item={it} />
+                  ))}
+                </View>
+              ) : null}
             </View>
           );
         })}
       </ScrollView>
+
+      <View style={{ padding: 8, borderTopWidth: 1, borderColor: tokens.border }}>
+        <Item item={COMPARE_ITEM} />
+      </View>
     </View>
   );
 }

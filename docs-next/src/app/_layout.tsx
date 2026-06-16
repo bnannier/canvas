@@ -6,21 +6,23 @@ import { View, Pressable, useTheme } from "@olympusoss/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { Sidebar } from "../shell/sidebar";
 import { Topbar } from "../shell/topbar";
+import { useDocsFonts } from "../ui/fonts";
 
-// The whole app renders inside Canvas's own ThemeProvider (via DocsThemeProvider), so
-// every component AND the docs chrome are painted by the kit the docs document.
+// The whole app renders inside Canvas's ThemeProvider (via DocsThemeProvider), so the
+// components AND the docs chrome are painted by the kit, and once the Geist faces load
+// the typography matches the original site on every platform.
 export default function RootLayout() {
+  const [fontsLoaded] = useDocsFonts();
   return (
     <SafeAreaProvider>
-      <DocsThemeProvider>
-        <Shell />
-      </DocsThemeProvider>
+      <DocsThemeProvider>{fontsLoaded ? <Shell /> : null}</DocsThemeProvider>
     </SafeAreaProvider>
   );
 }
 
-// Responsive shell: a fixed sidebar rail on wide viewports (desktop web / tablet), a
-// hamburger drawer on phones. The content area carries the topbar + the routed screen.
+// Responsive shell mirroring the Vite docs: a fixed 240px sidebar rail on wide
+// viewports (desktop web / tablet), a hamburger drawer on phones, the topbar + routed
+// content in the main column.
 function Shell() {
   const { tokens } = useTheme();
   const { width } = useWindowDimensions();
@@ -32,7 +34,7 @@ function Shell() {
     <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top", "bottom"]}>
       <View style={{ flex: 1, flexDirection: "row" }}>
         {wide ? (
-          <View style={{ width: 264, borderRightWidth: 1, borderColor: tokens.border }}>
+          <View style={{ width: 240, borderRightWidth: 1, borderColor: tokens.border }}>
             <Sidebar />
           </View>
         ) : null}
@@ -47,11 +49,11 @@ function Shell() {
       {!wide ? (
         <Modal visible={drawerOpen} transparent animationType="fade" onRequestClose={() => setDrawerOpen(false)}>
           <Pressable
-            style={{ flex: 1, flexDirection: "row", backgroundColor: "rgba(0,0,0,0.45)" }}
+            style={{ flex: 1, flexDirection: "row", backgroundColor: "rgba(0,0,0,0.5)" }}
             onPress={() => setDrawerOpen(false)}
           >
             <Pressable
-              style={{ width: 286, maxWidth: "86%", paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: tokens.popover }}
+              style={{ width: 240, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: tokens.card }}
               onPress={() => {}}
             >
               <Sidebar onNavigate={() => setDrawerOpen(false)} />

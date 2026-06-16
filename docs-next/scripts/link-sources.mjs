@@ -18,10 +18,6 @@ const repoRoot = resolve(projectRoot, "..");
 const links = [
   ["node_modules/@olympusoss/canvas", repoRoot],
   ["node_modules/docs-core", resolve(repoRoot, "docs-core")],
-  // The web target reuses the Vite docs (their "@/..." imports map here). Symlinked so
-  // Metro resolves + registers the files normally (a raw sourceFile return intermittently
-  // fails the SHA-1 lookup for watch-folder files).
-  ["node_modules/docs-web-src", resolve(repoRoot, "docs", "src")],
 ];
 
 for (const [rel, target] of links) {

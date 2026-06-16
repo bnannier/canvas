@@ -1,61 +1,66 @@
 import { type ReactNode } from "react";
-import { Platform } from "react-native";
 import { View, Text, useTheme } from "@olympusoss/canvas";
+import { geist, geistMono } from "./fonts";
 
-// Prose primitives for the docs, styled from Canvas tokens so they track the active
-// scheme/surface. The web docs use the Geist font + CSS; native uses the system font.
-export const MONO = Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" })!;
+// Prose primitives matching the Vite docs CSS exactly (Geist faces, the same sizes,
+// weights, letter-spacing and token colors), so the React Native docs read identically
+// on iOS / Android / web. Custom RN fonts carry weight via the family, not fontWeight.
 
+export const MONO = geistMono("400");
+
+// Page title — `.page-header h1`: 1.375rem / 600 / -0.02em.
 export function H1({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontSize: 28, fontWeight: "700", letterSpacing: -0.4, color: tokens.foreground }}>
+    <Text style={{ fontFamily: geist("600"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>
       {children}
     </Text>
   );
 }
 
+// Section heading — `.h4`: 1rem / 600 / -0.01em.
 export function H2({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontSize: 20, fontWeight: "600", letterSpacing: -0.3, color: tokens.foreground }}>
+    <Text style={{ fontFamily: geist("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground }}>
       {children}
     </Text>
   );
 }
 
+// Sub-heading — `.h5`: 0.9375rem / 600.
 export function H3({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
-  return (
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>{children}</Text>
-  );
+  return <Text style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{children}</Text>;
 }
 
+// Body — `.body`: 0.875rem / 1.6.
 export function P({ children, muted }: { children: ReactNode; muted?: boolean }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontSize: 14, lineHeight: 22, color: muted ? tokens["muted-foreground"] : tokens.foreground }}>
+    <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22, color: muted ? tokens["muted-foreground"] : tokens.foreground }}>
       {children}
     </Text>
   );
 }
 
+// Page description — `.sub` / the muted lede under a header.
 export function Lead({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontSize: 15, lineHeight: 23, color: tokens["muted-foreground"], maxWidth: 640 }}>
+    <Text style={{ fontFamily: geist("400"), fontSize: 13.5, lineHeight: 21, color: tokens["muted-foreground"], maxWidth: 640 }}>
       {children}
     </Text>
   );
 }
 
+// Inline `<code>` — mono, subtle.
 export function InlineCode({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
-  return <Text style={{ fontFamily: MONO, fontSize: 13, color: tokens.primary }}>{children}</Text>;
+  return <Text style={{ fontFamily: MONO, fontSize: 12.5, color: tokens.foreground }}>{children}</Text>;
 }
 
-// A hairline rule.
 export function Rule() {
   const { tokens } = useTheme();
-  return <View style={{ height: 1, backgroundColor: tokens.border, marginVertical: 4 }} />;
+  return <View style={{ height: 1, backgroundColor: tokens.border }} />;
 }
