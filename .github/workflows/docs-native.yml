@@ -1,0 +1,87 @@
+name: docs-native — EAS build
+
+# Internal-distribution native builds (Android APK + ad-hoc iOS) of the universal
+# docs app. Until the repo is linked to an Expo project, this workflow SKIPS rather
+# than fails: add the EXPO_TOKEN secret and run `eas init` (see docs-next/README) to
+# enable it. The web build/deploy is handled separately by docs.yml.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs-next/**"
+      - "docs-core/**"
+      - "src/**"
+      - "tools/**"
+      - ".github/workflows/docs-native.yml"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        default: "preview"
+        type: choice
+        options: [preview, production, development]
+
+concurrency:
+  group: docs-native-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Gate on EXPO_TOKEN
+        id: gate
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::notice::EXPO_TOKEN is not set — skipping the EAS build. Add the secret and run 'eas init' in docs-next/ to enable native builds."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v6
+        if: steps.gate.outputs.skip != 'true'
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.gate.outputs.skip != 'true'
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.skip != 'true'
+        with:
+          node-version: 20
+
+      - uses: expo/expo-github-action@v8
+        if: steps.gate.outputs.skip != 'true'
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # The native app consumes the source-only library + generated docs-core via
+      # symlinks (docs-next postinstall). Install root deps first so those exist.
+      - name: Install root deps
+        if: steps.gate.outputs.skip != 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate docs-core
+        if: steps.gate.outputs.skip != 'true'
+        run: bun run docs:gen
+
+      - name: Install docs-next deps
+        if: steps.gate.outputs.skip != 'true'
+        working-directory: docs-next
+        run: bun install
+
+      - name: Typecheck native app
+        if: steps.gate.outputs.skip != 'true'
+        working-directory: docs-next
+        run: bunx tsc --noEmit
+
+      - name: EAS build (internal distribution)
+        if: steps.gate.outputs.skip != 'true'
+        working-directory: docs-next
+        run: eas build --platform all --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --no-wait
