@@ -217,17 +217,17 @@ export function Home() {
                 Canvas is a universal React Native UI kit. The same components render natively on iOS and Android and on the web through React Native Web, styled with flat, semantic boolean props that read like a sentence.
               </Text>
 
-              <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 18 }}>
-                <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
-                  <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
-                </View>
-                <Text style={{ fontFamily: geist("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
-              </View>
-
-              {/* On native (iOS/Android) the CTAs and platform checks are hidden so the
-                  rotating orbit surfaces sooner; the web hero keeps them. */}
+              {/* On native (iOS/Android) the prop-proof line, CTAs, and platform checks
+                  are hidden so the rotating orbit surfaces sooner; the web hero keeps them. */}
               {Platform.OS === "web" ? (
                 <>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 18 }}>
+                    <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
+                      <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
+                    </View>
+                    <Text style={{ fontFamily: geist("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
+                  </View>
+
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
                     <LandingButton primary label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
                     <LandingButton label="Explore tokens" onPress={() => go("/tokens/colors")} />
