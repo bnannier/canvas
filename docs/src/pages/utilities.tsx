@@ -1,11 +1,15 @@
 import { View, useResponsive } from "@olympusoss/canvas";
 import { Link } from "react-router-dom";
+import { Playground, type Example } from "@/components/playground";
+import { CodeBlock } from "@/components/code-block";
 import { PageNav } from "@/components/page-nav";
 
 /**
  * The layout guide. Canvas lays out with plain React Native style objects on the
- * raw View primitive (flexbox), so the demos here render real <View> elements
- * with the same style objects a consumer writes, and double as a live smoke test.
+ * raw View primitive (flexbox). Each demo is a live <Playground>: the fence is the
+ * real code, rendered across iOS / Android / Web so the page shows the same layout
+ * runs identically on every platform (the layout is platform-agnostic, so the three
+ * rows match, which is the point).
  */
 
 function Section({ title, description, anatomy, children }: {
@@ -45,25 +49,7 @@ function Section({ title, description, anatomy, children }: {
   );
 }
 
-/** A live demo box: renders the children, then shows the style used. */
-function Demo({ code, children, minHeight }: { code: string; children: React.ReactNode; minHeight?: number }) {
-  return (
-    <div style={{
-      border: "1px solid var(--border)",
-      borderRadius: "var(--radius-xl, 12px)",
-      overflow: "hidden",
-      marginBottom: 12,
-      background: "var(--card)",
-    }}>
-      <div style={{ padding: 16, minHeight }}>{children}</div>
-      <div style={{ borderTop: "1px solid var(--border)", background: "color-mix(in oklch, var(--muted) 30%, transparent)", padding: "8px 12px" }}>
-        <code style={{ fontSize: "12px", color: "var(--muted-foreground)", fontFamily: "var(--font-mono)" }}>{code}</code>
-      </div>
-    </div>
-  );
-}
-
-/** A small labelled swatch used as demo content. */
+/** A small labelled swatch used by the gap-scale reference and the responsive demo. */
 function Tile({ children, full }: { children?: React.ReactNode; full?: boolean }) {
   return (
     <div style={{
@@ -104,6 +90,88 @@ const GAP_SCALE: Array<[string, number]> = [
   ["0", 0], ["px", 1], ["0.5", 2], ["1", 4], ["1.5", 6], ["2", 8], ["3", 12], ["4", 16], ["6", 24], ["8", 32],
 ];
 
+// Shared swatch fills for the live demo boxes. Kept here so the source stays DRY;
+// the assembled fence string is exactly what renders live and shows in the code
+// block, so the examples read as real, copyable View layout code.
+const BOX = `borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.2)`;
+const BOXFILL = `borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.4)`;
+
+const directionExamples: Example[] = [
+  {
+    label: "Row",
+    code: `<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+  <View style={{ width: 72, height: 40, ${BOX} }} />
+  <View style={{ width: 72, height: 40, ${BOX} }} />
+  <View style={{ width: 72, height: 40, ${BOX} }} />
+</View>`,
+  },
+  {
+    label: "Column",
+    code: `<View style={{ flexDirection: "column", gap: 8 }}>
+  <View style={{ width: 160, height: 32, ${BOX} }} />
+  <View style={{ width: 160, height: 32, ${BOX} }} />
+  <View style={{ width: 160, height: 32, ${BOX} }} />
+</View>`,
+  },
+];
+
+const alignmentExamples: Example[] = [
+  {
+    label: "Space between",
+    code: `<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: 320 }}>
+  <View style={{ width: 72, height: 40, ${BOX} }} />
+  <View style={{ width: 72, height: 40, ${BOX} }} />
+  <View style={{ width: 72, height: 40, ${BOX} }} />
+</View>`,
+  },
+  {
+    label: "Centered",
+    code: `<View style={{ flexDirection: "row", justifyContent: "center", gap: 8, width: 320 }}>
+  <View style={{ width: 80, height: 40, ${BOX} }} />
+  <View style={{ width: 80, height: 40, ${BOX} }} />
+</View>`,
+  },
+];
+
+const flexExamples: Example[] = [
+  {
+    label: "flex: 1",
+    code: `<View style={{ flexDirection: "row", gap: 8, width: 320 }}>
+  <View style={{ width: 56, height: 40, ${BOX} }} />
+  <View style={{ flex: 1, height: 40, ${BOXFILL} }} />
+  <View style={{ width: 56, height: 40, ${BOX} }} />
+</View>`,
+  },
+];
+
+const sizingExamples: Example[] = [
+  {
+    label: "Percent widths",
+    code: `<View style={{ flexDirection: "row", gap: 8, width: 320 }}>
+  <View style={{ width: "50%", height: 40, ${BOX} }} />
+  <View style={{ width: "25%", height: 40, ${BOX} }} />
+  <View style={{ width: "25%", height: 40, ${BOX} }} />
+</View>`,
+  },
+  {
+    label: "Fixed & full",
+    code: `<View style={{ flexDirection: "column", gap: 8, width: 320 }}>
+  <View style={{ width: "100%", height: 32, ${BOX} }} />
+  <View style={{ width: 160, height: 32, ${BOX} }} />
+</View>`,
+  },
+];
+
+const composingExamples: Example[] = [
+  {
+    label: "Last wins",
+    code: `<View style={{ flexDirection: "column", gap: 12, width: 320 }}>
+  <View style={[{ width: 160 }, { height: 32, ${BOX} }]} />
+  <View style={[{ width: 160 }, { width: "100%", height: 32, ${BOXFILL} }]} />
+</View>`,
+  },
+];
+
 // useResponsive is a hook, so the responsive demo lives in its own component.
 // It collapses from a row on desktop to a column at the md breakpoint and below.
 function ResponsiveDemo() {
@@ -114,6 +182,21 @@ function ResponsiveDemo() {
     </View>
   );
 }
+
+// A hook + a window resize drive this one, so it can't be a stateless fence like
+// the others; it renders the live component above with its real source beside it,
+// in the same playground stage + code-block frame.
+const responsiveCode = `function Toolbar() {
+  // Desktop-first: base is the desktop value; md applies at 768px and below.
+  const direction = useResponsive({ base: "row", md: "column" });
+
+  return (
+    <View style={{ flexDirection: direction, gap: 12 }}>
+      <Text>a row on desktop</Text>
+      <Text>that stacks at md and below</Text>
+    </View>
+  );
+}`;
 
 export function UtilitiesPage() {
   return (
@@ -160,29 +243,11 @@ export function UtilitiesPage() {
       </Section>
 
       <Section title="Display & direction" description="React Native defaults a View to a column, so set flexDirection: 'row' for a row. There is no display:flex toggle (every View is already a flex container); use display:'none' to hide.">
-        <Demo code={'<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>'}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Tile>row</Tile><Tile>item</Tile><Tile>item</Tile>
-          </View>
-        </Demo>
-        <Demo code={'<View style={{ flexDirection: "column", gap: 8 }}>'}>
-          <View style={{ flexDirection: "column", gap: 8 }}>
-            <Tile>column</Tile><Tile>stacks</Tile><Tile>vertically</Tile>
-          </View>
-        </Demo>
+        <Playground examples={directionExamples} />
       </Section>
 
-      <Section title="Alignment" description="justifyContent controls the main axis; alignItems the cross axis. Use alignSelf for a single child, and flexGrow / flexShrink to tune how children flex.">
-        <Demo code={'<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>'}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-            <Tile>start</Tile><Tile>middle</Tile><Tile>end</Tile>
-          </View>
-        </Demo>
-        <Demo code={'<View style={{ flexDirection: "row", justifyContent: "center", gap: 8 }}>'}>
-          <View style={{ flexDirection: "row", justifyContent: "center", gap: 8 }}>
-            <Tile>centered</Tile><Tile>row</Tile>
-          </View>
-        </Demo>
+      <Section title="Alignment" description="justifyContent controls the main axis; alignItems the cross axis. Use alignSelf for a single child, and flexGrow / flexShrink to tune how children flex. (space-between needs a bounded width, hence the fixed 320 here.)">
+        <Playground examples={alignmentExamples} />
       </Section>
 
       <Section
@@ -208,38 +273,28 @@ export function UtilitiesPage() {
       </Section>
 
       <Section title="Flex sizing" description="flex: 1 makes a child fill the remaining space; flexGrow / flexShrink / flexBasis tune how children flex. Combine with the sizing properties below.">
-        <Demo code={'<View style={{ flexDirection: "row", gap: 8 }}> ... <View style={{ flex: 1 }}>'}>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Tile>auto</Tile>
-            <View style={{ flex: 1 }}><Tile full>flex: 1 fills the rest</Tile></View>
-            <Tile>auto</Tile>
-          </View>
-        </Demo>
+        <Playground examples={flexExamples} />
       </Section>
 
       <Section title="Sizing" description="width / height take a number (px), a percentage string ('50%', '100%'), or 'auto'. minWidth / maxWidth / minHeight / maxHeight round it out. There are no fraction utilities: write the percentage you want.">
-        <Demo code={'<View style={{ flexDirection: "row", gap: 8 }}> ... width: "50%" / "25%"'}>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <View style={{ width: "50%" }}><Tile full>width 50%</Tile></View>
-            <View style={{ width: "25%" }}><Tile full>25%</Tile></View>
-            <View style={{ width: "25%" }}><Tile full>25%</Tile></View>
-          </View>
-        </Demo>
-        <Demo code={'<View style={{ width: "100%" }}> / <View style={{ width: 160 }}>'}>
-          <View style={{ flexDirection: "column", gap: 8 }}>
-            <View style={{ width: "100%" }}><Tile full>width 100%</Tile></View>
-            <View style={{ width: 160 }}><Tile full>width 160</Tile></View>
-          </View>
-        </Demo>
+        <Playground examples={sizingExamples} />
       </Section>
 
       <Section
         title="Responsive (desktop-first)"
-        description="useResponsive({ base, md, ... }) returns the active value for the viewport. Because the model is desktop-first, a breakpoint entry applies at that width and BELOW. Resize the window across the md (768px) boundary to watch this change."
+        description="useResponsive({ base, md, ... }) returns the active value for the viewport. Because the model is desktop-first, a breakpoint entry applies at that width and BELOW. Resize the window across the md (768px) boundary to watch the live preview switch from a row to a column."
       >
-        <Demo code={'const direction = useResponsive({ base: "row", md: "column" });'}>
-          <ResponsiveDemo />
-        </Demo>
+        <div className="component-playground">
+          <div className="live-example">
+            <div
+              className="section-card live-example-stage"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem 1rem", minHeight: 84 }}
+            >
+              <ResponsiveDemo />
+            </div>
+            <CodeBlock code={responsiveCode} language="tsx" />
+          </div>
+        </div>
       </Section>
 
       <Section
@@ -247,12 +302,7 @@ export function UtilitiesPage() {
         description="Pass an array of style objects and the later entries win, the same merge React Native uses. Every Canvas component also takes a style prop applied last, so a caller can nudge layout (a margin, a width) without restyling the component."
         anatomy="Below, the base sets a fixed 160px width; the second entry in the array overrides it to 100%, because a style array is applied left to right and the last value wins."
       >
-        <Demo code={'<View style={[{ width: 160 }, { width: "100%" }]} />'}>
-          <View style={{ flexDirection: "column", gap: 12 }}>
-            <View style={{ width: 160 }}><Tile full>width 160</Tile></View>
-            <View style={[{ width: 160 }, { width: "100%" }]}><Tile full>[160, 100%] -&gt; last wins</Tile></View>
-          </View>
-        </Demo>
+        <Playground examples={composingExamples} />
       </Section>
 
       <PageNav />
