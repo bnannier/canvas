@@ -30,6 +30,8 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
+    "docs:gen": "bun tools/docgen/generate.ts",
+    "docs:gen:check": "bun tools/docgen/generate.ts && git diff --quiet -- docs-core/examples docs-core/registry.ts",
     "docs:dev": "cd docs && npx vite",
     "docs:build": "cd docs && npx vite build"
   },

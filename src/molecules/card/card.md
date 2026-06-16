@@ -12,7 +12,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
       <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["blue-500"], 0.1), color: palette["blue-600"] }}>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["blue-500"], 0.1) }}>
       <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["blue-600"] }}>U</Text>
     </View>
   </View>
@@ -50,7 +50,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
       <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["green-500"], 0.1), color: palette["green-600"] }}>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["green-500"], 0.1) }}>
       <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["green-600"] }}>S</Text>
     </View>
   </View>
@@ -67,7 +67,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
       <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["purple-500"], 0.1), color: palette["purple-600"] }}>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["purple-500"], 0.1) }}>
       <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["purple-600"] }}>O</Text>
     </View>
   </View>
@@ -84,7 +84,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
       <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(tokens.destructive, 0.1), color: tokens.destructive }}>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(tokens.destructive, 0.1) }}>
       <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.destructive }}>!</Text>
     </View>
   </View>
@@ -101,7 +101,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
       <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
     </View>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["amber-500"], 0.1), color: palette["amber-600"] }}>
+    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["amber-500"], 0.1) }}>
       <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["amber-600"] }}>T</Text>
     </View>
   </View>

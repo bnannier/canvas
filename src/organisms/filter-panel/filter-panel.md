@@ -72,7 +72,7 @@ Sidebar filter rail with chip pills for active filters.
     <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Role</Text>
     <Icon chevronDown size={12} />
   </Pressable>
-  <Button ghost small style={{ color: tokens.primary }}>+ Add filter</Button>
+  <Button ghost small><Text style={{ color: tokens.primary }}>+ Add filter</Text></Button>
 </View>
 ```
 

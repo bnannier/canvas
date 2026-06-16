@@ -98,9 +98,9 @@ Multi-line input, with character count, with toolbar.
 ```tsx
 <View style={{ maxWidth: 400, overflow: "hidden", borderRadius: 6, borderWidth: 1, borderColor: tokens.border }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 4, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.3), paddingHorizontal: 12, paddingVertical: 8 }}>
-    <Button ghost small style={{ fontWeight: "700" }}>B</Button>
-    <Button ghost small style={{ fontStyle: "italic" }}>I</Button>
-    <Button ghost small style={{ fontFamily: "monospace", fontSize: 11 }}>{"</>"}</Button>
+    <Button ghost small><Text style={{ fontWeight: "700" }}>B</Text></Button>
+    <Button ghost small><Text style={{ fontStyle: "italic" }}>I</Text></Button>
+    <Button ghost small><Text style={{ fontFamily: "monospace", fontSize: 11 }}>{"</>"}</Text></Button>
   </View>
   <Textarea rows={4} placeholder="Leave a comment" style={{ borderRadius: 0, borderWidth: 0, ...shadow("none") }} />
 </View>
