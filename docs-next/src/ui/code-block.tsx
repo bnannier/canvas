@@ -12,7 +12,7 @@ const KEYWORDS = new Set([
   "true", "false", "null", "undefined", "await", "async", "new", "if", "else",
 ]);
 const TOKEN_RE =
-  /(\/\/[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(<\/?[A-Za-z][\w.]*)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)/g;
+  /(\/\/[^\n]*|<!--[\s\S]*?-->|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(<\/?[A-Za-z][\w.]*)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)/g;
 
 function useSyntaxColors() {
   const { tokens, dark } = useTheme();

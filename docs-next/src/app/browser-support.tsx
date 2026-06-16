@@ -1,76 +1,100 @@
 import { View } from "@olympusoss/canvas";
 import { Page, PageHeader } from "../ui/page";
 import { Section } from "../ui/section";
-import { P, H3 } from "../ui/prose";
+import { P, H3, InlineCode, Rule } from "../ui/prose";
 import { Table } from "../ui/table";
+import { Surface } from "../ui/tokens-kit";
 import { PageNav } from "../ui/page-nav";
+
+const PLATFORMS = [
+  ["iOS", "React Native (native)", "iOS 13.4+"],
+  ["Android", "React Native (native)", "Android 6.0+ (API 23)"],
+  ["Web", "react-native-web + the canvas.css token layer", "Modern browsers (see baseline below)"],
+];
+
+const PEERS = [
+  ["react", ">=18", "The React runtime Canvas builds on."],
+  ["react-native", ">=0.74", "Native iOS / Android host, and the module aliased to react-native-web on the web."],
+  ["react-native-svg", ">=13", "Vector icons and the chart primitives."],
+];
+
+const WEB_BASELINE = [
+  ["Chrome / Edge", "111+", "Tailwind v4 token layer (canvas.css)"],
+  ["Safari", "16.4+", "Tailwind v4 token layer (canvas.css)"],
+  ["Firefox", "128+", "Tailwind v4 token layer (canvas.css)"],
+];
 
 const NOTES = [
   {
     title: "Native uses no CSS",
-    body: "On iOS and Android there is no browser and no CSS feature floor. Components read the active tokens with useTheme and build their RN styles from them; the native minimums come from React Native 0.74 and react-native-svg.",
+    description:
+      "On iOS and Android there is no browser and no CSS feature floor. Components read the active design tokens with useTheme and build their React Native styles from them; the native minimums above come from React Native 0.74 and react-native-svg, the package's peer dependencies.",
   },
   {
-    title: "The web floor comes from the stylesheet",
-    body: "Components resolve to inline styles through react-native-web and run in much older browsers. It's the single shipped stylesheet, canvas.css (a Tailwind v4 token layer), that sets the modern-browser baseline.",
+    title: "The web floor comes from the stylesheet, not the components",
+    description:
+      "Canvas components resolve to inline styles through react-native-web and run in much older browsers. It is the single shipped stylesheet, canvas.css (a Tailwind v4 token layer), that sets the modern-browser baseline above. If you must support older browsers, supply the design tokens as plain CSS custom properties yourself; canvas.css is the only stylesheet Canvas ships.",
+  },
+  {
+    title: "Accessibility and motion",
+    description:
+      "Reduced-motion and other accessibility preferences are handled at the platform layer (React Native on native, react-native-web in the browser), not through bundled CSS pattern files.",
   },
 ];
 
 export default function BrowserSupportScreen() {
   return (
     <Page>
-      <PageHeader
-        title="Platform & Browser Support"
-        description="The platforms Canvas runs on (iOS, Android, and the web through react-native-web) and the web browser baseline."
-      />
-
-      <Section title="Platforms">
-        <Table
-          headers={["Platform", "Runtime", "Minimum"]}
-          rows={[
-            ["iOS", "React Native (native)", "iOS 13.4+"],
-            ["Android", "React Native (native)", "Android 6.0+ (API 23)"],
-            ["Web", "react-native-web + canvas.css", "Modern browsers"],
-          ]}
+      <View style={{ gap: 28 }}>
+        <PageHeader
+          title="Platform & Browser Support"
+          description="The platforms Canvas runs on (iOS, Android, and the web through react-native-web) and the web browser baseline."
         />
-      </Section>
 
-      <Section title="Peer dependencies">
-        <Table
-          headers={["Package", "Range"]}
-          rows={[
-            ["react", ">=18"],
-            ["react-native", ">=0.74"],
-            ["react-native-svg", ">=13"],
-          ]}
-          mono
-        />
-      </Section>
+        <Section title="Platforms">
+          <P muted>
+            Canvas is a universal React Native UI kit. It runs natively on iOS and Android, and on the web through{" "}
+            <InlineCode>react-native-web</InlineCode>.
+          </P>
+          <Table headers={["Platform", "Runtime", "Minimum"]} rows={PLATFORMS} />
+        </Section>
 
-      <Section title="Web browser baseline">
-        <P muted>Set by the canvas.css token layer (Tailwind v4):</P>
-        <Table
-          headers={["Browser", "Minimum"]}
-          rows={[
-            ["Chrome / Edge", "111+"],
-            ["Safari", "16.4+"],
-            ["Firefox", "128+"],
-          ]}
-        />
-      </Section>
+        <Rule />
 
-      <Section title="Notes">
-        <View style={{ gap: 12 }}>
-          {NOTES.map((n) => (
-            <View key={n.title} style={{ gap: 4 }}>
-              <H3>{n.title}</H3>
-              <P muted>{n.body}</P>
-            </View>
-          ))}
-        </View>
-      </Section>
+        <Section title="Peer Dependencies">
+          <P muted>
+            These peers set the platform floor. Install them alongside <InlineCode>@olympusoss/canvas</InlineCode>.
+          </P>
+          <Table headers={["Package", "Range", "Role"]} rows={PEERS} mono />
+        </Section>
 
-      <PageNav />
+        <Rule />
+
+        <Section title="Web Browser Baseline">
+          <P muted>
+            On the web, the modern-browser floor is set by the <InlineCode>canvas.css</InlineCode> token layer, which is
+            Tailwind v4. Tailwind v4 targets these versions:
+          </P>
+          <Table headers={["Browser", "Minimum Version", "Reason"]} rows={WEB_BASELINE} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Notes">
+          <View style={{ gap: 16 }}>
+            {NOTES.map((n) => (
+              <Surface key={n.title} padding={16}>
+                <View style={{ gap: 4 }}>
+                  <H3>{n.title}</H3>
+                  <P muted>{n.description}</P>
+                </View>
+              </Surface>
+            ))}
+          </View>
+        </Section>
+
+        <PageNav />
+      </View>
     </Page>
   );
 }

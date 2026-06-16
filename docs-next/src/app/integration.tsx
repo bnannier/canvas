@@ -1,53 +1,242 @@
+import { View } from "@olympusoss/canvas";
 import { Page, PageHeader } from "../ui/page";
 import { Section } from "../ui/section";
-import { P } from "../ui/prose";
+import { P, H3, InlineCode, Rule } from "../ui/prose";
 import { CodeBlock } from "../ui/code-block";
-import { Table } from "../ui/table";
 import { PageNav } from "../ui/page-nav";
+
+const INSTALL = `npm install @olympusoss/canvas react react-native react-native-svg`;
+
+const QUICK_START = `import { ThemeProvider, Button } from "@olympusoss/canvas";
+
+// Wrap the app once in ThemeProvider; it follows the OS appearance by default
+// (pass scheme="light" | "dark" to force one). Components are React Native, so
+// style them with Canvas's semantic boolean props.
+export function App() {
+  return (
+    <ThemeProvider>
+      <Button primary large>Save</Button>
+    </ThemeProvider>
+  );
+}`;
+
+const VITE_CONFIG = `import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  // react-native-web reads these globals.
+  define: { __DEV__: "true", global: "globalThis" },
+  resolve: {
+    // The single line that makes Canvas run in the browser.
+    alias: { "react-native": "react-native-web" },
+    // Prefer .web.* implementations (react-native-svg ships them).
+    extensions: [".web.tsx", ".web.ts", ".web.js", ".tsx", ".ts", ".js"],
+  },
+  optimizeDeps: {
+    include: ["react-native-web", "react-native-svg"],
+    esbuildOptions: {
+      resolveExtensions: [".web.tsx", ".web.ts", ".web.js", ".tsx", ".ts", ".js"],
+    },
+  },
+});`;
+
+const WEB_ENTRY = `import { createRoot } from "react-dom/client";
+import { ThemeProvider } from "@olympusoss/canvas";
+// The CSS token layer: custom properties + the .dark / [data-surface] / [data-density]
+// hooks. Needed only for the DOM theme helpers and any custom CSS you write with var().
+import "@olympusoss/canvas/styles/canvas.css";
+import { App } from "./app";
+import { useHtmlScheme } from "./use-html-scheme";
+
+function Root() {
+  // Keep the RN ThemeProvider in sync with the <html> theme (see the hook below).
+  const scheme = useHtmlScheme();
+  return (
+    <ThemeProvider scheme={scheme}>
+      <App />
+    </ThemeProvider>
+  );
+}
+
+createRoot(document.getElementById("root")!).render(<Root />);`;
+
+const SCHEME_HOOK = `import { useSyncExternalStore } from "react";
+
+// setTheme() toggles <html class="dark">. Mirror that class into the value the
+// ThemeProvider consumes, so the React Native components re-theme with the page.
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+  return () => observer.disconnect();
+}
+
+const getSnapshot = () =>
+  document.documentElement.classList.contains("dark") ? "dark" : "light";
+
+export function useHtmlScheme(): "light" | "dark" {
+  return useSyncExternalStore(subscribe, getSnapshot, () => "light");
+}`;
+
+const THEME_API = `import { setTheme, toggleTheme, setSurface, setDensity } from "@olympusoss/canvas";
+
+setTheme("dark");       // toggles <html class="dark"> and persists to localStorage
+toggleTheme();          // flips light <-> dark, returns the next theme
+setSurface("glass");    // <html data-surface="glass">  (solid is the default)
+setDensity("compact");  // <html data-density="compact"> (regular is the default)`;
+
+const TOKEN = `import { token } from "@olympusoss/canvas";
+
+// Web only: reads a CSS custom property off <html>, so it reflects the live theme.
+// Requires canvas.css to be loaded; on native, theme values come from ThemeProvider.
+token("primary");     // "oklch(0.511 0.262 276.966)"
+token("radius-md");   // "0.375rem"
+
+// Color tokens are oklch, so the legacy hsl() helper does not apply to them.
+// For an alpha variant, compose in CSS:
+//   color-mix(in oklch, var(--primary) 50%, transparent)`;
+
+const BUILDING = `import { View, Text, useTheme } from "@olympusoss/canvas";
+
+// Build your own components the way Canvas does: raw RN View/Text styled with a
+// style object built from the tokens, with flat boolean props for each style
+// choice (not string enums).
+interface CalloutProps {
+  children: React.ReactNode;
+  /** Emphasised, filled style. */
+  primary?: boolean;
+}
+
+export function Callout({ children, primary }: CalloutProps) {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, padding: 16, backgroundColor: primary ? tokens.primary : tokens.card }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: primary ? tokens["primary-foreground"] : tokens.foreground }}>
+        {children}
+      </Text>
+    </View>
+  );
+}`;
+
+const EXPORTS = [
+  {
+    path: "@olympusoss/canvas",
+    content:
+      "Components, the style foundation (ThemeProvider, useTheme, useResponsive, shadow, alpha, and the View / Text / Pressable / Image / TextInput / ScrollView primitives), and the token / theme utilities. Ships as TypeScript source.",
+  },
+  {
+    path: "@olympusoss/canvas/styles/canvas.css",
+    content:
+      "Tailwind v4 token layer: the CSS custom properties plus the .dark / [data-surface] / [data-density] theme hooks. Web only.",
+  },
+];
 
 export default function IntegrationScreen() {
   return (
     <Page>
-      <PageHeader title="Integration" description="Install Canvas and render your first component." />
-
-      <Section title="Install">
-        <CodeBlock code={`npm install @olympusoss/canvas react react-native react-native-svg`} />
-      </Section>
-
-      <Section title="Quick start">
-        <P muted>Wrap your app in the ThemeProvider once, then use components with semantic boolean props.</P>
-        <CodeBlock
-          code={`import { ThemeProvider, Button } from "@olympusoss/canvas";
-
-export default function App() {
-  return (
-    <ThemeProvider>
-      <Button primary>Save changes</Button>
-    </ThemeProvider>
-  );
-}`}
+      <View style={{ gap: 28 }}>
+        <PageHeader
+          title="Integration"
+          description="Consume Canvas, a universal React Native UI kit, on native and on the web."
         />
-      </Section>
 
-      <Section title="React Native Web">
-        <P muted>
-          On the web, alias react-native to react-native-web in your bundler. These docs are the kit itself, running
-          universally — native on this device, and on the web through React Native Web.
-        </P>
-      </Section>
+        <Section title="Installation">
+          <P muted>
+            Canvas is published as <InlineCode>@olympusoss/canvas</InlineCode> and lists{" "}
+            <InlineCode>react</InlineCode>, <InlineCode>react-native</InlineCode>, and{" "}
+            <InlineCode>react-native-svg</InlineCode> as peer dependencies.
+          </P>
+          <CodeBlock code={INSTALL} />
+        </Section>
 
-      <Section title="Package exports">
-        <Table
-          headers={["Entry", "What"]}
-          rows={[
-            ["@olympusoss/canvas", "Components, primitives, theme, tokens"],
-            ["@olympusoss/canvas/styles/*", "The canvas.css token layer (web)"],
-          ]}
-          mono
-        />
-      </Section>
+        <Rule />
 
-      <PageNav />
+        <Section title="Quick start (native)">
+          <P muted>
+            On iOS and Android (Expo or React Native CLI), wrap the app in{" "}
+            <InlineCode>ThemeProvider</InlineCode> and use the components. No CSS, no build step beyond your normal RN
+            bundler.
+          </P>
+          <CodeBlock code={QUICK_START} />
+        </Section>
+
+        <Rule />
+
+        <Section title="React Native Web">
+          <P muted>
+            In the browser, Canvas runs through react-native-web: alias <InlineCode>react-native</InlineCode> to{" "}
+            <InlineCode>react-native-web</InlineCode> in your bundler. Here is a Vite config (Metro and webpack take the
+            same alias). The <InlineCode>@tailwindcss/vite</InlineCode> plugin is what processes{" "}
+            <InlineCode>canvas.css</InlineCode> in the next section.
+          </P>
+          <CodeBlock code={VITE_CONFIG} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Theming on the web">
+          <P muted>
+            Components theme themselves through <InlineCode>ThemeProvider</InlineCode> (they read the active scheme's
+            tokens with <InlineCode>useTheme</InlineCode>). On the web you also import the CSS token layer so the DOM
+            theme helpers and any custom CSS you write stay in sync. The helpers toggle attributes on{" "}
+            <InlineCode>&lt;html&gt;</InlineCode>; a small hook mirrors the <InlineCode>.dark</InlineCode> class back into
+            the provider so the React Native components follow the page.
+          </P>
+          <CodeBlock code={WEB_ENTRY} />
+          <H3>The scheme-sync hook</H3>
+          <CodeBlock code={SCHEME_HOOK} />
+          <H3>Theme, surface, density helpers</H3>
+          <P muted>
+            These set (and persist) the <InlineCode>&lt;html&gt;</InlineCode> attributes the token layer keys off. They
+            are web-only (they touch <InlineCode>document</InlineCode> and <InlineCode>localStorage</InlineCode>).
+          </P>
+          <CodeBlock code={THEME_API} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Reading tokens (web)">
+          <P muted>
+            <InlineCode>token()</InlineCode> reads the live computed value of a CSS custom property off{" "}
+            <InlineCode>document.documentElement</InlineCode>, so it reflects the current theme. It needs{" "}
+            <InlineCode>canvas.css</InlineCode> loaded and is web-only; on native, read theme values from{" "}
+            <InlineCode>useTheme()</InlineCode> instead.
+          </P>
+          <CodeBlock code={TOKEN} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Building on Canvas">
+          <P>
+            Compose Canvas components directly, or build your own on the React Native primitives (<InlineCode>View</InlineCode>,{" "}
+            <InlineCode>Text</InlineCode>, <InlineCode>Pressable</InlineCode>, <InlineCode>Image</InlineCode>,{" "}
+            <InlineCode>TextInput</InlineCode>, <InlineCode>ScrollView</InlineCode>). Follow the Canvas convention: one
+            flat boolean prop per style choice, not string-enum <InlineCode>variant</InlineCode>/<InlineCode>size</InlineCode>{" "}
+            props.
+          </P>
+          <CodeBlock code={BUILDING} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Package exports">
+          {EXPORTS.map((e) => (
+            <View key={e.path} style={{ gap: 2 }}>
+              <P>
+                <InlineCode>{e.path}</InlineCode>
+              </P>
+              <P muted>{e.content}</P>
+            </View>
+          ))}
+        </Section>
+
+        <PageNav />
+      </View>
     </Page>
   );
 }

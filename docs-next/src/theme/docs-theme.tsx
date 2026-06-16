@@ -12,6 +12,7 @@ interface DocsThemeContext {
   scheme: Scheme;
   surface: Surface;
   toggleScheme: () => void;
+  setScheme: (s: Scheme) => void;
   setSurface: (s: Surface) => void;
 }
 
@@ -33,6 +34,7 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
       scheme,
       surface,
       toggleScheme: () => setScheme((s) => (s === "dark" ? "light" : "dark")),
+      setScheme,
       setSurface,
     }),
     [scheme, surface],
