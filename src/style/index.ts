@@ -14,3 +14,4 @@ export * from "./color.js";
 export * from "./ripple.js";
 export * from "./motion.js";
 export * from "./primitives.js";
+export * from "./portal.js";
