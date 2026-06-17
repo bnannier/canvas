@@ -234,7 +234,16 @@ export function Home() {
                   <View style={{ position: "absolute", width: 13, height: 13, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.22) }} />
                   <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
                 </View>
-                <Text style={{ fontFamily: geistMono("500"), fontSize: 12, color: tokens["muted-foreground"] }}>{version} · @olympusoss/canvas</Text>
+                <Text style={{ fontFamily: geistMono("500"), fontSize: 12, color: tokens["muted-foreground"] }}>
+                  {version} ·{" "}
+                  <Text
+                    accessibilityRole="link"
+                    onPress={() => Linking.openURL(NPM_URL)}
+                    style={{ color: tokens.primary }}
+                  >
+                    @olympusoss/canvas
+                  </Text>
+                </Text>
               </View>
 
               <Text style={{ fontFamily: geist("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
