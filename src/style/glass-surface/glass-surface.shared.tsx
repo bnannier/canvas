@@ -14,7 +14,6 @@
 
 import { type ReactNode } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { type ColorTokens } from "../tokens.js";
 
 export interface GlassSurfaceProps {
   /** The skin's shape + fill style (radius, padding, border, shadow, the popover
@@ -24,16 +23,11 @@ export interface GlassSurfaceProps {
   pointerEvents?: ViewProps["pointerEvents"];
 }
 
-// Blur strength for the frost, tuned to read close to the popover token alpha.
-export const GLASS_INTENSITY = 40;
-
-// A faint tint laid over the blur so glass keeps the brand warmth and stays
-// legible where backdrop blur is weak or unsupported (older browsers, low-end
-// Android). Lighter than the opaque-ish popover fallback so it does not muddy the
-// real blur.
-export function glassTint(_tokens: ColorTokens, dark: boolean): string {
-  return dark ? "rgba(30, 30, 34, 0.28)" : "rgba(255, 255, 255, 0.30)";
-}
+// Blur strength for the frost. expo-blur maps intensity to a blur radius (~0.2px
+// per point on web), so ~80 lands near the docs' established blur(16px) frost.
+// expo-blur supplies its own light/dark tint at this intensity, so no extra tint
+// overlay is layered on top (that would double-darken the material).
+export const GLASS_INTENSITY = 80;
 
 // Keys that must live on the OUTER box: shadow (overflow:hidden would clip it),
 // absolute positioning, and outer-margin/self-alignment (so the surface sits

@@ -7,13 +7,11 @@
 // expo-glass-effect is NOT imported here, so web and Android bundles never pull
 // the iOS-only Liquid Glass native module. iOS resolves glass-surface.ios.tsx.
 
-import { View } from "react-native";
 import * as ExpoBlur from "expo-blur";
 import { useTheme } from "../theme.js";
 import {
   GlassBox,
   PlainSurface,
-  glassTint,
   GLASS_INTENSITY,
   MATERIAL_FILL,
   type GlassSurfaceProps,
@@ -23,7 +21,7 @@ import {
 const BlurView = (ExpoBlur as { BlurView?: typeof ExpoBlur.BlurView }).BlurView;
 
 export function GlassSurface({ style, children, pointerEvents }: GlassSurfaceProps) {
-  const { surface, tokens, dark } = useTheme();
+  const { surface, dark } = useTheme();
 
   if (surface !== "glass" || !BlurView) {
     return (
@@ -34,15 +32,12 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
   }
 
   const material = (
-    <>
-      <BlurView
-        intensity={GLASS_INTENSITY}
-        tint={dark ? "dark" : "light"}
-        experimentalBlurMethod="dimezisBlurView"
-        style={MATERIAL_FILL}
-      />
-      <View style={[MATERIAL_FILL, { backgroundColor: glassTint(tokens, dark) }]} />
-    </>
+    <BlurView
+      intensity={GLASS_INTENSITY}
+      tint={dark ? "dark" : "light"}
+      experimentalBlurMethod="dimezisBlurView"
+      style={MATERIAL_FILL}
+    />
   );
 
   return (

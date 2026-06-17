@@ -4,14 +4,12 @@
 // expo-blur frost the other platforms use; with neither module it degrades to a
 // translucent View. Both modules are optional peer dependencies.
 
-import { View } from "react-native";
 import * as ExpoGlass from "expo-glass-effect";
 import * as ExpoBlur from "expo-blur";
 import { useTheme } from "../theme.js";
 import {
   GlassBox,
   PlainSurface,
-  glassTint,
   GLASS_INTENSITY,
   MATERIAL_FILL,
   type GlassSurfaceProps,
@@ -22,7 +20,7 @@ const isLiquidGlassAvailable = (ExpoGlass as { isLiquidGlassAvailable?: () => bo
 const BlurView = (ExpoBlur as { BlurView?: typeof ExpoBlur.BlurView }).BlurView;
 
 export function GlassSurface({ style, children, pointerEvents }: GlassSurfaceProps) {
-  const { surface, tokens, dark } = useTheme();
+  const { surface, dark } = useTheme();
 
   if (surface !== "glass") {
     return (
@@ -47,14 +45,12 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
 
   // iOS < 26 (or reduce-transparency): the same frost as web/Android.
   if (BlurView) {
-    const material = (
-      <>
-        <BlurView intensity={GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />
-        <View style={[MATERIAL_FILL, { backgroundColor: glassTint(tokens, dark) }]} />
-      </>
-    );
     return (
-      <GlassBox style={style} material={material} pointerEvents={pointerEvents}>
+      <GlassBox
+        style={style}
+        pointerEvents={pointerEvents}
+        material={<BlurView intensity={GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />}
+      >
         {children}
       </GlassBox>
     );

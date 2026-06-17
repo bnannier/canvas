@@ -20,6 +20,7 @@
 import { type ReactNode, type RefObject, useEffect, useState } from "react";
 import { View, Pressable, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
+import { GlassSurface } from "./glass-surface/glass-surface.js";
 
 // A transparent layer filling the outlet: it catches a tap anywhere off the card
 // and dismisses. Transparent (no fill) — anchored menus don't dim the page.
@@ -57,7 +58,7 @@ export function AnchoredOverlay({
   // No provider: render the card inline in place, exactly as the kit did before
   // the portal layer (absolute anchor under the trigger, no backdrop).
   if (!host) {
-    return open ? <View style={[inlineStyle, cardStyle]}>{children}</View> : null;
+    return open ? <GlassSurface style={[inlineStyle, cardStyle]}>{children}</GlassSurface> : null;
   }
 
   return (
@@ -133,9 +134,9 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}
       {rect ? (
-        <View style={[{ position: "absolute", left: rect.x, top: rect.y + rect.height + gap }, cardStyle]}>
+        <GlassSurface style={[{ position: "absolute", left: rect.x, top: rect.y + rect.height + gap }, cardStyle]}>
           {children}
-        </View>
+        </GlassSurface>
       ) : null}
     </Portal>
   );
