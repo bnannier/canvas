@@ -218,10 +218,11 @@ export function Home() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: tokens.background }}>
       {/* ── Hero ── */}
-      <View style={{ overflow: "hidden", paddingTop: 28, paddingBottom: 56 }}>
+      <View style={{ overflow: "hidden", paddingTop: wide ? 28 : 14, paddingBottom: 56 }}>
         <Aurora />
         <Wrap>
-          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 40, alignItems: "center" }}>
+          {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
+          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
             {/* Copy */}
             <View style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
               <View style={{ flexDirection: "row", alignSelf: "flex-start", alignItems: "center", gap: 8, paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>

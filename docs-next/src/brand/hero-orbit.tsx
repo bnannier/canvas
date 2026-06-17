@@ -99,7 +99,9 @@ export function HeroOrbit() {
   const boxW = stacked ? Math.min(width - 40, 440) : 380;
   const r = stacked ? Math.round((boxW - badge - 20) / 2) : 150;
   const core = stacked ? Math.round(r * 0.78) : 116;
-  const boxH = stacked ? boxW : 400;
+  // Stacked: trim the ring's vertical margin (badges nearly touch the box edges) so the orbit
+  // takes less height and stays fully on screen below the copy.
+  const boxH = stacked ? boxW - 18 : 400;
   const cx = boxW / 2, cy = boxH / 2;
   const mark = Math.round(core * 0.64);
   const logo = Math.round(26 * (badge / 60));
