@@ -1,0 +1,48 @@
+import { View, Text, useTheme, alpha } from "@olympusoss/canvas";
+import { geist, geistMono } from "../ui/fonts";
+import type { CatTile } from "./tile";
+
+// ── Tokens previews ──────────────────────────────────────────────────────────
+// Hand-authored mini-mockups for the Tokens category, ported from the Vite components-index.
+
+function ColorsPreview() {
+  const { tokens } = useTheme();
+  const swatches = [
+    tokens.primary, tokens.card, tokens.muted, tokens.accent, tokens.foreground, tokens.destructive,
+    tokens.secondary, tokens.popover, tokens.background, tokens.ring, tokens.input, tokens.border,
+  ];
+  return (
+    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, width: 220, maxWidth: "100%" }}>
+      {swatches.map((c, i) => (
+        <View key={i} style={{ width: 33, height: 28, borderRadius: 4, backgroundColor: c, borderWidth: 1, borderColor: tokens.border }} />
+      ))}
+    </View>
+  );
+}
+
+function SpacingPreview() {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 4 }}>
+      {[12, 16, 20, 24, 28].map((n) => (
+        <View key={n} style={{ width: n, height: n, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.25), borderWidth: 1, borderColor: alpha(tokens.primary, 0.4) }} />
+      ))}
+    </View>
+  );
+}
+
+function TypographyPreview() {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ alignItems: "flex-start", gap: 2 }}>
+      <Text style={{ fontFamily: geist("700"), fontSize: 24, letterSpacing: -0.48, lineHeight: 24, color: tokens.foreground }}>Aa</Text>
+      <Text style={{ fontFamily: geistMono("400"), fontSize: 11, lineHeight: 13, color: tokens.foreground }}>Geist Mono</Text>
+    </View>
+  );
+}
+
+export const TOKENS_TILES: CatTile[] = [
+  { title: "Colors & Theme", href: "/tokens/colors", Preview: ColorsPreview },
+  { title: "Spacing & Shape", href: "/tokens/spacing", Preview: SpacingPreview },
+  { title: "Typography", href: "/tokens/typography", Preview: TypographyPreview },
+];
