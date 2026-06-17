@@ -15,3 +15,4 @@ export * from "./ripple.js";
 export * from "./motion.js";
 export * from "./primitives.js";
 export * from "./portal.js";
+export * from "./anchored-overlay.js";
