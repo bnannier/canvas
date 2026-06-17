@@ -69,7 +69,7 @@ export function CanvasMark({ size = 22 }: { size?: number }) {
           {MARK_PATHS.map((d, i) => <Path key={i} d={d} />)}
         </ClipPath>
       </Defs>
-      <G translateX={1.56} clipPath="url(#canvas-mark)">
+      <G transform="translate(1.56, 0)" clipPath="url(#canvas-mark)">
         {SECTORS.map((s, i) => <Path key={i} d={s.d} fill={s.color} />)}
       </G>
     </Svg>
