@@ -27,22 +27,27 @@ function ErrorNote({ message }: { message: string }) {
   );
 }
 
-// One platform row in the 3-up stage: a 96px label column + the centered live render.
-function PlatformRow({ label, scope, render, resetKey, first }: {
+// One platform row in the stage: the centered live render, with a 96px platform-label column
+// only when more than one platform is shown (the web 3-up). On a device there is a single
+// preview and you ARE the platform, so the label is dropped and the render spans the full width.
+function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
   label: string;
   scope: ExampleScope;
   render: (s: ExampleScope) => ReactNode;
   resetKey: string;
   first: boolean;
+  showLabel: boolean;
 }) {
   const { tokens } = useTheme();
   return (
     <View style={{ flexDirection: "row", alignItems: "stretch", borderTopWidth: first ? 0 : 1, borderColor: tokens.border }}>
-      <View style={{ width: 96, justifyContent: "center", paddingVertical: 12, paddingHorizontal: 14, borderRightWidth: 1, borderColor: tokens.border }}>
-        <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"] }}>
-          {label}
-        </Text>
-      </View>
+      {showLabel ? (
+        <View style={{ width: 96, justifyContent: "center", paddingVertical: 12, paddingHorizontal: 14, borderRightWidth: 1, borderColor: tokens.border }}>
+          <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"] }}>
+            {label}
+          </Text>
+        </View>
+      ) : null}
       <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 16, minHeight: 84 }}>
         <ExampleErrorBoundary key={resetKey}>{render(scope)}</ExampleErrorBoundary>
       </View>
@@ -61,6 +66,9 @@ export function Playground({ examples }: { examples: DocExample[] }) {
   if (!ex) return null;
 
   const previews = buildScopes(tokens);
+  // The web build returns the iOS/Android/Web 3-up (labels help tell them apart); the native
+  // build returns a single device preview, where the platform label is redundant.
+  const showLabels = previews.length > 1;
 
   const stage = (
     <View style={{ flex: 1, minWidth: 0 }}>
@@ -79,7 +87,7 @@ export function Playground({ examples }: { examples: DocExample[] }) {
         }}
       >
         {previews.map((p, i) => (
-          <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} />
+          <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} />
         ))}
       </View>
       <CodeBlock code={ex.code} flush />
