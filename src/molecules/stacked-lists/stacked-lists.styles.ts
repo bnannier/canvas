@@ -2,9 +2,10 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow } from "../../style/index.js";
 
 // Co-located StackedList styles. Layout-only fragments are static objects;
-// anything that reads a color is a function of the active tokens (so the surface,
-// dividers, and labels follow light/dark and read as glass when the
-// ThemeProvider's surface is "glass", since tokens.card goes translucent there).
+// anything that reads a color is a function of the active tokens, so the surface,
+// dividers, and labels follow light/dark. As a content-layer surface (cardSurface
+// paints tokens.card), it stays solid even when the ThemeProvider's surface is
+// "glass": glass only turns the popover-layer overlays translucent, never the card.
 
 // --- outer frame ------------------------------------------------------------
 

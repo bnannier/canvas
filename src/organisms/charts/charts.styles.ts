@@ -3,8 +3,10 @@ import { type ColorTokens, palette, shadow } from "../../style/index.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens (so the surface follows
-// light/dark, and reads as glass when the ThemeProvider's surface is "glass",
-// since tokens.card is swapped translucent at the theming level). The bar fill
+// light/dark). Charts are a content surface: they paint tokens.card, which stays
+// opaque in glass mode (glassByScheme swaps only the `popover` token translucent;
+// `card` stays solid), so charts do NOT read as glass. Only overlays that paint
+// the `popover` token (popovers, menus, sheets, dialogs) go frosted. The bar fill
 // per tone is the one palette-vs-token choice, resolved by `barFill`.
 
 export type Tone = "primary" | "success" | "destructive";
@@ -12,7 +14,8 @@ export type Tone = "primary" | "success" | "destructive";
 // --- surface ----------------------------------------------------------------
 
 // The bordered, shadowed card surface (rounded-lg border border-border bg-card
-// shadow-sm), mirroring the docs `cardCls`.
+// shadow-sm), mirroring the docs `cardCls`. backgroundColor is tokens.card, which
+// stays opaque in glass mode, so this surface stays solid (it is not frosted).
 export function surface(tokens: ColorTokens): ViewStyle {
   return {
     borderRadius: 8,
