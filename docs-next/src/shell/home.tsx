@@ -3,6 +3,7 @@ import { ScrollView, useWindowDimensions, Linking } from "react-native";
 import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
+import QRCode from "react-native-qrcode-svg";
 import {
   ArrowRight, Check, ChevronRight, Layers, Plus, Shield, AppWindow,
   Home as HomeIcon, type LucideIcon,
@@ -19,6 +20,13 @@ const REPO_URL = "https://github.com/OlympusOSS/canvas";
 const NPM_URL = "https://www.npmjs.com/package/@olympusoss/canvas";
 const VERSION = "v5.0.0";
 const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
+
+// The hosted EAS Update preview link that opens these docs in Expo Go. Set this to the
+// `exp://u.expo.dev/...` preview URL printed by `eas update`; while empty, the whole
+// "Get the app" section is hidden (there is nothing to scan until the update is published).
+const APP_INSTALL_URL = "";
+const EXPO_GO_IOS = "https://apps.apple.com/app/expo-go/id982107779";
+const EXPO_GO_ANDROID = "https://play.google.com/store/apps/details?id=host.exp.exponent";
 
 const INSTALL_BASH = "bun add @olympusoss/canvas";
 const INSTALL_TSX = [
@@ -118,8 +126,10 @@ function Wrap({ children, style }: { children: ReactNode; style?: object }) {
 }
 
 // .landing-btn (-primary / -outline, -lg): solid foreground fill or bordered surface.
-function LandingButton({ label, icon, primary, onPress }: {
-  label: string; icon?: ReactNode; primary?: boolean; onPress: () => void;
+// `iconRight` places the icon after the label (the Vite "Browse components ->" layout);
+// otherwise it leads (the "<icon> View on GitHub" layout).
+function LandingButton({ label, icon, primary, iconRight, onPress }: {
+  label: string; icon?: ReactNode; primary?: boolean; iconRight?: boolean; onPress: () => void;
 }) {
   const { tokens } = useTheme();
   return (
@@ -132,8 +142,9 @@ function LandingButton({ label, icon, primary, onPress }: {
         borderColor: primary ? "transparent" : tokens.border,
       }}
     >
-      {icon}
+      {iconRight ? null : icon}
       <Text style={{ fontFamily: geist("500"), fontSize: 15, color: primary ? tokens.background : tokens.foreground }}>{label}</Text>
+      {iconRight ? icon : null}
     </Pressable>
   );
 }
@@ -205,8 +216,12 @@ export function Home() {
             {/* Copy */}
             <View style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
               <View style={{ flexDirection: "row", alignSelf: "flex-start", alignItems: "center", gap: 8, paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
-                <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
-                <Text style={{ fontFamily: geistMono("400"), fontSize: 12, color: tokens["muted-foreground"] }}>{VERSION} · @olympusoss/canvas</Text>
+                {/* The dot keeps a 7px layout box; the 3px halo ring overflows it (Vite box-shadow 0 0 0 3px primary@22%). */}
+                <View style={{ width: 7, height: 7, alignItems: "center", justifyContent: "center" }}>
+                  <View style={{ position: "absolute", width: 13, height: 13, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.22) }} />
+                  <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
+                </View>
+                <Text style={{ fontFamily: geistMono("500"), fontSize: 12, color: tokens["muted-foreground"] }}>{VERSION} · @olympusoss/canvas</Text>
               </View>
 
               <Text style={{ fontFamily: geist("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
@@ -229,7 +244,7 @@ export function Home() {
                   </View>
 
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
-                    <LandingButton primary label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
+                    <LandingButton primary iconRight label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
                     <LandingButton label="Explore tokens" onPress={() => go("/tokens/colors")} />
                   </View>
 
@@ -255,6 +270,39 @@ export function Home() {
           </View>
         </Wrap>
       </View>
+
+      {/* ── Get the app ── (hidden until the EAS Update preview URL is set; there is
+           nothing to scan before the hosted update is published). */}
+      {APP_INSTALL_URL ? (
+        <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
+          <SectionHead
+            eyebrow="On your phone"
+            title="Get the app."
+            desc="These docs are a real React Native app. Install Expo Go, then scan to run Canvas natively on iOS and Android, hosted and live, with no build or install."
+            titleSize={sectionTitle}
+          />
+          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 40 : 24, alignItems: wide ? "center" : "stretch" }}>
+            <View style={{ alignSelf: "flex-start", padding: 14, backgroundColor: "#ffffff", borderRadius: 16, borderWidth: 1, borderColor: tokens.border }}>
+              <QRCode value={APP_INSTALL_URL} size={176} color="#000000" backgroundColor="#ffffff" />
+            </View>
+            <View style={{ flex: wide ? 1 : undefined, gap: 16, minWidth: 0 }}>
+              <View style={{ gap: 10 }}>
+                <Step n="1">Install Expo Go from the App Store or Google Play.</Step>
+                <Step n="2">Scan the code with your Camera (iOS) or the Expo Go scanner (Android).</Step>
+                <Step n="3">Canvas opens in Expo Go: the same app, running natively.</Step>
+              </View>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+                <LandingButton label="App Store" onPress={() => Linking.openURL(EXPO_GO_IOS)} />
+                <LandingButton label="Google Play" onPress={() => Linking.openURL(EXPO_GO_ANDROID)} />
+              </View>
+              <Pressable onPress={() => Linking.openURL(APP_INSTALL_URL)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={{ fontFamily: geist("500"), fontSize: 14.5, color: tokens.primary }}>Open in Expo Go</Text>
+                <ArrowRight size={15} color={tokens.primary} />
+              </Pressable>
+            </View>
+          </View>
+        </Wrap>
+      ) : null}
 
       {/* ── Principles ── */}
       <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
@@ -362,7 +410,7 @@ export function Home() {
               Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
-              <LandingButton primary label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
+              <LandingButton primary iconRight label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
               <LandingButton label="View on GitHub" icon={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)} />
             </View>
           </View>
@@ -405,6 +453,19 @@ export function Home() {
         </Wrap>
       </View>
     </ScrollView>
+  );
+}
+
+// A numbered step row for the "Get the app" instructions.
+function Step({ n, children }: { n: string; children: ReactNode }) {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
+      <View style={{ width: 22, height: 22, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26), alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+        <Text style={{ fontFamily: geist("600"), fontSize: 11, color: tokens.primary }}>{n}</Text>
+      </View>
+      <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 14.5, lineHeight: 22, color: tokens["muted-foreground"] }}>{children}</Text>
+    </View>
   );
 }
 
