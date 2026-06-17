@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
 import * as s from "./command.styles.js";
@@ -95,7 +95,7 @@ export function Command(props: CommandProps) {
   let flat = -1;
 
   const card = open ? (
-    <View style={[s.card(tokens), trigger ? s.cardFloating : null]}>
+    <GlassSurface style={[s.card(tokens), trigger ? s.cardFloating : null]}>
       <View style={s.searchRow(tokens)}>
         <Text style={s.searchGlyph(tokens)}>🔍</Text>
         <Text style={s.searchPlaceholder(tokens)}>{placeholder}</Text>
@@ -146,7 +146,7 @@ export function Command(props: CommandProps) {
           </View>
         </View>
       ) : null}
-    </View>
+    </GlassSurface>
   ) : null;
 
   if (!trigger) return card;

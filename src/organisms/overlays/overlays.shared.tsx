@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, useTheme, controlRipple, pressDim, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, controlRipple, pressDim, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import * as s from "./overlays.styles.js";
@@ -112,7 +112,7 @@ export function createOverlay(skin: OverlaySkin) {
               { minHeight: 280 },
             ]}
           >
-            <View style={[skin.surface(tokens, placement), style]}>
+            <GlassSurface style={[skin.surface(tokens, placement), style]}>
               {showHandle ? (
                 <View style={s.handleWrap}>
                   <View style={skin.handle!(tokens)} />
@@ -168,7 +168,7 @@ export function createOverlay(skin: OverlaySkin) {
                   </View>
                 </>
               )}
-            </View>
+            </GlassSurface>
           </View>
         ) : null}
       </View>

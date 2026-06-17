@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -200,7 +200,7 @@ export function createDialog(skin: DialogSkin) {
         ) : null}
         {open ? (
           <View style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}>
-            <View style={[s.cardLayout, skin.card(tokens), s.cardWidth(size), style]}>
+            <GlassSurface style={[s.cardLayout, skin.card(tokens), s.cardWidth(size), style]}>
               {children != null ? (
                 children
               ) : (
@@ -221,7 +221,7 @@ export function createDialog(skin: DialogSkin) {
                   {footer}
                 </>
               )}
-            </View>
+            </GlassSurface>
           </View>
         ) : null}
       </View>

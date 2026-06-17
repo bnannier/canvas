@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { root, rootLifted, type SelectSkin, type Size } from "./select.styles.js";
 
@@ -101,7 +101,7 @@ export function createSelect(skin: SelectSkin) {
         </Pressable>
 
         {open ? (
-          <View style={skin.panel(tokens)}>
+          <GlassSurface style={skin.panel(tokens)}>
             {options.map((option, i) => {
               const selected = option === value;
               return (
@@ -135,7 +135,7 @@ export function createSelect(skin: SelectSkin) {
                 </Pressable>
               );
             })}
-          </View>
+          </GlassSurface>
         ) : null}
       </View>
     );

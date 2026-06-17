@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { wrapper, wrapperLifted } from "./combobox.styles.js";
 import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 
@@ -120,7 +120,7 @@ export function createCombobox(skin: ComboboxSkin) {
         </Pressable>
 
         {open ? (
-          <View style={skin.popover(tokens)}>
+          <GlassSurface style={skin.popover(tokens)}>
             {matches.length === 0 ? (
               <View style={skin.emptyRow}>
                 <Text style={skin.emptyText(tokens, size)}>No results</Text>
@@ -148,7 +148,7 @@ export function createCombobox(skin: ComboboxSkin) {
                 );
               })
             )}
-          </View>
+          </GlassSurface>
         ) : null}
 
         {helperText != null && helperText !== "" ? (

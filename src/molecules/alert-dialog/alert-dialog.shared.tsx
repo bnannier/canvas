@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -168,7 +168,7 @@ export function createAlertDialog(skin: AlertDialogSkin) {
         ) : null}
         {open ? (
           <View style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}>
-            <View style={[s.cardBase, skin.card(tokens), s.panelWidth[width], style]}>
+            <GlassSurface style={[s.cardBase, skin.card(tokens), s.panelWidth[width], style]}>
               {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
               {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
               {withInput ? (
@@ -178,7 +178,7 @@ export function createAlertDialog(skin: AlertDialogSkin) {
                 </View>
               ) : null}
               {actionRow}
-            </View>
+            </GlassSurface>
           </View>
         ) : null}
       </View>

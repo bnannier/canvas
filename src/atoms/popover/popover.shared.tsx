@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -84,14 +84,13 @@ export function createPopover(skin: PopoverSkin) {
     const placement = placementOf(props);
 
     // With a trigger, the card floats (absolute) below it (the wrapper is
-    // `relative`), so it overflows its container instead of growing it. In
-    // inline mode it is a standalone in-flow panel. The `style` escape hatch
-    // applies last.
-    const card: StyleProp<ViewStyle> = [
-      skin.card(tokens),
-      !inline ? s.cardFloating : null,
-      style,
-    ];
+    // `relative`), so it overflows its container instead of growing it. In inline
+    // mode it is a standalone in-flow panel. The float position lives on a wrapper
+    // so the GlassSurface card (which clips its frosted material to its rounded
+    // corners) sits inside it, while the iOS anchor arrow renders as the wrapper's
+    // sibling — outside the clip, so it is never cut off. The `style` escape hatch
+    // applies to the wrapper (outermost).
+    const cardPosition: StyleProp<ViewStyle> = [!inline ? s.cardFloating : null, style];
 
     return (
       <View style={[inline ? null : s.wrapper, !inline && open ? s.wrapperLifted : null]}>
@@ -103,19 +102,22 @@ export function createPopover(skin: PopoverSkin) {
           </View>
         )}
         {open ? (
-          <View style={card}>
+          <View style={cardPosition}>
             {/* The anchor arrow: drawn only when the skin supplies one (iOS) and
-                only in the floating case (an inline panel has no anchor). */}
+                only in the floating case (an inline panel has no anchor). It sits
+                outside the GlassSurface so the surface's corner clip never cuts it. */}
             {skin.arrow != null && !inline ? <View style={skin.arrow(tokens, placement)} /> : null}
-            {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
-            {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
-            {actionLabel != null ? (
-              <View style={s.actionRow}>
-                <Button primary small onPress={() => setOpen(false)}>
-                  {actionLabel}
-                </Button>
-              </View>
-            ) : null}
+            <GlassSurface style={skin.card(tokens)}>
+              {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
+              {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
+              {actionLabel != null ? (
+                <View style={s.actionRow}>
+                  <Button primary small onPress={() => setOpen(false)}>
+                    {actionLabel}
+                  </Button>
+                </View>
+              ) : null}
+            </GlassSurface>
           </View>
         ) : null}
       </View>

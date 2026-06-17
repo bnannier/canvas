@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
@@ -72,7 +72,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         </Pressable>
 
         {open ? (
-          <View style={skin.menuCard(tokens)}>
+          <GlassSurface style={skin.menuCard(tokens)}>
             {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
             {items.map((item, index) => (
               <View key={`${item.label}-${index}`}>
@@ -97,7 +97,7 @@ export function createRowMenu(skin: RowMenuSkin) {
                 </Pressable>
               </View>
             ))}
-          </View>
+          </GlassSurface>
         ) : null}
       </View>
     );
