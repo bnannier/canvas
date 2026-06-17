@@ -30,14 +30,16 @@ export interface GlassSurfaceProps {
 export const GLASS_INTENSITY = 80;
 
 // Keys that must live on the OUTER box: shadow (overflow:hidden would clip it),
-// absolute positioning, and outer-margin/self-alignment (so the surface sits
-// where the single-View version did). Radius keys are duplicated onto the outer
-// box so its shadow is rounded.
+// absolute positioning, outer-margin/self-alignment, and SIZING (flex/width/
+// height) so the surface fills or sizes within its parent exactly as the single-
+// View version did. The inner clip box then fills the outer (flex: 1). Radius keys
+// are duplicated onto the outer box so its shadow is rounded.
 const OUTER_KEYS = new Set<string>([
   "shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation",
   "position", "top", "right", "bottom", "left", "zIndex",
   "margin", "marginTop", "marginBottom", "marginLeft", "marginRight", "marginHorizontal", "marginVertical",
-  "alignSelf",
+  "alignSelf", "flex", "flexGrow", "flexShrink", "flexBasis",
+  "width", "height", "minWidth", "maxWidth", "minHeight", "maxHeight",
 ]);
 const RADIUS_KEYS = new Set<string>([
   "borderRadius", "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
@@ -51,7 +53,10 @@ interface Split {
 export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const outer: Record<string, unknown> = {};
-  const clip: Record<string, unknown> = { overflow: "hidden" };
+  // flex:1 makes the clip box fill the outer box (whose size the OUTER_KEYS set),
+  // so the material covers the whole surface even when the surface is sized by flex
+  // (e.g. a full-height sidebar) rather than by its content.
+  const clip: Record<string, unknown> = { overflow: "hidden", flex: 1 };
   for (const [key, value] of Object.entries(flat)) {
     if (value == null) continue;
     if (key === "backgroundColor") continue; // the material supplies the fill
