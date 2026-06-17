@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useWindowDimensions, Animated, Easing, AccessibilityInfo } from "react-native";
-import { View, useTheme, supportsNativeDriver } from "@olympusoss/canvas";
+import { View, useTheme, alpha, supportsNativeDriver } from "@olympusoss/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
 import { AppleLogo, ReactLogo, TypeScriptLogo, AndroidLogo, Html5Logo, TailwindLogo } from "./brand-logos";
@@ -95,7 +95,9 @@ export function HeroOrbit() {
   const logo = Math.round(26 * (badge / 60));
 
   const glowSize = core + 100; // Vite `.hero-orbit-core::before { inset: -50px }`
-  const gc = glowSize / 2, gR = glowSize / 2, gN = 120;
+  // The glow is bigger than the Canvas mark, so it needs many more conic sectors to keep
+  // each seam sub-pixel; 360 (one per degree) + the blur below reads as a true conic.
+  const gc = glowSize / 2, gR = glowSize / 2, gN = 360;
   const ring = Array.from({ length: gN }, (_, i) => {
     const a0 = (i * 360) / gN, a1 = ((i + 1) * 360) / gN, am = a0 + 180 / gN;
     const x0 = gc + gR * Math.sin((a0 * Math.PI) / 180), y0 = gc - gR * Math.cos((a0 * Math.PI) / 180);
@@ -139,9 +141,10 @@ export function HeroOrbit() {
               <Rect x="0" y="0" width={glowSize} height={glowSize} fill="url(#glow-fade)" />
             </Mask>
             {/* Vite `filter: blur(9px) saturate(1.25)` — softens the conic sectors into one
-                diffuse bloom (no visible banding) and deepens the hues. */}
+                diffuse bloom (no visible banding) and deepens the hues. A hair more blur than
+                Vite (11 vs 9) since sectors need slightly more help than a true CSS conic. */}
             <Filter id="glow-blur" x="-25%" y="-25%" width="150%" height="150%">
-              <FeGaussianBlur stdDeviation="9" result="b" />
+              <FeGaussianBlur stdDeviation="11" result="b" />
               <FeColorMatrix in="b" type="saturate" values="1.25" />
             </Filter>
           </Defs>
@@ -165,10 +168,8 @@ export function HeroOrbit() {
           borderColor: tokens.border,
           alignItems: "center",
           justifyContent: "center",
-          shadowColor: tokens.foreground,
-          shadowOpacity: 0.3,
-          shadowRadius: 20,
-          shadowOffset: { width: 0, height: 18 },
+          // Vite `.hero-orbit-core::after`: 0 18px 40px -20px foreground@35%.
+          boxShadow: `0px 18px 40px -20px ${alpha(tokens.foreground, 0.35)}`,
         }}
       >
         <CanvasMark size={mark} />
@@ -197,11 +198,10 @@ export function HeroOrbit() {
                 alignItems: "center",
                 justifyContent: "center",
                 transform: [{ rotate: badgeCounter }],
-                // Vite `.orbit-badge-inner`: 0 8px 22px -10px var(--c)@55% colored glow.
-                shadowColor: tint,
-                shadowOpacity: 0.5,
-                shadowRadius: 11,
-                shadowOffset: { width: 0, height: 8 },
+                // Vite `.orbit-badge-inner`: a tight colored glow (the -10px spread keeps it
+                // small) plus a faint grounding shadow. boxShadow carries both + the spread,
+                // which RN's shadow* props cannot.
+                boxShadow: `0px 8px 22px -10px ${alpha(tint, 0.55)}, 0px 1px 2px ${alpha(tokens.foreground, 0.1)}`,
               }}
             >
               {render(logo, tint)}
