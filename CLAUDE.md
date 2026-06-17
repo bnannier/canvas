@@ -3,6 +3,22 @@
 Canvas is a React Native UI kit, published as `@olympusoss/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
+## React-Native-everywhere principle
+
+Everything here is built in React Native, so one codebase renders on iOS, Android,
+and the web (through React Native Web). This holds for the kit AND its docs app:
+write components from React Native primitives (`react-native`, `react-native-svg`,
+and the kit's own primitives), never from web-only building blocks.
+
+No web-only escape hatches. Do not reach into the DOM, set raw CSS on a node, branch
+on `Platform.OS === "web"` to render different markup, or use a `.web.tsx` fork to get
+an effect working on web alone. When React Native lacks a primitive the design needs
+(for example a conic gradient, a blur, or a shadow with spread), implement it
+cross-platform: build it from `react-native-svg` (sectors, masks, `FeGaussianBlur`,
+`FeColorMatrix`), the `boxShadow`/`filter` style props, or math, so the same code
+produces the same result natively and on the web. A web-only DOM/CSS trick is a
+shortcut: name it as such and get explicit authorization before using one.
+
 ## Highly responsive
 
 Canvas is highly responsive by default. Every component must adapt cleanly across
