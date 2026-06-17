@@ -1,18 +1,15 @@
 name: docs-native — EAS build
 
-# Internal-distribution native builds (Android APK + ad-hoc iOS) of the universal
-# docs app. Until the repo is linked to an Expo project, this workflow SKIPS rather
-# than fails: add the EXPO_TOKEN secret and run `eas init` (see docs-next/README) to
-# enable it. The web build/deploy is handled separately by docs.yml.
+# Internal-distribution native binary builds (Android APK + ad-hoc iOS) of the
+# universal docs app. This is MANUAL ONLY (workflow_dispatch): native binaries are
+# heavy and need Apple/Google signing credentials configured on EAS, so they should
+# not run on every push. The lightweight per-push Expo Go preview is published by
+# eas-update.yml instead; the web build/deploy is handled by docs.yml.
+#
+# Requires the EXPO_TOKEN secret and the app linked to an Expo project (`eas init`,
+# see docs-next/README). Since this is a deploy, the preflight FAILS LOUDLY (red)
+# with an actionable message when either is missing, rather than passing silently.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "docs-next/**"
-      - "docs-core/**"
-      - "src/**"
-      - "tools/**"
-      - ".github/workflows/docs-native.yml"
   workflow_dispatch:
     inputs:
       profile:
@@ -34,29 +31,31 @@ jobs:
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
-      - name: Gate on EXPO_TOKEN
-        id: gate
+      # Checkout first so the preflight can read docs-next/app.json for the project link.
+      - uses: actions/checkout@v6
+
+      # Fail LOUDLY (red) with an actionable message rather than skipping, so a
+      # misconfigured build is never mistaken for a successful one.
+      - name: Preflight (require EXPO_TOKEN + project link)
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "::notice::EXPO_TOKEN is not set — skipping the EAS build. Add the secret and run 'eas init' in docs-next/ to enable native builds."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::error::EXPO_TOKEN secret is not set. Add it under repo Settings → Secrets and variables → Actions so CI can authenticate to Expo."
+            exit 1
+          fi
+          if ! grep -q '"projectId"' docs-next/app.json; then
+            echo "::error::No Expo project linked: docs-next/app.json has no extra.eas.projectId. Run 'eas init' in docs-next/ and commit the result."
+            exit 1
           fi
 
-      - uses: actions/checkout@v6
-        if: steps.gate.outputs.skip != 'true'
-
       - uses: oven-sh/setup-bun@v2
-        if: steps.gate.outputs.skip != 'true'
         with:
           bun-version: latest
 
       - uses: actions/setup-node@v4
-        if: steps.gate.outputs.skip != 'true'
         with:
           node-version: 20
 
       - uses: expo/expo-github-action@v8
-        if: steps.gate.outputs.skip != 'true'
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
@@ -64,24 +63,19 @@ jobs:
       # The native app consumes the source-only library + generated docs-core via
       # symlinks (docs-next postinstall). Install root deps first so those exist.
       - name: Install root deps
-        if: steps.gate.outputs.skip != 'true'
         run: bun install --frozen-lockfile
 
       - name: Regenerate docs-core
-        if: steps.gate.outputs.skip != 'true'
         run: bun run docs:gen
 
       - name: Install docs-next deps
-        if: steps.gate.outputs.skip != 'true'
         working-directory: docs-next
         run: bun install
 
       - name: Typecheck native app
-        if: steps.gate.outputs.skip != 'true'
         working-directory: docs-next
         run: bunx tsc --noEmit
 
       - name: EAS build (internal distribution)
-        if: steps.gate.outputs.skip != 'true'
         working-directory: docs-next
         run: eas build --platform all --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --no-wait
