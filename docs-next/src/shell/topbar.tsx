@@ -66,24 +66,28 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
         </Pressable>
       ) : null}
 
-      <View style={{ minWidth: 0 }}>
+      <View style={{ minWidth: 0, flexShrink: 1 }}>
         <Text style={{ fontFamily: geist("600"), fontSize: 14.5, color: tokens.foreground }} numberOfLines={1}>
           {title}
         </Text>
-        {subtitle ? (
+        {subtitle && wideEnough ? (
           <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }} numberOfLines={1}>
             {subtitle}
           </Text>
         ) : null}
       </View>
 
+      {/* Two flex spacers around the search center it and pin the toggle + theme
+          button to the right edge, so the bar fills the full width (Vite parity).
+          The search is a fixed-width element, not the flexing one. */}
+      <View style={{ flex: 1 }} />
+
       {wideEnough ? (
         <Pressable
           onPress={onSearch}
           style={{
-            flex: 1,
+            minWidth: 240,
             maxWidth: 360,
-            marginHorizontal: 8,
             flexDirection: "row",
             alignItems: "center",
             gap: 8,
@@ -103,9 +107,9 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
             <Text style={{ fontFamily: geist("500"), fontSize: 10, color: tokens["muted-foreground"] }}>⌘K</Text>
           </View>
         </Pressable>
-      ) : (
-        <View style={{ flex: 1 }} />
-      )}
+      ) : null}
+
+      <View style={{ flex: 1 }} />
 
       {wideEnough ? (
         <View
