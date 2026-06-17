@@ -15,10 +15,10 @@ import { HeroOrbit } from "../brand/hero-orbit";
 import { CodeBlock } from "../ui/code-block";
 import { geist, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
+import { useLatestVersion } from "../ui/use-latest-version";
 
 const REPO_URL = "https://github.com/OlympusOSS/canvas";
 const NPM_URL = "https://www.npmjs.com/package/@olympusoss/canvas";
-const VERSION = "v5.0.0";
 const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
 
 // The hosted EAS Update preview link that opens these docs in Expo Go. Set this to the
@@ -208,6 +208,7 @@ export function Home() {
   const { width } = useWindowDimensions();
   const router = useRouter();
   const go = (to: string) => router.push(to as never);
+  const version = useLatestVersion();
 
   const wide = width > 920;
   const levelStack = width <= 760;
@@ -233,7 +234,7 @@ export function Home() {
                   <View style={{ position: "absolute", width: 13, height: 13, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.22) }} />
                   <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
                 </View>
-                <Text style={{ fontFamily: geistMono("500"), fontSize: 12, color: tokens["muted-foreground"] }}>{VERSION} · @olympusoss/canvas</Text>
+                <Text style={{ fontFamily: geistMono("500"), fontSize: 12, color: tokens["muted-foreground"] }}>{version} · @olympusoss/canvas</Text>
               </View>
 
               <Text style={{ fontFamily: geist("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
@@ -459,7 +460,7 @@ export function Home() {
             </View>
           </View>
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8, paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
-            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Olympus · @olympusoss/canvas {VERSION}</Text>
+            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Olympus · @olympusoss/canvas {version}</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
           </View>
         </Wrap>
