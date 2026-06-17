@@ -76,17 +76,22 @@ applied together.
 Glass is NOT a per-component axis: it is a theming-level surface mode, like the
 light/dark scheme. Turn it on with the `src/style` `ThemeProvider`'s `surface="glass"`
 prop (or `setSurface("glass")` on the web). Following Apple's Liquid Glass model,
-glass is the material for the FUNCTIONAL layer only: it swaps the `popover` token
-translucent so overlays (popovers, menus, dropdowns, selects, comboboxes, dialogs,
-alert dialogs, sheets, drawers, command) read as glass, and the bar/sidebar shells
-(navbars, sidebar) paint that same `popover` material in glass mode. The `card`
-token stays SOLID, so content surfaces (cards, lists, tables, calendars, charts)
-do NOT go glass (Apple: "don't use Liquid Glass in the content layer"). Do not add
-a per-component `glass` prop, and do NOT hand-paint glass effects (backdrop-filter,
-specular edges) onto individual components: real iOS Liquid Glass is the OS's
-automatic, system-rendered material (standard components adopt it on rebuild with
-the latest SDK); Canvas's glass mode is its own cross-platform glassmorphism (the
-docs render the frost), and it does not replicate iOS Liquid Glass per component.
+glass is the material for the FUNCTIONAL layer only: overlays (popovers, menus,
+dropdowns, selects, comboboxes, dialogs, alert dialogs, sheets, drawers, command)
+and the bar/sidebar shells (navbars, sidebar) read as glass. The `card` token stays
+SOLID, so content surfaces (cards, lists, tables, calendars, charts) do NOT go glass
+(Apple: "don't use Liquid Glass in the content layer").
+
+Those functional-layer surfaces render through the shared `GlassSurface` primitive
+(`src/style/glass-surface`), which paints the active material per platform: Apple's
+real native Liquid Glass via `expo-glass-effect` on iOS 26+, a genuine frosted blur
+via `expo-blur` on web/Android (and iOS < 26), and the translucent `popover` fill as
+a fallback when those optional peer dependencies are not installed. So glass mode IS
+real iOS Liquid Glass on iOS and a real frost elsewhere, not a per-component effect.
+Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-filter,
+specular edges) onto individual components: route any new functional-layer surface
+through `GlassSurface` (pass it the skin's shape style; it strips the fill and
+supplies the material), and leave content-layer surfaces solid.
 
 ### Conflicts
 
