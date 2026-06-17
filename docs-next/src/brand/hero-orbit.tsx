@@ -89,16 +89,17 @@ export function HeroOrbit() {
     return () => { b.stop(); g.stop(); p.stop(); };
   }, [reduced, badgeSpin, glowSpin, glowPulse]);
 
-  // Match the CSS breakpoints: desktop r150/core116, tablet (<=920) r134/core104,
-  // phone (<=560) r112/core88. The badge stays 60px until it shrinks on phones.
-  const tier = width <= 560 ? "phone" : width <= 920 ? "tablet" : "desktop";
-  const r = tier === "phone" ? 112 : tier === "tablet" ? 134 : 150;
-  const core = tier === "phone" ? 88 : tier === "tablet" ? 104 : 116;
-  const badge = tier === "phone" ? 52 : 60;
-  // Vite `.hero-orbit` height: desktop 400, tablet (<=920) 360, phone (<=560) 300. The box
-  // is wider/taller than the ring so the orbit has breathing room; center separately on x/y.
-  const boxW = r * 2 + badge + 20;
-  const boxH = tier === "phone" ? 300 : tier === "tablet" ? 360 : 400;
+  // Desktop (the side-by-side hero, width > 920) keeps the fixed Vite orbit next to the copy.
+  // The stacked phone/tablet hero scales the WHOLE orbit (ring, disc, glow, badges) to fill the
+  // available width, so on a phone it is the screen's centerpiece instead of a small medallion.
+  const stacked = width <= 920;
+  const badge = width <= 400 ? 56 : 60;
+  // Fill the viewport width (small side margin), capped so a big tablet does not get an
+  // oversized orbit. The box is square when stacked, so it fills vertically too.
+  const boxW = stacked ? Math.min(width - 40, 440) : 380;
+  const r = stacked ? Math.round((boxW - badge - 20) / 2) : 150;
+  const core = stacked ? Math.round(r * 0.78) : 116;
+  const boxH = stacked ? boxW : 400;
   const cx = boxW / 2, cy = boxH / 2;
   const mark = Math.round(core * 0.64);
   const logo = Math.round(26 * (badge / 60));
