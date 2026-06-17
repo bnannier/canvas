@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { useWindowDimensions, Animated, Easing, AccessibilityInfo, Platform, type View as RNViewType } from "react-native";
+import { useWindowDimensions, Animated, Easing, AccessibilityInfo } from "react-native";
 import { View, useTheme, alpha, supportsNativeDriver } from "@olympusoss/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
@@ -22,18 +22,26 @@ const BADGES: { i: number; color: string; render: (s: number, tint: string) => R
   { i: 5, color: "__fg__", render: (s, tint) => <AppleLogo size={s} color={tint} /> },
 ];
 
-// The rainbow glow from the keyframe: six bright hues swept as ONE conic ring (the web
-// blurs a conic-gradient; RN has no conic, so we approximate it with many bright sectors
-// faded out radially, with the disc covering the center, leaving a vivid rainbow halo).
+// The rainbow glow from the keyframe: six bright hues swept as ONE conic ring. react-native-svg
+// has no conic gradient, so the ring is built cross-platform from many thin pie sectors and
+// blurred. A piecewise-LINEAR blend between the six hues leaves faint Mach-band lines at each
+// stop (most visible green→yellow and blue→purple), so the colour is interpolated with a CLOSED
+// Catmull-Rom spline through the hues instead: it passes through every hue but with a continuous
+// first derivative, so neighbouring hues blend with no slope kink and therefore no seam.
 const GLOW = ["#06b6d4", "#22c55e", "#f59e0b", "#fb6a3c", "#ec4899", "#a855f7"];
-function mix(a: string, b: string, t: number): string {
-  const p = (h: string, i: number) => parseInt(h.replace("#", "").slice(i, i + 2), 16);
-  return `rgb(${Math.round(p(a, 0) + (p(b, 0) - p(a, 0)) * t)},${Math.round(p(a, 2) + (p(b, 2) - p(a, 2)) * t)},${Math.round(p(a, 4) + (p(b, 4) - p(a, 4)) * t)})`;
+const GLOW_RGB = GLOW.map((h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+function catmull(p0: number, p1: number, p2: number, p3: number, t: number): number {
+  const t2 = t * t, t3 = t2 * t;
+  return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 }
-// The conic glow color at a screen angle (deg): six hues, 60° apart, blended cyclically.
+// The conic glow color at a screen angle (deg): a smooth closed Catmull-Rom sweep of the six hues.
 function glowColor(deg: number): string {
-  const a = (((deg % 360) + 360) % 360), idx = Math.floor(a / 60) % 6;
-  return mix(GLOW[idx], GLOW[(idx + 1) % 6], (a % 60) / 60);
+  const n = GLOW_RGB.length;
+  const seg = ((((deg % 360) + 360) % 360) / 360) * n; // 0..n around the wheel
+  const i = Math.floor(seg) % n, t = seg - Math.floor(seg);
+  const p0 = GLOW_RGB[(i - 1 + n) % n], p1 = GLOW_RGB[i], p2 = GLOW_RGB[(i + 1) % n], p3 = GLOW_RGB[(i + 2) % n];
+  const ch = (k: number) => Math.max(0, Math.min(255, Math.round(catmull(p0[k], p1[k], p2[k], p3[k], t))));
+  return `rgb(${ch(0)},${ch(1)},${ch(2)})`;
 }
 
 function useReducedMotion() {
@@ -45,27 +53,6 @@ function useReducedMotion() {
     return () => { mounted = false; sub.remove(); };
   }, []);
   return reduced;
-}
-
-// On web the glow IS Vite's `.hero-orbit-core::before`: a real CSS conic-gradient, blurred
-// and radially masked. A conic blends continuously with no stop seams, so we apply the exact
-// same CSS to the DOM node (react-native-web forwards the View ref to its div). react-native-svg
-// has no conic gradient, so native falls back to the many-sector approximation below. The six
-// hues + the wrap stop and the blur/saturate/mask are copied verbatim from the Vite rule.
-const GLOW_CONIC =
-  "conic-gradient(from 0deg, #06b6d4, #22c55e, #f59e0b, #fb6a3c, #ec4899, #a855f7, #06b6d4)";
-const GLOW_MASK = "radial-gradient(closest-side, #000 0 54%, transparent 92%)";
-function WebConicGlow({ size }: { size: number }) {
-  const ref = useRef<RNViewType>(null);
-  useEffect(() => {
-    const node = ref.current as unknown as HTMLElement | null;
-    if (!node || !node.style) return;
-    node.style.backgroundImage = GLOW_CONIC;
-    node.style.filter = "blur(9px) saturate(1.25)";
-    node.style.maskImage = GLOW_MASK;
-    (node.style as CSSStyleDeclaration & { webkitMaskImage?: string }).webkitMaskImage = GLOW_MASK;
-  }, []);
-  return <View ref={ref} style={{ width: size, height: size, borderRadius: size / 2 }} />;
 }
 
 export function HeroOrbit() {
@@ -149,9 +136,6 @@ export function HeroOrbit() {
           transform: [{ rotate: glowRotate }],
         }}
       >
-        {Platform.OS === "web" ? (
-          <WebConicGlow size={glowSize} />
-        ) : (
         <Svg width={glowSize} height={glowSize}>
           <Defs>
             {/* Vite mask: radial-gradient(closest-side, #000 0 54%, transparent 92%) — the disc
@@ -176,7 +160,6 @@ export function HeroOrbit() {
             {ring.map((s, i) => <Path key={i} d={s.d} fill={s.color} />)}
           </G>
         </Svg>
-        )}
       </Animated.View>
 
       {/* The disc + the Canvas mark (static, above the glow) */}
