@@ -27,6 +27,31 @@ function ErrorNote({ message }: { message: string }) {
   );
 }
 
+// Holds a preview together when it is wider than the stage. The stage measures its own width and
+// hands it to a horizontal scroller as a minWidth: a responsive (width:"100%") example fills the
+// stage exactly (so it never scrolls and its own internal scroll still works), a small example is
+// centered at its natural size, and only an example genuinely WIDER than the stage scrolls — so
+// nothing is ever cropped or squished. The component is untouched: it renders at its own size and
+// never learns the stage exists. Recomputed on resize via the outer onLayout.
+function FitStage({ children }: { children: ReactNode }) {
+  const [avail, setAvail] = useState(0);
+  return (
+    <View
+      style={{ width: "100%" }}
+      onLayout={(e) => { const w = Math.round(e.nativeEvent.layout.width); setAvail((a) => (a !== w ? w : a)); }}
+    >
+      <ScrollView
+        horizontal
+        bounces={false}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ minWidth: avail || undefined, alignItems: "center", justifyContent: "center" }}
+      >
+        {children}
+      </ScrollView>
+    </View>
+  );
+}
+
 // One platform row in the stage: the centered live render, with a 96px platform-label column
 // only when more than one platform is shown (the web 3-up). On a device there is a single
 // preview and you ARE the platform, so the label is dropped and the render spans the full width.
@@ -49,7 +74,9 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
         </View>
       ) : null}
       <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 16, minHeight: 84 }}>
-        <ExampleErrorBoundary key={resetKey}>{render(scope)}</ExampleErrorBoundary>
+        <ExampleErrorBoundary key={resetKey}>
+          <FitStage>{render(scope)}</FitStage>
+        </ExampleErrorBoundary>
       </View>
     </View>
   );
