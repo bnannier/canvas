@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useWindowDimensions, Animated, Easing, AccessibilityInfo } from "react-native";
-import { View, useTheme } from "@olympusoss/canvas";
+import { View, useTheme, supportsNativeDriver } from "@olympusoss/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
 import { AppleLogo, ReactLogo, TypeScriptLogo, AndroidLogo, Html5Logo, TailwindLogo } from "./brand-logos";
@@ -65,11 +65,14 @@ export function HeroOrbit() {
     }
     // Match the CSS: 30s for the orbit, 6s for the rainbow spin, both linear and looping;
     // a 3.4s ease-in-out opacity pulse (heroGlowPulse: 0.85 → 1 → 0.85) breathes the glow.
-    const b = Animated.loop(Animated.timing(badgeSpin, { toValue: 1, duration: 30000, easing: Easing.linear, useNativeDriver: true }));
-    const g = Animated.loop(Animated.timing(glowSpin, { toValue: 1, duration: 6000, easing: Easing.linear, useNativeDriver: true }));
+    // The driver is gated on supportsNativeDriver: on react-native-web, Animated.loop +
+    // useNativeDriver:true runs one pass then freezes, so web uses the JS loop while native
+    // keeps the off-thread driver.
+    const b = Animated.loop(Animated.timing(badgeSpin, { toValue: 1, duration: 30000, easing: Easing.linear, useNativeDriver: supportsNativeDriver }));
+    const g = Animated.loop(Animated.timing(glowSpin, { toValue: 1, duration: 6000, easing: Easing.linear, useNativeDriver: supportsNativeDriver }));
     const p = Animated.loop(Animated.sequence([
-      Animated.timing(glowPulse, { toValue: 0.85, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      Animated.timing(glowPulse, { toValue: 1, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      Animated.timing(glowPulse, { toValue: 0.85, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: supportsNativeDriver }),
+      Animated.timing(glowPulse, { toValue: 1, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: supportsNativeDriver }),
     ]));
     b.start();
     g.start();
