@@ -88,26 +88,28 @@ export function Playground({ examples }: { examples: DocExample[] }) {
 
   if (examples.length <= 1) return stage;
 
-  const rail = (
-    <ScrollView
-      horizontal={!wide}
-      showsHorizontalScrollIndicator={false}
-      style={wide ? { width: 200, flexGrow: 0 } : undefined}
-      contentContainerStyle={{ gap: 2, flexDirection: wide ? "column" : "row" }}
-    >
-      {examples.map((e, i) => {
-        const active = i === selected;
-        return (
-          <Pressable
-            key={e.label}
-            onPress={() => setSelected(i)}
-            style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: active ? tokens.foreground : "transparent" }}
-          >
-            <Text style={{ fontFamily: geist("500"), fontSize: 13, color: active ? tokens.background : tokens["muted-foreground"] }}>{e.label}</Text>
-          </Pressable>
-        );
-      })}
+  const pills = examples.map((e, i) => {
+    const active = i === selected;
+    return (
+      <Pressable
+        key={e.label}
+        onPress={() => setSelected(i)}
+        style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: active ? tokens.foreground : "transparent" }}
+      >
+        <Text style={{ fontFamily: geist("500"), fontSize: 13, color: active ? tokens.background : tokens["muted-foreground"] }}>{e.label}</Text>
+      </Pressable>
+    );
+  });
+
+  // Wide: a fixed 200px vertical rail beside the stage. Narrow: a wrapping row of pills.
+  // (A horizontal ScrollView here grows to the column's leftover height on react-native-web,
+  // which stretched the active pill into a tall bar — so wrap instead of scroll.)
+  const rail = wide ? (
+    <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 2 }}>
+      {pills}
     </ScrollView>
+  ) : (
+    <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 6 }}>{pills}</View>
   );
 
   return (
