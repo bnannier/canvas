@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { ScrollView, useWindowDimensions, Linking } from "react-native";
 import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
-import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
+import Svg, { Circle, Defs, RadialGradient, Stop, Filter, FeGaussianBlur, G } from "react-native-svg";
 import QRCode from "react-native-qrcode-svg";
 import {
   ArrowRight, Check, ChevronRight, Layers, Plus, Shield, AppWindow,
@@ -149,8 +149,11 @@ function LandingButton({ label, icon, primary, iconRight, onPress }: {
   );
 }
 
-// The blurred radial wash behind the hero (decorative). RN has no positioned blur, so
-// soft radial-gradient blobs stand in for the Vite `.landing-aurora`.
+// The blurred radial wash behind the hero (decorative), matching the Vite `.landing-aurora`:
+// three low-opacity color blobs softened by a heavy Gaussian blur so they read as ONE
+// diffuse glow rather than defined dark discs. Without the blur the low-opacity circles
+// over the near-black page render as a hard-edged blob; FeGaussianBlur (the same primitive
+// the hero glow uses, supported on every platform) spreads them into the soft wash.
 function Aurora() {
   const { tokens } = useTheme();
   const blobs = [
@@ -168,10 +171,16 @@ function Aurora() {
               <Stop offset="72%" stopColor={b.color} stopOpacity={0} />
             </RadialGradient>
           ))}
+          {/* Vite `.landing-aurora { filter: blur(40px) }`. */}
+          <Filter id="aurora-blur" x="-25%" y="-25%" width="150%" height="150%">
+            <FeGaussianBlur stdDeviation="40" />
+          </Filter>
         </Defs>
-        {blobs.map((_, i) => (
-          <Circle key={i} cx={380} cy={380} r={380} fill={`url(#aurora-${i})`} />
-        ))}
+        <G filter="url(#aurora-blur)">
+          {blobs.map((_, i) => (
+            <Circle key={i} cx={380} cy={380} r={380} fill={`url(#aurora-${i})`} />
+          ))}
+        </G>
       </Svg>
     </View>
   );
