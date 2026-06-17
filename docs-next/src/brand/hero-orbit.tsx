@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { useWindowDimensions, Animated, Easing, AccessibilityInfo } from "react-native";
+import { useWindowDimensions, Animated, Easing, AccessibilityInfo, Platform, type View as RNViewType } from "react-native";
 import { View, useTheme, alpha, supportsNativeDriver } from "@olympusoss/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
@@ -45,6 +45,27 @@ function useReducedMotion() {
     return () => { mounted = false; sub.remove(); };
   }, []);
   return reduced;
+}
+
+// On web the glow IS Vite's `.hero-orbit-core::before`: a real CSS conic-gradient, blurred
+// and radially masked. A conic blends continuously with no stop seams, so we apply the exact
+// same CSS to the DOM node (react-native-web forwards the View ref to its div). react-native-svg
+// has no conic gradient, so native falls back to the many-sector approximation below. The six
+// hues + the wrap stop and the blur/saturate/mask are copied verbatim from the Vite rule.
+const GLOW_CONIC =
+  "conic-gradient(from 0deg, #06b6d4, #22c55e, #f59e0b, #fb6a3c, #ec4899, #a855f7, #06b6d4)";
+const GLOW_MASK = "radial-gradient(closest-side, #000 0 54%, transparent 92%)";
+function WebConicGlow({ size }: { size: number }) {
+  const ref = useRef<RNViewType>(null);
+  useEffect(() => {
+    const node = ref.current as unknown as HTMLElement | null;
+    if (!node || !node.style) return;
+    node.style.backgroundImage = GLOW_CONIC;
+    node.style.filter = "blur(9px) saturate(1.25)";
+    node.style.maskImage = GLOW_MASK;
+    (node.style as CSSStyleDeclaration & { webkitMaskImage?: string }).webkitMaskImage = GLOW_MASK;
+  }, []);
+  return <View ref={ref} style={{ width: size, height: size, borderRadius: size / 2 }} />;
 }
 
 export function HeroOrbit() {
@@ -128,6 +149,9 @@ export function HeroOrbit() {
           transform: [{ rotate: glowRotate }],
         }}
       >
+        {Platform.OS === "web" ? (
+          <WebConicGlow size={glowSize} />
+        ) : (
         <Svg width={glowSize} height={glowSize}>
           <Defs>
             {/* Vite mask: radial-gradient(closest-side, #000 0 54%, transparent 92%) — the disc
@@ -152,6 +176,7 @@ export function HeroOrbit() {
             {ring.map((s, i) => <Path key={i} d={s.d} fill={s.color} />)}
           </G>
         </Svg>
+        )}
       </Animated.View>
 
       {/* The disc + the Canvas mark (static, above the glow) */}
