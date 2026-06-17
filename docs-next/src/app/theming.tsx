@@ -155,11 +155,11 @@ export default function ThemingScreen() {
         <Section title="Glass Surface">
           <P>
             Following Apple's Liquid Glass model, glass is the material for the functional layer: overlays (popovers, menus, dialogs,
-            sheets) plus navbars and sidebars read as frosted panes, while content surfaces (cards, lists, tables) stay solid ("don't
-            use glass in the content layer"). It is a theming-level switch (the ThemeProvider swaps the popover surface token
-            translucent), not a per-component prop, and Canvas never hand-paints glass per component: real iOS Liquid Glass is the OS's
-            automatic, system-rendered material on iOS 26, which standard components adopt on their own. Canvas's glass is its own
-            cross-platform glassmorphism, not a reimplementation of it. Turn it on with <InlineCode>surface="glass"</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on
+            sheets) plus navbars and sidebars read as glass, while content surfaces (cards, lists, tables) stay solid ("don't use glass
+            in the content layer"). It is a theming-level switch (the ThemeProvider swaps the popover surface token), not a per-component
+            prop. Those functional-layer surfaces render through Canvas's GlassSurface primitive, which paints the real material per
+            platform: Apple's native Liquid Glass on iOS 26+ (via expo-glass-effect), a genuine frosted blur on web and Android (via
+            expo-blur), and a translucent fallback when those optional modules are not installed. Turn it on with <InlineCode>surface="glass"</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on
             native, or <InlineCode>data-surface="glass"</InlineCode> on <InlineCode>{"<html>"}</InlineCode> on the web.
           </P>
           <CodeBlock code={GLASS} />
@@ -169,9 +169,9 @@ export default function ThemingScreen() {
           </View>
           <H3>What changes</H3>
           <View style={{ gap: 4 }}>
-            <Bullet>Functional-layer fills (overlays, navbars, sidebars) become translucent; content cards, lists, and tables stay solid</Bullet>
+            <Bullet>Functional-layer surfaces (overlays, navbars, sidebars) render the glass material via GlassSurface: native Liquid Glass on iOS 26+, a frosted blur on web and Android; content cards, lists, and tables stay solid</Bullet>
             <Bullet>Border colors shift to white-alpha edges</Bullet>
-            <Bullet>On the web, the body background becomes a multi-color aurora gradient and the functional surfaces add a frosted blur</Bullet>
+            <Bullet>On the web, the body background becomes a multi-color aurora gradient that the frosted surfaces refract</Bullet>
           </View>
           <H3>Web helpers</H3>
           <CodeBlock code={JS_SURFACE} />

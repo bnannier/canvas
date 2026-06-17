@@ -79,20 +79,21 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
 
 /**
  * Glass-surface token overrides per scheme. Glass follows Apple's Liquid Glass
- * model: it is a material for the FUNCTIONAL layer — controls, navigation, and
- * overlays that float above content — and is deliberately NOT applied to the
- * content layer (Apple: "don't use Liquid Glass in the content layer"). So only
- * the `popover` fill (the overlay/menu/sheet/dialog material) goes translucent;
+ * model: it is a material for the FUNCTIONAL layer (controls, navigation, and
+ * overlays that float above content), deliberately NOT applied to the content
+ * layer (Apple: "don't use Liquid Glass in the content layer"). So only the
+ * `popover` fill (the overlay/menu/sheet/dialog material) goes translucent;
  * `card` (the content-surface fill) stays solid, so content cards, lists, tables,
  * calendars, and charts read as opaque content. Bars and sidebars join this same
  * functional layer at the shell level (they paint `popover` in glass mode).
  *
- * This is Canvas's own cross-platform glassmorphism surface mode. Real iOS Liquid
- * Glass is the OS's automatic, system-rendered material (standard bars/sheets/
- * popovers adopt it on rebuild with the latest SDK); Canvas does not hand-paint
- * or replicate that per component. Only the fill changes here; foreground and
- * border tokens are untouched. Values are rgba so they compose over whatever sits
- * behind the surface, on native and on react-native-web.
+ * In glass mode these translucent `popover` values are the FALLBACK fill: the
+ * GlassSurface primitive (src/style/glass-surface) renders the real material over
+ * them per platform (Apple's native Liquid Glass via expo-glass-effect on iOS 26+,
+ * an expo-blur frost on web and Android), and falls back to this fill when those
+ * optional modules are absent. Only the fill changes here; foreground and border
+ * tokens are untouched. Values are rgba so they compose over whatever sits behind
+ * the surface, on native and on react-native-web.
  */
 export const glassByScheme: Record<ColorScheme, Partial<ColorTokens>> = {
   light: {
