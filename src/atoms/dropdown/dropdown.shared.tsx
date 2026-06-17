@@ -1,6 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { Platform } from "react-native";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useRef, useState, type ReactNode } from "react";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
 
@@ -9,7 +8,7 @@ import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./drop
 // optional trailing keyboard shortcut, with hairline separators between groups
 // and red-tinted destructive rows), the public boolean-prop API, the
 // controlled/uncontrolled open state, the trigger/select close handlers, the
-// web-only dismiss backdrop, the disabled handling, and accessibility all live
+// outside-tap dismissal, the disabled handling, and accessibility all live
 // here once. A platform file supplies only its skin (the menu card shape/fill/
 // border, the separators, the row sizing, and the press feedback) and calls
 // createDropdown.
@@ -19,12 +18,12 @@ import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./drop
 // a topbar): the children render in place of the button, inside a Pressable that
 // toggles the menu. Either way the menu rows still come from `items`.
 //
-// Overlay note: the open menu renders as a floating card positioned absolutely
-// below the trigger (the wrapper is `relative`), so it overflows its container
-// (e.g. a docs card or the playground stage) instead of growing it, with no
-// portal/Modal. On the web, an UNCONTROLLED menu also lays down a transparent
-// full-viewport backdrop so a press anywhere off the menu dismisses it; a
-// controlled `open` menu and native get no backdrop (native would use a Modal).
+// Overlay note: the open menu renders through AnchoredOverlay. When an
+// OverlayProvider is mounted (an app root, or a docs example stage) the menu is
+// portaled over the page, anchored below the trigger, and a tap anywhere off it
+// dismisses it — identically on iOS, Android, and web, with no Platform.OS branch
+// and no position:fixed. With no provider it falls back to an inline card
+// positioned absolutely below the trigger (the kit's pre-portal behavior).
 //
 // There are no visual style axes on the menu itself, so there is no boolean-prop
 // precedence to resolve; the per-item `destructive` flag is the only variant and
@@ -70,21 +69,11 @@ export interface DropdownProps {
 // stays at least this wide; a wider trigger (an account chip) sets the width.
 const MENU_MIN_WIDTH = 200;
 
-// A transparent full-viewport layer behind the open menu (web only): a press off
-// the menu dismisses it. `position: fixed` is not in RN's ViewStyle type but
-// react-native-web honors it; cast through unknown. zIndex sits below the menu's
-// z-50 so the menu and its items stay clickable above the backdrop.
-const DISMISS_BACKDROP = {
-  position: "fixed",
-  top: 0,
-  right: 0,
-  bottom: 0,
-  left: 0,
-  zIndex: 40,
-} as unknown as StyleProp<ViewStyle>;
-
-// The menu card is positioned absolutely below the trigger on every platform; the
-// skin owns the card's shape/fill/shadow, this owns the anchoring.
+// The inline-fallback anchor: with no OverlayProvider mounted the menu renders in
+// place, absolutely positioned below the trigger (the kit's pre-portal behavior).
+// With a provider, AnchoredOverlay positions the card over the page and adds the
+// outside-tap dismiss backdrop instead. The skin owns the card's shape/fill/
+// shadow; this owns the inline anchoring.
 const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", left: 0, zIndex: 50, marginTop: 4 };
 
 /** Build a Dropdown component from a platform skin. */
@@ -106,12 +95,17 @@ export function createDropdown(skin: DropdownSkin) {
     // Measured via the wrapper's layout; the menu is absolute, so it never feeds
     // back into this width.
     const [triggerWidth, setTriggerWidth] = useState(0);
+    // The wrapper tightly wraps the trigger (the menu portals out when hosted), so
+    // measuring it gives the trigger's box for anchoring the floating card.
+    const triggerRef = useRef<View>(null);
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      // self-start keeps the trigger from stretching; relative anchors the menu.
+      // self-start keeps the trigger from stretching; relative anchors the inline
+      // fallback menu.
       <View
+        ref={triggerRef}
         style={[wrapper, open ? wrapperLifted : null, style]}
         onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
       >
@@ -130,18 +124,14 @@ export function createDropdown(skin: DropdownSkin) {
           </Button>
         )}
 
-        {open && openProp === undefined && Platform.OS === "web" ? (
-          <Pressable accessible={false} onPress={() => setOpen(false)} style={DISMISS_BACKDROP} />
-        ) : null}
-
-        {open ? (
-          <View
-            style={[
-              MENU_ANCHOR,
-              skin.menuCard(tokens),
-              { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) },
-            ]}
-          >
+        <AnchoredOverlay
+          open={open}
+          onDismiss={() => setOpen(false)}
+          triggerRef={triggerRef}
+          gap={4}
+          cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
+          inlineStyle={MENU_ANCHOR}
+        >
             {label ? (
               <Text style={skin.menuLabel(tokens)}>
                 {label}
@@ -182,8 +172,7 @@ export function createDropdown(skin: DropdownSkin) {
                 </Pressable>
               </View>
             ))}
-          </View>
-        ) : null}
+        </AnchoredOverlay>
       </View>
     );
   };

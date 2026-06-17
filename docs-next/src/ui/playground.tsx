@@ -1,6 +1,6 @@
 import { Component, type ReactNode, useState } from "react";
 import { useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Pressable, useTheme } from "@olympusoss/canvas";
+import { ScrollView, View, Text, Pressable, OverlayProvider, useTheme } from "@olympusoss/canvas";
 import { buildScopes } from "docs-core/build-scopes";
 import type { DocExample, ExampleScope } from "docs-core/scope";
 import { CodeBlock } from "./code-block";
@@ -73,11 +73,14 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
           </Text>
         </View>
       ) : null}
-      <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 16, minHeight: 84 }}>
+      {/* Per-platform overlay host: a portaled overlay (e.g. an open dropdown
+          menu) anchors and dismisses within this cell, contained to its stage row
+          instead of covering the gallery. */}
+      <OverlayProvider style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 16, minHeight: 84 }}>
         <ExampleErrorBoundary key={resetKey}>
           <FitStage>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
-      </View>
+      </OverlayProvider>
     </View>
   );
 }

@@ -1,7 +1,7 @@
 import { Component, useLayoutEffect, useRef, type ReactNode } from "react";
 import * as React from "react";
 import { transform } from "sucrase";
-import { useTheme } from "@olympusoss/canvas";
+import { OverlayProvider, useTheme } from "@olympusoss/canvas";
 import { LIVE_SCOPE, SCOPE_BY_PLATFORM } from "@/live-scope";
 
 // Renders a single ```tsx example fence from a component's markdown as a real,
@@ -178,7 +178,11 @@ export function PlatformPreview({ code }: { code: string }) {
         <div className="playground-platform" key={p.key}>
           <div className="playground-platform-label">{p.label}</div>
           <div className="playground-platform-body">
-            <LiveExampleFor code={code} platform={p.key} />
+            {/* Per-platform overlay host: a portaled overlay (e.g. an open
+                dropdown menu) anchors and dismisses within this cell. */}
+            <OverlayProvider style={{ alignSelf: "stretch", flex: 1, alignItems: "center", justifyContent: "center" }}>
+              <LiveExampleFor code={code} platform={p.key} />
+            </OverlayProvider>
           </div>
         </div>
       ))}
