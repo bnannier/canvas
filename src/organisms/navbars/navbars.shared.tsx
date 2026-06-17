@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { type Surface } from "./navbars.styles.js";
@@ -88,21 +88,22 @@ function surfaceOf(p: NavbarProps): Surface {
 export function createNavbar(skin: NavbarSkin) {
   return function Navbar(props: NavbarProps) {
     const { brand, links, active = 0, actionLabel, onAction, avatar, onSelect, style } = props;
-    const { tokens, surface: themeSurface } = useTheme();
+    const { tokens } = useTheme();
     const surface = surfaceOf(props);
 
+    // The bar joins the functional glass layer: GlassSurface paints the native
+    // Liquid Glass (iOS) or frost (web/Android) in glass mode, and the solid skin
+    // background in default mode. The glass fill is stripped by GlassSurface, so
+    // the skin keeps supplying the solid background only.
     const container: StyleProp<ViewStyle> = [
       skin.bar(tokens),
       skin.surface(tokens),
       skin.surfaceContainer(tokens, surface),
-      // The bar joins the functional glass layer: in glass mode it paints the
-      // translucent overlay material (popover) instead of the solid background.
-      themeSurface === "glass" ? { backgroundColor: tokens.popover } : null,
       style,
     ];
 
     return (
-      <View style={container}>
+      <GlassSurface style={container}>
         <View style={skin.leftGroup(tokens)}>
           <Text style={skin.brand(tokens)}>{brand}</Text>
           <View style={skin.linksRow(tokens)}>
@@ -134,7 +135,7 @@ export function createNavbar(skin: NavbarSkin) {
           ) : null}
           {avatar ? <Avatar small name={avatar} /> : null}
         </View>
-      </View>
+      </GlassSurface>
     );
   };
 }

@@ -1,5 +1,5 @@
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { type Density, type Frame } from "./sidebar.styles.js";
 
@@ -107,7 +107,7 @@ export function createSidebar(skin: SidebarSkin) {
     const { sections, items, active, onSelect, style } = props;
     const density = densityOf(props);
     const frame = frameOf(props);
-    const { tokens, surface } = useTheme();
+    const { tokens } = useTheme();
 
     // Normalize to a sections list; a flat `items` array becomes one untitled
     // section. Sections always win when both are supplied.
@@ -123,13 +123,13 @@ export function createSidebar(skin: SidebarSkin) {
     // Running flat index so label/index matching and onSelect agree across groups.
     let flat = -1;
 
+    // Sidebar joins the functional glass layer: GlassSurface paints native Liquid
+    // Glass (iOS) or frost (web/Android) in glass mode and the solid skin
+    // background in default mode.
     return (
-      <View
+      <GlassSurface
         style={[
           skin.column(tokens, frame),
-          // Sidebar joins the functional glass layer: translucent overlay material
-          // (popover) instead of the solid background in glass mode.
-          surface === "glass" ? { backgroundColor: tokens.popover } : null,
           style,
         ]}
       >
@@ -169,7 +169,7 @@ export function createSidebar(skin: SidebarSkin) {
             })}
           </View>
         ))}
-      </View>
+      </GlassSurface>
     );
   };
 }
