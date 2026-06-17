@@ -12,4 +12,5 @@ export * from "./responsive.js";
 export * from "./shadow.js";
 export * from "./color.js";
 export * from "./ripple.js";
+export * from "./motion.js";
 export * from "./primitives.js";
