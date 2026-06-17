@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useWindowDimensions, Animated, Easing, AccessibilityInfo } from "react-native";
-import { View, useTheme, alpha, supportsNativeDriver } from "@olympusoss/canvas";
+import { View, useTheme, alpha } from "@olympusoss/canvas";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { CanvasMark } from "./canvas-mark";
 import { AppleLogo, ReactLogo, TypeScriptLogo, AndroidLogo, Html5Logo, TailwindLogo } from "./brand-logos";
@@ -73,14 +73,15 @@ export function HeroOrbit() {
     }
     // Match the CSS: 30s for the orbit, 6s for the rainbow spin, both linear and looping;
     // a 3.4s ease-in-out opacity pulse (heroGlowPulse: 0.85 → 1 → 0.85) breathes the glow.
-    // The driver is gated on supportsNativeDriver: on react-native-web, Animated.loop +
-    // useNativeDriver:true runs one pass then freezes, so web uses the JS loop while native
-    // keeps the off-thread driver.
-    const b = Animated.loop(Animated.timing(badgeSpin, { toValue: 1, duration: 30000, easing: Easing.linear, useNativeDriver: supportsNativeDriver }));
-    const g = Animated.loop(Animated.timing(glowSpin, { toValue: 1, duration: 6000, easing: Easing.linear, useNativeDriver: supportsNativeDriver }));
+    // These loops run on the JS driver (useNativeDriver:false) on every platform: the native
+    // driver's looping is unreliable here (it runs one pass then freezes on react-native-web,
+    // and does not loop under the New Architecture on iOS). A slow background rotation is cheap
+    // on the JS thread, and the JS restart loop ticks correctly everywhere.
+    const b = Animated.loop(Animated.timing(badgeSpin, { toValue: 1, duration: 30000, easing: Easing.linear, useNativeDriver: false }));
+    const g = Animated.loop(Animated.timing(glowSpin, { toValue: 1, duration: 6000, easing: Easing.linear, useNativeDriver: false }));
     const p = Animated.loop(Animated.sequence([
-      Animated.timing(glowPulse, { toValue: 0.85, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: supportsNativeDriver }),
-      Animated.timing(glowPulse, { toValue: 1, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: supportsNativeDriver }),
+      Animated.timing(glowPulse, { toValue: 0.85, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+      Animated.timing(glowPulse, { toValue: 1, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
     ]));
     b.start();
     g.start();
