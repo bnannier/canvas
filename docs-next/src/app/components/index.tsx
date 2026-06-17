@@ -1,6 +1,7 @@
 import { View, Text, useTheme } from "@olympusoss/canvas";
 import { ScrollView } from "react-native";
 import { COMPONENTS } from "docs-core/data/components";
+import { TOPBAR_HEIGHT } from "../../shell/topbar";
 import { PageNav } from "../../ui/page-nav";
 import { geist } from "../../ui/fonts";
 import { CatSubBar, CatGroup } from "../../catalog/tile";
@@ -33,7 +34,7 @@ export default function ComponentsIndex() {
       // Glass surface mode: the canvas goes transparent so the shell's GlassAurora reads
       // through (matching the shared Page); the per-category tiles stay solid content cards.
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
-      contentContainerStyle={{ paddingTop: 24, paddingHorizontal: 28, paddingBottom: 80, gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
+      contentContainerStyle={{ paddingTop: TOPBAR_HEIGHT + 24, paddingHorizontal: 28, paddingBottom: 80, gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
     >
       <CatSubBar categories={CATEGORY_IDS} total={total} />
 

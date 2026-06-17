@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { ScrollView, View, useTheme } from "@olympusoss/canvas";
+import { TOPBAR_HEIGHT } from "../shell/topbar";
 import { H1, Lead } from "./prose";
 
 // The standard scrollable content frame, mirroring `.app-content` (max-width 1400,
@@ -10,7 +11,9 @@ export function Page({ children }: { children: ReactNode }) {
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentContainerStyle={{
-        paddingTop: 24,
+        // Inset by the overlaying topbar so the first row clears it but content
+        // still scrolls behind the glass bar.
+        paddingTop: TOPBAR_HEIGHT + 24,
         paddingHorizontal: 28,
         paddingBottom: 80,
         gap: 28,

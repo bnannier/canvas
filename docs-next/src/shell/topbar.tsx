@@ -6,6 +6,11 @@ import { getComponent } from "docs-core/data/components";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 
+// The topbar overlays the scrolling content (so its glass frost refracts what
+// scrolls behind it). Content scrollers add this as a top inset so their first row
+// starts below the bar.
+export const TOPBAR_HEIGHT = 56;
+
 function titleize(slug: string): string {
   return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
@@ -52,7 +57,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
-        height: 56,
+        height: TOPBAR_HEIGHT,
         paddingHorizontal: wideEnough ? 24 : 16,
         borderBottomWidth: 1,
         borderColor: tokens.border,

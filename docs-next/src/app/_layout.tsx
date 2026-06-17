@@ -61,9 +61,15 @@ function Shell() {
           </View>
         ) : null}
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Topbar showMenu onMenu={() => (wide ? setCollapsed((c) => !c) : setDrawerOpen(true))} onSearch={() => setSearchOpen(true)} />
+          {/* Content fills the column and scrolls BEHIND the topbar, which overlays
+              the top as a glass bar (each page scroll insets its top by TOPBAR_HEIGHT
+              so its first row clears the bar). This is what lets the navbar frost
+              refract live content, matching the Vite chrome. */}
           <View style={{ flex: 1 }}>
             <Slot />
+          </View>
+          <View style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}>
+            <Topbar showMenu onMenu={() => (wide ? setCollapsed((c) => !c) : setDrawerOpen(true))} onSearch={() => setSearchOpen(true)} />
           </View>
         </View>
       </View>

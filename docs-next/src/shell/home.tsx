@@ -16,6 +16,7 @@ import { CodeBlock } from "../ui/code-block";
 import { geist, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 import { useLatestVersion } from "../ui/use-latest-version";
+import { TOPBAR_HEIGHT } from "./topbar";
 
 const REPO_URL = "https://github.com/OlympusOSS/canvas";
 const NPM_URL = "https://www.npmjs.com/package/@olympusoss/canvas";
@@ -219,7 +220,10 @@ export function Home() {
   // Glass is a theming-level surface mode: the canvas goes transparent so the shell's
   // GlassAurora reads through (the footer band stays solid, matching the Vite landing).
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
+      contentContainerStyle={{ paddingTop: TOPBAR_HEIGHT }}
+    >
       {/* ── Hero ── */}
       <View style={{ overflow: "hidden", paddingTop: wide ? 28 : 14, paddingBottom: 56 }}>
         <Aurora />
