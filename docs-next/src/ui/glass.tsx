@@ -1,22 +1,12 @@
-import { Platform, useWindowDimensions, type ViewStyle } from "react-native";
+import { useWindowDimensions, type ViewStyle } from "react-native";
 import { View, useTheme } from "@olympusoss/canvas";
 import Svg, { Rect, Defs, RadialGradient, Stop } from "react-native-svg";
 
-// Glass surface mode for the docs shell. Following the Canvas glass model, the FUNCTIONAL
-// layer (navbar/sidebar/overlays) paints the translucent `popover` material in glass mode,
-// while content surfaces (cards) stay solid. On the web that translucency reads as frost
-// via a backdrop blur (RN Web honors the backdropFilter style); on native the translucent
-// fill stands in. A soft multi-color aurora sits behind the shell so the frost has color
-// to refract, matching the Vite docs' glass body wash.
-
-// The web-only backdrop blur applied to a glass bar. The `saturate(1.6)` boosts the aurora's
-// color as it transmits through the frost, matching the Vite chrome frost exactly. Typed
-// loosely because backdropFilter is a web CSS property react-native-web passes through but
-// RN's ViewStyle does not model.
-export function webFrost(glass: boolean): ViewStyle {
-  if (Platform.OS !== "web" || !glass) return {};
-  return { backdropFilter: "blur(16px) saturate(1.6)", WebkitBackdropFilter: "blur(16px) saturate(1.6)" } as unknown as ViewStyle;
-}
+// Glass surface mode for the docs shell. The shell (topbar, sidebar, drawer, search)
+// now renders through the kit's GlassSurface, which paints native Liquid Glass on iOS
+// and an expo-blur frost on web/Android. This module only supplies the soft multi-color
+// aurora that sits behind the shell so the frost has color to refract, matching the
+// Vite docs' glass body wash.
 
 // The aurora blobs, mirroring the Vite `[data-surface="glass"] body` radial-gradient stack:
 // three corner blobs (primary top-left, brand violet top-right, brand cyan bottom-right) over

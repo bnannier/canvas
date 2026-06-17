@@ -1,11 +1,10 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, Pressable, useTheme, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, useTheme, GlassSurface, alpha } from "@olympusoss/canvas";
 import { usePathname } from "expo-router";
 import { Menu, Search, Sun, Moon } from "lucide-react-native";
 import { getComponent } from "docs-core/data/components";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
-import { webFrost } from "../ui/glass";
 
 function titleize(slug: string): string {
   return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
@@ -45,11 +44,11 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
   const { title, subtitle } = titleFor(pathname);
   const wideEnough = width >= 640;
 
-  const glass = surface === "glass";
-
+  // GlassSurface paints the glass material in glass mode (native Liquid Glass on
+  // iOS, expo-blur frost on web/Android) and the solid background otherwise.
   return (
-    <View
-      style={[{
+    <GlassSurface
+      style={{
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
@@ -57,8 +56,8 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
         paddingHorizontal: wideEnough ? 24 : 16,
         borderBottomWidth: 1,
         borderColor: tokens.border,
-        backgroundColor: glass ? tokens.popover : tokens.background,
-      }, webFrost(glass)]}
+        backgroundColor: tokens.background,
+      }}
     >
       {showMenu ? (
         <Pressable onPress={onMenu} hitSlop={8} accessibilityLabel="Toggle menu" style={{ padding: 6, marginLeft: -2 }}>
@@ -147,6 +146,6 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
       <Pressable onPress={toggleScheme} hitSlop={10} style={{ padding: 6 }}>
         {scheme === "dark" ? <Sun size={16} color={tokens.foreground} /> : <Moon size={16} color={tokens.foreground} />}
       </Pressable>
-    </View>
+    </GlassSurface>
   );
 }

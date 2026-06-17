@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Text, Pressable, useTheme } from "@olympusoss/canvas";
+import { ScrollView, View, Text, Pressable, useTheme, GlassSurface } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { ChevronRight, ChevronLeft } from "lucide-react-native";
 import { CanvasMark } from "../brand/canvas-mark";
 import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, getActiveGroup, type NavItem } from "../data/nav";
 import { geist } from "../ui/fonts";
-import { webFrost } from "../ui/glass";
 
 // The docs sidebar, matching the Vite chrome: brand (CanvasMark + Canvas / design
 // system), a pinned Overview, an always-open Tokens & Utilities section, the
@@ -24,8 +23,7 @@ export function Sidebar({
   collapsible?: boolean;
   onToggleCollapse?: () => void;
 }) {
-  const { tokens, surface } = useTheme();
-  const glass = surface === "glass";
+  const { tokens } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
   const activeSlug = getActiveSlug(pathname);
@@ -113,7 +111,7 @@ export function Sidebar({
   };
 
   return (
-    <View style={[{ flex: 1, backgroundColor: glass ? tokens.popover : tokens.card }, webFrost(glass)]}>
+    <GlassSurface style={{ flex: 1, backgroundColor: tokens.card }}>
       {/* Brand row: full lockup when expanded (with the desktop collapse chevron), just the
           mark as an expand button when collapsed. */}
       <View
@@ -216,6 +214,6 @@ export function Sidebar({
           <Item item={COMPARE_ITEM} />
         </View>
       ) : null}
-    </View>
+    </GlassSurface>
   );
 }

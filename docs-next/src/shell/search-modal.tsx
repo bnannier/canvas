@@ -7,13 +7,12 @@ import {
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
 } from "react-native";
-import { View, Text, Pressable, TextInput, useTheme, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, TextInput, useTheme, GlassSurface, alpha } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import { Search } from "lucide-react-native";
 import { search } from "docs-core/data/search";
 import type { SearchEntry } from "docs-core/data/types";
 import { geist } from "../ui/fonts";
-import { webFrost } from "../ui/glass";
 
 // The docs search modal: a transparent fade Modal with a centered panel, mirroring the
 // Vite cmd-K dialog. A TextInput drives a case-insensitive search over the docs-core
@@ -21,10 +20,9 @@ import { webFrost } from "../ui/glass";
 // Keyboard up/down/enter/esc nav is wired through the web build (RN-Web surfaces the key
 // via onKeyPress); on native the Modal's onRequestClose handles Android back / dismiss.
 export function SearchModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const { tokens, surface } = useTheme();
+  const { tokens } = useTheme();
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const glass = surface === "glass";
 
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -101,21 +99,16 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
         }}
         onPress={onClose}
       >
-        <Pressable
-          style={[
-            {
-              width: panelWidth,
-              maxHeight: 480,
+        <Pressable style={{ width: panelWidth, maxHeight: 480 }} onPress={() => {}}>
+          <GlassSurface
+            style={{
+              flex: 1,
               borderRadius: 12,
               borderWidth: 1,
               borderColor: tokens.border,
-              backgroundColor: glass ? tokens.popover : tokens.card,
-              overflow: "hidden",
-            },
-            webFrost(glass),
-          ]}
-          onPress={() => {}}
-        >
+              backgroundColor: tokens.card,
+            }}
+          >
           {/* Search input row */}
           <View
             style={{
@@ -210,6 +203,7 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
               </View>
             )}
           </ScrollView>
+          </GlassSurface>
         </Pressable>
       </Pressable>
     </Modal>

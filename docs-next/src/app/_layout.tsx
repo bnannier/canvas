@@ -8,7 +8,7 @@ import { Sidebar } from "../shell/sidebar";
 import { Topbar } from "../shell/topbar";
 import { SearchModal } from "../shell/search-modal";
 import { useDocsFonts } from "../ui/fonts";
-import { GlassAurora, webFrost } from "../ui/glass";
+import { GlassAurora } from "../ui/glass";
 
 // The whole app renders inside Canvas's ThemeProvider (via DocsThemeProvider), so the
 // components AND the docs chrome are painted by the kit, and once the Geist faces load
@@ -74,8 +74,11 @@ function Shell() {
             style={{ flex: 1, flexDirection: "row", backgroundColor: "rgba(0,0,0,0.5)" }}
             onPress={() => setDrawerOpen(false)}
           >
+            {/* The Sidebar is itself a GlassSurface, so it provides the glass/frost;
+                this panel just sizes it and catches taps. Solid card fills the safe-
+                area insets above/below the frosted body. */}
             <Pressable
-              style={[{ width: 240, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: glass ? tokens.popover : tokens.card }, webFrost(glass)]}
+              style={{ width: 240, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: tokens.card }}
               onPress={() => {}}
             >
               <Sidebar onNavigate={() => setDrawerOpen(false)} />
