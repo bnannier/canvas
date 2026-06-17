@@ -1,6 +1,6 @@
 import { Platform, useWindowDimensions, type ViewStyle } from "react-native";
 import { View, useTheme } from "@olympusoss/canvas";
-import Svg, { Circle, Rect, Defs, RadialGradient, Stop } from "react-native-svg";
+import Svg, { Rect, Defs, RadialGradient, Stop } from "react-native-svg";
 
 // Glass surface mode for the docs shell. Following the Canvas glass model, the FUNCTIONAL
 // layer (navbar/sidebar/overlays) paints the translucent `popover` material in glass mode,
@@ -9,47 +9,51 @@ import Svg, { Circle, Rect, Defs, RadialGradient, Stop } from "react-native-svg"
 // fill stands in. A soft multi-color aurora sits behind the shell so the frost has color
 // to refract, matching the Vite docs' glass body wash.
 
-// The web-only backdrop blur applied to a glass bar. Typed loosely because backdropFilter
-// is a web CSS property react-native-web passes through but RN's ViewStyle does not model.
+// The web-only backdrop blur applied to a glass bar. The `saturate(1.6)` boosts the aurora's
+// color as it transmits through the frost, matching the Vite chrome frost exactly. Typed
+// loosely because backdropFilter is a web CSS property react-native-web passes through but
+// RN's ViewStyle does not model.
 export function webFrost(glass: boolean): ViewStyle {
   if (Platform.OS !== "web" || !glass) return {};
-  return { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" } as unknown as ViewStyle;
+  return { backdropFilter: "blur(16px) saturate(1.6)", WebkitBackdropFilter: "blur(16px) saturate(1.6)" } as unknown as ViewStyle;
 }
 
-// The aurora blob positions; the lead color is keyed off the primary token, the rest are
-// the brand orbs. Light mode boosts the opacities and adds an off-white cool floor so the
-// frost has color to transmit (matching the Vite `:not(.dark)` aurora override); dark mode
-// keeps the wash subtle over the deep background.
-const BLOBS = (primary: string) => [
-  { c: primary, cx: "16%", cy: "10%" },
-  { c: "#8b5cf6", cx: "86%", cy: "6%" },
-  { c: "#06b6d4", cx: "72%", cy: "78%" },
-  { c: "#ff6a4d", cx: "22%", cy: "88%" },
+// The aurora blobs, mirroring the Vite `[data-surface="glass"] body` radial-gradient stack:
+// three corner blobs (primary top-left, brand violet top-right, brand cyan bottom-right) over
+// an off-white floor in light. Each blob is positioned as a fraction of the viewport (cx/cy)
+// with a radius in rem (Vite uses 38-42rem in dark, 48-56rem in light), and fades to clear at
+// `end`. Light carries far stronger, warmer alphas than dark so it reads through the frost;
+// dark stays restrained over the deep background (Vite leaves the dark wash bare).
+const REM = 16;
+const BLOBS = (primary: string, dark: boolean) => [
+  { c: primary, cx: 0.12, cy: 0.06, rem: dark ? 38 : 52, o: dark ? 0.18 : 0.3, end: 0.6 },
+  { c: "#8b5cf6", cx: 0.9, cy: 0.12, rem: dark ? 34 : 48, o: dark ? 0.18 : 0.38, end: 0.62 },
+  { c: "#06b6d4", cx: 0.78, cy: 0.94, rem: dark ? 42 : 56, o: dark ? 0.18 : 0.36, end: dark ? 0.62 : 0.64 },
 ];
 
-// The full-bleed aurora wash rendered behind the shell when glass is on.
+// The full-bleed aurora wash rendered behind the shell when glass is on. Each blob fills the
+// viewport with a userSpaceOnUse radial gradient anchored at its viewport fraction, so the
+// corners land exactly where the Vite CSS `radial-gradient(... at X% Y%)` puts them (the prior
+// objectBoundingBox circles pushed the centers off-screen and washed the wash out).
 export function GlassAurora() {
   const { width, height } = useWindowDimensions();
   const { tokens, dark } = useTheme();
-  const r = Math.max(width, height);
-  const blobs = BLOBS(tokens.primary);
-  // Light glass needs a far stronger, warmer wash than dark to read through the frost.
-  const o = dark ? [0.22, 0.2, 0.16, 0.12] : [0.36, 0.32, 0.3, 0.22];
+  const blobs = BLOBS(tokens.primary, dark);
   return (
     <View pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
       <Svg width={width} height={height}>
         <Defs>
           {blobs.map((b, i) => (
-            <RadialGradient key={i} id={`ga-${i}`} cx={b.cx} cy={b.cy} r="52%">
-              <Stop offset="0%" stopColor={b.c} stopOpacity={o[i]} />
-              <Stop offset="70%" stopColor={b.c} stopOpacity={0} />
+            <RadialGradient key={i} id={`ga-${i}`} gradientUnits="userSpaceOnUse" cx={b.cx * width} cy={b.cy * height} r={b.rem * REM}>
+              <Stop offset="0" stopColor={b.c} stopOpacity={b.o} />
+              <Stop offset={b.end} stopColor={b.c} stopOpacity={0} />
             </RadialGradient>
           ))}
         </Defs>
-        {/* Off-white cool floor in light mode, so the bands sit on a tinted base. */}
-        {!dark ? <Rect x="0" y="0" width="100%" height="100%" fill="#fafaff" /> : null}
+        {/* Off-white cool floor in light mode, so the bands sit on a tinted base (Vite floor radial). */}
+        {!dark ? <Rect x={0} y={0} width={width} height={height} fill="#fafaff" /> : null}
         {blobs.map((_, i) => (
-          <Circle key={i} cx={width / 2} cy={height / 2} r={r} fill={`url(#ga-${i})`} />
+          <Rect key={i} x={0} y={0} width={width} height={height} fill={`url(#ga-${i})`} />
         ))}
       </Svg>
     </View>

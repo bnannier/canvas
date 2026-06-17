@@ -204,7 +204,7 @@ function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; tit
 }
 
 export function Home() {
-  const { tokens } = useTheme();
+  const { tokens, surface } = useTheme();
   const { width } = useWindowDimensions();
   const router = useRouter();
   const go = (to: string) => router.push(to as never);
@@ -215,8 +215,10 @@ export function Home() {
   const sectionTitle = Math.round(Math.min(36, Math.max(26, width * 0.034)));
   const ctaTitle = Math.round(Math.min(42, Math.max(28, width * 0.04)));
 
+  // Glass is a theming-level surface mode: the canvas goes transparent so the shell's
+  // GlassAurora reads through (the footer band stays solid, matching the Vite landing).
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: tokens.background }}>
+    <ScrollView style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}>
       {/* ── Hero ── */}
       <View style={{ overflow: "hidden", paddingTop: wide ? 28 : 14, paddingBottom: 56 }}>
         <Aurora />

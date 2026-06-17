@@ -16,7 +16,7 @@ const CATEGORY_IDS = ["Tokens", "Atoms", "Molecules", "Organisms", "Templates", 
 // A live catalog mirroring the Vite components-index: a category pill bar + intro, then a tile
 // grid per category, each tile a small mockup preview of the component linking to its reference.
 export default function ComponentsIndex() {
-  const { tokens } = useTheme();
+  const { tokens, surface } = useTheme();
   const byCat = (c: string) => COMPONENTS.filter((x) => x.category === c).length;
   const counts = {
     Tokens: 3,
@@ -30,7 +30,9 @@ export default function ComponentsIndex() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: tokens.background }}
+      // Glass surface mode: the canvas goes transparent so the shell's GlassAurora reads
+      // through (matching the shared Page); the per-category tiles stay solid content cards.
+      style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentContainerStyle={{ paddingTop: 24, paddingHorizontal: 28, paddingBottom: 80, gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
     >
       <CatSubBar categories={CATEGORY_IDS} total={total} />
