@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { ScrollView, View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight, ChevronLeft } from "lucide-react-native";
 import { CanvasMark } from "../brand/canvas-mark";
 import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, getActiveGroup, type NavItem } from "../data/nav";
 import { geist } from "../ui/fonts";
@@ -10,8 +10,20 @@ import { webFrost } from "../ui/glass";
 
 // The docs sidebar, matching the Vite chrome: brand (CanvasMark + Canvas / design
 // system), a pinned Overview, an always-open Tokens & Utilities section, the
-// collapsible category groups (accordion), and a Compare footer.
-export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+// collapsible category groups (accordion), and a Compare footer. On wide viewports it
+// can collapse to a 56px icon rail (the brand chevron / topbar hamburger toggle it),
+// mirroring the Vite `.sidebar.collapsed` rail.
+export function Sidebar({
+  onNavigate,
+  collapsed = false,
+  collapsible = false,
+  onToggleCollapse,
+}: {
+  onNavigate?: () => void;
+  collapsed?: boolean;
+  collapsible?: boolean;
+  onToggleCollapse?: () => void;
+}) {
   const { tokens, surface } = useTheme();
   const glass = surface === "glass";
   const pathname = usePathname();
@@ -36,18 +48,22 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     return (
       <Pressable
         onPress={() => go(item.href)}
+        accessibilityLabel={collapsed ? item.label : undefined}
         style={{
           flexDirection: "row",
           alignItems: "center",
-          gap: 8,
+          justifyContent: collapsed ? "center" : "flex-start",
+          gap: collapsed ? 0 : 8,
           paddingVertical: 6.4,
-          paddingHorizontal: 10,
+          paddingHorizontal: collapsed ? 6.4 : 10,
           borderRadius: 8,
           backgroundColor: active ? tokens.accent : "transparent",
         }}
       >
         <Icon size={16} color={color} />
-        <Text style={{ fontFamily: geist(active ? "600" : "500"), fontSize: 13, color }}>{item.label}</Text>
+        {collapsed ? null : (
+          <Text style={{ fontFamily: geist(active ? "600" : "500"), fontSize: 13, color }}>{item.label}</Text>
+        )}
       </Pressable>
     );
   };
@@ -68,26 +84,73 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     </Text>
   );
 
+  // A collapsed group renders just its icon; tapping it expands the rail and opens that
+  // group, mirroring the Vite collapsed-rail `expandToGroup`.
+  const CollapsedGroup = ({ group }: { group: (typeof NAV_GROUPS)[number] }) => {
+    const groupHasActive = group.items.some((i) => i.slug === activeSlug);
+    const color = groupHasActive ? tokens.foreground : tokens["muted-foreground"];
+    const Icon = group.icon;
+    return (
+      <Pressable
+        onPress={() => {
+          setOpenGroup(group.label);
+          onToggleCollapse?.();
+        }}
+        accessibilityLabel={group.label}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          paddingVertical: 6.4,
+          paddingHorizontal: 6.4,
+          borderRadius: 8,
+          backgroundColor: groupHasActive ? tokens.accent : "transparent",
+        }}
+      >
+        <Icon size={16} color={color} />
+      </Pressable>
+    );
+  };
+
   return (
     <View style={[{ flex: 1, backgroundColor: glass ? tokens.popover : tokens.card }, webFrost(glass)]}>
+      {/* Brand row: full lockup when expanded (with the desktop collapse chevron), just the
+          mark as an expand button when collapsed. */}
       <View
         style={{
           height: 56,
           flexDirection: "row",
           alignItems: "center",
-          gap: 10,
-          paddingHorizontal: 14,
+          gap: collapsed ? 0 : 10,
+          justifyContent: collapsed ? "center" : "flex-start",
+          paddingHorizontal: collapsed ? 0 : 14,
           borderBottomWidth: 1,
           borderColor: tokens.border,
         }}
       >
-        <CanvasMark size={26.62} />
-        <View>
-          <Text style={{ fontFamily: geist("600"), fontSize: 14, letterSpacing: -0.14, color: tokens.foreground }}>Canvas</Text>
-          <Text style={{ fontFamily: geist("500"), fontSize: 10, letterSpacing: 0.4, color: tokens["muted-foreground"], marginTop: 2 }}>
-            design system
-          </Text>
-        </View>
+        {collapsed ? (
+          <Pressable onPress={onToggleCollapse} hitSlop={8} accessibilityLabel="Expand sidebar">
+            <CanvasMark size={26.62} />
+          </Pressable>
+        ) : (
+          <>
+            <CanvasMark size={26.62} />
+            <View>
+              <Text style={{ fontFamily: geist("600"), fontSize: 14, letterSpacing: -0.14, color: tokens.foreground }}>Canvas</Text>
+              <Text style={{ fontFamily: geist("500"), fontSize: 10, letterSpacing: 0.4, color: tokens["muted-foreground"], marginTop: 2 }}>
+                design system
+              </Text>
+            </View>
+            {collapsible ? (
+              <>
+                <View style={{ flex: 1 }} />
+                <Pressable onPress={onToggleCollapse} hitSlop={8} accessibilityLabel="Collapse sidebar" style={{ padding: 4 }}>
+                  <ChevronLeft size={14} color={tokens["muted-foreground"]} />
+                </Pressable>
+              </>
+            ) : null}
+          </>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 8, paddingBottom: 16 }}>
@@ -98,8 +161,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </View>
 
         <View style={{ marginBottom: 2 }}>
-          <GroupHeader label={NAV_GROUPS[1].label} />
-          <View style={{ marginTop: 2 }}>
+          {collapsed ? null : <GroupHeader label={NAV_GROUPS[1].label} />}
+          <View style={{ marginTop: collapsed ? 0 : 2 }}>
             {NAV_GROUPS[1].items.map((it) => (
               <Item key={it.href} item={it} />
             ))}
@@ -107,6 +170,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </View>
 
         {NAV_GROUPS.slice(2).map((g) => {
+          if (collapsed) return <CollapsedGroup key={g.label} group={g} />;
           const isOpen = openGroup === g.label;
           return (
             <View key={g.label} style={{ marginBottom: 2 }}>

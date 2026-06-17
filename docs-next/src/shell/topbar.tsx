@@ -61,8 +61,8 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
       }, webFrost(glass)]}
     >
       {showMenu ? (
-        <Pressable onPress={onMenu} hitSlop={10} style={{ paddingRight: 2 }}>
-          <Menu size={20} color={tokens.foreground} />
+        <Pressable onPress={onMenu} hitSlop={8} accessibilityLabel="Toggle menu" style={{ padding: 6, marginLeft: -2 }}>
+          <Menu size={18} color={tokens.foreground} />
         </Pressable>
       ) : null}
 

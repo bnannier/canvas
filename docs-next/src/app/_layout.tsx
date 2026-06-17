@@ -33,6 +33,9 @@ function Shell() {
   const glass = surface === "glass";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  // Desktop sidebar collapse (Vite parity): the topbar hamburger toggles it on wide
+  // viewports, the sidebar chevron collapses it, and the rail shrinks to an icon strip.
+  const [collapsed, setCollapsed] = useState(false);
 
   // Global cmd-K / ctrl-K to toggle search, web only (the soft keyboard on native has
   // no such shortcut and document/window are web-only globals).
@@ -53,12 +56,12 @@ function Shell() {
       {glass ? <GlassAurora /> : null}
       <View style={{ flex: 1, flexDirection: "row" }}>
         {wide ? (
-          <View style={{ width: 240, borderRightWidth: 1, borderColor: tokens.border }}>
-            <Sidebar />
+          <View style={{ width: collapsed ? 56 : 240, borderRightWidth: 1, borderColor: tokens.border }}>
+            <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
           </View>
         ) : null}
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Topbar showMenu={!wide} onMenu={() => setDrawerOpen(true)} onSearch={() => setSearchOpen(true)} />
+          <Topbar showMenu onMenu={() => (wide ? setCollapsed((c) => !c) : setDrawerOpen(true))} onSearch={() => setSearchOpen(true)} />
           <View style={{ flex: 1 }}>
             <Slot />
           </View>
