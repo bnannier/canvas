@@ -42,12 +42,24 @@
   "peerDependencies": {
     "react": ">=18",
     "react-native": ">=0.74",
-    "react-native-svg": ">=13"
+    "react-native-svg": ">=13",
+    "expo-blur": "*",
+    "expo-glass-effect": "*"
+  },
+  "peerDependenciesMeta": {
+    "expo-blur": {
+      "optional": true
+    },
+    "expo-glass-effect": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
     "@playwright/test": "^1.60.0",
     "@types/react": "^19.2.16",
+    "expo-blur": "~56.0.3",
+    "expo-glass-effect": "~56.0.4",
     "react": "^19.2.7",
     "react-native": "^0.85.3",
     "react-native-svg": "^15",
