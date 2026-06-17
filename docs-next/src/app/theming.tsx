@@ -158,7 +158,8 @@ export default function ThemingScreen() {
             sheets) plus navbars and sidebars read as frosted panes, while content surfaces (cards, lists, tables) stay solid ("don't
             use glass in the content layer"). It is a theming-level switch (the ThemeProvider swaps the popover surface token
             translucent), not a per-component prop, and Canvas never hand-paints glass per component: real iOS Liquid Glass is the OS's
-            automatic system material. Turn it on with <InlineCode>surface="glass"</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on
+            automatic, system-rendered material on iOS 26, which standard components adopt on their own. Canvas's glass is its own
+            cross-platform glassmorphism, not a reimplementation of it. Turn it on with <InlineCode>surface="glass"</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on
             native, or <InlineCode>data-surface="glass"</InlineCode> on <InlineCode>{"<html>"}</InlineCode> on the web.
           </P>
           <CodeBlock code={GLASS} />

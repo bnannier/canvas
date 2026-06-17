@@ -26,6 +26,11 @@ const WEB_BASELINE = [
 
 const NOTES = [
   {
+    title: "Why these versions",
+    description:
+      "The floor is set by the modern CSS that Tailwind v4 (and so canvas.css) builds on: the @property at-rule, color-mix(), oklch() colors, and cascade layers. The versions above are where each engine shipped that feature set; Firefox lags to 128 because @property landed there last (mid 2024). The color primitives themselves, oklch() and color-mix(), have been Baseline \"widely available\" across Chrome, Edge, Safari, and Firefox since May 2023. Older browsers are served by Tailwind v3.4 instead.",
+  },
+  {
     title: "Native uses no CSS",
     description:
       "On iOS and Android there is no browser and no CSS feature floor. Components read the active design tokens with useTheme and build their React Native styles from them; the native minimums above come from React Native 0.74 and react-native-svg, the package's peer dependencies.",
