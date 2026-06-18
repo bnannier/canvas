@@ -144,7 +144,8 @@ function CodeCard({ title, code }: { title: string; code: string }) {
 export default function ColorsScreen() {
   const { tokens, dark } = useTheme();
   const { width } = useWindowDimensions();
-  const c6 = width >= 900 ? 6 : width >= 620 ? 3 : 2;
+  // One shared 5-column grid for every swatch section, so columns align down the
+  // whole page and the cards stay wide enough that the oklch/hex codes never wrap.
   const c5 = width >= 900 ? 5 : width >= 620 ? 3 : 2;
   const c2 = width >= 760 ? 2 : 1;
 
@@ -165,7 +166,7 @@ export default function ColorsScreen() {
           description="The core token set. Every component reads from these, never from raw color literals."
           anatomy="Each token has a paired foreground for legible content on top (e.g. primary / primary-foreground). Use the pair together to guarantee contrast in both themes."
         >
-          <Grid cols={c6}>{SEMANTIC_PAIRS.map((row) => <ColorPair key={row.varName} row={row} />)}</Grid>
+          <Grid cols={c5}>{SEMANTIC_PAIRS.map((row) => <ColorPair key={row.varName} row={row} />)}</Grid>
         </TokenSection>
 
         <TokenSection
@@ -173,7 +174,7 @@ export default function ColorsScreen() {
           description="The default --primary is Indigo. Point --primary and --ring at any of these six curated hues to re-skin the whole system; they sit at similar perceived weight (chroma and lightness held roughly constant)."
           anatomy="Accents only override --primary and --ring. All foreground pairings are recalculated downstream via Tailwind's color-mix() opacity utilities, so you don't restate them per accent."
         >
-          <Grid cols={c6}>
+          <Grid cols={c5}>
             {ACCENT_OPTIONS.map((a) => (
               <SwatchCard key={a.name} label={a.name} color={`hsl(${a.h}, ${a.s}%, ${a.l}%)`} height={80}>
                 <MonoRows rows={[{ value: `hsl(${a.h} ${a.s}% ${a.l}%)`, hex: hslToHex(a.h, a.s, a.l) }]} />
@@ -215,7 +216,7 @@ export default function ColorsScreen() {
           title="Brand colors"
           description="Reserved for brand moments: the avatar gradient, sign-in orbs, marketing splashes. Never used as component fills."
         >
-          <Grid cols={c6}>
+          <Grid cols={c5}>
             {[
               ...BRAND.map((b) => (
                 <SwatchCard key={b.varName} label={b.name} color={b.hex} height={80}>
