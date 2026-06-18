@@ -2,13 +2,13 @@ import { Redirect, useLocalSearchParams } from "expo-router";
 import { View, Text, useTheme } from "@olympusoss/canvas";
 import { COMPONENTS, getComponent } from "docs-core/data/components";
 import { COMPONENT_DOCS } from "docs-core/registry";
-import { Page } from "../../ui/page";
-import { Lead } from "../../ui/prose";
-import { Playground } from "../../ui/playground";
-import { Donts } from "../../ui/dont";
-import { PageNav } from "../../ui/page-nav";
-import { stripHtml } from "../../lib/html";
-import { geist } from "../../ui/fonts";
+import { Page } from "../../../ui/page";
+import { Lead } from "../../../ui/prose";
+import { Playground } from "../../../ui/playground";
+import { Donts } from "../../../ui/dont";
+import { PageNav } from "../../../ui/page-nav";
+import { stripHtml } from "../../../lib/html";
+import { geist } from "../../../ui/fonts";
 
 // Pre-render one static HTML page per component for the web export.
 export async function generateStaticParams() {

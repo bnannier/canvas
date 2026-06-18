@@ -1,13 +1,13 @@
 import { ScrollView, View, Text, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
-import { Page, PageHeader } from "../ui/page";
-import { Section } from "../ui/section";
-import { P, InlineCode, Rule } from "../ui/prose";
-import { Table } from "../ui/table";
-import { CodeBlock } from "../ui/code-block";
-import { PageNav } from "../ui/page-nav";
-import { MONO } from "../ui/prose";
-import { geist } from "../ui/fonts";
+import { Page, PageHeader } from "../../ui/page";
+import { Section } from "../../ui/section";
+import { P, InlineCode, Rule } from "../../ui/prose";
+import { Table } from "../../ui/table";
+import { CodeBlock } from "../../ui/code-block";
+import { PageNav } from "../../ui/page-nav";
+import { MONO } from "../../ui/prose";
+import { geist } from "../../ui/fonts";
 
 // One row per re-exported primitive: the name (links to its reference page), the
 // react-native component it IS, and what its style object controls.

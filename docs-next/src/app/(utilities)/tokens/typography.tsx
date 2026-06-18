@@ -1,9 +1,9 @@
 import { useWindowDimensions } from "react-native";
 import { View, Text, useTheme } from "@olympusoss/canvas";
-import { Page } from "../../ui/page";
-import { PageNav } from "../../ui/page-nav";
-import { geist, geistMono } from "../../ui/fonts";
-import { TokenH1, TokenLede, TokenSection, Surface, Grid } from "../../ui/tokens-kit";
+import { Page } from "../../../ui/page";
+import { PageNav } from "../../../ui/page-nav";
+import { geist, geistMono } from "../../../ui/fonts";
+import { TokenH1, TokenLede, TokenSection, Surface, Grid } from "../../../ui/tokens-kit";
 
 // The Canvas type scale is the Typography component's roles. Each row mirrors a
 // role on the Typography atom (src/atoms/typography/typography.tsx), whose

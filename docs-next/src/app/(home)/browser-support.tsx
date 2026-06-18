@@ -1,10 +1,10 @@
 import { View } from "@olympusoss/canvas";
-import { Page, PageHeader } from "../ui/page";
-import { Section } from "../ui/section";
-import { P, H3, InlineCode, Rule } from "../ui/prose";
-import { Table } from "../ui/table";
-import { Surface } from "../ui/tokens-kit";
-import { PageNav } from "../ui/page-nav";
+import { Page, PageHeader } from "../../ui/page";
+import { Section } from "../../ui/section";
+import { P, H3, InlineCode, Rule } from "../../ui/prose";
+import { Table } from "../../ui/table";
+import { Surface } from "../../ui/tokens-kit";
+import { PageNav } from "../../ui/page-nav";
 
 const PLATFORMS = [
   ["iOS", "React Native (native)", "iOS 13.4+"],

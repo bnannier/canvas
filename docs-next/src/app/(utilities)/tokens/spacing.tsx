@@ -1,9 +1,9 @@
 import { View } from "@olympusoss/canvas";
-import { Page } from "../../ui/page";
-import { PageNav } from "../../ui/page-nav";
-import { Playground } from "../../ui/playground";
+import { Page } from "../../../ui/page";
+import { PageNav } from "../../../ui/page-nav";
+import { Playground } from "../../../ui/playground";
 import type { DocExample } from "docs-core/scope";
-import { TokenH1, TokenLede, TokenSection } from "../../ui/tokens-kit";
+import { TokenH1, TokenLede, TokenSection } from "../../../ui/tokens-kit";
 
 const SPACING = [
   { tw: "p-1", px: 4 }, { tw: "p-2", px: 8 }, { tw: "p-3", px: 12 }, { tw: "p-4", px: 16 },

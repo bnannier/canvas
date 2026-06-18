@@ -1,11 +1,11 @@
 import { useWindowDimensions } from "react-native";
 import { View, Text, useTheme, colorsByScheme, type ColorTokens } from "@olympusoss/canvas";
-import { Page } from "../../ui/page";
-import { PageNav } from "../../ui/page-nav";
-import { CodeBlock } from "../../ui/code-block";
-import { geist } from "../../ui/fonts";
-import { alpha, hslToHex, hslTripletToHex, colorFormats } from "../../ui/color";
-import { TokenH1, TokenLede, TokenSection, Callout, SwatchCard, SwatchLabel, MonoRows, GradientFill, Grid, Surface } from "../../ui/tokens-kit";
+import { Page } from "../../../ui/page";
+import { PageNav } from "../../../ui/page-nav";
+import { CodeBlock } from "../../../ui/code-block";
+import { geist } from "../../../ui/fonts";
+import { alpha, hslToHex, hslTripletToHex, colorFormats } from "../../../ui/color";
+import { TokenH1, TokenLede, TokenSection, Callout, SwatchCard, SwatchLabel, MonoRows, GradientFill, Grid, Surface } from "../../../ui/tokens-kit";
 
 // Semantic tokens. Values are not stored here: every notation is derived from the
 // hex the kit actually ships (colorsByScheme) so all three stay mutually consistent.

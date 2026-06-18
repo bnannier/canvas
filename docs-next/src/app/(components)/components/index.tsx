@@ -1,16 +1,16 @@
 import { View, Text, useTheme } from "@olympusoss/canvas";
 import { ScrollView } from "react-native";
 import { COMPONENTS } from "docs-core/data/components";
-import { TOPBAR_HEIGHT } from "../../shell/topbar";
-import { PageNav } from "../../ui/page-nav";
-import { geist } from "../../ui/fonts";
-import { CatSubBar, CatGroup } from "../../catalog/tile";
-import { TOKENS_TILES } from "../../catalog/tokens";
-import { ATOMS_TILES } from "../../catalog/atoms";
-import { MOLECULES_TILES } from "../../catalog/molecules";
-import { ORGANISMS_TILES } from "../../catalog/organisms";
-import { TEMPLATES_TILES } from "../../catalog/templates";
-import { PATTERNS_TILES } from "../../catalog/patterns";
+import { TOPBAR_HEIGHT } from "../../../shell/topbar";
+import { PageNav } from "../../../ui/page-nav";
+import { geist } from "../../../ui/fonts";
+import { CatSubBar, CatGroup } from "../../../catalog/tile";
+import { TOKENS_TILES } from "../../../catalog/tokens";
+import { ATOMS_TILES } from "../../../catalog/atoms";
+import { MOLECULES_TILES } from "../../../catalog/molecules";
+import { ORGANISMS_TILES } from "../../../catalog/organisms";
+import { TEMPLATES_TILES } from "../../../catalog/templates";
+import { PATTERNS_TILES } from "../../../catalog/patterns";
 
 const CATEGORY_IDS = ["Tokens", "Atoms", "Molecules", "Organisms", "Templates", "Patterns"];
 

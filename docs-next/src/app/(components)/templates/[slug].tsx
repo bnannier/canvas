@@ -1,6 +1,6 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { getTemplate, getAllTemplates } from "docs-core/data/templates";
-import { MockupDocPage } from "../../ui/mockup-page";
+import { MockupDocPage } from "../../../ui/mockup-page";
 
 export async function generateStaticParams() {
   return getAllTemplates().map((t) => ({ slug: t.slug }));

@@ -1,9 +1,9 @@
 import { View } from "@olympusoss/canvas";
-import { Page, PageHeader } from "../ui/page";
-import { Section } from "../ui/section";
-import { P, H3, InlineCode, Rule } from "../ui/prose";
-import { CodeBlock } from "../ui/code-block";
-import { PageNav } from "../ui/page-nav";
+import { Page, PageHeader } from "../../ui/page";
+import { Section } from "../../ui/section";
+import { P, H3, InlineCode, Rule } from "../../ui/prose";
+import { CodeBlock } from "../../ui/code-block";
+import { PageNav } from "../../ui/page-nav";
 
 const INSTALL = `npm install @olympusoss/canvas react react-native react-native-svg`;
 

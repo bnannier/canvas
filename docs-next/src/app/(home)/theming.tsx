@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
-import { Page, PageHeader } from "../ui/page";
-import { Section } from "../ui/section";
-import { H3, P, Rule, InlineCode } from "../ui/prose";
-import { PageNav } from "../ui/page-nav";
-import { CodeBlock } from "../ui/code-block";
-import { Callout } from "../ui/tokens-kit";
-import { geist } from "../ui/fonts";
-import { useDocsTheme } from "../theme/docs-theme";
+import { Page, PageHeader } from "../../ui/page";
+import { Section } from "../../ui/section";
+import { H3, P, Rule, InlineCode } from "../../ui/prose";
+import { PageNav } from "../../ui/page-nav";
+import { CodeBlock } from "../../ui/code-block";
+import { Callout } from "../../ui/tokens-kit";
+import { geist } from "../../ui/fonts";
+import { useDocsTheme } from "../../theme/docs-theme";
 
 // Snippets ported verbatim (fence-stripped) from docs/src/pages/snippets/theming/*.md.
 const NATIVE_PROVIDER = `import { ThemeProvider } from "@olympusoss/canvas";

@@ -1,11 +1,11 @@
 import { View, Text, useTheme, alpha } from "@olympusoss/canvas";
 import { Rocket } from "lucide-react-native";
-import { Page, PageHeader } from "../../ui/page";
-import { Section } from "../../ui/section";
-import { P, H3, InlineCode, Rule } from "../../ui/prose";
-import { Surface } from "../../ui/tokens-kit";
-import { PageNav } from "../../ui/page-nav";
-import { geist } from "../../ui/fonts";
+import { Page, PageHeader } from "../../../ui/page";
+import { Section } from "../../../ui/section";
+import { P, H3, InlineCode, Rule } from "../../../ui/prose";
+import { Surface } from "../../../ui/tokens-kit";
+import { PageNav } from "../../../ui/page-nav";
+import { geist } from "../../../ui/fonts";
 
 // Placeholder for the Boilerplate section: a ready-to-clone starter application built on
 // Canvas. The page is intentionally a stub for now; the real boilerplate app and its setup
