@@ -1,5 +1,5 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, Pressable, useTheme, GlassSurface, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
 import { usePathname } from "expo-router";
 import { Menu, Search, Sun, Moon } from "lucide-react-native";
 import { getComponent } from "docs-core/data/components";
@@ -48,6 +48,10 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
   const pathname = usePathname();
   const { title, subtitle } = titleFor(pathname);
   const wideEnough = width >= 640;
+  // On iOS 26 glass is the platform default (and not toggleable here), so the Frost
+  // toggle only shows where glass is opt-in: web, Android, and iOS < 26. Shown at
+  // every width there (including phone), beside the theme toggle.
+  const showFrostToggle = !liquidGlassAvailable();
 
   // GlassSurface paints the glass material in glass mode (native Liquid Glass on
   // iOS, expo-blur frost on web/Android) and the solid background otherwise.
@@ -115,7 +119,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
 
       <View style={{ flex: 1 }} />
 
-      {wideEnough ? (
+      {showFrostToggle ? (
         <View
           style={{
             flexDirection: "row",
@@ -126,7 +130,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
             padding: 2,
           }}
         >
-          {(["default", "glass"] as const).map((s) => {
+          {(["solid", "glass"] as const).map((s) => {
             const active = surface === s;
             return (
               <Pressable
@@ -140,7 +144,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
                 }}
               >
                 <Text style={{ fontFamily: geist("500"), fontSize: 11, color: active ? tokens.background : tokens["muted-foreground"] }}>
-                  {s === "default" ? "Solid" : "Glass"}
+                  {s === "solid" ? "Solid" : "Frost"}
                 </Text>
               </Pressable>
             );

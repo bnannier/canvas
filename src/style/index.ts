@@ -17,3 +17,4 @@ export * from "./primitives.js";
 export * from "./portal.js";
 export * from "./anchored-overlay.js";
 export * from "./glass-surface/glass-surface.js";
+export * from "./glass-surface/liquid-glass.js";

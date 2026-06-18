@@ -25,7 +25,7 @@ const USE_THEME = `import { useTheme } from "@olympusoss/canvas";
 
 // Read the active theme anywhere under the provider.
 const { scheme, surface, tokens, dark } = useTheme();
-// scheme:  "light" | "dark"      surface: "default" | "glass"
+// scheme:  "light" | "dark"      surface: "solid" | "glass"
 // tokens:  active color tokens   dark:    scheme === "dark"`;
 const DARK_TOGGLE = `<!-- Light (default) -->
 <html>
@@ -47,9 +47,9 @@ const GLASS = `<html data-surface="glass">
 <html class="dark" data-surface="glass">`;
 const JS_SURFACE = `import { getSurface, setSurface } from "@olympusoss/canvas";
 
-getSurface();            // "default" | "glass"
+getSurface();            // "solid" | "glass"
 setSurface("glass");     // sets data-surface="glass"
-setSurface("default");   // removes the attribute`;
+setSurface("solid");     // removes the attribute`;
 const DENSITY = `<!-- Regular (default, no attribute needed) -->
 <html>
 
@@ -159,12 +159,14 @@ export default function ThemingScreen() {
             in the content layer"). It is a theming-level switch (the ThemeProvider swaps the popover surface token), not a per-component
             prop. Those functional-layer surfaces render through Canvas's GlassSurface primitive, which paints the real material per
             platform: Apple's native Liquid Glass on iOS 26+ (via expo-glass-effect), a genuine frosted blur on web and Android (via
-            expo-blur), and a translucent fallback when those optional modules are not installed. Turn it on with <InlineCode>surface="glass"</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on
-            native, or <InlineCode>data-surface="glass"</InlineCode> on <InlineCode>{"<html>"}</InlineCode> on the web.
+            expo-blur), and a translucent fallback when those optional modules are not installed. It defaults to the platform: <InlineCode>surface</InlineCode> is{" "}
+            glass on iOS 26+ (matching the OS) and solid everywhere else, when you don't set it. Force it with <InlineCode>surface="glass"</InlineCode> /{" "}
+            <InlineCode>surface="solid"</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on native, or <InlineCode>data-surface="glass"</InlineCode> on{" "}
+            <InlineCode>{"<html>"}</InlineCode> on the web.
           </P>
           <CodeBlock code={GLASS} />
           <View style={{ flexDirection: "row", gap: 8 }}>
-            <Toggle label="Default" active={surface === "default"} onPress={() => setSurface("default")} />
+            <Toggle label="Solid" active={surface === "solid"} onPress={() => setSurface("solid")} />
             <Toggle label="Glass" active={surface === "glass"} onPress={() => setSurface("glass")} />
           </View>
           <H3>What changes</H3>

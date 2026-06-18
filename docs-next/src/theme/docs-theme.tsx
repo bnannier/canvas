@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { useColorScheme } from "react-native";
-import { ThemeProvider, type Surface } from "@olympusoss/canvas";
+import { ThemeProvider, liquidGlassAvailable, type Surface } from "@olympusoss/canvas";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by `scheme` and
 // `surface`; this holds that state and exposes setters to the topbar toggles, so the
@@ -27,7 +27,9 @@ export function useDocsTheme(): DocsThemeContext {
 export function DocsThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const [scheme, setScheme] = useState<Scheme>(system === "dark" ? "dark" : "light");
-  const [surface, setSurface] = useState<Surface>("default");
+  // Start at the platform default: glass on iOS 26 (matching the OS), solid elsewhere.
+  // The topbar Frost toggle (shown only where glass is opt-in) flips it from there.
+  const [surface, setSurface] = useState<Surface>(liquidGlassAvailable() ? "glass" : "solid");
 
   const value = useMemo<DocsThemeContext>(
     () => ({

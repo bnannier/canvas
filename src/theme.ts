@@ -1,5 +1,5 @@
 export type Theme = "light" | "dark";
-export type Surface = "default" | "glass";
+export type Surface = "solid" | "glass";
 export type Density = "compact" | "regular" | "comfy";
 
 const STORAGE_KEY_THEME = "canvas-theme";
@@ -33,12 +33,12 @@ export function toggleTheme(): Theme {
 
 export function getSurface(): Surface {
   const saved = load(STORAGE_KEY_SURFACE);
-  if (saved === "default" || saved === "glass") return saved;
-  return (document.documentElement.dataset.surface as Surface) ?? "default";
+  if (saved === "solid" || saved === "glass") return saved;
+  return (document.documentElement.dataset.surface as Surface) ?? "solid";
 }
 
 export function setSurface(surface: Surface): void {
-  if (surface === "default") {
+  if (surface === "solid") {
     delete document.documentElement.dataset.surface;
   } else {
     document.documentElement.dataset.surface = surface;
