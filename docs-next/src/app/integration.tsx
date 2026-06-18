@@ -155,23 +155,26 @@ export default function IntegrationScreen() {
 
         <Rule />
 
-        <Section title="Quick start (native)">
+        <Section title="Quick start">
           <P muted>
-            On iOS and Android (Expo or React Native CLI), wrap the app in{" "}
-            <InlineCode>ThemeProvider</InlineCode> and use the components. No CSS, no build step beyond your normal RN
-            bundler.
+            Wrap the app once in <InlineCode>ThemeProvider</InlineCode> and use the components. This is the whole usage
+            API, and it is the same code on iOS, Android, and the web, the component props never change per platform. On
+            native (Expo or React Native CLI) it is all you need beyond your normal RN bundler; the web adds two setup
+            steps, the <InlineCode>react-native-web</InlineCode> alias and <InlineCode>canvas.css</InlineCode>, shown
+            below.
           </P>
           <CodeBlock code={QUICK_START} />
         </Section>
 
         <Rule />
 
-        <Section title="React Native Web">
+        <Section title="Web setup: react-native-web">
           <P muted>
-            In the browser, Canvas runs through react-native-web: alias <InlineCode>react-native</InlineCode> to{" "}
+            The component code above does not change on the web; this is build configuration only. In the browser Canvas
+            runs through react-native-web, so alias <InlineCode>react-native</InlineCode> to{" "}
             <InlineCode>react-native-web</InlineCode> in your bundler. Here is a Vite config (Metro and webpack take the
-            same alias). The <InlineCode>@tailwindcss/vite</InlineCode> plugin is what processes{" "}
-            <InlineCode>canvas.css</InlineCode> in the next section.
+            same alias). The <InlineCode>@tailwindcss/vite</InlineCode> plugin processes{" "}
+            <InlineCode>canvas.css</InlineCode> (next section).
           </P>
           <CodeBlock code={VITE_CONFIG} />
         </Section>
