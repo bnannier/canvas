@@ -96,7 +96,7 @@ export function ThemingPage() {
           <Markdown source={glassCode} />
 
           <div style={{ display: "flex", gap: "0.5rem", margin: "1rem 0" }}>
-            <button className="btn btn-outline btn-sm" onClick={() => setSurface("default")}>Default</button>
+            <button className="btn btn-outline btn-sm" onClick={() => setSurface("solid")}>Solid</button>
             <button className="btn btn-outline btn-sm" onClick={() => setSurface("glass")}>Glass</button>
           </div>
 

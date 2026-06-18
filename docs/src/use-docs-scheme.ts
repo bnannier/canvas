@@ -27,10 +27,10 @@ function subscribeSurface(onChange: () => void): () => void {
   return () => observer.disconnect();
 }
 
-function getSurfaceSnapshot(): "default" | "glass" {
-  return document.documentElement.dataset.surface === "glass" ? "glass" : "default";
+function getSurfaceSnapshot(): "solid" | "glass" {
+  return document.documentElement.dataset.surface === "glass" ? "glass" : "solid";
 }
 
-export function useDocsSurface(): "default" | "glass" {
-  return useSyncExternalStore(subscribeSurface, getSurfaceSnapshot, () => "default");
+export function useDocsSurface(): "solid" | "glass" {
+  return useSyncExternalStore(subscribeSurface, getSurfaceSnapshot, () => "solid");
 }

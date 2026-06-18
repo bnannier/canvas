@@ -1,7 +1,7 @@
 ```javascript
 import { getSurface, setSurface } from "@olympusoss/canvas";
 
-getSurface();            // "default" | "glass"
+getSurface();            // "solid" | "glass"
 setSurface("glass");     // sets data-surface="glass"
-setSurface("default");   // removes the attribute
+setSurface("solid");     // removes the attribute
 ```

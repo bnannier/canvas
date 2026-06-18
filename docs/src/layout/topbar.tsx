@@ -115,8 +115,8 @@ export function Topbar({ onMenuToggle, onCollapseToggle, onSearchOpen }: TopbarP
 
       <div className="topbar-surface-toggle">
         <button
-          onClick={() => switchSurface("default")}
-          className={surface === "default" ? "active" : ""}
+          onClick={() => switchSurface("solid")}
+          className={surface === "solid" ? "active" : ""}
         >
           Solid
         </button>

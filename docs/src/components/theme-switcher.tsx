@@ -23,7 +23,7 @@ export function ThemeSwitcher() {
   }, [theme]);
 
   const toggleSurface = useCallback(() => {
-    const next: Surface = surface === "glass" ? "default" : "glass";
+    const next: Surface = surface === "glass" ? "solid" : "glass";
     setSurface(next);
     setSurfaceState(next);
   }, [surface]);
