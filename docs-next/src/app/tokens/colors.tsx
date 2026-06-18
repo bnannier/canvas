@@ -85,6 +85,32 @@ const DYNAMIC = `<Button primary>Save</Button>
 //   dark        → #6366f1
 //   teal accent → #20b6a5`;
 
+// Do / don't pairs for the colors page. Each renders as a red "Don't" card next to
+// a green "Do" card; every pair is grounded in a Canvas principle (semantic prop
+// styling, paired foregrounds, useTheme-routed values, glass as a surface mode).
+const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note: string } }[] = [
+  {
+    bad: { code: `<View style={{ backgroundColor: "#6366f1" }}>`, note: "A hard-coded hex bypasses the theme. Won't follow accent changes; looks wrong in dark mode." },
+    good: { code: `<Button primary>Save</Button>`, note: "The semantic prop is token-routed through useTheme(). Theme and accent changes are free." },
+  },
+  {
+    bad: { code: `<Button variant="primary" size="lg">`, note: "String-valued enum props are rejected. variant, size, and tone are not part of the API." },
+    good: { code: `<Button primary large>`, note: "Flat boolean props, at most one per axis. The prop name is the value." },
+  },
+  {
+    bad: { code: `backgroundColor: tokens.primary,\ncolor: tokens.foreground`, note: "A mismatched pair: foreground on a primary fill is not contrast-guaranteed." },
+    good: { code: `backgroundColor: tokens.primary,\ncolor: tokens["primary-foreground"]`, note: "Pair every fill with its foreground token; contrast holds in light and dark." },
+  },
+  {
+    bad: { code: `import { darkColors } from "@olympusoss/canvas"\nconst bg = darkColors.primary`, note: "Frozen to one scheme. Ignores the active theme and the surface mode." },
+    good: { code: `const { tokens } = useTheme()\nconst bg = tokens.primary`, note: "Reads the active scheme and re-renders when the theme changes." },
+  },
+  {
+    bad: { code: `<Popover glass>`, note: "Glass is not a per-component prop, and you never hand-paint a blur onto one component." },
+    good: { code: `<ThemeProvider surface="glass">`, note: "Glass is a theming-level surface mode; the whole functional layer turns to glass together." },
+  },
+];
+
 function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
   const light = colorsByScheme.light[row.token];
   const dark = colorsByScheme.dark[row.token];
@@ -132,6 +158,28 @@ function StatusBadge({ label, i }: { label: string; i: number }) {
     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 2, paddingHorizontal: 8, borderRadius: 9999, borderWidth: 1, borderColor: alpha(tone, 0.3), backgroundColor: "transparent" }}>
       <View style={{ width: 6, height: 6, borderRadius: 9999, backgroundColor: tone }} />
       <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tone }}>{label}</Text>
+    </View>
+  );
+}
+
+// One Do-or-Don't card: a green "Do" or red "Don't" label, a code sample, and a note.
+function Guidance({ kind, code, note }: { kind: "do" | "dont"; code: string; note: string }) {
+  const { tokens } = useTheme();
+  const isDo = kind === "do";
+  return (
+    <View
+      style={{
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: isDo ? "hsla(143, 70%, 45%, 0.3)" : "hsla(0, 70%, 60%, 0.3)",
+        backgroundColor: isDo ? "hsla(143, 70%, 45%, 0.05)" : "hsla(0, 70%, 60%, 0.05)",
+        padding: 20,
+        gap: 8,
+      }}
+    >
+      <Text style={{ fontFamily: geist("600"), fontSize: 13, color: isDo ? "hsl(143, 60%, 38%)" : tokens.destructive }}>{isDo ? "Do" : "Don't"}</Text>
+      <CodeBlock code={code} />
+      <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>{note}</Text>
     </View>
   );
 }
@@ -286,21 +334,16 @@ export default function ColorsScreen() {
           </Surface>
         </TokenSection>
 
-        {/* Don'ts */}
-        <TokenSection title="Don'ts">
+        {/* Do's and don'ts */}
+        <TokenSection
+          title="Do's and don'ts"
+          description="Keep color theme-routed. These are the patterns that follow the accent and dark mode for free, beside the ones that quietly break them."
+        >
           <Grid cols={c2}>
-            {[
-              <View key="dont" style={{ borderRadius: 12, borderWidth: 1, borderColor: "hsla(0, 70%, 60%, 0.3)", backgroundColor: "hsla(0, 70%, 60%, 0.05)", padding: 20, gap: 8 }}>
-                <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.destructive }}>Don't</Text>
-                <CodeBlock code={`<View style={{ backgroundColor: "#6366f1" }}>`} />
-                <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>A hard-coded hex bypasses the theme. Won't follow accent changes; will look wrong in dark mode.</Text>
-              </View>,
-              <View key="do" style={{ borderRadius: 12, borderWidth: 1, borderColor: "hsla(143, 70%, 45%, 0.3)", backgroundColor: "hsla(143, 70%, 45%, 0.05)", padding: 20, gap: 8 }}>
-                <Text style={{ fontFamily: geist("600"), fontSize: 13, color: "hsl(143, 60%, 38%)" }}>Do</Text>
-                <CodeBlock code={`<Button primary>Save</Button>`} />
-                <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>The semantic prop is token-routed through useTheme(). Theme and accent changes are free.</Text>
-              </View>,
-            ]}
+            {DO_DONT.flatMap((p, i) => [
+              <Guidance key={`dont${i}`} kind="dont" code={p.bad.code} note={p.bad.note} />,
+              <Guidance key={`do${i}`} kind="do" code={p.good.code} note={p.good.note} />,
+            ])}
           </Grid>
         </TokenSection>
 
