@@ -79,27 +79,16 @@ export function Chip({ children }: { children: ReactNode }) {
   );
 }
 
-// A compact code block for a swatch's value codes: an optional var name plus value
-// rows on a muted code surface with a hairline border. Unlike the loose MonoCaption
-// it replaces (muted-foreground, which reads washed out), the values are FOREGROUND
-// for proper contrast; only the row prefix (L/D) stays muted. Each row may carry a
-// `hex` that renders as a second FOREGROUND line under its value (indented to sit
-// under the value, past the label), so a swatch can show e.g. its oklch/hsl spec
-// AND the hex it resolves to, both legible. Long values wrap.
-export function MonoBlock({ varName, rows }: { varName?: string; rows: { label?: string; value: string; hex?: string }[] }) {
+// The code rows for a swatch's value codes: an optional var name plus value rows,
+// content only (no frame) so they drop into SwatchCard's attached code region. The
+// values are FOREGROUND for proper contrast; only the row prefix (L/D) stays muted.
+// Each row may carry a `hex` that renders as a second FOREGROUND line under its
+// value (indented to sit under the value, past the label), so a swatch can show
+// e.g. its oklch/hsl spec AND the hex it resolves to, both legible. Long values wrap.
+export function MonoRows({ varName, rows }: { varName?: string; rows: { label?: string; value: string; hex?: string }[] }) {
   const { tokens } = useTheme();
   return (
-    <View
-      style={{
-        borderRadius: 6,
-        borderWidth: 1,
-        borderColor: tokens.border,
-        backgroundColor: tokens.muted,
-        paddingVertical: 7,
-        paddingHorizontal: 9,
-        gap: 4,
-      }}
-    >
+    <>
       {varName ? (
         <Text style={{ fontFamily: geistMono("500"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>{varName}</Text>
       ) : null}
@@ -114,7 +103,7 @@ export function MonoBlock({ varName, rows }: { varName?: string; rows: { label?:
           ) : null}
         </View>
       ))}
-    </View>
+    </>
   );
 }
 
@@ -124,44 +113,64 @@ export function SwatchLabel({ children }: { children: ReactNode }) {
   return <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{children}</Text>;
 }
 
-// A solid color swatch: a filled, bordered box of the given height. Children render
-// centered inside (e.g. a "Light"/"Dark" label sample).
-export function Swatch({ color, height = 80, children }: { color: string; height?: number; children?: ReactNode }) {
-  const { tokens } = useTheme();
-  return (
-    <View style={{ height, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: color, alignItems: "center", justifyContent: "center" }}>
-      {children}
-    </View>
-  );
-}
-
-// A linear-gradient swatch (RN has no CSS gradient; render it with react-native-svg).
-// `angle` is the gradient direction in degrees (135 = top-left → bottom-right, the
-// Vite default). Children render centered on top.
-export function GradientSwatch({ colors, height = 80, angle = 135, children }: {
+// A bare linear-gradient fill (RN has no CSS gradient; render it with react-native-svg).
+// No border/radius of its own — it sits in SwatchCard's clipped top region. `angle`
+// is the direction in degrees (135 = top-left → bottom-right, the Vite default).
+// Children render centered on top. A per-instance gradient id avoids url(#id)
+// collisions when several gradient fills render on the same page.
+export function GradientFill({ colors, height = 80, angle = 135, children }: {
   colors: [string, string];
   height?: number;
   angle?: number;
   children?: ReactNode;
 }) {
-  const { tokens } = useTheme();
   // Convert the CSS gradient angle to SVG x1/y1→x2/y2 (CSS 0deg points up; here we use
   // the simple 135deg default mapping top-left to bottom-right).
   const rad = (angle - 90) * (Math.PI / 180);
   const x = Math.cos(rad);
   const y = Math.sin(rad);
+  const gid = `g${colors.join("")}`.replace(/[^a-zA-Z0-9]/g, "");
   return (
-    <View style={{ height, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" }}>
+    <View style={{ height }}>
       <Svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
         <Defs>
-          <LinearGradient id="g" x1={`${50 - x * 50}%`} y1={`${50 - y * 50}%`} x2={`${50 + x * 50}%`} y2={`${50 + y * 50}%`}>
+          <LinearGradient id={gid} x1={`${50 - x * 50}%`} y1={`${50 - y * 50}%`} x2={`${50 + x * 50}%`} y2={`${50 + y * 50}%`}>
             <Stop offset="0%" stopColor={colors[0]} />
             <Stop offset="100%" stopColor={colors[1]} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#g)" />
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${gid})`} />
       </Svg>
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
+    </View>
+  );
+}
+
+// A swatch card: an optional label, then a single bordered, rounded, overflow-clipped
+// card whose color/gradient preview (top) is ATTACHED directly to its code region
+// (bottom, the MonoRows), divided by a hairline. The card is flex:1 so, inside the
+// equal-width Grid (whose rows stretch by default), every card in a row resolves to
+// an EVEN height — short code regions grow to match the tallest sibling. Pass either
+// `color` (solid fill) or a custom `top` node (e.g. a GradientFill with an overlay).
+export function SwatchCard({ label, color, height = 80, top, children }: {
+  label?: ReactNode;
+  color?: string;
+  height?: number;
+  top?: ReactNode;
+  children?: ReactNode;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ flex: 1, gap: 6 }}>
+      {label != null ? <SwatchLabel>{label}</SwatchLabel> : null}
+      <View style={{ flex: 1, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, overflow: "hidden", backgroundColor: tokens.muted }}>
+        {top != null ? top : <View style={{ height, backgroundColor: color }} />}
+        {children != null ? (
+          <View style={{ flex: 1, borderTopWidth: 1, borderTopColor: tokens.border, paddingVertical: 7, paddingHorizontal: 9, gap: 4 }}>
+            {children}
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }
