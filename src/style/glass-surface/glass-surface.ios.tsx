@@ -37,7 +37,7 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
       <GlassBox
         style={style}
         pointerEvents={pointerEvents}
-        material={<GlassView glassEffectStyle="regular" isInteractive={false} colorScheme={dark ? "dark" : "light"} style={MATERIAL_FILL} />}
+        material={<GlassView glassEffectStyle="clear" isInteractive={false} colorScheme={dark ? "dark" : "light"} style={MATERIAL_FILL} />}
       >
         {children}
       </GlassBox>
