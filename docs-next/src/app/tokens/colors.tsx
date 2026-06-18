@@ -1,10 +1,10 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, useTheme, type ColorTokens } from "@olympusoss/canvas";
+import { View, Text, useTheme, colorsByScheme, type ColorTokens } from "@olympusoss/canvas";
 import { Page } from "../../ui/page";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { geist } from "../../ui/fonts";
-import { alpha } from "../../ui/color";
+import { alpha, hslToHex, hslTripletToHex } from "../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout, Swatch, SwatchLabel, MonoBlock, GradientSwatch, Grid, Surface } from "../../ui/tokens-kit";
 
 const SEMANTIC_PAIRS: { name: string; token: keyof ColorTokens; varName: string; light: string; dark: string }[] = [
@@ -88,7 +88,13 @@ function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
       <Swatch color={tokens[row.token]} height={80} />
       <View style={{ gap: 6 }}>
         <SwatchLabel>{row.name}</SwatchLabel>
-        <MonoBlock varName={row.varName} rows={[{ label: "L", value: row.light }, { label: "D", value: row.dark }]} />
+        <MonoBlock
+          varName={row.varName}
+          rows={[
+            { label: "L", value: row.light, hex: colorsByScheme.light[row.token] },
+            { label: "D", value: row.dark, hex: colorsByScheme.dark[row.token] },
+          ]}
+        />
       </View>
     </View>
   );
@@ -173,7 +179,7 @@ export default function ColorsScreen() {
                 <Swatch color={`hsl(${a.h}, ${a.s}%, ${a.l}%)`} height={80} />
                 <View style={{ gap: 6 }}>
                   <SwatchLabel>{a.name}</SwatchLabel>
-                  <MonoBlock rows={[{ value: `hsl(${a.h} ${a.s}% ${a.l}%)` }]} />
+                  <MonoBlock rows={[{ value: `hsl(${a.h} ${a.s}% ${a.l}%)`, hex: hslToHex(a.h, a.s, a.l) }]} />
                 </View>
               </View>
             ))}
@@ -200,7 +206,13 @@ export default function ColorsScreen() {
                 <Swatch color={hsl(dark ? ch.dark : ch.light)} height={64} />
                 <View style={{ gap: 6 }}>
                   <SwatchLabel>{ch.name}</SwatchLabel>
-                  <MonoBlock varName={ch.varName} rows={[{ label: "L", value: ch.light }, { label: "D", value: ch.dark }]} />
+                  <MonoBlock
+                    varName={ch.varName}
+                    rows={[
+                      { label: "L", value: ch.light, hex: hslTripletToHex(ch.light) },
+                      { label: "D", value: ch.dark, hex: hslTripletToHex(ch.dark) },
+                    ]}
+                  />
                 </View>
               </View>
             ))}

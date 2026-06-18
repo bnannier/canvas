@@ -82,8 +82,11 @@ export function Chip({ children }: { children: ReactNode }) {
 // A compact code block for a swatch's value codes: an optional var name plus value
 // rows on a muted code surface with a hairline border. Unlike the loose MonoCaption
 // it replaces (muted-foreground, which reads washed out), the values are FOREGROUND
-// for proper contrast; only the row prefix (L/D) stays muted. Long values wrap.
-export function MonoBlock({ varName, rows }: { varName?: string; rows: { label?: string; value: string }[] }) {
+// for proper contrast; only the row prefix (L/D) stays muted. Each row may carry a
+// `hex` that renders as a second FOREGROUND line under its value (indented to sit
+// under the value, past the label), so a swatch can show e.g. its oklch/hsl spec
+// AND the hex it resolves to, both legible. Long values wrap.
+export function MonoBlock({ varName, rows }: { varName?: string; rows: { label?: string; value: string; hex?: string }[] }) {
   const { tokens } = useTheme();
   return (
     <View
@@ -94,17 +97,22 @@ export function MonoBlock({ varName, rows }: { varName?: string; rows: { label?:
         backgroundColor: tokens.muted,
         paddingVertical: 7,
         paddingHorizontal: 9,
-        gap: 2,
+        gap: 4,
       }}
     >
       {varName ? (
         <Text style={{ fontFamily: geistMono("500"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>{varName}</Text>
       ) : null}
       {rows.map((r, i) => (
-        <Text key={i} style={{ fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>
-          {r.label ? <Text style={{ color: tokens["muted-foreground"] }}>{r.label} </Text> : null}
-          {r.value}
-        </Text>
+        <View key={i} style={{ gap: 1 }}>
+          <Text style={{ fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>
+            {r.label ? <Text style={{ color: tokens["muted-foreground"] }}>{r.label} </Text> : null}
+            {r.value}
+          </Text>
+          {r.hex ? (
+            <Text style={{ fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground, paddingLeft: r.label ? 13 : 0 }}>{r.hex}</Text>
+          ) : null}
+        </View>
       ))}
     </View>
   );
