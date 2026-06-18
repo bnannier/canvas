@@ -9,7 +9,7 @@ import { Topbar } from "../shell/topbar";
 import { SearchModal } from "../shell/search-modal";
 import { useDocsFonts } from "../ui/fonts";
 import { GlassAurora } from "../ui/glass";
-import { WebScrollbarTheme } from "../ui/web-scrollbar";
+import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
 
 // The whole app renders inside Canvas's ThemeProvider (via DocsThemeProvider), so the
 // components AND the docs chrome are painted by the kit, and once the Geist faces load
@@ -70,7 +70,11 @@ function Shell() {
           <View style={{ flex: 1 }}>
             <Slot />
           </View>
-          <View style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}>
+          {/* On web the content scroller reserves a SCROLLBAR_W gutter on its right;
+              inset the bar by that so the scrollbar sits in the gutter BESIDE it (visible
+              from the top), like the Vite docs, instead of being covered by the bar.
+              Native has no persistent scrollbar, so no inset there. */}
+          <View style={{ position: "absolute", top: 0, left: 0, right: Platform.OS === "web" ? SCROLLBAR_W : 0, zIndex: 10 }}>
             <Topbar showMenu onMenu={() => (wide ? setCollapsed((c) => !c) : setDrawerOpen(true))} onSearch={() => setSearchOpen(true)} />
           </View>
         </View>
