@@ -36,14 +36,67 @@ export function hslTripletToHex(triplet: string): string {
 // relative-luminance crossover (~0.179) where black and white read equally well.
 // Lets the L/D markers on a split swatch stay legible on any color.
 export function readableText(hex: string): string {
-  const h = hex.replace("#", "");
-  const toLin = (v: number) => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  };
   const lum =
-    0.2126 * toLin(parseInt(h.slice(0, 2), 16)) +
-    0.7152 * toLin(parseInt(h.slice(2, 4), 16)) +
-    0.0722 * toLin(parseInt(h.slice(4, 6), 16));
+    0.2126 * srgbToLinear(parseInt(hex.replace("#", "").slice(0, 2), 16)) +
+    0.7152 * srgbToLinear(parseInt(hex.replace("#", "").slice(2, 4), 16)) +
+    0.0722 * srgbToLinear(parseInt(hex.replace("#", "").slice(4, 6), 16));
   return lum > 0.179 ? "#000000" : "#ffffff";
+}
+
+// --- Format conversions for the token reference ------------------------------
+// The colors page derives every notation from the one hex a swatch actually
+// renders, so the hex/hsl/oklch shown always describe the same pixel and never
+// drift apart. All pure math (no DOM), so it runs identically on native and web.
+
+function rgb255(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+function srgbToLinear(v: number): number {
+  const c = v / 255;
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+// Hex → CSS `hsl(H S% L%)` string.
+export function hexToHslString(hex: string): string {
+  const [r, g, b] = rgb255(hex).map((v) => v / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  const l = (max + min) / 2;
+  let h = 0;
+  let s = 0;
+  if (d !== 0) {
+    s = d / (1 - Math.abs(2 * l - 1));
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h = h * 60;
+    if (h < 0) h += 360;
+  }
+  return `hsl(${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%)`;
+}
+
+// Hex → CSS `oklch(L C H)` string, via Björn Ottosson's sRGB → OKLab transform.
+export function hexToOklchString(hex: string): string {
+  const [r, g, b] = rgb255(hex).map(srgbToLinear);
+  const l_ = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m_ = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s_ = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const L = 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_;
+  const a = 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_;
+  const bb = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_;
+  const C = Math.sqrt(a * a + bb * bb);
+  let H = Math.atan2(bb, a) * (180 / Math.PI);
+  if (H < 0) H += 360;
+  // Hue is undefined for achromatic colors; report 0 once chroma rounds to 0.000.
+  const hue = C < 0.0005 ? 0 : Math.round(H);
+  return `oklch(${L.toFixed(3)} ${C.toFixed(3)} ${hue})`;
+}
+
+// All three CSS notations for a single rendered hex, derived from that hex so
+// they are always mutually consistent. Returned in display order: hex, hsl, oklch.
+export function colorFormats(hex: string): string[] {
+  return [hex, hexToHslString(hex), hexToOklchString(hex)];
 }

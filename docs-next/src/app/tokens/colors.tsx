@@ -4,22 +4,24 @@ import { Page } from "../../ui/page";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { geist } from "../../ui/fonts";
-import { alpha, hslToHex, hslTripletToHex } from "../../ui/color";
+import { alpha, hslToHex, hslTripletToHex, colorFormats } from "../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout, SwatchCard, SwatchLabel, MonoRows, GradientFill, Grid, Surface } from "../../ui/tokens-kit";
 
-const SEMANTIC_PAIRS: { name: string; token: keyof ColorTokens; varName: string; light: string; dark: string }[] = [
-  { name: "Background", token: "background", varName: "--background", light: "oklch(1 0 0)", dark: "oklch(0.141 0.005 285.823)" },
-  { name: "Foreground", token: "foreground", varName: "--foreground", light: "oklch(0.141 0.005 285.823)", dark: "oklch(0.985 0 0)" },
-  { name: "Card", token: "card", varName: "--card", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.885)" },
-  { name: "Popover", token: "popover", varName: "--popover", light: "oklch(1 0 0)", dark: "oklch(0.21 0.006 285.885)" },
-  { name: "Primary", token: "primary", varName: "--primary", light: "oklch(0.511 0.262 276.966)", dark: "oklch(0.585 0.233 277.117)" },
-  { name: "Secondary", token: "secondary", varName: "--secondary", light: "oklch(0.967 0.001 286.375)", dark: "oklch(0.274 0.006 286.033)" },
-  { name: "Muted", token: "muted", varName: "--muted", light: "oklch(0.967 0.001 286.375)", dark: "oklch(0.274 0.006 286.033)" },
-  { name: "Accent", token: "accent", varName: "--accent", light: "oklch(0.967 0.001 286.375)", dark: "oklch(0.274 0.006 286.033)" },
-  { name: "Destructive", token: "destructive", varName: "--destructive", light: "oklch(0.577 0.245 27.325)", dark: "oklch(0.704 0.191 22.216)" },
-  { name: "Border", token: "border", varName: "--border", light: "oklch(0.92 0.004 286.32)", dark: "oklch(0.274 0.006 286.033)" },
-  { name: "Input", token: "input", varName: "--input", light: "oklch(0.92 0.004 286.32)", dark: "oklch(0.274 0.006 286.033)" },
-  { name: "Ring", token: "ring", varName: "--ring", light: "oklch(0.585 0.233 277.117)", dark: "oklch(0.585 0.233 277.117)" },
+// Semantic tokens. Values are not stored here: every notation is derived from the
+// hex the kit actually ships (colorsByScheme) so all three stay mutually consistent.
+const SEMANTIC_PAIRS: { name: string; token: keyof ColorTokens; varName: string }[] = [
+  { name: "Background", token: "background", varName: "--background" },
+  { name: "Foreground", token: "foreground", varName: "--foreground" },
+  { name: "Card", token: "card", varName: "--card" },
+  { name: "Popover", token: "popover", varName: "--popover" },
+  { name: "Primary", token: "primary", varName: "--primary" },
+  { name: "Secondary", token: "secondary", varName: "--secondary" },
+  { name: "Muted", token: "muted", varName: "--muted" },
+  { name: "Accent", token: "accent", varName: "--accent" },
+  { name: "Destructive", token: "destructive", varName: "--destructive" },
+  { name: "Border", token: "border", varName: "--border" },
+  { name: "Input", token: "input", varName: "--input" },
+  { name: "Ring", token: "ring", varName: "--ring" },
 ];
 
 const ACCENT_OPTIONS = [
@@ -81,13 +83,15 @@ const DYNAMIC = `<button className="bg-primary text-primary-foreground">Save</bu
 //   accent=teal → background-color: hsl(173 70% 42%)`;
 
 function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
+  const light = colorsByScheme.light[row.token];
+  const dark = colorsByScheme.dark[row.token];
   return (
-    <SwatchCard label={row.name} split={{ light: colorsByScheme.light[row.token], dark: colorsByScheme.dark[row.token] }} height={80}>
+    <SwatchCard label={row.name} split={{ light, dark }} height={80}>
       <MonoRows
         varName={row.varName}
-        rows={[
-          { label: "L", value: row.light, hex: colorsByScheme.light[row.token] },
-          { label: "D", value: row.dark, hex: colorsByScheme.dark[row.token] },
+        groups={[
+          { label: "L", lines: colorFormats(light) },
+          { label: "D", lines: colorFormats(dark) },
         ]}
       />
     </SwatchCard>
@@ -108,7 +112,7 @@ function StatusCell({ s }: { s: typeof STATUS[number] }) {
               </View>
             }
           >
-            <MonoRows rows={[{ label: "bg", value: s[mode].bg }, { label: "fg", value: s[mode].fg }]} />
+            <MonoRows groups={[{ label: "bg", lines: [s[mode].bg] }, { label: "fg", lines: [s[mode].fg] }]} />
           </SwatchCard>
         ))}
       </View>
@@ -175,7 +179,7 @@ export default function ColorsScreen() {
           <Grid cols={c5}>
             {ACCENT_OPTIONS.map((a) => (
               <SwatchCard key={a.name} label={a.name} color={`hsl(${a.h}, ${a.s}%, ${a.l}%)`} height={80}>
-                <MonoRows rows={[{ value: `hsl(${a.h} ${a.s}% ${a.l}%)`, hex: hslToHex(a.h, a.s, a.l) }]} />
+                <MonoRows groups={[{ lines: colorFormats(hslToHex(a.h, a.s, a.l)) }]} />
               </SwatchCard>
             ))}
           </Grid>
@@ -196,17 +200,21 @@ export default function ColorsScreen() {
           description="Five colors tuned for data viz, distinct enough at small marks (1-2px), no two adjacent hues vibrating. The dark-mode set is independently chosen (not just lightness-flipped) for the same readability bar."
         >
           <Grid cols={c5}>
-            {CHART_PALETTE.map((ch) => (
-              <SwatchCard key={ch.varName} label={ch.name} split={{ light: hslTripletToHex(ch.light), dark: hslTripletToHex(ch.dark) }} height={64}>
-                <MonoRows
-                  varName={ch.varName}
-                  rows={[
-                    { label: "L", value: ch.light, hex: hslTripletToHex(ch.light) },
-                    { label: "D", value: ch.dark, hex: hslTripletToHex(ch.dark) },
-                  ]}
-                />
-              </SwatchCard>
-            ))}
+            {CHART_PALETTE.map((ch) => {
+              const light = hslTripletToHex(ch.light);
+              const dark = hslTripletToHex(ch.dark);
+              return (
+                <SwatchCard key={ch.varName} label={ch.name} split={{ light, dark }} height={64}>
+                  <MonoRows
+                    varName={ch.varName}
+                    groups={[
+                      { label: "L", lines: colorFormats(light) },
+                      { label: "D", lines: colorFormats(dark) },
+                    ]}
+                  />
+                </SwatchCard>
+              );
+            })}
           </Grid>
         </TokenSection>
 
@@ -218,11 +226,11 @@ export default function ColorsScreen() {
             {[
               ...BRAND.map((b) => (
                 <SwatchCard key={b.varName} label={b.name} color={b.hex} height={80}>
-                  <MonoRows varName={b.varName} rows={[{ value: b.hex }]} />
+                  <MonoRows varName={b.varName} groups={[{ lines: colorFormats(b.hex) }]} />
                 </SwatchCard>
               )),
               <SwatchCard key="avatar-gradient" label="Avatar gradient" top={<GradientFill colors={["#6366f1", "#8b5cf6"]} height={80} />}>
-                <MonoRows rows={[{ value: "--orb-indigo → --orb-violet" }]} />
+                <MonoRows groups={[{ lines: ["--orb-indigo → --orb-violet"] }]} />
               </SwatchCard>,
             ]}
           </Grid>
@@ -247,7 +255,7 @@ export default function ColorsScreen() {
                   </GradientFill>
                 }
               >
-                <MonoRows rows={[{ value: g.fill }]} />
+                <MonoRows groups={[{ lines: [g.fill] }]} />
               </SwatchCard>
             ))}
           </Grid>

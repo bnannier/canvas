@@ -79,30 +79,34 @@ export function Chip({ children }: { children: ReactNode }) {
   );
 }
 
-// The code rows for a swatch's value codes: an optional var name plus value rows,
-// content only (no frame) so they drop into SwatchCard's attached code region. The
-// values are FOREGROUND for proper contrast; only the row prefix (L/D) stays muted.
-// Each row may carry a `hex` that renders as a second FOREGROUND line under its
-// value (indented to sit under the value, past the label), so a swatch can show
-// e.g. its oklch/hsl spec AND the hex it resolves to, both legible. Long values wrap.
-export function MonoRows({ varName, rows }: { varName?: string; rows: { label?: string; value: string; hex?: string }[] }) {
+// The code rows for a swatch's value codes: an optional var name plus one or more
+// GROUPS, content only (no frame) so they drop into SwatchCard's attached code
+// region. A group is an optional muted label (e.g. "L"/"D" for a scheme, or
+// "bg"/"fg") followed by one or more value lines. The label sits inline before the
+// group's first line; continuation lines are indented (a monospace run of spaces
+// the width of the label) so every value in the group aligns. Values are FOREGROUND
+// for contrast; the label/indent prefix stays muted. Long values wrap.
+export function MonoRows({ varName, groups }: { varName?: string; groups: { label?: string; lines: string[] }[] }) {
   const { tokens } = useTheme();
+  const lineStyle = { fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground } as const;
   return (
     <>
       {varName ? (
         <Text style={{ fontFamily: geistMono("500"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>{varName}</Text>
       ) : null}
-      {rows.map((r, i) => (
-        <View key={i} style={{ gap: 1 }}>
-          <Text style={{ fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>
-            {r.label ? <Text style={{ color: tokens["muted-foreground"] }}>{r.label} </Text> : null}
-            {r.value}
-          </Text>
-          {r.hex ? (
-            <Text style={{ fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground, paddingLeft: r.label ? 13 : 0 }}>{r.hex}</Text>
-          ) : null}
-        </View>
-      ))}
+      {groups.map((g, gi) => {
+        const indent = g.label ? " ".repeat(g.label.length + 1) : "";
+        return (
+          <View key={gi} style={{ gap: 1 }}>
+            {g.lines.map((line, li) => (
+              <Text key={li} style={lineStyle}>
+                <Text style={{ color: tokens["muted-foreground"] }}>{li === 0 ? (g.label ? `${g.label} ` : "") : indent}</Text>
+                {line}
+              </Text>
+            ))}
+          </View>
+        );
+      })}
     </>
   );
 }
