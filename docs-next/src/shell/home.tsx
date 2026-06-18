@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { ScrollView, useWindowDimensions, Linking } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Defs, RadialGradient, Stop, Filter, FeGaussianBlur, G } from "react-native-svg";
@@ -207,6 +208,7 @@ function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; tit
 export function Home() {
   const { tokens, surface } = useTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const go = (to: string) => router.push(to as never);
   const version = useLatestVersion();
@@ -222,7 +224,7 @@ export function Home() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
-      contentContainerStyle={{ paddingTop: TOPBAR_HEIGHT }}
+      contentContainerStyle={{ paddingTop: TOPBAR_HEIGHT, paddingBottom: insets.bottom }}
     >
       {/* ── Hero ── */}
       <View style={{ overflow: "hidden", paddingTop: wide ? 28 : 14, paddingBottom: 56 }}>

@@ -52,8 +52,11 @@ function Shell() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // Top edge only: the content scrolls edge-to-edge to the bottom of the screen
+  // (under the home indicator) rather than stopping above it. Each content scroller
+  // adds the bottom safe-area inset to its own padding so the last row clears it.
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
       {glass ? <GlassAurora /> : null}
       <View style={{ flex: 1, flexDirection: "row" }}>
