@@ -26,7 +26,10 @@ export function Navbar() {
 // icon names are validated app data, cast through to the SF Symbol / Material props.
 function NativeNav() {
   return (
-    <NativeTabs sidebarAdaptable={Platform.OS === "ios"} minimizeBehavior="onScrollDown">
+    // blurEffect="none" keeps the iOS tab bar clear: it sets the standard (content-
+    // behind) appearance transparent, matching the already-transparent scroll-edge
+    // appearance, so the bar reads as clear glass in every scroll state. iOS-only prop.
+    <NativeTabs sidebarAdaptable={Platform.OS === "ios"} minimizeBehavior="onScrollDown" blurEffect="none">
       {MOBILE_TABS.map((tab) => (
         <NativeTabs.Trigger key={tab.id} name={tab.role === "search" ? "search" : `(${tab.id})`} role={tab.role}>
           <NativeTabs.Trigger.Icon sf={tab.icon.ios as never} md={tab.icon.android as never} />
