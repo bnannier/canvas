@@ -8,8 +8,11 @@ import { geist } from "./fonts";
 // honor fontWeight), so headers use geist("600").
 export function Table({ headers, rows, mono }: { headers: string[]; rows: string[][]; mono?: boolean }) {
   const { tokens } = useTheme();
+  // A table is a CONTENT surface, so it stays solid even under the glass surface mode
+  // (only the functional layer goes translucent). Fill it with `card` so its rows never
+  // turn transparent and let the glass aurora bleed through.
   return (
-    <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 10, overflow: "hidden" }}>
+    <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 10, overflow: "hidden", backgroundColor: tokens.card }}>
       <View style={{ flexDirection: "row", backgroundColor: tokens.muted }}>
         {headers.map((h, i) => (
           <View key={i} style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 9 }}>
