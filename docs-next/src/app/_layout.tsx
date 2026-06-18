@@ -9,6 +9,7 @@ import { Topbar } from "../shell/topbar";
 import { SearchModal } from "../shell/search-modal";
 import { useDocsFonts } from "../ui/fonts";
 import { GlassAurora } from "../ui/glass";
+import { WebScrollbarTheme } from "../ui/web-scrollbar";
 
 // The whole app renders inside Canvas's ThemeProvider (via DocsThemeProvider), so the
 // components AND the docs chrome are painted by the kit, and once the Geist faces load
@@ -53,6 +54,7 @@ function Shell() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top", "bottom"]}>
+      <WebScrollbarTheme />
       {glass ? <GlassAurora /> : null}
       <View style={{ flex: 1, flexDirection: "row" }}>
         {wide ? (

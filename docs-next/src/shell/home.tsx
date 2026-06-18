@@ -221,6 +221,7 @@ export function Home() {
   // GlassAurora reads through (the footer band stays solid, matching the Vite landing).
   return (
     <ScrollView
+      dataSet={{ scrollMain: "true" }}
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentContainerStyle={{ paddingTop: TOPBAR_HEIGHT }}
     >
