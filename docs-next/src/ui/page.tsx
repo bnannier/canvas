@@ -1,6 +1,5 @@
 import { type ReactNode } from "react";
-import { ScrollView } from "react-native";
-import { View, useTheme } from "@olympusoss/canvas";
+import { ScrollView, View, useTheme } from "@olympusoss/canvas";
 import { TOPBAR_HEIGHT } from "../shell/topbar";
 import { H1, Lead } from "./prose";
 
@@ -10,7 +9,6 @@ export function Page({ children }: { children: ReactNode }) {
   const { tokens, surface } = useTheme();
   return (
     <ScrollView
-      dataSet={{ scrollMain: "true" }}
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentContainerStyle={{
         // Inset by the overlaying topbar so the first row clears it but content

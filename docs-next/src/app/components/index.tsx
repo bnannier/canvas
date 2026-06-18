@@ -31,7 +31,6 @@ export default function ComponentsIndex() {
 
   return (
     <ScrollView
-      dataSet={{ scrollMain: "true" }}
       // Glass surface mode: the canvas goes transparent so the shell's GlassAurora reads
       // through (matching the shared Page); the per-category tiles stay solid content cards.
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
