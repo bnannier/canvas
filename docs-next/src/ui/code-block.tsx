@@ -11,8 +11,12 @@ const KEYWORDS = new Set([
   "const", "let", "var", "return", "function", "import", "from", "export",
   "true", "false", "null", "undefined", "await", "async", "new", "if", "else",
 ]);
+// Groups: 1 comment · 2 string · 3 arrow (=>, kept text so it never reads as a tag)
+// · 4 JSX tag — both the `<Tag`/`</Tag` open AND the closing `>` or `/>` · 5 number
+// · 6 identifier. The arrow alternative sits before the tag so `=>` is consumed whole
+// and its `>` is never mistaken for a tag close.
 const TOKEN_RE =
-  /(\/\/[^\n]*|<!--[\s\S]*?-->|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(<\/?[A-Za-z][\w.]*)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)/g;
+  /(\/\/[^\n]*|<!--[\s\S]*?-->|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(=>)|(<\/?[A-Za-z][\w.]*|\/?>)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)/g;
 
 function useSyntaxColors() {
   const { tokens, dark } = useTheme();
@@ -39,9 +43,10 @@ export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
     let color = c.text;
     if (m[1]) color = c.comment;
     else if (m[2]) color = c.string;
-    else if (m[3]) color = c.tag;
-    else if (m[4]) color = c.number;
-    else if (m[5]) color = KEYWORDS.has(m[5]) ? c.keyword : c.text;
+    else if (m[3]) color = c.text; // arrow => is not a JSX tag
+    else if (m[4]) color = c.tag;
+    else if (m[5]) color = c.number;
+    else if (m[6]) color = KEYWORDS.has(m[6]) ? c.keyword : c.text;
     spans.push({ text: m[0], color });
     last = i + m[0].length;
   }
