@@ -4,7 +4,7 @@ import { Page } from "../../ui/page";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { geist } from "../../ui/fonts";
-import { alpha, hslToHex, hslTripletToHex, colorFormats, wrapHex } from "../../ui/color";
+import { alpha, hslToHex, hslTripletToHex, colorFormats } from "../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout, SwatchCard, SwatchLabel, MonoRows, GradientFill, Grid, Surface } from "../../ui/tokens-kit";
 
 // Semantic tokens. Values are not stored here: every notation is derived from the
@@ -112,7 +112,7 @@ function StatusCell({ s }: { s: typeof STATUS[number] }) {
               </View>
             }
           >
-            <MonoRows groups={[{ label: "bg", lines: [wrapHex(s[mode].bg)] }, { label: "fg", lines: [wrapHex(s[mode].fg)] }]} />
+            <MonoRows groups={[{ label: "bg", lines: colorFormats(s[mode].bg) }, { label: "fg", lines: colorFormats(s[mode].fg) }]} />
           </SwatchCard>
         ))}
       </View>
@@ -149,6 +149,9 @@ export default function ColorsScreen() {
   // One shared 5-column grid for every swatch section, so columns align down the
   // whole page and the cards stay wide enough that the oklch/hex codes never wrap.
   const c5 = width >= 900 ? 5 : width >= 620 ? 3 : 2;
+  // Status tones are wide (a Light + Dark card each), so they sit 3 per row:
+  // Success / Warning / Error, then Info / Neutral.
+  const c3 = width >= 880 ? 3 : width >= 560 ? 2 : 1;
   const c2 = width >= 760 ? 2 : 1;
 
   return (
@@ -189,7 +192,7 @@ export default function ColorsScreen() {
           title="Semantic status colors"
           description="Five tones used by StatusBadge and inline alerts. Dark mode uses translucent backgrounds so they read on the deeper page palette without punching through."
         >
-          <Grid cols={c5}>{STATUS.map((s) => <StatusCell key={s.name} s={s} />)}</Grid>
+          <Grid cols={c3}>{STATUS.map((s) => <StatusCell key={s.name} s={s} />)}</Grid>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
             {STATUS_BADGES.map((b) => <StatusBadge key={b.label} label={b.label} i={b.i} />)}
           </View>
@@ -255,7 +258,7 @@ export default function ColorsScreen() {
                   </GradientFill>
                 }
               >
-                <MonoRows groups={[{ lines: [g.fill] }]} />
+                <MonoRows groups={[{ lines: colorFormats(g.fill) }]} />
               </SwatchCard>
             ))}
           </Grid>
