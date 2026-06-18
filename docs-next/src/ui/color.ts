@@ -31,3 +31,19 @@ export function hslTripletToHex(triplet: string): string {
   const [h, s, l] = triplet.replace(/%/g, "").trim().split(/\s+/).map(Number);
   return hslToHex(h, s, l);
 }
+
+// Pick black or white for a label sitting on top of a hex fill, using the WCAG
+// relative-luminance crossover (~0.179) where black and white read equally well.
+// Lets the L/D markers on a split swatch stay legible on any color.
+export function readableText(hex: string): string {
+  const h = hex.replace("#", "");
+  const toLin = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  const lum =
+    0.2126 * toLin(parseInt(h.slice(0, 2), 16)) +
+    0.7152 * toLin(parseInt(h.slice(2, 4), 16)) +
+    0.0722 * toLin(parseInt(h.slice(4, 6), 16));
+  return lum > 0.179 ? "#000000" : "#ffffff";
+}

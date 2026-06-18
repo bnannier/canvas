@@ -57,7 +57,6 @@ const BRAND = [
   { name: "Orb Cyan", hex: "#06b6d4", varName: "--orb-cyan" },
 ];
 
-const hsl = (triplet: string) => `hsl(${triplet.replace(/ /g, ", ")})`;
 
 const CSS_VARS = `:root {
   --primary: oklch(0.511 0.262 277);
@@ -82,9 +81,8 @@ const DYNAMIC = `<button className="bg-primary text-primary-foreground">Save</bu
 //   accent=teal → background-color: hsl(173 70% 42%)`;
 
 function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
-  const { tokens } = useTheme();
   return (
-    <SwatchCard label={row.name} color={tokens[row.token]} height={80}>
+    <SwatchCard label={row.name} split={{ light: colorsByScheme.light[row.token], dark: colorsByScheme.dark[row.token] }} height={80}>
       <MonoRows
         varName={row.varName}
         rows={[
@@ -142,7 +140,7 @@ function CodeCard({ title, code }: { title: string; code: string }) {
 }
 
 export default function ColorsScreen() {
-  const { tokens, dark } = useTheme();
+  const { tokens } = useTheme();
   const { width } = useWindowDimensions();
   // One shared 5-column grid for every swatch section, so columns align down the
   // whole page and the cards stay wide enough that the oklch/hex codes never wrap.
@@ -199,7 +197,7 @@ export default function ColorsScreen() {
         >
           <Grid cols={c5}>
             {CHART_PALETTE.map((ch) => (
-              <SwatchCard key={ch.varName} label={ch.name} color={hsl(dark ? ch.dark : ch.light)} height={64}>
+              <SwatchCard key={ch.varName} label={ch.name} split={{ light: hslTripletToHex(ch.light), dark: hslTripletToHex(ch.dark) }} height={64}>
                 <MonoRows
                   varName={ch.varName}
                   rows={[
