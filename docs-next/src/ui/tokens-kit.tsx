@@ -79,10 +79,35 @@ export function Chip({ children }: { children: ReactNode }) {
   );
 }
 
-// A monospace caption line (used for var names, hex/oklch values under swatches).
-export function MonoCaption({ children, size = 10.5 }: { children: ReactNode; size?: number }) {
+// A compact code block for a swatch's value codes: an optional var name plus value
+// rows on a muted code surface with a hairline border. Unlike the loose MonoCaption
+// it replaces (muted-foreground, which reads washed out), the values are FOREGROUND
+// for proper contrast; only the row prefix (L/D) stays muted. Long values wrap.
+export function MonoBlock({ varName, rows }: { varName?: string; rows: { label?: string; value: string }[] }) {
   const { tokens } = useTheme();
-  return <Text style={{ fontFamily: geistMono("400"), fontSize: size, lineHeight: size * 1.4, color: tokens["muted-foreground"] }}>{children}</Text>;
+  return (
+    <View
+      style={{
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: tokens.border,
+        backgroundColor: tokens.muted,
+        paddingVertical: 7,
+        paddingHorizontal: 9,
+        gap: 2,
+      }}
+    >
+      {varName ? (
+        <Text style={{ fontFamily: geistMono("500"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>{varName}</Text>
+      ) : null}
+      {rows.map((r, i) => (
+        <Text key={i} style={{ fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>
+          {r.label ? <Text style={{ color: tokens["muted-foreground"] }}>{r.label} </Text> : null}
+          {r.value}
+        </Text>
+      ))}
+    </View>
+  );
 }
 
 // A swatch label line — 12.5 / 500, foreground.

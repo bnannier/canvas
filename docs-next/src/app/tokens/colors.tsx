@@ -5,7 +5,7 @@ import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { geist } from "../../ui/fonts";
 import { alpha } from "../../ui/color";
-import { TokenH1, TokenLede, TokenSection, Callout, Swatch, SwatchLabel, MonoCaption, GradientSwatch, Grid, Surface } from "../../ui/tokens-kit";
+import { TokenH1, TokenLede, TokenSection, Callout, Swatch, SwatchLabel, MonoBlock, GradientSwatch, Grid, Surface } from "../../ui/tokens-kit";
 
 const SEMANTIC_PAIRS: { name: string; token: keyof ColorTokens; varName: string; light: string; dark: string }[] = [
   { name: "Background", token: "background", varName: "--background", light: "oklch(1 0 0)", dark: "oklch(0.141 0.005 285.823)" },
@@ -86,13 +86,9 @@ function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
   return (
     <View style={{ gap: 8 }}>
       <Swatch color={tokens[row.token]} height={80} />
-      <View style={{ gap: 2 }}>
+      <View style={{ gap: 6 }}>
         <SwatchLabel>{row.name}</SwatchLabel>
-        <MonoCaption size={11}>{row.varName}</MonoCaption>
-        <View style={{ gap: 0 }}>
-          <MonoCaption>L · {row.light}</MonoCaption>
-          <MonoCaption>D · {row.dark}</MonoCaption>
-        </View>
+        <MonoBlock varName={row.varName} rows={[{ label: "L", value: row.light }, { label: "D", value: row.dark }]} />
       </View>
     </View>
   );
@@ -108,10 +104,7 @@ function StatusCell({ s }: { s: typeof STATUS[number] }) {
             <View style={{ height: 48, borderRadius: 6, borderWidth: 1, borderColor: "rgba(127,127,127,0.25)", backgroundColor: s[mode].bg, alignItems: "center", justifyContent: "center" }}>
               <Text style={{ fontFamily: geist("500"), fontSize: 12, color: s[mode].fg }}>{mode === "light" ? "Light" : "Dark"}</Text>
             </View>
-            <View>
-              <MonoCaption>bg {s[mode].bg}</MonoCaption>
-              <MonoCaption>fg {s[mode].fg}</MonoCaption>
-            </View>
+            <MonoBlock rows={[{ label: "bg", value: s[mode].bg }, { label: "fg", value: s[mode].fg }]} />
           </View>
         ))}
       </View>
@@ -178,9 +171,9 @@ export default function ColorsScreen() {
             {ACCENT_OPTIONS.map((a) => (
               <View key={a.name} style={{ gap: 8 }}>
                 <Swatch color={`hsl(${a.h}, ${a.s}%, ${a.l}%)`} height={80} />
-                <View style={{ gap: 2 }}>
+                <View style={{ gap: 6 }}>
                   <SwatchLabel>{a.name}</SwatchLabel>
-                  <MonoCaption>hsl({a.h} {a.s}% {a.l}%)</MonoCaption>
+                  <MonoBlock rows={[{ value: `hsl(${a.h} ${a.s}% ${a.l}%)` }]} />
                 </View>
               </View>
             ))}
@@ -205,13 +198,9 @@ export default function ColorsScreen() {
             {CHART_PALETTE.map((ch) => (
               <View key={ch.varName} style={{ gap: 8 }}>
                 <Swatch color={hsl(dark ? ch.dark : ch.light)} height={64} />
-                <View style={{ gap: 2 }}>
+                <View style={{ gap: 6 }}>
                   <SwatchLabel>{ch.name}</SwatchLabel>
-                  <MonoCaption size={11}>{ch.varName}</MonoCaption>
-                  <View>
-                    <MonoCaption>L · {ch.light}</MonoCaption>
-                    <MonoCaption>D · {ch.dark}</MonoCaption>
-                  </View>
+                  <MonoBlock varName={ch.varName} rows={[{ label: "L", value: ch.light }, { label: "D", value: ch.dark }]} />
                 </View>
               </View>
             ))}
@@ -227,18 +216,17 @@ export default function ColorsScreen() {
               ...BRAND.map((b) => (
                 <View key={b.varName} style={{ gap: 8 }}>
                   <Swatch color={b.hex} height={80} />
-                  <View style={{ gap: 2 }}>
+                  <View style={{ gap: 6 }}>
                     <SwatchLabel>{b.name}</SwatchLabel>
-                    <MonoCaption size={11}>{b.varName}</MonoCaption>
-                    <MonoCaption>{b.hex}</MonoCaption>
+                    <MonoBlock varName={b.varName} rows={[{ value: b.hex }]} />
                   </View>
                 </View>
               )),
               <View key="avatar-gradient" style={{ gap: 8 }}>
                 <GradientSwatch colors={["#6366f1", "#8b5cf6"]} height={80} />
-                <View style={{ gap: 2 }}>
+                <View style={{ gap: 6 }}>
                   <SwatchLabel>Avatar gradient</SwatchLabel>
-                  <MonoCaption size={11}>--orb-indigo → --orb-violet</MonoCaption>
+                  <MonoBlock rows={[{ value: "--orb-indigo → --orb-violet" }]} />
                 </View>
               </View>,
             ]}
@@ -259,9 +247,9 @@ export default function ColorsScreen() {
                 <GradientSwatch colors={g.grad} height={96}>
                   <View style={{ width: "62%", height: "56%", borderRadius: 6, backgroundColor: g.fill, borderWidth: 1, borderColor: "rgba(255,255,255,0.35)" }} />
                 </GradientSwatch>
-                <View style={{ gap: 2 }}>
+                <View style={{ gap: 6 }}>
                   <SwatchLabel>{g.label}</SwatchLabel>
-                  <MonoCaption size={11}>{g.fill}</MonoCaption>
+                  <MonoBlock rows={[{ value: g.fill }]} />
                 </View>
               </View>
             ))}
