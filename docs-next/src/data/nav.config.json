@@ -1,0 +1,135 @@
+{
+  "routes": {
+    "about":       { "label": "About Canvas",    "href": "/",                  "icon": "home" },
+    "components":  { "label": "All components",   "href": "/components",        "icon": "layers" },
+    "colors":      { "label": "Colors & Theme",   "href": "/tokens/colors",     "icon": "palette" },
+    "spacing":     { "label": "Spacing & Shape",  "href": "/tokens/spacing",    "icon": "layers" },
+    "typography":  { "label": "Typography",       "href": "/tokens/typography", "icon": "type" },
+    "layout":      { "label": "Layout & Flexbox", "href": "/tokens/layout",     "icon": "layout-grid" },
+    "integration": { "label": "Integration",      "href": "/integration",       "icon": "plug" },
+    "theming":     { "label": "Theming",          "href": "/theming",           "icon": "moon" },
+    "rn":          { "label": "React Native",      "href": "/rn-primitives",     "icon": "smartphone" },
+    "browser":     { "label": "Browser Support",   "href": "/browser-support",   "icon": "globe" },
+    "boilerplate": { "label": "Overview",          "href": "/boilerplate",       "icon": "rocket" }
+  },
+  "web": {
+    "sidebar": [
+      { "group": "Overview", "icon": "home", "routes": ["about", "components"] },
+      { "group": "Tokens & Utilities", "icon": "palette", "routes": ["colors", "spacing", "typography", "layout"] },
+      { "group": "Guides", "icon": "book-open", "collapsible": true, "routes": ["integration", "theming", "rn", "browser"] },
+      {
+        "group": "Atoms", "icon": "mouse-pointer-click", "collapsible": true, "base": "/components",
+        "components": [
+          { "slug": "view", "label": "View", "icon": "box" },
+          { "slug": "text", "label": "Text", "icon": "type" },
+          { "slug": "pressable", "label": "Pressable", "icon": "pointer" },
+          { "slug": "image", "label": "Image", "icon": "image" },
+          { "slug": "text-input", "label": "Text Input", "icon": "text-cursor-input" },
+          { "slug": "scroll-view", "label": "Scroll View", "icon": "move-vertical" },
+          { "slug": "avatar", "label": "Avatars", "icon": "user" },
+          { "slug": "badge", "label": "Badges", "icon": "award" },
+          { "slug": "breadcrumb", "label": "Breadcrumbs", "icon": "chevron-right" },
+          { "slug": "button-group", "label": "Button Groups", "icon": "columns-2" },
+          { "slug": "button", "label": "Buttons", "icon": "mouse-pointer-click" },
+          { "slug": "checkbox", "label": "Checkboxes", "icon": "check-square" },
+          { "slug": "combobox", "label": "Comboboxes", "icon": "search" },
+          { "slug": "divider", "label": "Dividers", "icon": "minus" },
+          { "slug": "dropdown", "label": "Dropdowns", "icon": "chevron-down" },
+          { "slug": "icon", "label": "Icons", "icon": "info" },
+          { "slug": "input", "label": "Inputs & Forms", "icon": "text-cursor-input" },
+          { "slug": "kbd", "label": "Kbd", "icon": "keyboard" },
+          { "slug": "listbox", "label": "Listboxes", "icon": "list-checks" },
+          { "slug": "pagination", "label": "Pagination", "icon": "chevrons-left" },
+          { "slug": "popover", "label": "Popover", "icon": "square" },
+          { "slug": "radio", "label": "Radios", "icon": "circle-dot" },
+          { "slug": "select", "label": "Selects", "icon": "list" },
+          { "slug": "skeleton", "label": "Skeletons", "icon": "loader" },
+          { "slug": "spinner", "label": "Spinner", "icon": "loader" },
+          { "slug": "textarea", "label": "Textareas", "icon": "align-left" },
+          { "slug": "toggle", "label": "Toggles", "icon": "toggle-left" },
+          { "slug": "tooltip", "label": "Tooltips", "icon": "message-circle" },
+          { "slug": "typography", "label": "Typography", "icon": "type" }
+        ]
+      },
+      {
+        "group": "Molecules", "icon": "layers", "collapsible": true, "base": "/components",
+        "components": [
+          { "slug": "action-panels", "label": "Action Panels", "icon": "shield" },
+          { "slug": "alert", "label": "Alerts", "icon": "alert-triangle" },
+          { "slug": "alert-dialog", "label": "Alert Dialog", "icon": "message-square-warning" },
+          { "slug": "card", "label": "Cards", "icon": "square" },
+          { "slug": "code-block", "label": "Code Block", "icon": "code" },
+          { "slug": "description-lists", "label": "Description Lists", "icon": "info" },
+          { "slug": "empty-state", "label": "Empty States", "icon": "inbox" },
+          { "slug": "feeds", "label": "Feeds", "icon": "activity" },
+          { "slug": "field", "label": "Field Display", "icon": "file-text" },
+          { "slug": "fieldset", "label": "Fieldsets", "icon": "group" },
+          { "slug": "form", "label": "Form Layouts", "icon": "file-input" },
+          { "slug": "grid-lists", "label": "Grid Lists", "icon": "layers" },
+          { "slug": "media-objects", "label": "Media Objects", "icon": "users" },
+          { "slug": "stacked-lists", "label": "Stacked Lists", "icon": "layers" },
+          { "slug": "stats", "label": "Stats", "icon": "bar-chart-2" }
+        ]
+      },
+      {
+        "group": "Organisms", "icon": "layout", "collapsible": true, "base": "/components",
+        "components": [
+          { "slug": "calendar", "label": "Calendars", "icon": "calendar" },
+          { "slug": "charts", "label": "Charts", "icon": "chart-line" },
+          { "slug": "command", "label": "Command Palette", "icon": "terminal" },
+          { "slug": "data-table", "label": "Data Tables", "icon": "table" },
+          { "slug": "dialog", "label": "Dialog", "icon": "app-window" },
+          { "slug": "filter-panel", "label": "Filter Panels", "icon": "filter" },
+          { "slug": "navbars", "label": "Navbars", "icon": "navigation" },
+          { "slug": "navigation", "label": "Navigation", "icon": "navigation" },
+          { "slug": "overlays", "label": "Overlays", "icon": "panel-right" },
+          { "slug": "row-menu", "label": "Row Menu", "icon": "more-horizontal" },
+          { "slug": "stepper", "label": "Steppers", "icon": "footprints" },
+          { "slug": "tabs", "label": "Tabs", "icon": "folder" }
+        ]
+      },
+      {
+        "group": "Templates", "icon": "file-text", "collapsible": true, "base": "/templates",
+        "components": [
+          { "slug": "calendar", "label": "Calendar", "icon": "calendar" },
+          { "slug": "dashboard", "label": "Dashboard", "icon": "layout" },
+          { "slug": "detail-sidebar", "label": "Detail w/ sidebar", "icon": "panel-right" },
+          { "slug": "identities", "label": "Identities", "icon": "users" },
+          { "slug": "onboarding", "label": "Onboarding", "icon": "check" },
+          { "slug": "profile", "label": "Profile", "icon": "user" },
+          { "slug": "settings", "label": "Settings", "icon": "settings" },
+          { "slug": "signin", "label": "Sign-in", "icon": "lock" }
+        ]
+      },
+      {
+        "group": "Patterns", "icon": "settings", "collapsible": true, "base": "/patterns",
+        "components": [
+          { "slug": "accessibility", "label": "Accessibility", "icon": "eye" },
+          { "slug": "density", "label": "Density", "icon": "gauge" },
+          { "slug": "form-validation", "label": "Form Validation", "icon": "alert-triangle" },
+          { "slug": "glass", "label": "Glass Surface", "icon": "layers" },
+          { "slug": "loading", "label": "Loading", "icon": "loader" },
+          { "slug": "responsive", "label": "Responsive", "icon": "smartphone" }
+        ]
+      },
+      { "group": "Boilerplate", "icon": "rocket", "collapsible": true, "routes": ["boilerplate"] }
+    ]
+  },
+  "mobile": {
+    "tabs": [
+      { "id": "search", "role": "search", "label": "Search", "icon": { "ios": "magnifyingglass", "android": "search" } },
+      {
+        "id": "home", "label": "Home", "icon": { "ios": "house", "android": "home" },
+        "topbar": { "inline": ["about", "components", "integration"], "overflow": ["theming", "rn", "browser", "boilerplate"] }
+      },
+      {
+        "id": "components", "label": "Components", "icon": { "ios": "square.grid.2x2", "android": "grid_view" },
+        "topbar": { "categories": ["Atoms", "Molecules", "Organisms", "Templates", "Patterns"] }
+      },
+      {
+        "id": "utilities", "label": "Utilities", "icon": { "ios": "paintpalette", "android": "palette" },
+        "topbar": { "inline": ["colors", "spacing", "typography", "layout"] }
+      }
+    ]
+  }
+}

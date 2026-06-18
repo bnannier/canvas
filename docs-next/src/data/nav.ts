@@ -16,9 +16,35 @@ import {
   Rocket,
   type LucideIcon,
 } from "lucide-react-native";
+import navConfigJson from "./nav.config.json";
 
-// The docs navigation, mirroring the Vite sidebar exactly: the same groups, items,
-// order, and per-item lucide icons (lucide-react-native gives the identical glyphs).
+// The single source of truth for navigation is nav.config.json: a `routes` registry,
+// a `web.sidebar` tree (with the component leaves enumerated), and a `mobile.tabs`
+// node. This module is the typed loader over it. It rebuilds the SAME NavGroup[] the
+// sidebar already consumes (so the web sidebar is unchanged) and exposes the mobile
+// config for the native tab bar. The JSON carries lucide icon NAMES; this map resolves
+// them back to the components (kept here so the icon set is tree-shakeable and typed).
+const ICONS: Record<string, LucideIcon> = {
+  "home": Home, "layers": Layers, "palette": Palette, "user": User, "award": Award,
+  "chevron-right": ChevronRight, "app-window": AppWindow, "mouse-pointer-click": MousePointerClick,
+  "columns-2": Columns2, "check-square": CheckSquare, "search": Search, "chevron-down": ChevronDown,
+  "info": Info, "text-cursor-input": TextCursorInput, "keyboard": Keyboard, "chevrons-left": ChevronsLeft,
+  "circle-dot": CircleDot, "list": List, "minus": Minus, "loader": Loader, "toggle-left": ToggleLeft,
+  "align-left": AlignLeft, "message-circle": MessageCircle, "alert-triangle": AlertTriangle, "square": Square,
+  "inbox": Inbox, "file-text": FileText, "file-input": FileInput, "bar-chart-2": BarChart2, "calendar": Calendar,
+  "terminal": Terminal, "table": Table, "filter": Filter, "more-horizontal": MoreHorizontal, "panel-right": PanelRight,
+  "footprints": Footprints, "folder": Folder, "navigation": Navigation, "layout": Layout, "shield": Shield,
+  "activity": Activity, "users": Users, "chart-line": ChartLine, "lock": Lock, "settings": Settings, "check": Check,
+  "eye": Eye, "type": Type, "gauge": Gauge, "smartphone": Smartphone, "layout-grid": LayoutGrid, "code": Code,
+  "group": Group, "list-checks": ListChecks, "message-square-warning": MessageSquareWarning, "book-open": BookOpen,
+  "plug": Plug, "moon": Moon, "globe": Globe, "git-compare": GitCompare, "box": Box, "pointer": Pointer,
+  "image": ImageIcon, "move-vertical": MoveVertical, "rocket": Rocket,
+};
+
+function icon(name: string): LucideIcon {
+  return ICONS[name] ?? Square;
+}
+
 export interface NavItem {
   slug: string;
   label: string;
@@ -31,150 +57,36 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-export const NAV_GROUPS: NavGroup[] = [
-  {
-    label: "Overview",
-    icon: Home,
-    items: [
-      { slug: "", label: "About Canvas", href: "/", icon: Home },
-      { slug: "components", label: "All components", href: "/components", icon: Layers },
-    ],
-  },
-  {
-    label: "Tokens & Utilities",
-    icon: Palette,
-    items: [
-      { slug: "tokens-colors", label: "Colors & Theme", href: "/tokens/colors", icon: Palette },
-      { slug: "tokens-spacing", label: "Spacing & Shape", href: "/tokens/spacing", icon: Layers },
-      { slug: "tokens-typography", label: "Typography", href: "/tokens/typography", icon: Type },
-      { slug: "tokens-layout", label: "Layout & Flexbox", href: "/tokens/layout", icon: LayoutGrid },
-    ],
-  },
-  {
-    label: "Guides",
-    icon: BookOpen,
-    items: [
-      { slug: "integration", label: "Integration", href: "/integration", icon: Plug },
-      { slug: "theming", label: "Theming", href: "/theming", icon: Moon },
-      { slug: "rn-primitives", label: "React Native", href: "/rn-primitives", icon: Smartphone },
-      { slug: "browser-support", label: "Browser Support", href: "/browser-support", icon: Globe },
-    ],
-  },
-  {
-    label: "Atoms",
-    icon: MousePointerClick,
-    items: [
-      { slug: "view", label: "View", href: "/components/view", icon: Box },
-      { slug: "text", label: "Text", href: "/components/text", icon: Type },
-      { slug: "pressable", label: "Pressable", href: "/components/pressable", icon: Pointer },
-      { slug: "image", label: "Image", href: "/components/image", icon: ImageIcon },
-      { slug: "text-input", label: "Text Input", href: "/components/text-input", icon: TextCursorInput },
-      { slug: "scroll-view", label: "Scroll View", href: "/components/scroll-view", icon: MoveVertical },
-      { slug: "avatar", label: "Avatars", href: "/components/avatar", icon: User },
-      { slug: "badge", label: "Badges", href: "/components/badge", icon: Award },
-      { slug: "breadcrumb", label: "Breadcrumbs", href: "/components/breadcrumb", icon: ChevronRight },
-      { slug: "button-group", label: "Button Groups", href: "/components/button-group", icon: Columns2 },
-      { slug: "button", label: "Buttons", href: "/components/button", icon: MousePointerClick },
-      { slug: "checkbox", label: "Checkboxes", href: "/components/checkbox", icon: CheckSquare },
-      { slug: "combobox", label: "Comboboxes", href: "/components/combobox", icon: Search },
-      { slug: "divider", label: "Dividers", href: "/components/divider", icon: Minus },
-      { slug: "dropdown", label: "Dropdowns", href: "/components/dropdown", icon: ChevronDown },
-      { slug: "icon", label: "Icons", href: "/components/icon", icon: Info },
-      { slug: "input", label: "Inputs & Forms", href: "/components/input", icon: TextCursorInput },
-      { slug: "kbd", label: "Kbd", href: "/components/kbd", icon: Keyboard },
-      { slug: "listbox", label: "Listboxes", href: "/components/listbox", icon: ListChecks },
-      { slug: "pagination", label: "Pagination", href: "/components/pagination", icon: ChevronsLeft },
-      { slug: "popover", label: "Popover", href: "/components/popover", icon: Square },
-      { slug: "radio", label: "Radios", href: "/components/radio", icon: CircleDot },
-      { slug: "select", label: "Selects", href: "/components/select", icon: List },
-      { slug: "skeleton", label: "Skeletons", href: "/components/skeleton", icon: Loader },
-      { slug: "spinner", label: "Spinner", href: "/components/spinner", icon: Loader },
-      { slug: "textarea", label: "Textareas", href: "/components/textarea", icon: AlignLeft },
-      { slug: "toggle", label: "Toggles", href: "/components/toggle", icon: ToggleLeft },
-      { slug: "tooltip", label: "Tooltips", href: "/components/tooltip", icon: MessageCircle },
-      { slug: "typography", label: "Typography", href: "/components/typography", icon: Type },
-    ],
-  },
-  {
-    label: "Molecules",
-    icon: Layers,
-    items: [
-      { slug: "action-panels", label: "Action Panels", href: "/components/action-panels", icon: Shield },
-      { slug: "alert", label: "Alerts", href: "/components/alert", icon: AlertTriangle },
-      { slug: "alert-dialog", label: "Alert Dialog", href: "/components/alert-dialog", icon: MessageSquareWarning },
-      { slug: "card", label: "Cards", href: "/components/card", icon: Square },
-      { slug: "code-block", label: "Code Block", href: "/components/code-block", icon: Code },
-      { slug: "description-lists", label: "Description Lists", href: "/components/description-lists", icon: Info },
-      { slug: "empty-state", label: "Empty States", href: "/components/empty-state", icon: Inbox },
-      { slug: "feeds", label: "Feeds", href: "/components/feeds", icon: Activity },
-      { slug: "field", label: "Field Display", href: "/components/field", icon: FileText },
-      { slug: "fieldset", label: "Fieldsets", href: "/components/fieldset", icon: Group },
-      { slug: "form", label: "Form Layouts", href: "/components/form", icon: FileInput },
-      { slug: "grid-lists", label: "Grid Lists", href: "/components/grid-lists", icon: Layers },
-      { slug: "media-objects", label: "Media Objects", href: "/components/media-objects", icon: Users },
-      { slug: "stacked-lists", label: "Stacked Lists", href: "/components/stacked-lists", icon: Layers },
-      { slug: "stats", label: "Stats", href: "/components/stats", icon: BarChart2 },
-    ],
-  },
-  {
-    label: "Organisms",
-    icon: Layout,
-    items: [
-      { slug: "calendar", label: "Calendars", href: "/components/calendar", icon: Calendar },
-      { slug: "charts", label: "Charts", href: "/components/charts", icon: ChartLine },
-      { slug: "command", label: "Command Palette", href: "/components/command", icon: Terminal },
-      { slug: "data-table", label: "Data Tables", href: "/components/data-table", icon: Table },
-      { slug: "dialog", label: "Dialog", href: "/components/dialog", icon: AppWindow },
-      { slug: "filter-panel", label: "Filter Panels", href: "/components/filter-panel", icon: Filter },
-      { slug: "navbars", label: "Navbars", href: "/components/navbars", icon: Navigation },
-      { slug: "navigation", label: "Navigation", href: "/components/navigation", icon: Navigation },
-      { slug: "overlays", label: "Overlays", href: "/components/overlays", icon: PanelRight },
-      { slug: "row-menu", label: "Row Menu", href: "/components/row-menu", icon: MoreHorizontal },
-      { slug: "stepper", label: "Steppers", href: "/components/stepper", icon: Footprints },
-      { slug: "tabs", label: "Tabs", href: "/components/tabs", icon: Folder },
-    ],
-  },
-  {
-    label: "Templates",
-    icon: FileText,
-    items: [
-      { slug: "tpl-calendar", label: "Calendar", href: "/templates/calendar", icon: Calendar },
-      { slug: "tpl-dashboard", label: "Dashboard", href: "/templates/dashboard", icon: Layout },
-      { slug: "tpl-detail-sidebar", label: "Detail w/ sidebar", href: "/templates/detail-sidebar", icon: PanelRight },
-      { slug: "tpl-identities", label: "Identities", href: "/templates/identities", icon: Users },
-      { slug: "tpl-onboarding", label: "Onboarding", href: "/templates/onboarding", icon: Check },
-      { slug: "tpl-profile", label: "Profile", href: "/templates/profile", icon: User },
-      { slug: "tpl-settings", label: "Settings", href: "/templates/settings", icon: Settings },
-      { slug: "tpl-signin", label: "Sign-in", href: "/templates/signin", icon: Lock },
-    ],
-  },
-  {
-    label: "Patterns",
-    icon: Settings,
-    items: [
-      { slug: "pat-accessibility", label: "Accessibility", href: "/patterns/accessibility", icon: Eye },
-      { slug: "pat-density", label: "Density", href: "/patterns/density", icon: Gauge },
-      { slug: "pat-form-validation", label: "Form Validation", href: "/patterns/form-validation", icon: AlertTriangle },
-      { slug: "pat-glass", label: "Glass Surface", href: "/patterns/glass", icon: Layers },
-      { slug: "pat-loading", label: "Loading", href: "/patterns/loading", icon: Loader },
-      { slug: "pat-responsive", label: "Responsive", href: "/patterns/responsive", icon: Smartphone },
-    ],
-  },
-  {
-    label: "Boilerplate",
-    icon: Rocket,
-    items: [
-      { slug: "boilerplate", label: "Overview", href: "/boilerplate", icon: Rocket },
-    ],
-  },
-];
-
-for (const group of NAV_GROUPS) {
-  group.items.sort((a, b) => a.label.localeCompare(b.label));
+// ── nav.config.json shapes (the on-disk single source of truth) ──────────────
+export interface NavConfigRoute {
+  label: string;
+  href: string;
+  icon: string;
+}
+interface NavConfigLeaf {
+  slug: string;
+  label: string;
+  icon: string;
+}
+type NavConfigGroup =
+  | { group: string; icon: string; collapsible?: boolean; routes: string[] }
+  | { group: string; icon: string; collapsible?: boolean; base: string; components: NavConfigLeaf[] };
+export interface NavTab {
+  id: string;
+  label: string;
+  role?: "search";
+  icon: { ios: string; android: string };
+  topbar?: { inline?: string[]; overflow?: string[]; categories?: string[] };
+}
+export interface NavConfig {
+  routes: Record<string, NavConfigRoute>;
+  web: { sidebar: NavConfigGroup[] };
+  mobile: { tabs: NavTab[] };
 }
 
-export const COMPARE_ITEM: NavItem = { slug: "compare", label: "Compare", href: "/compare", icon: GitCompare };
+const CONFIG = navConfigJson as unknown as NavConfig;
 
+// ── Active-state helpers (pathname is group-transparent, so these are unchanged) ─
 export function getActiveSlug(pathname: string): string {
   if (pathname === "/") return "";
   const m = pathname.match(/^\/components\/(.+)$/);
@@ -186,6 +98,35 @@ export function getActiveSlug(pathname: string): string {
   return pathname.replace(/^\//, "").replace(/\//g, "-");
 }
 
+// A NavItem's slug is derivable from its href (same rule the router uses), so the JSON
+// never has to store it for registry routes and we stay consistent with getActiveSlug.
+function navItem(label: string, href: string, iconName: string): NavItem {
+  return { slug: getActiveSlug(href), label, href, icon: icon(iconName) };
+}
+
+export const NAV_ROUTES = CONFIG.routes;
+
+export function routeItem(key: string): NavItem {
+  const r = CONFIG.routes[key];
+  return navItem(r.label, r.href, r.icon);
+}
+
+// The web sidebar tree, rebuilt from the JSON into the exact shape sidebar.tsx consumes.
+export const NAV_GROUPS: NavGroup[] = CONFIG.web.sidebar.map((g): NavGroup => {
+  const items: NavItem[] =
+    "components" in g
+      ? g.components.map((c) => navItem(c.label, `${g.base}/${c.slug}`, c.icon))
+      : g.routes.map((k) => routeItem(k));
+  return { label: g.group, icon: icon(g.icon), items };
+});
+
+// Alphabetize within each group (matches the Vite sidebar ordering).
+for (const group of NAV_GROUPS) {
+  group.items.sort((a, b) => a.label.localeCompare(b.label));
+}
+
+export const COMPARE_ITEM: NavItem = { slug: "compare", label: "Compare", href: "/compare", icon: GitCompare };
+
 export function getActiveGroup(pathname: string): string | null {
   const slug = getActiveSlug(pathname);
   for (const g of NAV_GROUPS) {
@@ -196,3 +137,6 @@ export function getActiveGroup(pathname: string): string | null {
 
 // Flattened, ordered content pages for prev/next nav (excludes the home route).
 export const FLAT_PAGES: NavItem[] = NAV_GROUPS.flatMap((g) => g.items).filter((i) => i.href !== "/");
+
+// ── Mobile (iOS + Android) tab bar config, consumed by the native nav chrome ─────
+export const MOBILE_TABS: NavTab[] = CONFIG.mobile.tabs;

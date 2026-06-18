@@ -65,6 +65,12 @@ jobs:
         working-directory: docs-next
         run: bunx tsc --noEmit
 
+      # The single nav source of truth (nav.config.json) must stay 1:1 with docs-core,
+      # so a component/template/pattern can never drift out of the navigation.
+      - name: Check nav config in sync with docs-core
+        working-directory: docs-next
+        run: bun run check:nav
+
       - name: Export web build
         working-directory: docs-next
         run: npx expo export -p web
