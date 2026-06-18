@@ -60,27 +60,30 @@ const BRAND = [
 ];
 
 
-const CSS_VARS = `:root {
-  --primary: oklch(0.511 0.262 277);
-  --background: oklch(1 0 0);
-  /* … */
-}
-.dark {
-  --primary: oklch(0.585 0.233 277);
-  --background: oklch(0.141 0.005 285.8);
-  /* … */
-}`;
-const THEME_BRIDGE = `@theme inline {
-  --color-primary:    var(--primary);
-  --color-background: var(--background);
-  /* … */
-}`;
-const DYNAMIC = `<button className="bg-primary text-primary-foreground">Save</button>
+const TOKENS_SRC = `// tokens.ts — plain JS values, RN-usable (no CSS, no DOM)
+export const lightColors = {
+  primary: "#4f46e5",
+  background: "#ffffff",
+  // …
+};
+export const darkColors = {
+  primary: "#6366f1",
+  background: "#09090b",
+  // …
+};`;
+const THEME_RUNTIME = `// ThemeProvider supplies the active scheme;
+// components read it through useTheme().
+const { tokens } = useTheme();
 
-// Same markup, different theme:
-//   light → background-color: oklch(0.511 0.262 277)
-//   dark  → background-color: oklch(0.585 0.233 277)
-//   accent=teal → background-color: hsl(173 70% 42%)`;
+tokens.primary; // "#4f46e5" light · "#6366f1" dark`;
+const DYNAMIC = `<Button primary>Save</Button>
+
+// You set the look with a prop, never a class. The skin
+// builds { backgroundColor: tokens.primary }, so one prop
+// resolves live per theme — no restyling:
+//   light       → #4f46e5
+//   dark        → #6366f1
+//   teal accent → #20b6a5`;
 
 function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
   const light = colorsByScheme.light[row.token];
@@ -161,7 +164,7 @@ export default function ColorsScreen() {
         <View style={{ gap: 12 }}>
           <TokenH1>Colors & Theme</TokenH1>
           <TokenLede>
-            Canvas uses a semantic token system. Every color is an oklch value bound to a CSS custom property. Tailwind utilities (bg-primary, text-muted-foreground, border-border, …) resolve through those vars via @theme inline, so switching themes is just rewriting the variables. On native, the same tokens ship as hex values read through useTheme().
+            Canvas uses a semantic token system. Every color is a named token (primary, muted-foreground, border, …) that ships as a plain value per scheme. Components read the active set through useTheme() and build their React Native styles from it, so the same code themes correctly on iOS, Android, and the web, with no CSS variables and no per-platform fork. You never touch the values directly: you pick a component's look with semantic boolean props.
           </TokenLede>
           <Callout label="Try this.">Toggle the surface or change the theme. Every swatch below reacts live.</Callout>
         </View>
@@ -266,19 +269,19 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="How theming works"
-          description="The same utility resolves to different values in different contexts. No re-skinning, no per-page overrides."
+          description="You change a component's look with semantic boolean props. Each one resolves through the active scheme's tokens, so the same markup renders correctly in every theme and accent, with no re-skinning and no per-call overrides."
         >
           <Grid cols={c2}>
             {[
-              <CodeCard key="1" title="1 · CSS variables (tokens.css)" code={CSS_VARS} />,
-              <CodeCard key="2" title="2 · Tailwind theme bridge" code={THEME_BRIDGE} />,
+              <CodeCard key="1" title="1 · Tokens (tokens.ts)" code={TOKENS_SRC} />,
+              <CodeCard key="2" title="2 · The theme runtime (useTheme)" code={THEME_RUNTIME} />,
             ]}
           </Grid>
           <Surface>
-            <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground, marginBottom: 8 }}>3 · Utilities resolve dynamically</Text>
+            <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground, marginBottom: 8 }}>3 · One prop, resolved live</Text>
             <CodeBlock code={DYNAMIC} />
             <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"], marginTop: 12 }}>
-              The accent picker mutates --primary directly on {"<html>"}; because @theme inline preserves the var() reference (not the resolved value), every utility everywhere in the page reflows.
+              The {"`primary`"} prop is the whole styling API; the button reads {"`tokens.primary`"} from useTheme(). Switch the scheme or point the accent at a new hue and the ThemeProvider swaps the token set, so every component bound to it re-renders with the new color. No classes, no CSS variables.
             </Text>
           </Surface>
         </TokenSection>
@@ -289,13 +292,13 @@ export default function ColorsScreen() {
             {[
               <View key="dont" style={{ borderRadius: 12, borderWidth: 1, borderColor: "hsla(0, 70%, 60%, 0.3)", backgroundColor: "hsla(0, 70%, 60%, 0.05)", padding: 20, gap: 8 }}>
                 <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.destructive }}>Don't</Text>
-                <CodeBlock code={`<button style={{ background: '#6366f1' }}>`} />
-                <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>Hard-coded hex bypasses the theme. Won't follow accent changes; will look wrong in dark mode.</Text>
+                <CodeBlock code={`<View style={{ backgroundColor: "#6366f1" }}>`} />
+                <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>A hard-coded hex bypasses the theme. Won't follow accent changes; will look wrong in dark mode.</Text>
               </View>,
               <View key="do" style={{ borderRadius: 12, borderWidth: 1, borderColor: "hsla(143, 70%, 45%, 0.3)", backgroundColor: "hsla(143, 70%, 45%, 0.05)", padding: 20, gap: 8 }}>
                 <Text style={{ fontFamily: geist("600"), fontSize: 13, color: "hsl(143, 60%, 38%)" }}>Do</Text>
-                <CodeBlock code={`<button className="bg-primary text-primary-foreground">`} />
-                <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>Always token-routed. Theme changes are free.</Text>
+                <CodeBlock code={`<Button primary>Save</Button>`} />
+                <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>The semantic prop is token-routed through useTheme(). Theme and accent changes are free.</Text>
               </View>,
             ]}
           </Grid>
