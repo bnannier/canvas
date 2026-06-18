@@ -95,8 +95,16 @@ export function hexToOklchString(hex: string): string {
   return `oklch(${L.toFixed(3)} ${C.toFixed(3)} ${hue})`;
 }
 
-// All three CSS notations for a single rendered hex, derived from that hex so
-// they are always mutually consistent. Returned in display order: hex, hsl, oklch.
+// Wrap a hex string as `hex(#rrggbb)` so it lines up with the hsl()/oklch()/rgba()
+// function syntax used elsewhere on the colors page. `hex()` is a display convention
+// here, not a real CSS function. Non-hex values (e.g. an rgba() fill) pass through
+// unchanged so a mixed list stays uniform.
+export function wrapHex(value: string): string {
+  return value.startsWith("#") ? `hex(${value})` : value;
+}
+
+// All three notations for a single rendered hex, derived from that hex so they are
+// always mutually consistent. Returned in display order: hex, hsl, oklch.
 export function colorFormats(hex: string): string[] {
-  return [hex, hexToHslString(hex), hexToOklchString(hex)];
+  return [wrapHex(hex), hexToHslString(hex), hexToOklchString(hex)];
 }
