@@ -13,6 +13,7 @@ import {
   Group, ListChecks, MessageSquareWarning,
   BookOpen, Plug, Moon, Globe, GitCompare,
   Box, Pointer, Image as ImageIcon, MoveVertical,
+  Rocket,
   type LucideIcon,
 } from "lucide-react-native";
 
@@ -157,6 +158,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { slug: "pat-glass", label: "Glass Surface", href: "/patterns/glass", icon: Layers },
       { slug: "pat-loading", label: "Loading", href: "/patterns/loading", icon: Loader },
       { slug: "pat-responsive", label: "Responsive", href: "/patterns/responsive", icon: Smartphone },
+    ],
+  },
+  {
+    label: "Boilerplate",
+    icon: Rocket,
+    items: [
+      { slug: "boilerplate", label: "Overview", href: "/boilerplate", icon: Rocket },
     ],
   },
 ];

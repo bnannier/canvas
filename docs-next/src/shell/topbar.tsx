@@ -27,6 +27,7 @@ const STATIC_TITLES: Record<string, { title: string; subtitle?: string }> = {
   "/browser-support": { title: "Browser Support", subtitle: "Guides" },
   "/rn-primitives": { title: "React Native", subtitle: "Guides" },
   "/compare": { title: "Platform comparison", subtitle: "QA" },
+  "/boilerplate": { title: "Boilerplate", subtitle: "Overview" },
 };
 
 function titleFor(pathname: string): { title: string; subtitle?: string } {
