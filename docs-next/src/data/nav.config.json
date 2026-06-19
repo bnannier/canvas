@@ -117,7 +117,6 @@
   },
   "mobile": {
     "tabs": [
-      { "id": "search", "role": "search", "label": "Search", "icon": { "ios": "magnifyingglass", "android": "search" } },
       {
         "id": "home", "label": "Home", "icon": { "ios": "house", "android": "home" },
         "topbar": { "inline": ["about", "components", "integration"], "overflow": ["theming", "rn", "browser", "boilerplate"] }

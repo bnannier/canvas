@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from "react";
+import { useWindowDimensions } from "react-native";
 import { View, Text, Pressable, useTheme, alpha } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
@@ -52,17 +53,21 @@ export function Tile({ tile, width }: { tile: CatTile; width: number }) {
 // The responsive tile grid: 3 columns when wide, 2 when medium, 1 when narrow. A `span` tile
 // takes two cell widths (used by Data Tables), matching the Vite `.cat-tile-grid` + span2.
 export function CatGrid({ tiles }: { tiles: CatTile[] }) {
-  const [w, setW] = useState(0);
+  const { width: winW } = useWindowDimensions();
+  const [measured, setMeasured] = useState(0);
   const gap = 12;
+  // Seed the width from the viewport so tiles render on the first paint; onLayout then
+  // refines it to the grid's exact width. Relying on onLayout alone hid every tile whenever
+  // the web ResizeObserver did not fire until a later reflow (the grid sits in the centered
+  // content column: viewport minus the sidebar on wide web, minus the 28px page gutters).
+  const w = measured || Math.max(280, Math.min(1400, winW >= 1024 ? winW - 240 : winW) - 56);
   const cols = w >= 680 ? 3 : w >= 420 ? 2 : 1;
-  const colW = w > 0 ? (w - gap * (cols - 1)) / cols : 0;
+  const colW = (w - gap * (cols - 1)) / cols;
   return (
-    <View onLayout={(e) => setW(e.nativeEvent.layout.width)} style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
-      {colW > 0
-        ? tiles.map((t) => (
-            <Tile key={t.href} tile={t} width={t.span && cols > 1 ? colW * 2 + gap : colW} />
-          ))
-        : null}
+    <View onLayout={(e) => setMeasured(e.nativeEvent.layout.width)} style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
+      {tiles.map((t) => (
+        <Tile key={t.href} tile={t} width={t.span && cols > 1 ? colW * 2 + gap : colW} />
+      ))}
     </View>
   );
 }

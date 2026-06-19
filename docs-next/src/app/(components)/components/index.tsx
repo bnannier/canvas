@@ -2,7 +2,7 @@ import { View, Text, useTheme } from "@olympusoss/canvas";
 import { ScrollView } from "react-native";
 import { COMPONENTS } from "docs-core/data/components";
 import { CONTENT_TOP_INSET } from "../../../shell/topbar";
-import { NativeHeader } from "../../../shell/native-header";
+import { ScreenFrame } from "../../../shell/native-header";
 import { PageNav } from "../../../ui/page-nav";
 import { geist } from "../../../ui/fonts";
 import { CatSubBar, CatGroup } from "../../../catalog/tile";
@@ -31,6 +31,7 @@ export default function ComponentsIndex() {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
+    <ScreenFrame>
     <ScrollView
       // Glass surface mode: the canvas goes transparent so the shell's GlassAurora reads
       // through (matching the shared Page); the per-category tiles stay solid content cards.
@@ -38,7 +39,6 @@ export default function ComponentsIndex() {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET + 24, paddingHorizontal: 28, paddingBottom: 80, gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
     >
-      <NativeHeader />
       <CatSubBar categories={CATEGORY_IDS} total={total} />
 
       <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20.8, maxWidth: 672, color: tokens["muted-foreground"], marginTop: -12 }}>
@@ -57,5 +57,6 @@ export default function ComponentsIndex() {
         <PageNav />
       </View>
     </ScrollView>
+    </ScreenFrame>
   );
 }
