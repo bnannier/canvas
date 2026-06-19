@@ -1,13 +1,13 @@
 // Guards the single source of truth: every component/template/pattern enumerated in
-// src/data/nav.config.json must exist in docs-core (and vice versa), so a page can
+// src/data/nav.config.json must exist in the docs core data (and vice versa), so a page can
 // never silently drift out of the navigation. Run by CI (docs.yml) and `bun run check:nav`.
 //
-// Imports only the JSON + docs-core data registries (no React Native), so it runs in
+// Imports only the JSON + the docs core data registries (no React Native), so it runs in
 // plain bun/node.
 import navConfig from "../src/data/nav.config.json";
-import { COMPONENTS } from "../../docs-core/data/components";
-import { getAllTemplates } from "../../docs-core/data/templates";
-import { getAllPatterns } from "../../docs-core/data/patterns";
+import { COMPONENTS } from "../src/core/data/components";
+import { getAllTemplates } from "../src/core/data/templates";
+import { getAllPatterns } from "../src/core/data/patterns";
 
 interface SidebarGroup {
   group: string;
@@ -30,8 +30,8 @@ function diff(name: string, navSlugs: string[], coreSlugs: string[]): string[] {
     navSet.add(s);
   }
   const coreSet = new Set(coreSlugs);
-  for (const s of coreSlugs) if (!navSet.has(s)) errs.push(`${name}: "${s}" is in docs-core but missing from nav.config.json`);
-  for (const s of navSet) if (!coreSet.has(s)) errs.push(`${name}: "${s}" is in nav.config.json but not in docs-core`);
+  for (const s of coreSlugs) if (!navSet.has(s)) errs.push(`${name}: "${s}" is in the docs core but missing from nav.config.json`);
+  for (const s of navSet) if (!coreSet.has(s)) errs.push(`${name}: "${s}" is in nav.config.json but not in the docs core`);
   return errs;
 }
 
@@ -42,11 +42,11 @@ const errors = [
 ];
 
 if (errors.length) {
-  console.error("✗ nav.config.json is out of sync with docs-core:\n" + errors.map((e) => "  - " + e).join("\n"));
+  console.error("✗ nav.config.json is out of sync with the docs core:\n" + errors.map((e) => "  - " + e).join("\n"));
   process.exit(1);
 }
 
 console.log(
-  `✓ nav.config.json in sync with docs-core ` +
+  `✓ nav.config.json in sync with the docs core ` +
     `(${COMPONENTS.length} components, ${getAllTemplates().length} templates, ${getAllPatterns().length} patterns)`,
 );

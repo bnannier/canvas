@@ -4,8 +4,7 @@
     "strict": true,
     "skipLibCheck": true,
     "paths": {
-      "@olympusoss/canvas": ["../src/index.ts"],
-      "docs-core/*": ["../docs-core/*"]
+      "@olympusoss/canvas": ["../src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"]

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ScrollView, Platform, type StyleProp, type ViewStyle } from "react-native";
 import { View, Text, Pressable, useTheme, alpha } from "@olympusoss/canvas";
-import type { SearchEntry } from "docs-core/data/types";
+import type { SearchEntry } from "../core/data/types";
 import { geist } from "../ui/fonts";
 
 // The grouped search results list, shared by the web cmd-K modal and the native

@@ -1,8 +1,8 @@
 import { Component, type ReactNode, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import { ScrollView, View, Text, Pressable, OverlayProvider, useTheme } from "@olympusoss/canvas";
-import { buildScopes } from "docs-core/build-scopes";
-import type { DocExample, ExampleScope } from "docs-core/scope";
+import { buildScopes } from "../core/build-scopes";
+import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
 import { geist } from "./fonts";
 

@@ -1,6 +1,7 @@
 // Metro config for the universal Canvas docs app (iOS / Android / web from one
-// React Native codebase). It consumes the source-only @olympusoss/canvas library and
-// the generated docs-core as live symlinks (see package.json postinstall):
+// React Native codebase). It consumes the source-only @olympusoss/canvas library as a
+// live symlink (see package.json postinstall); the generated docs core lives in-tree at
+// src/core:
 //   - watchFolders sees the out-of-tree source;
 //   - nodeModulesPaths + disableHierarchicalLookup force a single react/RN/svg copy;
 //   - the resolver maps the library's NodeNext ".js" specifiers to their .ts/.tsx

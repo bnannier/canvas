@@ -21,7 +21,7 @@ const GUIDE_ENTRIES: SearchEntry[] = [
 ];
 
 // The full searchable index: the static guide entries plus every component, pattern,
-// and template, sourced from the docs-core data so the index stays in sync with the
+// and template, sourced from the docs core data so the index stays in sync with the
 // pages that actually exist. The paths match the RN routes exactly.
 const ALL_ENTRIES: SearchEntry[] = [
   ...GUIDE_ENTRIES,

@@ -3,7 +3,7 @@
 // Reads every component's co-located markdown (src/<category>/<dir>/<dir>.md),
 // parses out the Playground examples and Do/Don't pairs with the shared grammar,
 // and emits, for each fence, a real statically-importable example module under
-// docs-core/examples/, plus a single docs-core/registry.ts that wires them up with
+// docs/src/core/examples/, plus a single docs/src/core/registry.ts that wires them up with
 // their source strings and labels.
 //
 // This replaces the previous docs web shell's runtime engine (sucrase transpile + `new
@@ -21,9 +21,9 @@ const REPO = path.resolve(HERE, "..", "..");
 const CATEGORIES = ["atoms", "molecules", "organisms"] as const;
 type Category = (typeof CATEGORIES)[number];
 
-const EXAMPLES_DIR = path.join(REPO, "docs-core", "examples");
-const REGISTRY_FILE = path.join(REPO, "docs-core", "registry.ts");
-const RAW_MD_FILE = path.join(REPO, "docs-core", "raw-md.ts");
+const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
+const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
+const RAW_MD_FILE = path.join(REPO, "docs", "src", "core", "raw-md.ts");
 
 // The raw markdown of every component, keyed exactly like the web docs' Vite
 // import.meta.glob (so the reused Compare page can read it on Metro instead).
@@ -32,10 +32,10 @@ const rawMd: Record<string, string> = {};
 // The names an example fence may reference, taken straight from the docs runtime
 // scope so the destructure list never drifts from the single source of truth.
 const SCOPE_NAMES = scopeNamesFromLiveScope(
-  fs.readFileSync(path.join(REPO, "docs-core", "live-scope.ts"), "utf8"),
+  fs.readFileSync(path.join(REPO, "docs", "src", "core", "live-scope.ts"), "utf8"),
 );
 if (SCOPE_NAMES.length === 0) {
-  throw new Error("Could not extract LIVE_SCOPE names from docs-core/live-scope.ts");
+  throw new Error("Could not extract LIVE_SCOPE names from docs/src/core/live-scope.ts");
 }
 
 const SCOPE_NAME_SET = new Set(SCOPE_NAMES);
@@ -43,7 +43,7 @@ const SCOPE_NAME_SET = new Set(SCOPE_NAMES);
 // Every capitalized JSX tag a fence uses must be a known scope name; otherwise the
 // generated module would destructure nothing for it and reference an unbound
 // identifier (a cryptic `tsc` "Cannot find name" / a runtime ReferenceError). The
-// scope (docs-core/live-scope.ts) and the type each fence is checked against (the
+// scope (docs/src/core/live-scope.ts) and the type each fence is checked against (the
 // `@olympusoss/canvas` barrel) are separate sources, so a component added to the
 // barrel and used in a fence — but not to the scope — would slip through. Collect
 // any such tags during generation and fail fast with a clear, source-located error.
@@ -104,8 +104,8 @@ function usedScopeNames(code: string): string[] {
   return SCOPE_NAMES.filter((name) => new RegExp(`\\b${name}\\b`).test(code));
 }
 
-// Emit one example module. `depth` is how many dirs the module sits below docs-core
-// (examples/<category>/<dir>/ = 3), used to reach docs-core/scope.ts.
+// Emit one example module. `depth` is how many dirs the module sits below docs/src/core
+// (examples/<category>/<dir>/ = 3), used to reach docs/src/core/scope.ts.
 function exampleModule(code: string, source: string): string {
   const used = usedScopeNames(code);
   const destructure = used.length ? `  const { ${used.join(", ")} } = scope;\n` : "";
@@ -238,7 +238,7 @@ function main() {
     const uniq = [...new Map(tagViolations.map((v) => [`${v.tag}|${v.source}`, v])).values()];
     throw new Error(
       `docs:gen — ${uniq.length} JSX tag(s) used in a fence are not in the example scope ` +
-        `(docs-core/live-scope.ts LIVE_SCOPE); the generated module would reference an unbound ` +
+        `(docs/src/core/live-scope.ts LIVE_SCOPE); the generated module would reference an unbound ` +
         `identifier. Add them to LIVE_SCOPE:\n` +
         uniq.map((v) => `  <${v.tag}> in ${v.source}`).join("\n"),
     );
@@ -257,7 +257,7 @@ function main() {
 
   console.log(
     `docs:gen — ${entries.length} components, ${exampleCount} examples, ${dontCount} Do/Don't pairs ` +
-      `(${exampleCount + dontCount * 2} modules) → docs-core/`,
+      `(${exampleCount + dontCount * 2} modules) → docs/src/core/`,
   );
 }
 

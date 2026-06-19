@@ -1,7 +1,7 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { View, Text, useTheme } from "@olympusoss/canvas";
-import { COMPONENTS, getComponent } from "docs-core/data/components";
-import { COMPONENT_DOCS } from "docs-core/registry";
+import { COMPONENTS, getComponent } from "../../../core/data/components";
+import { COMPONENT_DOCS } from "../../../core/registry";
 import { Page } from "../../../ui/page";
 import { Lead } from "../../../ui/prose";
 import { Playground } from "../../../ui/playground";

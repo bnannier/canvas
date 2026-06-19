@@ -10,12 +10,12 @@ import {
 import { View, Text, Pressable, TextInput, useTheme, GlassSurface, alpha } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import { Search } from "lucide-react-native";
-import { search } from "docs-core/data/search";
-import type { SearchEntry } from "docs-core/data/types";
+import { search } from "../core/data/search";
+import type { SearchEntry } from "../core/data/types";
 import { geist } from "../ui/fonts";
 
 // The docs search modal: a transparent fade Modal with a centered panel, mirroring the
-// Vite cmd-K dialog. A TextInput drives a case-insensitive search over the docs-core
+// Vite cmd-K dialog. A TextInput drives a case-insensitive search over the docs core
 // index; results group under uppercase category headers, each row navigates and closes.
 // Keyboard up/down/enter/esc nav is wired through the web build (RN-Web surfaces the key
 // via onKeyPress); on native the Modal's onRequestClose handles Android back / dismiss.

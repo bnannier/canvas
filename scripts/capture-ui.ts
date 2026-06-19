@@ -8,9 +8,9 @@
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium } from "@playwright/test";
-import { COMPONENTS } from "../docs-core/data/components.ts";
-import { getAllTemplates } from "../docs-core/data/templates.ts";
-import { getAllPatterns } from "../docs-core/data/patterns.ts";
+import { COMPONENTS } from "../docs/src/core/data/components.ts";
+import { getAllTemplates } from "../docs/src/core/data/templates.ts";
+import { getAllPatterns } from "../docs/src/core/data/patterns.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT = join(ROOT, "test", "ui");

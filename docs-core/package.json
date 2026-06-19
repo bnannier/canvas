@@ -1,6 +1,0 @@
-{
-  "name": "docs-core",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Generated, bundler-agnostic Canvas docs core: static example modules + registry consumed by the docs apps. Run `bun run docs:gen` at the repo root to regenerate."
-}

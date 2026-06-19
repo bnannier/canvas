@@ -6,7 +6,6 @@ on:
       - 'src/**'
       - 'styles/**'
       - 'docs/**'
-      - 'docs-core/**'
       - 'tools/**'
       - 'package.json'
       - 'bun.lock'
@@ -52,7 +51,7 @@ jobs:
         run: bun run docs:gen:check
 
       - name: Typecheck generated docs examples
-        run: bunx tsc --noEmit -p docs-core/tsconfig.json
+        run: bunx tsc --noEmit -p docs/src/core/tsconfig.json
 
       - name: Verify package exports
         run: bun -e "import { cn, getTheme, token } from './src/index.ts'; console.log('JS exports OK')"
@@ -81,10 +80,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install root deps (for source + docs-core symlinks)
+      - name: Install root deps (for the source symlink)
         run: bun install --frozen-lockfile
 
-      - name: Regenerate docs-core
+      - name: Regenerate docs core
         run: bun run docs:gen
 
       - name: Install docs deps

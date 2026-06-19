@@ -2,8 +2,8 @@ import { type ReactNode } from "react";
 import { useWindowDimensions } from "react-native";
 import { View, Text, useTheme } from "@olympusoss/canvas";
 import { CircleX, CircleCheck } from "lucide-react-native";
-import { buildScopes } from "docs-core/build-scopes";
-import type { DocDontPair, ExampleScope } from "docs-core/scope";
+import { buildScopes } from "../core/build-scopes";
+import type { DocDontPair, ExampleScope } from "../core/scope";
 import { ExampleErrorBoundary } from "./playground";
 import { geist } from "./fonts";
 

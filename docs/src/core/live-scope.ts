@@ -68,7 +68,7 @@ import {
 // theme-aware color set, injected live by the Playground), `alpha`/`shadow`
 // helpers, and the `palette` of fixed Tailwind hues. Imported from src/style so
 // they're available regardless of what the package barrel currently re-exports.
-import { alpha, shadow, palette } from "../src/style/index.js";
+import { alpha, shadow, palette } from "../../../src/style/index.js";
 
 // The canonical list of names a component `.md` example fence may reference as a JSX
 // tag, mapped to the real Canvas components. The docgen (tools/docgen) parses these

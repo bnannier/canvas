@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { getPattern, getAllPatterns } from "docs-core/data/patterns";
+import { getPattern, getAllPatterns } from "../../../core/data/patterns";
 import { MockupDocPage } from "../../../ui/mockup-page";
 
 export async function generateStaticParams() {

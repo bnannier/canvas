@@ -106,7 +106,7 @@ export function parseDonts(section: string): DontPair[] {
 
 // Extract the names exposed to an example fence (the LIVE_SCOPE keys) straight from
 // the docs runtime scope module, so the codegen's destructure list stays in lockstep
-// with the single source of truth (docs-core/live-scope.ts) without importing it
+// with the single source of truth (docs/src/core/live-scope.ts) without importing it
 // (importing would pull react-native into a plain Node/Bun context). These are all
 // VALUE names (components, primitives, `tokens`, `alpha`/`shadow`/`palette`) — never
 // type-only exports — so destructuring them from the scope is always valid.

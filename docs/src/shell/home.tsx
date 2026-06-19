@@ -9,7 +9,7 @@ import {
   ArrowRight, Check, ChevronRight, Layers, Plus, Shield, AppWindow,
   Home as HomeIcon, type LucideIcon,
 } from "lucide-react-native";
-import { COMPONENTS } from "docs-core/data/components";
+import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
 import { HeroOrbit } from "../brand/hero-orbit";

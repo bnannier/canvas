@@ -2,7 +2,7 @@ import { View } from "@olympusoss/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { Playground } from "../../../ui/playground";
-import type { DocExample } from "docs-core/scope";
+import type { DocExample } from "../../../core/scope";
 import { TokenH1, TokenLede, TokenSection } from "../../../ui/tokens-kit";
 
 const SPACING = [

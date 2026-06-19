@@ -60,12 +60,12 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      # The native app consumes the source-only library + generated docs-core via
+      # The native app consumes the source-only library + the generated docs core via
       # symlinks (docs postinstall). Install root deps first so those exist.
       - name: Install root deps
         run: bun install --frozen-lockfile
 
-      - name: Regenerate docs-core
+      - name: Regenerate docs core
         run: bun run docs:gen
 
       - name: Install docs deps

@@ -1,6 +1,6 @@
 import { View, Text, useTheme, useResponsive } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
-import type { DocExample, ExampleScope } from "docs-core/scope";
+import type { DocExample, ExampleScope } from "../../../core/scope";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { CodeBlock } from "../../../ui/code-block";

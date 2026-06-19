@@ -10,7 +10,6 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
-      - 'docs-core/**'
       - 'tools/**'
       - 'src/**'
       - 'styles/**'
@@ -41,18 +40,18 @@ jobs:
         with:
           node-version: 20
 
-      # Install root deps first: docs consumes the source-only library + the generated
-      # docs-core as live symlinks (created by the docs postinstall), so those targets
-      # must exist before the docs install.
+      # Install root deps first: docs consumes the source-only @olympusoss/canvas
+      # library as a live symlink (created by the docs postinstall), so it must exist
+      # before the docs install.
       - name: Install root deps
         run: bun install --frozen-lockfile
 
-      - name: Regenerate docs-core (fail if drift)
+      - name: Regenerate docs core (fail if drift)
         run: |
           bun run docs:gen
-          if [ -n "$(git status --porcelain docs-core)" ]; then
-            echo "::error::docs-core is out of date. Run 'bun run docs:gen' and commit the result."
-            git --no-pager diff --stat docs-core
+          if [ -n "$(git status --porcelain docs/src/core)" ]; then
+            echo "::error::the generated docs core is out of date. Run 'bun run docs:gen' and commit the result."
+            git --no-pager diff --stat docs/src/core
             exit 1
           fi
 
@@ -64,9 +63,9 @@ jobs:
         working-directory: docs
         run: bunx tsc --noEmit
 
-      # The single nav source of truth (nav.config.json) must stay 1:1 with docs-core,
+      # The single nav source of truth (nav.config.json) must stay 1:1 with the docs core data,
       # so a component/template/pattern can never drift out of the navigation.
-      - name: Check nav config in sync with docs-core
+      - name: Check nav config in sync with the docs core data
         working-directory: docs
         run: bun run check:nav
 

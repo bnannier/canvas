@@ -4,7 +4,7 @@ import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { Menu } from "lucide-react-native";
 import { useTheme } from "@olympusoss/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { search } from "docs-core/data/search";
+import { search } from "../core/data/search";
 import { titleFor } from "./topbar";
 import { MOBILE_TABS, NAV_ROUTES } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";

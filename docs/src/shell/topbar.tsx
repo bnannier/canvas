@@ -2,7 +2,7 @@ import { Platform, useWindowDimensions } from "react-native";
 import { View, Text, Pressable, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
 import { usePathname } from "expo-router";
 import { Menu, Search, Sun, Moon } from "lucide-react-native";
-import { getComponent } from "docs-core/data/components";
+import { getComponent } from "../core/data/components";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 
