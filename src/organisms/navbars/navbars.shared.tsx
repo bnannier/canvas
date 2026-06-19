@@ -31,6 +31,15 @@ export interface NavbarSkin {
   pressedOpacity: number | null;
   /** Android ripple over a pressed link; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /**
+   * Web-only focus-outline reset for the link Pressable. iOS sets this so the
+   * react-native-web keyboard-focus blue ring (which a real iOS toolbar bar-button
+   * item never shows) is suppressed, leaving the press dim as the only feedback.
+   * Undefined on web/Android, which keep their own focus treatment. No-op
+   * natively, where `outlineStyle`/`outlineWidth` are not real CSS. Mirrors
+   * pagination/input/textarea's focus reset.
+   */
+  focusOutlineReset?: ViewStyle;
 
   /** The bar row: height, padding, and flex layout. */
   bar: (t: ColorTokens) => ViewStyle;
@@ -118,6 +127,7 @@ export function createNavbar(skin: NavbarSkin) {
                   accessibilityState={{ selected: isActive }}
                   style={({ pressed }) => [
                     skin.linkTile(tokens, isActive),
+                    skin.focusOutlineReset,
                     skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                   ]}
                 >

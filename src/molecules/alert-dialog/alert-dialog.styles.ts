@@ -1,5 +1,12 @@
+import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type InputProps } from "../../atoms/input/input.shared.js";
+
+// The confirmation field is rendered through the platform-correct Input atom,
+// passed to `createAlertDialog` by each platform's thin `.tsx`/`.ios`/`.android`
+// file. Typing it as the atom's component preserves the public Input API.
+export type InputComponent = ComponentType<InputProps>;
 
 // Co-located AlertDialog skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when
@@ -10,9 +17,13 @@ import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 //   iOS (iOS 27 / Liquid Glass alert): a rounded card (~28 radius, `popover`
 //     fill, soft shadow, no border), a LEFT-aligned bold title and a left-aligned
 //     `muted-foreground` message; exactly two actions rendered as two CAPSULES
-//     side by side (no divider) — a gray Cancel capsule (`secondary` fill) and a
-//     filled Confirm capsule (`primary`, or `destructive` when destructive) with
-//     a white label. Press = opacity dim (~0.85).
+//     side by side (no divider) — a gray Cancel capsule (`secondary` fill, 400
+//     label) and a Confirm capsule. The non-destructive PRIMARY confirm is a
+//     FILLED `primary` capsule with a white 600 label; the DESTRUCTIVE confirm
+//     keeps the same gray `secondary` fill and tints only its 600 LABEL red
+//     (`destructive`), it is NOT a red-filled capsule. The body confirmation
+//     field renders the iOS-styled Input (the skin owns it), a flat gray-filled
+//     borderless field with no focus ring. Press = opacity dim (~0.85).
 //   Android (Material 3 AlertDialog): an elevated surface (28 radius, `popover`
 //     fill, soft shadow), a LEFT-aligned title and left-aligned body; two M3 TEXT
 //     buttons bottom-right (Cancel then Confirm/Delete), the confirm tinted with
@@ -74,11 +85,13 @@ export interface AlertDialogSkin {
   capsuleCell: ViewStyle | null;
   /** The Cancel (gray) capsule fill. */
   cancelFill: ((t: ColorTokens) => ViewStyle) | null;
-  /** The Confirm capsule fill; `destructive` swaps `primary` for `destructive`. */
+  /** The Confirm capsule fill. Non-destructive = filled `primary`; destructive
+   *  keeps the gray `secondary` fill (the kit fills only the primary confirm). */
   confirmFill: ((t: ColorTokens, destructive: boolean) => ViewStyle) | null;
-  /** The Cancel capsule label (regular weight, on-secondary color). */
+  /** The Cancel capsule label (regular 400 weight, on-secondary color). */
   cancelLabelStyle: ((t: ColorTokens) => TextStyle) | null;
-  /** The Confirm capsule label (weight 600, on-fill foreground). */
+  /** The Confirm capsule label (semibold 600; white on the filled primary fill,
+   *  `destructive` red over the gray fill when destructive). */
   confirmLabelStyle: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
   /** iOS/web dim on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
@@ -194,13 +207,23 @@ export const iosSkin: AlertDialogSkin = {
     borderRadius: IOS_CAPSULE_RADIUS,
   },
   cancelFill: (t) => ({ backgroundColor: t.secondary }),
-  confirmFill: (t, destructive) => ({ backgroundColor: destructive ? t.destructive : t.primary }),
-  cancelLabelStyle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", color: t["secondary-foreground"] }),
+  // iOS 27 kit: ONLY the non-destructive primary confirm is a filled (brand)
+  // capsule with a white label. The destructive action keeps the NEUTRAL gray
+  // `secondary` fill (same as Cancel) and tints only its LABEL red; it is NOT a
+  // red-filled capsule (per the kit's "3 Destructive" action part / "Buttons
+  // Stacked" alert).
+  confirmFill: (t, destructive) => ({ backgroundColor: destructive ? t.secondary : t.primary }),
+  // Secondary/Cancel capsule label reads regular (400), lighter than the confirm
+  // (the kit's Default alert / "2 Secondary" part).
+  cancelLabelStyle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "400", color: t["secondary-foreground"] }),
+  // Confirm label is the heavier of the two at semibold (600), per the kit's
+  // filled "1 Primary" capsule. Destructive tints the label red over the gray
+  // fill (`destructive`), not white over a red fill.
   confirmLabelStyle: (t, destructive) => ({
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: "700",
-    color: destructive ? t["destructive-foreground"] : t["primary-foreground"],
+    fontWeight: "600",
+    color: destructive ? t.destructive : t["primary-foreground"],
   }),
   pressedOpacity: 0.85,
   ripple: null,

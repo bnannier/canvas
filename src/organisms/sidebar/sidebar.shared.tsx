@@ -35,6 +35,14 @@ export interface SidebarSkin {
   pressedOpacity: number | null;
   /** Android ripple over a pressed row; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /**
+   * Web-only focus-outline reset for the row Pressables. iOS sets this so the
+   * react-native-web keyboard-focus blue ring (which a real iOS device never
+   * shows on a sidebar nav row) is suppressed, leaving the press dim as the only
+   * feedback. Undefined on web/Android, which keep their own focus treatment.
+   * No-op natively, where `outlineStyle`/`outlineWidth` are not real CSS.
+   */
+  focusOutlineReset?: ViewStyle;
 
   /** The outer navigation column, per frame. */
   column: (t: ColorTokens, frame: Frame) => ViewStyle;
@@ -152,6 +160,9 @@ export function createSidebar(skin: SidebarSkin) {
                     // press paints it too (the old `active:bg-accent`).
                     skin.rowFill(tokens, activeRow || (skin.pressedFill && pressed)),
                     skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                    // iOS suppresses the RNW keyboard-focus ring (no-op natively);
+                    // undefined on web/Android.
+                    skin.focusOutlineReset,
                   ]}
                   onPress={(event) => onSelect?.(item, index, event)}
                   accessibilityRole="button"

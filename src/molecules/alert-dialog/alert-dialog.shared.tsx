@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
-import { Input } from "../../atoms/input/input.js";
+import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
-import { type Width, type AlertDialogSkin } from "./alert-dialog.styles.js";
+import { type Width, type AlertDialogSkin, type InputComponent } from "./alert-dialog.styles.js";
 
 // Shared AlertDialog shell. The structure (optional trigger + dim backdrop +
 // centered card + title/description + optional confirmation field + action row),
@@ -67,8 +67,20 @@ function widthOf(p: AlertDialogProps): Width {
   return "medium";
 }
 
-/** Build an AlertDialog component from a platform skin. */
-export function createAlertDialog(skin: AlertDialogSkin) {
+/**
+ * Build an AlertDialog component from a platform skin.
+ *
+ * `Input` is the platform-correct Input atom for the confirmation field
+ * (`withInput`). Each platform's thin `.tsx`/`.ios`/`.android` file passes the
+ * Input it already resolves for that platform, so the field matches the alert's
+ * platform on every build path. This matters for the WEB docs 3-up preview: a
+ * bare barrel import always resolves the WEB Input in a browser bundler, which
+ * would paint a boxed, blue-focus-ring field inside the iOS/Android rows; the
+ * iOS row must show the iOS-styled field (borderless, no focus box). On a real
+ * device Metro resolves the right Input by extension regardless, so the default
+ * (the web base) is correct there too. Defaults to the web base when omitted.
+ */
+export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent = WebInput) {
   return function AlertDialog(props: AlertDialogProps) {
     const {
       title,

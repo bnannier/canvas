@@ -168,9 +168,38 @@ const IOS_PILL_SHADOW: ViewStyle = {
   elevation: 2,
 };
 
+// Blend two hex colors by `t` (0 = a, 1 = b). Used to lift the dark-mode selected
+// thumb to a lighter gray than the track (Apple's tertiary/secondary system-fill
+// layering) while staying token-driven.
+function mix(a: string, b: string, t: number): string {
+  const parse = (c: string) => {
+    const h = c.replace("#", "");
+    const full = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
+    return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
+  };
+  const [ar, ag, ab] = parse(a);
+  const [br, bg, bb] = parse(b);
+  const ch = (x: number, y: number) => Math.round(x + (y - x) * t);
+  return `rgb(${ch(ar, br)}, ${ch(ag, bg)}, ${ch(ab, bb)})`;
+}
+
+// The iOS segmented thumb fill. Light mode: the white `background` reads clearly
+// against the gray `muted` track. Dark mode: `background` (#09090b) is DARKER than
+// the `muted` track (#27272a), so it would sink in; instead lift the track 28%
+// toward `foreground` to a medium-light gray thumb that pops off the track, as in
+// Apple's iOS 27 dark segmented control. Token-driven, so it follows the scheme.
+function iosSelectedThumb(tokens: ColorTokens, dark: boolean): string {
+  return dark ? mix(tokens.muted, tokens.foreground, 0.28) : tokens.background;
+}
+
 export const iosSkin: TabsSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
+  // Suppress the react-native-web blue keyboard-focus ring on iOS triggers; a
+  // real iOS segmented control never shows it. `outlineStyle`/`outlineWidth` are
+  // not in RN's ViewStyle (hence the cast) and are ignored natively. Mirrors
+  // input/textarea/pagination's outline resets.
+  focusOutlineReset: { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle,
 
   // --- underline -> capsule segmented control (gray track + raised pill) ---
   underlineRow(tokens) {
@@ -184,9 +213,10 @@ export const iosSkin: TabsSkin = {
       backgroundColor: tokens.muted,
     };
   },
-  underlineTrigger(tokens, selected) {
+  underlineTrigger(tokens, selected, dark) {
     // Each tab is an independent capsule pill (radius 9999) inside the track;
-    // the selected one is raised white/elevated.
+    // the selected one is a raised, elevated thumb that reads lighter than the
+    // track in both schemes (white in light, lifted gray in dark).
     return {
       flexDirection: "row",
       alignItems: "center",
@@ -195,7 +225,7 @@ export const iosSkin: TabsSkin = {
       borderRadius: 9999,
       paddingHorizontal: 14,
       paddingVertical: 7,
-      ...(selected ? { ...IOS_PILL_SHADOW, backgroundColor: tokens.background } : { backgroundColor: "transparent" }),
+      ...(selected ? { ...IOS_PILL_SHADOW, backgroundColor: iosSelectedThumb(tokens, dark) } : { backgroundColor: "transparent" }),
     };
   },
   // No underline rule on iOS: the raised capsule pill is the selected affordance.
@@ -231,9 +261,9 @@ export const iosSkin: TabsSkin = {
       paddingVertical: 7,
     };
   },
-  pillsFill(tokens, selected) {
+  pillsFill(tokens, selected, dark) {
     return selected
-      ? { ...IOS_PILL_SHADOW, backgroundColor: tokens.background }
+      ? { ...IOS_PILL_SHADOW, backgroundColor: iosSelectedThumb(tokens, dark) }
       : { backgroundColor: "transparent" };
   },
   pillsLabel(tokens, selected) {

@@ -97,6 +97,18 @@ export interface CalendarSkin {
 
 const WEEKDAYS_TWO = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const WEEKDAYS_ONE = ["S", "M", "T", "W", "T", "F", "S"];
+// iOS reference uses UPPERCASE short weekday symbols (SUN/MON shortened to two
+// letters here to stay distinct from Android's single-letter row); mixed-case
+// "Su/Mo" is a web (shadcn) idiom, not the iOS date-picker reference.
+const WEEKDAYS_TWO_UPPER = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
+// react-native-web paints the browser's blue keyboard-focus ring around a
+// focused Pressable (e.g. Tab onto a day cell or a chevron); a real iOS device
+// never shows it (native iOS feedback is the press dim only). Suppress it so
+// focusing paints no box. Web-only: `outlineStyle`/`outlineWidth` are not in
+// RN's ViewStyle (hence the cast) and are ignored natively. Mirrors the
+// input/textarea/pagination FIELD_OUTLINE_RESET.
+const FOCUS_OUTLINE_RESET = { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle;
 
 // =============================================================================
 // Web: the established Canvas look (lifted verbatim from the original file).
@@ -214,6 +226,8 @@ export const iosSkin: CalendarSkin = {
     justifyContent: "center",
     borderRadius: 9999,
     backgroundColor: "transparent",
+    // Suppress the react-native-web keyboard focus ring; no-op natively.
+    ...FOCUS_OUTLINE_RESET,
   },
   // HIG: the chevrons carry the brand indigo (system-accent style), heavier glyph.
   chevronText: (t) => ({ fontSize: 22, lineHeight: 24, fontWeight: "500", color: t.primary }),
@@ -224,9 +238,11 @@ export const iosSkin: CalendarSkin = {
   headCell: { alignItems: "center", justifyContent: "center" },
   // ~13pt muted SF-style weekday header.
   weekdayLabel: (t) => ({ fontSize: 13, lineHeight: 16, fontWeight: "600", color: t["muted-foreground"] }),
-  weekdays: WEEKDAYS_TWO,
+  // iOS reference: uppercase two-letter weekday symbols.
+  weekdays: WEEKDAYS_TWO_UPPER,
 
-  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999 },
+  // Suppress the react-native-web keyboard focus ring on the day cell; no-op natively.
+  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999, ...FOCUS_OUTLINE_RESET },
   // Selected wins: filled `primary` circle. Today (when not selected): no fill
   // (the day label carries the brand indigo instead).
   dayCellState: (t, st) => (st.selected ? { backgroundColor: t.primary } : {}),

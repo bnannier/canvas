@@ -42,17 +42,28 @@ export interface TabsSkin {
   pressedOpacity: number | null;
   /** Android ripple over a pressed trigger; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /**
+   * Web-only focus-outline reset for the trigger Pressables. The iOS skin sets
+   * this so the react-native-web keyboard-focus blue ring (which a real iOS
+   * device never shows) is suppressed, leaving the press dim as the only
+   * feedback. Undefined on web/Android, which keep their own focus treatment.
+   * No-op natively, where `outlineStyle`/`outlineWidth` are not real CSS.
+   */
+  focusOutlineReset?: ViewStyle;
 
   // --- underline ---
+  // `dark` lets the selected-pill fill follow the scheme (iOS: a white thumb in
+  // light mode, a lifted lighter-gray thumb in dark mode, matching Apple's
+  // segmented control's tertiary/secondary system-fill layering).
   underlineRow: (t: ColorTokens) => ViewStyle;
-  underlineTrigger: (t: ColorTokens, selected: boolean) => ViewStyle;
+  underlineTrigger: (t: ColorTokens, selected: boolean, dark: boolean) => ViewStyle;
   underlineIndicator: (t: ColorTokens, selected: boolean) => ViewStyle;
   underlineLabel: (t: ColorTokens, selected: boolean) => TextStyle;
 
   // --- pills ---
   pillsRow: (t: ColorTokens) => ViewStyle;
   pillsTrigger: (t: ColorTokens, selected: boolean) => ViewStyle;
-  pillsFill: (t: ColorTokens, selected: boolean) => ViewStyle;
+  pillsFill: (t: ColorTokens, selected: boolean, dark: boolean) => ViewStyle;
   pillsLabel: (t: ColorTokens, selected: boolean) => TextStyle;
 
   // --- vertical ---
@@ -143,7 +154,7 @@ export function createTabs(skin: TabsSkin) {
   }
 
   function Trigger({ label, badge, selected, variant, block, disabled, onPress }: TriggerProps) {
-    const { tokens } = useTheme();
+    const { tokens, dark } = useTheme();
 
     if (variant === "vertical") {
       // Vertical rail: a full-width, left-aligned row; the active item is filled
@@ -151,6 +162,7 @@ export function createTabs(skin: TabsSkin) {
       const container: StyleProp<ViewStyle> = [
         skin.verticalTrigger(tokens, selected),
         skin.verticalFill(tokens, selected),
+        skin.focusOutlineReset,
         disabled ? s.disabledDim : null,
       ];
       return (
@@ -172,7 +184,8 @@ export function createTabs(skin: TabsSkin) {
       const container: StyleProp<ViewStyle> = [
         skin.pillsTrigger(tokens, selected),
         block ? s.flex1 : null,
-        skin.pillsFill(tokens, selected),
+        skin.pillsFill(tokens, selected, dark),
+        skin.focusOutlineReset,
         disabled ? s.disabledDim : null,
       ];
       return (
@@ -194,8 +207,9 @@ export function createTabs(skin: TabsSkin) {
     // drawn as an explicit sliver pinned to the trigger's bottom edge (iOS draws
     // a raised pill instead, supplied through underlineTrigger).
     const container: StyleProp<ViewStyle> = [
-      skin.underlineTrigger(tokens, selected),
+      skin.underlineTrigger(tokens, selected, dark),
       block ? s.flex1 : null,
+      skin.focusOutlineReset,
       disabled ? s.disabledDim : null,
     ];
     return (

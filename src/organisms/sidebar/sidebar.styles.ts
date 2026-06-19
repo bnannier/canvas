@@ -118,6 +118,13 @@ export const iosSkin: SidebarSkin = {
   pressedOpacity: 0.8,
   ripple: null,
 
+  // Suppress the react-native-web keyboard-focus blue ring on each row; a real
+  // iOS device never paints a hardware focus ring on a sidebar nav row, so the
+  // press dim is the only feedback. Web-only: `outlineStyle`/`outlineWidth` are
+  // not in RN's ViewStyle (hence the cast), and are a no-op natively. Matches the
+  // Input/Textarea/Pagination focus-outline reset.
+  focusOutlineReset: { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle,
+
   column(tokens, frame) {
     const base: ViewStyle = {
       width: 240,
