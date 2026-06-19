@@ -7,7 +7,7 @@ name: docs-native — EAS build
 # eas-update.yml instead; the web build/deploy is handled by docs.yml.
 #
 # Requires the EXPO_TOKEN secret and the app linked to an Expo project (`eas init`,
-# see docs-next/README). Since this is a deploy, the preflight FAILS LOUDLY (red)
+# see docs/README). Since this is a deploy, the preflight FAILS LOUDLY (red)
 # with an actionable message when either is missing, rather than passing silently.
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
-      # Checkout first so the preflight can read docs-next/app.json for the project link.
+      # Checkout first so the preflight can read docs/app.json for the project link.
       - uses: actions/checkout@v6
 
       # Fail LOUDLY (red) with an actionable message rather than skipping, so a
@@ -42,8 +42,8 @@ jobs:
             echo "::error::EXPO_TOKEN secret is not set. Add it under repo Settings → Secrets and variables → Actions so CI can authenticate to Expo."
             exit 1
           fi
-          if ! grep -q '"projectId"' docs-next/app.json; then
-            echo "::error::No Expo project linked: docs-next/app.json has no extra.eas.projectId. Run 'eas init' in docs-next/ and commit the result."
+          if ! grep -q '"projectId"' docs/app.json; then
+            echo "::error::No Expo project linked: docs/app.json has no extra.eas.projectId. Run 'eas init' in docs/ and commit the result."
             exit 1
           fi
 
@@ -61,21 +61,21 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       # The native app consumes the source-only library + generated docs-core via
-      # symlinks (docs-next postinstall). Install root deps first so those exist.
+      # symlinks (docs postinstall). Install root deps first so those exist.
       - name: Install root deps
         run: bun install --frozen-lockfile
 
       - name: Regenerate docs-core
         run: bun run docs:gen
 
-      - name: Install docs-next deps
-        working-directory: docs-next
+      - name: Install docs deps
+        working-directory: docs
         run: bun install
 
       - name: Typecheck native app
-        working-directory: docs-next
+        working-directory: docs
         run: bunx tsc --noEmit
 
       - name: EAS build (internal distribution)
-        working-directory: docs-next
+        working-directory: docs
         run: eas build --platform all --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --no-wait

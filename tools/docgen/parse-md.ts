@@ -1,5 +1,5 @@
-// The component-markdown grammar, lifted verbatim from the docs web shell
-// (docs/src/pages/component-page.tsx) into one framework-free module so the web
+// The component-markdown grammar, lifted verbatim from the original web docs'
+// component page into one framework-free module so the web
 // shell, the native shell, and the build-time codegen all parse a component's
 // `.md` the exact same way and can never drift. These functions are pure string
 // parsers with no React or bundler dependency.
@@ -106,7 +106,7 @@ export function parseDonts(section: string): DontPair[] {
 
 // Extract the names exposed to an example fence (the LIVE_SCOPE keys) straight from
 // the docs runtime scope module, so the codegen's destructure list stays in lockstep
-// with the single source of truth (docs/src/live-scope.ts) without importing it
+// with the single source of truth (docs-core/live-scope.ts) without importing it
 // (importing would pull react-native into a plain Node/Bun context). These are all
 // VALUE names (components, primitives, `tokens`, `alpha`/`shadow`/`palette`) — never
 // type-only exports — so destructuring them from the scope is always valid.

@@ -1,21 +1,12 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
     "strict": true,
-    "baseUrl": ".",
+    "skipLibCheck": true,
     "paths": {
-      "@/*": ["src/*"],
-      "@olympusoss/canvas": ["../src/index.ts"]
+      "@olympusoss/canvas": ["../src/index.ts"],
+      "docs-core/*": ["../docs-core/*"]
     }
   },
-  "include": ["src"]
+  "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"]
 }

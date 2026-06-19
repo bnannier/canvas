@@ -122,8 +122,7 @@ export const webSkin: DropdownSkin = {
 
 // ---------- iOS 26 (Liquid Glass pull-down menu): VERY rounded popover, no border, hairline groups ----------
 // Apple's iOS 26 pull-down/context menu: a very rounded popover panel (~26pt
-// continuous radius, matching the Liquid Glass kit render in
-// docs/public/refs/ios/dropdown/menu-iphone-light.png) over the `popover` fill
+// continuous radius, matching Apple's Liquid Glass pull-down kit render) over the `popover` fill
 // with NO visible border and a soft shadow; rows ~44pt tall with ~17pt labels,
 // full-bleed hairline `border` separators between groups, a destructive row in
 // the `destructive` red (icon + label), section titles in `muted-foreground`,

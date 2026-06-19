@@ -3,18 +3,18 @@
  * Screenshots every route in 3 modes: desktop-dark, desktop-light, mobile-dark.
  * Output: test/ui/<mode>/<kind>-<slug>.png
  *
- * Usage: BASE=http://localhost:5174 bun scripts/capture-ui.ts
+ * Usage: BASE=<docs web server URL> bun scripts/capture-ui.ts
  */
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium } from "@playwright/test";
-import { COMPONENTS } from "../docs/src/data/components.ts";
-import { getAllTemplates } from "../docs/src/data/templates.ts";
-import { getAllPatterns } from "../docs/src/data/patterns.ts";
+import { COMPONENTS } from "../docs-core/data/components.ts";
+import { getAllTemplates } from "../docs-core/data/templates.ts";
+import { getAllPatterns } from "../docs-core/data/patterns.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT = join(ROOT, "test", "ui");
-const BASE = process.env.BASE ?? "http://localhost:5174";
+const BASE = process.env.BASE ?? "http://localhost:8081";
 
 interface Route { kind: string; slug: string; route: string; }
 

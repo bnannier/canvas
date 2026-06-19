@@ -4,7 +4,7 @@ import { getAllTemplates } from "./templates";
 import type { SearchEntry } from "./types";
 
 // Static guide + foundation + token entries. These mirror the routes the docs app
-// actually exposes (the RN app has richer token pages than the original Vite docs:
+// actually exposes (the RN app has richer token pages than the original web docs:
 // colors, spacing, typography, and layout are each their own route), so a path here
 // always resolves to a real page on every platform.
 const GUIDE_ENTRIES: SearchEntry[] = [

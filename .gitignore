@@ -10,6 +10,3 @@ test/ui/
 
 # Local Claude Code session state
 .claude/
-
-# Local QA aid: third-party platform reference screenshots (not shipped)
-docs/public/refs/

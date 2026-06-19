@@ -6,10 +6,9 @@
 // docs-core/examples/, plus a single docs-core/registry.ts that wires them up with
 // their source strings and labels.
 //
-// This replaces the docs web shell's runtime engine (sucrase transpile + `new
-// Function` against a live scope in docs/src/components/live-example.tsx), which
-// cannot run under React Native's Hermes engine (no runtime eval). The generated
-// modules are ordinary TSX: Metro bundles them natively, Vite bundles them on web,
+// This replaces the previous docs web shell's runtime engine (sucrase transpile + `new
+// Function` against a live scope), which cannot run under React Native's Hermes engine
+// (no runtime eval). The generated modules are ordinary TSX: Metro bundles them natively
 // and `tsc` type-checks every fence against the real Canvas component types.
 
 import * as fs from "node:fs";
@@ -33,10 +32,10 @@ const rawMd: Record<string, string> = {};
 // The names an example fence may reference, taken straight from the docs runtime
 // scope so the destructure list never drifts from the single source of truth.
 const SCOPE_NAMES = scopeNamesFromLiveScope(
-  fs.readFileSync(path.join(REPO, "docs", "src", "live-scope.ts"), "utf8"),
+  fs.readFileSync(path.join(REPO, "docs-core", "live-scope.ts"), "utf8"),
 );
 if (SCOPE_NAMES.length === 0) {
-  throw new Error("Could not extract LIVE_SCOPE names from docs/src/live-scope.ts");
+  throw new Error("Could not extract LIVE_SCOPE names from docs-core/live-scope.ts");
 }
 
 const SCOPE_NAME_SET = new Set(SCOPE_NAMES);
@@ -44,7 +43,7 @@ const SCOPE_NAME_SET = new Set(SCOPE_NAMES);
 // Every capitalized JSX tag a fence uses must be a known scope name; otherwise the
 // generated module would destructure nothing for it and reference an unbound
 // identifier (a cryptic `tsc` "Cannot find name" / a runtime ReferenceError). The
-// scope (docs/src/live-scope.ts) and the type each fence is checked against (the
+// scope (docs-core/live-scope.ts) and the type each fence is checked against (the
 // `@olympusoss/canvas` barrel) are separate sources, so a component added to the
 // barrel and used in a fence — but not to the scope — would slip through. Collect
 // any such tags during generation and fail fast with a clear, source-located error.
@@ -65,7 +64,7 @@ const writtenExampleFiles = new Set<string>();
 // Write `content` to `file` only when it differs from what's already on disk, so a
 // no-op codegen run leaves the file's mtime and inode untouched. Metro's module map
 // and watchman key off mtime, so rewriting byte-identical files on every push would
-// invalidate the docs-next dev client's index and break the running iOS bundler.
+// invalidate the docs dev client's index and break the running iOS bundler.
 function writeFileIfChanged(file: string, content: string): void {
   let existing: string | null = null;
   try {
@@ -239,7 +238,7 @@ function main() {
     const uniq = [...new Map(tagViolations.map((v) => [`${v.tag}|${v.source}`, v])).values()];
     throw new Error(
       `docs:gen — ${uniq.length} JSX tag(s) used in a fence are not in the example scope ` +
-        `(docs/src/live-scope.ts LIVE_SCOPE); the generated module would reference an unbound ` +
+        `(docs-core/live-scope.ts LIVE_SCOPE); the generated module would reference an unbound ` +
         `identifier. Add them to LIVE_SCOPE:\n` +
         uniq.map((v) => `  <${v.tag}> in ${v.source}`).join("\n"),
     );

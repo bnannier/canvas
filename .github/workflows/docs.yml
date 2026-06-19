@@ -1,16 +1,15 @@
 name: Deploy docs to GitHub Pages
 
-# Builds the universal React Native docs app (docs-next) for the web and publishes it to
-# GitHub Pages at https://olympusoss.github.io/canvas/. The docs are now one Expo Router
-# app that renders on iOS, Android, and the web from the same code; this deploys the web
+# Builds the universal React Native docs app (docs/) for the web and publishes it to
+# GitHub Pages at https://olympusoss.github.io/canvas/. The docs are one Expo Router app
+# that renders on iOS, Android, and the web from the same code; this deploys the web
 # target. Runs on pushes to main that touch the app, the generated docs data, the library
-# source, or the codegen, plus manual rebuilds. (The old Vite docs/ is retained for
-# rollback; revert this file to redeploy it.)
+# source, or the codegen, plus manual rebuilds.
 on:
   push:
     branches: [main]
     paths:
-      - 'docs-next/**'
+      - 'docs/**'
       - 'docs-core/**'
       - 'tools/**'
       - 'src/**'
@@ -42,9 +41,9 @@ jobs:
         with:
           node-version: 20
 
-      # Install root deps first: docs-next consumes the source-only library + the generated
-      # docs-core as live symlinks (created by the docs-next postinstall), so those targets
-      # must exist before the docs-next install.
+      # Install root deps first: docs consumes the source-only library + the generated
+      # docs-core as live symlinks (created by the docs postinstall), so those targets
+      # must exist before the docs install.
       - name: Install root deps
         run: bun install --frozen-lockfile
 
@@ -57,29 +56,29 @@ jobs:
             exit 1
           fi
 
-      - name: Install docs-next deps
-        working-directory: docs-next
+      - name: Install docs deps
+        working-directory: docs
         run: bun install --frozen-lockfile
 
-      - name: Typecheck docs-next
-        working-directory: docs-next
+      - name: Typecheck docs
+        working-directory: docs
         run: bunx tsc --noEmit
 
       # The single nav source of truth (nav.config.json) must stay 1:1 with docs-core,
       # so a component/template/pattern can never drift out of the navigation.
       - name: Check nav config in sync with docs-core
-        working-directory: docs-next
+        working-directory: docs
         run: bun run check:nav
 
       - name: Export web build
-        working-directory: docs-next
+        working-directory: docs
         run: npx expo export -p web
         env:
           # Served under /canvas/ on Pages; app.config.js reads this into experiments.baseUrl.
           EXPO_BASE_URL: /canvas
 
       - name: SPA fallback + .nojekyll
-        working-directory: docs-next
+        working-directory: docs
         run: |
           # GitHub Pages serves 404.html for unknown paths; a copy of index.html lets the
           # SPA boot and client-route any deep link (e.g. /canvas/components/button). The
@@ -91,7 +90,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs-next/dist
+          path: docs/dist
 
   deploy:
     needs: build

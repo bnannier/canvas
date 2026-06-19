@@ -2,7 +2,7 @@
 
 Baseline: **v2.20.2** (last v2 React-component release) vs **current `main`** (the
 v3 CSS-first line). Sources of truth are each version's documented catalogue
-(`docs/src/data/components.ts`) cross-checked against the shipped style/source files.
+(`docs-core/data/components.ts`) cross-checked against the shipped style/source files.
 
 v2 documented **102** components across four tiers (atoms, molecules, organisms,
 charts). v3 documents **47** entries. The drop in count is mostly *consolidation

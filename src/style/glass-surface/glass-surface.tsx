@@ -2,7 +2,7 @@
 // expo-blur frost (real backdrop blur on web via react-native-web, native blur on
 // Android via the dimezis method). Falls back to a plain translucent View when not
 // in glass mode or when expo-blur is not installed (an optional peer dependency;
-// the Vite docs build stubs it, and bare consumers that skip it degrade here).
+// the docs build stubs it, and bare consumers that skip it degrade here).
 //
 // expo-glass-effect is NOT imported here, so web and Android bundles never pull
 // the iOS-only Liquid Glass native module. iOS resolves glass-surface.ios.tsx.
