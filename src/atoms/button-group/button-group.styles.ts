@@ -271,14 +271,17 @@ export const iosSkin: ButtonGroupSkin = {
   },
   showSelectedCheck: false,
 
-  // --- split (HIG: primary action + chevron, brand fill, rounded ~8) ---
+  // --- split (HIG: primary action + chevron, brand fill, capsule) ---
+  // The split is two prominent iOS buttons joined by a hairline, so the outer
+  // corners read as one capsule group (radius 9999), matching button.styles.ts
+  // (iOS 27 prominent buttons are full pills) and this skin's segmented pills.
   splitPrimary(t) {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopLeftRadius: 8,
-      borderBottomLeftRadius: 8,
+      borderTopLeftRadius: 9999,
+      borderBottomLeftRadius: 9999,
       backgroundColor: t.primary,
     };
   },
@@ -293,8 +296,8 @@ export const iosSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopRightRadius: 8,
-      borderBottomRightRadius: 8,
+      borderTopRightRadius: 9999,
+      borderBottomRightRadius: 9999,
       backgroundColor: t.primary,
       paddingHorizontal: 10,
       height,

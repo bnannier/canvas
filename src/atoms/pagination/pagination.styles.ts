@@ -41,6 +41,14 @@ export interface PaginationSkin {
   pressedOpacity: number | null;
   /** Android ripple over a pressed cell; null on iOS/web. */
   ripple?: (t: ColorTokens, selected: boolean) => { color: string; borderless: boolean };
+  /**
+   * Web-only focus-outline reset for the cell Pressables. iOS sets this so the
+   * react-native-web keyboard-focus blue ring (which a real iOS device never
+   * shows) is suppressed, leaving the press dim as the only feedback. Undefined
+   * on web/Android, which keep their own focus treatment. No-op natively, where
+   * `outlineStyle`/`outlineWidth` are not real CSS.
+   */
+  focusOutlineReset?: ViewStyle;
 }
 
 // --- shared size scales (brand type/sizing, identical across platforms) ------
@@ -146,22 +154,26 @@ export const webSkin: PaginationSkin = {
 // =============================================================================
 
 export const iosSkin: PaginationSkin = {
-  // Pill-rounded (radius 8), no border; the chevron reads as a plain glyph on the
-  // background so the numbered cells carry the shape.
-  controlBox(t) {
+  // Pill-rounded (radius 8), no border; the chevron reads as a plain glyph that is
+  // truly hollow (transparent) on any host surface, so the numbered cells carry the
+  // shape. Transparent (not `t.background`) keeps the control consistent on light,
+  // dark, and glass surfaces (HIG page control: hollow rest).
+  controlBox() {
     return {
       ...CELL_ROW,
       borderRadius: 8,
-      backgroundColor: t.background,
+      backgroundColor: "transparent",
     };
   },
   // The active page is a filled `primary` pill (radius 8); inactive pages are
-  // plain background pills with no border (HIG dots: filled current, hollow rest).
+  // truly hollow (transparent) on any surface, no border (HIG dots: filled current,
+  // hollow rest). Transparent, not `t.background`, so the resting look does not flip
+  // between dark chips and invisible cells depending on the host surface.
   pageBox(t, selected) {
     return {
       ...CELL_ROW,
       borderRadius: 8,
-      backgroundColor: selected ? t.primary : t.background,
+      backgroundColor: selected ? t.primary : "transparent",
     };
   },
   // The rows-per-page selector: a muted-filled pill trigger (radius 8), value +
@@ -190,6 +202,12 @@ export const iosSkin: PaginationSkin = {
     return { paddingHorizontal: 4, color: t["muted-foreground"] };
   },
   pressedOpacity: 0.8,
+  // react-native-web paints the browser's blue keyboard-focus ring around a
+  // focused Pressable; a real iOS device never shows it (native iOS feedback is
+  // the press dim only). Suppress it so Tab-focusing a cell or chevron paints no
+  // box. Web-only: `outlineStyle`/`outlineWidth` are not in RN's ViewStyle (hence
+  // the cast) and are ignored natively. Mirrors input/textarea's FIELD_OUTLINE_RESET.
+  focusOutlineReset: { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle,
 };
 
 // =============================================================================

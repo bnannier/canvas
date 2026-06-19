@@ -131,6 +131,7 @@ export function createPagination(skin: PaginationSkin) {
         style={({ pressed }) => [
           skin.controlBox(tokens),
           s.itemSize[size],
+          skin.focusOutlineReset,
           disabled ? { opacity: 0.5 } : null,
           skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
         ]}
@@ -219,6 +220,7 @@ export function createPagination(skin: PaginationSkin) {
               style={({ pressed }) => [
                 skin.selectorBox(tokens),
                 s.itemSize[size],
+                skin.focusOutlineReset,
                 disabled ? { opacity: 0.5 } : null,
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
@@ -268,6 +270,7 @@ export function createPagination(skin: PaginationSkin) {
               style={({ pressed }) => [
                 skin.pageBox(tokens, selected),
                 s.itemSize[size],
+                skin.focusOutlineReset,
                 disabled ? { opacity: 0.5 } : null,
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}

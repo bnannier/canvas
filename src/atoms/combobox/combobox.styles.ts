@@ -46,8 +46,23 @@ export interface ComboboxSkin {
   emptyText: (t: ColorTokens, size: Size) => TextStyle;
   /** A single option row's layout (gutter, radius, padding). */
   row: ViewStyle;
-  /** The accent surface for the selected row and the pressed/active row. */
-  rowAccent: (t: ColorTokens) => ViewStyle;
+  /**
+   * Optional hairline group separator applied to every row after the first, so
+   * the menu reads as iOS's separated item groups. Skins that omit it (web,
+   * Android) render borderless rows exactly as before.
+   */
+  rowSeparator?: (t: ColorTokens) => ViewStyle;
+  /**
+   * The fill applied to the SELECTED row at rest. iOS marks selection with the
+   * leading check only (no rest fill), so it returns null; web/Android tint with
+   * the brand `accent`.
+   */
+  rowSelected: (t: ColorTokens) => ViewStyle | null;
+  /**
+   * The transient fill applied while a row is PRESSED. iOS uses the neutral list
+   * tint (`secondary`); web/Android tint with the brand `accent`.
+   */
+  rowPressed: (t: ColorTokens) => ViewStyle;
   /** The leading check column. */
   check: (t: ColorTokens, size: Size) => TextStyle;
   /** The option label. */
@@ -128,7 +143,10 @@ export const webSkin: ComboboxSkin = {
     paddingHorizontal: 8,
     paddingVertical: 6,
   },
-  rowAccent: (t) => ({ backgroundColor: t.accent }),
+  // Web marks both selection and press with the brand `accent` fill (the
+  // established Canvas look, lifted verbatim).
+  rowSelected: (t) => ({ backgroundColor: t.accent }),
+  rowPressed: (t) => ({ backgroundColor: t.accent }),
   check: (t, size) => ({ width: 14, color: t["popover-foreground"], ...TEXT_SIZE[size] }),
   optionText: (t, size) => ({ color: t["popover-foreground"], ...TEXT_SIZE[size] }),
   helper: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
@@ -141,16 +159,31 @@ export const webSkin: ComboboxSkin = {
 // The iOS 27 combo box reads like the new iOS text field: NO filled capsule and
 // no box, just the value text on a transparent surface above a thin bottom
 // hairline (`border` at rest, the brand indigo `primary` when the list is open,
-// echoing the field's blue caret in the reference). The open list is the iOS 26+
-// menu surface: a large continuous-corner `popover` card (~27 radius, up from the
-// old ~12) floating on a soft shadow, with roomy rows. Press dims the surface
-// (~0.8); no ripple. The brand survives: the open hairline, the leading check,
-// and the focus accent are all the indigo `primary`, never iOS system blue.
-const IOS_MENU_RADIUS = 27;
+// echoing the field's blue caret in the reference). The field value, placeholder,
+// and label use the iOS-native scale (13/15/17pt). The open list is the iOS 26+
+// menu surface: a large continuous-corner `popover` card (26 radius, matching the
+// co-located iOS Select menu) floating on a soft shadow, with roomy ~42pt rows
+// pinned to the iOS body 17pt and hairline group separators between them. Selection
+// is the leading brand check ONLY (no rest fill); the transient press highlight is
+// the neutral iOS list tint `secondary`. Press dims the field surface (~0.8); no
+// ripple. The brand survives: the open hairline, the leading check, and the
+// trailing disclosure are all the indigo `primary`, never iOS system blue.
+const IOS_MENU_RADIUS = 26;
 const IOS_FIELD_BOX: Record<Size, number> = { small: 36, default: 44, large: 50 };
+// iOS-native field scale (matches select.styles.ts IOS_TEXT): the field value,
+// placeholder, and stacked label sit a notch larger than the brand web scale so
+// the control reads at the iOS-native footprint (13/15/17pt).
+const IOS_TEXT: Record<Size, TextStyle> = {
+  small: { fontSize: 13, lineHeight: 18 },
+  default: { fontSize: 15, lineHeight: 20 },
+  large: { fontSize: 17, lineHeight: 22 },
+};
+// Menu rows hold the iOS body size (17pt) regardless of the field's size axis,
+// matching the kit's fixed "Menu Item, Title" type and select.styles.ts IOS_ROW_TEXT.
+const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: ComboboxSkin = {
-  text: webText,
-  label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...TEXT_SIZE[size] }),
+  text: (size) => IOS_TEXT[size],
+  label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
   // Plain field: transparent, square (no capsule), bottom hairline only. The
   // hairline thickens and tints to the brand `primary` when the list is open.
   field: (t, size, open) => ({
@@ -164,8 +197,9 @@ export const iosSkin: ComboboxSkin = {
     paddingHorizontal: 0,
     height: IOS_FIELD_BOX[size],
   }),
-  fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
-  chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
+  fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...IOS_TEXT[size] }),
+  // The trailing disclosure is the brand indigo, the iOS field/pop-up tint.
+  chevron: (t, size) => ({ color: t.primary, ...IOS_TEXT[size] }),
   popover: (t) => ({
     position: "absolute",
     top: "100%",
@@ -176,24 +210,35 @@ export const iosSkin: ComboboxSkin = {
     maxHeight: 260,
     borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
-    padding: 6,
+    paddingVertical: 6,
     ...shadow("lg"),
   }),
-  emptyRow: { paddingHorizontal: 14, paddingVertical: 10 },
-  emptyText: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
+  emptyRow: { paddingHorizontal: 16, paddingVertical: 11 },
+  emptyText: (t, _size) => ({ color: t["muted-foreground"], ...IOS_ROW_TEXT }),
+  // iOS grouped-list rows: roomy (~42pt), no rest fill, hairline-separated. The
+  // selection is shown by the leading check, not a row tint.
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    gap: 10,
+    borderRadius: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    minHeight: 42,
   },
-  rowAccent: (t) => ({ backgroundColor: t.accent }),
-  check: (t, size) => ({ width: 16, color: t.primary, ...TEXT_SIZE[size] }),
-  optionText: (t, size) => ({ color: t["popover-foreground"], ...TEXT_SIZE[size] }),
+  // Inset hairline group separator on every row after the first, in `border`
+  // (the iOS opaque-separator read), so the menu reads as iOS's separated groups.
+  rowSeparator: (t) => ({ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.border }),
+  // Selection is the leading check ONLY, no rest fill (iOS selectable menu item).
+  rowSelected: () => null,
+  // The transient press highlight is the neutral iOS list-row tint.
+  rowPressed: (t) => ({ backgroundColor: t.secondary }),
+  check: (t, _size) => ({ width: 18, color: t.primary, ...IOS_ROW_TEXT }),
+  optionText: (t, _size) => ({ color: t["popover-foreground"], ...IOS_ROW_TEXT }),
   helper: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  disabledOpacity: 0.5,
+  // iOS disabled control alpha ~0.4 (the kit's disabled Menu Item is markedly
+  // dimmer than 50%), matching select.styles.ts and the iOS Button.
+  disabledOpacity: 0.4,
   pressedOpacity: 0.8,
   ripple: null,
 };
@@ -260,7 +305,10 @@ export const androidSkin: ComboboxSkin = {
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  rowAccent: (t) => ({ backgroundColor: t.accent }),
+  // M3 marks both selection and press with the brand `accent` state layer
+  // (unchanged from the previous shared `rowAccent`).
+  rowSelected: (t) => ({ backgroundColor: t.accent }),
+  rowPressed: (t) => ({ backgroundColor: t.accent }),
   check: (t, size) => ({ width: 16, color: t.primary, ...TEXT_SIZE[size] }),
   optionText: (t, size) => ({ color: t["popover-foreground"], ...TEXT_SIZE[size] }),
   helper: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),

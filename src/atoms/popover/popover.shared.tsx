@@ -104,9 +104,11 @@ export function createPopover(skin: PopoverSkin) {
         {open ? (
           <View style={cardPosition}>
             {/* The anchor arrow: drawn only when the skin supplies one (iOS) and
-                only in the floating case (an inline panel has no anchor). It sits
-                outside the GlassSurface so the surface's corner clip never cuts it. */}
-            {skin.arrow != null && !inline ? <View style={skin.arrow(tokens, placement)} /> : null}
+                only in the floating case (an inline panel has no anchor). The skin
+                renders the pointer node itself (iOS draws a tapered SVG beak), and
+                it sits outside the GlassSurface so the surface's corner clip never
+                cuts it. */}
+            {skin.arrow != null && !inline ? skin.arrow(tokens, placement) : null}
             <GlassSurface style={skin.card(tokens)}>
               {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
               {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}

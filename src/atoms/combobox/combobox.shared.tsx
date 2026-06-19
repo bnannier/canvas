@@ -126,14 +126,17 @@ export function createCombobox(skin: ComboboxSkin) {
                 <Text style={skin.emptyText(tokens, size)}>No results</Text>
               </View>
             ) : (
-              matches.map((option) => {
+              matches.map((option, index) => {
                 const selected = option === value;
+                const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
                 return (
                   <Pressable
                     key={option}
                     style={({ pressed }) => [
                       skin.row,
-                      selected || pressed ? skin.rowAccent(tokens) : null,
+                      separator,
+                      selected ? skin.rowSelected(tokens) : null,
+                      pressed ? skin.rowPressed(tokens) : null,
                     ]}
                     onPress={() => {
                       onSelect?.(option);
