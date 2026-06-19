@@ -17,7 +17,8 @@ import { CodeBlock } from "../ui/code-block";
 import { geist, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 import { useLatestVersion } from "../ui/use-latest-version";
-import { TOPBAR_HEIGHT } from "./topbar";
+import { CONTENT_TOP_INSET } from "./topbar";
+import { NativeHeader } from "./native-header";
 
 const REPO_URL = "https://github.com/OlympusOSS/canvas";
 const NPM_URL = "https://www.npmjs.com/package/@olympusoss/canvas";
@@ -224,8 +225,10 @@ export function Home() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
-      contentContainerStyle={{ paddingTop: TOPBAR_HEIGHT, paddingBottom: insets.bottom }}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom }}
     >
+      <NativeHeader />
       {/* ── Hero ── */}
       <View style={{ overflow: "hidden", paddingTop: wide ? 28 : 14, paddingBottom: 56 }}>
         <Aurora />

@@ -1,4 +1,4 @@
-import { useWindowDimensions } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { View, Text, Pressable, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
 import { usePathname } from "expo-router";
 import { Menu, Search, Sun, Moon } from "lucide-react-native";
@@ -10,6 +10,12 @@ import { geist } from "../ui/fonts";
 // scrolls behind it). Content scrollers add this as a top inset so their first row
 // starts below the bar.
 export const TOPBAR_HEIGHT = 56;
+
+// Top inset content scrollers add for the overlaying top bar. On web the custom Topbar is
+// an absolute overlay, so content must clear it (TOPBAR_HEIGHT). On native the real
+// UINavigationBar owns the inset via contentInsetAdjustmentBehavior="automatic", so the
+// content adds nothing (0) and lets iOS place it under the collapsing large title.
+export const CONTENT_TOP_INSET = Platform.OS === "web" ? TOPBAR_HEIGHT : 0;
 
 function titleize(slug: string): string {
   return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
@@ -30,7 +36,7 @@ const STATIC_TITLES: Record<string, { title: string; subtitle?: string }> = {
   "/boilerplate": { title: "Boilerplate", subtitle: "Overview" },
 };
 
-function titleFor(pathname: string): { title: string; subtitle?: string } {
+export function titleFor(pathname: string): { title: string; subtitle?: string } {
   if (STATIC_TITLES[pathname]) return STATIC_TITLES[pathname];
   const seg = pathname.split("/").filter(Boolean);
   if (seg[0] === "components" && seg[1]) {

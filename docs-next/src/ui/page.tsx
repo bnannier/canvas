@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { ScrollView, View, useTheme } from "@olympusoss/canvas";
-import { TOPBAR_HEIGHT } from "../shell/topbar";
+import { CONTENT_TOP_INSET } from "../shell/topbar";
+import { NativeHeader } from "../shell/native-header";
 import { H1, Lead } from "./prose";
 
 // The standard scrollable content frame, mirroring `.app-content` (max-width 1400,
@@ -10,10 +11,12 @@ export function Page({ children }: { children: ReactNode }) {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        // Inset by the overlaying topbar so the first row clears it but content
-        // still scrolls behind the glass bar.
-        paddingTop: TOPBAR_HEIGHT + 24,
+        // Web: clear the absolute Topbar overlay (CONTENT_TOP_INSET = 56). Native: iOS
+        // owns the inset via contentInsetAdjustmentBehavior, so we add 0 and let content
+        // sit under the collapsing large-title nav bar.
+        paddingTop: CONTENT_TOP_INSET + 24,
         paddingHorizontal: 28,
         paddingBottom: 80,
         gap: 28,
@@ -22,6 +25,7 @@ export function Page({ children }: { children: ReactNode }) {
         alignSelf: "center",
       }}
     >
+      <NativeHeader />
       {children}
     </ScrollView>
   );
