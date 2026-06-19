@@ -52,7 +52,9 @@ function fill(t: ColorTokens, intent: Intent): ViewStyle {
   }
 }
 
-// Label color (+ underline for link) per intent.
+// Label color per intent (brand, shared by all platforms). The link UNDERLINE is a web
+// idiom only: iOS and Android text buttons are tint-colored with no underline, so the
+// underline lives in webSkin.label, not here.
 function labelColor(t: ColorTokens, intent: Intent): TextStyle {
   switch (intent) {
     case "primary": return { color: t["primary-foreground"] };
@@ -60,7 +62,7 @@ function labelColor(t: ColorTokens, intent: Intent): TextStyle {
     case "destructive": return { color: t["destructive-foreground"] };
     case "outline": return { color: t.foreground };
     case "ghost": return { color: t.foreground };
-    case "link": return { color: t.primary, textDecorationLine: "underline" };
+    case "link": return { color: t.primary };
   }
 }
 
@@ -91,6 +93,7 @@ export const webSkin: ButtonSkin = {
     fontWeight: "500",
     ...(size === "large" ? FS(16, 24) : size === "small" ? FS(12, 16) : FS(14, 20)),
     ...labelColor(t, intent),
+    ...(intent === "link" ? { textDecorationLine: "underline" as const } : null), // web-only link underline
   }),
   pressedOpacity: 0.9,
   ripple: null,
@@ -104,12 +107,14 @@ export const iosSkin: ButtonSkin = {
     borderRadius: 9999, // iOS 27 prominent buttons are capsules (full pill at every size); icon = circle
     ...(o.icon
       ? sq(size === "small" ? 36 : size === "large" ? 52 : 44)
+      // Heights: base ~50pt (lineHeight 22 + 2*14) = the iOS 27 prominent button; large ~58pt
+      // for a clearly tiered ladder; small ~36pt. Capsule preserved at every size.
       : size === "small" ? { paddingHorizontal: 14, paddingVertical: 8 }
-      : size === "large" ? { paddingHorizontal: 24, paddingVertical: 15 }
-      : { paddingHorizontal: 20, paddingVertical: 12 }),
+      : size === "large" ? { paddingHorizontal: 26, paddingVertical: 18 }
+      : { paddingHorizontal: 20, paddingVertical: 14 }),
     ...fill(t, intent),
     ...(o.block ? { width: "100%" } : null),
-    ...(o.dim ? { opacity: 0.5 } : null),
+    ...(o.dim ? { opacity: 0.4 } : null), // iOS disabled control alpha (more muted than 0.5)
   }),
   label: (t, intent, size) => ({
     fontWeight: "600",

@@ -128,6 +128,26 @@ export const webSkin: InputSkin = {
 // thickening + tinting that hairline to the brand `ring` on focus (and
 // `destructive` on error); at rest it is the faint `border` separator. The
 // cursor/selection is always the indigo `primary` (set in the shell).
+
+// On iOS the plain field must show NO box at all on focus: only the bottom
+// hairline reacts. react-native-web otherwise paints its default focus outline
+// (a bright-blue rectangle) and a browser-default caret, which would turn the
+// plain hairline field into a generic boxed input the instant it is focused.
+// These web-only style props suppress that outline and pin the caret to the
+// brand `primary`, matching `selectionColor`. They are iOS-skin-only (the web
+// skin draws its own visible border and is left untouched) and are no-ops on
+// real iOS, which has no CSS outline. `caretColor`/`cursorColor`/`outlineStyle`
+// /`outlineWidth` are not in RN's TextStyle, hence the cast (as in the shell's
+// FIELD_OUTLINE_RESET).
+function iosWebFieldReset(t: ColorTokens): TextStyle {
+  return {
+    outlineStyle: "none",
+    outlineWidth: 0,
+    caretColor: t.primary, // brand indigo caret (RN Web), matching selectionColor
+    cursorColor: t.primary, // brand indigo caret (RN Android prop, harmless on iOS)
+  } as unknown as TextStyle;
+}
+
 function iosHairline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean): ViewStyle {
   // Rest = the faint `border` separator; focus/error thicken to 2pt and tint to
   // the brand color the shell resolved (ring on focus, destructive on error).
@@ -149,6 +169,10 @@ export const iosSkin: InputSkin = {
     // Plain field: transparent surface, no box/radius, only a bottom hairline.
     backgroundColor: "transparent",
     ...iosHairline(t, borderColor, focused, error),
+    // Suppress the react-native-web focus outline box and pin the caret to the
+    // brand `primary` (the bare + multiline path never got the shell's
+    // FIELD_OUTLINE_RESET, so on focus it showed a browser-blue rectangle).
+    ...iosWebFieldReset(t),
     // No horizontal inset so the value text aligns flush with the hairline edge,
     // as in the iOS 27 render.
     paddingHorizontal: 0,
@@ -171,6 +195,10 @@ export const iosSkin: InputSkin = {
     paddingHorizontal: 0,
     paddingVertical: 10,
     color: t.foreground,
+    // Brand caret + outline suppression on the inner grouped field too, so the
+    // caret matches the bare field (the shell already adds FIELD_OUTLINE_RESET
+    // to the grouped field, but not the caret color).
+    ...iosWebFieldReset(t),
     ...(leadingIcon ? { paddingLeft: 28 } : null),
     ...(trailingIcon ? { paddingRight: 28 } : null),
   }),

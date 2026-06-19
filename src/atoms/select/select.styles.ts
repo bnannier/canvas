@@ -234,7 +234,9 @@ export const iosSkin: SelectSkin = {
   // selectable menu marks the leading edge).
   indicator: (t, _size) => ({ color: t.primary, fontWeight: "600", ...IOS_ROW_TEXT }),
   selectedSide: "leading",
-  disabledOpacity: 0.5,
+  // iOS disabled control alpha: ~0.4 (the kit's disabled Menu Item is markedly
+  // dimmer than 50%), matching the iOS Button's disabled treatment.
+  disabledOpacity: 0.4,
   pressedOpacity: 0.8,
   ripple: null,
 };

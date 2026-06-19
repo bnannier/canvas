@@ -72,22 +72,29 @@ export const webSkin: TextareaSkin = {
 
 // ---------- iOS (HIG, iOS 27 / Liquid Glass): plain transparent field, bottom hairline ----------
 // The iOS 27 plain multiline text view: no fill, no box, a transparent field
-// with a single subtle bottom hairline rule. The rule is the `input` token at
-// rest (1pt), brightening to the brand `primary` on focus and `destructive` on
-// error, mirroring the new plain single-line input. Horizontal padding drops to
-// 0 so the text and the rule align to the field's edges like the reference.
+// with a single subtle bottom hairline rule. The rule is the faint `border`
+// separator at rest (1pt), thickening to 2pt and tinting to the brand focus
+// accent `ring` on focus (and `destructive` on error), mirroring the single-line
+// input's iosHairline exactly. Horizontal padding drops to 0 so the text and the
+// rule align to the field's edges like the reference; vertical padding is 10 to
+// match the sibling iOS field's density.
 export const iosSkin: TextareaSkin = {
-  field: (t, st) => ({
-    width: "100%",
-    backgroundColor: "transparent",
-    // The only chrome: a bottom hairline that carries focus/error.
-    borderBottomWidth: 1,
-    borderBottomColor: st.error ? t.destructive : st.focused ? t.primary : t.input,
-    paddingHorizontal: 0,
-    paddingTop: 8,
-    paddingBottom: 8,
-    color: t.foreground,
-  }),
+  field: (t, st) => {
+    // Focus or error make the field "active": the hairline thickens 1pt -> 2pt
+    // and tints to the brand accent (ring on focus, destructive on error).
+    const active = st.focused || st.error;
+    return {
+      width: "100%",
+      backgroundColor: "transparent",
+      // The only chrome: a bottom hairline that carries focus/error.
+      borderBottomWidth: active ? 2 : 1,
+      borderBottomColor: st.error ? t.destructive : st.focused ? t.ring : t.border,
+      paddingHorizontal: 0,
+      paddingTop: 10,
+      paddingBottom: 10,
+      color: t.foreground,
+    };
+  },
 };
 
 // ---------- Android (Material 3 filled): subtle fill + active indicator ------

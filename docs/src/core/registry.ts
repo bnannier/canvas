@@ -176,6 +176,9 @@ import e_atoms_input_example_3 from "./examples/atoms/input/example-3";
 import e_atoms_input_example_4 from "./examples/atoms/input/example-4";
 import e_atoms_input_example_5 from "./examples/atoms/input/example-5";
 import e_atoms_input_example_6 from "./examples/atoms/input/example-6";
+import e_atoms_input_example_7 from "./examples/atoms/input/example-7";
+import e_atoms_input_example_8 from "./examples/atoms/input/example-8";
+import e_atoms_input_example_9 from "./examples/atoms/input/example-9";
 import e_atoms_input_dont_0_do from "./examples/atoms/input/dont-0-do";
 import e_atoms_input_dont_0_dont from "./examples/atoms/input/dont-0-dont";
 import e_atoms_input_dont_1_do from "./examples/atoms/input/dont-1-do";
@@ -882,9 +885,12 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Control - number", code: "<Input placeholder=\"1024\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_1 },
       { label: "Control - select", code: "<View style={{ maxWidth: 320, flexDirection: \"column\", gap: 6 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Status</Text>\n  <Select value=\"Active\" options={[\"Active\", \"Inactive\", \"Pending\"]} />\n  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens[\"muted-foreground\"] }}>We'll use this for account recovery.</Text>\n</View>", render: e_atoms_input_example_2 },
       { label: "Control - textarea", code: "<Input multiline placeholder=\"Describe the change\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_3 },
-      { label: "State - error", code: "<Input error placeholder=\"rachel.chen@example.com\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_4 },
-      { label: "State - disabled", code: "<Input disabled placeholder=\"rachel.chen@example.com\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_5 },
-      { label: "State - readonly", code: "<Input readOnly placeholder=\"rachel.chen@example.com\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_6 },
+      { label: "Addon - prefix", code: "<Input prefix=\"https://\" placeholder=\"canvas.dev\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_4 },
+      { label: "Addon - action", code: "<Input suffix=\"Copy\" action value=\"cnv_3f9a21b8e7\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_5 },
+      { label: "Addon - icon", code: "<Input leadingIcon icon=\"search\" placeholder=\"Search\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_6 },
+      { label: "State - error", code: "<Input error placeholder=\"rachel.chen@example.com\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_7 },
+      { label: "State - disabled", code: "<Input disabled placeholder=\"rachel.chen@example.com\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_8 },
+      { label: "State - readonly", code: "<Input readOnly placeholder=\"rachel.chen@example.com\" style={{ maxWidth: 320 }} />", render: e_atoms_input_example_9 },
     ],
     donts: [
       { title: "text", do: { caption: "Pair every field with a persistent .label above the control.", code: "<Field label=\"Email\" placeholder=\"ada@acme.dev\" style={{ maxWidth: 320 }} />", render: e_atoms_input_dont_0_do }, dont: { caption: "A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.", code: "<Input placeholder=\"Email\" style={{ maxWidth: 320 }} />", render: e_atoms_input_dont_0_dont } },

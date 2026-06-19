@@ -38,9 +38,12 @@ function sizeOf(p: SwitchProps): Size {
 }
 
 // The only thing a platform skin owns: the track and thumb styles for a given
-// on/off state and size, built from the active tokens. Everything else is the shell.
+// on/off state and size, built from the active tokens. Everything else is the
+// shell. `dark` is threaded in (like dropdown/badge) so a skin can pick a
+// scheme-specific off-track gray that the generic `input` token does not provide
+// (the iOS off track is a solid mid-gray in light mode, systemGray3).
 export interface SwitchSkin {
-  track: (tokens: ColorTokens, checked: boolean, size: Size) => ViewStyle;
+  track: (tokens: ColorTokens, dark: boolean, checked: boolean, size: Size) => ViewStyle;
   thumb: (tokens: ColorTokens, checked: boolean, size: Size) => ViewStyle;
 }
 
@@ -51,7 +54,7 @@ const DESC_FONT: Record<Size, number> = { small: 11, base: 12, large: 14 };
 export function createSwitch(skin: SwitchSkin) {
   return function Switch(props: SwitchProps) {
     const { checked = false, onChange, onValueChange, disabled, children, description, style } = props;
-    const { tokens } = useTheme();
+    const { tokens, dark } = useTheme();
     const size = sizeOf(props);
 
     const handlePress = (_event: GestureResponderEvent) => {
@@ -88,7 +91,7 @@ export function createSwitch(skin: SwitchSkin) {
             ) : null}
           </View>
         ) : null}
-        <View style={skin.track(tokens, checked, size)}>
+        <View style={skin.track(tokens, dark, checked, size)}>
           <View style={skin.thumb(tokens, checked, size)} />
         </View>
       </Pressable>

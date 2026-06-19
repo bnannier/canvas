@@ -32,6 +32,24 @@ The Input component is a React Native text field with semantic boolean props (`e
 <Input multiline placeholder="Describe the change" style={{ maxWidth: 320 }} />
 ```
 
+### Addon - prefix
+
+```tsx
+<Input prefix="https://" placeholder="canvas.dev" style={{ maxWidth: 320 }} />
+```
+
+### Addon - action
+
+```tsx
+<Input suffix="Copy" action value="cnv_3f9a21b8e7" style={{ maxWidth: 320 }} />
+```
+
+### Addon - icon
+
+```tsx
+<Input leadingIcon icon="search" placeholder="Search" style={{ maxWidth: 320 }} />
+```
+
 ### State - error
 
 ```tsx
