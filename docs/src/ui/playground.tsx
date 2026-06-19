@@ -1,5 +1,5 @@
 import { Component, type ReactNode, useState } from "react";
-import { useWindowDimensions } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { ScrollView, View, Text, Pressable, OverlayProvider, useTheme } from "@olympusoss/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocExample, ExampleScope } from "../core/scope";
@@ -103,6 +103,11 @@ export function Playground({ examples }: { examples: DocExample[] }) {
   const stage = (
     <View style={{ flex: 1, minWidth: 0 }}>
       <View
+        // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
+        // react-native-web draws for a scrollable demo (a ScrollView/list/table) inside a
+        // preview cell — a real iOS/Android device shows a transient indicator, not a
+        // persistent bar. Web-only attribute; a no-op on native.
+        {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
         style={{
           borderWidth: 1,
           borderBottomWidth: 0,

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { useWindowDimensions } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { View, Text, useTheme } from "@olympusoss/canvas";
 import { CircleX, CircleCheck } from "lucide-react-native";
 import { buildScopes } from "../core/build-scopes";
@@ -26,7 +26,12 @@ function ResultCard({ kind, caption, scope, render, resetKey }: {
         <Icon size={14} color={labelColor} />
         <Text style={{ fontFamily: geist("600"), fontSize: 13, color: labelColor }}>{isDont ? "Don’t" : "Do"}</Text>
       </View>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+      <View
+        // Same preview-scrollbar suppression as the Playground stage (see web-scrollbar.tsx):
+        // hide the browser scrollbar a scrollable demo would draw here. Web-only; no-op native.
+        {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
+        style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }}
+      >
         <ExampleErrorBoundary key={resetKey}>{render(scope)}</ExampleErrorBoundary>
       </View>
       <Text style={{ fontFamily: geist("400"), fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>{caption}</Text>

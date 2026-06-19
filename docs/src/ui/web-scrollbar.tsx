@@ -26,6 +26,11 @@ export function WebScrollbarTheme() {
 ::-webkit-scrollbar-corner { background: transparent; }
 ::-webkit-scrollbar-thumb { background-color: ${thumb}; border-radius: 9999px; border: 2px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background-color: ${thumbHover}; background-clip: padding-box; }
+/* Inside a component preview stage, hide the persistent browser scrollbar a scrollable
+   demo would otherwise show — iOS/Android use a transient indicator, not a fixed bar, so a
+   visible bar reads as wrong in the iOS/Android preview columns. The demo still scrolls. */
+[data-preview-stage] ::-webkit-scrollbar { display: none; }
+[data-preview-stage], [data-preview-stage] * { scrollbar-width: none; }
 `;
     let el = document.getElementById("docs-scrollbar-theme") as HTMLStyleElement | null;
     if (!el) {
