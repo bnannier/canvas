@@ -14,6 +14,7 @@ export * from "./kbd/kbd.js";
 export * from "./listbox/listbox.js";
 export * from "./pagination/pagination.js";
 export * from "./popover/popover.js";
+export * from "./qrcode/qrcode.js";
 export * from "./radio/radio.js";
 export * from "./select/select.js";
 export * from "./skeleton/skeleton.js";

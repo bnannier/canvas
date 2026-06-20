@@ -1,10 +1,9 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Icon, useTheme } from "@olympusoss/canvas";
+import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Defs, RadialGradient, Stop, Filter, FeGaussianBlur, G } from "react-native-svg";
-import QRCode from "react-native-qrcode-svg";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
@@ -285,9 +284,7 @@ export function Home() {
             titleSize={sectionTitle}
           />
           <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 40 : 24, alignItems: wide ? "center" : "stretch" }}>
-            <View style={{ alignSelf: "flex-start", padding: 14, backgroundColor: "#ffffff", borderRadius: 16, borderWidth: 1, borderColor: tokens.border }}>
-              <QRCode value={APP_INSTALL_URL} size={176} color="#000000" backgroundColor="#ffffff" />
-            </View>
+            <QRCode value={APP_INSTALL_URL} large style={{ borderWidth: 1, borderColor: tokens.border }} />
             <View style={{ flex: wide ? 1 : undefined, gap: 16, minWidth: 0 }}>
               <View style={{ gap: 10 }}>
                 <Step n="1">Install Expo Go from the App Store or Google Play.</Step>

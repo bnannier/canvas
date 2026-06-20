@@ -322,6 +322,12 @@ export const COMPONENTS: ComponentDoc[] = [
     description: "Floating panel for rich content triggered by a click.",
     category: "Atoms",
   },
+  {
+    slug: "qrcode",
+    name: "QRCode",
+    description: "Encodes a string as a scannable QR code. Built on react-native-svg, so it renders the same on iOS, Android, and the web, and stays a fixed dark-on-white card for reliable scanning.",
+    category: "Atoms",
+  },
 
   {
     slug: "row-menu",

@@ -37,10 +37,13 @@
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
+  "dependencies": {
+    "react-native-qrcode-svg": "^6.3.21"
+  },
   "peerDependencies": {
     "react": ">=18",
     "react-native": ">=0.74",
-    "react-native-svg": ">=13",
+    "react-native-svg": ">=14",
     "expo-blur": "*",
     "expo-glass-effect": "*"
   },

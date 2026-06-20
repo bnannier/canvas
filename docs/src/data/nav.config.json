@@ -41,6 +41,7 @@
           { "slug": "listbox", "label": "Listboxes", "icon": "list-checks" },
           { "slug": "pagination", "label": "Pagination", "icon": "chevrons-left" },
           { "slug": "popover", "label": "Popover", "icon": "square" },
+          { "slug": "qrcode", "label": "QR Code", "icon": "layout-grid" },
           { "slug": "radio", "label": "Radios", "icon": "circle-dot" },
           { "slug": "select", "label": "Selects", "icon": "list" },
           { "slug": "skeleton", "label": "Skeletons", "icon": "loader" },

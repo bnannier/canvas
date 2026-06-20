@@ -227,6 +227,11 @@ import e_atoms_popover_dont_2_dont from "./examples/atoms/popover/dont-2-dont";
 import e_atoms_pressable_example_0 from "./examples/atoms/pressable/example-0";
 import e_atoms_pressable_example_1 from "./examples/atoms/pressable/example-1";
 import e_atoms_pressable_example_2 from "./examples/atoms/pressable/example-2";
+import e_atoms_qrcode_example_0 from "./examples/atoms/qrcode/example-0";
+import e_atoms_qrcode_example_1 from "./examples/atoms/qrcode/example-1";
+import e_atoms_qrcode_example_2 from "./examples/atoms/qrcode/example-2";
+import e_atoms_qrcode_dont_0_do from "./examples/atoms/qrcode/dont-0-do";
+import e_atoms_qrcode_dont_0_dont from "./examples/atoms/qrcode/dont-0-dont";
 import e_atoms_radio_example_0 from "./examples/atoms/radio/example-0";
 import e_atoms_radio_example_1 from "./examples/atoms/radio/example-1";
 import e_atoms_radio_example_2 from "./examples/atoms/radio/example-2";
@@ -966,6 +971,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
 
+    ],
+  },
+  "qrcode": {
+    dir: "qrcode",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<QRCode value=\"https://canvas.olympusoss.com\" />", render: e_atoms_qrcode_example_0 },
+      { label: "Size - small", code: "<QRCode value=\"https://canvas.olympusoss.com\" small />", render: e_atoms_qrcode_example_1 },
+      { label: "Size - large", code: "<QRCode value=\"https://canvas.olympusoss.com\" large />", render: e_atoms_qrcode_example_2 },
+    ],
+    donts: [
+      { title: "Keep it scannable", do: { caption: "Leave the fixed dark-on-white card in place so the code stays high-contrast for any camera.", code: "<QRCode value=\"https://canvas.olympusoss.com\" />", render: e_atoms_qrcode_dont_0_do }, dont: { caption: "Shrinking a data-dense value to the small size drops the modules below a reliably scannable density.", code: "<QRCode value=\"https://canvas.olympusoss.com/get/the/app?ref=docs&utm=homepage&v=2\" small />", render: e_atoms_qrcode_dont_0_dont } },
     ],
   },
   "radio": {
