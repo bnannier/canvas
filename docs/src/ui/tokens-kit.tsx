@@ -6,10 +6,10 @@ import { geist, geistMono } from "./fonts";
 import { alpha, readableText } from "./color";
 
 // Shared primitives for the token reference pages (Colors, Spacing, Typography, Layout).
-// These pages use a LARGER heading scale than the component/guide pages: the Vite
-// `.tokens` h1 is clamp(32,5vw,40)/700/-0.025em and each section h2 is 20px/600/-0.015em,
+// These pages use a LARGER heading scale than the component/guide pages: the page
+// h1 is clamp(32,5vw,40)/700/-0.025em and each section h2 is 20px/600/-0.015em,
 // with a muted "Anatomy." / "Try this." callout. Built with Geist + tokens so the RN pages
-// read identically to the Vite originals on every platform.
+// read identically on every platform.
 
 // Page title — clamp(32px, 5vw, 40px) / 700 / -0.025em.
 export function TokenH1({ children }: { children: ReactNode }) {
@@ -119,7 +119,7 @@ export function SwatchLabel({ children }: { children: ReactNode }) {
 
 // A bare linear-gradient fill (RN has no CSS gradient; render it with react-native-svg).
 // No border/radius of its own — it sits in SwatchCard's clipped top region. `angle`
-// is the direction in degrees (135 = top-left → bottom-right, the Vite default).
+// is the direction in degrees (135 = top-left → bottom-right, the default).
 // Children render centered on top. A per-instance gradient id avoids url(#id)
 // collisions when several gradient fills render on the same page.
 export function GradientFill({ colors, height = 80, angle = 135, children }: {
@@ -198,8 +198,7 @@ export function SwatchCard({ label, color, split, height = 80, top, children }: 
 }
 
 // An equal-width responsive grid: lay `children` out in rows of `cols`, each cell flex:1.
-// On narrow viewports pass a smaller `cols`. Mirrors the Vite `grid-template-columns:
-// repeat(N, 1fr)` swatch grids.
+// On narrow viewports pass a smaller `cols`. Mirrors a `repeat(N, 1fr)` swatch grid.
 export function Grid({ children, cols, gap = 16 }: { children: ReactNode[]; cols: number; gap?: number }) {
   const items = children.filter(Boolean);
   const rows: ReactNode[][] = [];

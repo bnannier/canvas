@@ -15,7 +15,7 @@ import { PATTERNS_TILES } from "../../../catalog/patterns";
 
 const CATEGORY_IDS = ["Tokens", "Atoms", "Molecules", "Organisms", "Templates", "Patterns"];
 
-// A live catalog mirroring the Vite components-index: a category pill bar + intro, then a tile
+// A live catalog: a category pill bar + intro, then a tile
 // grid per category, each tile a small mockup preview of the component linking to its reference.
 export default function ComponentsIndex() {
   const { tokens, surface } = useTheme();

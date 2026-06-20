@@ -7,11 +7,10 @@ import { CanvasMark } from "../brand/canvas-mark";
 import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, getActiveGroup, type NavItem } from "../data/nav";
 import { geist } from "../ui/fonts";
 
-// The docs sidebar, matching the Vite chrome: brand (CanvasMark + Canvas / design
+// The docs sidebar chrome: brand (CanvasMark + Canvas / design
 // system), a pinned Overview, an always-open Tokens & Utilities section, the
 // collapsible category groups (accordion), and a Compare footer. On wide viewports it
-// can collapse to a 56px icon rail (the brand chevron / topbar hamburger toggle it),
-// mirroring the Vite `.sidebar.collapsed` rail.
+// can collapse to a 56px icon rail (the brand chevron / topbar hamburger toggle it).
 export function Sidebar({
   onNavigate,
   collapsed = false,
@@ -83,7 +82,7 @@ export function Sidebar({
   );
 
   // A collapsed group renders just its icon; tapping it expands the rail and opens that
-  // group, mirroring the Vite collapsed-rail `expandToGroup`.
+  // group.
   const CollapsedGroup = ({ group }: { group: (typeof NAV_GROUPS)[number] }) => {
     const groupHasActive = group.items.some((i) => i.slug === activeSlug);
     const color = groupHasActive ? tokens.foreground : tokens["muted-foreground"];

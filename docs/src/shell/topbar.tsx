@@ -93,7 +93,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
       </View>
 
       {/* Two flex spacers around the search center it and pin the toggle + theme
-          button to the right edge, so the bar fills the full width (Vite parity).
+          button to the right edge, so the bar fills the full width.
           The search is a fixed-width element, not the flexing one. */}
       <View style={{ flex: 1 }} />
 

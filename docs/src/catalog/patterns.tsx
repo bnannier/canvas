@@ -6,8 +6,7 @@ import { geist, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";
 
 // ── Patterns previews ─────────────────────────────────────────────────────────
-// Hand-authored mini-mockups for the Patterns category, ported from the Vite
-// components-index. Same order, titles, and hrefs as the source `<Tile>` set.
+// Hand-authored mini-mockups for the Patterns category.
 
 // Honours the OS "reduce motion" setting so the pulsing skeletons hold still when
 // the user has asked for less animation. Mirrors the hero-orbit helper.
@@ -151,8 +150,8 @@ function FormValidationPreview() {
       <View
         style={{
           height: 28,
-          // The Vite mockup pairs a destructive border with a 1px destructive box-shadow ring;
-          // a 2px destructive border reads as that emphasized error outline at tile size.
+          // A destructive border paired with a 1px destructive ring reads as an emphasized error
+          // outline; a 2px destructive border conveys that at tile size.
           borderRadius: 6,
           borderWidth: 2,
           borderColor: tokens.destructive,

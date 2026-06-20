@@ -1,4 +1,4 @@
-// The Vite landing leans on CSS `color-mix(... N%, transparent)` for its tinted chips,
+// The landing leans on CSS `color-mix(... N%, transparent)` for its tinted chips,
 // badges, and washes. The Canvas tokens are plain 6-digit hex, so this turns a hex token
 // into an rgba() string at the given alpha — the RN-safe equivalent of mixing toward
 // transparent. (Mixing toward another color is done per-call where needed.)

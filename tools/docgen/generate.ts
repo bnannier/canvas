@@ -25,7 +25,7 @@ const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
 const RAW_MD_FILE = path.join(REPO, "docs", "src", "core", "raw-md.ts");
 
-// The raw markdown of every component, keyed exactly like the web docs' Vite
+// The raw markdown of every component, keyed exactly like the web docs'
 // import.meta.glob (so the reused Compare page can read it on Metro instead).
 const rawMd: Record<string, string> = {};
 

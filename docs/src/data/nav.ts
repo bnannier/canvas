@@ -120,7 +120,7 @@ export const NAV_GROUPS: NavGroup[] = CONFIG.web.sidebar.map((g): NavGroup => {
   return { label: g.group, icon: icon(g.icon), items };
 });
 
-// Alphabetize within each group (matches the Vite sidebar ordering).
+// Alphabetize within each group.
 for (const group of NAV_GROUPS) {
   group.items.sort((a, b) => a.label.localeCompare(b.label));
 }

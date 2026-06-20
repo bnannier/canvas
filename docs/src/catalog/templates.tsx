@@ -5,14 +5,14 @@ import { CanvasMark } from "../brand/canvas-mark";
 import { type CatTile } from "./tile";
 
 // ── Templates previews ───────────────────────────────────────────────────────
-// Hand-authored mini-mockups for the Templates category, ported from the Vite
-// components-index. Each Preview returns just the centered mockup; the Tile
-// wrapper supplies the 16:9 stage, the muted wash, and padding.
+// Hand-authored mini-mockups for the Templates category. Each Preview returns
+// just the centered mockup; the Tile wrapper supplies the 16:9 stage, the muted
+// wash, and padding.
 
 function CalendarPreview() {
   const { tokens } = useTheme();
   // 7-column month grid: cell 10 is "today" (primary fill), cell 8 has a primary
-  // bottom rule. Mirrors the Vite 21-cell grid with gap 1.
+  // bottom rule. A 21-cell grid with gap 1.
   return (
     <View style={{ width: "100%", maxWidth: 180, flexDirection: "row", flexWrap: "wrap", gap: 1 }}>
       {Array.from({ length: 21 }).map((_, i) => (

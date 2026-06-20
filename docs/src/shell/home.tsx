@@ -128,8 +128,8 @@ function Wrap({ children, style }: { children: ReactNode; style?: object }) {
   return <View style={[{ width: "100%", maxWidth: 1140, alignSelf: "center", paddingHorizontal: 24 }, style]}>{children}</View>;
 }
 
-// .landing-btn (-primary / -outline, -lg): solid foreground fill or bordered surface.
-// `iconRight` places the icon after the label (the Vite "Browse components ->" layout);
+// A landing button (primary / outline, large): solid foreground fill or bordered surface.
+// `iconRight` places the icon after the label (the "Browse components ->" layout);
 // otherwise it leads (the "<icon> View on GitHub" layout).
 function LandingButton({ label, icon, primary, iconRight, onPress }: {
   label: string; icon?: ReactNode; primary?: boolean; iconRight?: boolean; onPress: () => void;
@@ -152,7 +152,7 @@ function LandingButton({ label, icon, primary, iconRight, onPress }: {
   );
 }
 
-// The blurred radial wash behind the hero (decorative), matching the Vite `.landing-aurora`:
+// The blurred radial wash behind the hero (decorative):
 // three low-opacity color blobs softened by a heavy Gaussian blur so they read as ONE
 // diffuse glow rather than defined dark discs. Without the blur the low-opacity circles
 // over the near-black page render as a hard-edged blob; FeGaussianBlur (the same primitive
@@ -174,7 +174,7 @@ function Aurora() {
               <Stop offset="72%" stopColor={b.color} stopOpacity={0} />
             </RadialGradient>
           ))}
-          {/* Vite `.landing-aurora { filter: blur(40px) }`. */}
+          {/* A 40px Gaussian blur over the aurora wash. */}
           <Filter id="aurora-blur" x="-25%" y="-25%" width="150%" height="150%">
             <FeGaussianBlur stdDeviation="40" />
           </Filter>
@@ -221,7 +221,7 @@ export function Home() {
   const ctaTitle = Math.round(Math.min(42, Math.max(28, width * 0.04)));
 
   // Glass is a theming-level surface mode: the canvas goes transparent so the shell's
-  // GlassAurora reads through (the footer band stays solid, matching the Vite landing).
+  // GlassAurora reads through (the footer band stays solid).
   return (
     <ScreenFrame>
     <ScrollView
@@ -238,7 +238,7 @@ export function Home() {
             {/* Copy */}
             <View style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
               <View style={{ flexDirection: "row", alignSelf: "flex-start", alignItems: "center", gap: 8, paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
-                {/* The dot keeps a 7px layout box; the 3px halo ring overflows it (Vite box-shadow 0 0 0 3px primary@22%). */}
+                {/* The dot keeps a 7px layout box; the 3px halo ring overflows it (a 0 0 0 3px box-shadow at primary@22%). */}
                 <View style={{ width: 7, height: 7, alignItems: "center", justifyContent: "center" }}>
                   <View style={{ position: "absolute", width: 13, height: 13, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.22) }} />
                   <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />

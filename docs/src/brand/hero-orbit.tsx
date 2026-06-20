@@ -5,8 +5,8 @@ import Svg, { Circle, Path, Defs, RadialGradient, Stop, Mask, Rect, G, Filter, F
 import { CanvasMark } from "./canvas-mark";
 import { AppleLogo, ReactLogo, TypeScriptLogo, AndroidLogo, Html5Logo, TailwindLogo } from "./brand-logos";
 
-// Canvas at the core, the platforms it targets orbiting around it — the RN port of the
-// Vite `.hero-orbit`: a dashed ring, a disc carrying the rainbow "C", a rainbow glow that
+// Canvas at the core, the platforms it targets orbiting around it: a dashed ring, a disc
+// carrying the rainbow "C", a rainbow glow that
 // spins behind it, and six brand badges that ride a slow orbit (each counter-rotated so its
 // logo stays upright), exactly like the CSS keyframes. The web's `--i` order is preserved so
 // each logo keeps its slot: tailwind 0, react 1, ts 2, android 3, web 4, ios 5. Honors
@@ -17,7 +17,7 @@ const BADGES: { i: number; color: string; render: (s: number, tint: string) => R
   { i: 2, color: "#3178c6", render: (s) => <TypeScriptLogo size={s - 3} color="#3178c6" /> },
   { i: 3, color: "#3ddc84", render: (s) => <AndroidLogo size={s} color="#3ddc84" /> },
   { i: 4, color: "#e34f26", render: (s) => <Html5Logo size={s - 1} color="#e34f26" /> },
-  // iOS rides the `--c: foreground` slot in Vite; the Apple glyph uses currentColor, so we
+  // iOS rides the `--c: foreground` slot; the Apple glyph uses currentColor, so we
   // pass the resolved foreground tint (without it, dark mode renders it near-invisible).
   { i: 5, color: "__fg__", render: (s, tint) => <AppleLogo size={s} color={tint} /> },
 ];
@@ -89,7 +89,7 @@ export function HeroOrbit() {
     return () => { b.stop(); g.stop(); p.stop(); };
   }, [reduced, badgeSpin, glowSpin, glowPulse]);
 
-  // Desktop (the side-by-side hero, width > 920) keeps the fixed Vite orbit next to the copy.
+  // Desktop (the side-by-side hero, width > 920) keeps the fixed orbit next to the copy.
   // The stacked phone/tablet hero scales the WHOLE orbit (ring, disc, glow, badges) to fill the
   // available width, so on a phone it is the screen's centerpiece instead of a small medallion.
   const stacked = width <= 920;
@@ -106,7 +106,7 @@ export function HeroOrbit() {
   const mark = Math.round(core * 0.64);
   const logo = Math.round(26 * (badge / 60));
 
-  const glowSize = core + 100; // Vite `.hero-orbit-core::before { inset: -50px }`
+  const glowSize = core + 100; // a 50px inset glow around the core
   // The glow is bigger than the Canvas mark, so it needs many more conic sectors to keep
   // each seam sub-pixel; 360 (one per degree) + the blur below reads as a true conic.
   const gc = glowSize / 2, gR = glowSize / 2, gN = 360;
@@ -142,7 +142,7 @@ export function HeroOrbit() {
       >
         <Svg width={glowSize} height={glowSize}>
           <Defs>
-            {/* Vite mask: radial-gradient(closest-side, #000 0 54%, transparent 92%) — the disc
+            {/* Mask: radial-gradient(closest-side, #000 0 54%, transparent 92%); the disc
                 covers the solid center, leaving a ring that fades out by 92% of the radius. */}
             <RadialGradient id="glow-fade" cx="50%" cy="50%" r="50%">
               <Stop offset="0%" stopColor="#ffffff" stopOpacity={1} />
@@ -152,9 +152,9 @@ export function HeroOrbit() {
             <Mask id="glow-mask">
               <Rect x="0" y="0" width={glowSize} height={glowSize} fill="url(#glow-fade)" />
             </Mask>
-            {/* Vite `filter: blur(9px) saturate(1.25)` — softens the conic sectors into one
-                diffuse bloom (no visible banding) and deepens the hues. A hair more blur than
-                Vite (11 vs 9) since sectors need slightly more help than a true CSS conic. */}
+            {/* `filter: blur(9px) saturate(1.25)`: softens the conic sectors into one
+                diffuse bloom (no visible banding) and deepens the hues. A hair more blur
+                (11 vs 9) since sectors need slightly more help than a true CSS conic. */}
             <Filter id="glow-blur" x="-25%" y="-25%" width="150%" height="150%">
               <FeGaussianBlur stdDeviation="11" result="b" />
               <FeColorMatrix in="b" type="saturate" values="1.25" />
@@ -180,7 +180,7 @@ export function HeroOrbit() {
           borderColor: tokens.border,
           alignItems: "center",
           justifyContent: "center",
-          // Vite `.hero-orbit-core::after`: 0 18px 40px -20px foreground@35%.
+          // Core shadow: 0 18px 40px -20px foreground@35%.
           boxShadow: `0px 18px 40px -20px ${alpha(tokens.foreground, 0.35)}`,
         }}
       >
@@ -210,7 +210,7 @@ export function HeroOrbit() {
                 alignItems: "center",
                 justifyContent: "center",
                 transform: [{ rotate: badgeCounter }],
-                // Vite `.orbit-badge-inner`: a tight colored glow (the -10px spread keeps it
+                // Badge inner shadow: a tight colored glow (the -10px spread keeps it
                 // small) plus a faint grounding shadow. boxShadow carries both + the spread,
                 // which RN's shadow* props cannot.
                 boxShadow: `0px 8px 22px -10px ${alpha(tint, 0.55)}, 0px 1px 2px ${alpha(tokens.foreground, 0.1)}`,

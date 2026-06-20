@@ -1,7 +1,7 @@
 import Svg, { Path } from "react-native-svg";
 
 // The platform/brand marks the home page orbits and footer use. lucide-react dropped
-// its brand glyphs, so the Vite site ships them inline; these are the same paths ported
+// its brand glyphs, so the site ships them inline; these are the same paths ported
 // to react-native-svg. `fill="currentColor"` becomes an explicit `color` prop (defaults
 // to a neutral) so each orbit badge can tint its logo with its brand hue.
 type LogoProps = { size?: number; color?: string };

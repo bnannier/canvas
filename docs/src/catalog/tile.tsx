@@ -7,11 +7,11 @@ import { geist } from "../ui/fonts";
 
 // One entry in the component catalog: a title, the route it links to, an optional double-width
 // flag, and a Preview component (a small hand-authored mockup of the component, rendered in the
-// tile's 16:9 stage). Mirrors the Vite components-index `<Tile>` children.
+// tile's 16:9 stage).
 export type CatTile = { title: string; href: string; span?: boolean; Preview: () => ReactNode };
 
 // A single catalog tile: a card with a centered 16:9 preview stage over a muted wash, and a
-// footer with the title and a chevron. Matches the Vite `.docs-tile`.
+// footer with the title and a chevron.
 export function Tile({ tile, width }: { tile: CatTile; width: number }) {
   const { tokens } = useTheme();
   const router = useRouter();
@@ -51,7 +51,7 @@ export function Tile({ tile, width }: { tile: CatTile; width: number }) {
 }
 
 // The responsive tile grid: 3 columns when wide, 2 when medium, 1 when narrow. A `span` tile
-// takes two cell widths (used by Data Tables), matching the Vite `.cat-tile-grid` + span2.
+// takes two cell widths (used by Data Tables).
 export function CatGrid({ tiles }: { tiles: CatTile[] }) {
   const { width: winW } = useWindowDimensions();
   const [measured, setMeasured] = useState(0);
@@ -72,8 +72,7 @@ export function CatGrid({ tiles }: { tiles: CatTile[] }) {
   );
 }
 
-// A category section: heading + "N components" count, then the tile grid. Matches the Vite
-// `.cat-group` / `<CatGroup>`.
+// A category section: heading + "N components" count, then the tile grid.
 export function CatGroup({ label, count, tiles }: { label: string; count: number; tiles: CatTile[] }) {
   const { tokens } = useTheme();
   return (
@@ -89,7 +88,7 @@ export function CatGroup({ label, count, tiles }: { label: string; count: number
   );
 }
 
-// The category pill bar with the total component count, matching the Vite `.cat-subbar`.
+// The category pill bar with the total component count.
 export function CatSubBar({ categories, total }: { categories: string[]; total: number }) {
   const { tokens } = useTheme();
   return (
@@ -126,8 +125,8 @@ export function CatSubBar({ categories, total }: { categories: string[]; total: 
   );
 }
 
-// Shared mini-mockup helpers used by the per-category preview files, rebuilding the docs CSS
-// classes the Vite tiles use (.btn, .input, .badge, .avatar, ...) as small RN nodes.
+// Shared mini-mockup helpers used by the per-category preview files, rebuilding the common docs
+// elements (button, input, badge, avatar, ...) as small RN nodes.
 export function MiniBtn({ label, variant = "default" }: { label: string; variant?: "default" | "outline" | "ghost" }) {
   const { tokens } = useTheme();
   const bg = variant === "default" ? tokens.primary : variant === "outline" ? tokens.background : "transparent";
@@ -151,8 +150,8 @@ export function MiniInput({ placeholder, value, width = 170 }: { placeholder?: s
   );
 }
 
-// An avatar disc with initials. The Vite tiles use brand gradients; RN keeps it simple with a
-// solid brand-tinted fill so it reads at tile size on every platform.
+// An avatar disc with initials. Brand gradients are kept simple here with a solid brand-tinted
+// fill so it reads at tile size on every platform.
 export function MiniAvatar({ initials, size = 32, color, ring }: { initials: string; size?: number; color?: string; ring?: boolean }) {
   const { tokens } = useTheme();
   return (

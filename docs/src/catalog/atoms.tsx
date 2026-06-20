@@ -4,10 +4,9 @@ import { geist } from "../ui/fonts";
 import { MiniBtn, MiniInput, type CatTile } from "./tile";
 
 // ── Atoms previews ───────────────────────────────────────────────────────────
-// Hand-authored mini-mockups for the Atoms category, ported from the Vite
-// components-index `<Tile>` children. Order, titles, and hrefs match the source.
+// Hand-authored mini-mockups for the Atoms category.
 
-// The Vite avatar tiles use brand gradients; RN keeps it readable at tile size with
+// The avatar tiles use brand gradients; RN keeps it readable at tile size with
 // a solid lead color drawn from each gradient's start hue.
 const avatarColors = ["hsl(258 70% 55%)", "hsl(290 70% 55%)", "hsl(186 70% 50%)", "hsl(8 70% 55%)"];
 
@@ -167,8 +166,7 @@ function BadgesPreview() {
   );
 }
 
-// A status pill matching the Vite `.status-badge` + data-status colors: a bordered
-// 9999-radius pill with a leading dot, colored per status.
+// A status pill colored per status: a bordered 9999-radius pill with a leading dot.
 function StatusBadge({ label, status }: { label: string; status: "success" | "warning" | "error" | "info" | "neutral" }) {
   const { tokens } = useTheme();
   const palette = {
@@ -321,8 +319,7 @@ function DropdownsPreview() {
   );
 }
 
-// The 12 lucide-style outline icons from the Vite source, redrawn as react-native-svg
-// paths in a 6-column grid.
+// The 12 lucide-style outline icons, redrawn as react-native-svg paths in a 6-column grid.
 const ICON_PATHS = [
   "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
   "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2",

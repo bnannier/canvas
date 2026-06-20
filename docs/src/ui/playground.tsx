@@ -116,7 +116,7 @@ export function Playground({ examples }: { examples: DocExample[] }) {
           borderTopRightRadius: 12,
           // The stage is a content card (tokens.card, distinct from the page bg in dark
           // mode); in glass it goes transparent so previewed glass overlays frost against
-          // the aurora, matching the Vite `.live-example-stage`.
+          // the aurora.
           backgroundColor: surface === "glass" ? "transparent" : tokens.card,
           overflow: "hidden",
         }}

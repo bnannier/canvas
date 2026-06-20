@@ -1,11 +1,11 @@
 import Svg, { G, Path, ClipPath, Defs } from "react-native-svg";
 
 // The Canvas mark: a rainbow "C", six hues blended as ONE continuous conic sweep around
-// an open counter with a wedge gap on the right. The Vite mark fills the C silhouette with
-// a real CSS conic-gradient; react-native-svg has no conic gradient, so we approximate it
+// an open counter with a wedge gap on the right. A real CSS conic-gradient fills the C
+// silhouette; react-native-svg has no conic gradient, so we approximate it
 // with many thin pie sectors (interpolated colors) clipped to the exact C silhouette, which
 // reads as a smooth conic on every platform. Geometry + stops are copied verbatim from the
-// web mark from the previous web docs: conic `from 90deg at 53.25% 50%`.
+// web mark: conic `from 90deg at 53.25% 50%`.
 const MARK_PATHS = [
   "M31.293 28.557 L41.385 34.863 A20.5 20.5 0 0 1 28.959 43.891 L26.081 32.345 A8.6 8.6 0 0 0 31.293 28.557 Z",
   "M26.081 32.345 L28.959 43.891 A20.5 20.5 0 0 1 14.376 42.1 L19.963 31.593 A8.6 8.6 0 0 0 26.081 32.345 Z",

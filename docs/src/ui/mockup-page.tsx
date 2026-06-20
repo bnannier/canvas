@@ -10,8 +10,8 @@ type DocSection = { title: string; description?: string; anatomy?: string; html:
 
 // The shared layout for a pattern or template doc page: a title (.h2, 24/600), a muted
 // description, then one section per entry, each a `.h4` heading + muted `.body-sm` blurb
-// + Anatomy callout + the live mockup in a bordered `.section-card` stage. Mirrors the
-// Vite pattern-page / template-page exactly, with the html mockups rendered by <Mockup>.
+// + Anatomy callout + the live mockup in a bordered `.section-card` stage, with the html
+// mockups rendered by <Mockup>.
 export function MockupDocPage({ name, description, sections }: { name: string; description: string; sections: DocSection[] }) {
   const { tokens } = useTheme();
   return (

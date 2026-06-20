@@ -149,7 +149,7 @@ function StatusCell({ s }: { s: typeof STATUS[number] }) {
   );
 }
 
-// Matches the Vite `.status-badge`: a pill with a TRANSPARENT fill, a 1px tone-tinted
+// A status pill: a TRANSPARENT fill, a 1px tone-tinted
 // border, and a tone-colored dot + label (brighter tone in dark mode), not a solid fill.
 function StatusBadge({ label, i }: { label: string; i: number }) {
   const { dark } = useTheme();

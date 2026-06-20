@@ -198,7 +198,7 @@ const gapExamples: DocExample[] = GAP_SCALE.map(([, px]) => ({
   },
 }));
 
-// A small labelled tile used by the responsive demo. Matches the Vite Tile: a primary
+// A small labelled tile used by the responsive demo: a primary
 // tinted, bordered box with centered 12px/600 primary text.
 function Tile({ children }: { children: React.ReactNode }) {
   const { tokens } = useTheme();

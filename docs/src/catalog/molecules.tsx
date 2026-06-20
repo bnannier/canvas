@@ -5,12 +5,12 @@ import { geist, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
 
 // ── Molecules previews ───────────────────────────────────────────────────────
-// Hand-authored mini-mockups for the Molecules category, ported from the Vite
-// components-index. Each Preview renders just the centered mockup; the Tile
-// wrapper supplies the 16:9 stage, the muted wash, and the padding.
+// Hand-authored mini-mockups for the Molecules category. Each Preview renders
+// just the centered mockup; the Tile wrapper supplies the 16:9 stage, the muted
+// wash, and the padding.
 
-// Amber and green literals for the alert/status accents, matching the Vite
-// source's hsl() values (these stay literal, not token-derived).
+// Amber and green literals for the alert/status accents, from the source's hsl()
+// values (these stay literal, not token-derived).
 const AMBER = "#eab308"; // hsl(38 92% 50%)
 const AMBER_TEXT = "#ca8a04"; // hsl(38 92% 45%)
 const GREEN = "#22c55e"; // hsl(143 70% 45%)

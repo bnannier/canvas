@@ -3,7 +3,7 @@ import { geist, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
 
 // ── Tokens previews ──────────────────────────────────────────────────────────
-// Hand-authored mini-mockups for the Tokens category, ported from the Vite components-index.
+// Hand-authored mini-mockups for the Tokens category.
 
 function ColorsPreview() {
   const { tokens } = useTheme();
