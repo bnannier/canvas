@@ -23,7 +23,7 @@ const PRIproprietaryIVES = [
 // reach for instead. Keeps the boundary explicit, not arbitrary.
 const NOT_WRAPPED: string[][] = [
   ["FlatList / SectionList", "Virtualization; the styling surface is your renderItem cells.", "Import from react-native; build cells with View / Text."],
-  ["Modal", "Canvas overlays render their open state inline, so there is no Modal to dogfood.", "Use Dialog / Popover / Tooltip, or import Modal."],
+  ["Modal", "The inline Dialog / Popover / Tooltip render their open state in place; the Drawer wraps Modal for a real full-screen panel.", "Use Drawer for a full-screen panel, Dialog / Popover / Tooltip inline, or import Modal directly."],
   ["Animated, Animated.View", "Animation is a behavior driven by Animated.Value, not a static style.", "Build the style object from tokens and animate it on Animated.View (the Skeleton recipe)."],
   ["Dimensions", "useResponsive already reads useWindowDimensions for responsive values.", "Pick values with useResponsive, or import useWindowDimensions for raw numbers."],
   ["KeyboardAvoidingView / SafeAreaView / RefreshControl", "Behavior primitives whose value is platform behavior, not styling.", "Import from react-native (or react-native-safe-area-context)."],

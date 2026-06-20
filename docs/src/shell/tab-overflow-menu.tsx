@@ -1,14 +1,12 @@
-import { Modal } from "react-native";
-import { Text, Pressable, useTheme, GlassSurface } from "@olympusoss/canvas";
+import { Text, Pressable, Drawer, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NAV_ROUTES } from "../data/nav";
-import { TOPBAR_HEIGHT } from "./topbar";
 import { geist } from "../ui/fonts";
 
-// The hamburger overflow for a tab's contextual header: a Liquid Glass sheet that
-// drops below the header listing the tab's overflow routes. Each row navigates and
-// closes. Tapping the scrim dismisses.
+// The overflow menu for a native tab's contextual header: a kit Drawer bottom sheet
+// listing the tab's overflow routes. Each row navigates and closes; tapping the scrim
+// dismisses. (Native iOS/Android only; the web uses the sidebar.)
 export function TabOverflowMenu({
   visible,
   onClose,
@@ -28,34 +26,22 @@ export function TabOverflowMenu({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", paddingTop: insets.top + TOPBAR_HEIGHT + 4, paddingHorizontal: 12 }}
-        onPress={onClose}
-      >
-        <Pressable onPress={() => {}}>
-          <GlassSurface
-            style={{
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: tokens.border,
-              paddingVertical: 6,
-              overflow: "hidden",
-              alignSelf: "flex-end",
-              minWidth: 220,
-            }}
-          >
-            {routeKeys.map((key) => {
-              const r = NAV_ROUTES[key];
-              return (
-                <Pressable key={key} onPress={() => go(r.href)} style={{ paddingHorizontal: 18, paddingVertical: 12 }}>
-                  <Text style={{ fontFamily: geist("500"), fontSize: 15, color: tokens.foreground }}>{r.label}</Text>
-                </Pressable>
-              );
-            })}
-          </GlassSurface>
-        </Pressable>
-      </Pressable>
-    </Modal>
+    <Drawer
+      open={visible}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+      bottom
+      style={{ paddingTop: 8, paddingBottom: insets.bottom + 8 }}
+    >
+      {routeKeys.map((key) => {
+        const r = NAV_ROUTES[key];
+        return (
+          <Pressable key={key} onPress={() => go(r.href)} style={{ paddingHorizontal: 20, paddingVertical: 14 }}>
+            <Text style={{ fontFamily: geist("500"), fontSize: 16, color: tokens.foreground }}>{r.label}</Text>
+          </Pressable>
+        );
+      })}
+    </Drawer>
   );
 }

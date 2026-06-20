@@ -4,6 +4,7 @@ export * from "./charts/charts.js";
 export * from "./command/command.js";
 export * from "./data-table/data-table.js";
 export * from "./dialog/dialog.js";
+export * from "./drawer/drawer.js";
 export * from "./filter-panel/filter-panel.js";
 export * from "./navbars/navbars.js";
 export * from "./overlays/overlays.js";

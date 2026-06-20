@@ -80,6 +80,7 @@
           { "slug": "command", "label": "Command Palette", "icon": "terminal" },
           { "slug": "data-table", "label": "Data Tables", "icon": "table" },
           { "slug": "dialog", "label": "Dialog", "icon": "app-window" },
+          { "slug": "drawer", "label": "Drawer", "icon": "panel-right" },
           { "slug": "filter-panel", "label": "Filter Panels", "icon": "filter" },
           { "slug": "navbars", "label": "Navbars", "icon": "navigation" },
           { "slug": "navigation", "label": "Navigation", "icon": "navigation" },

@@ -1,8 +1,8 @@
 import { Slot } from "expo-router";
 import { useState, useEffect } from "react";
-import { Modal, Platform, useWindowDimensions } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Pressable, useTheme } from "@olympusoss/canvas";
+import { View, useTheme, Drawer } from "@olympusoss/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
@@ -88,13 +88,15 @@ function WebNav() {
       </View>
 
       {!wide ? (
-        <Modal visible={drawerOpen} transparent animationType="fade" onRequestClose={() => setDrawerOpen(false)}>
-          <Pressable style={{ flex: 1, flexDirection: "row", backgroundColor: "rgba(0,0,0,0.5)" }} onPress={() => setDrawerOpen(false)}>
-            <Pressable style={{ width: 240, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: tokens.card }} onPress={() => {}}>
-              <Sidebar onNavigate={() => setDrawerOpen(false)} />
-            </Pressable>
-          </Pressable>
-        </Modal>
+        <Drawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          left
+          width={240}
+          style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+        >
+          <Sidebar onNavigate={() => setDrawerOpen(false)} />
+        </Drawer>
       ) : null}
 
       <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />

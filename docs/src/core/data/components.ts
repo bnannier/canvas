@@ -265,6 +265,12 @@ export const COMPONENTS: ComponentDoc[] = [
     description: "A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, an optional description, a body for real content like a form, and right-aligned actions. Use it for a focused task that warrants interrupting the page; reach for the Alert Dialog for a terse yes/no confirmation.",
     category: "Organisms",
   },
+  {
+    slug: "drawer",
+    name: "Drawer",
+    description: "A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal so it floats over the whole app on iOS, Android, and the web. For a small contextual menu, reach for Dropdown or RowMenu instead.",
+    category: "Organisms",
+  },
 
   {
     slug: "overlays",
