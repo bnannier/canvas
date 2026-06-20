@@ -19,6 +19,30 @@ cross-platform: build it from `react-native-svg` (sectors, masks, `FeGaussianBlu
 produces the same result natively and on the web. A web-only DOM/CSS trick is a
 shortcut: name it as such and get explicit authorization before using one.
 
+## Dogfood the kit: every UI element is a Canvas component
+
+A claude prime global directive. Every UI element used anywhere in this repo, the
+docs app included, must be a Canvas component (or one of the kit's primitives:
+`View`, `Text`, `Pressable`, `Image`, `TextInput`, `ScrollView`), never a hand-rolled
+look-alike. The rule, in order:
+
+- Need a control the kit already exports? Import and use it.
+- The kit has no such component? CREATE IT IN THE KIT (`src/atoms` | `molecules` |
+  `organisms`, with its skins/styles), export it, then use it. Add a changeset, since
+  it ships in `@olympusoss/canvas`.
+- A Canvas component almost fits but lacks a capability (an icon slot, a `ReactNode`
+  cell, a prop, a variant)? EXTEND that kit component (backward-compatibly) rather
+  than re-implementing it in the docs. (This is how `Button` got `iconLeft`/`iconRight`
+  and `DataTable` got `ReactNode` cells.)
+
+A hand-rolled button / badge / card / table / toggle / keycap / input in the docs is a
+bug: replace it with the real component, or add/extend the kit component first. The
+only bespoke UI allowed is genuinely docs-only infrastructure with no kit equivalent
+(the playground/compare harness, the live-example frame, brand illustrations) plus the
+authorized platform escape hatches. Why: the docs are the kit's own showcase and proof
+of the API; a duplicated control both misrepresents how to build with Canvas and hides
+a missing kit feature.
+
 ## Highly responsive
 
 Canvas is highly responsive by default. Every component must adapt cleanly across
