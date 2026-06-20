@@ -8,6 +8,7 @@
 // the iOS-only Liquid Glass native module. iOS resolves glass-surface.ios.tsx.
 
 import * as ExpoBlur from "expo-blur";
+import { View } from "react-native";
 import { useTheme } from "../theme.js";
 import {
   GlassBox,
@@ -21,7 +22,7 @@ import {
 const BlurView = (ExpoBlur as { BlurView?: typeof ExpoBlur.BlurView }).BlurView;
 
 export function GlassSurface({ style, children, pointerEvents }: GlassSurfaceProps) {
-  const { surface, dark } = useTheme();
+  const { surface, dark, tokens } = useTheme();
 
   if (surface !== "glass" || !BlurView) {
     return (
@@ -31,13 +32,20 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
     );
   }
 
+  // The blur alone is too faint over a flat surface (a dark blur over a near-black page
+  // reads as clear), so paint the translucent `popover` frost fill UNDER the blur. That
+  // keeps the frost a substantial material in both schemes while the blur still shows
+  // through the remaining translucency.
   const material = (
-    <BlurView
-      intensity={GLASS_INTENSITY}
-      tint={dark ? "dark" : "light"}
-      experimentalBlurMethod="dimezisBlurView"
-      style={MATERIAL_FILL}
-    />
+    <>
+      <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover }]} pointerEvents="none" />
+      <BlurView
+        intensity={GLASS_INTENSITY}
+        tint={dark ? "dark" : "light"}
+        experimentalBlurMethod="dimezisBlurView"
+        style={MATERIAL_FILL}
+      />
+    </>
   );
 
   return (
