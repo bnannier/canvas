@@ -1,59 +1,27 @@
-import {
-  Home, Layers, Palette, User, Award, ChevronRight, AppWindow,
-  MousePointerClick, Columns2, CheckSquare, Search,
-  ChevronDown, Info, TextCursorInput, Keyboard,
-  ChevronsLeft, CircleDot, List, Minus, Loader,
-  ToggleLeft, AlignLeft, MessageCircle,
-  AlertTriangle, Square, Inbox, FileText, FileInput,
-  BarChart2, Calendar, Terminal, Table, Filter,
-  MoreHorizontal, PanelRight, Footprints, Folder,
-  Navigation, Layout, Shield, Activity, Users,
-  ChartLine, Lock, Settings, Check, Eye,
-  Type, Gauge, Smartphone, LayoutGrid, Code,
-  Group, ListChecks, MessageSquareWarning,
-  BookOpen, Plug, Moon, Globe, GitCompare,
-  Box, Pointer, Image as ImageIcon, MoveVertical,
-  Rocket,
-  type LucideIcon,
-} from "lucide-react-native";
 import navConfigJson from "./nav.config.json";
 
 // The single source of truth for navigation is nav.config.json: a `routes` registry,
 // a `web.sidebar` tree (with the component leaves enumerated), and a `mobile.tabs`
 // node. This module is the typed loader over it. It rebuilds the SAME NavGroup[] the
 // sidebar already consumes (so the web sidebar is unchanged) and exposes the mobile
-// config for the native tab bar. The JSON carries lucide icon NAMES; this map resolves
-// them back to the components (kept here so the icon set is tree-shakeable and typed).
-const ICONS: Record<string, LucideIcon> = {
-  "home": Home, "layers": Layers, "palette": Palette, "user": User, "award": Award,
-  "chevron-right": ChevronRight, "app-window": AppWindow, "mouse-pointer-click": MousePointerClick,
-  "columns-2": Columns2, "check-square": CheckSquare, "search": Search, "chevron-down": ChevronDown,
-  "info": Info, "text-cursor-input": TextCursorInput, "keyboard": Keyboard, "chevrons-left": ChevronsLeft,
-  "circle-dot": CircleDot, "list": List, "minus": Minus, "loader": Loader, "toggle-left": ToggleLeft,
-  "align-left": AlignLeft, "message-circle": MessageCircle, "alert-triangle": AlertTriangle, "square": Square,
-  "inbox": Inbox, "file-text": FileText, "file-input": FileInput, "bar-chart-2": BarChart2, "calendar": Calendar,
-  "terminal": Terminal, "table": Table, "filter": Filter, "more-horizontal": MoreHorizontal, "panel-right": PanelRight,
-  "footprints": Footprints, "folder": Folder, "navigation": Navigation, "layout": Layout, "shield": Shield,
-  "activity": Activity, "users": Users, "chart-line": ChartLine, "lock": Lock, "settings": Settings, "check": Check,
-  "eye": Eye, "type": Type, "gauge": Gauge, "smartphone": Smartphone, "layout-grid": LayoutGrid, "code": Code,
-  "group": Group, "list-checks": ListChecks, "message-square-warning": MessageSquareWarning, "book-open": BookOpen,
-  "plug": Plug, "moon": Moon, "globe": Globe, "git-compare": GitCompare, "box": Box, "pointer": Pointer,
-  "image": ImageIcon, "move-vertical": MoveVertical, "rocket": Rocket,
-};
-
-function icon(name: string): LucideIcon {
-  return ICONS[name] ?? Square;
+// config for the native tab bar. The JSON carries icon NAMES in kebab-case; the sidebar
+// renders them with the kit `Icon` atom, so `icon()` just maps a JSON name to the kit's
+// camelCase glyph key (e.g. "bar-chart-2" -> "barChart2"); no external icon package.
+function icon(name: string): string {
+  return name.replace(/-([a-z0-9])/g, (_m, c: string) => c.toUpperCase());
 }
 
 export interface NavItem {
   slug: string;
   label: string;
   href: string;
-  icon: LucideIcon;
+  /** A kit `Icon` glyph key (camelCase prop name), e.g. "barChart2". */
+  icon: string;
 }
 export interface NavGroup {
   label: string;
-  icon: LucideIcon;
+  /** A kit `Icon` glyph key (camelCase prop name). */
+  icon: string;
   items: NavItem[];
 }
 
@@ -125,7 +93,7 @@ for (const group of NAV_GROUPS) {
   group.items.sort((a, b) => a.label.localeCompare(b.label));
 }
 
-export const COMPARE_ITEM: NavItem = { slug: "compare", label: "Compare", href: "/compare", icon: GitCompare };
+export const COMPARE_ITEM: NavItem = { slug: "compare", label: "Compare", href: "/compare", icon: "gitCompare" };
 
 export function getActiveGroup(pathname: string): string | null {
   const slug = getActiveSlug(pathname);

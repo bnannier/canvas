@@ -1,8 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { Platform, Pressable, View, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
+import { Platform, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
-import { Menu } from "lucide-react-native";
-import { useTheme } from "@olympusoss/canvas";
+import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { search } from "../core/data/search";
 import { titleFor } from "./topbar";
@@ -140,7 +139,7 @@ export function NativeHeader() {
           headerRight: hasMenu
             ? () => (
                 <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }}>
-                  <Menu size={22} color={tokens.foreground} />
+                  <Icon menu size={22} />
                 </Pressable>
               )
             : () => null,

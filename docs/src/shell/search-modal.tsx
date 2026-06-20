@@ -7,9 +7,8 @@ import {
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
 } from "react-native";
-import { View, Text, Pressable, TextInput, useTheme, GlassSurface, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, TextInput, Icon, useTheme, GlassSurface, alpha } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
-import { Search } from "lucide-react-native";
 import { search } from "../core/data/search";
 import type { SearchEntry } from "../core/data/types";
 import { geist } from "../ui/fonts";
@@ -121,7 +120,7 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
               borderColor: tokens.border,
             }}
           >
-            <Search size={16} color={tokens["muted-foreground"]} />
+            <Icon search size={16} muted />
             <TextInput
               autoFocus
               value={query}

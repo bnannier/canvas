@@ -1,8 +1,7 @@
 import { type ReactNode, useState } from "react";
 import { useWindowDimensions } from "react-native";
-import { View, Text, Pressable, useTheme, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, Icon, useTheme, alpha } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
 import { geist } from "../ui/fonts";
 
 // One entry in the component catalog: a title, the route it links to, an optional double-width
@@ -44,7 +43,7 @@ export function Tile({ tile, width }: { tile: CatTile; width: number }) {
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, paddingHorizontal: 12 }}>
         <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{tile.title}</Text>
-        <ChevronRight size={12} color={tokens["muted-foreground"]} />
+        <Icon chevronRight size={12} muted />
       </View>
     </Pressable>
   );

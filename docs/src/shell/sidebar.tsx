@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Text, Pressable, useTheme, GlassSurface } from "@olympusoss/canvas";
+import { ScrollView, View, Text, Pressable, Icon, useTheme, GlassSurface, type IconProps } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
-import { ChevronRight, ChevronLeft } from "lucide-react-native";
 import { CanvasMark } from "../brand/canvas-mark";
 import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, getActiveGroup, type NavItem } from "../data/nav";
 import { geist } from "../ui/fonts";
+
+// A nav glyph rendered by its kit `Icon` glyph key (the camelCase name the nav config
+// carries). The dynamic name maps onto the kit Icon's boolean glyph prop; active items
+// ride the default foreground color, inactive ones go muted. The cast omits `key` (a kit
+// glyph name that collides with React's reserved `key` prop on a spread); the nav set
+// never uses that glyph, so runtime is unaffected.
+function NavGlyph({ name, active }: { name: string; active: boolean }) {
+  return <Icon {...({ [name]: true, muted: !active, size: 16 } as unknown as Omit<IconProps, "key">)} />;
+}
 
 // The docs sidebar chrome: brand (CanvasMark + Canvas / design
 // system), a pinned Overview, an always-open Tokens & Utilities section, the
@@ -41,7 +49,6 @@ export function Sidebar({
   const Item = ({ item }: { item: NavItem }) => {
     const active = item.slug === activeSlug;
     const color = active ? tokens.foreground : tokens["muted-foreground"];
-    const Icon = item.icon;
     return (
       <Pressable
         onPress={() => go(item.href)}
@@ -57,7 +64,7 @@ export function Sidebar({
           backgroundColor: active ? tokens.accent : "transparent",
         }}
       >
-        <Icon size={16} color={color} />
+        <NavGlyph name={item.icon} active={active} />
         {collapsed ? null : (
           <Text style={{ fontFamily: geist(active ? "600" : "500"), fontSize: 13, color }}>{item.label}</Text>
         )}
@@ -85,8 +92,6 @@ export function Sidebar({
   // group.
   const CollapsedGroup = ({ group }: { group: (typeof NAV_GROUPS)[number] }) => {
     const groupHasActive = group.items.some((i) => i.slug === activeSlug);
-    const color = groupHasActive ? tokens.foreground : tokens["muted-foreground"];
-    const Icon = group.icon;
     return (
       <Pressable
         onPress={() => {
@@ -104,7 +109,7 @@ export function Sidebar({
           backgroundColor: groupHasActive ? tokens.accent : "transparent",
         }}
       >
-        <Icon size={16} color={color} />
+        <NavGlyph name={group.icon} active={groupHasActive} />
       </Pressable>
     );
   };
@@ -142,7 +147,7 @@ export function Sidebar({
               <>
                 <View style={{ flex: 1 }} />
                 <Pressable onPress={onToggleCollapse} hitSlop={8} accessibilityLabel="Collapse sidebar" style={{ padding: 4 }}>
-                  <ChevronLeft size={14} color={tokens["muted-foreground"]} />
+                  <Icon chevronLeft size={14} muted />
                 </Pressable>
               </>
             ) : null}
@@ -191,7 +196,7 @@ export function Sidebar({
                   <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: tokens.primary, marginRight: 6 }} />
                 ) : null}
                 <View style={{ transform: [{ rotate: isOpen ? "90deg" : "0deg" }] }}>
-                  <ChevronRight size={11} color={tokens["muted-foreground"]} />
+                  <Icon chevronRight size={11} muted />
                 </View>
               </Pressable>
               {isOpen ? (

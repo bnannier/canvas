@@ -1,7 +1,6 @@
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Pressable, Button, ButtonGroup, Kbd, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
 import { usePathname } from "expo-router";
-import { Menu, Search, Sun, Moon } from "lucide-react-native";
 import { getComponent } from "../core/data/components";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
@@ -81,7 +80,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
           icon
           small
           accessibilityLabel="Toggle menu"
-          iconLeft={<Menu size={18} color={tokens.foreground} />}
+          iconLeft={<Icon menu size={18} />}
           onPress={onMenu}
           style={{ marginLeft: -2 }}
         />
@@ -120,7 +119,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
             backgroundColor: alpha(tokens.muted, 0.3),
           }}
         >
-          <Search size={13} color={tokens["muted-foreground"]} />
+          <Icon search size={13} muted />
           <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>
             Search components...
           </Text>
@@ -145,7 +144,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
         icon
         small
         accessibilityLabel="Toggle color scheme"
-        iconLeft={scheme === "dark" ? <Sun size={16} color={tokens.foreground} /> : <Moon size={16} color={tokens.foreground} />}
+        iconLeft={scheme === "dark" ? <Icon sun size={16} /> : <Icon moon size={16} />}
         onPress={toggleScheme}
       />
     </GlassSurface>

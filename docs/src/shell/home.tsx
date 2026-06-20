@@ -1,14 +1,10 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, useTheme } from "@olympusoss/canvas";
+import { View, Text, Pressable, Button, ScrollView, Icon, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Defs, RadialGradient, Stop, Filter, FeGaussianBlur, G } from "react-native-svg";
 import QRCode from "react-native-qrcode-svg";
-import {
-  ArrowRight, Check, ChevronRight, Layers, Plus, Shield, AppWindow,
-  Home as HomeIcon, type LucideIcon,
-} from "lucide-react-native";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
@@ -61,14 +57,14 @@ const PRINCIPLES = [
   },
 ];
 
-const ATOMIC_LEVELS: { id: string; label: string; icon: LucideIcon; blurb: string; pages: { label: string; to: string }[] }[] = [
+const ATOMIC_LEVELS: { id: string; label: string; icon: ReactNode; blurb: string; pages: { label: string; to: string }[] }[] = [
   {
-    id: "tokens", label: "Tokens", icon: Layers,
+    id: "tokens", label: "Tokens", icon: <Icon layers primary size={16} />,
     blurb: "The lowest-level decisions: color schemes (light and dark), typography, spacing, radii, and density. Every component derives from these tokens, so theming is a token change, not a rewrite.",
     pages: [{ label: "Colors & Theme", to: "/tokens/colors" }, { label: "Theming", to: "/theming" }],
   },
   {
-    id: "atoms", label: "Atoms", icon: Plus,
+    id: "atoms", label: "Atoms", icon: <Icon plus primary size={16} />,
     blurb: "Indivisible building blocks like Button, Input, Badge, Icon, and Avatar. One job each, styled entirely through semantic boolean props, every state identical on native and web.",
     pages: [
       { label: "Buttons", to: "/components/button" }, { label: "Inputs", to: "/components/input" },
@@ -76,7 +72,7 @@ const ATOMIC_LEVELS: { id: string; label: string; icon: LucideIcon; blurb: strin
     ],
   },
   {
-    id: "molecules", label: "Molecules", icon: Shield,
+    id: "molecules", label: "Molecules", icon: <Icon shield primary size={16} />,
     blurb: "Small compositions of atoms with a single clear purpose: Card, Field, Empty State. Reusable across pages and built from the same boolean prop API.",
     pages: [
       { label: "Cards", to: "/components/card" }, { label: "Field Display", to: "/components/field" },
@@ -84,7 +80,7 @@ const ATOMIC_LEVELS: { id: string; label: string; icon: LucideIcon; blurb: strin
     ],
   },
   {
-    id: "organisms", label: "Organisms", icon: AppWindow,
+    id: "organisms", label: "Organisms", icon: <Icon appWindow primary size={16} />,
     blurb: "Self-contained sections of a screen: Data Table, Navigation, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
     pages: [
       { label: "Data Tables", to: "/components/data-table" }, { label: "Navigation", to: "/components/navigation" },
@@ -92,7 +88,7 @@ const ATOMIC_LEVELS: { id: string; label: string; icon: LucideIcon; blurb: strin
     ],
   },
   {
-    id: "templates", label: "Templates", icon: HomeIcon,
+    id: "templates", label: "Templates", icon: <Icon home primary size={16} />,
     blurb: "Full screen compositions showing how atoms, molecules, and organisms assemble into real product surfaces, from a dashboard to a sign-in flow.",
     pages: [
       { label: "Dashboard", to: "/templates/dashboard" }, { label: "Sign In", to: "/templates/signin" },
@@ -100,7 +96,7 @@ const ATOMIC_LEVELS: { id: string; label: string; icon: LucideIcon; blurb: strin
     ],
   },
   {
-    id: "patterns", label: "Patterns", icon: Check,
+    id: "patterns", label: "Patterns", icon: <Icon check primary size={16} />,
     blurb: "Cross-cutting treatments that span many components: responsive layout, glass surfaces, density, loading, form validation, and accessibility.",
     pages: [
       { label: "Responsive", to: "/patterns/responsive" }, { label: "Glass", to: "/patterns/glass" },
@@ -251,14 +247,14 @@ export function Home() {
                   </View>
 
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
-                    <Button primary large iconRight={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")}>Browse components</Button>
+                    <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
                     <Button outline large onPress={() => go("/tokens/colors")}>Explore tokens</Button>
                   </View>
 
                   <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
                     {PLATFORMS.map((p) => (
                       <View key={p} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                        <Check size={13} color={tokens.primary} />
+                        <Icon check primary size={13} />
                         <Text style={{ fontFamily: geist("500"), fontSize: 13.5, color: tokens["muted-foreground"] }}>{p}</Text>
                       </View>
                     ))}
@@ -304,7 +300,7 @@ export function Home() {
               </View>
               <Pressable onPress={() => Linking.openURL(APP_INSTALL_URL)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                 <Text style={{ fontFamily: geist("500"), fontSize: 14.5, color: tokens.primary }}>Open in Expo Go</Text>
-                <ArrowRight size={15} color={tokens.primary} />
+                <Icon arrowRight primary size={15} />
               </Pressable>
             </View>
           </View>
@@ -340,7 +336,7 @@ export function Home() {
             </Text>
             <Pressable onPress={() => go("/integration")} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 22 }}>
               <Text style={{ fontFamily: geist("500"), fontSize: 14.5, color: tokens.primary }}>Read the integration guide</Text>
-              <ArrowRight size={15} color={tokens.primary} />
+              <Icon arrowRight primary size={15} />
             </Pressable>
           </View>
 
@@ -369,7 +365,6 @@ export function Home() {
         />
         <View style={{ gap: 12 }}>
           {ATOMIC_LEVELS.map((lvl, i) => {
-            const Icon = lvl.icon;
             return (
               <View key={lvl.id} style={{ flexDirection: levelStack ? "column" : "row", borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden" }}>
                 <View style={{
@@ -387,7 +382,7 @@ export function Home() {
                 }}>
                   <Text style={{ fontFamily: geistMono("600"), fontSize: levelStack ? 22 : 30, color: alpha(tokens["muted-foreground"], 0.6) }}>0{i + 1}</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <Icon size={16} color={tokens.primary} />
+                    {lvl.icon}
                     <Text style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
                   </View>
                 </View>
@@ -397,7 +392,7 @@ export function Home() {
                     {lvl.pages.map((pg) => (
                       <Pressable key={pg.to} onPress={() => go(pg.to)} style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 5, paddingHorizontal: 11, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
                         <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{pg.label}</Text>
-                        <ChevronRight size={11} color={tokens["muted-foreground"]} />
+                        <Icon chevronRight size={11} muted />
                       </Pressable>
                     ))}
                   </View>
@@ -417,7 +412,7 @@ export function Home() {
               Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
-              <Button primary large iconRight={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")}>Browse components</Button>
+              <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
               <Button outline large iconLeft={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)}>View on GitHub</Button>
             </View>
           </View>

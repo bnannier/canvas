@@ -1,5 +1,4 @@
-import { View, Text, useTheme, alpha } from "@olympusoss/canvas";
-import { Rocket } from "lucide-react-native";
+import { View, Text, Icon, useTheme, alpha } from "@olympusoss/canvas";
 import { Page, PageHeader } from "../../../ui/page";
 import { Section } from "../../../ui/section";
 import { P, H3, InlineCode, Rule } from "../../../ui/prose";
@@ -45,7 +44,7 @@ export default function BoilerplateScreen() {
           style={{ borderColor: alpha(tokens.primary, 0.32), backgroundColor: alpha(tokens.primary, 0.08) }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Rocket size={18} color={tokens.primary} />
+            <Icon rocket size={18} primary />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={{ fontFamily: geist("600"), fontSize: 14, color: tokens.foreground }}>Coming soon</Text>
               <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 19, color: tokens["muted-foreground"] }}>

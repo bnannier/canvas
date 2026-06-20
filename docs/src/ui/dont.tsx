@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, useTheme } from "@olympusoss/canvas";
-import { CircleX, CircleCheck } from "lucide-react-native";
+import { View, Text, Icon, palette, useTheme } from "@olympusoss/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair, ExampleScope } from "../core/scope";
 import { ExampleErrorBoundary } from "./playground";
@@ -14,16 +13,17 @@ function ResultCard({ kind, caption, scope, render, resetKey }: {
   render: (s: ExampleScope) => ReactNode;
   resetKey: string;
 }) {
-  const { tokens } = useTheme();
+  const { tokens, dark } = useTheme();
   const isDont = kind === "dont";
   const border = isDont ? "hsla(0, 70%, 60%, 0.3)" : "hsla(143, 70%, 45%, 0.3)";
   const bg = isDont ? "hsla(0, 70%, 60%, 0.05)" : "hsla(143, 70%, 45%, 0.05)";
-  const labelColor = isDont ? "hsl(0, 84%, 60%)" : "hsl(143, 60%, 38%)";
-  const Icon = isDont ? CircleX : CircleCheck;
+  // Label and glyph share the kit tone colors so they match exactly: the
+  // destructive token for Don't, the palette green (Alert's success shade) for Do.
+  const labelColor = isDont ? tokens.destructive : dark ? palette["green-400"] : palette["green-600"];
   return (
     <View style={{ flex: 1, borderRadius: 12, borderWidth: 1, borderColor: border, backgroundColor: bg, padding: 20, gap: 8 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-        <Icon size={14} color={labelColor} />
+        {isDont ? <Icon circleX destructive size={14} /> : <Icon circleCheck success size={14} />}
         <Text style={{ fontFamily: geist("600"), fontSize: 13, color: labelColor }}>{isDont ? "Don’t" : "Do"}</Text>
       </View>
       <View
