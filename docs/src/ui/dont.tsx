@@ -4,6 +4,7 @@ import { View, Text, Icon, palette, useTheme } from "@olympusoss/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair, ExampleScope } from "../core/scope";
 import { ExampleErrorBoundary } from "./playground";
+import { DocsSurface } from "./surface";
 import { geist } from "./fonts";
 
 function ResultCard({ kind, caption, scope, render, resetKey }: {
@@ -21,7 +22,10 @@ function ResultCard({ kind, caption, scope, render, resetKey }: {
   // destructive token for Don't, the palette green (Alert's success shade) for Do.
   const labelColor = isDont ? tokens.destructive : dark ? palette["green-400"] : palette["green-600"];
   return (
-    <View style={{ flex: 1, borderRadius: 12, borderWidth: 1, borderColor: border, backgroundColor: bg, padding: 20, gap: 8 }}>
+    // Solid card in solid mode, frost in glass mode (DocsSurface), with the do/don't
+    // red/green wash laid over it as an overlay so the card never reads as a clear hole.
+    <DocsSurface style={{ flex: 1, borderRadius: 12, borderWidth: 1, borderColor: border, padding: 20, gap: 8 }}>
+      <View pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: bg }} />
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
         {isDont ? <Icon circleX destructive size={14} /> : <Icon circleCheck success size={14} />}
         <Text style={{ fontFamily: geist("600"), fontSize: 13, color: labelColor }}>{isDont ? "Don’t" : "Do"}</Text>
@@ -35,7 +39,7 @@ function ResultCard({ kind, caption, scope, render, resetKey }: {
         <ExampleErrorBoundary key={resetKey}>{render(scope)}</ExampleErrorBoundary>
       </View>
       <Text style={{ fontFamily: geist("400"), fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>{caption}</Text>
-    </View>
+    </DocsSurface>
   );
 }
 

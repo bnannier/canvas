@@ -4,6 +4,7 @@ import { ScrollView, View, Text, Pressable, OverlayProvider, useTheme } from "@o
 import { buildScopes } from "../core/build-scopes";
 import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
+import { DocsSurface } from "./surface";
 import { geist } from "./fonts";
 
 export class ExampleErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
@@ -88,7 +89,7 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
 // The component playground: the stacked iOS/Android/Web stage (one device row on
 // native) + flush source, with the example rail to the right on wide viewports.
 export function Playground({ examples }: { examples: DocExample[] }) {
-  const { tokens, surface } = useTheme();
+  const { tokens } = useTheme();
   const { width } = useWindowDimensions();
   const wide = width >= 1024;
   const [selected, setSelected] = useState(0);
@@ -101,30 +102,32 @@ export function Playground({ examples }: { examples: DocExample[] }) {
   const showLabels = previews.length > 1;
 
   const stage = (
-    <View style={{ flex: 1, minWidth: 0 }}>
-      <View
-        // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
-        // react-native-web draws for a scrollable demo (a ScrollView/list/table) inside a
-        // preview cell — a real iOS/Android device shows a transient indicator, not a
-        // persistent bar. Web-only attribute; a no-op on native.
-        {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
+    <View
+      // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
+      // react-native-web draws for a scrollable demo (a ScrollView/list/table) inside a
+      // preview cell — a real iOS/Android device shows a transient indicator, not a
+      // persistent bar. Web-only attribute; a no-op on native.
+      {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
+      style={{ flex: 1, minWidth: 0 }}
+    >
+      {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
+          (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
+          clear hole. The cells below inherit it. */}
+      <DocsSurface
+        fill="card"
         style={{
           borderWidth: 1,
           borderBottomWidth: 0,
           borderColor: tokens.border,
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
-          // The stage is a content card (tokens.card, distinct from the page bg in dark
-          // mode); in glass it goes transparent so previewed glass overlays frost against
-          // the aurora.
-          backgroundColor: surface === "glass" ? "transparent" : tokens.card,
           overflow: "hidden",
         }}
       >
         {previews.map((p, i) => (
           <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} />
         ))}
-      </View>
+      </DocsSurface>
       <CodeBlock code={ex.code} flush />
     </View>
   );

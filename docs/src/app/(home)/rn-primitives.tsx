@@ -4,6 +4,7 @@ import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, InlineCode, Rule } from "../../ui/prose";
 import { CodeBlock } from "../../ui/code-block";
+import { DocsSurface } from "../../ui/surface";
 import { PageNav } from "../../ui/page-nav";
 import { MONO } from "../../ui/prose";
 import { geist } from "../../ui/fonts";
@@ -109,25 +110,26 @@ function PrimitivesTable() {
   const { tokens } = useTheme();
   const router = useRouter();
   return (
-    <DataTable
-      bordered
-      columns={["Primitive", "Is (react-native)", "style controls"]}
-      rows={PRIproprietaryIVES.map((p) => [
-        <Text
-          key="name"
-          onPress={() => router.push(p.to as never)}
-          style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.primary }}
-        >
-          {p.name}
-        </Text>,
-        <Text key="wraps" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
-          {p.wraps}
-        </Text>,
-        <Text key="styles" style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>
-          {p.styles}
-        </Text>,
-      ])}
-    />
+    <DocsSurface bordered>
+      <DataTable
+        columns={["Primitive", "Is (react-native)", "style controls"]}
+        rows={PRIproprietaryIVES.map((p) => [
+          <Text
+            key="name"
+            onPress={() => router.push(p.to as never)}
+            style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.primary }}
+          >
+            {p.name}
+          </Text>,
+          <Text key="wraps" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
+            {p.wraps}
+          </Text>,
+          <Text key="styles" style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>
+            {p.styles}
+          </Text>,
+        ])}
+      />
+    </DocsSurface>
   );
 }
 
@@ -232,17 +234,18 @@ export default function RnPrimitivesScreen() {
             duplicate the peer surface and risk version skew). Import these directly from{" "}
             <InlineCode>react-native</InlineCode>:
           </P>
-          <DataTable
-            bordered
-            columns={["From react-native", "Why not wrapped", "Use instead"]}
-            rows={NOT_WRAPPED.map(([from, why, use]) => [
-              <Text key="from" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
-                {from}
-              </Text>,
-              why,
-              use,
-            ])}
-          />
+          <DocsSurface bordered>
+            <DataTable
+              columns={["From react-native", "Why not wrapped", "Use instead"]}
+              rows={NOT_WRAPPED.map(([from, why, use]) => [
+                <Text key="from" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
+                  {from}
+                </Text>,
+                why,
+                use,
+              ])}
+            />
+          </DocsSurface>
         </Section>
 
         <Rule />

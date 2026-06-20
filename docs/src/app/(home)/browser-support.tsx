@@ -3,6 +3,7 @@ import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, InlineCode, Rule, MONO } from "../../ui/prose";
 import { Surface } from "../../ui/tokens-kit";
+import { DocsSurface } from "../../ui/surface";
 import { PageNav } from "../../ui/page-nav";
 
 const PLATFORMS = [
@@ -61,7 +62,9 @@ export default function BrowserSupportScreen() {
             Canvas is a universal React Native UI kit. It runs natively on iOS and Android, and on the web through{" "}
             <InlineCode>react-native-web</InlineCode>.
           </P>
-          <DataTable bordered columns={["Platform", "Runtime", "Minimum"]} rows={PLATFORMS} />
+          <DocsSurface bordered>
+            <DataTable columns={["Platform", "Runtime", "Minimum"]} rows={PLATFORMS} />
+          </DocsSurface>
         </Section>
 
         <Rule />
@@ -70,17 +73,18 @@ export default function BrowserSupportScreen() {
           <P muted>
             These peers set the platform floor. Install them alongside <InlineCode>@olympusoss/canvas</InlineCode>.
           </P>
-          <DataTable
-            bordered
-            columns={["Package", "Range", "Role"]}
-            rows={PEERS.map(([pkg, range, role]) => [
-              <Text key="pkg" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
-                {pkg}
-              </Text>,
-              range,
-              role,
-            ])}
-          />
+          <DocsSurface bordered>
+            <DataTable
+              columns={["Package", "Range", "Role"]}
+              rows={PEERS.map(([pkg, range, role]) => [
+                <Text key="pkg" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
+                  {pkg}
+                </Text>,
+                range,
+                role,
+              ])}
+            />
+          </DocsSurface>
         </Section>
 
         <Rule />
@@ -90,7 +94,9 @@ export default function BrowserSupportScreen() {
             On the web, the modern-browser floor is set by the <InlineCode>canvas.css</InlineCode> token layer, which is
             Tailwind v4. Tailwind v4 targets these versions:
           </P>
-          <DataTable bordered columns={["Browser", "Minimum Version", "Reason"]} rows={WEB_BASELINE} />
+          <DocsSurface bordered>
+            <DataTable columns={["Browser", "Minimum Version", "Reason"]} rows={WEB_BASELINE} />
+          </DocsSurface>
         </Section>
 
         <Rule />
