@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Text, Pressable, useTheme, palette } from "@olympusoss/canvas";
+import { ScrollView, View, Text, Button, useTheme, palette } from "@olympusoss/canvas";
 import { MONO } from "./prose";
-import { geist } from "./fonts";
 
 // A token-themed TSX highlighter standing in for Shiki (which emits HTML and can't run
 // on native). Colors approximate github-dark/light. Matches `.docs-code-wrap`: bordered,
@@ -83,22 +82,14 @@ export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
           ))}
         </Text>
       </ScrollView>
-      <Pressable
+      <Button
+        outline
+        small
         onPress={copy}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          paddingVertical: 4,
-          paddingHorizontal: 8,
-          borderRadius: 6,
-          borderWidth: 1,
-          borderColor: tokens.border,
-          backgroundColor: tokens.card,
-        }}
+        style={{ position: "absolute", top: 8, right: 8 }}
       >
-        <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens["muted-foreground"] }}>{copied ? "Copied" : "Copy"}</Text>
-      </Pressable>
+        {copied ? "Copied" : "Copy"}
+      </Button>
     </View>
   );
 }

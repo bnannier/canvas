@@ -1,5 +1,5 @@
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Pressable, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, Button, ButtonGroup, Kbd, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
 import { usePathname } from "expo-router";
 import { Menu, Search, Sun, Moon } from "lucide-react-native";
 import { getComponent } from "../core/data/components";
@@ -76,9 +76,15 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
       }}
     >
       {showMenu ? (
-        <Pressable onPress={onMenu} hitSlop={8} accessibilityLabel="Toggle menu" style={{ padding: 6, marginLeft: -2 }}>
-          <Menu size={18} color={tokens.foreground} />
-        </Pressable>
+        <Button
+          ghost
+          icon
+          small
+          accessibilityLabel="Toggle menu"
+          iconLeft={<Menu size={18} color={tokens.foreground} />}
+          onPress={onMenu}
+          style={{ marginLeft: -2 }}
+        />
       ) : null}
 
       <View style={{ minWidth: 0, flexShrink: 1 }}>
@@ -118,50 +124,30 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
           <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>
             Search components...
           </Text>
-          <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4, borderWidth: 1, borderColor: tokens.border }}>
-            <Text style={{ fontFamily: geist("500"), fontSize: 10, color: tokens["muted-foreground"] }}>⌘K</Text>
-          </View>
+          <Kbd>⌘K</Kbd>
         </Pressable>
       ) : null}
 
       <View style={{ flex: 1 }} />
 
       {showFrostToggle ? (
-        <View
-          style={{
-            flexDirection: "row",
-            borderRadius: 9999,
-            borderWidth: 1,
-            borderColor: tokens.border,
-            backgroundColor: tokens.card,
-            padding: 2,
-          }}
-        >
-          {(["solid", "glass"] as const).map((s) => {
-            const active = surface === s;
-            return (
-              <Pressable
-                key={s}
-                onPress={() => setSurface(s)}
-                style={{
-                  paddingVertical: 4,
-                  paddingHorizontal: 10,
-                  borderRadius: 9999,
-                  backgroundColor: active ? tokens.foreground : "transparent",
-                }}
-              >
-                <Text style={{ fontFamily: geist("500"), fontSize: 11, color: active ? tokens.background : tokens["muted-foreground"] }}>
-                  {s === "solid" ? "Solid" : "Frost"}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <ButtonGroup
+          segmented
+          small
+          items={["Solid", "Frost"]}
+          active={surface === "solid" ? 0 : 1}
+          onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
+        />
       ) : null}
 
-      <Pressable onPress={toggleScheme} hitSlop={10} style={{ padding: 6 }}>
-        {scheme === "dark" ? <Sun size={16} color={tokens.foreground} /> : <Moon size={16} color={tokens.foreground} />}
-      </Pressable>
+      <Button
+        ghost
+        icon
+        small
+        accessibilityLabel="Toggle color scheme"
+        iconLeft={scheme === "dark" ? <Sun size={16} color={tokens.foreground} /> : <Moon size={16} color={tokens.foreground} />}
+        onPress={toggleScheme}
+      />
     </GlassSurface>
   );
 }

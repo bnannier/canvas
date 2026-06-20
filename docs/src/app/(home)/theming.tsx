@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
+import { View, Text, ButtonGroup, useTheme } from "@olympusoss/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { H3, P, Rule, InlineCode } from "../../ui/prose";
@@ -71,26 +71,8 @@ setTheme("dark");
 setSurface("glass");
 setDensity("compact");`;
 
-// A small outline toggle button (the docs `.btn .btn-outline .btn-sm`), with an active
-// fill when its value is the live selection.
-function Toggle({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
-  const { tokens } = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        paddingVertical: 7,
-        paddingHorizontal: 14,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: active ? tokens.foreground : tokens.border,
-        backgroundColor: active ? tokens.foreground : tokens.background,
-      }}
-    >
-      <Text style={{ fontFamily: geist("500"), fontSize: 13, color: active ? tokens.background : tokens.foreground }}>{label}</Text>
-    </Pressable>
-  );
-}
+// Density levels in display order; the ButtonGroup index maps straight to this tuple.
+const DENSITIES = ["compact", "regular", "comfy"] as const;
 
 function Bullet({ children }: { children: React.ReactNode }) {
   const { tokens } = useTheme();
@@ -139,9 +121,14 @@ export default function ThemingScreen() {
             <InlineCode>scheme</InlineCode> to <InlineCode>ThemeProvider</InlineCode> instead.)
           </P>
           <CodeBlock code={DARK_TOGGLE} />
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Toggle label="Light" active={scheme === "light"} onPress={() => setScheme("light")} />
-            <Toggle label="Dark" active={scheme === "dark"} onPress={() => setScheme("dark")} />
+          <View style={{ flexDirection: "row" }}>
+            <ButtonGroup
+              segmented
+              small
+              items={["Light", "Dark"]}
+              active={scheme === "light" ? 0 : 1}
+              onSelect={(i) => setScheme(i === 0 ? "light" : "dark")}
+            />
           </View>
           <H3>Web helpers</H3>
           <CodeBlock code={JS_THEME} />
@@ -165,9 +152,14 @@ export default function ThemingScreen() {
             <InlineCode>{"<html>"}</InlineCode> on the web.
           </P>
           <CodeBlock code={GLASS} />
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Toggle label="Solid" active={surface === "solid"} onPress={() => setSurface("solid")} />
-            <Toggle label="Glass" active={surface === "glass"} onPress={() => setSurface("glass")} />
+          <View style={{ flexDirection: "row" }}>
+            <ButtonGroup
+              segmented
+              small
+              items={["Solid", "Glass"]}
+              active={surface === "solid" ? 0 : 1}
+              onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
+            />
           </View>
           <H3>What changes</H3>
           <View style={{ gap: 4 }}>
@@ -188,10 +180,14 @@ export default function ThemingScreen() {
             components key off; on native, components expose per-component density props (for example {"<Card compact>"}).
           </P>
           <CodeBlock code={DENSITY} />
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Toggle label="Compact" active={density === "compact"} onPress={() => setDensity("compact")} />
-            <Toggle label="Regular" active={density === "regular"} onPress={() => setDensity("regular")} />
-            <Toggle label="Comfy" active={density === "comfy"} onPress={() => setDensity("comfy")} />
+          <View style={{ flexDirection: "row" }}>
+            <ButtonGroup
+              segmented
+              small
+              items={["Compact", "Regular", "Comfy"]}
+              active={DENSITIES.indexOf(density)}
+              onSelect={(i) => setDensity(DENSITIES[i])}
+            />
           </View>
           <P muted>The buttons set <InlineCode>data-density</InlineCode> on this page on the web; on native, density is a per-component prop.</P>
           <H3>Web helpers</H3>

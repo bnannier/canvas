@@ -1,5 +1,4 @@
-import { View, Text, useTheme } from "@olympusoss/canvas";
-import { ScrollView } from "react-native";
+import { View, Text, useTheme, ScrollView } from "@olympusoss/canvas";
 import { COMPONENTS } from "../../../core/data/components";
 import { CONTENT_TOP_INSET } from "../../../shell/topbar";
 import { ScreenFrame } from "../../../shell/native-header";

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
+import { View, Button, useTheme } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { FLAT_PAGES } from "../data/nav";
 
@@ -26,20 +26,16 @@ export function PageNav() {
       }}
     >
       {prev ? (
-        <Pressable onPress={() => router.push(prev.href as never)} style={{ flexShrink: 1 }}>
-          <Text style={{ fontSize: 13, color: tokens["muted-foreground"] }} numberOfLines={1}>
-            ← {prev.label}
-          </Text>
-        </Pressable>
+        <Button link small onPress={() => router.push(prev.href as never)} style={{ flexShrink: 1 }}>
+          ← {prev.label}
+        </Button>
       ) : (
         <View />
       )}
       {next ? (
-        <Pressable onPress={() => router.push(next.href as never)} style={{ flexShrink: 1 }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }} numberOfLines={1}>
-            {next.label} →
-          </Text>
-        </Pressable>
+        <Button link small onPress={() => router.push(next.href as never)} style={{ flexShrink: 1 }}>
+          {next.label} →
+        </Button>
       ) : (
         <View />
       )}

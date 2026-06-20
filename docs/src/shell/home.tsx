@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
-import { ScrollView, useWindowDimensions, Linking } from "react-native";
+import { useWindowDimensions, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, useTheme } from "@olympusoss/canvas";
+import { View, Text, Pressable, Button, ScrollView, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Defs, RadialGradient, Stop, Filter, FeGaussianBlur, G } from "react-native-svg";
 import QRCode from "react-native-qrcode-svg";
@@ -128,30 +128,6 @@ function Wrap({ children, style }: { children: ReactNode; style?: object }) {
   return <View style={[{ width: "100%", maxWidth: 1140, alignSelf: "center", paddingHorizontal: 24 }, style]}>{children}</View>;
 }
 
-// A landing button (primary / outline, large): solid foreground fill or bordered surface.
-// `iconRight` places the icon after the label (the "Browse components ->" layout);
-// otherwise it leads (the "<icon> View on GitHub" layout).
-function LandingButton({ label, icon, primary, iconRight, onPress }: {
-  label: string; icon?: ReactNode; primary?: boolean; iconRight?: boolean; onPress: () => void;
-}) {
-  const { tokens } = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-        height: 46, paddingHorizontal: 22, borderRadius: 11, borderWidth: 1,
-        backgroundColor: primary ? tokens.foreground : tokens.background,
-        borderColor: primary ? "transparent" : tokens.border,
-      }}
-    >
-      {iconRight ? null : icon}
-      <Text style={{ fontFamily: geist("500"), fontSize: 15, color: primary ? tokens.background : tokens.foreground }}>{label}</Text>
-      {iconRight ? icon : null}
-    </Pressable>
-  );
-}
-
 // The blurred radial wash behind the hero (decorative):
 // three low-opacity color blobs softened by a heavy Gaussian blur so they read as ONE
 // diffuse glow rather than defined dark discs. Without the blur the low-opacity circles
@@ -275,8 +251,8 @@ export function Home() {
                   </View>
 
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
-                    <LandingButton primary iconRight label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
-                    <LandingButton label="Explore tokens" onPress={() => go("/tokens/colors")} />
+                    <Button primary large iconRight={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")}>Browse components</Button>
+                    <Button outline large onPress={() => go("/tokens/colors")}>Explore tokens</Button>
                   </View>
 
                   <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
@@ -323,8 +299,8 @@ export function Home() {
                 <Step n="3">Canvas opens in Expo Go: the same app, running natively.</Step>
               </View>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
-                <LandingButton label="App Store" onPress={() => Linking.openURL(EXPO_GO_IOS)} />
-                <LandingButton label="Google Play" onPress={() => Linking.openURL(EXPO_GO_ANDROID)} />
+                <Button outline large onPress={() => Linking.openURL(EXPO_GO_IOS)}>App Store</Button>
+                <Button outline large onPress={() => Linking.openURL(EXPO_GO_ANDROID)}>Google Play</Button>
               </View>
               <Pressable onPress={() => Linking.openURL(APP_INSTALL_URL)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                 <Text style={{ fontFamily: geist("500"), fontSize: 14.5, color: tokens.primary }}>Open in Expo Go</Text>
@@ -441,8 +417,8 @@ export function Home() {
               Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
-              <LandingButton primary iconRight label="Browse components" icon={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")} />
-              <LandingButton label="View on GitHub" icon={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)} />
+              <Button primary large iconRight={<ArrowRight size={16} color={tokens.background} />} onPress={() => go("/components/button")}>Browse components</Button>
+              <Button outline large iconLeft={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)}>View on GitHub</Button>
             </View>
           </View>
         </Wrap>
