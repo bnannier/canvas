@@ -1,8 +1,7 @@
-import { View } from "@olympusoss/canvas";
+import { View, Text, DataTable, useTheme } from "@olympusoss/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
-import { P, H3, InlineCode, Rule } from "../../ui/prose";
-import { Table } from "../../ui/table";
+import { P, H3, InlineCode, Rule, MONO } from "../../ui/prose";
 import { Surface } from "../../ui/tokens-kit";
 import { PageNav } from "../../ui/page-nav";
 
@@ -48,6 +47,7 @@ const NOTES = [
 ];
 
 export default function BrowserSupportScreen() {
+  const { tokens } = useTheme();
   return (
     <Page>
       <View style={{ gap: 28 }}>
@@ -61,7 +61,7 @@ export default function BrowserSupportScreen() {
             Canvas is a universal React Native UI kit. It runs natively on iOS and Android, and on the web through{" "}
             <InlineCode>react-native-web</InlineCode>.
           </P>
-          <Table headers={["Platform", "Runtime", "Minimum"]} rows={PLATFORMS} />
+          <DataTable bordered columns={["Platform", "Runtime", "Minimum"]} rows={PLATFORMS} />
         </Section>
 
         <Rule />
@@ -70,7 +70,17 @@ export default function BrowserSupportScreen() {
           <P muted>
             These peers set the platform floor. Install them alongside <InlineCode>@olympusoss/canvas</InlineCode>.
           </P>
-          <Table headers={["Package", "Range", "Role"]} rows={PEERS} mono />
+          <DataTable
+            bordered
+            columns={["Package", "Range", "Role"]}
+            rows={PEERS.map(([pkg, range, role]) => [
+              <Text key="pkg" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
+                {pkg}
+              </Text>,
+              range,
+              role,
+            ])}
+          />
         </Section>
 
         <Rule />
@@ -80,7 +90,7 @@ export default function BrowserSupportScreen() {
             On the web, the modern-browser floor is set by the <InlineCode>canvas.css</InlineCode> token layer, which is
             Tailwind v4. Tailwind v4 targets these versions:
           </P>
-          <Table headers={["Browser", "Minimum Version", "Reason"]} rows={WEB_BASELINE} />
+          <DataTable bordered columns={["Browser", "Minimum Version", "Reason"]} rows={WEB_BASELINE} />
         </Section>
 
         <Rule />

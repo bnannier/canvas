@@ -1,9 +1,8 @@
-import { ScrollView, View, Text, useTheme } from "@olympusoss/canvas";
+import { ScrollView, View, Text, DataTable, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, InlineCode, Rule } from "../../ui/prose";
-import { Table } from "../../ui/table";
 import { CodeBlock } from "../../ui/code-block";
 import { PageNav } from "../../ui/page-nav";
 import { MONO } from "../../ui/prose";
@@ -103,40 +102,32 @@ function Rows({ data }) {
   );
 }`;
 
-// The primitives table: the first column links each name to its reference page
-// (primary-colored, monospace), mirroring the `.dt-table` styling from the Table kit.
+// The primitives table: the Canvas DataTable, with the first column a primary
+// monospace link to each name's reference page. ReactNode cells carry the link /
+// monospace / muted styling inside the kit table's bordered, uppercase-header frame.
 function PrimitivesTable() {
   const { tokens } = useTheme();
   const router = useRouter();
-  const headers = ["Primitive", "Is (react-native)", "style controls"];
   return (
-    <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 10, overflow: "hidden" }}>
-      <View style={{ flexDirection: "row", backgroundColor: tokens.muted }}>
-        {headers.map((h, i) => (
-          <View key={i} style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 9 }}>
-            <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.3, color: tokens.foreground }}>{h}</Text>
-          </View>
-        ))}
-      </View>
-      {PRIproprietaryIVES.map((p) => (
-        <View key={p.name} style={{ flexDirection: "row", borderTopWidth: 1, borderColor: tokens.border }}>
-          <View style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 9 }}>
-            <Text
-              onPress={() => router.push(p.to as never)}
-              style={{ fontFamily: MONO, fontSize: 12, lineHeight: 17, color: tokens.primary }}
-            >
-              {p.name}
-            </Text>
-          </View>
-          <View style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 9 }}>
-            <Text style={{ fontFamily: MONO, fontSize: 12, lineHeight: 17, color: tokens.foreground }}>{p.wraps}</Text>
-          </View>
-          <View style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 9 }}>
-            <Text style={{ fontFamily: geist("400"), fontSize: 12, lineHeight: 17, color: tokens["muted-foreground"] }}>{p.styles}</Text>
-          </View>
-        </View>
-      ))}
-    </View>
+    <DataTable
+      bordered
+      columns={["Primitive", "Is (react-native)", "style controls"]}
+      rows={PRIproprietaryIVES.map((p) => [
+        <Text
+          key="name"
+          onPress={() => router.push(p.to as never)}
+          style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.primary }}
+        >
+          {p.name}
+        </Text>,
+        <Text key="wraps" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
+          {p.wraps}
+        </Text>,
+        <Text key="styles" style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>
+          {p.styles}
+        </Text>,
+      ])}
+    />
   );
 }
 
@@ -241,7 +232,17 @@ export default function RnPrimitivesScreen() {
             duplicate the peer surface and risk version skew). Import these directly from{" "}
             <InlineCode>react-native</InlineCode>:
           </P>
-          <Table headers={["From react-native", "Why not wrapped", "Use instead"]} rows={NOT_WRAPPED} mono />
+          <DataTable
+            bordered
+            columns={["From react-native", "Why not wrapped", "Use instead"]}
+            rows={NOT_WRAPPED.map(([from, why, use]) => [
+              <Text key="from" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
+                {from}
+              </Text>,
+              why,
+              use,
+            ])}
+          />
         </Section>
 
         <Rule />

@@ -18,8 +18,12 @@ import { type Density } from "./data-table.styles.js";
 export interface DataTableProps {
   /** Column header labels, one per column. */
   columns: string[];
-  /** Row data: an array of rows, each an array of cell strings (one per column). */
-  rows: string[][];
+  /**
+   * Row data: an array of rows, each an array of cells (one per column). A cell is
+   * a string (rendered in the default cell type) or any ReactNode for a custom
+   * cell — a link, a `Badge`, a monospace name, etc. (rendered directly).
+   */
+  rows: ReactNode[][];
   /** Tint every other data row for easier horizontal scanning. */
   striped?: boolean;
   /** Wrap the table in a rounded outer border. */
@@ -30,7 +34,7 @@ export interface DataTableProps {
   /** Prepend a leading checkbox column (header gets an empty selector cell). */
   selectable?: boolean;
   /** When set, each data row is pressable, reporting the row data and index. */
-  onRowPress?: (row: string[], index: number) => void;
+  onRowPress?: (row: ReactNode[], index: number) => void;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -71,11 +75,18 @@ export function DataTable(props: DataTableProps) {
                 <Checkbox />
               </View>
             ) : null}
-            {columns.map((_col, c) => (
-              <View key={`c-${r}-${c}`} style={[s.dataCell, s.cellPad[density]]}>
-                <Text style={s.cellText(tokens)}>{cellOf(row, c)}</Text>
-              </View>
-            ))}
+            {columns.map((_col, c) => {
+              const cell = cellOf(row, c);
+              return (
+                <View key={`c-${r}-${c}`} style={[s.dataCell, s.cellPad[density]]}>
+                  {typeof cell === "string" || typeof cell === "number" ? (
+                    <Text style={s.cellText(tokens)}>{cell}</Text>
+                  ) : (
+                    cell
+                  )}
+                </View>
+              );
+            })}
           </>
         );
         // The striped tint sits on odd-index rows for either layout.
@@ -99,7 +110,7 @@ export function DataTable(props: DataTableProps) {
 }
 
 // Read a cell, tolerating short rows (missing trailing cells render empty).
-function cellOf(row: string[], index: number): ReactNode {
+function cellOf(row: ReactNode[], index: number): ReactNode {
   const value = row[index];
   return value == null ? "" : value;
 }
