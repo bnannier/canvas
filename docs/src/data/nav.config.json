@@ -130,9 +130,6 @@
       {
         "id": "utilities", "label": "Utilities", "icon": { "ios": "paintpalette", "android": "palette" },
         "topbar": { "inline": ["colors", "spacing", "typography", "layout"] }
-      },
-      {
-        "id": "menu", "label": "Menu", "icon": { "ios": "line.3.horizontal", "android": "menu" }
       }
     ]
   }
