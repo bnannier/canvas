@@ -6,6 +6,7 @@ import { View, useTheme, Drawer } from "@olympusoss/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
+import { BottomNav } from "./bottom-nav";
 import { SearchModal } from "./search-modal";
 import { GlassAurora } from "../ui/glass";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
@@ -81,8 +82,12 @@ function WebNav() {
           <View style={{ flex: 1 }}>
             <Slot />
           </View>
+          {/* Phone: the nav lives in a bottom tab bar (Menu is the 4th, bottom-right button
+              and opens the drawer); the topbar hamburger is dropped. Wide keeps the topbar
+              hamburger as the sidebar-rail toggle. */}
+          {!wide ? <BottomNav onMenu={() => setDrawerOpen(true)} /> : null}
           <View style={{ position: "absolute", top: 0, left: 0, right: Platform.OS === "web" ? SCROLLBAR_W : 0, zIndex: 10 }}>
-            <Topbar showMenu onMenu={() => (wide ? setCollapsed((c) => !c) : setDrawerOpen(true))} onSearch={() => setSearchOpen(true)} />
+            <Topbar showMenu={wide} onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
           </View>
         </View>
       </View>
