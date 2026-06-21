@@ -15,10 +15,16 @@ export function TabOverflowMenu({
   visible,
   onClose,
   menu,
+  activeGroup,
+  activeSlug,
 }: {
   visible: boolean;
   onClose: () => void;
   menu: NativeMenu;
+  /** The current page's category, so the drill-down reopens reflecting where you are. */
+  activeGroup?: string | null;
+  /** The current page's slug, to mark it in the list. */
+  activeSlug?: string;
 }) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -38,24 +44,25 @@ export function TabOverflowMenu({
       style={{ paddingTop: 8, paddingBottom: insets.bottom + 8 }}
     >
       {menu.kind === "flat" ? (
-        menu.items.map((it) => <MenuRow key={it.href} label={it.label} onPress={() => go(it.href)} />)
+        menu.items.map((it) => <MenuRow key={it.href} label={it.label} active={it.slug === activeSlug} onPress={() => go(it.href)} />)
       ) : (
-        <DrillDown menu={menu} visible={visible} onSelect={go} />
+        <DrillDown menu={menu} visible={visible} onSelect={go} activeGroup={activeGroup} activeSlug={activeSlug} />
       )}
     </Drawer>
   );
 }
 
-// A single tappable row; `chevron` adds the trailing drill-in affordance for category rows.
-function MenuRow({ label, onPress, chevron }: { label: string; onPress: () => void; chevron?: boolean }) {
+// A single tappable row; `chevron` adds the trailing drill-in affordance for category rows,
+// `active` marks the current page (primary label + a trailing check).
+function MenuRow({ label, onPress, chevron, active }: { label: string; onPress: () => void; chevron?: boolean; active?: boolean }) {
   const { tokens } = useTheme();
   return (
     <Pressable
       onPress={onPress}
       style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 14 }}
     >
-      <Text style={{ fontFamily: geist("500"), fontSize: 16, color: tokens.foreground }}>{label}</Text>
-      {chevron ? <Icon chevronRight size={18} muted /> : null}
+      <Text style={{ fontFamily: geist(active ? "600" : "500"), fontSize: 16, color: active ? tokens.primary : tokens.foreground }}>{label}</Text>
+      {active ? <Icon check primary size={18} /> : chevron ? <Icon chevronRight size={18} muted /> : null}
     </Pressable>
   );
 }
@@ -69,10 +76,14 @@ function DrillDown({
   menu,
   visible,
   onSelect,
+  activeGroup,
+  activeSlug,
 }: {
   menu: Extract<NativeMenu, { kind: "groups" }>;
   visible: boolean;
   onSelect: (href: string) => void;
+  activeGroup?: string | null;
+  activeSlug?: string;
 }) {
   const { tokens } = useTheme();
   const { width: windowWidth, height } = useWindowDimensions();
@@ -82,16 +93,21 @@ function DrillDown({
   const [width, setWidth] = useState(windowWidth);
   const [active, setActive] = useState<MenuGroup | null>(null);
   const x = useRef(new Animated.Value(0)).current;
+  const wasVisible = useRef(false);
   const useDriver = Platform.OS !== "web";
   const panelHeight = Math.round(height * 0.55);
 
-  // Reopen at the category list whenever the sheet is dismissed.
+  // On OPEN (a false->true transition only, so a manual drill survives parent re-renders),
+  // reflect where we are: if the current page is in a category, open at that category
+  // (level 1); otherwise show the category list (level 0).
   useEffect(() => {
-    if (!visible) {
-      x.setValue(0);
-      setActive(null);
+    if (visible && !wasVisible.current) {
+      const g = activeGroup ? menu.groups.find((gr) => gr.label === activeGroup) ?? null : null;
+      setActive(g);
+      x.setValue(g ? 1 : 0);
     }
-  }, [visible, x]);
+    wasVisible.current = visible;
+  }, [visible, activeGroup, menu, x]);
 
   const slideTo = (level: 0 | 1, after?: () => void) => {
     Animated.timing(x, { toValue: level, duration: 220, useNativeDriver: useDriver }).start(after ? () => after() : undefined);
@@ -125,7 +141,9 @@ function DrillDown({
             <Text style={{ fontFamily: geist("600"), fontSize: 16, color: tokens.foreground }}>{active?.label ?? ""}</Text>
           </Pressable>
           <ScrollView>
-            {active?.items.map((it) => <MenuRow key={it.href} label={it.label} onPress={() => onSelect(it.href)} />)}
+            {active?.items.map((it) => (
+              <MenuRow key={it.href} label={it.label} active={it.slug === activeSlug} onPress={() => onSelect(it.href)} />
+            ))}
           </ScrollView>
         </View>
       </Animated.View>

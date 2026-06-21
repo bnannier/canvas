@@ -5,7 +5,7 @@ import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { search } from "../core/data/search";
 import { titleFor } from "./topbar";
-import { nativeMenuFor, type MenuLeaf } from "../data/nav";
+import { nativeMenuFor, getActiveGroup, getActiveSlug, type MenuLeaf, type MenuGroup } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";
 import { SearchResults } from "./search-results";
 
@@ -61,6 +61,10 @@ export function NativeHeader() {
   const title = titleFor(pathname).title;
   const model = nativeMenuFor(sectionFor(pathname));
   const hasMenu = model.kind === "flat" ? model.items.length > 0 : model.groups.length > 0;
+  // Where we are now: the current page's category + slug, so the menu reopens reflecting it
+  // instead of restarting at the base category list.
+  const activeGroup = getActiveGroup(pathname);
+  const activeSlug = getActiveSlug(pathname);
 
   // The native integrated search field (in the nav bar on iOS 26). placement is iOS-only;
   // Android renders its own Material search field with the default placement.
@@ -93,20 +97,29 @@ export function NativeHeader() {
 
   // iOS: a native pull-down UIMenu in the trailing slot. Flat sections (Home/Utilities) are
   // action rows; Components is a list of category SUBMENUS, each holding its component pages,
-  // so iOS slides over to the category's items natively. The trailing items are ALWAYS
-  // declared (returning [] when this section has no menu): the native bar merges options
-  // across the sibling tab stacks, so a bare omission would leave a previous section's menu
-  // showing here, and an explicit [] clears it.
+  // so iOS slides over to the category's items natively. The current page is check-marked
+  // (state "on"), and on a component page its category is surfaced FIRST as an inline section
+  // (the native menu can't reopen pre-drilled into a submenu, so this reflects where you are);
+  // the remaining categories stay as drill-in submenus. The trailing items are ALWAYS declared
+  // (returning [] when this section has no menu): the native bar merges options across the
+  // sibling tab stacks, so a bare omission would leave a previous section's menu showing here,
+  // and an explicit [] clears it.
   if (Platform.OS === "ios") {
     const action = (leaf: MenuLeaf) => ({
       type: "action" as const,
       label: leaf.label,
       onPress: () => router.push(leaf.href as never),
+      ...(leaf.slug === activeSlug ? { state: "on" as const } : {}),
     });
+    const submenu = (g: MenuGroup) => ({ type: "submenu" as const, label: g.label, items: g.items.map(action) });
+    const current = model.kind === "groups" && activeGroup ? model.groups.find((g) => g.label === activeGroup) : undefined;
     const items =
       model.kind === "flat"
         ? model.items.map(action)
-        : model.groups.map((g) => ({ type: "submenu" as const, label: g.label, items: g.items.map(action) }));
+        : [
+            ...(current ? [{ type: "submenu" as const, label: current.label, inline: true, items: current.items.map(action) }] : []),
+            ...model.groups.filter((g) => g !== current).map(submenu),
+          ];
     return (
       <>
         <Stack.Screen
@@ -150,7 +163,7 @@ export function NativeHeader() {
             : () => null,
         }}
       />
-      {hasMenu ? <TabOverflowMenu visible={menuOpen} onClose={() => setMenuOpen(false)} menu={model} /> : null}
+      {hasMenu ? <TabOverflowMenu visible={menuOpen} onClose={() => setMenuOpen(false)} menu={model} activeGroup={activeGroup} activeSlug={activeSlug} /> : null}
       {overlay}
     </>
   );

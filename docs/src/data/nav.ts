@@ -117,6 +117,8 @@ export const MOBILE_TABS: NavTab[] = CONFIG.mobile.tabs;
 // NAV_GROUPS (the category -> components tree the web sidebar already consumes). iOS
 // renders `groups` as native UIMenu submenus; Android renders them as a drill-down sheet.
 export interface MenuLeaf {
+  /** The page slug (matches getActiveSlug), so the menu can mark the current page. */
+  slug: string;
   label: string;
   href: string;
 }
@@ -134,10 +136,13 @@ export function nativeMenuFor(section: string): NativeMenu {
     const groups: MenuGroup[] = categories
       .map((c) => byLabel.get(c))
       .filter((g): g is NavGroup => Boolean(g))
-      .map((g) => ({ label: g.label, items: g.items.map((i) => ({ label: i.label, href: i.href })) }));
+      .map((g) => ({ label: g.label, items: g.items.map((i) => ({ slug: i.slug, label: i.label, href: i.href })) }));
     return { kind: "groups", groups };
   }
   const keys = [...(tab?.topbar?.inline ?? []), ...(tab?.topbar?.overflow ?? [])];
-  const items = keys.map((k) => ({ label: NAV_ROUTES[k].label, href: NAV_ROUTES[k].href }));
+  const items = keys.map((k) => {
+    const r = routeItem(k);
+    return { slug: r.slug, label: r.label, href: r.href };
+  });
   return { kind: "flat", items };
 }
