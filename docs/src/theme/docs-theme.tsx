@@ -26,7 +26,13 @@ export function useDocsTheme(): DocsThemeContext {
 
 export function DocsThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
-  const [scheme, setScheme] = useState<Scheme>(system === "dark" ? "dark" : "light");
+  const systemScheme: Scheme = system === "dark" ? "dark" : "light";
+  // The scheme FOLLOWS the live OS appearance; only an explicit override wins. On native
+  // (iOS/Android) there is no theme toggle, so `override` stays null and the app tracks
+  // the OS light/dark setting in real time — the system chrome, including the iOS 26
+  // Liquid Glass tab bar, follows along. The web topbar sun/moon sets the override.
+  const [override, setOverride] = useState<Scheme | null>(null);
+  const scheme: Scheme = override ?? systemScheme;
   // Start at the platform default: glass on iOS 26 (matching the OS), solid elsewhere.
   // The topbar Frost toggle (shown only where glass is opt-in) flips it from there.
   const [surface, setSurface] = useState<Surface>(liquidGlassAvailable() ? "glass" : "solid");
@@ -35,8 +41,8 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
     () => ({
       scheme,
       surface,
-      toggleScheme: () => setScheme((s) => (s === "dark" ? "light" : "dark")),
-      setScheme,
+      toggleScheme: () => setOverride(scheme === "dark" ? "light" : "dark"),
+      setScheme: setOverride,
       setSurface,
     }),
     [scheme, surface],
@@ -44,9 +50,7 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={value}>
-      <ThemeProvider scheme={scheme} surface={surface}>
-        {children}
-      </ThemeProvider>
+      <ThemeProvider scheme={scheme} surface={surface}>{children}</ThemeProvider>
     </Ctx.Provider>
   );
 }

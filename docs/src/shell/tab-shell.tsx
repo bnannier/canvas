@@ -13,6 +13,13 @@ import { useTheme } from "@olympusoss/canvas";
 // to paint Liquid Glass); the screen scrollers add contentInsetAdjustmentBehavior="automatic"
 // so iOS owns the inset. Android has no such auto-inset, so it uses a solid Material top app
 // bar (themed to match) that occupies its own space, and the content sits below it.
+//
+// contentStyle paints the themed page backdrop behind every native screen. The screens
+// render TRANSPARENT in glass mode (so a single backdrop shows through, mirroring how the
+// web shell's SafeAreaView owns the fill), so without this the native screen container
+// would fall back to its system-default (light) background — making the app look light in
+// dark mode and frosting the Liquid Glass bars over white. Tied to tokens.background, the
+// backdrop follows the OS light/dark scheme, and the bars frost over the right color.
 export function TabShell({ section: _section }: { section: "home" | "components" | "utilities" }) {
   const { tokens } = useTheme();
   if (Platform.OS === "web") return <Slot />;
@@ -23,6 +30,7 @@ export function TabShell({ section: _section }: { section: "home" | "components"
         headerShown: true,
         headerTransparent: ios,
         headerTitleAlign: "left",
+        contentStyle: { backgroundColor: tokens.background },
         ...(ios
           ? {}
           : {
