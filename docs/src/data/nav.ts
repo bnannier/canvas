@@ -108,3 +108,36 @@ export const FLAT_PAGES: NavItem[] = NAV_GROUPS.flatMap((g) => g.items).filter((
 
 // ── Mobile (iOS + Android) tab bar config, consumed by the native nav chrome ─────
 export const MOBILE_TABS: NavTab[] = CONFIG.mobile.tabs;
+
+// ── Native header menu model ─────────────────────────────────────────────────
+// The hamburger is the active tab's secondary nav, and its SHAPE depends on the tab:
+// Home/Utilities are a flat list of links; Components is a list of categories, each
+// drilling into its component pages. `nativeMenuFor` resolves a tab id (== section)
+// to one of these two shapes, reusing the existing NAV_ROUTES (link registry) and
+// NAV_GROUPS (the category -> components tree the web sidebar already consumes). iOS
+// renders `groups` as native UIMenu submenus; Android renders them as a drill-down sheet.
+export interface MenuLeaf {
+  label: string;
+  href: string;
+}
+export interface MenuGroup {
+  label: string;
+  items: MenuLeaf[];
+}
+export type NativeMenu = { kind: "flat"; items: MenuLeaf[] } | { kind: "groups"; groups: MenuGroup[] };
+
+export function nativeMenuFor(section: string): NativeMenu {
+  const tab = MOBILE_TABS.find((t) => t.id === section);
+  const categories = tab?.topbar?.categories;
+  if (categories && categories.length) {
+    const byLabel = new Map(NAV_GROUPS.map((g) => [g.label, g] as const));
+    const groups: MenuGroup[] = categories
+      .map((c) => byLabel.get(c))
+      .filter((g): g is NavGroup => Boolean(g))
+      .map((g) => ({ label: g.label, items: g.items.map((i) => ({ label: i.label, href: i.href })) }));
+    return { kind: "groups", groups };
+  }
+  const keys = [...(tab?.topbar?.inline ?? []), ...(tab?.topbar?.overflow ?? [])];
+  const items = keys.map((k) => ({ label: NAV_ROUTES[k].label, href: NAV_ROUTES[k].href }));
+  return { kind: "flat", items };
+}

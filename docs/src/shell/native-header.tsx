@@ -5,7 +5,7 @@ import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { search } from "../core/data/search";
 import { titleFor } from "./topbar";
-import { MOBILE_TABS, NAV_ROUTES } from "../data/nav";
+import { nativeMenuFor, type MenuLeaf } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";
 import { SearchResults } from "./search-results";
 
@@ -59,9 +59,8 @@ export function NativeHeader() {
   if (Platform.OS === "web" || !isFocused) return null;
 
   const title = titleFor(pathname).title;
-  const tab = MOBILE_TABS.find((t) => t.id === sectionFor(pathname));
-  const menuKeys = [...(tab?.topbar?.inline ?? []), ...(tab?.topbar?.overflow ?? [])];
-  const hasMenu = menuKeys.length > 0;
+  const model = nativeMenuFor(sectionFor(pathname));
+  const hasMenu = model.kind === "flat" ? model.items.length > 0 : model.groups.length > 0;
 
   // The native integrated search field (in the nav bar on iOS 26). placement is iOS-only;
   // Android renders its own Material search field with the default placement.
@@ -92,16 +91,22 @@ export function NativeHeader() {
     </View>
   ) : null;
 
-  // iOS: a native pull-down UIMenu in the trailing slot. The trailing items are ALWAYS
+  // iOS: a native pull-down UIMenu in the trailing slot. Flat sections (Home/Utilities) are
+  // action rows; Components is a list of category SUBMENUS, each holding its component pages,
+  // so iOS slides over to the category's items natively. The trailing items are ALWAYS
   // declared (returning [] when this section has no menu): the native bar merges options
-  // across the sibling tab stacks, so a bare omission would leave a previous section's
-  // menu showing here, and an explicit [] clears it.
+  // across the sibling tab stacks, so a bare omission would leave a previous section's menu
+  // showing here, and an explicit [] clears it.
   if (Platform.OS === "ios") {
-    const items = menuKeys.map((k) => ({
+    const action = (leaf: MenuLeaf) => ({
       type: "action" as const,
-      label: NAV_ROUTES[k].label,
-      onPress: () => router.push(NAV_ROUTES[k].href as never),
-    }));
+      label: leaf.label,
+      onPress: () => router.push(leaf.href as never),
+    });
+    const items =
+      model.kind === "flat"
+        ? model.items.map(action)
+        : model.groups.map((g) => ({ type: "submenu" as const, label: g.label, items: g.items.map(action) }));
     return (
       <>
         <Stack.Screen
@@ -145,7 +150,7 @@ export function NativeHeader() {
             : () => null,
         }}
       />
-      {hasMenu ? <TabOverflowMenu visible={menuOpen} onClose={() => setMenuOpen(false)} routeKeys={menuKeys} /> : null}
+      {hasMenu ? <TabOverflowMenu visible={menuOpen} onClose={() => setMenuOpen(false)} menu={model} /> : null}
       {overlay}
     </>
   );
