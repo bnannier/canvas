@@ -75,8 +75,11 @@ function DrillDown({
   onSelect: (href: string) => void;
 }) {
   const { tokens } = useTheme();
-  const { height } = useWindowDimensions();
-  const [width, setWidth] = useState(0);
+  const { width: windowWidth, height } = useWindowDimensions();
+  // Seed the panel width from the window so the slide interpolation is right on the very
+  // first drill-down (before onLayout fires, width 0 would make outputRange [0,-0] and the
+  // animation a no-op); onLayout then refines it to the measured clip width.
+  const [width, setWidth] = useState(windowWidth);
   const [active, setActive] = useState<MenuGroup | null>(null);
   const x = useRef(new Animated.Value(0)).current;
   const useDriver = Platform.OS !== "web";
