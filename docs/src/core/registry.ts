@@ -227,6 +227,17 @@ import e_atoms_popover_dont_2_dont from "./examples/atoms/popover/dont-2-dont";
 import e_atoms_pressable_example_0 from "./examples/atoms/pressable/example-0";
 import e_atoms_pressable_example_1 from "./examples/atoms/pressable/example-1";
 import e_atoms_pressable_example_2 from "./examples/atoms/pressable/example-2";
+import e_atoms_progress_example_0 from "./examples/atoms/progress/example-0";
+import e_atoms_progress_example_1 from "./examples/atoms/progress/example-1";
+import e_atoms_progress_example_2 from "./examples/atoms/progress/example-2";
+import e_atoms_progress_example_3 from "./examples/atoms/progress/example-3";
+import e_atoms_progress_example_4 from "./examples/atoms/progress/example-4";
+import e_atoms_progress_dont_0_do from "./examples/atoms/progress/dont-0-do";
+import e_atoms_progress_dont_0_dont from "./examples/atoms/progress/dont-0-dont";
+import e_atoms_progress_dont_1_do from "./examples/atoms/progress/dont-1-do";
+import e_atoms_progress_dont_1_dont from "./examples/atoms/progress/dont-1-dont";
+import e_atoms_progress_dont_2_do from "./examples/atoms/progress/dont-2-do";
+import e_atoms_progress_dont_2_dont from "./examples/atoms/progress/dont-2-dont";
 import e_atoms_qrcode_example_0 from "./examples/atoms/qrcode/example-0";
 import e_atoms_qrcode_example_1 from "./examples/atoms/qrcode/example-1";
 import e_atoms_qrcode_example_2 from "./examples/atoms/qrcode/example-2";
@@ -276,6 +287,17 @@ import e_atoms_skeleton_dont_4_do from "./examples/atoms/skeleton/dont-4-do";
 import e_atoms_skeleton_dont_4_dont from "./examples/atoms/skeleton/dont-4-dont";
 import e_atoms_skeleton_dont_5_do from "./examples/atoms/skeleton/dont-5-do";
 import e_atoms_skeleton_dont_5_dont from "./examples/atoms/skeleton/dont-5-dont";
+import e_atoms_slider_example_0 from "./examples/atoms/slider/example-0";
+import e_atoms_slider_example_1 from "./examples/atoms/slider/example-1";
+import e_atoms_slider_example_2 from "./examples/atoms/slider/example-2";
+import e_atoms_slider_example_3 from "./examples/atoms/slider/example-3";
+import e_atoms_slider_example_4 from "./examples/atoms/slider/example-4";
+import e_atoms_slider_dont_0_do from "./examples/atoms/slider/dont-0-do";
+import e_atoms_slider_dont_0_dont from "./examples/atoms/slider/dont-0-dont";
+import e_atoms_slider_dont_1_do from "./examples/atoms/slider/dont-1-do";
+import e_atoms_slider_dont_1_dont from "./examples/atoms/slider/dont-1-dont";
+import e_atoms_slider_dont_2_do from "./examples/atoms/slider/dont-2-do";
+import e_atoms_slider_dont_2_dont from "./examples/atoms/slider/dont-2-dont";
 import e_atoms_spinner_example_0 from "./examples/atoms/spinner/example-0";
 import e_atoms_spinner_example_1 from "./examples/atoms/spinner/example-1";
 import e_atoms_spinner_example_2 from "./examples/atoms/spinner/example-2";
@@ -983,6 +1005,22 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
 
     ],
   },
+  "progress": {
+    dir: "progress",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<Progress value={0.6} style={{ maxWidth: 320 }} />", render: e_atoms_progress_example_0 },
+      { label: "Determinate", code: "<Progress value={0.4} style={{ maxWidth: 320 }} />", render: e_atoms_progress_example_1 },
+      { label: "Indeterminate", code: "<Progress indeterminate style={{ maxWidth: 320 }} />", render: e_atoms_progress_example_2 },
+      { label: "Size - sm", code: "<Progress small value={0.6} style={{ maxWidth: 320 }} />", render: e_atoms_progress_example_3 },
+      { label: "Size - lg", code: "<Progress large value={0.6} style={{ maxWidth: 320 }} />", render: e_atoms_progress_example_4 },
+    ],
+    donts: [
+      { title: "Determinate", do: { caption: "Use a determinate bar when you know the share of work done, and pair it with a percent or count so the number and the bar agree.", code: "<View style={{ maxWidth: 320, gap: 8 }}>\n  <View style={{ flexDirection: \"row\", justifyContent: \"space-between\" }}>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Uploading…</Text>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>72%</Text>\n  </View>\n  <Progress value={0.72} />\n</View>", render: e_atoms_progress_dont_0_do }, dont: { caption: "Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.", code: "<View style={{ maxWidth: 320, gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>\n  <Progress value={0.5} />\n</View>", render: e_atoms_progress_dont_0_dont } },
+      { title: "Indeterminate", do: { caption: "Reach for the indeterminate bar only when the duration is genuinely unknown, so the looping sweep tells users work is happening.", code: "<View style={{ maxWidth: 320, gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>Connecting…</Text>\n  <Progress indeterminate />\n</View>", render: e_atoms_progress_dont_1_do }, dont: { caption: "Don't fake indeterminate progress when you do have a measurable value; a sliding bar over known work hides information you could show.", code: "<View style={{ maxWidth: 320, gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>Step 3 of 4</Text>\n  <Progress indeterminate />\n</View>", render: e_atoms_progress_dont_1_dont } },
+      { title: "Context", do: { caption: "Give the bar a width and a label; on its own it carries no meaning, so set its measure with the `style` prop and name the task.", code: "<View style={{ maxWidth: 320, gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Importing contacts</Text>\n  <Progress value={0.35} />\n</View>", render: e_atoms_progress_dont_2_do }, dont: { caption: "Don't hand-roll a bar from raw views; the kit's `Progress` already adapts its thickness and ends per platform and stays themed.", code: "<View style={{ maxWidth: 320, height: 8, borderRadius: 4, backgroundColor: alpha(tokens.primary, 0.2), overflow: \"hidden\" }}>\n  <View style={{ height: \"100%\", width: \"35%\", borderRadius: 4, backgroundColor: tokens.primary }} />\n</View>", render: e_atoms_progress_dont_2_dont } },
+    ],
+  },
   "qrcode": {
     dir: "qrcode",
     category: "atoms",
@@ -1056,6 +1094,22 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "card", do: { caption: "Mirror the real layout (avatar circle, text lines) so the swap is seamless.", code: "<Skeleton card animate />", render: e_atoms_skeleton_dont_3_do }, dont: { caption: "A generic block that ignores the content's shape causes a jarring shift when it loads.", code: "<View style={{ backgroundColor: tokens.muted, borderRadius: 6, width: 320, height: 88 }} />", render: e_atoms_skeleton_dont_3_dont } },
       { title: "list", do: { caption: "Repeat a per-row placeholder so the avatar-and-text rhythm matches the loaded list.", code: "<Skeleton list animate />", render: e_atoms_skeleton_dont_4_do }, dont: { caption: "One tall block hides the row rhythm, so the list reflows when each item appears.", code: "<View style={{ backgroundColor: tokens.muted, width: 400, height: 120, borderRadius: 6 }} />", render: e_atoms_skeleton_dont_4_dont } },
       { title: "table", do: { caption: "Lay placeholders out on the real column grid so each cell stays put when it fills in.", code: "<Skeleton table animate />", render: e_atoms_skeleton_dont_5_do }, dont: { caption: "A single rectangle gives no column structure; cells shift sideways once data lands.", code: "<View style={{ backgroundColor: tokens.muted, width: 400, height: 120, borderRadius: 6 }} />", render: e_atoms_skeleton_dont_5_dont } },
+    ],
+  },
+  "slider": {
+    dir: "slider",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<Slider value={60} min={0} max={100} />", render: e_atoms_slider_example_0 },
+      { label: "Size - sm", code: "<Slider small value={40} style={{ maxWidth: 280 }} />", render: e_atoms_slider_example_1 },
+      { label: "Size - lg", code: "<Slider large value={75} style={{ maxWidth: 280 }} />", render: e_atoms_slider_example_2 },
+      { label: "Stepped", code: "<Slider value={6} min={0} max={10} step={2} style={{ maxWidth: 280 }} />", render: e_atoms_slider_example_3 },
+      { label: "Disabled", code: "<Slider disabled value={30} style={{ maxWidth: 280 }} />", render: e_atoms_slider_example_4 },
+    ],
+    donts: [
+      { title: "Range", do: { caption: "Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance.", code: "<View style={{ maxWidth: 320, gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Volume</Text>\n  <Slider value={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_do }, dont: { caption: "Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.", code: "<View style={{ width: 64 }}>\n  <Slider value={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_dont } },
+      { title: "Bounds", do: { caption: "Pair the slider with its current value so the number is explicit, not just inferred from the thumb position.", code: "<View style={{ maxWidth: 320, flexDirection: \"row\", alignItems: \"center\", gap: 16 }}>\n  <Slider value={48} min={0} max={100} style={{ flex: 1 }} />\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"], minWidth: 32, textAlign: \"right\" }}>48</Text>\n</View>", render: e_atoms_slider_dont_1_do }, dont: { caption: "A slider with no readout and no label leaves users guessing what the value is and what it controls.", code: "<Slider value={48} min={0} max={100} style={{ maxWidth: 320 }} />", render: e_atoms_slider_dont_1_dont } },
+      { title: "State", do: { caption: "Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.", code: "<Slider disabled value={20} min={0} max={100} style={{ maxWidth: 320 }} />", render: e_atoms_slider_dont_2_do }, dont: { caption: "Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.", code: "<View style={{ maxWidth: 320, height: 20, justifyContent: \"center\" }}>\n  <View style={{ width: \"100%\", height: 4, borderRadius: 999, backgroundColor: tokens.muted }}>\n    <View style={{ position: \"absolute\", left: 0, top: 0, bottom: 0, width: \"20%\", borderRadius: 999, backgroundColor: alpha(tokens.primary, 0.4) }} />\n  </View>\n</View>", render: e_atoms_slider_dont_2_dont } },
     ],
   },
   "spinner": {

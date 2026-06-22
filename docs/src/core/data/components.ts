@@ -330,6 +330,20 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "progress",
+    name: "Progress",
+    description: "Determinate and indeterminate progress bars.",
+    category: "Atoms",
+  },
+
+  {
+    slug: "slider",
+    name: "Slider",
+    description: "A draggable value/range input with keyboard and screen-reader support.",
+    category: "Atoms",
+  },
+
+  {
     slug: "popover",
     name: "Popover",
     description: "Floating panel for rich content triggered by a click.",

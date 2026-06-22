@@ -59,6 +59,10 @@ import { Avatar as AvatarIOS } from "../../../src/atoms/avatar/avatar.ios.js";
 import { Avatar as AvatarAndroid } from "../../../src/atoms/avatar/avatar.android.js";
 import { Breadcrumb as BreadcrumbIOS } from "../../../src/atoms/breadcrumb/breadcrumb.ios.js";
 import { Breadcrumb as BreadcrumbAndroid } from "../../../src/atoms/breadcrumb/breadcrumb.android.js";
+import { Slider as SliderIOS } from "../../../src/atoms/slider/slider.ios.js";
+import { Slider as SliderAndroid } from "../../../src/atoms/slider/slider.android.js";
+import { Progress as ProgressIOS } from "../../../src/atoms/progress/progress.ios.js";
+import { Progress as ProgressAndroid } from "../../../src/atoms/progress/progress.android.js";
 import { ActionPanel as ActionPanelIOS } from "../../../src/molecules/action-panels/action-panels.ios.js";
 import { ActionPanel as ActionPanelAndroid } from "../../../src/molecules/action-panels/action-panels.android.js";
 import { Alert as AlertIOS } from "../../../src/molecules/alert/alert.ios.js";
@@ -102,7 +106,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS, Overlay: OverlayIOS,
     Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Stepper: StepperIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
-    Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS,
+    Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, DescriptionList: DescriptionListIOS,
     EmptyState: EmptyStateIOS, Feed: FeedIOS, Field: FieldIOS, Fieldset: FieldsetIOS, Form: FormIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
@@ -115,7 +119,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid, Overlay: OverlayAndroid,
     Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Stepper: StepperAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
-    Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid,
+    Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, DescriptionList: DescriptionListAndroid,
     EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Field: FieldAndroid, Fieldset: FieldsetAndroid, Form: FormAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
