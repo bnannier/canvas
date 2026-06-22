@@ -63,13 +63,16 @@ large button").
 <Button primary large>Save</Button>
 <Button destructive>Delete</Button>
 <Button ghost small>Cancel</Button>
-<Card glass>...</Card>
+<Card raised>...</Card>
 ```
 
-Props are grouped into orthogonal axes (intent, size, surface, density, and
-stacking state/layout flags). Props on different axes combine freely; props
-within one axis are mutually exclusive, so you pass at most one and the
-component resolves any conflict by a fixed precedence.
+Props are grouped into orthogonal axes (intent, size, density, and stacking
+state/layout flags). Props on different axes combine freely; props within one
+axis are mutually exclusive, so you pass at most one and the component resolves
+any conflict by a fixed precedence. Glass is the one exception: it is a
+theme-level surface mode, not a per-component prop, set once via
+`<ThemeProvider surface="glass">` (it defaults to real Liquid Glass on iOS 26+
+and solid elsewhere).
 
 ```jsx
 // Four props from four axes, all applied together.
@@ -94,14 +97,32 @@ need to:
 
 ## What's Included
 
-- A full component kit: buttons, inputs, cards, tables, tabs, dialogs,
-  dropdowns, calendars, charts, sidebars, and more, all exported from
-  `@olympusoss/canvas`.
+- A comprehensive component kit (60+ components across atoms, molecules, and
+  organisms), all exported from `@olympusoss/canvas`:
+  - **Forms & inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio,
+    Switch, Slider, Number Input, Input OTP, Select, Combobox, Listbox.
+  - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown,
+    Action Sheet, Toast, Command palette.
+  - **Navigation**: Tabs, Tab Bar, Navbars, Sidebar, Breadcrumb, Pagination,
+    Stepper.
+  - **Data & content**: Data Table, Stacked / Grid Lists, Stats, Calendar,
+    Charts, Card, Avatar, Badge, Description Lists, Media Objects, QR Code.
+  - **Disclosure & feedback**: Accordion, Collapsible, Carousel, Progress,
+    Skeleton, Spinner, Alert, Empty State.
+- **Universal by construction**: one codebase renders natively on iOS and
+  Android and on the web through React Native Web; no web-only escape hatches.
+- **Accessibility built in**: every interactive component exposes its role and
+  state (selected / checked / expanded, slider and progress values) to assistive
+  tech on iOS, Android, and the web, via `aria-*` aliases that survive react-native-web.
+  The kit also honors the OS **Reduce Motion** setting (`useReducedMotion`).
+- **Liquid Glass**: real iOS 26 Liquid Glass for the functional layer (overlays
+  and bars), a genuine cross-platform frost elsewhere, and a solid fallback,
+  routed through one `GlassSurface` primitive.
 - The style foundation: design tokens, the theme runtime (`ThemeProvider`,
   `useTheme`), the `useResponsive` / `shadow` / `alpha` helpers, and the raw React
   Native `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView` primitives.
-- Light and dark color schemes resolved through theme tokens.
-- Desktop-first responsiveness built into every component.
+- Light and dark color schemes resolved through theme tokens, with desktop-first
+  responsiveness built into every component.
 
 ## License
 
