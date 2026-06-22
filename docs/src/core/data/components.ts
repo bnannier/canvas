@@ -344,6 +344,20 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "accordion",
+    name: "Accordion",
+    description: "A vertically stacked set of collapsible disclosure panels.",
+    category: "Molecules",
+  },
+
+  {
+    slug: "action-sheet",
+    name: "Action Sheet",
+    description: "A modal sheet of contextual actions (the iOS action sheet idiom).",
+    category: "Organisms",
+  },
+
+  {
     slug: "popover",
     name: "Popover",
     description: "Floating panel for rich content triggered by a click.",

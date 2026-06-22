@@ -1,4 +1,5 @@
 // Molecules: the React Native UI kit components at the molecules atomic level.
+export * from "./accordion/accordion.js";
 export * from "./action-panels/action-panels.js";
 export * from "./alert/alert.js";
 export * from "./alert-dialog/alert-dialog.js";
