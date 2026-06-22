@@ -5,7 +5,7 @@ import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { search } from "../core/data/search";
 import { titleFor } from "./topbar";
-import { nativeMenuFor, getActiveGroup, getActiveSlug, type MenuLeaf, type MenuGroup } from "../data/nav";
+import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuLeaf, type MenuGroup } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";
 import { SearchResults } from "./search-results";
 
@@ -21,14 +21,6 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
       <NativeHeader />
     </View>
   );
-}
-
-// Which tab a route belongs to (the route groups are URL-transparent, so derive it from
-// the path). Used to source the section's secondary nav for the native header menu.
-function sectionFor(pathname: string): "home" | "components" | "utilities" {
-  if (pathname.startsWith("/tokens") || pathname === "/utilities") return "utilities";
-  if (pathname.startsWith("/components") || pathname.startsWith("/templates") || pathname.startsWith("/patterns")) return "components";
-  return "home";
 }
 
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,

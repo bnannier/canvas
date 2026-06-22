@@ -125,6 +125,10 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
           </Text>
           <Kbd>⌘K</Kbd>
         </Pressable>
+      ) : onSearch ? (
+        // Phone: the full search pill doesn't fit, so a compact search icon button keeps
+        // search reachable in the bar (the iOS nav-bar search affordance).
+        <Button ghost icon small accessibilityLabel="Search" iconLeft={<Icon search size={16} />} onPress={onSearch} />
       ) : null}
 
       <View style={{ flex: 1 }} />

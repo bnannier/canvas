@@ -109,6 +109,15 @@ export const FLAT_PAGES: NavItem[] = NAV_GROUPS.flatMap((g) => g.items).filter((
 // ── Mobile (iOS + Android) tab bar config, consumed by the native nav chrome ─────
 export const MOBILE_TABS: NavTab[] = CONFIG.mobile.tabs;
 
+// Which tab/section a route belongs to (the route groups are URL-transparent, so derive it
+// from the path). Used by the native header and the mobile-web shell to source the active
+// section + its secondary nav.
+export function sectionFor(pathname: string): "home" | "components" | "utilities" {
+  if (pathname.startsWith("/tokens") || pathname === "/utilities") return "utilities";
+  if (pathname.startsWith("/components") || pathname.startsWith("/templates") || pathname.startsWith("/patterns")) return "components";
+  return "home";
+}
+
 // ── Native header menu model ─────────────────────────────────────────────────
 // The hamburger is the active tab's secondary nav, and its SHAPE depends on the tab:
 // Home/Utilities are a flat list of links; Components is a list of categories, each
