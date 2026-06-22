@@ -39,6 +39,8 @@ import { Overlay as OverlayIOS } from "../../../src/organisms/overlays/overlays.
 import { Overlay as OverlayAndroid } from "../../../src/organisms/overlays/overlays.android.js";
 import { Spinner as SpinnerIOS } from "../../../src/atoms/spinner/spinner.ios.js";
 import { Spinner as SpinnerAndroid } from "../../../src/atoms/spinner/spinner.android.js";
+import { TabBar as TabBarIOS } from "../../../src/organisms/tab-bar/tab-bar.ios.js";
+import { TabBar as TabBarAndroid } from "../../../src/organisms/tab-bar/tab-bar.android.js";
 import { Tabs as TabsIOS } from "../../../src/organisms/tabs/tabs.ios.js";
 import { Tabs as TabsAndroid } from "../../../src/organisms/tabs/tabs.android.js";
 import { Pagination as PaginationIOS } from "../../../src/atoms/pagination/pagination.ios.js";
@@ -98,7 +100,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Combobox: ComboboxIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS, Overlay: OverlayIOS,
-    Spinner: SpinnerIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Stepper: StepperIOS,
+    Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Stepper: StepperIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
     Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS,
     ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, DescriptionList: DescriptionListIOS,
@@ -111,7 +113,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Combobox: ComboboxAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid, Overlay: OverlayAndroid,
-    Spinner: SpinnerAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Stepper: StepperAndroid,
+    Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Stepper: StepperAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
     Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid,
     ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, DescriptionList: DescriptionListAndroid,

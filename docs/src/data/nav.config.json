@@ -87,6 +87,7 @@
           { "slug": "overlays", "label": "Overlays", "icon": "panel-right" },
           { "slug": "row-menu", "label": "Row Menu", "icon": "more-horizontal" },
           { "slug": "stepper", "label": "Steppers", "icon": "footprints" },
+          { "slug": "tab-bar", "label": "Tab Bar", "icon": "navigation" },
           { "slug": "tabs", "label": "Tabs", "icon": "folder" }
         ]
       },
