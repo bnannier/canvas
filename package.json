@@ -3,6 +3,31 @@
   "version": "6.19.0",
   "type": "module",
   "description": "Universal React Native UI kit styled with Tailwind",
+  "license": "UNLICENSED",
+  "homepage": "https://olympusoss.github.io/canvas/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OlympusOSS/canvas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OlympusOSS/canvas/issues"
+  },
+  "keywords": [
+    "react-native",
+    "react-native-web",
+    "ui-kit",
+    "component-library",
+    "design-system",
+    "ios",
+    "android",
+    "web",
+    "universal",
+    "cross-platform",
+    "liquid-glass",
+    "accessibility",
+    "tailwind",
+    "expo"
+  ],
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
