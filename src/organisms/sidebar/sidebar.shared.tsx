@@ -167,6 +167,7 @@ export function createSidebar(skin: SidebarSkin) {
                   onPress={(event) => onSelect?.(item, index, event)}
                   accessibilityRole="button"
                   accessibilityState={{ selected: activeRow }}
+                  aria-selected={activeRow}
                 >
                   {item.icon != null ? (
                     <Text style={skin.icon(tokens, activeRow)}>{item.icon}</Text>

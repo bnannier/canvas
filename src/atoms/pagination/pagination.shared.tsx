@@ -283,6 +283,7 @@ export function createPagination(skin: PaginationSkin) {
               accessibilityRole="button"
               accessibilityLabel={`Page ${p}`}
               accessibilityState={{ selected, disabled: !!disabled }}
+              aria-selected={selected}
             >
               <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size]]}>{p}</Text>
             </Pressable>

@@ -176,6 +176,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         android_ripple={ripple ? ripple(tokens) : undefined}
         accessibilityRole="button"
         accessibilityState={{ selected, disabled: !!disabled }}
+        aria-selected={selected}
       >
         {skin.showSelectedCheck && selected ? (
           <Icon check primary size={s.chevronSize[size]} style={{ marginRight: 6 }} />
@@ -226,6 +227,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           android_ripple={ripple ? ripple(tokens) : undefined}
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
+          aria-expanded={open}
           accessibilityLabel="More actions"
         >
           <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>

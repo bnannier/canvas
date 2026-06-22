@@ -114,6 +114,7 @@ export function createCombobox(skin: ComboboxSkin) {
           onPress={() => setOpen(!open)}
           android_ripple={ripple}
           accessibilityRole="button"
+          aria-expanded={open}
         >
           <Text style={skin.fieldText(tokens, size, fieldMuted)}>{fieldText}</Text>
           <Text style={skin.chevron(tokens, size)}>▾</Text>

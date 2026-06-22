@@ -92,6 +92,7 @@ export function createSelect(skin: SelectSkin) {
           onPress={() => setOpen(!open)}
           android_ripple={ripple}
           accessibilityRole="button"
+          aria-expanded={open}
         >
           <View style={skin.triggerValue}>
             {icon ? <Icon globe muted size={14} /> : null}

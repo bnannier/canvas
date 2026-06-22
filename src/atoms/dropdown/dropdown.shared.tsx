@@ -115,11 +115,12 @@ export function createDropdown(skin: DropdownSkin) {
             onPress={() => setOpen(!open)}
             accessibilityRole="button"
             accessibilityState={{ expanded: open }}
+            aria-expanded={open}
           >
             {children}
           </Pressable>
         ) : (
-          <Button outline small onPress={() => setOpen(!open)}>
+          <Button outline small expanded={open} onPress={() => setOpen(!open)}>
             {trigger}
           </Button>
         )}

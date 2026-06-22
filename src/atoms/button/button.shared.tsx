@@ -38,6 +38,13 @@ export interface ButtonProps {
   block?: boolean;
   loading?: boolean;
   disabled?: boolean;
+  /**
+   * Marks the Button as a disclosure/menu trigger and announces its open state to
+   * assistive tech (aria-expanded, which react-native-web forwards and RN maps back
+   * to the native expanded state). Pass the live open boolean; omit for a plain
+   * button. So a Button that toggles a Dropdown/Popover stays accessible.
+   */
+  expanded?: boolean;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -77,6 +84,7 @@ export function createButton(skin: ButtonSkin) {
         disabled={disabled || loading}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
+        aria-expanded={props.expanded}
         android_ripple={ripple}
         style={({ pressed }) => [
           container,

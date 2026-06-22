@@ -54,6 +54,7 @@ export function createTabBar(skin: TabBarSkin) {
                 key={it.key}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
+                aria-selected={isActive}
                 accessibilityLabel={it.label}
                 onPress={() => onSelect(it.key)}
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}

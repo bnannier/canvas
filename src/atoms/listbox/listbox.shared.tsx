@@ -142,6 +142,7 @@ export function createListbox(skin: ListboxSkin) {
               disabled={disabled}
               accessibilityRole={mode === "multi" ? "checkbox" : "menuitem"}
               accessibilityState={{ selected, disabled: !!disabled }}
+              aria-selected={selected}
             >
               {mode === "multi" ? (
                 <Checkbox checked={selected} />

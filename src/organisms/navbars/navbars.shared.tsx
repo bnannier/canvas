@@ -125,6 +125,7 @@ export function createNavbar(skin: NavbarSkin) {
                   android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                   accessibilityRole="link"
                   accessibilityState={{ selected: isActive }}
+                  aria-selected={isActive}
                   style={({ pressed }) => [
                     skin.linkTile(tokens, isActive),
                     skin.focusOutlineReset,

@@ -136,6 +136,7 @@ export function createCalendar(skin: CalendarSkin) {
                 onPress={() => onSelect?.(day)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
+                aria-selected={isSelected}
               >
                 <Text style={[m.label, skin.dayLabel(tokens, state)]}>{day}</Text>
               </Pressable>

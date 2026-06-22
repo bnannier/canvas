@@ -88,6 +88,7 @@ export function createCheckbox(skin: CheckboxSkin) {
         hitSlop={children == null ? 8 : undefined}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: indeterminate ? "mixed" : !!checked, disabled: !!disabled }}
+        aria-checked={indeterminate ? "mixed" : !!checked}
         android_ripple={ripple}
         style={({ pressed }) => [
           ROW,

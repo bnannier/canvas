@@ -140,6 +140,7 @@ export function createFilterPanel(
                   android_ripple={ripple}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: !!option.checked }}
+                  aria-checked={!!option.checked}
                 >
                   <View pointerEvents="none">
                     <Checkbox checked={option.checked}>{option.label}</Checkbox>

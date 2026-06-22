@@ -69,6 +69,7 @@ export function createSwitch(skin: SwitchSkin) {
         disabled={disabled}
         accessibilityRole="switch"
         accessibilityState={{ checked, disabled: !!disabled }}
+        aria-checked={checked}
         style={({ pressed }) => [
           {
             flexDirection: "row",

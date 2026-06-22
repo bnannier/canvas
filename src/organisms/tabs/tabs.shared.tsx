@@ -172,6 +172,7 @@ export function createTabs(skin: TabsSkin) {
           android_ripple={ripple ? ripple(tokens) : undefined}
           accessibilityRole="tab"
           accessibilityState={{ selected, disabled: !!disabled }}
+          aria-selected={selected}
           style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           <Text style={skin.verticalLabel(tokens, selected)}>{label}</Text>
@@ -195,6 +196,7 @@ export function createTabs(skin: TabsSkin) {
           android_ripple={ripple ? ripple(tokens) : undefined}
           accessibilityRole="tab"
           accessibilityState={{ selected, disabled: !!disabled }}
+          aria-selected={selected}
           style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           <Text style={skin.pillsLabel(tokens, selected)}>{label}</Text>
@@ -219,6 +221,7 @@ export function createTabs(skin: TabsSkin) {
         android_ripple={ripple ? ripple(tokens) : undefined}
         accessibilityRole="tab"
         accessibilityState={{ selected, disabled: !!disabled }}
+        aria-selected={selected}
         style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
       >
         <Text style={skin.underlineLabel(tokens, selected)}>{label}</Text>

@@ -83,6 +83,7 @@ export function createRadio(skin: RadioSkin) {
         hitSlop={children == null ? 8 : undefined}
         accessibilityRole="radio"
         accessibilityState={{ checked: isChecked, disabled: !!disabled }}
+        aria-checked={isChecked}
         android_ripple={ripple}
         style={({ pressed }) => [
           ROW,
