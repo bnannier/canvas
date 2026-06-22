@@ -51,6 +51,32 @@ const PATTERNS: PatternDoc[] = [
 </div>`,
       },
       {
+        title: "Cross-platform support",
+        description: "Canvas components announce their role and state to assistive tech identically on iOS, Android, and the web. react-native-web does not forward accessibilityState or accessibilityValue to the DOM, so each component also carries the matching aria-* attribute (React Native maps it back to the native state). You get VoiceOver, TalkBack, and web screen-reader support from one codebase.",
+        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+  <div class="section-card" style="padding:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Disclosure</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Accordion, Collapsible, Dropdown, Select, Combobox</div>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">aria-expanded="true|false"<br>+ accessibilityState</code>
+  </div>
+  <div class="section-card" style="padding:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Selection</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Tabs, TabBar, Listbox, Select &amp; Command options, Pagination, Calendar</div>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="option" / "tab"<br>aria-selected="true|false"</code>
+  </div>
+  <div class="section-card" style="padding:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Checkable</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Checkbox, Switch, Radio</div>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">aria-checked="true|false|mixed"</code>
+  </div>
+  <div class="section-card" style="padding:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Value</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Slider, Progress, NumberInput</div>
+    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">aria-valuemin / valuemax<br>aria-valuenow</code>
+  </div>
+</div>`,
+      },
+      {
         title: "Color contrast",
         description: "Canvas tokens are designed for WCAG AA contrast (4.5:1 for normal text, 3:1 for large text). Verify contrast when customizing theme colors.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
