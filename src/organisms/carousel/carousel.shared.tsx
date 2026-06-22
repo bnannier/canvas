@@ -10,6 +10,7 @@ import {
   Text,
   Pressable,
   useTheme,
+  useReducedMotion,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -170,6 +171,7 @@ export function createCarousel(skin: CarouselSkin) {
       style,
     } = props;
     const { tokens } = useTheme();
+    const reduced = useReducedMotion();
     const count = items.length;
 
     // Uncontrolled store, seeded once from defaultIndex; ignored when controlled.
@@ -188,11 +190,12 @@ export function createCarousel(skin: CarouselSkin) {
     }, []);
 
     // Scroll the list to a slide index (no-op until the viewport has measured).
+    // Reduce Motion jumps to the slide instead of animating the scroll.
     const scrollTo = useCallback(
       (i: number, animated: boolean) => {
-        if (width > 0) listRef.current?.scrollToOffset({ offset: i * width, animated });
+        if (width > 0) listRef.current?.scrollToOffset({ offset: i * width, animated: animated && !reduced });
       },
-      [width],
+      [width, reduced],
     );
 
     // Commit a new current index: update the uncontrolled store, notify the

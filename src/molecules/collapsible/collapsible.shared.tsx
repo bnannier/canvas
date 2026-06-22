@@ -6,6 +6,7 @@ import {
   Pressable,
   useTheme,
   supportsNativeDriver,
+  useReducedMotion,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -104,6 +105,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
   return function Collapsible(props: CollapsibleProps) {
     const { title, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, style } = props;
     const { tokens } = useTheme();
+    const reduced = useReducedMotion();
 
     // Uncontrolled store, seeded once from defaultOpen; ignored when controlled.
     const [internal, setInternal] = useState<boolean>(() => defaultOpen);
@@ -111,24 +113,25 @@ export function createCollapsible(skin: CollapsibleSkin) {
     const open = controlled ? !!openProp : internal;
 
     // Chevron rotation: 0deg collapsed -> 90deg open (chevronRight points down).
+    // Reduce Motion snaps it (duration 0) rather than easing.
     const spin = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
       Animated.timing(spin, {
         toValue: open ? 1 : 0,
-        duration: 180,
+        duration: reduced ? 0 : 180,
         useNativeDriver: supportsNativeDriver,
       }).start();
-    }, [open, spin]);
+    }, [open, spin, reduced]);
     const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "90deg"] });
 
     const toggle = useCallback(() => {
       // Animate the reveal natively (a smooth height ease); web falls back to a
-      // plain show/hide, which is the robust cross-platform behavior.
-      if (supportsNativeDriver) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      // plain show/hide. Reduce Motion skips the height ease entirely.
+      if (supportsNativeDriver && !reduced) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       const next = !open;
       if (!controlled) setInternal(next);
       onOpenChange?.(next);
-    }, [open, controlled, onOpenChange]);
+    }, [open, controlled, onOpenChange, reduced]);
 
     const headerStyle: StyleProp<ViewStyle> = [
       skin.header(tokens),

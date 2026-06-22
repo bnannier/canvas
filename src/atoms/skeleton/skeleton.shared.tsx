@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Animated } from "react-native";
-import { View, useTheme, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useTheme, useReducedMotion, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // Shared Skeleton shell. The structure (a single muted shape — text line, avatar,
 // button — or a composite card / list / table scaffold built from one muted fill,
@@ -142,9 +142,13 @@ function shapeOf(p: SkeletonProps): Shape {
  *  (a nested View would collapse `w-[60%]` against an auto-width wrapper). */
 function Pulse({ animate, style }: { animate?: boolean; style: StyleProp<ViewStyle> }) {
   const opacity = useRef(new Animated.Value(1)).current;
+  // The shimmer is decorative, so honor Reduce Motion: hold the placeholder still
+  // (the muted shape alone already reads as "loading").
+  const reduced = useReducedMotion();
+  const active = !!animate && !reduced;
 
   useEffect(() => {
-    if (!animate) {
+    if (!active) {
       opacity.setValue(1);
       return;
     }
@@ -156,9 +160,9 @@ function Pulse({ animate, style }: { animate?: boolean; style: StyleProp<ViewSty
     );
     loop.start();
     return () => loop.stop();
-  }, [animate, opacity]);
+  }, [active, opacity]);
 
-  return <Animated.View style={[style, { opacity: animate ? opacity : 1 }]} />;
+  return <Animated.View style={[style, { opacity: active ? opacity : 1 }]} />;
 }
 
 export function createSkeleton(skin: SkeletonSkin) {

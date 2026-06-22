@@ -6,6 +6,7 @@ import {
   Pressable,
   useTheme,
   supportsNativeDriver,
+  useReducedMotion,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -151,17 +152,19 @@ export function createAccordion(skin: AccordionSkin) {
     onToggle: () => void;
   }) {
     const { tokens } = useTheme();
+    const reduced = useReducedMotion();
     const disabled = !!item.disabled || !!groupDisabled;
 
     // Chevron rotation: 0deg collapsed -> 90deg open (chevronRight points down).
+    // Reduce Motion snaps it (duration 0) rather than easing.
     const spin = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
       Animated.timing(spin, {
         toValue: open ? 1 : 0,
-        duration: 180,
+        duration: reduced ? 0 : 180,
         useNativeDriver: supportsNativeDriver,
       }).start();
-    }, [open, spin]);
+    }, [open, spin, reduced]);
     const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "90deg"] });
 
     const headerStyle: StyleProp<ViewStyle> = [
@@ -212,6 +215,7 @@ export function createAccordion(skin: AccordionSkin) {
   return function Accordion(props: AccordionProps) {
     const { items = DEFAULT_ITEMS, value, defaultValue, onValueChange, multiple = false, disabled, style } = props;
     const { tokens } = useTheme();
+    const reduced = useReducedMotion();
 
     // Uncontrolled store, seeded once from defaultValue; ignored when controlled.
     const [internal, setInternal] = useState<Set<string>>(() => toSet(defaultValue));
@@ -221,8 +225,8 @@ export function createAccordion(skin: AccordionSkin) {
     const toggle = useCallback(
       (key: string) => {
         // Animate the reveal natively (a smooth height ease); web falls back to a
-        // plain show/hide, which is the robust cross-platform behavior.
-        if (supportsNativeDriver) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        // plain show/hide. Reduce Motion skips the height ease entirely.
+        if (supportsNativeDriver && !reduced) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         const next = new Set(open);
         if (next.has(key)) {
           next.delete(key);
@@ -233,7 +237,7 @@ export function createAccordion(skin: AccordionSkin) {
         if (!controlled) setInternal(next);
         onValueChange?.(fromSet(next, multiple));
       },
-      [open, multiple, controlled, onValueChange],
+      [open, multiple, controlled, onValueChange, reduced],
     );
 
     return (
