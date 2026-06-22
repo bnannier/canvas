@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type NavbarSkin } from "./navbars.shared.js";
 
 // Co-located Navbar skins, one per platform. The shell resolves the surface axis
@@ -112,9 +112,9 @@ export const iosSkin: NavbarSkin = {
   // focused link Pressable; a real iOS toolbar bar-button item never shows it
   // (native iOS feedback is the press dim only). Suppress it so Tab-focusing a
   // nav-link chip paints no box. Web-only: `outlineStyle`/`outlineWidth` are not
-  // in RN's ViewStyle (hence the cast) and are ignored natively. Mirrors
-  // pagination/input/textarea's focus reset.
-  focusOutlineReset: { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle,
+  // in RN's ViewStyle (hence the cast inside FOCUS_RESET) and are ignored
+  // natively. Mirrors pagination/input/textarea's focus reset.
+  focusOutlineReset: FOCUS_RESET,
 
   // Slim 44pt bar. iOS navigation bars are shorter than the Canvas web bar.
   bar() {

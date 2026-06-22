@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { type ColorTokens, FOCUS_RESET } from "../../style/index.js";
 
 // Co-located Input skins, one per platform. The BRAND survives on every platform
 // (the cursor/selection is always the indigo `primary`, the focus accent is the
@@ -141,8 +141,7 @@ export const webSkin: InputSkin = {
 // FIELD_OUTLINE_RESET).
 function iosWebFieldReset(t: ColorTokens): TextStyle {
   return {
-    outlineStyle: "none",
-    outlineWidth: 0,
+    ...FOCUS_RESET, // shared outline-ring suppression (outlineStyle/outlineWidth)
     caretColor: t.primary, // brand indigo caret (RN Web), matching selectionColor
     cursorColor: t.primary, // brand indigo caret (RN Android prop, harmless on iOS)
   } as unknown as TextStyle;

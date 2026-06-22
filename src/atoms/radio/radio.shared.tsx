@@ -78,6 +78,9 @@ export function createRadio(skin: RadioSkin) {
       <Pressable
         onPress={(event) => onChange?.(true, event)}
         disabled={disabled}
+        // Icon-only (no label): grow the small ring's tap target toward ~44pt.
+        // With a label the whole row is already a generous target, so leave it.
+        hitSlop={children == null ? 8 : undefined}
         accessibilityRole="radio"
         accessibilityState={{ checked: isChecked, disabled: !!disabled }}
         android_ripple={ripple}

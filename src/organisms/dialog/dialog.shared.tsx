@@ -199,7 +199,13 @@ export function createDialog(skin: DialogSkin) {
           </Button>
         ) : null}
         {open ? (
-          <View style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}>
+          <View
+            // Tell assistive tech the content behind this modal overlay is inert
+            // while the dialog is open (iOS VoiceOver honors this; a no-op
+            // elsewhere). No focus trap is attempted (hard cross-platform).
+            accessibilityViewIsModal={true}
+            style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}
+          >
             <GlassSurface style={[s.cardLayout, skin.card(tokens), s.cardWidth(size), style]}>
               {children != null ? (
                 children

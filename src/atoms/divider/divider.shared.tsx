@@ -84,7 +84,16 @@ export function createDivider(skin: DividerSkin) {
 
     if (orientation === "vertical") {
       // A thin vertical rule that adapts to the row height it sits in.
-      return <View style={[{ width: skin.ruleThickness, alignSelf: "stretch" }, fill, style]} />;
+      return (
+        <View
+          // `separator` announces the structural break to screen readers. We use
+          // the ARIA-aligned `role` prop (not `accessibilityRole`) because RN's
+          // AccessibilityRole union has no "separator" member; `role` carries it
+          // cross-platform (VoiceOver/TalkBack natively, the DOM role on web).
+          role="separator"
+          style={[{ width: skin.ruleThickness, alignSelf: "stretch" }, fill, style]}
+        />
+      );
     }
 
     // Horizontal with a label/action in the middle: a centered node flanked by two hairlines.
@@ -97,7 +106,11 @@ export function createDivider(skin: DividerSkin) {
         flexBasis: "0%",
       };
       return (
-        <View style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}>
+        <View
+          // The whole flank-line + label row reads as one structural separator.
+          role="separator"
+          style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
+        >
           <View style={[flankRule, fill]} />
           {isText ? (
             <Text style={[skin.labelType, labelColor(tokens)]}>{children}</Text>
@@ -110,6 +123,8 @@ export function createDivider(skin: DividerSkin) {
     }
 
     // Plain horizontal hairline spanning the full width.
-    return <View style={[{ height: skin.ruleThickness, width: "100%" }, fill, style]} />;
+    return (
+      <View role="separator" style={[{ height: skin.ruleThickness, width: "100%" }, fill, style]} />
+    );
   };
 }

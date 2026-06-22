@@ -137,6 +137,7 @@ export function createPagination(skin: PaginationSkin) {
         ]}
         onPress={onPress}
         disabled={disabled}
+        hitSlop={8}
         android_ripple={ripple ? ripple(tokens, false) : undefined}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
@@ -226,6 +227,7 @@ export function createPagination(skin: PaginationSkin) {
               ]}
               onPress={cycleSize}
               disabled={disabled}
+              hitSlop={8}
               android_ripple={ripple ? ripple(tokens, false) : undefined}
               accessibilityRole="button"
               accessibilityLabel="Rows per page"
@@ -276,6 +278,7 @@ export function createPagination(skin: PaginationSkin) {
               ]}
               onPress={() => go(p)}
               disabled={disabled}
+              hitSlop={4}
               android_ripple={ripple ? ripple(tokens, selected) : undefined}
               accessibilityRole="button"
               accessibilityLabel={`Page ${p}`}

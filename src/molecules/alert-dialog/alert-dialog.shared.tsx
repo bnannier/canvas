@@ -179,7 +179,13 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
           </Button>
         ) : null}
         {open ? (
-          <View style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}>
+          <View
+            // Tell assistive tech the content behind this modal overlay is inert
+            // while the alert dialog is open (iOS VoiceOver honors this; a no-op
+            // elsewhere). No focus trap is attempted (hard cross-platform).
+            accessibilityViewIsModal={true}
+            style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}
+          >
             <GlassSurface style={[s.cardBase, skin.card(tokens), s.panelWidth[width], style]}>
               {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
               {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}

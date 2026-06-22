@@ -1,13 +1,12 @@
-import { useState } from "react";
-import { TextInput, useTheme, type StyleProp, type TextStyle } from "../../style/index.js";
+import { forwardRef, useState } from "react";
+import { type TextInput as RNTextInput } from "react-native";
+import { TextInput, useTheme, FOCUS_RESET, type StyleProp, type TextStyle } from "../../style/index.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
 // react-native-web paints the browser's blue focus outline on a focused multiline
-// <textarea>; real iOS/Android have no such outline. Suppress it so the skin's own
-// focus cue (the bottom hairline thickening to the brand ring) is the only treatment,
-// matching the sibling Input. Web-only: outlineStyle/outlineWidth are not in RN's
-// TextStyle (hence the cast) and are ignored natively. Mirrors input.shared.tsx.
-const FIELD_OUTLINE_RESET = { outlineStyle: "none", outlineWidth: 0 } as unknown as TextStyle;
+// <textarea>; real iOS/Android have no such outline. The shared FOCUS_RESET suppresses
+// it so the skin's own focus cue (the bottom hairline thickening to the brand ring) is
+// the only treatment, matching the sibling Input. It is web-only and a no-op natively.
 
 // Shared Textarea shell. The structure (a multiline TextInput), the public
 // boolean-prop API, the size precedence, the error/focus state resolution, the
@@ -49,7 +48,7 @@ function sizeOf(p: TextareaProps): Size {
 
 /** Build a Textarea component from a platform skin. */
 export function createTextarea(skin: TextareaSkin) {
-  return function Textarea(props: TextareaProps) {
+  const Textarea = forwardRef<RNTextInput, TextareaProps>(function Textarea(props, ref) {
     const { value, onChangeText, placeholder, rows, disabled, style } = props;
     const isError = !!props.error || !!props.invalid;
     const size = sizeOf(props);
@@ -58,6 +57,7 @@ export function createTextarea(skin: TextareaSkin) {
 
     return (
       <TextInput
+        ref={ref}
         multiline
         value={value}
         onChangeText={onChangeText}
@@ -73,10 +73,12 @@ export function createTextarea(skin: TextareaSkin) {
           sizeText(size),
           minHeight(rows),
           disabled ? { opacity: 0.5 } : null,
-          FIELD_OUTLINE_RESET,
+          FOCUS_RESET,
           style,
         ]}
       />
     );
-  };
+  });
+  Textarea.displayName = "Textarea";
+  return Textarea;
 }

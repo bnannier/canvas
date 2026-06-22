@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha } from "../../style/index.js";
+import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
 
 // Co-located Pagination skins, one per platform. The page buttons, Prev/Next
 // controls, and the size selector are square-ish boxes whose footprint scales
@@ -206,8 +206,8 @@ export const iosSkin: PaginationSkin = {
   // focused Pressable; a real iOS device never shows it (native iOS feedback is
   // the press dim only). Suppress it so Tab-focusing a cell or chevron paints no
   // box. Web-only: `outlineStyle`/`outlineWidth` are not in RN's ViewStyle (hence
-  // the cast) and are ignored natively. Mirrors input/textarea's FIELD_OUTLINE_RESET.
-  focusOutlineReset: { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle,
+  // the cast inside FOCUS_RESET) and are ignored natively. Mirrors input/textarea.
+  focusOutlineReset: FOCUS_RESET,
 };
 
 // =============================================================================

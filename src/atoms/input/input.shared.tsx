@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { type GestureResponderEvent, type TextStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { forwardRef, useState } from "react";
+import { type GestureResponderEvent, type TextInput as RNTextInput } from "react-native";
+import { View, Pressable, Text, TextInput, useTheme, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -26,9 +26,8 @@ const ICON_BOOL: Record<string, "search" | "mail" | "lock" | "user" | "key" | "g
 
 // react-native-web paints a default focus outline on the field; in the grouped
 // (addon) layout that ring is clipped by the rounded, overflow-hidden container
-// and reads as half-baked, so it is suppressed there and the group shows focus
-// on its shared border instead. No-op on native, which has no CSS outline.
-const FIELD_OUTLINE_RESET = { outlineStyle: "none", outlineWidth: 0 } as unknown as TextStyle;
+// and reads as half-baked, so the shared FOCUS_RESET suppresses it there and the
+// group shows focus on its shared border instead. No-op on native (no CSS outline).
 
 export interface InputProps {
   /** Current text value (controlled). */
@@ -88,7 +87,7 @@ function sizeOf(p: InputProps): Size {
 
 /** Build an Input component from a platform skin. */
 export function createInput(skin: InputSkin) {
-  return function Input(props: InputProps) {
+  const Input = forwardRef<RNTextInput, InputProps>(function Input(props, ref) {
     const {
       value,
       onChangeText,
@@ -135,6 +134,7 @@ export function createInput(skin: InputSkin) {
     if (!hasAddons) {
       return (
         <TextInput
+          ref={ref}
           style={[
             skin.bareField(tokens, borderColor, focused, isError),
             skin.bareBox(size, !!multiline),
@@ -151,7 +151,7 @@ export function createInput(skin: InputSkin) {
 
     // Grouped field: prefix/suffix addons, overlaid icons, optional action button.
     // The whole group shares one border, so it owns the focus state and the inner
-    // field's default outline is suppressed (see FIELD_OUTLINE_RESET).
+    // field's default outline is suppressed (see FOCUS_RESET).
     const height = skin.groupedHeight(size);
     return (
       <View
@@ -169,7 +169,7 @@ export function createInput(skin: InputSkin) {
           </View>
         ) : null}
 
-        <TextInput style={[skin.groupField(tokens, !!leadingIcon, !!trailingIcon), text, FIELD_OUTLINE_RESET]} {...common} />
+        <TextInput ref={ref} style={[skin.groupField(tokens, !!leadingIcon, !!trailingIcon), text, FOCUS_RESET]} {...common} />
 
         {trailingIcon && iconName != null ? (
           <View style={skin.iconOverlay("right")} pointerEvents="none">
@@ -199,5 +199,7 @@ export function createInput(skin: InputSkin) {
         ) : null}
       </View>
     );
-  };
+  });
+  Input.displayName = "Input";
+  return Input;
 }

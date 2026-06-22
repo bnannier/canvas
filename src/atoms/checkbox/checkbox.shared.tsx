@@ -83,6 +83,9 @@ export function createCheckbox(skin: CheckboxSkin) {
       <Pressable
         onPress={handlePress}
         disabled={disabled}
+        // Icon-only (no label): grow the small box's tap target toward ~44pt.
+        // With a label the whole row is already a generous target, so leave it.
+        hitSlop={children == null ? 8 : undefined}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: indeterminate ? "mixed" : !!checked, disabled: !!disabled }}
         android_ripple={ripple}

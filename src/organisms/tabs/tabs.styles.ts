@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -197,9 +197,9 @@ export const iosSkin: TabsSkin = {
   ripple: null,
   // Suppress the react-native-web blue keyboard-focus ring on iOS triggers; a
   // real iOS segmented control never shows it. `outlineStyle`/`outlineWidth` are
-  // not in RN's ViewStyle (hence the cast) and are ignored natively. Mirrors
-  // input/textarea/pagination's outline resets.
-  focusOutlineReset: { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle,
+  // not in RN's ViewStyle (hence the cast inside FOCUS_RESET) and are ignored
+  // natively. Mirrors input/textarea/pagination's outline resets.
+  focusOutlineReset: FOCUS_RESET,
 
   // --- underline -> capsule segmented control (gray track + raised pill) ---
   underlineRow(tokens) {

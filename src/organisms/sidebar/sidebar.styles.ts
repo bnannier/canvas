@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha } from "../../style/index.js";
+import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type SidebarSkin } from "./sidebar.shared.js";
 
 // Co-located Sidebar skins, one per platform. The shell resolves the density and
@@ -121,9 +121,9 @@ export const iosSkin: SidebarSkin = {
   // Suppress the react-native-web keyboard-focus blue ring on each row; a real
   // iOS device never paints a hardware focus ring on a sidebar nav row, so the
   // press dim is the only feedback. Web-only: `outlineStyle`/`outlineWidth` are
-  // not in RN's ViewStyle (hence the cast), and are a no-op natively. Matches the
-  // Input/Textarea/Pagination focus-outline reset.
-  focusOutlineReset: { outlineStyle: "none", outlineWidth: 0 } as unknown as ViewStyle,
+  // not in RN's ViewStyle (hence the cast inside FOCUS_RESET), and are a no-op
+  // natively. Matches the Input/Textarea/Pagination focus-outline reset.
+  focusOutlineReset: FOCUS_RESET,
 
   column(tokens, frame) {
     const base: ViewStyle = {

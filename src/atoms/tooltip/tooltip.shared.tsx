@@ -92,6 +92,7 @@ export function createTooltip(skin: TooltipSkin) {
         android_ripple={controlRipple(tokens)}
         style={({ pressed }) => [iconTrigger, pressDim(pressed)]}
         onPress={() => setOpen(!open)}
+        hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel={label}
       >

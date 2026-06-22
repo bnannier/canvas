@@ -109,6 +109,10 @@ export function createDrawer(skin: DrawerSkin) {
           transparent
           animationType={edge === "bottom" ? "slide" : "fade"}
           onRequestClose={() => setOpen(false)}
+          // Tell assistive tech the content behind this full-screen overlay is
+          // inert while the drawer is open (iOS VoiceOver honors this; a no-op
+          // elsewhere). No focus trap is attempted (hard cross-platform).
+          accessibilityViewIsModal={true}
         >
           <Pressable style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
             {/* A no-op press inside the panel keeps taps from falling through to the scrim. */}

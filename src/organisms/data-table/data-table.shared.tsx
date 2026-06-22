@@ -90,7 +90,13 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
             <>
               {selectable ? (
                 <View style={[skin.selectCell, skin.cellPad[density]]}>
-                  <Checkbox />
+                  {/* DataTable carries no per-row selection state in its public
+                      API (rows are raw ReactNode cells; `selectable` only adds
+                      the column), so the selection checkbox is an unselected
+                      affordance. Make that explicit rather than leaving the
+                      prop off, so the unchecked state is intentional, not a
+                      forgotten binding. */}
+                  <Checkbox checked={false} />
                 </View>
               ) : null}
               {columns.map((_col, c) => {

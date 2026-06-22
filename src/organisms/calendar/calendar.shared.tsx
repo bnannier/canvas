@@ -83,6 +83,7 @@ export function createCalendar(skin: CalendarSkin) {
             ]}
             android_ripple={ripple ? { ...ripple, borderless: true } : undefined}
             onPress={onPrev}
+            hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Previous month"
           >
@@ -96,6 +97,7 @@ export function createCalendar(skin: CalendarSkin) {
             ]}
             android_ripple={ripple ? { ...ripple, borderless: true } : undefined}
             onPress={onNext}
+            hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Next month"
           >
