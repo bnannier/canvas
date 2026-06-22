@@ -57,12 +57,30 @@ export interface FieldRow {
   badge?: string;
   /** Render the value as a success status Badge carrying this text, e.g. "Active". */
   status?: string;
-  /** Append a ghost "Copy" button after the value that copies this string. */
+  /**
+   * Append a ghost "Copy" button after the value. Pressing it invokes the
+   * Field's `onCopy` callback with this string (the kit ships no clipboard
+   * dependency; the consumer performs the write).
+   */
   copyValue?: string;
   /** Render the value as an overlapping avatar stack. */
   avatars?: FieldAvatar[];
   /** Trailing "+N" overflow chip after an avatar stack. */
   overflow?: number;
+}
+
+/**
+ * A plain-text rendering of a display row's value, used to pair the term and
+ * value into one screen-reader announcement (the visual value composes atoms
+ * that a screen reader would otherwise read as disconnected fragments).
+ */
+function rowValueText(row: FieldRow): string {
+  if (row.avatars && row.avatars.length > 0) {
+    const names = row.avatars.map((a) => a.name).filter(Boolean) as string[];
+    const more = typeof row.overflow === "number" && row.overflow > 0 ? ` and ${row.overflow} more` : "";
+    return names.length > 0 ? `${names.join(", ")}${more}` : `${row.avatars.length} members${more}`;
+  }
+  return row.value ?? row.status ?? row.badge ?? row.copyValue ?? "";
 }
 
 export interface FieldProps {
@@ -83,6 +101,12 @@ export interface FieldProps {
   value?: string;
   /** Called with the new text on each keystroke, forwarded to the Input. */
   onChangeText?: (text: string) => void;
+  /**
+   * Called with a row's `copyValue` when its "Copy" button is pressed. The kit
+   * carries no clipboard peer dependency, so the consumer supplies the write
+   * (e.g. `expo-clipboard` / `@react-native-clipboard/clipboard`).
+   */
+  onCopy?: (value: string) => void;
   // Boolean axes (orthogonal, stack freely).
   /** Marks the field as required: appends a destructive "*" to the label. */
   required?: boolean;
@@ -118,7 +142,7 @@ export function createField(
   // Render a row's value slot from its data descriptor. Precedence: an avatar
   // stack, then a copyable value, then a status badge, then a metadata badge,
   // then plain (optionally monospace) text.
-  function FieldValue(row: FieldRow) {
+  function FieldValue(row: FieldRow, onCopy?: (value: string) => void) {
     const { tokens } = useTheme();
 
     if (row.avatars && row.avatars.length > 0) {
@@ -140,12 +164,18 @@ export function createField(
       );
     }
     if (row.copyValue != null) {
+      const copyValue = row.copyValue;
       return (
         <View style={s.copyRow}>
           <Text style={[skin.fieldValue(tokens), row.mono ? skin.monoStyle : null]}>
-            {row.value ?? row.copyValue}
+            {row.value ?? copyValue}
           </Text>
-          <Button ghost small>
+          <Button
+            ghost
+            small
+            accessibilityLabel={`Copy ${row.label}`}
+            onPress={() => onCopy?.(copyValue)}
+          >
             Copy
           </Button>
         </View>
@@ -177,6 +207,7 @@ export function createField(
       placeholder,
       value,
       onChangeText,
+      onCopy,
       required,
       disabled,
       invalid,
@@ -190,12 +221,45 @@ export function createField(
     if (rows) {
       return (
         <View style={[skin.displayStack, disabled ? s.dimmed : null, style]}>
-          {rows.map((row, index) => (
-            <View key={`${row.label}-${index}`} style={skin.displayRow}>
-              <Text style={skin.fieldLabel(tokens)}>{row.label}</Text>
-              <View style={s.valueFill}>{FieldValue(row)}</View>
-            </View>
-          ))}
+          {rows.map((row, index) => {
+            // A row with a Copy button carries a separately-focusable control,
+            // so it stays ungrouped (collapsing it would hide that button from
+            // the controls list). Every other shape is read-only, so group the
+            // term + value into one announced unit and hide the now-redundant
+            // child text nodes from the accessibility tree.
+            const interactive = row.copyValue != null;
+            const valueText = rowValueText(row);
+            return (
+              <View
+                key={`${row.label}-${index}`}
+                style={skin.displayRow}
+                {...(interactive
+                  ? {}
+                  : {
+                      accessible: true,
+                      accessibilityRole: "text" as const,
+                      accessibilityLabel: valueText ? `${row.label}, ${valueText}` : row.label,
+                    })}
+              >
+                <Text
+                  style={skin.fieldLabel(tokens)}
+                  {...(interactive
+                    ? {}
+                    : { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const })}
+                >
+                  {row.label}
+                </Text>
+                <View
+                  style={s.valueFill}
+                  {...(interactive
+                    ? {}
+                    : { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const })}
+                >
+                  {FieldValue(row, onCopy)}
+                </View>
+              </View>
+            );
+          })}
         </View>
       );
     }

@@ -74,6 +74,25 @@ export interface InputProps {
   /** Called when the action suffix is pressed (action only). */
   onActionPress?: (event: GestureResponderEvent) => void;
 
+  /**
+   * Accessible name for the field when there is no programmatically-associated
+   * visible label. Maps to accessibilityLabel + the aria-label web alias on the
+   * underlying TextInput, so a Form/Field control is announced with its name.
+   */
+  accessibilityLabel?: string;
+  /**
+   * ID of the visible label element that names this field (its `nativeID`).
+   * react-native-web forwards aria-labelledby to the DOM input; prefer this over
+   * accessibilityLabel when a visible <Text> label is present so the label and
+   * field are programmatically linked.
+   */
+  "aria-labelledby"?: string;
+  /**
+   * ID of the helper/error text that describes this field (its `nativeID`), so a
+   * screen reader reads the hint after the field name.
+   */
+  "aria-describedby"?: string;
+
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -128,6 +147,20 @@ export function createInput(skin: InputSkin) {
       selectionColor: tokens.primary, // brand cursor / selection on every platform
       onFocus: () => setFocused(true),
       onBlur: () => setFocused(false),
+      // Surface the validation problem programmatically, not just as a red border
+      // (WCAG 1.4.1 / 4.1.2). `aria-invalid` is the cross-platform alias RNW
+      // forwards to the DOM input as aria-invalid="true" so web screen readers
+      // announce the field as invalid. Undefined when valid so the attribute is
+      // omitted entirely rather than emitting aria-invalid="false".
+      "aria-invalid": isError || undefined,
+      // Accessible name + descriptions, forwarded to the TextInput so a Form/Field
+      // control is announced with its label and helper/error text. aria-label is
+      // the web alias for accessibilityLabel; aria-labelledby/aria-describedby link
+      // to a visible label / helper Text by nativeID (RNW forwards them to the DOM).
+      accessibilityLabel: props.accessibilityLabel,
+      "aria-label": props.accessibilityLabel,
+      "aria-labelledby": props["aria-labelledby"],
+      "aria-describedby": props["aria-describedby"],
     };
 
     // Bare field (and the multiline text area): no addons.

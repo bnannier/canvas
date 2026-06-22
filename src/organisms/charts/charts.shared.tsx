@@ -33,6 +33,12 @@ import { type Tone } from "./charts.styles.js";
 //   the default density.
 
 export interface ChartDatum {
+  /**
+   * Stable identity for this datum, used as the React key when present. Supply
+   * it when the data can reorder or when labels are not unique; otherwise the
+   * array index is used.
+   */
+  id?: string | number;
   /** Bucket label shown under (vertical) or beside (horizontal) the bar. */
   label: string;
   /** The bar's magnitude. Compared against `max` to size the bar. */
@@ -85,21 +91,34 @@ export function createChart(skin: ChartSkin) {
 
     const fill = s.barFill(tokens, tone);
     const plot = compact ? PLOT_LENGTH.compact : PLOT_LENGTH.default;
-    // Axis max: the caller's, else the largest value, else 1 to avoid /0.
-    const values = data.map((d) => d.value);
+    // Axis max: the caller's, else the largest finite value, else 1 to avoid /0.
+    // Non-finite data (NaN / Infinity) is filtered here so a single bad datum
+    // cannot poison `max` (and thus every bar) with NaN.
+    const values = data.map((d) => d.value).filter((v) => Number.isFinite(v));
     const max = props.max != null && props.max > 0 ? props.max : Math.max(1, ...values);
 
-    // Map a value to a clamped pixel length along the plot axis.
+    // Map a value to a clamped pixel length along the plot axis. A non-finite
+    // value (NaN / Infinity) is treated as 0 so it never reaches a style
+    // dimension (an invalid `height` / `width` would break the bar's layout).
     const lengthPx = (value: number): number => {
-      const ratio = Math.max(0, Math.min(1, value / max));
+      const v = Number.isFinite(value) ? value : 0;
+      const ratio = Math.max(0, Math.min(1, v / max));
       return Math.max(2, Math.round(ratio * plot));
     };
 
     // Per-bar gap by density: gap-1.5 (6) compact, gap-2 (8) default.
     const gap = compact ? 6 : 8;
 
+    // Summarize the chart for assistive tech: the title if there is one, else a
+    // generic name. The container is grouped (role="group") so a screen reader
+    // announces the summary and then walks into the per-bar items below.
+    const chartName = title != null && title !== "" ? `${title} chart` : "Bar chart";
+
     return (
       <View
+        role="group"
+        accessibilityLabel={chartName}
+        aria-label={chartName}
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,
@@ -114,7 +133,18 @@ export function createChart(skin: ChartSkin) {
           // Horizontal: each row is a label, a track-aligned bar, and the value.
           <View style={[s.horizontalStack, { gap }]}>
             {data.map((d, i) => (
-              <View key={i} style={s.horizontalRow}>
+              // Each row is one accessible item announcing "label: value", so the
+              // bar's magnitude is reachable assistively (the bar itself is a bare
+              // colored View). role="image" gives the RNW DOM an img element.
+              <View
+                key={d.id ?? i}
+                accessible
+                accessibilityRole="image"
+                role="img"
+                accessibilityLabel={`${d.label}: ${d.value}`}
+                aria-label={`${d.label}: ${d.value}`}
+                style={s.horizontalRow}
+              >
                 <Text style={s.horizontalLabel(tokens)}>{d.label}</Text>
                 <View style={s.horizontalTrack}>
                   <View style={s.horizontalBar(fill, lengthPx(d.value), skin.barRadius)} />
@@ -124,11 +154,25 @@ export function createChart(skin: ChartSkin) {
             ))}
           </View>
         ) : (
-          // Vertical: a baseline-aligned row of columns, each a bar over its label.
+          // Vertical: a baseline-aligned row of columns, each a value over a bar,
+          // with the category label beneath the baseline.
           <View>
             <View style={[s.verticalBars, { gap, height: plot }]}>
               {data.map((d, i) => (
-                <View key={i} style={s.verticalColumn}>
+                // Each column is one accessible item announcing "label: value".
+                // The value is also rendered as visible Text above the bar so the
+                // magnitude is present in both the UI and the accessibility tree
+                // (it was previously only shown in the horizontal orientation).
+                <View
+                  key={d.id ?? i}
+                  accessible
+                  accessibilityRole="image"
+                  role="img"
+                  accessibilityLabel={`${d.label}: ${d.value}`}
+                  aria-label={`${d.label}: ${d.value}`}
+                  style={s.verticalColumn}
+                >
+                  <Text style={s.verticalValue(tokens)}>{d.value}</Text>
                   <View style={s.verticalBar(fill, lengthPx(d.value), skin.barRadius)} />
                 </View>
               ))}
@@ -137,7 +181,7 @@ export function createChart(skin: ChartSkin) {
             <View style={s.baseline(tokens)} />
             <View style={[s.verticalLabelsRow, { gap }]}>
               {data.map((d, i) => (
-                <Text key={i} style={s.verticalLabel(tokens)}>
+                <Text key={d.id ?? i} style={s.verticalLabel(tokens)}>
                   {d.label}
                 </Text>
               ))}

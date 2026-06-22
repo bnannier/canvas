@@ -147,6 +147,13 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
   interface SegmentProps {
     label: string;
     selected: boolean;
+    /**
+     * Whether this segment can read selected. Segmented options are a single
+     * mutually-exclusive control (role `tab`, with `aria-selected`); spaced peers
+     * are detached buttons that never carry a selected state (role `button`, no
+     * `aria-selected`, which ARIA does not support on `button`).
+     */
+    selectable: boolean;
     /** Corner radii for this segment given its position in the row. */
     corners: ViewStyle;
     /** This segment overlaps the previous border / draws a leading divider. */
@@ -156,7 +163,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     onPress?: (event: GestureResponderEvent) => void;
   }
 
-  function Segment({ label, selected, corners, leading, size, disabled, onPress }: SegmentProps) {
+  function Segment({ label, selected, selectable, corners, leading, size, disabled, onPress }: SegmentProps) {
     const { tokens } = useTheme();
     const container: StyleProp<ViewStyle> = [
       s.segmentBase,
@@ -168,15 +175,20 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       skin.segmentSurface(tokens, selected),
       disabled ? s.dim : null,
     ];
+    // `aria-selected` is only valid on roles that support a selected state. A
+    // segmented option reads as a `tab` (matching Tabs) so its selection is
+    // conveyed; a detached spaced peer stays a plain `button` and emits no
+    // selected state at all.
+    const selectionA11y = selectable
+      ? { accessibilityRole: "tab" as const, accessibilityState: { selected, disabled: !!disabled }, "aria-selected": selected }
+      : { accessibilityRole: "button" as const, accessibilityState: { disabled: !!disabled } };
     return (
       <Pressable
         style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         onPress={onPress}
         disabled={disabled}
         android_ripple={ripple ? ripple(tokens) : undefined}
-        accessibilityRole="button"
-        accessibilityState={{ selected, disabled: !!disabled }}
-        aria-selected={selected}
+        {...selectionA11y}
       >
         {skin.showSelectedCheck && selected ? (
           <Icon check primary size={s.chevronSize[size]} style={{ marginRight: 6 }} />
@@ -235,7 +247,9 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           </View>
         </Pressable>
         {open ? (
-          <View style={skin.splitMenu(tokens)}>
+          // role="menu" gives the menuitem rows a valid ARIA parent; without it
+          // each menuitem is orphaned and web SRs/validators flag it.
+          <View style={skin.splitMenu(tokens)} accessibilityRole="menu" role="menu" aria-label="More actions">
             {menu.map((item, i) => (
               <Pressable
                 key={`${item}-${i}`}
@@ -331,6 +345,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               key={`${item}-${i}`}
               label={item}
               selected={false}
+              selectable={false}
               corners={skin.spacedCorners}
               leading={false}
               size={size}
@@ -385,6 +400,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         key={`${item}-${i}`}
         label={item}
         selected={i === active}
+        selectable
         corners={skin.joinCorners(i, count)}
         leading={i > 0}
         size={size}
@@ -392,9 +408,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         onPress={(e) => onSelect?.(i, item, e)}
       />
     ));
+    // The segments are a single mutually-exclusive control, so the row is a
+    // `tablist` grouping its `tab` segments (matching the Tabs precedent).
     if (wrap) {
-      return <View style={[wrap, style]}>{row}</View>;
+      return <View accessibilityRole="tablist" style={[wrap, style]}>{row}</View>;
     }
-    return <View style={[s.segmentedContainer, style]}>{row}</View>;
+    return <View accessibilityRole="tablist" style={[s.segmentedContainer, style]}>{row}</View>;
   };
 }

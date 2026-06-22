@@ -78,8 +78,18 @@ export function createTooltip(skin: TooltipSkin) {
       onOpenChange?.(next);
     };
 
+    // The open bubble is a polite live region so the tip text is announced when
+    // it appears (rather than appearing silently beside the trigger). Mirrors the
+    // toast pattern: accessibilityRole/LiveRegion for native plus the aria-live
+    // alias, since react-native-web does not forward accessibilityLiveRegion's
+    // role on its own.
     const tip = open ? (
-      <View style={[skin.bubble(tokens), bubbleGap[placement]]}>
+      <View
+        style={[skin.bubble(tokens), bubbleGap[placement]]}
+        accessibilityRole="alert"
+        accessibilityLiveRegion="polite"
+        aria-live="polite"
+      >
         <Text style={skin.label(tokens)}>{label}</Text>
       </View>
     ) : null;
@@ -94,12 +104,21 @@ export function createTooltip(skin: TooltipSkin) {
         onPress={() => setOpen(!open)}
         hitSlop={8}
         accessibilityRole="button"
-        accessibilityLabel={label}
+        // Fall back to a sensible name so the icon button is never announced as a
+        // bare "button" when used without a label (e.g. `<Tooltip iconTrigger />`).
+        accessibilityLabel={label ?? "More info"}
+        // Announce the disclosure state. accessibilityState covers native; the
+        // aria-expanded alias is required because react-native-web does not
+        // forward accessibilityState to the DOM.
+        accessibilityState={{ expanded: open }}
+        aria-expanded={open}
       >
         <Icon settings size={16} />
       </Pressable>
     ) : (
-      <Button outline small onPress={() => setOpen(!open)}>
+      // `expanded` maps to aria-expanded inside Button so the text trigger also
+      // exposes its open/closed disclosure state.
+      <Button outline small expanded={open} onPress={() => setOpen(!open)}>
         {trigger}
       </Button>
     );

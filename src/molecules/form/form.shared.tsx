@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactNode } from "react";
+import { type ComponentType, type ReactNode, useId } from "react";
 import { type DimensionValue } from "react-native";
 import { View, Text, useTheme, useResponsive, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -148,20 +148,32 @@ export function createForm(
   Checkbox: CheckboxComponent = WebCheckbox,
   Input: InputComponent = WebInput,
 ) {
-  function Helper({ text }: { text?: string }) {
+  function Helper({ text, id }: { text?: string; id?: string }) {
     const { tokens } = useTheme();
     if (!text) return null;
-    return <Text style={skin.helper(tokens)}>{text}</Text>;
+    return <Text nativeID={id} style={skin.helper(tokens)}>{text}</Text>;
   }
 
-  // A label sitting above its input (stacked and two-column layouts).
+  // A label sitting above its input (stacked and two-column layouts). The visible
+  // label is linked to the field (aria-labelledby + accessibilityLabel) and the
+  // helper text is wired as the field's description (aria-describedby), so a screen
+  // reader announces the field with its name and hint.
   function StackedField({ field }: { field: FormField }) {
     const { tokens } = useTheme();
+    const base = useId();
+    const labelId = `${base}-label`;
+    const helperId = field.helper ? `${base}-helper` : undefined;
     return (
       <View>
-        <Text style={[skin.label(tokens), skin.labelSpacing]}>{field.label}</Text>
-        <Input placeholder={field.placeholder} value={field.value} />
-        <Helper text={field.helper} />
+        <Text nativeID={labelId} style={[skin.label(tokens), skin.labelSpacing]}>{field.label}</Text>
+        <Input
+          placeholder={field.placeholder}
+          value={field.value}
+          accessibilityLabel={field.label}
+          aria-labelledby={labelId}
+          aria-describedby={helperId}
+        />
+        <Helper text={field.helper} id={helperId} />
       </View>
     );
   }
@@ -192,11 +204,7 @@ export function createForm(
                 </Checkbox>
               ))
             : (section.fields ?? []).map((field, i) => (
-                <View key={i}>
-                  <Text style={[skin.label(tokens), skin.labelSpacing]}>{field.label}</Text>
-                  <Input placeholder={field.placeholder} value={field.value} />
-                  <Helper text={field.helper} />
-                </View>
+                <StackedField key={i} field={field} />
               ))}
         </View>
       </View>
@@ -207,6 +215,9 @@ export function createForm(
   // side-by-side on wide viewports, collapsing to stacked on small screens.
   function SidebarField({ field }: { field: FormField }) {
     const { tokens } = useTheme();
+    const base = useId();
+    const labelId = `${base}-label`;
+    const helperId = field.helper ? `${base}-helper` : undefined;
     const row = useResponsive<ViewStyle>({
       base: { flexDirection: "row", gap: 32 },
       sm: { flexDirection: "column", gap: 6 },
@@ -216,11 +227,17 @@ export function createForm(
     return (
       <View style={[{ alignItems: "flex-start" }, row]}>
         <View style={{ width: leftWidth }}>
-          <Text style={[skin.label(tokens), skin.headingWeight]}>{field.label}</Text>
-          <Helper text={field.helper} />
+          <Text nativeID={labelId} style={[skin.label(tokens), skin.headingWeight]}>{field.label}</Text>
+          <Helper text={field.helper} id={helperId} />
         </View>
         <View style={[s.flex1, rightFull]}>
-          <Input placeholder={field.placeholder} value={field.value} />
+          <Input
+            placeholder={field.placeholder}
+            value={field.value}
+            accessibilityLabel={field.label}
+            aria-labelledby={labelId}
+            aria-describedby={helperId}
+          />
         </View>
       </View>
     );

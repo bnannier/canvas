@@ -46,6 +46,37 @@ function surface(tokens: ColorTokens): ViewStyle {
 // Surface padding (p-4) added on top of `surface`.
 const surfacePad: ViewStyle = { padding: 16 };
 
+// --- header bar (plain + numbered filename/language label) ------------------
+
+// The header bar that carries the filename/language label, sitting above the code
+// surface: a muted, bordered strip whose bottom edge meets the surface's top edge.
+// flex-row items-center rounded-t-lg border border-b-0 border-border bg-muted px-4 py-2.
+function headerBar(tokens: ColorTokens): ViewStyle {
+  return {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    width: "100%",
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: tokens.border,
+    backgroundColor: tokens.muted,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  };
+}
+
+// The header label type: text-xs muted-foreground (the file/language name).
+function headerLabel(tokens: ColorTokens): TextStyle {
+  return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
+}
+
+// When a header bar sits above the surface, the surface's own top corners must be
+// squared off so the two strips read as one card.
+const surfaceUnderHeader: ViewStyle = { borderTopLeftRadius: 0, borderTopRightRadius: 0 };
+
 // --- inline variant ---------------------------------------------------------
 
 // self-start rounded border border-border bg-muted px-1.5 py-0.5
@@ -111,8 +142,9 @@ const terminalBody: ViewStyle = { backgroundColor: palette["zinc-900"], padding:
 // A single command row: flex-row.
 const terminalRow: ViewStyle = { flexDirection: "row" };
 
-// The non-selectable "$ " prompt: text-emerald-400.
-const terminalPrompt: TextStyle = { color: palette["emerald-400"] };
+// The non-selectable "$ " prompt: text-emerald-400. `userSelect: "none"` keeps the
+// shell glyph out of a copied selection (it is a cross-platform RN TextStyle prop).
+const terminalPrompt: TextStyle = { color: palette["emerald-400"], userSelect: "none" };
 
 // The command line itself: flex-1 text-zinc-100.
 const terminalLine: TextStyle = {
@@ -131,8 +163,10 @@ const numberedSurface: ViewStyle = { flexDirection: "row", padding: 16 };
 const numberedGutter: ViewStyle = { marginRight: 16, alignItems: "flex-end" };
 
 // Dimmed line numbers (text-muted-foreground), sharing the code type.
+// `userSelect: "none"` keeps the line numbers out of a copied selection, so the
+// pasted block is clean, runnable code (cross-platform RN TextStyle prop).
 function gutterText(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"] };
+  return { color: tokens["muted-foreground"], userSelect: "none" };
 }
 
 // The code column: flex-1.
@@ -182,6 +216,9 @@ export const webSkin: CodeBlockSkin = {
   codeText,
   surface,
   surfacePad,
+  headerBar,
+  headerLabel,
+  surfaceUnderHeader,
   inlineBox,
   inlineType,
   terminalOuter,

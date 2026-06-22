@@ -25,6 +25,12 @@ export interface SwitchProps {
   children?: ReactNode;
   /** Optional muted description line, rendered under the label. */
   description?: ReactNode;
+  /**
+   * Accessible name for the switch when no visible `children` label is rendered
+   * (e.g. a switch embedded in an Action Panel whose label sits in sibling Text).
+   * Without it, a label-less switch announces only "switch, on/off".
+   */
+  accessibilityLabel?: string;
   /** Extra style on the row, applied last. */
   style?: ViewStyle;
 }
@@ -53,7 +59,7 @@ const DESC_FONT: Record<Size, number> = { small: 11, base: 12, large: 14 };
 /** Build a Switch component from a platform skin. */
 export function createSwitch(skin: SwitchSkin) {
   return function Switch(props: SwitchProps) {
-    const { checked = false, onChange, onValueChange, disabled, children, description, style } = props;
+    const { checked = false, onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
     const { tokens, dark } = useTheme();
     const size = sizeOf(props);
 
@@ -68,6 +74,8 @@ export function createSwitch(skin: SwitchSkin) {
         onPress={handlePress}
         disabled={disabled}
         accessibilityRole="switch"
+        accessibilityLabel={accessibilityLabel}
+        aria-label={accessibilityLabel}
         accessibilityState={{ checked, disabled: !!disabled }}
         aria-checked={checked}
         style={({ pressed }) => [

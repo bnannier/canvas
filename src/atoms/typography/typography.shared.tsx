@@ -59,6 +59,21 @@ export interface TypographySkin {
   roleType: Record<Role, TextStyle>;
 }
 
+// Heading roles and the level they expose to assistive tech. Setting
+// accessibilityRole="header" gives the native heading trait and (via RNW) emits
+// a real <h*> element; passing both aria-level and accessibilityLevel pins the
+// correct level (display + h1 at 1, h2..h5 at 2..5) on web and native rather
+// than RNW defaulting every heading to h1. Non-heading roles are absent here so
+// they stay plain text.
+const HEADING_LEVEL: Partial<Record<Role, number>> = {
+  display: 1,
+  h1: 1,
+  h2: 2,
+  h3: 3,
+  h4: 4,
+  h5: 5,
+};
+
 // Role precedence when more than one is passed: first match wins. Order runs
 // largest-to-smallest, headings before helper styles, so a conflicting pair
 // resolves to the more prominent role.
@@ -90,8 +105,18 @@ export function createTypography(skin: TypographySkin) {
     // utility, so request the cross-platform monospace alias via inline style.
     const monoStyle = MONO_ROLES.has(role) ? { fontFamily: "monospace" as const } : null;
 
+    // Heading roles expose the native heading trait + level so screen readers
+    // can navigate heading-by-heading (the H key / rotor); body/helper roles
+    // stay plain text. aria-level + accessibilityLevel pin the level on web and
+    // native (otherwise RNW emits every header as h1).
+    const level = HEADING_LEVEL[role];
+
     return (
-      <Text style={[skin.roleType[role], roleColor(tokens, role), monoStyle, style]}>
+      <Text
+        accessibilityRole={level ? "header" : undefined}
+        aria-level={level}
+        style={[skin.roleType[role], roleColor(tokens, role), monoStyle, style]}
+      >
         {children}
       </Text>
     );

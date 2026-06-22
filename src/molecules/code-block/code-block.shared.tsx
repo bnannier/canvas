@@ -48,6 +48,12 @@ export interface CodeBlockSkin {
   surface: (t: ColorTokens) => ViewStyle;
   /** Padding for the plain surface. */
   surfacePad: ViewStyle;
+  /** Header strip carrying the filename/language label (plain + numbered). */
+  headerBar: (t: ColorTokens) => ViewStyle;
+  /** Header label type (the file/language name). */
+  headerLabel: (t: ColorTokens) => TextStyle;
+  /** Squares off the surface's top corners when a header bar sits above it. */
+  surfaceUnderHeader: ViewStyle;
   /** The inline pill (short mid-sentence token). */
   inlineBox: (t: ColorTokens) => ViewStyle;
   /** Inline label type (its own smaller size). */
@@ -87,8 +93,17 @@ export interface CodeBlockSkin {
 export interface CodeBlockProps {
   /** The code to render. Newlines are preserved (RN Text honors "\n"). */
   code?: string;
-  /** Optional filename or language label for the header bar. */
+  /**
+   * Optional filename label shown in a header bar above the surface. Honored by
+   * the plain and numbered variants (and the terminal chrome label); the inline
+   * pill has no header. When both are set, `filename` wins the header label and
+   * `language` the terminal label.
+   */
   filename?: string;
+  /**
+   * Optional language label shown in the header bar / terminal chrome. See
+   * `filename` for which variant renders it.
+   */
   language?: string;
 
   // Variant (pick one; default is the plain block).
@@ -146,11 +161,27 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     );
   }
 
+  // The header strip above plain/numbered surfaces, carrying the filename/language
+  // label. Rendered only when a label is present.
+  function Header({ label }: { label: string }) {
+    const { tokens } = useTheme();
+    return (
+      <View style={skin.headerBar(tokens)}>
+        <Text style={[skin.headerLabel(tokens), MONO]} numberOfLines={1}>
+          {label}
+        </Text>
+      </View>
+    );
+  }
+
   return function CodeBlock(props: CodeBlockProps) {
     const { code = DEFAULT_CODE, filename, language, copy, wrap, onCopy, style } = props;
     const variant = variantOf(props);
     const { tokens } = useTheme();
     const lines = code.split("\n");
+    // The header label for the plain/numbered variants: prefer the filename, fall
+    // back to the language. Absent both, no header bar is rendered.
+    const headerLabel = filename ?? language;
 
     // Inline: a short token rendered as an inline pill. No header, copy, or wrap.
     if (variant === "inline") {
@@ -193,7 +224,8 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     if (variant === "numbered") {
       return (
         <View style={[RELATIVE, style]}>
-          <View style={[skin.surface(tokens), skin.numberedSurface]}>
+          {headerLabel ? <Header label={headerLabel} /> : null}
+          <View style={[skin.surface(tokens), headerLabel ? skin.surfaceUnderHeader : null, skin.numberedSurface]}>
             {/* Gutter: right-aligned, dimmed line numbers. */}
             <View style={skin.numberedGutter}>
               {lines.map((_, i) => (
@@ -223,7 +255,8 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // Plain (default): the muted code surface, padded, monospace.
     return (
       <View style={[RELATIVE, style]}>
-        <View style={[skin.surface(tokens), skin.surfacePad]}>
+        {headerLabel ? <Header label={headerLabel} /> : null}
+        <View style={[skin.surface(tokens), headerLabel ? skin.surfaceUnderHeader : null, skin.surfacePad]}>
           <Text
             style={[skin.codeType, skin.codeText(tokens), MONO]}
             numberOfLines={wrap ? undefined : lines.length}

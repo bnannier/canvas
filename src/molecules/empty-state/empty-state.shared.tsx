@@ -74,7 +74,16 @@ export function createEmptyState(skin: EmptyStateSkin) {
     return (
       <View style={container}>
         {icon != null ? (
-          <View style={[skin.discBase, s.discTone(tokens, tone)]}>
+          // The disc glyph is purely decorative; the title carries the meaning.
+          // Emoji announce their own accessible name, so hide the disc from
+          // assistive tech. react-native-web does not forward
+          // accessibilityElementsHidden to the DOM, so add the aria-hidden alias.
+          <View
+            style={[skin.discBase, s.discTone(tokens, tone)]}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            aria-hidden
+          >
             <Text style={[skin.glyph, s.glyphTone(tokens, tone)]}>{icon}</Text>
           </View>
         ) : null}

@@ -11,6 +11,7 @@ export default function Example(scope: ExampleScope) {
   confirmLabel="Delete"
   destructive
   withInput
+  confirmText="DELETE"
   trigger="Delete identity…"
 />
   );

@@ -138,7 +138,11 @@ export function createActionPanel(
     // otherwise, small to sit comfortably inside the panel.
     const action = toggle ? (
       <View style={actionPinned}>
-        <Switch checked={checked} onValueChange={onToggle} />
+        <Switch
+          checked={checked}
+          onValueChange={onToggle}
+          accessibilityLabel={title ?? actionLabel}
+        />
       </View>
     ) : actionLabel != null ? (
       <View style={layout === "inline" ? actionPinned : actionStacked}>

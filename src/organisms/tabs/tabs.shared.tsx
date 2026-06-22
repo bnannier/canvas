@@ -173,6 +173,7 @@ export function createTabs(skin: TabsSkin) {
           accessibilityRole="tab"
           accessibilityState={{ selected, disabled: !!disabled }}
           aria-selected={selected}
+          aria-disabled={disabled || undefined}
           style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           <Text style={skin.verticalLabel(tokens, selected)}>{label}</Text>
@@ -197,6 +198,7 @@ export function createTabs(skin: TabsSkin) {
           accessibilityRole="tab"
           accessibilityState={{ selected, disabled: !!disabled }}
           aria-selected={selected}
+          aria-disabled={disabled || undefined}
           style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           <Text style={skin.pillsLabel(tokens, selected)}>{label}</Text>
@@ -222,6 +224,7 @@ export function createTabs(skin: TabsSkin) {
         accessibilityRole="tab"
         accessibilityState={{ selected, disabled: !!disabled }}
         aria-selected={selected}
+        aria-disabled={disabled || undefined}
         style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
       >
         <Text style={skin.underlineLabel(tokens, selected)}>{label}</Text>
@@ -240,7 +243,7 @@ export function createTabs(skin: TabsSkin) {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
       return (
-        <View style={[verticalRail(!!props.block), style]}>
+        <View accessibilityRole="tablist" style={[verticalRail(!!props.block), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -259,7 +262,7 @@ export function createTabs(skin: TabsSkin) {
 
     if (variant === "pills") {
       return (
-        <View style={[skin.pillsRow(tokens), s.blockWidth(!!props.block), style]}>
+        <View accessibilityRole="tablist" style={[skin.pillsRow(tokens), s.blockWidth(!!props.block), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -279,7 +282,7 @@ export function createTabs(skin: TabsSkin) {
     // Underline: the row sits on a hairline bottom border (web/Android) or a gray
     // segmented track (iOS).
     return (
-      <View style={[skin.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
+      <View accessibilityRole="tablist" style={[skin.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
         {tabs.map((item, i) => (
           <Trigger
             key={`${labelOf(item)}-${i}`}

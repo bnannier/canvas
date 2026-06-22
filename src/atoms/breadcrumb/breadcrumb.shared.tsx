@@ -145,7 +145,12 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
     if (children == null) return null;
     if (current) {
       return (
-        <Text style={[skin.current(tokens), style]} accessibilityRole="text">
+        <Text
+          style={[skin.current(tokens), style]}
+          accessibilityRole="text"
+          accessibilityState={{ selected: true }}
+          aria-current="page"
+        >
           {children}
         </Text>
       );
@@ -179,7 +184,12 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
     const glyph = SEPARATOR_GLYPH[separator];
 
     return (
-      <View style={[NAV, style]} accessibilityRole="header">
+      <View
+        style={[NAV, style]}
+        role="navigation"
+        aria-label="Breadcrumb"
+        accessibilityLabel="Breadcrumb"
+      >
         {homeIcon ? (
           <View style={CRUMB}>
             <Pressable
@@ -194,7 +204,12 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
               <Icon home muted size={skin.homeIconSize} />
             </Pressable>
             {trail.length === 0 ? null : (
-              <Text style={skin.separator(tokens)} accessibilityElementsHidden>
+              <Text
+                style={skin.separator(tokens)}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                aria-hidden
+              >
                 {glyph}
               </Text>
             )}
@@ -211,7 +226,12 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
                 {item}
               </BreadcrumbItem>
               {last ? null : (
-                <Text style={skin.separator(tokens)} accessibilityElementsHidden>
+                <Text
+                  style={skin.separator(tokens)}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  aria-hidden
+                >
                   {glyph}
                 </Text>
               )}

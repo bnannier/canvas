@@ -57,6 +57,11 @@ Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred back
 
 ### Body field
 
+`withInput` renders a confirmation field that gates the confirm action: the user
+must type the `confirmText` token (default `"DELETE"`) exactly before the confirm
+button enables, so it is a real safety check rather than a decorative field. Pass
+`confirmText` to require a different token.
+
 ```tsx
 <AlertDialog
   title="Delete this identity?"
@@ -64,6 +69,7 @@ Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred back
   confirmLabel="Delete"
   destructive
   withInput
+  confirmText="DELETE"
   trigger="Delete identity…"
 />
 ```

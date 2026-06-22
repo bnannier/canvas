@@ -1,4 +1,3 @@
-import { type ReactNode } from "react";
 import { View, Pressable, Text, useTheme, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
@@ -81,7 +80,6 @@ export interface NavbarProps {
   // Surface (pick one; default is the flush bottom-hairline bar).
   bordered?: boolean;
   floating?: boolean;
-  children?: ReactNode;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -125,7 +123,7 @@ export function createNavbar(skin: NavbarSkin) {
                   android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                   accessibilityRole="link"
                   accessibilityState={{ selected: isActive }}
-                  aria-selected={isActive}
+                  aria-current={isActive ? "page" : undefined}
                   style={({ pressed }) => [
                     skin.linkTile(tokens, isActive),
                     skin.focusOutlineReset,

@@ -111,5 +111,8 @@ export const androidSkin: SpinnerSkin = {
 // original single-file component. It animates itself, so it ignores the shared
 // rotate value.
 export const webSkin: SpinnerSkin = {
+  // The ActivityIndicator animates itself and never reads the shared `rotate`
+  // value, so the shell must NOT drive a perpetual Animated loop for it.
+  spins: false,
   render: ({ size, color }) => <ActivityIndicator size={size} color={color} />,
 };

@@ -51,6 +51,14 @@ export interface SpinnerSkin {
     rotate: Animated.Value;
     tokens: ColorTokens;
   }) => ReactElement;
+  /**
+   * Whether this skin consumes the shared rotation value. When `false`, the
+   * shell skips starting the perpetual rotation loop (e.g. the web
+   * ActivityIndicator animates itself and never reads `rotate`, so driving an
+   * Animated.Value for it would be a wasted, never-stopping per-instance timer).
+   * Defaults to `true`.
+   */
+  spins?: boolean;
 }
 
 /** Build a Spinner component from a platform skin. */
@@ -70,7 +78,12 @@ export function createSpinner(skin: SpinnerSkin) {
     // one pass then freezes on react-native-web, and does not loop under the New
     // Architecture on iOS). A 900ms spinner is cheap on the JS thread.
     const rotate = useRef(new Animated.Value(0)).current;
+    const spins = skin.spins !== false;
     useEffect(() => {
+      // Skins that animate themselves (the web ActivityIndicator) never read
+      // `rotate`; starting a loop for them would spin an Animated.Value forever
+      // with no subscriber in the render tree. Only loop when the skin spins.
+      if (!spins) return;
       const loop = Animated.loop(
         Animated.timing(rotate, {
           toValue: 1,
@@ -81,7 +94,7 @@ export function createSpinner(skin: SpinnerSkin) {
       );
       loop.start();
       return () => loop.stop();
-    }, [rotate]);
+    }, [rotate, spins]);
 
     return (
       <Animated.View

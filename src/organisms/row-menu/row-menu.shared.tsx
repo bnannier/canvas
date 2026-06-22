@@ -32,6 +32,8 @@ export interface RowMenuProps {
   sectionLabel?: string;
   /** Fired with the selected item and its index when a row is pressed. */
   onSelect?: (item: RowMenuItem, index: number) => void;
+  /** Accessible name for the icon-only ⋯ trigger. Defaults to "More options". */
+  triggerLabel?: string;
   /** Escape hatch for layout/positioning composition. */
   style?: StyleProp<ViewStyle>;
 }
@@ -39,7 +41,7 @@ export interface RowMenuProps {
 /** Build a RowMenu component from a platform skin. */
 export function createRowMenu(skin: RowMenuSkin) {
   return function RowMenu(props: RowMenuProps) {
-    const { items, links = false, sectionLabel, onSelect, onOpenChange, style } = props;
+    const { items, links = false, sectionLabel, onSelect, onOpenChange, triggerLabel = "More options", style } = props;
     const { tokens, dark } = useTheme();
     // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
     // closes it; a controlled `open` prop overrides this.
@@ -67,8 +69,20 @@ export function createRowMenu(skin: RowMenuSkin) {
           onPress={() => setOpen(!open)}
           android_ripple={ripple}
           accessibilityRole="button"
+          accessibilityLabel={triggerLabel}
+          accessibilityState={{ expanded: open }}
+          // RNW forwards neither accessibilityState nor aria-haspopup; alias both.
+          aria-expanded={open}
+          {...{ "aria-haspopup": "menu" }}
         >
-          <Text style={skin.triggerGlyph(tokens)}>⋯</Text>
+          <Text
+            style={skin.triggerGlyph(tokens)}
+            aria-hidden
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            ⋯
+          </Text>
         </Pressable>
 
         {open ? (

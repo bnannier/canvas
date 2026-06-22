@@ -49,6 +49,14 @@ export interface BadgeProps {
   error?: boolean;
   info?: boolean;
   neutral?: boolean;
+  /**
+   * Accessible name for the badge. Most useful for the status family: the bare-dot status
+   * form (`<Badge status error />` with no children) is otherwise color-only and silent to
+   * screen readers. When omitted on a childless status badge, the status tone word (e.g.
+   * "error") is announced as a fallback. Mirrors the Spinner/Progress `accessibilityLabel`
+   * contract.
+   */
+  accessibilityLabel?: string;
   /** Escape hatch for layout/positioning composition. */
   style?: StyleProp<ViewStyle>;
 }
@@ -120,13 +128,20 @@ function statusDotColor(tokens: ColorTokens, status: Status): string {
 
 export function createBadge(skin: BadgeSkin) {
   return function Badge(props: BadgeProps) {
-    const { children, mono, style } = props;
+    const { children, mono, style, accessibilityLabel } = props;
     const { tokens, dark } = useTheme();
 
     if (props.status) {
       const tone = statusOf(props);
+      // The bare-dot status form (no children) is color-only; give it an accessible name so a
+      // screen reader does not announce a silent, meaningless dot. Prefer the caller's label,
+      // else fall back to the status tone word ("error", "success", ...).
+      const statusName = accessibilityLabel ?? (children == null ? tone : undefined);
       return (
-        <View style={[skin.statusBase, statusContainer(tokens, dark, tone), style]}>
+        <View
+          style={[skin.statusBase, statusContainer(tokens, dark, tone), style]}
+          accessibilityLabel={statusName}
+        >
           <View style={{ height: skin.dotSize, width: skin.dotSize, borderRadius: 9999, backgroundColor: statusDotColor(tokens, tone) }} />
           {children != null ? (
             <Text style={[skin.labelType, statusLabel(tokens, dark, tone)]}>{children}</Text>

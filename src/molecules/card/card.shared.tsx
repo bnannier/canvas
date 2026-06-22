@@ -19,8 +19,8 @@ import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 //
 // - Elevation (pick one): `raised` > `flat` > default. `flat` drops the shadow;
 //   `raised` lifts it. (The exact resting/raised shadow is per-OS via the skin.)
-// - Interaction: `interactive` (with onPress) gives a pressed affordance, for a
-//   card that behaves like a control.
+// - Interaction: pass `onPress` to make the whole card pressable; it gains the
+//   pressed affordance (Android ripple, iOS/web pressed dim) and the button role.
 // - Padding: `padded` pads the surface itself (good for a single block of
 //   content); omit when you compose CardHeader/CardContent, which carry their
 //   own padding.
@@ -46,8 +46,7 @@ export interface CardProps {
   // Elevation (pick one; default is a soft resting shadow).
   raised?: boolean;
   flat?: boolean;
-  // Interaction and padding (orthogonal booleans).
-  interactive?: boolean;
+  // Padding (orthogonal boolean).
   padded?: boolean;
   /** When set, the whole card becomes pressable (a card that behaves as a control). */
   onPress?: () => void;
@@ -97,22 +96,25 @@ export function createCard(skin: CardSkin) {
     if (children != null) {
       inner = children;
     } else {
-      const hasHeader = title != null || description != null;
+      // Empty strings count as "no content" in this data-driven path, so a
+      // cleared field never renders an empty header, body, footer, or a stray
+      // separator. Guard on truthiness rather than null for these display strings.
+      const hasHeader = Boolean(title) || Boolean(description);
       inner = (
         <>
           {hasHeader ? (
             <CardHeader>
-              {title != null ? <CardTitle>{title}</CardTitle> : null}
-              {description != null ? <CardDescription>{description}</CardDescription> : null}
+              {title ? <CardTitle>{title}</CardTitle> : null}
+              {description ? <CardDescription>{description}</CardDescription> : null}
             </CardHeader>
           ) : null}
-          {hasHeader && body != null ? <CardSeparator /> : null}
-          {body != null ? (
+          {hasHeader && body ? <CardSeparator /> : null}
+          {body ? (
             <CardContent>
               <Text style={s.bodyText(tokens)}>{body}</Text>
             </CardContent>
           ) : null}
-          {footer != null ? (
+          {footer ? (
             <>
               <CardSeparator />
               <CardFooter>

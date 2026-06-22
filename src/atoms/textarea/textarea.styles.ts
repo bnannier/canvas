@@ -48,10 +48,13 @@ export function sizeText(size: Size): TextStyle {
 }
 
 // Derived min height from the row count: each row ~22px plus the vertical
-// padding. Falls back to the 80px floor when no rows are given. The field still
-// grows with content past this floor. Shared across platforms.
+// padding. Falls back to the 80px floor when no rows are given. The row count is
+// clamped to at least one whole visible row, so rows={0} or a negative/fractional
+// value can never collapse the field below a usable single-line floor. The field
+// still grows with content past this floor. Shared across platforms.
 export function minHeight(rows?: number): TextStyle {
-  return { minHeight: rows == null ? 80 : rows * 22 + 16 };
+  const r = rows == null ? null : Math.max(1, Math.floor(rows));
+  return { minHeight: r == null ? 80 : r * 22 + 16 };
 }
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------

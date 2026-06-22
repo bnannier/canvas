@@ -169,6 +169,14 @@ export function createInputOTP(skin: InputOTPSkin) {
             caretHidden
             inputMode="numeric"
             keyboardType="number-pad"
+            // When masked, obscure the value at the input layer so the platform
+            // masks it for real: RN hides it natively and RNW emits a password
+            // input, so a screen reader / the DOM value / password-manager UI no
+            // longer expose the raw passcode (the cell bullets alone were purely
+            // cosmetic). Keep `textContentType="oneTimeCode"` set regardless —
+            // iOS still honors it for SMS autofill even with secure entry — so
+            // one-time-code autofill keeps landing in both modes.
+            secureTextEntry={!!masked}
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
             maxLength={length}

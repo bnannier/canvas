@@ -21,9 +21,10 @@ import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 // createCombobox.
 //
 // Like Select, the open state is rendered inline (the docs render it this way;
-// there is no portal/Modal). `open` defaults to true so the floating list is
-// visible. The selected option carries a leading "✓" and an accent surface; an
-// empty filtered list shows a muted "No results" row.
+// there is no portal/Modal). The list is closed by default in the uncontrolled
+// case; pass `open` to render the floating list inline. The selected option
+// carries a leading "✓" and an accent surface; an empty filtered list shows a
+// muted "No results" row.
 
 export interface ComboboxProps {
   /** The text typed into the field. Filters the option list when set. */
@@ -35,8 +36,10 @@ export interface ComboboxProps {
   /** Prompt shown in the field when there is no query or value. */
   placeholder?: string;
   /**
-   * Whether the option list is open. Defaults to true so the open state is
-   * visible inline (the docs render it this way; there is no portal/Modal).
+   * Whether the option list is open. Uncontrolled and closed by default; the
+   * field tap toggles it. Pass `open` to render the list open inline (the docs
+   * render it this way; there is no portal/Modal). A disabled control stays
+   * closed regardless.
    */
   open?: boolean;
   /** Fired when the open state changes (field tap, select). */
@@ -119,13 +122,21 @@ export function createCombobox(skin: ComboboxSkin) {
           onPress={() => setOpen(!open)}
           android_ripple={ripple}
           accessibilityRole="button"
+          // accessibilityState is the NATIVE disclosure/disabled channel (iOS/Android);
+          // RNW drops it on the web, so aria-expanded/aria-disabled alias it there.
+          accessibilityState={{ expanded: open, disabled: !!disabled }}
           aria-expanded={open}
+          aria-disabled={!!disabled}
+          // Tie the visible stacked label to the field so a screen reader announces
+          // the field's name (not just the inner value/placeholder) on both channels.
+          accessibilityLabel={label != null && label !== "" ? label : undefined}
+          aria-label={label != null && label !== "" ? label : undefined}
         >
           <Text style={skin.fieldText(tokens, size, fieldMuted)}>{fieldText}</Text>
           <Text style={skin.chevron(tokens, size)}>▾</Text>
         </Pressable>
 
-        {open ? (
+        {open && !disabled ? (
           <GlassSurface style={skin.popover(tokens)}>
             {matches.length === 0 ? (
               <View style={skin.emptyRow}>
@@ -151,6 +162,9 @@ export function createCombobox(skin: ComboboxSkin) {
                     }}
                     android_ripple={ripple}
                     role="option"
+                    // accessibilityState carries the native selected trait (iOS/Android);
+                    // RNW drops it on the web, so aria-selected aliases it there.
+                    accessibilityState={{ selected }}
                     aria-selected={selected}
                   >
                     <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>

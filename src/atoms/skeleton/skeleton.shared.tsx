@@ -41,9 +41,40 @@ export interface SkeletonProps {
   large?: boolean;
   /** Subtle opacity pulse while content loads. */
   animate?: boolean;
+  /**
+   * Screen-reader label announced for the loading placeholder. Defaults to
+   * "Loading". The placeholder carries a `progressbar` role + busy state so
+   * assistive tech announces the pending content (matching Spinner / Progress).
+   */
+  accessibilityLabel?: string;
   /** Escape hatch for layout/positioning composition (mainly sizing, e.g. width). */
   style?: StyleProp<ViewStyle>;
 }
+
+// The accessibility props every Skeleton shape carries on its outermost element so
+// the loading state is perceivable. `progressbar` + a busy state match the kit's
+// other two loading indicators (Spinner, Progress). The `aria-busy` alias is
+// mandatory: react-native-web does not forward accessibilityState to the DOM, so
+// without it web screen readers would never hear the busy state. The whole shape
+// announces once as a single node, so the inner muted blocks stay hidden from AT.
+function loadingA11y(label: string | undefined) {
+  return {
+    accessibilityRole: "progressbar" as const,
+    accessibilityLabel: label ?? "Loading",
+    accessibilityState: { busy: true },
+    "aria-busy": true,
+  };
+}
+
+// Hide a composite shape's inner muted blocks from assistive tech: the wrapping
+// element already announces the loading state once, so the nested fills must not
+// surface as anonymous generic nodes. Mirrors the kit's established decorative-hide
+// pattern (breadcrumb, input-otp): the native flags plus the `aria-hidden` web alias.
+const innerHidden = {
+  accessibilityElementsHidden: true,
+  importantForAccessibility: "no-hide-descendants" as const,
+  "aria-hidden": true,
+};
 
 // --- platform-neutral fill + layout fragments -------------------------------
 
@@ -139,8 +170,10 @@ function shapeOf(p: SkeletonProps): Shape {
 
 /** A pulsing or static muted block. The resolved width/height/fill go on the
  *  Animated.View itself so percentage widths resolve against the real parent
- *  (a nested View would collapse `w-[60%]` against an auto-width wrapper). */
-function Pulse({ animate, style }: { animate?: boolean; style: StyleProp<ViewStyle> }) {
+ *  (a nested View would collapse `w-[60%]` against an auto-width wrapper).
+ *  Extra props (accessibility flags) are spread onto the Animated.View so a
+ *  single-shape Skeleton can carry its loading semantics on this outermost node. */
+function Pulse({ animate, style, ...rest }: { animate?: boolean; style: StyleProp<ViewStyle> } & Record<string, unknown>) {
   const opacity = useRef(new Animated.Value(1)).current;
   // The shimmer is decorative, so honor Reduce Motion: hold the placeholder still
   // (the muted shape alone already reads as "loading").
@@ -162,7 +195,7 @@ function Pulse({ animate, style }: { animate?: boolean; style: StyleProp<ViewSty
     return () => loop.stop();
   }, [active, opacity]);
 
-  return <Animated.View style={[style, { opacity: active ? opacity : 1 }]} />;
+  return <Animated.View {...rest} style={[style, { opacity: active ? opacity : 1 }]} />;
 }
 
 export function createSkeleton(skin: SkeletonSkin) {
@@ -175,23 +208,24 @@ export function createSkeleton(skin: SkeletonSkin) {
   }
 
   return function Skeleton(props: SkeletonProps) {
-    const { animate, style } = props;
+    const { animate, accessibilityLabel, style } = props;
     const { tokens } = useTheme();
     const shape = shapeOf(props);
+    const a11y = loadingA11y(accessibilityLabel);
 
     if (shape === "avatar") {
       const d = avatarDiameter(props);
-      return <Pulse animate={animate} style={[fill(tokens), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} />;
+      return <Pulse animate={animate} {...a11y} style={[fill(tokens), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} />;
     }
 
     if (shape === "button") {
       const { height, width } = buttonSize(props);
-      return <Pulse animate={animate} style={[fill(tokens), { height, width, borderRadius: skin.buttonRadius }, style]} />;
+      return <Pulse animate={animate} {...a11y} style={[fill(tokens), { height, width, borderRadius: skin.buttonRadius }, style]} />;
     }
 
     if (shape === "card") {
       return (
-        <View style={[cardSurface(tokens), { borderRadius: skin.cardRadius }, style]}>
+        <View {...a11y} {...innerHidden} style={[cardSurface(tokens), { borderRadius: skin.cardRadius }, style]}>
           <View style={cardRow}>
             <Pulse animate={animate} style={[fill(tokens), cardAvatar, { borderRadius: skin.avatarRadius }]} />
             <View style={flexFill}>
@@ -217,7 +251,7 @@ export function createSkeleton(skin: SkeletonSkin) {
         </View>
       );
       return (
-        <View style={[listContainer, style]}>
+        <View {...a11y} {...innerHidden} style={[listContainer, style]}>
           <Row a={{ width: "70%" }} b={{ width: "50%" }} />
           <Row a={{ width: "55%" }} b={{ width: "35%" }} />
         </View>
@@ -234,7 +268,7 @@ export function createSkeleton(skin: SkeletonSkin) {
         </View>
       );
       return (
-        <View style={[tableContainer, style]}>
+        <View {...a11y} {...innerHidden} style={[tableContainer, style]}>
           <Row a={{ width: "70%" }} b={{ width: "50%" }} />
           <Row a={{ width: "80%" }} b={{ width: "60%" }} />
           <Row a={{ width: "65%" }} b={{ width: "45%" }} last />
@@ -244,6 +278,6 @@ export function createSkeleton(skin: SkeletonSkin) {
 
     // Default: a single text line, full width by default; style carries the width
     // override (e.g. width: "60%") and any other layout.
-    return <Pulse animate={animate} style={[fill(tokens), lineHeight(props), { width: "100%", borderRadius: skin.lineRadius }, style]} />;
+    return <Pulse animate={animate} {...a11y} style={[fill(tokens), lineHeight(props), { width: "100%", borderRadius: skin.lineRadius }, style]} />;
   };
 }

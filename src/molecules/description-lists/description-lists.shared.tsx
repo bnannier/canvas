@@ -99,9 +99,13 @@ export interface DescriptionListSkin {
 }
 
 // Layout precedence when more than one is passed: first match wins.
+// `stacked` is the lowest-precedence opt-in and the default when no layout
+// boolean is set, so reading it here makes the public prop a real, intentional
+// choice rather than relying on it only as the unconditional fallback.
 function layoutOf(p: DescriptionListProps): Layout {
   if (p.inline) return "inline";
   if (p.twoColumn) return "twoColumn";
+  if (p.stacked) return "stacked";
   return "stacked";
 }
 
@@ -153,7 +157,7 @@ export function createDescriptionList(skin: DescriptionListSkin) {
           <View style={layout === "twoColumn" ? s.twoColumnValueCell : null}>
             <Value item={item} align={layout === "inline"} skin={skin} />
             {item.update ? (
-              <Button link small>
+              <Button link small accessibilityLabel={`Update ${item.term}`}>
                 Update
               </Button>
             ) : null}

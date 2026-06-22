@@ -127,8 +127,20 @@ export function createAlert(skin: AlertSkin) {
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
 
+    // An Alert is an inline notification surface, so it announces itself as an
+    // alert and rides a live region (assistive tech reads the message without
+    // stealing focus). RNW drops accessibilityLiveRegion, so the aria-live alias
+    // carries the web announcement. An error tone is urgent enough to interrupt
+    // ("assertive"); the rest stay "polite".
+    const live = tone === "error" ? "assertive" : "polite";
+
     return (
-      <View style={[skin.container, containerColor(tokens, dark, tone), style]}>
+      <View
+        accessibilityRole="alert"
+        accessibilityLiveRegion={live}
+        aria-live={live}
+        style={[skin.container, containerColor(tokens, dark, tone), style]}
+      >
         {icon != null ? <Text style={[skin.iconType, iconColor(tokens, dark, tone)]}>{icon}</Text> : null}
         <View style={CONTENT}>
           {title != null && title !== "" ? (

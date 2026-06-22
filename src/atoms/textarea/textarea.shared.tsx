@@ -55,6 +55,15 @@ export function createTextarea(skin: TextareaSkin) {
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
 
+    // Surface the validation problem programmatically, not just as a red border
+    // (the border alone fails WCAG 1.4.1 / 4.1.2). `aria-invalid` is the
+    // cross-platform alias react-native-web forwards to the DOM textarea as
+    // aria-invalid="true" so web screen readers announce the field as invalid;
+    // it mirrors the sibling Input exactly. Undefined when valid so the attribute
+    // is omitted rather than emitting aria-invalid="false". Spread (not a direct
+    // JSX attribute) because `aria-invalid` is outside RN's typed prop set.
+    const a11y = { "aria-invalid": isError || undefined };
+
     return (
       <TextInput
         ref={ref}
@@ -76,6 +85,7 @@ export function createTextarea(skin: TextareaSkin) {
           FOCUS_RESET,
           style,
         ]}
+        {...a11y}
       />
     );
   });

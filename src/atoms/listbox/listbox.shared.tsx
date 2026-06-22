@@ -1,3 +1,4 @@
+import { type Role } from "react-native";
 import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 
@@ -20,6 +21,9 @@ import { Checkbox } from "../checkbox/checkbox.js";
 // has no listbox either (the exposed dropdown menu is the select idiom), so the
 // single web look (Catalyst's listbox) is correct on every platform. The skin is
 // therefore identical across iOS / Android / web.
+
+// RN's Role union omits "listbox" (it is a valid ARIA role), so cast it once.
+const LISTBOX = "listbox" as Role;
 
 export type Mode = "single" | "multi";
 export type Size = "small" | "medium" | "large";
@@ -113,8 +117,11 @@ export function createListbox(skin: ListboxSkin) {
       style,
     ];
 
+    // A selectable list of options is a `listbox` of `option`s (single-select)
+    // or a group of `checkbox` rows (multi-select); "option"/"checkbox" are in
+    // RN's Role union, "listbox" is the hoisted cast above.
     return (
-      <View style={container} accessibilityRole="list">
+      <View style={container} role={LISTBOX}>
         {items.map((item, index) => {
           const selected = !!item.selected;
           // Single-select fills the chosen row; multi-select leaves the row plain
@@ -140,12 +147,31 @@ export function createListbox(skin: ListboxSkin) {
               ]}
               onPress={disabled ? undefined : () => onSelect?.(index)}
               disabled={disabled}
-              accessibilityRole={mode === "multi" ? "checkbox" : "menuitem"}
-              accessibilityState={{ selected, disabled: !!disabled }}
-              aria-selected={selected}
+              // A multi-select row IS the checkbox (the inner Checkbox below is a
+              // presentational glyph), so its state is `checked`; a single-select
+              // row is an `option`, whose state is `selected`. RNW forwards neither
+              // accessibilityState key to the DOM, so each carries its aria alias.
+              role={mode === "multi" ? "checkbox" : "option"}
+              accessibilityState={
+                mode === "multi"
+                  ? { checked: selected, disabled: !!disabled }
+                  : { selected, disabled: !!disabled }
+              }
+              {...(mode === "multi" ? { "aria-checked": selected } : { "aria-selected": selected })}
             >
               {mode === "multi" ? (
-                <Checkbox checked={selected} />
+                // Presentational only: the row Pressable owns the checkbox role and
+                // state, so the inner Checkbox is hidden from assistive tech and made
+                // non-interactive (no nested checkbox, no second focus target). It
+                // still mirrors the row's disabled dim.
+                <View
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  aria-hidden
+                  pointerEvents="none"
+                >
+                  <Checkbox checked={selected} disabled={disabled} />
+                </View>
               ) : (
                 // Reserve the checkmark column on every row so labels stay aligned
                 // whether or not the row is selected.

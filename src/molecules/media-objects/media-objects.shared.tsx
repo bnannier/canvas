@@ -185,9 +185,15 @@ export function createMediaObject(skin: MediaObjectSkin) {
     // affordance, so a tappable media row needs no hand-rolled Pressable. Android
     // shows the native surface ripple; iOS/web dim opacity on press.
     if (props.onPress) {
+      // A tappable row's accessible name is otherwise derived only from its
+      // descendant Text. An icon-only or photo-only row (no title/description/meta)
+      // would expose an unlabeled button, so fall back to the first available text
+      // prop to give the control a name for screen readers.
+      const a11yLabel = title ?? description ?? meta ?? undefined;
       return (
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={a11yLabel}
           onPress={props.onPress}
           android_ripple={surfaceRipple(tokens)}
           style={({ pressed }) => [container, pressDim(pressed, skin.pressedOpacity)]}

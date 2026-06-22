@@ -127,7 +127,16 @@ export function createFilterPanel(
                 // previous plain-View look). The Checkbox is rendered as a
                 // non-interactive visual mirror of the state (`pointerEvents` off,
                 // no onChange) so the press goes to the row and there is a single
-                // checkbox role + a single toggle path, not a double-fire.
+                // toggle path, not a double-fire.
+                //
+                // The row Pressable owns the only checkbox role + state in the
+                // subtree, and names itself via accessibilityLabel (with the count
+                // appended when present) so it announces independent of the inner
+                // visual. The wrapper View hides the inner Checkbox atom entirely
+                // from assistive tech (accessibilityElementsHidden +
+                // importantForAccessibility on native, aria-hidden + role
+                // "presentation" on web), so the inner atom's own Pressable/role
+                // never surfaces a second, nested checkbox to the screen reader.
                 <Pressable
                   key={oi}
                   style={({ pressed }) => [
@@ -141,8 +150,17 @@ export function createFilterPanel(
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: !!option.checked }}
                   aria-checked={!!option.checked}
+                  accessibilityLabel={
+                    option.count != null ? `${option.label}, ${option.count}` : option.label
+                  }
                 >
-                  <View pointerEvents="none">
+                  <View
+                    pointerEvents="none"
+                    accessibilityElementsHidden={true}
+                    importantForAccessibility="no-hide-descendants"
+                    role="presentation"
+                    aria-hidden
+                  >
                     <Checkbox checked={option.checked}>{option.label}</Checkbox>
                   </View>
                   {option.count != null ? <Badge secondary>{option.count}</Badge> : null}

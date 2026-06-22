@@ -171,7 +171,7 @@ export function createToastSystem(skin: ToastSkin) {
       // the skin's shape. The a11y wrapper holds the role because GlassSurface paints
       // a surface and does not forward accessibility props.
       <View
-        accessibilityRole="alert"
+        role="status"
         accessibilityLiveRegion="polite"
         aria-live="polite"
         style={style}

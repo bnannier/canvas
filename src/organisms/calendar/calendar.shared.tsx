@@ -135,6 +135,7 @@ export function createCalendar(skin: CalendarSkin) {
                 android_ripple={ripple}
                 onPress={() => onSelect?.(day)}
                 accessibilityRole="button"
+                accessibilityLabel={`${day}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}`}
                 accessibilityState={{ selected: isSelected }}
                 aria-selected={isSelected}
               >

@@ -107,8 +107,20 @@ export function createFieldset(
   }) {
     const { tokens } = useTheme();
     const msg = item.error ?? (error ? "Enter a valid value" : "");
+    // The label must reach the control programmatically, not just sit above it: the
+    // composed Input renders a bare field with only a placeholder, and a placeholder
+    // is not a label (it vanishes on focus and is skipped by many screen readers).
+    // The Input atom forwards no accessible name of its own, so the field is wrapped
+    // in a labeled group whose name is the field label, which assistive tech announces
+    // for the control inside. RNW does not forward the accessible name to the DOM, so
+    // both accessibilityLabel (native) and its aria-label alias (web) are set; `role`
+    // maps to the ARIA grouping role cross-platform.
+    const labelled =
+      item.label
+        ? ({ role: "group" as const, accessibilityLabel: item.label, "aria-label": item.label } as const)
+        : {};
     return (
-      <View style={s.fieldWrap}>
+      <View style={s.fieldWrap} {...labelled}>
         {item.label ? <Text style={skin.fieldLabel(tokens)}>{item.label}</Text> : null}
         <Input value={item.value} placeholder={item.placeholder} disabled={disabled} error={!!msg} block />
         {msg ? (
@@ -157,10 +169,30 @@ export function createFieldset(
       style,
     ];
 
+    // Programmatic grouping: a fieldset's whole point is that a screen reader hears
+    // the legend as the group's name and the controls as members of it, not as loose
+    // text beside unrelated inputs. RNW does not infer a group from a plain View, so
+    // the container carries an explicit grouping role and takes its accessible name
+    // from the legend (the description, when present, supplements it). Both the RN
+    // accessibilityLabel and the aria-label alias are set because RNW forwards neither
+    // the name nor a plain accessibilityState to the DOM on its own; `role` maps to the
+    // ARIA role cross-platform.
+    const groupName = legend ?? description;
+    const groupProps =
+      groupName != null
+        ? ({ role: "group" as const, accessibilityLabel: groupName, "aria-label": groupName } as const)
+        : {};
+
     const header =
       legend != null || description != null ? (
         <View style={skin.header}>
-          {legend != null ? <Text style={skin.legend(tokens)}>{legend}</Text> : null}
+          {legend != null ? (
+            // The legend is the group heading, exposed as a heading so assistive tech
+            // can navigate to it and announce it as the set's title.
+            <Text style={skin.legend(tokens)} accessibilityRole="header" {...{ "aria-level": 3 }}>
+              {legend}
+            </Text>
+          ) : null}
           {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
         </View>
       ) : null;
@@ -168,7 +200,7 @@ export function createFieldset(
     // Children win: when composed, render exactly what the caller passed.
     if (children != null) {
       return (
-        <View style={container}>
+        <View style={container} {...groupProps}>
           {header}
           {children}
         </View>
@@ -178,7 +210,7 @@ export function createFieldset(
     // Checkbox group: a stacked set of labeled checkboxes.
     if (checkboxes != null) {
       return (
-        <View style={container}>
+        <View style={container} {...groupProps}>
           {header}
           <View style={{ gap: skin.checkboxGap }}>
             {checkboxes.map((c, i) => (
@@ -195,7 +227,7 @@ export function createFieldset(
     const rows = items ?? [];
 
     return (
-      <View style={container}>
+      <View style={container} {...groupProps}>
         {header}
         {twoColumn ? (
           <TwoColumnGroup rows={rows} disabled={disabled} error={error} />

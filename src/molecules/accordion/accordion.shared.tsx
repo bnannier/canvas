@@ -122,7 +122,10 @@ const DEFAULT_ITEMS: AccordionItem[] = [
 // Normalize the open value (controlled or the internal store) into a Set of keys,
 // regardless of single (string) or multiple (string[]) shape.
 function toSet(value: string | string[] | undefined): Set<string> {
-  if (value == null) return new Set();
+  // `null`/`undefined` and the single-mode "nothing open" sentinel ("" emitted by
+  // fromSet) both normalize to an empty Set, so collapsing the last open panel in
+  // controlled single-open mode round-trips cleanly instead of seeding Set { "" }.
+  if (value == null || value === "") return new Set();
   return new Set(Array.isArray(value) ? value : [value]);
 }
 

@@ -96,7 +96,7 @@ export function createPopover(skin: PopoverSkin) {
       <View style={[inline ? null : s.wrapper, !inline && open ? s.wrapperLifted : null]}>
         {inline ? null : (
           <View style={s.triggerWrap}>
-            <Button outline small onPress={() => setOpen(!open)}>
+            <Button outline small expanded={open} onPress={() => setOpen(!open)}>
               {trigger ?? "Open popover"}
             </Button>
           </View>

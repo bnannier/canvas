@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
@@ -91,6 +91,13 @@ export function createDialog(skin: DialogSkin) {
       style,
     } = props;
     const { tokens } = useTheme();
+
+    // Stable, per-instance ids so the panel's title/description can be wired as
+    // the dialog's accessible name/description (aria-labelledby/aria-describedby).
+    // useId yields one collision-free base per instance.
+    const baseId = useId();
+    const titleId = `${baseId}-title`;
+    const descriptionId = `${baseId}-description`;
 
     // Uncontrolled by default: the trigger opens the dialog and an action closes
     // it; a controlled `open` prop overrides this.
@@ -200,10 +207,19 @@ export function createDialog(skin: DialogSkin) {
         ) : null}
         {open ? (
           <View
-            // Tell assistive tech the content behind this modal overlay is inert
-            // while the dialog is open (iOS VoiceOver honors this; a no-op
-            // elsewhere). No focus trap is attempted (hard cross-platform).
+            // The overlay carries the dialog semantics so assistive tech announces
+            // it. `role` ("dialog", or "alertdialog" for a destructive confirm) +
+            // `aria-modal` make web screen readers treat it as a modal dialog and
+            // the page behind it as inert; the title/description (when rendered for
+            // the data-driven case) are wired as the accessible name/description via
+            // aria-labelledby/aria-describedby. `accessibilityViewIsModal` keeps iOS
+            // VoiceOver honoring the inert backdrop (RNW drops it, hence the
+            // aria-modal alias). No focus trap is attempted (hard cross-platform).
+            role={destructive ? "alertdialog" : "dialog"}
             accessibilityViewIsModal={true}
+            aria-modal={true}
+            aria-labelledby={children == null && title != null ? titleId : undefined}
+            aria-describedby={children == null && description != null ? descriptionId : undefined}
             style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}
           >
             <GlassSurface style={[s.cardLayout, skin.card(tokens), s.cardWidth(size), style]}>
@@ -211,8 +227,16 @@ export function createDialog(skin: DialogSkin) {
                 children
               ) : (
                 <>
-                  {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
-                  {description != null ? <Text style={skin.body(tokens)}>{description}</Text> : null}
+                  {title != null ? (
+                    <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
+                      {title}
+                    </Text>
+                  ) : null}
+                  {description != null ? (
+                    <Text nativeID={descriptionId} style={skin.body(tokens)}>
+                      {description}
+                    </Text>
+                  ) : null}
                   {withBody ? (
                     <View style={skin.formBody}>
                       <Text style={skin.fieldLabel(tokens)}>Amount</Text>

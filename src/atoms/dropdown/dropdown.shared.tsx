@@ -133,6 +133,9 @@ export function createDropdown(skin: DropdownSkin) {
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
           inlineStyle={MENU_ANCHOR}
         >
+            {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
+                each menuitem is orphaned and web SRs/validators flag it. */}
+            <View accessibilityRole="menu" role="menu">
             {label ? (
               <Text style={skin.menuLabel(tokens)}>
                 {label}
@@ -156,6 +159,7 @@ export function createDropdown(skin: DropdownSkin) {
                   android_ripple={ripple}
                   accessibilityRole="menuitem"
                   accessibilityState={{ disabled: item.disabled }}
+                  aria-disabled={item.disabled}
                 >
                   {item.icon ? (
                     <Text style={[skin.itemTextType, skin.itemTextColor(tokens, dark, !!item.destructive)]}>
@@ -173,6 +177,7 @@ export function createDropdown(skin: DropdownSkin) {
                 </Pressable>
               </View>
             ))}
+            </View>
         </AnchoredOverlay>
       </View>
     );

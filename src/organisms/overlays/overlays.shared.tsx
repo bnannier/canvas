@@ -105,6 +105,13 @@ export function createOverlay(skin: OverlaySkin) {
         ) : null}
         {open ? (
           <View
+            // Tell assistive tech the content behind this overlay surface is inert
+            // while it is open, matching Dialog's backdrop. `accessibilityViewIsModal`
+            // is honored by iOS VoiceOver; RNW drops it on the web, so `aria-modal`
+            // is the cross-platform alias that keeps web screen readers treating the
+            // backdrop as a modal region with the page behind it inert.
+            accessibilityViewIsModal={true}
+            aria-modal={true}
             style={[
               trigger != null ? s.backdropWithTrigger : null,
               s.backdrop(),

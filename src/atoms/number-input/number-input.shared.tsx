@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { TextInput, type NativeSyntheticEvent, type TextInputEndEditingEventData } from "react-native";
+import {
+  TextInput,
+  type AccessibilityActionEvent,
+  type NativeSyntheticEvent,
+  type TextInputEndEditingEventData,
+} from "react-native";
 import {
   View,
   Text,
@@ -144,6 +149,17 @@ export function createNumberInput(skin: NumberInputSkin) {
       emit(current + step);
     };
 
+    // Keyboard / Switch Control / VoiceOver / TalkBack "adjust value" gesture for the
+    // container's `adjustable` role: route the assistive-tech increment/decrement to
+    // the same step helpers (which already guard atMin/atMax). Without this the role
+    // would over-promise an adjust affordance that does nothing.
+    const onAccessibilityAction = (event: AccessibilityActionEvent) => {
+      if (disabled) return;
+      const name = event.nativeEvent.actionName;
+      if (name === "increment") increment();
+      else if (name === "decrement") decrement();
+    };
+
     // Parse on every keystroke: ignore non-numeric input, allow an empty/partial
     // transient draft, and emit the clamped number whenever the draft parses.
     const onChangeText = (raw: string) => {
@@ -237,6 +253,13 @@ export function createNumberInput(skin: NumberInputSkin) {
         aria-valuemin={min}
         aria-valuemax={max}
         accessibilityState={{ disabled: !!disabled }}
+        // RNW drops accessibilityState, so alias the disabled flag for web SR (matching
+        // the ± buttons) — otherwise the group's adjustable element omits disabled.
+        aria-disabled={!!disabled}
+        // The adjustable role advertises an "adjust value" gesture; bind it so swipe /
+        // arrow-key adjust actually steps the value (helpers guard atMin/atMax).
+        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+        onAccessibilityAction={onAccessibilityAction}
         style={[
           {
             flexDirection: "row",

@@ -88,10 +88,12 @@ describe("Carousel", () => {
 });
 
 describe("Toast (presentational)", () => {
-  it("renders the message as a status region", () => {
+  it("renders the message as a polite status region", () => {
     const { container } = ui(<Toast success message="Saved" />);
     expect(screen.getByText("Saved")).toBeDefined();
-    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    // role="status" is the polite live region (consistent with aria-live="polite");
+    // role="alert" would be assertive and contradict the polite announcement.
+    expect(container.querySelector('[role="status"]')).not.toBeNull();
   });
 
   it("runs the action and the dismiss handlers", () => {

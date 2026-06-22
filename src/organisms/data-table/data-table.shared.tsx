@@ -45,6 +45,16 @@ export interface DataTableProps {
   selectable?: boolean;
   /** When set, each data row is pressable, reporting the row data and index. */
   onRowPress?: (row: ReactNode[], index: number) => void;
+  /**
+   * Stable key for a row, derived from the row data and its index. Supply this
+   * whenever rows can be reordered, inserted, or deleted AND a cell is a stateful
+   * custom ReactNode (an input, a toggle, a Badge with internal state): the shape
+   * is `ReactNode[][]` with no intrinsic id, so without a stable key React reuses
+   * the element at a position rather than its identity, and the wrong row keeps
+   * the previous row's internal state. When omitted, rows fall back to their array
+   * index (safe for string/number cells and stateless custom cells).
+   */
+  rowKey?: (row: ReactNode[], index: number) => string | number;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -62,7 +72,7 @@ function densityOf(p: DataTableProps): Density {
  */
 export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<CheckboxProps>) {
   return function DataTable(props: DataTableProps) {
-    const { columns, rows, striped, bordered, selectable, onRowPress, style } = props;
+    const { columns, rows, striped, bordered, selectable, onRowPress, rowKey, style } = props;
     const density = densityOf(props);
     const { tokens } = useTheme();
 
@@ -76,20 +86,23 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View style={wrap}>
-        <View style={[skin.headerRow(tokens), skin.headerPad[density]]}>
-          {selectable ? <View style={skin.selectCol} /> : null}
+      <View style={wrap} role="table">
+        <View style={[skin.headerRow(tokens), skin.headerPad[density]]} role="row">
+          {selectable ? <View style={skin.selectCol} role="columnheader" /> : null}
           {columns.map((label, i) => (
-            <Text key={`h-${i}`} style={skin.headerCell(tokens)}>
+            <Text key={`h-${i}`} style={skin.headerCell(tokens)} role="columnheader">
               {label}
             </Text>
           ))}
         </View>
         {rows.map((row, r) => {
+          // Prefer a caller-supplied stable key so stateful custom cells keep
+          // their identity across reorder/insert/delete; fall back to the index.
+          const rowId = rowKey ? rowKey(row, r) : r;
           const cells = (
             <>
               {selectable ? (
-                <View style={[skin.selectCell, skin.cellPad[density]]}>
+                <View style={[skin.selectCell, skin.cellPad[density]]} role="cell">
                   {/* DataTable carries no per-row selection state in its public
                       API (rows are raw ReactNode cells; `selectable` only adds
                       the column), so the selection checkbox is an unselected
@@ -102,7 +115,7 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
               {columns.map((_col, c) => {
                 const cell = cellOf(row, c);
                 return (
-                  <View key={`c-${r}-${c}`} style={[skin.dataCell, skin.cellPad[density]]}>
+                  <View key={`c-${rowId}-${c}`} style={[skin.dataCell, skin.cellPad[density]]} role="cell">
                     {typeof cell === "string" || typeof cell === "number" ? (
                       <Text style={skin.cellText(tokens)}>{cell}</Text>
                     ) : (
@@ -117,9 +130,14 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
           const stripe = striped && r % 2 === 1 ? skin.stripeTint(tokens) : null;
           return onRowPress ? (
             <Pressable
-              key={`r-${r}`}
+              key={`r-${rowId}`}
               onPress={() => onRowPress(row, r)}
               android_ripple={ripple}
+              role="button"
+              // Announce the actionable row's content: read off the plain
+              // string/number cells (custom ReactNode cells carry their own
+              // labels, so they are skipped here).
+              accessibilityLabel={rowLabel(row)}
               style={({ pressed }) => [
                 skin.dataRow(tokens),
                 stripe,
@@ -130,7 +148,7 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
               {cells}
             </Pressable>
           ) : (
-            <View key={`r-${r}`} style={[skin.dataRow(tokens), stripe]}>
+            <View key={`r-${rowId}`} style={[skin.dataRow(tokens), stripe]} role="row">
               {cells}
             </View>
           );
@@ -144,4 +162,13 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
 function cellOf(row: ReactNode[], index: number): ReactNode {
   const value = row[index];
   return value == null ? "" : value;
+}
+
+// Derive a screen-reader label for a pressable row from its plain text cells.
+// Custom ReactNode cells (links, badges, inputs) carry their own labels, so only
+// the string/number cells are joined here.
+function rowLabel(row: ReactNode[]): string {
+  return row
+    .filter((cell): cell is string | number => typeof cell === "string" || typeof cell === "number")
+    .join(", ");
 }

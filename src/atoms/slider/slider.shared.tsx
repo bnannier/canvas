@@ -88,7 +88,11 @@ export function createSlider(skin: SliderSkin) {
     const { tokens } = useTheme();
     const size = sizeOf(props);
 
-    const current = clamp(value ?? min, min, max);
+    // Treat null/undefined AND NaN as "no value": fall back to `min` rather than
+    // letting NaN flow through clamp (Math.min/max propagate NaN) and poison the
+    // geometry (fillWidth/thumbLeft) and the announced aria-valuenow/accessibilityValue.
+    const raw = value == null || Number.isNaN(value) ? min : value;
+    const current = clamp(raw, min, max);
     const fraction = max > min ? (current - min) / (max - min) : 0;
 
     const trackHeight = skin.trackHeight(size);
@@ -184,6 +188,10 @@ export function createSlider(skin: SliderSkin) {
         aria-valuemax={max}
         aria-valuenow={current}
         accessibilityState={{ disabled: !!disabled }}
+        // RNW forwards neither accessibilityState nor accessibilityValue to the DOM,
+        // so pair the disabled state with an aria-disabled alias (matching the
+        // aria-valuemin/max/now aliases above) for web screen readers.
+        aria-disabled={!!disabled}
         accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
         onAccessibilityAction={onAccessibilityAction}
         style={[

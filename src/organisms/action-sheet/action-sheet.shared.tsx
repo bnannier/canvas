@@ -39,6 +39,13 @@ import { type ActionSheetSkin } from "./action-sheet.styles.js";
 
 /** A single action in the sheet. */
 export interface ActionSheetAction {
+  /**
+   * Optional stable identity for this action, used as the React key for its row.
+   * Supply it when the `actions` array can reorder or have items inserted/removed
+   * so React keeps each row associated with its logical action; falls back to the
+   * label when omitted.
+   */
+  id?: string | number;
   /** The row label. */
   label: string;
   /** Run when the row is selected (the sheet then closes). */
@@ -121,7 +128,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
     ) : null;
 
     const actionRows = actions.map((action, i) => (
-      <Fragment key={i}>
+      <Fragment key={action.id ?? action.label}>
         {skin.divider && i > 0 ? <View style={skin.divider(tokens)} /> : null}
         <Pressable
           onPress={() => selectAction(action)}
@@ -164,7 +171,17 @@ export function createActionSheet(skin: ActionSheetSkin) {
         // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
         accessibilityViewIsModal={true}
       >
-        <Pressable style={s.scrim(skin.scrimOpacity)} onPress={close} accessibilityLabel={cancelLabel}>
+        {/* The scrim dismisses on tap. It wraps the whole sheet, so it cannot be
+            hidden from assistive tech (that would hide the action rows too); give
+            it the same button role as its sibling controls so a screen reader
+            reaches a properly-roled, labeled dismiss target instead of a roleless
+            focusable backdrop. */}
+        <Pressable
+          style={s.scrim(skin.scrimOpacity)}
+          onPress={close}
+          accessibilityRole="button"
+          accessibilityLabel={cancelLabel}
+        >
           {/* A no-op press inside the stack keeps taps from falling through to the scrim. */}
           <Pressable style={[skin.stack, style]} onPress={() => {}}>
             <GlassSurface style={skin.actionsCard(tokens)}>

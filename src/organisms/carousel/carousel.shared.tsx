@@ -261,13 +261,15 @@ export function createCarousel(skin: CarouselSkin) {
                 <View style={[{ width }, skin.slide(tokens)]}>{slideBody(item)}</View>
               )}
             />
-          ) : (
+          ) : items[current] ? (
             // Pre-measurement fallback: the current slide, full-bleed, so the carousel
             // is NEVER blank even if onLayout is delayed or does not fire (some web
             // layout contexts). The paged, swipeable FlatList replaces this the moment
             // a positive width lands; the arrows/dots already page by swapping `current`.
+            // Guarded on a present item so an empty `items=[]` renders an empty
+            // viewport instead of dereferencing `undefined.content`.
             <View style={skin.slide(tokens)}>{slideBody(items[current])}</View>
-          )}
+          ) : null}
 
           {showArrows && count > 1 ? (
             <>

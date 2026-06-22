@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { BackHandler, Modal } from "react-native";
 import { View, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
@@ -76,10 +76,13 @@ export function createDrawer(skin: DrawerSkin) {
     // controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
     const open = openProp ?? internalOpen;
-    const setOpen = (next: boolean) => {
-      if (openProp === undefined) setInternalOpen(next);
-      onOpenChange?.(next);
-    };
+    const setOpen = useCallback(
+      (next: boolean) => {
+        if (openProp === undefined) setInternalOpen(next);
+        onOpenChange?.(next);
+      },
+      [openProp, onOpenChange],
+    );
 
     // Hardware back closes the open drawer. BackHandler fires on Android only
     // (the Modal's own onRequestClose also covers the system back/escape); the
@@ -94,8 +97,7 @@ export function createDrawer(skin: DrawerSkin) {
         return true;
       });
       return () => sub.remove();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
+    }, [open, setOpen]);
 
     return (
       <>
@@ -114,9 +116,16 @@ export function createDrawer(skin: DrawerSkin) {
           // elsewhere). No focus trap is attempted (hard cross-platform).
           accessibilityViewIsModal={true}
         >
-          <Pressable style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
-            {/* A no-op press inside the panel keeps taps from falling through to the scrim. */}
-            <Pressable style={s.panelPos[edge]} onPress={() => {}}>
+          {/* The dim backdrop is a dismiss affordance, not a control to land on:
+              keep it out of the focus order and unannounced (matching
+              anchored-overlay's backdrop) so web screen-reader/keyboard users
+              are not stopped on an unlabeled button. Back/escape and the trigger
+              remain the discoverable dismiss paths. */}
+          <Pressable accessible={false} style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
+            {/* A no-op press inside the panel keeps taps from falling through to
+                the scrim. It is a pure event-capture wrapper, never a control,
+                so it is hidden from assistive tech to avoid a phantom button. */}
+            <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}}>
               <View style={[skin.panelShape(edge, width, tokens), style]}>{children}</View>
             </Pressable>
           </Pressable>

@@ -84,6 +84,8 @@ export function createButton(skin: ButtonSkin) {
         disabled={disabled || loading}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
+        aria-busy={loading ? true : undefined}
         aria-expanded={props.expanded}
         android_ripple={ripple}
         style={({ pressed }) => [

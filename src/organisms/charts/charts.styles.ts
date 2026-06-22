@@ -100,13 +100,30 @@ export function horizontalValue(tokens: ColorTokens): TextStyle {
 // plot height are applied by the component.
 export const verticalBars: ViewStyle = { flexDirection: "row", alignItems: "flex-end" };
 
-// One column wrapping a vertical bar (flex-1 items-stretch).
+// One column wrapping a vertical bar (flex-1 items-stretch). It also sizes the
+// bar to its share of the plot via flex (justify-end so the bar foots on the
+// baseline and the value sits above it).
 export const verticalColumn: ViewStyle = {
   flexGrow: 1,
   flexShrink: 1,
   flexBasis: "0%",
   alignItems: "stretch",
+  justifyContent: "flex-end",
 };
+
+// The value shown above each vertical bar (mb-1 text-center text-xs font-medium
+// text-card-foreground). Mirrors `horizontalValue` so the magnitude is visible
+// (and reachable as text by assistive tech) in the vertical orientation too.
+export function verticalValue(tokens: ColorTokens): TextStyle {
+  return {
+    marginBottom: 4,
+    textAlign: "center",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "500",
+    color: tokens["card-foreground"],
+  };
+}
 
 // A vertical bar: rounded-t plus its fill and height (set by the component). The top
 // corners are rounded (radius from the skin); the foot sits on the baseline.

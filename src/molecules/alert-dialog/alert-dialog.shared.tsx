@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
@@ -48,8 +48,15 @@ export interface AlertDialogProps {
   narrow?: boolean;
   small?: boolean;
   large?: boolean;
-  // Body: render a confirmation field ("Type DELETE to confirm") in the panel.
+  // Body: render a confirmation field that gates confirm. The user must type the
+  // `confirmText` token (default "DELETE") for the confirm action to enable; until
+  // it matches exactly, confirm is disabled and `handleConfirm` is a no-op. This is
+  // a real safety gate, not a decorative field.
   withInput?: boolean;
+  /** The token the confirmation field must match to enable confirm (default
+   *  "DELETE"). Only used when `withInput` is set; drives the label, placeholder,
+   *  and the gate. */
+  confirmText?: string;
   // Confirm intent (default is a primary confirm).
   destructive?: boolean;
   // Action handlers.
@@ -91,6 +98,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
       open: openProp,
       onOpenChange,
       withInput,
+      confirmText = "DELETE",
       destructive,
       onConfirm,
       onCancel,
@@ -108,14 +116,32 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
       onOpenChange?.(next);
     };
 
+    // Confirmation-field text (only meaningful when `withInput` is set). The
+    // confirm action is gated on an exact match with `confirmText`, so the field
+    // is a real safety check rather than decorative.
+    const [confirmInput, setConfirmInput] = useState("");
+    const confirmGated = !!withInput && confirmInput !== confirmText;
+
+    // Stable ids so web screen readers can wire the dialog's accessible name and
+    // description (aria-labelledby/aria-describedby) and tie the confirmation
+    // label to its field. useId yields one collision-free base per instance.
+    const baseId = useId();
+    const titleId = `${baseId}-title`;
+    const descriptionId = `${baseId}-description`;
+    const inputLabelId = `${baseId}-input-label`;
+
     const width = widthOf(props);
 
     const handleConfirm = () => {
+      // The confirmation field, when present, must match before confirm fires.
+      if (confirmGated) return;
       onConfirm?.();
+      setConfirmInput("");
       setOpen(false);
     };
     const handleCancel = () => {
       onCancel?.();
+      setConfirmInput("");
       setOpen(false);
     };
 
@@ -140,12 +166,16 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
           </Pressable>
           <Pressable
             onPress={handleConfirm}
+            disabled={confirmGated}
             accessibilityRole="button"
+            accessibilityState={{ disabled: confirmGated }}
+            aria-disabled={confirmGated || undefined}
             android_ripple={ripple}
             style={({ pressed }) => [
               skin.capsuleCell!,
               skin.confirmFill!(tokens, !!destructive),
-              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+              confirmGated ? { opacity: 0.4 } : null,
+              !confirmGated && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
           >
             <Text style={skin.confirmLabelStyle!(tokens, !!destructive)}>{confirmLabel}</Text>
@@ -157,11 +187,11 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             {cancelLabel}
           </Button>
           {destructive ? (
-            <Button destructive small={skin.buttonSmall} onPress={handleConfirm}>
+            <Button destructive small={skin.buttonSmall} disabled={confirmGated} onPress={handleConfirm}>
               {confirmLabel}
             </Button>
           ) : (
-            <Button primary small={skin.buttonSmall} onPress={handleConfirm}>
+            <Button primary small={skin.buttonSmall} disabled={confirmGated} onPress={handleConfirm}>
               {confirmLabel}
             </Button>
           )}
@@ -180,19 +210,51 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
         ) : null}
         {open ? (
           <View
-            // Tell assistive tech the content behind this modal overlay is inert
-            // while the alert dialog is open (iOS VoiceOver honors this; a no-op
-            // elsewhere). No focus trap is attempted (hard cross-platform).
+            // The overlay carries the dialog semantics so assistive tech announces
+            // it. `role="alertdialog"` + `aria-modal` make web screen readers treat
+            // it as a modal alert dialog and the page behind it as inert; the title
+            // (and description, when present) are wired as the accessible name and
+            // description via aria-labelledby/aria-describedby. `accessibilityViewIsModal`
+            // keeps iOS VoiceOver honoring the inert backdrop. No focus trap is
+            // attempted (hard cross-platform).
+            role="alertdialog"
             accessibilityViewIsModal={true}
+            aria-modal={true}
+            aria-labelledby={title != null ? titleId : undefined}
+            aria-describedby={description != null ? descriptionId : undefined}
             style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}
           >
             <GlassSurface style={[s.cardBase, skin.card(tokens), s.panelWidth[width], style]}>
-              {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
-              {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
+              {title != null ? (
+                <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
+                  {title}
+                </Text>
+              ) : null}
+              {description != null ? (
+                <Text nativeID={descriptionId} style={skin.description(tokens)}>
+                  {description}
+                </Text>
+              ) : null}
               {withInput ? (
-                <View style={skin.inputBlock}>
-                  <Text style={skin.inputLabel(tokens)}>Type DELETE to confirm</Text>
-                  <Input placeholder="DELETE" />
+                // The confirmation field is wired to its visible label: the label
+                // Text carries a stable id and the group is associated to it via
+                // aria-labelledby (role="group" so web screen readers name the
+                // field by the visible label, independent of the placeholder).
+                <View
+                  style={skin.inputBlock}
+                  role="group"
+                  aria-labelledby={inputLabelId}
+                >
+                  <Text nativeID={inputLabelId} style={skin.inputLabel(tokens)}>
+                    Type {confirmText} to confirm
+                  </Text>
+                  <Input
+                    value={confirmInput}
+                    onChangeText={setConfirmInput}
+                    placeholder={confirmText}
+                    accessibilityLabel={`Type ${confirmText} to confirm`}
+                    aria-labelledby={inputLabelId}
+                  />
                 </View>
               ) : null}
               {actionRow}

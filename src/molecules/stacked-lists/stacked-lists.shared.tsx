@@ -45,6 +45,11 @@ import { type StackedListSkin } from "./stacked-lists.styles.js";
 
 /** One row in the list. */
 export interface StackedListItem {
+  /** Stable identity for the row's React key, so reorder/insert/delete keeps a
+   *  row mapped to the same item (preserving in-progress press/hover/focus state
+   *  and avoiding needless avatar remounts). The array index is the fallback,
+   *  which is only safe for static, never-reordered lists. */
+  id?: string | number;
   /** Primary line, bold (e.g. a person's name). */
   name: string;
   /** Secondary line, smaller and muted (e.g. an email or role). */
@@ -94,15 +99,6 @@ function variantOf(p: StackedListProps): Variant {
   if (p.clickable) return "clickable";
   if (p.card) return "card";
   return "two-line";
-}
-
-// Two initials from a name, used when an item supplies no explicit initials and
-// no photo (e.g. "Rachel Chen" -> "RC").
-function initialsFrom(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 export function createStackedList(skin: StackedListSkin) {
@@ -171,18 +167,22 @@ export function createStackedList(skin: StackedListSkin) {
     );
 
     const renderAvatar = (item: StackedListItem) => (
-      <Avatar src={item.avatar} name={item.name}>
-        {item.initials ?? initialsFrom(item.name)}
-      </Avatar>
+      // `name` flows the human name to Avatar for the accessible label/alt text;
+      // an explicit `item.initials` wins verbatim through Avatar's dedicated
+      // `initials` prop, otherwise Avatar reduces the name to its initials.
+      <Avatar src={item.avatar} name={item.name} initials={item.initials} />
     );
 
     const rows = items.map((item, index) => {
       const divider = ruled && index < lastIndex ? skin.rowDivider(tokens) : null;
+      // Stable identity when the caller supplies one; the array index is the
+      // fallback for static lists only (see StackedListItem.id).
+      const key = item.id ?? index;
 
       if (variant === "clickable") {
         return (
           <Pressable
-            key={index}
+            key={key}
             style={({ pressed }) => [skin.rowBase, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed), divider]}
             android_ripple={ripple}
             onPress={(event) => onPressItem?.(index, event)}
@@ -192,13 +192,24 @@ export function createStackedList(skin: StackedListSkin) {
             {renderColumn(item)}
             {renderTrailing(item)}
             {rowMenu ? renderMenu(index) : null}
-            <Text style={skin.mutedLabel(tokens)}>{"›"}</Text>
+            {/* Decorative drilldown chevron: the row's `button` role already
+                conveys it is actionable, so hide the glyph from assistive tech
+                (aria-hidden is the RNW alias; importantForAccessibility is not
+                forwarded on web). */}
+            <Text
+              style={skin.mutedLabel(tokens)}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              aria-hidden
+            >
+              {"›"}
+            </Text>
           </Pressable>
         );
       }
 
       return (
-        <View key={index} style={[skin.rowBase, divider]}>
+        <View key={key} style={[skin.rowBase, divider]}>
           {renderAvatar(item)}
           {renderColumn(item)}
           {renderTrailing(item)}

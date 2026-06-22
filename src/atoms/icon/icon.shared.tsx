@@ -600,6 +600,18 @@ export interface IconProps {
   size?: number;
   // Render the whole gallery instead of a single glyph.
   set?: boolean;
+  /**
+   * Accessible name for a MEANINGFUL standalone icon (one that conveys
+   * information not repeated in adjacent text, e.g. an icon-only button's glyph).
+   * Marks the glyph `role="img"` with this label on web and native.
+   */
+  accessibilityLabel?: string;
+  /**
+   * Mark a DECORATIVE/ornamental glyph (one paired with a text label, a separator
+   * chevron, an empty-state illustration) so assistive tech skips it. Hides it via
+   * aria-hidden on web and importantForAccessibility on native.
+   */
+  decorative?: boolean;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -689,13 +701,43 @@ export function createIcon(skin: IconSkin) {
       );
     }
 
-    return (
+    const wrapped = props.decorative || props.accessibilityLabel != null;
+    const glyph = (
       <Glyph
         shapes={ICONS[nameOf(props)]}
         size={props.size ?? 24}
         stroke={strokeOf(props, tokens, dark)}
-        style={props.style}
+        style={wrapped ? undefined : props.style}
       />
     );
+
+    // A decorative glyph is hidden from assistive tech (the adjacent text carries
+    // the meaning); a labeled glyph is announced as an image with its name. The
+    // aria-* aliases cover web (react-native-web drops the RN-only a11y props).
+    if (props.decorative) {
+      return (
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          aria-hidden
+          style={props.style}
+        >
+          {glyph}
+        </View>
+      );
+    }
+    if (props.accessibilityLabel != null) {
+      return (
+        <View
+          accessibilityRole="image"
+          accessibilityLabel={props.accessibilityLabel}
+          aria-label={props.accessibilityLabel}
+          style={props.style}
+        >
+          {glyph}
+        </View>
+      );
+    }
+    return glyph;
   };
 }

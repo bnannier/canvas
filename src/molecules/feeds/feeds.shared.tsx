@@ -43,6 +43,14 @@ import * as s from "./feeds.styles.js";
 
 /** One event in the feed. */
 export interface FeedItem {
+  /**
+   * Stable identity for this event, used as the row's React key. Supply it for
+   * mutable or reordered feeds (the common timeline case is prepending the
+   * newest event): without it the rows fall back to their array index, which
+   * desyncs per-row state and press feedback when items are inserted at the
+   * front or reordered.
+   */
+  id?: string | number;
   /** Actor who performed the action, rendered bold (e.g. "Rachel Chen"). */
   actor?: string;
   /** The action text, muted (e.g. "approved the request"). */
@@ -149,6 +157,7 @@ export function createFeed(skin: FeedSkin) {
       // Avatar lead: each row leads with the actor's avatar; rows are ruled by a
       // hairline between items (the last row keeps no rule).
       const rows = items.map((item, index) => {
+        const rowKey = item.id ?? index;
         const divider = index < lastIndex ? skin.avatarDivider(tokens) : null;
         const rowStyle: StyleProp<ViewStyle> = [s.avatarRow, skin.avatarRowPad(compact), divider];
         const inner: ReactNode = (
@@ -162,7 +171,7 @@ export function createFeed(skin: FeedSkin) {
         if (onItemPress) {
           return (
             <Pressable
-              key={index}
+              key={rowKey}
               accessibilityRole="button"
               onPress={() => onItemPress(index)}
               android_ripple={ripple}
@@ -176,7 +185,7 @@ export function createFeed(skin: FeedSkin) {
           );
         }
         return (
-          <View key={index} style={rowStyle}>
+          <View key={rowKey} style={rowStyle}>
             {inner}
           </View>
         );
@@ -187,6 +196,7 @@ export function createFeed(skin: FeedSkin) {
     // Connector lead: a bordered node per row with a vertical line linking each
     // event to the next. The line is dropped on the final item.
     const rows = items.map((item, index) => {
+      const rowKey = item.id ?? index;
       const isLast = index === lastIndex;
       const rowStyle: StyleProp<ViewStyle> = [s.connectorRow, isLast ? null : skin.connectorRowGap(compact)];
       const inner: ReactNode = (
@@ -210,7 +220,7 @@ export function createFeed(skin: FeedSkin) {
       if (onItemPress) {
         return (
           <Pressable
-            key={index}
+            key={rowKey}
             accessibilityRole="button"
             onPress={() => onItemPress(index)}
             android_ripple={ripple}
@@ -224,7 +234,7 @@ export function createFeed(skin: FeedSkin) {
         );
       }
       return (
-        <View key={index} style={rowStyle}>
+        <View key={rowKey} style={rowStyle}>
           {inner}
         </View>
       );

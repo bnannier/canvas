@@ -188,7 +188,13 @@ export function createCommand(skin: CommandSkin) {
 
     return (
       <View style={[s.triggerWrapper, open ? s.triggerWrapperLifted : null, style]}>
-        <Pressable style={s.triggerRow(tokens)} onPress={() => setOpen(!open)}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open }}
+          aria-expanded={open}
+          style={s.triggerRow(tokens)}
+          onPress={() => setOpen(!open)}
+        >
           <Icon search muted size={14} />
           <Text style={s.triggerLabel(tokens)}>Search...</Text>
           <Kbd style={s.triggerKbd}>⌘K</Kbd>

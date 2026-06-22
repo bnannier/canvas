@@ -142,6 +142,7 @@ export function createPagination(skin: PaginationSkin) {
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={{ disabled }}
+        aria-disabled={disabled}
       >
         <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{glyph}</Text>
       </Pressable>
@@ -231,6 +232,8 @@ export function createPagination(skin: PaginationSkin) {
               android_ripple={ripple ? ripple(tokens, false) : undefined}
               accessibilityRole="button"
               accessibilityLabel="Rows per page"
+              accessibilityState={{ disabled: !!disabled }}
+              aria-disabled={!!disabled}
             >
               <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{pageSize}</Text>
               <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>▾</Text>
@@ -283,7 +286,8 @@ export function createPagination(skin: PaginationSkin) {
               accessibilityRole="button"
               accessibilityLabel={`Page ${p}`}
               accessibilityState={{ selected, disabled: !!disabled }}
-              aria-selected={selected}
+              aria-current={selected ? "page" : undefined}
+              aria-disabled={!!disabled}
             >
               <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size]]}>{p}</Text>
             </Pressable>

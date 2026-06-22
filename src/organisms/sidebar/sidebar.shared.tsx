@@ -62,6 +62,13 @@ export interface SidebarSkin {
 
 /** One nav row: a label, an optional leading icon glyph, an optional count. */
 export interface SidebarItem {
+  /**
+   * Stable identity for this row, used as its React key so inserting or
+   * reordering rows reconciles by item rather than by position. Falls back to
+   * the row label when omitted, so supply an `id` when two rows can share a
+   * label.
+   */
+  id?: string | number;
   /** Row label (e.g. "Dashboard"). */
   label: string;
   /** Leading icon glyph rendered before the label (e.g. an emoji or symbol). */
@@ -72,6 +79,12 @@ export interface SidebarItem {
 
 /** A titled group of nav rows. */
 export interface SidebarSection {
+  /**
+   * Stable identity for this section, used as its React key so inserting or
+   * reordering sections reconciles by section rather than by position. Falls
+   * back to the section title when omitted.
+   */
+  id?: string | number;
   /** Optional muted heading shown above the group. */
   title?: string;
   /** Rows in this group. */
@@ -121,14 +134,25 @@ export function createSidebar(skin: SidebarSkin) {
     // section. Sections always win when both are supplied.
     const groups: SidebarSection[] = sections ?? (items ? [{ items }] : []);
 
-    // Active match is by label or by flat index across every row in order.
-    const isActive = (item: SidebarItem, flatIndex: number): boolean => {
-      if (active == null) return false;
-      if (typeof active === "number") return active === flatIndex;
-      return active === item.label;
-    };
+    // Resolve the active row to a SINGLE flat index up front: scan the flattened
+    // rows in order and pick the FIRST whose flat index (numeric `active`) or
+    // label (string `active`) matches. Matching against this one resolved index
+    // guarantees exactly one active row even when two rows share a label.
+    const activeIndex = ((): number => {
+      if (active == null) return -1;
+      let scan = -1;
+      for (const section of groups) {
+        for (const item of section.items) {
+          scan += 1;
+          if (typeof active === "number" ? active === scan : active === item.label) {
+            return scan;
+          }
+        }
+      }
+      return -1;
+    })();
 
-    // Running flat index so label/index matching and onSelect agree across groups.
+    // Running flat index so index matching and onSelect agree across groups.
     let flat = -1;
 
     // Sidebar joins the functional glass layer: GlassSurface paints native Liquid
@@ -142,17 +166,17 @@ export function createSidebar(skin: SidebarSkin) {
         ]}
       >
         {groups.map((section, gi) => (
-          <View key={gi} style={skin.group}>
+          <View key={section.id ?? section.title ?? gi} style={skin.group}>
             {section.title != null ? (
               <Text style={skin.sectionTitle(tokens)}>{section.title}</Text>
             ) : null}
             {section.items.map((item) => {
               flat += 1;
               const index = flat;
-              const activeRow = isActive(item, index);
+              const activeRow = index === activeIndex;
               return (
                 <Pressable
-                  key={index}
+                  key={item.id ?? item.label}
                   android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                   style={({ pressed }) => [
                     skin.row(tokens, density),

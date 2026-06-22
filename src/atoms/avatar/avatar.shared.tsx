@@ -46,10 +46,18 @@ export interface AvatarProps {
   src?: string;
   /** Alias for `src`, for callers that think in terms of a native image uri. */
   uri?: string;
-  /** Initials fallback shown when there is no photo (e.g. "AO"). */
+  /** Full name. Drives the initials fallback AND the accessible label/alt text. */
   name?: string;
+  /** Ready-made initials, used verbatim as the glyph (overrides `name`/`children`). */
+  initials?: string;
   /** Same as `name`; the rendered initials when no photo is supplied. */
   children?: ReactNode;
+  /**
+   * Accessible name for the avatar (the photo's alt text and, when pressable, the
+   * button's label). Falls back to `name`, then string `children`. Set it for a
+   * photo-only or pressable avatar that has no `name`.
+   */
+  accessibilityLabel?: string;
   // Size (pick one; default is the 40px row avatar).
   small?: boolean;
   large?: boolean;
@@ -125,11 +133,13 @@ function labelStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size): TextStyl
 /** Build an Avatar component from a platform skin. */
 export function createAvatar(skin: AvatarSkin) {
   return function Avatar(props: AvatarProps) {
-    const { src, uri, name, children, ring, onPress, style } = props;
+    const { src, uri, name, initials, children, ring, accessibilityLabel, onPress, style } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
     const shape = shapeOf(props);
     const photo = src ?? uri;
+    // The accessible name: an explicit label, else the full name, else string children.
+    const label = accessibilityLabel ?? name ?? (typeof children === "string" ? children : undefined);
 
     const container: StyleProp<ViewStyle> = [containerStyle(tokens, skin, size, shape, !!ring), style];
 
@@ -139,14 +149,16 @@ export function createAvatar(skin: AvatarSkin) {
         <Image
           style={imageStyle(skin, shape)}
           source={{ uri: photo }}
-          accessibilityLabel={name}
+          accessibilityLabel={label}
+          aria-label={label}
           resizeMode="cover"
         />
       );
     } else {
+      // Explicit `initials` win verbatim; otherwise reduce the name / string children.
       const source = name ?? (typeof children === "string" ? children : "");
-      const initials = source ? initialsFrom(source) : "";
-      inner = initials ? <Text style={labelStyle(tokens, skin, size)}>{initials}</Text> : null;
+      const glyph = initials ?? (source ? initialsFrom(source) : "");
+      inner = glyph ? <Text style={labelStyle(tokens, skin, size)}>{glyph}</Text> : null;
     }
 
     if (onPress) {
@@ -159,6 +171,8 @@ export function createAvatar(skin: AvatarSkin) {
           ]}
           onPress={onPress}
           accessibilityRole="button"
+          accessibilityLabel={label}
+          aria-label={label}
         >
           {inner}
         </Pressable>

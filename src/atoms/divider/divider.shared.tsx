@@ -107,8 +107,13 @@ export function createDivider(skin: DividerSkin) {
       };
       return (
         <View
-          // The whole flank-line + label row reads as one structural separator.
-          role="separator"
+          // For a text label the whole flank-line + label row reads as one structural
+          // separator. For the action pattern the child is an interactive control (e.g. a
+          // Button), and a `separator` is a structural ARIA role that does not expect
+          // focusable/interactive descendants, so we drop the container role there: the
+          // wrapper is a plain group and the child's own role (button/link/...) is what
+          // assistive tech exposes. The two flanking hairlines still carry the visual break.
+          role={isText ? "separator" : undefined}
           style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
         >
           <View style={[flankRule, fill]} />
