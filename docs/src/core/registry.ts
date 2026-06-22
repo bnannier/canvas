@@ -187,6 +187,13 @@ import e_atoms_input_dont_2_do from "./examples/atoms/input/dont-2-do";
 import e_atoms_input_dont_2_dont from "./examples/atoms/input/dont-2-dont";
 import e_atoms_input_dont_3_do from "./examples/atoms/input/dont-3-do";
 import e_atoms_input_dont_3_dont from "./examples/atoms/input/dont-3-dont";
+import e_atoms_input_otp_example_0 from "./examples/atoms/input-otp/example-0";
+import e_atoms_input_otp_example_1 from "./examples/atoms/input-otp/example-1";
+import e_atoms_input_otp_example_2 from "./examples/atoms/input-otp/example-2";
+import e_atoms_input_otp_example_3 from "./examples/atoms/input-otp/example-3";
+import e_atoms_input_otp_example_4 from "./examples/atoms/input-otp/example-4";
+import e_atoms_input_otp_dont_0_do from "./examples/atoms/input-otp/dont-0-do";
+import e_atoms_input_otp_dont_0_dont from "./examples/atoms/input-otp/dont-0-dont";
 import e_atoms_kbd_example_0 from "./examples/atoms/kbd/example-0";
 import e_atoms_kbd_example_1 from "./examples/atoms/kbd/example-1";
 import e_atoms_kbd_example_2 from "./examples/atoms/kbd/example-2";
@@ -208,6 +215,15 @@ import e_atoms_listbox_dont_1_do from "./examples/atoms/listbox/dont-1-do";
 import e_atoms_listbox_dont_1_dont from "./examples/atoms/listbox/dont-1-dont";
 import e_atoms_listbox_dont_2_do from "./examples/atoms/listbox/dont-2-do";
 import e_atoms_listbox_dont_2_dont from "./examples/atoms/listbox/dont-2-dont";
+import e_atoms_number_input_example_0 from "./examples/atoms/number-input/example-0";
+import e_atoms_number_input_example_1 from "./examples/atoms/number-input/example-1";
+import e_atoms_number_input_example_2 from "./examples/atoms/number-input/example-2";
+import e_atoms_number_input_example_3 from "./examples/atoms/number-input/example-3";
+import e_atoms_number_input_example_4 from "./examples/atoms/number-input/example-4";
+import e_atoms_number_input_dont_0_do from "./examples/atoms/number-input/dont-0-do";
+import e_atoms_number_input_dont_0_dont from "./examples/atoms/number-input/dont-0-dont";
+import e_atoms_number_input_dont_1_do from "./examples/atoms/number-input/dont-1-do";
+import e_atoms_number_input_dont_1_dont from "./examples/atoms/number-input/dont-1-dont";
 import e_atoms_pagination_example_0 from "./examples/atoms/pagination/example-0";
 import e_atoms_pagination_example_1 from "./examples/atoms/pagination/example-1";
 import e_atoms_pagination_example_2 from "./examples/atoms/pagination/example-2";
@@ -471,6 +487,12 @@ import e_molecules_code_block_dont_2_do from "./examples/molecules/code-block/do
 import e_molecules_code_block_dont_2_dont from "./examples/molecules/code-block/dont-2-dont";
 import e_molecules_code_block_dont_3_do from "./examples/molecules/code-block/dont-3-do";
 import e_molecules_code_block_dont_3_dont from "./examples/molecules/code-block/dont-3-dont";
+import e_molecules_collapsible_example_0 from "./examples/molecules/collapsible/example-0";
+import e_molecules_collapsible_example_1 from "./examples/molecules/collapsible/example-1";
+import e_molecules_collapsible_example_2 from "./examples/molecules/collapsible/example-2";
+import e_molecules_collapsible_example_3 from "./examples/molecules/collapsible/example-3";
+import e_molecules_collapsible_dont_0_do from "./examples/molecules/collapsible/dont-0-do";
+import e_molecules_collapsible_dont_0_dont from "./examples/molecules/collapsible/dont-0-dont";
 import e_molecules_description_lists_example_0 from "./examples/molecules/description-lists/example-0";
 import e_molecules_description_lists_example_1 from "./examples/molecules/description-lists/example-1";
 import e_molecules_description_lists_example_2 from "./examples/molecules/description-lists/example-2";
@@ -592,6 +614,11 @@ import e_organisms_calendar_dont_0_do from "./examples/organisms/calendar/dont-0
 import e_organisms_calendar_dont_0_dont from "./examples/organisms/calendar/dont-0-dont";
 import e_organisms_calendar_dont_1_do from "./examples/organisms/calendar/dont-1-do";
 import e_organisms_calendar_dont_1_dont from "./examples/organisms/calendar/dont-1-dont";
+import e_organisms_carousel_example_0 from "./examples/organisms/carousel/example-0";
+import e_organisms_carousel_example_1 from "./examples/organisms/carousel/example-1";
+import e_organisms_carousel_example_2 from "./examples/organisms/carousel/example-2";
+import e_organisms_carousel_dont_0_do from "./examples/organisms/carousel/dont-0-do";
+import e_organisms_carousel_dont_0_dont from "./examples/organisms/carousel/dont-0-dont";
 import e_organisms_charts_example_0 from "./examples/organisms/charts/example-0";
 import e_organisms_charts_example_1 from "./examples/organisms/charts/example-1";
 import e_organisms_charts_example_2 from "./examples/organisms/charts/example-2";
@@ -721,6 +748,13 @@ import e_organisms_tabs_dont_1_do from "./examples/organisms/tabs/dont-1-do";
 import e_organisms_tabs_dont_1_dont from "./examples/organisms/tabs/dont-1-dont";
 import e_organisms_tabs_dont_2_do from "./examples/organisms/tabs/dont-2-do";
 import e_organisms_tabs_dont_2_dont from "./examples/organisms/tabs/dont-2-dont";
+import e_organisms_toast_example_0 from "./examples/organisms/toast/example-0";
+import e_organisms_toast_example_1 from "./examples/organisms/toast/example-1";
+import e_organisms_toast_example_2 from "./examples/organisms/toast/example-2";
+import e_organisms_toast_example_3 from "./examples/organisms/toast/example-3";
+import e_organisms_toast_example_4 from "./examples/organisms/toast/example-4";
+import e_organisms_toast_dont_0_do from "./examples/organisms/toast/dont-0-do";
+import e_organisms_toast_dont_0_dont from "./examples/organisms/toast/dont-0-dont";
 
 // Every documented component, keyed by its source directory (the `.md` stem). The
 // consuming page maps a URL slug to its dir via the components data, then renders
@@ -951,6 +985,20 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "textarea", do: { caption: "Give a textarea a min-height for several lines and resize-y so it can grow with the content.", code: "<View style={{ maxWidth: 320 }}>\n  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Notes</Text>\n  <Textarea rows={4} value=\"Describe the change in enough detail that a teammate could follow it…\" />\n</View>", render: e_atoms_input_dont_3_do }, dont: { caption: "A one-line, resize-none textarea clips multi-line input so users cannot review what they wrote.", code: "<View style={{ maxWidth: 320 }}>\n  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Notes</Text>\n  <TextInput multiline value=\"Describe the change in enough detail that a teammate could follow it…\" style={{ height: 36, width: \"100%\", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 4, fontSize: 14, lineHeight: 20, color: tokens.foreground, overflow: \"hidden\" }} />\n</View>", render: e_atoms_input_dont_3_dont } },
     ],
   },
+  "input-otp": {
+    dir: "input-otp",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<InputOTP value=\"123\" onChange={() => {}} />", render: e_atoms_input_otp_example_0 },
+      { label: "Length - six vs four digits", code: "<View style={{ flexDirection: \"column\", gap: 16 }}>\n  <InputOTP length={6} value=\"1234\" onChange={() => {}} />\n  <InputOTP length={4} value=\"12\" onChange={() => {}} />\n</View>", render: e_atoms_input_otp_example_1 },
+      { label: "Masked", code: "<InputOTP masked value=\"1234\" onChange={() => {}} />", render: e_atoms_input_otp_example_2 },
+      { label: "Sizes", code: "<View style={{ flexDirection: \"column\", gap: 16 }}>\n  <InputOTP small value=\"123\" onChange={() => {}} />\n  <InputOTP value=\"123\" onChange={() => {}} />\n  <InputOTP large value=\"123\" onChange={() => {}} />\n</View>", render: e_atoms_input_otp_example_3 },
+      { label: "Disabled", code: "<InputOTP disabled value=\"1234\" onChange={() => {}} />", render: e_atoms_input_otp_example_4 },
+    ],
+    donts: [
+      { do: { caption: "Size the field to the real code length with `length`, so every digit has its own cell and the user can see how many remain.", code: "<InputOTP length={6} value=\"123\" onChange={() => {}} />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked value=\"123456\" onChange={() => {}} />", render: e_atoms_input_otp_dont_0_dont } },
+    ],
+  },
   "kbd": {
     dir: "kbd",
     category: "atoms",
@@ -980,6 +1028,21 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Prefer a native select for simple lists", do: { caption: "For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.", code: "<Select open value=\"Yes\" options={[\"Yes\", \"No\"]} style={{ width: 192 }} />", render: e_atoms_listbox_dont_0_do }, dont: { caption: "A custom listbox for two short options is heavier than it needs to be and worse on mobile.", code: "<Listbox bordered style={{ width: 192 }} items={[\n    { label: \"Yes\", selected: true },\n    { label: \"No\" }\n  ]} />", render: e_atoms_listbox_dont_0_dont } },
       { title: "single", do: { caption: "Show exactly one checkmark, mirror it in the trigger value, and close the panel on pick.", code: "<Listbox bordered style={{ width: 224 }} items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" },\n    { label: \"Platform\" }\n  ]} />", render: e_atoms_listbox_dont_1_do }, dont: { caption: "Single-select with two checkmarks lies about state: only one option can be the value.", code: "<Listbox bordered style={{ width: 224 }} items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: true },\n    { label: \"Design\" },\n    { label: \"Platform\" }\n  ]} />", render: e_atoms_listbox_dont_1_dont } },
       { title: "multi", do: { caption: "Keep the panel open, toggle each option's own checkmark, and summarize the count in the trigger.", code: "<View style={{ width: 224, gap: 4 }}>\n  <View style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"space-between\", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>3 selected</Text>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>▾</Text>\n  </View>\n  <Listbox multi bordered items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: true },\n    { label: \"Design\" },\n    { label: \"Platform\", selected: true }\n  ]} />\n</View>", render: e_atoms_listbox_dont_2_do }, dont: { caption: "Don't close on each pick or echo only the last choice: multi-select needs to keep all selections visible.", code: "<View style={{ width: 224, gap: 4 }}>\n  <View style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"space-between\", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Backend</Text>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>▾</Text>\n  </View>\n  <Listbox multi bordered items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: true },\n    { label: \"Design\" },\n    { label: \"Platform\", selected: true }\n  ]} />\n</View>", render: e_atoms_listbox_dont_2_dont } },
+    ],
+  },
+  "number-input": {
+    dir: "number-input",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<NumberInput value={3} min={0} max={10} onChange={() => {}} />", render: e_atoms_number_input_example_0 },
+      { label: "Sizes", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 16 }}>\n  <NumberInput small value={2} min={0} max={10} onChange={() => {}} />\n  <NumberInput value={2} min={0} max={10} onChange={() => {}} />\n  <NumberInput large value={2} min={0} max={10} onChange={() => {}} />\n</View>", render: e_atoms_number_input_example_1 },
+      { label: "With min / max", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 16 }}>\n  <NumberInput value={0} min={0} max={5} onChange={() => {}} />\n  <NumberInput value={5} min={0} max={5} onChange={() => {}} />\n</View>", render: e_atoms_number_input_example_2 },
+      { label: "Stepped", code: "<NumberInput value={20} min={0} max={100} step={10} onChange={() => {}} />", render: e_atoms_number_input_example_3 },
+      { label: "Disabled", code: "<NumberInput disabled value={4} min={0} max={10} onChange={() => {}} />", render: e_atoms_number_input_example_4 },
+    ],
+    donts: [
+      { title: "Bounds", do: { caption: "Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.", code: "<View style={{ gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Quantity</Text>\n  <NumberInput value={1} min={1} max={9} onChange={() => {}} />\n</View>", render: e_atoms_number_input_dont_0_do }, dont: { caption: "Leaving the range unbounded lets the user push the count below zero or past what the form can accept.", code: "<NumberInput value={1} onChange={() => {}} />", render: e_atoms_number_input_dont_0_dont } },
+      { title: "Step", do: { caption: "Match `step` to the real increment, so each tap moves the value by an amount that makes sense for the field.", code: "<NumberInput value={30} min={0} max={120} step={5} onChange={() => {}} />", render: e_atoms_number_input_dont_1_do }, dont: { caption: "A step of 1 on a field that only takes round numbers makes the user tap many times to reach a usable value.", code: "<NumberInput value={30} min={0} max={120} step={1} onChange={() => {}} />", render: e_atoms_number_input_dont_1_dont } },
     ],
   },
   "pagination": {
@@ -1364,6 +1427,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Inline", do: { caption: "Reserve inline code for short tokens; move anything multi-line into a block.", code: "<View style={{ maxWidth: 360, gap: 6 }}>\n  <Text style={{ fontSize: 14, lineHeight: 28 }}>Run the setup command:</Text>\n  <CodeBlock code={`npm install @olympusoss/canvas\nnpm run build`} />\n</View>", render: e_molecules_code_block_dont_3_do }, dont: { caption: "A long, multi-step command crammed inline wraps mid-token and offers no horizontal scroll.", code: "<View style={{ maxWidth: 360, flexDirection: \"row\", flexWrap: \"wrap\", alignItems: \"center\" }}>\n  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}>Run </Text>\n  <View style={{ alignSelf: \"flex-start\", borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.muted, paddingHorizontal: 6, paddingVertical: 2 }}>\n    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: \"monospace\" }}>npm install @olympusoss/canvas && npm run build && npm run preview</Text>\n  </View>\n  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}> to start.</Text>\n</View>", render: e_molecules_code_block_dont_3_dont } },
     ],
   },
+  "collapsible": {
+    dir: "collapsible",
+    category: "molecules",
+    examples: [
+      { label: "Default", code: "<Collapsible title=\"Shipping details\">\n  <Text>Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.</Text>\n</Collapsible>", render: e_molecules_collapsible_example_0 },
+      { label: "Open by default", code: "<Collapsible title=\"What is Canvas?\" defaultOpen>\n  <Text>A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web.</Text>\n</Collapsible>", render: e_molecules_collapsible_example_1 },
+      { label: "Disabled", code: "<Collapsible title=\"Advanced settings (coming soon)\" disabled>\n  <Text>Not available yet.</Text>\n</Collapsible>", render: e_molecules_collapsible_example_2 },
+      { label: "Custom trigger", code: "<Collapsible\n  trigger={<Text>Order #1024 — 3 items</Text>}\n  defaultOpen\n>\n  <Text>Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.</Text>\n</Collapsible>", render: e_molecules_collapsible_example_3 },
+    ],
+    donts: [
+      { do: { caption: "Use one Collapsible to hide a single block of secondary detail behind a clear label, and let the chevron carry the open/closed affordance.", code: "<Collapsible title=\"Returns policy\">\n  <Text>30-day returns, no questions asked. Refunds post within 5 business days.</Text>\n</Collapsible>", render: e_molecules_collapsible_dont_0_do }, dont: { caption: "Don't reach for a Collapsible when you have several related, peer sections; that is an Accordion's job, and a stack of standalone disclosures loses the single-open coordination.", code: "<View>\n  <Collapsible title=\"Billing\"><Text>Manage your plan.</Text></Collapsible>\n  <Collapsible title=\"Team\"><Text>Invite teammates.</Text></Collapsible>\n  <Collapsible title=\"Security\"><Text>Two-factor authentication.</Text></Collapsible>\n</View>", render: e_molecules_collapsible_dont_0_dont } },
+    ],
+  },
   "description-lists": {
     dir: "description-lists",
     category: "molecules",
@@ -1542,6 +1618,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     donts: [
       { title: "Single date", do: { caption: "Exactly one selected day (primary), with today marked separately in the accent tone.", code: "<View style={{ width: \"auto\", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12 }}>\n  <View style={{ flexDirection: \"row\", gap: 2 }}>\n    <Pressable style={{ height: 36, width: 36, alignItems: \"center\", justifyContent: \"center\", borderRadius: 6 }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>8</Text>\n    </Pressable>\n    <Pressable style={{ height: 36, width: 36, alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.accent }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"accent-foreground\"] }}>23</Text>\n    </Pressable>\n    <Pressable style={{ height: 36, width: 36, alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.primary }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"primary-foreground\"] }}>24</Text>\n    </Pressable>\n  </View>\n</View>", render: e_organisms_calendar_dont_0_do }, dont: { caption: "Painting several days with the primary selected style makes a single-date picker look like a multi-select.", code: "<View style={{ width: \"auto\", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12 }}>\n  <View style={{ flexDirection: \"row\", gap: 2 }}>\n    <Pressable style={{ height: 36, width: 36, alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.primary }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"primary-foreground\"] }}>8</Text>\n    </Pressable>\n    <Pressable style={{ height: 36, width: 36, alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.primary }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"primary-foreground\"] }}>14</Text>\n    </Pressable>\n    <Pressable style={{ height: 36, width: 36, alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.primary }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"primary-foreground\"] }}>23</Text>\n    </Pressable>\n  </View>\n</View>", render: e_organisms_calendar_dont_0_dont } },
       { title: "With event list", do: { caption: "Keep the panel header and rows in sync with the selected day so the two views always agree.", code: "<View style={{ flexDirection: \"row\", flexWrap: \"wrap\", alignItems: \"flex-start\", gap: 24 }}>\n  <Calendar month=\"May 2026\" today={23} selected={24} daysInMonth={31} startWeekday={4} />\n  <Card style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: \"0%\" }}>\n    <View style={{ borderBottomWidth: 1, borderColor: tokens.border, paddingHorizontal: 20, paddingVertical: 12 }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"600\", color: tokens[\"card-foreground\"] }}>May 24</Text>\n    </View>\n    <View style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"space-between\", paddingHorizontal: 16, paddingVertical: 10 }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Sprint planning</Text>\n      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>9:00 AM</Text>\n    </View>\n  </Card>\n</View>", render: e_organisms_calendar_dont_1_do }, dont: { caption: "Selecting May 24 but leaving the panel on a placeholder breaks the link between the grid and its day.", code: "<View style={{ flexDirection: \"row\", flexWrap: \"wrap\", alignItems: \"flex-start\", gap: 24 }}>\n  <Calendar month=\"May 2026\" today={23} selected={24} daysInMonth={31} startWeekday={4} />\n  <Card style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: \"0%\" }}>\n    <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>\n      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>Pick a date to see events.</Text>\n    </View>\n  </Card>\n</View>", render: e_organisms_calendar_dont_1_dont } },
+    ],
+  },
+  "carousel": {
+    dir: "carousel",
+    category: "organisms",
+    examples: [
+      { label: "Default", code: "<Carousel\n  items={[\n    { key: \"one\", content: (\n      <View style={{ height: 160, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 18, fontWeight: \"600\", color: tokens.foreground }}>Slide 1</Text>\n      </View>\n    ) },\n    { key: \"two\", content: (\n      <View style={{ height: 160, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 18, fontWeight: \"600\", color: tokens.foreground }}>Slide 2</Text>\n      </View>\n    ) },\n    { key: \"three\", content: (\n      <View style={{ height: 160, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 18, fontWeight: \"600\", color: tokens.foreground }}>Slide 3</Text>\n      </View>\n    ) }\n  ]}\n  defaultIndex={0}\n  onIndexChange={() => {}}\n/>", render: e_organisms_carousel_example_0 },
+      { label: "Arrows hidden (dots only)", code: "<Carousel\n  showArrows={false}\n  items={[\n    { key: \"a\", content: (\n      <View style={{ height: 140, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 16, fontWeight: \"500\", color: tokens.foreground }}>Featured</Text>\n      </View>\n    ) },\n    { key: \"b\", content: (\n      <View style={{ height: 140, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 16, fontWeight: \"500\", color: tokens.foreground }}>Popular</Text>\n      </View>\n    ) }\n  ]}\n  defaultIndex={0}\n  onIndexChange={() => {}}\n/>", render: e_organisms_carousel_example_1 },
+      { label: "Default index", code: "<Carousel\n  defaultIndex={1}\n  loop\n  items={[\n    { key: \"x\", content: (\n      <View style={{ height: 140, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 16, fontWeight: \"500\", color: tokens.foreground }}>First</Text>\n      </View>\n    ) },\n    { key: \"y\", content: (\n      <View style={{ height: 140, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 16, fontWeight: \"500\", color: tokens.foreground }}>Second</Text>\n      </View>\n    ) },\n    { key: \"z\", content: (\n      <View style={{ height: 140, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 16, fontWeight: \"500\", color: tokens.foreground }}>Third</Text>\n      </View>\n    ) }\n  ]}\n  onIndexChange={() => {}}\n/>", render: e_organisms_carousel_example_2 },
+    ],
+    donts: [
+      { do: { caption: "Keep one current slide and let the dots mirror it, so the position in", code: "<Carousel\n  items={[\n    { key: \"do1\", content: (\n      <View style={{ height: 140, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 16, fontWeight: \"500\", color: tokens.foreground }}>Step 1</Text>\n      </View>\n    ) },\n    { key: \"do2\", content: (\n      <View style={{ height: 140, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n        <Text style={{ fontSize: 16, fontWeight: \"500\", color: tokens.foreground }}>Step 2</Text>\n      </View>\n    ) }\n  ]}\n  defaultIndex={0}\n  onIndexChange={() => {}}\n/>", render: e_organisms_carousel_dont_0_do }, dont: { caption: "Stack the slides yourself with a manual row of pressables; it loses", code: "<View style={{ flexDirection: \"row\", gap: 8 }}>\n  <View style={{ width: 200, height: 140, borderRadius: 8, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n    <Text style={{ fontSize: 16, color: tokens.foreground }}>Slide 1</Text>\n  </View>\n  <View style={{ width: 200, height: 140, borderRadius: 8, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n    <Text style={{ fontSize: 16, color: tokens.foreground }}>Slide 2</Text>\n  </View>\n</View>", render: e_organisms_carousel_dont_0_dont } },
     ],
   },
   "charts": {
@@ -1732,6 +1820,20 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Underline", do: { caption: "Underline and foreground-color only the active tab; leave the rest muted with no rule.", code: "<Tabs tabs={[\"Overview\", \"Activity\", \"Settings\"]} active={0} />", render: e_organisms_tabs_dont_0_do }, dont: { caption: "Underlining every tab erases the active indicator: there is no way to tell which view is current.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", borderBottomWidth: 1, borderColor: tokens.border, alignSelf: \"flex-start\" }}>\n  <Pressable style={({ pressed }) => [{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", paddingHorizontal: 16, paddingVertical: 10 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Overview</Text>\n    <View style={{ position: \"absolute\", bottom: 0, left: 0, right: 0, height: 2, borderRadius: 9999, backgroundColor: tokens.primary }} />\n  </Pressable>\n  <Pressable style={({ pressed }) => [{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", paddingHorizontal: 16, paddingVertical: 10 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Activity</Text>\n    <View style={{ position: \"absolute\", bottom: 0, left: 0, right: 0, height: 2, borderRadius: 9999, backgroundColor: tokens.primary }} />\n  </Pressable>\n  <Pressable style={({ pressed }) => [{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", paddingHorizontal: 16, paddingVertical: 10 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Settings</Text>\n    <View style={{ position: \"absolute\", bottom: 0, left: 0, right: 0, height: 2, borderRadius: 9999, backgroundColor: tokens.primary }} />\n  </Pressable>\n</View>", render: e_organisms_tabs_dont_0_dont } },
       { title: "Pill", do: { caption: "Exactly one pill gets the elevated background; the rest sit flat on the muted track.", code: "<Tabs tabs={[\"All\", \"Active\", \"Archived\"]} active={0} pills />", render: e_organisms_tabs_dont_1_do }, dont: { caption: "Giving every pill the raised background makes the group read as three buttons, not one selection.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 4, alignSelf: \"flex-start\", borderRadius: 8, backgroundColor: tokens.muted, padding: 4 }}>\n  <Pressable style={({ pressed }) => [{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.background, ...shadow(\"sm\"), paddingHorizontal: 12, paddingVertical: 6 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>All</Text>\n  </Pressable>\n  <Pressable style={({ pressed }) => [{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.background, ...shadow(\"sm\"), paddingHorizontal: 12, paddingVertical: 6 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Active</Text>\n  </Pressable>\n  <Pressable style={({ pressed }) => [{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", borderRadius: 6, backgroundColor: tokens.background, ...shadow(\"sm\"), paddingHorizontal: 12, paddingVertical: 6 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Archived</Text>\n  </Pressable>\n</View>", render: e_organisms_tabs_dont_1_dont } },
       { title: "Vertical", do: { caption: "Fill the active rail item with the accent background so the selected pane is unmistakable.", code: "<Tabs tabs={[\"General\", \"Security\", \"Notifications\"]} active={0} vertical />", render: e_organisms_tabs_dont_2_do }, dont: { caption: "With no filled active item the rail collapses into a plain link list and loses its current selection.", code: "<View style={{ flexDirection: \"column\", alignItems: \"stretch\", gap: 4, width: 180 }}>\n  <Pressable style={({ pressed }) => [{ width: \"100%\", flexDirection: \"row\", alignItems: \"center\", borderRadius: 6, backgroundColor: \"transparent\", paddingHorizontal: 12, paddingVertical: 8 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"muted-foreground\"] }}>General</Text>\n  </Pressable>\n  <Pressable style={({ pressed }) => [{ width: \"100%\", flexDirection: \"row\", alignItems: \"center\", borderRadius: 6, backgroundColor: \"transparent\", paddingHorizontal: 12, paddingVertical: 8 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"muted-foreground\"] }}>Security</Text>\n  </Pressable>\n  <Pressable style={({ pressed }) => [{ width: \"100%\", flexDirection: \"row\", alignItems: \"center\", borderRadius: 6, backgroundColor: \"transparent\", paddingHorizontal: 12, paddingVertical: 8 }, pressed ? { opacity: 0.9 } : null]}>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"muted-foreground\"] }}>Notifications</Text>\n  </Pressable>\n</View>", render: e_organisms_tabs_dont_2_dont } },
+    ],
+  },
+  "toast": {
+    dir: "toast",
+    category: "organisms",
+    examples: [
+      { label: "Default", code: "<Toast message=\"Your changes were saved.\" />", render: e_organisms_toast_example_0 },
+      { label: "Success", code: "<Toast success message=\"Profile updated\" description=\"Your changes are now live.\" />", render: e_organisms_toast_example_1 },
+      { label: "Error", code: "<Toast destructive message=\"Upload failed\" description=\"Check your connection and try again.\" />", render: e_organisms_toast_example_2 },
+      { label: "With an action", code: "<Toast message=\"Message archived\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_3 },
+      { label: "Dismissible, informational", code: "<Toast info message=\"A new version is available\" onDismiss={() => {}} />", render: e_organisms_toast_example_4 },
+    ],
+    donts: [
+      { do: { caption: "Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.", code: "<Toast success message=\"Copied to clipboard\" />", render: e_organisms_toast_dont_0_do }, dont: { caption: "Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.", code: "<Toast\n  message=\"We were unable to complete your request because the server returned an unexpected error and the operation was rolled back\"\n/>", render: e_organisms_toast_dont_0_dont } },
     ],
   },
 };

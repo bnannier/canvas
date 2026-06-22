@@ -1,0 +1,51 @@
+# Toast
+
+A transient notification capsule. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
+
+## Usage
+
+```tsx
+<Toast message="Your changes were saved." />
+```
+
+## Variants
+
+### Success
+
+```tsx
+<Toast success message="Profile updated" description="Your changes are now live." />
+```
+
+### Error
+
+```tsx
+<Toast destructive message="Upload failed" description="Check your connection and try again." />
+```
+
+### With an action
+
+```tsx
+<Toast message="Message archived" action={{ label: "Undo", onPress: () => {} }} />
+```
+
+### Dismissible, informational
+
+```tsx
+<Toast info message="A new version is available" onDismiss={() => {}} />
+```
+
+## Do & Don't
+
+**Do** — Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.
+
+```tsx
+<Toast success message="Copied to clipboard" />
+```
+
+**Don't** — Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.
+
+```tsx
+<Toast
+  message="We were unable to complete your request because the server returned an unexpected error and the operation was rolled back"
+/>
+```

@@ -37,8 +37,10 @@
           { "slug": "dropdown", "label": "Dropdowns", "icon": "chevron-down" },
           { "slug": "icon", "label": "Icons", "icon": "info" },
           { "slug": "input", "label": "Inputs & Forms", "icon": "text-cursor-input" },
+          { "slug": "input-otp", "label": "Input OTP", "icon": "key" },
           { "slug": "kbd", "label": "Kbd", "icon": "keyboard" },
           { "slug": "listbox", "label": "Listboxes", "icon": "list-checks" },
+          { "slug": "number-input", "label": "Number Input", "icon": "plus" },
           { "slug": "pagination", "label": "Pagination", "icon": "chevrons-left" },
           { "slug": "popover", "label": "Popover", "icon": "square" },
           { "slug": "progress", "label": "Progress", "icon": "loader" },
@@ -63,6 +65,7 @@
           { "slug": "alert-dialog", "label": "Alert Dialog", "icon": "message-square-warning" },
           { "slug": "card", "label": "Cards", "icon": "square" },
           { "slug": "code-block", "label": "Code Block", "icon": "code" },
+          { "slug": "collapsible", "label": "Collapsible", "icon": "chevron-down" },
           { "slug": "description-lists", "label": "Description Lists", "icon": "info" },
           { "slug": "empty-state", "label": "Empty States", "icon": "inbox" },
           { "slug": "feeds", "label": "Feeds", "icon": "activity" },
@@ -80,6 +83,7 @@
         "components": [
           { "slug": "action-sheet", "label": "Action Sheet", "icon": "more-horizontal" },
           { "slug": "calendar", "label": "Calendars", "icon": "calendar" },
+          { "slug": "carousel", "label": "Carousel", "icon": "image" },
           { "slug": "charts", "label": "Charts", "icon": "chart-line" },
           { "slug": "command", "label": "Command Palette", "icon": "terminal" },
           { "slug": "data-table", "label": "Data Tables", "icon": "table" },
@@ -92,7 +96,8 @@
           { "slug": "row-menu", "label": "Row Menu", "icon": "more-horizontal" },
           { "slug": "stepper", "label": "Steppers", "icon": "footprints" },
           { "slug": "tab-bar", "label": "Tab Bar", "icon": "navigation" },
-          { "slug": "tabs", "label": "Tabs", "icon": "folder" }
+          { "slug": "tabs", "label": "Tabs", "icon": "folder" },
+          { "slug": "toast", "label": "Toast", "icon": "bell" }
         ]
       },
       {

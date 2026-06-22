@@ -358,6 +358,41 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "number-input",
+    name: "Number Input",
+    description: "A numeric stepper with − and + controls plus direct entry (the iOS UIStepper / web number-field idiom).",
+    category: "Atoms",
+  },
+
+  {
+    slug: "input-otp",
+    name: "Input OTP",
+    description: "A segmented one-time-code field driven by one input, with SMS autofill and paste.",
+    category: "Atoms",
+  },
+
+  {
+    slug: "collapsible",
+    name: "Collapsible",
+    description: "A single disclosure: a header that toggles one collapsible content panel.",
+    category: "Molecules",
+  },
+
+  {
+    slug: "carousel",
+    name: "Carousel",
+    description: "A horizontally paged slide viewer with snap paging, dot indicators, and optional arrows.",
+    category: "Organisms",
+  },
+
+  {
+    slug: "toast",
+    name: "Toast",
+    description: "A transient notification capsule, rendered directly or driven imperatively via a ToastProvider and the useToast hook.",
+    category: "Organisms",
+  },
+
+  {
     slug: "popover",
     name: "Popover",
     description: "Floating panel for rich content triggered by a click.",

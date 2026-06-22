@@ -101,6 +101,16 @@ import { Drawer as DrawerIOS } from "../../../src/organisms/drawer/drawer.ios.js
 import { Drawer as DrawerAndroid } from "../../../src/organisms/drawer/drawer.android.js";
 import { FilterPanel as FilterPanelIOS } from "../../../src/organisms/filter-panel/filter-panel.ios.js";
 import { FilterPanel as FilterPanelAndroid } from "../../../src/organisms/filter-panel/filter-panel.android.js";
+import { NumberInput as NumberInputIOS } from "../../../src/atoms/number-input/number-input.ios.js";
+import { NumberInput as NumberInputAndroid } from "../../../src/atoms/number-input/number-input.android.js";
+import { InputOTP as InputOTPIOS } from "../../../src/atoms/input-otp/input-otp.ios.js";
+import { InputOTP as InputOTPAndroid } from "../../../src/atoms/input-otp/input-otp.android.js";
+import { Collapsible as CollapsibleIOS } from "../../../src/molecules/collapsible/collapsible.ios.js";
+import { Collapsible as CollapsibleAndroid } from "../../../src/molecules/collapsible/collapsible.android.js";
+import { Carousel as CarouselIOS } from "../../../src/organisms/carousel/carousel.ios.js";
+import { Carousel as CarouselAndroid } from "../../../src/organisms/carousel/carousel.android.js";
+import { Toast as ToastIOS } from "../../../src/organisms/toast/toast.ios.js";
+import { Toast as ToastAndroid } from "../../../src/organisms/toast/toast.android.js";
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -116,6 +126,8 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     EmptyState: EmptyStateIOS, Feed: FeedIOS, Field: FieldIOS, Fieldset: FieldsetIOS, Form: FormIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
+    NumberInput: NumberInputIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
+    Carousel: CarouselIOS, Toast: ToastIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
@@ -130,5 +142,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Field: FieldAndroid, Fieldset: FieldsetAndroid, Form: FormAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
+    NumberInput: NumberInputAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
+    Carousel: CarouselAndroid, Toast: ToastAndroid,
   },
 };

@@ -5,6 +5,7 @@ export * from "./alert/alert.js";
 export * from "./alert-dialog/alert-dialog.js";
 export * from "./card/card.js";
 export * from "./code-block/code-block.js";
+export * from "./collapsible/collapsible.js";
 export * from "./description-lists/description-lists.js";
 export * from "./empty-state/empty-state.js";
 export * from "./feeds/feeds.js";
