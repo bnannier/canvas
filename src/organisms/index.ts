@@ -11,4 +11,5 @@ export * from "./overlays/overlays.js";
 export * from "./row-menu/row-menu.js";
 export * from "./sidebar/sidebar.js";
 export * from "./stepper/stepper.js";
+export * from "./tab-bar/tab-bar.js";
 export * from "./tabs/tabs.js";
