@@ -1,14 +1,24 @@
 import { type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
+import { type TypographySkin } from "./typography.shared.js";
 
 // Co-located Typography styles. One axis (role), each role mapping to a single
 // TextStyle built from the active brand tokens (so the type color follows
 // light/dark and the glass surface). The component resolves the active role by
 // first-match precedence and spreads the matching fragment.
 //
+// Typography is a "Shared" platform treatment: there is no native type-scale
+// control to skin per OS, so iosSkin and androidSkin reference the exact same
+// values as webSkin (the kit type scale already maps cleanly onto iOS text
+// styles and Material 3 type roles via the shared tokens). The full file
+// structure exists to match the kit's platform-skin recipe; the columns are
+// identical and the atom is not registered for a docs preview.
+//
 // Every fragment is a TextStyle: Typography renders a single Text, so layout +
 // type + color all live on the Text. The `code` role additionally carries the
 // muted fill and pill padding (a Text can hold backgroundColor/padding in RN).
+// The role color and the monospace role set are platform-neutral, so they live
+// here and are consumed by the shared shell, not the per-OS skins.
 
 export type Role =
   | "display"
@@ -29,7 +39,7 @@ export type Role =
 // Mirrors the docs' typeScale: heading sizes get the tight tracking, body gets
 // the relaxed line height, caption gets uppercase + wide tracking, and `code`
 // carries the self-start pill box (radius + padding).
-export const roleType: Record<Role, TextStyle> = {
+const roleType: Record<Role, TextStyle> = {
   // text-5xl font-bold tracking-tight
   display: { fontSize: 48, lineHeight: 48, fontWeight: "700", letterSpacing: -0.4 },
   // text-4xl font-bold tracking-tight
@@ -64,6 +74,18 @@ export const roleType: Record<Role, TextStyle> = {
   // text-sm
   mono: { fontSize: 14, lineHeight: 20 },
 };
+
+// Web base skin: the established Canvas type scale (the current look, preserved
+// verbatim).
+export const webSkin: TypographySkin = { roleType };
+
+// iOS (HIG) and Material 3 skins. Typography is a Shared treatment, so both
+// reference the exact same scale as the web skin: there is no native type-scale
+// control to diverge toward, and the kit's type tokens already serve iOS text
+// styles and Material 3 type roles. Keeping them identical is intentional, not
+// a placeholder.
+export const iosSkin: TypographySkin = webSkin;
+export const androidSkin: TypographySkin = webSkin;
 
 // Text color (and the `code` role's muted fill) per role. The docs relied on
 // inherited page color; RN text does not cascade, so every role names its color

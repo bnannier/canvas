@@ -53,6 +53,10 @@ import { Calendar as CalendarIOS } from "../../../src/organisms/calendar/calenda
 import { Calendar as CalendarAndroid } from "../../../src/organisms/calendar/calendar.android.js";
 import { Badge as BadgeIOS } from "../../../src/atoms/badge/badge.ios.js";
 import { Badge as BadgeAndroid } from "../../../src/atoms/badge/badge.android.js";
+import { Avatar as AvatarIOS } from "../../../src/atoms/avatar/avatar.ios.js";
+import { Avatar as AvatarAndroid } from "../../../src/atoms/avatar/avatar.android.js";
+import { Breadcrumb as BreadcrumbIOS } from "../../../src/atoms/breadcrumb/breadcrumb.ios.js";
+import { Breadcrumb as BreadcrumbAndroid } from "../../../src/atoms/breadcrumb/breadcrumb.android.js";
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -62,6 +66,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS, Overlay: OverlayIOS,
     Spinner: SpinnerIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Stepper: StepperIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
+    Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
@@ -70,5 +75,6 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid, Overlay: OverlayAndroid,
     Spinner: SpinnerAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Stepper: StepperAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
+    Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid,
   },
 };

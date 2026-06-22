@@ -1,15 +1,15 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { type KbdSkin } from "./kbd.shared.js";
 
-// Co-located Kbd styles. The cap has one fixed look (no axes), so the layout-only
-// box geometry is a static fragment and the colored surface (border + muted fill)
-// plus the muted label color are functions of the active tokens (so the cap
-// follows light/dark and reads as glass at the theming level).
+// Per-OS Kbd skins. Kbd is a "Shared" treatment: neither iOS nor Material 3 ships a
+// native keyboard-key cap, so all three platforms render ONE look — the web key cap
+// from shadcn/ui (a hairline-bordered, muted-fill cap with small medium-weight text).
+// The iOS and Android skins therefore reference the SAME values as the web skin; the
+// token-driven surface (border + muted fill) and label color live in kbd.shared.tsx.
 
-// The key-cap box: a centered row, fixed cap height, a minimum width so a single
-// glyph still reads as a key, the small radius, a hairline border, and snug
-// horizontal padding.
-export const capBox: ViewStyle = {
+// The key-cap box: a centered row, fixed cap height, a minimum width so a single glyph
+// still reads as a key, the small radius, a hairline border, and snug horizontal padding.
+const CAP_BOX: ViewStyle = {
   flexDirection: "row",
   height: 20,
   minWidth: 20,
@@ -20,14 +20,15 @@ export const capBox: ViewStyle = {
   paddingHorizontal: 6,
 };
 
-// The cap surface: the muted fill and the hairline border color.
-export function capSurface(tokens: ColorTokens): ViewStyle {
-  return { borderColor: tokens.border, backgroundColor: tokens.muted };
-}
+// The key label: small, medium-weight text.
+const LABEL_TYPE: TextStyle = { fontSize: 12, lineHeight: 16, fontWeight: "500" };
 
-// The key label: small, medium-weight, muted text.
-export const labelType: TextStyle = { fontSize: 12, lineHeight: 16, fontWeight: "500" };
+// Web: the current Canvas look, matched to shadcn/ui's kbd.
+export const webSkin: KbdSkin = {
+  capBox: CAP_BOX,
+  labelType: LABEL_TYPE,
+};
 
-export function labelColor(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"] };
-}
+// Shared treatment: iOS and Android render the identical web look (no native keycap).
+export const iosSkin: KbdSkin = webSkin;
+export const androidSkin: KbdSkin = webSkin;
