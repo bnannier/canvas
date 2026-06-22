@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { type Role } from "react-native";
 import { View, Pressable, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+
+// React Native's Role union omits the valid ARIA "listbox" role, so the option-list
+// container casts it. The value is correct on both web (DOM role) and native.
+const LISTBOX = "listbox" as Role;
 import { wrapper, wrapperLifted } from "./combobox.styles.js";
 import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 
@@ -127,7 +132,8 @@ export function createCombobox(skin: ComboboxSkin) {
                 <Text style={skin.emptyText(tokens, size)}>No results</Text>
               </View>
             ) : (
-              matches.map((option, index) => {
+              <View role={LISTBOX}>
+              {matches.map((option, index) => {
                 const selected = option === value;
                 const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
                 return (
@@ -144,13 +150,15 @@ export function createCombobox(skin: ComboboxSkin) {
                       setOpen(false);
                     }}
                     android_ripple={ripple}
-                    accessibilityRole="button"
+                    role="option"
+                    aria-selected={selected}
                   >
                     <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
                     <Text style={skin.optionText(tokens, size)}>{option}</Text>
                   </Pressable>
                 );
-              })
+              })}
+              </View>
             )}
           </GlassSurface>
         ) : null}

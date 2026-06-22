@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { type Role } from "react-native";
 import { View, Pressable, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+
+// React Native's Role union omits the valid ARIA "listbox" role, so the option-list
+// container casts it. The value is correct on both web (DOM role) and native.
+const LISTBOX = "listbox" as Role;
 import { Icon } from "../icon/icon.js";
 import { root, rootLifted, type SelectSkin, type Size } from "./select.styles.js";
 
@@ -103,6 +108,7 @@ export function createSelect(skin: SelectSkin) {
 
         {open ? (
           <GlassSurface style={skin.panel(tokens)}>
+            <View role={LISTBOX}>
             {options.map((option, i) => {
               const selected = option === value;
               return (
@@ -118,7 +124,8 @@ export function createSelect(skin: SelectSkin) {
                   ]}
                   onPress={() => { onSelect?.(option); setOpen(false); }}
                   android_ripple={ripple}
-                  accessibilityRole="button"
+                  role="option"
+                  aria-selected={selected}
                 >
                   {skin.selectedSide === "leading" ? (
                     <Text style={[skin.indicator(tokens, size), { width: 14 }]}>
@@ -136,6 +143,7 @@ export function createSelect(skin: SelectSkin) {
                 </Pressable>
               );
             })}
+            </View>
           </GlassSurface>
         ) : null}
       </View>

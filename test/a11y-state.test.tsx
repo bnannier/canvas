@@ -1,11 +1,14 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { Select } from "../src/atoms/select/select.tsx";
+import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 
@@ -52,5 +55,37 @@ describe("web a11y state (aria aliases for RNW-dropped accessibilityState)", () 
   it("Dropdown trigger exposes aria-expanded (collapsed by default)", () => {
     const { container } = ui(<Dropdown label="Menu" items={[{ label: "One" }, { label: "Two" }]} />);
     expect(attr(container, "[aria-expanded]", "aria-expanded")).toBe("false");
+  });
+});
+
+describe("listbox a11y (options announce as a selectable list, operably)", () => {
+  it("Select: role=listbox + role=option rows carry aria-selected and stay operable", () => {
+    let picked = "";
+    const { container } = ui(<Select open options={["A", "B", "C"]} value="A" onSelect={(o) => { picked = o; }} />);
+    expect(container.querySelector('[role="listbox"]')).not.toBeNull();
+    const opts = container.querySelectorAll('[role="option"]');
+    expect(opts.length).toBe(3);
+    expect(opts[0].getAttribute("aria-selected")).toBe("true");
+    expect(opts[1].getAttribute("aria-selected")).toBe("false");
+    fireEvent.click(opts[1]);
+    expect(picked).toBe("B");
+  });
+
+  it("Combobox: role=listbox + role=option rows carry aria-selected", () => {
+    const { container } = ui(<Combobox open options={["A", "B"]} value="B" onSelect={() => {}} />);
+    expect(container.querySelector('[role="listbox"]')).not.toBeNull();
+    const opts = container.querySelectorAll('[role="option"]');
+    expect(opts.length).toBe(2);
+    expect(opts[1].getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("Command: role=listbox + role=option rows, the active row aria-selected", () => {
+    const { container } = ui(
+      <Command open active={0} groups={[{ items: [{ label: "X" }, { label: "Y" }] }]} onSelect={() => {}} />,
+    );
+    expect(container.querySelector('[role="listbox"]')).not.toBeNull();
+    const opts = container.querySelectorAll('[role="option"]');
+    expect(opts.length).toBe(2);
+    expect(opts[0].getAttribute("aria-selected")).toBe("true");
   });
 });

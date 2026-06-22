@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { type Role } from "react-native";
 import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+
+// React Native's Role union omits the valid ARIA "listbox" role, so the command
+// list container casts it. The value is correct on both web (DOM role) and native.
+const LISTBOX = "listbox" as Role;
 import { Icon } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
 import { type CommandSkin } from "./command.styles.js";
@@ -119,8 +124,9 @@ export function createCommand(skin: CommandSkin) {
           <Text style={skin.searchPlaceholder(tokens)}>{placeholder}</Text>
         </View>
 
+        <View role={LISTBOX}>
         {groups.map((group, gi) => (
-          <View key={`group-${gi}`}>
+          <View key={`group-${gi}`} role="group" aria-label={group.heading ?? undefined}>
             {group.heading != null ? <Text style={s.groupHeading(tokens)}>{group.heading}</Text> : null}
             {group.items.map((item, ii) => {
               flat += 1;
@@ -145,7 +151,8 @@ export function createCommand(skin: CommandSkin) {
                     setOpen(false);
                   }}
                   android_ripple={ripple}
-                  accessibilityRole="button"
+                  role="option"
+                  aria-selected={isActive}
                 >
                   {item.icon != null ? <Text style={skin.rowIcon(tokens)}>{item.icon}</Text> : null}
                   <Text style={skin.rowLabel(tokens)}>{item.label}</Text>
@@ -155,6 +162,7 @@ export function createCommand(skin: CommandSkin) {
             })}
           </View>
         ))}
+        </View>
 
         {footer ? (
           <View style={s.footerBar(tokens)}>
