@@ -83,6 +83,14 @@ import { StackedList as StackedListIOS } from "../../../src/molecules/stacked-li
 import { StackedList as StackedListAndroid } from "../../../src/molecules/stacked-lists/stacked-lists.android.js";
 import { Stats as StatsIOS } from "../../../src/molecules/stats/stats.ios.js";
 import { Stats as StatsAndroid } from "../../../src/molecules/stats/stats.android.js";
+import { Command as CommandIOS } from "../../../src/organisms/command/command.ios.js";
+import { Command as CommandAndroid } from "../../../src/organisms/command/command.android.js";
+import { DataTable as DataTableIOS } from "../../../src/organisms/data-table/data-table.ios.js";
+import { DataTable as DataTableAndroid } from "../../../src/organisms/data-table/data-table.android.js";
+import { Drawer as DrawerIOS } from "../../../src/organisms/drawer/drawer.ios.js";
+import { Drawer as DrawerAndroid } from "../../../src/organisms/drawer/drawer.android.js";
+import { FilterPanel as FilterPanelIOS } from "../../../src/organisms/filter-panel/filter-panel.ios.js";
+import { FilterPanel as FilterPanelAndroid } from "../../../src/organisms/filter-panel/filter-panel.android.js";
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -96,6 +104,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, DescriptionList: DescriptionListIOS,
     EmptyState: EmptyStateIOS, Feed: FeedIOS, Field: FieldIOS, Fieldset: FieldsetIOS, Form: FormIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
+    Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
@@ -108,5 +117,6 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, DescriptionList: DescriptionListAndroid,
     EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Field: FieldAndroid, Fieldset: FieldsetAndroid, Form: FormAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
+    Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
   },
 };

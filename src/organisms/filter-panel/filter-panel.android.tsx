@@ -1,0 +1,11 @@
+import { createFilterPanel } from "./filter-panel.shared.js";
+import { androidSkin } from "./filter-panel.styles.js";
+import { Checkbox as CheckboxAndroid } from "../../atoms/checkbox/checkbox.android.js";
+import { Badge as BadgeAndroid } from "../../atoms/badge/badge.android.js";
+
+// Material 3 FilterPanel. Metro resolves this file on Android; the docs import it
+// for preview. The option rows render the M3-styled Checkbox and the counts the
+// M3-styled Badge so the panel reads native. The literal `.android` atom imports
+// are required for the WEB docs 3-up, where a barrel import would resolve the web atoms.
+export const FilterPanel = createFilterPanel(androidSkin, CheckboxAndroid, BadgeAndroid);
+export type { FilterPanelProps, FilterOption, FilterGroup } from "./filter-panel.shared.js";

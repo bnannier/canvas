@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, shadow } from "../../style/index.js";
+import { type ChartSkin } from "./charts.shared.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens (so the surface follows
@@ -15,10 +16,11 @@ export type Tone = "primary" | "success" | "destructive";
 
 // The bordered, shadowed card surface (rounded-lg border border-border bg-card
 // shadow-sm), mirroring the docs `cardCls`. backgroundColor is tokens.card, which
-// stays opaque in glass mode, so this surface stays solid (it is not frosted).
-export function surface(tokens: ColorTokens): ViewStyle {
+// stays opaque in glass mode, so this surface stays solid (it is not frosted). The
+// corner radius is supplied by the skin (8 everywhere; Chart is Shared).
+export function surface(tokens: ColorTokens, radius: number): ViewStyle {
   return {
-    borderRadius: 8,
+    borderRadius: radius,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
@@ -75,12 +77,13 @@ export const horizontalTrack: ViewStyle = {
 };
 
 // A horizontal bar: h-3 rounded-r plus its fill and width (set by the
-// component). The right corners are rounded; the left edge sits on the track.
-export function horizontalBar(fill: string, width: number): ViewStyle {
+// component). The right corners are rounded (radius from the skin); the left edge
+// sits on the track.
+export function horizontalBar(fill: string, width: number, radius: number): ViewStyle {
   return {
     height: 12,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
+    borderTopRightRadius: radius,
+    borderBottomRightRadius: radius,
     backgroundColor: fill,
     width,
   };
@@ -105,11 +108,12 @@ export const verticalColumn: ViewStyle = {
   alignItems: "stretch",
 };
 
-// A vertical bar: rounded-t plus its fill and height (set by the component).
-export function verticalBar(fill: string, height: number): ViewStyle {
+// A vertical bar: rounded-t plus its fill and height (set by the component). The top
+// corners are rounded (radius from the skin); the foot sits on the baseline.
+export function verticalBar(fill: string, height: number, radius: number): ViewStyle {
   return {
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    borderTopLeftRadius: radius,
+    borderTopRightRadius: radius,
     backgroundColor: fill,
     height,
   };
@@ -136,3 +140,21 @@ export function verticalLabel(tokens: ColorTokens): TextStyle {
     color: tokens["muted-foreground"],
   };
 }
+
+// --- per-OS skins -----------------------------------------------------------
+
+// Chart is a "Shared" treatment: data visualization is platform-neutral. The iOS HIG
+// Charts page (Swift Charts) and the shadcn web chart are the same plotted-bar idiom,
+// and Material 3 ships no charts component at all, so there is no native shape to match
+// and the look is identical on every platform. `webSkin` carries the established Canvas
+// look verbatim (a rounded-lg (8) card surface and rounded (4) bar corners); the iOS
+// and Android skins reference it directly so the three columns stay byte-identical.
+
+export const webSkin: ChartSkin = {
+  surfaceRadius: 8,
+  barRadius: 4,
+};
+
+// Shared treatment: no per-OS divergence, so the native skins are the web skin.
+export const iosSkin: ChartSkin = webSkin;
+export const androidSkin: ChartSkin = webSkin;
