@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Animated, Platform, useWindowDimensions, type LayoutChangeEvent } from "react-native";
 import { Text, Pressable, ScrollView, View, Drawer, Icon, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
@@ -17,6 +17,7 @@ export function TabOverflowMenu({
   menu,
   activeGroup,
   activeSlug,
+  footer,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -25,7 +26,10 @@ export function TabOverflowMenu({
   activeGroup?: string | null;
   /** The current page's slug, to mark it in the list. */
   activeSlug?: string;
+  /** Optional sheet footer (e.g. the mobile-web theme toggles, kept off the iOS-style bar). */
+  footer?: ReactNode;
 }) {
+  const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -48,6 +52,11 @@ export function TabOverflowMenu({
       ) : (
         <DrillDown menu={menu} visible={visible} onSelect={go} activeGroup={activeGroup} activeSlug={activeSlug} />
       )}
+      {footer ? (
+        <View style={{ borderTopWidth: 1, borderColor: tokens.border, marginTop: 4, paddingTop: 12, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          {footer}
+        </View>
+      ) : null}
     </Drawer>
   );
 }

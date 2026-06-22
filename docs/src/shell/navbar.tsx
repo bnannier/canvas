@@ -2,14 +2,17 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Icon, TabBar, useTheme, type IconProps } from "@olympusoss/canvas";
+import { View, Text, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, type IconProps } from "@olympusoss/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
-import { Topbar } from "./topbar";
+import { Topbar, titleFor } from "./topbar";
+import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
 import { TabOverflowMenu } from "./tab-overflow-menu";
 import { GlassAurora } from "../ui/glass";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
+import { useDocsTheme } from "../theme/docs-theme";
+import { geist } from "../ui/fonts";
 import { MOBILE_TABS, nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug } from "../data/nav";
 
 // The one adaptive navigation component. On the web it is the sidebar + topbar shell at
@@ -57,6 +60,37 @@ function sectionIcon(name: string, active: boolean) {
   return { [name]: true, [active ? "primary" : "muted"]: true } as unknown as Omit<IconProps, "key">;
 }
 
+// The scheme + frost toggles, relocated off the iOS-style mobile nav bar (which has none) into
+// the drill-down sheet's footer, so the bar matches the native iOS header exactly.
+function ThemeToggles() {
+  const { tokens } = useTheme();
+  const { scheme, surface, toggleScheme, setSurface } = useDocsTheme();
+  return (
+    <>
+      <Text style={{ fontFamily: geist("500"), fontSize: 13, color: tokens["muted-foreground"] }}>Appearance</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        {!liquidGlassAvailable() ? (
+          <ButtonGroup
+            segmented
+            small
+            items={["Solid", "Frost"]}
+            active={surface === "solid" ? 0 : 1}
+            onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
+          />
+        ) : null}
+        <Button
+          ghost
+          icon
+          small
+          accessibilityLabel="Toggle color scheme"
+          iconLeft={scheme === "dark" ? <Icon sun size={16} /> : <Icon moon size={16} />}
+          onPress={toggleScheme}
+        />
+      </View>
+    </>
+  );
+}
+
 // Web (every width): desktop = sidebar + glass topbar; narrow = the mobile iOS shell (a
 // bottom kit TabBar for the sections + the glass topbar whose hamburger drills into the
 // current section's sub-nav, mirroring the native iOS app). cmd-K search modal, web
@@ -91,6 +125,9 @@ function WebNav() {
   // at the bottom (thumb-reachable) to switch sections.
   if (!wide) {
     const section = sectionFor(pathname);
+    const sectionRoot = MOBILE_SECTIONS.find((s) => s.id === section)?.href ?? "/";
+    const atRoot = MOBILE_SECTIONS.some((s) => s.href === pathname);
+    const goBack = () => (router.canGoBack() ? router.back() : router.push(sectionRoot as never));
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
         <WebScrollbarTheme />
@@ -100,7 +137,13 @@ function WebNav() {
             <Slot />
           </View>
           <View style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
-            <Topbar showMenu onMenu={() => setMenuOpen(true)} onSearch={() => setSearchOpen(true)} />
+            <MobileNavBar
+              title={titleFor(pathname).title}
+              showBack={!atRoot}
+              onBack={goBack}
+              onMenu={() => setMenuOpen(true)}
+              onSearch={() => setSearchOpen(true)}
+            />
           </View>
         </View>
         <TabBar
@@ -122,6 +165,7 @@ function WebNav() {
           menu={nativeMenuFor(section)}
           activeGroup={getActiveGroup(pathname)}
           activeSlug={getActiveSlug(pathname)}
+          footer={<ThemeToggles />}
         />
         <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
       </SafeAreaView>
