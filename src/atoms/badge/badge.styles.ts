@@ -1,79 +1,49 @@
-import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette } from "../../style/index.js";
+import { type ViewStyle } from "react-native";
+import { type BadgeSkin } from "./badge.shared.js";
 
-// Co-located Badge styles. The metadata badge uses semantic tokens; the status
-// badge uses the Tailwind palette (a soft 50/200/700 surface in light, a
-// 950/800/400 surface in dark) with a saturated 500 dot, and neutral stays on
-// the semantic muted token.
+// Per-OS Badge skins. Badge is a "Light" treatment: identical structure and semantic colors
+// (those live in badge.shared.tsx); only shape radius, label type, and dot size shift per OS.
+// Web matches Catalyst's rounded-md pill; iOS uses SF-style medium type with tightened
+// tracking; Android matches Material 3's more-rounded label (M3 label-small: 11sp / +0.5
+// tracking / weight 500).
 
-export type Tone = "default" | "secondary" | "outline" | "destructive";
-export type Status = "success" | "warning" | "error" | "info" | "neutral";
-
-export const metaBase: ViewStyle = {
+const META: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   alignSelf: "flex-start",
-  borderRadius: 6,
   borderWidth: 1,
   paddingHorizontal: 8,
   paddingVertical: 2,
 };
 
-export const statusBase: ViewStyle = {
+const STATUS: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   alignSelf: "flex-start",
   gap: 6,
-  borderRadius: 9999,
   borderWidth: 1,
+  borderRadius: 9999,
   paddingHorizontal: 8,
   paddingVertical: 2,
 };
 
-export const labelType: TextStyle = { fontSize: 12, lineHeight: 16, fontWeight: "500" };
-
-export function metaContainer(tokens: ColorTokens, tone: Tone): ViewStyle {
-  switch (tone) {
-    case "default": return { borderColor: "transparent", backgroundColor: tokens.primary };
-    case "secondary": return { borderColor: "transparent", backgroundColor: tokens.secondary };
-    case "outline": return { borderColor: tokens.border, backgroundColor: "transparent" };
-    case "destructive": return { borderColor: "transparent", backgroundColor: tokens.destructive };
-  }
-}
-
-export function metaLabel(tokens: ColorTokens, tone: Tone): TextStyle {
-  switch (tone) {
-    case "default": return { color: tokens["primary-foreground"] };
-    case "secondary": return { color: tokens["secondary-foreground"] };
-    case "outline": return { color: tokens.foreground };
-    case "destructive": return { color: tokens["destructive-foreground"] };
-  }
-}
-
-// The palette hue per status tone (neutral is handled on the semantic tokens).
-const STATUS_HUE: Record<Exclude<Status, "neutral">, string> = {
-  success: "green",
-  warning: "amber",
-  error: "red",
-  info: "blue",
+export const webSkin: BadgeSkin = {
+  metaBase: { ...META, borderRadius: 6 },
+  statusBase: STATUS,
+  labelType: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
+  dotSize: 6,
 };
 
-export function statusContainer(tokens: ColorTokens, dark: boolean, status: Status): ViewStyle {
-  if (status === "neutral") return { borderColor: tokens.border, backgroundColor: tokens.muted };
-  const hue = STATUS_HUE[status];
-  return dark
-    ? { borderColor: palette[`${hue}-800`], backgroundColor: palette[`${hue}-950`] }
-    : { borderColor: palette[`${hue}-200`], backgroundColor: palette[`${hue}-50`] };
-}
+export const iosSkin: BadgeSkin = {
+  metaBase: { ...META, borderRadius: 6 },
+  statusBase: STATUS,
+  labelType: { fontSize: 12, lineHeight: 16, fontWeight: "600", letterSpacing: -0.08 },
+  dotSize: 6,
+};
 
-export function statusLabel(tokens: ColorTokens, dark: boolean, status: Status): TextStyle {
-  if (status === "neutral") return { color: tokens["muted-foreground"] };
-  const hue = STATUS_HUE[status];
-  return { color: dark ? palette[`${hue}-400`] : palette[`${hue}-700`] };
-}
-
-export function statusDot(tokens: ColorTokens, status: Status): ViewStyle {
-  const base: ViewStyle = { height: 6, width: 6, borderRadius: 9999 };
-  if (status === "neutral") return { ...base, backgroundColor: tokens["muted-foreground"] };
-  return { ...base, backgroundColor: palette[`${STATUS_HUE[status]}-500`] };
-}
+export const androidSkin: BadgeSkin = {
+  metaBase: { ...META, borderRadius: 8 },
+  statusBase: STATUS,
+  labelType: { fontSize: 11, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5 },
+  dotSize: 6,
+};

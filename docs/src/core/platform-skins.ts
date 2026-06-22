@@ -51,6 +51,8 @@ import { Sidebar as SidebarIOS } from "../../../src/organisms/sidebar/sidebar.io
 import { Sidebar as SidebarAndroid } from "../../../src/organisms/sidebar/sidebar.android.js";
 import { Calendar as CalendarIOS } from "../../../src/organisms/calendar/calendar.ios.js";
 import { Calendar as CalendarAndroid } from "../../../src/organisms/calendar/calendar.android.js";
+import { Badge as BadgeIOS } from "../../../src/atoms/badge/badge.ios.js";
+import { Badge as BadgeAndroid } from "../../../src/atoms/badge/badge.android.js";
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -59,7 +61,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Combobox: ComboboxIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS, Overlay: OverlayIOS,
     Spinner: SpinnerIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Stepper: StepperIOS,
-    Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS,
+    Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
@@ -67,6 +69,6 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Combobox: ComboboxAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid, Overlay: OverlayAndroid,
     Spinner: SpinnerAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Stepper: StepperAndroid,
-    Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid,
+    Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
   },
 };
