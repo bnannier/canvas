@@ -1,28 +1,53 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow } from "../../style/index.js";
+import { type DescriptionListSkin } from "./description-lists.shared.js";
 
-// Co-located DescriptionList styles. Layout-only fragments are static objects;
-// anything that reads a color is a function of the active tokens (so the card
-// surface follows light/dark and reads as glass when the ThemeProvider's surface
-// is "glass", since tokens.card is swapped translucent at the theming level).
+// Co-located DescriptionList skins and shared style fragments. Layout-only
+// fragments are static objects; anything that reads a color is a function of the
+// active tokens (so the card surface follows light/dark and reads as glass when
+// the ThemeProvider's surface is "glass", since tokens.card is swapped translucent
+// at the theming level). The per-OS pieces (card radius / elevation, row density,
+// type tracking) come in through the DescriptionListSkin the shell holds.
+//
+// DescriptionList is a "Light" treatment: identical structure and semantic colors
+// (in description-lists.shared.tsx); only the card corner radius, row spacing,
+// type tracking, and surface elevation shift per OS.
+//   Web  — the established Canvas / Catalyst look, lifted verbatim: a card with
+//          8 radius, a 1px `border`, the `card` fill, a soft shadow("sm"), 24
+//          padding, gap 12 between rows; the stacked term is 12pt/500 uppercase
+//          with 0.4 letter-spacing.
+//   iOS  — SwiftUI LabeledContent value-style rows inside an inset-grouped card:
+//          a rounder 12-radius card with a soft shadow, the same 24 padding and
+//          12 gap, and SF-style tightened type tracking (-0.08 on the inline term
+//          and value, +0.06 on the small uppercase stacked term, -0.2 on the
+//          header title).
+//   Android — Material 3 has no description-list control; key-value content is a
+//          plain list/text layout, so the surface follows the M3 outlined card:
+//          a 12-radius outlined surface kept FLAT (no shadow, elevation 0), a
+//          slightly more breathable 14 row gap, and M3 type tracking (+0.1 on the
+//          term, +0.5 on the uppercase stacked label per M3 label-small, 0 on the
+//          header title).
 
 export type Layout = "inline" | "twoColumn" | "stacked";
 
-// Card surface: rounded, bordered, card fill, soft shadow. When a header band is
-// present the card carries no padding (the header and rows supply their own
-// px-6) so the header rule spans the full width; otherwise the card pads itself.
-export function cardSurface(tokens: ColorTokens): ViewStyle {
-  return { borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm") };
+// Card surface: rounded, bordered, card fill, per-OS elevation. The radius and
+// shadow come from the skin so the shape and elevation shift per platform; the
+// border, fill, and the rest are shared.
+export function cardSurface(tokens: ColorTokens, skin: DescriptionListSkin): ViewStyle {
+  return {
+    borderRadius: skin.cardRadius,
+    borderWidth: 1,
+    borderColor: tokens.border,
+    backgroundColor: tokens.card,
+    ...skin.cardShadow,
+  };
 }
 
-// The self-padding applied to a card with no header band (p-6).
-export const cardPad: ViewStyle = { padding: 24 };
-
-// gap-3 between rows when there is no header band wrapping them.
-export const stackGap: ViewStyle = { gap: 12 };
-
-// With a header, rows sit in their own px-6 group beneath the bordered band.
-export const rowsWrap: ViewStyle = { paddingHorizontal: 24, gap: 12 };
+// With a header, rows sit in their own px-6 group beneath the bordered band; the
+// inter-row gap follows the per-OS density.
+export function rowsWrap(skin: DescriptionListSkin): ViewStyle {
+  return { paddingHorizontal: 24, gap: skin.rowGap };
+}
 
 // --- term / value text ------------------------------------------------------
 
@@ -32,14 +57,13 @@ export function termLabel(tokens: ColorTokens): TextStyle {
 }
 
 // Stacked term: uppercased and tracked so the label reads as secondary above a
-// full-weight value.
+// full-weight value. The per-OS tracking is layered on by the skin.
 export function termStacked(tokens: ColorTokens): TextStyle {
   return {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
     textTransform: "uppercase",
-    letterSpacing: 0.4,
     color: tokens["muted-foreground"],
   };
 }
@@ -100,3 +124,43 @@ export function headerTitle(tokens: ColorTokens): TextStyle {
 export function headerSubtitle(tokens: ColorTokens): TextStyle {
   return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
 }
+
+// --- per-OS skins -----------------------------------------------------------
+
+// Web: the current Canvas look, preserved verbatim.
+export const webSkin: DescriptionListSkin = {
+  cardRadius: 8,
+  cardShadow: shadow("sm"),
+  rowGap: 12,
+  cardPadding: 24,
+  termTracking: {},
+  stackedTermTracking: { letterSpacing: 0.4 },
+  valueTracking: {},
+  headerTitleTracking: {},
+};
+
+// iOS (HIG / SwiftUI LabeledContent in an inset-grouped card): a rounder card
+// with a soft shadow and SF-style tightened tracking.
+export const iosSkin: DescriptionListSkin = {
+  cardRadius: 12,
+  cardShadow: shadow("sm"),
+  rowGap: 12,
+  cardPadding: 24,
+  termTracking: { letterSpacing: -0.08 },
+  stackedTermTracking: { letterSpacing: 0.06 },
+  valueTracking: { letterSpacing: -0.08 },
+  headerTitleTracking: { letterSpacing: -0.2 },
+};
+
+// Android (Material 3 outlined surface): a rounder, FLAT outlined card (no
+// shadow), slightly more breathing room, and M3 type tracking.
+export const androidSkin: DescriptionListSkin = {
+  cardRadius: 12,
+  cardShadow: shadow("none"),
+  rowGap: 14,
+  cardPadding: 24,
+  termTracking: { letterSpacing: 0.1 },
+  stackedTermTracking: { letterSpacing: 0.5 },
+  valueTracking: { letterSpacing: 0.1 },
+  headerTitleTracking: {},
+};

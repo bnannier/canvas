@@ -1,11 +1,18 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
+import { type CodeBlockSkin } from "./code-block.shared.js";
 
-// Co-located CodeBlock styles. Layout-only fragments are static objects; anything
+// Co-located CodeBlock skins. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens, so the muted surface
 // follows light/dark and reads as glass at the theming level. The terminal
 // variant is intentionally a fixed dark window built from the Tailwind palette
 // (zinc/emerald/red/amber/green), so it stays dark in every scheme.
+//
+// CodeBlock is a "Shared" platform treatment: neither iOS nor Android ships a code
+// display control, and the web reference is the standard `pre`/`code` HTML pattern,
+// so there is ONE look on every platform. `iosSkin` and `androidSkin` therefore
+// reference the SAME object as `webSkin` (no fabricated per-OS difference); the skin
+// contract exists only so the file pattern matches the rest of the kit.
 
 export type Variant = "terminal" | "numbered" | "inline" | "plain";
 
@@ -13,17 +20,19 @@ export type Variant = "terminal" | "numbered" | "inline" | "plain";
 // approach Badge's `mono` modifier uses).
 export const MONO = { fontFamily: "monospace" } as const;
 
+// --- shared style fragments (the one look) ----------------------------------
+
 // Shared code type: text-sm leading-relaxed.
-export const codeType: TextStyle = { fontSize: 14, lineHeight: 28 };
+const codeType: TextStyle = { fontSize: 14, lineHeight: 28 };
 
 // Code foreground color (text-foreground).
-export function codeText(tokens: ColorTokens): TextStyle {
+function codeText(tokens: ColorTokens): TextStyle {
   return { color: tokens.foreground };
 }
 
 // The shared code surface: a muted, bordered, rounded card. (w-full self-start
 // rounded-lg border border-border bg-muted/50)
-export function surface(tokens: ColorTokens): ViewStyle {
+function surface(tokens: ColorTokens): ViewStyle {
   return {
     width: "100%",
     alignSelf: "flex-start",
@@ -35,17 +44,12 @@ export function surface(tokens: ColorTokens): ViewStyle {
 }
 
 // Surface padding (p-4) added on top of `surface`.
-export const surfacePad: ViewStyle = { padding: 16 };
-
-// --- outer wrappers ---------------------------------------------------------
-
-// relative
-export const relative: ViewStyle = { position: "relative" };
+const surfacePad: ViewStyle = { padding: 16 };
 
 // --- inline variant ---------------------------------------------------------
 
 // self-start rounded border border-border bg-muted px-1.5 py-0.5
-export function inlineBox(tokens: ColorTokens): ViewStyle {
+function inlineBox(tokens: ColorTokens): ViewStyle {
   return {
     alignSelf: "flex-start",
     borderRadius: 4,
@@ -57,10 +61,13 @@ export function inlineBox(tokens: ColorTokens): ViewStyle {
   };
 }
 
+// The inline pill's own smaller size (text-[13px]).
+const inlineType: TextStyle = { fontSize: 13 };
+
 // --- terminal variant -------------------------------------------------------
 
 // relative w-full self-start overflow-hidden rounded-lg border border-border shadow-sm
-export function terminalOuter(tokens: ColorTokens): ViewStyle {
+function terminalOuter(tokens: ColorTokens): ViewStyle {
   return {
     position: "relative",
     width: "100%",
@@ -74,7 +81,7 @@ export function terminalOuter(tokens: ColorTokens): ViewStyle {
 }
 
 // Chrome bar: flex-row items-center gap-1.5 border-b border-zinc-700 bg-zinc-800 px-4 py-2.5
-export const terminalChrome: ViewStyle = {
+const terminalChrome: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   gap: 6,
@@ -86,12 +93,12 @@ export const terminalChrome: ViewStyle = {
 };
 
 // Traffic-light dot: h-3 w-3 rounded-full bg-<hue>-500.
-export function trafficDot(hue: "red" | "amber" | "green"): ViewStyle {
+function trafficDot(hue: "red" | "amber" | "green"): ViewStyle {
   return { height: 12, width: 12, borderRadius: 9999, backgroundColor: palette[`${hue}-500`] };
 }
 
 // Chrome label: ml-2 text-xs text-zinc-400.
-export const terminalLabel: TextStyle = {
+const terminalLabel: TextStyle = {
   marginLeft: 8,
   fontSize: 12,
   lineHeight: 16,
@@ -99,16 +106,16 @@ export const terminalLabel: TextStyle = {
 };
 
 // Terminal body: bg-zinc-900 p-4.
-export const terminalBody: ViewStyle = { backgroundColor: palette["zinc-900"], padding: 16 };
+const terminalBody: ViewStyle = { backgroundColor: palette["zinc-900"], padding: 16 };
 
 // A single command row: flex-row.
-export const terminalRow: ViewStyle = { flexDirection: "row" };
+const terminalRow: ViewStyle = { flexDirection: "row" };
 
 // The non-selectable "$ " prompt: text-emerald-400.
-export const terminalPrompt: TextStyle = { color: palette["emerald-400"] };
+const terminalPrompt: TextStyle = { color: palette["emerald-400"] };
 
 // The command line itself: flex-1 text-zinc-100.
-export const terminalLine: TextStyle = {
+const terminalLine: TextStyle = {
   flexGrow: 1,
   flexShrink: 1,
   flexBasis: "0%",
@@ -118,24 +125,24 @@ export const terminalLine: TextStyle = {
 // --- numbered variant -------------------------------------------------------
 
 // The numbered surface row: flex-row p-4 (on top of `surface`).
-export const numberedSurface: ViewStyle = { flexDirection: "row", padding: 16 };
+const numberedSurface: ViewStyle = { flexDirection: "row", padding: 16 };
 
 // The line-number gutter: mr-4 items-end.
-export const numberedGutter: ViewStyle = { marginRight: 16, alignItems: "flex-end" };
+const numberedGutter: ViewStyle = { marginRight: 16, alignItems: "flex-end" };
 
 // Dimmed line numbers (text-muted-foreground), sharing the code type.
-export function gutterText(tokens: ColorTokens): TextStyle {
+function gutterText(tokens: ColorTokens): TextStyle {
   return { color: tokens["muted-foreground"] };
 }
 
 // The code column: flex-1.
-export const numberedCodeCol: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
+const numberedCodeCol: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
 // --- copy affordance --------------------------------------------------------
 
 // absolute right-2 top-2 z-10 flex-row items-center self-start rounded-md border px-2.5 py-1.
 // The fill/border follows the dark branch: dark window vs light surface.
-export function copyButton(tokens: ColorTokens, dark: boolean): ViewStyle {
+function copyButton(tokens: ColorTokens, dark: boolean): ViewStyle {
   const base: ViewStyle = {
     position: "absolute",
     right: 8,
@@ -157,7 +164,7 @@ export function copyButton(tokens: ColorTokens, dark: boolean): ViewStyle {
 }
 
 // Copy label: text-xs font-medium, color per dark branch.
-export function copyText(tokens: ColorTokens, dark: boolean): TextStyle {
+function copyText(tokens: ColorTokens, dark: boolean): TextStyle {
   return {
     fontSize: 12,
     lineHeight: 16,
@@ -165,3 +172,38 @@ export function copyText(tokens: ColorTokens, dark: boolean): TextStyle {
     color: dark ? palette["zinc-300"] : tokens["muted-foreground"],
   };
 }
+
+// ---------- Web: the established Canvas look (lifted verbatim) ----------
+// The current code-block surface: a muted, bordered, rounded card with the
+// terminal / numbered / inline variants and the copy chip described above. This is
+// the single source of truth for the one shared look.
+export const webSkin: CodeBlockSkin = {
+  codeType,
+  codeText,
+  surface,
+  surfacePad,
+  inlineBox,
+  inlineType,
+  terminalOuter,
+  terminalChrome,
+  trafficDot,
+  terminalLabel,
+  terminalBody,
+  terminalRow,
+  terminalPrompt,
+  terminalLine,
+  numberedSurface,
+  numberedGutter,
+  gutterText,
+  numberedCodeCol,
+  copyButton,
+  copyText,
+  copyPressedOpacity: 0.8,
+};
+
+// ---------- iOS / Android: identical to web (Shared treatment) ----------
+// CodeBlock has no native iOS/Android control to match (the reference catalog marks
+// both `(none)`), so there is one look everywhere. These intentionally reference the
+// same object as `webSkin`; do NOT fabricate per-OS differences here.
+export const iosSkin: CodeBlockSkin = webSkin;
+export const androidSkin: CodeBlockSkin = webSkin;

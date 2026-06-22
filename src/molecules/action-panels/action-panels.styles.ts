@@ -1,39 +1,94 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette } from "../../style/index.js";
 
-// Co-located ActionPanel styles. Layout-only fragments are static objects; the
-// title color is a function of the active tokens (neutral) or the dark scheme
-// (the destructive danger-zone red, which rides the Tailwind palette so it stays
-// fixed per scheme rather than following the semantic tokens).
+// Co-located ActionPanel skins, one per platform. ActionPanel is a "Light"
+// platform treatment: ONE structure (a settings card with a copy block and a
+// single action), with only small per-OS touches on the layout rhythm and the
+// type. The shared shell (action-panels.shared.tsx) owns the structure, the
+// prop axes, and the tone-color logic (the danger-zone red and the neutral
+// token foreground); the skin carries ONLY the per-OS-varying pieces:
+//   - the title type (weight / size / tracking),
+//   - the description type (size / tracking),
+//   - the layout rhythm (copy gap, the inline-row gap, the stacked gap).
+//
+// The BRAND survives on every platform: the action itself is the platform-skinned
+// Button / Switch atom (those bring their own per-OS shape and press feedback, so
+// this molecule does NOT re-skin them), and the danger-zone red is the same
+// semantic red on every OS. Only the native type tracking and spacing shift:
+//   iOS (HIG / SwiftUI grouped-list & Form rows): SF type with tightened title
+//     tracking and a roomier inline gap, matching iOS settings-row rhythm.
+//   Android (Material 3 list / card): M3 label tracking on the title (positive
+//     tracking, M3 title-medium convention) over the same scale.
+//   Web: the established Canvas look (the current action-panel, lifted verbatim):
+//     14pt/600 title, 14pt muted description, 4pt copy gap, 24pt inline gap,
+//     16pt stacked gap, no tracking.
+//
+// ActionPanel itself has NO pressable rows of its own (its only interactive
+// elements are the composed Button / Switch atoms), so there is no per-OS press
+// feedback for the molecule to carry — the atoms own it.
 
 export type Tone = "destructive" | "neutral";
 export type Layout = "inline" | "stacked";
 
-// The card surface caps its width; passed to the Card child via its `style` prop.
-export const cardWidth: ViewStyle = { maxWidth: 560 };
-
-// The copy block: title stacked above its consequence line. In the inline layout
-// it grows to push the action to the right (flex-1); stacked, it stays natural.
-export const copyBlock: ViewStyle = { gap: 4 };
-export const copyGrow: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
-
-// The action wrapper: pinned (shrink-0) in the inline/toggle layouts, or
-// left-aligned (items-start) on its own line in the stacked layout.
-export const actionPinned: ViewStyle = { flexShrink: 0 };
-export const actionStacked: ViewStyle = { alignItems: "flex-start" };
-
-// The two body layouts: a side-by-side row (inline/toggle) or a vertical stack.
-export const inlineBody: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 24 };
-export const stackedBody: ViewStyle = { gap: 16 };
-
-// Title and description share Canvas's settings-row type scale (text-sm).
-export function titleText(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
-  // Danger-zone red rides the palette (fixed per scheme); neutral follows the
-  // semantic card foreground so it tracks light/dark/glass.
-  const color = tone === "destructive" ? (dark ? palette["red-400"] : palette["red-700"]) : tokens["card-foreground"];
-  return { fontSize: 14, lineHeight: 20, fontWeight: "600", color };
+// The contract a platform skin fulfills. The shell renders the card, the copy
+// block, the title/description, and the action; the skin maps the active
+// platform's type and spacing onto the copy + the two body layouts.
+export interface ActionPanelSkin {
+  /** Title type (weight / size / tracking). The tone color is supplied by shared. */
+  titleType: TextStyle;
+  /** Description type (size / line-height / tracking). The muted color is supplied by shared. */
+  descriptionType: TextStyle;
+  /** Vertical gap between the title and its consequence line. */
+  copyGap: number;
+  /** Horizontal gap between the copy and the pinned action in the inline/toggle row. */
+  inlineGap: number;
+  /** Vertical gap between the copy and the action in the stacked layout. */
+  stackedGap: number;
 }
 
-export function descriptionText(tokens: ColorTokens): TextStyle {
-  return { fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] };
+// The danger-zone red rides the Tailwind palette (fixed per scheme so it stays a
+// red rather than following the semantic tokens); this is platform-neutral and
+// therefore lives here as a helper the shell calls, shared by every skin.
+export function titleColor(tokens: ColorTokens, dark: boolean, tone: Tone): string {
+  return tone === "destructive"
+    ? dark
+      ? palette["red-400"]
+      : palette["red-700"]
+    : tokens["card-foreground"];
 }
+
+// ---------- Web: the established Canvas look (lifted verbatim) ----------
+// The current action-panel: a 14pt/600 title sharing the settings-row scale, a
+// 14pt muted description, a 4pt copy gap, a 24pt inline-row gap, and a 16pt
+// stacked gap. No type tracking.
+export const webSkin: ActionPanelSkin = {
+  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600" },
+  descriptionType: { fontSize: 14, lineHeight: 20 },
+  copyGap: 4,
+  inlineGap: 24,
+  stackedGap: 16,
+};
+
+// ---------- iOS (HIG / SwiftUI grouped-list & Form rows) ----------
+// iOS settings rows use SF type. Keeping Canvas's 14pt scale, the title takes the
+// SF tightened tracking (-0.24) and the inline action sits with a roomier gap (the
+// iOS grouped-row rhythm); the stacked gap matches.
+export const iosSkin: ActionPanelSkin = {
+  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24 },
+  descriptionType: { fontSize: 14, lineHeight: 20, letterSpacing: -0.16 },
+  copyGap: 4,
+  inlineGap: 28,
+  stackedGap: 16,
+};
+
+// ---------- Android (Material 3 list / card) ----------
+// M3 uses positive label tracking. The title takes the M3 title-medium tracking
+// (+0.15) and the body the M3 body tracking (+0.25) over Canvas's 14pt scale; the
+// action row sits a touch tighter (the M3 card-action rhythm).
+export const androidSkin: ActionPanelSkin = {
+  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: 0.15 },
+  descriptionType: { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 },
+  copyGap: 4,
+  inlineGap: 24,
+  stackedGap: 16,
+};

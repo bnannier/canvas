@@ -1,39 +1,59 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, alpha } from "../../style/index.js";
 
-// Co-located EmptyState styles. Layout-only fragments are static objects; the
-// disc fill + glyph color read a color and so are functions of the active
-// tokens. The `positive` tone paints the disc and glyph green from the fixed
-// Tailwind palette (green-600), while the default tone stays on the semantic
-// muted / muted-foreground tokens so it follows light/dark/glass.
+// Co-located EmptyState skins, one per platform. EmptyState is a "Light"
+// treatment: identical structure and semantic colors (those live below as the
+// shared tone helpers); only the bordered card's RADIUS, the column DENSITY/
+// SPACING, and the title/description TYPE TRACKING shift per OS. The BRAND survives
+// on every platform (the `positive` green wash and the `primary` action Button stay
+// the same); React Native gives no native empty-state control on iOS (SwiftUI's
+// ContentUnavailableView is code-only) or Android (Material 3 dropped the M1/M2
+// empty-states pattern), so there is no native shape to match — each skin keeps the
+// established structure and applies only the platform's own surface conventions:
+//   iOS (HIG): a continuous-corner bordered card (radius 12, the grouped-inset
+//     feel), SF-style type with tightened tracking on the title (-0.4) and
+//     description (-0.2); press feedback is N/A (the surface has no pressable of its
+//     own; the action is the iOS-skinned Button atom).
+//   Android (Material 3): an M3 medium-shape card (radius 12), M3 type tracking
+//     (title +0.15, body +0.25); the action is the M3-skinned Button atom, which
+//     carries its own ripple, so this surface adds none.
+//   Web: the established Canvas look (the current empty-state, lifted verbatim) — a
+//     rounded-md bordered card (radius 8), padding 16/24 (compact) or 24/32, a
+//     16pt/600 title and a 14pt `muted-foreground` description, no extra tracking.
 
 export type Tone = "positive" | "default";
 
-// The centered column. Bordered wraps it in a rounded, bordered card whose
-// padding tightens under `compact`.
-export const container: ViewStyle = { alignItems: "center" };
+// The contract a platform skin fulfills. The shell renders the centered column,
+// the optional bordered card, the icon disc, the title/description, and the action
+// spacing; the skin maps the active platform's radius/density/type onto each piece.
+export interface EmptyStateSkin {
+  /** The centered column wrapper. */
+  container: ViewStyle;
+  /** The bordered card shape (radius + border width); fill/color is shared. */
+  borderedBase: ViewStyle;
+  /** Bordered card padding by density (compact tightens it for dense table cells). */
+  borderedPad: Record<"compact" | "default", ViewStyle>;
+  /** The round icon disc base (size + shape + bottom inset); fill is shared by tone. */
+  discBase: ViewStyle;
+  /** The glyph type inside the disc; color is shared by tone. */
+  glyph: TextStyle;
+  /** Title type (size / line-height / weight / tracking + alignment + color). */
+  title: (t: ColorTokens) => TextStyle;
+  /** Description type (size / line-height / tracking + inset + alignment + color). */
+  description: (t: ColorTokens) => TextStyle;
+  /** The action button's inset above it. */
+  actionSpacing: ViewStyle;
+}
 
-export const borderedBase: ViewStyle = { borderRadius: 8, borderWidth: 1 };
+// ---- Shared, platform-neutral color logic (the same on every OS) -------------
+// The bordered card's border color follows the semantic `border` token. The
+// `positive` tone paints the disc and glyph green from the fixed Tailwind palette
+// (green-600), while the default tone stays on the semantic muted / muted-
+// foreground tokens so it follows light/dark/glass.
 
 export function borderedSurface(tokens: ColorTokens): ViewStyle {
   return { borderColor: tokens.border };
 }
-
-// Bordered card padding by density (compact tightens it for dense table cells).
-export const borderedPad: Record<"compact" | "default", ViewStyle> = {
-  compact: { paddingHorizontal: 16, paddingVertical: 24 },
-  default: { paddingHorizontal: 24, paddingVertical: 32 },
-};
-
-// The round 48x48 icon disc.
-export const discBase: ViewStyle = {
-  marginBottom: 12,
-  height: 48,
-  width: 48,
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 9999,
-};
 
 // Disc fill per tone: a 10% green wash when positive, the muted token otherwise.
 export function discTone(tokens: ColorTokens, tone: Tone): ViewStyle {
@@ -42,22 +62,107 @@ export function discTone(tokens: ColorTokens, tone: Tone): ViewStyle {
     : { backgroundColor: tokens.muted };
 }
 
-// The glyph inside the disc (text-xl), colored per tone.
-export const glyphBase: TextStyle = { fontSize: 20, lineHeight: 28 };
-
 export function glyphTone(tokens: ColorTokens, tone: Tone): TextStyle {
   return tone === "positive" ? { color: palette["green-600"] } : { color: tokens["muted-foreground"] };
 }
 
-// Title: centered, semibold, foreground.
-export function title(tokens: ColorTokens): TextStyle {
-  return { textAlign: "center", fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground };
-}
+// ---- Shared layout fragments reused across the skins -------------------------
+const CONTAINER: ViewStyle = { alignItems: "center" };
 
-// Description: centered, muted, with a small inset above the title.
-export function description(tokens: ColorTokens): TextStyle {
-  return { marginTop: 4, textAlign: "center", fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] };
-}
+const DISC: ViewStyle = {
+  marginBottom: 12,
+  height: 48,
+  width: 48,
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: 9999,
+};
 
-// The action button's inset above it.
-export const actionSpacing: ViewStyle = { marginTop: 16 };
+const GLYPH: TextStyle = { fontSize: 20, lineHeight: 28 };
+
+const ACTION_SPACING: ViewStyle = { marginTop: 16 };
+
+// ---- Web (the established Canvas look, lifted verbatim) ----------------------
+export const webSkin: EmptyStateSkin = {
+  container: CONTAINER,
+  borderedBase: { borderRadius: 8, borderWidth: 1 },
+  borderedPad: {
+    compact: { paddingHorizontal: 16, paddingVertical: 24 },
+    default: { paddingHorizontal: 24, paddingVertical: 32 },
+  },
+  discBase: DISC,
+  glyph: GLYPH,
+  title: (tokens) => ({
+    textAlign: "center",
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600",
+    color: tokens.foreground,
+  }),
+  description: (tokens) => ({
+    marginTop: 4,
+    textAlign: "center",
+    fontSize: 14,
+    lineHeight: 20,
+    color: tokens["muted-foreground"],
+  }),
+  actionSpacing: ACTION_SPACING,
+};
+
+// ---- iOS (HIG): continuous-corner grouped-inset feel, tightened SF tracking --
+export const iosSkin: EmptyStateSkin = {
+  container: CONTAINER,
+  borderedBase: { borderRadius: 12, borderWidth: 1 },
+  borderedPad: {
+    compact: { paddingHorizontal: 16, paddingVertical: 24 },
+    default: { paddingHorizontal: 24, paddingVertical: 32 },
+  },
+  discBase: DISC,
+  glyph: GLYPH,
+  title: (tokens) => ({
+    textAlign: "center",
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600",
+    letterSpacing: -0.4,
+    color: tokens.foreground,
+  }),
+  description: (tokens) => ({
+    marginTop: 4,
+    textAlign: "center",
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: -0.2,
+    color: tokens["muted-foreground"],
+  }),
+  actionSpacing: ACTION_SPACING,
+};
+
+// ---- Android (Material 3): M3 medium shape, M3 type tracking -----------------
+export const androidSkin: EmptyStateSkin = {
+  container: CONTAINER,
+  borderedBase: { borderRadius: 12, borderWidth: 1 },
+  borderedPad: {
+    compact: { paddingHorizontal: 16, paddingVertical: 24 },
+    default: { paddingHorizontal: 24, paddingVertical: 32 },
+  },
+  discBase: DISC,
+  glyph: GLYPH,
+  title: (tokens) => ({
+    textAlign: "center",
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600",
+    letterSpacing: 0.15,
+    color: tokens.foreground,
+  }),
+  description: (tokens) => ({
+    marginTop: 4,
+    textAlign: "center",
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0.25,
+    color: tokens["muted-foreground"],
+  }),
+  actionSpacing: ACTION_SPACING,
+};
