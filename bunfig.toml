@@ -1,0 +1,4 @@
+[test]
+# Alias react-native -> react-native-web so the kit's modules load under `bun test`
+# (see test/setup.ts). Tests exercise the web (RNW) rendering of the universal components.
+preload = ["./test/setup.ts"]

@@ -43,6 +43,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Unit tests
+        run: bun test
+
       # The docs example modules are generated from each component's .md fences
       # (tools/docgen). Fail if the committed output is stale, then type-check every
       # generated fence against the real component prop types, so a breaking prop
