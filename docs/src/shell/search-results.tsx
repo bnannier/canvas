@@ -37,15 +37,13 @@ export function SearchResults({
 
   return (
     <ScrollView style={style} keyboardShouldPersistTaps="handled">
-      {!query ? (
+      {/* A populated list always renders (the caller may seed empty-query browse content);
+          the prompt/empty states only show when there is nothing to list. */}
+      {results.length === 0 ? (
         <View style={{ padding: 24, alignItems: "center" }}>
           <Text style={{ fontFamily: geist("400"), fontSize: 13, color: tokens["muted-foreground"], textAlign: "center" }}>
-            Type to search components, tokens, and guides.
+            {query ? "No results found." : "Type to search components, tokens, and guides."}
           </Text>
-        </View>
-      ) : results.length === 0 ? (
-        <View style={{ padding: 24, alignItems: "center" }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 13, color: tokens["muted-foreground"] }}>No results found.</Text>
         </View>
       ) : (
         <View style={{ paddingVertical: 6 }}>

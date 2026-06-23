@@ -3,7 +3,7 @@ import { Platform, type NativeSyntheticEvent, type TextInputFocusEventData } fro
 import { Redirect, Stack, useFocusEffect, useRouter } from "expo-router";
 import type { SearchBarCommands } from "react-native-screens";
 import { View, useTheme } from "@olympusoss/canvas";
-import { search } from "../../core/data/search";
+import { search, ALL_ENTRIES } from "../../core/data/search";
 import { SearchResults } from "../../shell/search-results";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this:
@@ -11,6 +11,13 @@ import { SearchResults } from "../../shell/search-results";
 // search on Android). Whenever the tab is opened it AUTO-FOCUSES the field (keyboard up,
 // ready to type) and the live results render below. On web the Search tab opens the cmd-K
 // modal instead (see WebNav), so a /search deep link just redirects home.
+//
+// The content layer is the full browseable catalog (ALL_ENTRIES) until the user types, then
+// it narrows to matches. That keeps a real, scrollable list behind the field at all times:
+// it is the iOS 26 search pattern (a content list under the bar) AND it is what gives the
+// field its Liquid Glass refraction. The system dims the background during search by default
+// (obscureBackground), which would cover that content with a flat sheet and leave the glass
+// nothing to refract, so we turn the dimming off and let the themed catalog show through.
 export default function SearchScreen() {
   if (Platform.OS === "web") return <Redirect href="/" />;
   return <NativeSearch />;
@@ -20,7 +27,9 @@ function NativeSearch() {
   const router = useRouter();
   const { tokens } = useTheme();
   const [query, setQuery] = useState("");
-  const results = useMemo(() => search(query), [query]);
+  // Empty query browses the whole catalog; a real query narrows to matches. Either way the
+  // content layer is populated, so the Liquid Glass field always has a list to refract.
+  const results = useMemo(() => (query.trim() ? search(query) : ALL_ENTRIES), [query]);
   const searchRef = useRef<SearchBarCommands>(null);
 
   // Focus the search field every time the tab gains focus. The native search bar's
@@ -44,6 +53,9 @@ function NativeSearch() {
             autoFocus: true,
             placeholder: "Search components...",
             hideWhenScrolling: false,
+            // Don't dim/cover the screen while searching: the themed catalog stays visible
+            // behind the field so the iOS 26 Liquid Glass material has content to refract.
+            obscureBackground: false,
             ...(Platform.OS === "ios" ? { placement: "integrated" as const } : {}),
             onChangeText: (e: NativeSyntheticEvent<TextInputFocusEventData>) => setQuery(e.nativeEvent.text),
             onCancelButtonPress: () => setQuery(""),
