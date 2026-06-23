@@ -36,7 +36,7 @@ function NativeNav() {
     // material is fully system-controlled, so its clarity can't be tuned here.
     <NativeTabs sidebarAdaptable={Platform.OS === "ios"} minimizeBehavior="onScrollDown">
       {MOBILE_TABS.map((tab) => (
-        <NativeTabs.Trigger key={tab.id} name={tab.role === "search" ? "search" : `(${tab.id})`} role={tab.role}>
+        <NativeTabs.Trigger key={tab.id} name={`(${tab.id})`} role={tab.role}>
           <NativeTabs.Trigger.Icon sf={tab.icon.ios as never} md={tab.icon.android as never} />
           <NativeTabs.Trigger.Label>{tab.label}</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>

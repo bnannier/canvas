@@ -20,7 +20,7 @@ import { useTheme } from "@olympusoss/canvas";
 // would fall back to its system-default (light) background — making the app look light in
 // dark mode and frosting the Liquid Glass bars over white. Tied to tokens.background, the
 // backdrop follows the OS light/dark scheme, and the bars frost over the right color.
-export function TabShell({ section: _section }: { section: "home" | "components" | "utilities" }) {
+export function TabShell({ section: _section }: { section: "home" | "components" | "utilities" | "search" }) {
   const { tokens } = useTheme();
   if (Platform.OS === "web") return <Slot />;
   const ios = Platform.OS === "ios";
