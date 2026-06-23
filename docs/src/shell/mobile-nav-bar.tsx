@@ -4,13 +4,14 @@ import { geist } from "../ui/fonts";
 
 // The mobile-web top bar, built to match the iOS UINavigationBar: a centered title flanked by
 // circular Liquid-Glass-style buttons — a back chevron on the left (on pushed pages) and the
-// menu + search on the right. It renders through GlassSurface like the native nav bar, so it
-// frosts in glass mode and is solid otherwise. This is docs nav chrome (the authorized
-// platform branch), composed from kit primitives, mirroring the native iOS header.
+// category-menu button on the right (search lives in the bottom tab bar). It renders through
+// GlassSurface like the native nav bar, so it frosts in glass mode and is solid otherwise. This
+// is docs nav chrome (the authorized platform branch), composed from kit primitives, mirroring
+// the native iOS header.
 
 const BAR_HEIGHT = 52;
 // Equal side cells keep the title centered across the whole bar regardless of how many
-// buttons each side holds (the right side has two), exactly as iOS centers its title.
+// buttons each side holds, exactly as iOS centers its title.
 const SIDE = 90;
 
 function CircleButton({ icon, label, onPress }: { icon: ReactNode; label: string; onPress: () => void }) {
@@ -42,13 +43,11 @@ export function MobileNavBar({
   showBack,
   onBack,
   onMenu,
-  onSearch,
 }: {
   title: string;
   showBack: boolean;
   onBack: () => void;
   onMenu: () => void;
-  onSearch: () => void;
 }) {
   const { tokens } = useTheme();
   return (
@@ -62,7 +61,6 @@ export function MobileNavBar({
         </Text>
         <View style={{ width: SIDE, flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
           <CircleButton label="Menu" onPress={onMenu} icon={<Icon menu size={18} />} />
-          <CircleButton label="Search" onPress={onSearch} icon={<Icon search size={18} />} />
         </View>
       </View>
     </GlassSurface>

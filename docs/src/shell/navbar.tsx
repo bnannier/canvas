@@ -54,6 +54,9 @@ const MOBILE_SECTIONS = [
   { id: "utilities", label: "Utilities", icon: "palette", href: "/tokens/colors" },
 ];
 
+// The bottom tab bar's rightmost tab key: an action (opens search), not a section.
+const SEARCH_TAB = "search";
+
 // The kit Icon is styled by boolean glyph props; the section glyph is data, so it is built
 // dynamically and cast to IconProps (the one place a name string drives the Icon).
 function sectionIcon(name: string, active: boolean) {
@@ -142,18 +145,26 @@ function WebNav() {
               showBack={!atRoot}
               onBack={goBack}
               onMenu={() => setMenuOpen(true)}
-              onSearch={() => setSearchOpen(true)}
             />
           </View>
         </View>
         <TabBar
-          items={MOBILE_SECTIONS.map((s) => ({
-            key: s.id,
-            label: s.label,
-            icon: (active) => <Icon {...sectionIcon(s.icon, active)} size={22} />,
-          }))}
+          items={[
+            ...MOBILE_SECTIONS.map((s) => ({
+              key: s.id,
+              label: s.label,
+              icon: (active: boolean) => <Icon {...sectionIcon(s.icon, active)} size={22} />,
+            })),
+            // Search is the rightmost tab (the iOS App Store pattern): it opens the
+            // search modal instead of navigating, so it never reads as "active".
+            { key: SEARCH_TAB, label: "Search", icon: () => <Icon search muted size={22} /> },
+          ]}
           active={section}
           onSelect={(key) => {
+            if (key === SEARCH_TAB) {
+              setSearchOpen(true);
+              return;
+            }
             const s = MOBILE_SECTIONS.find((m) => m.id === key);
             if (s) router.push(s.href as never);
           }}
