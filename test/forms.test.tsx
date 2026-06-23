@@ -6,6 +6,9 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
+import { Field } from "../src/molecules/field/field.tsx";
+import { Form } from "../src/molecules/form/form.tsx";
+import { Fieldset } from "../src/molecules/fieldset/fieldset.tsx";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -53,5 +56,48 @@ describe("Input", () => {
 
   it("sets a displayName for DevTools/stack traces", () => {
     expect((Input as { displayName?: string }).displayName).toBe("Input");
+  });
+
+  it("emits aria-label to the DOM for accessibilityLabel (RNW drops the RN prop)", () => {
+    ui(<Input accessibilityLabel="Email" placeholder="you@acme.dev" />);
+    // getByLabelText resolves the computed accessible name: proves WCAG 4.1.2 Name.
+    expect(screen.getByLabelText("Email")).toBe(screen.getByPlaceholderText("you@acme.dev"));
+  });
+
+  it("emits aria-labelledby so a visible label Text names the field", () => {
+    ui(
+      <>
+        {/* nativeID -> id on web */}
+        <Input aria-labelledby="lbl" placeholder="bare" />
+        <span id="lbl">Username</span>
+      </>,
+    );
+    expect(screen.getByLabelText("Username")).toBe(screen.getByPlaceholderText("bare"));
+  });
+});
+
+// The visible label of a composed field must be the input's programmatic name on
+// web, not just a sibling Text (WCAG 4.1.2). getByLabelText only resolves when the
+// accessible name is wired through to the DOM input, so it guards every layout.
+describe("accessible names on composed fields", () => {
+  it("Field names its control by the visible label", () => {
+    ui(<Field label="Email" placeholder="ada@acme.dev" />);
+    expect(screen.getByLabelText("Email")).toBe(screen.getByPlaceholderText("ada@acme.dev"));
+  });
+
+  it("Form (stacked) names each input by its label", () => {
+    ui(<Form stacked fields={[{ label: "Full name", placeholder: "Ada" }, { label: "Email", placeholder: "ada@acme.dev" }]} />);
+    expect(screen.getByLabelText("Full name")).toBe(screen.getByPlaceholderText("Ada"));
+    expect(screen.getByLabelText("Email")).toBe(screen.getByPlaceholderText("ada@acme.dev"));
+  });
+
+  it("Form (sidebar) names each input by its label", () => {
+    ui(<Form sidebar fields={[{ label: "City", placeholder: "Austin" }]} />);
+    expect(screen.getByLabelText("City")).toBe(screen.getByPlaceholderText("Austin"));
+  });
+
+  it("Fieldset names each item's control by its label", () => {
+    ui(<Fieldset legend="Address" items={[{ label: "Street", placeholder: "123 Market St" }]} />);
+    expect(screen.getByLabelText("Street")).toBe(screen.getByPlaceholderText("123 Market St"));
   });
 });
