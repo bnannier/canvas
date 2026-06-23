@@ -1,35 +1,38 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import canvasPkg from "../../../package.json";
 
-// The version pill shows the latest PUBLISHED release of @olympusoss/canvas. A
-// deployed docs build bakes in whatever version it was compiled against, which can
-// trail npm (CI bumps the version on release, and a static export may outlive
-// several releases), so we fetch the latest dist-tag at runtime and fall back to
-// the build-time version until (and unless) it resolves. Cross-platform: a plain
-// fetch works on iOS, Android, and web (the npm registry sends permissive CORS
-// headers for the browser case); on failure the pill keeps the build-time value.
+// The version pill shows the latest PUBLISHED release of @olympusoss/canvas. It re-checks the
+// npm registry EVERY time the screen using it gains focus (there is no "once per session"
+// short-circuit), so the pill always reflects the current published version rather than a
+// value cached at first load. Until the first fetch resolves — or if it fails (offline, etc.)
+// — it falls back to the build-time version. A module-level last-known value seeds the initial
+// render so a re-mount (web navigation) doesn't flash the fallback. Cross-platform: a plain
+// fetch works on iOS, Android, and the web (the npm registry sends permissive CORS headers).
 const FALLBACK = `v${canvasPkg.version}`;
 const LATEST_URL = "https://registry.npmjs.org/@olympusoss/canvas/latest";
 
-// Resolve once per session; the latest release does not change while the app runs.
-let cached: string | null = null;
+// Seeds the first render of a fresh mount; always re-validated by the focus fetch below.
+let lastKnown: string | null = null;
 
 export function useLatestVersion(): string {
-  const [version, setVersion] = useState(cached ?? FALLBACK);
-  useEffect(() => {
-    if (cached) return;
-    let active = true;
-    fetch(LATEST_URL)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: { version?: string } | null) => {
-        if (!active || typeof data?.version !== "string") return;
-        cached = `v${data.version}`;
-        setVersion(cached);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
+  const [version, setVersion] = useState(lastKnown ?? FALLBACK);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      // cache: "no-store" so each check hits the network instead of a stale cached response.
+      fetch(LATEST_URL, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: { version?: string } | null) => {
+          if (!active || typeof data?.version !== "string") return;
+          lastKnown = `v${data.version}`;
+          setVersion(lastKnown);
+        })
+        .catch(() => {});
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
   return version;
 }
