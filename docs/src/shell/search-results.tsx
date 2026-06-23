@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Platform, type StyleProp, type ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Text, Pressable, useTheme, alpha, ScrollView } from "@olympusoss/canvas";
 import type { SearchEntry } from "../core/data/types";
 import { geist } from "../ui/fonts";
@@ -24,6 +25,7 @@ export function SearchResults({
   style?: StyleProp<ViewStyle>;
 }) {
   const { tokens } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const grouped = useMemo(() => {
     const map = new Map<string, SearchEntry[]>();
@@ -36,7 +38,14 @@ export function SearchResults({
   }, [results]);
 
   return (
-    <ScrollView style={style} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={style}
+      keyboardShouldPersistTaps="handled"
+      // The native iOS search field floats over the bottom of this list (integrated
+      // placement), so pad the content by the safe area + the field's height; without it
+      // the last results sit hidden behind the field.
+      contentContainerStyle={{ paddingBottom: insets.bottom + 64 }}
+    >
       {/* A populated list always renders (the caller may seed empty-query browse content);
           the prompt/empty states only show when there is nothing to list. */}
       {results.length === 0 ? (
