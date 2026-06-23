@@ -168,7 +168,7 @@ function WebNav() {
             const s = MOBILE_SECTIONS.find((m) => m.id === key);
             if (s) router.push(s.href as never);
           }}
-          style={{ paddingBottom: insets.bottom }}
+          bottomInset={insets.bottom}
         />
         <TabOverflowMenu
           visible={menuOpen}

@@ -24,7 +24,13 @@ export interface TabBarProps {
   /** The active item's key. */
   active: string;
   onSelect: (key: string) => void;
-  /** Layout escape hatch, e.g. a safe-area bottom inset: `{ paddingBottom: insets.bottom }`. */
+  /**
+   * Safe-area bottom inset, e.g. `insets.bottom`. It is added BELOW the bar's own symmetric
+   * vertical padding (not in place of it), so the bar clears the home indicator without making
+   * the bottom margin heavier than the top. Defaults to 0 (web desktop / no inset).
+   */
+  bottomInset?: number;
+  /** Layout escape hatch for other overrides. Do NOT use this for the safe area — see `bottomInset`. */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -42,10 +48,16 @@ export interface TabBarSkin {
 }
 
 export function createTabBar(skin: TabBarSkin) {
-  return function TabBar({ items, active, onSelect, style }: TabBarProps) {
+  return function TabBar({ items, active, onSelect, bottomInset = 0, style }: TabBarProps) {
     const { tokens } = useTheme();
+    // The skin's paddingTop is the bar's symmetric vertical base. Mirror it on the bottom and
+    // add the safe-area inset there, so the item row stays vertically centered (top margin ==
+    // bottom margin) while the bar still extends down to cover the home indicator.
+    const basePad = typeof skin.bar.paddingTop === "number" ? skin.bar.paddingTop : 0;
     return (
-      <GlassSurface style={[skin.bar, { borderColor: tokens.border, backgroundColor: tokens.card }, style]}>
+      <GlassSurface
+        style={[skin.bar, { borderColor: tokens.border, backgroundColor: tokens.card, paddingBottom: basePad + bottomInset }, style]}
+      >
         <View accessibilityRole="tablist" style={{ flex: 1, flexDirection: "row" }}>
           {items.map((it) => {
             const isActive = it.key === active;
