@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactNode } from "react";
+import { type ComponentType, type ReactNode, useId } from "react";
 import { type DimensionValue } from "react-native";
 import { View, Text, useTheme, useResponsive, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
@@ -106,27 +106,41 @@ export function createFieldset(
     error?: boolean;
   }) {
     const { tokens } = useTheme();
+    const fieldId = useId();
     const msg = item.error ?? (error ? "Enter a valid value" : "");
     // The label must reach the control programmatically, not just sit above it: the
     // composed Input renders a bare field with only a placeholder, and a placeholder
-    // is not a label (it vanishes on focus and is skipped by many screen readers).
-    // The Input atom forwards no accessible name of its own, so the field is wrapped
-    // in a labeled group whose name is the field label, which assistive tech announces
-    // for the control inside. RNW does not forward the accessible name to the DOM, so
-    // both accessibilityLabel (native) and its aria-label alias (web) are set; `role`
-    // maps to the ARIA grouping role cross-platform.
+    // is not a label (it vanishes on focus and is skipped by many screen readers). A
+    // group's name does not become the contained control's own accessible name, so the
+    // visible label Text is linked to the Input via aria-labelledby (with the RN
+    // accessibilityLabel as the native name) and the help/error is wired as its
+    // description; the wrapping group still carries the same name so the row also
+    // announces as one unit. RNW forwards neither the name nor a plain
+    // accessibilityState to the DOM on its own, hence the aria-* aliases; `role` maps
+    // to the ARIA grouping role cross-platform.
+    const labelId = item.label ? `${fieldId}-label` : undefined;
+    const messageId = msg || item.help ? `${fieldId}-message` : undefined;
     const labelled =
       item.label
         ? ({ role: "group" as const, accessibilityLabel: item.label, "aria-label": item.label } as const)
         : {};
     return (
       <View style={s.fieldWrap} {...labelled}>
-        {item.label ? <Text style={skin.fieldLabel(tokens)}>{item.label}</Text> : null}
-        <Input value={item.value} placeholder={item.placeholder} disabled={disabled} error={!!msg} block />
+        {item.label ? <Text nativeID={labelId} style={skin.fieldLabel(tokens)}>{item.label}</Text> : null}
+        <Input
+          value={item.value}
+          placeholder={item.placeholder}
+          disabled={disabled}
+          error={!!msg}
+          block
+          accessibilityLabel={item.label}
+          aria-labelledby={labelId}
+          aria-describedby={messageId}
+        />
         {msg ? (
-          <Text style={skin.fieldError(tokens)}>{msg}</Text>
+          <Text nativeID={messageId} style={skin.fieldError(tokens)}>{msg}</Text>
         ) : item.help ? (
-          <Text style={skin.fieldHelp(tokens)}>{item.help}</Text>
+          <Text nativeID={messageId} style={skin.fieldHelp(tokens)}>{item.help}</Text>
         ) : null}
       </View>
     );

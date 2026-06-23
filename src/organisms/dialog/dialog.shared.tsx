@@ -98,6 +98,10 @@ export function createDialog(skin: DialogSkin) {
     const baseId = useId();
     const titleId = `${baseId}-title`;
     const descriptionId = `${baseId}-description`;
+    // The demo body's two fields link their visible labels to the inputs below, so
+    // each control is announced by name rather than as an unlabeled edit field.
+    const amountId = `${baseId}-amount`;
+    const reasonId = `${baseId}-reason`;
 
     // Uncontrolled by default: the trigger opens the dialog and an action closes
     // it; a controlled `open` prop overrides this.
@@ -239,13 +243,13 @@ export function createDialog(skin: DialogSkin) {
                   ) : null}
                   {withBody ? (
                     <View style={skin.formBody}>
-                      <Text style={skin.fieldLabel(tokens)}>Amount</Text>
+                      <Text nativeID={amountId} style={skin.fieldLabel(tokens)}>Amount</Text>
                       <View style={skin.amountRow}>
                         <Text style={skin.currency(tokens)}>$</Text>
-                        <Input value="90.00" style={skin.amountInput} />
+                        <Input value="90.00" style={skin.amountInput} accessibilityLabel="Amount" aria-labelledby={amountId} />
                       </View>
-                      <Text style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>
-                      <Input placeholder="Duplicate charge" />
+                      <Text nativeID={reasonId} style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>
+                      <Input placeholder="Duplicate charge" accessibilityLabel="Reason" aria-labelledby={reasonId} />
                     </View>
                   ) : null}
                   {footer}

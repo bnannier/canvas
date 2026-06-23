@@ -1,4 +1,4 @@
-import { type ComponentType } from "react";
+import { type ComponentType, useId } from "react";
 import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -214,6 +214,9 @@ export function createField(
       style,
     } = props;
     const { tokens } = useTheme();
+    // One collision-free id base per field instance, used in control mode to link
+    // the visible label and the helper/error message to the Input below.
+    const fieldId = useId();
 
     // Display mode: a read-only stack of label/value rows. Each row aligns its
     // label to a fixed 180px column (flex, not grid) so every value lines up to
@@ -267,11 +270,18 @@ export function createField(
     // Error takes precedence over the resting helper below the control.
     const showError = !!invalid && !!error;
     const messageText = showError ? error : helper;
+    // Programmatically associate the visible label and the helper/error with the
+    // control: the label Text carries an id named via aria-labelledby (with the RN
+    // accessibilityLabel as the native name), and the message Text is wired as the
+    // field's description. Without this the Input is announced as an unlabeled edit
+    // field (WCAG 4.1.2 Name/Role/Value).
+    const labelId = label != null ? `${fieldId}-label` : undefined;
+    const messageId = messageText != null ? `${fieldId}-message` : undefined;
 
     return (
       <View style={[skin.controlStack, disabled ? s.dimmed : null, style]}>
         {label != null ? (
-          <Text style={skin.label(tokens)}>
+          <Text nativeID={labelId} style={skin.label(tokens)}>
             {label}
             {required ? <Text style={{ color: tokens.destructive }}> *</Text> : null}
           </Text>
@@ -282,8 +292,11 @@ export function createField(
           placeholder={placeholder}
           disabled={disabled}
           error={invalid}
+          accessibilityLabel={label}
+          aria-labelledby={labelId}
+          aria-describedby={messageId}
         />
-        {messageText != null ? <Text style={skin.message(tokens, showError)}>{messageText}</Text> : null}
+        {messageText != null ? <Text nativeID={messageId} style={skin.message(tokens, showError)}>{messageText}</Text> : null}
       </View>
     );
   };
