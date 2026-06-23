@@ -140,6 +140,9 @@
       {
         "id": "utilities", "label": "Utilities", "icon": { "ios": "paintpalette", "android": "palette" },
         "topbar": { "inline": ["colors", "spacing", "typography", "layout"] }
+      },
+      {
+        "id": "search", "role": "search", "label": "Search", "icon": { "ios": "magnifyingglass", "android": "search" }
       }
     ]
   }
