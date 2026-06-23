@@ -136,7 +136,7 @@ function Aurora() {
     { color: "#06b6d4", cx: "20%", cy: "80%", r: "32%", o: 0.2 },
   ];
   return (
-    <View pointerEvents="none" style={{ position: "absolute", top: -260, right: -180, width: 760, height: 760, opacity: 0.7 }}>
+    <View pointerEvents="none" style={{ position: "absolute", top: -100, right: -180, width: 760, height: 760, opacity: 0.7 }}>
       <Svg width={760} height={760}>
         <Defs>
           {blobs.map((b, i) => (
