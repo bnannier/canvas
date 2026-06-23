@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { useWindowDimensions, Linking, Platform } from "react-native";
+import { useWindowDimensions, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
@@ -198,10 +198,7 @@ export function Home() {
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentInsetAdjustmentBehavior="automatic"
-      // Web: CONTENT_TOP_INSET clears the absolute Topbar. Native: it is 0 (the transparent
-      // nav bar is cleared by contentInsetAdjustmentBehavior), but add breathing room so the
-      // hero badge is not jammed up under the bar / cut off at the top.
-      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET + (Platform.OS === "web" ? 0 : 24), paddingBottom: insets.bottom }}
+      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom }}
     >
       {/* ── Hero ── */}
       <View style={{ overflow: "hidden", paddingTop: wide ? 28 : 14, paddingBottom: 56 }}>
