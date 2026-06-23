@@ -59,6 +59,11 @@ function NativeSearch() {
             ...(Platform.OS === "ios" ? { placement: "integrated" as const } : {}),
             onChangeText: (e: NativeSyntheticEvent<TextInputFocusEventData>) => setQuery(e.nativeEvent.text),
             onCancelButtonPress: () => setQuery(""),
+            // iOS floats a separate Cancel button (its own Liquid Glass pill) next to the
+            // field whenever it is editing, which reads as a second object. Hide it as soon
+            // as the field focuses so the search reads as ONE cohesive control; the leading
+            // nav capsule (return-to-previous-tab) remains the way out of search.
+            onFocus: () => searchRef.current?.toggleCancelButton(false),
           },
         }}
       />
