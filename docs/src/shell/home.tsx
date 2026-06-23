@@ -201,7 +201,11 @@ export function Home() {
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom }}
     >
       {/* ── Hero ── */}
-      <View style={{ overflow: "hidden", paddingTop: wide ? 28 : 14, paddingBottom: 56 }}>
+      {/* Bleed the hero (and its Aurora wash) up under the transparent nav bar so the glass
+          refracts the aurora instead of the bare page — otherwise that strip reads as a white
+          bar at the top. insets.top is 0 on web, so the web hero is unchanged; the matching
+          paddingTop keeps the copy below the bar. */}
+      <View style={{ overflow: "hidden", marginTop: -insets.top, paddingTop: insets.top + (wide ? 28 : 14), paddingBottom: 56 }}>
         <Aurora />
         <Wrap>
           {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
