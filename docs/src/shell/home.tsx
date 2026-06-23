@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { useWindowDimensions, Linking } from "react-native";
+import { useWindowDimensions, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
@@ -197,15 +197,20 @@ export function Home() {
     <ScreenFrame>
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom }}
+      // The hero must start at the very top of the viewport (its Aurora fills behind the
+      // transparent nav bar), so do NOT inset the content for the top bar. The hero's own
+      // paddingTop brings the copy below the bar; paddingBottom clears the tab bar — both
+      // insets we'd otherwise inherit from "automatic". No-op on web (the Topbar is cleared by
+      // CONTENT_TOP_INSET and there is no native tab bar).
+      contentInsetAdjustmentBehavior="never"
+      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? 0 : 49) }}
     >
       {/* ── Hero ── */}
-      {/* Bleed the hero (and its Aurora wash) up under the transparent nav bar so the glass
-          refracts the aurora instead of the bare page — otherwise that strip reads as a white
-          bar at the top. insets.top is 0 on web, so the web hero is unchanged; the matching
-          paddingTop keeps the copy below the bar. */}
-      <View style={{ overflow: "hidden", marginTop: -insets.top, paddingTop: insets.top + (wide ? 28 : 14), paddingBottom: 56 }}>
+      {/* Starts at the viewport top (the scroller is not top-inset, above) so the Aurora fills
+          behind the transparent nav bar. paddingTop = the status-bar inset + the ~44pt nav bar +
+          the hero's own gap, so the copy lands just below the bar. Native only: on web insets.top
+          is 0 and there is no nav bar (the Topbar is cleared by CONTENT_TOP_INSET). */}
+      <View style={{ overflow: "hidden", paddingTop: insets.top + (wide ? 28 : 14) + (Platform.OS === "web" ? 0 : 44), paddingBottom: 56 }}>
         <Aurora />
         <Wrap>
           {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
