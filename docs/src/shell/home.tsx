@@ -214,7 +214,7 @@ export function Home() {
           under the transparent nav bar; paddingTop = status-bar inset + the ~44pt nav bar + a gap,
           landing the copy just below the bar. Native only: on web insets.top is 0 and there's no
           nav bar (the Topbar is cleared by CONTENT_TOP_INSET). */}
-      <View style={{ paddingTop: insets.top + (wide ? 18 : 4) + (Platform.OS === "web" ? 0 : 44), paddingBottom: 56 }}>
+      <View style={{ paddingTop: insets.top + (wide ? 18 : 4) + (Platform.OS === "web" ? 0 : 10), paddingBottom: 56 }}>
         <Wrap>
           {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
           <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
