@@ -97,7 +97,7 @@ function NativeSearch() {
       {/* The aurora backdrop, the same multi-color wash the shell uses, fills the screen for the
           whole search session (while this screen is focused), so the clear Liquid Glass bubble has
           the brand's color to refract the moment you enter search. It clears when you leave. */}
-      {glass && active ? <GlassAurora /> : null}
+      {glass && active ? <GlassAurora vivid /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (
