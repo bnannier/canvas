@@ -210,11 +210,12 @@ export function Home() {
           scroll content and washing the top of the page down from behind the transparent nav bar. */}
       <Aurora />
       {/* ── Hero ── */}
-      {/* The hero starts at the viewport top (the scroller is not top-inset) so its copy can sit
-          under the transparent nav bar; paddingTop = status-bar inset + the ~44pt nav bar + a gap,
-          landing the copy just below the bar. Native only: on web insets.top is 0 and there's no
-          nav bar (the Topbar is cleared by CONTENT_TOP_INSET). */}
-      <View style={{ paddingTop: insets.top + (wide ? 18 : 4) + (Platform.OS === "web" ? 0 : 10), paddingBottom: 56 }}>
+      {/* The scroller's content is ALREADY inset below the bar: on native the navigation insets
+          the screen content under the (transparent) header, and on web CONTENT_TOP_INSET clears the
+          topbar. So the hero only adds a small gap below that, NOT another status-bar + nav-bar
+          offset (that double-inset was pushing the hero down). The aurora still fills behind the
+          bar because it is absolutely positioned with a negative top, independent of this. */}
+      <View style={{ paddingTop: wide ? 18 : 8, paddingBottom: 56 }}>
         <Wrap>
           {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
           <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
