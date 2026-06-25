@@ -205,13 +205,16 @@ export function Home() {
       contentInsetAdjustmentBehavior="never"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? 0 : 49) }}
     >
+      {/* The aurora is a full-page background wash. It lives OUTSIDE the hero box (and its
+          overflow:hidden, which used to clip it into a hard-edged cut-off), sitting behind all the
+          scroll content and washing the top of the page down from behind the transparent nav bar. */}
+      <Aurora />
       {/* ── Hero ── */}
-      {/* Starts at the viewport top (the scroller is not top-inset, above) so the Aurora fills
-          behind the transparent nav bar. paddingTop = the status-bar inset + the ~44pt nav bar +
-          the hero's own gap, so the copy lands just below the bar. Native only: on web insets.top
-          is 0 and there is no nav bar (the Topbar is cleared by CONTENT_TOP_INSET). */}
-      <View style={{ overflow: "hidden", paddingTop: insets.top + (wide ? 28 : 14) + (Platform.OS === "web" ? 0 : 44), paddingBottom: 56 }}>
-        <Aurora />
+      {/* The hero starts at the viewport top (the scroller is not top-inset) so its copy can sit
+          under the transparent nav bar; paddingTop = status-bar inset + the ~44pt nav bar + a gap,
+          landing the copy just below the bar. Native only: on web insets.top is 0 and there's no
+          nav bar (the Topbar is cleared by CONTENT_TOP_INSET). */}
+      <View style={{ paddingTop: insets.top + (wide ? 18 : 4) + (Platform.OS === "web" ? 0 : 44), paddingBottom: 56 }}>
         <Wrap>
           {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
           <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
