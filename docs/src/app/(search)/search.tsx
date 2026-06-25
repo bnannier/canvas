@@ -7,6 +7,7 @@ import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@olympusos
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
 import { geist } from "../../ui/fonts";
+import { GlassAurora } from "../../ui/glass";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
 // nav bar hosts the system search field (a real UISearchController on iOS 26 / Material search on
@@ -41,10 +42,14 @@ function rankForBubble(query: string): SearchEntry[] {
 
 function NativeSearch() {
   const router = useRouter();
-  const { tokens } = useTheme();
+  const { tokens, surface } = useTheme();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const results = useMemo(() => rankForBubble(query), [query]);
+  // In glass mode the bubble is translucent (real Liquid Glass on iOS 26, frost on fallback), so
+  // it needs color behind it to refract. In solid mode the bubble is opaque, so the wash is skipped.
+  const glass = surface === "glass";
+  const showBubble = results.length > 0;
   const searchRef = useRef<SearchBarCommands>(null);
 
   // Focus the field every time the tab gains focus. The native bar's `autoFocus` is a no-op for
@@ -82,9 +87,13 @@ function NativeSearch() {
           },
         }}
       />
+      {/* The aurora backdrop, the same multi-color wash the shell uses, rises behind the bubble
+          while searching so the clear Liquid Glass has color to refract. It fills the screen
+          behind (and around) the bubble, then clears with it when the query is emptied. */}
+      {glass && showBubble ? <GlassAurora /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
-      {results.length > 0 ? (
+      {showBubble ? (
         <View
           pointerEvents="box-none"
           style={{ position: "absolute", left: 10, right: 10, top: insets.top + 8, bottom: insets.bottom + 60 }}
