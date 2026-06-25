@@ -45,6 +45,9 @@ function NativeSearch() {
   const { tokens, surface } = useTheme();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
+  // True while THIS screen is the focused one (the active search session). The aurora is tied to
+  // this, not to whether results exist, so the wash is there the moment you enter search.
+  const [active, setActive] = useState(false);
   const results = useMemo(() => rankForBubble(query), [query]);
   // In glass mode the bubble is translucent (real Liquid Glass on iOS 26, frost on fallback), so
   // it needs color behind it to refract. In solid mode the bubble is opaque, so the wash is skipped.
@@ -56,8 +59,12 @@ function NativeSearch() {
   // the iOS UISearchController (and the screen pre-mounts), so drive focus() imperatively.
   useFocusEffect(
     useCallback(() => {
+      setActive(true);
       const t = setTimeout(() => searchRef.current?.focus(), 120);
-      return () => clearTimeout(t);
+      return () => {
+        clearTimeout(t);
+        setActive(false);
+      };
     }, []),
   );
 
@@ -87,10 +94,10 @@ function NativeSearch() {
           },
         }}
       />
-      {/* The aurora backdrop, the same multi-color wash the shell uses, rises behind the bubble
-          while searching so the clear Liquid Glass has color to refract. It fills the screen
-          behind (and around) the bubble, then clears with it when the query is emptied. */}
-      {glass && showBubble ? <GlassAurora /> : null}
+      {/* The aurora backdrop, the same multi-color wash the shell uses, fills the screen for the
+          whole search session (while this screen is focused), so the clear Liquid Glass bubble has
+          the brand's color to refract the moment you enter search. It clears when you leave. */}
+      {glass && active ? <GlassAurora /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (
