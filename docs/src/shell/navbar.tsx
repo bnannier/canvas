@@ -2,7 +2,7 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, type IconProps } from "@olympusoss/canvas";
+import { View, Text, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, alpha, type IconProps } from "@olympusoss/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
@@ -29,12 +29,24 @@ export function Navbar() {
 // maps to a root route group ((home)/(components)/(utilities)) or the search screen. The
 // icon names are validated app data, cast through to the SF Symbol / Material props.
 function NativeNav() {
+  const { tokens } = useTheme();
+  // The iOS 26 Liquid Glass tab bar is system-painted and ignores every appearance prop
+  // (backgroundColor / blurEffect — verified a red background had no effect in
+  // react-native-screens 4.25), so theme ONLY Android's Material navigation bar to the app's
+  // scheme. Without this it renders on a light surface even in dark mode. (Its M3 height +
+  // gesture inset is system-controlled and stays the native bar's.)
+  const androidTheme =
+    Platform.OS === "android"
+      ? {
+          backgroundColor: tokens.card,
+          iconColor: { default: tokens["muted-foreground"], selected: tokens.primary },
+          labelStyle: { default: { color: tokens["muted-foreground"] }, selected: { color: tokens.primary } },
+          indicatorColor: alpha(tokens.primary, 0.16),
+          rippleColor: alpha(tokens.primary, 0.12),
+        }
+      : {};
   return (
-    // NOTE: the iOS 26 system Liquid Glass tab bar ignores every appearance prop
-    // (backgroundColor / blurEffect / disableTransparentOnScrollEdge) in
-    // react-native-screens 4.25 — verified a red background had no effect. Its glass
-    // material is fully system-controlled, so its clarity can't be tuned here.
-    <NativeTabs sidebarAdaptable={Platform.OS === "ios"} minimizeBehavior="onScrollDown">
+    <NativeTabs sidebarAdaptable={Platform.OS === "ios"} minimizeBehavior="onScrollDown" {...androidTheme}>
       {MOBILE_TABS.map((tab) => (
         <NativeTabs.Trigger key={tab.id} name={`(${tab.id})`} role={tab.role}>
           <NativeTabs.Trigger.Icon sf={tab.icon.ios as never} md={tab.icon.android as never} />
