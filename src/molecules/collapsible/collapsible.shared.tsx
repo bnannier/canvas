@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState, useCallback } from "react";
-import { Animated, LayoutAnimation, Platform, UIManager } from "react-native";
+import { Animated, LayoutAnimation } from "react-native";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   useTheme,
   supportsNativeDriver,
   useReducedMotion,
+  enableAndroidLayoutAnimations,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -94,11 +95,9 @@ export interface CollapsibleProps {
   style?: StyleProp<ViewStyle>;
 }
 
-// Enable LayoutAnimation on Android (it is off by default there); a no-op on iOS
-// and web. Evaluated once per bundle.
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+// Enable LayoutAnimation on old-arch Android (off by default there); a no-op on iOS, web, and the
+// New Architecture, where it is on by default and the setter only logs a warning. Once per bundle.
+enableAndroidLayoutAnimations();
 
 /** Build a Collapsible component from a platform skin. */
 export function createCollapsible(skin: CollapsibleSkin) {

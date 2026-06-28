@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AccessibilityInfo, Platform } from "react-native";
+import { AccessibilityInfo, Platform, UIManager } from "react-native";
 
 // Whether the platform has React Native's native animated module, and therefore whether
 // `useNativeDriver: true` engages an off-thread animation. True on iOS/Android, false on
@@ -43,4 +43,18 @@ export function useReducedMotion(): boolean {
     };
   }, []);
   return reduced;
+}
+
+// React Native's New Architecture (Fabric / Bridgeless) enables LayoutAnimation by default, and
+// `UIManager.setLayoutAnimationEnabledExperimental` is a no-op there that LOGS A WARNING on every
+// call. The OLD (Paper) architecture still needs the flag flipped on Android. So detect Fabric via
+// the global the runtime installs, and only flip the experimental flag on old-arch Android — a
+// no-op on iOS, web, and the New Architecture. Call once at module scope from any component that
+// drives LayoutAnimation (Accordion, Collapsible). Evaluated per bundle; Fabric is known by then.
+const IS_FABRIC = (globalThis as { nativeFabricUIManager?: unknown }).nativeFabricUIManager != null;
+
+export function enableAndroidLayoutAnimations(): void {
+  if (Platform.OS === "android" && !IS_FABRIC && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
 }
