@@ -55,14 +55,16 @@ function NativeSearch() {
   const showBubble = results.length > 0;
   const searchRef = useRef<SearchBarCommands>(null);
 
-  // Focus the field every time the tab gains focus. The native bar's `autoFocus` is a no-op for
-  // the iOS UISearchController (and the screen pre-mounts), so drive focus() imperatively.
+  // Mark the screen active (drives the aurora) while it's focused. We deliberately do NOT
+  // imperatively focus the iOS field: on iOS 26 the integrated toolbar search forces its (iconless)
+  // cancel "X" button whenever the field is focused, and that button can't be suppressed
+  // (the system overrides toggleCancelButton / cancelSearch). Leaving the field unfocused keeps the
+  // bar clean, just the field + the tab accessory, and the user taps to type. Android is unaffected
+  // by that bug, so its `autoFocus` still focuses the field there.
   useFocusEffect(
     useCallback(() => {
       setActive(true);
-      const t = setTimeout(() => searchRef.current?.focus(), 120);
       return () => {
-        clearTimeout(t);
         setActive(false);
       };
     }, []),
