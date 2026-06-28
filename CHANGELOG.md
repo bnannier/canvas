@@ -1,5 +1,11 @@
 # @olympusoss/canvas
 
+## 6.21.1
+
+### Patch Changes
+
+- 4fe81cf: Accordion and Collapsible no longer log "setLayoutAnimationEnabledExperimental is a no-op in the New Architecture". The Android LayoutAnimation flag is now flipped only on the old (Paper) architecture, where it is actually needed; on Fabric / Bridgeless it is on by default, so the call (and its warning) is skipped. New shared helper `enableAndroidLayoutAnimations()` centralizes the guard.
+
 ## 6.21.0
 
 ### Minor Changes
