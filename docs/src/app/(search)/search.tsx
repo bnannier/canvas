@@ -1,5 +1,6 @@
+import { useCallback, useState } from "react";
 import { Platform } from "react-native";
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View } from "@olympusoss/canvas";
 import { DocsSearch } from "../../shell/docs-search";
@@ -16,13 +17,21 @@ export default function SearchScreen() {
 
 function NativeSearch() {
   const insets = useSafeAreaInsets();
+  // Remount DocsSearch each time the Search tab gains focus so the expand-from-icon reveal replays
+  // (the tab screen pre-mounts and stays mounted, so there is no natural remount otherwise).
+  const [playKey, setPlayKey] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      setPlayKey((k) => k + 1);
+    }, []),
+  );
   // No nav header here: the Command's own field IS the search affordance, so hide the header and
   // inset the palette below the status bar (the screen would otherwise start at the viewport top,
   // under the transparent bar). The bottom tab bar marks this as the Search tab.
   return (
     <View style={{ flex: 1, paddingTop: insets.top }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <DocsSearch />
+      <DocsSearch key={playKey} />
     </View>
   );
 }

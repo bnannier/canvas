@@ -60,6 +60,9 @@ export function DocsSearch({
       value={query}
       onValueChange={setQuery}
       autoFocus
+      // The inline (native) search has no other entrance animation, so play the expand-from-icon
+      // reveal there; the web overlay already animates in via its Modal.
+      revealOnOpen={!overlay}
       placeholder="Search components, tokens, guides..."
       emptyLabel={query.trim() ? "No results found." : "Type to search components, tokens, and guides."}
       groups={groups}

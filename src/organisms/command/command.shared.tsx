@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  LayoutAnimation,
   Modal,
   BackHandler,
   Platform,
@@ -15,6 +16,9 @@ import {
   ScrollView,
   useTheme,
   useResponsive,
+  useReducedMotion,
+  supportsNativeDriver,
+  enableAndroidLayoutAnimations,
   GlassSurface,
   type StyleProp,
   type ViewStyle,
@@ -27,6 +31,10 @@ import { Icon } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
 import { type CommandSkin } from "./command.styles.js";
 import * as s from "./command.styles.js";
+
+// LayoutAnimation drives the reveal's width expand; on old-arch Android it must be enabled (a no-op
+// on iOS, web, and the New Architecture). Evaluated once per bundle.
+enableAndroidLayoutAnimations();
 
 // Shared Command shell. The structure, the public API, the data shapes, the
 // controlled/uncontrolled open state, the flat active-index walk, the select/close
@@ -109,6 +117,12 @@ export interface CommandProps {
   overlay?: boolean;
   /** Bottom safe-area inset for the mobile overlay sheet. */
   safeBottom?: number;
+  /**
+   * Play an entrance reveal when the palette opens: the search field expands out of its magnifier
+   * icon into the full-width bar (sliding left), then the results fade in. Honors Reduce Motion
+   * (snaps). Opt in (search mode); display-mode usage is unaffected.
+   */
+  revealOnOpen?: boolean;
 }
 
 /** Build a Command component from a platform skin. */
@@ -130,6 +144,7 @@ export function createCommand(skin: CommandSkin) {
       emptyLabel,
       overlay,
       safeBottom = 0,
+      revealOnOpen,
     } = props;
     const { tokens } = useTheme();
     const mobile = useResponsive({ base: false, md: true });
@@ -184,6 +199,28 @@ export function createCommand(skin: CommandSkin) {
       // setOpen is derived from stable props; re-subscribing only on overlay/open is intended.
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [overlay, open]);
+
+    // Entrance reveal (opt in): the search field expands out of its magnifier icon into the
+    // full-width bar (its width animates, right-anchored, so the bar grows leftward), then the input
+    // and results fade in. One JS-driven Animated.Value (width is a layout prop, not native-driver
+    // safe); replayed whenever the palette opens; snaps to the end when Reduce Motion is on.
+    const reduced = useReducedMotion();
+    // The reveal: start collapsed, then (next frame) animate the width to full under LayoutAnimation
+    // (the kit's cross-platform layout animation; an Animated width did not update on Android Fabric).
+    const [expanded, setExpanded] = useState(!revealOnOpen);
+    useEffect(() => {
+      if (!revealOnOpen || !open) return;
+      setExpanded(false);
+      const id = requestAnimationFrame(() => {
+        if (supportsNativeDriver && !reduced) {
+          LayoutAnimation.configureNext({ duration: 280, update: { type: LayoutAnimation.Types.easeInEaseOut } });
+        }
+        setExpanded(true);
+      });
+      return () => cancelAnimationFrame(id);
+    }, [revealOnOpen, open, reduced]);
+
+    const COLLAPSED_W = 52;
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
@@ -255,38 +292,55 @@ export function createCommand(skin: CommandSkin) {
         </View>
       );
 
+    // The kit Icon (not an emoji glyph) so the magnifier renders reliably and stays a Canvas
+    // component; sized to the skin's search-glyph type.
+    const glyph = <Icon search muted size={skin.searchGlyph(tokens).fontSize ?? 16} />;
+    const fieldInput = searchMode ? (
+      <TextInput
+        value={value}
+        onChangeText={onValueChange}
+        onKeyPress={onKeyPress}
+        placeholder={placeholder}
+        placeholderTextColor={tokens["muted-foreground"]}
+        autoFocus={autoFocus}
+        returnKeyType="search"
+        accessibilityLabel="Search"
+        style={[
+          skin.searchPlaceholder(tokens),
+          {
+            color: tokens.foreground,
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: "0%",
+            // Strip the RN-Web default input outline; the card border frames it.
+            ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null),
+          },
+        ]}
+      />
+    ) : (
+      <Text style={skin.searchPlaceholder(tokens)}>{placeholder}</Text>
+    );
+
+    // With revealOnOpen the field expands out of the magnifier: a RIGHT-anchored, clipped bar whose
+    // width animates from a collapsed pill to the full width measured on the wrapper (so it grows
+    // leftward), with the input fading in. Otherwise it is the plain full-width search row.
+    const searchField = (
+      <View
+        style={[
+          skin.searchRow(tokens),
+          // The reveal: a right-anchored, clipped bar whose width snaps collapsed then expands to full
+          // under LayoutAnimation, so the field grows leftward out of the magnifier.
+          revealOnOpen ? { alignSelf: "flex-end", overflow: "hidden", width: expanded ? "100%" : COLLAPSED_W } : null,
+        ]}
+      >
+        {glyph}
+        {fieldInput}
+      </View>
+    );
+
     const card = (
       <GlassSurface style={cardStyle}>
-        <View style={skin.searchRow(tokens)}>
-          {/* The kit Icon (not an emoji glyph) so the magnifier renders reliably and stays a Canvas
-              component; sized to the skin's search-glyph type. */}
-          <Icon search muted size={skin.searchGlyph(tokens).fontSize ?? 16} />
-          {searchMode ? (
-            <TextInput
-              value={value}
-              onChangeText={onValueChange}
-              onKeyPress={onKeyPress}
-              placeholder={placeholder}
-              placeholderTextColor={tokens["muted-foreground"]}
-              autoFocus={autoFocus}
-              returnKeyType="search"
-              accessibilityLabel="Search"
-              style={[
-                skin.searchPlaceholder(tokens),
-                {
-                  color: tokens.foreground,
-                  flexGrow: 1,
-                  flexShrink: 1,
-                  flexBasis: "0%",
-                  // Strip the RN-Web default input outline; the card border frames it.
-                  ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null),
-                },
-              ]}
-            />
-          ) : (
-            <Text style={skin.searchPlaceholder(tokens)}>{placeholder}</Text>
-          )}
-        </View>
+        {searchField}
 
         {searchMode ? (
           <ScrollView style={overlay ? { flexGrow: 0, flexShrink: 1 } : { flex: 1 }} keyboardShouldPersistTaps="handled">
