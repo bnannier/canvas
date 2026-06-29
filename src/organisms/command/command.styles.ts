@@ -84,6 +84,77 @@ export const cardFloating: ViewStyle = {
   marginTop: 12,
 };
 
+// ---------- search-mode cards (shared) ----------
+// When Command runs in SEARCH mode (an editable field + live results) it is no longer the
+// fixed 420 inline card. It presents in one of three shapes, all sharing the popover fill +
+// clipped corners; GlassSurface strips the fill and supplies the material.
+//
+// `cardInline` fills its parent (a full-screen native search screen): edge to edge, no
+// floating chrome — the search row's hairline and the rows carry the structure.
+export function cardInline(tokens: ColorTokens): ViewStyle {
+  return { flex: 1, width: "100%", backgroundColor: tokens.popover, overflow: "hidden" };
+}
+
+// `cardPalette` is the centered desktop overlay palette (a wider, taller floating card).
+export function cardPalette(tokens: ColorTokens): ViewStyle {
+  return {
+    width: 560,
+    maxWidth: "100%",
+    maxHeight: 520,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: tokens.border,
+    backgroundColor: tokens.popover,
+    overflow: "hidden",
+    ...shadow("xl"),
+  };
+}
+
+// `cardSheet` is the mobile overlay: a bottom sheet that rounds its top corners, borders its
+// top edge, and pads its bottom for the home indicator.
+export function cardSheet(tokens: ColorTokens, insetBottom: number): ViewStyle {
+  return {
+    width: "100%",
+    maxHeight: "82%",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderTopWidth: 1,
+    borderColor: tokens.border,
+    backgroundColor: tokens.popover,
+    overflow: "hidden",
+    paddingBottom: insetBottom,
+  };
+}
+
+// ---------- overlay (shared): the Modal scrim + card placement ----------
+// The full-screen scrim behind the overlay card. Desktop drops the card from the top-center
+// (the cmd-K palette); mobile docks it to the bottom edge (the sheet).
+export function overlayRoot(mobile: boolean): ViewStyle {
+  return {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    ...(mobile
+      ? { justifyContent: "flex-end" }
+      : { alignItems: "center", justifyContent: "flex-start", paddingTop: 96, paddingHorizontal: 16 }),
+  };
+}
+
+// ---------- editable search row + results (shared) ----------
+// A row's label + description stacked when a description is present (the label keeps its
+// weight, the description is a muted second line).
+export const rowText: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
+
+export function rowDescription(tokens: ColorTokens): TextStyle {
+  return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"], marginTop: 1 };
+}
+
+// The "no results" empty state: one centered muted row in place of the listbox.
+export const emptyState: ViewStyle = { paddingVertical: 28, alignItems: "center", justifyContent: "center" };
+
+export function emptyText(tokens: ColorTokens): TextStyle {
+  return { fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] };
+}
+
 // ---------- group heading (shared across platforms) ----------
 // The optional uppercase section heading above a group's rows.
 // (uppercase text-xs text-muted-foreground px-3 pt-3 pb-1.)
