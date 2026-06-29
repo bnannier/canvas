@@ -7,7 +7,7 @@ import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
-import { DocsSearch } from "./docs-search";
+import { SearchModal } from "./search-modal";
 import { TabOverflowMenu } from "./tab-overflow-menu";
 import { GlassAurora } from "../ui/glass";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
@@ -190,7 +190,7 @@ function WebNav() {
           activeSlug={getActiveSlug(pathname)}
           footer={<ThemeToggles />}
         />
-        <DocsSearch overlay visible={searchOpen} onClose={() => setSearchOpen(false)} />
+        <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
       </SafeAreaView>
     );
   }
@@ -213,7 +213,7 @@ function WebNav() {
           </View>
         </View>
       </View>
-      <DocsSearch overlay visible={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
     </SafeAreaView>
   );
 }

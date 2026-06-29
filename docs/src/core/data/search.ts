@@ -50,34 +50,18 @@ const ALL_ENTRIES: SearchEntry[] = [
   })),
 ];
 
-// Case-insensitive match across title, description, category, and keywords, ranked
-// BEST MATCH FIRST: an exact title beats a title prefix beats a title substring beats a
-// keyword hit beats a description/category-only hit; ties break alphabetically. Returns up
-// to 20 hits, which the UI groups by category. The relevance order is what makes the
-// command palette feel right (the closest match is the first, pre-highlighted row).
-function relevance(entry: SearchEntry, q: string): number {
-  const t = entry.title.toLowerCase();
-  if (t === q) return 5;
-  if (t.startsWith(q)) return 4;
-  if (t.includes(q)) return 3;
-  if (entry.keywords.some((k) => k.toLowerCase().startsWith(q))) return 2;
-  if (
-    entry.description.toLowerCase().includes(q) ||
-    entry.category.toLowerCase().includes(q) ||
-    entry.keywords.some((k) => k.toLowerCase().includes(q))
-  )
-    return 1;
-  return 0;
-}
-
+// Case-insensitive substring match across title, description, category, and keywords.
+// Returns up to 20 hits in index order (guides first, then components, patterns,
+// templates), which the UI groups by category.
 export function search(query: string): SearchEntry[] {
   if (!query.trim()) return [];
   const q = query.toLowerCase();
-  return ALL_ENTRIES.map((entry) => ({ entry, score: relevance(entry, q) }))
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score || a.entry.title.localeCompare(b.entry.title))
-    .slice(0, 20)
-    .map((x) => x.entry);
+  return ALL_ENTRIES.filter((entry) => {
+    if (entry.title.toLowerCase().includes(q)) return true;
+    if (entry.description.toLowerCase().includes(q)) return true;
+    if (entry.category.toLowerCase().includes(q)) return true;
+    return entry.keywords.some((k) => k.toLowerCase().includes(q));
+  }).slice(0, 20);
 }
 
 export { ALL_ENTRIES, GUIDE_ENTRIES };
