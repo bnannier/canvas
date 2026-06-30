@@ -1,0 +1,76 @@
+name: Deploy to Google Play (internal)
+
+# Reusable Android deploy: EAS-builds the docs app (production profile -> .aab) and submits it to
+# the Google Play "internal testing" track. Invoked by the deploy.yml button and independently
+# runnable via its own "Run workflow".
+#
+# ONE-TIME SETUP to activate (until done, the gate SKIPS green with a notice):
+#   1. EXPO_TOKEN repo secret (shared with TestFlight).
+#   2. Create the app in the Google Play Console for package com.olympusoss.canvasdocs.
+#   3. A Google Cloud service-account JSON key with Play release permissions, stored on EAS
+#      (`eas credentials -p android` -> Google Service Account). Keeps the key out of the repo.
+#   4. THE VERY FIRST .aab MUST be uploaded MANUALLY via the Play Console once (Google's API cannot
+#      create the first release); after that, `eas submit` works here.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: google-play
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -n "$EXPO_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Google Play deploy skipped: set EXPO_TOKEN, create the app in the Play Console, store a Google service-account key on EAS, and do the FIRST .aab upload manually (see this workflow's header)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: gate
+    if: ${{ needs.gate.outputs.enabled == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate docs core
+        run: bun run docs:gen
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install
+
+      - name: EAS build (Android, production -> .aab) and submit to Google Play internal
+        working-directory: docs
+        run: eas build --platform android --profile production --non-interactive --auto-submit

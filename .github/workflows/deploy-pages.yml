@@ -1,19 +1,10 @@
 name: Deploy docs to GitHub Pages
 
-# Builds the universal React Native docs app (docs/) for the web and publishes it to
-# GitHub Pages at https://olympusoss.github.io/canvas/. The docs are one Expo Router app
-# that renders on iOS, Android, and the web from the same code; this deploys the web
-# target. Runs on pushes to main that touch the app, the generated docs data, the library
-# source, or the codegen, plus manual rebuilds.
+# Reusable web-docs deploy. Invoked by the deploy.yml button, and independently runnable via its
+# own "Run workflow". NO push trigger: Pages deploys ONLY when invoked (deploy-on-demand). Builds
+# the universal RN docs app for web and publishes to https://olympusoss.github.io/canvas/.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - 'tools/**'
-      - 'src/**'
-      - 'styles/**'
-      - '.github/workflows/docs.yml'
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -88,7 +79,6 @@ jobs:
       - uses: actions/configure-pages@v5
         # enablement: true auto-enables GitHub Pages (Source: GitHub Actions) if
         # it is off, instead of failing the build with "Get Pages site failed".
-        # The job already has `pages: write`, so it can flip the setting itself.
         with:
           enablement: true
 

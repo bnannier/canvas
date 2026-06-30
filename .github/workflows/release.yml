@@ -1,24 +1,20 @@
 name: Release — canvas
 
-# Changesets-powered release. Runs ONLY after the CI workflow completes
-# successfully on main — avoids racing CI in parallel and never publishes a
-# version that hasn't passed checks. On a successful CI run:
+# Changesets-powered npm release. Reusable: invoked by the deploy.yml button (and runnable on its
+# own via "Run workflow"); it no longer auto-runs after CI. When run:
 #   1. If there are pending changesets, consume them locally (version bump +
 #      CHANGELOG update) and commit directly to main.
 #   2. ALWAYS run `changeset publish` afterward. It is idempotent: it only
-#      publishes versions missing from npm. So a publish that failed once
-#      (a transient registry or auth error) is retried on the next CI run
-#      WITHOUT needing a fresh changeset, and a version already bumped on main
-#      always converges to npm instead of drifting.
+#      publishes versions missing from npm, so a publish that failed once
+#      (a transient registry or auth error) is retried on the next run WITHOUT
+#      needing a fresh changeset, and a version already bumped on main always
+#      converges to npm instead of drifting.
 #
 # Avoids the PR-creation path entirely so it does not need the
 # "Allow GitHub Actions to create and approve pull requests" repo setting.
 
 on:
-  workflow_run:
-    workflows: ["CI — canvas"]
-    types: [completed]
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -31,18 +27,14 @@ concurrency:
 
 jobs:
   release:
-    # workflow_run fires on every completion (success/failure/cancelled). Gate
-    # to success-only here so a red CI doesn't trigger a publish attempt.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          # workflow_run runs against the default branch by default; pin to the
-          # SHA that triggered CI so we publish the exact code that was tested.
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          # Check out the ref the deploy was run from (main).
+          ref: ${{ github.ref }}
 
       - uses: oven-sh/setup-bun@v2
         with:

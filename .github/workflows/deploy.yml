@@ -1,0 +1,71 @@
+name: Deploy — canvas
+
+# THE manual deploy button. Click "Run workflow" to ship any or all four targets in PARALLEL:
+# GitHub Pages (web docs), npm (the kit), TestFlight (iOS), and Google Play internal (Android).
+# Each target is also runnable on its own via its reusable workflow's "Run workflow". Nothing here
+# runs on push: deploys are manual-only by design (CI still validates every push).
+on:
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: "Deploy web docs to GitHub Pages"
+        type: boolean
+        default: true
+      npm:
+        description: "Publish @olympusoss/canvas to npm"
+        type: boolean
+        default: true
+      ios:
+        description: "Build iOS docs app + submit to TestFlight"
+        type: boolean
+        default: true
+      android:
+        description: "Build Android docs app + submit to Google Play (internal)"
+        type: boolean
+        default: true
+
+# Union of every callee's needs. Reusable-workflow permissions do NOT inherit: each calling job
+# re-scopes to what it uses, and a callee sees the INTERSECTION of (its job's grant) and (its own
+# permissions block).
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  pages:
+    if: ${{ inputs.pages }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    secrets: inherit
+    uses: ./.github/workflows/deploy-pages.yml
+
+  npm:
+    if: ${{ inputs.npm }}
+    permissions:
+      contents: write
+      id-token: write
+    secrets: inherit
+    uses: ./.github/workflows/release.yml
+
+  ios:
+    if: ${{ inputs.ios }}
+    permissions:
+      contents: read
+    secrets: inherit
+    uses: ./.github/workflows/deploy-testflight.yml
+
+  android:
+    if: ${{ inputs.android }}
+    permissions:
+      contents: read
+    secrets: inherit
+    uses: ./.github/workflows/deploy-android.yml
+    # No `needs:` anywhere in this file: the four jobs run in parallel and independently, so one
+    # target's failure (e.g. an Android cert issue) never blocks another (Pages, npm, iOS).
