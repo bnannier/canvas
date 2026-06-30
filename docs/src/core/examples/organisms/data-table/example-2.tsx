@@ -14,6 +14,7 @@ export default function Example(scope: ExampleScope) {
   ]}
   bordered
   compact
+  onRowPress={() => {}}
 />
   );
 }

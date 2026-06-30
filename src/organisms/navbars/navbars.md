@@ -24,6 +24,7 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
   active={0}
+  actionLabel="New"
   avatar="RC"
   bordered
 />

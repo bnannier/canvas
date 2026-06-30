@@ -3,12 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { View, EmptyState } = scope;
   return (
 <EmptyState
   icon="✅"
   title="No errors"
   description="Everything is running smoothly."
+  actionLabel="View logs"
   positive
   bordered
 />

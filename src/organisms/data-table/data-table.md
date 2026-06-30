@@ -13,6 +13,7 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
     ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
   ]}
   bordered
+  onRowPress={() => {}}
 />
 ```
 
@@ -30,6 +31,7 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
   ]}
   bordered
   selectable
+  onRowPress={() => {}}
 />
 ```
 
@@ -45,6 +47,7 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
   ]}
   bordered
   compact
+  onRowPress={() => {}}
 />
 ```
 

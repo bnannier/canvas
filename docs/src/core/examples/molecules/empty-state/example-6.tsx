@@ -3,12 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { View, EmptyState } = scope;
   return (
 <EmptyState
   icon="✅"
   title="All clear"
   description="No locked accounts or pending reviews."
+  actionLabel="View history"
   positive
   bordered
 />

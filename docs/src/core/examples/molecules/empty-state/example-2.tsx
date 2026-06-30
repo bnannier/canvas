@@ -9,6 +9,7 @@ export default function Example(scope: ExampleScope) {
   icon="📄"
   title="No files"
   description="Upload or drag files here."
+  actionLabel="Upload files"
   bordered
 />
   );

@@ -9,6 +9,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon="🔍"
   title="No results found"
   description="Try adjusting your search filters."
+  actionLabel="Clear filters"
   bordered
 />
 ```
@@ -22,6 +23,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon="👥"
   title="No users"
   description="Invite your first team member."
+  actionLabel="Invite member"
   bordered
 />
 ```
@@ -33,6 +35,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon="📄"
   title="No files"
   description="Upload or drag files here."
+  actionLabel="Upload files"
   bordered
 />
 ```
@@ -44,6 +47,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon="📈"
   title="No activity"
   description="Events will appear as they happen."
+  actionLabel="Refresh"
   bordered
 />
 ```
@@ -55,6 +59,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon="🔔"
   title="All caught up"
   description="No new notifications."
+  actionLabel="View archive"
   bordered
 />
 ```
@@ -66,6 +71,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon="✅"
   title="No errors"
   description="Everything is running smoothly."
+  actionLabel="View logs"
   positive
   bordered
 />
@@ -78,6 +84,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   icon="✅"
   title="All clear"
   description="No locked accounts or pending reviews."
+  actionLabel="View history"
   positive
   bordered
 />
@@ -106,7 +113,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
     <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Status</Text>
   </View>
   <View style={{ paddingHorizontal: 16, paddingVertical: 40 }}>
-    <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." />
+    <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
   </View>
 </View>
 ```

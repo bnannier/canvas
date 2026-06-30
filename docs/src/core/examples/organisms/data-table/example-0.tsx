@@ -13,6 +13,7 @@ export default function Example(scope: ExampleScope) {
     ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
   ]}
   bordered
+  onRowPress={() => {}}
 />
   );
 }

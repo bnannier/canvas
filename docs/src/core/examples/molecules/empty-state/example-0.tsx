@@ -9,6 +9,7 @@ export default function Example(scope: ExampleScope) {
   icon="🔍"
   title="No results found"
   description="Try adjusting your search filters."
+  actionLabel="Clear filters"
   bordered
 />
   );

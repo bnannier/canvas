@@ -9,6 +9,7 @@ export default function Example(scope: ExampleScope) {
   icon="👥"
   title="No users"
   description="Invite your first team member."
+  actionLabel="Invite member"
   bordered
 />
   );

@@ -7,6 +7,7 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 ```tsx
 <Sidebar
   active="Dashboard"
+  onSelect={() => {}}
   sections={[
     { title: "Main", items: [
       { label: "Dashboard", icon: "◉" },

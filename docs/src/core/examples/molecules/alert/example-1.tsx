@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert } = scope;
+  const { View, Alert, Button } = scope;
   return (
 <Alert
   success
@@ -11,6 +11,10 @@ export default function Example(scope: ExampleScope) {
   title="All set"
   description="Your changes have been saved successfully."
   dismissible
-/>
+>
+  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+    <Button ghost small>View changes</Button>
+  </View>
+</Alert>
   );
 }

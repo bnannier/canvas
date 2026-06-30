@@ -3,12 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Drawer } = scope;
+  const { tokens, View, Text, Button, Drawer } = scope;
   return (
 <Drawer trigger="Left drawer" left width={240}>
   <View style={{ padding: 20, gap: 10 }}>
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Navigation</Text>
     <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>A full-height panel on the left.</Text>
+    <Button primary block onPress={() => {}}>Go to settings</Button>
   </View>
 </Drawer>
   );

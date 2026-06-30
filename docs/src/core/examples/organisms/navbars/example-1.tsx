@@ -9,8 +9,8 @@ export default function Example(scope: ExampleScope) {
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
   active={0}
+  actionLabel="New"
   avatar="RC"
-  bordered
 />
   );
 }

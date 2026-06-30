@@ -13,6 +13,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
     { label: "Done", description: "You're all set." }
   ]}
   current={1}
+  onStepPress={() => {}}
   value={68}
   label="Setup progress"
 />
@@ -32,6 +33,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
   ]}
   current={1}
   vertical
+  onStepPress={() => {}}
   value={68}
   label="Setup progress"
 />

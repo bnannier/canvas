@@ -8,9 +8,9 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 <Drawer trigger="Open menu" left width={260}>
   <View style={{ padding: 20, gap: 12 }}>
     <Text style={{ fontSize: 16, fontWeight: "600", color: tokens.foreground }}>Menu</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Home</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Components</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Settings</Text>
+    <Button ghost block onPress={() => {}}>Home</Button>
+    <Button ghost block onPress={() => {}}>Components</Button>
+    <Button ghost block onPress={() => {}}>Settings</Button>
   </View>
 </Drawer>
 ```
@@ -24,6 +24,7 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
   <View style={{ padding: 20, gap: 10 }}>
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Navigation</Text>
     <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>A full-height panel on the left.</Text>
+    <Button primary block onPress={() => {}}>Go to settings</Button>
   </View>
 </Drawer>
 ```
@@ -35,6 +36,7 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
   <View style={{ padding: 20, gap: 10 }}>
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Details</Text>
     <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>A full-height panel on the right.</Text>
+    <Button primary block onPress={() => {}}>View full details</Button>
   </View>
 </Drawer>
 ```
@@ -45,9 +47,9 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 <Drawer trigger="Bottom sheet" bottom>
   <View style={{ padding: 20, gap: 10 }}>
     <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Actions</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Share</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Duplicate</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Delete</Text>
+    <Button ghost block onPress={() => {}}>Share</Button>
+    <Button ghost block onPress={() => {}}>Duplicate</Button>
+    <Button destructive block onPress={() => {}}>Delete</Button>
   </View>
 </Drawer>
 ```

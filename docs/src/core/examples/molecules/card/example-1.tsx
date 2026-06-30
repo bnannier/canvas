@@ -6,6 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Card } = scope;
   return (
 <Card
+  onPress={() => {}}
   title="Recent activity"
   body="A labeled content surface. Drop fields, a list, or any module of content here."
 />

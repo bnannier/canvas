@@ -25,6 +25,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 
 ```tsx
 <Card
+  onPress={() => {}}
   title="Recent activity"
   body="A labeled content surface. Drop fields, a list, or any module of content here."
 />
@@ -35,6 +36,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ```tsx
 <Card
   padded
+  onPress={() => {}}
   title="Anything goes here"
   body="The card surface gives you the border, radius, and shadow. You bring the content."
 />

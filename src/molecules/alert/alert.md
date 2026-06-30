@@ -11,7 +11,11 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="Heads up"
   description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
-/>
+>
+  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+    <Button link small>Learn more</Button>
+  </View>
+</Alert>
 ```
 
 ## Variants
@@ -25,7 +29,11 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="All set"
   description="Your changes have been saved successfully."
   dismissible
-/>
+>
+  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+    <Button ghost small>View changes</Button>
+  </View>
+</Alert>
 ```
 
 ### Variant - warning
@@ -37,7 +45,11 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="Action required"
   description="Your trial expires in 3 days."
   dismissible
-/>
+>
+  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+    <Button primary small>Upgrade plan</Button>
+  </View>
+</Alert>
 ```
 
 ### Variant - destructive
@@ -49,7 +61,11 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="Something went wrong"
   description="Could not save your changes. Please try again."
   dismissible
-/>
+>
+  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+    <Button primary small>Retry</Button>
+  </View>
+</Alert>
 ```
 
 ## Do & Don't

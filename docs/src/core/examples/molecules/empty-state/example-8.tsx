@@ -13,7 +13,7 @@ export default function Example(scope: ExampleScope) {
     <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Status</Text>
   </View>
   <View style={{ paddingHorizontal: 16, paddingVertical: 40 }}>
-    <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." />
+    <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
   </View>
 </View>
   );

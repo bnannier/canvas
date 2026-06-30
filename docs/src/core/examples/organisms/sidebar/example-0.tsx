@@ -7,6 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Sidebar
   active="Dashboard"
+  onSelect={() => {}}
   sections={[
     { title: "Main", items: [
       { label: "Dashboard", icon: "◉" },

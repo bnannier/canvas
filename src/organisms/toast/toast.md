@@ -5,7 +5,7 @@ A transient notification capsule. Render a `<Toast>` directly, or drive them imp
 ## Usage
 
 ```tsx
-<Toast message="Your changes were saved." />
+<Toast message="Your changes were saved." action={{ label: "Undo", onPress: () => {} }} />
 ```
 
 ## Variants
@@ -13,13 +13,13 @@ A transient notification capsule. Render a `<Toast>` directly, or drive them imp
 ### Success
 
 ```tsx
-<Toast success message="Profile updated" description="Your changes are now live." />
+<Toast success message="Profile updated" description="Your changes are now live." action={{ label: "View", onPress: () => {} }} />
 ```
 
 ### Error
 
 ```tsx
-<Toast destructive message="Upload failed" description="Check your connection and try again." />
+<Toast destructive message="Upload failed" description="Check your connection and try again." action={{ label: "Retry", onPress: () => {} }} />
 ```
 
 ### With an action

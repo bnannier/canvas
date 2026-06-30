@@ -13,6 +13,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Done", description: "You're all set." }
   ]}
   current={1}
+  onStepPress={() => {}}
   value={68}
   label="Setup progress"
 />

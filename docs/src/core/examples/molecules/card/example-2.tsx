@@ -7,6 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Card
   padded
+  onPress={() => {}}
   title="Anything goes here"
   body="The card surface gives you the border, radius, and shadow. You bring the content."
 />

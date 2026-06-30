@@ -14,6 +14,7 @@ export default function Example(scope: ExampleScope) {
   ]}
   current={1}
   vertical
+  onStepPress={() => {}}
   value={68}
   label="Setup progress"
 />
