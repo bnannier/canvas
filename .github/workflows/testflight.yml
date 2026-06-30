@@ -1,0 +1,101 @@
+name: Deploy to TestFlight
+
+# On every push to main that PASSES CI, cloud-build the universal docs app for iOS
+# (EAS, production profile) and submit it to TestFlight. Gated on a successful
+# "CI — canvas" run (workflow_run), so only code that passed checks ships, exactly
+# like release.yml gates the npm publish.
+#
+# ONE-TIME SETUP to activate (until done, this SKIPS green with a notice rather than
+# failing every push):
+#   1. EXPO_TOKEN repo secret: expo.dev -> account settings -> access tokens -> create,
+#      then repo Settings -> Secrets and variables -> Actions.
+#   2. iOS distribution credentials on EAS: run `eas build -p ios --profile production`
+#      once locally; let EAS generate the distribution cert + App Store provisioning
+#      profile and create the App Store Connect app record (needs your Apple login).
+#   3. App Store Connect API key on EAS: create one in App Store Connect (Users and
+#      Access -> Integrations -> App Store Connect API, App Manager role), then add it
+#      with `eas credentials -p ios` -> App Store Connect API Key, so `eas submit` runs
+#      non-interactively here.
+#
+# Each qualifying push then builds a NEW iOS binary on EAS (build minutes apply) and
+# uploads it to TestFlight; the build number auto-increments remotely (eas.json
+# appVersionSource: remote). TestFlight is iOS-only; a Google Play track would be a
+# separate workflow.
+
+on:
+  workflow_run:
+    workflows: ["CI — canvas"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    # Proceed only on a green CI run (or a manual dispatch). Then check the deploy is
+    # configured: if EXPO_TOKEN is absent, skip the whole thing with a warning rather
+    # than a red build, so an un-configured repo is not red on every push.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -n "$EXPO_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::TestFlight deploy skipped: set the EXPO_TOKEN secret and configure iOS credentials + an App Store Connect API key on EAS to enable it (see this workflow's header)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: gate
+    if: ${{ needs.gate.outputs.enabled == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Build the exact SHA that passed CI; workflow_run otherwise checks out the
+          # default branch tip.
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # The native app consumes the source-only kit + the generated docs core through
+      # symlinks (docs postinstall), so install root deps and regenerate the docs core
+      # before the EAS build packages the project.
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate docs core
+        run: bun run docs:gen
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install
+
+      - name: EAS build (iOS, production) and submit to TestFlight
+        working-directory: docs
+        run: eas build --platform ios --profile production --non-interactive --auto-submit
