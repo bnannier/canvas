@@ -192,7 +192,8 @@ export const androidSkin: StackedListSkin = {
     paddingVertical: 12,
   }),
   headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t.foreground }),
-  menuButton: { ...MENU, borderRadius: 9999 },
+  // overflow:hidden clips the bounded Material ripple to the rounded (circular) outline.
+  menuButton: { ...MENU, borderRadius: 9999, overflow: "hidden" },
   pressedOpacity: null,
   ripple: (t) => surfaceRipple(t),
 };

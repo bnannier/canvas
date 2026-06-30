@@ -221,6 +221,8 @@ export const androidSkin: PaginationSkin = {
     return {
       ...CELL_ROW,
       borderRadius: 8,
+      // clip the Material ripple to the rounded outline
+      overflow: "hidden",
       backgroundColor: "transparent",
     };
   },
@@ -230,6 +232,8 @@ export const androidSkin: PaginationSkin = {
     return {
       ...CELL_ROW,
       borderRadius: 8,
+      // clip the Material ripple to the rounded outline
+      overflow: "hidden",
       backgroundColor: selected ? alpha(t.primary, 0.12) : "transparent",
     };
   },
@@ -242,6 +246,8 @@ export const androidSkin: PaginationSkin = {
       justifyContent: "space-between",
       gap: 4,
       borderRadius: 8,
+      // clip the Material ripple to the rounded outline
+      overflow: "hidden",
       backgroundColor: alpha(t.primary, 0.08),
     };
   },

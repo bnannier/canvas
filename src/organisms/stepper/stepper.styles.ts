@@ -40,6 +40,9 @@ export const circleBase: ViewStyle = {
   justifyContent: "center",
   borderRadius: 9999,
   borderWidth: 2,
+  // clip the Material ripple to the rounded outline (Android bounds the
+  // android_ripple to the view rect otherwise, so it bleeds past the circle).
+  overflow: "hidden",
 };
 
 // text-sm font-medium (the check / number inside the circle).

@@ -26,3 +26,14 @@ export function controlRipple(tokens: ColorTokens) {
 export function pressDim(pressed: boolean, opacity = 0.9) {
   return pressed && Platform.OS !== "android" ? { opacity } : null;
 }
+
+// Clip a BOUNDED ripple to its rounded node on Android. android_ripple paints a RippleDrawable
+// bounded to the view's RECTANGLE; overflow:"hidden" (clipToOutline) masks it to the rounded
+// outline. The native Android elevation shadow is drawn around the outline by the platform, so it
+// SURVIVES the clip; iOS/web (which dim instead of rippling, and whose shadow* WOULD be clipped) get
+// null. Add to the SAME node that carries the borderRadius + android_ripple, when that node also has
+// an elevation/shadow (so the clip cannot be put unconditionally in a shared style). A rounded
+// shadow-free Android skin style should just set overflow:"hidden" directly instead.
+export function rippleClip() {
+  return Platform.OS === "android" ? ({ overflow: "hidden" } as const) : null;
+}

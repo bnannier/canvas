@@ -238,6 +238,9 @@ export const androidSkin: NavbarSkin = {
   linkTile(tokens, active) {
     return {
       borderRadius: 9999,
+      // clip the Material ripple to the rounded outline (without this, the bounded
+      // android_ripple paints a rectangle past the pill corners).
+      overflow: "hidden",
       paddingHorizontal: 16,
       paddingVertical: 6,
       backgroundColor: active ? alpha(tokens.primary, 0.12) : "transparent",

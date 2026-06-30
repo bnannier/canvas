@@ -137,6 +137,8 @@ export const iosSkin: StatsSkin = {
 export const androidSkin: StatsSkin = {
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
     borderRadius: 12,
+    // Clip the Material ripple to the rounded outline (a tappable card carries a bounded android_ripple).
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,

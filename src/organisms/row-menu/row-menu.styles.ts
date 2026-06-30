@@ -216,6 +216,9 @@ export const androidSkin: RowMenuSkin = {
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 20,
+    // Clip the Material ripple to the circular outline (without this, the bounded
+    // RippleDrawable paints a rectangle past the rounded corners on Android).
+    overflow: "hidden",
   },
   triggerGlyph: (t) => ({ fontSize: 20, lineHeight: 24, color: t.foreground }),
   // Android tints the trigger via the ripple, not a fill.

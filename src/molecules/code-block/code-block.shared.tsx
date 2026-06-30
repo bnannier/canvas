@@ -1,5 +1,5 @@
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, rippleClip, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { MONO, type Variant } from "./code-block.styles.js";
 
 // Shared CodeBlock shell. The structure (the muted code surface and its terminal /
@@ -151,7 +151,9 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     return (
       <Pressable
         android_ripple={surfaceRipple(tokens)}
-        style={({ pressed }) => [skin.copyButton(tokens, isDark), pressDim(pressed, skin.copyPressedOpacity)]}
+        // Android clips the bounded ripple to the rounded chip; the light chip's elevation shadow is
+        // drawn around the outline by the platform, so it survives. iOS keeps its shadow* (no clip).
+        style={({ pressed }) => [skin.copyButton(tokens, isDark), pressDim(pressed, skin.copyPressedOpacity), rippleClip()]}
         onPress={(e) => onCopy?.(text, e)}
         accessibilityRole="button"
         accessibilityLabel="Copy code"

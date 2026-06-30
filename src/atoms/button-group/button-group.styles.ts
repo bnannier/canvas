@@ -382,7 +382,8 @@ export const androidSkin: ButtonGroupSkin = {
     // The stadium wrap clips the corners; segments themselves are square.
     return {};
   },
-  spacedCorners: { borderRadius: 9999 },
+  // overflow:hidden clips the Material ripple to the rounded outline (spaced peers are pills).
+  spacedCorners: { borderRadius: 9999, overflow: "hidden" },
   // Each segment after the first draws a 1dp leading divider in the outline color.
   overlap: null,
   segmentDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
@@ -405,6 +406,8 @@ export const androidSkin: ButtonGroupSkin = {
       borderTopLeftRadius: 9999,
       borderBottomLeftRadius: 9999,
       backgroundColor: t.primary,
+      // clip the Material ripple to the rounded outline
+      overflow: "hidden",
     };
   },
   splitPrimaryLabel(t) {
@@ -423,6 +426,8 @@ export const androidSkin: ButtonGroupSkin = {
       backgroundColor: t.primary,
       paddingHorizontal: 10,
       height,
+      // clip the Material ripple to the rounded outline
+      overflow: "hidden",
     };
   },
   splitChevronColor: "primaryForeground",
@@ -460,6 +465,8 @@ export const androidSkin: ButtonGroupSkin = {
       backgroundColor: "transparent",
       paddingHorizontal: 10,
       height,
+      // clip the Material ripple to the rounded stadium outline (the arrow cells are pill-cornered)
+      overflow: "hidden",
     };
   },
   stepperArrowLeft: { borderTopLeftRadius: 9999, borderBottomLeftRadius: 9999 },

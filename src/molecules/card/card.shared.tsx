@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, rippleClip, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 
@@ -134,7 +134,9 @@ export function createCard(skin: CardSkin) {
           accessibilityRole="button"
           onPress={onPress}
           android_ripple={surfaceRipple(tokens)}
-          style={({ pressed }) => [container, pressDim(pressed)]}
+          // Android clips the bounded ripple to the rounded card; the M3 elevation shadow is drawn
+          // around the outline by the platform, so it survives the clip. iOS keeps its shadow* (no clip).
+          style={({ pressed }) => [container, pressDim(pressed), rippleClip()]}
         >
           {inner}
         </Pressable>

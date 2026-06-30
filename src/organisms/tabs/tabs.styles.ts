@@ -377,6 +377,8 @@ export const androidSkin: TabsSkin = {
       justifyContent: "center",
       gap: 6,
       borderRadius: 9999,
+      // clip the Material ripple to the rounded (capsule) outline
+      overflow: "hidden",
       paddingHorizontal: 14,
       paddingVertical: 7,
     };
@@ -397,6 +399,8 @@ export const androidSkin: TabsSkin = {
       alignItems: "center",
       gap: 6,
       borderRadius: 9999,
+      // clip the Material ripple to the rounded outline
+      overflow: "hidden",
       paddingHorizontal: 14,
       paddingVertical: 9,
     };

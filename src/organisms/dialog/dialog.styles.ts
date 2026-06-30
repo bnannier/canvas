@@ -253,6 +253,8 @@ export const androidSkin: DialogSkin = {
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 20,
+    // clip the Material ripple to the rounded outline (else it bleeds past the corners as a rectangle)
+    overflow: "hidden",
     minHeight: 40,
   },
   textButtonLabel: (t, destructive) => ({

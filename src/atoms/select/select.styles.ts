@@ -270,6 +270,9 @@ export const androidSkin: SelectSkin = {
     borderTopRightRadius: ANDROID_TOP_RADIUS,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
+    // Clip the Material ripple to the rounded top outline (without this the bounded
+    // android_ripple paints a rectangle past the top corners).
+    overflow: "hidden",
     borderBottomWidth: open ? 2 : 1,
     // Rest baseline reads clearly (on-surface-variant ~ muted-foreground) so the M3
     // filled trigger is distinct from the iOS lineless capsule.

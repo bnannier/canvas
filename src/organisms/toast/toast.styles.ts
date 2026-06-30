@@ -43,6 +43,8 @@ const actionButton = (): ViewStyle => ({
   paddingHorizontal: 10,
   paddingVertical: 6,
   borderRadius: 6,
+  // clip the Material ripple to the rounded outline (Android clipToOutline)
+  overflow: "hidden",
   alignItems: "center",
   justifyContent: "center",
 });
@@ -51,6 +53,8 @@ const dismissButton = (): ViewStyle => ({
   width: 24,
   height: 24,
   borderRadius: 12,
+  // clip the Material ripple to the rounded outline (Android clipToOutline)
+  overflow: "hidden",
   alignItems: "center",
   justifyContent: "center",
 });

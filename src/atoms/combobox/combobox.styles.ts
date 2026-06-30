@@ -275,6 +275,9 @@ export const androidSkin: ComboboxSkin = {
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     height: ANDROID_FIELD_BOX[size],
+    // Clip the Material ripple to the rounded (top-corner) outline (without it
+    // the bounded RippleDrawable bleeds past the rounded corners as a rectangle).
+    overflow: "hidden",
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),

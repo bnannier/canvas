@@ -311,7 +311,9 @@ export const androidSkin: CalendarSkin = {
   weekdayLabel: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
   weekdays: WEEKDAYS_ONE,
 
-  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999 },
+  // overflow:"hidden" clips the Material ripple to the rounded outline (the bounded
+  // android_ripple otherwise bleeds past the circle as a rectangle).
+  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999, overflow: "hidden" },
   // Selected -> filled `primary` circle. Today (unselected) -> a 1px `primary`
   // ring on a transparent fill.
   dayCellState: (t, st) => {

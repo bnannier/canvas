@@ -238,6 +238,9 @@ export const androidSkin: SidebarSkin = {
       alignItems: "center",
       gap: 12,
       borderRadius: 9999,
+      // Clip the Material ripple to the rounded pill outline (Android bounds the
+      // ripple to the view rectangle without this).
+      overflow: "hidden",
       paddingHorizontal: 16,
       // ~56dp comfortable / ~48dp compact (paddingVertical + ~24 line box).
       paddingVertical: density === "compact" ? 12 : 16,

@@ -27,7 +27,9 @@ function containerBordered(tokens: ColorTokens): ViewStyle {
 // Each row: a horizontal Pressable with a leading control, the label/detail
 // stack, and (added by the shell) a subtle press-state fill. Size adds the
 // vertical padding.
-const rowBase: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2 };
+// overflow:hidden clips the Material ripple to the rounded outline (borderRadius)
+// so the bounded ripple does not bleed past the rounded corners on Android.
+const rowBase: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, overflow: "hidden" };
 
 // Per-row padding by size: small reads like the legacy h-8 trigger, medium like
 // h-9, large like h-10.

@@ -131,6 +131,10 @@ export const androidSkin: ButtonSkin = {
     ...ROW,
     gap: 8,
     borderRadius: 9999, // M3 filled button = fully rounded (stadium); icon = circle
+    // Clip the Material ripple to the rounded outline. android_ripple paints a RippleDrawable
+    // bounded to the view's RECTANGLE; without clipToOutline (overflow:hidden) it bleeds past the
+    // pill's corners. Safe here: the M3 filled button is flat (no elevation/shadow to clip).
+    overflow: "hidden",
     ...(o.icon
       ? sq(size === "small" ? 32 : size === "large" ? 48 : 40)
       : size === "small" ? { paddingHorizontal: 16, paddingVertical: 6 }
