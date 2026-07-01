@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { View, Image, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle } from "../../style/index.js";
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
@@ -68,7 +68,7 @@ export interface AvatarProps {
   ring?: boolean;
   /** When set, the avatar becomes pressable (e.g. a topbar account trigger). */
   onPress?: () => void;
-  /** Escape hatch for layout/positioning composition (e.g. negative margin to overlap in a stack). */
+  /** For layout composition only; overlap/stacking is owned by AvatarGroup, not this prop. */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -179,5 +179,104 @@ export function createAvatar(skin: AvatarSkin) {
       );
     }
     return <View style={container}>{inner}</View>;
+  };
+}
+
+// AvatarGroup: the overlapping avatar stack, so no call site writes a negative
+// `marginLeft` to overlap avatars. It caps the visible avatars at `max`,
+// collapses the remainder into a "+N" chip, forwards its size to every child,
+// and injects the overlap margin + separator ring internally (the caller's
+// Avatars carry no layout style). Co-located with Avatar because it reuses the
+// same AvatarSkin, size scale, box, and ring outline.
+
+export type Overlap = "tight" | "snug" | "loose";
+
+// Overlap (negative marginLeft) per size and tightness. The magic negative margin
+// is owned here, once, instead of at every call site.
+const OVERLAP: Record<Size, Record<Overlap, number>> = {
+  small: { tight: -10, snug: -6, loose: -2 },
+  default: { tight: -12, snug: -8, loose: -4 },
+  large: { tight: -14, snug: -10, loose: -6 },
+};
+
+export interface AvatarGroupProps {
+  /** Avatar elements to stack. */
+  children?: ReactNode;
+  /** Cap the visible avatars; the remainder collapses into a "+N" chip. */
+  max?: number;
+  /** Override the total behind the "+N" chip (e.g. a server-known member count). */
+  total?: number;
+  // Size (pick one; forwarded to every child so the whole stack is uniform).
+  small?: boolean;
+  large?: boolean;
+  // Overlap tightness (pick one; default `tight`). Precedence loose > snug > tight.
+  tight?: boolean;
+  snug?: boolean;
+  loose?: boolean;
+  /** Accessible name for the whole group (e.g. "8 members"). */
+  accessibilityLabel?: string;
+}
+
+// Overlap precedence when more than one is passed: first match wins.
+function overlapOf(p: AvatarGroupProps): Overlap {
+  if (p.loose) return "loose";
+  if (p.snug) return "snug";
+  return "tight";
+}
+
+/** Build an AvatarGroup from the same platform skin as Avatar. */
+export function createAvatarGroup(skin: AvatarSkin) {
+  return function AvatarGroup(props: AvatarGroupProps) {
+    const { children, max, total, small, large, accessibilityLabel } = props;
+    const { tokens } = useTheme();
+    const size = sizeOf(props);
+    const overlap = OVERLAP[size][overlapOf(props)];
+
+    const items = Children.toArray(children).filter(isValidElement) as ReactElement<AvatarProps>[];
+    const cap = max ?? items.length;
+    const visible = items.slice(0, cap);
+    const totalCount = total ?? items.length;
+    const hidden = totalCount - visible.length;
+
+    // Size is forwarded only when the group sets one, so a child keeps its own
+    // size otherwise. Overlap + ring are always injected, so the caller's
+    // Avatars never carry layout style.
+    const sizeProps: Partial<AvatarProps> = small ? { small: true } : large ? { large: true } : {};
+
+    return (
+      <View
+        style={{ flexDirection: "row", alignItems: "center" }}
+        accessibilityLabel={accessibilityLabel}
+        aria-label={accessibilityLabel}
+      >
+        {visible.map((child, i) =>
+          cloneElement(child, {
+            key: child.key ?? i,
+            ...sizeProps,
+            ring: true,
+            style: [child.props.style, i > 0 ? { marginLeft: overlap } : null],
+          }),
+        )}
+        {hidden > 0 ? (
+          <View
+            style={{
+              flexShrink: 0,
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              backgroundColor: tokens.muted,
+              width: BOX[size],
+              height: BOX[size],
+              borderRadius: CIRCLE_RADIUS,
+              borderWidth: 2,
+              borderColor: tokens.background,
+              marginLeft: visible.length > 0 ? overlap : 0,
+            }}
+          >
+            <Text style={{ color: tokens["muted-foreground"], ...skin.labelType[size] }}>+{hidden}</Text>
+          </View>
+        ) : null}
+      </View>
+    );
   };
 }

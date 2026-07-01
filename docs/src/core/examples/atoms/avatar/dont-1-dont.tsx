@@ -3,17 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Avatar } = scope;
+  const { Avatar, AvatarGroup } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center" }}>
-  <Avatar small ring name="AO" />
-  <Avatar small ring name="RC" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="LB" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="KT" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="JD" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="MA" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="AL" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="SK" style={{ marginLeft: -10 }} />
-</View>
+<AvatarGroup small>
+  <Avatar name="AO" />
+  <Avatar name="RC" />
+  <Avatar name="LB" />
+  <Avatar name="KT" />
+  <Avatar name="JD" />
+  <Avatar name="MA" />
+  <Avatar name="AL" />
+  <Avatar name="SK" />
+</AvatarGroup>
   );
 }

@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Avatar } = scope;
+  const { Avatar, AvatarGroup } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center" }}>
-  <Avatar ring src="/rachel-chen.jpg" name="RC" />
-  <Avatar ring src="/liang-bao.jpg" name="LB" style={{ marginLeft: -12 }} />
-  <Avatar ring src="/marcus-allen.jpg" name="LB" style={{ marginLeft: -12 }} />
-  <Avatar ring src="/kira-tanaka.jpg" name="KT" style={{ marginLeft: -12 }} />
-</View>
+<AvatarGroup max={4}>
+  <Avatar src="/rachel-chen.jpg" name="RC" />
+  <Avatar src="/liang-bao.jpg" name="LB" />
+  <Avatar src="/marcus-allen.jpg" name="MA" />
+  <Avatar src="/kira-tanaka.jpg" name="KT" />
+</AvatarGroup>
   );
 }

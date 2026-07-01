@@ -3,14 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Avatar } = scope;
+  const { Avatar, AvatarGroup } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center" }}>
-  <Avatar small ring name="AO" />
-  <Avatar small ring name="RC" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="LB" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="KT" style={{ marginLeft: -10 }} />
-  <Text style={{ marginLeft: 6, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+12</Text>
-</View>
+<AvatarGroup small max={4} total={16}>
+  <Avatar name="AO" />
+  <Avatar name="RC" />
+  <Avatar name="LB" />
+  <Avatar name="KT" />
+</AvatarGroup>
   );
 }

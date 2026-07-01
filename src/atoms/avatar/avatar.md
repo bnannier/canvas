@@ -13,12 +13,12 @@ A photo when the account has one, falling back to two initials on a brand gradie
 ### Variant - stacked
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center" }}>
-  <Avatar ring src="/rachel-chen.jpg" name="RC" />
-  <Avatar ring src="/liang-bao.jpg" name="LB" style={{ marginLeft: -12 }} />
-  <Avatar ring src="/marcus-allen.jpg" name="LB" style={{ marginLeft: -12 }} />
-  <Avatar ring src="/kira-tanaka.jpg" name="KT" style={{ marginLeft: -12 }} />
-</View>
+<AvatarGroup max={4}>
+  <Avatar src="/rachel-chen.jpg" name="RC" />
+  <Avatar src="/liang-bao.jpg" name="LB" />
+  <Avatar src="/marcus-allen.jpg" name="MA" />
+  <Avatar src="/kira-tanaka.jpg" name="KT" />
+</AvatarGroup>
 ```
 
 ### Variant - topbar
@@ -87,31 +87,30 @@ A photo when the account has one, falling back to two initials on a brand gradie
 
 ### Stacked
 
-**Do** — Cap the stack and summarize the rest with a +N count.
+**Do** — Cap the stack with `max` and let AvatarGroup summarize the rest as a +N count.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center" }}>
-  <Avatar small ring name="AO" />
-  <Avatar small ring name="RC" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="LB" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="KT" style={{ marginLeft: -10 }} />
-  <Text style={{ marginLeft: 6, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+12</Text>
-</View>
+<AvatarGroup small max={4} total={16}>
+  <Avatar name="AO" />
+  <Avatar name="RC" />
+  <Avatar name="LB" />
+  <Avatar name="KT" />
+</AvatarGroup>
 ```
 
-**Don't** — An unbounded stack runs off the row and stops being scannable.
+**Don't** — An unbounded stack (no `max`) runs off the row and stops being scannable.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center" }}>
-  <Avatar small ring name="AO" />
-  <Avatar small ring name="RC" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="LB" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="KT" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="JD" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="MA" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="AL" style={{ marginLeft: -10 }} />
-  <Avatar small ring name="SK" style={{ marginLeft: -10 }} />
-</View>
+<AvatarGroup small>
+  <Avatar name="AO" />
+  <Avatar name="RC" />
+  <Avatar name="LB" />
+  <Avatar name="KT" />
+  <Avatar name="JD" />
+  <Avatar name="MA" />
+  <Avatar name="AL" />
+  <Avatar name="SK" />
+</AvatarGroup>
 ```
 
 ### Topbar account menu

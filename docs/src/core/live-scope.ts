@@ -75,6 +75,7 @@ import {
   Typography,
   Row,
   Column,
+  AvatarGroup,
 } from "@olympusoss/canvas";
 
 // Style helpers an example fence can reference when it styles a raw View/Text.
@@ -174,4 +175,5 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   Typography,
   Row,
   Column,
+  AvatarGroup,
 };
