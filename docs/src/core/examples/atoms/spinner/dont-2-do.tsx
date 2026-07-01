@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Spinner } = scope;
+  const { Card, Spinner, Typography, Column } = scope;
   return (
-<View style={{ flexDirection: "column", alignItems: "center", gap: 8, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 24 }}>
-  <Spinner />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Loading…</Text>
-</View>
+<Card padded>
+  <Column alignCenter snug>
+    <Spinner />
+    <Typography small muted>Loading…</Typography>
+  </Column>
+</Card>
   );
 }

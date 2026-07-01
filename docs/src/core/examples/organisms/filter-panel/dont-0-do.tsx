@@ -3,17 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable, Icon } = scope;
+  const { Row, Chip } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 4, borderRadius: 9999, backgroundColor: tokens.primary, paddingHorizontal: 10, paddingVertical: 4 }}>
-    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Active</Text>
-    <Icon x primaryForeground size={12} />
-  </Pressable>
-  <Pressable style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 4, borderRadius: 9999, backgroundColor: tokens.primary, paddingHorizontal: 10, paddingVertical: 4 }}>
-    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Default</Text>
-    <Icon x primaryForeground size={12} />
-  </Pressable>
-</View>
+<Row wrap snug>
+  <Chip primary onRemove={() => {}}>Active</Chip>
+  <Chip primary onRemove={() => {}}>Default</Chip>
+</Row>
   );
 }

@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Avatar } = scope;
+  const { Avatar, Typography, Row, Column } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+<Row relaxed alignCenter>
   <Avatar src="/rachel-chen.jpg" name="RC" />
-  <View>
-    <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>rachel.chen@example.com</Text>
-  </View>
-</View>
+  <Column>
+    <Typography lead semibold>Rachel Chen</Typography>
+    <Typography small muted>rachel.chen@example.com</Typography>
+  </Column>
+</Row>
   );
 }

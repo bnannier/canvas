@@ -5,29 +5,29 @@ Single-pick selection: stacked, inline, card-style.
 ## Usage
 
 ```tsx
-<View style={{ flexDirection: "column", gap: 10 }}>
-  <View style={{ flexDirection: "row", gap: 8 }}>
+<Column snug>
+  <Row snug alignStart>
     <Radio style={{ marginTop: 3 }} />
-    <View>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: tokens.foreground }}>Hobby</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For personal projects and experiments.</Text>
-    </View>
-  </View>
-  <View style={{ flexDirection: "row", gap: 8 }}>
+    <Column>
+      <Typography small medium>Hobby</Typography>
+      <Typography tiny muted>For personal projects and experiments.</Typography>
+    </Column>
+  </Row>
+  <Row snug alignStart>
     <Radio checked style={{ marginTop: 3 }} />
-    <View>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: tokens.foreground }}>Pro</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For growing teams that need more control.</Text>
-    </View>
-  </View>
-  <View style={{ flexDirection: "row", gap: 8 }}>
+    <Column>
+      <Typography small medium>Pro</Typography>
+      <Typography tiny muted>For growing teams that need more control.</Typography>
+    </Column>
+  </Row>
+  <Row snug alignStart>
     <Radio style={{ marginTop: 3 }} />
-    <View>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: tokens.foreground }}>Enterprise</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Advanced security, compliance, and support.</Text>
-    </View>
-  </View>
-</View>
+    <Column>
+      <Typography small medium>Enterprise</Typography>
+      <Typography tiny muted>Advanced security, compliance, and support.</Typography>
+    </Column>
+  </Row>
+</Column>
 ```
 
 ## Variants
@@ -65,12 +65,12 @@ Single-pick selection: stacked, inline, card-style.
 **Do** — Pre-select a sensible default so the common path needs no clicks.
 
 ```tsx
-<View style={{ flexDirection: "column", gap: 8 }}>
-  <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Plan</Text>
+<Column snug>
+  <Typography small semibold style={{ marginBottom: 4 }}>Plan</Typography>
   <Radio>Hobby</Radio>
   <Radio checked>Pro</Radio>
   <Radio>Enterprise</Radio>
-</View>
+</Column>
 ```
 
 **Don't** — Leaving a radio group with nothing selected forces an extra decision and can submit empty.
@@ -89,15 +89,15 @@ Single-pick selection: stacked, inline, card-style.
 **Do** — Align the control to the first text line (mt-[3px]) so it sits beside the title, with the description flowing below.
 
 ```tsx
-<View style={{ flexDirection: "column", gap: 10 }}>
-  <View style={{ flexDirection: "row", gap: 8 }}>
+<Column snug>
+  <Row snug alignStart>
     <Radio checked style={{ marginTop: 3 }} />
-    <View>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: tokens.foreground }}>Pro</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For growing teams that need more control.</Text>
-    </View>
-  </View>
-</View>
+    <Column>
+      <Typography small medium>Pro</Typography>
+      <Typography tiny muted>For growing teams that need more control.</Typography>
+    </Column>
+  </Row>
+</Column>
 ```
 
 **Don't** — With items-center the input floats to the vertical middle of a two-line label, leaving it visually unattached to the title it controls.
@@ -119,11 +119,11 @@ Single-pick selection: stacked, inline, card-style.
 **Do** — Use gap-6 between options (gap-2 inside each) so every label clearly pairs with its own control.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
+<Row loose wrap>
   <Radio checked small>Hobby</Radio>
   <Radio small>Pro</Radio>
   <Radio small>Enterprise</Radio>
-</View>
+</Row>
 ```
 
 **Don't** — Cramped gap-1 between options makes each label blur into the next radio, so it is hard to tell which dot belongs to which choice.

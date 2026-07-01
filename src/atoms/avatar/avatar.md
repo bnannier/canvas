@@ -29,36 +29,36 @@ A photo when the account has one, falling back to two initials on a brand gradie
     { label: "Settings", icon: "⚙" },
     { label: "Sign out", icon: "↩", separatorBefore: true }
   ]}>
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
+  <Row snug alignCenter style={{ borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
     <Avatar small src="/marcus-allen.jpg" name="MA" />
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>admin@example.com</Text>
+    <Typography small medium>admin@example.com</Typography>
     <Icon chevronDown muted size={12} />
-  </View>
+  </Row>
 </Dropdown>
 ```
 
 ### Variant - identity
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+<Row relaxed alignCenter>
   <Avatar src="/rachel-chen.jpg" name="RC" />
-  <View>
-    <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>rachel.chen@example.com</Text>
-  </View>
-</View>
+  <Column>
+    <Typography lead semibold>Rachel Chen</Typography>
+    <Typography small muted>rachel.chen@example.com</Typography>
+  </Column>
+</Row>
 ```
 
 ### Variant - menu
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderColor: tokens.border, paddingBottom: 12 }}>
+<Row cozy alignCenter style={{ borderBottomWidth: 1, borderColor: tokens.border, paddingBottom: 12 }}>
   <Avatar src="/ada-lovelace.jpg" name="AL" />
-  <View>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Ada Lovelace</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>admin@example.com</Text>
-  </View>
-</View>
+  <Column>
+    <Typography small semibold>Ada Lovelace</Typography>
+    <Typography tiny muted>admin@example.com</Typography>
+  </Column>
+</Row>
 ```
 
 ### Ring outline
@@ -118,11 +118,11 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Do** — Pair it with the account name and a chevron so it reads as a trigger.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
+<Row snug alignCenter style={{ borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
   <Avatar small src="/marcus-allen.jpg" name="MA" />
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>admin@example.com</Text>
+  <Typography small medium>admin@example.com</Typography>
   <Icon chevronDown muted size={12} />
-</View>
+</Row>
 ```
 
 **Don't** — A lone avatar gives no hint that it opens the account menu.
@@ -136,13 +136,13 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Do** — Name primary; email muted and secondary.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+<Row relaxed alignCenter>
   <Avatar src="/rachel-chen.jpg" name="RC" />
-  <View>
-    <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>rachel.chen@example.com</Text>
-  </View>
-</View>
+  <Column>
+    <Typography lead semibold>Rachel Chen</Typography>
+    <Typography small muted>rachel.chen@example.com</Typography>
+  </Column>
+</Row>
 ```
 
 **Don't** — Equal weight on the name and email flattens the hierarchy.
@@ -162,13 +162,13 @@ A photo when the account has one, falling back to two initials on a brand gradie
 **Do** — Keep one consistent circular avatar shape across contexts.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+<Row cozy alignCenter>
   <Avatar src="/ada-lovelace.jpg" name="AL" />
-  <View>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Ada Lovelace</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>admin@example.com</Text>
-  </View>
-</View>
+  <Column>
+    <Typography small semibold>Ada Lovelace</Typography>
+    <Typography tiny muted>admin@example.com</Typography>
+  </Column>
+</Row>
 ```
 
 **Don't** — Squaring the avatar here clashes with the circular avatars everywhere else.

@@ -3,18 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable, Button, Icon } = scope;
+  const { Button, Icon, Row } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, backgroundColor: tokens.primary, paddingHorizontal: 12 }}>
-    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["primary-foreground"] }}>Status</Text>
-    <Icon chevronDown primaryForeground size={12} />
-  </Pressable>
-  <Pressable style={{ height: 32, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }}>
-    <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>Role</Text>
-    <Icon chevronDown size={12} />
-  </Pressable>
-  <Button ghost small><Text style={{ color: tokens.primary }}>+ Add filter</Text></Button>
-</View>
+<Row wrap alignCenter snug>
+  <Button primary small iconRight={<Icon chevronDown primaryForeground size={12} />}>Status</Button>
+  <Button outline small iconRight={<Icon chevronDown size={12} />}>Role</Button>
+  <Button link small iconLeft={<Icon plus size={14} />}>Add filter</Button>
+</Row>
   );
 }

@@ -27,10 +27,10 @@ Animated loading spinner in three sizes.
 **Do** — Pair longer waits with a short label so the spinner has context.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Spinner small />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Loading…</Text>
-</View>
+  <Typography small muted>Loading…</Typography>
+</Row>
 ```
 
 **Don't** — A bare spinner with no label leaves users guessing what is happening and for how long.
@@ -60,10 +60,12 @@ Animated loading spinner in three sizes.
 **Do** — Keep the default square and centered with a label for small content panels and cards.
 
 ```tsx
-<View style={{ flexDirection: "column", alignItems: "center", gap: 8, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 24 }}>
-  <Spinner />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Loading…</Text>
-</View>
+<Card padded>
+  <Column alignCenter snug>
+    <Spinner />
+    <Typography small muted>Loading…</Typography>
+  </Column>
+</Card>
 ```
 
 **Don't** — Don't stretch it with conflicting w/h utilities; a spinner must stay a perfect circle to spin cleanly.
@@ -79,10 +81,12 @@ Animated loading spinner in three sizes.
 **Do** — Reserve the large size for section- or page-level loading, centered in the empty content area.
 
 ```tsx
-<View style={{ height: 160, flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
-  <Spinner large />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Loading dashboard…</Text>
-</View>
+<Card style={{ height: 160 }}>
+  <Column fill center alignCenter cozy>
+    <Spinner large />
+    <Typography small muted>Loading dashboard…</Typography>
+  </Column>
+</Card>
 ```
 
 **Don't** — The 8×8 spinner overflows a small control; cramming the large size into a button breaks its height.

@@ -5,13 +5,13 @@ Multi-select option, single yes/no, grouped lists.
 ## Usage
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+<Row snug alignStart>
   <Checkbox checked />
-  <View style={{ gap: 2 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
-  </View>
-</View>
+  <Column tight>
+    <Typography small medium>Email notifications</Typography>
+    <Typography tiny muted>Get notified when activity happens on your account.</Typography>
+  </Column>
+</Row>
 ```
 
 ## Variants
@@ -19,25 +19,25 @@ Multi-select option, single yes/no, grouped lists.
 ### State - unchecked
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+<Row snug alignStart>
   <Checkbox />
-  <View style={{ gap: 2 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
-  </View>
-</View>
+  <Column tight>
+    <Typography small medium>Email notifications</Typography>
+    <Typography tiny muted>Get notified when activity happens on your account.</Typography>
+  </Column>
+</Row>
 ```
 
 ### State - disabled
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+<Row snug alignStart>
   <Checkbox disabled />
-  <View style={{ gap: 2 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
-  </View>
-</View>
+  <Column tight>
+    <Typography small medium>Email notifications</Typography>
+    <Typography tiny muted>Get notified when activity happens on your account.</Typography>
+  </Column>
+</Row>
 ```
 
 ## Do & Don't
@@ -61,14 +61,17 @@ Multi-select option, single yes/no, grouped lists.
 **Do** — Show the parent indeterminate (a dash, not a tick) when only some children are checked.
 
 ```tsx
-<View style={{ gap: 8 }}>
+<Column snug>
   <Checkbox indeterminate>Select all</Checkbox>
-  <View style={{ marginLeft: 24, gap: 8 }}>
-    <Checkbox checked>Read</Checkbox>
-    <Checkbox>Write</Checkbox>
-    <Checkbox>Delete</Checkbox>
-  </View>
-</View>
+  <Row flush>
+    <View style={{ width: 24 }} />
+    <Column snug>
+      <Checkbox checked>Read</Checkbox>
+      <Checkbox>Write</Checkbox>
+      <Checkbox>Delete</Checkbox>
+    </Column>
+  </Row>
+</Column>
 ```
 
 **Don't** — A fully checked parent claims every child is selected when only one is, so the state reads as a lie.
@@ -89,10 +92,10 @@ Multi-select option, single yes/no, grouped lists.
 **Do** — Say why it's unavailable, like a plan gate, or don't show it at all.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+<Row snug alignCenter>
   <Checkbox disabled>Export to CSV</Checkbox>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>(Pro plan)</Text>
-</View>
+  <Typography tiny muted>(Pro plan)</Typography>
+</Row>
 ```
 
 **Don't** — A disabled option with no reason leaves users stuck and guessing.
@@ -106,12 +109,12 @@ Multi-select option, single yes/no, grouped lists.
 **Do** — Radios for one-of-many; reserve checkboxes for independent multi-select.
 
 ```tsx
-<View style={{ gap: 8 }}>
-  <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Plan</Text>
+<Column snug>
+  <Typography small semibold>Plan</Typography>
   <Radio>Free</Radio>
   <Radio checked>Pro</Radio>
   <Radio>Enterprise</Radio>
-</View>
+</Column>
 ```
 
 **Don't** — Checkboxes allow multiple selections; for a one-of choice they let users pick contradictory options.
@@ -131,9 +134,8 @@ Multi-select option, single yes/no, grouped lists.
 
 ```tsx
 <Checkbox checked>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
-  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "400", color: tokens["muted-foreground"] }}>
-Get notified when activity happens on your account.</Text>
+  <Typography small medium>Email notifications</Typography>
+  <Typography tiny muted>Get notified when activity happens on your account.</Typography>
 </Checkbox>
 ```
 

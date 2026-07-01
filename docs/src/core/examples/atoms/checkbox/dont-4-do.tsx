@@ -3,12 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Text, Checkbox } = scope;
+  const { Checkbox, Typography } = scope;
   return (
 <Checkbox checked>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
-  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "400", color: tokens["muted-foreground"] }}>
-Get notified when activity happens on your account.</Text>
+  <Typography small medium>Email notifications</Typography>
+  <Typography tiny muted>Get notified when activity happens on your account.</Typography>
 </Checkbox>
   );
 }

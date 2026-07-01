@@ -3,30 +3,30 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Radio } = scope;
+  const { Radio, Typography, Row, Column } = scope;
   return (
-<View style={{ flexDirection: "column", gap: 10 }}>
-  <View style={{ flexDirection: "row", gap: 8 }}>
+<Column snug>
+  <Row snug alignStart>
     <Radio style={{ marginTop: 3 }} />
-    <View>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: tokens.foreground }}>Hobby</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For personal projects and experiments.</Text>
-    </View>
-  </View>
-  <View style={{ flexDirection: "row", gap: 8 }}>
+    <Column>
+      <Typography small medium>Hobby</Typography>
+      <Typography tiny muted>For personal projects and experiments.</Typography>
+    </Column>
+  </Row>
+  <Row snug alignStart>
     <Radio checked style={{ marginTop: 3 }} />
-    <View>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: tokens.foreground }}>Pro</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For growing teams that need more control.</Text>
-    </View>
-  </View>
-  <View style={{ flexDirection: "row", gap: 8 }}>
+    <Column>
+      <Typography small medium>Pro</Typography>
+      <Typography tiny muted>For growing teams that need more control.</Typography>
+    </Column>
+  </Row>
+  <Row snug alignStart>
     <Radio style={{ marginTop: 3 }} />
-    <View>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: tokens.foreground }}>Enterprise</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Advanced security, compliance, and support.</Text>
-    </View>
-  </View>
-</View>
+    <Column>
+      <Typography small medium>Enterprise</Typography>
+      <Typography tiny muted>Advanced security, compliance, and support.</Typography>
+    </Column>
+  </Row>
+</Column>
   );
 }

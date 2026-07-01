@@ -3,18 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Avatar, Dropdown, Icon } = scope;
+  const { tokens, Avatar, Dropdown, Icon, Typography, Row } = scope;
   return (
 <Dropdown items={[
     { label: "Your profile", icon: "👤" },
     { label: "Settings", icon: "⚙" },
     { label: "Sign out", icon: "↩", separatorBefore: true }
   ]}>
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
+  <Row snug alignCenter style={{ borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
     <Avatar small src="/marcus-allen.jpg" name="MA" />
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>admin@example.com</Text>
+    <Typography small medium>admin@example.com</Typography>
     <Icon chevronDown muted size={12} />
-  </View>
+  </Row>
 </Dropdown>
   );
 }

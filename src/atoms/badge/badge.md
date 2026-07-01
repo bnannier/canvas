@@ -19,22 +19,22 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 ### Type - identity
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-  <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
+<Row wrap alignCenter snug>
+  <Typography lead semibold>Rachel Chen</Typography>
   <Badge status success>active</Badge>
   <Badge status info>Verified</Badge>
   <Badge secondary>employee</Badge>
-</View>
+</Row>
 ```
 
 ### Type - grants
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
+<Row wrap tight>
   <Badge secondary mono>authorization_code</Badge>
   <Badge secondary mono>refresh_token</Badge>
   <Badge secondary mono>client_credentials</Badge>
-</View>
+</Row>
 ```
 
 ### Badge variant - default
@@ -68,12 +68,12 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 **Do** — Neutral tags for metadata; reserve color and the status-badge dot for live state.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+<Row wrap alignCenter snug>
   <Badge secondary>employee</Badge>
   <Badge secondary>engineering</Badge>
   <Badge secondary>remote</Badge>
   <Badge status success>active</Badge>
-</View>
+</Row>
 ```
 
 **Don't** — Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.
@@ -106,11 +106,11 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 **Do** — Show only the one or two badges relevant to this view.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-  <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
+<Row wrap alignCenter snug>
+  <Typography lead semibold>Rachel Chen</Typography>
   <Badge status success>active</Badge>
   <Badge secondary>employee</Badge>
-</View>
+</Row>
 ```
 
 **Don't** — A wall of badges after a name buries the one that matters.
@@ -132,11 +132,11 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 **Do** — Use the mono variant for tokens, scopes, and event names.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
+<Row wrap tight>
   <Badge secondary mono>authorization_code</Badge>
   <Badge secondary mono>refresh_token</Badge>
   <Badge secondary mono>client_credentials</Badge>
-</View>
+</Row>
 ```
 
 **Don't** — Proportional type makes identifiers hard to scan and compare.
@@ -154,11 +154,11 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 **Do** — Reserve the default fill for the single tag you want noticed first; keep the rest secondary.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+<Row wrap alignCenter snug>
   <Badge default>admin</Badge>
   <Badge secondary>engineering</Badge>
   <Badge secondary>remote</Badge>
-</View>
+</Row>
 ```
 
 **Don't** — The solid primary fill is the loudest badge; using it for every tag makes the whole row shout and nothing leads.
@@ -177,11 +177,11 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 **Do** — Keep secondary for static metadata (role, team) and switch to the status-badge for anything live.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+<Row wrap alignCenter snug>
   <Badge secondary>employee</Badge>
   <Badge secondary>engineering</Badge>
   <Badge status success>active</Badge>
-</View>
+</Row>
 ```
 
 **Don't** — A muted gray pill reads as static metadata, so live state shown as a secondary badge looks inert and goes unnoticed.
@@ -199,10 +199,12 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 **Do** — Use outline on a plain surface where the quiet border has contrast, for low-priority secondary tags.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 12 }}>
-  <Badge outline>draft</Badge>
-  <Badge outline>internal</Badge>
-</View>
+<Card padded>
+  <Row wrap alignCenter snug>
+    <Badge outline>draft</Badge>
+    <Badge outline>internal</Badge>
+  </Row>
+</Card>
 ```
 
 **Don't** — The thin border is the whole badge; on a colored or busy surface it disappears and the label floats unboxed.
@@ -219,11 +221,11 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 **Do** — Reserve destructive for genuinely destructive or error semantics like revoked or banned.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+<Row wrap alignCenter snug>
   <Badge destructive>Revoked</Badge>
   <Badge destructive>Banned</Badge>
   <Badge secondary>marketing</Badge>
-</View>
+</Row>
 ```
 
 **Don't** — Solid red signals error or danger, so using it to color-code neutral categories raises a false alarm.

@@ -151,7 +151,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
   </CardHeader>
   <CardSeparator />
   <CardContent>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
+    <Typography small>Two events today.</Typography>
   </CardContent>
 </Card>
 ```
@@ -175,8 +175,10 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 
 ```tsx
 <Card padded style={{ maxWidth: 360 }}>
-  <Text style={{ marginBottom: 4, fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Anything goes here</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>The card surface gives you the border, radius, and shadow. You bring the content.</Text>
+  <Column tight>
+    <Typography lead semibold>Anything goes here</Typography>
+    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
+  </Column>
 </Card>
 ```
 

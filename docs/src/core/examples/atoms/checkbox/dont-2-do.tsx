@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Checkbox } = scope;
+  const { Checkbox, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+<Row snug alignCenter>
   <Checkbox disabled>Export to CSV</Checkbox>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>(Pro plan)</Text>
-</View>
+  <Typography tiny muted>(Pro plan)</Typography>
+</Row>
   );
 }

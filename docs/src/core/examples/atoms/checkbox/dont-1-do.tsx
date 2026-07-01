@@ -3,15 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Checkbox, Select } = scope;
+  const { View, Checkbox, Select, Row, Column } = scope;
   return (
-<View style={{ gap: 8 }}>
+<Column snug>
   <Checkbox indeterminate>Select all</Checkbox>
-  <View style={{ marginLeft: 24, gap: 8 }}>
-    <Checkbox checked>Read</Checkbox>
-    <Checkbox>Write</Checkbox>
-    <Checkbox>Delete</Checkbox>
-  </View>
-</View>
+  <Row flush>
+    <View style={{ width: 24 }} />
+    <Column snug>
+      <Checkbox checked>Read</Checkbox>
+      <Checkbox>Write</Checkbox>
+      <Checkbox>Delete</Checkbox>
+    </Column>
+  </Row>
+</Column>
   );
 }

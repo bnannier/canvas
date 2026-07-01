@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Checkbox } = scope;
+  const { Checkbox, Typography, Row, Column } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+<Row snug alignStart>
   <Checkbox disabled />
-  <View style={{ gap: 2 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>
-  </View>
-</View>
+  <Column tight>
+    <Typography small medium>Email notifications</Typography>
+    <Typography tiny muted>Get notified when activity happens on your account.</Typography>
+  </Column>
+</Row>
   );
 }

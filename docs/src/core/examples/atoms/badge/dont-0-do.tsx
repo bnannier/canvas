@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Badge } = scope;
+  const { Badge, Row } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+<Row wrap alignCenter snug>
   <Badge secondary>employee</Badge>
   <Badge secondary>engineering</Badge>
   <Badge secondary>remote</Badge>
   <Badge status success>active</Badge>
-</View>
+</Row>
   );
 }

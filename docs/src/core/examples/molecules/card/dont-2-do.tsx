@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, shadow, Text, Card } = scope;
+  const { shadow, Card, Typography, Column } = scope;
   return (
 <Card padded style={{ maxWidth: 360 }}>
-  <Text style={{ marginBottom: 4, fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Anything goes here</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>The card surface gives you the border, radius, and shadow. You bring the content.</Text>
+  <Column tight>
+    <Typography lead semibold>Anything goes here</Typography>
+    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
+  </Column>
 </Card>
   );
 }

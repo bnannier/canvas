@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Text, Card, CardContent, CardHeader, CardSeparator, CardTitle } = scope;
+  const { Card, CardContent, CardHeader, CardSeparator, CardTitle, Typography } = scope;
   return (
 <Card style={{ maxWidth: 360 }}>
   <CardHeader>
@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
   </CardHeader>
   <CardSeparator />
   <CardContent>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
+    <Typography small>Two events today.</Typography>
   </CardContent>
 </Card>
   );

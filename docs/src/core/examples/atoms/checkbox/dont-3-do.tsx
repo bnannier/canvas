@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Radio } = scope;
+  const { Radio, Typography, Column } = scope;
   return (
-<View style={{ gap: 8 }}>
-  <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Plan</Text>
+<Column snug>
+  <Typography small semibold>Plan</Typography>
   <Radio>Free</Radio>
   <Radio checked>Pro</Radio>
   <Radio>Enterprise</Radio>
-</View>
+</Column>
   );
 }
