@@ -107,6 +107,13 @@ import e_atoms_checkbox_dont_3_do from "./examples/atoms/checkbox/dont-3-do";
 import e_atoms_checkbox_dont_3_dont from "./examples/atoms/checkbox/dont-3-dont";
 import e_atoms_checkbox_dont_4_do from "./examples/atoms/checkbox/dont-4-do";
 import e_atoms_checkbox_dont_4_dont from "./examples/atoms/checkbox/dont-4-dont";
+import e_atoms_chip_example_0 from "./examples/atoms/chip/example-0";
+import e_atoms_chip_example_1 from "./examples/atoms/chip/example-1";
+import e_atoms_chip_example_2 from "./examples/atoms/chip/example-2";
+import e_atoms_chip_example_3 from "./examples/atoms/chip/example-3";
+import e_atoms_chip_example_4 from "./examples/atoms/chip/example-4";
+import e_atoms_chip_dont_0_do from "./examples/atoms/chip/dont-0-do";
+import e_atoms_chip_dont_0_dont from "./examples/atoms/chip/dont-0-dont";
 import e_atoms_combobox_example_0 from "./examples/atoms/combobox/example-0";
 import e_atoms_combobox_example_1 from "./examples/atoms/combobox/example-1";
 import e_atoms_combobox_example_2 from "./examples/atoms/combobox/example-2";
@@ -166,6 +173,12 @@ import e_atoms_icon_dont_3_do from "./examples/atoms/icon/dont-3-do";
 import e_atoms_icon_dont_3_dont from "./examples/atoms/icon/dont-3-dont";
 import e_atoms_icon_dont_4_do from "./examples/atoms/icon/dont-4-do";
 import e_atoms_icon_dont_4_dont from "./examples/atoms/icon/dont-4-dont";
+import e_atoms_icon_tile_example_0 from "./examples/atoms/icon-tile/example-0";
+import e_atoms_icon_tile_example_1 from "./examples/atoms/icon-tile/example-1";
+import e_atoms_icon_tile_example_2 from "./examples/atoms/icon-tile/example-2";
+import e_atoms_icon_tile_example_3 from "./examples/atoms/icon-tile/example-3";
+import e_atoms_icon_tile_dont_0_do from "./examples/atoms/icon-tile/dont-0-do";
+import e_atoms_icon_tile_dont_0_dont from "./examples/atoms/icon-tile/dont-0-dont";
 import e_atoms_image_example_0 from "./examples/atoms/image/example-0";
 import e_atoms_image_example_1 from "./examples/atoms/image/example-1";
 import e_atoms_image_example_2 from "./examples/atoms/image/example-2";
@@ -895,6 +908,20 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "With description", do: { caption: "Wrap the box, label, and description in a <label> so the whole row toggles.", code: "<Checkbox checked>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Email notifications</Text>\n  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: \"400\", color: tokens[\"muted-foreground\"] }}>\nGet notified when activity happens on your account.</Text>\n</Checkbox>", render: e_atoms_checkbox_dont_4_do }, dont: { caption: "A bare div makes only the 16px box clickable; the label text does nothing.", code: "<View style={{ flexDirection: \"row\", alignItems: \"flex-start\", gap: 8 }}>\n  <Checkbox checked />\n  <View>\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Email notifications</Text>\n    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens[\"muted-foreground\"] }}>Get notified when activity happens on your account.</Text>\n  </View>\n</View>", render: e_atoms_checkbox_dont_4_dont } },
     ],
   },
+  "chip": {
+    dir: "chip",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<Chip primary onRemove={() => {}}>Status: Active</Chip>", render: e_atoms_chip_example_0 },
+      { label: "Tones", code: "<Row snug wrap alignCenter>\n  <Chip secondary>Draft</Chip>\n  <Chip primary>Published</Chip>\n  <Chip outline>Archived</Chip>\n</Row>", render: e_atoms_chip_example_1 },
+      { label: "With leading icon", code: "<Chip primary icon={<Icon check primaryForeground size={14} />}>Verified</Chip>", render: e_atoms_chip_example_2 },
+      { label: "Removable filters", code: "<Row snug wrap alignCenter>\n  <Chip primary onRemove={() => {}}>Role: Admin</Chip>\n  <Chip primary onRemove={() => {}}>Status: Active</Chip>\n  <Chip outline onPress={() => {}} icon={<Icon plus muted size={14} />}>Add filter</Chip>\n</Row>", render: e_atoms_chip_example_3 },
+      { label: "Small", code: "<Chip small primary onRemove={() => {}}>Beta</Chip>", render: e_atoms_chip_example_4 },
+    ],
+    donts: [
+      { title: "Removable filter", do: { caption: "Use a Chip with `onRemove` so the pill and its \"×\" stay consistent and accessible.", code: "<Chip primary onRemove={() => {}}>Status: Active</Chip>", render: e_atoms_chip_dont_0_do }, dont: { caption: "Hand-build the pill from a raw Pressable with border-radius, padding, and a text \"×\".", code: "<Pressable style={{ flexDirection: \"row\", alignItems: \"center\", gap: 4, alignSelf: \"flex-start\", borderRadius: 9999, backgroundColor: \"#4f46e5\", paddingHorizontal: 10, paddingVertical: 4 }}>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>Status: Active</Text>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>×</Text>\n</Pressable>", render: e_atoms_chip_dont_0_dont } },
+    ],
+  },
   "combobox": {
     dir: "combobox",
     category: "atoms",
@@ -963,6 +990,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "primary", do: { caption: "Reserve text-primary for the one active or selected icon; keep the rest muted.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 20 }}>\n  <Icon home muted size={22} />\n  <Icon star primary size={22} />\n  <Icon settings muted size={22} />\n</View>", render: e_atoms_icon_dont_2_do }, dont: { caption: "Painting a whole toolbar primary spends the accent on everything, so nothing reads as emphasized.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 20 }}>\n  <Icon home primary size={22} />\n  <Icon search primary size={22} />\n  <Icon settings primary size={22} />\n</View>", render: e_atoms_icon_dont_2_dont } },
       { title: "destructive", do: { caption: "Keep text-destructive for genuinely destructive actions like delete, so red always means consequence.", code: "<Icon trash destructive size={28} />", render: e_atoms_icon_dont_3_do }, dont: { caption: "A red download icon implies danger on a perfectly safe action and trains users to ignore the warning color.", code: "<Icon download destructive size={28} />", render: e_atoms_icon_dont_3_dont } },
       { title: "muted", do: { caption: "Use text-muted-foreground for secondary, inline hint icons where its color matches the helper text.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 6 }}>\n  <Icon info muted size={16} />\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>Optional, used only for recovery</Text>\n</View>", render: e_atoms_icon_dont_4_do }, dont: { caption: "A muted icon inside a solid primary button reads as disabled and clashes with the high-contrast label.", code: "<Pressable style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", gap: 8, borderRadius: 6, backgroundColor: tokens.primary, paddingHorizontal: 16, paddingVertical: 8 }}>\n  <Icon plus muted size={16} />\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"primary-foreground\"] }}>New project</Text>\n</Pressable>", render: e_atoms_icon_dont_4_dont } },
+    ],
+  },
+  "icon-tile": {
+    dir: "icon-tile",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<IconTile primary>\n  <Icon shield />\n</IconTile>", render: e_atoms_icon_tile_example_0 },
+      { label: "Tones", code: "<Row snug alignCenter>\n  <IconTile primary><Icon shield /></IconTile>\n  <IconTile success><Icon check /></IconTile>\n  <IconTile destructive><Icon trash /></IconTile>\n  <IconTile muted><Icon bell /></IconTile>\n</Row>", render: e_atoms_icon_tile_example_1 },
+      { label: "Sizes", code: "<Row snug alignCenter>\n  <IconTile small primary><Icon bell /></IconTile>\n  <IconTile primary><Icon bell /></IconTile>\n  <IconTile large primary><Icon bell /></IconTile>\n</Row>", render: e_atoms_icon_tile_example_2 },
+      { label: "Circle", code: "<IconTile circle success>\n  <Icon check />\n</IconTile>", render: e_atoms_icon_tile_example_3 },
+    ],
+    donts: [
+      { title: "Surface", do: { caption: "Use IconTile so the tint and icon color stay in sync from one tone prop.", code: "<IconTile primary>\n  <Icon shield />\n</IconTile>", render: e_atoms_icon_tile_dont_0_do }, dont: { caption: "Hand-compose the tinted square with raw `borderRadius`, `backgroundColor`, and padding.", code: "<View style={{ height: 40, width: 40, alignItems: \"center\", justifyContent: \"center\", borderRadius: 8, backgroundColor: \"rgba(79,70,229,0.1)\" }}>\n  <Icon shield primary />\n</View>", render: e_atoms_icon_tile_dont_0_dont } },
     ],
   },
   "image": {

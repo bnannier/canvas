@@ -27,6 +27,8 @@
           { "slug": "text-input", "label": "Text Input", "icon": "text-cursor-input" },
           { "slug": "scroll-view", "label": "Scroll View", "icon": "move-vertical" },
           { "slug": "row-column", "label": "Row & Column", "icon": "layout-grid" },
+          { "slug": "chip", "label": "Chip", "icon": "tag" },
+          { "slug": "icon-tile", "label": "Icon Tile", "icon": "square" },
           { "slug": "avatar", "label": "Avatars", "icon": "user" },
           { "slug": "badge", "label": "Badges", "icon": "award" },
           { "slug": "breadcrumb", "label": "Breadcrumbs", "icon": "chevron-right" },

@@ -50,6 +50,20 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "chip",
+    name: "Chip",
+    description: "An interactive pill: filter chips, tags, and selectable tokens. Optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove. Tone is a boolean axis (secondary / primary / outline; primary is the active state).",
+    category: "Atoms",
+  },
+
+  {
+    slug: "icon-tile",
+    name: "Icon Tile",
+    description: "A tinted rounded square that holds a single Icon, the recurring icon-on-a-soft-background used in cards, media objects, empty states, and feeds. A tone tints the square and paints the glyph to match, so no call site hand-composes the icon background.",
+    category: "Atoms",
+  },
+
+  {
     slug: "avatar",
     name: "Avatars",
     description: "A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).",
