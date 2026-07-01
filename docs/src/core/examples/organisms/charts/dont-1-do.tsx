@@ -3,27 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text } = scope;
+  const { Card, Typography, Row, Column, Sparkline } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200 }}>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Tokens issued</Text>
-  <View style={{ marginTop: 4, flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" }}>
-    <Text style={{ fontSize: 24, lineHeight: 32, fontWeight: "600", color: tokens["card-foreground"] }}>4,847</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens.primary }}>+12%</Text>
-  </View>
-  <View style={{ marginTop: 8, flexDirection: "row", alignItems: "flex-end", gap: 1, height: 34, width: 180 }}>
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 6 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 8 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 12 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 10 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 16 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 20 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 18 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 25 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 23 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 29 }} />
-    <View style={{ height: 8, width: 8, alignSelf: "flex-start", borderRadius: 9999, backgroundColor: tokens.primary }} />
-  </View>
-</View>
+<Card padded style={{ maxWidth: 200 }}>
+  <Column snug>
+    <Column tight>
+      <Typography tiny>Tokens issued</Typography>
+      <Row between baseline>
+        <Typography h3>4,847</Typography>
+        <Typography tiny primary>+12%</Typography>
+      </Row>
+    </Column>
+    <Sparkline tall values={[6, 8, 12, 10, 16, 20, 18, 25, 23, 29]} style={{ width: 180 }} />
+  </Column>
+</Card>
   );
 }
