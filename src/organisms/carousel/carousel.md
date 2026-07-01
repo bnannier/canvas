@@ -12,17 +12,17 @@ wrapped when `loop`). Slides hold any content; pass an `items` array of
 <Carousel
   items={[
     { key: "one", content: (
-      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography h5 semibold>Slide 1</Typography>
       </Column>
     ) },
     { key: "two", content: (
-      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography h5 semibold>Slide 2</Typography>
       </Column>
     ) },
     { key: "three", content: (
-      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography h5 semibold>Slide 3</Typography>
       </Column>
     ) }
@@ -44,12 +44,12 @@ page the carousel, the iOS page-control idiom.
   showArrows={false}
   items={[
     { key: "a", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Featured</Typography>
       </Column>
     ) },
     { key: "b", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Popular</Typography>
       </Column>
     ) }
@@ -69,17 +69,17 @@ Start on a later slide with `defaultIndex`; the matching dot reads selected.
   loop
   items={[
     { key: "x", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>First</Typography>
       </Column>
     ) },
     { key: "y", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Second</Typography>
       </Column>
     ) },
     { key: "z", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Third</Typography>
       </Column>
     ) }
@@ -97,12 +97,12 @@ the set is always clear.
 <Carousel
   items={[
     { key: "do1", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Step 1</Typography>
       </Column>
     ) },
     { key: "do2", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Step 2</Typography>
       </Column>
     ) }
