@@ -11,11 +11,8 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="Heads up"
   description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
->
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
-    <Button link small>Learn more</Button>
-  </View>
-</Alert>
+  actions={<Button link small>Learn more</Button>}
+/>
 ```
 
 ## Variants
@@ -29,11 +26,8 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="All set"
   description="Your changes have been saved successfully."
   dismissible
->
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
-    <Button ghost small>View changes</Button>
-  </View>
-</Alert>
+  actions={<Button ghost small>View changes</Button>}
+/>
 ```
 
 ### Variant - warning
@@ -45,11 +39,8 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="Action required"
   description="Your trial expires in 3 days."
   dismissible
->
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
-    <Button primary small>Upgrade plan</Button>
-  </View>
-</Alert>
+  actions={<Button primary small>Upgrade plan</Button>}
+/>
 ```
 
 ### Variant - destructive
@@ -61,11 +52,8 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   title="Something went wrong"
   description="Could not save your changes. Please try again."
   dismissible
->
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
-    <Button primary small>Retry</Button>
-  </View>
-</Alert>
+  actions={<Button primary small>Retry</Button>}
+/>
 ```
 
 ## Do & Don't
@@ -89,11 +77,13 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 **Do** — Make confirmations transient: auto-dismiss or give a Dismiss control so the success state clears once acknowledged.
 
 ```tsx
-<Alert success icon="✓" title="Saved" description="Your changes have been saved successfully.">
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
-    <Button ghost small>Dismiss</Button>
-  </View>
-</Alert>
+<Alert
+  success
+  icon="✓"
+  title="Saved"
+  description="Your changes have been saved successfully."
+  actions={<Button ghost small>Dismiss</Button>}
+/>
 ```
 
 **Don't** — A success banner pinned with no way to dismiss it lingers as visual noise long after the action is done.
@@ -107,11 +97,13 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 **Do** — State the consequence, the deadline, and the action: name what's wrong and give a button to resolve it.
 
 ```tsx
-<Alert warning icon="⚠" title="Action required" description="Your trial expires in 3 days. Upgrade to keep your projects.">
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
-    <Button primary small>Upgrade plan</Button>
-  </View>
-</Alert>
+<Alert
+  warning
+  icon="⚠"
+  title="Action required"
+  description="Your trial expires in 3 days. Upgrade to keep your projects."
+  actions={<Button primary small>Upgrade plan</Button>}
+/>
 ```
 
 **Don't** — A warning with no specifics or next step leaves the user guessing what to fix and by when.

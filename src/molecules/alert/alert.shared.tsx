@@ -51,6 +51,9 @@ export interface AlertSkin {
   dismissType: TextStyle;
   /** Pressed opacity for the dismiss control (iOS/web dim; Android stays opaque under ripple). */
   dismissPressedOpacity: number;
+  /** Footer action region: the row layout + gap between action buttons, plus the
+   *  top separation dividing them from the body above. */
+  actions: ViewStyle;
 }
 
 export interface AlertProps {
@@ -69,6 +72,14 @@ export interface AlertProps {
   /** Fired when the dismiss control is pressed. */
   onDismiss?: () => void;
   children?: ReactNode;
+  /**
+   * A footer action region rendered under the body. The Alert owns the layout: it
+   * separates the actions from the description above and lays the buttons out in a
+   * row, so a call site passes the buttons directly
+   * (`actions={<Button primary small>Upgrade plan</Button>}`) with no wrapper.
+   * Pass a fragment for more than one action.
+   */
+  actions?: ReactNode;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -123,7 +134,7 @@ function bodyColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
 
 export function createAlert(skin: AlertSkin) {
   return function Alert(props: AlertProps) {
-    const { title, description, icon, children, dismissible, onDismiss, style } = props;
+    const { title, description, icon, children, actions, dismissible, onDismiss, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
 
@@ -150,6 +161,7 @@ export function createAlert(skin: AlertSkin) {
             <Text style={[skin.bodyType, bodyColor(tokens, dark, tone)]}>{description}</Text>
           ) : null}
           {children}
+          {actions != null ? <View style={skin.actions}>{actions}</View> : null}
         </View>
         {dismissible ? (
           <Pressable

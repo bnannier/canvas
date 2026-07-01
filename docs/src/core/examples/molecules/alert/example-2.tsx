@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Alert, Button } = scope;
+  const { Alert, Button } = scope;
   return (
 <Alert
   warning
@@ -11,10 +11,7 @@ export default function Example(scope: ExampleScope) {
   title="Action required"
   description="Your trial expires in 3 days."
   dismissible
->
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
-    <Button primary small>Upgrade plan</Button>
-  </View>
-</Alert>
+  actions={<Button primary small>Upgrade plan</Button>}
+/>
   );
 }
