@@ -59,8 +59,14 @@ function recordFenceTags(code: string, source: string) {
 // Warns by default so the migration can land incrementally; DOCGEN_STYLE_STRICT=1
 // turns it into a hard failure (wired into CI once the sweep is complete).
 const STYLE_STRICT = process.env.DOCGEN_STYLE_STRICT === "1";
+// The primitive doc pages legitimately style the raw primitive: their whole point
+// is to teach `<View style={…}>` / `<Image style={…}>` etc. The 6 primitives are
+// the explicitly-allowed foundation (and RN's Image can't take semantic props), so
+// their own pages are exempt from the styling-escape-hatch guardrail.
+const EXEMPT_STYLE_DIRS = new Set(["view", "text", "text-input", "pressable", "scroll-view", "image"]);
 const styleViolations: { source: string; kind: string; props: string[] }[] = [];
-function recordFenceStyle(code: string, source: string, kind: string) {
+function recordFenceStyle(code: string, source: string, kind: string, dir: string) {
+  if (EXEMPT_STYLE_DIRS.has(dir)) return;
   const props = bannedStyleViolations(code);
   if (props.length) styleViolations.push({ source, kind, props });
 }
@@ -157,13 +163,13 @@ function writeModule(category: Category, dir: string, name: string, code: string
 
 function buildEntry(category: Category, dir: string, examples: Example[], donts: DontPair[]): Entry {
   const source = `src/${category}/${dir}/${dir}.md`;
-  for (const ex of examples) { recordFenceTags(ex.code, source); recordFenceStyle(ex.code, source, "example"); }
+  for (const ex of examples) { recordFenceTags(ex.code, source); recordFenceStyle(ex.code, source, "example", dir); }
   for (const d of donts) {
     recordFenceTags(d.do.code, source);
     recordFenceTags(d.dont.code, source);
     // Only the "Do" side is held to the no-escape-hatches rule; the "Don't" side
     // intentionally hand-rolls the anti-pattern it is teaching against.
-    recordFenceStyle(d.do.code, source, "Do");
+    recordFenceStyle(d.do.code, source, "Do", dir);
   }
   const exampleRefs: ExampleRef[] = examples.map((ex, i) => {
     const m = writeModule(category, dir, `example-${i}`, ex.code, source);
