@@ -56,9 +56,10 @@ function recordFenceTags(code: string, source: string) {
 
 // Style-shim guardrail (CLAUDE.md "No styling escape hatches"). Run only over the
 // example and "Do" fences — "Don't" fences hand-roll the wrong way on purpose.
-// Warns by default so the migration can land incrementally; DOCGEN_STYLE_STRICT=1
-// turns it into a hard failure (wired into CI once the sweep is complete).
-const STYLE_STRICT = process.env.DOCGEN_STYLE_STRICT === "1";
+// The example sweep reached zero, so this HARD-FAILS by default: any new banned
+// `style={{…}}` in a fence breaks `docs:gen` (and thus the pre-push hook + CI).
+// Set DOCGEN_STYLE_STRICT=0 to downgrade to a warning (a last-resort escape).
+const STYLE_STRICT = process.env.DOCGEN_STYLE_STRICT !== "0";
 // The primitive doc pages legitimately style the raw primitive: their whole point
 // is to teach `<View style={…}>` / `<Image style={…}>` etc. The 6 primitives are
 // the explicitly-allowed foundation (and RN's Image can't take semantic props), so
