@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Alert, Button } = scope;
+  const { Alert, Button, Row } = scope;
   return (
 <Alert
   info
@@ -12,9 +12,9 @@ export default function Example(scope: ExampleScope) {
   description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
 >
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button link small>Learn more</Button>
-  </View>
+  </Row>
 </Alert>
   );
 }

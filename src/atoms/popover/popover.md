@@ -18,14 +18,16 @@ Floating panel for rich content triggered by a click.
 **Do** — Keep popovers compact: a focused prompt with one input and a clear action.
 
 ```tsx
-<View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), alignSelf: "flex-start", minWidth: 240 }}>
-  <Text style={{ marginBottom: 8, fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Rename this project?</Text>
-  <Input value="Identity Platform" style={{ marginBottom: 8 }} />
-  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
-    <Button outline small>Cancel</Button>
-    <Button primary small>Rename</Button>
-  </View>
-</View>
+<Card padded style={{ alignSelf: "flex-start", minWidth: 240 }}>
+  <Column snug>
+    <Typography small>Rename this project?</Typography>
+    <Input value="Identity Platform" />
+    <Row snug end>
+      <Button outline small>Cancel</Button>
+      <Button primary small>Rename</Button>
+    </Row>
+  </Column>
+</Card>
 ```
 
 **Don't** — A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident.

@@ -12,19 +12,19 @@ wrapped when `loop`). Slides hold any content; pass an `items` array of
 <Carousel
   items={[
     { key: "one", content: (
-      <View style={{ height: 160, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 18, fontWeight: "600", color: tokens.foreground }}>Slide 1</Text>
-      </View>
+      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>
+        <Typography h5 semibold>Slide 1</Typography>
+      </Column>
     ) },
     { key: "two", content: (
-      <View style={{ height: 160, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 18, fontWeight: "600", color: tokens.foreground }}>Slide 2</Text>
-      </View>
+      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>
+        <Typography h5 semibold>Slide 2</Typography>
+      </Column>
     ) },
     { key: "three", content: (
-      <View style={{ height: 160, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 18, fontWeight: "600", color: tokens.foreground }}>Slide 3</Text>
-      </View>
+      <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>
+        <Typography h5 semibold>Slide 3</Typography>
+      </Column>
     ) }
   ]}
   defaultIndex={0}
@@ -44,14 +44,14 @@ page the carousel, the iOS page-control idiom.
   showArrows={false}
   items={[
     { key: "a", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Featured</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Featured</Typography>
+      </Column>
     ) },
     { key: "b", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Popular</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Popular</Typography>
+      </Column>
     ) }
   ]}
   defaultIndex={0}
@@ -69,19 +69,19 @@ Start on a later slide with `defaultIndex`; the matching dot reads selected.
   loop
   items={[
     { key: "x", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>First</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>First</Typography>
+      </Column>
     ) },
     { key: "y", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Second</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Second</Typography>
+      </Column>
     ) },
     { key: "z", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Third</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Third</Typography>
+      </Column>
     ) }
   ]}
   onIndexChange={() => {}}
@@ -97,14 +97,14 @@ the set is always clear.
 <Carousel
   items={[
     { key: "do1", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Step 1</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Step 1</Typography>
+      </Column>
     ) },
     { key: "do2", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Step 2</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Step 2</Typography>
+      </Column>
     ) }
   ]}
   defaultIndex={0}

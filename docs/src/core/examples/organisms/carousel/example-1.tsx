@@ -3,20 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Carousel } = scope;
+  const { tokens, Carousel, Typography, Column } = scope;
   return (
 <Carousel
   showArrows={false}
   items={[
     { key: "a", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Featured</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Featured</Typography>
+      </Column>
     ) },
     { key: "b", content: (
-      <View style={{ height: 140, alignItems: "center", justifyContent: "center", backgroundColor: tokens.muted }}>
-        <Text style={{ fontSize: 16, fontWeight: "500", color: tokens.foreground }}>Popular</Text>
-      </View>
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>
+        <Typography lead medium>Popular</Typography>
+      </Column>
     ) }
   ]}
   defaultIndex={0}

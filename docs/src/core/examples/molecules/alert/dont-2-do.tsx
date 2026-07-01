@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Alert, Button } = scope;
+  const { Alert, Button, Row } = scope;
   return (
 <Alert warning icon="⚠" title="Action required" description="Your trial expires in 3 days. Upgrade to keep your projects.">
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button primary small>Upgrade plan</Button>
-  </View>
+  </Row>
 </Alert>
   );
 }

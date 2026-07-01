@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Radio, Typography, Column } = scope;
   return (
 <Column snug>
-  <Typography small semibold style={{ marginBottom: 4 }}>Plan</Typography>
+  <Typography small semibold>Plan</Typography>
   <Radio>Hobby</Radio>
   <Radio checked>Pro</Radio>
   <Radio>Enterprise</Radio>

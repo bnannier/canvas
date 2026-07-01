@@ -3,19 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Listbox } = scope;
+  const { Listbox, Select, Column } = scope;
   return (
-<View style={{ width: 224, gap: 4 }}>
-  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>3 selected</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>▾</Text>
-  </View>
+<Column tight style={{ width: 224 }}>
+  <Select value="3 selected" style={{ width: 224 }} />
   <Listbox multi bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },
     { label: "Design" },
     { label: "Platform", selected: true }
   ]} />
-</View>
+</Column>
   );
 }

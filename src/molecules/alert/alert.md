@@ -12,9 +12,9 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
 >
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button link small>Learn more</Button>
-  </View>
+  </Row>
 </Alert>
 ```
 
@@ -30,9 +30,9 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   description="Your changes have been saved successfully."
   dismissible
 >
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button ghost small>View changes</Button>
-  </View>
+  </Row>
 </Alert>
 ```
 
@@ -46,9 +46,9 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   description="Your trial expires in 3 days."
   dismissible
 >
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button primary small>Upgrade plan</Button>
-  </View>
+  </Row>
 </Alert>
 ```
 
@@ -62,9 +62,9 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   description="Could not save your changes. Please try again."
   dismissible
 >
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button primary small>Retry</Button>
-  </View>
+  </Row>
 </Alert>
 ```
 
@@ -90,9 +90,9 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 
 ```tsx
 <Alert success icon="✓" title="Saved" description="Your changes have been saved successfully.">
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button ghost small>Dismiss</Button>
-  </View>
+  </Row>
 </Alert>
 ```
 
@@ -108,9 +108,9 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 
 ```tsx
 <Alert warning icon="⚠" title="Action required" description="Your trial expires in 3 days. Upgrade to keep your projects.">
-  <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+  <Row snug>
     <Button primary small>Upgrade plan</Button>
-  </View>
+  </Row>
 </Alert>
 ```
 

@@ -3,19 +3,27 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View, Text, Radio } = scope;
+  const { Card, Radio, Typography, Row, Column } = scope;
   return (
-<View style={{ flexDirection: "row", gap: 8 }}>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", flexDirection: "column", borderRadius: 6, borderWidth: 2, borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05), padding: 14 }}>
-    <Radio checked style={{ marginBottom: 8 }} />
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Pro</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For growing teams.</Text>
-  </View>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", flexDirection: "column", borderRadius: 6, borderWidth: 1, borderColor: tokens.border, padding: 14 }}>
-    <Radio style={{ marginBottom: 8 }} />
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Enterprise</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Advanced security.</Text>
-  </View>
-</View>
+<Row snug>
+  <Column fill>
+    <Card padded selected>
+      <Column snug>
+        <Radio checked />
+        <Typography small semibold>Pro</Typography>
+        <Typography tiny muted>For growing teams.</Typography>
+      </Column>
+    </Card>
+  </Column>
+  <Column fill>
+    <Card padded>
+      <Column snug>
+        <Radio />
+        <Typography small semibold>Enterprise</Typography>
+        <Typography tiny muted>Advanced security.</Typography>
+      </Column>
+    </Card>
+  </Column>
+</Row>
   );
 }

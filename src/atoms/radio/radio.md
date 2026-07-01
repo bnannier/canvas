@@ -41,23 +41,35 @@ Single-pick selection: stacked, inline, card-style.
 ### Variant - card
 
 ```tsx
-<View style={{ flexDirection: "row", gap: 8 }}>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", flexDirection: "column", borderRadius: 6, padding: 14, borderWidth: 1, borderColor: tokens.border }}>
-    <Radio style={{ marginBottom: 8 }} />
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Hobby</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For personal projects and experiments.</Text>
-  </View>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", flexDirection: "column", borderRadius: 6, padding: 14, borderWidth: 2, borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) }}>
-    <Radio checked style={{ marginBottom: 8 }} />
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Pro</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For growing teams that need more control.</Text>
-  </View>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", flexDirection: "column", borderRadius: 6, padding: 14, borderWidth: 1, borderColor: tokens.border }}>
-    <Radio style={{ marginBottom: 8 }} />
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Enterprise</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Advanced security, compliance, and support.</Text>
-  </View>
-</View>
+<Row snug>
+  <Column fill>
+    <Card padded>
+      <Column snug>
+        <Radio />
+        <Typography small semibold>Hobby</Typography>
+        <Typography tiny muted>For personal projects and experiments.</Typography>
+      </Column>
+    </Card>
+  </Column>
+  <Column fill>
+    <Card padded selected>
+      <Column snug>
+        <Radio checked />
+        <Typography small semibold>Pro</Typography>
+        <Typography tiny muted>For growing teams that need more control.</Typography>
+      </Column>
+    </Card>
+  </Column>
+  <Column fill>
+    <Card padded>
+      <Column snug>
+        <Radio />
+        <Typography small semibold>Enterprise</Typography>
+        <Typography tiny muted>Advanced security, compliance, and support.</Typography>
+      </Column>
+    </Card>
+  </Column>
+</Row>
 ```
 
 ## Do & Don't
@@ -66,7 +78,7 @@ Single-pick selection: stacked, inline, card-style.
 
 ```tsx
 <Column snug>
-  <Typography small semibold style={{ marginBottom: 4 }}>Plan</Typography>
+  <Typography small semibold>Plan</Typography>
   <Radio>Hobby</Radio>
   <Radio checked>Pro</Radio>
   <Radio>Enterprise</Radio>
@@ -141,18 +153,26 @@ Single-pick selection: stacked, inline, card-style.
 **Do** — Give the selected card a primary border and tinted fill so the whole tile reads as chosen, not just the dot.
 
 ```tsx
-<View style={{ flexDirection: "row", gap: 8 }}>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", flexDirection: "column", borderRadius: 6, borderWidth: 2, borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05), padding: 14 }}>
-    <Radio checked style={{ marginBottom: 8 }} />
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Pro</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>For growing teams.</Text>
-  </View>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", flexDirection: "column", borderRadius: 6, borderWidth: 1, borderColor: tokens.border, padding: 14 }}>
-    <Radio style={{ marginBottom: 8 }} />
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Enterprise</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Advanced security.</Text>
-  </View>
-</View>
+<Row snug>
+  <Column fill>
+    <Card padded selected>
+      <Column snug>
+        <Radio checked />
+        <Typography small semibold>Pro</Typography>
+        <Typography tiny muted>For growing teams.</Typography>
+      </Column>
+    </Card>
+  </Column>
+  <Column fill>
+    <Card padded>
+      <Column snug>
+        <Radio />
+        <Typography small semibold>Enterprise</Typography>
+        <Typography tiny muted>Advanced security.</Typography>
+      </Column>
+    </Card>
+  </Column>
+</Row>
 ```
 
 **Don't** — When the selected card keeps the same plain border, only the tiny native dot signals the choice and the active card is easy to miss.

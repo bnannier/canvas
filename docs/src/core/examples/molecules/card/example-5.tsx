@@ -3,19 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View, Text, Card } = scope;
+  const { tokens, alpha, View, Text, Card, Typography, Row, Column } = scope;
   return (
-<Card style={{ width: 280, padding: 20 }}>
-  <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
-    <View>
-      <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Active identities</Text>
-      <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "700", color: tokens["card-foreground"] }}>12,348</Text>
-      <Text style={{ marginTop: 2, fontSize: 11, color: tokens["muted-foreground"] }}>+142 today</Text>
-    </View>
+<Card padded style={{ width: 280 }}>
+  <Row between alignStart>
+    <Column tight>
+      <Typography caption medium>Active identities</Typography>
+      <Typography h3 bold>12,348</Typography>
+      <Typography tiny muted>+142 today</Typography>
+    </Column>
     <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(tokens.destructive, 0.1) }}>
       <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.destructive }}>!</Text>
     </View>
-  </View>
+  </Row>
 </Card>
   );
 }
