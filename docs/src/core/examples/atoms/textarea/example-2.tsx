@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View, Button, Textarea } = scope;
+  const { Button, Card, Divider, Textarea, Row } = scope;
   return (
-<View style={{ maxWidth: 400, overflow: "hidden", borderRadius: 6, borderWidth: 1, borderColor: tokens.border }}>
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 4, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.3), paddingHorizontal: 12, paddingVertical: 8 }}>
-    <Button ghost small style={{ minWidth: 32, paddingHorizontal: 8 }}>B</Button>
-    <Button ghost small style={{ minWidth: 32, paddingHorizontal: 8 }}>I</Button>
-    <Button ghost small style={{ minWidth: 32, paddingHorizontal: 8 }}>{"</>"}</Button>
-    <View style={{ marginHorizontal: 4, height: 16, width: 1, backgroundColor: tokens.border }} />
-    <Button ghost small style={{ paddingHorizontal: 12 }}>Comment</Button>
-  </View>
-  <Textarea rows={4} placeholder="Leave a comment…" style={{ minHeight: 104, width: "100%", borderRadius: 0, borderWidth: 0 }} />
-</View>
+<Card flat style={{ maxWidth: 400, overflow: "hidden" }}>
+  <Row alignCenter tight padTight>
+    <Button ghost small>B</Button>
+    <Button ghost small>I</Button>
+    <Button ghost small>{"</>"}</Button>
+    <Divider vertical style={{ height: 16 }} />
+    <Button ghost small>Comment</Button>
+  </Row>
+  <Divider />
+  <Textarea rows={4} flush placeholder="Leave a comment…" />
+</Card>
   );
 }

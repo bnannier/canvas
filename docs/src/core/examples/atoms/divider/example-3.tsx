@@ -3,18 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button, Divider } = scope;
+  const { Button, Card, Divider, Typography, Column } = scope;
   return (
-<View style={{ width: 320 }}>
-  <View style={{ gap: 8 }}>
-    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 12, paddingVertical: 8 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Ada commented on the draft</Text>
-    </View>
-    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 12, paddingVertical: 8 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Grace approved the request</Text>
-    </View>
-  </View>
-  <Divider style={{ marginTop: 12 }} children={<Button ghost small>Show more</Button>} />
-</View>
+<Column cozy style={{ width: 320 }}>
+  <Column snug>
+    <Card padded>
+      <Typography small>Ada commented on the draft</Typography>
+    </Card>
+    <Card padded>
+      <Typography small>Grace approved the request</Typography>
+    </Card>
+  </Column>
+  <Divider>
+    <Button ghost small>Show more</Button>
+  </Divider>
+</Column>
   );
 }

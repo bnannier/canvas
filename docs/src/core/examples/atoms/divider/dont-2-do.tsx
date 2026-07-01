@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button, Divider } = scope;
+  const { Button, Divider, Typography, Column } = scope;
   return (
-<View style={{ width: 320, gap: 6 }}>
-  <Text style={{ paddingVertical: 6, fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Logged in from 2 new devices · 3 more entries</Text>
+<Column snug style={{ width: 320 }}>
+  <Typography small muted>Logged in from 2 new devices · 3 more entries</Typography>
   <Divider>
     <Button ghost small>Show less</Button>
   </Divider>
-</View>
+</Column>
   );
 }

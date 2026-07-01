@@ -25,17 +25,19 @@ Horizontal, vertical, with label, with action.
 ### Variant - action
 
 ```tsx
-<View style={{ width: 320 }}>
-  <View style={{ gap: 8 }}>
-    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 12, paddingVertical: 8 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Ada commented on the draft</Text>
-    </View>
-    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 12, paddingVertical: 8 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Grace approved the request</Text>
-    </View>
-  </View>
-  <Divider style={{ marginTop: 12 }} children={<Button ghost small>Show more</Button>} />
-</View>
+<Column cozy style={{ width: 320 }}>
+  <Column snug>
+    <Card padded>
+      <Typography small>Ada commented on the draft</Typography>
+    </Card>
+    <Card padded>
+      <Typography small>Grace approved the request</Typography>
+    </Card>
+  </Column>
+  <Divider>
+    <Button ghost small>Show more</Button>
+  </Divider>
+</Column>
 ```
 
 ## Do & Don't
@@ -45,13 +47,13 @@ Horizontal, vertical, with label, with action.
 **Do** — Click a row: group with spacing and reserve a divider for a real break like Sign out.
 
 ```tsx
-<View style={{ maxWidth: 280 }}>
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Profile</Text>
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Account</Text>
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Notifications</Text>
-  <Divider style={{ marginVertical: 4 }} />
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Sign out</Text>
-</View>
+<Column tight style={{ maxWidth: 280 }}>
+  <Typography small>Profile</Typography>
+  <Typography small>Account</Typography>
+  <Typography small>Notifications</Typography>
+  <Divider />
+  <Typography small>Sign out</Typography>
+</Column>
 ```
 
 **Don't** — Click a row: a divider between every one is noise that competes with the content.
@@ -101,12 +103,12 @@ Horizontal, vertical, with label, with action.
 **Do** — Click Show more: the button toggles its label and reveals the rest.
 
 ```tsx
-<View style={{ width: 320, gap: 6 }}>
-  <Text style={{ paddingVertical: 6, fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Logged in from 2 new devices · 3 more entries</Text>
+<Column snug style={{ width: 320 }}>
+  <Typography small muted>Logged in from 2 new devices · 3 more entries</Typography>
   <Divider>
     <Button ghost small>Show less</Button>
   </Divider>
-</View>
+</Column>
 ```
 
 **Don't** — Click the button: an action divider that does nothing is just decoration.

@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Text, Divider } = scope;
+  const { Divider, Typography, Column } = scope;
   return (
-<View style={{ maxWidth: 280 }}>
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Profile</Text>
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Account</Text>
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Notifications</Text>
-  <Divider style={{ marginVertical: 4 }} />
-  <Text style={{ borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6, fontSize: 14, lineHeight: 20 }}>Sign out</Text>
-</View>
+<Column tight style={{ maxWidth: 280 }}>
+  <Typography small>Profile</Typography>
+  <Typography small>Account</Typography>
+  <Typography small>Notifications</Typography>
+  <Divider />
+  <Typography small>Sign out</Typography>
+</Column>
   );
 }

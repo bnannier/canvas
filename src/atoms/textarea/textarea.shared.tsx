@@ -35,6 +35,11 @@ export interface TextareaProps {
   large?: boolean;
   /** Blocks editing and focus, and dims the field. */
   disabled?: boolean;
+  /**
+   * Borderless: drop the field's own border and radius so it sits flush inside a
+   * framed container (e.g. a Card with a formatting toolbar above it).
+   */
+  flush?: boolean;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<TextStyle>;
 }
@@ -49,7 +54,7 @@ function sizeOf(p: TextareaProps): Size {
 /** Build a Textarea component from a platform skin. */
 export function createTextarea(skin: TextareaSkin) {
   const Textarea = forwardRef<RNTextInput, TextareaProps>(function Textarea(props, ref) {
-    const { value, onChangeText, placeholder, rows, disabled, style } = props;
+    const { value, onChangeText, placeholder, rows, disabled, flush, style } = props;
     const isError = !!props.error || !!props.invalid;
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
@@ -82,6 +87,12 @@ export function createTextarea(skin: TextareaSkin) {
           sizeText(size),
           minHeight(rows),
           disabled ? { opacity: 0.5 } : null,
+          // Flush: strip the field's own border + radius so it sits flush inside a
+          // framed container (a toolbar Card). Zero every edge so it works whether
+          // the skin draws a full border or a bottom underline.
+          flush
+            ? { borderWidth: 0, borderTopWidth: 0, borderBottomWidth: 0, borderLeftWidth: 0, borderRightWidth: 0, borderRadius: 0 }
+            : null,
           FOCUS_RESET,
           style,
         ]}
