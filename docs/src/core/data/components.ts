@@ -42,6 +42,14 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "row-column",
+    dir: "layout",
+    name: "Row & Column",
+    description: "The layout primitives. Row lays children out horizontally, Column vertically, with a semantic gap scale (flush / tight / snug / cozy / relaxed / loose), main-axis distribution (center, between), cross-axis alignment (alignCenter, baseline), and wrap / fill / grow, so a call site never hand-rolls flexDirection, gap, or alignItems.",
+    category: "Atoms",
+  },
+
+  {
     slug: "avatar",
     name: "Avatars",
     description: "A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).",
