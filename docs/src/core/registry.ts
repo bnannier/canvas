@@ -394,6 +394,11 @@ import e_atoms_typography_example_9 from "./examples/atoms/typography/example-9"
 import e_atoms_typography_example_10 from "./examples/atoms/typography/example-10";
 import e_atoms_typography_example_11 from "./examples/atoms/typography/example-11";
 import e_atoms_typography_example_12 from "./examples/atoms/typography/example-12";
+import e_atoms_typography_example_13 from "./examples/atoms/typography/example-13";
+import e_atoms_typography_example_14 from "./examples/atoms/typography/example-14";
+import e_atoms_typography_example_15 from "./examples/atoms/typography/example-15";
+import e_atoms_typography_example_16 from "./examples/atoms/typography/example-16";
+import e_atoms_typography_example_17 from "./examples/atoms/typography/example-17";
 import e_atoms_typography_dont_0_do from "./examples/atoms/typography/dont-0-do";
 import e_atoms_typography_dont_0_dont from "./examples/atoms/typography/dont-0-dont";
 import e_atoms_typography_dont_1_do from "./examples/atoms/typography/dont-1-do";
@@ -1323,6 +1328,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Style - caption", code: "<Typography caption>The quick brown fox</Typography>", render: e_atoms_typography_example_10 },
       { label: "Style - code", code: "<Typography code>The quick brown fox</Typography>", render: e_atoms_typography_example_11 },
       { label: "Style - mono", code: "<Typography mono>The quick brown fox</Typography>", render: e_atoms_typography_example_12 },
+      { label: "Style - lead", code: "<Typography lead>The quick brown fox</Typography>", render: e_atoms_typography_example_13 },
+      { label: "Weight - semibold", code: "<Typography lead semibold>Rachel Chen</Typography>", render: e_atoms_typography_example_14 },
+      { label: "Tone - primary", code: "<Typography body primary>View invoices</Typography>", render: e_atoms_typography_example_15 },
+      { label: "Tone - positive", code: "<Typography small positive>+12.4% this week</Typography>", render: e_atoms_typography_example_16 },
+      { label: "Tone - destructive", code: "<Typography small destructive>Payment failed</Typography>", render: e_atoms_typography_example_17 },
     ],
     donts: [
       { title: "display", do: { caption: "Use display once per hero, then drop to a muted line for the supporting copy.", code: "<View>\n  <Typography display>Welcome</Typography>\n  <Typography muted style={{ marginTop: 8 }}>Sign in to pick up where you left off.</Typography>\n</View>", render: e_atoms_typography_dont_0_do }, dont: { caption: "Two display-size lines in one view fight for attention and leave no clear focal point.", code: "<View style={{ gap: 8 }}>\n  <Typography display>Welcome</Typography>\n  <Typography display>Get started</Typography>\n</View>", render: e_atoms_typography_dont_0_dont } },

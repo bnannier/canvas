@@ -82,6 +82,36 @@ Type scale classes for headings, body text, and helper styles.
 <Typography mono>The quick brown fox</Typography>
 ```
 
+### Style - lead
+
+```tsx
+<Typography lead>The quick brown fox</Typography>
+```
+
+### Weight - semibold
+
+```tsx
+<Typography lead semibold>Rachel Chen</Typography>
+```
+
+### Tone - primary
+
+```tsx
+<Typography body primary>View invoices</Typography>
+```
+
+### Tone - positive
+
+```tsx
+<Typography small positive>+12.4% this week</Typography>
+```
+
+### Tone - destructive
+
+```tsx
+<Typography small destructive>Payment failed</Typography>
+```
+
 ## Do & Don't
 
 ### display

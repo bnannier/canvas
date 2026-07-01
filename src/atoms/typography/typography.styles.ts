@@ -1,5 +1,5 @@
 import { type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { alpha, palette, type ColorTokens } from "../../style/index.js";
 import { type TypographySkin } from "./typography.shared.js";
 
 // Co-located Typography styles. One axis (role), each role mapping to a single
@@ -27,6 +27,7 @@ export type Role =
   | "h3"
   | "h4"
   | "h5"
+  | "lead"
   | "body"
   | "small"
   | "tiny"
@@ -52,6 +53,8 @@ const roleType: Record<Role, TextStyle> = {
   h4: { fontSize: 20, lineHeight: 28, fontWeight: "600", letterSpacing: -0.4 },
   // text-lg font-semibold
   h5: { fontSize: 18, lineHeight: 28, fontWeight: "600" },
+  // text-base: a 16px lead paragraph / identity name (weight comes from the weight axis)
+  lead: { fontSize: 16, lineHeight: 24 },
   // text-sm leading-relaxed (the relaxed line height overrides text-sm's 20)
   body: { fontSize: 14, lineHeight: 28 },
   // text-sm
@@ -99,6 +102,7 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "h3":
     case "h4":
     case "h5":
+    case "lead":
     case "body":
     case "mono":
       return { color: tokens.foreground };
@@ -115,3 +119,40 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
 // Roles whose face is monospace; RN has no font-family utility, so the component
 // supplies the cross-platform monospace alias inline (matches Badge's mono).
 export const MONO_ROLES = new Set<Role>(["code", "mono"]);
+
+// Tone axis: an orthogonal color layer over the role's own color. Its names are
+// deliberately collision-free with the roles (so `muted`/`small`/`tiny`/`caption`
+// keep their existing muted color as roles, and tone adds the colored intents).
+// When no tone prop is set the role's own color stands. positive/warning pick a
+// palette step per scheme (like Badge); subtle is a translucent foreground.
+export type Tone = "subtle" | "primary" | "destructive" | "positive" | "warning";
+
+export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
+  switch (tone) {
+    case "subtle":
+      return { color: alpha(tokens.foreground, 0.6) };
+    case "primary":
+      return { color: tokens.primary };
+    case "destructive":
+      return { color: tokens.destructive };
+    case "positive":
+      return { color: dark ? palette["green-400"] : palette["green-600"] };
+    case "warning":
+      return { color: dark ? palette["amber-400"] : palette["amber-600"] };
+  }
+}
+
+// Weight axis: an orthogonal fontWeight layer over the role's own weight. When no
+// weight prop is set the role's own weight stands.
+export type Weight = "regular" | "medium" | "semibold" | "bold";
+
+const WEIGHT: Record<Weight, TextStyle["fontWeight"]> = {
+  regular: "400",
+  medium: "500",
+  semibold: "600",
+  bold: "700",
+};
+
+export function weightStyle(weight: Weight): TextStyle {
+  return { fontWeight: WEIGHT[weight] };
+}

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Text, useTheme, type StyleProp, type TextStyle } from "../../style/index.js";
-import { type Role, roleColor, MONO_ROLES } from "./typography.styles.js";
+import { type Role, type Tone, type Weight, roleColor, toneColor, weightStyle, MONO_ROLES } from "./typography.styles.js";
 
 // Shared Typography shell. The structure (a single styled Text), the role axis
 // and its first-match precedence, the token-backed color resolution, and the
@@ -15,15 +15,20 @@ import { type Role, roleColor, MONO_ROLES } from "./typography.styles.js";
 // identical and it is not registered for a docs preview.
 //
 // Typography is the Canvas type scale as a single styled Text. One boolean role
-// prop per style (display / h1..h5 / body / small / tiny / muted / caption /
-// code / mono) selects a token-backed style set; omit all for the plain body
-// look. The foundation's `Text` primitive is the host element, so the public
-// component is named `Typography` (the bare `Text` name belongs to the
+// prop per style (display / h1..h5 / lead / body / small / tiny / muted /
+// caption / code / mono) selects a token-backed style set; omit all for the
+// plain body look. The foundation's `Text` primitive is the host element, so the
+// public component is named `Typography` (the bare `Text` name belongs to the
 // foundation).
 //
 // Boolean-prop API: one boolean per role on a single axis, first-match
 // precedence (mirrors Button's intentOf / Badge's toneOf). Roles are mutually
-// exclusive; pass at most one. The text content comes from children.
+// exclusive; pass at most one. Two orthogonal axes layer on top: an optional
+// tone (subtle / primary / destructive / positive / warning) sets the color and
+// a weight (regular / medium / semibold / bold) sets the fontWeight; each is
+// mutually exclusive within itself and null by default, so the role's own color
+// and weight stand when the axis is untouched. The text content comes from
+// children.
 //
 // Two roles want a monospace face (code, mono). There is no font-family
 // utility, so each requests RN's cross-platform monospace alias via inline
@@ -40,6 +45,7 @@ export interface TypographyProps {
   h3?: boolean;
   h4?: boolean;
   h5?: boolean;
+  lead?: boolean;
   body?: boolean;
   small?: boolean;
   tiny?: boolean;
@@ -47,7 +53,21 @@ export interface TypographyProps {
   caption?: boolean;
   code?: boolean;
   mono?: boolean;
-  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  // Tone (pick one; orthogonal to role). When omitted, the role's own color is used.
+  subtle?: boolean;
+  primary?: boolean;
+  destructive?: boolean;
+  positive?: boolean;
+  warning?: boolean;
+  // Weight (pick one; orthogonal to role). When omitted, the role's own weight is used.
+  regular?: boolean;
+  medium?: boolean;
+  semibold?: boolean;
+  bold?: boolean;
+  /**
+   * For layout/positioning composition only (margins handled by Row/Column). Not a
+   * styling escape hatch: size, color, and weight come from the props above.
+   */
   style?: StyleProp<TextStyle>;
 }
 
@@ -84,6 +104,7 @@ function roleOf(p: TypographyProps): Role {
   if (p.h3) return "h3";
   if (p.h4) return "h4";
   if (p.h5) return "h5";
+  if (p.lead) return "lead";
   if (p.code) return "code";
   if (p.mono) return "mono";
   if (p.caption) return "caption";
@@ -94,12 +115,35 @@ function roleOf(p: TypographyProps): Role {
   return "body";
 }
 
+// Tone precedence when more than one is passed: first match wins. Returns null
+// when no tone prop is set, so the role's own color stands.
+function toneOf(p: TypographyProps): Tone | null {
+  if (p.destructive) return "destructive";
+  if (p.warning) return "warning";
+  if (p.positive) return "positive";
+  if (p.primary) return "primary";
+  if (p.subtle) return "subtle";
+  return null;
+}
+
+// Weight precedence when more than one is passed: first match wins. Returns null
+// when no weight prop is set, so the role's own weight stands.
+function weightOf(p: TypographyProps): Weight | null {
+  if (p.bold) return "bold";
+  if (p.semibold) return "semibold";
+  if (p.medium) return "medium";
+  if (p.regular) return "regular";
+  return null;
+}
+
 /** Build a Typography component from a platform skin. */
 export function createTypography(skin: TypographySkin) {
   return function Typography(props: TypographyProps) {
     const { children, style } = props;
-    const { tokens } = useTheme();
+    const { tokens, dark } = useTheme();
     const role = roleOf(props);
+    const tone = toneOf(props);
+    const weight = weightOf(props);
 
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
@@ -115,7 +159,14 @@ export function createTypography(skin: TypographySkin) {
       <Text
         accessibilityRole={level ? "header" : undefined}
         aria-level={level}
-        style={[skin.roleType[role], roleColor(tokens, role), monoStyle, style]}
+        style={[
+          skin.roleType[role],
+          roleColor(tokens, role),
+          tone ? toneColor(tokens, dark, tone) : null,
+          weight ? weightStyle(weight) : null,
+          monoStyle,
+          style,
+        ]}
       >
         {children}
       </Text>
