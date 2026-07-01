@@ -3,21 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable, Avatar } = scope;
+  const { tokens, Pressable, Avatar, Card, Icon, Typography, Row, Column } = scope;
   return (
-<View style={{ width: "100%", maxWidth: 360, overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
-  <View style={{ flexDirection: "row", height: 56, alignItems: "center", gap: 8, backgroundColor: tokens.card, paddingHorizontal: 12 }}>
+<Card flat style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
+  <Row alignCenter snug style={{ height: 56, paddingHorizontal: 12 }}>
     <Pressable style={({ pressed }) => [{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6 }, pressed ? { backgroundColor: tokens.accent } : null]}>
-      <View style={{ width: 18, gap: 4 }}>
-        <View style={{ height: 2, width: "100%", borderRadius: 9999, backgroundColor: tokens["muted-foreground"] }} />
-        <View style={{ height: 2, width: "100%", borderRadius: 9999, backgroundColor: tokens["muted-foreground"] }} />
-        <View style={{ height: 2, width: "100%", borderRadius: 9999, backgroundColor: tokens["muted-foreground"] }} />
-      </View>
+      <Icon menu muted size={18} />
     </Pressable>
-    <Text style={{ fontSize: 13, fontWeight: "600", color: tokens.foreground }}>Canvas</Text>
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }} />
+    <Typography small semibold>Canvas</Typography>
+    <Column grow />
     <Avatar small src="/rachel-chen.jpg" name="RC" />
-  </View>
-</View>
+  </Row>
+</Card>
   );
 }

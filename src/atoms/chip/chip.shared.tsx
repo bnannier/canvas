@@ -30,8 +30,10 @@ export interface ChipSkin {
 export interface ChipProps {
   /** The chip label. */
   children?: ReactNode;
-  /** A leading `<Icon />` element. */
+  /** A leading element (e.g. an `<Icon />` or a small `<Avatar />`). */
   icon?: ReactNode;
+  /** A trailing element (e.g. a chevron for a menu trigger). Rendered after the label. */
+  trailing?: ReactNode;
   /** Makes the whole chip tappable (e.g. toggling a filter). */
   onPress?: () => void;
   /** Adds a trailing "×" remove button firing this handler. */
@@ -80,7 +82,7 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
 /** Build a Chip from a platform skin. */
 export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
-    const { children, icon, onPress, onRemove, small, disabled, accessibilityLabel, style } = props;
+    const { children, icon, trailing, onPress, onRemove, small, disabled, accessibilityLabel, style } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const primaryTone = tone === "primary";
@@ -101,6 +103,7 @@ export function createChip(skin: ChipSkin) {
             {children}
           </Text>
         ) : null}
+        {trailing}
         {onRemove ? (
           <Pressable
             onPress={onRemove}

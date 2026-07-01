@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, DataTable, Spinner } = scope;
+  const { Card, DataTable, Spinner, Column } = scope;
   return (
-<View style={{ overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, maxWidth: 520 }}>
+<Card flat style={{ overflow: "hidden", maxWidth: 520 }}>
   <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
-  <View style={{ alignItems: "center", paddingHorizontal: 16, paddingVertical: 32 }}>
+  <Column alignCenter padLoose>
     <Spinner small />
-  </View>
-</View>
+  </Column>
+</Card>
   );
 }

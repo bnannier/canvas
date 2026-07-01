@@ -3,19 +3,21 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable, Icon, Kbd } = scope;
+  const { tokens, Pressable, Card, Icon, Kbd, Typography, Row, Column } = scope;
   return (
-<View style={{ width: "100%", overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
-  <View style={{ flexDirection: "row", height: 56, alignItems: "center", gap: 8, backgroundColor: tokens.card, paddingHorizontal: 16 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Canvas</Text>
-    <View style={{ marginHorizontal: 16, maxWidth: 400, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+<Card flat style={{ width: "100%", overflow: "hidden" }}>
+  <Row alignCenter snug style={{ height: 56, paddingHorizontal: 16 }}>
+    <Typography small semibold>Canvas</Typography>
+    <Column grow style={{ marginHorizontal: 16, maxWidth: 400 }}>
       <Pressable style={({ pressed }) => [{ flexDirection: "row", height: 34, width: "100%", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingHorizontal: 10 }, pressed ? { opacity: 0.9 } : null]}>
         <Icon search muted size={13} />
-        <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", textAlign: "left", fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Search…</Text>
+        <Column grow>
+          <Typography small style={{ textAlign: "left" }}>Search…</Typography>
+        </Column>
         <Kbd>⌘K</Kbd>
       </Pressable>
-    </View>
-  </View>
-</View>
+    </Column>
+  </Row>
+</Card>
   );
 }

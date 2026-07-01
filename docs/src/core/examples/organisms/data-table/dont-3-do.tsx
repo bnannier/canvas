@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, DataTable } = scope;
+  const { Card, DataTable, Typography, Column } = scope;
   return (
-<View style={{ overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, maxWidth: 520 }}>
+<Card flat style={{ overflow: "hidden", maxWidth: 520 }}>
   <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
-  <View style={{ alignItems: "center", paddingHorizontal: 16, paddingVertical: 32 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>No results found.</Text>
-  </View>
-</View>
+  <Column alignCenter padLoose>
+    <Typography small muted>No results found.</Typography>
+  </Column>
+</Card>
   );
 }

@@ -3,13 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button } = scope;
+  const { Button, Card, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12, maxWidth: 520 }}>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>3 selected</Text>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }} />
-  <Button outline small>Bulk edit</Button>
-  <Button destructive small>Delete</Button>
-</View>
+<Card flat padded style={{ maxWidth: 520 }}>
+  <Row snug alignCenter between>
+    <Typography tiny muted>3 selected</Typography>
+    <Row snug alignCenter>
+      <Button outline small>Bulk edit</Button>
+      <Button destructive small>Delete</Button>
+    </Row>
+  </Row>
+</Card>
   );
 }

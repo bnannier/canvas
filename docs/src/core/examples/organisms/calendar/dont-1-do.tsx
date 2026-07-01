@@ -3,19 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Calendar, Card } = scope;
+  const { Calendar, Card, CardContent, CardHeader, CardSeparator, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
+<Row loose wrap alignStart>
   <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
   <Card style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <View style={{ borderBottomWidth: 1, borderColor: tokens.border, paddingHorizontal: 20, paddingVertical: 12 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>May 24</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Sprint planning</Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>9:00 AM</Text>
-    </View>
+    <CardHeader>
+      <Typography small semibold>May 24</Typography>
+    </CardHeader>
+    <CardSeparator />
+    <CardContent>
+      <Row between alignCenter>
+        <Typography small medium>Sprint planning</Typography>
+        <Typography small muted>9:00 AM</Typography>
+      </Row>
+    </CardContent>
   </Card>
-</View>
+</Row>
   );
 }

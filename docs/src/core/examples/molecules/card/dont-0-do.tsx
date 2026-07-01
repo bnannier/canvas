@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { alpha, palette, View, Text, Card, Typography, Row, Column } = scope;
+  const { Card, Typography, Row, Column, IconTile } = scope;
   return (
 <Card padded style={{ maxWidth: 280 }}>
   <Row between alignStart>
@@ -12,9 +12,7 @@ export default function Example(scope: ExampleScope) {
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["blue-500"], 0.1) }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["blue-600"] }}>U</Text>
-    </View>
+    <IconTile primary label="U" />
   </Row>
 </Card>
   );

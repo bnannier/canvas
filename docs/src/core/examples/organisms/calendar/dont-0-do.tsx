@@ -3,20 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable } = scope;
+  const { Calendar } = scope;
   return (
-<View style={{ width: "auto", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12 }}>
-  <View style={{ flexDirection: "row", gap: 2 }}>
-    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>8</Text>
-    </Pressable>
-    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.accent }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["accent-foreground"] }}>23</Text>
-    </Pressable>
-    <Pressable style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: tokens.primary }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>24</Text>
-    </Pressable>
-  </View>
-</View>
+<Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
   );
 }

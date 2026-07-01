@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Avatar, Icon, Typography, Row } = scope;
+  const { Avatar, Icon, Chip } = scope;
   return (
-<Row snug alignCenter style={{ borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingVertical: 4, paddingLeft: 4, paddingRight: 10 }}>
-  <Avatar small src="/marcus-allen.jpg" name="MA" />
-  <Typography small medium>admin@example.com</Typography>
-  <Icon chevronDown muted size={12} />
-</Row>
+<Chip outline icon={<Avatar small src="/marcus-allen.jpg" name="MA" />} trailing={<Icon chevronDown muted size={12} />}>admin@example.com</Chip>
   );
 }

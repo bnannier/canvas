@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, useTheme, alpha, palette, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, alpha, palette, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type IconTileSkin } from "./icon-tile.styles.js";
 
 // Shared IconTile shell. The tinted rounded square that holds a single Icon,
@@ -18,6 +18,8 @@ export type TileSize = "small" | "default" | "large";
 export interface IconTileProps {
   /** A single `<Icon />` element; IconTile tints it to match the tone. */
   children?: ReactNode;
+  /** A monogram letter (or two) instead of an icon, painted in the tone color. */
+  label?: string;
   // Tone (pick one; default `muted`). Sets the tinted surface and the icon color.
   primary?: boolean;
   destructive?: boolean;
@@ -69,23 +71,42 @@ const ICON_TINT: Record<Tone, Record<string, boolean>> = {
   muted: { muted: true },
 };
 
+// Solid tone color for a monogram label (the `label` path).
+function labelColor(tokens: ColorTokens, tone: Tone): string {
+  switch (tone) {
+    case "primary":
+      return tokens.primary;
+    case "destructive":
+      return tokens.destructive;
+    case "success":
+      return palette["green-600"];
+    case "muted":
+      return tokens["muted-foreground"];
+  }
+}
+
 /** Build an IconTile from a platform skin. */
 export function createIconTile(skin: IconTileSkin) {
   return function IconTile(props: IconTileProps) {
-    const { children, circle, style } = props;
+    const { children, label, circle, style } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const size = sizeOf(props);
     const box = skin.box[size];
+    const glyph = skin.iconSize[size];
 
-    // Own the icon color + size: clone the Icon child to inject the tone color and
-    // the tile's icon size, so the caller writes only the glyph.
-    const icon = isValidElement(children)
-      ? cloneElement(children as ReactElement<Record<string, unknown>>, {
-          ...ICON_TINT[tone],
-          size: skin.iconSize[size],
-        })
-      : children;
+    // A monogram label paints in the tone color; otherwise own the icon color +
+    // size by cloning the Icon child, so the caller writes only the glyph.
+    const inner =
+      label != null ? (
+        <Text style={{ color: labelColor(tokens, tone), fontWeight: "600", fontSize: Math.round(glyph * 0.85), lineHeight: glyph }}>
+          {label}
+        </Text>
+      ) : isValidElement(children) ? (
+        cloneElement(children as ReactElement<Record<string, unknown>>, { ...ICON_TINT[tone], size: glyph })
+      ) : (
+        children
+      );
 
     return (
       <View
@@ -102,7 +123,7 @@ export function createIconTile(skin: IconTileSkin) {
           style,
         ]}
       >
-        {icon}
+        {inner}
       </View>
     );
   };

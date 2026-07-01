@@ -12,9 +12,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["blue-500"], 0.1) }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["blue-600"] }}>U</Text>
-    </View>
+    <IconTile primary label="U" />
   </Row>
 </Card>
 ```
@@ -52,14 +50,12 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["green-500"], 0.1) }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["green-600"] }}>S</Text>
-    </View>
+    <IconTile success label="S" />
   </Row>
 </Card>
 ```
 
-### Icon tone - purple
+### Icon tone - primary
 
 ```tsx
 <Card padded style={{ width: 280 }}>
@@ -69,9 +65,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["purple-500"], 0.1) }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["purple-600"] }}>O</Text>
-    </View>
+    <IconTile primary label="O" />
   </Row>
 </Card>
 ```
@@ -86,14 +80,12 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(tokens.destructive, 0.1) }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.destructive }}>!</Text>
-    </View>
+    <IconTile destructive label="!" />
   </Row>
 </Card>
 ```
 
-### Icon tone - amber
+### Icon tone - muted
 
 ```tsx
 <Card padded style={{ width: 280 }}>
@@ -103,9 +95,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["amber-500"], 0.1) }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["amber-600"] }}>T</Text>
-    </View>
+    <IconTile muted label="T" />
   </Row>
 </Card>
 ```
@@ -124,9 +114,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha(palette["blue-500"], 0.1) }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: palette["blue-600"] }}>U</Text>
-    </View>
+    <IconTile primary label="U" />
   </Row>
 </Card>
 ```
