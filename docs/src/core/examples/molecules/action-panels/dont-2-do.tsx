@@ -3,17 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button, Card } = scope;
+  const { Button, Card, Typography, Row, Column } = scope;
   return (
-<Card padded style={{ maxWidth: 460, flexDirection: "row", alignItems: "flex-start", gap: 24 }}>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 4 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Discard unsaved changes?</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>You have unsaved edits in this form. Leaving now will lose all progress.</Text>
-  </View>
-  <View style={{ flexShrink: 0, flexDirection: "row", gap: 8 }}>
-    <Button outline small>Cancel</Button>
-    <Button destructive small>Discard</Button>
-  </View>
+<Card padded style={{ maxWidth: 460 }}>
+  <Row alignStart loose>
+    <Column fill tight>
+      <Typography lead semibold>Discard unsaved changes?</Typography>
+      <Typography small muted>You have unsaved edits in this form. Leaving now will lose all progress.</Typography>
+    </Column>
+    <Row snug>
+      <Button outline small>Cancel</Button>
+      <Button destructive small>Discard</Button>
+    </Row>
+  </Row>
 </Card>
   );
 }

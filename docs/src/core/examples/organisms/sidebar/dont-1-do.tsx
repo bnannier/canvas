@@ -3,14 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button } = scope;
+  const { Button, Card, Typography, Row } = scope;
   return (
-<View style={{ height: 56, width: 420, maxWidth: "100%", flexDirection: "row", alignItems: "center", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingHorizontal: 16 }}>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>Dashboard</Text>
-  <View style={{ marginLeft: "auto", flexDirection: "row", gap: 8 }}>
-    <Button ghost small>Search</Button>
-    <Button primary small>New</Button>
-  </View>
-</View>
+<Card style={{ width: 420, maxWidth: "100%" }}>
+  <Row between alignCenter style={{ height: 56, paddingHorizontal: 16 }}>
+    <Typography lead semibold>Dashboard</Typography>
+    <Row snug>
+      <Button ghost small>Search</Button>
+      <Button primary small>New</Button>
+    </Row>
+  </Row>
+</Card>
   );
 }

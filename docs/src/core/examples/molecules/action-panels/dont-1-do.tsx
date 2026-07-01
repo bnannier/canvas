@@ -3,17 +3,21 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button, Card, Input } = scope;
+  const { Button, Card, Input, Typography, Row, Column } = scope;
   return (
-<Card padded style={{ maxWidth: 420, gap: 16 }}>
-  <View style={{ gap: 4 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Subscribe to updates</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>We'll send you a weekly digest of what changed.</Text>
-  </View>
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-    <Input placeholder="you@example.com" style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }} />
-    <Button primary>Subscribe</Button>
-  </View>
+<Card padded style={{ maxWidth: 420 }}>
+  <Column relaxed>
+    <Column tight>
+      <Typography lead semibold>Subscribe to updates</Typography>
+      <Typography small muted>We'll send you a weekly digest of what changed.</Typography>
+    </Column>
+    <Row alignCenter snug>
+      <Column fill>
+        <Input placeholder="you@example.com" />
+      </Column>
+      <Button primary>Subscribe</Button>
+    </Row>
+  </Column>
 </Card>
   );
 }

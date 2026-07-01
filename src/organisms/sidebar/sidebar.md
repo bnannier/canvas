@@ -63,13 +63,15 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 **Do** — Push utilities to the right, keep one primary button, and demote the rest to ghost so the New action leads.
 
 ```tsx
-<View style={{ height: 56, width: 420, maxWidth: "100%", flexDirection: "row", alignItems: "center", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingHorizontal: 16 }}>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>Dashboard</Text>
-  <View style={{ marginLeft: "auto", flexDirection: "row", gap: 8 }}>
-    <Button ghost small>Search</Button>
-    <Button primary small>New</Button>
-  </View>
-</View>
+<Card style={{ width: 420, maxWidth: "100%" }}>
+  <Row between alignCenter style={{ height: 56, paddingHorizontal: 16 }}>
+    <Typography lead semibold>Dashboard</Typography>
+    <Row snug>
+      <Button ghost small>Search</Button>
+      <Button primary small>New</Button>
+    </Row>
+  </Row>
+</Card>
 ```
 
 **Don't** — Four solid primary buttons crammed left-to-right give the topbar no focal action and no breathing room.

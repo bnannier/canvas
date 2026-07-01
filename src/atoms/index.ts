@@ -25,6 +25,7 @@ export * from "./radio/radio.js";
 export * from "./select/select.js";
 export * from "./skeleton/skeleton.js";
 export * from "./slider/slider.js";
+export * from "./sparkline/sparkline.js";
 export * from "./spinner/spinner.js";
 export * from "./switch/switch.js";
 export * from "./textarea/textarea.js";

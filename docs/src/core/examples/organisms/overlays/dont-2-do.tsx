@@ -3,16 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, shadow, View, Text, Pressable } = scope;
+  const { Toast } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, paddingHorizontal: 16, paddingVertical: 12, ...shadow("lg") }}>
-  <View>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["popover-foreground"] }}>Identity deleted</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>You can undo this for 10 seconds.</Text>
-  </View>
-  <Pressable style={({ pressed }) => [pressed ? { opacity: 0.7 } : null]}>
-    <Text style={{ color: tokens["muted-foreground"] }}>×</Text>
-  </Pressable>
-</View>
+<Toast
+  message="Identity deleted"
+  description="You can undo this for 10 seconds."
+  action={{ label: "Undo", onPress: () => {} }}
+  onDismiss={() => {}}
+/>
   );
 }

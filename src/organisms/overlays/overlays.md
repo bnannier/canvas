@@ -72,15 +72,12 @@ Floating surfaces: drawers, modals, popovers, toasts.
 **Do** — Keep toasts to passive confirmation of something already done; offer Undo, not a blocking choice.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, paddingHorizontal: 16, paddingVertical: 12, ...shadow("lg") }}>
-  <View>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["popover-foreground"] }}>Identity deleted</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>You can undo this for 10 seconds.</Text>
-  </View>
-  <Pressable style={({ pressed }) => [pressed ? { opacity: 0.7 } : null]}>
-    <Text style={{ color: tokens["muted-foreground"] }}>×</Text>
-  </Pressable>
-</View>
+<Toast
+  message="Identity deleted"
+  description="You can undo this for 10 seconds."
+  action={{ label: "Undo", onPress: () => {} }}
+  onDismiss={() => {}}
+/>
 ```
 
 **Don't** — A toast that demands a decision can be auto-dismissed before the user acts, and steals focus from a transient surface.

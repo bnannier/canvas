@@ -64,6 +64,13 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "sparkline",
+    name: "Sparkline",
+    description: "A compact trend strip: a row of thin bars whose heights track a series of values. Pass values and it sizes each bar against the series max and paints the tone, so no call site hand-composes a row of flexGrow + height Views to draw an inline trend on a stat card or dashboard.",
+    category: "Atoms",
+  },
+
+  {
     slug: "avatar",
     name: "Avatars",
     description: "A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).",

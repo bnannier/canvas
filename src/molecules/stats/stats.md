@@ -134,26 +134,18 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 **Do** — Pair the sparkline with an explicit delta so the headline reads without decoding the curve.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm"), maxWidth: 220, padding: 20 }}>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Requests</Text>
-  <View style={{ marginTop: 4, flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" }}>
-    <Text style={{ fontSize: 24, lineHeight: 32, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground }}>24.5k</Text>
-    <Text style={{ fontFamily: "monospace", fontSize: 11, color: palette["emerald-600"] }}>+8.2%</Text>
-  </View>
-  <View style={{ marginTop: 12, flexDirection: "row", alignItems: "flex-end", gap: 2, height: 24 }}>
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 4 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 8 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 6 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 12 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 10 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 16 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 14 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 18 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 16 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 20 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 24 }} />
-  </View>
-</View>
+<Card padded style={{ maxWidth: 220 }}>
+  <Column snug>
+    <Column tight>
+      <Typography tiny>Requests</Typography>
+      <Row between baseline>
+        <Typography h3>24.5k</Typography>
+        <Typography tiny positive>+8.2%</Typography>
+      </Row>
+    </Column>
+    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
+  </Column>
+</Card>
 ```
 
 **Don't** — A trend line with no current delta makes you eyeball the slope to guess the direction.

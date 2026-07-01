@@ -105,16 +105,11 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 ### Inside a table
 
 ```tsx
-<View style={{ overflow: "scroll", borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
-  <View style={{ flexDirection: "row", borderBottomWidth: 1, borderColor: tokens.border }}>
-    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Name</Text>
-    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Email</Text>
-    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Role</Text>
-    <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingHorizontal: 16, paddingVertical: 10, textAlign: "left", fontSize: 12, lineHeight: 16, fontWeight: "500", textTransform: "uppercase", letterSpacing: 0.4, color: tokens["muted-foreground"] }}>Status</Text>
-  </View>
-  <View style={{ paddingHorizontal: 16, paddingVertical: 40 }}>
+<View style={{ overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
+  <DataTable columns={["Name", "Email", "Role", "Status"]} rows={[]} />
+  <Column alignCenter style={{ paddingHorizontal: 16, paddingVertical: 40 }}>
     <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
-  </View>
+  </Column>
 </View>
 ```
 
