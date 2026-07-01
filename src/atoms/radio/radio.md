@@ -7,21 +7,21 @@ Single-pick selection: stacked, inline, card-style.
 ```tsx
 <Column snug>
   <Row snug alignStart>
-    <Radio style={{ marginTop: 3 }} />
+    <Radio />
     <Column>
       <Typography small medium>Hobby</Typography>
       <Typography tiny muted>For personal projects and experiments.</Typography>
     </Column>
   </Row>
   <Row snug alignStart>
-    <Radio checked style={{ marginTop: 3 }} />
+    <Radio checked />
     <Column>
       <Typography small medium>Pro</Typography>
       <Typography tiny muted>For growing teams that need more control.</Typography>
     </Column>
   </Row>
   <Row snug alignStart>
-    <Radio style={{ marginTop: 3 }} />
+    <Radio />
     <Column>
       <Typography small medium>Enterprise</Typography>
       <Typography tiny muted>Advanced security, compliance, and support.</Typography>
@@ -103,7 +103,7 @@ Single-pick selection: stacked, inline, card-style.
 ```tsx
 <Column snug>
   <Row snug alignStart>
-    <Radio checked style={{ marginTop: 3 }} />
+    <Radio checked />
     <Column>
       <Typography small medium>Pro</Typography>
       <Typography tiny muted>For growing teams that need more control.</Typography>

@@ -55,6 +55,8 @@ export interface CardProps {
    * selectable cards (a card-style radio or checkbox option that is chosen).
    */
   selected?: boolean;
+  /** Grow to fill the main axis of a parent Row/Column (flexGrow: 1). */
+  grow?: boolean;
   // Density (pick one; default is the standard inset). Scales the card's own
   // content padding and the gap between flat children.
   compact?: boolean;
@@ -79,7 +81,7 @@ function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, description, body, footer, padded, onPress, selected, style } = props;
+    const { children, title, description, body, footer, padded, onPress, selected, grow, style } = props;
     const { tokens } = useTheme();
     const elev = elevationOf(props);
     const dens = densityOf(props);
@@ -95,6 +97,7 @@ export function createCard(skin: CardSkin) {
       // Selected: recolor the border to primary and wash the surface with a soft
       // primary tint (the border width is unchanged, so content never shifts).
       selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,
+      grow ? { flexGrow: 1 } : null,
       style,
     ];
 

@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Card, Input, Typography, Row, Column } = scope;
   return (
-<Card padded style={{ alignSelf: "flex-start", minWidth: 240 }}>
+<Card padded style={{ minWidth: 240 }}>
   <Column snug>
     <Typography small>Rename this project?</Typography>
     <Input value="Identity Platform" />

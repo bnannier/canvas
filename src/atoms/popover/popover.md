@@ -18,7 +18,7 @@ Floating panel for rich content triggered by a click.
 **Do** — Keep popovers compact: a focused prompt with one input and a clear action.
 
 ```tsx
-<Card padded style={{ alignSelf: "flex-start", minWidth: 240 }}>
+<Card padded style={{ minWidth: 240 }}>
   <Column snug>
     <Typography small>Rename this project?</Typography>
     <Input value="Identity Platform" />

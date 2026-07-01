@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Button, Card, Typography, Row } = scope;
   return (
 <Card style={{ width: 420, maxWidth: "100%" }}>
-  <Row between alignCenter style={{ height: 56, paddingHorizontal: 16 }}>
+  <Row between alignCenter pad style={{ height: 56 }}>
     <Typography lead semibold>Dashboard</Typography>
     <Row snug>
       <Button ghost small>Search</Button>

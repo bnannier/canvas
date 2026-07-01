@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug>
   <Row snug alignStart>
-    <Radio checked style={{ marginTop: 3 }} />
+    <Radio checked />
     <Column>
       <Typography small medium>Pro</Typography>
       <Typography tiny muted>For growing teams that need more control.</Typography>
