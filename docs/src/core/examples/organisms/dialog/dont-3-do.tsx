@@ -3,16 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button, Dialog } = scope;
+  const { Button, Dialog, Typography, Row, Column } = scope;
   return (
 <Dialog open medium>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Unsaved changes</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 8 }}>You have edits that are not saved.</Text>
-  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
-    <Button ghost small>Discard</Button>
-    <Button outline small>Keep editing</Button>
-    <Button primary small>Save</Button>
-  </View>
+  <Column relaxed>
+    <Column tight>
+      <Typography lead semibold>Unsaved changes</Typography>
+      <Typography small muted>You have edits that are not saved.</Typography>
+    </Column>
+    <Row end snug alignCenter>
+      <Button ghost small>Discard</Button>
+      <Button outline small>Keep editing</Button>
+      <Button primary small>Save</Button>
+    </Row>
+  </Column>
 </Dialog>
   );
 }

@@ -139,11 +139,11 @@ setTheme(theme);`} />
 **Do** — Reserve inline code for short tokens; move anything multi-line into a block.
 
 ```tsx
-<View style={{ maxWidth: 360, gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 28 }}>Run the setup command:</Text>
+<Column snug style={{ maxWidth: 360 }}>
+  <Typography body>Run the setup command:</Typography>
   <CodeBlock code={`npm install @olympusoss/canvas
 npm run build`} />
-</View>
+</Column>
 ```
 
 **Don't** — A long, multi-step command crammed inline wraps mid-token and offers no horizontal scroll.

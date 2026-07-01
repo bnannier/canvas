@@ -6,12 +6,12 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 
 ```tsx
 <Drawer trigger="Open menu" left width={260}>
-  <View style={{ padding: 20, gap: 12 }}>
-    <Text style={{ fontSize: 16, fontWeight: "600", color: tokens.foreground }}>Menu</Text>
+  <Column padLoose cozy>
+    <Typography lead semibold>Menu</Typography>
     <Button ghost block onPress={() => {}}>Home</Button>
     <Button ghost block onPress={() => {}}>Components</Button>
     <Button ghost block onPress={() => {}}>Settings</Button>
-  </View>
+  </Column>
 </Drawer>
 ```
 
@@ -21,11 +21,11 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 
 ```tsx
 <Drawer trigger="Left drawer" left width={240}>
-  <View style={{ padding: 20, gap: 10 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Navigation</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>A full-height panel on the left.</Text>
+  <Column padLoose snug>
+    <Typography lead semibold>Navigation</Typography>
+    <Typography small muted>A full-height panel on the left.</Typography>
     <Button primary block onPress={() => {}}>Go to settings</Button>
-  </View>
+  </Column>
 </Drawer>
 ```
 
@@ -33,11 +33,11 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 
 ```tsx
 <Drawer trigger="Right drawer" right width={240}>
-  <View style={{ padding: 20, gap: 10 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Details</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>A full-height panel on the right.</Text>
+  <Column padLoose snug>
+    <Typography lead semibold>Details</Typography>
+    <Typography small muted>A full-height panel on the right.</Typography>
     <Button primary block onPress={() => {}}>View full details</Button>
-  </View>
+  </Column>
 </Drawer>
 ```
 
@@ -45,12 +45,12 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 
 ```tsx
 <Drawer trigger="Bottom sheet" bottom>
-  <View style={{ padding: 20, gap: 10 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Actions</Text>
+  <Column padLoose snug>
+    <Typography lead semibold>Actions</Typography>
     <Button ghost block onPress={() => {}}>Share</Button>
     <Button ghost block onPress={() => {}}>Duplicate</Button>
     <Button destructive block onPress={() => {}}>Delete</Button>
-  </View>
+  </Column>
 </Drawer>
 ```
 
@@ -62,11 +62,11 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 
 ```tsx
 <Drawer trigger="Open navigation" left width={260}>
-  <View style={{ padding: 20, gap: 10 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Navigation</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Home</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Components</Text>
-  </View>
+  <Column padLoose snug>
+    <Typography lead semibold>Navigation</Typography>
+    <Typography small muted>Home</Typography>
+    <Typography small muted>Components</Typography>
+  </Column>
 </Drawer>
 ```
 

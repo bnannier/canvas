@@ -13,13 +13,13 @@ Multi-line input, with character count, with toolbar.
 ### Character counter
 
 ```tsx
-<View style={{ maxWidth: 400 }}>
-  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Description</Text>
+<Column tight style={{ maxWidth: 400 }}>
+  <Typography small medium>Description</Typography>
   <Textarea rows={4} placeholder="A few words about this project…" />
-  <View style={{ marginTop: 4, flexDirection: "row", justifyContent: "flex-end" }}>
-    <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>0 / 280</Text>
-  </View>
-</View>
+  <Row end>
+    <Typography tiny muted>0 / 280</Typography>
+  </Row>
+</Column>
 ```
 
 ### Formatting toolbar
@@ -50,10 +50,10 @@ Multi-line input, with character count, with toolbar.
 **Do** — Give a sensible min-height and allow vertical resize so users can see and grow their text.
 
 ```tsx
-<View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Description</Text>
+<Column snug style={{ maxWidth: 400 }}>
+  <Typography small medium>Description</Typography>
   <Textarea rows={3} value="This is a longer description that runs past one line and stays readable." />
-</View>
+</Column>
 ```
 
 **Don't** — A locked, single-line textarea hides long content with no way to expand.
@@ -70,13 +70,13 @@ Multi-line input, with character count, with toolbar.
 **Do** — Show the live count against the cap and turn it destructive past the limit so the overage is precise.
 
 ```tsx
-<View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Bio</Text>
+<Column snug style={{ maxWidth: 400 }}>
+  <Typography small medium>Bio</Typography>
   <Textarea rows={3} invalid value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
-  <View style={{ marginTop: 4, flexDirection: "row", justifyContent: "flex-end" }}>
-    <Text style={{ fontSize: 11, color: tokens.destructive }}>123 / 120</Text>
-  </View>
-</View>
+  <Row end>
+    <Typography tiny destructive>123 / 120</Typography>
+  </Row>
+</Column>
 ```
 
 **Don't** — A vague "over limit" message gives no number, so users cannot tell how much to trim.
@@ -124,10 +124,10 @@ Multi-line input, with character count, with toolbar.
 **Do** — Use the disabled attribute so the field blocks editing and focus, matching its dimmed look.
 
 ```tsx
-<View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Description</Text>
+<Column snug style={{ maxWidth: 400 }}>
+  <Typography small medium>Description</Typography>
   <Textarea rows={3} disabled value="Read-only content the user must not change." />
-</View>
+</Column>
 ```
 
 **Don't** — Dimming a textarea while leaving it editable looks disabled but still accepts input.

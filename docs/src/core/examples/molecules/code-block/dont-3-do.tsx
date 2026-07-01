@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Text, CodeBlock } = scope;
+  const { CodeBlock, Typography, Column } = scope;
   return (
-<View style={{ maxWidth: 360, gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 28 }}>Run the setup command:</Text>
+<Column snug style={{ maxWidth: 360 }}>
+  <Typography body>Run the setup command:</Typography>
   <CodeBlock code={`npm install @olympusoss/canvas
 npm run build`} />
-</View>
+</Column>
   );
 }

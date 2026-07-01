@@ -3,15 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button, Drawer } = scope;
+  const { Button, Drawer, Typography, Column } = scope;
   return (
 <Drawer trigger="Bottom sheet" bottom>
-  <View style={{ padding: 20, gap: 10 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Actions</Text>
+  <Column padLoose snug>
+    <Typography lead semibold>Actions</Typography>
     <Button ghost block onPress={() => {}}>Share</Button>
     <Button ghost block onPress={() => {}}>Duplicate</Button>
     <Button destructive block onPress={() => {}}>Delete</Button>
-  </View>
+  </Column>
 </Drawer>
   );
 }

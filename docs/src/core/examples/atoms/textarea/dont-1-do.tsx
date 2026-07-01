@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Textarea } = scope;
+  const { Textarea, Typography, Row, Column } = scope;
   return (
-<View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Bio</Text>
+<Column snug style={{ maxWidth: 400 }}>
+  <Typography small medium>Bio</Typography>
   <Textarea rows={3} invalid value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
-  <View style={{ marginTop: 4, flexDirection: "row", justifyContent: "flex-end" }}>
-    <Text style={{ fontSize: 11, color: tokens.destructive }}>123 / 120</Text>
-  </View>
-</View>
+  <Row end>
+    <Typography tiny destructive>123 / 120</Typography>
+  </Row>
+</Column>
   );
 }

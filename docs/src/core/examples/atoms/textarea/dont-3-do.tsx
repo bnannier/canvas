@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Textarea } = scope;
+  const { Textarea, Typography, Column } = scope;
   return (
-<View style={{ maxWidth: 400, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Description</Text>
+<Column snug style={{ maxWidth: 400 }}>
+  <Typography small medium>Description</Typography>
   <Textarea rows={3} disabled value="Read-only content the user must not change." />
-</View>
+</Column>
   );
 }

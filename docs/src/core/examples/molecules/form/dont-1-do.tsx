@@ -3,23 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Input } = scope;
+  const { Field, Row, Column } = scope;
   return (
-<View style={{ maxWidth: 560 }}>
-  <View style={{ marginBottom: 12 }}>
-    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Street address</Text>
-    <Input placeholder="123 Market St" />
-  </View>
-  <View style={{ flexDirection: "row", gap: 12 }}>
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-      <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
-      <Input placeholder="San Francisco" />
-    </View>
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-      <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>ZIP</Text>
-      <Input placeholder="94103" />
-    </View>
-  </View>
-</View>
+<Column cozy style={{ maxWidth: 560 }}>
+  <Field label="Street address" placeholder="123 Market St" />
+  <Row cozy>
+    <Column fill>
+      <Field label="City" placeholder="San Francisco" />
+    </Column>
+    <Column fill>
+      <Field label="ZIP" placeholder="94103" />
+    </Column>
+  </Row>
+</Column>
   );
 }

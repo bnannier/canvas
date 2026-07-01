@@ -109,18 +109,20 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 
 ```tsx
 <Dialog open large>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Edit profile</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 8 }}>Update how your name and email appear to teammates.</Text>
-  <View style={{ marginTop: 20 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input value="Ada Lovelace" />
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 16 }}>Email</Text>
-    <Input value="ada@example.com" />
-  </View>
-  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
-    <Button outline small>Cancel</Button>
-    <Button primary small>Save changes</Button>
-  </View>
+  <Column relaxed>
+    <Column tight>
+      <Typography lead semibold>Edit profile</Typography>
+      <Typography small muted>Update how your name and email appear to teammates.</Typography>
+    </Column>
+    <Column relaxed>
+      <Field label="Name" value="Ada Lovelace" />
+      <Field label="Email" value="ada@example.com" />
+    </Column>
+    <Row end snug alignCenter>
+      <Button outline small>Cancel</Button>
+      <Button primary small>Save changes</Button>
+    </Row>
+  </Column>
 </Dialog>
 ```
 
@@ -150,17 +152,17 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 
 ```tsx
 <Dialog open large>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Create project</Text>
-  <View style={{ marginTop: 20 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input placeholder="Acme website" />
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6, marginTop: 16 }}>Key</Text>
-    <Input placeholder="ACME" />
-  </View>
-  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
-    <Button outline small>Cancel</Button>
-    <Button primary small>Create</Button>
-  </View>
+  <Column relaxed>
+    <Typography lead semibold>Create project</Typography>
+    <Column relaxed>
+      <Field label="Name" placeholder="Acme website" />
+      <Field label="Key" placeholder="ACME" />
+    </Column>
+    <Row end snug alignCenter>
+      <Button outline small>Cancel</Button>
+      <Button primary small>Create</Button>
+    </Row>
+  </Column>
 </Dialog>
 ```
 
@@ -198,13 +200,17 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 
 ```tsx
 <Dialog open medium>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Unsaved changes</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 8 }}>You have edits that are not saved.</Text>
-  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
-    <Button ghost small>Discard</Button>
-    <Button outline small>Keep editing</Button>
-    <Button primary small>Save</Button>
-  </View>
+  <Column relaxed>
+    <Column tight>
+      <Typography lead semibold>Unsaved changes</Typography>
+      <Typography small muted>You have edits that are not saved.</Typography>
+    </Column>
+    <Row end snug alignCenter>
+      <Button ghost small>Discard</Button>
+      <Button outline small>Keep editing</Button>
+      <Button primary small>Save</Button>
+    </Row>
+  </Column>
 </Dialog>
 ```
 
@@ -242,15 +248,14 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 
 ```tsx
 <Dialog open small>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Rename</Text>
-  <View style={{ marginTop: 20 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input value="Untitled" />
-  </View>
-  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
-    <Button outline small>Cancel</Button>
-    <Button primary small>Save</Button>
-  </View>
+  <Column relaxed>
+    <Typography lead semibold>Rename</Typography>
+    <Field label="Name" value="Untitled" />
+    <Row end snug alignCenter>
+      <Button outline small>Cancel</Button>
+      <Button primary small>Save</Button>
+    </Row>
+  </Column>
 </Dialog>
 ```
 

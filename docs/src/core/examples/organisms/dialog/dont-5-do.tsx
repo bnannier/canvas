@@ -3,18 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Button, Dialog, Input } = scope;
+  const { Button, Dialog, Field, Typography, Row, Column } = scope;
   return (
 <Dialog open small>
-  <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Rename</Text>
-  <View style={{ marginTop: 20 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
-    <Input value="Untitled" />
-  </View>
-  <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
-    <Button outline small>Cancel</Button>
-    <Button primary small>Save</Button>
-  </View>
+  <Column relaxed>
+    <Typography lead semibold>Rename</Typography>
+    <Field label="Name" value="Untitled" />
+    <Row end snug alignCenter>
+      <Button outline small>Cancel</Button>
+      <Button primary small>Save</Button>
+    </Row>
+  </Column>
 </Dialog>
   );
 }

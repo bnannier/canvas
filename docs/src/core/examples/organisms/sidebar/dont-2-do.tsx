@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { Typography, Column } = scope;
   return (
-<View style={{ width: 420, maxWidth: "100%" }}>
+<Column tight style={{ width: 420, maxWidth: "100%" }}>
   <Typography h4>Users</Typography>
-  <Typography muted style={{ marginTop: 4 }}>Manage your team members.</Typography>
-</View>
+  <Typography muted>Manage your team members.</Typography>
+</Column>
   );
 }

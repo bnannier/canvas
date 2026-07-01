@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Icon, MediaObject } = scope;
+  const { Icon, MediaObject, Column } = scope;
   return (
-<View style={{ maxWidth: 560, gap: 12 }}>
+<Column cozy style={{ maxWidth: 560 }}>
   <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
   <MediaObject bordered start title="Real-time analytics" description="Live dashboards with sub-second refresh latency." icon={<Icon activity primary size={18} />} />
-</View>
+</Column>
   );
 }

@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Select } = scope;
+  const { Select, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Rows</Text>
+<Row alignCenter snug>
+  <Typography tiny muted>Rows</Typography>
   <Select small value="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
-</View>
+</Row>
   );
 }

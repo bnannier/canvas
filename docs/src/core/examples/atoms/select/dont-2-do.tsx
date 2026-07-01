@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Input, Select } = scope;
+  const { Field, Select, Row, Column } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, maxWidth: 420 }}>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
-    <Input value="Austin" />
-  </View>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>State</Text>
-    <Select value="Texas" options={["Texas", "Oregon"]} />
-  </View>
-</View>
+<Row alignEnd cozy style={{ maxWidth: 420 }}>
+  <Column fill>
+    <Field label="City" value="Austin" />
+  </Column>
+  <Column fill>
+    <Select label="State" value="Texas" options={["Texas", "Oregon"]} />
+  </Column>
+</Row>
   );
 }

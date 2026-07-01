@@ -20,27 +20,27 @@ Image or icon paired with text content. The fundamental building block for list 
 ### Tappable
 
 ```tsx
-<View style={{ maxWidth: 480, gap: 8 }}>
+<Column snug style={{ maxWidth: 480 }}>
   <MediaObject onPress={() => {}} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
   <MediaObject onPress={() => {}} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
-</View>
+</Column>
 ```
 
 ### Variant - icon
 
 ```tsx
-<View style={{ maxWidth: 560, gap: 12 }}>
+<Column cozy style={{ maxWidth: 560 }}>
   <MediaObject bordered start title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
   <MediaObject bordered start title="Real-time analytics" description="Live dashboards with sub-second refresh latency." icon={<Icon activity primary size={18} />} />
-</View>
+</Column>
 ```
 
 ### Variant - action
 
 ```tsx
-<View style={{ maxWidth: 480 }}>
+<Column flush style={{ maxWidth: 480 }}>
   <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
-</View>
+</Column>
 ```
 
 ## Do & Don't

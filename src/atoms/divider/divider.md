@@ -73,14 +73,18 @@ Horizontal, vertical, with label, with action.
 **Do** — Click a provider: keep the label to a few words and let the buttons carry the options.
 
 ```tsx
-<View style={{ width: 320, flexDirection: "column", gap: 8 }}>
+<Column snug style={{ width: 320 }}>
   <Button primary block>Sign in</Button>
   <Divider>or continue with</Divider>
-  <View style={{ flexDirection: "row", gap: 8 }}>
-    <Button outline block style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>Google</Button>
-    <Button outline block style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>GitHub</Button>
-  </View>
-</View>
+  <Row snug>
+    <Column fill>
+      <Button outline block>Google</Button>
+    </Column>
+    <Column fill>
+      <Button outline block>GitHub</Button>
+    </Column>
+  </Row>
+</Column>
 ```
 
 **Don't** — Click Sign in: a full sentence in the label divider buries the choice.
@@ -120,13 +124,13 @@ Horizontal, vertical, with label, with action.
 **Do** — Click an action: the vertical rule separates inline actions in a row.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20 }}>Edit</Text>
+<Row alignCenter cozy>
+  <Typography small>Edit</Typography>
   <Divider vertical style={{ height: 16 }} />
-  <Text style={{ fontSize: 14, lineHeight: 20 }}>Delete</Text>
+  <Typography small>Delete</Typography>
   <Divider vertical style={{ height: 16 }} />
-  <Text style={{ fontSize: 14, lineHeight: 20 }}>Share</Text>
-</View>
+  <Typography small>Share</Typography>
+</Row>
 ```
 
 **Don't** — Click an action: a vertical rule between stacked items reads as a glitch.

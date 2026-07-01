@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Drawer } = scope;
+  const { Drawer, Typography, Column } = scope;
   return (
 <Drawer trigger="Open navigation" left width={260}>
-  <View style={{ padding: 20, gap: 10 }}>
-    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Navigation</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Home</Text>
-    <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>Components</Text>
-  </View>
+  <Column padLoose snug>
+    <Typography lead semibold>Navigation</Typography>
+    <Typography small muted>Home</Typography>
+    <Typography small muted>Components</Typography>
+  </Column>
 </Drawer>
   );
 }

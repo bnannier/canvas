@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Select } = scope;
+  const { Select, Column } = scope;
   return (
-<View style={{ minHeight: 220 }}>
+<Column style={{ minHeight: 220 }}>
   <Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
-</View>
+</Column>
   );
 }

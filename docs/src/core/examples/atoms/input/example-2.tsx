@@ -3,12 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Select } = scope;
+  const { Select, Typography, Column } = scope;
   return (
-<View style={{ maxWidth: 320, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Status</Text>
-  <Select value="Active" options={["Active", "Inactive", "Pending"]} />
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>We'll use this for account recovery.</Text>
-</View>
+<Column snug style={{ maxWidth: 320 }}>
+  <Select label="Status" value="Active" options={["Active", "Inactive", "Pending"]} />
+  <Typography tiny muted>We'll use this for account recovery.</Typography>
+</Column>
   );
 }

@@ -19,11 +19,10 @@ The Input component is a React Native text field with semantic boolean props (`e
 ### Control - select
 
 ```tsx
-<View style={{ maxWidth: 320, flexDirection: "column", gap: 6 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Status</Text>
-  <Select value="Active" options={["Active", "Inactive", "Pending"]} />
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>We'll use this for account recovery.</Text>
-</View>
+<Column snug style={{ maxWidth: 320 }}>
+  <Select label="Status" value="Active" options={["Active", "Inactive", "Pending"]} />
+  <Typography tiny muted>We'll use this for account recovery.</Typography>
+</Column>
 ```
 
 ### Control - textarea
@@ -89,10 +88,10 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Use type="number" with inputmode and park the unit in a .input-addon so the value stays purely numeric.
 
 ```tsx
-<View style={{ maxWidth: 320 }}>
-  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Storage</Text>
+<Column snug style={{ maxWidth: 320 }}>
+  <Typography small medium>Storage</Typography>
   <Input value="1024" suffix="GB" />
-</View>
+</Column>
 ```
 
 **Don't** — A plain text field lets users type the unit into the value, breaking parsing and validation.
@@ -120,10 +119,10 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Give a textarea a min-height for several lines and resize-y so it can grow with the content.
 
 ```tsx
-<View style={{ maxWidth: 320 }}>
-  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Notes</Text>
+<Column snug style={{ maxWidth: 320 }}>
+  <Typography small medium>Notes</Typography>
   <Textarea rows={4} value="Describe the change in enough detail that a teammate could follow it…" />
-</View>
+</Column>
 ```
 
 **Don't** — A one-line, resize-none textarea clips multi-line input so users cannot review what they wrote.

@@ -73,9 +73,9 @@ Native select restyled to match Canvas inputs.
 **Do** — Mark the placeholder disabled and selected so it prompts without being a valid choice.
 
 ```tsx
-<View style={{ minHeight: 220 }}>
+<Column style={{ minHeight: 220 }}>
   <Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
-</View>
+</Column>
 ```
 
 **Don't** — A placeholder as a normal option can be submitted as a real value.
@@ -91,10 +91,10 @@ Native select restyled to match Canvas inputs.
 **Do** — Keep the small select inline with a short label so it stays compact inside toolbars and table footers.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Rows</Text>
+<Row alignCenter snug>
+  <Typography tiny muted>Rows</Typography>
   <Select small value="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
-</View>
+</Row>
 ```
 
 **Don't** — A stacked block label towers over the small control and breaks the dense row it belongs in.
@@ -108,16 +108,14 @@ Native select restyled to match Canvas inputs.
 **Do** — Match the default select to sibling inputs at the same height so the form row lines up.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, maxWidth: 420 }}>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
-    <Input value="Austin" />
-  </View>
-  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>State</Text>
-    <Select value="Texas" options={["Texas", "Oregon"]} />
-  </View>
-</View>
+<Row alignEnd cozy style={{ maxWidth: 420 }}>
+  <Column fill>
+    <Field label="City" value="Austin" />
+  </Column>
+  <Column fill>
+    <Select label="State" value="Texas" options={["Texas", "Oregon"]} />
+  </Column>
+</Row>
 ```
 
 **Don't** — A default select next to a taller lg input leaves the row baselines misaligned.

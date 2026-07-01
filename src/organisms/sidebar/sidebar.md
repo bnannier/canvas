@@ -89,10 +89,10 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 **Do** — Page-header titles are 20-22px semibold: clearly the page label, never larger than the topbar brand.
 
 ```tsx
-<View style={{ width: 420, maxWidth: "100%" }}>
+<Column tight style={{ width: 420, maxWidth: "100%" }}>
   <Typography h4>Users</Typography>
-  <Typography muted style={{ marginTop: 4 }}>Manage your team members.</Typography>
-</View>
+  <Typography muted>Manage your team members.</Typography>
+</Column>
 ```
 
 **Don't** — A 36px display heading on the page body competes with the topbar and screams louder than the content beneath it.

@@ -3,15 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Button, Divider } = scope;
+  const { Button, Divider, Row, Column } = scope;
   return (
-<View style={{ width: 320, flexDirection: "column", gap: 8 }}>
+<Column snug style={{ width: 320 }}>
   <Button primary block>Sign in</Button>
   <Divider>or continue with</Divider>
-  <View style={{ flexDirection: "row", gap: 8 }}>
-    <Button outline block style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>Google</Button>
-    <Button outline block style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>GitHub</Button>
-  </View>
-</View>
+  <Row snug>
+    <Column fill>
+      <Button outline block>Google</Button>
+    </Column>
+    <Column fill>
+      <Button outline block>GitHub</Button>
+    </Column>
+  </Row>
+</Column>
   );
 }

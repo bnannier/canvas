@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Button, MediaObject } = scope;
+  const { Button, MediaObject, Column } = scope;
   return (
-<View style={{ maxWidth: 480 }}>
+<Column flush style={{ maxWidth: 480 }}>
   <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
-</View>
+</Column>
   );
 }

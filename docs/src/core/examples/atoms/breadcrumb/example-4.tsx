@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Breadcrumb, Button } = scope;
+  const { Breadcrumb, Button, Typography, Row, Column } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-  <View>
-    <View style={{ marginBottom: 8 }}>
-      <Breadcrumb items={["Users", "Rachel Chen"]} />
-    </View>
-    <Text style={{ fontSize: 24, lineHeight: 32, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground }}>Rachel Chen</Text>
-  </View>
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row wrap alignStart between relaxed>
+  <Column snug>
+    <Breadcrumb items={["Users", "Rachel Chen"]} />
+    <Typography h3 semibold>Rachel Chen</Typography>
+  </Column>
+  <Row alignCenter snug>
     <Button outline small>Edit</Button>
     <Button primary small>Save</Button>
-  </View>
-</View>
+  </Row>
+</Row>
   );
 }
