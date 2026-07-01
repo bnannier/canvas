@@ -85,6 +85,12 @@ export interface BreadcrumbProps {
    * before the trail, followed by the separator. Off by default.
    */
   homeIcon?: boolean;
+  /**
+   * Collapse a long trail: when the trail has more than `maxItems` crumbs, keep
+   * the first crumb and the last `maxItems - 2`, and replace the middle with a
+   * single "…" crumb, so a deep path stays on one scannable line.
+   */
+  maxItems?: number;
   /** Fired with the crumb label and its index when a link (non-last) is pressed. */
   onItemPress?: (item: string, index: number) => void;
   /** Escape hatch for layout/positioning composition. */
@@ -177,11 +183,29 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
   }
 
   function Breadcrumb(props: BreadcrumbProps) {
-    const { items, homeIcon, onItemPress, style } = props;
+    const { items, homeIcon, maxItems, onItemPress, style } = props;
     const { tokens } = useTheme();
     const trail = items ?? [];
     const separator = separatorOf(props);
     const glyph = SEPARATOR_GLYPH[separator];
+
+    // Collapse a long trail: keep the first crumb + an ellipsis + the last
+    // `maxItems - 2` crumbs. `origIndex` preserves each visible crumb's index in
+    // the full trail (so onItemPress reports the real position); the ellipsis is a
+    // non-interactive muted crumb.
+    type Crumb = { label: string; origIndex: number; ellipsis?: boolean };
+    let display: Crumb[];
+    if (maxItems != null && maxItems >= 2 && trail.length > maxItems) {
+      const tailCount = maxItems - 1;
+      const tailStart = trail.length - tailCount;
+      display = [
+        { label: trail[0], origIndex: 0 },
+        { label: "…", origIndex: -1, ellipsis: true },
+        ...trail.slice(tailStart).map((label, i) => ({ label, origIndex: tailStart + i })),
+      ];
+    } else {
+      display = trail.map((label, i) => ({ label, origIndex: i }));
+    }
 
     return (
       <View
@@ -215,16 +239,22 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
             )}
           </View>
         ) : null}
-        {trail.map((item, index) => {
-          const last = index === trail.length - 1;
+        {display.map((entry, index) => {
+          const last = index === display.length - 1;
           return (
-            <View key={`${index}-${item}`} style={CRUMB}>
-              <BreadcrumbItem
-                current={last}
-                onPress={last ? undefined : () => onItemPress?.(item, index)}
-              >
-                {item}
-              </BreadcrumbItem>
+            <View key={`${index}-${entry.label}`} style={CRUMB}>
+              {entry.ellipsis ? (
+                <Text style={skin.link(tokens)} accessibilityLabel="More levels" aria-label="More levels">
+                  {entry.label}
+                </Text>
+              ) : (
+                <BreadcrumbItem
+                  current={last}
+                  onPress={last ? undefined : () => onItemPress?.(entry.label, entry.origIndex)}
+                >
+                  {entry.label}
+                </BreadcrumbItem>
+              )}
               {last ? null : (
                 <Text
                   style={skin.separator(tokens)}

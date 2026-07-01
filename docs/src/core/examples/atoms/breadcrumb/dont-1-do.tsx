@@ -3,20 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View, Text, Pressable, Avatar } = scope;
+  const { Avatar, Breadcrumb } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
-  </Pressable>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], paddingHorizontal: 4 }}>…</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
-  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Avatar</Text>
-  </Pressable>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Edit</Text>
-</View>
+<Breadcrumb maxItems={3} items={["Projects", "Identity Platform", "Settings", "Avatar", "Edit"]} />
   );
 }

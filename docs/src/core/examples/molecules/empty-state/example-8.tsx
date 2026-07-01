@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, DataTable, EmptyState, Column } = scope;
+  const { Card, DataTable, EmptyState, Column } = scope;
   return (
-<View style={{ overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
+<Card flat style={{ overflow: "hidden" }}>
   <DataTable columns={["Name", "Email", "Role", "Status"]} rows={[]} />
-  <Column alignCenter style={{ paddingHorizontal: 16, paddingVertical: 40 }}>
+  <Column alignCenter padLoose>
     <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
   </Column>
-</View>
+</Card>
   );
 }

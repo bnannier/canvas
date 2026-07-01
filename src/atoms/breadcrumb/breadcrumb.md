@@ -86,19 +86,7 @@ Hierarchical navigation showing where you are.
 **Do** — Collapse the middle to an ellipsis; keep the root and the last couple of levels.
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Projects</Text>
-  </Pressable>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], paddingHorizontal: 4 }}>…</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
-  <Pressable accessibilityRole="link" style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Avatar</Text>
-  </Pressable>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: alpha(tokens["muted-foreground"], 0.6) }}>›</Text>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Edit</Text>
-</View>
+<Breadcrumb maxItems={3} items={["Projects", "Identity Platform", "Settings", "Avatar", "Edit"]} />
 ```
 
 **Don't** — A fully expanded deep path wraps and competes with the page.
