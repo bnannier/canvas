@@ -132,3 +132,72 @@ export function scopeNamesFromLiveScope(src: string): string[] {
   }
   return [...names];
 }
+
+// Style-shim guardrail. The "No styling escape hatches" directive (CLAUDE.md)
+// bans raw `style={{…}}` overrides that restyle, re-space, reposition, or
+// re-typeset a component or primitive; those choices belong to semantic props and
+// the Row/Column layout primitives. bannedStyleViolations flags such keys in a
+// fence so the codegen can warn (and, once the sweep is done, fail). Deliberately
+// NOT banned: `width`/`height`/`maxWidth`/`minWidth` (bounding a demo is
+// composition, not styling), `overflow`, and `textAlign` (Typography has no align
+// axis yet). "Don't" fences are exempt at the call site (they hand-roll the wrong
+// way on purpose), so this is only run over the example and "Do" fences.
+export const BANNED_STYLE_PROPS: string[] = [
+  // layout / spacing / positioning — belongs to Row/Column or the component
+  "flexDirection", "flexWrap", "flex", "flexGrow", "flexShrink", "flexBasis",
+  "alignItems", "alignSelf", "justifyContent", "gap", "rowGap", "columnGap",
+  "margin", "marginTop", "marginBottom", "marginLeft", "marginRight",
+  "marginHorizontal", "marginVertical", "marginStart", "marginEnd",
+  "padding", "paddingTop", "paddingBottom", "paddingLeft", "paddingRight",
+  "paddingHorizontal", "paddingVertical", "paddingStart", "paddingEnd",
+  "position", "top", "left", "right", "bottom", "zIndex",
+  // typography — belongs to Typography's role / tone / weight
+  "fontSize", "lineHeight", "fontWeight", "color", "letterSpacing", "textTransform", "fontFamily",
+  // surface — belongs to the relevant component (Card, Chip, IconTile, Divider, …)
+  "backgroundColor", "borderWidth", "borderColor", "borderRadius",
+  "borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth",
+  "borderTopColor", "borderBottomColor", "borderLeftColor", "borderRightColor",
+  "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
+  "shadowColor", "shadowOpacity", "shadowRadius", "shadowOffset", "elevation", "boxShadow", "opacity",
+];
+
+// The distinct banned property names found inside any `style={…}` /
+// `contentContainerStyle={…}` expression in a fence. A `// docgen-allow-style`
+// comment on the line where a style begins opts that one style out (a last
+// resort, mirroring CLAUDE.md's "name it and get authorization" stance).
+export function bannedStyleViolations(code: string): string[] {
+  const found = new Set<string>();
+  const marker = "style={";
+  let idx = 0;
+  while (true) {
+    const at = code.indexOf(marker, idx);
+    if (at === -1) break;
+    // Move to the first "{" of the expression after "style=".
+    let i = code.indexOf("{", at + marker.length - 1);
+    if (i === -1) break;
+    // Brace-match the whole `{…}` expression (object or array of objects).
+    const start = i;
+    let depth = 0;
+    for (; i < code.length; i++) {
+      if (code[i] === "{") depth++;
+      else if (code[i] === "}") {
+        depth--;
+        if (depth === 0) { i++; break; }
+      }
+    }
+    const expr = code.slice(start, i);
+    idx = i;
+
+    // Per-line opt-out on the line where the style begins.
+    const lineStart = code.lastIndexOf("\n", at) + 1;
+    let lineEnd = code.indexOf("\n", at);
+    if (lineEnd === -1) lineEnd = code.length;
+    if (code.slice(lineStart, lineEnd).includes("docgen-allow-style")) continue;
+
+    for (const key of BANNED_STYLE_PROPS) {
+      // Key as an object member: preceded by "{", "," or whitespace, followed by ":".
+      if (new RegExp(`(?:^|[{,\\s])${key}\\s*:`).test(expr)) found.add(key);
+    }
+  }
+  return [...found];
+}
