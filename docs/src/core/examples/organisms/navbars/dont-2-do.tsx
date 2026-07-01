@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Pressable, Avatar, Card, Icon, Typography, Row, Column } = scope;
+  const { Avatar, Button, Card, Icon, Typography, Row, Column } = scope;
   return (
 <Card flat style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
-  <Row alignCenter snug style={{ height: 56, paddingHorizontal: 12 }}>
-    <Pressable style={({ pressed }) => [{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6 }, pressed ? { backgroundColor: tokens.accent } : null]}>
-      <Icon menu muted size={18} />
-    </Pressable>
+  <Row alignCenter snug pad style={{ height: 56 }}>
+    <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
     <Typography small semibold>Canvas</Typography>
     <Column grow />
     <Avatar small src="/rachel-chen.jpg" name="RC" />

@@ -73,16 +73,10 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 
 ```tsx
 <Card flat style={{ width: "100%", overflow: "hidden" }}>
-  <Row alignCenter snug style={{ height: 56, paddingHorizontal: 16 }}>
+  <Row alignCenter snug pad style={{ height: 56 }}>
     <Typography small semibold>Canvas</Typography>
-    <Column grow style={{ marginHorizontal: 16, maxWidth: 400 }}>
-      <Pressable style={({ pressed }) => [{ flexDirection: "row", height: 34, width: "100%", alignItems: "center", gap: 8, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingHorizontal: 10 }, pressed ? { opacity: 0.9 } : null]}>
-        <Icon search muted size={13} />
-        <Column grow>
-          <Typography small style={{ textAlign: "left" }}>Search…</Typography>
-        </Column>
-        <Kbd>⌘K</Kbd>
-      </Pressable>
+    <Column grow style={{ maxWidth: 400 }}>
+      <Button outline block iconLeft={<Icon search muted size={13} />} iconRight={<Kbd>⌘K</Kbd>}>Search…</Button>
     </Column>
   </Row>
 </Card>
@@ -107,10 +101,8 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 
 ```tsx
 <Card flat style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
-  <Row alignCenter snug style={{ height: 56, paddingHorizontal: 12 }}>
-    <Pressable style={({ pressed }) => [{ height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 6 }, pressed ? { backgroundColor: tokens.accent } : null]}>
-      <Icon menu muted size={18} />
-    </Pressable>
+  <Row alignCenter snug pad style={{ height: 56 }}>
+    <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
     <Typography small semibold>Canvas</Typography>
     <Column grow />
     <Avatar small src="/rachel-chen.jpg" name="RC" />
