@@ -79,6 +79,9 @@ import {
   Chip,
   IconTile,
   Sparkline,
+  StackedBar,
+  Gauge,
+  Heatmap,
 } from "@olympusoss/canvas";
 
 // Style helpers an example fence can reference when it styles a raw View/Text.
@@ -182,4 +185,7 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   Chip,
   IconTile,
   Sparkline,
+  StackedBar,
+  Gauge,
+  Heatmap,
 };

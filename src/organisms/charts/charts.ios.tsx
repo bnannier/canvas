@@ -6,3 +6,5 @@ import { iosSkin } from "./charts.styles.js";
 // platform-neutral), so the iOS skin matches the web look exactly.
 export const Chart = createChart(iosSkin);
 export type { ChartProps, ChartDatum } from "./charts.shared.js";
+export { StackedBar, Gauge, Heatmap } from "./charts-viz.js";
+export type { StackedBarProps, StackedSegment, GaugeProps, HeatmapProps } from "./charts-viz.js";

@@ -3,16 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text } = scope;
+  const { Card, Column, Gauge } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: "center" }}>
-  <View style={{ alignItems: "center", justifyContent: "center" }}>
-    <View style={{ borderRadius: 9999, borderWidth: 8, borderColor: tokens.muted, height: 120, width: 120 }} />
-    <View style={{ position: "absolute", alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontSize: 24, lineHeight: 32, fontWeight: "600", color: tokens["card-foreground"] }}>72%</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Uptime</Text>
-    </View>
-  </View>
-</View>
+<Card padded style={{ maxWidth: 200 }}>
+  <Column alignCenter>
+    <Gauge value={72} label="Uptime" />
+  </Column>
+</Card>
   );
 }

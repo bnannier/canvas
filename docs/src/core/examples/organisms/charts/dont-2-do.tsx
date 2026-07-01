@@ -3,37 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text } = scope;
+  const { Card, StackedBar } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>
-  <View style={{ marginBottom: 12, flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, width: 520 }}>
-    <View style={{ width: "42%", backgroundColor: "#6366f1" }} />
-    <View style={{ width: "28%", backgroundColor: "#14b8a6" }} />
-    <View style={{ width: "18%", backgroundColor: "#f59e0b" }} />
-    <View style={{ width: "12%", backgroundColor: "#f43f5e" }} />
-  </View>
-  <View style={{ flexDirection: "column", gap: 8 }}>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#6366f1" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Direct</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>42%</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#14b8a6" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Organic search</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>28%</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#f59e0b" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Social</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>18%</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#f43f5e" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Referral</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>12%</Text>
-    </View>
-  </View>
-</View>
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    segments={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Referral", value: 12 }
+    ]}
+  />
+</Card>
   );
 }

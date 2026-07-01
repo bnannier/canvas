@@ -177,36 +177,16 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
 **Do** — Always ship a legend with a colored dot, label, and percentage per segment.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>
-  <View style={{ marginBottom: 12, flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, width: 520 }}>
-    <View style={{ width: "42%", backgroundColor: "#6366f1" }} />
-    <View style={{ width: "28%", backgroundColor: "#14b8a6" }} />
-    <View style={{ width: "18%", backgroundColor: "#f59e0b" }} />
-    <View style={{ width: "12%", backgroundColor: "#f43f5e" }} />
-  </View>
-  <View style={{ flexDirection: "column", gap: 8 }}>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#6366f1" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Direct</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>42%</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#14b8a6" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Organic search</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>28%</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#f59e0b" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Social</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>18%</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: "#f43f5e" }} />
-      <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Referral</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>12%</Text>
-    </View>
-  </View>
-</View>
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    segments={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Referral", value: 12 }
+    ]}
+  />
+</Card>
 ```
 
 **Don't** — Colored segments with no legend force the reader to guess which channel each band represents.
@@ -227,15 +207,11 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
 **Do** — Put a muted track behind the fill and the numeric value plus label in the center.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: "center" }}>
-  <View style={{ alignItems: "center", justifyContent: "center" }}>
-    <View style={{ borderRadius: 9999, borderWidth: 8, borderColor: tokens.muted, height: 120, width: 120 }} />
-    <View style={{ position: "absolute", alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontSize: 24, lineHeight: 32, fontWeight: "600", color: tokens["card-foreground"] }}>72%</Text>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Uptime</Text>
-    </View>
-  </View>
-</View>
+<Card padded style={{ maxWidth: 200 }}>
+  <Column alignCenter>
+    <Gauge value={72} label="Uptime" />
+  </Column>
+</Card>
 ```
 
 **Don't** — An arc with no track and no number: there is no baseline to read the fill against and no exact value.
@@ -251,40 +227,9 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
 **Do** — Pair the grid with a discrete less-to-more legend so the density scale is legible.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 260 }}>
-  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, maxWidth: 220 }}>
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.15)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.4)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.7)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,1)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.55)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.25)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.85)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.35)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.6)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.9)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.2)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.5)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.75)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.3)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.95)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.45)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.65)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.1)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.8)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.4)" }} />
-    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: "rgba(99,102,241,0.7)" }} />
-  </View>
-  <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Less</Text>
-    <View style={{ borderRadius: 2, height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.2)" }} />
-    <View style={{ borderRadius: 2, height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.4)" }} />
-    <View style={{ borderRadius: 2, height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.6)" }} />
-    <View style={{ borderRadius: 2, height: 12, width: 12, backgroundColor: "rgba(99,102,241,0.8)" }} />
-    <View style={{ borderRadius: 2, height: 12, width: 12, backgroundColor: "rgba(99,102,241,1)" }} />
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>More</Text>
-  </View>
-</View>
+<Card padded style={{ maxWidth: 260 }}>
+  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />
+</Card>
 ```
 
 **Don't** — A density grid with no legend leaves the alpha-to-value mapping a mystery.
