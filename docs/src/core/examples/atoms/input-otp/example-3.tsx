@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, InputOTP } = scope;
+  const { InputOTP, Column } = scope;
   return (
-<View style={{ flexDirection: "column", gap: 16 }}>
+<Column relaxed>
   <InputOTP small value="123" onChange={() => {}} />
   <InputOTP value="123" onChange={() => {}} />
   <InputOTP large value="123" onChange={() => {}} />
-</View>
+</Column>
   );
 }

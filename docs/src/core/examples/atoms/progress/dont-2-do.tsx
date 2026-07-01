@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Progress } = scope;
+  const { Progress, Typography, Column } = scope;
   return (
-<View style={{ maxWidth: 320, gap: 8 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Importing contacts</Text>
+<Column snug style={{ maxWidth: 320 }}>
+  <Typography small>Importing contacts</Typography>
   <Progress value={0.35} />
-</View>
+</Column>
   );
 }

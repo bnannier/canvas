@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+<Row alignCenter between relaxed>
   <Typography small>Request ID</Typography>
   <Typography mono>req_8f2c10ab</Typography>
-</View>
+</Row>
   );
 }

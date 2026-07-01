@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, NumberInput } = scope;
+  const { NumberInput, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+<Row alignCenter relaxed>
   <NumberInput value={0} min={0} max={5} onChange={() => {}} />
   <NumberInput value={5} min={0} max={5} onChange={() => {}} />
-</View>
+</Row>
   );
 }

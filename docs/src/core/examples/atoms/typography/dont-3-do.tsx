@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { Typography, Column } = scope;
   return (
-<View style={{ maxWidth: 340 }}>
+<Column tight style={{ maxWidth: 340 }}>
   <Typography h3>About Canvas</Typography>
-  <Typography body style={{ marginTop: 4 }}>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
-</View>
+  <Typography body>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+</Column>
   );
 }

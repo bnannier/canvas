@@ -13,20 +13,20 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 ### Sizes
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+<Row alignCenter relaxed>
   <NumberInput small value={2} min={0} max={10} onChange={() => {}} />
   <NumberInput value={2} min={0} max={10} onChange={() => {}} />
   <NumberInput large value={2} min={0} max={10} onChange={() => {}} />
-</View>
+</Row>
 ```
 
 ### With min / max
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+<Row alignCenter relaxed>
   <NumberInput value={0} min={0} max={5} onChange={() => {}} />
   <NumberInput value={5} min={0} max={5} onChange={() => {}} />
-</View>
+</Row>
 ```
 
 ### Stepped
@@ -48,10 +48,10 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 **Do** — Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.
 
 ```tsx
-<View style={{ gap: 8 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Quantity</Text>
+<Column snug>
+  <Typography small medium>Quantity</Typography>
   <NumberInput value={1} min={1} max={9} onChange={() => {}} />
-</View>
+</Column>
 ```
 
 **Don't** — Leaving the range unbounded lets the user push the count below zero or past what the form can accept.

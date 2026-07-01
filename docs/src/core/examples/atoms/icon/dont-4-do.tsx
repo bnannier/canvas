@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Icon } = scope;
+  const { Icon, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+<Row alignCenter snug>
   <Icon info muted size={16} />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Optional, used only for recovery</Text>
-</View>
+  <Typography small muted>Optional, used only for recovery</Typography>
+</Row>
   );
 }

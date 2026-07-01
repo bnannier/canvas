@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Button } = scope;
+  const { Button, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Button primary>Create account</Button>
   <Button secondary>Import instead</Button>
-</View>
+</Row>
   );
 }

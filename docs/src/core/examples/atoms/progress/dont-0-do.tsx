@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Progress } = scope;
+  const { Progress, Typography, Row, Column } = scope;
   return (
-<View style={{ maxWidth: 320, gap: 8 }}>
-  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Uploading…</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>72%</Text>
-  </View>
+<Column snug style={{ maxWidth: 320 }}>
+  <Row flush between>
+    <Typography small>Uploading…</Typography>
+    <Typography small muted>72%</Typography>
+  </Row>
   <Progress value={0.72} />
-</View>
+</Column>
   );
 }

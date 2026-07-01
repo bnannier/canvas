@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Kbd } = scope;
+  const { Kbd, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+<Row alignCenter tight>
   <Kbd>⌘</Kbd>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
+  <Typography tiny muted>+</Typography>
   <Kbd>⇧</Kbd>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
+  <Typography tiny muted>+</Typography>
   <Kbd>P</Kbd>
-</View>
+</Row>
   );
 }

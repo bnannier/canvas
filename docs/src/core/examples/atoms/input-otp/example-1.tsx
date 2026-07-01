@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, InputOTP } = scope;
+  const { InputOTP, Column } = scope;
   return (
-<View style={{ flexDirection: "column", gap: 16 }}>
+<Column relaxed>
   <InputOTP length={6} value="1234" onChange={() => {}} />
   <InputOTP length={4} value="12" onChange={() => {}} />
-</View>
+</Column>
   );
 }

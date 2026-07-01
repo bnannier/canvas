@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Slider } = scope;
+  const { Slider, Typography, Row, Column } = scope;
   return (
-<View style={{ maxWidth: 320, flexDirection: "row", alignItems: "center", gap: 16 }}>
-  <Slider value={48} min={0} max={100} style={{ flex: 1 }} />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], minWidth: 32, textAlign: "right" }}>48</Text>
-</View>
+<Row alignCenter relaxed style={{ maxWidth: 320 }}>
+  <Column fill>
+    <Slider value={48} min={0} max={100} />
+  </Column>
+  <Typography small muted style={{ minWidth: 32, textAlign: "right" }}>48</Typography>
+</Row>
   );
 }

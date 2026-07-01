@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Button, Switch } = scope;
+  const { Button, Switch, Column } = scope;
   return (
-<View style={{ maxWidth: 280, flexDirection: "column", gap: 12 }}>
+<Column cozy alignStart style={{ maxWidth: 280 }}>
   <Switch checked>Auto-save drafts</Switch>
-  <Button destructive small style={{ alignSelf: "flex-start" }}>Delete account…</Button>
-</View>
+  <Button destructive small>Delete account…</Button>
+</Column>
   );
 }

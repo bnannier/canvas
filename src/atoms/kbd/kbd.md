@@ -5,11 +5,11 @@ Keyboard shortcut indicator badge.
 ## Usage
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+<Row alignCenter tight>
   <Kbd>⌘</Kbd>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
+  <Typography tiny muted>+</Typography>
   <Kbd>K</Kbd>
-</View>
+</Row>
 ```
 
 ## Variants
@@ -23,12 +23,12 @@ Keyboard shortcut indicator badge.
 ### Mode - in a sentence
 
 ```tsx
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 4 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Press </Text>
+<Row wrap alignCenter tight>
+  <Typography small>Press </Typography>
   <Kbd>⌘</Kbd>
   <Kbd>K</Kbd>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}> to search.</Text>
-</View>
+  <Typography small> to search.</Typography>
+</Row>
 ```
 
 ## Do & Don't
@@ -52,13 +52,13 @@ Keyboard shortcut indicator badge.
 **Do** — Separate each key with a + so the combo reads as keys pressed together.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+<Row alignCenter tight>
   <Kbd>⌘</Kbd>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
+  <Typography tiny muted>+</Typography>
   <Kbd>⇧</Kbd>
-  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>+</Text>
+  <Typography tiny muted>+</Typography>
   <Kbd>P</Kbd>
-</View>
+</Row>
 ```
 
 **Don't** — Caps butted together with no separator blur into one token and hide that it is a chord.
@@ -76,12 +76,12 @@ Keyboard shortcut indicator badge.
 **Do** — Wrap each key in a kbd so shortcuts read as physical keys.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20 }}>Press</Text>
+<Row alignCenter tight>
+  <Typography small>Press</Typography>
   <Kbd>Ctrl</Kbd>
   <Kbd>K</Kbd>
-  <Text style={{ fontSize: 14, lineHeight: 20 }}>to search.</Text>
-</View>
+  <Typography small>to search.</Typography>
+</Row>
 ```
 
 **Don't** — Plain-text shortcuts blend into the prose and are easy to miss.

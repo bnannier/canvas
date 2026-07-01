@@ -119,10 +119,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Use display once per hero, then drop to a muted line for the supporting copy.
 
 ```tsx
-<View>
+<Column snug>
   <Typography display>Welcome</Typography>
-  <Typography muted style={{ marginTop: 8 }}>Sign in to pick up where you left off.</Typography>
-</View>
+  <Typography muted>Sign in to pick up where you left off.</Typography>
+</Column>
 ```
 
 **Don't** — Two display-size lines in one view fight for attention and leave no clear focal point.
@@ -139,10 +139,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Give each page a single h1, then step down to h2 for the sections beneath it.
 
 ```tsx
-<View>
+<Column relaxed>
   <Typography h1>Billing</Typography>
-  <Typography h2 style={{ marginTop: 16 }}>Invoices</Typography>
-</View>
+  <Typography h2>Invoices</Typography>
+</Column>
 ```
 
 **Don't** — Two h1 titles on a page break the document outline and confuse assistive tech.
@@ -159,10 +159,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Follow an h1 with h2 for its top-level sections; don't skip the scale.
 
 ```tsx
-<View>
+<Column relaxed>
   <Typography h1>Settings</Typography>
-  <Typography h2 style={{ marginTop: 16 }}>Profile</Typography>
-</View>
+  <Typography h2>Profile</Typography>
+</Column>
 ```
 
 **Don't** — Jumping from h1 straight to h4 skips a level and flattens the visible hierarchy.
@@ -179,10 +179,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Reserve heading styles for titles; set running text in a small body utility.
 
 ```tsx
-<View style={{ maxWidth: 340 }}>
+<Column tight style={{ maxWidth: 340 }}>
   <Typography h3>About Canvas</Typography>
-  <Typography body style={{ marginTop: 4 }}>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
-</View>
+  <Typography body>Canvas is a universal React Native UI kit for building consistent product interfaces.</Typography>
+</Column>
 ```
 
 **Don't** — Body copy set in a heading style is hard to read in bulk and flattens the hierarchy.
@@ -196,10 +196,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Keep h4 to a short label and carry the explanation in a small supporting line.
 
 ```tsx
-<View>
+<Column tight>
   <Typography h4>Notifications</Typography>
-  <Typography small style={{ marginTop: 4 }}>Choose how and when we reach you.</Typography>
-</View>
+  <Typography small>Choose how and when we reach you.</Typography>
+</Column>
 ```
 
 **Don't** — h4 is a minor heading, not a place for full sentences; long text at this weight reads as a wall.
@@ -216,10 +216,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Use h5 only for the label; render the value in body so the pair stays scannable.
 
 ```tsx
-<View>
+<Column tight>
   <Typography h5>Members</Typography>
-  <Typography body style={{ marginTop: 2 }}>Aisha, Bao, Cleo, and 9 others have access.</Typography>
-</View>
+  <Typography body>Aisha, Bao, Cleo, and 9 others have access.</Typography>
+</Column>
 ```
 
 **Don't** — Setting the value in h5 too makes the label and its data indistinguishable.
@@ -257,10 +257,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Use small for secondary captions on a plain surface, not for the primary label.
 
 ```tsx
-<View>
+<Column tight>
   <Typography body>Save changes</Typography>
-  <Typography small style={{ marginTop: 2 }}>Last saved 2 minutes ago.</Typography>
-</View>
+  <Typography small>Last saved 2 minutes ago.</Typography>
+</Column>
 ```
 
 **Don't** — small is muted-foreground; on a colored button it loses contrast and looks disabled.
@@ -276,10 +276,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Reserve tiny for short metadata like timestamps and counts beside the main text.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Typography body>Deploy succeeded</Typography>
   <Typography tiny>3m ago</Typography>
-</View>
+</Row>
 ```
 
 **Don't** — tiny is for metadata, not legal prose; long copy at 12px strains the eye.
@@ -295,7 +295,7 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <Typography body style={{ maxWidth: 340 }}>
   Payment due May 31. 
-  <Typography body style={{ color: tokens.primary, textDecorationLine: "underline" }}>View invoices</Typography>
+  <Typography body primary style={{ textDecorationLine: "underline" }}>View invoices</Typography>
 </Typography>
 ```
 
@@ -310,10 +310,10 @@ Type scale classes for headings, body text, and helper styles.
 **Do** — Use caption as a short eyebrow label above a section, then explain in body.
 
 ```tsx
-<View>
+<Column tight>
   <Typography caption>Billing</Typography>
-  <Typography body style={{ marginTop: 4 }}>Your subscription renews automatically each month.</Typography>
-</View>
+  <Typography body>Your subscription renews automatically each month.</Typography>
+</Column>
 ```
 
 **Don't** — Uppercase, letter-spaced caption text is illegible for anything longer than a label.
@@ -347,10 +347,10 @@ git commit -m "wip"</Typography>
 **Do** — Use mono for identifiers, hashes, and tabular values where character alignment matters.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+<Row alignCenter between relaxed>
   <Typography small>Request ID</Typography>
   <Typography mono>req_8f2c10ab</Typography>
-</View>
+</Row>
 ```
 
 **Don't** — Mono spacing makes prose sentences sparse and slow to read; it is meant for fixed-width data.

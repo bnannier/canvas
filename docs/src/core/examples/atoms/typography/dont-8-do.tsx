@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Typography body>Deploy succeeded</Typography>
   <Typography tiny>3m ago</Typography>
-</View>
+</Row>
   );
 }

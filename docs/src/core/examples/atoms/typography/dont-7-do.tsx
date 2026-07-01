@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { Typography, Column } = scope;
   return (
-<View>
+<Column tight>
   <Typography body>Save changes</Typography>
-  <Typography small style={{ marginTop: 2 }}>Last saved 2 minutes ago.</Typography>
-</View>
+  <Typography small>Last saved 2 minutes ago.</Typography>
+</Column>
   );
 }

@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Icon } = scope;
+  const { Icon, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+<Row alignCenter relaxed>
   <Icon home muted size={22} />
   <Icon star primary size={22} />
   <Icon settings muted size={22} />
-</View>
+</Row>
   );
 }

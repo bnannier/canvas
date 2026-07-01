@@ -54,10 +54,10 @@ On / off switch, isolated or grouped in a settings list.
 **Do** — Reserve the on switch for instantly reversible settings; route irreversible actions through a button plus confirmation.
 
 ```tsx
-<View style={{ maxWidth: 280, flexDirection: "column", gap: 12 }}>
+<Column cozy alignStart style={{ maxWidth: 280 }}>
   <Switch checked>Auto-save drafts</Switch>
-  <Button destructive small style={{ alignSelf: "flex-start" }}>Delete account…</Button>
-</View>
+  <Button destructive small>Delete account…</Button>
+</Column>
 ```
 
 **Don't** — A switch applies instantly; wiring an on toggle to an irreversible action invites accidental, unconfirmed data loss.

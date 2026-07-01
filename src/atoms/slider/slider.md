@@ -41,10 +41,10 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 **Do** — Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance.
 
 ```tsx
-<View style={{ maxWidth: 320, gap: 8 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Volume</Text>
+<Column snug style={{ maxWidth: 320 }}>
+  <Typography small medium>Volume</Typography>
   <Slider value={65} min={0} max={100} />
-</View>
+</Column>
 ```
 
 **Don't** — Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.
@@ -60,10 +60,12 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 **Do** — Pair the slider with its current value so the number is explicit, not just inferred from the thumb position.
 
 ```tsx
-<View style={{ maxWidth: 320, flexDirection: "row", alignItems: "center", gap: 16 }}>
-  <Slider value={48} min={0} max={100} style={{ flex: 1 }} />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], minWidth: 32, textAlign: "right" }}>48</Text>
-</View>
+<Row alignCenter relaxed style={{ maxWidth: 320 }}>
+  <Column fill>
+    <Slider value={48} min={0} max={100} />
+  </Column>
+  <Typography small muted style={{ minWidth: 32, textAlign: "right" }}>48</Typography>
+</Row>
 ```
 
 **Don't** — A slider with no readout and no label leaves users guessing what the value is and what it controls.

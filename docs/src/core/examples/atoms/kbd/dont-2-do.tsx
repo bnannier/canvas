@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Text, Kbd } = scope;
+  const { Kbd, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20 }}>Press</Text>
+<Row alignCenter tight>
+  <Typography small>Press</Typography>
   <Kbd>Ctrl</Kbd>
   <Kbd>K</Kbd>
-  <Text style={{ fontSize: 14, lineHeight: 20 }}>to search.</Text>
-</View>
+  <Typography small>to search.</Typography>
+</Row>
   );
 }

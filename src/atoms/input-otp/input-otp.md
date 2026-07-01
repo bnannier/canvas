@@ -13,10 +13,10 @@ A segmented one-time-code field: `length` cells display the typed digits while o
 ### Length - six vs four digits
 
 ```tsx
-<View style={{ flexDirection: "column", gap: 16 }}>
+<Column relaxed>
   <InputOTP length={6} value="1234" onChange={() => {}} />
   <InputOTP length={4} value="12" onChange={() => {}} />
-</View>
+</Column>
 ```
 
 ### Masked
@@ -28,11 +28,11 @@ A segmented one-time-code field: `length` cells display the typed digits while o
 ### Sizes
 
 ```tsx
-<View style={{ flexDirection: "column", gap: 16 }}>
+<Column relaxed>
   <InputOTP small value="123" onChange={() => {}} />
   <InputOTP value="123" onChange={() => {}} />
   <InputOTP large value="123" onChange={() => {}} />
-</View>
+</Column>
 ```
 
 ### Disabled

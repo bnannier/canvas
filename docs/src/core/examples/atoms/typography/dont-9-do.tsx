@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Typography } = scope;
+  const { View, Typography } = scope;
   return (
 <Typography body style={{ maxWidth: 340 }}>
   Payment due May 31. 
-  <Typography body style={{ color: tokens.primary, textDecorationLine: "underline" }}>View invoices</Typography>
+  <Typography body primary style={{ textDecorationLine: "underline" }}>View invoices</Typography>
 </Typography>
   );
 }

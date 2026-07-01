@@ -77,10 +77,10 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — One clear primary action; everything else is supporting.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Button primary>Save</Button>
   <Button outline>Cancel</Button>
-</View>
+</Row>
 ```
 
 **Don't** — Multiple primaries compete; nothing stands out.
@@ -98,11 +98,11 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Promote the main action to default; keep the rest outline.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Button primary>Publish</Button>
   <Button outline>Save draft</Button>
   <Button outline>Schedule</Button>
-</View>
+</Row>
 ```
 
 **Don't** — All-outline leaves no signal which action is primary.
@@ -120,10 +120,10 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Default for the primary action; secondary for the next one down.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Button primary>Create account</Button>
   <Button secondary>Import instead</Button>
-</View>
+</Row>
 ```
 
 **Don't** — A secondary button as the main call to action under-sells it.
@@ -137,10 +137,10 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Use ghost for tertiary and toolbar actions; keep the CTA filled.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Button ghost>Cancel</Button>
   <Button primary>Save changes</Button>
-</View>
+</Row>
 ```
 
 **Don't** — A ghost button is too quiet to carry the primary action.
@@ -154,10 +154,10 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Reserve the destructive variant for irreversible actions like delete.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+<Row alignCenter snug>
   <Button primary>Save changes</Button>
   <Button destructive>Delete account</Button>
-</View>
+</Row>
 ```
 
 **Don't** — Red on a safe action cries wolf; users learn to ignore it.
@@ -171,10 +171,10 @@ Six variants × four sizes × disabled / focus / hover states. Always semantic: 
 **Do** — Link variant for inline navigation; a filled button for the submit.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+<Row alignCenter cozy>
   <Button primary>Submit</Button>
   <Button link>Learn more</Button>
-</View>
+</Row>
 ```
 
 **Don't** — A link-styled submit doesn't look pressable and gets lost.

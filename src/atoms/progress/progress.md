@@ -41,13 +41,13 @@ A rounded bar that reports how far a task has gotten, or that work is underway.
 **Do** — Use a determinate bar when you know the share of work done, and pair it with a percent or count so the number and the bar agree.
 
 ```tsx
-<View style={{ maxWidth: 320, gap: 8 }}>
-  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Uploading…</Text>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>72%</Text>
-  </View>
+<Column snug style={{ maxWidth: 320 }}>
+  <Row flush between>
+    <Typography small>Uploading…</Typography>
+    <Typography small muted>72%</Typography>
+  </Row>
   <Progress value={0.72} />
-</View>
+</Column>
 ```
 
 **Don't** — Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.
@@ -64,10 +64,10 @@ A rounded bar that reports how far a task has gotten, or that work is underway.
 **Do** — Reach for the indeterminate bar only when the duration is genuinely unknown, so the looping sweep tells users work is happening.
 
 ```tsx
-<View style={{ maxWidth: 320, gap: 8 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Connecting…</Text>
+<Column snug style={{ maxWidth: 320 }}>
+  <Typography small muted>Connecting…</Typography>
   <Progress indeterminate />
-</View>
+</Column>
 ```
 
 **Don't** — Don't fake indeterminate progress when you do have a measurable value; a sliding bar over known work hides information you could show.
@@ -84,10 +84,10 @@ A rounded bar that reports how far a task has gotten, or that work is underway.
 **Do** — Give the bar a width and a label; on its own it carries no meaning, so set its measure with the `style` prop and name the task.
 
 ```tsx
-<View style={{ maxWidth: 320, gap: 8 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Importing contacts</Text>
+<Column snug style={{ maxWidth: 320 }}>
+  <Typography small>Importing contacts</Typography>
   <Progress value={0.35} />
-</View>
+</Column>
 ```
 
 **Don't** — Don't hand-roll a bar from raw views; the kit's `Progress` already adapts its thickness and ends per platform and stays themed.

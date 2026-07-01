@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Skeleton } = scope;
+  const { Skeleton, Column } = scope;
   return (
-<View style={{ width: 320, flexDirection: "column", gap: 6 }}>
+<Column snug style={{ width: 320 }}>
   <Skeleton text animate style={{ width: "100%" }} />
   <Skeleton text animate style={{ width: "95%" }} />
   <Skeleton text animate style={{ width: "60%" }} />
-</View>
+</Column>
   );
 }

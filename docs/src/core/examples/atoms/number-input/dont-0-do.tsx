@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, NumberInput } = scope;
+  const { NumberInput, Typography, Column } = scope;
   return (
-<View style={{ gap: 8 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Quantity</Text>
+<Column snug>
+  <Typography small medium>Quantity</Typography>
   <NumberInput value={1} min={1} max={9} onChange={() => {}} />
-</View>
+</Column>
   );
 }

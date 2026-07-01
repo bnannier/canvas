@@ -41,11 +41,11 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Do** — One outline style at 1.75 stroke across the whole set.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+<Row alignCenter relaxed>
   <Icon home size={28} />
   <Icon search size={28} />
   <Icon bell size={28} />
-</View>
+</Row>
 ```
 
 **Don't** — Mixed stroke weights and a stray filled glyph make a set look incoherent.
@@ -79,11 +79,11 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Do** — Reserve text-primary for the one active or selected icon; keep the rest muted.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+<Row alignCenter relaxed>
   <Icon home muted size={22} />
   <Icon star primary size={22} />
   <Icon settings muted size={22} />
-</View>
+</Row>
 ```
 
 **Don't** — Painting a whole toolbar primary spends the accent on everything, so nothing reads as emphasized.
@@ -115,10 +115,10 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 **Do** — Use text-muted-foreground for secondary, inline hint icons where its color matches the helper text.
 
 ```tsx
-<View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+<Row alignCenter snug>
   <Icon info muted size={16} />
-  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Optional, used only for recovery</Text>
-</View>
+  <Typography small muted>Optional, used only for recovery</Typography>
+</Row>
 ```
 
 **Don't** — A muted icon inside a solid primary button reads as disabled and clashes with the high-contrast label.
