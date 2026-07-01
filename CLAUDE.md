@@ -142,3 +142,45 @@ to restyle a component.
 
 Every visual variation a component supports must be exposed as a boolean prop on
 one of these axes.
+
+## No styling escape hatches
+
+There is no styling escape hatch in Canvas, period. A component's look and its
+in-context layout come from its semantic boolean props (see "Semantic prop
+styling") and from the kit's own layout primitives, never from a raw `style={{…}}`
+override at the call site.
+
+Banned at every call site (app code, the docs, AND the kit's own `.md`
+examples, which are the showcase):
+
+- Restyling through `style`: `backgroundColor`, `borderWidth`/`borderColor`,
+  `borderRadius`, `color`, `fontSize`/`lineHeight`/`fontWeight`/`letterSpacing`,
+  `opacity`, shadows, gradients, and the like, to change how a component or
+  primitive looks.
+- Re-spacing / repositioning through `style`: `margin*` (including negative
+  margins), `padding`, `gap`, absolute positioning, and hand-set `width`/`height`
+  to nudge a component around (e.g. `marginLeft: -12` to overlap avatars).
+- Hand-composing a missing widget out of a primitive + raw style: a chip, pill,
+  tag, card, identity row, avatar stack, "+N" overflow counter, divider, and so
+  on.
+
+Reaching for a style shim is a signal, not a solution: it means the kit is
+missing a capability. The fix is always to add that capability to the kit and use
+it, never to shim at the call site:
+
+- Missing a visual variation? Add the semantic boolean prop to the component.
+- Missing an arrangement? Use or extend a layout primitive (a `Row`/`Column` with
+  a `tight`/`snug`/`relaxed`/`loose` gap and boolean alignment, an avatar group
+  with overlap), never a hand-rolled `flexDirection` + `gap` + `margin` `View`.
+- Missing a composite (chip, identity row, avatar group, icon tile)? Build it in
+  the kit (`src/atoms|molecules|organisms`), export it, add a changeset, use it.
+
+This extends the "Resolution" rule ("consumers never assemble utility soup or
+pass raw style overrides to restyle a component") to ALL styling and layout, and
+it binds the kit's own `.md` examples: an example that hand-shims is a bug. No
+component may expose a `style` prop documented as an "escape hatch"; where one
+exists today (e.g. `Avatar`'s overlap margin), the real capability replaces it.
+
+This is the STYLING escape-hatch ban. It is separate from, and additional to,
+the ban on web-only DOM/CSS platform escape hatches in the
+"React-Native-everywhere principle" above.
