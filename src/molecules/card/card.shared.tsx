@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, rippleClip, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, rippleClip, alpha, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 
@@ -50,6 +50,11 @@ export interface CardProps {
   padded?: boolean;
   /** When set, the whole card becomes pressable (a card that behaves as a control). */
   onPress?: () => void;
+  /**
+   * Active/selected surface: a primary border and a soft primary tint. For
+   * selectable cards (a card-style radio or checkbox option that is chosen).
+   */
+  selected?: boolean;
   // Density (pick one; default is the standard inset). Scales the card's own
   // content padding and the gap between flat children.
   compact?: boolean;
@@ -74,7 +79,7 @@ function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, description, body, footer, padded, onPress, style } = props;
+    const { children, title, description, body, footer, padded, onPress, selected, style } = props;
     const { tokens } = useTheme();
     const elev = elevationOf(props);
     const dens = densityOf(props);
@@ -87,6 +92,9 @@ export function createCard(skin: CardSkin) {
       // Density pads + gaps on its own and wins over `padded`; otherwise `padded`
       // applies the standard inset, and a bare card stays unpadded for composition.
       dens !== "default" ? skin.density[dens] : padded ? skin.padded : null,
+      // Selected: recolor the border to primary and wash the surface with a soft
+      // primary tint (the border width is unchanged, so content never shifts).
+      selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,
       style,
     ];
 
