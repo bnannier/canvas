@@ -125,10 +125,12 @@ export const MONO_ROLES = new Set<Role>(["code", "mono"]);
 // keep their existing muted color as roles, and tone adds the colored intents).
 // When no tone prop is set the role's own color stands. positive/warning pick a
 // palette step per scheme (like Badge); subtle is a translucent foreground.
-export type Tone = "subtle" | "primary" | "destructive" | "positive" | "warning";
+export type Tone = "muted" | "subtle" | "primary" | "destructive" | "positive" | "warning";
 
 export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   switch (tone) {
+    case "muted":
+      return { color: tokens["muted-foreground"] };
     case "subtle":
       return { color: alpha(tokens.foreground, 0.6) };
     case "primary":

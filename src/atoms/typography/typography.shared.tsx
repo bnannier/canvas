@@ -123,6 +123,10 @@ function toneOf(p: TypographyProps): Tone | null {
   if (p.positive) return "positive";
   if (p.primary) return "primary";
   if (p.subtle) return "subtle";
+  // `muted` is also a role; as a tone it layers muted color onto a larger role
+  // (e.g. `lead muted`). Bare `<Typography muted>` still resolves the muted role,
+  // which paints the same color, so this stays backward-compatible.
+  if (p.muted) return "muted";
   return null;
 }
 
