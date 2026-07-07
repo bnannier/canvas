@@ -46,6 +46,8 @@ export interface ChipProps {
   small?: boolean;
   disabled?: boolean;
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** For layout composition only (not styling). */
   style?: StyleProp<ViewStyle>;
 }
@@ -82,7 +84,7 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
 /** Build a Chip from a platform skin. */
 export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
-    const { children, icon, trailing, onPress, onRemove, small, disabled, accessibilityLabel, style } = props;
+    const { children, icon, trailing, onPress, onRemove, small, disabled, accessibilityLabel, testID, style } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const primaryTone = tone === "primary";
@@ -129,6 +131,7 @@ export function createChip(skin: ChipSkin) {
       return (
         <Pressable
           onPress={onPress}
+          testID={testID}
           accessibilityRole="button"
           accessibilityLabel={accessibilityLabel}
           style={({ pressed }) => [container, pressed ? { opacity: 0.85 } : null]}
@@ -139,7 +142,7 @@ export function createChip(skin: ChipSkin) {
     }
 
     return (
-      <View style={container} accessibilityLabel={accessibilityLabel}>
+      <View style={container} testID={testID} accessibilityLabel={accessibilityLabel}>
         {inner}
       </View>
     );

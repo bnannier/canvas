@@ -44,6 +44,8 @@ export interface OverlayProps {
   doneLabel?: string;
   // Action handler.
   onDone?: () => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition on the overlay surface. */
   style?: StyleProp<ViewStyle>;
 }
@@ -59,7 +61,7 @@ function placementOf(p: OverlayProps): Placement {
 /** Build an Overlay component from a platform skin. */
 export function createOverlay(skin: OverlaySkin) {
   return function Overlay(props: OverlayProps) {
-    const { title, description, trigger, open: openProp, onOpenChange, doneLabel = "Done", onDone, style } = props;
+    const { title, description, trigger, open: openProp, onOpenChange, doneLabel = "Done", onDone, testID, style } = props;
     const { tokens } = useTheme();
 
     // Uncontrolled by default: the trigger opens the overlay and Done closes it;
@@ -95,7 +97,7 @@ export function createOverlay(skin: OverlaySkin) {
     // backdrop: a rounded, clipped scrim with explicit presence in the preview
     // (minHeight) so the surface reads as an overlay within the area.
     return (
-      <View style={s.root}>
+      <View testID={testID} style={s.root}>
         {trigger != null ? (
           <View style={s.triggerWrap}>
             <Button outline small onPress={() => setOpen(true)}>

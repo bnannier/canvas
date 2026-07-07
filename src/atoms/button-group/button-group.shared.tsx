@@ -117,6 +117,8 @@ export interface ButtonGroupProps {
   large?: boolean;
 
   disabled?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -207,6 +209,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     size,
     disabled,
     onSelect,
+    testID,
     style,
   }: {
     primary: string;
@@ -214,13 +217,14 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     size: Size;
     disabled?: boolean;
     onSelect?: (index: number, item: string, event: GestureResponderEvent) => void;
+    testID?: string;
     style?: StyleProp<ViewStyle>;
   }) {
     const { tokens } = useTheme();
     const [open, setOpen] = useState(false);
     const triggerHeight = s.sizeHeight[size];
     return (
-      <View style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}>
+      <View style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]} testID={testID}>
         <Pressable
           style={({ pressed }) => [skin.splitPrimary(tokens), s.sizeContainer[size], skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           onPress={(e) => onSelect?.(0, primary, e)}
@@ -279,6 +283,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     size,
     disabled,
     onSelect,
+    testID,
     style,
   }: {
     items: string[];
@@ -286,6 +291,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     size: Size;
     disabled?: boolean;
     onSelect?: (index: number, item: string, event: GestureResponderEvent) => void;
+    testID?: string;
     style?: StyleProp<ViewStyle>;
   }) {
     const { tokens } = useTheme();
@@ -302,7 +308,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       onSelect?.(next, items[next], e);
     };
     return (
-      <View style={[s.stepperContainer, disabled ? s.dim : null, style]}>
+      <View style={[s.stepperContainer, disabled ? s.dim : null, style]} testID={testID}>
         <Pressable
           style={({ pressed }) => [skin.stepperArrow(tokens, height), skin.stepperArrowLeft, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           onPress={(e) => step(-1, e)}
@@ -331,7 +337,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
   }
 
   return function ButtonGroup(props: ButtonGroupProps) {
-    const { items = DEFAULT_ITEMS, active = 0, onSelect, disabled, style } = props;
+    const { items = DEFAULT_ITEMS, active = 0, onSelect, disabled, testID, style } = props;
     const { tokens } = useTheme();
     const kind = kindOf(props);
     const size = sizeOf(props);
@@ -339,7 +345,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // Spaced: detached peers separated by a gap, each with full rounding.
     if (kind === "spaced") {
       return (
-        <View style={[s.spacedContainer, style]}>
+        <View style={[s.spacedContainer, style]} testID={testID}>
           {items.map((item, i) => (
             <Segment
               key={`${item}-${i}`}
@@ -369,6 +375,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           size={size}
           disabled={disabled}
           onSelect={onSelect}
+          testID={testID}
           style={style}
         />
       );
@@ -385,6 +392,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           size={size}
           disabled={disabled}
           onSelect={onSelect}
+          testID={testID}
           style={style}
         />
       );
@@ -411,8 +419,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // The segments are a single mutually-exclusive control, so the row is a
     // `tablist` grouping its `tab` segments (matching the Tabs precedent).
     if (wrap) {
-      return <View accessibilityRole="tablist" style={[wrap, style]}>{row}</View>;
+      return <View accessibilityRole="tablist" style={[wrap, style]} testID={testID}>{row}</View>;
     }
-    return <View accessibilityRole="tablist" style={[s.segmentedContainer, style]}>{row}</View>;
+    return <View accessibilityRole="tablist" style={[s.segmentedContainer, style]} testID={testID}>{row}</View>;
   };
 }

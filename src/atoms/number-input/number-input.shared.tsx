@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import {
   TextInput,
   type AccessibilityActionEvent,
@@ -10,6 +10,7 @@ import {
   Text,
   Pressable,
   useTheme,
+  useControllableState,
   FOCUS_RESET,
   type ColorTokens,
   type StyleProp,
@@ -40,10 +41,14 @@ import { Icon } from "../icon/icon.js";
 export type Size = "small" | "base" | "large";
 
 export interface NumberInputProps {
-  /** Controlled numeric value (clamped to [min, max] for display). */
-  value: number;
-  /** Fired with the next clamped value when ±, or direct entry, changes it. */
-  onChange: (next: number) => void;
+  /** Controlled numeric value (clamped to [min, max] for display); omit for uncontrolled use. */
+  value?: number;
+  /** Initial value for uncontrolled use (a bare <NumberInput /> steps out of the box). Default `min`. */
+  defaultValue?: number;
+  /** Fired with the next clamped value when ±, or direct entry, changes it (both modes). */
+  onChange?: (next: number) => void;
+  /** E2E hook forwarded to the group container. */
+  testID?: string;
   /** Lower bound. Default 0. The − button disables when value <= min. */
   min?: number;
   /** Upper bound. Default Number.MAX_SAFE_INTEGER. The + button disables when value >= max. */
@@ -109,9 +114,8 @@ function sizeOf(p: NumberInputProps): Size {
 
 /** Build a NumberInput component from a platform skin. */
 export function createNumberInput(skin: NumberInputSkin) {
-  return function NumberInput(props: NumberInputProps) {
+  const NumberInput = forwardRef<TextInput, NumberInputProps>(function NumberInput(props, ref) {
     const {
-      value,
       onChange,
       min = 0,
       max = Number.MAX_SAFE_INTEGER,
@@ -122,6 +126,14 @@ export function createNumberInput(skin: NumberInputSkin) {
     } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
+
+    // Controlled when `value` is provided, self-managed otherwise, so a bare
+    // <NumberInput /> steps out of the box (the standard library contract).
+    const [value, setValue] = useControllableState<number>(
+      props.value,
+      props.defaultValue ?? min,
+      onChange,
+    );
 
     const current = clamp(value, min, max);
     const atMin = disabled || current <= min;
@@ -137,7 +149,7 @@ export function createNumberInput(skin: NumberInputSkin) {
 
     const emit = (next: number) => {
       const clamped = clamp(next, min, max);
-      if (clamped !== current) onChange(clamped);
+      if (clamped !== current) setValue(clamped);
     };
 
     const decrement = () => {
@@ -177,7 +189,7 @@ export function createNumberInput(skin: NumberInputSkin) {
       if (draft != null) {
         const parsed = Number(draft);
         const next = Number.isNaN(parsed) ? min : clamp(parsed, min, max);
-        if (next !== current) onChange(next);
+        if (next !== current) setValue(next);
       }
       setDraft(null);
     };
@@ -223,6 +235,7 @@ export function createNumberInput(skin: NumberInputSkin) {
 
     const Field = (
       <TextInput
+        ref={ref}
         value={shown}
         onChangeText={onChangeText}
         onBlur={() => commit()}
@@ -244,6 +257,7 @@ export function createNumberInput(skin: NumberInputSkin) {
     // RIGHT-of-minus / inline on the others). The dividers sit between adjacent slots.
     return (
       <View
+        testID={props.testID}
         // Cross-platform ARIA value props: RNW DROPS accessibilityValue, so the
         // numbers are forwarded directly (RN 0.71+ accepts them; RNW maps them to
         // aria-valuenow/min/max on the DOM node) for web screen readers.
@@ -290,5 +304,7 @@ export function createNumberInput(skin: NumberInputSkin) {
         )}
       </View>
     );
-  };
+  });
+  NumberInput.displayName = "NumberInput";
+  return NumberInput;
 }

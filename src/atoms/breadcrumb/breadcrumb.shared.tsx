@@ -93,6 +93,8 @@ export interface BreadcrumbProps {
   maxItems?: number;
   /** Fired with the crumb label and its index when a link (non-last) is pressed. */
   onItemPress?: (item: string, index: number) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition. */
   style?: StyleProp<ViewStyle>;
 }
@@ -183,7 +185,7 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
   }
 
   function Breadcrumb(props: BreadcrumbProps) {
-    const { items, homeIcon, maxItems, onItemPress, style } = props;
+    const { items, homeIcon, maxItems, onItemPress, testID, style } = props;
     const { tokens } = useTheme();
     const trail = items ?? [];
     const separator = separatorOf(props);
@@ -210,6 +212,7 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
     return (
       <View
         style={[NAV, style]}
+        testID={testID}
         role="navigation"
         aria-label="Breadcrumb"
         accessibilityLabel="Breadcrumb"

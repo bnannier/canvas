@@ -118,6 +118,9 @@ export interface CodeBlockProps {
   /** Called when the copy affordance is pressed (text is passed back). */
   onCopy?: (code: string, event: GestureResponderEvent) => void;
 
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
+
   /** Escape hatch for layout/positioning composition (mainly width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -177,7 +180,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
   }
 
   return function CodeBlock(props: CodeBlockProps) {
-    const { code = DEFAULT_CODE, filename, language, copy, wrap, onCopy, style } = props;
+    const { code = DEFAULT_CODE, filename, language, copy, wrap, onCopy, testID, style } = props;
     const variant = variantOf(props);
     const { tokens } = useTheme();
     const lines = code.split("\n");
@@ -188,7 +191,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // Inline: a short token rendered as an inline pill. No header, copy, or wrap.
     if (variant === "inline") {
       return (
-        <View style={[skin.inlineBox(tokens), style]}>
+        <View testID={testID} style={[skin.inlineBox(tokens), style]}>
           <Text style={[skin.codeText(tokens), MONO, skin.inlineType]}>{code}</Text>
         </View>
       );
@@ -198,7 +201,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     if (variant === "terminal") {
       const label = language ?? filename ?? "bash";
       return (
-        <View style={[skin.terminalOuter(tokens), style]}>
+        <View testID={testID} style={[skin.terminalOuter(tokens), style]}>
           {/* Chrome bar: three traffic-light dots and a faint label. */}
           <View style={skin.terminalChrome}>
             <View style={skin.trafficDot("red")} />
@@ -225,7 +228,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // Numbered: the plain surface with a right-aligned line-number gutter.
     if (variant === "numbered") {
       return (
-        <View style={[RELATIVE, style]}>
+        <View testID={testID} style={[RELATIVE, style]}>
           {headerLabel ? <Header label={headerLabel} /> : null}
           <View style={[skin.surface(tokens), headerLabel ? skin.surfaceUnderHeader : null, skin.numberedSurface]}>
             {/* Gutter: right-aligned, dimmed line numbers. */}
@@ -256,7 +259,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
 
     // Plain (default): the muted code surface, padded, monospace.
     return (
-      <View style={[RELATIVE, style]}>
+      <View testID={testID} style={[RELATIVE, style]}>
         {headerLabel ? <Header label={headerLabel} /> : null}
         <View style={[skin.surface(tokens), headerLabel ? skin.surfaceUnderHeader : null, skin.surfacePad]}>
           <Text

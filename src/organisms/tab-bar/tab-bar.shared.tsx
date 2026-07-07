@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, Pressable, GlassSurface, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, GlassSurface, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared TabBar shell. TabBar is the bottom app-navigation bar: a row of equal-width
 // destinations, each an icon over a short label, with exactly one active. It is a
@@ -21,9 +21,14 @@ export interface TabBarItem {
 
 export interface TabBarProps {
   items: TabBarItem[];
-  /** The active item's key. */
-  active: string;
-  onSelect: (key: string) => void;
+  /** The active item's key; omit for uncontrolled use. */
+  active?: string;
+  /** Initial active key for uncontrolled use (defaults to the first item's key). */
+  defaultActive?: string;
+  /** Called with the pressed destination's key (both modes). */
+  onSelect?: (key: string) => void;
+  /** E2E hook forwarded to the tablist row. */
+  testID?: string;
   /**
    * Safe-area bottom inset, e.g. `insets.bottom`. It is added BELOW the bar's own symmetric
    * vertical padding (not in place of it), so the bar clears the home indicator without making
@@ -48,8 +53,13 @@ export interface TabBarSkin {
 }
 
 export function createTabBar(skin: TabBarSkin) {
-  return function TabBar({ items, active, onSelect, bottomInset = 0, style }: TabBarProps) {
+  return function TabBar({ items, active, defaultActive, onSelect, bottomInset = 0, style, testID }: TabBarProps) {
     const { tokens } = useTheme();
+    // Controlled when `active` is provided, self-managed otherwise, so a bare
+    // <TabBar /> switches destinations out of the box (the standard library
+    // contract). Uncontrolled use starts on the first item unless defaultActive
+    // picks another.
+    const [activeKey, setActiveKey] = useControllableState<string>(active, defaultActive ?? items[0]?.key ?? "", onSelect);
     // The skin's paddingTop is the bar's symmetric vertical base. Mirror it on the bottom and
     // add the safe-area inset there, so the item row stays vertically centered (top margin ==
     // bottom margin) while the bar still extends down to cover the home indicator.
@@ -58,9 +68,9 @@ export function createTabBar(skin: TabBarSkin) {
       <GlassSurface
         style={[skin.bar, { borderColor: tokens.border, backgroundColor: tokens.card, paddingBottom: basePad + bottomInset }, style]}
       >
-        <View accessibilityRole="tablist" style={{ flex: 1, flexDirection: "row" }}>
+        <View accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row" }}>
           {items.map((it) => {
-            const isActive = it.key === active;
+            const isActive = it.key === activeKey;
             return (
               <Pressable
                 key={it.key}
@@ -68,7 +78,7 @@ export function createTabBar(skin: TabBarSkin) {
                 accessibilityState={{ selected: isActive }}
                 aria-selected={isActive}
                 accessibilityLabel={it.label}
-                onPress={() => onSelect(it.key)}
+                onPress={() => setActiveKey(it.key)}
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 style={({ pressed }) => [skin.item, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
               >

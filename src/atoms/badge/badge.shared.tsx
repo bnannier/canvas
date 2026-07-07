@@ -57,6 +57,8 @@ export interface BadgeProps {
    * contract.
    */
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition. */
   style?: StyleProp<ViewStyle>;
 }
@@ -128,7 +130,7 @@ function statusDotColor(tokens: ColorTokens, status: Status): string {
 
 export function createBadge(skin: BadgeSkin) {
   return function Badge(props: BadgeProps) {
-    const { children, mono, style, accessibilityLabel } = props;
+    const { children, mono, style, accessibilityLabel, testID } = props;
     const { tokens, dark } = useTheme();
 
     if (props.status) {
@@ -140,6 +142,7 @@ export function createBadge(skin: BadgeSkin) {
       return (
         <View
           style={[skin.statusBase, statusContainer(tokens, dark, tone), style]}
+          testID={testID}
           accessibilityLabel={statusName}
         >
           <View style={{ height: skin.dotSize, width: skin.dotSize, borderRadius: 9999, backgroundColor: statusDotColor(tokens, tone) }} />
@@ -156,7 +159,7 @@ export function createBadge(skin: BadgeSkin) {
     const monoStyle = mono ? { fontFamily: "monospace" as const } : null;
 
     return (
-      <View style={[skin.metaBase, metaContainer(tokens, tone), style]}>
+      <View style={[skin.metaBase, metaContainer(tokens, tone), style]} testID={testID}>
         {children != null ? (
           <Text style={[skin.labelType, metaLabel(tokens, tone), monoStyle]}>{children}</Text>
         ) : null}

@@ -88,6 +88,8 @@ export interface StackedListProps {
   card?: boolean;
   // Divider modifier: rows are ruled by default; `flush` removes the hairlines.
   flush?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -103,7 +105,7 @@ function variantOf(p: StackedListProps): Variant {
 
 export function createStackedList(skin: StackedListSkin) {
   return function StackedList(props: StackedListProps) {
-    const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, style } = props;
+    const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, testID, style } = props;
     const variant = variantOf(props);
     const { tokens } = useTheme();
 
@@ -227,7 +229,7 @@ export function createStackedList(skin: StackedListSkin) {
       ) : null;
 
     return (
-      <View style={[s.outer, framed ? skin.cardSurface(tokens) : null, style]}>
+      <View testID={testID} style={[s.outer, framed ? skin.cardSurface(tokens) : null, style]}>
         {header}
         {rows}
       </View>

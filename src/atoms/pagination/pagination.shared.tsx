@@ -67,6 +67,8 @@ export interface PaginationProps {
   large?: boolean;
 
   disabled?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -150,7 +152,7 @@ export function createPagination(skin: PaginationSkin) {
   }
 
   return function Pagination(props: PaginationProps) {
-    const { onChange, disabled, style } = props;
+    const { onChange, disabled, testID, style } = props;
     const size = sizeOf(props);
     const variant = variantOf(props);
     const { tokens } = useTheme();
@@ -192,7 +194,7 @@ export function createPagination(skin: PaginationSkin) {
     // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
     if (variant === "compact") {
       return (
-        <View style={[s.compactRow, style]}>
+        <View testID={testID} style={[s.compactRow, style]}>
           {prev}
           <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>
             {`Page ${current} of ${total}`}
@@ -215,7 +217,7 @@ export function createPagination(skin: PaginationSkin) {
         if (nextSize !== undefined && nextSize !== pageSize) props.onPageSizeChange?.(nextSize);
       };
       return (
-        <View style={[s.withSizeRow, style]}>
+        <View testID={testID} style={[s.withSizeRow, style]}>
           <View style={s.selectorCluster}>
             <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>Rows per page</Text>
             <Pressable
@@ -254,7 +256,7 @@ export function createPagination(skin: PaginationSkin) {
     const window = pageWindow(current, total);
 
     return (
-      <View style={[s.numberedRow, style]}>
+      <View testID={testID} style={[s.numberedRow, style]}>
         {prev}
         {window.map((p, i) => {
           if (p === GAP) {

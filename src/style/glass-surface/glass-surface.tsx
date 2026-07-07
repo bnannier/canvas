@@ -57,12 +57,12 @@ function radiusOf(style: GlassSurfaceProps["style"]): ViewStyle {
   };
 }
 
-export function GlassSurface({ style, children, pointerEvents }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
   const { surface, dark, tokens } = useTheme();
 
   if (surface !== "glass" || !BlurView) {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
         {children}
       </PlainSurface>
     );
@@ -87,7 +87,7 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
   );
 
   return (
-    <GlassBox style={style} material={material} pointerEvents={pointerEvents}>
+    <GlassBox style={style} material={material} pointerEvents={pointerEvents} testID={testID}>
       {children}
     </GlassBox>
   );

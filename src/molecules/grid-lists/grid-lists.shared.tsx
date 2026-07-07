@@ -108,6 +108,8 @@ export interface GridListProps {
    *  every tile renders as a Pressable with a button role and a pressed
    *  affordance, so a tappable grid needs no hand-rolled Pressable. */
   onPressItem?: (index: number) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -195,12 +197,12 @@ export function createGridList(skin: GridListSkin) {
   }
 
   return function GridList(props: GridListProps) {
-    const { items, gallery, compact, style, onPressItem } = props;
+    const { items, gallery, compact, testID, style, onPressItem } = props;
     const columns = columnsOf(props);
     const gap = compact ? skin.gap.compact : skin.gap.default;
 
     return (
-      <View style={[s.container, { gap }, style]}>
+      <View testID={testID} style={[s.container, { gap }, style]}>
         {items.map((item, index) => {
           const onPress = onPressItem ? () => onPressItem(index) : undefined;
           return gallery ? (

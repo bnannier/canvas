@@ -53,6 +53,8 @@ export interface ListboxProps {
   disabled?: boolean;
   /** Fired with the pressed option's index. */
   onSelect?: (index: number) => void;
+  /** E2E hook forwarded to the root list view. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -121,7 +123,7 @@ export function createListbox(skin: ListboxSkin) {
     // or a group of `checkbox` rows (multi-select); "option"/"checkbox" are in
     // RN's Role union, "listbox" is the hoisted cast above.
     return (
-      <View style={container} role={LISTBOX}>
+      <View style={container} role={LISTBOX} testID={props.testID}>
         {items.map((item, index) => {
           const selected = !!item.selected;
           // Single-select fills the chosen row; multi-select leaves the row plain

@@ -66,6 +66,8 @@ export interface FieldsetProps {
   disabled?: boolean;
   /** Flags a validation problem on the group. */
   error?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -167,7 +169,7 @@ export function createFieldset(
   }
 
   return function Fieldset(props: FieldsetProps) {
-    const { children, legend, description, items, checkboxes, twoColumn, disabled, error, style } = props;
+    const { children, legend, description, items, checkboxes, twoColumn, disabled, error, testID, style } = props;
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
 
@@ -209,7 +211,7 @@ export function createFieldset(
     // Children win: when composed, render exactly what the caller passed.
     if (children != null) {
       return (
-        <View style={container} {...groupProps}>
+        <View testID={testID} style={container} {...groupProps}>
           {header}
           {children}
         </View>
@@ -219,7 +221,7 @@ export function createFieldset(
     // Checkbox group: a stacked set of labeled checkboxes.
     if (checkboxes != null) {
       return (
-        <View style={container} {...groupProps}>
+        <View testID={testID} style={container} {...groupProps}>
           {header}
           <View style={{ gap: skin.checkboxGap }}>
             {checkboxes.map((c, i) => (
@@ -236,7 +238,7 @@ export function createFieldset(
     const rows = items ?? [];
 
     return (
-      <View style={container} {...groupProps}>
+      <View testID={testID} style={container} {...groupProps}>
         {header}
         {twoColumn ? (
           <TwoColumnGroup rows={rows} disabled={disabled} error={error} />

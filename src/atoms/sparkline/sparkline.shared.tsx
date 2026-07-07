@@ -27,6 +27,8 @@ export interface SparklineProps {
   tall?: boolean;
   /** Accessible summary (e.g. "requests, last 11 days"). */
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** For sizing/composition only (e.g. maxWidth); not a styling escape hatch. */
   style?: StyleProp<ViewStyle>;
 }
@@ -61,7 +63,7 @@ function barColor(tokens: ColorTokens, tone: Tone): string {
 /** Build a Sparkline from a platform skin. */
 export function createSparkline(skin: SparklineSkin) {
   return function Sparkline(props: SparklineProps) {
-    const { values, accessibilityLabel, style } = props;
+    const { values, accessibilityLabel, testID, style } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const plot = skin.height[sizeOf(props)];
@@ -77,6 +79,7 @@ export function createSparkline(skin: SparklineSkin) {
         role="img"
         accessibilityLabel={accessibilityLabel}
         aria-label={accessibilityLabel}
+        testID={testID}
         style={[{ flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot }, style]}
       >
         {values.map((v, i) => {

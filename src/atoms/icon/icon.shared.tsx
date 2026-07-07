@@ -612,6 +612,8 @@ export interface IconProps {
    * aria-hidden on web and importantForAccessibility on native.
    */
   decorative?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -660,11 +662,13 @@ function Glyph({
   shapes,
   size,
   stroke,
+  testID,
   style,
 }: {
   shapes: Shape[];
   size: number;
   stroke: string;
+  testID?: string;
   style?: StyleProp<ViewStyle>;
 }) {
   return (
@@ -677,6 +681,7 @@ function Glyph({
       strokeWidth={1.75}
       strokeLinecap="round"
       strokeLinejoin="round"
+      testID={testID}
       style={style}
     >
       {shapes.map((sh, i) => renderShape(sh, i))}
@@ -690,7 +695,7 @@ export function createIcon(skin: IconSkin) {
 
     if (props.set) {
       return (
-        <View style={[skin.setGrid, props.style]}>
+        <View testID={props.testID} style={[skin.setGrid, props.style]}>
           {NAMES.map(({ key, label }) => (
             <View key={key} style={[skin.setCell, { width: 80 }]}>
               <Glyph shapes={ICONS[key]} size={20} stroke={tokens.foreground} />
@@ -707,6 +712,8 @@ export function createIcon(skin: IconSkin) {
         shapes={ICONS[nameOf(props)]}
         size={props.size ?? 24}
         stroke={strokeOf(props, tokens, dark)}
+        // When a wrapper View is the root it carries the testID instead.
+        testID={wrapped ? undefined : props.testID}
         style={wrapped ? undefined : props.style}
       />
     );
@@ -720,6 +727,7 @@ export function createIcon(skin: IconSkin) {
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
           aria-hidden
+          testID={props.testID}
           style={props.style}
         >
           {glyph}
@@ -732,6 +740,7 @@ export function createIcon(skin: IconSkin) {
           accessibilityRole="image"
           accessibilityLabel={props.accessibilityLabel}
           aria-label={props.accessibilityLabel}
+          testID={props.testID}
           style={props.style}
         >
           {glyph}

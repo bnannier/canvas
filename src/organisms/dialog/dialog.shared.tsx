@@ -58,6 +58,8 @@ export interface DialogProps {
   // Action handlers.
   onConfirm?: () => void;
   onCancel?: () => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition on the panel (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -88,6 +90,7 @@ export function createDialog(skin: DialogSkin) {
       destructive,
       onConfirm,
       onCancel,
+      testID,
       style,
     } = props;
     const { tokens } = useTheme();
@@ -203,7 +206,7 @@ export function createDialog(skin: DialogSkin) {
     // backdrop: a centered scrim with presence in the preview (explicit
     // minHeight) so the panel reads as a modal within the area.
     return (
-      <View style={s.root}>
+      <View testID={testID} style={s.root}>
         {trigger != null ? (
           <Button outline small onPress={() => setOpen(true)}>
             {trigger}

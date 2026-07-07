@@ -93,6 +93,8 @@ export interface FormProps {
    * replaces the per-field rows. The actions row renders after the last section.
    */
   sections?: FormSection[];
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width, e.g. maxWidth). */
   style?: ViewStyle;
   onSubmit?: () => void;
@@ -285,12 +287,12 @@ export function createForm(
   }
 
   return function Form(props: FormProps) {
-    const { fields, submitLabel = "Submit", cancelLabel, style, onSubmit, onCancel } = props;
+    const { fields, submitLabel = "Submit", cancelLabel, testID, style, onSubmit, onCancel } = props;
     const layout = layoutOf(props);
 
     if (layout === "twoColumn") {
       return (
-        <View style={[skin.stackGap4, style]}>
+        <View testID={testID} style={[skin.stackGap4, style]}>
           <TwoColumnBody fields={fields ?? []} />
           <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
         </View>
@@ -303,7 +305,7 @@ export function createForm(
       const sections = props.sections;
       if (sections && sections.length > 0) {
         return (
-          <View style={[skin.stackGap6, style]}>
+          <View testID={testID} style={[skin.stackGap6, style]}>
             {sections.map((section, i) => (
               <Section key={i} section={section} last={i === sections.length - 1} />
             ))}
@@ -312,7 +314,7 @@ export function createForm(
         );
       }
       return (
-        <View style={[skin.stackGap6, style]}>
+        <View testID={testID} style={[skin.stackGap6, style]}>
           {(fields ?? []).map((field, i) => (
             <SidebarField key={i} field={field} />
           ))}
@@ -323,7 +325,7 @@ export function createForm(
 
     // stacked (default): one field per row, full width, label above input.
     return (
-      <View style={[skin.stackGap4, style]}>
+      <View testID={testID} style={[skin.stackGap4, style]}>
         {(fields ?? []).map((field, i) => (
           <StackedField key={i} field={field} />
         ))}

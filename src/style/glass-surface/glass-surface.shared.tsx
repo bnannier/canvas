@@ -21,6 +21,8 @@ export interface GlassSurfaceProps {
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   pointerEvents?: ViewProps["pointerEvents"];
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
 }
 
 // Blur strength for the frost. expo-blur maps intensity to a blur radius (~0.2px
@@ -73,11 +75,12 @@ export function GlassBox({
   style,
   children,
   pointerEvents,
+  testID,
   material,
 }: GlassSurfaceProps & { material: ReactNode }) {
   const { outer, clip } = splitSurfaceStyle(style);
   return (
-    <View style={outer} pointerEvents={pointerEvents}>
+    <View style={outer} pointerEvents={pointerEvents} testID={testID}>
       <View style={clip}>
         {material}
         {children}
@@ -88,9 +91,9 @@ export function GlassBox({
 
 // The no-glass / no-module fallback: one plain View identical to the pre-portal
 // surface (keeps the solid or translucent popover fill from `style`).
-export function PlainSurface({ style, children, pointerEvents }: GlassSurfaceProps) {
+export function PlainSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
   return (
-    <View style={style} pointerEvents={pointerEvents}>
+    <View style={style} pointerEvents={pointerEvents} testID={testID}>
       {children}
     </View>
   );

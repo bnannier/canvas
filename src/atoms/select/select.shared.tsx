@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -11,15 +10,17 @@ import { root, rootLifted, type SelectSkin, type Size } from "./select.styles.js
 // Shared Select shell. The structure (the stacked label + the trigger row with
 // its optional leading icon, value/placeholder and trailing chevron, plus the
 // inline open option list with its selectable rows), the public boolean-prop
-// API, the size precedence, the controlled/uncontrolled open state, the
-// select/close handlers, the disabled handling, and accessibility all live here
-// once. A platform file supplies only its skin (trigger shape/fill/border, the
-// chevron glyph, the menu surface, the row tint, where the selection indicator
-// renders, and the press feedback) and calls createSelect.
+// API, the size precedence, the controlled/uncontrolled value and open state,
+// the select/close handlers, the disabled handling, and accessibility all live
+// here once. A platform file supplies only its skin (trigger shape/fill/border,
+// the chevron glyph, the menu surface, the row tint, where the selection
+// indicator renders, and the press feedback) and calls createSelect.
 
 export interface SelectProps {
-  /** The currently selected option label. Empty shows the placeholder. */
+  /** Controlled selected option label; omit for uncontrolled use. Empty shows the placeholder. */
   value?: string;
+  /** Initial selection for uncontrolled use (a bare <Select options /> picks on its own). */
+  defaultValue?: string;
   /** The list of selectable option labels. */
   options?: string[];
   /** Optional stacked field label rendered above the trigger. */
@@ -28,17 +29,18 @@ export interface SelectProps {
   icon?: boolean;
   /** Prompt shown in the trigger when no value is selected. */
   placeholder?: string;
-  /**
-   * Whether the option list is open. Defaults to true so the open state is
-   * visible inline (the docs render it this way; there is no portal/Modal).
-   */
+  /** Controlled open state of the option list; omit for uncontrolled use. */
   open?: boolean;
-  /** Fired when the open state changes (trigger press, select). */
+  /** Initial open state for uncontrolled use. */
+  defaultOpen?: boolean;
+  /** Fired when the open state changes (trigger press, select), in both modes. */
   onOpenChange?: (open: boolean) => void;
   /** Dims the control and blocks interaction. */
   disabled?: boolean;
-  /** Called with the chosen option label when a row is pressed. */
+  /** Called with the chosen option label when a row is pressed (both modes). */
   onSelect?: (option: string) => void;
+  /** E2E hook forwarded to the trigger pressable. */
+  testID?: string;
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
@@ -57,12 +59,10 @@ function sizeOf(p: SelectProps): Size {
 export function createSelect(skin: SelectSkin) {
   return function Select(props: SelectProps) {
     const {
-      value,
       options = [],
       label,
       icon,
       placeholder = "Select an option",
-      open: openProp,
       onOpenChange,
       disabled,
       onSelect,
@@ -70,16 +70,22 @@ export function createSelect(skin: SelectSkin) {
     } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
-    // Uncontrolled by default: the trigger opens/closes the list, a select closes
-    // it; a controlled `open` prop overrides this.
-    const [internalOpen, setInternalOpen] = useState(false);
-    const open = openProp ?? internalOpen;
-    const setOpen = (next: boolean) => {
-      if (openProp === undefined) setInternalOpen(next);
-      onOpenChange?.(next);
-    };
+    // Controlled when `open`/`value` are provided, self-managed otherwise, so a
+    // bare <Select options /> opens and picks out of the box (the standard
+    // library contract): the trigger opens/closes the list, a select stores the
+    // choice and closes it, and the callbacks fire in both modes.
+    const [open, setOpen] = useControllableState<boolean>(
+      props.open,
+      props.defaultOpen ?? false,
+      onOpenChange,
+    );
+    const [value, setValue] = useControllableState<string>(
+      props.value,
+      props.defaultValue ?? "",
+      onSelect,
+    );
 
-    const hasValue = value != null && value !== "";
+    const hasValue = value !== "";
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
@@ -96,6 +102,7 @@ export function createSelect(skin: SelectSkin) {
           disabled={disabled}
           onPress={() => setOpen(!open)}
           android_ripple={ripple}
+          testID={props.testID}
           accessibilityRole="button"
           aria-expanded={open}
         >
@@ -122,7 +129,7 @@ export function createSelect(skin: SelectSkin) {
                     // Web/iOS tint the row on press here; Android uses the ripple instead.
                     skin.ripple == null && pressed ? skin.optionPressed(tokens) : null,
                   ]}
-                  onPress={() => { onSelect?.(option); setOpen(false); }}
+                  onPress={() => { setValue(option); setOpen(false); }}
                   android_ripple={ripple}
                   role="option"
                   aria-selected={selected}

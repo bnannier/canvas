@@ -69,6 +69,8 @@ export interface AlertProps {
   /** Fired when the dismiss control is pressed. */
   onDismiss?: () => void;
   children?: ReactNode;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -123,7 +125,7 @@ function bodyColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
 
 export function createAlert(skin: AlertSkin) {
   return function Alert(props: AlertProps) {
-    const { title, description, icon, children, dismissible, onDismiss, style } = props;
+    const { title, description, icon, children, dismissible, onDismiss, testID, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
 
@@ -136,6 +138,7 @@ export function createAlert(skin: AlertSkin) {
 
     return (
       <View
+        testID={testID}
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}

@@ -38,12 +38,12 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
   const { surface, dark } = useTheme();
 
   if (surface !== "glass") {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
         {children}
       </PlainSurface>
     );
@@ -56,6 +56,7 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
       <GlassBox
         style={style}
         pointerEvents={pointerEvents}
+        testID={testID}
         material={<GlassView glassEffectStyle="regular" isInteractive={false} colorScheme={dark ? "dark" : "light"} style={MATERIAL_FILL} />}
       >
         {children}
@@ -69,6 +70,7 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
       <GlassBox
         style={style}
         pointerEvents={pointerEvents}
+        testID={testID}
         material={<BlurView intensity={GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />}
       >
         {children}
@@ -77,7 +79,7 @@ export function GlassSurface({ style, children, pointerEvents }: GlassSurfacePro
   }
 
   return (
-    <PlainSurface style={style} pointerEvents={pointerEvents}>
+    <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
       {children}
     </PlainSurface>
   );

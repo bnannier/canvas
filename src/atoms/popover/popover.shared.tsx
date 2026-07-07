@@ -56,6 +56,8 @@ export interface PopoverProps {
   open?: boolean;
   /** Fired when the open state changes. */
   onOpenChange?: (open: boolean) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -69,7 +71,7 @@ function placementOf(p: PopoverProps): Placement {
 /** Build a Popover component from a platform skin. */
 export function createPopover(skin: PopoverSkin) {
   return function Popover(props: PopoverProps) {
-    const { trigger, title, description, actionLabel, inline, onOpenChange, style } = props;
+    const { trigger, title, description, actionLabel, inline, onOpenChange, testID, style } = props;
     const { tokens } = useTheme();
     const [internalOpen, setInternalOpen] = useState(false);
     // In static (inline) mode the card is always shown; otherwise it is
@@ -93,7 +95,7 @@ export function createPopover(skin: PopoverSkin) {
     const cardPosition: StyleProp<ViewStyle> = [!inline ? s.cardFloating : null, style];
 
     return (
-      <View style={[inline ? null : s.wrapper, !inline && open ? s.wrapperLifted : null]}>
+      <View testID={testID} style={[inline ? null : s.wrapper, !inline && open ? s.wrapperLifted : null]}>
         {inline ? null : (
           <View style={s.triggerWrap}>
             <Button outline small expanded={open} onPress={() => setOpen(!open)}>

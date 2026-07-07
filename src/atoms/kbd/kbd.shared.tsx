@@ -25,6 +25,8 @@ export interface KbdSkin {
 
 export interface KbdProps {
   children?: ReactNode;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -42,11 +44,11 @@ function labelColor(tokens: ColorTokens): TextStyle {
 
 /** Build a Kbd component from a platform skin. */
 export function createKbd(skin: KbdSkin) {
-  return function Kbd({ children, style }: KbdProps) {
+  return function Kbd({ children, testID, style }: KbdProps) {
     const { tokens } = useTheme();
 
     return (
-      <View style={[skin.capBox, capSurface(tokens), style]}>
+      <View testID={testID} style={[skin.capBox, capSurface(tokens), style]}>
         {children != null ? <Text style={[skin.labelType, labelColor(tokens)]}>{children}</Text> : null}
       </View>
     );

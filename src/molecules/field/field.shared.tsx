@@ -114,6 +114,8 @@ export interface FieldProps {
   disabled?: boolean;
   /** Invalid state: shows the error message (red) and flags the Input. */
   invalid?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -211,6 +213,7 @@ export function createField(
       required,
       disabled,
       invalid,
+      testID,
       style,
     } = props;
     const { tokens } = useTheme();
@@ -223,7 +226,7 @@ export function createField(
     // one baseline.
     if (rows) {
       return (
-        <View style={[skin.displayStack, disabled ? s.dimmed : null, style]}>
+        <View testID={testID} style={[skin.displayStack, disabled ? s.dimmed : null, style]}>
           {rows.map((row, index) => {
             // A row with a Copy button carries a separately-focusable control,
             // so it stays ungrouped (collapsing it would hide that button from
@@ -279,7 +282,7 @@ export function createField(
     const messageId = messageText != null ? `${fieldId}-message` : undefined;
 
     return (
-      <View style={[skin.controlStack, disabled ? s.dimmed : null, style]}>
+      <View testID={testID} style={[skin.controlStack, disabled ? s.dimmed : null, style]}>
         {label != null ? (
           <Text nativeID={labelId} style={skin.label(tokens)}>
             {label}

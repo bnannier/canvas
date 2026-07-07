@@ -34,6 +34,8 @@ export interface StepperProps {
   label?: string;
   /** When set, each step circle is pressable, reporting the step index. */
   onStepPress?: (index: number) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -86,14 +88,14 @@ export function createStepper(skin: StepperSkin) {
   }
 
   return function Stepper(props: StepperProps) {
-    const { steps, current, value, label, onStepPress, style } = props;
+    const { steps, current, value, label, onStepPress, testID, style } = props;
     const { tokens } = useTheme();
     const layout = layoutOf(props);
 
     if (layout === "progress") {
       const pct = Math.max(0, Math.min(100, Math.round(value ?? 0)));
       return (
-        <View style={[s.fullWidth, style]}>
+        <View testID={testID} style={[s.fullWidth, style]}>
           <View style={s.progressHeader}>
             <Text style={skin.progressCaption(tokens)}>{label ?? "Setup progress"}</Text>
             <Text style={skin.progressPercent(tokens)}>{pct}%</Text>
@@ -107,7 +109,7 @@ export function createStepper(skin: StepperSkin) {
 
     if (layout === "vertical") {
       return (
-        <View style={[s.fullWidth, style]}>
+        <View testID={testID} style={[s.fullWidth, style]}>
           {steps.map((step, i) => {
             const state = stateOf(i, current);
             const isLast = i === steps.length - 1;
@@ -134,7 +136,7 @@ export function createStepper(skin: StepperSkin) {
 
     // Horizontal: a row of circle + label columns, joined by flex-filling rules.
     return (
-      <View style={[s.horizontalRow, style]}>
+      <View testID={testID} style={[s.horizontalRow, style]}>
         {steps.map((step, i) => {
           const state = stateOf(i, current);
           const isLast = i === steps.length - 1;

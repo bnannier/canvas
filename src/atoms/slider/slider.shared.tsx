@@ -5,7 +5,7 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, useTheme, type ColorTokens, type ViewStyle, type StyleProp } from "../../style/index.js";
+import { View, useTheme, useControllableState, type ColorTokens, type ViewStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill/thumb
@@ -17,16 +17,20 @@ import { View, useTheme, type ColorTokens, type ViewStyle, type StyleProp } from
 // alike, so the drag is one cross-platform code path (no Platform.OS branch).
 
 export interface SliderProps {
-  /** Controlled value. The thumb sits at this value (clamped to [min, max]). */
+  /** Controlled value; omit for uncontrolled use. The thumb sits at this value (clamped to [min, max]). */
   value?: number;
+  /** Initial value for uncontrolled use (a bare <Slider /> drags out of the box). Default `min`. */
+  defaultValue?: number;
   /** Lower bound of the range. Default 0. */
   min?: number;
   /** Upper bound of the range. Default 100. */
   max?: number;
   /** Snap increment. Default 1. Set to a fraction for finer control. */
   step?: number;
-  /** Fired with the next (clamped, snapped) value as the thumb is dragged or the track tapped. */
+  /** Fired with the next (clamped, snapped) value as the thumb is dragged or the track tapped (both modes). */
   onChange?: (value: number) => void;
+  /** E2E hook forwarded to the slider container. */
+  testID?: string;
   // Size (pick one; default is the standard track + thumb).
   small?: boolean;
   large?: boolean;
@@ -84,14 +88,22 @@ function snap(raw: number, min: number, max: number, step: number): number {
 /** Build a Slider component from a platform skin. */
 export function createSlider(skin: SliderSkin) {
   return function Slider(props: SliderProps) {
-    const { value, min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style } = props;
+    const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
 
-    // Treat null/undefined AND NaN as "no value": fall back to `min` rather than
-    // letting NaN flow through clamp (Math.min/max propagate NaN) and poison the
-    // geometry (fillWidth/thumbLeft) and the announced aria-valuenow/accessibilityValue.
-    const raw = value == null || Number.isNaN(value) ? min : value;
+    // Controlled when `value` is provided, self-managed otherwise, so a bare
+    // <Slider /> drags out of the box (the standard library contract).
+    const [value, setValue] = useControllableState<number>(
+      props.value,
+      props.defaultValue ?? min,
+      onChange,
+    );
+
+    // Treat a NaN value as "no value": fall back to `min` rather than letting NaN
+    // flow through clamp (Math.min/max propagate NaN) and poison the geometry
+    // (fillWidth/thumbLeft) and the announced aria-valuenow/accessibilityValue.
+    const raw = Number.isNaN(value) ? min : value;
     const current = clamp(raw, min, max);
     const fraction = max > min ? (current - min) / (max - min) : 0;
 
@@ -122,7 +134,7 @@ export function createSlider(skin: SliderSkin) {
     };
 
     const emit = (next: number) => {
-      if (next !== current) onChange?.(next);
+      if (next !== current) setValue(next);
     };
 
     // Refs so the once-created PanResponder always calls the freshest closures
@@ -178,6 +190,7 @@ export function createSlider(skin: SliderSkin) {
       <View
         {...pan.panHandlers}
         onLayout={onLayout}
+        testID={props.testID}
         accessibilityRole="adjustable"
         accessibilityLabel={accessibilityLabel}
         accessibilityValue={{ min, max, now: current }}

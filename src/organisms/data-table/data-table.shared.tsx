@@ -55,6 +55,8 @@ export interface DataTableProps {
    * index (safe for string/number cells and stateless custom cells).
    */
   rowKey?: (row: ReactNode[], index: number) => string | number;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -72,7 +74,7 @@ function densityOf(p: DataTableProps): Density {
  */
 export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<CheckboxProps>) {
   return function DataTable(props: DataTableProps) {
-    const { columns, rows, striped, bordered, selectable, onRowPress, rowKey, style } = props;
+    const { columns, rows, striped, bordered, selectable, onRowPress, rowKey, testID, style } = props;
     const density = densityOf(props);
     const { tokens } = useTheme();
 
@@ -86,7 +88,7 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View style={wrap} role="table">
+      <View testID={testID} style={wrap} role="table">
         <View style={[skin.headerRow(tokens), skin.headerPad[density]]} role="row">
           {selectable ? <View style={skin.selectCol} role="columnheader" /> : null}
           {columns.map((label, i) => (

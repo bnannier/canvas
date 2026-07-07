@@ -61,6 +61,8 @@ export interface ActionPanelProps {
   checked?: boolean;
   /** Fired with the next checked value when the toggle Switch is flipped. */
   onToggle?: (next: boolean) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -114,7 +116,7 @@ export function createActionPanel(
   Switch: SwitchComponent = WebSwitch,
 ) {
   return function ActionPanel(props: ActionPanelProps) {
-    const { title, description, actionLabel, onAction, toggle, checked, onToggle, style } = props;
+    const { title, description, actionLabel, onAction, toggle, checked, onToggle, testID, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
     // The toggle affordance always reads as an inline settings row.
@@ -153,7 +155,7 @@ export function createActionPanel(
     ) : null;
 
     return (
-      <Card padded style={[cardWidth, style]}>
+      <Card padded testID={testID} style={[cardWidth, style]}>
         {layout === "inline" ? (
           <View style={{ flexDirection: "row", alignItems: "flex-start", gap: skin.inlineGap }}>
             {copy}

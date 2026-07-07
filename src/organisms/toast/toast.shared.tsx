@@ -70,6 +70,8 @@ export interface ToastProps {
   icon?: ReactNode;
   /** When provided, render a trailing dismiss (x) that calls this. */
   onDismiss?: () => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -154,7 +156,7 @@ const STACK_BOTTOM_INSET = 24;
  */
 export function createToastSystem(skin: ToastSkin) {
   function Toast(props: ToastProps) {
-    const { message, description, action, icon, onDismiss, style } = props;
+    const { message, description, action, icon, onDismiss, testID, style } = props;
     const { tokens } = useTheme();
     const intent = intentOf(props);
 
@@ -174,6 +176,7 @@ export function createToastSystem(skin: ToastSkin) {
         role="status"
         accessibilityLiveRegion="polite"
         aria-live="polite"
+        testID={testID}
         style={style}
       >
         <GlassSurface style={skin.container(tokens)}>

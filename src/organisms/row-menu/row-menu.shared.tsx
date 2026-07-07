@@ -34,6 +34,8 @@ export interface RowMenuProps {
   onSelect?: (item: RowMenuItem, index: number) => void;
   /** Accessible name for the icon-only ⋯ trigger. Defaults to "More options". */
   triggerLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition. */
   style?: StyleProp<ViewStyle>;
 }
@@ -41,7 +43,7 @@ export interface RowMenuProps {
 /** Build a RowMenu component from a platform skin. */
 export function createRowMenu(skin: RowMenuSkin) {
   return function RowMenu(props: RowMenuProps) {
-    const { items, links = false, sectionLabel, onSelect, onOpenChange, triggerLabel = "More options", style } = props;
+    const { items, links = false, sectionLabel, onSelect, onOpenChange, triggerLabel = "More options", testID, style } = props;
     const { tokens, dark } = useTheme();
     // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
     // closes it; a controlled `open` prop overrides this.
@@ -56,7 +58,7 @@ export function createRowMenu(skin: RowMenuSkin) {
 
     return (
       // self-start keeps the trigger from stretching; relative anchors the menu.
-      <View style={[skin.anchor, open ? anchorLifted : null, style]}>
+      <View testID={testID} style={[skin.anchor, open ? anchorLifted : null, style]}>
         <Pressable
           style={({ pressed }) => [
             skin.trigger,

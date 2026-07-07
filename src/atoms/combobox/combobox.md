@@ -91,7 +91,7 @@ Text input + dropdown: searchable single-select.
     "Tom Cook",
     "Tanya Fox",
     "Hellen Schmidt"
-  ]} query="co" open style={{ maxWidth: 280 }} />
+  ]} defaultQuery="co" open style={{ maxWidth: 280 }} />
 ```
 
 **Don't** — Try typing: a search box that ignores input is just a dropdown wearing a costume.

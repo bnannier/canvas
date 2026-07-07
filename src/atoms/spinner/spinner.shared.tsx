@@ -22,6 +22,8 @@ export interface SpinnerProps {
   foreground?: boolean;
   /** Accessible description of what is loading. */
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
 }
 
 // Tone precedence when more than one is passed: first match wins.
@@ -64,7 +66,7 @@ export interface SpinnerSkin {
 /** Build a Spinner component from a platform skin. */
 export function createSpinner(skin: SpinnerSkin) {
   return function Spinner(props: SpinnerProps) {
-    const { accessibilityLabel } = props;
+    const { accessibilityLabel, testID } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const size = sizeOf(props);
@@ -98,6 +100,7 @@ export function createSpinner(skin: SpinnerSkin) {
 
     return (
       <Animated.View
+        testID={testID}
         accessibilityRole="progressbar"
         accessibilityLabel={accessibilityLabel ?? "Loading"}
         style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}

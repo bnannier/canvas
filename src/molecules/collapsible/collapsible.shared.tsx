@@ -91,6 +91,8 @@ export interface CollapsibleProps {
   defaultOpen?: boolean;
   /** A disabled header does not toggle and reads dimmed. */
   disabled?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -102,7 +104,7 @@ enableAndroidLayoutAnimations();
 /** Build a Collapsible component from a platform skin. */
 export function createCollapsible(skin: CollapsibleSkin) {
   return function Collapsible(props: CollapsibleProps) {
-    const { title, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, style } = props;
+    const { title, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, testID, style } = props;
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
 
@@ -142,7 +144,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
     const a11yLabel = title ?? "Toggle section";
 
     return (
-      <View style={[skin.container(tokens), style]}>
+      <View testID={testID} style={[skin.container(tokens), style]}>
         <Pressable
           onPress={disabled ? undefined : toggle}
           disabled={disabled}

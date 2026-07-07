@@ -62,6 +62,8 @@ export interface AlertDialogProps {
   // Action handlers.
   onConfirm?: () => void;
   onCancel?: () => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -102,6 +104,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
       destructive,
       onConfirm,
       onCancel,
+      testID,
       style,
     } = props;
 
@@ -202,7 +205,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
     // backdrop: a centered, rounded scrim with presence in the preview (explicit
     // minHeight) so the card reads as a modal within the area.
     return (
-      <View style={s.root}>
+      <View testID={testID} style={s.root}>
         {trigger != null ? (
           <Button outline small onPress={() => setOpen(true)}>
             {trigger}

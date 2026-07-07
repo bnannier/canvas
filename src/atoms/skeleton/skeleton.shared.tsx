@@ -47,6 +47,8 @@ export interface SkeletonProps {
    * assistive tech announces the pending content (matching Spinner / Progress).
    */
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly sizing, e.g. width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -208,24 +210,24 @@ export function createSkeleton(skin: SkeletonSkin) {
   }
 
   return function Skeleton(props: SkeletonProps) {
-    const { animate, accessibilityLabel, style } = props;
+    const { animate, accessibilityLabel, testID, style } = props;
     const { tokens } = useTheme();
     const shape = shapeOf(props);
     const a11y = loadingA11y(accessibilityLabel);
 
     if (shape === "avatar") {
       const d = avatarDiameter(props);
-      return <Pulse animate={animate} {...a11y} style={[fill(tokens), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} />;
+      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} />;
     }
 
     if (shape === "button") {
       const { height, width } = buttonSize(props);
-      return <Pulse animate={animate} {...a11y} style={[fill(tokens), { height, width, borderRadius: skin.buttonRadius }, style]} />;
+      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), { height, width, borderRadius: skin.buttonRadius }, style]} />;
     }
 
     if (shape === "card") {
       return (
-        <View {...a11y} {...innerHidden} style={[cardSurface(tokens), { borderRadius: skin.cardRadius }, style]}>
+        <View {...a11y} {...innerHidden} testID={testID} style={[cardSurface(tokens), { borderRadius: skin.cardRadius }, style]}>
           <View style={cardRow}>
             <Pulse animate={animate} style={[fill(tokens), cardAvatar, { borderRadius: skin.avatarRadius }]} />
             <View style={flexFill}>
@@ -251,7 +253,7 @@ export function createSkeleton(skin: SkeletonSkin) {
         </View>
       );
       return (
-        <View {...a11y} {...innerHidden} style={[listContainer, style]}>
+        <View {...a11y} {...innerHidden} testID={testID} style={[listContainer, style]}>
           <Row a={{ width: "70%" }} b={{ width: "50%" }} />
           <Row a={{ width: "55%" }} b={{ width: "35%" }} />
         </View>
@@ -268,7 +270,7 @@ export function createSkeleton(skin: SkeletonSkin) {
         </View>
       );
       return (
-        <View {...a11y} {...innerHidden} style={[tableContainer, style]}>
+        <View {...a11y} {...innerHidden} testID={testID} style={[tableContainer, style]}>
           <Row a={{ width: "70%" }} b={{ width: "50%" }} />
           <Row a={{ width: "80%" }} b={{ width: "60%" }} />
           <Row a={{ width: "65%" }} b={{ width: "45%" }} last />
@@ -278,6 +280,6 @@ export function createSkeleton(skin: SkeletonSkin) {
 
     // Default: a single text line, full width by default; style carries the width
     // override (e.g. width: "60%") and any other layout.
-    return <Pulse animate={animate} {...a11y} style={[fill(tokens), lineHeight(props), { width: "100%", borderRadius: skin.lineRadius }, style]} />;
+    return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(tokens), lineHeight(props), { width: "100%", borderRadius: skin.lineRadius }, style]} />;
   };
 }

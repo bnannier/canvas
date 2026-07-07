@@ -40,6 +40,8 @@ export interface CalendarProps {
   /** Tighter cells and smaller type, for dense surfaces. */
   compact?: boolean;
 
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -62,6 +64,7 @@ export function createCalendar(skin: CalendarSkin) {
       onSelect,
       onPrev,
       onNext,
+      testID,
       style,
     } = props;
 
@@ -73,7 +76,7 @@ export function createCalendar(skin: CalendarSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View style={[skin.containerBase, skin.containerSurface(tokens), style]}>
+      <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), style]}>
         {/* Header: month label between two ghost chevron buttons. */}
         <View style={skin.header}>
           <Pressable

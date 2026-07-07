@@ -76,6 +76,8 @@ export interface QRCodeProps {
    * surfacing the raw value is undesirable.
    */
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -89,7 +91,7 @@ function sizeOf(p: QRCodeProps): number {
 
 export function createQRCode(skin: QRCodeSkin) {
   return function QRCode(props: QRCodeProps) {
-    const { value, accessibilityLabel, style } = props;
+    const { value, accessibilityLabel, testID, style } = props;
     // The QR draws as a bare SVG of rects (an <svg> of rects on web via RNW); without
     // a label assistive tech announces nothing, not even that a code is present. Expose
     // a spoken equivalent of the otherwise camera-only content. aria-label is added for
@@ -98,6 +100,7 @@ export function createQRCode(skin: QRCodeSkin) {
     return (
       <View
         style={[skin.frame, style]}
+        testID={testID}
         accessible
         accessibilityRole="image"
         role="img"

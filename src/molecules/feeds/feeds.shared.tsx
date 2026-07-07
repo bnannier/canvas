@@ -73,6 +73,8 @@ export interface FeedProps {
   compact?: boolean;
   /** When set, each event row is pressable, reporting the row index. */
   onItemPress?: (index: number) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -132,7 +134,7 @@ function initialsFrom(name: string): string {
 
 export function createFeed(skin: FeedSkin) {
   return function Feed(props: FeedProps) {
-    const { items = [], onItemPress, style } = props;
+    const { items = [], onItemPress, testID, style } = props;
     const { tokens } = useTheme();
     const lead = leadOf(props);
     const compact = !!props.compact;
@@ -190,7 +192,7 @@ export function createFeed(skin: FeedSkin) {
           </View>
         );
       });
-      return <View style={[skin.cardSurface(tokens), style]}>{rows}</View>;
+      return <View testID={testID} style={[skin.cardSurface(tokens), style]}>{rows}</View>;
     }
 
     // Connector lead: a bordered node per row with a vertical line linking each
@@ -240,6 +242,6 @@ export function createFeed(skin: FeedSkin) {
       );
     });
 
-    return <View style={[skin.cardSurface(tokens), skin.connectorPad(compact), style]}>{rows}</View>;
+    return <View testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), style]}>{rows}</View>;
   };
 }

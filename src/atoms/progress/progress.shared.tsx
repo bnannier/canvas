@@ -27,6 +27,8 @@ export interface ProgressProps {
   large?: boolean;
   /** Accessible description of what is progressing. */
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Extra style on the track, applied last. */
   style?: StyleProp<ViewStyle>;
 }
@@ -67,7 +69,7 @@ export interface ProgressSkin {
 /** Build a Progress component from a platform skin. */
 export function createProgress(skin: ProgressSkin) {
   return function Progress(props: ProgressProps) {
-    const { value, indeterminate, accessibilityLabel, style } = props;
+    const { value, indeterminate, accessibilityLabel, testID, style } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
 
@@ -130,6 +132,7 @@ export function createProgress(skin: ProgressSkin) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={indeterminate ? undefined : Math.round(fraction * 100)}
+        testID={testID}
         onLayout={onLayout}
         style={[
           { width: "100%", height, borderRadius: radius, backgroundColor: trackColor, overflow: "hidden" },

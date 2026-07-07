@@ -68,6 +68,8 @@ export interface AvatarProps {
   ring?: boolean;
   /** When set, the avatar becomes pressable (e.g. a topbar account trigger). */
   onPress?: () => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** For layout composition only; overlap/stacking is owned by AvatarGroup, not this prop. */
   style?: StyleProp<ViewStyle>;
 }
@@ -133,7 +135,7 @@ function labelStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size): TextStyl
 /** Build an Avatar component from a platform skin. */
 export function createAvatar(skin: AvatarSkin) {
   return function Avatar(props: AvatarProps) {
-    const { src, uri, name, initials, children, ring, accessibilityLabel, onPress, style } = props;
+    const { src, uri, name, initials, children, ring, accessibilityLabel, onPress, testID, style } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
     const shape = shapeOf(props);
@@ -170,6 +172,7 @@ export function createAvatar(skin: AvatarSkin) {
             pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null,
           ]}
           onPress={onPress}
+          testID={testID}
           accessibilityRole="button"
           accessibilityLabel={label}
           aria-label={label}
@@ -178,7 +181,7 @@ export function createAvatar(skin: AvatarSkin) {
         </Pressable>
       );
     }
-    return <View style={container}>{inner}</View>;
+    return <View style={container} testID={testID}>{inner}</View>;
   };
 }
 
@@ -215,6 +218,8 @@ export interface AvatarGroupProps {
   loose?: boolean;
   /** Accessible name for the whole group (e.g. "8 members"). */
   accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
 }
 
 // Overlap precedence when more than one is passed: first match wins.
@@ -227,7 +232,7 @@ function overlapOf(p: AvatarGroupProps): Overlap {
 /** Build an AvatarGroup from the same platform skin as Avatar. */
 export function createAvatarGroup(skin: AvatarSkin) {
   return function AvatarGroup(props: AvatarGroupProps) {
-    const { children, max, total, small, large, accessibilityLabel } = props;
+    const { children, max, total, small, large, accessibilityLabel, testID } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
     const overlap = OVERLAP[size][overlapOf(props)];
@@ -246,6 +251,7 @@ export function createAvatarGroup(skin: AvatarSkin) {
     return (
       <View
         style={{ flexDirection: "row", alignItems: "center" }}
+        testID={testID}
         accessibilityLabel={accessibilityLabel}
         aria-label={accessibilityLabel}
       >

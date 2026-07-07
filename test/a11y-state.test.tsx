@@ -79,6 +79,13 @@ describe("listbox a11y (options announce as a selectable list, operably)", () =>
     expect(opts[1].getAttribute("aria-selected")).toBe("true");
   });
 
+  it("Combobox: the field is a real text input with role=combobox + aria-expanded", () => {
+    const { container } = ui(<Combobox options={["A", "B"]} />);
+    const field = container.querySelector('input[role="combobox"]');
+    expect(field).not.toBeNull();
+    expect(field?.getAttribute("aria-expanded")).toBe("false");
+  });
+
   it("Command: role=listbox + role=option rows, the active row aria-selected", () => {
     const { container } = ui(
       <Command open active={0} groups={[{ items: [{ label: "X" }, { label: "Y" }] }]} onSelect={() => {}} />,

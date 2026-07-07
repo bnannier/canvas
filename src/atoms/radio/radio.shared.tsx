@@ -23,6 +23,8 @@ export interface RadioProps {
   selected?: boolean;
   /** Fired on press with the next checked value (always true for a radio). */
   onChange?: (checked: boolean, event: GestureResponderEvent) => void;
+  /** E2E hook forwarded to the pressable row. */
+  testID?: string;
   /** Label text shown beside the control. */
   children?: ReactNode;
   // Size (pick one; default is the 16px control).
@@ -78,6 +80,7 @@ export function createRadio(skin: RadioSkin) {
       <Pressable
         onPress={(event) => onChange?.(true, event)}
         disabled={disabled}
+        testID={props.testID}
         // Icon-only (no label): grow the small ring's tap target toward ~44pt.
         // With a label the whole row is already a generous target, so leave it.
         hitSlop={children == null ? 8 : undefined}

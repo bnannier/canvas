@@ -98,6 +98,8 @@ export interface MediaObjectProps {
   bordered?: boolean;
   // Layout.
   truncate?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -127,7 +129,7 @@ function borderedColors(tokens: ColorTokens): ViewStyle {
 
 export function createMediaObject(skin: MediaObjectSkin) {
   return function MediaObject(props: MediaObjectProps) {
-    const { title, description, body, meta, avatar, src, icon, action, truncate, style } = props;
+    const { title, description, body, meta, avatar, src, icon, action, truncate, testID, style } = props;
     const { tokens } = useTheme();
     const align = alignOf(props);
     const direction = directionOf(props);
@@ -195,6 +197,7 @@ export function createMediaObject(skin: MediaObjectSkin) {
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
           onPress={props.onPress}
+          testID={testID}
           android_ripple={surfaceRipple(tokens)}
           style={({ pressed }) => [container, pressDim(pressed, skin.pressedOpacity)]}
         >
@@ -203,6 +206,6 @@ export function createMediaObject(skin: MediaObjectSkin) {
       );
     }
 
-    return <View style={container}>{inner}</View>;
+    return <View testID={testID} style={container}>{inner}</View>;
   };
 }

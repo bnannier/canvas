@@ -1,4 +1,4 @@
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -82,10 +82,14 @@ export type TabItem = string | { label: string; badge?: string };
 export interface TabsProps {
   /** Triggers, left to right. Strings, or `{ label, badge }` for a count. */
   tabs?: TabItem[];
-  /** Index of the active trigger. */
+  /** Index of the active trigger; omit for uncontrolled use. */
   active?: number;
-  /** Called with the pressed trigger's index. */
+  /** Initial active index for uncontrolled use (a bare <Tabs /> switches out of the box). */
+  defaultActive?: number;
+  /** Called with the pressed trigger's index (both modes). */
   onChange?: (index: number) => void;
+  /** E2E hook forwarded to the tablist row. */
+  testID?: string;
 
   // Look (pick one; default is the underline look). Precedence when more than
   // one is passed: pills, then vertical, then underline.
@@ -235,15 +239,19 @@ export function createTabs(skin: TabsSkin) {
   }
 
   return function Tabs(props: TabsProps) {
-    const { tabs = DEFAULT_TABS, active = 0, onChange, disabled, style } = props;
+    const { tabs = DEFAULT_TABS, onChange, disabled, style, testID } = props;
     const variant = variantOf(props);
     const { tokens } = useTheme();
+
+    // Controlled when `active` is provided, self-managed otherwise, so a bare
+    // <Tabs /> switches tabs out of the box (the standard library contract).
+    const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0, onChange);
 
     if (variant === "vertical") {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
       return (
-        <View accessibilityRole="tablist" style={[verticalRail(!!props.block), style]}>
+        <View accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -253,7 +261,7 @@ export function createTabs(skin: TabsSkin) {
               variant="vertical"
               block={props.block}
               disabled={disabled}
-              onPress={() => onChange?.(i)}
+              onPress={() => setActive(i)}
             />
           ))}
         </View>
@@ -262,7 +270,7 @@ export function createTabs(skin: TabsSkin) {
 
     if (variant === "pills") {
       return (
-        <View accessibilityRole="tablist" style={[skin.pillsRow(tokens), s.blockWidth(!!props.block), style]}>
+        <View accessibilityRole="tablist" testID={testID} style={[skin.pillsRow(tokens), s.blockWidth(!!props.block), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -272,7 +280,7 @@ export function createTabs(skin: TabsSkin) {
               variant="pills"
               block={props.block}
               disabled={disabled}
-              onPress={() => onChange?.(i)}
+              onPress={() => setActive(i)}
             />
           ))}
         </View>
@@ -282,7 +290,7 @@ export function createTabs(skin: TabsSkin) {
     // Underline: the row sits on a hairline bottom border (web/Android) or a gray
     // segmented track (iOS).
     return (
-      <View accessibilityRole="tablist" style={[skin.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
+      <View accessibilityRole="tablist" testID={testID} style={[skin.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
         {tabs.map((item, i) => (
           <Trigger
             key={`${labelOf(item)}-${i}`}

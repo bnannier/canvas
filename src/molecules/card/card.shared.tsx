@@ -61,6 +61,8 @@ export interface CardProps {
   // content padding and the gap between flat children.
   compact?: boolean;
   comfortable?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -81,7 +83,7 @@ function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, description, body, footer, padded, onPress, selected, grow, style } = props;
+    const { children, title, description, body, footer, padded, onPress, selected, grow, testID, style } = props;
     const { tokens } = useTheme();
     const elev = elevationOf(props);
     const dens = densityOf(props);
@@ -144,6 +146,7 @@ export function createCard(skin: CardSkin) {
         <Pressable
           accessibilityRole="button"
           onPress={onPress}
+          testID={testID}
           android_ripple={surfaceRipple(tokens)}
           // Android clips the bounded ripple to the rounded card; the M3 elevation shadow is drawn
           // around the outline by the platform, so it survives the clip. iOS keeps its shadow* (no clip).
@@ -153,7 +156,7 @@ export function createCard(skin: CardSkin) {
         </Pressable>
       );
     }
-    return <View style={container}>{inner}</View>;
+    return <View testID={testID} style={container}>{inner}</View>;
   };
 }
 

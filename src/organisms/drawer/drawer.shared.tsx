@@ -54,6 +54,8 @@ export interface DrawerProps {
   bottom?: boolean;
   /** Width of a side drawer in px (default 288). Ignored for the bottom sheet. */
   width?: number;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for the panel surface (e.g. safe-area padding). */
   style?: StyleProp<ViewStyle>;
 }
@@ -68,7 +70,7 @@ function edgeOf(p: DrawerProps): Edge {
 /** Build a Drawer component from a platform skin. */
 export function createDrawer(skin: DrawerSkin) {
   return function Drawer(props: DrawerProps) {
-    const { children, open: openProp, onOpenChange, trigger, width = 288, style } = props;
+    const { children, open: openProp, onOpenChange, trigger, width = 288, testID, style } = props;
     const { tokens } = useTheme();
     const edge = edgeOf(props);
 
@@ -111,6 +113,7 @@ export function createDrawer(skin: DrawerSkin) {
           transparent
           animationType={edge === "bottom" ? "slide" : "fade"}
           onRequestClose={() => setOpen(false)}
+          testID={testID}
           // Tell assistive tech the content behind this full-screen overlay is
           // inert while the drawer is open (iOS VoiceOver honors this; a no-op
           // elsewhere). No focus trap is attempted (hard cross-platform).

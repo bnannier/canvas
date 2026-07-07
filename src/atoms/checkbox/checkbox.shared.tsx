@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the
 // active brand tokens via useTheme, so colors follow light/dark and the glass
@@ -12,17 +12,21 @@ import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type
 
 export interface CheckboxProps {
   children?: ReactNode;
-  /** Controlled checked state. The component renders exactly this value. */
+  /** Controlled checked state; omit for uncontrolled use. */
   checked?: boolean;
+  /** Initial state for uncontrolled use (a bare <Checkbox /> is interactive). */
+  defaultChecked?: boolean;
   /**
    * Mixed state: some-but-not-all selected. Shown as a dash, not a tick.
    * Takes visual precedence over `checked`.
    */
   indeterminate?: boolean;
-  /** Fired with the next checked value when the row is pressed. */
+  /** Fired with the next checked value when the row is pressed (both modes). */
   onChange?: (next: boolean) => void;
   /** Alias of onChange, for parity with RN's value-style callbacks. */
   onValueChange?: (next: boolean) => void;
+  /** E2E hook forwarded to the pressable row. */
+  testID?: string;
   // Size (pick one; default is the base box).
   small?: boolean;
   large?: boolean;
@@ -64,17 +68,27 @@ const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 
 /** Build a Checkbox component from a platform skin. */
 export function createCheckbox(skin: CheckboxSkin) {
   return function Checkbox(props: CheckboxProps) {
-    const { children, checked, indeterminate, onChange, onValueChange, disabled, style } = props;
+    const { children, indeterminate, onChange, onValueChange, disabled, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
+
+    // Controlled when `checked` is provided, self-managed otherwise, so a bare
+    // <Checkbox /> toggles out of the box (the standard library contract).
+    const [checked, setChecked] = useControllableState<boolean>(
+      props.checked,
+      props.defaultChecked ?? false,
+      (next) => {
+        onChange?.(next);
+        onValueChange?.(next);
+      },
+    );
+
     // Indeterminate reads as "selected-ish": fill the box like a checked state.
-    const filled = indeterminate || !!checked;
+    const filled = indeterminate || checked;
     const glyph = indeterminate ? "–" : "✓"; // en dash : check mark
 
     const handlePress = (_event: GestureResponderEvent) => {
-      const next = !checked;
-      onChange?.(next);
-      onValueChange?.(next);
+      setChecked(!checked);
     };
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
@@ -83,12 +97,13 @@ export function createCheckbox(skin: CheckboxSkin) {
       <Pressable
         onPress={handlePress}
         disabled={disabled}
+        testID={props.testID}
         // Icon-only (no label): grow the small box's tap target toward ~44pt.
         // With a label the whole row is already a generous target, so leave it.
         hitSlop={children == null ? 8 : undefined}
         accessibilityRole="checkbox"
-        accessibilityState={{ checked: indeterminate ? "mixed" : !!checked, disabled: !!disabled }}
-        aria-checked={indeterminate ? "mixed" : !!checked}
+        accessibilityState={{ checked: indeterminate ? "mixed" : checked, disabled: !!disabled }}
+        aria-checked={indeterminate ? "mixed" : checked}
         android_ripple={ripple}
         style={({ pressed }) => [
           ROW,

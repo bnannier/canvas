@@ -105,6 +105,8 @@ export interface SidebarProps {
   // Frame (pick one; default is the flush right-bordered column).
   bordered?: boolean;
   floating?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -125,7 +127,7 @@ function frameOf(p: SidebarProps): Frame {
 /** Build a Sidebar component from a platform skin. */
 export function createSidebar(skin: SidebarSkin) {
   return function Sidebar(props: SidebarProps) {
-    const { sections, items, active, onSelect, style } = props;
+    const { sections, items, active, onSelect, testID, style } = props;
     const density = densityOf(props);
     const frame = frameOf(props);
     const { tokens } = useTheme();
@@ -160,6 +162,7 @@ export function createSidebar(skin: SidebarSkin) {
     // background in default mode.
     return (
       <GlassSurface
+        testID={testID}
         style={[
           skin.column(tokens, frame),
           style,

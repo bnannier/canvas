@@ -104,6 +104,8 @@ export interface AccordionProps {
   multiple?: boolean;
   /** Disable the whole group (every row stops toggling and dims). */
   disabled?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -215,7 +217,7 @@ export function createAccordion(skin: AccordionSkin) {
   }
 
   return function Accordion(props: AccordionProps) {
-    const { items = DEFAULT_ITEMS, value, defaultValue, onValueChange, multiple = false, disabled, style } = props;
+    const { items = DEFAULT_ITEMS, value, defaultValue, onValueChange, multiple = false, disabled, testID, style } = props;
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
 
@@ -243,7 +245,7 @@ export function createAccordion(skin: AccordionSkin) {
     );
 
     return (
-      <View style={[skin.container(tokens), style]}>
+      <View testID={testID} style={[skin.container(tokens), style]}>
         {items.map((item, i) => (
           <Row
             key={item.key}

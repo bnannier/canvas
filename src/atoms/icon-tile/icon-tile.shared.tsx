@@ -30,6 +30,8 @@ export interface IconTileProps {
   large?: boolean;
   /** Circle instead of the default rounded square. */
   circle?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** For layout composition only (not styling): the tint, radius, and size come from props. */
   style?: StyleProp<ViewStyle>;
 }
@@ -88,7 +90,7 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
 /** Build an IconTile from a platform skin. */
 export function createIconTile(skin: IconTileSkin) {
   return function IconTile(props: IconTileProps) {
-    const { children, label, circle, style } = props;
+    const { children, label, circle, testID, style } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const size = sizeOf(props);
@@ -110,6 +112,7 @@ export function createIconTile(skin: IconTileSkin) {
 
     return (
       <View
+        testID={testID}
         style={[
           {
             flexShrink: 0,

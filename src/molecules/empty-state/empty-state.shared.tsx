@@ -48,6 +48,8 @@ export interface EmptyStateProps {
   bordered?: boolean;
   // Density axis (only affects the bordered card's padding).
   compact?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -59,7 +61,7 @@ function toneOf(p: EmptyStateProps): Tone {
 
 export function createEmptyState(skin: EmptyStateSkin) {
   return function EmptyState(props: EmptyStateProps) {
-    const { icon, title, description, actionLabel, onAction, bordered, compact, style } = props;
+    const { icon, title, description, actionLabel, onAction, bordered, compact, testID, style } = props;
     const { tokens } = useTheme();
     const tone: Tone = toneOf(props);
 
@@ -72,7 +74,7 @@ export function createEmptyState(skin: EmptyStateSkin) {
     ];
 
     return (
-      <View style={container}>
+      <View testID={testID} style={container}>
         {icon != null ? (
           // The disc glyph is purely decorative; the title carries the meaning.
           // Emoji announce their own accessible name, so hide the disc from

@@ -61,6 +61,8 @@ export interface DropdownProps {
   onOpenChange?: (open: boolean) => void;
   /** Fired with the selected item and its index when a row is pressed. */
   onSelect?: (item: DropdownItem, index: number) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -79,7 +81,7 @@ const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", left: 0, zIn
 /** Build a Dropdown component from a platform skin. */
 export function createDropdown(skin: DropdownSkin) {
   return function Dropdown(props: DropdownProps) {
-    const { trigger, children, label, items, open: openProp, onOpenChange, onSelect, style } = props;
+    const { trigger, children, label, items, open: openProp, onOpenChange, onSelect, testID, style } = props;
     const { tokens, dark } = useTheme();
     // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
     // menu and a select closes it; a controlled `open` prop overrides this.
@@ -106,6 +108,7 @@ export function createDropdown(skin: DropdownSkin) {
       // fallback menu.
       <View
         ref={triggerRef}
+        testID={testID}
         style={[wrapper, open ? wrapperLifted : null, style]}
         onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
       >

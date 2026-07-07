@@ -59,6 +59,8 @@ export interface ChartProps {
   horizontal?: boolean;
   // Density (default is the standard plot size).
   compact?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -83,7 +85,7 @@ const PLOT_LENGTH = { default: 140, compact: 96 } as const;
 
 export function createChart(skin: ChartSkin) {
   return function Chart(props: ChartProps) {
-    const { data, title, style } = props;
+    const { data, title, testID, style } = props;
     const tone = toneOf(props);
     const horizontal = !!props.horizontal;
     const compact = !!props.compact;
@@ -119,6 +121,7 @@ export function createChart(skin: ChartSkin) {
         role="group"
         accessibilityLabel={chartName}
         aria-label={chartName}
+        testID={testID}
         style={[
           s.surface(tokens, skin.surfaceRadius),
           compact ? s.surfacePadCompact : s.surfacePadDefault,

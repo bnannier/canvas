@@ -78,6 +78,8 @@ export interface CommandProps {
   footer?: boolean;
   /** Called with the chosen item and its flat index when a row is pressed. */
   onSelect?: (item: CommandItem, index: number) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -94,6 +96,7 @@ export function createCommand(skin: CommandSkin) {
       footer,
       onOpenChange,
       onSelect,
+      testID,
       style,
     } = props;
     const { tokens } = useTheme();
@@ -118,7 +121,9 @@ export function createCommand(skin: CommandSkin) {
     let flat = -1;
 
     const card = open ? (
-      <GlassSurface style={[s.card(tokens), trigger ? s.cardFloating : null]}>
+      // In bare (trigger-less) mode the card IS the root, so it carries the
+      // testID; in trigger mode the wrapper View below is the root and takes it.
+      <GlassSurface testID={trigger ? undefined : testID} style={[s.card(tokens), trigger ? s.cardFloating : null]}>
         <View style={skin.searchRow(tokens)}>
           <Text style={skin.searchGlyph(tokens)}>🔍</Text>
           <Text style={skin.searchPlaceholder(tokens)}>{placeholder}</Text>
@@ -187,7 +192,7 @@ export function createCommand(skin: CommandSkin) {
     if (!trigger) return card;
 
     return (
-      <View style={[s.triggerWrapper, open ? s.triggerWrapperLifted : null, style]}>
+      <View testID={testID} style={[s.triggerWrapper, open ? s.triggerWrapperLifted : null, style]}>
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}

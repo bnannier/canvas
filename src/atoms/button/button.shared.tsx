@@ -45,6 +45,8 @@ export interface ButtonProps {
    * button. So a Button that toggles a Dropdown/Popover stays accessible.
    */
   expanded?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -70,7 +72,7 @@ function sizeOf(p: ButtonProps): Size {
 /** Build a Button component from a platform skin. */
 export function createButton(skin: ButtonSkin) {
   return function Button(props: ButtonProps) {
-    const { children, iconLeft, iconRight, accessibilityLabel, onPress, loading, disabled, block, icon, style } = props;
+    const { children, iconLeft, iconRight, accessibilityLabel, onPress, loading, disabled, block, icon, testID, style } = props;
     const { tokens } = useTheme();
     const intent = intentOf(props);
     const size = sizeOf(props);
@@ -82,6 +84,7 @@ export function createButton(skin: ButtonSkin) {
       <Pressable
         onPress={onPress}
         disabled={disabled || loading}
+        testID={testID}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}

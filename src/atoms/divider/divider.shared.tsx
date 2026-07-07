@@ -46,6 +46,8 @@ export interface DividerProps {
   // Emphasis (pick one; default tracks the border token).
   soft?: boolean;
   strong?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -76,7 +78,7 @@ function labelColor(tokens: ColorTokens): TextStyle {
 
 export function createDivider(skin: DividerSkin) {
   return function Divider(props: DividerProps) {
-    const { children, style } = props;
+    const { children, testID, style } = props;
     const orientation = orientationOf(props);
     const emphasis = emphasisOf(props);
     const { tokens } = useTheme();
@@ -91,6 +93,7 @@ export function createDivider(skin: DividerSkin) {
           // AccessibilityRole union has no "separator" member; `role` carries it
           // cross-platform (VoiceOver/TalkBack natively, the DOM role on web).
           role="separator"
+          testID={testID}
           style={[{ width: skin.ruleThickness, alignSelf: "stretch" }, fill, style]}
         />
       );
@@ -114,6 +117,7 @@ export function createDivider(skin: DividerSkin) {
           // wrapper is a plain group and the child's own role (button/link/...) is what
           // assistive tech exposes. The two flanking hairlines still carry the visual break.
           role={isText ? "separator" : undefined}
+          testID={testID}
           style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
         >
           <View style={[flankRule, fill]} />
@@ -129,7 +133,7 @@ export function createDivider(skin: DividerSkin) {
 
     // Plain horizontal hairline spanning the full width.
     return (
-      <View role="separator" style={[{ height: skin.ruleThickness, width: "100%" }, fill, style]} />
+      <View role="separator" testID={testID} style={[{ height: skin.ruleThickness, width: "100%" }, fill, style]} />
     );
   };
 }

@@ -80,6 +80,8 @@ export interface NavbarProps {
   // Surface (pick one; default is the flush bottom-hairline bar).
   bordered?: boolean;
   floating?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -94,7 +96,7 @@ function surfaceOf(p: NavbarProps): Surface {
 /** Build a Navbar component from a platform skin. */
 export function createNavbar(skin: NavbarSkin) {
   return function Navbar(props: NavbarProps) {
-    const { brand, links, active = 0, actionLabel, onAction, avatar, onSelect, style } = props;
+    const { brand, links, active = 0, actionLabel, onAction, avatar, onSelect, testID, style } = props;
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
 
@@ -110,7 +112,7 @@ export function createNavbar(skin: NavbarSkin) {
     ];
 
     return (
-      <GlassSurface style={container}>
+      <GlassSurface testID={testID} style={container}>
         <View style={skin.leftGroup(tokens)}>
           <Text style={skin.brand(tokens)}>{brand}</Text>
           <View style={skin.linksRow(tokens)}>

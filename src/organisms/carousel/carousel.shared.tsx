@@ -101,6 +101,8 @@ export interface CarouselProps {
   showArrows?: boolean;
   /** Show the centered dot indicators below the slides (default true). */
   showDots?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -168,6 +170,7 @@ export function createCarousel(skin: CarouselSkin) {
       loop = false,
       showArrows = true,
       showDots = true,
+      testID,
       style,
     } = props;
     const { tokens } = useTheme();
@@ -244,7 +247,7 @@ export function createCarousel(skin: CarouselSkin) {
       );
 
     return (
-      <View style={[ROOT, style]}>
+      <View testID={testID} style={[ROOT, style]}>
         <View style={VIEWPORT} onLayout={onLayout}>
           {width > 0 ? (
             <FlatList

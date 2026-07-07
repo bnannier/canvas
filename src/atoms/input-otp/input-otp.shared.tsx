@@ -46,6 +46,8 @@ export interface InputOTPProps {
   // Size (pick one; default is the medium cell).
   small?: boolean;
   large?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width/alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -85,7 +87,7 @@ const DIGITS_ONLY = /\D/g;
 /** Build an InputOTP component from a platform skin. */
 export function createInputOTP(skin: InputOTPSkin) {
   const InputOTP = forwardRef<RNTextInput, InputOTPProps>(function InputOTP(props, ref) {
-    const { length = 6, value, onChange, onComplete, disabled, masked, style } = props;
+    const { length = 6, value, onChange, onComplete, disabled, masked, testID, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
     const [focused, setFocused] = useState(false);
@@ -119,6 +121,7 @@ export function createInputOTP(skin: InputOTPSkin) {
 
     return (
       <View
+        testID={testID}
         style={[{ alignSelf: "flex-start" }, disabled ? { opacity: skin.disabledOpacity } : null, style]}
       >
         {/* The visible segmented row. Relatively positioned so the real input can

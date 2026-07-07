@@ -27,11 +27,13 @@ export interface StackedBarProps {
   segments: StackedSegment[];
   /** Hide the legend (the labelled dots below the bar). */
   hideLegend?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** For sizing/composition only. */
   style?: StyleProp<ViewStyle>;
 }
 
-export function StackedBar({ segments, hideLegend, style }: StackedBarProps) {
+export function StackedBar({ segments, hideLegend, testID, style }: StackedBarProps) {
   const { tokens } = useTheme();
   const total = Math.max(
     1,
@@ -40,7 +42,7 @@ export function StackedBar({ segments, hideLegend, style }: StackedBarProps) {
   const pct = (v: number) => (Math.max(0, Number.isFinite(v) ? v : 0) / total) * 100;
 
   return (
-    <View style={style} accessibilityRole="image" accessibilityLabel="Stacked bar">
+    <View testID={testID} style={style} accessibilityRole="image" accessibilityLabel="Stacked bar">
       <View style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10 }}>
         {segments.map((seg, i) => (
           <View key={i} style={{ width: `${pct(seg.value)}%`, backgroundColor: seriesColor(i) }} />
@@ -78,6 +80,8 @@ export interface GaugeProps {
   primary?: boolean;
   success?: boolean;
   destructive?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** For sizing/composition only. */
   style?: StyleProp<ViewStyle>;
 }
@@ -89,7 +93,7 @@ function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
 }
 
 export function Gauge(props: GaugeProps) {
-  const { value, label, style } = props;
+  const { value, label, testID, style } = props;
   const { tokens } = useTheme();
   const v = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
   const size = 120;
@@ -100,6 +104,7 @@ export function Gauge(props: GaugeProps) {
 
   return (
     <View
+      testID={testID}
       style={[{ width: size, height: size, alignItems: "center", justifyContent: "center" }, style]}
       accessibilityRole="image"
       accessibilityLabel={`${label ?? "Gauge"}: ${v}%`}
@@ -136,18 +141,20 @@ export interface HeatmapProps {
   values: number[];
   /** Hide the less-to-more legend row. */
   hideLegend?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** For sizing/composition only. */
   style?: StyleProp<ViewStyle>;
 }
 
-export function Heatmap({ values, hideLegend, style }: HeatmapProps) {
+export function Heatmap({ values, hideLegend, testID, style }: HeatmapProps) {
   const { tokens } = useTheme();
   const cell = (intensity: number, box: number, key: number) => {
     const t = Math.max(0.08, Math.min(1, Number.isFinite(intensity) ? intensity : 0));
     return <View key={key} style={{ borderRadius: 2, height: box, width: box, backgroundColor: alpha(tokens.primary, t) }} />;
   };
   return (
-    <View style={style} accessibilityRole="image" accessibilityLabel="Heatmap">
+    <View testID={testID} style={style} accessibilityRole="image" accessibilityLabel="Heatmap">
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>{values.map((v, i) => cell(v, 18, i))}</View>
       {hideLegend ? null : (
         <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>

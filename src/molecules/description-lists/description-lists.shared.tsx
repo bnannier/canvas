@@ -72,6 +72,8 @@ export interface DescriptionListProps {
   divided?: boolean;
   // Surface: wrap the list in a card surface.
   card?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -122,7 +124,7 @@ function Value({ item, align, skin }: { item: DescriptionListItem; align?: boole
 
 export function createDescriptionList(skin: DescriptionListSkin) {
   return function DescriptionList(props: DescriptionListProps) {
-    const { items, title, subtitle, divided, card, style } = props;
+    const { items, title, subtitle, divided, card, testID, style } = props;
     const { tokens } = useTheme();
     const layout = layoutOf(props);
     const hasHeader = card && !!title;
@@ -167,7 +169,7 @@ export function createDescriptionList(skin: DescriptionListSkin) {
     });
 
     return (
-      <View style={container}>
+      <View testID={testID} style={container}>
         {hasHeader ? (
           <View style={s.headerBand(tokens)}>
             <Text style={[s.headerTitle(tokens), skin.headerTitleTracking]}>{title}</Text>

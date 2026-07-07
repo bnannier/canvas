@@ -52,6 +52,8 @@ export interface StatsProps {
    *  set, every metric renders as a Pressable with a button role and a pressed
    *  affordance, so a tappable stat needs no hand-rolled Pressable. */
   onPressItem?: (index: number) => void;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width). */
   style?: StyleProp<ViewStyle>;
 }
@@ -116,7 +118,7 @@ export function createStats(skin: StatsSkin) {
   }
 
   return function Stats(props: StatsProps) {
-    const { items, title, style, onPressItem } = props;
+    const { items, title, testID, style, onPressItem } = props;
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
 
@@ -126,7 +128,7 @@ export function createStats(skin: StatsSkin) {
     const isPlain = surface === "plain";
 
     return (
-      <View style={[isPlain ? skin.plainContainer(tokens) : null, style]}>
+      <View testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, style]}>
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
         <View style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (

@@ -64,6 +64,8 @@ export interface TypographyProps {
   medium?: boolean;
   semibold?: boolean;
   bold?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /**
    * For layout/positioning composition only (margins handled by Row/Column). Not a
    * styling escape hatch: size, color, and weight come from the props above.
@@ -143,7 +145,7 @@ function weightOf(p: TypographyProps): Weight | null {
 /** Build a Typography component from a platform skin. */
 export function createTypography(skin: TypographySkin) {
   return function Typography(props: TypographyProps) {
-    const { children, style } = props;
+    const { children, testID, style } = props;
     const { tokens, dark } = useTheme();
     const role = roleOf(props);
     const tone = toneOf(props);
@@ -161,6 +163,7 @@ export function createTypography(skin: TypographySkin) {
 
     return (
       <Text
+        testID={testID}
         accessibilityRole={level ? "header" : undefined}
         aria-level={level}
         style={[

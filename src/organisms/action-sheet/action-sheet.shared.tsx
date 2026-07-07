@@ -69,6 +69,8 @@ export interface ActionSheetProps {
   actions: ActionSheetAction[];
   /** The Cancel row label (default "Cancel"). */
   cancelLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /**
    * Escape hatch for the bottom-anchored stack (e.g. a safe-area bottom inset:
    * `style={{ paddingBottom: insets.bottom }}`). Composed onto the stack container.
@@ -79,7 +81,7 @@ export interface ActionSheetProps {
 /** Build an ActionSheet component from a platform skin. */
 export function createActionSheet(skin: ActionSheetSkin) {
   return function ActionSheet(props: ActionSheetProps) {
-    const { open, onOpenChange, title, message, actions, cancelLabel = "Cancel", style } = props;
+    const { open, onOpenChange, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
     const { tokens } = useTheme();
 
     const close = () => onOpenChange?.(false);
@@ -167,6 +169,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
         transparent
         animationType="slide"
         onRequestClose={close}
+        testID={testID}
         // Tell assistive tech the content behind this overlay is inert while the
         // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
         accessibilityViewIsModal={true}

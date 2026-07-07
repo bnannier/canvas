@@ -65,6 +65,9 @@ export interface FlexProps {
   pad?: boolean; // 16
   padLoose?: boolean; // 24
 
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
+
   /**
    * For sizing/composition only (e.g. `maxWidth` to bound a responsive block),
    * never for styling or spacing: gap, margin, padding, and flex layout come from
@@ -133,7 +136,7 @@ function padOf(p: FlexProps): Pad | null {
 /** Build a Row or Column component from a platform skin and a fixed direction. */
 export function createFlex(skin: FlexSkin, direction: Direction) {
   return function Flex(props: FlexProps) {
-    const { children, wrap, fill, grow, style } = props;
+    const { children, wrap, fill, grow, testID, style } = props;
     const layout: ViewStyle = {
       flexDirection: direction,
       gap: skin.gap[gapOf(props)],
@@ -145,6 +148,6 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     if (grow) layout.flexGrow = 1;
     const pad = padOf(props);
     if (pad) layout.padding = skin.pad[pad];
-    return <View style={[layout, style]}>{children}</View>;
+    return <View style={[layout, style]} testID={testID}>{children}</View>;
   };
 }

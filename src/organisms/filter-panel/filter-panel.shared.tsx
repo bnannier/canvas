@@ -57,6 +57,8 @@ export interface FilterPanelProps {
   bordered?: boolean;
   // Density (pick one): tighten the panel's padding and row spacing.
   compact?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (mainly width, margins). */
   style?: StyleProp<ViewStyle>;
 }
@@ -85,7 +87,7 @@ export function createFilterPanel(
   Badge: BadgeComponent = WebBadge,
 ) {
   return function FilterPanel(props: FilterPanelProps) {
-    const { groups, activeCount, onClear, onChange, bordered, style } = props;
+    const { groups, activeCount, onClear, onChange, bordered, testID, style } = props;
     const { tokens } = useTheme();
     const density = densityOf(props);
 
@@ -93,6 +95,7 @@ export function createFilterPanel(
 
     return (
       <View
+        testID={testID}
         style={[
           skin.panelBase,
           // `bordered` wraps it as a rounded card with a border and a card fill;

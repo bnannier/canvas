@@ -41,6 +41,8 @@ export interface TooltipProps {
   bottom?: boolean;
   left?: boolean;
   right?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
   /** Escape hatch for layout/positioning composition (margins, alignment). */
   style?: StyleProp<ViewStyle>;
 }
@@ -66,7 +68,7 @@ const BUBBLE_FIRST: Record<Placement, boolean> = {
 /** Build a Tooltip component from a platform skin. */
 export function createTooltip(skin: TooltipSkin) {
   return function Tooltip(props: TooltipProps) {
-    const { label, trigger, iconTrigger: isIconTrigger, onOpenChange, style } = props;
+    const { label, trigger, iconTrigger: isIconTrigger, onOpenChange, testID, style } = props;
     const placement = placementOf(props);
     const { tokens } = useTheme();
     // Uncontrolled by default: tapping the trigger toggles the bubble (a touch
@@ -124,7 +126,7 @@ export function createTooltip(skin: TooltipSkin) {
     );
 
     return (
-      <View style={[wrapper[placement], style]}>
+      <View style={[wrapper[placement], style]} testID={testID}>
         {BUBBLE_FIRST[placement] ? tip : null}
         {triggerEl}
         {BUBBLE_FIRST[placement] ? null : tip}
