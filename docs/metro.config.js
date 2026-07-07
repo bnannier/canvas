@@ -1,7 +1,9 @@
 // Metro config for the universal Canvas docs app (iOS / Android / web from one
-// React Native codebase). It consumes the source-only @olympusoss/canvas library as a
-// live symlink (see package.json postinstall); the generated docs core lives in-tree at
-// src/core:
+// React Native codebase). The PUBLISHED @olympusoss/canvas is a compiled dist
+// package, but the docs develop against the LIVE SOURCE via a symlink (see
+// package.json postinstall):
+//   - the resolver pins the bare "@olympusoss/canvas" import to src/index.ts, so
+//     docs never load a stale dist build during development;
 //   - watchFolders sees the out-of-tree source;
 //   - nodeModulesPaths + disableHierarchicalLookup force a single react/RN/svg copy;
 //   - the resolver maps the library's NodeNext ".js" specifiers to their .ts/.tsx
@@ -19,6 +21,11 @@ config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
 config.resolver.disableHierarchicalLookup = true;
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // Live-source pin: the package's main/exports point at dist (the publish
+  // artifact), but docs development must track src edits without a rebuild.
+  if (moduleName === "@olympusoss/canvas") {
+    return { type: "sourceFile", filePath: path.join(repoRoot, "src", "index.ts") };
+  }
   if (moduleName.endsWith(".js") && (moduleName.startsWith("./") || moduleName.startsWith("../"))) {
     try {
       return context.resolveRequest(context, moduleName, platform);

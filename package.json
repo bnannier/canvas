@@ -1,7 +1,6 @@
 {
   "name": "@olympusoss/canvas",
   "version": "6.23.2",
-  "type": "module",
   "description": "Universal React Native UI kit styled with Tailwind",
   "license": "UNLICENSED",
   "homepage": "https://olympusoss.github.io/canvas/",
@@ -28,26 +27,31 @@
     "tailwind",
     "expo"
   ],
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "react-native": "./dist/index.js",
+      "default": "./dist/index.js"
     },
-    "./styles/*": "./styles/*"
+    "./styles/*": "./styles/*",
+    "./package.json": "./package.json"
   },
   "files": [
-    "src",
+    "dist",
     "styles",
-    "package.json",
-    "tsconfig.json"
+    "CHANGELOG.md"
   ],
   "sideEffects": [
     "*.css"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "verify-package": "bun scripts/verify-package.ts",
+    "prepublishOnly": "bun run build && bun run verify-package",
     "test": "bun test",
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
@@ -63,17 +67,18 @@
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
-  "dependencies": {
-    "react-native-qrcode-svg": "^6.3.21"
-  },
   "peerDependencies": {
     "react": ">=18",
     "react-native": ">=0.74",
     "react-native-svg": ">=14",
+    "react-native-qrcode-svg": ">=6",
     "expo-blur": "*",
     "expo-glass-effect": "*"
   },
   "peerDependenciesMeta": {
+    "react-native-qrcode-svg": {
+      "optional": true
+    },
     "expo-blur": {
       "optional": true
     },
@@ -90,6 +95,7 @@
     "@types/react": "^19.2.16",
     "expo-blur": "~56.0.3",
     "expo-glass-effect": "~56.0.4",
+    "react-native-qrcode-svg": "^6.3.21",
     "happy-dom": "^20.10.6",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

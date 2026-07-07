@@ -1,5 +1,36 @@
-import RNQRCode from "react-native-qrcode-svg";
+import type RNQRCodeType from "react-native-qrcode-svg";
 import { View, type StyleProp, type ViewStyle } from "../../style/index.js";
+
+// react-native-qrcode-svg is an OPTIONAL peer (it drags a large text-encoding
+// polyfill), so it is loaded with a guarded literal require: consumers who never
+// render a QRCode skip the install AND the bundle weight; consumers who use it
+// install the peer. When absent, QRCode renders its labeled frame empty and
+// warns once in dev.
+declare const require: ((id: string) => unknown) | undefined;
+let RNQRCode: typeof RNQRCodeType | undefined;
+try {
+  if (typeof require === "function") {
+    const mod = require("react-native-qrcode-svg") as { default?: typeof RNQRCodeType } | typeof RNQRCodeType;
+    RNQRCode = (mod as { default?: typeof RNQRCodeType }).default ?? (mod as typeof RNQRCodeType);
+  }
+} catch {
+  RNQRCode = undefined;
+}
+let warnedMissing = false;
+
+// Dev-mode check that survives every runtime: Metro defines __DEV__, web
+// bundlers define process.env.NODE_ENV, and anything else counts as dev (a
+// missing-peer warning is more useful than silence in unknown environments).
+function isDevMode(): boolean {
+  try {
+    if (typeof __DEV__ !== "undefined") return __DEV__;
+  } catch { /* not defined */ }
+  try {
+    return process.env.NODE_ENV !== "production";
+  } catch {
+    return true;
+  }
+}
 
 // Shared QRCode shell. The structure (a fixed dark-on-white card wrapping the
 // react-native-qrcode-svg renderer) and the boolean-prop size axis live here once;
@@ -73,8 +104,22 @@ export function createQRCode(skin: QRCodeSkin) {
         accessibilityLabel={label}
         aria-label={label}
       >
-        {/* react-native-qrcode-svg throws on an empty string, so fall back to a space. */}
-        <RNQRCode value={value || " "} size={sizeOf(props)} color={skin.moduleColor} backgroundColor={skin.fieldColor} />
+        {RNQRCode ? (
+          // react-native-qrcode-svg throws on an empty string, so fall back to a space.
+          <RNQRCode value={value || " "} size={sizeOf(props)} color={skin.moduleColor} backgroundColor={skin.fieldColor} />
+        ) : (
+          // Optional peer not installed: keep the labeled frame (sized like the code)
+          // so layout holds, and tell the developer what to install.
+          (() => {
+            if (isDevMode() && !warnedMissing) {
+              warnedMissing = true;
+              console.warn(
+                "[canvas] <QRCode /> requires the optional peer dependency react-native-qrcode-svg. Install it to render QR codes.",
+              );
+            }
+            return <View style={{ width: sizeOf(props), height: sizeOf(props) }} />;
+          })()
+        )}
       </View>
     );
   };

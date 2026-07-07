@@ -11,10 +11,20 @@
 // optional peer dep was not linked, or the dev client predates it). The optional
 // peer-dependency contract is graceful degradation, so swallow that and report false.
 
-import * as ExpoGlass from "expo-glass-effect";
+// expo-glass-effect is an OPTIONAL peer: consumers without it must still build,
+// so it is loaded with a guarded literal require instead of a static import.
+declare const require: ((id: string) => unknown) | undefined;
+let ExpoGlass: { GlassView?: unknown; isLiquidGlassAvailable?: () => boolean } | undefined;
+try {
+  if (typeof require === "function") {
+    ExpoGlass = require("expo-glass-effect") as typeof ExpoGlass;
+  }
+} catch {
+  ExpoGlass = undefined;
+}
 
-const GlassView = (ExpoGlass as { GlassView?: unknown }).GlassView;
-const isLiquidGlassAvailable = (ExpoGlass as { isLiquidGlassAvailable?: () => boolean }).isLiquidGlassAvailable;
+const GlassView = ExpoGlass?.GlassView;
+const isLiquidGlassAvailable = ExpoGlass?.isLiquidGlassAvailable;
 
 export function liquidGlassAvailable(): boolean {
   if (!GlassView || !isLiquidGlassAvailable) return false;

@@ -26,9 +26,10 @@ permissions:
   contents: read
 
 jobs:
-  # Library checks: the published package is source-shipped (src + styles), so CI
-  # validates it compiles, exports resolve, and the single Tailwind v4 stylesheet
-  # (styles/canvas.css) is sound.
+  # Library checks: the published package is the COMPILED dist (ES modules +
+  # .d.ts from tsconfig.build.json), so CI builds it, verifies the artifact is
+  # consumable (specifier resolution, platform forks, no raw TS, no DOM-typed
+  # public surface), and smoke-renders components FROM dist in the test suite.
   check:
     runs-on: ubuntu-latest
     steps:
@@ -43,6 +44,14 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Build package (dist)
+        run: bun run build
+
+      - name: Verify package artifact
+        run: bun run verify-package
+
+      # Includes test/dist-smoke.test.tsx, which imports and renders components
+      # from the freshly built dist — the consumer's-eye check.
       - name: Unit tests
         run: bun test
 

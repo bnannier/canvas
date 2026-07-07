@@ -1,4 +1,7 @@
 export function token(name: string): string {
+  // Web-only helper (reads the CSS variable off the DOM). Guarded so importing
+  // the barrel never touches DOM globals on native or during SSR.
+  if (typeof document === "undefined" || typeof getComputedStyle === "undefined") return "";
   return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
 }
 

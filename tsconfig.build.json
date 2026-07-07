@@ -1,0 +1,19 @@
+{
+  // The publish build: compiles src → dist as ES modules + .d.ts. The relative
+  // NodeNext ".js" specifiers in src resolve to REAL .js files after this emit,
+  // which is what makes the published package consumable by stock Metro/Expo,
+  // web bundlers, and consumer tsc (skipLibCheck applies to .d.ts, unlike the
+  // raw .ts we used to ship). Platform forks (.ios.tsx/.android.tsx) emit as
+  // .ios.js/.android.js so Metro's platform resolution keeps working.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "test"]
+}

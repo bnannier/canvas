@@ -7,7 +7,7 @@
 // expo-glass-effect is NOT imported here, so web and Android bundles never pull
 // the iOS-only Liquid Glass native module. iOS resolves glass-surface.ios.tsx.
 
-import * as ExpoBlur from "expo-blur";
+import type * as ExpoBlurTypes from "expo-blur";
 import { View, StyleSheet, type ViewStyle } from "react-native";
 import { useTheme } from "../theme.js";
 import {
@@ -18,8 +18,20 @@ import {
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
-// Optional: undefined when expo-blur is absent/stubbed (then we fall back).
-const BlurView = (ExpoBlur as { BlurView?: typeof ExpoBlur.BlurView }).BlurView;
+// expo-blur is an OPTIONAL peer: consumers without it must still build, so it is
+// loaded with a guarded require (a literal id, so bundlers that DO have it
+// installed still include it) instead of a static import (which fails module
+// resolution for everyone who skipped the optional peer). Undefined when absent
+// or in a pure-ESM runtime with no `require` — then we fall back below.
+declare const require: ((id: string) => unknown) | undefined;
+let BlurView: typeof ExpoBlurTypes.BlurView | undefined;
+try {
+  if (typeof require === "function") {
+    BlurView = (require("expo-blur") as { BlurView?: typeof ExpoBlurTypes.BlurView }).BlurView;
+  }
+} catch {
+  BlurView = undefined;
+}
 
 // The specular edge that lifts the flat frost toward a liquid-glass look: light catches the
 // TOP edge, a faint hairline defines the whole rim, and the bottom edge takes a soft shade.

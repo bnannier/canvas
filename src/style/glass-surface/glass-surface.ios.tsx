@@ -4,8 +4,8 @@
 // expo-blur frost the other platforms use; with neither module it degrades to a
 // translucent View. Both modules are optional peer dependencies.
 
-import * as ExpoGlass from "expo-glass-effect";
-import * as ExpoBlur from "expo-blur";
+import type * as ExpoGlassTypes from "expo-glass-effect";
+import type * as ExpoBlurTypes from "expo-blur";
 import { useTheme } from "../theme.js";
 import { liquidGlassAvailable } from "./liquid-glass.js";
 import {
@@ -16,8 +16,27 @@ import {
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
-const GlassView = (ExpoGlass as { GlassView?: typeof ExpoGlass.GlassView }).GlassView;
-const BlurView = (ExpoBlur as { BlurView?: typeof ExpoBlur.BlurView }).BlurView;
+// Both modules are OPTIONAL peers: consumers without them must still build, so
+// each is loaded with a guarded literal require (bundlers that have it installed
+// include it; missing packages degrade to the translucent fallback) instead of a
+// static import (which fails module resolution for everyone who skipped it).
+declare const require: ((id: string) => unknown) | undefined;
+let GlassView: typeof ExpoGlassTypes.GlassView | undefined;
+let BlurView: typeof ExpoBlurTypes.BlurView | undefined;
+try {
+  if (typeof require === "function") {
+    GlassView = (require("expo-glass-effect") as { GlassView?: typeof ExpoGlassTypes.GlassView }).GlassView;
+  }
+} catch {
+  GlassView = undefined;
+}
+try {
+  if (typeof require === "function") {
+    BlurView = (require("expo-blur") as { BlurView?: typeof ExpoBlurTypes.BlurView }).BlurView;
+  }
+} catch {
+  BlurView = undefined;
+}
 
 export function GlassSurface({ style, children, pointerEvents }: GlassSurfaceProps) {
   const { surface, dark } = useTheme();
