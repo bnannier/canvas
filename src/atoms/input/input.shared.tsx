@@ -1,5 +1,9 @@
 import { forwardRef, useState } from "react";
-import { type GestureResponderEvent, type TextInput as RNTextInput } from "react-native";
+import {
+  type GestureResponderEvent,
+  type TextInput as RNTextInput,
+  type TextInputProps as RNTextInputProps,
+} from "react-native";
 import { View, Pressable, Text, TextInput, useTheme, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
@@ -29,8 +33,35 @@ const ICON_BOOL: Record<string, "search" | "mail" | "lock" | "user" | "key" | "g
 // and reads as half-baked, so the shared FOCUS_RESET suppresses it there and the
 // group shows focus on its shared border instead. No-op on native (no CSS outline).
 
-export interface InputProps {
-  /** Current text value (controlled). */
+/**
+ * The curated slice of React Native's TextInput behavior forwarded by Input and
+ * Textarea. Styling stays semantic (the kit's boolean props); BEHAVIOR — what
+ * keyboard appears, how text is captured, focus/submit events — belongs to the
+ * consumer, and hiding it made real forms (login, search, OTP) impossible to
+ * build. Typed via Pick so the props track react-native's own definitions.
+ */
+export type TextEntryProps = Pick<
+  RNTextInputProps,
+  | "defaultValue"
+  | "secureTextEntry"
+  | "keyboardType"
+  | "inputMode"
+  | "autoCapitalize"
+  | "autoComplete"
+  | "autoCorrect"
+  | "autoFocus"
+  | "maxLength"
+  | "returnKeyType"
+  | "textContentType"
+  | "onSubmitEditing"
+  | "onFocus"
+  | "onBlur"
+  | "onKeyPress"
+  | "testID"
+>;
+
+export interface InputProps extends TextEntryProps {
+  /** Current text value (controlled). Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Called with the new text on each keystroke. */
   onChangeText?: (text: string) => void;
@@ -145,8 +176,30 @@ export function createInput(skin: InputSkin) {
       placeholderTextColor: tokens["muted-foreground"],
       editable: !disabled && !readOnly,
       selectionColor: tokens.primary, // brand cursor / selection on every platform
-      onFocus: () => setFocused(true),
-      onBlur: () => setFocused(false),
+      // Text-entry behavior passthrough (the curated TextEntryProps slice).
+      defaultValue: props.defaultValue,
+      secureTextEntry: props.secureTextEntry,
+      keyboardType: props.keyboardType,
+      inputMode: props.inputMode,
+      autoCapitalize: props.autoCapitalize,
+      autoComplete: props.autoComplete,
+      autoCorrect: props.autoCorrect,
+      autoFocus: props.autoFocus,
+      maxLength: props.maxLength,
+      returnKeyType: props.returnKeyType,
+      textContentType: props.textContentType,
+      onSubmitEditing: props.onSubmitEditing,
+      onKeyPress: props.onKeyPress,
+      testID: props.testID,
+      // Internal focus styling chains with (never replaces) the consumer's handlers.
+      onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
+        setFocused(true);
+        props.onFocus?.(e);
+      },
+      onBlur: (e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
+        setFocused(false);
+        props.onBlur?.(e);
+      },
       // Surface the validation problem programmatically, not just as a red border
       // (WCAG 1.4.1 / 4.1.2). `aria-invalid` is the cross-platform alias RNW
       // forwards to the DOM input as aria-invalid="true" so web screen readers

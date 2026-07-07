@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useTheme, type ColorTokens, type ViewStyle } from "../../style/index.js";
+import { Pressable, View, Text, useTheme, useControllableState, type ColorTokens, type ViewStyle } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so colors follow light/dark.
@@ -10,12 +10,16 @@ import { Pressable, View, Text, useTheme, type ColorTokens, type ViewStyle } fro
 // and web alike (a real .css file would only work on the web).
 
 export interface SwitchProps {
-  /** Controlled on/off state. The component renders exactly this value. */
+  /** Controlled on/off state; omit for uncontrolled use. */
   checked?: boolean;
-  /** Fired with the next checked value when the switch is toggled. */
+  /** Initial state for uncontrolled use (a bare <Switch /> is interactive). */
+  defaultChecked?: boolean;
+  /** Fired with the next checked value when the switch is toggled (both modes). */
   onChange?: (next: boolean) => void;
   /** Alias of onChange, for parity with RN's value-style callbacks. */
   onValueChange?: (next: boolean) => void;
+  /** E2E hook forwarded to the pressable row. */
+  testID?: string;
   // Size (pick one; default is the standard track).
   small?: boolean;
   large?: boolean;
@@ -59,20 +63,30 @@ const DESC_FONT: Record<Size, number> = { small: 11, base: 12, large: 14 };
 /** Build a Switch component from a platform skin. */
 export function createSwitch(skin: SwitchSkin) {
   return function Switch(props: SwitchProps) {
-    const { checked = false, onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
+    const { onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
     const { tokens, dark } = useTheme();
     const size = sizeOf(props);
 
+    // Controlled when `checked` is provided, self-managed otherwise, so a bare
+    // <Switch /> toggles out of the box (the standard library contract).
+    const [checked, setChecked] = useControllableState<boolean>(
+      props.checked,
+      props.defaultChecked ?? false,
+      (next) => {
+        onChange?.(next);
+        onValueChange?.(next);
+      },
+    );
+
     const handlePress = (_event: GestureResponderEvent) => {
-      const next = !checked;
-      onChange?.(next);
-      onValueChange?.(next);
+      setChecked(!checked);
     };
 
     return (
       <Pressable
         onPress={handlePress}
         disabled={disabled}
+        testID={props.testID}
         accessibilityRole="switch"
         accessibilityLabel={accessibilityLabel}
         aria-label={accessibilityLabel}

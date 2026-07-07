@@ -1,6 +1,7 @@
 import { forwardRef, useState } from "react";
-import { type TextInput as RNTextInput } from "react-native";
+import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import { TextInput, useTheme, FOCUS_RESET, type StyleProp, type TextStyle } from "../../style/index.js";
+import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
 // react-native-web paints the browser's blue focus outline on a focused multiline
@@ -14,8 +15,8 @@ import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.st
 // file supplies only its skin (fill, shape, border/underline, focus feedback)
 // and calls createTextarea.
 
-export interface TextareaProps {
-  /** Controlled text value. */
+export interface TextareaProps extends TextEntryProps {
+  /** Controlled text value. Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Fired with the next text value on each edit. */
   onChangeText?: (next: string) => void;
@@ -80,8 +81,30 @@ export function createTextarea(skin: TextareaSkin) {
         selectionColor={tokens.primary} // brand cursor / selection on every platform
         editable={!disabled}
         textAlignVertical="top"
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        // Text-entry behavior passthrough (the curated TextEntryProps slice).
+        defaultValue={props.defaultValue}
+        secureTextEntry={props.secureTextEntry}
+        keyboardType={props.keyboardType}
+        inputMode={props.inputMode}
+        autoCapitalize={props.autoCapitalize}
+        autoComplete={props.autoComplete}
+        autoCorrect={props.autoCorrect}
+        autoFocus={props.autoFocus}
+        maxLength={props.maxLength}
+        returnKeyType={props.returnKeyType}
+        textContentType={props.textContentType}
+        onSubmitEditing={props.onSubmitEditing}
+        onKeyPress={props.onKeyPress}
+        testID={props.testID}
+        // Internal focus styling chains with (never replaces) the consumer's handlers.
+        onFocus={(e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
+          setFocused(true);
+          props.onFocus?.(e);
+        }}
+        onBlur={(e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
+          setFocused(false);
+          props.onBlur?.(e);
+        }}
         style={[
           skin.field(tokens, { error: isError, focused }),
           sizeText(size),
