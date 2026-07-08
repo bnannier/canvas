@@ -74,14 +74,16 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
           </Text>
         </View>
       ) : null}
-      {/* Per-platform overlay host: a portaled overlay (e.g. an open dropdown
-          menu) anchors and dismisses within this cell, contained to its stage row
-          instead of covering the gallery. */}
-      <OverlayProvider style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 16, minHeight: 84 }}>
+      {/* The live render cell. The overlay host is ONE per stage (see Playground),
+          not per cell: a per-cell host traps its outlet inside the cell's stacking
+          context, so an open menu on an upper row is clipped by the cell and painted
+          under lower rows. A single stage-level outlet floats overlays above every
+          row instead. */}
+      <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 16, minHeight: 84 }}>
         <ExampleErrorBoundary key={resetKey}>
           <FitStage>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
-      </OverlayProvider>
+      </View>
     </View>
   );
 }
@@ -102,45 +104,43 @@ export function Playground({ examples }: { examples: DocExample[] }) {
   const showLabels = previews.length > 1;
 
   const stage = (
-    <View
-      // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
-      // react-native-web draws for a scrollable demo (a ScrollView/list/table) inside a
-      // preview cell — a real iOS/Android device shows a transient indicator, not a
-      // persistent bar. Web-only attribute; a no-op on native.
-      {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
-      style={{ flex: 1, minWidth: 0 }}
-    >
-      {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
-          (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
-          clear hole. The cells below inherit it. */}
-      <DocsSurface
-        fill="card"
-        style={{
-          borderWidth: 1,
-          borderBottomWidth: 0,
-          borderColor: tokens.border,
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          // Overlays (an open Dropdown/Select/Popover menu) portal into a per-cell
-          // OverlayProvider that lives INSIDE this stage. A downward-opening menu
-          // near the stage bottom (e.g. the Avatar topbar account dropdown in the
-          // Web row) would be clipped by an `overflow: "hidden"` here, so keep it
-          // visible and lift the stage above the CodeBlock below (position + zIndex)
-          // so the menu floats over the code instead of being cut off. The stage's
-          // own rounded fill still draws the corners; children are inset, so nothing
-          // bleeds past them without the clip. Horizontal example overflow is still
-          // contained by FitStage's own ScrollView, not this.
-          overflow: "visible",
-          position: "relative",
-          zIndex: 1,
-        }}
+    // ONE overlay host per stage (not per cell). A portaled overlay (an open
+    // Dropdown / Select / Combobox / Popover / Row-menu menu) renders into this
+    // stage-level outlet, which paints above ALL device rows AND the code block, so
+    // it is neither clipped by the stage nor occluded by a lower row's trigger.
+    // Anchoring stays correct: AnchoredOverlay measures the trigger relative to this
+    // outlet. Because overlays no longer render inside the stage card, the card can
+    // keep its clean `overflow: "hidden"` rounded corners.
+    <OverlayProvider style={{ flex: 1, minWidth: 0 }}>
+      <View
+        // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
+        // react-native-web draws for a scrollable demo (a ScrollView/list/table) inside a
+        // preview cell — a real iOS/Android device shows a transient indicator, not a
+        // persistent bar. Web-only attribute; a no-op on native.
+        {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
+        style={{ flex: 1, minWidth: 0 }}
       >
-        {previews.map((p, i) => (
-          <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} />
-        ))}
-      </DocsSurface>
-      <CodeBlock code={ex.code} flush />
-    </View>
+        {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
+            (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
+            clear hole. The cells below inherit it. */}
+        <DocsSurface
+          fill="card"
+          style={{
+            borderWidth: 1,
+            borderBottomWidth: 0,
+            borderColor: tokens.border,
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            overflow: "hidden",
+          }}
+        >
+          {previews.map((p, i) => (
+            <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} />
+          ))}
+        </DocsSurface>
+        <CodeBlock code={ex.code} flush />
+      </View>
+    </OverlayProvider>
   );
 
   if (examples.length <= 1) return stage;
