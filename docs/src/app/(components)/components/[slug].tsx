@@ -2,9 +2,11 @@ import { Redirect, useLocalSearchParams } from "expo-router";
 import { View, Text, useTheme } from "@olympusoss/canvas";
 import { COMPONENTS, getComponent } from "../../../core/data/components";
 import { COMPONENT_DOCS } from "../../../core/registry";
+import { COMPONENT_PROPS } from "../../../core/props";
 import { Page } from "../../../ui/page";
 import { Lead } from "../../../ui/prose";
 import { Playground } from "../../../ui/playground";
+import { PropTables } from "../../../ui/prop-table";
 import { Donts } from "../../../ui/dont";
 import { PageNav } from "../../../ui/page-nav";
 import { stripHtml } from "../../../lib/html";
@@ -21,7 +23,9 @@ export default function ComponentScreen() {
   const comp = slug ? getComponent(slug) : undefined;
   if (!comp) return <Redirect href="/components" />;
 
-  const entry = COMPONENT_DOCS[comp.dir ?? comp.slug];
+  const key = comp.dir ?? comp.slug;
+  const entry = COMPONENT_DOCS[key];
+  const propGroups = COMPONENT_PROPS[key];
 
   return (
     <Page>
@@ -39,6 +43,7 @@ export default function ComponentScreen() {
           </Text>
         </View>
       )}
+      {propGroups && propGroups.length > 0 ? <PropTables groups={propGroups} /> : null}
       {entry && entry.donts.length > 0 ? <Donts donts={entry.donts} /> : null}
       <PageNav />
     </Page>

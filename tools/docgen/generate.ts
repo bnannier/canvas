@@ -15,6 +15,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, type Example, type DontPair } from "./parse-md.ts";
+import { extractProps, type PropGroup } from "./extract-props.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -24,6 +25,16 @@ type Category = (typeof CATEGORIES)[number];
 const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
 const RAW_MD_FILE = path.join(REPO, "docs", "src", "core", "raw-md.ts");
+const PROPS_FILE = path.join(REPO, "docs", "src", "core", "props.ts");
+
+// The source files a dir's prop tables are extracted from: every `.tsx` in the dir
+// except the platform forks (which only wire skins, no Props) and tests. Scanning
+// all of them lets a dir with more than one Props-bearing file (e.g. charts.shared
+// + charts-viz) contribute every group.
+const IS_PROP_SOURCE = (name: string) =>
+  name.endsWith(".tsx") &&
+  !/\.(ios|android|web)\.tsx$/.test(name) &&
+  !/\.test\.tsx$/.test(name);
 
 // The raw markdown of every component, keyed exactly like the web docs'
 // import.meta.glob (so the reused Compare page can read it on Metro instead).
@@ -235,10 +246,40 @@ ${entries.map(entrySrc).join("\n")}
 `;
 }
 
+// Emit docs/src/core/props.ts: the generated prop tables, keyed by dir exactly like
+// COMPONENT_DOCS so the component page can look them up with the same key.
+function renderProps(props: Record<string, PropGroup[]>): string {
+  const keys = Object.keys(props).sort();
+  const body = keys
+    .map((k) => `  ${JSON.stringify(k)}: ${JSON.stringify(props[k])},`)
+    .join("\n");
+  return `${GENERATED_HEADER}
+// Generated prop tables, extracted from each component's exported \`*Props\` interface
+// by tools/docgen/extract-props.ts (the TypeScript checker), keyed by source dir.
+
+export interface PropDoc {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+}
+
+export interface PropGroup {
+  name: string;
+  props: PropDoc[];
+}
+
+export const COMPONENT_PROPS: Record<string, PropGroup[]> = {
+${body}
+};
+`;
+}
+
 function main() {
   fs.mkdirSync(EXAMPLES_DIR, { recursive: true });
 
   const entries: Entry[] = [];
+  const propSources: { dir: string; file: string }[] = [];
   let exampleCount = 0;
   let dontCount = 0;
 
@@ -253,6 +294,10 @@ function main() {
       const { examples, donts } = splitDoc(content);
       if (examples.length === 0 && donts.length === 0) continue;
       entries.push(buildEntry(category, dir, examples, donts));
+      // Collect this dir's Props-bearing source files for the prop tables.
+      for (const f of fs.readdirSync(path.join(catDir, dir)).sort()) {
+        if (IS_PROP_SOURCE(f)) propSources.push({ dir, file: path.join(catDir, dir, f) });
+      }
       exampleCount += examples.length;
       dontCount += donts.length;
     }
@@ -299,9 +344,17 @@ function main() {
       `export const RAW: Record<string, string> = ${JSON.stringify(rawMd)};\n`,
   );
 
+  const props = extractProps(propSources);
+  writeFileIfChanged(PROPS_FILE, renderProps(props));
+  const propGroupCount = Object.values(props).reduce((n, groups) => n + groups.length, 0);
+  const propRowCount = Object.values(props).reduce(
+    (n, groups) => n + groups.reduce((m, g) => m + g.props.length, 0),
+    0,
+  );
+
   console.log(
     `docs:gen — ${entries.length} components, ${exampleCount} examples, ${dontCount} Do/Don't pairs ` +
-      `(${exampleCount + dontCount * 2} modules) → docs/src/core/`,
+      `(${exampleCount + dontCount * 2} modules); ${propGroupCount} prop tables, ${propRowCount} rows → docs/src/core/`,
   );
 }
 
