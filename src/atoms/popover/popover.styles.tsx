@@ -65,7 +65,7 @@ export const triggerWrap: ViewStyle = { alignSelf: "flex-start" };
 export const cardFloating: ViewStyle = {
   position: "absolute",
   top: "100%",
-  left: 0,
+  start: 0,
   zIndex: 50,
   marginTop: 8,
 };
@@ -161,7 +161,7 @@ export const iosSkin: PopoverSkin = {
         viewBox={`0 0 ${IOS_BEAK_W} ${IOS_BEAK_H}`}
         style={{
           position: "absolute",
-          left: 24,
+          start: 24,
           // Overlap the card edge by ~1px so the seam welds shut: ride the TOP
           // edge (pointing up) when the card is below the trigger, and the BOTTOM
           // edge (pointing down) when the card is above it.

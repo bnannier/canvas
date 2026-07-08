@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, useTheme, alpha, palette, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type IconTileSkin } from "./icon-tile.styles.js";
 
 // Shared IconTile shell. The tinted rounded square that holds a single Icon,
@@ -59,7 +59,7 @@ function tintBg(tokens: ColorTokens, tone: Tone): string {
     case "destructive":
       return alpha(tokens.destructive, 0.12);
     case "success":
-      return alpha(palette["green-500"], 0.12);
+      return alpha(tokens.success, 0.12);
     case "muted":
       return tokens.muted;
   }
@@ -81,7 +81,7 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
     case "destructive":
       return tokens.destructive;
     case "success":
-      return palette["green-600"];
+      return tokens.success;
     case "muted":
       return tokens["muted-foreground"];
   }

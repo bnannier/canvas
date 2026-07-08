@@ -54,6 +54,10 @@ function radiusOf(style: GlassSurfaceProps["style"]): ViewStyle {
     borderTopRightRadius: f.borderTopRightRadius,
     borderBottomLeftRadius: f.borderBottomLeftRadius,
     borderBottomRightRadius: f.borderBottomRightRadius,
+    borderTopStartRadius: f.borderTopStartRadius,
+    borderTopEndRadius: f.borderTopEndRadius,
+    borderBottomStartRadius: f.borderBottomStartRadius,
+    borderBottomEndRadius: f.borderBottomEndRadius,
   };
 }
 

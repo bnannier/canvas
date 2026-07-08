@@ -1,5 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
-import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, Pressable, useTheme, GlassSurface, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -126,6 +127,13 @@ export function createDialog(skin: DialogSkin) {
       setOpen(false);
     };
 
+    // Web focus management for the modal: move focus into the panel on open, trap
+    // Tab within it, and return focus to the trigger on close; Escape dismisses it
+    // as a Cancel. All of this is a no-op natively / under SSR (guarded on
+    // `document`).
+    const panelRef = useDialogFocus(open);
+    useEscapeKey(open, cancel);
+
     // The confirm/cancel footer. Three platform shapes:
     //   - web (footerKind "buttons", no skin.textButton): the outline Cancel +
     //     primary/destructive Confirm Button row (verbatim Canvas look).
@@ -221,7 +229,8 @@ export function createDialog(skin: DialogSkin) {
             // the data-driven case) are wired as the accessible name/description via
             // aria-labelledby/aria-describedby. `accessibilityViewIsModal` keeps iOS
             // VoiceOver honoring the inert backdrop (RNW drops it, hence the
-            // aria-modal alias). No focus trap is attempted (hard cross-platform).
+            // aria-modal alias). On the web the panel below also traps Tab focus and
+            // returns focus to the trigger on close (see useDialogFocus).
             role={destructive ? "alertdialog" : "dialog"}
             accessibilityViewIsModal={true}
             aria-modal={true}
@@ -230,34 +239,43 @@ export function createDialog(skin: DialogSkin) {
             style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}
           >
             <GlassSurface style={[s.cardLayout, skin.card(tokens), s.cardWidth(size), style]}>
-              {children != null ? (
-                children
-              ) : (
-                <>
-                  {title != null ? (
-                    <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
-                      {title}
-                    </Text>
-                  ) : null}
-                  {description != null ? (
-                    <Text nativeID={descriptionId} style={skin.body(tokens)}>
-                      {description}
-                    </Text>
-                  ) : null}
-                  {withBody ? (
-                    <View style={skin.formBody}>
-                      <Text nativeID={amountId} style={skin.fieldLabel(tokens)}>Amount</Text>
-                      <View style={skin.amountRow}>
-                        <Text style={skin.currency(tokens)}>$</Text>
-                        <Input value="90.00" style={skin.amountInput} accessibilityLabel="Amount" aria-labelledby={amountId} />
-                      </View>
-                      <Text nativeID={reasonId} style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>
-                      <Input placeholder="Duplicate charge" accessibilityLabel="Reason" aria-labelledby={reasonId} />
-                    </View>
-                  ) : null}
-                  {footer}
-                </>
-              )}
+              {/* The panel content region: a focusable (tabIndex -1) container the
+                  web focus manager pulls focus into and traps Tab within, wrapping
+                  the content in a KeyboardAvoidingView so the iOS keyboard never
+                  covers a form field (padding behavior on iOS; a plain passthrough
+                  View on web/Android). Neither wrapper adds layout of its own. */}
+              <View ref={panelRef} tabIndex={-1}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+                  {children != null ? (
+                    children
+                  ) : (
+                    <>
+                      {title != null ? (
+                        <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
+                          {title}
+                        </Text>
+                      ) : null}
+                      {description != null ? (
+                        <Text nativeID={descriptionId} style={skin.body(tokens)}>
+                          {description}
+                        </Text>
+                      ) : null}
+                      {withBody ? (
+                        <View style={skin.formBody}>
+                          <Text nativeID={amountId} style={skin.fieldLabel(tokens)}>Amount</Text>
+                          <View style={skin.amountRow}>
+                            <Text style={skin.currency(tokens)}>$</Text>
+                            <Input value="90.00" style={skin.amountInput} accessibilityLabel="Amount" aria-labelledby={amountId} />
+                          </View>
+                          <Text nativeID={reasonId} style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>
+                          <Input placeholder="Duplicate charge" accessibilityLabel="Reason" aria-labelledby={reasonId} />
+                        </View>
+                      ) : null}
+                      {footer}
+                    </>
+                  )}
+                </KeyboardAvoidingView>
+              </View>
             </GlassSurface>
           </View>
         ) : null}

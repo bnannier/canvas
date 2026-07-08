@@ -76,7 +76,7 @@ const MENU_MIN_WIDTH = 200;
 // With a provider, AnchoredOverlay positions the card over the page and adds the
 // outside-tap dismiss backdrop instead. The skin owns the card's shape/fill/
 // shadow; this owns the inline anchoring.
-const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", left: 0, zIndex: 50, marginTop: 4 };
+const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: 4 };
 
 /** Build a Dropdown component from a platform skin. */
 export function createDropdown(skin: DropdownSkin) {

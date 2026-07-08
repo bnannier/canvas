@@ -23,6 +23,10 @@ export interface ColorTokens {
   "accent-foreground": string;
   destructive: string;
   "destructive-foreground": string;
+  success: string;
+  "success-foreground": string;
+  warning: string;
+  "warning-foreground": string;
   border: string;
   input: string;
   ring: string;
@@ -45,6 +49,10 @@ export const lightColors: ColorTokens = {
   "accent-foreground": "#18181b",
   destructive: "#dc2626",
   "destructive-foreground": "#ffffff",
+  success: "#16a34a",
+  "success-foreground": "#ffffff",
+  warning: "#d97706",
+  "warning-foreground": "#ffffff",
   border: "#e4e4e7",
   input: "#e4e4e7",
   ring: "#4f46e5",
@@ -67,6 +75,10 @@ export const darkColors: ColorTokens = {
   "accent-foreground": "#fafafa",
   destructive: "#ef4444",
   "destructive-foreground": "#fafafa",
+  success: "#22c55e",
+  "success-foreground": "#052e16",
+  warning: "#f59e0b",
+  "warning-foreground": "#451a03",
   border: "#27272a",
   input: "#27272a",
   ring: "#6366f1",

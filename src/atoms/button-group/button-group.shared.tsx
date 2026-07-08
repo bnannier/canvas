@@ -193,7 +193,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         {...selectionA11y}
       >
         {skin.showSelectedCheck && selected ? (
-          <Icon check primary size={s.chevronSize[size]} style={{ marginRight: 6 }} />
+          <Icon check primary size={s.chevronSize[size]} style={{ marginEnd: 6 }} />
         ) : null}
         <Text style={[s.sizeLabel[size], skin.segmentLabel(tokens, selected)]}>{label}</Text>
       </Pressable>

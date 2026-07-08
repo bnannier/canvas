@@ -114,10 +114,10 @@ export const sheetHeaderTitleWrap: ViewStyle = { flex: 1, alignItems: "center", 
 
 // The drawer anchors to the right edge, full height. Shared anchoring; the skin
 // owns fill/border/radius/padding/shadow.
-const DRAWER_ANCHOR: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, width: 300 };
+const DRAWER_ANCHOR: ViewStyle = { position: "absolute", top: 0, end: 0, bottom: 0, width: 300 };
 
 // The sheet anchors to the bottom edge, spanning the width. Shared anchoring.
-const SHEET_ANCHOR: ViewStyle = { position: "absolute", left: 0, right: 0, bottom: 0 };
+const SHEET_ANCHOR: ViewStyle = { position: "absolute", start: 0, end: 0, bottom: 0 };
 
 // The modal is a self-centered floating card.
 const MODAL_BOX: ViewStyle = { alignSelf: "center", marginVertical: 48, width: "100%", maxWidth: 420 };
@@ -135,7 +135,7 @@ export const webSkin: OverlaySkin = {
         return {
           ...DRAWER_ANCHOR,
           backgroundColor: t.popover,
-          borderLeftWidth: 1,
+          borderStartWidth: 1,
           borderColor: t.border,
           padding: 20,
           ...shadow("xl"),
@@ -146,8 +146,8 @@ export const webSkin: OverlaySkin = {
           backgroundColor: t.popover,
           borderTopWidth: 1,
           borderColor: t.border,
-          borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
+          borderTopStartRadius: 8,
+          borderTopEndRadius: 8,
           padding: 20,
           ...shadow("xl"),
         };
@@ -193,8 +193,8 @@ export const iosSkin: OverlaySkin = {
           ...DRAWER_ANCHOR,
           backgroundColor: t.popover,
           // The leading edge rounds (the panel slides in from the right edge).
-          borderTopLeftRadius: IOS_SHEET_RADIUS,
-          borderBottomLeftRadius: IOS_SHEET_RADIUS,
+          borderTopStartRadius: IOS_SHEET_RADIUS,
+          borderBottomStartRadius: IOS_SHEET_RADIUS,
           padding: 20,
           ...shadow("xl"),
         };
@@ -203,8 +203,8 @@ export const iosSkin: OverlaySkin = {
           ...SHEET_ANCHOR,
           backgroundColor: t.popover,
           // Top corners rounded ~38, flat bottom (presents from the bottom edge).
-          borderTopLeftRadius: IOS_SHEET_RADIUS,
-          borderTopRightRadius: IOS_SHEET_RADIUS,
+          borderTopStartRadius: IOS_SHEET_RADIUS,
+          borderTopEndRadius: IOS_SHEET_RADIUS,
           paddingHorizontal: 16,
           // A little more top padding to seat the grabber above the header toolbar.
           paddingTop: 8,
@@ -270,8 +270,8 @@ export const androidSkin: OverlaySkin = {
           ...DRAWER_ANCHOR,
           backgroundColor: t.popover,
           // M3 navigation drawer: the trailing (leading-in) edge gets the large radius.
-          borderTopLeftRadius: ANDROID_SHEET_RADIUS,
-          borderBottomLeftRadius: ANDROID_SHEET_RADIUS,
+          borderTopStartRadius: ANDROID_SHEET_RADIUS,
+          borderBottomStartRadius: ANDROID_SHEET_RADIUS,
           padding: 24,
           ...shadow("lg"),
         };
@@ -280,8 +280,8 @@ export const androidSkin: OverlaySkin = {
           ...SHEET_ANCHOR,
           backgroundColor: t.popover,
           // Top corners radius 28, flat bottom (M3 modal bottom sheet).
-          borderTopLeftRadius: ANDROID_SHEET_RADIUS,
-          borderTopRightRadius: ANDROID_SHEET_RADIUS,
+          borderTopStartRadius: ANDROID_SHEET_RADIUS,
+          borderTopEndRadius: ANDROID_SHEET_RADIUS,
           paddingHorizontal: 24,
           // Top padding seats the drag handle; M3 bottom-sheet content inset.
           paddingTop: 16,

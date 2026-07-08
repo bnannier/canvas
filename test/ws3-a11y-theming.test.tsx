@@ -3,12 +3,13 @@ import { render, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { Slider } from "../src/atoms/slider/slider.tsx";
 import { StackedBar } from "../src/organisms/charts/charts.tsx";
 import { ToastProvider } from "../src/organisms/toast/toast.tsx";
 
-// Locks in the WS3/WS4 audit fixes: Escape-to-dismiss on anchored overlays, the
-// ThemeProvider brand-token override, the persistent Toast live region, and
-// data-bearing chart accessible names.
+// Locks in the WS3/WS4 audit fixes: Escape-to-dismiss on anchored overlays, web
+// keyboard operability of the Slider, the ThemeProvider brand-token override, the
+// persistent Toast live region, and data-bearing chart accessible names.
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
@@ -28,6 +29,72 @@ describe("useEscapeKey — Escape dismisses anchored overlays", () => {
     fireEvent.keyDown(document, { key: "Escape" });
     expect(queryByText("Sign out")).toBeNull();
     expect(container).toBeTruthy();
+  });
+});
+
+describe("Slider — web keyboard operability", () => {
+  // Focus the slider handle (role="slider") and drive it from the keyboard; assert
+  // both the reported onChange value AND the announced aria-valuenow move in step.
+  const handle = (c: HTMLElement) => c.querySelector('[role="slider"]') as Element;
+  const now = (c: HTMLElement) => handle(c).getAttribute("aria-valuenow");
+
+  it("ArrowRight/ArrowUp increments by one step and updates aria-valuenow", () => {
+    let reported = -1;
+    const { container } = ui(<Slider defaultValue={50} onChange={(v) => { reported = v; }} />);
+    expect(now(container)).toBe("50");
+    fireEvent.keyDown(handle(container), { key: "ArrowRight" });
+    expect(reported).toBe(51);
+    expect(now(container)).toBe("51");
+    fireEvent.keyDown(handle(container), { key: "ArrowUp" });
+    expect(reported).toBe(52);
+    expect(now(container)).toBe("52");
+  });
+
+  it("ArrowLeft/ArrowDown decrements by one step", () => {
+    const { container } = ui(<Slider defaultValue={50} />);
+    fireEvent.keyDown(handle(container), { key: "ArrowLeft" });
+    expect(now(container)).toBe("49");
+    fireEvent.keyDown(handle(container), { key: "ArrowDown" });
+    expect(now(container)).toBe("48");
+  });
+
+  it("PageUp/PageDown jump by a coarse page (10 steps)", () => {
+    const { container } = ui(<Slider defaultValue={50} step={2} />);
+    fireEvent.keyDown(handle(container), { key: "PageUp" });
+    expect(now(container)).toBe("70"); // 50 + 10*step(2)
+    fireEvent.keyDown(handle(container), { key: "PageDown" });
+    expect(now(container)).toBe("50");
+  });
+
+  it("Home jumps to min, End jumps to max, both clamped", () => {
+    const { container } = ui(<Slider defaultValue={50} min={0} max={100} />);
+    fireEvent.keyDown(handle(container), { key: "End" });
+    expect(now(container)).toBe("100");
+    fireEvent.keyDown(handle(container), { key: "ArrowRight" }); // already at max, stays clamped
+    expect(now(container)).toBe("100");
+    fireEvent.keyDown(handle(container), { key: "Home" });
+    expect(now(container)).toBe("0");
+    fireEvent.keyDown(handle(container), { key: "ArrowLeft" }); // already at min, stays clamped
+    expect(now(container)).toBe("0");
+  });
+
+  it("respects a controlled value: onChange reports, the value does not self-advance", () => {
+    let reported = -1;
+    const { container } = ui(<Slider value={20} onChange={(v) => { reported = v; }} />);
+    fireEvent.keyDown(handle(container), { key: "ArrowRight" });
+    expect(reported).toBe(21); // reported to the parent…
+    expect(now(container)).toBe("20"); // …but the pinned value governs the display
+  });
+
+  it("is a tab-stop when enabled and drops out of the tab order when disabled", () => {
+    const { container: on } = ui(<Slider defaultValue={50} />);
+    expect(handle(on).getAttribute("tabindex")).toBe("0");
+    let reported = -1;
+    const { container: off } = ui(<Slider defaultValue={50} disabled onChange={(v) => { reported = v; }} />);
+    expect(handle(off).getAttribute("tabindex")).toBe("-1");
+    fireEvent.keyDown(handle(off), { key: "ArrowRight" });
+    expect(reported).toBe(-1); // disabled swallows the key
+    expect(now(off)).toBe("50");
   });
 });
 

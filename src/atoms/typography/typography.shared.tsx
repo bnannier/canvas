@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Text, useTheme, type StyleProp, type TextStyle } from "../../style/index.js";
+import { Text, useTheme, MONO_FONT, type StyleProp, type TextStyle } from "../../style/index.js";
 import { type Role, type Tone, type Weight, roleColor, toneColor, weightStyle, MONO_ROLES } from "./typography.styles.js";
 
 // Shared Typography shell. The structure (a single styled Text), the role axis
@@ -153,7 +153,7 @@ export function createTypography(skin: TypographySkin) {
 
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
-    const monoStyle = MONO_ROLES.has(role) ? { fontFamily: "monospace" as const } : null;
+    const monoStyle = MONO_ROLES.has(role) ? { fontFamily: MONO_FONT } : null;
 
     // Heading roles expose the native heading trait + level so screen readers
     // can navigate heading-by-heading (the H key / rotor); body/helper roles

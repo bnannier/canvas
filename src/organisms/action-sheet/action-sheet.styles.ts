@@ -159,8 +159,8 @@ export const androidSkin: ActionSheetSkin = {
   cancelLayout: "lastRow",
   stack: {},
   actionsCard: (t) => ({
-    borderTopLeftRadius: ANDROID_RADIUS,
-    borderTopRightRadius: ANDROID_RADIUS,
+    borderTopStartRadius: ANDROID_RADIUS,
+    borderTopEndRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,
     paddingBottom: 8,
   }),

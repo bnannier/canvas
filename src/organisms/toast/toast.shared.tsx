@@ -347,8 +347,8 @@ const TEXT_COL: ViewStyle = { flexShrink: 1, flexGrow: 1, gap: 2 };
 // The portal stack: bottom-anchored, centered, newest at the bottom of the column.
 const STACK: ViewStyle = {
   position: "absolute",
-  left: 0,
-  right: 0,
+  start: 0,
+  end: 0,
   bottom: STACK_BOTTOM_INSET,
   alignItems: "center",
   gap: 8,

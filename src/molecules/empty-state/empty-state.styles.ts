@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, alpha } from "../../style/index.js";
+import { type ColorTokens, alpha } from "../../style/index.js";
 
 // Co-located EmptyState skins, one per platform. EmptyState is a "Light"
 // treatment: identical structure and semantic colors (those live below as the
@@ -47,9 +47,9 @@ export interface EmptyStateSkin {
 
 // ---- Shared, platform-neutral color logic (the same on every OS) -------------
 // The bordered card's border color follows the semantic `border` token. The
-// `positive` tone paints the disc and glyph green from the fixed Tailwind palette
-// (green-600), while the default tone stays on the semantic muted / muted-
-// foreground tokens so it follows light/dark/glass.
+// `positive` tone paints the disc and glyph green from the semantic `success`
+// token (so it follows light/dark), while the default tone stays on the semantic
+// muted / muted-foreground tokens so it follows light/dark/glass.
 
 export function borderedSurface(tokens: ColorTokens): ViewStyle {
   return { borderColor: tokens.border };
@@ -58,12 +58,12 @@ export function borderedSurface(tokens: ColorTokens): ViewStyle {
 // Disc fill per tone: a 10% green wash when positive, the muted token otherwise.
 export function discTone(tokens: ColorTokens, tone: Tone): ViewStyle {
   return tone === "positive"
-    ? { backgroundColor: alpha(palette["green-600"], 0.1) }
+    ? { backgroundColor: alpha(tokens.success, 0.1) }
     : { backgroundColor: tokens.muted };
 }
 
 export function glyphTone(tokens: ColorTokens, tone: Tone): TextStyle {
-  return tone === "positive" ? { color: palette["green-600"] } : { color: tokens["muted-foreground"] };
+  return tone === "positive" ? { color: tokens.success } : { color: tokens["muted-foreground"] };
 }
 
 // ---- Shared layout fragments reused across the skins -------------------------

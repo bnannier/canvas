@@ -35,16 +35,20 @@ export const GLASS_INTENSITY = 80;
 // absolute positioning, outer-margin/self-alignment, and SIZING (flex/width/
 // height) so the surface fills or sizes within its parent exactly as the single-
 // View version did. The inner clip box then fills the outer (flex: 1). Radius keys
-// are duplicated onto the outer box so its shadow is rounded.
+// are duplicated onto the outer box so its shadow is rounded. Both the physical
+// (left/right, marginLeft/Right) and the logical (start/end, marginStart/End) edge
+// keys are listed so a surface anchored either way routes to the outer box the same.
 const OUTER_KEYS = new Set<string>([
   "shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation",
-  "position", "top", "right", "bottom", "left", "zIndex",
-  "margin", "marginTop", "marginBottom", "marginLeft", "marginRight", "marginHorizontal", "marginVertical",
+  "position", "top", "right", "bottom", "left", "start", "end", "zIndex",
+  "margin", "marginTop", "marginBottom", "marginLeft", "marginRight", "marginStart", "marginEnd", "marginHorizontal", "marginVertical",
   "alignSelf", "flex", "flexGrow", "flexShrink", "flexBasis",
   "width", "height", "minWidth", "maxWidth", "minHeight", "maxHeight",
 ]);
 const RADIUS_KEYS = new Set<string>([
-  "borderRadius", "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
+  "borderRadius",
+  "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
+  "borderTopStartRadius", "borderTopEndRadius", "borderBottomStartRadius", "borderBottomEndRadius",
 ]);
 
 interface Split {
@@ -101,6 +105,9 @@ export function PlainSurface({ style, children, pointerEvents, testID }: GlassSu
 
 // The absolute-fill style for material layers, with taps passing through (the
 // content sits on top; the dismiss backdrop, when present, is a portal sibling).
+// A full-bleed cover layer (all four edges pinned), so it is direction-agnostic
+// and stays physical left/right — the RTL sweep converts reading-direction edges,
+// not symmetric full covers.
 export const MATERIAL_FILL: ViewStyle = {
   position: "absolute",
   top: 0,

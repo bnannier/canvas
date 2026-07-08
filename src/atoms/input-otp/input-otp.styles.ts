@@ -115,14 +115,14 @@ export const webSkin: InputOTPSkin = {
       // Shared borders: every cell draws top/right/bottom; only the first draws the left.
       borderTopWidth: 1,
       borderBottomWidth: 1,
-      borderRightWidth: 1,
-      borderLeftWidth: isFirst ? 1 : 0,
+      borderEndWidth: 1,
+      borderStartWidth: isFirst ? 1 : 0,
       borderColor: active ? t.ring : t.input,
       // Only the outer corners are rounded (first-left / last-right).
-      borderTopLeftRadius: isFirst ? WEB_RADIUS : 0,
-      borderBottomLeftRadius: isFirst ? WEB_RADIUS : 0,
-      borderTopRightRadius: isLast ? WEB_RADIUS : 0,
-      borderBottomRightRadius: isLast ? WEB_RADIUS : 0,
+      borderTopStartRadius: isFirst ? WEB_RADIUS : 0,
+      borderBottomStartRadius: isFirst ? WEB_RADIUS : 0,
+      borderTopEndRadius: isLast ? WEB_RADIUS : 0,
+      borderBottomEndRadius: isLast ? WEB_RADIUS : 0,
       // shadcn's data-[active]: a 3px ring at 50% alpha + raised z so it overlaps neighbors.
       ...(active
         ? {

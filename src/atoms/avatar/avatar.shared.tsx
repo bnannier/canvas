@@ -260,7 +260,7 @@ export function createAvatarGroup(skin: AvatarSkin) {
             key: child.key ?? i,
             ...sizeProps,
             ring: true,
-            style: [child.props.style, i > 0 ? { marginLeft: overlap } : null],
+            style: [child.props.style, i > 0 ? { marginStart: overlap } : null],
           }),
         )}
         {hidden > 0 ? (
@@ -276,7 +276,7 @@ export function createAvatarGroup(skin: AvatarSkin) {
               borderRadius: CIRCLE_RADIUS,
               borderWidth: 2,
               borderColor: tokens.background,
-              marginLeft: visible.length > 0 ? overlap : 0,
+              marginStart: visible.length > 0 ? overlap : 0,
             }}
           >
             <Text style={{ color: tokens["muted-foreground"], ...skin.labelType[size] }}>+{hidden}</Text>

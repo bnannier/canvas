@@ -121,13 +121,13 @@ export const webSkin: ButtonGroupSkin = {
   segmentBorderWidth: 1,
   joinCorners(index, count) {
     if (count === 1) return { borderRadius: 6 };
-    if (index === 0) return { borderTopLeftRadius: 6, borderBottomLeftRadius: 6 };
-    if (index === count - 1) return { borderTopRightRadius: 6, borderBottomRightRadius: 6 };
+    if (index === 0) return { borderTopStartRadius: 6, borderBottomStartRadius: 6 };
+    if (index === count - 1) return { borderTopEndRadius: 6, borderBottomEndRadius: 6 };
     return {};
   },
   spacedCorners: { borderRadius: 6 },
   // All but the leading segment overlap the previous border by 1px (-ml-px).
-  overlap: { marginLeft: -1 },
+  overlap: { marginStart: -1 },
   segmentSurface(t, selected) {
     return selected
       ? { zIndex: 10, borderColor: t.primary, backgroundColor: t.primary }
@@ -144,8 +144,8 @@ export const webSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopLeftRadius: 6,
-      borderBottomLeftRadius: 6,
+      borderTopStartRadius: 6,
+      borderBottomStartRadius: 6,
       backgroundColor: t.primary,
     };
   },
@@ -160,8 +160,8 @@ export const webSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopRightRadius: 6,
-      borderBottomRightRadius: 6,
+      borderTopEndRadius: 6,
+      borderBottomEndRadius: 6,
       backgroundColor: t.primary,
       paddingHorizontal: 8,
       height,
@@ -172,7 +172,7 @@ export const webSkin: ButtonGroupSkin = {
     return {
       position: "absolute",
       top: "100%",
-      right: 0,
+      end: 0,
       zIndex: 50,
       marginTop: 4,
       minWidth: 180,
@@ -204,15 +204,15 @@ export const webSkin: ButtonGroupSkin = {
       height,
     };
   },
-  stepperArrowLeft: { borderTopLeftRadius: 6, borderBottomLeftRadius: 6 },
-  stepperArrowRight: { marginLeft: -1, borderTopRightRadius: 6, borderBottomRightRadius: 6 },
+  stepperArrowLeft: { borderTopStartRadius: 6, borderBottomStartRadius: 6 },
+  stepperArrowRight: { marginStart: -1, borderTopEndRadius: 6, borderBottomEndRadius: 6 },
   stepperMiddle(t) {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 1,
-      marginLeft: -1,
+      marginStart: -1,
       borderColor: t.input,
       backgroundColor: t.background,
     };
@@ -280,8 +280,8 @@ export const iosSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopLeftRadius: 9999,
-      borderBottomLeftRadius: 9999,
+      borderTopStartRadius: 9999,
+      borderBottomStartRadius: 9999,
       backgroundColor: t.primary,
     };
   },
@@ -296,8 +296,8 @@ export const iosSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopRightRadius: 9999,
-      borderBottomRightRadius: 9999,
+      borderTopEndRadius: 9999,
+      borderBottomEndRadius: 9999,
       backgroundColor: t.primary,
       paddingHorizontal: 10,
       height,
@@ -308,7 +308,7 @@ export const iosSkin: ButtonGroupSkin = {
     return {
       position: "absolute",
       top: "100%",
-      right: 0,
+      end: 0,
       zIndex: 50,
       marginTop: 6,
       minWidth: 200,
@@ -339,15 +339,15 @@ export const iosSkin: ButtonGroupSkin = {
       height,
     };
   },
-  stepperArrowLeft: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8 },
-  stepperArrowRight: { marginLeft: 1, borderTopRightRadius: 8, borderBottomRightRadius: 8 },
+  stepperArrowLeft: { borderTopStartRadius: 8, borderBottomStartRadius: 8 },
+  stepperArrowRight: { marginStart: 1, borderTopEndRadius: 8, borderBottomEndRadius: 8 },
   stepperMiddle(t) {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 0,
-      marginLeft: 1,
+      marginStart: 1,
       backgroundColor: t.muted,
     };
   },
@@ -386,7 +386,7 @@ export const androidSkin: ButtonGroupSkin = {
   spacedCorners: { borderRadius: 9999, overflow: "hidden" },
   // Each segment after the first draws a 1dp leading divider in the outline color.
   overlap: null,
-  segmentDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
+  segmentDivider: (t) => ({ borderStartWidth: 1, borderStartColor: t.border }),
   segmentSurface(t, selected) {
     // Selected = tonal fill (secondaryContainer ≈ alpha(primary, .12)).
     return selected ? { backgroundColor: alpha(t.primary, 0.12) } : { backgroundColor: "transparent" };
@@ -403,8 +403,8 @@ export const androidSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopLeftRadius: 9999,
-      borderBottomLeftRadius: 9999,
+      borderTopStartRadius: 9999,
+      borderBottomStartRadius: 9999,
       backgroundColor: t.primary,
       // clip the Material ripple to the rounded outline
       overflow: "hidden",
@@ -421,8 +421,8 @@ export const androidSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopRightRadius: 9999,
-      borderBottomRightRadius: 9999,
+      borderTopEndRadius: 9999,
+      borderBottomEndRadius: 9999,
       backgroundColor: t.primary,
       paddingHorizontal: 10,
       height,
@@ -435,7 +435,7 @@ export const androidSkin: ButtonGroupSkin = {
     return {
       position: "absolute",
       top: "100%",
-      right: 0,
+      end: 0,
       zIndex: 50,
       marginTop: 4,
       minWidth: 200,
@@ -469,8 +469,8 @@ export const androidSkin: ButtonGroupSkin = {
       overflow: "hidden",
     };
   },
-  stepperArrowLeft: { borderTopLeftRadius: 9999, borderBottomLeftRadius: 9999 },
-  stepperArrowRight: { marginLeft: -1, borderTopRightRadius: 9999, borderBottomRightRadius: 9999 },
+  stepperArrowLeft: { borderTopStartRadius: 9999, borderBottomStartRadius: 9999 },
+  stepperArrowRight: { marginStart: -1, borderTopEndRadius: 9999, borderBottomEndRadius: 9999 },
   stepperMiddle(t) {
     return {
       flexDirection: "row",
@@ -478,7 +478,7 @@ export const androidSkin: ButtonGroupSkin = {
       justifyContent: "center",
       borderTopWidth: 1,
       borderBottomWidth: 1,
-      marginLeft: -1,
+      marginStart: -1,
       borderColor: t.border,
       backgroundColor: "transparent",
     };

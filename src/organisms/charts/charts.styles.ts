@@ -82,8 +82,8 @@ export const horizontalTrack: ViewStyle = {
 export function horizontalBar(fill: string, width: number, radius: number): ViewStyle {
   return {
     height: 12,
-    borderTopRightRadius: radius,
-    borderBottomRightRadius: radius,
+    borderTopEndRadius: radius,
+    borderBottomEndRadius: radius,
     backgroundColor: fill,
     width,
   };
@@ -129,8 +129,8 @@ export function verticalValue(tokens: ColorTokens): TextStyle {
 // corners are rounded (radius from the skin); the foot sits on the baseline.
 export function verticalBar(fill: string, height: number, radius: number): ViewStyle {
   return {
-    borderTopLeftRadius: radius,
-    borderTopRightRadius: radius,
+    borderTopStartRadius: radius,
+    borderTopEndRadius: radius,
     backgroundColor: fill,
     height,
   };

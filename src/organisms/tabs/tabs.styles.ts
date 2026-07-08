@@ -71,8 +71,8 @@ export const webSkin: TabsSkin = {
     return {
       position: "absolute",
       bottom: 0,
-      left: 0,
-      right: 0,
+      start: 0,
+      end: 0,
       height: 2,
       borderRadius: 9999,
       backgroundColor: selected ? tokens.primary : "transparent",
@@ -345,11 +345,11 @@ export const androidSkin: TabsSkin = {
     return {
       position: "absolute",
       bottom: 0,
-      left: 0,
-      right: 0,
+      start: 0,
+      end: 0,
       height: 3,
-      borderTopLeftRadius: 3,
-      borderTopRightRadius: 3,
+      borderTopStartRadius: 3,
+      borderTopEndRadius: 3,
       backgroundColor: selected ? tokens.primary : "transparent",
     };
   },

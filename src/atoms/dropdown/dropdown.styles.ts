@@ -109,7 +109,7 @@ export const webSkin: DropdownSkin = {
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({
-    marginLeft: "auto",
+    marginStart: "auto",
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 1.6,
@@ -169,7 +169,7 @@ export const iosSkin: DropdownSkin = {
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({
-    marginLeft: "auto",
+    marginStart: "auto",
     fontSize: 15,
     lineHeight: 20,
     letterSpacing: 0.5,
@@ -220,7 +220,7 @@ export const androidSkin: DropdownSkin = {
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({
-    marginLeft: "auto",
+    marginStart: "auto",
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.5,

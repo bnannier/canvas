@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { BackHandler, Modal } from "react-native";
-import { View, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { BackHandler, KeyboardAvoidingView, Modal, Platform, SafeAreaView } from "react-native";
+import { Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import * as s from "./drawer.styles.js";
 import { type Edge, type DrawerSkin } from "./drawer.styles.js";
@@ -56,7 +56,7 @@ export interface DrawerProps {
   width?: number;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for the panel surface (e.g. safe-area padding). */
+  /** Escape hatch for the panel surface. (Device safe-area insets are applied automatically.) */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -119,19 +119,31 @@ export function createDrawer(skin: DrawerSkin) {
           // elsewhere). No focus trap is attempted (hard cross-platform).
           accessibilityViewIsModal={true}
         >
-          {/* The dim backdrop is a dismiss affordance, not a control to land on:
-              keep it out of the focus order and unannounced (matching
-              anchored-overlay's backdrop) so web screen-reader/keyboard users
-              are not stopped on an unlabeled button. Back/escape and the trigger
-              remain the discoverable dismiss paths. */}
-          <Pressable accessible={false} style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
-            {/* A no-op press inside the panel keeps taps from falling through to
-                the scrim. It is a pure event-capture wrapper, never a control,
-                so it is hidden from assistive tech to avoid a phantom button. */}
-            <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}}>
-              <View style={[skin.panelShape(edge, width, tokens), style]}>{children}</View>
+          {/* Lift the panel above the iOS software keyboard so a field inside the
+              drawer (or bottom sheet) stays visible while typing. behavior "padding"
+              shrinks the overlay by the keyboard height on iOS; off iOS no behavior is
+              passed (Android's window handles the resize, web has no soft keyboard), so
+              the wrapper is inert there. */}
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+            {/* The dim backdrop is a dismiss affordance, not a control to land on:
+                keep it out of the focus order and unannounced (matching
+                anchored-overlay's backdrop) so web screen-reader/keyboard users
+                are not stopped on an unlabeled button. Back/escape and the trigger
+                remain the discoverable dismiss paths. */}
+            <Pressable accessible={false} style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
+              {/* A no-op press inside the panel keeps taps from falling through to
+                  the scrim. It is a pure event-capture wrapper, never a control,
+                  so it is hidden from assistive tech to avoid a phantom button. */}
+              <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}}>
+                {/* SafeAreaView pads the panel content clear of the device insets on
+                    iOS: a bottom sheet clears the home indicator, a side drawer clears
+                    the notch/status bar. The opaque `card` fill still reaches the screen
+                    edge (the inset sits as padding inside it); insets resolve to 0
+                    elsewhere, so the layout is unchanged off iOS. */}
+                <SafeAreaView style={[skin.panelShape(edge, width, tokens), style]}>{children}</SafeAreaView>
+              </Pressable>
             </Pressable>
-          </Pressable>
+          </KeyboardAvoidingView>
         </Modal>
       </>
     );

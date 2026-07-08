@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { type ColorTokens, MONO_FONT } from "../../style/index.js";
 
 // Co-located Field skins, one per platform. Field is a "Light" platform
 // treatment: ONE structure (read-only label/value rows in display mode, and a
@@ -68,7 +68,7 @@ export const valueFill: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%
 export const avatarRow: ViewStyle = { flexDirection: "row", alignItems: "center" };
 
 // Each avatar after the first overlaps the previous one.
-export const avatarOverlap: ViewStyle = { marginLeft: -8 };
+export const avatarOverlap: ViewStyle = { marginStart: -8 };
 
 // A copyable value: the value text followed by a ghost Copy button.
 export const copyRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
@@ -77,11 +77,11 @@ export const copyRow: ViewStyle = { flexDirection: "row", alignItems: "center", 
 export const dimmed: ViewStyle = { opacity: 0.5 };
 
 // RN's cross-platform monospace alias (the same technique Badge uses for `mono`).
-const MONO: TextStyle = { fontFamily: "monospace" };
+const MONO: TextStyle = { fontFamily: MONO_FONT };
 
 // Shared overflow-chip box (everything but the per-OS radius).
 const CHIP_BOX: ViewStyle = {
-  marginLeft: -8,
+  marginStart: -8,
   height: 28,
   width: 28,
   alignItems: "center",

@@ -108,10 +108,10 @@ export const iosSkin: TextareaSkin = {
 export const androidSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderTopStartRadius: 4,
+    borderTopEndRadius: 4,
+    borderBottomStartRadius: 0,
+    borderBottomEndRadius: 0,
     backgroundColor: alpha(t["muted-foreground"], 0.08),
     // The active indicator: only the bottom edge is drawn.
     borderBottomWidth: st.focused || st.error ? 2 : 1,

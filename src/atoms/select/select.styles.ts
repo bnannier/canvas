@@ -110,7 +110,7 @@ const TRIGGER_ROW: ViewStyle = {
 // it overlays the content beneath instead of reflowing the page, mirroring
 // Combobox. The per-skin `marginTop` adds the gap; `maxHeight`/fill/shape stay
 // per platform.
-const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50 };
+const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50 };
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 // Trigger height per size; mirrors the Input control's footprint (h-8/h-9/h-10).
@@ -266,10 +266,10 @@ export const androidSkin: SelectSkin = {
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...ANDROID_LABEL[size] }),
   trigger: (t, size, open) => ({
     ...TRIGGER_ROW,
-    borderTopLeftRadius: ANDROID_TOP_RADIUS,
-    borderTopRightRadius: ANDROID_TOP_RADIUS,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderTopStartRadius: ANDROID_TOP_RADIUS,
+    borderTopEndRadius: ANDROID_TOP_RADIUS,
+    borderBottomStartRadius: 0,
+    borderBottomEndRadius: 0,
     // Clip the Material ripple to the rounded top outline (without this the bounded
     // android_ripple paints a rectangle past the top corners).
     overflow: "hidden",

@@ -1,5 +1,5 @@
 import { useEffect, Fragment } from "react";
-import { BackHandler, Modal } from "react-native";
+import { BackHandler, KeyboardAvoidingView, Modal, Platform, SafeAreaView } from "react-native";
 import {
   View,
   Text,
@@ -72,8 +72,9 @@ export interface ActionSheetProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
-   * Escape hatch for the bottom-anchored stack (e.g. a safe-area bottom inset:
-   * `style={{ paddingBottom: insets.bottom }}`). Composed onto the stack container.
+   * Escape hatch for the bottom-anchored stack. Composed onto the stack container.
+   * (The device's bottom safe-area inset is applied automatically, so it clears the
+   * home indicator without a manual `paddingBottom`.)
    */
   style?: StyleProp<ViewStyle>;
 }
@@ -174,41 +175,54 @@ export function createActionSheet(skin: ActionSheetSkin) {
         // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
         accessibilityViewIsModal={true}
       >
-        {/* The scrim dismisses on tap. It wraps the whole sheet, so it cannot be
-            hidden from assistive tech (that would hide the action rows too); give
-            it the same button role as its sibling controls so a screen reader
-            reaches a properly-roled, labeled dismiss target instead of a roleless
-            focusable backdrop. */}
-        <Pressable
-          style={s.scrim(skin.scrimOpacity)}
-          onPress={close}
-          accessibilityRole="button"
-          accessibilityLabel={cancelLabel}
-        >
-          {/* A no-op press inside the stack keeps taps from falling through to the scrim. */}
-          <Pressable style={[skin.stack, style]} onPress={() => {}}>
-            <GlassSurface style={skin.actionsCard(tokens)}>
-              {/* The handle (Android) sits above the header inside the sheet. */}
-              {skin.handle ? <View style={skin.handle(tokens)} /> : null}
-              {headerNode}
-              {/* The rows scroll if they overflow the viewport (a long action list). */}
-              <ScrollView bounces={false} style={{ maxHeight: 360 }}>
-                {actionRows}
-                {/* Android: Cancel is the last row in the same sheet. */}
-                {skin.cancelLayout === "lastRow" ? (
-                  <Fragment>
-                    {skin.divider ? <View style={skin.divider(tokens)} /> : null}
-                    {cancelRow}
-                  </Fragment>
+        {/* Lift the sheet above the iOS software keyboard so a field summoned over
+            the sheet stays visible while typing. behavior "padding" shrinks the
+            overlay by the keyboard height on iOS; off iOS no behavior is passed
+            (Android's window handles the resize, web has no soft keyboard), so the
+            wrapper is inert there. */}
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+          {/* The scrim dismisses on tap. It wraps the whole sheet, so it cannot be
+              hidden from assistive tech (that would hide the action rows too); give
+              it the same button role as its sibling controls so a screen reader
+              reaches a properly-roled, labeled dismiss target instead of a roleless
+              focusable backdrop. */}
+          <Pressable
+            style={s.scrim(skin.scrimOpacity)}
+            onPress={close}
+            accessibilityRole="button"
+            accessibilityLabel={cancelLabel}
+          >
+            {/* SafeAreaView lifts the bottom-anchored stack clear of the home
+                indicator on iOS (the dim scrim still fills the gap behind it, matching
+                the native sheet); the inset resolves to 0 elsewhere, so the layout is
+                unchanged off iOS. */}
+            <SafeAreaView>
+              {/* A no-op press inside the stack keeps taps from falling through to the scrim. */}
+              <Pressable style={[skin.stack, style]} onPress={() => {}}>
+                <GlassSurface style={skin.actionsCard(tokens)}>
+                  {/* The handle (Android) sits above the header inside the sheet. */}
+                  {skin.handle ? <View style={skin.handle(tokens)} /> : null}
+                  {headerNode}
+                  {/* The rows scroll if they overflow the viewport (a long action list). */}
+                  <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                    {actionRows}
+                    {/* Android: Cancel is the last row in the same sheet. */}
+                    {skin.cancelLayout === "lastRow" ? (
+                      <Fragment>
+                        {skin.divider ? <View style={skin.divider(tokens)} /> : null}
+                        {cancelRow}
+                      </Fragment>
+                    ) : null}
+                  </ScrollView>
+                </GlassSurface>
+                {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
+                {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
+                  <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
                 ) : null}
-              </ScrollView>
-            </GlassSurface>
-            {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
-            {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
-              <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
-            ) : null}
+              </Pressable>
+            </SafeAreaView>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     );
   };

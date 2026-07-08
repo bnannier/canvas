@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, MONO_FONT, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Badge shell. The structure (a metadata pill, or a status pill with a leading
 // dot), the boolean-prop axes, and the semantic color logic live here once; a platform
@@ -156,7 +156,7 @@ export function createBadge(skin: BadgeSkin) {
     const tone = toneOf(props);
     // The mono modifier asks for a monospace face; RN has no font-family utility, so request
     // the cross-platform monospace alias via inline style.
-    const monoStyle = mono ? { fontFamily: "monospace" as const } : null;
+    const monoStyle = mono ? { fontFamily: MONO_FONT } : null;
 
     return (
       <View style={[skin.metaBase, metaContainer(tokens, tone), style]} testID={testID}>

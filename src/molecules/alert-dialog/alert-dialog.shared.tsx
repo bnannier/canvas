@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
-import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, Pressable, useTheme, GlassSurface, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -148,6 +149,13 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
       setOpen(false);
     };
 
+    // Web focus management for the modal: move focus into the panel on open, trap
+    // Tab within it, and return focus to the trigger on close; Escape dismisses it
+    // as a Cancel. All of this is a no-op natively / under SSR (guarded on
+    // `document`).
+    const panelRef = useDialogFocus(open);
+    useEscapeKey(open, handleCancel);
+
     // The action row. iOS renders two capsule buttons side by side (no divider)
     // drawn by the skin; web/Android render a right-aligned row of the shell's
     // Buttons.
@@ -218,8 +226,9 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             // it as a modal alert dialog and the page behind it as inert; the title
             // (and description, when present) are wired as the accessible name and
             // description via aria-labelledby/aria-describedby. `accessibilityViewIsModal`
-            // keeps iOS VoiceOver honoring the inert backdrop. No focus trap is
-            // attempted (hard cross-platform).
+            // keeps iOS VoiceOver honoring the inert backdrop. On the web the panel
+            // below also traps Tab focus and returns focus to the trigger on close
+            // (see useDialogFocus).
             role="alertdialog"
             accessibilityViewIsModal={true}
             aria-modal={true}
@@ -228,39 +237,48 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}
           >
             <GlassSurface style={[s.cardBase, skin.card(tokens), s.panelWidth[width], style]}>
-              {title != null ? (
-                <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
-                  {title}
-                </Text>
-              ) : null}
-              {description != null ? (
-                <Text nativeID={descriptionId} style={skin.description(tokens)}>
-                  {description}
-                </Text>
-              ) : null}
-              {withInput ? (
-                // The confirmation field is wired to its visible label: the label
-                // Text carries a stable id and the group is associated to it via
-                // aria-labelledby (role="group" so web screen readers name the
-                // field by the visible label, independent of the placeholder).
-                <View
-                  style={skin.inputBlock}
-                  role="group"
-                  aria-labelledby={inputLabelId}
-                >
-                  <Text nativeID={inputLabelId} style={skin.inputLabel(tokens)}>
-                    Type {confirmText} to confirm
-                  </Text>
-                  <Input
-                    value={confirmInput}
-                    onChangeText={setConfirmInput}
-                    placeholder={confirmText}
-                    accessibilityLabel={`Type ${confirmText} to confirm`}
-                    aria-labelledby={inputLabelId}
-                  />
-                </View>
-              ) : null}
-              {actionRow}
+              {/* The panel content region: a focusable (tabIndex -1) container the
+                  web focus manager pulls focus into and traps Tab within, wrapping
+                  the content in a KeyboardAvoidingView so the iOS keyboard never
+                  covers the confirmation field (padding behavior on iOS; a plain
+                  passthrough View on web/Android). Neither wrapper adds layout. */}
+              <View ref={panelRef} tabIndex={-1}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+                  {title != null ? (
+                    <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
+                      {title}
+                    </Text>
+                  ) : null}
+                  {description != null ? (
+                    <Text nativeID={descriptionId} style={skin.description(tokens)}>
+                      {description}
+                    </Text>
+                  ) : null}
+                  {withInput ? (
+                    // The confirmation field is wired to its visible label: the label
+                    // Text carries a stable id and the group is associated to it via
+                    // aria-labelledby (role="group" so web screen readers name the
+                    // field by the visible label, independent of the placeholder).
+                    <View
+                      style={skin.inputBlock}
+                      role="group"
+                      aria-labelledby={inputLabelId}
+                    >
+                      <Text nativeID={inputLabelId} style={skin.inputLabel(tokens)}>
+                        Type {confirmText} to confirm
+                      </Text>
+                      <Input
+                        value={confirmInput}
+                        onChangeText={setConfirmInput}
+                        placeholder={confirmText}
+                        accessibilityLabel={`Type ${confirmText} to confirm`}
+                        aria-labelledby={inputLabelId}
+                      />
+                    </View>
+                  ) : null}
+                  {actionRow}
+                </KeyboardAvoidingView>
+              </View>
             </GlassSurface>
           </View>
         ) : null}

@@ -5,7 +5,7 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, useTheme, useControllableState, type ColorTokens, type ViewStyle, type StyleProp } from "../../style/index.js";
+import { View, useTheme, useControllableState, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill/thumb
@@ -116,6 +116,9 @@ export function createSlider(skin: SliderSkin) {
     const [trackWidth, setTrackWidth] = useState(0);
     const widthRef = useRef(0);
     const [pressed, setPressed] = useState(false);
+    // Web keyboard focus: paint the thumb's focus ring (the same ring the drag
+    // shows) while the slider holds focus. Stays false on native touch usage.
+    const [focused, setFocused] = useState(false);
 
     const onLayout = (e: LayoutChangeEvent) => {
       const w = e.nativeEvent.layout.width;
@@ -176,6 +179,34 @@ export function createSlider(skin: SliderSkin) {
       else if (name === "decrement") emit(snap(current - step, min, max, step));
     };
 
+    // Web keyboard operability (the WAI-ARIA slider pattern): arrows nudge by one
+    // step, PageUp/PageDown by a coarse page (10 steps), Home/End jump to the ends;
+    // snap clamps every result to [min, max]. react-native-web forwards `onKeyDown`
+    // to the DOM node, but View's RN prop types omit it (it is web-only), so the
+    // handler rides in through a cast; natively View has no onKeyDown and never
+    // invokes it, so this is a no-op there — additive web-only EVENT handling, the
+    // same pattern as useEscapeKey, NOT a web-only render branch.
+    const pageStep = step * 10;
+    const onKeyDown = (event: { key: string; preventDefault: () => void }) => {
+      if (disabled) return;
+      let next: number;
+      switch (event.key) {
+        case "ArrowRight":
+        case "ArrowUp": next = current + step; break;
+        case "ArrowLeft":
+        case "ArrowDown": next = current - step; break;
+        case "PageUp": next = current + pageStep; break;
+        case "PageDown": next = current - pageStep; break;
+        case "Home": next = min; break;
+        case "End": next = max; break;
+        default: return; // let every other key through (Tab, etc.)
+      }
+      // Swallow the key so Arrow/Page/Home/End don't also scroll the page.
+      event.preventDefault();
+      emit(snap(next, min, max, step));
+    };
+    const webKeyboardProps = { onKeyDown } as unknown as ViewProps;
+
     // Fill spans from the left edge to the thumb center.
     const fillWidth = thumb / 2 + fraction * Math.max(0, trackWidth - thumb);
     // Thumb left so its center lands on the value point.
@@ -189,8 +220,15 @@ export function createSlider(skin: SliderSkin) {
     return (
       <View
         {...pan.panHandlers}
+        {...webKeyboardProps}
         onLayout={onLayout}
         testID={props.testID}
+        // A keyboard tab-stop on the web (RNW maps `focusable` to tabIndex 0/-1); the
+        // arrow/page/home/end keys then drive it through onKeyDown above. Disabled drops
+        // it out of the tab order.
+        focusable={!disabled}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         accessibilityRole="adjustable"
         accessibilityLabel={accessibilityLabel}
         accessibilityValue={{ min, max, now: current }}
@@ -215,6 +253,9 @@ export function createSlider(skin: SliderSkin) {
             height: rowHeight,
             opacity: disabled ? 0.5 : 1,
           },
+          // The thumb paints the focus ring, so suppress RNW's default outline on the
+          // focused container (no-op on native).
+          FOCUS_RESET,
           style,
         ]}
       >
@@ -227,11 +268,12 @@ export function createSlider(skin: SliderSkin) {
             track to jump AND dragging the thumb), so the thumb is a plain View that only
             PAINTS the value position and the per-OS press feedback (the iOS opacity dim,
             the Android M3 state-layer ring, the web focus ring), driven by `pressed` from
-            the PanResponder. It carries pointerEvents="none" so it never competes with the
-            parent for the touch responder, keeping the drag/jump on one code path. */}
+            the PanResponder OR web keyboard `focused`. It carries pointerEvents="none" so
+            it never competes with the parent for the touch responder, keeping the drag/jump
+            on one code path. */}
         <View
           pointerEvents="none"
-          style={[skin.thumb(tokens, size, !!disabled, pressed), { left: thumbLeft, top: thumbTop }]}
+          style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: thumbLeft, top: thumbTop }]}
         />
       </View>
     );

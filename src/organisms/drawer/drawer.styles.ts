@@ -83,8 +83,8 @@ export const webSkin: DrawerSkin = {
         maxHeight: "85%",
         borderTopWidth: 1,
         borderColor: t.border,
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
+        borderTopStartRadius: 16,
+        borderTopEndRadius: 16,
       };
     }
     return {
@@ -92,7 +92,7 @@ export const webSkin: DrawerSkin = {
       width,
       height: "100%",
       borderColor: t.border,
-      ...(edge === "right" ? { borderLeftWidth: 1 } : { borderRightWidth: 1 }),
+      ...(edge === "right" ? { borderStartWidth: 1 } : { borderEndWidth: 1 }),
     };
   },
 };
@@ -114,8 +114,8 @@ export const iosSkin: DrawerSkin = {
         ...base,
         width: "100%",
         maxHeight: "85%",
-        borderTopLeftRadius: IOS_SHEET_RADIUS,
-        borderTopRightRadius: IOS_SHEET_RADIUS,
+        borderTopStartRadius: IOS_SHEET_RADIUS,
+        borderTopEndRadius: IOS_SHEET_RADIUS,
         ...shadow("xl"),
       };
     }
@@ -123,8 +123,8 @@ export const iosSkin: DrawerSkin = {
     // screen edge. A left drawer rounds its right corners; a right drawer its left.
     const inner =
       edge === "right"
-        ? { borderTopLeftRadius: IOS_SIDE_RADIUS, borderBottomLeftRadius: IOS_SIDE_RADIUS }
-        : { borderTopRightRadius: IOS_SIDE_RADIUS, borderBottomRightRadius: IOS_SIDE_RADIUS };
+        ? { borderTopStartRadius: IOS_SIDE_RADIUS, borderBottomStartRadius: IOS_SIDE_RADIUS }
+        : { borderTopEndRadius: IOS_SIDE_RADIUS, borderBottomEndRadius: IOS_SIDE_RADIUS };
     return { ...base, width, height: "100%", ...inner, ...shadow("xl") };
   },
 };
@@ -146,16 +146,16 @@ export const androidSkin: DrawerSkin = {
         ...base,
         width: "100%",
         maxHeight: "85%",
-        borderTopLeftRadius: ANDROID_SHEET_RADIUS,
-        borderTopRightRadius: ANDROID_SHEET_RADIUS,
+        borderTopStartRadius: ANDROID_SHEET_RADIUS,
+        borderTopEndRadius: ANDROID_SHEET_RADIUS,
         ...shadow("lg"),
       };
     }
     // The inner (content-facing) vertical edge rounds; the outer edge sits flush.
     const inner =
       edge === "right"
-        ? { borderTopLeftRadius: ANDROID_SIDE_RADIUS, borderBottomLeftRadius: ANDROID_SIDE_RADIUS }
-        : { borderTopRightRadius: ANDROID_SIDE_RADIUS, borderBottomRightRadius: ANDROID_SIDE_RADIUS };
+        ? { borderTopStartRadius: ANDROID_SIDE_RADIUS, borderBottomStartRadius: ANDROID_SIDE_RADIUS }
+        : { borderTopEndRadius: ANDROID_SIDE_RADIUS, borderBottomEndRadius: ANDROID_SIDE_RADIUS };
     return { ...base, width, height: "100%", ...inner, ...shadow("lg") };
   },
 };

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, Pressable, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, controlRipple, pressDim, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
@@ -111,8 +111,10 @@ export function createChip(skin: ChipSkin) {
             onPress={onRemove}
             disabled={disabled}
             accessibilityRole="button"
-            accessibilityLabel="Remove"
-            hitSlop={8}
+            // Name the specific chip, not a bare "Remove", when the label is a string.
+            accessibilityLabel={typeof children === "string" ? `Remove ${children}` : "Remove"}
+            // Grow the ~14px glyph toward a ~44pt target; bias the slop away from the label (left).
+            hitSlop={{ top: 15, bottom: 15, left: 8, right: 15 }}
           >
             <Icon
               x
@@ -125,16 +127,27 @@ export function createChip(skin: ChipSkin) {
       </>
     );
 
-    // Tappable chip (a filter toggle): the whole pill is the Pressable. The remove
-    // button, when present, is a nested Pressable that fires its own handler.
-    if (onPress && !disabled) {
+    // Tappable chip (a filter toggle): the whole pill is the Pressable, kept even when
+    // disabled so it holds its button role + disabled state (a plain View would drop
+    // both). The remove button, when present, is a nested Pressable with its own handler.
+    if (onPress) {
       return (
         <Pressable
           onPress={onPress}
+          disabled={disabled}
           testID={testID}
           accessibilityRole="button"
           accessibilityLabel={accessibilityLabel}
-          style={({ pressed }) => [container, pressed ? { opacity: 0.85 } : null]}
+          // Toggle state to AT: `primary` reads as active/selected. Announce it natively
+          // via accessibilityState.selected and on the web via aria-pressed (RNW drops
+          // accessibilityState at the DOM), the dual alias the Switch uses.
+          accessibilityState={{ selected: primaryTone, disabled: !!disabled }}
+          aria-pressed={primaryTone}
+          // A small pill is only ~22pt tall; grow its whole tap target toward ~44pt.
+          hitSlop={small ? 11 : undefined}
+          // Android shows a ripple state layer on press; iOS/web keep the opacity dim.
+          android_ripple={controlRipple(tokens)}
+          style={({ pressed }) => [container, pressDim(pressed, 0.85)]}
         >
           {inner}
         </Pressable>

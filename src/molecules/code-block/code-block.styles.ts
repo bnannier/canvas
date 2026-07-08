@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, palette, shadow, alpha, MONO_FONT } from "../../style/index.js";
 import { type CodeBlockSkin } from "./code-block.shared.js";
 
 // Co-located CodeBlock skins. Layout-only fragments are static objects; anything
@@ -18,7 +18,7 @@ export type Variant = "terminal" | "numbered" | "inline" | "plain";
 
 // Monospace face: requested inline since RN has no font-family utility (the same
 // approach Badge's `mono` modifier uses).
-export const MONO = { fontFamily: "monospace" } as const;
+export const MONO = { fontFamily: MONO_FONT } as const;
 
 // --- shared style fragments (the one look) ----------------------------------
 
@@ -57,8 +57,8 @@ function headerBar(tokens: ColorTokens): ViewStyle {
     alignItems: "center",
     alignSelf: "flex-start",
     width: "100%",
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopStartRadius: 8,
+    borderTopEndRadius: 8,
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: tokens.border,
@@ -75,7 +75,7 @@ function headerLabel(tokens: ColorTokens): TextStyle {
 
 // When a header bar sits above the surface, the surface's own top corners must be
 // squared off so the two strips read as one card.
-const surfaceUnderHeader: ViewStyle = { borderTopLeftRadius: 0, borderTopRightRadius: 0 };
+const surfaceUnderHeader: ViewStyle = { borderTopStartRadius: 0, borderTopEndRadius: 0 };
 
 // --- inline variant ---------------------------------------------------------
 
@@ -130,7 +130,7 @@ function trafficDot(hue: "red" | "amber" | "green"): ViewStyle {
 
 // Chrome label: ml-2 text-xs text-zinc-400.
 const terminalLabel: TextStyle = {
-  marginLeft: 8,
+  marginStart: 8,
   fontSize: 12,
   lineHeight: 16,
   color: palette["zinc-400"],
@@ -160,7 +160,7 @@ const terminalLine: TextStyle = {
 const numberedSurface: ViewStyle = { flexDirection: "row", padding: 16 };
 
 // The line-number gutter: mr-4 items-end.
-const numberedGutter: ViewStyle = { marginRight: 16, alignItems: "flex-end" };
+const numberedGutter: ViewStyle = { marginEnd: 16, alignItems: "flex-end" };
 
 // Dimmed line numbers (text-muted-foreground), sharing the code type.
 // `userSelect: "none"` keeps the line numbers out of a copied selection, so the
@@ -179,7 +179,7 @@ const numberedCodeCol: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%"
 function copyButton(tokens: ColorTokens, dark: boolean): ViewStyle {
   const base: ViewStyle = {
     position: "absolute",
-    right: 8,
+    end: 8,
     top: 8,
     zIndex: 10,
     flexDirection: "row",

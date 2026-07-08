@@ -1,5 +1,5 @@
 import { type TextStyle } from "react-native";
-import { alpha, palette, type ColorTokens } from "../../style/index.js";
+import { alpha, type ColorTokens } from "../../style/index.js";
 import { type TypographySkin } from "./typography.shared.js";
 
 // Co-located Typography styles. One axis (role), each role mapping to a single
@@ -123,8 +123,8 @@ export const MONO_ROLES = new Set<Role>(["code", "mono"]);
 // Tone axis: an orthogonal color layer over the role's own color. Its names are
 // deliberately collision-free with the roles (so `muted`/`small`/`tiny`/`caption`
 // keep their existing muted color as roles, and tone adds the colored intents).
-// When no tone prop is set the role's own color stands. positive/warning pick a
-// palette step per scheme (like Badge); subtle is a translucent foreground.
+// When no tone prop is set the role's own color stands. positive/warning read the
+// semantic success/warning tokens (scheme-aware); subtle is a translucent foreground.
 export type Tone = "muted" | "subtle" | "primary" | "destructive" | "positive" | "warning";
 
 export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
@@ -138,9 +138,9 @@ export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextS
     case "destructive":
       return { color: tokens.destructive };
     case "positive":
-      return { color: dark ? palette["green-400"] : palette["green-600"] };
+      return { color: tokens.success };
     case "warning":
-      return { color: dark ? palette["amber-400"] : palette["amber-600"] };
+      return { color: tokens.warning };
   }
 }
 

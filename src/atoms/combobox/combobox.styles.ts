@@ -121,8 +121,8 @@ export const webSkin: ComboboxSkin = {
   popover: (t) => ({
     position: "absolute",
     top: "100%",
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     zIndex: 50,
     marginTop: 4,
     maxHeight: 240,
@@ -203,8 +203,8 @@ export const iosSkin: ComboboxSkin = {
   popover: (t) => ({
     position: "absolute",
     top: "100%",
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     zIndex: 50,
     marginTop: 6,
     maxHeight: 260,
@@ -264,10 +264,10 @@ export const androidSkin: ComboboxSkin = {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderTopLeftRadius: ANDROID_TOP_RADIUS,
-    borderTopRightRadius: ANDROID_TOP_RADIUS,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderTopStartRadius: ANDROID_TOP_RADIUS,
+    borderTopEndRadius: ANDROID_TOP_RADIUS,
+    borderBottomStartRadius: 0,
+    borderBottomEndRadius: 0,
     borderBottomWidth: open ? 2 : 1,
     // Rest baseline reads clearly (on-surface-variant ~ muted-foreground) so the M3
     // filled field is distinct from the iOS lineless capsule.
@@ -286,8 +286,8 @@ export const androidSkin: ComboboxSkin = {
   popover: (t) => ({
     position: "absolute",
     top: "100%",
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     zIndex: 50,
     marginTop: 4,
     maxHeight: 280,

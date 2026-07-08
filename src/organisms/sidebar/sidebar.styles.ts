@@ -49,7 +49,7 @@ export const webSkin: SidebarSkin = {
     if (frame === "bordered") {
       return { ...base, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
     }
-    return { ...base, borderRightWidth: 1, borderColor: tokens.border };
+    return { ...base, borderEndWidth: 1, borderColor: tokens.border };
   },
 
   // A titled group of nav rows.
@@ -135,7 +135,7 @@ export const iosSkin: SidebarSkin = {
     if (frame === "bordered") {
       return { ...base, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
     }
-    return { ...base, borderRightWidth: 1, borderColor: tokens.border };
+    return { ...base, borderEndWidth: 1, borderColor: tokens.border };
   },
 
   group: { gap: 2 },
@@ -213,7 +213,7 @@ export const androidSkin: SidebarSkin = {
     if (frame === "bordered") {
       return { ...base, borderRadius: 16, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
     }
-    return { ...base, borderRightWidth: 1, borderColor: tokens.border };
+    return { ...base, borderEndWidth: 1, borderColor: tokens.border };
   },
 
   group: { gap: 2 },

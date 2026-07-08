@@ -79,7 +79,7 @@ export function card(tokens: ColorTokens): ViewStyle {
 export const cardFloating: ViewStyle = {
   position: "absolute",
   top: "100%",
-  left: 0,
+  start: 0,
   zIndex: 50,
   marginTop: 12,
 };
@@ -136,7 +136,7 @@ export function triggerLabel(tokens: ColorTokens): TextStyle {
 }
 
 // Pushes the trailing kbd cap to the right edge of the trigger. (ml-auto.)
-export const triggerKbd: ViewStyle = { marginLeft: "auto" };
+export const triggerKbd: ViewStyle = { marginStart: "auto" };
 
 // ---------- footer hint bar (shared across platforms) ----------
 // The footer hint bar below the list. (flex-row items-center gap-3 border-t

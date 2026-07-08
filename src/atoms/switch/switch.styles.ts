@@ -80,7 +80,7 @@ export const iosSkin: SwitchSkin = {
       width,
       height,
       backgroundColor: "#ffffff",
-      ...(checked ? { right: 2 } : { left: 2 }),
+      ...(checked ? { end: 2 } : { start: 2 }),
     };
   },
 };
@@ -98,10 +98,10 @@ export const androidSkin: SwitchSkin = {
     const h = NATIVE_TRACK[size].height;
     if (checked) {
       const d = h - 8;
-      return { ...ABS, top: (h - d) / 2, right: 4, width: d, height: d, backgroundColor: "#ffffff" };
+      return { ...ABS, top: (h - d) / 2, end: 4, width: d, height: d, backgroundColor: "#ffffff" };
     }
     const d = Math.round(h / 2.6);
-    return { ...ABS, top: (h - 4 - d) / 2, left: 4, width: d, height: d, backgroundColor: t["muted-foreground"] };
+    return { ...ABS, top: (h - 4 - d) / 2, start: 4, width: d, height: d, backgroundColor: t["muted-foreground"] };
   },
 };
 
@@ -115,6 +115,6 @@ export const webSkin: SwitchSkin = {
   }),
   thumb: (t, checked, size) => {
     const d = WEB_THUMB[size];
-    return { ...ABS, top: 2, width: d, height: d, backgroundColor: t.background, ...(checked ? { right: 2 } : { left: 2 }) };
+    return { ...ABS, top: 2, width: d, height: d, backgroundColor: t.background, ...(checked ? { end: 2 } : { start: 2 }) };
   },
 };

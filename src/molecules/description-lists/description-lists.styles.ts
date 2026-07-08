@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow } from "../../style/index.js";
+import { type ColorTokens, shadow, MONO_FONT } from "../../style/index.js";
 import { type DescriptionListSkin } from "./description-lists.shared.js";
 
 // Co-located DescriptionList skins and shared style fragments. Layout-only
@@ -80,7 +80,7 @@ export function valueLabel(tokens: ColorTokens): TextStyle {
 export const valueAlignRight: TextStyle = { textAlign: "right" };
 
 // Monospace value face, for tokens, scopes, identifiers.
-export const valueMono: TextStyle = { fontFamily: "monospace" };
+export const valueMono: TextStyle = { fontFamily: MONO_FONT };
 
 // --- rows -------------------------------------------------------------------
 

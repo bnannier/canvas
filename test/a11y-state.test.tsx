@@ -8,6 +8,7 @@ import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Chip } from "../src/atoms/chip/chip.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
@@ -55,6 +56,18 @@ describe("web a11y state (aria aliases for RNW-dropped accessibilityState)", () 
   it("Dropdown trigger exposes aria-expanded (collapsed by default)", () => {
     const { container } = ui(<Dropdown label="Menu" items={[{ label: "One" }, { label: "Two" }]} />);
     expect(attr(container, "[aria-expanded]", "aria-expanded")).toBe("false");
+  });
+
+  it("Chip (tappable) forwards aria-pressed reflecting the active (primary) tone", () => {
+    const { container, rerender } = ui(<Chip onPress={() => {}}>Filter</Chip>);
+    expect(attr(container, '[role="button"]', "aria-pressed")).toBe("false");
+    rerender(<ThemeProvider><Chip primary onPress={() => {}}>Filter</Chip></ThemeProvider>);
+    expect(attr(container, '[role="button"]', "aria-pressed")).toBe("true");
+  });
+
+  it("Chip's remove button names the specific chip it removes", () => {
+    const { container } = ui(<Chip onRemove={() => {}}>Design</Chip>);
+    expect(container.querySelector('[aria-label="Remove Design"]')).not.toBeNull();
   });
 });
 

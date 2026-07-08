@@ -142,7 +142,7 @@ export const iosSkin: StackedListSkin = {
     overflow: "hidden",
   }),
   rowBase: { ...ROW, gap: 12, paddingHorizontal: 16, paddingVertical: 10 },
-  rowDivider: (t) => ({ borderBottomWidth: 1, borderColor: t.border, marginLeft: IOS_SEPARATOR_INSET }),
+  rowDivider: (t) => ({ borderBottomWidth: 1, borderColor: t.border, marginStart: IOS_SEPARATOR_INSET }),
   pressedSurface: (t) => ({ backgroundColor: t.accent }),
   nameLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2, color: t.foreground }),
   mutedLabel: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),

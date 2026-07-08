@@ -28,7 +28,7 @@ const CONTAINER: ViewStyle = {
 
 // Dismiss control box: -mr-1 -mt-0.5 h-6 w-6 items-center justify-center.
 const DISMISS: ViewStyle = {
-  marginRight: -4,
+  marginEnd: -4,
   marginTop: -2,
   height: 24,
   width: 24,

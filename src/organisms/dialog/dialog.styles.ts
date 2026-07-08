@@ -151,7 +151,7 @@ export const webSkin: DialogSkin = {
   fieldLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
   fieldLabelGap: { marginTop: 16 },
   amountRow: { flexDirection: "row", alignItems: "center" },
-  currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginRight: 8 }),
+  currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
   amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
 };
 
@@ -222,7 +222,7 @@ export const iosSkin: DialogSkin = {
   fieldLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
   fieldLabelGap: { marginTop: 14 },
   amountRow: { flexDirection: "row", alignItems: "center" },
-  currency: (t) => ({ fontSize: 15, lineHeight: 20, color: t["muted-foreground"], marginRight: 8 }),
+  currency: (t) => ({ fontSize: 15, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
   amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
 };
 
@@ -269,6 +269,6 @@ export const androidSkin: DialogSkin = {
   fieldLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
   fieldLabelGap: { marginTop: 16 },
   amountRow: { flexDirection: "row", alignItems: "center" },
-  currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginRight: 8 }),
+  currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
   amountInput: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
 };
