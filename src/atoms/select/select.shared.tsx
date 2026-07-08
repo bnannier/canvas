@@ -1,20 +1,30 @@
+import { useRef, useState } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, AnchoredOverlay, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
 const LISTBOX = "listbox" as Role;
 import { Icon } from "../icon/icon.js";
-import { root, rootLifted, type SelectSkin, type Size } from "./select.styles.js";
+import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./select.styles.js";
 
 // Shared Select shell. The structure (the stacked label + the trigger row with
 // its optional leading icon, value/placeholder and trailing chevron, plus the
-// inline open option list with its selectable rows), the public boolean-prop
+// open option list with its selectable rows), the public boolean-prop
 // API, the size precedence, the controlled/uncontrolled value and open state,
 // the select/close handlers, the disabled handling, and accessibility all live
 // here once. A platform file supplies only its skin (trigger shape/fill/border,
 // the chevron glyph, the menu surface, the row tint, where the selection
 // indicator renders, and the press feedback) and calls createSelect.
+//
+// Overlay note: the open option list renders through AnchoredOverlay. When an
+// OverlayProvider is mounted (an app root, or a docs example stage) the list is
+// portaled over the page, anchored below the trigger, and a tap anywhere off it
+// dismisses it, so it escapes any overflow-clipping ancestor (e.g. the docs'
+// horizontal preview scroller), identically on iOS, Android, and web, with no
+// Platform.OS branch. With no provider it falls back to an inline card positioned
+// absolutely below the trigger (the kit's pre-portal behavior). AnchoredOverlay
+// supplies its own GlassSurface material, so the listbox is passed to it directly.
 
 export interface SelectProps {
   /** Controlled selected option label; omit for uncontrolled use. Empty shows the placeholder. */
@@ -88,6 +98,12 @@ export function createSelect(skin: SelectSkin) {
     // Escape closes the open option list on web (no-op natively).
     useEscapeKey(open, () => setOpen(false));
 
+    // Anchor the floating option list to the trigger: its measured width is the
+    // list's minimum width when portaled over the page (a wider row can grow past
+    // it), and AnchoredOverlay reads the trigger's box to place the list below it.
+    const triggerRef = useRef<View>(null);
+    const [triggerWidth, setTriggerWidth] = useState(0);
+
     const hasValue = value !== "";
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
@@ -97,6 +113,8 @@ export function createSelect(skin: SelectSkin) {
           <Text style={skin.label(tokens, size)}>{label}</Text>
         ) : null}
         <Pressable
+          ref={triggerRef}
+          onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
           style={({ pressed }) => [
             skin.trigger(tokens, size, open),
             disabled ? { opacity: skin.disabledOpacity } : null,
@@ -116,8 +134,14 @@ export function createSelect(skin: SelectSkin) {
           <Text style={skin.chevron(tokens, size, open)}>{skin.chevronGlyph}</Text>
         </Pressable>
 
-        {open ? (
-          <GlassSurface style={skin.panel(tokens)}>
+        <AnchoredOverlay
+          open={open}
+          onDismiss={() => setOpen(false)}
+          triggerRef={triggerRef}
+          gap={4}
+          cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
+          inlineStyle={PANEL_ANCHOR}
+        >
             <View role={LISTBOX}>
             {options.map((option, i) => {
               const selected = option === value;
@@ -154,8 +178,7 @@ export function createSelect(skin: SelectSkin) {
               );
             })}
             </View>
-          </GlassSurface>
-        ) : null}
+        </AnchoredOverlay>
       </View>
     );
   };

@@ -59,7 +59,10 @@ export interface SelectSkin {
   chevron: (t: ColorTokens, size: Size, open: boolean) => TextStyle;
   /** The chevron character (▾ on web, ⌄ on Android, chevron-up-down on iOS). */
   chevronGlyph: string;
-  /** The open option list surface. */
+  /** The open option list surface: card visuals only (fill, border, shadow,
+   *  radius, padding, maxHeight). AnchoredOverlay supplies the GlassSurface
+   *  material and the on-page position; the inline no-host fallback adds
+   *  PANEL_ANCHOR for the absolute anchoring. */
   panel: (t: ColorTokens) => ViewStyle;
   /** An option row. `selected` carries the active tint. */
   optionRow: (t: ColorTokens, selected: boolean) => ViewStyle;
@@ -106,11 +109,14 @@ const TRIGGER_ROW: ViewStyle = {
   justifyContent: "space-between",
 };
 
-// Every skin's option list floats below the trigger (the root is `relative`) so
-// it overlays the content beneath instead of reflowing the page, mirroring
-// Combobox. The per-skin `marginTop` adds the gap; `maxHeight`/fill/shape stay
-// per platform.
-const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50 };
+// The inline-fallback anchor: with no OverlayProvider mounted the option list
+// renders in place, absolutely positioned below the trigger (the kit's pre-portal
+// behavior). With a provider, AnchoredOverlay portals the card over the page,
+// anchors it below the trigger, and adds the outside-tap dismiss backdrop instead.
+// `start:0,end:0` pins the fallback to the trigger's width; the `marginTop`
+// supplies the trigger-to-panel gap in this fallback (AnchoredOverlay's `gap` does
+// it when hosted). The skins own the card's shape/fill/shadow only.
+export const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 // Trigger height per size; mirrors the Input control's footprint (h-8/h-9/h-10).
@@ -132,8 +138,6 @@ export const webSkin: SelectSkin = {
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevronGlyph: "▾",
   panel: (t) => ({
-    ...PANEL_ANCHOR,
-    marginTop: 4,
     maxHeight: 240,
     borderRadius: 6,
     borderWidth: 1,
@@ -207,8 +211,6 @@ export const iosSkin: SelectSkin = {
   // Android panels here keep their drop shadow); the inset hairline separators and
   // the subtle neutral press tint stay clear of the rounded corners.
   panel: (t) => ({
-    ...PANEL_ANCHOR,
-    marginTop: 8,
     maxHeight: 320,
     borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
@@ -287,8 +289,6 @@ export const androidSkin: SelectSkin = {
   chevron: (t, size, open) => ({ color: open ? t.primary : t["muted-foreground"], ...ANDROID_TEXT[size] }),
   chevronGlyph: "⌄",
   panel: (t) => ({
-    ...PANEL_ANCHOR,
-    marginTop: 2,
     maxHeight: 280,
     borderRadius: 4,
     backgroundColor: t.popover,
