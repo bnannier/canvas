@@ -78,7 +78,7 @@ export interface QRCodeProps {
   accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (margins, alignment). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

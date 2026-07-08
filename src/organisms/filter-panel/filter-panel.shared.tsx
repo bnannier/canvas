@@ -59,7 +59,7 @@ export interface FilterPanelProps {
   compact?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (mainly width, margins). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -101,7 +101,7 @@ export function createFilterPanel(
           // `bordered` wraps it as a rounded card with a border and a card fill;
           // the bare panel keeps the same width but drops the chrome. The radius
           // comes from the skin (per-OS); the border/fill follow the tokens so it
-          // tracks light/dark and goes translucent under glass.
+          // tracks light/dark (the card fill stays solid under glass).
           bordered ? skin.borderedSurface(tokens) : null,
           skin.panelPad[density],
           skin.panelStack[density],

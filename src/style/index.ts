@@ -12,6 +12,7 @@ export * from "./responsive.js";
 export * from "./shadow.js";
 export * from "./color.js";
 export * from "./mono.js";
+export * from "./dev-warn.js";
 export * from "./focus-reset.js";
 export * from "./ripple.js";
 export * from "./use-controllable-state.js";

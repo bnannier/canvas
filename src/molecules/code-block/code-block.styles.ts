@@ -4,7 +4,8 @@ import { type CodeBlockSkin } from "./code-block.shared.js";
 
 // Co-located CodeBlock skins. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens, so the muted surface
-// follows light/dark and reads as glass at the theming level. The terminal
+// follows light/dark. CodeBlock is a CONTENT surface that paints tokens.muted,
+// which stays SOLID under glass (only the functional/popover layer frosts). The terminal
 // variant is intentionally a fixed dark window built from the Tailwind palette
 // (zinc/emerald/red/amber/green), so it stays dark in every scheme.
 //

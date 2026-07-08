@@ -63,7 +63,7 @@ export interface CardProps {
   comfortable?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (width, margins). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -162,13 +162,13 @@ export function createCard(skin: CardSkin) {
 
 export interface CardSectionProps {
   children?: ReactNode;
-  /** Escape hatch for layout/positioning composition. */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
 export interface CardTextProps {
   children?: ReactNode;
-  /** Escape hatch for layout/positioning composition. */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<TextStyle>;
 }
 

@@ -41,7 +41,7 @@ export interface TextareaProps extends TextEntryProps {
    * framed container (e.g. a Card with a formatting toolbar above it).
    */
   flush?: boolean;
-  /** Escape hatch for layout/positioning composition (mainly width). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<TextStyle>;
 }
 

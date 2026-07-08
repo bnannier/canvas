@@ -4,9 +4,9 @@ import { type DescriptionListSkin } from "./description-lists.shared.js";
 
 // Co-located DescriptionList skins and shared style fragments. Layout-only
 // fragments are static objects; anything that reads a color is a function of the
-// active tokens (so the card surface follows light/dark and reads as glass when
-// the ThemeProvider's surface is "glass", since tokens.card is swapped translucent
-// at the theming level). The per-OS pieces (card radius / elevation, row density,
+// active tokens (so the card surface follows light/dark). DescriptionList is a
+// CONTENT-layer surface that paints tokens.card, which stays SOLID under glass
+// (only the functional/popover layer frosts). The per-OS pieces (card radius / elevation, row density,
 // type tracking) come in through the DescriptionListSkin the shell holds.
 //
 // DescriptionList is a "Light" treatment: identical structure and semantic colors

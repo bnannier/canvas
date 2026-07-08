@@ -1,4 +1,4 @@
-import { View, useTheme, alpha, palette, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useTheme, alpha, palette, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type SparklineSkin } from "./sparkline.styles.js";
 
 // Shared Sparkline shell. A compact trend strip: a row of thin bars whose heights
@@ -68,6 +68,10 @@ export function createSparkline(skin: SparklineSkin) {
     const tone = toneOf(props);
     const plot = skin.height[sizeOf(props)];
     const fill = barColor(tokens, tone);
+
+    // No values means no bars: warn so an empty series is not mistaken for a
+    // flat trend.
+    devWarn(values.length === 0, "[canvas] <Sparkline />: `values` is empty; the strip renders with no bars.");
 
     // Bar height maps its value against the series max (finite values only), with
     // a 2px floor so a zero/empty bucket still reads as a bar.

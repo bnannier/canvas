@@ -56,7 +56,7 @@ export interface DrawerProps {
   width?: number;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for the panel surface. (Device safe-area insets are applied automatically.) */
+  /** Outer layout composition for the panel surface, never a restyle hook. (Device safe-area insets are applied automatically.) */
   style?: StyleProp<ViewStyle>;
 }
 

@@ -73,12 +73,20 @@ export interface ActionSheetSkin {
 
 // --- shared scrim (identical across platforms) ------------------------------
 
-// The full-screen scrim that fills the Modal and lays the stack against the
-// bottom edge. A tap on it (wired in the shell) dismisses the sheet. The dimming
-// alpha is the only per-OS value, supplied by the skin.
+// The full-screen scrim container that fills the Modal and lays the stack against
+// the bottom edge. It is a plain (non-interactive) dimmed View; the tap-to-dismiss
+// target is a separate absolute-fill Pressable the shell renders as its FIRST child
+// (a sibling behind the sheet, so its <button> never wraps the action rows). The
+// dimming alpha is the only per-OS value, supplied by the skin.
 export function scrim(opacity: number): ViewStyle {
   return { flex: 1, flexDirection: "column", justifyContent: "flex-end", backgroundColor: `rgba(0,0,0,${opacity})` };
 }
+
+// The sheet content layer. It sits ABOVE the absolute-fill dismiss backdrop (a
+// preceding sibling): zIndex lifts the in-flow content over the out-of-flow
+// backdrop so a tap on the sheet hits the sheet, and only a tap on the exposed
+// scrim reaches the dismiss control.
+export const scrimContent: ViewStyle = { zIndex: 1 };
 
 // ---------- Web: the established Canvas look (= the iOS action sheet) ----------
 // No web library ships an action sheet, so the kit's web look is the iOS idiom:

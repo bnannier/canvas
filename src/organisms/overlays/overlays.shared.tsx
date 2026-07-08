@@ -46,7 +46,7 @@ export interface OverlayProps {
   onDone?: () => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition on the overlay surface. */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

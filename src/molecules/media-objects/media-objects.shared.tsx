@@ -40,8 +40,9 @@ export interface MediaObjectSkin {
   /** Row gap between the leading media, content column, and trailing slot. */
   containerBase: ViewStyle;
   /** bordered card surface: corner radius + border width + padding (+ elevation). The
-   *  border color and the card fill (which read the tokens and follow light/dark/glass)
-   *  are supplied by shared; the skin carries only the shape/density/shadow. */
+   *  border color and the card fill (which read the tokens and follow light/dark; the
+   *  card stays SOLID under glass) are supplied by shared; the skin carries only the
+   *  shape/density/shadow. */
   borderedSurface: ViewStyle;
   /** Leading photo wrapper shape: size + corner radius (the muted fill comes from shared). */
   photoBox: ViewStyle;
@@ -100,7 +101,7 @@ export interface MediaObjectProps {
   truncate?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (width, margins). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -120,9 +121,9 @@ function directionOf(p: MediaObjectProps): Direction {
 }
 
 // The bordered card surface color (platform-neutral): border + card fill read the
-// active tokens, so the surface follows light/dark and reads as glass when the
-// ThemeProvider's surface is "glass" (tokens.card is swapped translucent at the
-// theming level). The skin carries only the shape/density/shadow.
+// active tokens, so the surface follows light/dark. MediaObject is a CONTENT-layer
+// surface that paints tokens.card, which stays SOLID under glass (only the
+// functional/popover layer frosts). The skin carries only the shape/density/shadow.
 function borderedColors(tokens: ColorTokens): ViewStyle {
   return { borderColor: tokens.border, backgroundColor: tokens.card };
 }

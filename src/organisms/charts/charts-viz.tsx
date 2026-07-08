@@ -1,5 +1,5 @@
 import Svg, { Circle } from "react-native-svg";
-import { View, Text, useTheme, palette, alpha, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // Additional chart types that share the Chart family's token-driven, View/SVG
 // look, so no call site hand-composes a stacked bar, a gauge ring, or a heatmap
@@ -37,11 +37,19 @@ export interface StackedBarProps {
 
 export function StackedBar({ segments, label, hideLegend, testID, style }: StackedBarProps) {
   const { tokens } = useTheme();
-  const total = Math.max(
-    1,
-    segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0),
-  );
+  const rawTotal = segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0);
+  // Floor the divisor at 1 so an all-zero (or empty) bar divides cleanly to 0%
+  // widths rather than producing NaN.
+  const total = Math.max(1, rawTotal);
   const pct = (v: number) => (Math.max(0, Number.isFinite(v) ? v : 0) / total) * 100;
+
+  // No segments, or every segment zero, both render an empty bar: warn so the
+  // developer sees the degenerate input instead of a silently blank strip.
+  devWarn(segments.length === 0, "[canvas] <StackedBar />: `segments` is empty; the bar renders empty.");
+  devWarn(
+    segments.length > 0 && rawTotal <= 0,
+    "[canvas] <StackedBar />: all segment values are zero; the bar renders empty.",
+  );
 
   // The accessible name carries the data itself, so a screen reader hears the
   // composition ("Traffic sources: Direct 42%, …"), not a bare "Stacked bar".
@@ -106,6 +114,12 @@ function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
 export function Gauge(props: GaugeProps) {
   const { value, label, testID, style } = props;
   const { tokens } = useTheme();
+  // Gauge is a 0–100 dial; an out-of-range value is clamped, but warn so the
+  // developer notices the input was outside the supported range.
+  devWarn(
+    Number.isFinite(value) && (value < 0 || value > 100),
+    "[canvas] <Gauge />: `value` is outside 0–100; it is clamped to that range.",
+  );
   const v = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
   const size = 120;
   const stroke = 8;
@@ -163,6 +177,9 @@ export interface HeatmapProps {
 
 export function Heatmap({ values, label, hideLegend, testID, style }: HeatmapProps) {
   const { tokens } = useTheme();
+  // No values means no cells: warn so an empty grid is not mistaken for one that
+  // failed to style.
+  devWarn(values.length === 0, "[canvas] <Heatmap />: `values` is empty; the grid renders with no cells.");
   const cell = (intensity: number, box: number, key: number) => {
     const t = Math.max(0.08, Math.min(1, Number.isFinite(intensity) ? intensity : 0));
     return <View key={key} style={{ borderRadius: 2, height: box, width: box, backgroundColor: alpha(tokens.primary, t) }} />;

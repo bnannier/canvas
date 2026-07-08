@@ -1,9 +1,10 @@
 # @olympusoss/canvas
 
-Universal React Native UI kit. Canvas runs natively on iOS and Android, and on
-the web through React Native Web, from a single component API. Components are
-styled with semantic boolean props and authored desktop-first, so they adapt
-cleanly from large desktop down to phone.
+**One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
+
+[![npm](https://img.shields.io/npm/v/@olympusoss/canvas.svg)](https://www.npmjs.com/package/@olympusoss/canvas) [![license](https://img.shields.io/npm/l/@olympusoss/canvas.svg)](./LICENSE) [Documentation](https://olympusoss.github.io/canvas/)
+
+Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; elsewhere it falls back to a genuine frost or a solid surface.
 
 ## Install
 
@@ -11,22 +12,30 @@ cleanly from large desktop down to phone.
 npm install @olympusoss/canvas
 ```
 
-Canvas relies on three peer dependencies that you install alongside it:
+Canvas ships compiled (no build step in your app) and declares three **required** peer dependencies you install alongside it:
 
 ```bash
 npm install react react-native react-native-svg
 ```
 
-For web rendering, add `react-native-web` to your app and alias `react-native`
-to `react-native-web` in your bundler, the same way any React Native Web project
-does.
+### Optional peers
 
-## Quick Start
+These are only needed if you use the feature they back. Install them lazily; skip them and Canvas still works, degrading gracefully:
 
-Wrap your app in the `ThemeProvider`, then compose components imported
-from `@olympusoss/canvas`. The provider supplies the active color scheme and
-token map; omit `scheme` to follow the OS appearance, or force it with
-`scheme="light"` / `scheme="dark"`.
+| Package | Install only if | Without it |
+| --- | --- | --- |
+| `react-native-qrcode-svg` | you render the `QRCode` component | `QRCode` is unavailable |
+| `expo-glass-effect` | you want real iOS 26 Liquid Glass | glass falls back to a translucent fill |
+| `expo-blur` | you want a real frosted blur for glass mode on web, Android, and iOS < 26 | glass falls back to a translucent fill |
+
+```bash
+# add any subset you actually use
+npm install react-native-qrcode-svg expo-glass-effect expo-blur
+```
+
+## Quick start
+
+Wrap your app once in `ThemeProvider`, then compose components imported from `@olympusoss/canvas`. The provider supplies the active color scheme, surface, and token map to every component below it.
 
 ```jsx
 import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@olympusoss/canvas";
@@ -49,80 +58,70 @@ export default function App() {
 }
 ```
 
-The same component tree renders natively on iOS and Android and, through React
-Native Web, in the browser. There is no separate web component set to learn.
+That exact tree renders natively on iOS and Android and, through React Native Web, in the browser. There is no separate web component set to learn.
 
-## Semantic boolean props
+### Styling with semantic boolean props
 
-Styling is done with flat boolean props. Each style choice is its own prop,
-named for the meaning it carries, and passing the prop turns it on. The prop
-name is the value, so the call site reads like natural language ("a primary,
-large button").
+Every visual variation is a flat boolean prop named for its meaning; passing the prop turns it on, so the call site reads like natural language.
 
 ```jsx
 <Button primary large>Save</Button>
 <Button destructive>Delete</Button>
 <Button ghost small>Cancel</Button>
-<Card raised>...</Card>
+<Badge success>Active</Badge>
+<Card raised selected>...</Card>
 ```
 
-Props are grouped into orthogonal axes (intent, size, density, and stacking
-state/layout flags). Props on different axes combine freely; props within one
-axis are mutually exclusive, so you pass at most one and the component resolves
-any conflict by a fixed precedence. Glass is the one exception: it is a
-theme-level surface mode, not a per-component prop, set once via
-`<ThemeProvider surface="glass">` (it defaults to real Liquid Glass on iOS 26+
-and solid elsewhere).
+Props are grouped into orthogonal axes (intent, size, density, plus stacking state and layout flags). Props on different axes combine freely; within one axis they are mutually exclusive, so you pass at most one and the component resolves any conflict by a fixed precedence.
 
 ```jsx
 // Four props from four axes, all applied together.
 <Button primary large loading block>Save</Button>
 ```
 
-String-valued enum props such as `variant="primary"`, `size="lg"`, or
-`tone="destructive"` are not part of the API and are not accepted. The boolean
-form is the only styling surface.
+String-valued enum props such as `variant="primary"`, `size="lg"`, or `tone="destructive"` are not part of the API and are not accepted. The boolean form is the only styling surface, and there is no `style`-override escape hatch.
+
+## Platforms
+
+Canvas targets all three platforms from one install. The only thing that changes is which peers your app already provides.
+
+- **Expo** works out of the box. Expo ships `react-native` and `react-native-svg` compatible versions, and the optional `expo-blur` / `expo-glass-effect` peers are Expo modules, so glass renders at full fidelity with no extra native setup.
+- **Bare React Native** works the same way once the required peers are installed and linked (`react-native-svg` needs the usual autolinking / pod install). Add the optional peers if you want QRCode or full-fidelity glass.
+- **Web via React Native Web** needs one bundler step: install `react-native-web` and alias `react-native` to `react-native-web`, exactly as any RNW project does. Canvas resolves its `react-native` entry point through your alias; nothing else is web-specific. On the web you can also flip glass at runtime with the exported `setSurface("glass")` / `setSurface("solid")` DOM helper.
 
 ## Theming
 
-`ThemeProvider` reads the OS color scheme by default and exposes the resolved
-tokens to every Canvas component through `useTheme`. Force a scheme when you
-need to:
+`ThemeProvider` reads the OS color scheme by default and exposes the resolved tokens to every Canvas component through the `useTheme` hook. Three optional props control it:
+
+- `scheme` (`"light" | "dark"`): force a color scheme. Omit to follow the OS appearance.
+- `surface` (`"solid" | "glass"`): the functional-layer material. Omit for the platform default (Liquid Glass on iOS 26+, solid everywhere else); pass `"glass"` to force frost, `"solid"` to force flat.
+- `tokens`: brand token overrides merged over the active scheme, so you can rebrand without forking the token files. Pass a flat `Partial<ColorTokens>` to apply to both schemes, or `{ light, dark }` to override each separately. Use a stable reference (a module constant or memoized object).
 
 ```jsx
-<ThemeProvider scheme="dark">
+const brand = { primary: "#7c3aed" };
+
+<ThemeProvider scheme="dark" surface="glass" tokens={brand}>
   <App />
 </ThemeProvider>
 ```
 
-## What's Included
+## Documentation and components
 
-- A comprehensive component kit (60+ components across atoms, molecules, and
-  organisms), all exported from `@olympusoss/canvas`:
-  - **Forms & inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio,
-    Switch, Slider, Number Input, Input OTP, Select, Combobox, Listbox.
-  - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown,
-    Action Sheet, Toast, Command palette.
-  - **Navigation**: Tabs, Tab Bar, Navbars, Sidebar, Breadcrumb, Pagination,
-    Stepper.
-  - **Data & content**: Data Table, Stacked / Grid Lists, Stats, Calendar,
-    Charts, Card, Avatar, Badge, Description Lists, Media Objects, QR Code.
-  - **Disclosure & feedback**: Accordion, Collapsible, Carousel, Progress,
-    Skeleton, Spinner, Alert, Empty State.
-- **Universal by construction**: one codebase renders natively on iOS and
-  Android and on the web through React Native Web; no web-only escape hatches.
-- **Accessibility built in**: every interactive component exposes its role and
-  state (selected / checked / expanded, slider and progress values) to assistive
-  tech on iOS, Android, and the web, via `aria-*` aliases that survive react-native-web.
-  The kit also honors the OS **Reduce Motion** setting (`useReducedMotion`).
-- **Liquid Glass**: real iOS 26 Liquid Glass for the functional layer (overlays
-  and bars), a genuine cross-platform frost elsewhere, and a solid fallback,
-  routed through one `GlassSurface` primitive.
-- The style foundation: design tokens, the theme runtime (`ThemeProvider`,
-  `useTheme`), the `useResponsive` / `shadow` / `alpha` helpers, and the raw React
-  Native `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView` primitives.
-- Light and dark color schemes resolved through theme tokens, with desktop-first
-  responsiveness built into every component.
+Full docs, live examples, and the complete prop reference live at **<https://olympusoss.github.io/canvas/>**.
+
+The kit exports 60+ components across atoms, molecules, and organisms, all from `@olympusoss/canvas`:
+
+- **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Number Input, Input OTP, Select, Combobox, Listbox.
+- **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown, Action Sheet, Toast, Command palette.
+- **Navigation**: Tabs, Tab Bar, Navbars, Sidebar, Breadcrumb, Pagination, Stepper.
+- **Data and content**: Data Table, Stacked / Grid Lists, Stats, Calendar, Charts, Card, Avatar, Badge, Description Lists, Media Objects, QR Code.
+- **Disclosure and feedback**: Accordion, Collapsible, Carousel, Progress, Skeleton, Spinner, Alert, Empty State.
+
+Alongside the components, the package exports the style foundation: the theme runtime (`ThemeProvider`, `useTheme`), the design tokens (`token`, `hsl`), the responsive and motion helpers (`useResponsive`, `useReducedMotion`), the glass helpers (`liquidGlassAvailable`, `setSurface`), and the raw React Native primitives (`View`, `Text`, `Pressable`, `Image`, `TextInput`, `ScrollView`).
+
+## Contributing
+
+Issues and pull requests are welcome at <https://github.com/OlympusOSS/canvas>. Report bugs at <https://github.com/OlympusOSS/canvas/issues>.
 
 ## License
 

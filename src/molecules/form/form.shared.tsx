@@ -95,7 +95,7 @@ export interface FormProps {
   sections?: FormSection[];
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (mainly width, e.g. maxWidth). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: ViewStyle;
   onSubmit?: () => void;
   onCancel?: () => void;

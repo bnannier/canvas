@@ -63,7 +63,7 @@ export interface DropdownProps {
   onSelect?: (item: DropdownItem, index: number) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (mainly width). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

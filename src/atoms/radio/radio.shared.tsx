@@ -32,7 +32,7 @@ export interface RadioProps {
   large?: boolean;
   /** Dim the control and block presses. */
   disabled?: boolean;
-  /** Escape hatch for layout/positioning composition. */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

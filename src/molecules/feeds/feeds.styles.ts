@@ -6,8 +6,9 @@ import { type FeedSkin } from "./feeds.shared.js";
 // ONE structure (a card surface framing connector-node rows or avatar rows, with
 // a muted actor/action line plus a relative timestamp) shared across every OS,
 // driven by the brand tokens (passed in from useTheme so the surface, node fill,
-// and divider follow light/dark and read as glass when tokens.card is swapped at
-// the theming level). Only the small native touches shift per OS:
+// and divider follow light/dark). Feed is a CONTENT-layer surface that paints
+// tokens.card, which stays SOLID under glass (only the functional/popover layer
+// frosts). Only the small native touches shift per OS:
 //   Web: the established Canvas look (the current feed, lifted verbatim) — an
 //     8-radius card with a 1px `border`, no shadow; rows pressed dim to 0.7
 //     opacity (the kit's content default).

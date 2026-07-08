@@ -1,4 +1,4 @@
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 
@@ -61,7 +61,7 @@ export interface ChartProps {
   compact?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (mainly width). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -90,6 +90,10 @@ export function createChart(skin: ChartSkin) {
     const horizontal = !!props.horizontal;
     const compact = !!props.compact;
     const { tokens } = useTheme();
+
+    // Empty data renders a bare surface with no bars: warn so the developer sees
+    // the omission instead of a silently blank chart.
+    devWarn(data.length === 0, "[canvas] <Chart />: `data` is empty; the chart renders with no bars.");
 
     const fill = s.barFill(tokens, tone);
     const plot = compact ? PLOT_LENGTH.compact : PLOT_LENGTH.default;

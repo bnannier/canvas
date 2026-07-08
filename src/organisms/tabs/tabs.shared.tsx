@@ -101,7 +101,7 @@ export interface TabsProps {
   block?: boolean;
 
   disabled?: boolean;
-  /** Escape hatch for layout/positioning composition (mainly width). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

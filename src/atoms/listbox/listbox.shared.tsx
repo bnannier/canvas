@@ -55,7 +55,7 @@ export interface ListboxProps {
   onSelect?: (index: number) => void;
   /** E2E hook forwarded to the root list view. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (mainly width). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

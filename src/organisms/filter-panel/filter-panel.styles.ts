@@ -116,7 +116,8 @@ function titleText(tokens: ColorTokens): TextStyle {
 export const webSkin: FilterPanelSkin = {
   panelBase: PANEL_BASE,
   // `bordered` wraps the panel as a rounded card: an 8px-radius border on the card
-  // fill. The card token goes translucent under glass, so don't hardcode its hex.
+  // fill. The card token follows light/dark (and stays solid under glass), so read it
+  // from tokens rather than hardcoding its hex.
   borderedSurface: (tokens) => ({
     borderRadius: 8,
     borderWidth: 1,

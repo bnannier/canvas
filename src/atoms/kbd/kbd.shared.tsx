@@ -27,12 +27,13 @@ export interface KbdProps {
   children?: ReactNode;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (mainly width). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
 // The cap surface: the muted fill and the hairline border color (platform-neutral,
-// token-driven so the cap follows light/dark and reads as glass at the theming level).
+// token-driven so the cap follows light/dark; it paints tokens.muted, which stays
+// SOLID under glass, since only the functional/popover layer frosts).
 function capSurface(tokens: ColorTokens): ViewStyle {
   return { borderColor: tokens.border, backgroundColor: tokens.muted };
 }

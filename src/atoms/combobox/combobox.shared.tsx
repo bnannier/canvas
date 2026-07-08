@@ -83,7 +83,7 @@ export interface ComboboxProps {
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
-  /** Escape hatch for layout/positioning composition (mainly width). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

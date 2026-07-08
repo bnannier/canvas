@@ -1,5 +1,5 @@
 import { useEffect, Fragment } from "react";
-import { BackHandler, KeyboardAvoidingView, Modal, Platform, SafeAreaView } from "react-native";
+import { BackHandler, KeyboardAvoidingView, Modal, Platform, SafeAreaView, StyleSheet } from "react-native";
 import {
   View,
   Text,
@@ -72,9 +72,9 @@ export interface ActionSheetProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
-   * Escape hatch for the bottom-anchored stack. Composed onto the stack container.
-   * (The device's bottom safe-area inset is applied automatically, so it clears the
-   * home indicator without a manual `paddingBottom`.)
+   * Outer layout composition for the bottom-anchored stack, composed onto the stack
+   * container; not a restyle hook. (The device's bottom safe-area inset is applied
+   * automatically, so it clears the home indicator without a manual `paddingBottom`.)
    */
   style?: StyleProp<ViewStyle>;
 }
@@ -181,24 +181,29 @@ export function createActionSheet(skin: ActionSheetSkin) {
             (Android's window handles the resize, web has no soft keyboard), so the
             wrapper is inert there. */}
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-          {/* The scrim dismisses on tap. It wraps the whole sheet, so it cannot be
-              hidden from assistive tech (that would hide the action rows too); give
-              it the same button role as its sibling controls so a screen reader
-              reaches a properly-roled, labeled dismiss target instead of a roleless
-              focusable backdrop. */}
-          <Pressable
-            style={s.scrim(skin.scrimOpacity)}
-            onPress={close}
-            accessibilityRole="button"
-            accessibilityLabel={cancelLabel}
-          >
+          {/* The dimmed scrim is a plain container; the tap-to-dismiss target is a
+              separate full-bleed Pressable BEHIND the sheet, not a wrapper around it.
+              A Pressable that wrapped the sheet would nest one interactive element
+              inside another (an invalid <button>-in-<button> on the web, since RNW
+              renders a button-roled Pressable as a real <button>, plus an ambiguous
+              a11y target). Kept as a sibling, the dismiss control still exposes the
+              same button role + label a screen reader can reach, while the action
+              rows live in their own subtree. The content layer is lifted above the
+              absolute backdrop with zIndex, so a tap on the sheet hits the sheet and
+              a tap on the exposed scrim dismisses (no fall-through wrapper needed). */}
+          <View style={s.scrim(skin.scrimOpacity)}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={close}
+              accessibilityRole="button"
+              accessibilityLabel={cancelLabel}
+            />
             {/* SafeAreaView lifts the bottom-anchored stack clear of the home
                 indicator on iOS (the dim scrim still fills the gap behind it, matching
                 the native sheet); the inset resolves to 0 elsewhere, so the layout is
                 unchanged off iOS. */}
-            <SafeAreaView>
-              {/* A no-op press inside the stack keeps taps from falling through to the scrim. */}
-              <Pressable style={[skin.stack, style]} onPress={() => {}}>
+            <SafeAreaView style={s.scrimContent}>
+              <View style={[skin.stack, style]}>
                 <GlassSurface style={skin.actionsCard(tokens)}>
                   {/* The handle (Android) sits above the header inside the sheet. */}
                   {skin.handle ? <View style={skin.handle(tokens)} /> : null}
@@ -219,9 +224,9 @@ export function createActionSheet(skin: ActionSheetSkin) {
                 {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
                   <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
                 ) : null}
-              </Pressable>
+              </View>
             </SafeAreaView>
-          </Pressable>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
     );

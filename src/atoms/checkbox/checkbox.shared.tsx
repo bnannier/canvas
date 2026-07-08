@@ -32,7 +32,7 @@ export interface CheckboxProps {
   large?: boolean;
   // State.
   disabled?: boolean;
-  /** Escape hatch for layout/positioning composition. */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 

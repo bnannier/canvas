@@ -95,7 +95,7 @@ export interface BreadcrumbProps {
   onItemPress?: (item: string, index: number) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition. */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -123,7 +123,7 @@ export interface BreadcrumbItemProps {
   /** Render as the current page: emphasized foreground text, non-interactive. */
   current?: boolean;
   onPress?: (event: GestureResponderEvent) => void;
-  /** Escape hatch for layout/positioning composition. */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<TextStyle>;
 }
 

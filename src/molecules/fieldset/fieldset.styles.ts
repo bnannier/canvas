@@ -3,8 +3,8 @@ import { type ColorTokens, shadow } from "../../style/index.js";
 
 // Co-located Fieldset skins, one per platform. Layout-only parts are static; anything
 // that reads a color is a function of the active tokens (so the bordered surface
-// follows light/dark and reads as glass when the ThemeProvider's surface is "glass",
-// since tokens.card is swapped translucent at the theming level). The responsive
+// follows light/dark). Fieldset is a CONTENT-layer surface that paints tokens.card,
+// which stays SOLID under glass (only the functional/popover layer frosts). The responsive
 // collapse (two-column -> single column at the `sm` breakpoint) is driven by
 // useResponsive in the shell, with the column gap/width supplied by the skin.
 //

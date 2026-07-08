@@ -58,7 +58,7 @@ export interface PopoverProps {
   onOpenChange?: (open: boolean) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Escape hatch for layout/positioning composition (width, margins). */
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
