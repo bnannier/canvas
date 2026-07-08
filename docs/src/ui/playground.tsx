@@ -121,7 +121,18 @@ export function Playground({ examples }: { examples: DocExample[] }) {
           borderColor: tokens.border,
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
-          overflow: "hidden",
+          // Overlays (an open Dropdown/Select/Popover menu) portal into a per-cell
+          // OverlayProvider that lives INSIDE this stage. A downward-opening menu
+          // near the stage bottom (e.g. the Avatar topbar account dropdown in the
+          // Web row) would be clipped by an `overflow: "hidden"` here, so keep it
+          // visible and lift the stage above the CodeBlock below (position + zIndex)
+          // so the menu floats over the code instead of being cut off. The stage's
+          // own rounded fill still draws the corners; children are inset, so nothing
+          // bleeds past them without the clip. Horizontal example overflow is still
+          // contained by FitStage's own ScrollView, not this.
+          overflow: "visible",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         {previews.map((p, i) => (
