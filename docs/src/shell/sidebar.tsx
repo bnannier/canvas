@@ -7,12 +7,13 @@ import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, getActiveGroup, type NavItem }
 import { geist } from "../ui/fonts";
 
 // A nav glyph rendered by its kit `Icon` glyph key (the camelCase name the nav config
-// carries). The dynamic name maps onto the kit Icon's boolean glyph prop; active items
-// ride the default foreground color, inactive ones go muted. The cast omits `key` (a kit
-// glyph name that collides with React's reserved `key` prop on a spread); the nav set
-// never uses that glyph, so runtime is unaffected.
+// carries, e.g. "keyRound"). The dynamic name maps onto the kit Icon's boolean glyph
+// prop; active items ride the default foreground color, inactive ones go muted. The cast
+// bridges the computed-key object to IconProps (a dynamic key is not statically
+// assignable). No glyph name collides with React's reserved `key` prop: the credential
+// glyph is `keyRound`, not `key`, precisely so a spread never carries a `key` member.
 function NavGlyph({ name, active }: { name: string; active: boolean }) {
-  return <Icon {...({ [name]: true, muted: !active, size: 16 } as unknown as Omit<IconProps, "key">)} />;
+  return <Icon {...({ [name]: true, muted: !active, size: 16 } as unknown as IconProps)} />;
 }
 
 // The docs sidebar chrome: brand (CanvasMark + Canvas / design

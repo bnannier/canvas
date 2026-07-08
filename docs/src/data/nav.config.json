@@ -41,7 +41,7 @@
           { "slug": "dropdown", "label": "Dropdowns", "icon": "chevron-down" },
           { "slug": "icon", "label": "Icons", "icon": "info" },
           { "slug": "input", "label": "Inputs & Forms", "icon": "text-cursor-input" },
-          { "slug": "input-otp", "label": "Input OTP", "icon": "key" },
+          { "slug": "input-otp", "label": "Input OTP", "icon": "key-round" },
           { "slug": "kbd", "label": "Kbd", "icon": "keyboard" },
           { "slug": "listbox", "label": "Listboxes", "icon": "list-checks" },
           { "slug": "number-input", "label": "Number Input", "icon": "plus" },

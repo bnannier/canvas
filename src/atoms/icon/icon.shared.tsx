@@ -223,7 +223,7 @@ const ICONS: Record<string, Shape[]> = {
     { t: "line", x1: 12, y1: 16, x2: 12, y2: 12 },
     { t: "line", x1: 12, y1: 8, x2: 12.01, y2: 8 },
   ],
-  key: [{ t: "path", d: "m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4" }],
+  keyRound: [{ t: "path", d: "m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4" }],
   keyboard: [
     { t: "rect", x: 2, y: 4, width: 20, height: 16, rx: 2, ry: 2 },
     { t: "path", d: "M6 8h.001M10 8h.001M14 8h.001M18 8h.001M8 12h.001M12 12h.001M16 12h.001M7 16h10" },
@@ -456,7 +456,7 @@ const NAMES: { key: string; label: string }[] = [
   { key: "image", label: "image" },
   { key: "inbox", label: "inbox" },
   { key: "info", label: "info" },
-  { key: "key", label: "key" },
+  { key: "keyRound", label: "key-round" },
   { key: "keyboard", label: "keyboard" },
   { key: "layers", label: "layers" },
   { key: "layout", label: "layout" },
@@ -545,7 +545,9 @@ export interface IconProps {
   image?: boolean;
   inbox?: boolean;
   info?: boolean;
-  key?: boolean;
+  /** Key/credential glyph (lucide `key-round`). Named `keyRound`, not `key`, because
+   *  React reserves `key` as a special prop, so a `key` boolean would be unreachable. */
+  keyRound?: boolean;
   keyboard?: boolean;
   layers?: boolean;
   layout?: boolean;
