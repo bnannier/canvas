@@ -14,6 +14,7 @@ export * from "./color.js";
 export * from "./focus-reset.js";
 export * from "./ripple.js";
 export * from "./use-controllable-state.js";
+export * from "./use-escape-key.js";
 export * from "./motion.js";
 export * from "./primitives.js";
 export * from "./portal.js";

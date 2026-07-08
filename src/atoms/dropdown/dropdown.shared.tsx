@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
 
@@ -91,6 +91,9 @@ export function createDropdown(skin: DropdownSkin) {
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
+
+    // Escape dismisses the open menu on web (no-op natively).
+    useEscapeKey(open, () => setOpen(false));
 
     // Match the menu width to the trigger (and let longer rows grow past it), so a
     // wide trigger like a topbar account chip gets a menu of the same width.

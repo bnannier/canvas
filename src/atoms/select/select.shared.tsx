@@ -1,5 +1,5 @@
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -84,6 +84,9 @@ export function createSelect(skin: SelectSkin) {
       props.defaultValue ?? "",
       onSelect,
     );
+
+    // Escape closes the open option list on web (no-op natively).
+    useEscapeKey(open, () => setOpen(false));
 
     const hasValue = value !== "";
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;

@@ -16,6 +16,30 @@ import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 // everywhere else.
 export type Surface = "solid" | "glass";
 
+/**
+ * Brand token overrides for the ThemeProvider `tokens` prop. Two shapes:
+ *
+ * - A flat `Partial<ColorTokens>` applies the same overrides to BOTH schemes
+ *   (the common rebrand: `tokens={{ primary: "#7c3aed" }}`).
+ * - A `{ light, dark }` object overrides each scheme separately, for brands
+ *   whose colors shift between appearances.
+ *
+ * The two shapes are unambiguous because `ColorTokens` has no `light`/`dark` key.
+ */
+export type ThemeTokenOverrides =
+  | Partial<ColorTokens>
+  | { light?: Partial<ColorTokens>; dark?: Partial<ColorTokens> };
+
+// Resolve the overrides that apply to the active scheme: a { light, dark } shape
+// contributes its per-scheme set; a flat Partial applies to both schemes as-is.
+function overridesFor(tokens: ThemeTokenOverrides | undefined, scheme: ColorScheme): Partial<ColorTokens> | undefined {
+  if (!tokens) return undefined;
+  if ("light" in tokens || "dark" in tokens) {
+    return (tokens as { light?: Partial<ColorTokens>; dark?: Partial<ColorTokens> })[scheme];
+  }
+  return tokens as Partial<ColorTokens>;
+}
+
 export interface ThemeValue {
   scheme: ColorScheme;
   surface: Surface;
@@ -36,6 +60,17 @@ export interface ThemeProviderProps {
    * (the native system material for that layer), solid elsewhere.
    */
   surface?: Surface;
+  /**
+   * Brand token overrides, merged over the active scheme's base tokens so a
+   * consumer can rebrand the kit (e.g. `tokens={{ primary: "#7c3aed" }}`)
+   * without forking the token files. Pass a flat `Partial<ColorTokens>` to
+   * apply the same overrides to both schemes, or `{ light, dark }` to override
+   * each scheme separately. The glass-surface overrides still compose on top
+   * (base, then brand, then glass), so rebranding never disturbs the glass
+   * material. Pass a stable reference (a module constant or a memoized object);
+   * an inline literal re-creates the theme value on every render.
+   */
+  tokens?: ThemeTokenOverrides;
   children: ReactNode;
 }
 
@@ -46,21 +81,22 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
-export function ThemeProvider({ scheme, surface, children }: ThemeProviderProps) {
+export function ThemeProvider({ scheme, surface, tokens, children }: ThemeProviderProps) {
   const system = useColorScheme();
   const active: ColorScheme = scheme ?? (system === "dark" ? "dark" : "light");
   const resolved: Surface = surface ?? defaultSurface();
-  const value = useMemo<ThemeValue>(
-    () => ({
+  const value = useMemo<ThemeValue>(() => {
+    // Merge order: scheme base, then brand overrides, then the glass material
+    // overrides; glass stays on top so a rebrand composes with it unchanged.
+    const brand = overridesFor(tokens, active);
+    const base = brand ? { ...colorsByScheme[active], ...brand } : colorsByScheme[active];
+    return {
       scheme: active,
       surface: resolved,
-      tokens: resolved === "glass"
-        ? { ...colorsByScheme[active], ...glassByScheme[active] }
-        : colorsByScheme[active],
+      tokens: resolved === "glass" ? { ...base, ...glassByScheme[active] } : base,
       dark: active === "dark",
-    }),
-    [active, resolved],
-  );
+    };
+  }, [active, resolved, tokens]);
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 

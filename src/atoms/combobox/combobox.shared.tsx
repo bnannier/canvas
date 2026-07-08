@@ -7,6 +7,7 @@ import {
   TextInput,
   useTheme,
   useControllableState,
+  useEscapeKey,
   GlassSurface,
   FOCUS_RESET,
   type StyleProp,
@@ -137,6 +138,10 @@ export function createCombobox(skin: ComboboxSkin) {
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
+
+    // Escape closes the open option list on web (no-op natively). A disabled
+    // control renders no list, so it never subscribes.
+    useEscapeKey(open && !disabled, () => setOpen(false));
 
     // What the field shows: the typed query, then the selected value, else the
     // placeholder (rendered natively by the input, in the skin's muted color).

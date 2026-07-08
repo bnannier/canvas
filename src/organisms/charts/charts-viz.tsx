@@ -25,6 +25,8 @@ export interface StackedSegment {
 
 export interface StackedBarProps {
   segments: StackedSegment[];
+  /** What the bar measures (e.g. "Traffic sources"); leads the accessible name. */
+  label?: string;
   /** Hide the legend (the labelled dots below the bar). */
   hideLegend?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -33,7 +35,7 @@ export interface StackedBarProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function StackedBar({ segments, hideLegend, testID, style }: StackedBarProps) {
+export function StackedBar({ segments, label, hideLegend, testID, style }: StackedBarProps) {
   const { tokens } = useTheme();
   const total = Math.max(
     1,
@@ -41,9 +43,18 @@ export function StackedBar({ segments, hideLegend, testID, style }: StackedBarPr
   );
   const pct = (v: number) => (Math.max(0, Number.isFinite(v) ? v : 0) / total) * 100;
 
+  // The accessible name carries the data itself, so a screen reader hears the
+  // composition ("Traffic sources: Direct 42%, …"), not a bare "Stacked bar".
+  const name = `${label ?? "Stacked bar"}: ${segments.map((seg) => `${seg.label} ${Math.round(pct(seg.value))}%`).join(", ")}`;
+  // role="img" makes its whole subtree presentational to assistive tech, which
+  // would silence the legend text; so while the legend renders, the image role
+  // (and data-bearing name) sits on the plot row only, leaving the legend
+  // reachable. With the legend hidden, the root itself is the image.
+  const img = { accessibilityRole: "image", accessibilityLabel: name, "aria-label": name } as const;
+
   return (
-    <View testID={testID} style={style} accessibilityRole="image" accessibilityLabel="Stacked bar">
-      <View style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10 }}>
+    <View testID={testID} style={style} {...(hideLegend ? img : {})}>
+      <View {...(hideLegend ? {} : img)} style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10 }}>
         {segments.map((seg, i) => (
           <View key={i} style={{ width: `${pct(seg.value)}%`, backgroundColor: seriesColor(i) }} />
         ))}
@@ -108,6 +119,7 @@ export function Gauge(props: GaugeProps) {
       style={[{ width: size, height: size, alignItems: "center", justifyContent: "center" }, style]}
       accessibilityRole="image"
       accessibilityLabel={`${label ?? "Gauge"}: ${v}%`}
+      aria-label={`${label ?? "Gauge"}: ${v}%`}
     >
       <Svg width={size} height={size} style={{ position: "absolute" }}>
         <Circle cx={size / 2} cy={size / 2} r={r} stroke={tokens.muted} strokeWidth={stroke} fill="none" />
@@ -139,6 +151,8 @@ export function Gauge(props: GaugeProps) {
 export interface HeatmapProps {
   /** Cell intensities, 0–1; each becomes one square, alpha-scaled from the primary hue. */
   values: number[];
+  /** What the grid measures (e.g. "Contribution activity"); leads the accessible name. */
+  label?: string;
   /** Hide the less-to-more legend row. */
   hideLegend?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -147,15 +161,20 @@ export interface HeatmapProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Heatmap({ values, hideLegend, testID, style }: HeatmapProps) {
+export function Heatmap({ values, label, hideLegend, testID, style }: HeatmapProps) {
   const { tokens } = useTheme();
   const cell = (intensity: number, box: number, key: number) => {
     const t = Math.max(0.08, Math.min(1, Number.isFinite(intensity) ? intensity : 0));
     return <View key={key} style={{ borderRadius: 2, height: box, width: box, backgroundColor: alpha(tokens.primary, t) }} />;
   };
+  // Name the grid with its size so assistive tech hears the scope of the data.
+  const name = `${label ?? "Heatmap"}, ${values.length} cells`;
+  // Same img-placement rule as StackedBar: while the less-to-more legend renders,
+  // the image role sits on the cell grid only so the legend text stays reachable.
+  const img = { accessibilityRole: "image", accessibilityLabel: name, "aria-label": name } as const;
   return (
-    <View testID={testID} style={style} accessibilityRole="image" accessibilityLabel="Heatmap">
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>{values.map((v, i) => cell(v, 18, i))}</View>
+    <View testID={testID} style={style} {...(hideLegend ? img : {})}>
+      <View {...(hideLegend ? {} : img)} style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>{values.map((v, i) => cell(v, 18, i))}</View>
       {hideLegend ? null : (
         <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Less</Text>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Pressable, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, GlassSurface, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
@@ -53,6 +53,9 @@ export function createRowMenu(skin: RowMenuSkin) {
       if (props.open === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
+
+    // Escape dismisses the open menu on web (no-op natively).
+    useEscapeKey(open, () => setOpen(false));
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 

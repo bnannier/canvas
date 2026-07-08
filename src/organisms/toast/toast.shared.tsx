@@ -34,8 +34,11 @@ import { Icon } from "../../atoms/icon/icon.js";
 //   2. The imperative runtime — <ToastProvider> + useToast(). The provider owns a
 //      queue of live toasts, auto-dismisses each after its duration, and renders the
 //      stack through the kit Portal (the non-modal overlay outlet, so toasts float
-//      over the app without blocking it). useToast() returns { toast, dismiss }:
-//      toast(options) enqueues and returns an id; dismiss(id) removes one early.
+//      over the app without blocking it). The stack view doubles as the polite live
+//      region and is mounted PERSISTENTLY (even while empty); capsules swap inside
+//      it, which is what makes assistive tech announce them (see ToastProvider).
+//      useToast() returns { toast, dismiss }: toast(options) enqueues and returns
+//      an id; dismiss(id) removes one early.
 //
 // The intent axis is a set of mutually exclusive booleans (success / destructive /
 // info, with a neutral default); each maps to an icon glyph and a theme color. The
@@ -155,8 +158,15 @@ const STACK_BOTTOM_INSET = 24;
  * re-export all three; an app mounts one ToastProvider near its root.
  */
 export function createToastSystem(skin: ToastSkin) {
-  function Toast(props: ToastProps) {
-    const { message, description, action, icon, onDismiss, testID, style } = props;
+  // The skinned capsule alone: the GlassSurface (real glass on iOS 26+, frost on
+  // web/Android, solid popover fill otherwise) with the icon, text column, action,
+  // and dismiss. It carries NO live-region semantics of its own: the standalone
+  // <Toast> wraps it in a status region, while <ToastProvider> swaps capsules
+  // inside its single persistent region (a per-capsule region would both nest
+  // regions, double-firing, and mount together with its content, which assistive
+  // tech misses).
+  function ToastCapsule(props: Omit<ToastProps, "testID" | "style">) {
+    const { message, description, action, icon, onDismiss } = props;
     const { tokens } = useTheme();
     const intent = intentOf(props);
 
@@ -167,11 +177,55 @@ export function createToastSystem(skin: ToastSkin) {
     const glyph = icon !== undefined ? icon : <IntentIcon intent={intent} size={skin.iconSize} />;
 
     return (
-      // The capsule announces itself as a status region (so assistive tech reads it
-      // without stealing focus); the GlassSurface inside supplies the material (real
-      // glass on iOS 26+, frost on web/Android, solid popover fill otherwise) from
-      // the skin's shape. The a11y wrapper holds the role because GlassSurface paints
-      // a surface and does not forward accessibility props.
+      <GlassSurface style={skin.container(tokens)}>
+        {glyph != null && glyph !== false ? <View style={ICON_SLOT}>{glyph}</View> : null}
+        <View style={TEXT_COL}>
+          <Text style={skin.message(tokens)} numberOfLines={2}>
+            {message}
+          </Text>
+          {description != null && description !== "" ? (
+            <Text style={skin.description(tokens)} numberOfLines={3}>
+              {description}
+            </Text>
+          ) : null}
+        </View>
+        {action ? (
+          <Pressable
+            onPress={action.onPress}
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+            android_ripple={ripple}
+            style={({ pressed }) => [skin.actionButton(tokens), pressFeedback(pressed)]}
+          >
+            <Text style={skin.actionLabel(tokens)}>{action.label}</Text>
+          </Pressable>
+        ) : null}
+        {onDismiss ? (
+          <Pressable
+            onPress={onDismiss}
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss"
+            android_ripple={ripple}
+            style={({ pressed }) => [skin.dismissButton(tokens), pressFeedback(pressed)]}
+          >
+            <Icon x muted size={skin.dismissIconSize} />
+          </Pressable>
+        ) : null}
+      </GlassSurface>
+    );
+  }
+
+  function Toast(props: ToastProps) {
+    const { testID, style, ...content } = props;
+
+    return (
+      // A directly rendered capsule announces itself as a polite status region (so
+      // assistive tech reads it without stealing focus). The a11y wrapper holds the
+      // role because GlassSurface paints a surface and does not forward
+      // accessibility props. Caveat of the direct form: the region mounts together
+      // with its content, so screen readers can miss a toast that pops into
+      // existence; for reliable announcements render through <ToastProvider>,
+      // whose live region is persistent.
       <View
         role="status"
         accessibilityLiveRegion="polite"
@@ -179,41 +233,7 @@ export function createToastSystem(skin: ToastSkin) {
         testID={testID}
         style={style}
       >
-        <GlassSurface style={skin.container(tokens)}>
-          {glyph != null && glyph !== false ? <View style={ICON_SLOT}>{glyph}</View> : null}
-          <View style={TEXT_COL}>
-            <Text style={skin.message(tokens)} numberOfLines={2}>
-              {message}
-            </Text>
-            {description != null && description !== "" ? (
-              <Text style={skin.description(tokens)} numberOfLines={3}>
-                {description}
-              </Text>
-            ) : null}
-          </View>
-          {action ? (
-            <Pressable
-              onPress={action.onPress}
-              accessibilityRole="button"
-              accessibilityLabel={action.label}
-              android_ripple={ripple}
-              style={({ pressed }) => [skin.actionButton(tokens), pressFeedback(pressed)]}
-            >
-              <Text style={skin.actionLabel(tokens)}>{action.label}</Text>
-            </Pressable>
-          ) : null}
-          {onDismiss ? (
-            <Pressable
-              onPress={onDismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Dismiss"
-              android_ripple={ripple}
-              style={({ pressed }) => [skin.dismissButton(tokens), pressFeedback(pressed)]}
-            >
-              <Icon x muted size={skin.dismissIconSize} />
-            </Pressable>
-          ) : null}
-        </GlassSurface>
+        <ToastCapsule {...content} />
       </View>
     );
   }
@@ -275,12 +295,23 @@ export function createToastSystem(skin: ToastSkin) {
       <ToastContext.Provider value={handle}>
         {children}
         {/* The live stack floats over the app via the Portal outlet; box-none lets
-            taps fall through everywhere except the toast capsules themselves. */}
+            taps fall through everywhere except the toast capsules themselves. The
+            stack IS the single polite live region and is mounted persistently
+            (even while empty), so capsules that swap in ARE announced — a
+            per-capsule region would mount together with its content, which
+            assistive tech routinely misses. Capsules render as the bare
+            ToastCapsule (no region of their own) to avoid nesting live regions. */}
         <Portal>
-          <View pointerEvents="box-none" style={STACK}>
+          <View
+            pointerEvents="box-none"
+            style={STACK}
+            role="status"
+            accessibilityLiveRegion="polite"
+            aria-live="polite"
+          >
             {toasts.map((t) => (
               <View key={t.id} pointerEvents="box-none" style={STACK_ITEM}>
-                <Toast
+                <ToastCapsule
                   message={t.message}
                   description={t.description}
                   action={t.action}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, GlassSurface, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -81,6 +81,10 @@ export function createPopover(skin: PopoverSkin) {
       if (props.open === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
+    // Escape dismisses the floating card on web (no-op natively). An inline
+    // panel is an always-visible surface, not a dismissable overlay, so it
+    // never subscribes.
+    useEscapeKey(open && !inline, () => setOpen(false));
     // Resolve the placement axis (documented, presentational in this rendering;
     // on iOS it also picks the edge the arrow rides).
     const placement = placementOf(props);
