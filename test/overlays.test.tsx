@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
+import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 import { Popover } from "../src/atoms/popover/popover.tsx";
 import { Tooltip } from "../src/atoms/tooltip/tooltip.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
@@ -66,6 +67,22 @@ describe("Drawer (full-screen Modal overlay)", () => {
     expect(scrim.style.backgroundColor).toContain("0, 0, 0");
     fireEvent.click(scrim);
     expect(openState).toBe(false);
+  });
+});
+
+describe("ActionSheet (full-screen Modal overlay)", () => {
+  it("renders nothing until opened, then mounts the sheet via its trigger", () => {
+    ui(
+      <ActionSheet
+        trigger="Add photo"
+        actions={[{ label: "Take Photo", onPress: () => {} }]}
+      />,
+    );
+    // Closed: the Modal is not visible, so RNW mounts none of its rows.
+    expect(screen.queryByText("Take Photo")).toBeNull();
+    // The uncontrolled trigger opens it.
+    fireEvent.click(screen.getByText("Add photo"));
+    expect(screen.getByText("Take Photo")).toBeDefined();
   });
 });
 

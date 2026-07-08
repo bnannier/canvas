@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, Text, useTheme, GlassSurface, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useRef, useState } from "react";
+import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -12,15 +12,20 @@ import * as s from "./popover.styles.js";
 // supplies only its skin (card shape/fill/border, heading/description type, and
 // whether an anchor arrow is drawn) and calls createPopover.
 //
-// The card is an overlay surface; in real use it floats above the page anchored
-// to the trigger. Here it is rendered inline, directly below the trigger, so the
-// open state is visible without a portal or Modal.
+// The floating card is an overlay surface: the open (triggered) card routes
+// through AnchoredOverlay, so with an OverlayProvider mounted (an app root, or a
+// docs example stage) it portals over the page anchored below the trigger with
+// outside-tap dismissal, and with no provider it falls back to an inline card
+// positioned absolutely below the trigger (the kit's pre-portal behavior). The
+// static `inline` mode is a plain in-flow panel and never portals.
 //
 // Axes:
 //
-// - Placement (pick one; default is `bottom`): `top` > `bottom`. Presentational
-//   only in this inline rendering; it documents the intended anchor side and (on
-//   iOS) which edge the arrow rides.
+// - Placement (pick one; default is `bottom`): `top` > `bottom`. The card always
+//   anchors BELOW the trigger (AnchoredOverlay's below-anchoring); placement drives
+//   which edge the iOS arrow rides (up toward the trigger for `bottom`). Genuine
+//   above-the-trigger `top` anchoring is not yet supported (see the note by the
+//   AnchoredOverlay call).
 //
 // Content props (the children-less / data-driven case):
 //
@@ -43,7 +48,8 @@ export interface PopoverProps {
   description?: string;
   /** When set, renders a primary action button at the bottom of the card. */
   actionLabel?: string;
-  // Placement (pick one; default is `bottom`). Presentational only here.
+  // Placement (pick one; default is `bottom`). The card anchors below the trigger
+  // either way; this picks which edge the iOS arrow rides.
   top?: boolean;
   bottom?: boolean;
   /**
@@ -85,49 +91,89 @@ export function createPopover(skin: PopoverSkin) {
     // panel is an always-visible surface, not a dismissable overlay, so it
     // never subscribes.
     useEscapeKey(open && !inline, () => setOpen(false));
-    // Resolve the placement axis (documented, presentational in this rendering;
-    // on iOS it also picks the edge the arrow rides).
+    // Resolve the placement axis (drives which edge the iOS beak rides; the card
+    // itself always anchors below the trigger).
     const placement = placementOf(props);
 
-    // With a trigger, the card floats (absolute) below it (the wrapper is
-    // `relative`), so it overflows its container instead of growing it. In inline
-    // mode it is a standalone in-flow panel. The float position lives on a wrapper
-    // so the GlassSurface card (which clips its frosted material to its rounded
-    // corners) sits inside it, while the iOS anchor arrow renders as the wrapper's
-    // sibling — outside the clip, so it is never cut off. The `style` escape hatch
-    // applies to the wrapper (outermost).
-    const cardPosition: StyleProp<ViewStyle> = [!inline ? s.cardFloating : null, style];
+    // Match the floating card's min width to the trigger, measured off the wrapper
+    // (the card portals out, so it never feeds back into this width). The wrapper
+    // hugs the trigger, so its laid-out width is the trigger's box.
+    const [triggerWidth, setTriggerWidth] = useState(0);
+    const triggerRef = useRef<View>(null);
 
-    return (
-      <View testID={testID} style={[inline ? null : s.wrapper, !inline && open ? s.wrapperLifted : null]}>
-        {inline ? null : (
-          <View style={s.triggerWrap}>
-            <Button outline small expanded={open} onPress={() => setOpen(!open)}>
-              {trigger ?? "Open popover"}
+    // The card body (heading, supporting line, optional action), shared by the
+    // static inline panel and the floating overlay card.
+    const panelBody = (
+      <>
+        {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
+        {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
+        {actionLabel != null ? (
+          <View style={s.actionRow}>
+            <Button primary small onPress={() => setOpen(false)}>
+              {actionLabel}
             </Button>
           </View>
-        )}
-        {open ? (
-          <View style={cardPosition}>
-            {/* The anchor arrow: drawn only when the skin supplies one (iOS) and
-                only in the floating case (an inline panel has no anchor). The skin
-                renders the pointer node itself (iOS draws a tapered SVG beak), and
-                it sits outside the GlassSurface so the surface's corner clip never
-                cuts it. */}
-            {skin.arrow != null && !inline ? skin.arrow(tokens, placement) : null}
-            <GlassSurface style={skin.card(tokens)}>
-              {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
-              {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
-              {actionLabel != null ? (
-                <View style={s.actionRow}>
-                  <Button primary small onPress={() => setOpen(false)}>
-                    {actionLabel}
-                  </Button>
-                </View>
-              ) : null}
-            </GlassSurface>
-          </View>
         ) : null}
+      </>
+    );
+
+    // Static (inline) mode: an always-visible in-flow panel with no trigger,
+    // arrow, or dismissal. It renders its own GlassSurface card directly rather
+    // than through the anchored overlay. The `style` escape hatch composes its
+    // outer layout.
+    if (inline) {
+      return (
+        <View testID={testID}>
+          <View style={style}>
+            <GlassSurface style={skin.card(tokens)}>{panelBody}</GlassSurface>
+          </View>
+        </View>
+      );
+    }
+
+    // Triggered mode: a trigger button plus a floating card. The open card routes
+    // through AnchoredOverlay (mirroring Dropdown): with an OverlayProvider it
+    // portals over the page anchored below the trigger, with outside-tap dismissal;
+    // with no provider it falls back to the kit's pre-portal inline anchor
+    // (`s.cardFloating`, absolute top:"100%" under the `relative` wrapper).
+    // `self-start` keeps the trigger from stretching; `wrapperLifted` lifts the
+    // whole overlay above later siblings in that no-provider fallback. The `style`
+    // escape hatch composes the wrapper's outer layout.
+    return (
+      <View
+        ref={triggerRef}
+        testID={testID}
+        style={[s.wrapper, open ? s.wrapperLifted : null, style]}
+        onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+      >
+        <View style={s.triggerWrap}>
+          <Button outline small expanded={open} onPress={() => setOpen(!open)}>
+            {trigger ?? "Open popover"}
+          </Button>
+        </View>
+
+        {/* NOTE (placement): AnchoredOverlay always anchors below the trigger, so
+            the `top` placement still renders the card below (its pre-portal
+            behavior) with the beak merely flipped; genuine above-the-trigger
+            placement needs placement-aware anchoring added to AnchoredOverlay. */}
+        <AnchoredOverlay
+          open={open}
+          onDismiss={() => setOpen(false)}
+          triggerRef={triggerRef}
+          gap={4}
+          cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
+          inlineStyle={s.cardFloating}
+        >
+          {/* The anchor beak, drawn only when the skin supplies one (iOS). For the
+              bottom placement it points UP at the trigger. NOTE (beak clip):
+              AnchoredOverlay wraps the card in a single GlassSurface whose clip box
+              hides overflow under glass mode, so the beak (which protrudes past the
+              card edge) shows in solid mode but is clipped under glass; restoring
+              the always-outside-the-clip beak needs an out-of-clip adornment slot
+              on AnchoredOverlay. */}
+          {skin.arrow != null ? skin.arrow(tokens, placement) : null}
+          {panelBody}
+        </AnchoredOverlay>
       </View>
     );
   };

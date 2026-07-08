@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./button-group.styles.js";
 
@@ -201,8 +201,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
   }
 
   // The split kind's secondary control: a chevron that toggles a floating dropdown
-  // of related actions, anchored to the right edge of the primary button. The
-  // menu floats (absolute) so it overflows the group rather than growing it.
+  // of related actions, anchored below the primary button. The menu renders
+  // through AnchoredOverlay, so when an OverlayProvider is mounted (an app root
+  // or a docs example stage) it portals over the page and escapes the group's
+  // clipping instead of being cut off; with no provider it falls back to the
+  // inline absolute anchor (the kit's pre-portal behavior).
   function SplitButton({
     primary,
     menu,
@@ -223,8 +226,24 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const { tokens } = useTheme();
     const [open, setOpen] = useState(false);
     const triggerHeight = s.sizeHeight[size];
+    // Measure the split control so the dropdown can match its width and never
+    // render narrower than the button it drops from.
+    const [triggerWidth, setTriggerWidth] = useState(0);
+    const triggerRef = useRef<View>(null);
+    // The skin's splitMenu merges the card visuals (fill/border/shadow/radius)
+    // with the inline anchor (position/top/end/marginTop/zIndex). Split them so
+    // AnchoredOverlay can style the portaled card via cardStyle and fall back to
+    // the inline anchor only when no OverlayProvider is mounted.
+    const { position, top, end, zIndex, marginTop, minWidth, ...menuCard } = skin.splitMenu(tokens);
+    const menuAnchor: ViewStyle = { position, top, end, zIndex, marginTop };
+    const menuMinWidth = typeof minWidth === "number" ? minWidth : 0;
     return (
-      <View style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]} testID={testID}>
+      <View
+        ref={triggerRef}
+        style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}
+        testID={testID}
+        onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+      >
         <Pressable
           style={({ pressed }) => [skin.splitPrimary(tokens), s.sizeContainer[size], skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           onPress={(e) => onSelect?.(0, primary, e)}
@@ -250,10 +269,17 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             <Icon chevronDown size={s.chevronSize[size]} {...iconColorProps(skin.splitChevronColor)} />
           </View>
         </Pressable>
-        {open ? (
-          // role="menu" gives the menuitem rows a valid ARIA parent; without it
-          // each menuitem is orphaned and web SRs/validators flag it.
-          <View style={skin.splitMenu(tokens)} accessibilityRole="menu" role="menu" aria-label="More actions">
+        <AnchoredOverlay
+          open={open}
+          onDismiss={() => setOpen(false)}
+          triggerRef={triggerRef}
+          gap={4}
+          cardStyle={[menuCard, { minWidth: Math.max(triggerWidth, menuMinWidth) }]}
+          inlineStyle={menuAnchor}
+        >
+          {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
+              each menuitem is orphaned and web SRs/validators flag it. */}
+          <View accessibilityRole="menu" role="menu" aria-label="More actions">
             {menu.map((item, i) => (
               <Pressable
                 key={`${item}-${i}`}
@@ -268,7 +294,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               </Pressable>
             ))}
           </View>
-        ) : null}
+        </AnchoredOverlay>
       </View>
     );
   }

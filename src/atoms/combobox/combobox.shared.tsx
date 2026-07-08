@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput } from "react-native";
 import {
   View,
@@ -8,7 +8,7 @@ import {
   useTheme,
   useControllableState,
   useEscapeKey,
-  GlassSurface,
+  AnchoredOverlay,
   FOCUS_RESET,
   type StyleProp,
   type ViewStyle,
@@ -35,11 +35,14 @@ import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 // shape, fill, border/underline, popover elevation, row layout, press
 // feedback) and calls createCombobox.
 //
-// Like Select, the open state is rendered inline (the docs render it this way;
-// there is no portal/Modal). The list is closed by default in the uncontrolled
-// case; focusing or typing opens it, the chevron toggles it, and a select
-// closes it. The selected option carries a leading "✓" and an accent surface;
-// an empty filtered list shows a muted "No results" row.
+// The open list renders through AnchoredOverlay: when an OverlayProvider is
+// mounted (an app root, or a docs example stage) it portals over the page,
+// anchored below the field, so it escapes any overflow-clipping ancestor (e.g.
+// the docs' horizontal preview scroller); with no provider it falls back to an
+// inline absolute anchor below the field. The list is closed by default in the
+// uncontrolled case; focusing or typing opens it, the chevron toggles it, and a
+// select closes it. The selected option carries a leading "✓" and an accent
+// surface; an empty filtered list shows a muted "No results" row.
 
 export interface ComboboxProps {
   /**
@@ -64,8 +67,8 @@ export interface ComboboxProps {
   /**
    * Whether the option list is open. Uncontrolled and closed by default;
    * focusing or typing in the field opens it, the chevron toggles it. Pass
-   * `open` to render the list open inline (the docs render it this way; there
-   * is no portal/Modal). A disabled control stays closed regardless.
+   * `open` to render the list open (the docs render it this way). A disabled
+   * control stays closed regardless.
    */
   open?: boolean;
   /** Fired when the open state changes (focus, typing, chevron, select). */
@@ -103,6 +106,13 @@ const fieldInput: TextStyle = { flex: 1, paddingVertical: 0, paddingHorizontal: 
 // without moving it from where the static chevron sat in the field row.
 const chevronHit: ViewStyle = { alignSelf: "stretch", justifyContent: "center" };
 
+// The inline-fallback anchor: with no OverlayProvider mounted the option list
+// renders in place, absolutely positioned below the field (the kit's pre-portal
+// behavior). With a provider, AnchoredOverlay portals the card over the page and
+// adds the outside-tap dismiss backdrop instead. `start:0,end:0` pins it to the
+// field's width; the skin owns the card's shape/fill/shadow.
+const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
+
 /** Build a Combobox component from a platform skin. */
 export function createCombobox(skin: ComboboxSkin) {
   const Combobox = forwardRef<RNTextInput, ComboboxProps>(function Combobox(props, ref) {
@@ -139,6 +149,12 @@ export function createCombobox(skin: ComboboxSkin) {
       onOpenChange?.(next);
     };
 
+    // Anchor the floating option list to the FIELD (not the whole wrapper, which
+    // also spans the label and helper text). Measured via onLayout so the list
+    // takes at least the field's width when portaled over the page.
+    const fieldRef = useRef<View>(null);
+    const [triggerWidth, setTriggerWidth] = useState(0);
+
     // Escape closes the open option list on web (no-op natively). A disabled
     // control renders no list, so it never subscribes.
     useEscapeKey(open && !disabled, () => setOpen(false));
@@ -163,6 +179,8 @@ export function createCombobox(skin: ComboboxSkin) {
           <Text style={skin.label(tokens, size)}>{label}</Text>
         ) : null}
         <View
+          ref={fieldRef}
+          onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
           style={[
             skin.field(tokens, size, open),
             disabled ? { opacity: skin.disabledOpacity } : null,
@@ -216,8 +234,14 @@ export function createCombobox(skin: ComboboxSkin) {
           </Pressable>
         </View>
 
-        {open && !disabled ? (
-          <GlassSurface style={skin.popover(tokens)}>
+        <AnchoredOverlay
+          open={open && !disabled}
+          onDismiss={() => setOpen(false)}
+          triggerRef={fieldRef}
+          gap={4}
+          cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
+          inlineStyle={POPOVER_ANCHOR}
+        >
             {matches.length === 0 ? (
               <View style={skin.emptyRow}>
                 <Text style={skin.emptyText(tokens, size)}>No results</Text>
@@ -257,8 +281,7 @@ export function createCombobox(skin: ComboboxSkin) {
               })}
               </View>
             )}
-          </GlassSurface>
-        ) : null}
+        </AnchoredOverlay>
 
         {helperText != null && helperText !== "" ? (
           <Text style={skin.helper(tokens)}>{helperText}</Text>

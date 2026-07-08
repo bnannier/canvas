@@ -45,8 +45,11 @@ export interface RowMenuSkin {
   triggerGlyph: (t: ColorTokens) => TextStyle;
   /** The fill applied to the trigger on press (web/iOS tint via this; Android ripples). */
   triggerPressed: (t: ColorTokens) => ViewStyle;
-  /** The floating menu card surface (shape, fill, border, shadow, placement). */
+  /** The floating menu card surface (shape, fill, border, shadow, radius). The
+   *  shell adds the measured minWidth and positions the card via AnchoredOverlay. */
   menuCard: (t: ColorTokens) => ViewStyle;
+  /** The menu's min-width floor; the card never renders narrower than this. */
+  menuMinWidth: number;
   /** The muted section heading above the rows. */
   menuLabel: (t: ColorTokens) => TextStyle;
   /** A single action/link row layout. */
@@ -92,19 +95,14 @@ export const webSkin: RowMenuSkin = {
   triggerGlyph: (t) => ({ fontSize: 16, lineHeight: 24, color: t.foreground }),
   triggerPressed: (t) => ({ backgroundColor: t.accent }),
   menuCard: (t) => ({
-    minWidth: 180,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.popover,
     padding: 4,
     ...shadow("lg"),
-    position: "absolute",
-    top: "100%",
-    start: 0,
-    zIndex: 50,
-    marginTop: 4,
   }),
+  menuMinWidth: 180,
   menuLabel: (t) => ({
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -156,7 +154,6 @@ export const iosSkin: RowMenuSkin = {
   // iOS dims the whole trigger on press (pressedOpacity); no fill tint.
   triggerPressed: () => ({}),
   menuCard: (t) => ({
-    minWidth: 250,
     borderRadius: IOS_RADIUS,
     backgroundColor: t.popover,
     // The deep corner clips the first/last row fills cleanly; vertical inset keeps
@@ -164,12 +161,8 @@ export const iosSkin: RowMenuSkin = {
     paddingVertical: 6,
     overflow: "hidden",
     ...shadow("lg"),
-    position: "absolute",
-    top: "100%",
-    start: 0,
-    zIndex: 50,
-    marginTop: 8,
   }),
+  menuMinWidth: 250,
   menuLabel: (t) => ({
     paddingHorizontal: 16,
     paddingTop: 10,
@@ -224,17 +217,12 @@ export const androidSkin: RowMenuSkin = {
   // Android tints the trigger via the ripple, not a fill.
   triggerPressed: () => ({}),
   menuCard: (t) => ({
-    minWidth: 200,
     borderRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,
     paddingVertical: 8,
     ...shadow("md"),
-    position: "absolute",
-    top: "100%",
-    start: 0,
-    zIndex: 50,
-    marginTop: 2,
   }),
+  menuMinWidth: 200,
   menuLabel: (t) => ({
     paddingHorizontal: 16,
     paddingVertical: 8,

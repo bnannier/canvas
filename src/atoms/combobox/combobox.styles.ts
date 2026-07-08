@@ -39,7 +39,12 @@ export interface ComboboxSkin {
   fieldText: (t: ColorTokens, size: Size, muted: boolean) => TextStyle;
   /** The trailing disclosure chevron. */
   chevron: (t: ColorTokens, size: Size) => TextStyle;
-  /** The open option list surface (radius, elevation/shadow, padding). */
+  /**
+   * The open option list CARD: radius, fill, border, elevation/shadow, padding,
+   * max-height. Positioning is owned by the shell (AnchoredOverlay portals and
+   * anchors it; POPOVER_ANCHOR is the no-host inline fallback), so this returns
+   * card visuals only, no position/top/zIndex.
+   */
   popover: (t: ColorTokens) => ViewStyle;
   /** The "No results" row box. */
   emptyRow: ViewStyle;
@@ -119,12 +124,6 @@ export const webSkin: ComboboxSkin = {
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   popover: (t) => ({
-    position: "absolute",
-    top: "100%",
-    start: 0,
-    end: 0,
-    zIndex: 50,
-    marginTop: 4,
     maxHeight: 240,
     borderRadius: 6,
     borderWidth: 1,
@@ -201,12 +200,6 @@ export const iosSkin: ComboboxSkin = {
   // The trailing disclosure is the brand indigo, the iOS field/pop-up tint.
   chevron: (t, size) => ({ color: t.primary, ...IOS_TEXT[size] }),
   popover: (t) => ({
-    position: "absolute",
-    top: "100%",
-    start: 0,
-    end: 0,
-    zIndex: 50,
-    marginTop: 6,
     maxHeight: 260,
     borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
@@ -284,12 +277,6 @@ export const androidSkin: ComboboxSkin = {
   // M3 menu surface: flat 4dp corners, elevated (no soft drop shadow), zero
   // padding so the full-bleed rows reach the edges.
   popover: (t) => ({
-    position: "absolute",
-    top: "100%",
-    start: 0,
-    end: 0,
-    zIndex: 50,
-    marginTop: 4,
     maxHeight: 280,
     borderRadius: 4,
     backgroundColor: t.popover,
