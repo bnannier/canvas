@@ -1,3 +1,4 @@
+import { StyleSheet } from "react-native";
 import { View, useTheme, alpha, palette, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type SparklineSkin } from "./sparkline.styles.js";
 
@@ -78,13 +79,21 @@ export function createSparkline(skin: SparklineSkin) {
     const finite = values.filter((v) => Number.isFinite(v));
     const max = Math.max(1, ...finite);
 
+    // The bars grow with `flexGrow`, so the strip needs a defined width or they
+    // collapse to 0 and render blank. Give it the skin's intrinsic width unless
+    // the caller already sizes it via `width` or `flex`/`flexBasis`/`flexGrow`.
+    const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+    const sized = flat.width != null || flat.flex != null || flat.flexBasis != null || flat.flexGrow != null;
+    const root: ViewStyle = { flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot };
+    if (!sized) root.width = skin.defaultWidth;
+
     return (
       <View
         role="img"
         accessibilityLabel={accessibilityLabel}
         aria-label={accessibilityLabel}
         testID={testID}
-        style={[{ flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot }, style]}
+        style={[root, style]}
       >
         {values.map((v, i) => {
           const value = Number.isFinite(v) ? v : 0;

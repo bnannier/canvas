@@ -253,6 +253,14 @@ export function createCarousel(skin: CarouselSkin) {
             <FlatList
               ref={listRef}
               data={items}
+              // Pin the scroll container to the measured viewport width. Without a
+              // DEFINITE width the horizontal list reports its intrinsic size (the
+              // sum of the slides, each itself sized to the measured width) up to the
+              // viewport, so in a shrink-to-content parent the viewport width feeds
+              // back into the slide width and diverges (the browser clamps the runaway
+              // at its ~2^24 layout cap, pushing every slide off-screen). A definite
+              // width caps that contribution and keeps slide N at N * width.
+              style={{ width }}
               keyExtractor={(item) => item.key}
               horizontal
               pagingEnabled

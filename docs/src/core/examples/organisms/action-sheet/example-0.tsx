@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { ActionSheet } = scope;
   return (
 <ActionSheet
-  open
+  trigger="Add photo"
   title="Photo"
   message="Choose how to add a photo."
   actions={[

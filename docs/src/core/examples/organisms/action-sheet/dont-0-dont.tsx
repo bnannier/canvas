@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { ActionSheet } = scope;
   return (
 <ActionSheet
-  open
+  trigger="Confirm"
   title="Are you sure?"
   actions={[{ label: "OK", onPress: () => {} }]}
 />

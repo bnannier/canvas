@@ -47,6 +47,11 @@ export const item: Record<Surface, ViewStyle> = {
   plain: { minWidth: 112 },
 };
 
+// The trend strip an item renders when it carries `spark` data: it sits below the
+// value/delta and spans the full metric width (so the bars fill the stack rather
+// than a fixed 120px). A layout contract shared by every skin, like `row`/`item`.
+export const sparkStrip: ViewStyle = { marginTop: 12, width: "100%" };
+
 // Delta tone: a rise reads green (text-green-600 dark:text-green-400), a decline
 // reads red (text-red-600 dark:text-red-400). Semantic color, shared.
 export function deltaTone(dark: boolean, down: boolean): TextStyle {

@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { deltaTone, item as itemLayout, row, type Surface } from "./stats.styles.js";
+import { Sparkline } from "../../atoms/sparkline/sparkline.js";
+import { deltaTone, item as itemLayout, row, sparkStrip, type Surface } from "./stats.styles.js";
 
 // Shared Stats shell. The structure (a wrapping row/grid of metric stacks, each a
 // small label, a large headline value, and an optional delta), the boolean-prop
@@ -38,6 +39,9 @@ export interface StatItem {
   delta?: string;
   /** Color the delta red (a decline) instead of the default green (a rise). */
   down?: boolean;
+  /** Optional trend series; when set (and non-empty), the metric renders a
+   *  Sparkline strip below the value that plots these points. Omit for no trend. */
+  spark?: number[];
 }
 
 export interface StatsProps {
@@ -98,6 +102,9 @@ export function createStats(skin: StatsSkin) {
         <Text style={skin.valueText(tokens)}>{item.value}</Text>
         {item.delta != null && item.delta !== "" ? (
           <Text style={[skin.deltaBase, deltaTone(dark, !!item.down)]}>{item.delta}</Text>
+        ) : null}
+        {item.spark != null && item.spark.length > 0 ? (
+          <Sparkline values={item.spark} accessibilityLabel={`${item.label} trend`} style={sparkStrip} />
         ) : null}
       </>
     );

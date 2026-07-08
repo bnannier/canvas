@@ -1,12 +1,12 @@
 # Action Sheet
 
-The iOS modal action menu: a bottom sheet of choices summoned in response to a user action. It poses an optional title and message, lists a set of actions (any of which can be destructive), and offers a Cancel. Selecting an action runs it and closes the sheet; tapping the scrim or Cancel closes it without acting. For a small contextual menu anchored to a control, reach for Dropdown or RowMenu instead.
+The iOS modal action menu: a bottom sheet of choices summoned in response to a user action. It poses an optional title and message, lists a set of actions (any of which can be destructive), and offers a Cancel. Selecting an action runs it and closes the sheet; tapping the scrim or Cancel closes it without acting. Pass a `trigger` label for a self-contained button that opens the sheet, or drive `open` / `onOpenChange` yourself. For a small contextual menu anchored to a control, reach for Dropdown or RowMenu instead.
 
 ## Usage
 
 ```tsx
 <ActionSheet
-  open
+  trigger="Add photo"
   title="Photo"
   message="Choose how to add a photo."
   actions={[
@@ -23,7 +23,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="Discard draft…"
   title="Discard draft?"
   message="Your unsaved changes will be lost."
   actions={[
@@ -37,7 +37,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="Show actions"
   actions={[
     { label: "Share", onPress: () => {} },
     { label: "Duplicate", onPress: () => {} },
@@ -50,7 +50,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="Delete file…"
   title="Delete this file?"
   message="This permanently removes the file. This action cannot be undone."
   actions={[{ label: "Delete File", destructive: true, onPress: () => {} }]}
@@ -61,7 +61,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="File options"
   actions={[
     { label: "Save", onPress: () => {} },
     { label: "Save As…", disabled: true, onPress: () => {} },
@@ -78,7 +78,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="Add photo"
   title="Photo"
   actions={[
     { label: "Take Photo", onPress: () => {} },
@@ -92,7 +92,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="Confirm"
   title="Are you sure?"
   actions={[{ label: "OK", onPress: () => {} }]}
 />
@@ -104,7 +104,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="File options"
   actions={[
     { label: "Delete File", destructive: true, onPress: () => {} },
     { label: "Move to Folder", onPress: () => {} },
@@ -116,7 +116,7 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 ```tsx
 <ActionSheet
-  open
+  trigger="Delete file…"
   title="Delete file?"
   actions={[
     { label: "Yes", destructive: true, onPress: () => {} },

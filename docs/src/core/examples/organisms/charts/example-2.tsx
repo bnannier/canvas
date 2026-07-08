@@ -3,21 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart } = scope;
+  const { Card, StackedBar } = scope;
   return (
-<Chart
-  title="Signups"
-  data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]}
-  max={100}
-  success
-/>
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    segments={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Referral", value: 12 }
+    ]}
+  />
+</Card>
   );
 }

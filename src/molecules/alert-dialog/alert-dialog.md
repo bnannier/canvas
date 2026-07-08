@@ -87,7 +87,7 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 **Don't** — A blocking alert dialog for passive confirmation interrupts the user for no reason.
 
 ```tsx
-<AlertDialog open small title="Saved" description="Your changes have been saved." confirmLabel="OK" />
+<AlertDialog small title="Saved" description="Your changes have been saved." confirmLabel="OK" trigger="Save changes" />
 ```
 
 ### Name the action on the confirm button
@@ -95,13 +95,13 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 **Do** — Label the confirm button with the verb it performs (Delete, Archive, Sign out).
 
 ```tsx
-<AlertDialog open small destructive title="Delete this identity?" cancelLabel="Cancel" confirmLabel="Delete" />
+<AlertDialog small destructive title="Delete this identity?" cancelLabel="Cancel" confirmLabel="Delete" trigger="Delete identity…" />
 ```
 
 **Don't** — Generic Yes / No forces the user to re-read the title to know what they are confirming.
 
 ```tsx
-<AlertDialog open small destructive title="Delete this identity?" cancelLabel="No" confirmLabel="Yes" />
+<AlertDialog small destructive title="Delete this identity?" cancelLabel="No" confirmLabel="Yes" trigger="Delete identity…" />
 ```
 
 ### xs
@@ -109,13 +109,13 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 **Do** — Reserve xs for a terse one-line question with short button labels and no body content.
 
 ```tsx
-<AlertDialog open narrow destructive title="Remove device?" cancelLabel="Cancel" confirmLabel="Remove" />
+<AlertDialog narrow destructive title="Remove device?" cancelLabel="Cancel" confirmLabel="Remove" trigger="Remove device…" />
 ```
 
 **Don't** — A long title, multi-line description, and wordy buttons get cramped in the xs width and wrap awkwardly.
 
 ```tsx
-<AlertDialog open narrow destructive title="Remove this trusted device?" description="It will need to re-authenticate, and any pending background syncs from it will be cancelled the next time it connects." cancelLabel="Cancel" confirmLabel="Remove device" />
+<AlertDialog narrow destructive title="Remove this trusted device?" description="It will need to re-authenticate, and any pending background syncs from it will be cancelled the next time it connects." cancelLabel="Cancel" confirmLabel="Remove device" trigger="Remove device…" />
 ```
 
 ### sm
@@ -123,7 +123,7 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 **Do** — Use sm for a single short confirmation with a one-line description; move real forms to a full dialog.
 
 ```tsx
-<AlertDialog open small title="Transfer ownership?" description="You will lose admin access to this workspace." cancelLabel="Cancel" confirmLabel="Transfer" />
+<AlertDialog small title="Transfer ownership?" description="You will lose admin access to this workspace." cancelLabel="Cancel" confirmLabel="Transfer" trigger="Transfer ownership…" />
 ```
 
 **Don't** — Packing a multi-field form into sm makes it feel like a form crammed into a confirmation popup.
@@ -159,13 +159,13 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 **Do** — md is the default home for a typical destructive confirm with a sentence or two of description.
 
 ```tsx
-<AlertDialog open destructive title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" />
+<AlertDialog destructive title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" trigger="Delete identity…" />
 ```
 
 **Don't** — Squeezing a description-carrying confirm into a smaller width crowds the copy against the edges.
 
 ```tsx
-<AlertDialog open narrow destructive title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" />
+<AlertDialog narrow destructive title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" trigger="Delete identity…" />
 ```
 
 ### lg
@@ -173,11 +173,11 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 **Do** — Reserve lg for dialogs that earn the width: a body field or a longer explanation to read.
 
 ```tsx
-<AlertDialog open large destructive withInput title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" />
+<AlertDialog large destructive withInput title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" trigger="Delete identity…" />
 ```
 
 **Don't** — A bare yes/no in lg leaves a wide, empty panel that reads as heavier than the trivial decision it asks for.
 
 ```tsx
-<AlertDialog open large title="Sign out?" cancelLabel="Cancel" confirmLabel="Sign out" />
+<AlertDialog large title="Sign out?" cancelLabel="Cancel" confirmLabel="Sign out" trigger="Sign out…" />
 ```

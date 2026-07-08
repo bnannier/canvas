@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
-<AlertDialog open narrow destructive title="Remove this trusted device?" description="It will need to re-authenticate, and any pending background syncs from it will be cancelled the next time it connects." cancelLabel="Cancel" confirmLabel="Remove device" />
+<AlertDialog narrow destructive title="Remove this trusted device?" description="It will need to re-authenticate, and any pending background syncs from it will be cancelled the next time it connects." cancelLabel="Cancel" confirmLabel="Remove device" trigger="Remove device…" />
   );
 }

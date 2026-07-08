@@ -9,12 +9,12 @@ export default function Example(scope: ExampleScope) {
   showArrows={false}
   items={[
     { key: "a", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Featured</Typography>
       </Column>
     ) },
     { key: "b", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Popular</Typography>
       </Column>
     ) }

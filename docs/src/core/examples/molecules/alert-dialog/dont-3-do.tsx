@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
-<AlertDialog open small title="Transfer ownership?" description="You will lose admin access to this workspace." cancelLabel="Cancel" confirmLabel="Transfer" />
+<AlertDialog small title="Transfer ownership?" description="You will lose admin access to this workspace." cancelLabel="Cancel" confirmLabel="Transfer" trigger="Transfer ownership…" />
   );
 }

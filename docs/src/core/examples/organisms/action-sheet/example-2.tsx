@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { ActionSheet } = scope;
   return (
 <ActionSheet
-  open
+  trigger="Show actions"
   actions={[
     { label: "Share", onPress: () => {} },
     { label: "Duplicate", onPress: () => {} },

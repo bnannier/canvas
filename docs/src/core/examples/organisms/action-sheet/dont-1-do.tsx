@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { ActionSheet } = scope;
   return (
 <ActionSheet
-  open
+  trigger="File options"
   actions={[
     { label: "Delete File", destructive: true, onPress: () => {} },
     { label: "Move to Folder", onPress: () => {} },

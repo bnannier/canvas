@@ -10,17 +10,17 @@ export default function Example(scope: ExampleScope) {
   loop
   items={[
     { key: "x", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>First</Typography>
       </Column>
     ) },
     { key: "y", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Second</Typography>
       </Column>
     ) },
     { key: "z", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Third</Typography>
       </Column>
     ) }

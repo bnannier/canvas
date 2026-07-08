@@ -1,4 +1,4 @@
-import { useEffect, Fragment } from "react";
+import { useCallback, useEffect, useState, Fragment } from "react";
 import { BackHandler, KeyboardAvoidingView, Modal, Platform, SafeAreaView, StyleSheet } from "react-native";
 import {
   View,
@@ -10,6 +10,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "../../style/index.js";
+import { Button } from "../../atoms/button/button.js";
 import * as s from "./action-sheet.styles.js";
 import { type ActionSheetSkin } from "./action-sheet.styles.js";
 
@@ -32,10 +33,11 @@ import { type ActionSheetSkin } from "./action-sheet.styles.js";
 // are FUNCTIONAL-LAYER overlays, so they render through GlassSurface (glass when
 // the theme's surface mode is glass, a solid `popover` fill otherwise).
 //
-// Controlled only: drive `open` / `onOpenChange` yourself (an action sheet is
-// summoned in response to a user action, so there is no built-in trigger button).
-// The scrim, the system back/escape, AND the Android hardware back button all
-// request a close.
+// Open state mirrors the kit's other overlays (Dialog, Drawer): pass `trigger`
+// for an uncontrolled sheet that renders its own button and opens itself on
+// press, or drive `open` / `onOpenChange` yourself for the controlled case. The
+// scrim, the system back/escape, AND the Android hardware back button all request
+// a close.
 
 /** A single action in the sheet. */
 export interface ActionSheetAction {
@@ -57,10 +59,15 @@ export interface ActionSheetAction {
 }
 
 export interface ActionSheetProps {
-  /** Controlled open state. */
-  open: boolean;
-  /** Fired when the open state changes (scrim tap, Cancel, an action, back/escape). */
+  /** Controlled open state. Omit for uncontrolled (a `trigger` opens it). */
+  open?: boolean;
+  /** Fired when the open state changes (trigger press, scrim tap, Cancel, an action, back/escape). */
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Label for an optional trigger button. When set, the sheet renders the button
+   * and opens itself on press (uncontrolled). Omit when you drive `open` yourself.
+   */
+  trigger?: string;
   /** Optional header title (a short, centered gray heading on iOS/web). */
   title?: string;
   /** Optional header message under the title. */
@@ -82,10 +89,22 @@ export interface ActionSheetProps {
 /** Build an ActionSheet component from a platform skin. */
 export function createActionSheet(skin: ActionSheetSkin) {
   return function ActionSheet(props: ActionSheetProps) {
-    const { open, onOpenChange, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
+    const { open: openProp, onOpenChange, trigger, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
     const { tokens } = useTheme();
 
-    const close = () => onOpenChange?.(false);
+    // Uncontrolled by default: the trigger opens the sheet and the scrim/Cancel
+    // closes it; a controlled `open` prop overrides this.
+    const [internalOpen, setInternalOpen] = useState(false);
+    const open = openProp ?? internalOpen;
+    const setOpen = useCallback(
+      (next: boolean) => {
+        if (openProp === undefined) setInternalOpen(next);
+        onOpenChange?.(next);
+      },
+      [openProp, onOpenChange],
+    );
+
+    const close = () => setOpen(false);
 
     // Selecting an action runs its handler, then closes the sheet.
     const selectAction = (action: ActionSheetAction) => {
@@ -102,12 +121,11 @@ export function createActionSheet(skin: ActionSheetSkin) {
     useEffect(() => {
       if (!open) return;
       const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-        close();
+        setOpen(false);
         return true;
       });
       return () => sub.remove();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
+    }, [open, setOpen]);
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const hasHeader = title != null || message != null;
@@ -165,70 +183,77 @@ export function createActionSheet(skin: ActionSheetSkin) {
     );
 
     return (
-      <Modal
-        visible={open}
-        transparent
-        animationType="slide"
-        onRequestClose={close}
-        testID={testID}
-        // Tell assistive tech the content behind this overlay is inert while the
-        // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
-        accessibilityViewIsModal={true}
-      >
-        {/* Lift the sheet above the iOS software keyboard so a field summoned over
-            the sheet stays visible while typing. behavior "padding" shrinks the
-            overlay by the keyboard height on iOS; off iOS no behavior is passed
-            (Android's window handles the resize, web has no soft keyboard), so the
-            wrapper is inert there. */}
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-          {/* The dimmed scrim is a plain container; the tap-to-dismiss target is a
-              separate full-bleed Pressable BEHIND the sheet, not a wrapper around it.
-              A Pressable that wrapped the sheet would nest one interactive element
-              inside another (an invalid <button>-in-<button> on the web, since RNW
-              renders a button-roled Pressable as a real <button>, plus an ambiguous
-              a11y target). Kept as a sibling, the dismiss control still exposes the
-              same button role + label a screen reader can reach, while the action
-              rows live in their own subtree. The content layer is lifted above the
-              absolute backdrop with zIndex, so a tap on the sheet hits the sheet and
-              a tap on the exposed scrim dismisses (no fall-through wrapper needed). */}
-          <View style={s.scrim(skin.scrimOpacity)}>
-            <Pressable
-              style={StyleSheet.absoluteFill}
-              onPress={close}
-              accessibilityRole="button"
-              accessibilityLabel={cancelLabel}
-            />
-            {/* SafeAreaView lifts the bottom-anchored stack clear of the home
-                indicator on iOS (the dim scrim still fills the gap behind it, matching
-                the native sheet); the inset resolves to 0 elsewhere, so the layout is
-                unchanged off iOS. */}
-            <SafeAreaView style={s.scrimContent}>
-              <View style={[skin.stack, style]}>
-                <GlassSurface style={skin.actionsCard(tokens)}>
-                  {/* The handle (Android) sits above the header inside the sheet. */}
-                  {skin.handle ? <View style={skin.handle(tokens)} /> : null}
-                  {headerNode}
-                  {/* The rows scroll if they overflow the viewport (a long action list). */}
-                  <ScrollView bounces={false} style={{ maxHeight: 360 }}>
-                    {actionRows}
-                    {/* Android: Cancel is the last row in the same sheet. */}
-                    {skin.cancelLayout === "lastRow" ? (
-                      <Fragment>
-                        {skin.divider ? <View style={skin.divider(tokens)} /> : null}
-                        {cancelRow}
-                      </Fragment>
-                    ) : null}
-                  </ScrollView>
-                </GlassSurface>
-                {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
-                {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
-                  <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
-                ) : null}
-              </View>
-            </SafeAreaView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <Fragment>
+        {trigger != null ? (
+          <Button outline small onPress={() => setOpen(true)}>
+            {trigger}
+          </Button>
+        ) : null}
+        <Modal
+          visible={open}
+          transparent
+          animationType="slide"
+          onRequestClose={close}
+          testID={testID}
+          // Tell assistive tech the content behind this overlay is inert while the
+          // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
+          accessibilityViewIsModal={true}
+        >
+          {/* Lift the sheet above the iOS software keyboard so a field summoned over
+              the sheet stays visible while typing. behavior "padding" shrinks the
+              overlay by the keyboard height on iOS; off iOS no behavior is passed
+              (Android's window handles the resize, web has no soft keyboard), so the
+              wrapper is inert there. */}
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+            {/* The dimmed scrim is a plain container; the tap-to-dismiss target is a
+                separate full-bleed Pressable BEHIND the sheet, not a wrapper around it.
+                A Pressable that wrapped the sheet would nest one interactive element
+                inside another (an invalid <button>-in-<button> on the web, since RNW
+                renders a button-roled Pressable as a real <button>, plus an ambiguous
+                a11y target). Kept as a sibling, the dismiss control still exposes the
+                same button role + label a screen reader can reach, while the action
+                rows live in their own subtree. The content layer is lifted above the
+                absolute backdrop with zIndex, so a tap on the sheet hits the sheet and
+                a tap on the exposed scrim dismisses (no fall-through wrapper needed). */}
+            <View style={s.scrim(skin.scrimOpacity)}>
+              <Pressable
+                style={StyleSheet.absoluteFill}
+                onPress={close}
+                accessibilityRole="button"
+                accessibilityLabel={cancelLabel}
+              />
+              {/* SafeAreaView lifts the bottom-anchored stack clear of the home
+                  indicator on iOS (the dim scrim still fills the gap behind it, matching
+                  the native sheet); the inset resolves to 0 elsewhere, so the layout is
+                  unchanged off iOS. */}
+              <SafeAreaView style={s.scrimContent}>
+                <View style={[skin.stack, style]}>
+                  <GlassSurface style={skin.actionsCard(tokens)}>
+                    {/* The handle (Android) sits above the header inside the sheet. */}
+                    {skin.handle ? <View style={skin.handle(tokens)} /> : null}
+                    {headerNode}
+                    {/* The rows scroll if they overflow the viewport (a long action list). */}
+                    <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                      {actionRows}
+                      {/* Android: Cancel is the last row in the same sheet. */}
+                      {skin.cancelLayout === "lastRow" ? (
+                        <Fragment>
+                          {skin.divider ? <View style={skin.divider(tokens)} /> : null}
+                          {cancelRow}
+                        </Fragment>
+                      ) : null}
+                    </ScrollView>
+                  </GlassSurface>
+                  {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
+                  {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
+                    <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
+                  ) : null}
+                </View>
+              </SafeAreaView>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </Fragment>
     );
   };
 }

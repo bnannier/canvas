@@ -26,14 +26,18 @@ export const TONE_TOKEN: Record<Tone, keyof ColorTokens> = {
   foreground: "foreground",
 };
 
-// react-native-svg's Circle/Line aren't Animated components; wrapping the SVG in
-// the shell's Animated.View and spinning that is enough, but the rotation has to
-// live on an Animated.View. The skins below return a static SVG; the shell's
-// Animated.View carries the spin. To make the *shape itself* rotate (not just the
-// bounding box), each spinning skin wraps its SVG in an Animated.View whose
-// transform interpolates the shared 0..1 value to 0..360deg.
-
-const AnimatedSvg = Animated.createAnimatedComponent(Svg);
+// react-native-svg's Circle/Line aren't Animated components. Each spinning skin
+// wraps a static Svg in an Animated.View whose transform interpolates the shared
+// 0..1 value to 0..360deg; the View is centered over the Svg, so rotating it spins
+// the shape (identical to rotating the bounding box, since it is a centered square).
+// We deliberately wrap in Animated.View instead of animating the Svg itself
+// (Animated.createAnimatedComponent(Svg)): react-native's Animated forces
+// `collapsable={false}` (a native-only View prop, meant to keep the view un-flattened
+// for the native driver) onto whatever it wraps, and react-native-svg forwards unknown
+// props to the underlying host node, so on react-native-web that `false` reaches the
+// `<svg>` DOM element and React errors with "Received `false` for a non-boolean
+// attribute `collapsable`". react-native-web's View drops `collapsable`, so parking the
+// animation on the Animated.View keeps it off the DOM.
 
 // iOS: 12 spokes laid out every 30deg around the center, each a short rounded
 // line from an inner radius to the rim. Opacity steps down around the ring so the
@@ -71,9 +75,11 @@ export const iosSkin: SpinnerSkin = {
       );
     });
     return (
-      <AnimatedSvg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: [{ rotate: spin }] }}>
-        {spokes}
-      </AnimatedSvg>
+      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          {spokes}
+        </Svg>
+      </Animated.View>
     );
   },
 };
@@ -90,18 +96,20 @@ export const androidSkin: SpinnerSkin = {
     const arc = circumference * 0.75; // 270deg sweep
     const spin = rotate.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
     return (
-      <AnimatedSvg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: [{ rotate: spin }] }}>
-        <Circle
-          cx={c}
-          cy={c}
-          r={r}
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          fill="none"
-          strokeDasharray={`${arc} ${circumference}`}
-        />
-      </AnimatedSvg>
+      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <Circle
+            cx={c}
+            cy={c}
+            r={r}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray={`${arc} ${circumference}`}
+          />
+        </Svg>
+      </Animated.View>
     );
   },
 };

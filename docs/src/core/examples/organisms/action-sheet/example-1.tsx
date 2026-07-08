@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { ActionSheet } = scope;
   return (
 <ActionSheet
-  open
+  trigger="Discard draft…"
   title="Discard draft?"
   message="Your unsaved changes will be lost."
   actions={[

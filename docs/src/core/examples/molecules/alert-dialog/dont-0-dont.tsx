@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
-<AlertDialog open small title="Saved" description="Your changes have been saved." confirmLabel="OK" />
+<AlertDialog small title="Saved" description="Your changes have been saved." confirmLabel="OK" trigger="Save changes" />
   );
 }

@@ -25,78 +25,42 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
 ### Chart type - sparkline
 
 ```tsx
-<Chart
-  title="Signups"
-  data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]}
-  max={100}
-  horizontal
-/>
+<Card padded style={{ maxWidth: 200 }}>
+  <Sparkline tall values={[45, 60, 35, 70, 55, 80, 95]} style={{ width: 160 }} />
+</Card>
 ```
 
 ### Chart type - stacked
 
 ```tsx
-<Chart
-  title="Signups"
-  data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]}
-  max={100}
-  success
-/>
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    segments={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Referral", value: 12 }
+    ]}
+  />
+</Card>
 ```
 
 ### Chart type - gauge
 
 ```tsx
-<Chart
-  title="Signups"
-  data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]}
-  max={100}
-  success
-  horizontal
-/>
+<Card padded style={{ maxWidth: 200 }}>
+  <Column alignCenter>
+    <Gauge value={72} label="Uptime" />
+  </Column>
+</Card>
 ```
 
 ### Chart type - heatmap
 
 ```tsx
-<Chart
-  title="Signups"
-  data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]}
-  max={100}
-  destructive
-/>
+<Card padded style={{ maxWidth: 260 }}>
+  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />
+</Card>
 ```
 
 ## Do & Don't

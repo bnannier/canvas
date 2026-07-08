@@ -8,12 +8,12 @@ export default function Example(scope: ExampleScope) {
 <Carousel
   items={[
     { key: "do1", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Step 1</Typography>
       </Column>
     ) },
     { key: "do2", content: (
-      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}> {/* docgen-allow-style: demo placeholder slide surface */}
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
         <Typography lead medium>Step 2</Typography>
       </Column>
     ) }

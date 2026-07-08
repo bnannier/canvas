@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
-<AlertDialog open narrow destructive title="Remove device?" cancelLabel="Cancel" confirmLabel="Remove" />
+<AlertDialog narrow destructive title="Remove device?" cancelLabel="Cancel" confirmLabel="Remove" trigger="Remove device…" />
   );
 }

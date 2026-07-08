@@ -3,22 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart } = scope;
+  const { Card, Column, Gauge } = scope;
   return (
-<Chart
-  title="Signups"
-  data={[
-    { label: "Mon", value: 45 },
-    { label: "Tue", value: 60 },
-    { label: "Wed", value: 35 },
-    { label: "Thu", value: 70 },
-    { label: "Fri", value: 55 },
-    { label: "Sat", value: 80 },
-    { label: "Sun", value: 95 }
-  ]}
-  max={100}
-  success
-  horizontal
-/>
+<Card padded style={{ maxWidth: 200 }}>
+  <Column alignCenter>
+    <Gauge value={72} label="Uptime" />
+  </Column>
+</Card>
   );
 }

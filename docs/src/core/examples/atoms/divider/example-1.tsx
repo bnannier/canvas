@@ -3,8 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Divider } = scope;
+  const { Divider, Typography, Row } = scope;
   return (
-<Divider vertical />
+<Row alignCenter cozy>
+  <Typography small>Edit</Typography>
+  <Divider vertical style={{ height: 16 }} />
+  <Typography small>Delete</Typography>
+</Row>
   );
 }

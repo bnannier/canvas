@@ -74,13 +74,15 @@ describe("generated prop tables", () => {
   });
 
   it("flags required props with a badge and leaves optional ones unflagged", () => {
-    // ActionSheet has exactly two required props: `open` and `actions`.
+    // ActionSheet has exactly one required prop: `actions` (`open` is optional now
+    // that a `trigger` can open the sheet, mirroring Dialog/Drawer).
     const [group] = COMPONENT_PROPS["action-sheet"];
     const requiredCount = group.props.filter((p) => p.required).length;
-    expect(requiredCount).toBe(2);
+    expect(requiredCount).toBe(1);
     const { getAllByText, getByText } = ui(<GroupTable group={group} />);
     expect(getAllByText("required").length).toBe(requiredCount);
-    // `open` is required, `title` is optional — both still render as prop names.
+    // `actions` is required; `open` and `title` are optional — all still render as prop names.
+    expect(getByText("actions")).toBeTruthy();
     expect(getByText("open")).toBeTruthy();
     expect(getByText("title")).toBeTruthy();
   });

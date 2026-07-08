@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
-<AlertDialog open narrow destructive title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" />
+<AlertDialog narrow destructive title="Delete this identity?" description="This permanently removes the identity and revokes any active sessions. This action cannot be undone." cancelLabel="Cancel" confirmLabel="Delete" trigger="Delete identity…" />
   );
 }

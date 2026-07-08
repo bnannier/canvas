@@ -33,6 +33,9 @@ export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
   const { tokens } = useTheme();
   const c = useSyntaxColors();
   const [copied, setCopied] = useState(false);
+  // Width of the pinned Copy button, measured so the code can reserve a
+  // matching right gutter and never render underneath it.
+  const [copyWidth, setCopyWidth] = useState(0);
 
   const spans: { text: string; color: string }[] = [];
   let last = 0;
@@ -73,7 +76,17 @@ export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
         overflow: "hidden",
       }}
     >
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 16, paddingHorizontal: 20 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingVertical: 16,
+          paddingLeft: 20,
+          // Reserve room on the right for the pinned Copy button (its width
+          // plus the 8px offset and a small gap) so long first lines clear it.
+          paddingRight: copyWidth ? copyWidth + 20 : 20,
+        }}
+      >
         <Text style={{ fontFamily: MONO, fontSize: 13, lineHeight: 20.8 }}>
           {spans.map((s, i) => (
             <Text key={i} style={{ color: s.color }}>
@@ -82,14 +95,14 @@ export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
           ))}
         </Text>
       </ScrollView>
-      <Button
-        outline
-        small
-        onPress={copy}
+      <View
+        onLayout={(e) => setCopyWidth((w) => Math.max(w, e.nativeEvent.layout.width))}
         style={{ position: "absolute", top: 8, right: 8 }}
       >
-        {copied ? "Copied" : "Copy"}
-      </Button>
+        <Button outline small onPress={copy}>
+          {copied ? "Copied" : "Copy"}
+        </Button>
+      </View>
     </View>
   );
 }

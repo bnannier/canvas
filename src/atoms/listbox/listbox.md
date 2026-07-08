@@ -1,6 +1,6 @@
 # Listboxes
 
-A custom (non-native) select: single or multi-select, optional avatars or icons per option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.
+A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.
 
 ## Usage
 
@@ -67,7 +67,7 @@ A custom (non-native) select: single or multi-select, optional avatars or icons 
 />
 ```
 
-### Avatars
+### Detail line
 
 ```tsx
 <Listbox

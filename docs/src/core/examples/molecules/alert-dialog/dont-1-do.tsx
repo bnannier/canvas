@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
-<AlertDialog open small destructive title="Delete this identity?" cancelLabel="Cancel" confirmLabel="Delete" />
+<AlertDialog small destructive title="Delete this identity?" cancelLabel="Cancel" confirmLabel="Delete" trigger="Delete identity…" />
   );
 }

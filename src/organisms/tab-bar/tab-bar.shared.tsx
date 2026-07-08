@@ -64,9 +64,14 @@ export function createTabBar(skin: TabBarSkin) {
     // add the safe-area inset there, so the item row stays vertically centered (top margin ==
     // bottom margin) while the bar still extends down to cover the home indicator.
     const basePad = typeof skin.bar.paddingTop === "number" ? skin.bar.paddingTop : 0;
+    // A bottom tab bar is a full-bleed nav shell: it must fill its container's width, not
+    // shrink-wrap to the icon column. `alignSelf: "stretch"` fills the cross axis in a normal
+    // column screen; `width: "100%"` also fills a centering/shrink-wrapping parent (e.g. the
+    // docs FitStage). Both route to GlassSurface's outer box, so glass and solid match. The
+    // `style` escape hatch still overrides, since it is applied last.
     return (
       <GlassSurface
-        style={[skin.bar, { borderColor: tokens.border, backgroundColor: tokens.card, paddingBottom: basePad + bottomInset }, style]}
+        style={[skin.bar, { borderColor: tokens.border, backgroundColor: tokens.card, alignSelf: "stretch", width: "100%", paddingBottom: basePad + bottomInset }, style]}
       >
         <View accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row" }}>
           {items.map((it) => {
@@ -83,7 +88,7 @@ export function createTabBar(skin: TabBarSkin) {
                 style={({ pressed }) => [skin.item, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
               >
                 {it.icon(isActive)}
-                <Text style={[skin.label(isActive), { color: isActive ? tokens.primary : tokens["muted-foreground"] }]}>{it.label}</Text>
+                <Text numberOfLines={1} style={[skin.label(isActive), { color: isActive ? tokens.primary : tokens["muted-foreground"] }]}>{it.label}</Text>
               </Pressable>
             );
           })}

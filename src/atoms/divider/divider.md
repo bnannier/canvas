@@ -13,7 +13,11 @@ Horizontal, vertical, with label, with action.
 ### Orientation - vertical
 
 ```tsx
-<Divider vertical />
+<Row alignCenter cozy>
+  <Typography small>Edit</Typography>
+  <Divider vertical style={{ height: 16 }} />
+  <Typography small>Delete</Typography>
+</Row>
 ```
 
 ### Variant - label

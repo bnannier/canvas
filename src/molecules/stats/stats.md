@@ -59,8 +59,8 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 ```tsx
 <Stats
   items={[
-    { label: "Requests", value: "24.5k", delta: "+8.2%" },
-    { label: "Latency", value: "142ms", delta: "+12ms", down: true }
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
+    { label: "Latency", value: "142ms", delta: "+12ms", down: true, spark: [10, 9, 11, 10, 12, 11, 13, 12, 14, 13, 15] }
   ]}
 />
 ```

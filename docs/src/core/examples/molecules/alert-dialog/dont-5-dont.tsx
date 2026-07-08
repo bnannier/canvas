@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { AlertDialog } = scope;
   return (
-<AlertDialog open large title="Sign out?" cancelLabel="Cancel" confirmLabel="Sign out" />
+<AlertDialog large title="Sign out?" cancelLabel="Cancel" confirmLabel="Sign out" trigger="Sign out…" />
   );
 }
