@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, Fragment } from "react";
-import { BackHandler, KeyboardAvoidingView, Modal, Platform, SafeAreaView, StyleSheet } from "react-native";
+import { BackHandler, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
+import { SafeAreaView } from "../../style/safe-area.js";
 import {
   View,
   Text,

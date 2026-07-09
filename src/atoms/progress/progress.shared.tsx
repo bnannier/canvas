@@ -88,7 +88,7 @@ export function createProgress(skin: ProgressSkin) {
     const progress = useRef(new Animated.Value(0)).current;
 
     const onLayout = (e: LayoutChangeEvent) => {
-      const w = e.nativeEvent.layout.width;
+      const _l = e.nativeEvent.layout; if (!_l) return; const w = _l.width;
       if (w !== trackWidth) setTrackWidth(w);
     };
 

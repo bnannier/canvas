@@ -72,11 +72,15 @@
     "react-native": ">=0.74",
     "react-native-svg": ">=14",
     "react-native-qrcode-svg": ">=6",
+    "react-native-safe-area-context": ">=4",
     "expo-blur": "*",
     "expo-glass-effect": "*"
   },
   "peerDependenciesMeta": {
     "react-native-qrcode-svg": {
+      "optional": true
+    },
+    "react-native-safe-area-context": {
       "optional": true
     },
     "expo-blur": {

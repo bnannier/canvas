@@ -191,7 +191,7 @@ export function createCombobox(skin: ComboboxSkin) {
         ) : null}
         <View
           ref={fieldRef}
-          onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+          onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
           style={[
             skin.field(tokens, size, open),
             disabled ? { opacity: skin.disabledOpacity } : null,

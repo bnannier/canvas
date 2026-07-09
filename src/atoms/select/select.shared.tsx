@@ -114,7 +114,7 @@ export function createSelect(skin: SelectSkin) {
         ) : null}
         <Pressable
           ref={triggerRef}
-          onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+          onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
           style={({ pressed }) => [
             skin.trigger(tokens, size, open),
             disabled ? { opacity: skin.disabledOpacity } : null,

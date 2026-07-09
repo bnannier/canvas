@@ -144,7 +144,7 @@ export function createPopover(skin: PopoverSkin) {
         ref={triggerRef}
         testID={testID}
         style={[s.wrapper, open ? s.wrapperLifted : null, style]}
-        onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
       >
         <View style={s.triggerWrap}>
           <Button outline small expanded={open} onPress={() => setOpen(!open)}>

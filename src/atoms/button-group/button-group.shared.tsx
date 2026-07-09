@@ -244,7 +244,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         ref={triggerRef}
         style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}
         testID={testID}
-        onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
       >
         <Pressable
           style={({ pressed }) => [skin.splitPrimary(tokens), s.sizeContainer[size], skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { BackHandler, KeyboardAvoidingView, Modal, Platform, SafeAreaView } from "react-native";
+import { BackHandler, KeyboardAvoidingView, Modal, Platform } from "react-native";
 import { Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { SafeAreaView } from "../../style/safe-area.js";
 import { Button } from "../../atoms/button/button.js";
 import * as s from "./drawer.styles.js";
 import { type Edge, type DrawerSkin } from "./drawer.styles.js";

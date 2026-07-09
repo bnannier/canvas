@@ -188,7 +188,7 @@ export function createCarousel(skin: CarouselSkin) {
     const listRef = useRef<FlatList<CarouselItem>>(null);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-      const w = e.nativeEvent.layout.width;
+      const _l = e.nativeEvent.layout; if (!_l) return; const w = _l.width;
       setWidth((prev) => (prev !== w ? w : prev));
     }, []);
 

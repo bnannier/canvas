@@ -98,7 +98,7 @@ export function createTabBar(skin: TabBarSkin) {
                   // The wrapper shrink-wraps to the icon; the absolute pill is drawn first (behind)
                   // and does not affect layout, so iOS/web (skin.pill === null) render the bare icon.
                   <View style={{ alignItems: "center", justifyContent: "center" }}>
-                    {isActive ? <View pointerEvents="none" style={skin.pill(tokens)} /> : null}
+                    {isActive ? <View style={[skin.pill(tokens), { pointerEvents: "none" }]} /> : null}
                     {it.icon(isActive)}
                   </View>
                 ) : (

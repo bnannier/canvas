@@ -121,7 +121,7 @@ export function createSlider(skin: SliderSkin) {
     const [focused, setFocused] = useState(false);
 
     const onLayout = (e: LayoutChangeEvent) => {
-      const w = e.nativeEvent.layout.width;
+      const _l = e.nativeEvent.layout; if (!_l) return; const w = _l.width;
       widthRef.current = w;
       setTrackWidth(w);
     };

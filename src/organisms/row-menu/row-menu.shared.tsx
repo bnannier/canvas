@@ -82,7 +82,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         ref={triggerRef}
         testID={testID}
         style={[skin.anchor, open ? anchorLifted : null, style]}
-        onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
       >
         <Pressable
           style={({ pressed }) => [

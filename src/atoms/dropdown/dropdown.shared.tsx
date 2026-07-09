@@ -113,7 +113,7 @@ export function createDropdown(skin: DropdownSkin) {
         ref={triggerRef}
         testID={testID}
         style={[wrapper, open ? wrapperLifted : null, style]}
-        onLayout={(e) => setTriggerWidth(e.nativeEvent.layout.width)}
+        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
       >
         {children != null ? (
           <Pressable
