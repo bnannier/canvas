@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, FOCUS_RESET, activeIndicator } from "../../style/index.js";
 
 // Co-located Input skins, one per platform. The BRAND survives on every platform
 // (the cursor/selection is always the indigo `primary`, the focus accent is the
@@ -147,14 +147,12 @@ function iosWebFieldReset(t: ColorTokens): TextStyle {
   } as unknown as TextStyle;
 }
 
-function iosHairline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean): ViewStyle {
-  // Rest = the faint `border` separator; focus/error thicken to 2pt and tint to
-  // the brand color the shell resolved (ring on focus, destructive on error).
-  const active = focused || error;
-  return {
-    borderBottomWidth: active ? 2 : 1,
-    borderBottomColor: active ? t[borderColor] : t.border,
-  };
+// The iOS field rule: a faint `border` separator at rest, thickening to 2pt and tinting
+// to the shell-resolved brand color (ring on focus, destructive on error) when active.
+// `gap` is the padding kept below the content (match the field's top padding), so the
+// thickening reserves a constant band and never reflows the value text (see activeIndicator).
+function iosHairline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean, gap: number): ViewStyle {
+  return activeIndicator({ active: focused || error, restColor: t.border, activeColor: t[borderColor], gap });
 }
 export const iosSkin: InputSkin = {
   text: webText,
@@ -165,9 +163,10 @@ export const iosSkin: InputSkin = {
   groupedHeight: (size) => (size === "large" ? 50 : size === "small" ? 36 : 44),
   bareField: (t, borderColor, focused, error) => ({
     width: "100%",
-    // Plain field: transparent surface, no box/radius, only a bottom hairline.
+    // Plain field: transparent surface, no box/radius, only a bottom hairline (gap 10
+    // keeps its no-reflow padding balanced with paddingTop).
     backgroundColor: "transparent",
-    ...iosHairline(t, borderColor, focused, error),
+    ...iosHairline(t, borderColor, focused, error, 10),
     // Suppress the react-native-web focus outline box and pin the caret to the
     // brand `primary` (the bare + multiline path never got the shell's
     // FIELD_OUTLINE_RESET, so on focus it showed a browser-blue rectangle).
@@ -176,21 +175,16 @@ export const iosSkin: InputSkin = {
     // as in the iOS 27 render.
     paddingHorizontal: 0,
     paddingTop: 10,
-    // Reserve a constant 2pt below the content (hairline + this padding) so the
-    // hairline's 1pt -> 2pt thickening on focus never reflows the centered value text.
-    paddingBottom: focused || error ? 10 : 11,
     color: t.foreground,
   }),
   groupContainer: (t, borderColor, focused, error) => ({
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
-    // The whole row shares the single bottom hairline; no fill, no box, no radius.
+    // The whole row shares the single bottom hairline; no fill, no box, no radius. The
+    // hairline's no-reflow padding (gap 0) keeps the grouped field's centered text stable.
     backgroundColor: "transparent",
-    ...iosHairline(t, borderColor, focused, error),
-    // Keep the row's content height constant as the shared hairline thickens on
-    // focus, so the grouped field's centered value text does not shift.
-    paddingBottom: focused || error ? 0 : 1,
+    ...iosHairline(t, borderColor, focused, error, 0),
   }),
   groupField: (t, leadingIcon, trailingIcon) => ({
     flexGrow: 1,
@@ -237,16 +231,12 @@ export const iosSkin: InputSkin = {
 // (brand) on focus, `destructive` on error. The brand survives via the focused
 // indicator color and the action suffix's primary label + ripple.
 const ANDROID_TOP_RADIUS = 4;
-function androidUnderline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean): ViewStyle {
-  // M3 active indicator: a VISIBLE baseline at rest (on-surface-variant ~ the
-  // `muted-foreground` token), thickening to 2dp in the brand `ring` on focus /
-  // `destructive` on error. The rest color must read clearly so the filled field is
-  // distinct from the iOS lineless capsule (the regression this fixes).
-  const active = focused || error;
-  return {
-    borderBottomWidth: active ? 2 : 1,
-    borderBottomColor: active ? t[borderColor] : t["muted-foreground"],
-  };
+// M3 active indicator: a VISIBLE baseline at rest (on-surface-variant ~ `muted-foreground`,
+// so the filled field stays distinct from the iOS lineless capsule), thickening to 2dp in the
+// shell-resolved brand color (ring on focus / destructive on error) when active. `gap` is the
+// padding kept below the content so the thickening reserves a constant band (see activeIndicator).
+function androidUnderline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean, gap: number): ViewStyle {
+  return activeIndicator({ active: focused || error, restColor: t["muted-foreground"], activeColor: t[borderColor], gap });
 }
 export const androidSkin: InputSkin = {
   // M3 body input is 16sp; nudge the base/large up, keep small readable.
@@ -266,13 +256,11 @@ export const androidSkin: InputSkin = {
     borderTopEndRadius: ANDROID_TOP_RADIUS,
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
-    ...androidUnderline(t, borderColor, focused, error),
+    // The bottom indicator + its no-reflow padding (gap 8 keeps it balanced with paddingTop).
+    ...androidUnderline(t, borderColor, focused, error, 8),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     paddingTop: 8,
-    // Reserve a constant 2dp below the content (indicator + this padding) so the
-    // indicator's 1dp -> 2dp thickening on focus never reflows the centered value text.
-    paddingBottom: focused || error ? 8 : 9,
     color: t.foreground,
   }),
   groupContainer: (t, borderColor, focused, error) => ({
@@ -281,11 +269,9 @@ export const androidSkin: InputSkin = {
     width: "100%",
     borderTopStartRadius: ANDROID_TOP_RADIUS,
     borderTopEndRadius: ANDROID_TOP_RADIUS,
-    ...androidUnderline(t, borderColor, focused, error),
+    // The shared bottom indicator + its no-reflow padding (gap 0).
+    ...androidUnderline(t, borderColor, focused, error, 0),
     overflow: "hidden",
-    // Keep the row's content height constant as the indicator thickens on focus,
-    // so the grouped field's centered value text does not shift.
-    paddingBottom: focused || error ? 0 : 1,
     backgroundColor: t.muted,
   }),
   groupField: (t, leadingIcon, trailingIcon) => ({

@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow } from "../../style/index.js";
+import { type ColorTokens, shadow, activeIndicator } from "../../style/index.js";
 
 // Co-located Combobox skins, one per platform. A Combobox is a searchable
 // single-select: an editable field that filters an open option list. The BRAND
@@ -191,11 +191,9 @@ export const iosSkin: ComboboxSkin = {
     justifyContent: "space-between",
     borderRadius: 0,
     backgroundColor: "transparent",
-    borderBottomWidth: open ? 1.5 : StyleSheet.hairlineWidth,
-    borderBottomColor: open ? t.primary : t.border,
-    // Reserve a constant 1.5pt below the content (hairline + this padding) so the
-    // indicator's thickening on open never reflows the centered value text.
-    paddingBottom: open ? 0 : 1.5 - StyleSheet.hairlineWidth,
+    // The iOS field rule thickens hairline -> 1.5pt and tints to the brand primary on
+    // open. activeIndicator keeps the content-box height fixed across the change.
+    ...activeIndicator({ active: open, restColor: t.border, activeColor: t.primary, restWidth: StyleSheet.hairlineWidth, activeWidth: 1.5 }),
     paddingHorizontal: 0,
     height: IOS_FIELD_BOX[size],
   }),
@@ -264,13 +262,9 @@ export const androidSkin: ComboboxSkin = {
     borderTopEndRadius: ANDROID_TOP_RADIUS,
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
-    borderBottomWidth: open ? 2 : 1,
-    // Rest baseline reads clearly (on-surface-variant ~ muted-foreground) so the M3
-    // filled field is distinct from the iOS lineless capsule.
-    borderBottomColor: open ? t.ring : t["muted-foreground"],
-    // Reserve a constant 2dp below the content (border + this padding) so the
-    // indicator's 1dp -> 2dp thickening never reflows the centered value text.
-    paddingBottom: open ? 0 : 1,
+    // M3 active indicator: a clear muted rest baseline thickening to the brand `ring`
+    // on open. activeIndicator keeps the content-box height fixed across the change.
+    ...activeIndicator({ active: open, restColor: t["muted-foreground"], activeColor: t.ring }),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     height: ANDROID_FIELD_BOX[size],

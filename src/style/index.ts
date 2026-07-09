@@ -14,6 +14,7 @@ export * from "./color.js";
 export * from "./mono.js";
 export * from "./dev-warn.js";
 export * from "./focus-reset.js";
+export * from "./active-indicator.js";
 export * from "./ripple.js";
 export * from "./use-controllable-state.js";
 export * from "./use-escape-key.js";

@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, activeIndicator } from "../../style/index.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface, since
@@ -275,15 +275,10 @@ export const androidSkin: SelectSkin = {
     // Clip the Material ripple to the rounded top outline (without this the bounded
     // android_ripple paints a rectangle past the top corners).
     overflow: "hidden",
-    borderBottomWidth: open ? 2 : 1,
-    // Rest baseline reads clearly (on-surface-variant ~ muted-foreground) so the M3
-    // filled trigger is distinct from the iOS lineless capsule.
-    borderBottomColor: open ? t.primary : t["muted-foreground"],
-    // The active indicator thickens 1dp -> 2dp when open. Reserve a constant 2dp
-    // below the content (border + this compensating padding) so the content-box
-    // height stays fixed and the thickening never nudges the vertically-centered
-    // value text up (the ~0.5px jump that read as a layout glitch on open).
-    paddingBottom: open ? 0 : 1,
+    // M3 active indicator: a clear rest baseline (on-surface-variant ~ muted-foreground)
+    // thickening to the brand primary on open. activeIndicator reserves a constant band
+    // below the content so the 1dp -> 2dp thickening never reflows the centered value text.
+    ...activeIndicator({ active: open, restColor: t["muted-foreground"], activeColor: t.primary }),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     height: ANDROID_TRIGGER_BOX[size],
