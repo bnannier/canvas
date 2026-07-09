@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { alpha, type ColorTokens } from "../../style/index.js";
+import { alpha, type ColorTokens, type ViewStyle } from "../../style/index.js";
 import { type TabBarSkin } from "./tab-bar.shared.js";
 
 // Per-OS TabBar skins. iOS = HIG tab bar; Android = Material 3 navigation bar; web mirrors
@@ -14,6 +14,7 @@ export const iosSkin: TabBarSkin = {
   label: (active) => ({ fontSize: 10, lineHeight: 13, fontWeight: active ? "600" : "500", letterSpacing: -0.2 }),
   ripple: null,
   pressedOpacity: 0.6,
+  pill: null,
 };
 
 // Web tab bar: mirrors the iOS look so the mobile-web nav reads as iOS.
@@ -23,6 +24,7 @@ export const webSkin: TabBarSkin = {
   label: (active) => ({ fontSize: 11, lineHeight: 14, fontWeight: active ? "600" : "500", letterSpacing: -0.1 }),
   ripple: null,
   pressedOpacity: 0.7,
+  pill: null,
 };
 
 // Material 3 navigation bar: taller, M3 label type with positive tracking, brand ripple,
@@ -33,4 +35,20 @@ export const androidSkin: TabBarSkin = {
   label: (active) => ({ fontSize: 12, lineHeight: 16, fontWeight: active ? "600" : "500", letterSpacing: 0.5 }),
   ripple: (t: ColorTokens) => ({ color: alpha(t.primary, 0.12), borderless: true, radius: 36 }),
   pressedOpacity: null,
+  // M3 active-indicator pill: 56x32dp, fully rounded (16 radius). Fill is a tonal brand
+  // tint (alpha(primary, 0.16)) standing in for M3's secondary-container — this shadcn
+  // token set has no secondary-container, and the flat `secondary` gray is nearly the bar
+  // fill, so it would not read as a pill. It is absolute + self-centering (left/top 50%,
+  // negative half-size margins), so it centers on any icon size without shifting layout.
+  pill: (t: ColorTokens): ViewStyle => ({
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    width: 56,
+    height: 32,
+    marginLeft: -28,
+    marginTop: -16,
+    borderRadius: 16,
+    backgroundColor: alpha(t.primary, 0.16),
+  }),
 };

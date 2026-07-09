@@ -15,7 +15,7 @@ import { type NavbarSkin } from "./navbars.shared.js";
 //     (a translucent neutral `secondary` circle), the glyph/label tints the
 //     brand `primary`; the active item reads as a brand-FILLED circle. Press =
 //     opacity dim 0.8.
-//   Android (M3 top app bar): a ~56dp bar with a ~22sp weight-500 LEADING title;
+//   Android (M3 top app bar): a 64dp bar with a ~22sp weight-500 LEADING title;
 //     no hairline border, a flat `background` surface (soft elevation only when
 //     `floating`); nav links use a tonal `primary` active fill; press =
 //     android_ripple.
@@ -186,7 +186,7 @@ export const iosSkin: NavbarSkin = {
 };
 
 // =============================================================================
-// Android (Material 3): a top app bar. A ~56dp bar with a ~22sp weight-500
+// Android (Material 3): a top app bar. A 64dp bar with a ~22sp weight-500
 // LEADING title and no hairline border; the surface is flat `background` (soft
 // elevation only when floating). Nav links use a tonal `primary` active fill.
 // Press = android_ripple.
@@ -196,13 +196,13 @@ export const androidSkin: NavbarSkin = {
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (tokens) => ({ color: alpha(tokens.primary, 0.12), borderless: false }),
 
-  // ~56dp small top app bar.
+  // 64dp M3 small top app bar (M3 container height; Material 2 was 56dp).
   bar() {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      height: 56,
+      height: 64,
       paddingHorizontal: 16,
     };
   },

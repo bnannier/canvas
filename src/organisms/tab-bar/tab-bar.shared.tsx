@@ -50,6 +50,12 @@ export interface TabBarSkin {
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean; radius?: number }) | null;
   /** iOS/web press dim (null on Android, where the ripple carries it). */
   pressedOpacity: number | null;
+  /**
+   * Material 3 active-indicator pill drawn BEHIND the active item's icon (the icon
+   * is on top). Returns the full absolute-positioned, self-centering pill style;
+   * null on iOS/web, so only the Android skin renders it.
+   */
+  pill: ((tokens: ColorTokens) => ViewStyle) | null;
 }
 
 export function createTabBar(skin: TabBarSkin) {
@@ -87,7 +93,17 @@ export function createTabBar(skin: TabBarSkin) {
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 style={({ pressed }) => [skin.item, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
               >
-                {it.icon(isActive)}
+                {skin.pill ? (
+                  // Android only: wrap the icon so the M3 active-indicator pill can center on it.
+                  // The wrapper shrink-wraps to the icon; the absolute pill is drawn first (behind)
+                  // and does not affect layout, so iOS/web (skin.pill === null) render the bare icon.
+                  <View style={{ alignItems: "center", justifyContent: "center" }}>
+                    {isActive ? <View pointerEvents="none" style={skin.pill(tokens)} /> : null}
+                    {it.icon(isActive)}
+                  </View>
+                ) : (
+                  it.icon(isActive)
+                )}
                 <Text numberOfLines={1} style={[skin.label(isActive), { color: isActive ? tokens.primary : tokens["muted-foreground"] }]}>{it.label}</Text>
               </Pressable>
             );
