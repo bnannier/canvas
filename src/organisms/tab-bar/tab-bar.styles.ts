@@ -38,16 +38,14 @@ export const androidSkin: TabBarSkin = {
   // M3 active-indicator pill: 56x32dp, fully rounded (16 radius). Fill is a tonal brand
   // tint (alpha(primary, 0.16)) standing in for M3's secondary-container — this shadcn
   // token set has no secondary-container, and the flat `secondary` gray is nearly the bar
-  // fill, so it would not read as a pill. It is absolute + self-centering (left/top 50%,
-  // negative half-size margins), so it centers on any icon size without shifting layout.
+  // fill, so it would not read as a pill. It carries NO insets: an absolutely-positioned
+  // child with no left/top is placed by the parent's alignItems/justifyContent, so the
+  // centering wrapper puts it dead-center behind the icon on native Android AND web alike
+  // (percentage left/top + negative margins centered on RN Web but drifted on native).
   pill: (t: ColorTokens): ViewStyle => ({
     position: "absolute",
-    left: "50%",
-    top: "50%",
     width: 56,
     height: 32,
-    marginLeft: -28,
-    marginTop: -16,
     borderRadius: 16,
     backgroundColor: alpha(t.primary, 0.16),
   }),
