@@ -36,9 +36,26 @@ export const iosSkin: ChipSkin = {
   removeSizeSmall: 12,
 };
 
+// Material 3 chips (assist/filter/input/suggestion) share a 32dp container with an
+// 8dp corner radius (NOT a full pill), a 1dp outline, and 16dp side padding. Give
+// Android its own base/small so iOS + web keep the shared pill.
+const androidBase: ViewStyle = {
+  ...base,
+  borderRadius: 8, // M3 8dp corner (not a pill)
+  paddingHorizontal: 16, // M3 side padding
+  paddingVertical: 8, // 16 label lineHeight + 2*8 = 32dp container height
+  gap: 8, // M3 8dp between elements
+};
+
+const androidSmall: ViewStyle = {
+  ...small,
+  borderRadius: 8,
+  paddingVertical: 6, // 16 label lineHeight + 2*6 = ~28dp, clearly shorter than base
+};
+
 export const androidSkin: ChipSkin = {
-  base,
-  small,
+  base: androidBase,
+  small: androidSmall,
   labelType: { fontSize: 13, lineHeight: 16, fontWeight: "500", letterSpacing: 0.25 },
   labelTypeSmall: { fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.25 },
   removeSize: 14,

@@ -22,10 +22,13 @@ const IOS_TRACK: Record<Size, { width: number; height: number }> = {
 // acceptable, so dark stays close to it via systemGray3 dark.
 const IOS_OFF_TRACK = { light: "#c7c7cc", dark: "#48484a" } as const;
 
+// Material 3 (m3.material.io/components/switch/specs): the switch has a SINGLE
+// size, a 52×32dp track. Base is that exact spec; small/large are proportional
+// Canvas variants.
 const NATIVE_TRACK: Record<Size, { width: number; height: number }> = {
-  small: { width: 44, height: 24 },
-  base: { width: 48, height: 28 },
-  large: { width: 56, height: 32 },
+  small: { width: 46, height: 28 },
+  base: { width: 52, height: 32 },
+  large: { width: 56, height: 34 },
 };
 
 const WEB_TRACK: Record<Size, { width: number; height: number }> = {
@@ -97,11 +100,13 @@ export const androidSkin: SwitchSkin = {
   thumb: (t, checked, size) => {
     const h = NATIVE_TRACK[size].height;
     if (checked) {
+      // M3 selected handle: 24dp at base (h − 8 = 24 when h = 32).
       const d = h - 8;
       return { ...ABS, top: (h - d) / 2, end: 4, width: d, height: d, backgroundColor: "#ffffff" };
     }
-    const d = Math.round(h / 2.6);
-    return { ...ABS, top: (h - 4 - d) / 2, start: 4, width: d, height: d, backgroundColor: t["muted-foreground"] };
+    // M3 unselected handle: 16dp at base (h / 2 = 16 when h = 32), centered.
+    const d = h / 2;
+    return { ...ABS, top: (h - d) / 2, start: 4, width: d, height: d, backgroundColor: t["muted-foreground"] };
   },
 };
 
