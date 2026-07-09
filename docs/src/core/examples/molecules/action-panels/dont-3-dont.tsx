@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ActionPanel } = scope;
   return (
-<ActionPanel title="Two-factor authentication" toggle checked style={{ maxWidth: 460 }} />
+<ActionPanel title="Two-factor authentication" toggle defaultChecked style={{ maxWidth: 460 }} />
   );
 }

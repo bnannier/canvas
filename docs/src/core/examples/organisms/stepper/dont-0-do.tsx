@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Stepper } = scope;
   return (
-<Stepper current={1} steps={[
+<Stepper defaultCurrent={1} steps={[
     { label: "Account" },
     { label: "Profile" },
     { label: "Review" }

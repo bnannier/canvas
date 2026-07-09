@@ -34,7 +34,7 @@ Section card with headline, body text, and a primary action. Used to surface a s
   title="Delete this project"
   description="Add an extra layer of security to your account by requiring a verification code on login."
   toggle
-  checked
+  defaultChecked
 />
 ```
 
@@ -129,11 +129,11 @@ Section card with headline, body text, and a primary action. Used to surface a s
 **Do** — Pair the switch with a one-line explanation of what turning it on or off does.
 
 ```tsx
-<ActionPanel title="Two-factor authentication" description="Add an extra layer of security to your account by requiring a verification code on login." toggle checked style={{ maxWidth: 460 }} />
+<ActionPanel title="Two-factor authentication" description="Add an extra layer of security to your account by requiring a verification code on login." toggle defaultChecked style={{ maxWidth: 460 }} />
 ```
 
 **Don't** — A bare switch with no description leaves the user guessing what flipping it actually changes.
 
 ```tsx
-<ActionPanel title="Two-factor authentication" toggle checked style={{ maxWidth: 460 }} />
+<ActionPanel title="Two-factor authentication" toggle defaultChecked style={{ maxWidth: 460 }} />
 ```

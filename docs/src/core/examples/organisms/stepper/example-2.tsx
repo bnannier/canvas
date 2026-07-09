@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Review", description: "Invite collaborators to your workspace." },
     { label: "Done", description: "You're all set." }
   ]}
-  current={1}
+  defaultCurrent={1}
   progress
   value={68}
   label="Setup progress"

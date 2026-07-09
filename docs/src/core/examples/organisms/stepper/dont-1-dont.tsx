@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { View, Stepper } = scope;
   return (
 <View style={{ maxWidth: 320 }}>
-  <Stepper vertical current={1} steps={[
+  <Stepper vertical defaultCurrent={1} steps={[
     { label: "Account created" },
     { label: "Profile setup" },
     { label: "Team invite" },

@@ -1,5 +1,5 @@
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./stepper.styles.js";
 import { type State, type StepperSkin } from "./stepper.styles.js";
 
@@ -22,8 +22,10 @@ export interface Step {
 export interface StepperProps {
   /** Ordered steps to render. Each is a label with an optional one-line note. */
   steps: Step[];
-  /** Index of the active step. Earlier steps read completed, later ones muted. */
-  current: number;
+  /** Index of the active step (CONTROLLED). Earlier steps read completed, later ones muted. Omit for uncontrolled use. */
+  current?: number;
+  /** Initial active step for uncontrolled use (pressing a step, with `onStepPress`, moves it). */
+  defaultCurrent?: number;
   // Layout (pick one; default is horizontal).
   vertical?: boolean;
   /** Render a labeled percentage progress bar instead of discrete steps. */
@@ -88,9 +90,19 @@ export function createStepper(skin: StepperSkin) {
   }
 
   return function Stepper(props: StepperProps) {
-    const { steps, current, value, label, onStepPress, testID, style } = props;
+    const { steps, value, label, onStepPress, testID, style } = props;
     const { tokens } = useTheme();
     const layout = layoutOf(props);
+    // Controlled when `current` is provided, self-managed otherwise, so a bare
+    // stepper with pressable steps moves the active step instead of ignoring it.
+    const [current, setCurrent] = useControllableState<number>(props.current, props.defaultCurrent ?? 0);
+    // Pressable steps (opt-in via onStepPress) move the active step and report it.
+    const pressStep = onStepPress
+      ? (i: number) => {
+          setCurrent(i);
+          onStepPress(i);
+        }
+      : undefined;
 
     if (layout === "progress") {
       const pct = Math.max(0, Math.min(100, Math.round(value ?? 0)));
@@ -116,7 +128,7 @@ export function createStepper(skin: StepperSkin) {
             return (
               <View key={i} style={s.verticalRow}>
                 <View style={s.verticalRail}>
-                  <Circle index={i} state={state} onPress={onStepPress ? () => onStepPress(i) : undefined} />
+                  <Circle index={i} state={state} onPress={pressStep ? () => pressStep(i) : undefined} />
                   {!isLast ? (
                     <View style={[s.verticalConnector, skin.connector(tokens, state === "completed")]} />
                   ) : null}

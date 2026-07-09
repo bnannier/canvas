@@ -56,7 +56,7 @@ export interface FieldsetProps {
   description?: string;
   /** Data-only field rows: each renders a label + <Input>. */
   items?: FieldsetItem[];
-  /** Data-only checkbox rows: each renders a <Checkbox> with the label. */
+  /** Data-only checkbox rows: each renders a <Checkbox> with the label. `checked` seeds the initial (uncontrolled) state; the box toggles itself on press. */
   checkboxes?: { label: string; checked?: boolean }[];
   // Surface (pick one; default is the plain, borderless group).
   bordered?: boolean;
@@ -225,7 +225,7 @@ export function createFieldset(
           {header}
           <View style={{ gap: skin.checkboxGap }}>
             {checkboxes.map((c, i) => (
-              <Checkbox key={i} checked={c.checked} disabled={disabled}>
+              <Checkbox key={i} defaultChecked={c.checked} disabled={disabled}>
                 {c.label}
               </Checkbox>
             ))}

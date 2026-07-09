@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   title="Delete this project"
   description="Add an extra layer of security to your account by requiring a verification code on login."
   toggle
-  checked
+  defaultChecked
 />
   );
 }

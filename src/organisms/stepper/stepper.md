@@ -12,7 +12,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
     { label: "Review", description: "Invite collaborators to your workspace." },
     { label: "Done", description: "You're all set." }
   ]}
-  current={1}
+  defaultCurrent={1}
   onStepPress={() => {}}
   value={68}
   label="Setup progress"
@@ -31,7 +31,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
     { label: "Review", description: "Invite collaborators to your workspace." },
     { label: "Done", description: "You're all set." }
   ]}
-  current={1}
+  defaultCurrent={1}
   vertical
   onStepPress={() => {}}
   value={68}
@@ -49,7 +49,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
     { label: "Review", description: "Invite collaborators to your workspace." },
     { label: "Done", description: "You're all set." }
   ]}
-  current={1}
+  defaultCurrent={1}
   progress
   value={68}
   label="Setup progress"
@@ -63,7 +63,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 **Do** — Mark exactly one step active; show completed steps filled and the rest pending.
 
 ```tsx
-<Stepper current={1} steps={[
+<Stepper defaultCurrent={1} steps={[
     { label: "Account" },
     { label: "Profile" },
     { label: "Review" }
@@ -109,7 +109,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 
 ```tsx
 <View style={{ maxWidth: 320 }}>
-  <Stepper vertical current={1} steps={[
+  <Stepper vertical defaultCurrent={1} steps={[
     { label: "Account created", description: "Email verified and password set." },
     { label: "Profile setup", description: "Add your name and avatar." },
     { label: "Team invite", description: "Invite collaborators to your workspace." },
@@ -122,7 +122,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 
 ```tsx
 <View style={{ maxWidth: 320 }}>
-  <Stepper vertical current={1} steps={[
+  <Stepper vertical defaultCurrent={1} steps={[
     { label: "Account created" },
     { label: "Profile setup" },
     { label: "Team invite" },

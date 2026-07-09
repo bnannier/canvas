@@ -50,7 +50,7 @@ export interface FormField {
 export interface FormCheckbox {
   /** Visible label beside the box. */
   label: string;
-  /** Whether the box starts ticked. */
+  /** Whether the box starts ticked (uncontrolled seed; the Checkbox toggles itself on press). */
   checked?: boolean;
 }
 
@@ -201,7 +201,7 @@ export function createForm(
         <View style={[s.flex1, { gap: 12 }, rightFull]}>
           {section.checkboxes
             ? section.checkboxes.map((c, i) => (
-                <Checkbox key={i} checked={c.checked}>
+                <Checkbox key={i} defaultChecked={c.checked}>
                   {c.label}
                 </Checkbox>
               ))

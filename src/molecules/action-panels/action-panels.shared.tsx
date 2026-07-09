@@ -57,8 +57,10 @@ export interface ActionPanelProps {
   // Affordance: render the action as an on/off Switch instead of a Button. The
   // panel always lays out inline in this mode.
   toggle?: boolean;
-  /** The Switch on/off state when `toggle` is set. */
+  /** The Switch on/off state when `toggle` is set (CONTROLLED). Omit for uncontrolled use. */
   checked?: boolean;
+  /** Initial Switch state for uncontrolled use (the toggle flips itself on press). */
+  defaultChecked?: boolean;
   /** Fired with the next checked value when the toggle Switch is flipped. */
   onToggle?: (next: boolean) => void;
   /** E2E hook forwarded to the root element. */
@@ -116,7 +118,7 @@ export function createActionPanel(
   Switch: SwitchComponent = WebSwitch,
 ) {
   return function ActionPanel(props: ActionPanelProps) {
-    const { title, description, actionLabel, onAction, toggle, checked, onToggle, testID, style } = props;
+    const { title, description, actionLabel, onAction, toggle, checked, defaultChecked, onToggle, testID, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
     // The toggle affordance always reads as an inline settings row.
@@ -142,6 +144,7 @@ export function createActionPanel(
       <View style={actionPinned}>
         <Switch
           checked={checked}
+          defaultChecked={defaultChecked}
           onValueChange={onToggle}
           accessibilityLabel={title ?? actionLabel}
         />
