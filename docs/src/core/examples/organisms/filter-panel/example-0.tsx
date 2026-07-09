@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <FilterPanel
   bordered
-  activeCount={2}
   groups={[
     { title: "Status", options: [
       { label: "Active", checked: true, count: "128" },

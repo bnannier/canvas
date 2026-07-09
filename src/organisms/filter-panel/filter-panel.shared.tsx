@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button } from "../../atoms/button/button.js";
@@ -31,7 +32,7 @@ import {
 export interface FilterOption {
   /** Row label, shown beside the checkbox. */
   label: string;
-  /** Controlled checked state for this option. */
+  /** Whether this option is initially checked (uncontrolled seed). */
   checked?: boolean;
   /** Optional trailing count, rendered as a secondary badge. */
   count?: string;
@@ -47,7 +48,7 @@ export interface FilterGroup {
 export interface FilterPanelProps {
   /** Filter groups, each a heading plus its checkbox options. */
   groups: FilterGroup[];
-  /** Active-filter count shown next to the "Filters" title in the header. */
+  /** Active-filter count shown next to the "Filters" title. Omit to derive it from the checked options. */
   activeCount?: number;
   /** Fired when the header "Clear" action is pressed. */
   onClear?: () => void;
@@ -93,6 +94,38 @@ export function createFilterPanel(
 
     const ripple = skin.rowRipple ? skin.rowRipple(tokens) : undefined;
 
+    // Uncontrolled checked state, seeded from each option's `checked` flag, so a
+    // bare panel actually toggles filters on press instead of ignoring the tap.
+    // `onChange` still fires so a parent can mirror the selection.
+    const [checkedKeys, setCheckedKeys] = useState<Set<string>>(() => {
+      const seeded = new Set<string>();
+      props.groups.forEach((group, gi) =>
+        group.options.forEach((option, oi) => {
+          if (option.checked) seeded.add(`${gi}:${oi}`);
+        }),
+      );
+      return seeded;
+    });
+    const isChecked = (gi: number, oi: number) => checkedKeys.has(`${gi}:${oi}`);
+    const toggle = (gi: number, oi: number) => {
+      const key = `${gi}:${oi}`;
+      const next = !checkedKeys.has(key);
+      setCheckedKeys((prev) => {
+        const updated = new Set(prev);
+        if (next) updated.add(key);
+        else updated.delete(key);
+        return updated;
+      });
+      onChange?.(gi, oi, next);
+    };
+    const clearAll = () => {
+      setCheckedKeys(new Set());
+      onClear?.();
+    };
+    // The header badge tracks the live checked count; an explicit `activeCount`
+    // overrides it for callers that manage the number themselves.
+    const shownCount = activeCount ?? checkedKeys.size;
+
     return (
       <View
         testID={testID}
@@ -111,9 +144,9 @@ export function createFilterPanel(
         <View style={skin.headerRow}>
           <View style={skin.titleCluster}>
             <Text style={skin.titleText(tokens)}>Filters</Text>
-            {activeCount != null ? <Badge secondary>{String(activeCount)}</Badge> : null}
+            {shownCount > 0 ? <Badge secondary>{String(shownCount)}</Badge> : null}
           </View>
-          <Button ghost small onPress={onClear}>
+          <Button ghost small onPress={clearAll}>
             Clear
           </Button>
         </View>
@@ -148,11 +181,11 @@ export function createFilterPanel(
                       ? { opacity: skin.rowPressedOpacity }
                       : null,
                   ]}
-                  onPress={() => onChange?.(gi, oi, !option.checked)}
+                  onPress={() => toggle(gi, oi)}
                   android_ripple={ripple}
                   accessibilityRole="checkbox"
-                  accessibilityState={{ checked: !!option.checked }}
-                  aria-checked={!!option.checked}
+                  accessibilityState={{ checked: isChecked(gi, oi) }}
+                  aria-checked={isChecked(gi, oi)}
                   accessibilityLabel={
                     option.count != null ? `${option.label}, ${option.count}` : option.label
                   }
@@ -164,7 +197,7 @@ export function createFilterPanel(
                     role="presentation"
                     aria-hidden
                   >
-                    <Checkbox checked={option.checked}>{option.label}</Checkbox>
+                    <Checkbox checked={isChecked(gi, oi)}>{option.label}</Checkbox>
                   </View>
                   {option.count != null ? <Badge secondary>{option.count}</Badge> : null}
                 </Pressable>

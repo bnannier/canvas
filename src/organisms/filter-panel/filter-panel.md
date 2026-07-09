@@ -7,7 +7,6 @@ Sidebar filter rail with chip pills for active filters.
 ```tsx
 <FilterPanel
   bordered
-  activeCount={2}
   groups={[
     { title: "Status", options: [
       { label: "Active", checked: true, count: "128" },
