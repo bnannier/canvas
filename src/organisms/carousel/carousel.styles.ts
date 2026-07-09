@@ -13,7 +13,7 @@ import { type CarouselSkin } from "./carousel.shared.js";
 //     circular dots (7px): the active one fills brand `primary`, inactive ones
 //     are `muted-foreground` at low alpha. Slide radius 12. Arrows are present
 //     but subtle (a translucent circular chip); press = opacity dim ~0.8.
-//   Android M3: the M3 carousel feel. Rounded slide corners (16), and an M3
+//   Android M3: the M3 carousel feel. Rounded slide corners (28), and an M3
 //     position indicator whose ACTIVE dot widens to a brand `primary` pill while
 //     inactive dots stay small `muted-foreground`/alpha circles. Arrows are flat
 //     `card` chips with a hairline border; press = android_ripple (no shadow).
@@ -152,7 +152,7 @@ export const androidSkin: CarouselSkin = {
 
   slide(tokens) {
     return {
-      borderRadius: 16,
+      borderRadius: 28, // M3 carousel item corner radius (extra-large, all layouts)
       overflow: "hidden",
       backgroundColor: tokens.card,
     };
