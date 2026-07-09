@@ -7,6 +7,7 @@ import { type ReactNode, createContext, useContext, useMemo } from "react";
 import { useColorScheme } from "react-native";
 import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
+import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
 
 // Surface treatment. "glass" makes the functional layer's fills translucent across
 // every overlay/bar component (see glassByScheme); "solid" is opaque. It is a
@@ -45,10 +46,21 @@ export interface ThemeValue {
   surface: Surface;
   tokens: ColorTokens;
   dark: boolean;
+  /** OS "Reduce Transparency" is on: GlassSurface renders opaque (Apple AX). */
+  reducedTransparency: boolean;
+  /** OS "Increase Contrast" is on: GlassSurface renders opaque + a contrasting border (Apple AX). */
+  increasedContrast: boolean;
 }
 
 const ThemeContext = createContext<ThemeValue | null>(null);
-const FALLBACK: ThemeValue = { scheme: "light", surface: "solid", tokens: colorsByScheme.light, dark: false };
+const FALLBACK: ThemeValue = {
+  scheme: "light",
+  surface: "solid",
+  tokens: colorsByScheme.light,
+  dark: false,
+  reducedTransparency: false,
+  increasedContrast: false,
+};
 
 export interface ThemeProviderProps {
   /** Force a color scheme. Omit to follow the OS appearance. */
@@ -83,6 +95,12 @@ function defaultSurface(): Surface {
 
 export function ThemeProvider({ scheme, surface, tokens, children }: ThemeProviderProps) {
   const system = useColorScheme();
+  // Reading the accessibility preferences here (not deep in a leaf) is what makes
+  // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
+  // the provider re-renders, so defaultSurface() is re-evaluated (on iOS 26 the
+  // native liquidGlassAvailable() flips) and the token merge below re-runs.
+  const reducedTransparency = useReducedTransparency();
+  const increasedContrast = useIncreasedContrast();
   const active: ColorScheme = scheme ?? (system === "dark" ? "dark" : "light");
   const resolved: Surface = surface ?? defaultSurface();
   const value = useMemo<ThemeValue>(() => {
@@ -90,13 +108,21 @@ export function ThemeProvider({ scheme, surface, tokens, children }: ThemeProvid
     // overrides; glass stays on top so a rebrand composes with it unchanged.
     const brand = overridesFor(tokens, active);
     const base = brand ? { ...colorsByScheme[active], ...brand } : colorsByScheme[active];
+    // Apply the translucent glass fill only when glass is active AND no
+    // accessibility setting demands an opaque surface. Under Reduce Transparency or
+    // Increase Contrast the `popover` token snaps back to its solid (brand-aware)
+    // value for EVERY glass consumer at once, including the module-absent
+    // PlainSurface fallback (Apple AX1/AX2).
+    const glass = resolved === "glass" && !reducedTransparency && !increasedContrast;
     return {
       scheme: active,
       surface: resolved,
-      tokens: resolved === "glass" ? { ...base, ...glassByScheme[active] } : base,
+      tokens: glass ? { ...base, ...glassByScheme[active] } : base,
       dark: active === "dark",
+      reducedTransparency,
+      increasedContrast,
     };
-  }, [active, resolved, tokens]);
+  }, [active, resolved, tokens, reducedTransparency, increasedContrast]);
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 

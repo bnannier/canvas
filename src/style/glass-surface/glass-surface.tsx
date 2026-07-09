@@ -13,6 +13,7 @@ import { useTheme } from "../theme.js";
 import {
   GlassBox,
   PlainSurface,
+  degradedGlassSurface,
   GLASS_INTENSITY,
   MATERIAL_FILL,
   type GlassSurfaceProps,
@@ -62,7 +63,7 @@ function radiusOf(style: GlassSurfaceProps["style"]): ViewStyle {
 }
 
 export function GlassSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
-  const { surface, dark, tokens } = useTheme();
+  const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
 
   if (surface !== "glass" || !BlurView) {
     return (
@@ -71,6 +72,11 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
       </PlainSurface>
     );
   }
+
+  // Accessibility rungs (Reduce Transparency / Increase Contrast) render the surface
+  // opaque, before the frost material below (Apple AX1/AX2).
+  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID });
+  if (degraded) return degraded;
 
   // The blur alone is too faint over a flat surface (a dark blur over a near-black page
   // reads as clear), so paint the translucent `popover` frost fill UNDER the blur. That

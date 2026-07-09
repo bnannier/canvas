@@ -6,11 +6,13 @@
 
 import type * as ExpoGlassTypes from "expo-glass-effect";
 import type * as ExpoBlurTypes from "expo-blur";
+import { View } from "react-native";
 import { useTheme } from "../theme.js";
 import { liquidGlassAvailable } from "./liquid-glass.js";
 import {
   GlassBox,
   PlainSurface,
+  degradedGlassSurface,
   GLASS_INTENSITY,
   MATERIAL_FILL,
   type GlassSurfaceProps,
@@ -39,7 +41,7 @@ try {
 }
 
 export function GlassSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
-  const { surface, dark } = useTheme();
+  const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
 
   if (surface !== "glass") {
     return (
@@ -48,6 +50,13 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
       </PlainSurface>
     );
   }
+
+  // Accessibility rungs (Reduce Transparency / Increase Contrast) win over every
+  // material below, including the native GlassView: the wrapper's adaptation under
+  // Increase Contrast is unverifiable, so the kit guarantees the opaque + bordered
+  // result itself.
+  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID });
+  if (degraded) return degraded;
 
   // iOS 26+: the genuine system Liquid Glass material. (The `GlassView &&` also
   // narrows it for the JSX below; liquidGlassAvailable() does the safe availability check.)
@@ -64,14 +73,21 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
     );
   }
 
-  // iOS < 26 (or reduce-transparency): the same frost as web/Android.
+  // iOS < 26: the same frost as web/Android. The translucent `popover` fill sits
+  // UNDER the blur so the frost stays a substantial material (the blur alone is too
+  // faint over a flat surface), matching the web/Android layering.
   if (BlurView) {
     return (
       <GlassBox
         style={style}
         pointerEvents={pointerEvents}
         testID={testID}
-        material={<BlurView intensity={GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />}
+        material={
+          <>
+            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover }]} pointerEvents="none" />
+            <BlurView intensity={GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />
+          </>
+        }
       >
         {children}
       </GlassBox>

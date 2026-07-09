@@ -14,6 +14,7 @@
 
 import { type ReactNode } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
+import { type ColorTokens } from "../tokens.js";
 
 export interface GlassSurfaceProps {
   /** The skin's shape + fill style (radius, padding, border, shadow, the popover
@@ -30,6 +31,18 @@ export interface GlassSurfaceProps {
 // expo-blur supplies its own light/dark tint at this intensity, so no extra tint
 // overlay is layered on top (that would double-darken the material).
 export const GLASS_INTENSITY = 80;
+
+// Under the OS "Increase Contrast" setting, Apple makes Liquid Glass "predominantly
+// black or white and highlights them with a contrasting border". The kit renders the
+// opaque surface (via PlainSurface) plus this border, in `foreground` (near-black on
+// light, near-white on dark) — a true contrasting edge, unlike the subtle `border`
+// hairline token. Applied as a style-array override so it wins over (or adds to) a
+// skin's own border. Border-box in RN, so it adds no external layout shift.
+export const CONTRAST_BORDER_WIDTH = 1;
+
+export function contrastBorder(tokens: ColorTokens): ViewStyle {
+  return { borderWidth: CONTRAST_BORDER_WIDTH, borderColor: tokens.foreground };
+}
 
 // Keys that must live on the OUTER box: shadow (overflow:hidden would clip it),
 // absolute positioning, outer-margin/self-alignment, and SIZING (flex/width/
@@ -100,6 +113,27 @@ export function PlainSurface({ style, children, pointerEvents, testID }: GlassSu
     <View style={style} pointerEvents={pointerEvents} testID={testID}>
       {children}
     </View>
+  );
+}
+
+// The accessibility degradation rungs, shared by both platform files so the ladder
+// is defined ONCE (Apple: these modifiers must apply to every glass element). When
+// either setting is on the surface renders opaque via PlainSurface — the ThemeProvider
+// has already reverted the translucent `popover` token to its solid value, so the
+// skin's own fill is opaque here with no extra work. Increase Contrast additionally
+// adds a contrasting `foreground` border. Returns null when neither setting is on, so
+// the caller proceeds to its normal material path. Precedence: Increase Contrast wins
+// over Reduce Transparency (its rung is a superset — opaque plus the border).
+export function degradedGlassSurface(
+  flags: { increasedContrast: boolean; reducedTransparency: boolean; tokens: ColorTokens },
+  props: GlassSurfaceProps,
+): ReactNode | null {
+  if (!flags.increasedContrast && !flags.reducedTransparency) return null;
+  const style = flags.increasedContrast ? [props.style, contrastBorder(flags.tokens)] : props.style;
+  return (
+    <PlainSurface style={style} pointerEvents={props.pointerEvents} testID={props.testID}>
+      {props.children}
+    </PlainSurface>
   );
 }
 
