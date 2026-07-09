@@ -118,6 +118,11 @@ export const backdropLayout: ViewStyle = {
 // from the skin; this owns the box-model that every platform shares.
 export const cardLayout: ViewStyle = { width: "100%", padding: 24 };
 
+// The sizing box for the animated Entrance wrapper: it fills the centered backdrop
+// (up to cardWidth's cap) so the card keeps its width while the wrapper owns the
+// scale-fade. The card's own padding stays on cardLayout, inside the wrapper.
+export const cardSizing: ViewStyle = { width: "100%" };
+
 // Per-size max width cap.
 export function cardWidth(size: Size): ViewStyle {
   return { maxWidth: PANEL_MAX_WIDTH[size] };

@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, useTheme, GlassSurface, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -238,7 +238,8 @@ export function createDialog(skin: DialogSkin) {
             aria-describedby={children == null && description != null ? descriptionId : undefined}
             style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}
           >
-            <GlassSurface style={[s.cardLayout, skin.card(tokens), s.cardWidth(size), style]}>
+            <Entrance style={[s.cardSizing, s.cardWidth(size), style]}>
+            <GlassSurface style={[s.cardLayout, skin.card(tokens)]}>
               {/* The panel content region: a focusable (tabIndex -1) container the
                   web focus manager pulls focus into and traps Tab within, wrapping
                   the content in a KeyboardAvoidingView so the iOS keyboard never
@@ -277,6 +278,7 @@ export function createDialog(skin: DialogSkin) {
                 </KeyboardAvoidingView>
               </View>
             </GlassSurface>
+            </Entrance>
           </View>
         ) : null}
       </View>

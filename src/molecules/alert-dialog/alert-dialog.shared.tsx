@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, useTheme, GlassSurface, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -236,7 +236,8 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             aria-describedby={description != null ? descriptionId : undefined}
             style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}
           >
-            <GlassSurface style={[s.cardBase, skin.card(tokens), s.panelWidth[width], style]}>
+            <Entrance style={[s.cardBase, s.panelWidth[width], style]}>
+            <GlassSurface style={[s.cardBase, skin.card(tokens)]}>
               {/* The panel content region: a focusable (tabIndex -1) container the
                   web focus manager pulls focus into and traps Tab within, wrapping
                   the content in a KeyboardAvoidingView so the iOS keyboard never
@@ -280,6 +281,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
                 </KeyboardAvoidingView>
               </View>
             </GlassSurface>
+            </Entrance>
           </View>
         ) : null}
       </View>
