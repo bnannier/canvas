@@ -13,6 +13,7 @@ import {
   GlassBox,
   PlainSurface,
   degradedGlassSurface,
+  specularRim,
   GLASS_INTENSITY,
   MATERIAL_FILL,
   type GlassSurfaceProps,
@@ -86,6 +87,10 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
           <>
             <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover }]} pointerEvents="none" />
             <BlurView intensity={GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />
+            {/* Specular edge (below the content): a lit rim that supplies the surface's
+                edge now that skin borders are stripped under glass. iOS 26's native
+                GlassView above is never decorated. */}
+            <View style={specularRim(style, dark)} pointerEvents="none" />
           </>
         }
       >

@@ -1,5 +1,13 @@
 import { describe, it, expect } from "bun:test";
-import { splitSurfaceStyle, MATERIAL_FILL, GLASS_INTENSITY } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import {
+  splitSurfaceStyle,
+  contrastBorder,
+  specularRim,
+  MATERIAL_FILL,
+  GLASS_INTENSITY,
+  CONTRAST_BORDER_WIDTH,
+} from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { lightColors, darkColors } from "../src/style/tokens.ts";
 
 describe("splitSurfaceStyle", () => {
   it("strips backgroundColor so the material supplies the fill", () => {
@@ -23,10 +31,55 @@ describe("splitSurfaceStyle", () => {
     expect(clip.borderRadius).toBe(16);
   });
 
-  it("keeps non-sizing skin styles (padding, border) on the clip box", () => {
-    const { clip } = splitSurfaceStyle({ padding: 12, borderWidth: 1 });
+  it("keeps non-sizing skin styles (padding) on the clip box", () => {
+    const { clip } = splitSurfaceStyle({ padding: 12 });
     expect(clip.padding).toBe(12);
-    expect(clip.borderWidth).toBe(1);
+  });
+
+  it("strips border width/color/style so the material supplies the edge", () => {
+    const { outer, clip } = splitSurfaceStyle({
+      borderWidth: 1,
+      borderColor: "#e4e4e7",
+      borderStyle: "solid",
+      borderTopWidth: 2,
+      borderEndColor: "#000",
+      borderRadius: 12,
+      padding: 8,
+    });
+    // No border key survives on either box...
+    expect(clip.borderWidth).toBeUndefined();
+    expect(clip.borderColor).toBeUndefined();
+    expect(clip.borderStyle).toBeUndefined();
+    expect(clip.borderTopWidth).toBeUndefined();
+    expect(clip.borderEndColor).toBeUndefined();
+    expect(outer.borderWidth).toBeUndefined();
+    // ...but radius (shape) and padding are kept.
+    expect(clip.borderRadius).toBe(12);
+    expect(outer.borderRadius).toBe(12);
+    expect(clip.padding).toBe(8);
+  });
+});
+
+describe("contrastBorder", () => {
+  it("is a 1px foreground border on light", () => {
+    expect(contrastBorder(lightColors)).toEqual({ borderWidth: CONTRAST_BORDER_WIDTH, borderColor: lightColors.foreground });
+    expect(lightColors.foreground).toBe("#09090b");
+  });
+
+  it("is a 1px foreground border on dark", () => {
+    expect(contrastBorder(darkColors)).toEqual({ borderWidth: CONTRAST_BORDER_WIDTH, borderColor: darkColors.foreground });
+    expect(darkColors.foreground).toBe("#fafafa");
+  });
+});
+
+describe("specularRim", () => {
+  it("carries the skin radius and a scheme-adaptive inset boxShadow", () => {
+    const light = specularRim({ borderRadius: 26 }, false);
+    const dark = specularRim({ borderRadius: 26 }, true);
+    expect(light.borderRadius).toBe(26);
+    expect(light.position).toBe("absolute");
+    expect(typeof light.boxShadow).toBe("string");
+    expect(light.boxShadow).not.toBe(dark.boxShadow);
   });
 });
 

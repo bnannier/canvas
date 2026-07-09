@@ -63,6 +63,18 @@ const RADIUS_KEYS = new Set<string>([
   "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
   "borderTopStartRadius", "borderTopEndRadius", "borderBottomStartRadius", "borderBottomEndRadius",
 ]);
+// Border width/color/style keys stripped under glass: the material supplies the edge
+// (Apple's Liquid Glass carries its own on iOS 26; the SPECULAR_RIM does on the frost),
+// so a skin's hairline would double it and fight the material (Apple: remove custom
+// backgrounds/borders from navigation surfaces). Radius keys are NOT here — they shape
+// the clip and must survive. Logical (start/end) variants are listed alongside physical.
+const BORDER_KEYS = new Set<string>([
+  "borderWidth", "borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth",
+  "borderStartWidth", "borderEndWidth",
+  "borderColor", "borderTopColor", "borderBottomColor", "borderLeftColor", "borderRightColor",
+  "borderStartColor", "borderEndColor", "borderBlockColor", "borderBlockStartColor", "borderBlockEndColor",
+  "borderStyle",
+]);
 
 interface Split {
   outer: ViewStyle;
@@ -78,7 +90,7 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
   const clip: Record<string, unknown> = { overflow: "hidden", flex: 1 };
   for (const [key, value] of Object.entries(flat)) {
     if (value == null) continue;
-    if (key === "backgroundColor") continue; // the material supplies the fill
+    if (key === "backgroundColor" || BORDER_KEYS.has(key)) continue; // the material supplies the fill + edge
     if (OUTER_KEYS.has(key)) outer[key] = value;
     else clip[key] = value;
     if (RADIUS_KEYS.has(key)) outer[key] = value; // round the shadow too
@@ -150,3 +162,41 @@ export const MATERIAL_FILL: ViewStyle = {
   left: 0,
   pointerEvents: "none",
 };
+
+// The specular edge that lifts the flat frost toward a liquid-glass look: light
+// catches the TOP edge, a faint hairline defines the whole rim, and the bottom edge
+// takes a soft shade. Painted with the cross-platform `boxShadow` style prop (RN 0.85:
+// web + Android + iOS), so it is one code path, not a web-only effect. Scheme-adaptive
+// so it reads on light and dark. Applied on the FROST paths only (web, Android, iOS < 26)
+// — iOS 26's native GlassView material is never decorated. Once skin borders are stripped
+// under glass, this rim is the surface's edge.
+export const SPECULAR_RIM = {
+  light:
+    "inset 0 1px 1px rgba(255,255,255,0.55), inset 0 0 0 0.5px rgba(255,255,255,0.40), inset 0 -1px 1.5px rgba(0,0,0,0.06)",
+  dark:
+    "inset 0 1px 1px rgba(255,255,255,0.16), inset 0 0 0 0.5px rgba(255,255,255,0.10), inset 0 -1px 1.5px rgba(0,0,0,0.22)",
+} as const;
+
+// The corner radii from the skin's style, so the rim hugs the surface's rounded shape.
+function radiusOf(style: StyleProp<ViewStyle>): ViewStyle {
+  const f = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+  return {
+    borderRadius: f.borderRadius,
+    borderTopLeftRadius: f.borderTopLeftRadius,
+    borderTopRightRadius: f.borderTopRightRadius,
+    borderBottomLeftRadius: f.borderBottomLeftRadius,
+    borderBottomRightRadius: f.borderBottomRightRadius,
+    borderTopStartRadius: f.borderTopStartRadius,
+    borderTopEndRadius: f.borderTopEndRadius,
+    borderBottomStartRadius: f.borderBottomStartRadius,
+    borderBottomEndRadius: f.borderBottomEndRadius,
+  };
+}
+
+// The absolute-fill specular-rim overlay style for a frost surface: the skin's radii
+// (so the rim follows the rounded corners) plus the scheme's inset boxShadow. Render as
+// `<View style={specularRim(style, dark)} pointerEvents="none" />` on top of the blur,
+// below the content.
+export function specularRim(style: StyleProp<ViewStyle>, dark: boolean): ViewStyle {
+  return { ...MATERIAL_FILL, ...radiusOf(style), boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
+}
