@@ -78,7 +78,7 @@ function placementOf(p: PopoverProps): Placement {
 export function createPopover(skin: PopoverSkin) {
   return function Popover(props: PopoverProps) {
     const { trigger, title, description, actionLabel, inline, onOpenChange, testID, style } = props;
-    const { tokens } = useTheme();
+    const { tokens, surface } = useTheme();
     const [internalOpen, setInternalOpen] = useState(false);
     // In static (inline) mode the card is always shown; otherwise it is
     // uncontrolled (the trigger toggles it) unless a controlled `open` is passed.
@@ -164,14 +164,13 @@ export function createPopover(skin: PopoverSkin) {
           cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
           inlineStyle={s.cardFloating}
         >
-          {/* The anchor beak, drawn only when the skin supplies one (iOS). For the
-              bottom placement it points UP at the trigger. NOTE (beak clip):
-              AnchoredOverlay wraps the card in a single GlassSurface whose clip box
-              hides overflow under glass mode, so the beak (which protrudes past the
-              card edge) shows in solid mode but is clipped under glass; restoring
-              the always-outside-the-clip beak needs an out-of-clip adornment slot
-              on AnchoredOverlay. */}
-          {skin.arrow != null ? skin.arrow(tokens, placement) : null}
+          {/* The anchor beak, drawn only when the skin supplies one (iOS) and only in
+              SOLID mode. Under glass the beak is intentionally omitted: a flat
+              token-filled beak cannot match the Liquid Glass material (GlassView has no
+              path mask to extend the material into a beak), and a beak-less floating
+              rounded card is exactly how iOS 26 menus read. (It was previously clipped
+              away by the GlassSurface clip box anyway; this makes the intent explicit.) */}
+          {skin.arrow != null && surface !== "glass" ? skin.arrow(tokens, placement) : null}
           {panelBody}
         </AnchoredOverlay>
       </View>

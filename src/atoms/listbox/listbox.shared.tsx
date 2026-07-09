@@ -42,7 +42,7 @@ export interface ListboxProps {
   items: ListboxItem[];
   /** Multi-select: each row gets a leading Checkbox instead of a single ✓. */
   multi?: boolean;
-  /** Wrap the list in a rounded, bordered popover-surface card. */
+  /** Wrap the list in a rounded, bordered content card (solid, stays opaque under glass). */
   bordered?: boolean;
   // Size (pick one; default is medium).
   /** Tighter rows with smaller text. */
@@ -76,11 +76,11 @@ export interface ListboxProps {
 // structure matches the rest of the kit and a future divergence is a one-line
 // change. Color-bearing pieces are functions of the active tokens (so the
 // bordered surface, the selected/press fill, and the label/detail colors follow
-// light/dark and the glass surface via tokens.popover/accent); layout-only
-// fragments are static objects. `ripple` / `pressedOpacity` express the press
-// feedback (Android ripple vs. opacity dim) the platform applies.
+// light/dark via tokens.card/accent); layout-only fragments are static objects.
+// `ripple` / `pressedOpacity` express the press feedback (Android ripple vs. opacity
+// dim) the platform applies.
 export interface ListboxSkin {
-  /** A bordered container reads as a popover surface: rounded card, hairline border, popover fill, inset. */
+  /** A bordered container reads as a content card: rounded, hairline border, solid `card` fill, inset. */
   containerBordered: (tokens: ColorTokens) => ViewStyle;
   /** Each row: a horizontal flex shell with a leading control + label stack. */
   rowBase: ViewStyle;

@@ -26,11 +26,12 @@ export type Placement = "top" | "bottom";
 
 // The contract a platform skin fulfills. The shell resolves the placement axis
 // and the inline/floating state and passes them in; the skin maps them to RN
-// style objects. `arrow` RENDERS the anchor pointer node (the shell drops it in
-// as the card wrapper's sibling, so it is never cut by the surface's corner clip)
-// or is null when the platform draws no arrow. It renders a node rather than
-// returning a ViewStyle so a platform can draw a true tapered beak with an SVG
-// path (iOS) instead of being limited to a rotated box.
+// style objects. `arrow` RENDERS the anchor pointer node (a beak the shell draws in
+// SOLID mode only) or is null when the platform draws no arrow. It renders a node
+// rather than returning a ViewStyle so a platform can draw a true tapered beak with
+// an SVG path (iOS) instead of being limited to a rotated box. Under glass the shell
+// omits the beak: a flat token-filled beak cannot match the Liquid Glass material,
+// so a beak-less rounded card (how iOS 26 menus read) is used instead.
 export interface PopoverSkin {
   /** The floating card frame: width, radius, border, fill, padding, shadow. */
   card: (t: ColorTokens) => ViewStyle;

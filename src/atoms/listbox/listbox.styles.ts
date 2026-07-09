@@ -17,11 +17,14 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // opacity dim is applied (the accent press fill carries the press feedback,
 // exactly as the previous single-file look did).
 
-// A bordered container reads as a popover surface: rounded card, hairline border,
-// popover fill (translucent under glass), and a 4px inset so rows don't touch the
-// edge.
+// A bordered container reads as a content card: rounded card, hairline border, solid
+// `card` fill, and a 4px inset so rows don't touch the edge. Listbox is an inline,
+// in-page list (the CONTENT layer, not a floating overlay), so it uses the solid `card`
+// token, NOT `popover` — `card` stays opaque under glass (Apple: don't put Liquid Glass
+// in the content layer). In solid mode `card` and `popover` are identical, so this is a
+// no-op there and only fixes the translucent-with-no-material bug under glass.
 function containerBordered(tokens: ColorTokens): ViewStyle {
-  return { borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4 };
+  return { borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 4 };
 }
 
 // Each row: a horizontal Pressable with a leading control, the label/detail
