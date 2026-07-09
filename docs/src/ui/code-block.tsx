@@ -96,7 +96,7 @@ export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
         </Text>
       </ScrollView>
       <View
-        onLayout={(e) => setCopyWidth((w) => Math.max(w, e.nativeEvent.layout.width))}
+        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setCopyWidth((w) => Math.max(w, l.width)); }}
         style={{ position: "absolute", top: 8, right: 8 }}
       >
         <Button outline small onPress={copy}>

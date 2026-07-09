@@ -46,16 +46,26 @@ function FitStage({ children }: { children: ReactNode }) {
   return (
     <View
       style={{ width: "100%" }}
-      onLayout={(e) => { const w = Math.round(e.nativeEvent.layout.width); setAvail((a) => (a !== w ? w : a)); }}
+      onLayout={(e) => { const l = e.nativeEvent.layout; if (!l) return; const w = Math.round(l.width); setAvail((a) => (a !== w ? w : a)); }}
     >
-      <ScrollView
-        horizontal
-        bounces={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ width: avail || undefined, alignItems: "center", justifyContent: "center" }}
-      >
-        {children}
-      </ScrollView>
+      {Platform.OS === "web" ? (
+        // Web 3-up: a wide example that cannot shrink below its content scrolls
+        // horizontally so nothing is cropped. Native shows a single full-width column
+        // where examples already fit, and a horizontal ScrollView here would nest the
+        // Carousel's horizontal FlatList inside a same-orientation scroller (the RN
+        // "VirtualizedLists should never be nested" warning), so native renders a plain
+        // centering View. The Carousel is the only FlatList-backed component in the kit.
+        <ScrollView
+          horizontal
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ width: avail || undefined, alignItems: "center", justifyContent: "center" }}
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={{ width: avail || "100%", alignItems: "center", justifyContent: "center" }}>{children}</View>
+      )}
     </View>
   );
 }
