@@ -1,5 +1,5 @@
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
@@ -33,7 +33,7 @@ export interface ListboxItem {
   label: string;
   /** Optional secondary text shown under the label in a muted tone. */
   detail?: string;
-  /** Whether this option is currently selected. */
+  /** Whether this option is initially selected (uncontrolled seed; prefer the top-level `defaultSelected`). */
   selected?: boolean;
 }
 
@@ -51,6 +51,18 @@ export interface ListboxProps {
   large?: boolean;
   /** Dim the list and block selection. */
   disabled?: boolean;
+  /**
+   * Selected option index(es) (CONTROLLED): a single index in single-select, an
+   * array of indices in multi-select. Omit for uncontrolled use.
+   */
+  selected?: number | number[];
+  /**
+   * Initial selection for uncontrolled use (a bare listbox selects on press).
+   * Falls back to the `selected` flags on `items` when omitted.
+   */
+  defaultSelected?: number | number[];
+  /** Fired with the full new selection (an index in single-select, an index array in multi). */
+  onChange?: (selected: number | number[]) => void;
   /** Fired with the pressed option's index. */
   onSelect?: (index: number) => void;
   /** E2E hook forwarded to the root list view. */
@@ -113,6 +125,31 @@ export function createListbox(skin: ListboxSkin) {
     const size = sizeOf(props);
     const { tokens } = useTheme();
 
+    // Normalize the single|multi selection to an index array so one code path
+    // drives both modes. Controlled via `selected`; uncontrolled seeds from
+    // `defaultSelected`, falling back to the items' own `selected` flags, so a
+    // bare listbox is interactive out of the box instead of ignoring presses.
+    const toArray = (v: number | number[] | undefined): number[] | undefined =>
+      v === undefined ? undefined : Array.isArray(v) ? v : [v];
+    const controlled = toArray(props.selected);
+    const initial = toArray(props.defaultSelected)
+      ?? items.reduce<number[]>((acc, it, i) => (it.selected ? [...acc, i] : acc), []);
+    const [selectedArr, setSelectedArr] = useControllableState<number[]>(
+      controlled,
+      initial,
+      (next) => props.onChange?.(mode === "single" ? (next[0] ?? -1) : next),
+    );
+
+    const press = (index: number) => {
+      const next = mode === "single"
+        ? [index]
+        : selectedArr.includes(index)
+          ? selectedArr.filter((i) => i !== index)
+          : [...selectedArr, index];
+      setSelectedArr(next);
+      onSelect?.(index);
+    };
+
     const container: StyleProp<ViewStyle> = [
       bordered ? skin.containerBordered(tokens) : null,
       disabled ? { opacity: 0.5 } : null,
@@ -125,7 +162,7 @@ export function createListbox(skin: ListboxSkin) {
     return (
       <View style={container} role={LISTBOX} testID={props.testID}>
         {items.map((item, index) => {
-          const selected = !!item.selected;
+          const selected = selectedArr.includes(index);
           // Single-select fills the chosen row; multi-select leaves the row plain
           // and reflects state in the leading Checkbox instead.
           const rowBase: StyleProp<ViewStyle> = [
@@ -147,7 +184,7 @@ export function createListbox(skin: ListboxSkin) {
                 !disabled && pressed ? skin.rowSelected(tokens) : null,
                 skin.pressedOpacity != null && !disabled && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
-              onPress={disabled ? undefined : () => onSelect?.(index)}
+              onPress={disabled ? undefined : () => press(index)}
               disabled={disabled}
               // A multi-select row IS the checkbox (the inner Checkbox below is a
               // presentational glyph), so its state is `checked`; a single-select
