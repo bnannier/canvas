@@ -279,6 +279,11 @@ export const androidSkin: SelectSkin = {
     // Rest baseline reads clearly (on-surface-variant ~ muted-foreground) so the M3
     // filled trigger is distinct from the iOS lineless capsule.
     borderBottomColor: open ? t.primary : t["muted-foreground"],
+    // The active indicator thickens 1dp -> 2dp when open. Reserve a constant 2dp
+    // below the content (border + this compensating padding) so the content-box
+    // height stays fixed and the thickening never nudges the vertically-centered
+    // value text up (the ~0.5px jump that read as a layout glitch on open).
+    paddingBottom: open ? 0 : 1,
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     height: ANDROID_TRIGGER_BOX[size],
