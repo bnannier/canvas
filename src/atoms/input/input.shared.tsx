@@ -225,6 +225,13 @@ export function createInput(skin: InputSkin) {
             skin.bareField(tokens, borderColor, focused, isError),
             skin.bareBox(size, !!multiline),
             text,
+            // Suppress the browser's default focus outline on web (RN Web draws it
+            // on the <input>/<textarea>). Every skin paints its own focus affordance
+            // (web: border -> ring, iOS: hairline, Android: bottom indicator), so the
+            // outline is redundant and, over the filled Android skin, reads as a blue
+            // rectangle on top of the indicator. No-op on native; matches the grouped
+            // path and the Combobox/Textarea/NumberInput shells.
+            FOCUS_RESET,
             disabled ? { opacity: skin.disabledOpacity } : null,
             style,
           ]}
