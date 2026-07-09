@@ -191,7 +191,7 @@ export function createFilterPanel(
                   }
                 >
                   <View
-                    pointerEvents="none"
+                    style={{ pointerEvents: "none" }}
                     accessibilityElementsHidden={true}
                     importantForAccessibility="no-hide-descendants"
                     role="presentation"

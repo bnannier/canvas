@@ -251,7 +251,7 @@ export function createNumberInput(skin: NumberInputSkin) {
     );
 
     const makeDivider = (key: string) =>
-      skin.divider ? <View key={key} pointerEvents="none" style={skin.divider(tokens, !!disabled)} /> : null;
+      skin.divider ? <View key={key} style={[skin.divider(tokens, !!disabled), { pointerEvents: "none" }]} /> : null;
 
     // The [ − | + ] pill is one piece; the field sits beside it (LEFT on iOS per HIG,
     // RIGHT-of-minus / inline on the others). The dividers sit between adjacent slots.

@@ -52,7 +52,7 @@ export function contrastBorder(tokens: ColorTokens): ViewStyle {
 // (left/right, marginLeft/Right) and the logical (start/end, marginStart/End) edge
 // keys are listed so a surface anchored either way routes to the outer box the same.
 const OUTER_KEYS = new Set<string>([
-  "shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation",
+  "shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation", "boxShadow",
   "position", "top", "right", "bottom", "left", "start", "end", "zIndex",
   "margin", "marginTop", "marginBottom", "marginLeft", "marginRight", "marginStart", "marginEnd", "marginHorizontal", "marginVertical",
   "alignSelf", "flex", "flexGrow", "flexShrink", "flexBasis",
@@ -109,7 +109,7 @@ export function GlassBox({
 }: GlassSurfaceProps & { material: ReactNode }) {
   const { outer, clip } = splitSurfaceStyle(style);
   return (
-    <View style={outer} pointerEvents={pointerEvents} testID={testID}>
+    <View style={[outer, pointerEvents ? { pointerEvents } : null]} testID={testID}>
       <View style={clip}>
         {material}
         {children}
@@ -122,7 +122,7 @@ export function GlassBox({
 // surface (keeps the solid or translucent popover fill from `style`).
 export function PlainSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
   return (
-    <View style={style} pointerEvents={pointerEvents} testID={testID}>
+    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID}>
       {children}
     </View>
   );

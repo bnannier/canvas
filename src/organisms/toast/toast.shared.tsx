@@ -303,14 +303,13 @@ export function createToastSystem(skin: ToastSkin) {
             ToastCapsule (no region of their own) to avoid nesting live regions. */}
         <Portal>
           <View
-            pointerEvents="box-none"
-            style={STACK}
+            style={[STACK, { pointerEvents: "box-none" }]}
             role="status"
             accessibilityLiveRegion="polite"
             aria-live="polite"
           >
             {toasts.map((t) => (
-              <View key={t.id} pointerEvents="box-none" style={STACK_ITEM}>
+              <View key={t.id} style={[STACK_ITEM, { pointerEvents: "box-none" }]}>
                 <ToastCapsule
                   message={t.message}
                   description={t.description}

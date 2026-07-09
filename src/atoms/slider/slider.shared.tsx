@@ -272,8 +272,7 @@ export function createSlider(skin: SliderSkin) {
             it never competes with the parent for the touch responder, keeping the drag/jump
             on one code path. */}
         <View
-          pointerEvents="none"
-          style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: thumbLeft, top: thumbTop }]}
+          style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: thumbLeft, top: thumbTop, pointerEvents: "none" }]}
         />
       </View>
     );

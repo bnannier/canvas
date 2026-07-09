@@ -143,11 +143,10 @@ export function createInputOTP(skin: InputOTPSkin) {
             return (
               <View
                 key={index}
-                style={skin.cell(tokens, size, { active, filled, index, count })}
+                style={[skin.cell(tokens, size, { active, filled, index, count }), { pointerEvents: "none" }]}
                 // The cells are decorative; the TextInput carries the a11y role/label.
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
-                pointerEvents="none"
               >
                 {filled ? (
                   <Text style={skin.digit(tokens, size)}>{masked ? "•" : char}</Text>

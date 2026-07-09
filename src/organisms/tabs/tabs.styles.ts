@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -160,13 +160,7 @@ export const webSkin: TabsSkin = {
 // rail. Press = opacity dim.
 // =============================================================================
 
-const IOS_PILL_SHADOW: ViewStyle = {
-  shadowColor: "#000000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.18,
-  shadowRadius: 2,
-  elevation: 2,
-};
+const IOS_PILL_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.18, elevation: 2 });
 
 // Blend two hex colors by `t` (0 = a, 1 = b). Used to lift the dark-mode selected
 // thumb to a lighter gray than the track (Apple's tertiary/secondary system-fill

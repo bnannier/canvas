@@ -1,4 +1,5 @@
 import { type ViewStyle } from "react-native";
+import { customShadow } from "../../style/index.js";
 import { type SwitchSkin, type Size } from "./switch.shared.js";
 
 // Co-located Switch styles, one skin per platform, all driven by the brand tokens
@@ -41,13 +42,7 @@ const WEB_THUMB: Record<Size, number> = { small: 14, base: 16, large: 20 };
 
 const PILL: ViewStyle = { borderRadius: 999, position: "relative" };
 const ABS: ViewStyle = { position: "absolute", borderRadius: 999 };
-const IOS_SHADOW: ViewStyle = {
-  shadowColor: "#000000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.2,
-  shadowRadius: 2,
-  elevation: 2,
-};
+const IOS_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.2, elevation: 2 });
 
 // iOS (iOS 27 UI Kit Toggles): a ~1.64 pill with a white rounded-rect CAPSULE
 // knob (wider than tall), not a circle. The on-track is the brand `primary`; the

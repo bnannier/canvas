@@ -124,14 +124,11 @@ export const webSkin: InputOTPSkin = {
       borderTopEndRadius: isLast ? WEB_RADIUS : 0,
       borderBottomEndRadius: isLast ? WEB_RADIUS : 0,
       // shadcn's data-[active]: a 3px ring at 50% alpha + raised z so it overlaps neighbors.
+      // Drawn with the cross-platform `boxShadow` spread (a 0-radius shadow* cannot make an
+      // outer ring, and shadow* is deprecated on react-native-web).
       ...(active
         ? {
             zIndex: 10,
-            shadowColor: alpha(t.ring, 0.5),
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 1,
-            shadowRadius: 0,
-            // RN Web: a uniform 3px outer ring via boxShadow spread (filter prop unused here).
             boxShadow: `0 0 0 3px ${alpha(t.ring, 0.5)}`,
           }
         : null),

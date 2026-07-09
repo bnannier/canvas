@@ -68,7 +68,7 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
   // through the remaining translucency.
   const material = (
     <>
-      <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover }]} pointerEvents="none" />
+      <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, pointerEvents: "none" }]} />
       <BlurView
         intensity={GLASS_INTENSITY}
         tint={dark ? "dark" : "light"}
@@ -76,7 +76,7 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
         style={MATERIAL_FILL}
       />
       {/* Specular edge on top of the frost (below the content): a lit rim that reads as glass. */}
-      <View style={specularRim(style, dark)} pointerEvents="none" />
+      <View style={[specularRim(style, dark), { pointerEvents: "none" }]} />
     </>
   );
 

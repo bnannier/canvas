@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { alpha } from "../../style/index.js";
+import { alpha, customShadow } from "../../style/index.js";
 import { type SliderSkin, type Size } from "./slider.shared.js";
 
 // Co-located Slider skins, one per platform, all driven by the brand tokens (passed
@@ -25,13 +25,7 @@ const FILL_BASE: ViewStyle = { position: "absolute", left: 0, top: 0, bottom: 0,
 const THUMB_BASE: ViewStyle = { position: "absolute", borderRadius: 999 };
 
 // iOS soft knob shadow (HIG sliders float the knob just off the rail).
-const IOS_THUMB_SHADOW: ViewStyle = {
-  shadowColor: "#000000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.18,
-  shadowRadius: 3,
-  elevation: 3,
-};
+const IOS_THUMB_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.18, elevation: 3 });
 
 // ----- iOS (HIG): thin 4pt rail, ~28pt white circular knob -----
 const IOS_TRACK_H: Record<Size, number> = { small: 3, base: 4, large: 5 };
@@ -135,11 +129,7 @@ export const webSkin: SliderSkin = {
       backgroundColor: t.background,
       borderWidth: 1,
       borderColor: disabled ? t["muted-foreground"] : t.primary,
-      shadowColor: "#000000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 2,
-      elevation: 1,
+      ...customShadow({ offsetY: 1, radius: 2, opacity: 0.1, elevation: 1 }),
       // Web press feedback: a faint primary focus ring grows on press (hover:ring-4 /
       // focus-visible:ring-4 in shadcn).
       ...(pressed && !disabled ? { borderColor: alpha(t.primary, 0.5), borderWidth: 4 } : null),

@@ -135,7 +135,7 @@ export function createCarousel(skin: CarouselSkin) {
     const { tokens } = useTheme();
     const edge = side === "prev" ? { start: skin.arrowInset } : { end: skin.arrowInset };
     return (
-      <View pointerEvents="box-none" style={[ARROW_LAYER, edge]}>
+      <View style={[ARROW_LAYER, edge, { pointerEvents: "box-none" }]}>
         <Pressable
           onPress={disabled ? undefined : onPress}
           disabled={disabled}

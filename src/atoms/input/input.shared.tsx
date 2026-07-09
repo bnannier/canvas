@@ -257,7 +257,7 @@ export function createInput(skin: InputSkin) {
         ) : null}
 
         {leadingIcon && iconName != null ? (
-          <View style={skin.iconOverlay("left")} pointerEvents="none">
+          <View style={[skin.iconOverlay("left"), { pointerEvents: "none" }]}>
             <Icon {...{ [iconName]: true }} muted size={16} />
           </View>
         ) : null}
@@ -265,7 +265,7 @@ export function createInput(skin: InputSkin) {
         <TextInput ref={ref} style={[skin.groupField(tokens, !!leadingIcon, !!trailingIcon), text, FOCUS_RESET]} {...common} />
 
         {trailingIcon && iconName != null ? (
-          <View style={skin.iconOverlay("right")} pointerEvents="none">
+          <View style={[skin.iconOverlay("right"), { pointerEvents: "none" }]}>
             <Icon {...{ [iconName]: true }} muted size={16} />
           </View>
         ) : null}

@@ -207,7 +207,7 @@ export function createListbox(skin: ListboxSkin) {
                   accessibilityElementsHidden
                   importantForAccessibility="no-hide-descendants"
                   aria-hidden
-                  pointerEvents="none"
+                  style={{ pointerEvents: "none" }}
                 >
                   <Checkbox checked={selected} disabled={disabled} />
                 </View>

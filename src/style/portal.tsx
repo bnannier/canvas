@@ -131,7 +131,7 @@ interface OutletProps {
 function Outlet({ outletRef, subscribe, getSnapshot }: OutletProps) {
   const nodes = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   return (
-    <View ref={outletRef} pointerEvents="box-none" style={OUTLET}>
+    <View ref={outletRef} style={[OUTLET, { pointerEvents: "box-none" }]}>
       {[...nodes].map(([id, node]) => (
         <Fragment key={id}>{node}</Fragment>
       ))}

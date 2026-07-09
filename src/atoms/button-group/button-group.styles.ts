@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, customShadow } from "../../style/index.js";
 import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 
 // Co-located ButtonGroup skins, one per platform. The group is laid out per
@@ -229,13 +229,7 @@ export const webSkin: ButtonGroupSkin = {
 // iOS (UISegmentedControl): gray rounded container, raised white selected pill.
 // =============================================================================
 
-const IOS_PILL_SHADOW: ViewStyle = {
-  shadowColor: "#000000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.18,
-  shadowRadius: 2,
-  elevation: 2,
-};
+const IOS_PILL_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.18, elevation: 2 });
 
 export const iosSkin: ButtonGroupSkin = {
   // The gray CAPSULE track that holds the segments (radius 9999, muted fill, a
