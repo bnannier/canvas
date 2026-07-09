@@ -46,15 +46,32 @@ A vertically stacked group of disclosure rows: each `items` entry is a header (i
 
 ### Controlled
 
+Drive the open step from outside the accordion: a parent owns the active step and
+passes it as `value`, so the group reflects that external state rather than toggling on
+a header press. Here the Previous / Next buttons are the trigger. (`Stateful` is a
+docs-only helper standing in for your own state; in an app you would hold `step` with
+`useState` and pass `value={step}` plus `onValueChange` if you also want header presses
+to update it.)
+
 ```tsx
-<Accordion
-  value="step-1"
-  items={[
-    { key: "step-1", title: "Step 1 — Connect", content: "Link your data source." },
-    { key: "step-2", title: "Step 2 — Map", content: "Map the incoming fields." },
-    { key: "step-3", title: "Step 3 — Review", content: "Confirm and import." }
-  ]}
-/>
+<Stateful initial="step-1">
+  {(step, setStep) => (
+    <Column relaxed>
+      <Row snug alignCenter>
+        <Button small outline disabled={step === "step-1"} onPress={() => setStep(step === "step-3" ? "step-2" : "step-1")}>Previous</Button>
+        <Button small primary disabled={step === "step-3"} onPress={() => setStep(step === "step-1" ? "step-2" : "step-3")}>Next step</Button>
+      </Row>
+      <Accordion
+        value={step}
+        items={[
+          { key: "step-1", title: "Step 1: Connect", content: "Link your data source." },
+          { key: "step-2", title: "Step 2: Map", content: "Map the incoming fields." },
+          { key: "step-3", title: "Step 3: Review", content: "Confirm and import." }
+        ]}
+      />
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Do & Don't

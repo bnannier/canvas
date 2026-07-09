@@ -91,6 +91,9 @@ import {
 // helpers, and the `palette` of fixed Tailwind hues. Imported from src/style so
 // they're available regardless of what the package barrel currently re-exports.
 import { alpha, shadow, palette } from "../../../src/style/index.js";
+// Docs-only live-example state helper (not a Canvas export); lets a fence drive a
+// component's controlled `value` from an external control. See ./live-state.tsx.
+import { Stateful } from "./live-state.js";
 
 // The canonical list of names a component `.md` example fence may reference as a JSX
 // tag, mapped to the real Canvas components. The docgen (tools/docgen) parses these
@@ -106,6 +109,7 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   alpha,
   shadow,
   palette,
+  Stateful,
   View,
   Text,
   Pressable,

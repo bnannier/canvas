@@ -15,7 +15,14 @@ import type { ColorTokens } from "@olympusoss/canvas";
 //     per-platform skins, to render the three-up comparison; and
 //   - on native it builds one scope from the device skins Metro already resolved.
 // No `eval`, no sucrase, Hermes-safe.
-export type ExampleScope = typeof import("@olympusoss/canvas") & { tokens: ColorTokens };
+// The docs-only live-example state helper (./live-state.tsx). A render-prop state
+// holder that lets a stateless fence demonstrate CONTROLLED usage: it owns state and
+// hands it to its children with a setter, so an example can wire an external control
+// to a component's `value`. Typed structurally here so this type module needs no value
+// import; keep it in sync with the `Stateful` component in ./live-state.tsx.
+type StatefulHelper = <T>(props: { initial: T; children: (value: T, set: (next: T) => void) => ReactNode }) => ReactNode;
+
+export type ExampleScope = typeof import("@olympusoss/canvas") & { tokens: ColorTokens; Stateful: StatefulHelper };
 
 // A generated example module's default export.
 export type ExampleRender = (scope: ExampleScope) => ReactNode;

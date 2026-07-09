@@ -1,6 +1,7 @@
 import * as Canvas from "@olympusoss/canvas";
 import type { ColorTokens } from "@olympusoss/canvas";
 import { Platform } from "react-native";
+import { Stateful } from "./live-state";
 import type { ExampleScope, PreviewScope } from "./scope";
 
 // Native build: on a device you ARE the platform — Metro already resolved each
@@ -13,7 +14,7 @@ export function buildScopes(tokens: ColorTokens): PreviewScope[] {
     {
       label: platform === "android" ? "Android" : "iOS",
       platform,
-      scope: { ...Canvas, tokens } as unknown as ExampleScope,
+      scope: { ...Canvas, tokens, Stateful } as unknown as ExampleScope,
     },
   ];
 }
