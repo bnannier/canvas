@@ -25,7 +25,7 @@ function ResultCard({ kind, caption, scope, render, resetKey }: {
     // Solid card in solid mode, frost in glass mode (DocsSurface), with the do/don't
     // red/green wash laid over it as an overlay so the card never reads as a clear hole.
     <DocsSurface style={{ flex: 1, borderRadius: 12, borderWidth: 1, borderColor: border, padding: 20, gap: 8 }}>
-      <View pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: bg }} />
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: bg, pointerEvents: "none" }} />
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
         {isDont ? <Icon circleX destructive size={14} /> : <Icon circleCheck success size={14} />}
         <Text style={{ fontFamily: geist("600"), fontSize: 13, color: labelColor }}>{isDont ? "Don’t" : "Do"}</Text>

@@ -104,8 +104,7 @@ function NativeSearch() {
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (
         <View
-          pointerEvents="box-none"
-          style={{ position: "absolute", left: 10, right: 10, top: insets.top + 8, bottom: insets.bottom + 60 }}
+          style={{ position: "absolute", left: 10, right: 10, top: insets.top + 8, bottom: insets.bottom + 60, pointerEvents: "box-none" }}
         >
           {/* The bubble is a content-sized rounded box (the rows size it); GlassSurface fills
               BEHIND them as an absolute background, since a content-sized GlassSurface would

@@ -42,7 +42,7 @@ export function GlassAurora({ vivid = false }: { vivid?: boolean } = {}) {
   const { tokens, dark } = useTheme();
   const blobs = BLOBS(tokens.primary, dark, vivid);
   return (
-    <View pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+    <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none" }}>
       <Svg width={width} height={height}>
         <Defs>
           {blobs.map((b, i) => (
