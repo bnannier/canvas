@@ -157,8 +157,9 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
     useEscapeKey(open, handleCancel);
 
     // The action row. iOS renders two capsule buttons side by side (no divider)
-    // drawn by the skin; web/Android render a right-aligned row of the shell's
-    // Buttons.
+    // drawn by the skin; Android renders a right-aligned row of flat M3 TEXT
+    // buttons (no fill); web renders a right-aligned row of the shell's Buttons
+    // (an outline Cancel + a primary/destructive filled Confirm).
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const actionRow =
       skin.actionLayout === "capsule" ? (
@@ -190,6 +191,33 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             ]}
           >
             <Text style={skin.confirmLabelStyle!(tokens, !!destructive)}>{confirmLabel}</Text>
+          </Pressable>
+        </View>
+      ) : skin.textButton != null ? (
+        // Android (M3): flat TEXT buttons, Cancel then Confirm — no fill, brand
+        // `primary` indigo labels, a destructive confirm in the `destructive`
+        // red, each with an android_ripple. This keeps the destructive confirm a
+        // red LABEL on a transparent button (never a filled red button) and
+        // mirrors the plain Dialog's Android footer.
+        <View style={skin.actions}>
+          <Pressable
+            onPress={handleCancel}
+            accessibilityRole="button"
+            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+            style={skin.textButton}
+          >
+            <Text style={skin.textButtonLabel!(tokens, false)}>{cancelLabel}</Text>
+          </Pressable>
+          <Pressable
+            onPress={handleConfirm}
+            disabled={confirmGated}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: confirmGated }}
+            aria-disabled={confirmGated || undefined}
+            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+            style={[skin.textButton, confirmGated ? { opacity: 0.38 } : null]}
+          >
+            <Text style={skin.textButtonLabel!(tokens, !!destructive)}>{confirmLabel}</Text>
           </Pressable>
         </View>
       ) : (

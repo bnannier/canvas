@@ -76,8 +76,19 @@ export interface AlertDialogSkin {
   actions: ViewStyle;
   /** The size prop passed to the shell's Cancel/Confirm Buttons. */
   buttonSmall: boolean;
-  /** The intent props for the Cancel Button (web = outline; Android = ghost/text). */
+  /** The intent props for the Cancel Button (web = outline). */
   cancelButton: { outline?: boolean; ghost?: boolean };
+  // --- Android text-button actions (buttons layout, no fill); null on iOS/web ---
+  /** An Android text-button touch target (no fill). When set, the shell renders
+   *  the Cancel/Confirm actions as flat M3 TEXT buttons instead of Button atoms,
+   *  so a destructive confirm is a red LABEL on a transparent button, never a
+   *  filled red button (mirrors the plain Dialog). */
+  textButton: ViewStyle | null;
+  /** The Android text-button label; brand `primary` indigo, `destructive` reds an
+   *  irreversible confirm. */
+  textButtonLabel: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
+  /** The Android ripple over a text button; null on the other platforms. */
+  textButtonRipple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   // --- "capsule" layout (iOS): two side-by-side pill buttons, no divider --------
   /** The action row that holds the two equal-width capsules with a gap. */
   capsuleRow: ViewStyle | null;
@@ -140,6 +151,9 @@ export const webSkin: AlertDialogSkin = {
   actions: { flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 },
   buttonSmall: true,
   cancelButton: { outline: true },
+  textButton: null,
+  textButtonLabel: null,
+  textButtonRipple: null,
   capsuleRow: null,
   capsuleCell: null,
   cancelFill: null,
@@ -195,6 +209,9 @@ export const iosSkin: AlertDialogSkin = {
   actions: { flexDirection: "row" },
   buttonSmall: true,
   cancelButton: {},
+  textButton: null,
+  textButtonLabel: null,
+  textButtonRipple: null,
   // Two equal-width capsules side by side, separated by a gap (no divider).
   capsuleRow: { flexDirection: "row", gap: 12, marginTop: 24 },
   capsuleCell: {
@@ -258,8 +275,31 @@ export const androidSkin: AlertDialogSkin = {
   // M3 places the action buttons bottom-right with 8dp gap and 24dp above.
   actions: { flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 },
   buttonSmall: true,
-  // M3 dialog actions are text (ghost) buttons, not outlined.
+  // Unused on Android (the textButton path renders the actions), but the contract
+  // requires a concrete value.
   cancelButton: { ghost: true },
+  // M3 dialog actions are flat TEXT buttons (no fill): a Cancel then a Confirm,
+  // both in brand `primary` indigo, with a destructive confirm tinting only its
+  // LABEL the `destructive` red — never a filled red button (mirrors the plain
+  // Dialog's Android footer). Label = M3 Label Large (14/20, weight 500).
+  textButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 20,
+    // clip the Material ripple to the rounded outline (else it bleeds past the corners as a rectangle)
+    overflow: "hidden",
+    minHeight: 40,
+  },
+  textButtonLabel: (t, destructive) => ({
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+    color: destructive ? t.destructive : t.primary,
+  }),
+  textButtonRipple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
   capsuleRow: null,
   capsuleCell: null,
   cancelFill: null,
@@ -267,5 +307,7 @@ export const androidSkin: AlertDialogSkin = {
   cancelLabelStyle: null,
   confirmLabelStyle: null,
   pressedOpacity: null,
-  ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
+  // The capsule-cell ripple is iOS-layout-only; Android's text buttons use
+  // textButtonRipple instead.
+  ripple: null,
 };

@@ -13,9 +13,10 @@ import { type ToastSkin } from "./toast.shared.js";
 //
 //   iOS (HIG banner): a rounded-16 floating capsule, 15pt medium message over a 13pt
 //     secondary description, a brand-tinted action, an x dismiss. Press = opacity dim.
-//   Android (Material 3 snackbar): a small-radius (8dp) bar, 14sp body, the action in
-//     the brand tint (M3 puts the action in inversePrimary; the kit keeps the brand),
-//     press = ripple. Single dismiss x where provided.
+//   Android (Material 3 snackbar): a small-radius (4dp) bar on the INVERSE surface
+//     (dark `foreground` capsule with light `background` text in a light theme), 14sp
+//     body, the action in the brand tint (M3 puts the action in inversePrimary; the
+//     kit keeps the brand), press = ripple. Single dismiss x where provided.
 //   Web (sonner): a rounded-12 card with shadow-lg, 14px medium message + 13px muted
 //     description, a brand action, an x dismiss. Press = opacity dim.
 
@@ -88,11 +89,14 @@ export const iosSkin: ToastSkin = {
 };
 
 // ---------- Android (Material 3 snackbar): a small-radius bar ----------
+// M3 snackbars use the INVERSE surface: a dark capsule with light text in a light
+// theme (`foreground` bg, `background` text), inverting in dark mode, so the bar
+// contrasts with the page. The 4dp corner is M3's extra-small snackbar radius.
 export const androidSkin: ToastSkin = {
-  container: (t) => ({ ...capsule(t, 8), gap: 8 }),
+  container: (t) => ({ ...capsule(t, 4), gap: 8, backgroundColor: t.foreground }),
   iconSize: ICON_SIZE + 2,
-  message: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t["popover-foreground"] }),
-  description: (t) => ({ fontSize: 13, lineHeight: 18, color: t["muted-foreground"] }),
+  message: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t.background }),
+  description: (t) => ({ fontSize: 13, lineHeight: 18, color: alpha(t.background, 0.7) }),
   actionButton,
   actionLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.primary }),
   dismissButton,

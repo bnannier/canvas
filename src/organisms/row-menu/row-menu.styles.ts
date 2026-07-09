@@ -13,7 +13,8 @@ import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 //     are red; pressed = a `secondary` highlight (no ripple). The ⋯ trigger dims
 //     to ~0.8 opacity on press.
 //   Android (Material 3 menu): the card is an elevated surface (4 radius,
-//     `popover`, soft shadow), NO border and NO separators between rows; rows are
+//     `popover`, soft shadow), NO border; groups are not auto-divided, but an item
+//     that sets `separatorBefore` gets a 1dp M3 menu divider above it; rows are
 //     ~48dp tall with a LEADING icon; press = an android_ripple (alpha(primary,
 //     0.12) state layer). Destructive rows are red. The ⋯ trigger uses the same
 //     ripple.
@@ -56,9 +57,8 @@ export interface RowMenuSkin {
   itemRow: ViewStyle;
   /** The fill applied to a row on press (web/iOS tint via this; Android ripples). */
   itemPressed: (t: ColorTokens) => ViewStyle;
-  /** Whether this platform draws hairline separators between groups (iOS/web yes, Android no). */
-  showSeparators: boolean;
-  /** The hairline separator above a row that sets `separatorBefore`. */
+  /** The hairline separator above a row that sets `separatorBefore`. Always rendered
+   *  when an item requests it, on every platform (both HIG and M3 menus use group dividers). */
   separator: (t: ColorTokens) => ViewStyle;
   /** The shared icon/label text size, so they line up in a row. */
   rowTextSize: TextStyle;
@@ -120,7 +120,6 @@ export const webSkin: RowMenuSkin = {
     paddingVertical: 6,
   },
   itemPressed: (t) => ({ backgroundColor: t.accent }),
-  showSeparators: true,
   separator: (t) => ({ marginVertical: 4, height: 1, backgroundColor: t.border }),
   rowTextSize: { fontSize: 14, lineHeight: 20 },
   rowTextColor: (item, links, t, dark) => {
@@ -182,7 +181,6 @@ export const iosSkin: RowMenuSkin = {
   },
   // The selected/pressed row uses the iOS system highlight (the `secondary` fill).
   itemPressed: (t) => ({ backgroundColor: t.secondary }),
-  showSeparators: true,
   // A full-bleed hairline divider (no horizontal inset) splitting menu groups.
   separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
   rowTextSize: { fontSize: 17, lineHeight: 22 },
@@ -241,7 +239,8 @@ export const androidSkin: RowMenuSkin = {
   },
   // The M3 pressed state layer: the brand primary at ~12% alpha (the ripple tint).
   itemPressed: (t) => ({ backgroundColor: alpha(t.primary, 0.12) }),
-  showSeparators: false,
+  // M3 does not auto-draw a divider between every group, but an item that explicitly
+  // requests `separatorBefore` gets the M3 menu divider (a 1dp full-width hairline).
   separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
   rowTextSize: { fontSize: 16, lineHeight: 24 },
   rowTextColor: (item, links, t, dark) => {

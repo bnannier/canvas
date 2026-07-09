@@ -123,7 +123,7 @@ export function createRowMenu(skin: RowMenuSkin) {
           {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
           {items.map((item, index) => (
             <View key={`${item.label}-${index}`}>
-              {item.separatorBefore && skin.showSeparators ? <View style={skin.separator(tokens)} /> : null}
+              {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
               <Pressable
                 style={({ pressed }) => [
                   skin.itemRow,
