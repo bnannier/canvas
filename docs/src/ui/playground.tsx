@@ -28,12 +28,19 @@ function ErrorNote({ message }: { message: string }) {
   );
 }
 
-// Holds a preview together when it is wider than the stage. The stage measures its own width and
-// hands it to a horizontal scroller as a minWidth: a responsive (width:"100%") example fills the
-// stage exactly (so it never scrolls and its own internal scroll still works), a small example is
-// centered at its natural size, and only an example genuinely WIDER than the stage scrolls — so
-// nothing is ever cropped or squished. The component is untouched: it renders at its own size and
-// never learns the stage exists. Recomputed on resize via the outer onLayout.
+// Holds a preview sized to the stage. The stage measures its own width and gives the scroller's
+// content container that exact width, so the example tracks the stage FLUIDLY as the viewport
+// resizes (not just at breakpoint thresholds):
+//   - a responsive (width:"100%") example resolves to the stage width and wraps to fit, so it
+//     fills the stage and keeps resizing with it at every width;
+//   - a small example keeps its natural size and is centered (justifyContent on the row);
+//   - an example whose content cannot shrink below the stage still overflows and the horizontal
+//     scroller takes over, so nothing is cropped.
+// It is a fixed `width` (not a `minWidth`): a minWidth lets a wide-content example grow the
+// container past the stage, which stops a width:"100%" example from ever shrinking below its
+// content — the fixed width is what makes it resize down. The component is untouched: it renders at
+// the width it is given and never learns the stage exists. Recomputed on resize via the outer
+// onLayout.
 function FitStage({ children }: { children: ReactNode }) {
   const [avail, setAvail] = useState(0);
   return (
@@ -45,7 +52,7 @@ function FitStage({ children }: { children: ReactNode }) {
         horizontal
         bounces={false}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ minWidth: avail || undefined, alignItems: "center", justifyContent: "center" }}
+        contentContainerStyle={{ width: avail || undefined, alignItems: "center", justifyContent: "center" }}
       >
         {children}
       </ScrollView>
