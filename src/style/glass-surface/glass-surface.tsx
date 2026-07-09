@@ -38,7 +38,7 @@ try {
 export function GlassSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
 
-  if (surface !== "glass" || !BlurView) {
+  if (surface !== "glass") {
     return (
       <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
         {children}
@@ -47,9 +47,20 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
   }
 
   // Accessibility rungs (Reduce Transparency / Increase Contrast) render the surface
-  // opaque, before the frost material below (Apple AX1/AX2).
+  // opaque, before the frost material below AND before the no-module fallback, so an
+  // opaque + bordered surface is guaranteed even when expo-blur is not installed
+  // (Apple AX1/AX2).
   const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID });
   if (degraded) return degraded;
+
+  // Glass mode but expo-blur is absent: the translucent `popover` fill fallback.
+  if (!BlurView) {
+    return (
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
+        {children}
+      </PlainSurface>
+    );
+  }
 
   // The blur alone is too faint over a flat surface (a dark blur over a near-black page
   // reads as clear), so paint the translucent `popover` frost fill UNDER the blur. That
