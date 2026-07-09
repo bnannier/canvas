@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Switch } = scope;
   return (
-<Switch checked style={{ maxWidth: 280 }}>Notifications</Switch>
+<Switch defaultChecked style={{ maxWidth: 280 }}>Notifications</Switch>
   );
 }

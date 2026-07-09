@@ -6,7 +6,7 @@ Multi-select option, single yes/no, grouped lists.
 
 ```tsx
 <Row snug alignStart>
-  <Checkbox checked />
+  <Checkbox defaultChecked />
   <Column tight>
     <Typography small medium>Email notifications</Typography>
     <Typography tiny muted>Get notified when activity happens on your account.</Typography>
@@ -53,7 +53,7 @@ Multi-select option, single yes/no, grouped lists.
 **Don't** — A consent box that starts checked opts users in by default; under GDPR pre-ticked consent is not consent.
 
 ```tsx
-<Checkbox checked>Email me product news, offers, and survey invitations.</Checkbox>
+<Checkbox defaultChecked>Email me product news, offers, and survey invitations.</Checkbox>
 ```
 
 ### Checked
@@ -66,7 +66,7 @@ Multi-select option, single yes/no, grouped lists.
   <Row flush>
     <View style={{ width: 24 }} />
     <Column snug>
-      <Checkbox checked>Read</Checkbox>
+      <Checkbox defaultChecked>Read</Checkbox>
       <Checkbox>Write</Checkbox>
       <Checkbox>Delete</Checkbox>
     </Column>
@@ -78,9 +78,9 @@ Multi-select option, single yes/no, grouped lists.
 
 ```tsx
 <View style={{ gap: 8 }}>
-  <Checkbox checked>Select all</Checkbox>
+  <Checkbox defaultChecked>Select all</Checkbox>
   <View style={{ marginLeft: 24, gap: 8 }}>
-    <Checkbox checked>Read</Checkbox>
+    <Checkbox defaultChecked>Read</Checkbox>
     <Checkbox>Write</Checkbox>
     <Checkbox>Delete</Checkbox>
   </View>
@@ -111,9 +111,11 @@ Multi-select option, single yes/no, grouped lists.
 ```tsx
 <Column snug>
   <Typography small semibold>Plan</Typography>
-  <Radio>Free</Radio>
-  <Radio checked>Pro</Radio>
-  <Radio>Enterprise</Radio>
+  <RadioGroup defaultValue="pro">
+    <Radio value="free">Free</Radio>
+    <Radio value="pro">Pro</Radio>
+    <Radio value="enterprise">Enterprise</Radio>
+  </RadioGroup>
 </Column>
 ```
 
@@ -123,7 +125,7 @@ Multi-select option, single yes/no, grouped lists.
 <View style={{ gap: 8 }}>
   <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Plan</Text>
   <Checkbox>Free</Checkbox>
-  <Checkbox checked>Pro</Checkbox>
+  <Checkbox defaultChecked>Pro</Checkbox>
   <Checkbox>Enterprise</Checkbox>
 </View>
 ```
@@ -133,7 +135,7 @@ Multi-select option, single yes/no, grouped lists.
 **Do** — Wrap the box, label, and description in a <label> so the whole row toggles.
 
 ```tsx
-<Checkbox checked>
+<Checkbox defaultChecked>
   <Typography small medium>Email notifications</Typography>
   <Typography tiny muted>Get notified when activity happens on your account.</Typography>
 </Checkbox>
@@ -143,7 +145,7 @@ Multi-select option, single yes/no, grouped lists.
 
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-  <Checkbox checked />
+  <Checkbox defaultChecked />
   <View>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>

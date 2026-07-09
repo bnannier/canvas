@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Row alignCenter relaxed style={{ maxWidth: 320 }}>
   <Column fill>
-    <Slider value={48} min={0} max={100} />
+    <Slider defaultValue={48} min={0} max={100} />
   </Column>
   <Typography small muted style={{ minWidth: 32, textAlign: "right" }}>48</Typography>
 </Row>

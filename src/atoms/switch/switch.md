@@ -5,7 +5,7 @@ On / off switch, isolated or grouped in a settings list.
 ## Usage
 
 ```tsx
-<Switch checked>Available to chat</Switch>
+<Switch defaultChecked>Available to chat</Switch>
 ```
 
 ## Variants
@@ -19,13 +19,13 @@ On / off switch, isolated or grouped in a settings list.
 ### With description
 
 ```tsx
-<Switch checked description="Show your availability to teammates.">Available to chat</Switch>
+<Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
 ```
 
 ### Disabled
 
 ```tsx
-<Switch checked disabled>Available to chat</Switch>
+<Switch defaultChecked disabled>Available to chat</Switch>
 ```
 
 ## Do & Don't
@@ -55,7 +55,7 @@ On / off switch, isolated or grouped in a settings list.
 
 ```tsx
 <Column cozy alignStart style={{ maxWidth: 280 }}>
-  <Switch checked>Auto-save drafts</Switch>
+  <Switch defaultChecked>Auto-save drafts</Switch>
   <Button destructive small>Delete account…</Button>
 </Column>
 ```
@@ -74,7 +74,7 @@ On / off switch, isolated or grouped in a settings list.
 **Do** — Label the setting, not the state; the switch communicates on or off.
 
 ```tsx
-<Switch checked style={{ maxWidth: 280 }}>Notifications</Switch>
+<Switch defaultChecked style={{ maxWidth: 280 }}>Notifications</Switch>
 ```
 
 **Don't** — An On/Off label duplicates what the switch position already shows.

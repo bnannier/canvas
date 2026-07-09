@@ -5,7 +5,7 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 ## Usage
 
 ```tsx
-<NumberInput value={3} min={0} max={10} onChange={() => {}} />
+<NumberInput defaultValue={3} min={0} max={10} onChange={() => {}} />
 ```
 
 ## Variants
@@ -14,9 +14,9 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 
 ```tsx
 <Row alignCenter relaxed>
-  <NumberInput small value={2} min={0} max={10} onChange={() => {}} />
-  <NumberInput value={2} min={0} max={10} onChange={() => {}} />
-  <NumberInput large value={2} min={0} max={10} onChange={() => {}} />
+  <NumberInput small defaultValue={2} min={0} max={10} onChange={() => {}} />
+  <NumberInput defaultValue={2} min={0} max={10} onChange={() => {}} />
+  <NumberInput large defaultValue={2} min={0} max={10} onChange={() => {}} />
 </Row>
 ```
 
@@ -24,21 +24,21 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 
 ```tsx
 <Row alignCenter relaxed>
-  <NumberInput value={0} min={0} max={5} onChange={() => {}} />
-  <NumberInput value={5} min={0} max={5} onChange={() => {}} />
+  <NumberInput defaultValue={0} min={0} max={5} onChange={() => {}} />
+  <NumberInput defaultValue={5} min={0} max={5} onChange={() => {}} />
 </Row>
 ```
 
 ### Stepped
 
 ```tsx
-<NumberInput value={20} min={0} max={100} step={10} onChange={() => {}} />
+<NumberInput defaultValue={20} min={0} max={100} step={10} onChange={() => {}} />
 ```
 
 ### Disabled
 
 ```tsx
-<NumberInput disabled value={4} min={0} max={10} onChange={() => {}} />
+<NumberInput disabled defaultValue={4} min={0} max={10} onChange={() => {}} />
 ```
 
 ## Do & Don't
@@ -50,14 +50,14 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 ```tsx
 <Column snug>
   <Typography small medium>Quantity</Typography>
-  <NumberInput value={1} min={1} max={9} onChange={() => {}} />
+  <NumberInput defaultValue={1} min={1} max={9} onChange={() => {}} />
 </Column>
 ```
 
 **Don't** — Leaving the range unbounded lets the user push the count below zero or past what the form can accept.
 
 ```tsx
-<NumberInput value={1} onChange={() => {}} />
+<NumberInput defaultValue={1} onChange={() => {}} />
 ```
 
 ### Step
@@ -65,11 +65,11 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 **Do** — Match `step` to the real increment, so each tap moves the value by an amount that makes sense for the field.
 
 ```tsx
-<NumberInput value={30} min={0} max={120} step={5} onChange={() => {}} />
+<NumberInput defaultValue={30} min={0} max={120} step={5} onChange={() => {}} />
 ```
 
 **Don't** — A step of 1 on a field that only takes round numbers makes the user tap many times to reach a usable value.
 
 ```tsx
-<NumberInput value={30} min={0} max={120} step={1} onChange={() => {}} />
+<NumberInput defaultValue={30} min={0} max={120} step={1} onChange={() => {}} />
 ```

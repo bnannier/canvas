@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { NumberInput, Row } = scope;
   return (
 <Row alignCenter relaxed>
-  <NumberInput small value={2} min={0} max={10} onChange={() => {}} />
-  <NumberInput value={2} min={0} max={10} onChange={() => {}} />
-  <NumberInput large value={2} min={0} max={10} onChange={() => {}} />
+  <NumberInput small defaultValue={2} min={0} max={10} onChange={() => {}} />
+  <NumberInput defaultValue={2} min={0} max={10} onChange={() => {}} />
+  <NumberInput large defaultValue={2} min={0} max={10} onChange={() => {}} />
 </Row>
   );
 }

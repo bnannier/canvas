@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Select } = scope;
   return (
-<Select label="Email notifications" options={["On", "Off"]} value="On" style={{ maxWidth: 320 }} />
+<Select label="Email notifications" options={["On", "Off"]} defaultValue="On" style={{ maxWidth: 320 }} />
   );
 }

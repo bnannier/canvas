@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Tabs
   vertical
   tabs={["General", "Security", "Notifications", "API Keys", "Billing"]}
-  active={0}
+  defaultActive={0}
 />
   );
 }

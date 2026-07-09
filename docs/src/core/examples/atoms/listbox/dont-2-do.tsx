@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Listbox, Select, Column } = scope;
   return (
 <Column tight style={{ width: 224 }}>
-  <Select value="3 selected" style={{ width: 224 }} />
+  <Select defaultValue="3 selected" style={{ width: 224 }} />
   <Listbox multi bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },

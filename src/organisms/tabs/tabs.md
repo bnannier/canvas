@@ -13,7 +13,7 @@ Underline, pill, vertical, with badges.
     "Billing",
     "Integrations"
   ]}
-  active={0}
+  defaultActive={0}
 />
 ```
 
@@ -22,7 +22,7 @@ Underline, pill, vertical, with badges.
 ### Variant - pill
 
 ```tsx
-<Tabs pills tabs={["All", "Active", "Archived", "Deleted"]} active={0} />
+<Tabs pills tabs={["All", "Active", "Archived", "Deleted"]} defaultActive={0} />
 ```
 
 ### Variant - vertical
@@ -31,7 +31,7 @@ Underline, pill, vertical, with badges.
 <Tabs
   vertical
   tabs={["General", "Security", "Notifications", "API Keys", "Billing"]}
-  active={0}
+  defaultActive={0}
 />
 ```
 
@@ -45,7 +45,7 @@ Underline, pill, vertical, with badges.
     { label: "Pending", badge: "12" },
     { label: "Archived", badge: "53" }
   ]}
-  active={0}
+  defaultActive={0}
 />
 ```
 
@@ -56,7 +56,7 @@ Underline, pill, vertical, with badges.
 **Do** — Underline and foreground-color only the active tab; leave the rest muted with no rule.
 
 ```tsx
-<Tabs tabs={["Overview", "Activity", "Settings"]} active={0} />
+<Tabs tabs={["Overview", "Activity", "Settings"]} defaultActive={0} />
 ```
 
 **Don't** — Underlining every tab erases the active indicator: there is no way to tell which view is current.
@@ -83,7 +83,7 @@ Underline, pill, vertical, with badges.
 **Do** — Exactly one pill gets the elevated background; the rest sit flat on the muted track.
 
 ```tsx
-<Tabs tabs={["All", "Active", "Archived"]} active={0} pills />
+<Tabs tabs={["All", "Active", "Archived"]} defaultActive={0} pills />
 ```
 
 **Don't** — Giving every pill the raised background makes the group read as three buttons, not one selection.
@@ -107,7 +107,7 @@ Underline, pill, vertical, with badges.
 **Do** — Fill the active rail item with the accent background so the selected pane is unmistakable.
 
 ```tsx
-<Tabs tabs={["General", "Security", "Notifications"]} active={0} vertical />
+<Tabs tabs={["General", "Security", "Notifications"]} defaultActive={0} vertical />
 ```
 
 **Don't** — With no filled active item the rail collapses into a plain link list and loses its current selection.

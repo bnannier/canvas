@@ -300,7 +300,7 @@ export function createTabs(skin: TabsSkin) {
             variant="underline"
             block={props.block}
             disabled={disabled}
-            onPress={() => onChange?.(i)}
+            onPress={() => setActive(i)}
           />
         ))}
       </View>

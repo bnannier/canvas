@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { NumberInput, Row } = scope;
   return (
 <Row alignCenter relaxed>
-  <NumberInput value={0} min={0} max={5} onChange={() => {}} />
-  <NumberInput value={5} min={0} max={5} onChange={() => {}} />
+  <NumberInput defaultValue={0} min={0} max={5} onChange={() => {}} />
+  <NumberInput defaultValue={5} min={0} max={5} onChange={() => {}} />
 </Row>
   );
 }

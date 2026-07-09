@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
     <Field label="City" value="Austin" />
   </Column>
   <Column fill>
-    <Select label="State" value="Texas" options={["Texas", "Oregon"]} />
+    <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />
   </Column>
 </Row>
   );

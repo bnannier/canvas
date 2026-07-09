@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug>
   <Typography small medium>Quantity</Typography>
-  <NumberInput value={1} min={1} max={9} onChange={() => {}} />
+  <NumberInput defaultValue={1} min={1} max={9} onChange={() => {}} />
 </Column>
   );
 }

@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
   <Field label="Email" placeholder="ada@canvas.dev" style={{ marginBottom: 8 }} />
   <View style={{ marginBottom: 8 }}>
     <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Role</Text>
-    <Select value="Engineer" options={["Engineer", "Designer", "Manager"]} />
+    <Select defaultValue="Engineer" options={["Engineer", "Designer", "Manager"]} />
   </View>
   <Field label="Team" placeholder="Identity Platform" style={{ marginBottom: 8 }} />
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>

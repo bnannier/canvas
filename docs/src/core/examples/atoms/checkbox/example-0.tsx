@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Checkbox, Typography, Row, Column } = scope;
   return (
 <Row snug alignStart>
-  <Checkbox checked />
+  <Checkbox defaultChecked />
   <Column tight>
     <Typography small medium>Email notifications</Typography>
     <Typography tiny muted>Get notified when activity happens on your account.</Typography>

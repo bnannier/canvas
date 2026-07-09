@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { View, Checkbox, Select } = scope;
   return (
 <View style={{ gap: 8 }}>
-  <Checkbox checked>Select all</Checkbox>
+  <Checkbox defaultChecked>Select all</Checkbox>
   <View style={{ marginLeft: 24, gap: 8 }}>
-    <Checkbox checked>Read</Checkbox>
+    <Checkbox defaultChecked>Read</Checkbox>
     <Checkbox>Write</Checkbox>
     <Checkbox>Delete</Checkbox>
   </View>

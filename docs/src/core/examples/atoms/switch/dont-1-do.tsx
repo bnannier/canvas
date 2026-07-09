@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Button, Switch, Column } = scope;
   return (
 <Column cozy alignStart style={{ maxWidth: 280 }}>
-  <Switch checked>Auto-save drafts</Switch>
+  <Switch defaultChecked>Auto-save drafts</Switch>
   <Button destructive small>Delete account…</Button>
 </Column>
   );

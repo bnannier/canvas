@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Select, Column } = scope;
   return (
 <Column style={{ minHeight: 220 }}>
-  <Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+  <Select defaultOpen label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
 </Column>
   );
 }

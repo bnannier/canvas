@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, Checkbox } = scope;
   return (
 <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-  <Checkbox checked />
+  <Checkbox defaultChecked />
   <View>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Email notifications</Text>
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Get notified when activity happens on your account.</Text>

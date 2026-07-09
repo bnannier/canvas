@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug style={{ maxWidth: 320 }}>
   <Typography small medium>Volume</Typography>
-  <Slider value={65} min={0} max={100} />
+  <Slider defaultValue={65} min={0} max={100} />
 </Column>
   );
 }

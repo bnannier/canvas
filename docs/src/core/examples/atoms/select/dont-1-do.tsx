@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Row alignCenter snug>
   <Typography tiny muted>Rows</Typography>
-  <Select small value="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
+  <Select small defaultValue="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
 </Row>
   );
 }

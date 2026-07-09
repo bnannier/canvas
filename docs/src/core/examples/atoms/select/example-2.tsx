@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Select
   large
   label="Country"
-  value="United States"
+  defaultValue="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
   style={{ maxWidth: 280 }}

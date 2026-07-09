@@ -5,7 +5,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 ## Usage
 
 ```tsx
-<Slider value={60} min={0} max={100} />
+<Slider defaultValue={60} min={0} max={100} />
 ```
 
 ## Variants
@@ -13,25 +13,25 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 ### Size - sm
 
 ```tsx
-<Slider small value={40} style={{ maxWidth: 280 }} />
+<Slider small defaultValue={40} style={{ maxWidth: 280 }} />
 ```
 
 ### Size - lg
 
 ```tsx
-<Slider large value={75} style={{ maxWidth: 280 }} />
+<Slider large defaultValue={75} style={{ maxWidth: 280 }} />
 ```
 
 ### Stepped
 
 ```tsx
-<Slider value={6} min={0} max={10} step={2} style={{ maxWidth: 280 }} />
+<Slider defaultValue={6} min={0} max={10} step={2} style={{ maxWidth: 280 }} />
 ```
 
 ### Disabled
 
 ```tsx
-<Slider disabled value={30} style={{ maxWidth: 280 }} />
+<Slider disabled defaultValue={30} style={{ maxWidth: 280 }} />
 ```
 
 ## Do & Don't
@@ -43,7 +43,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 ```tsx
 <Column snug style={{ maxWidth: 320 }}>
   <Typography small medium>Volume</Typography>
-  <Slider value={65} min={0} max={100} />
+  <Slider defaultValue={65} min={0} max={100} />
 </Column>
 ```
 
@@ -51,7 +51,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 
 ```tsx
 <View style={{ width: 64 }}>
-  <Slider value={65} min={0} max={100} />
+  <Slider defaultValue={65} min={0} max={100} />
 </View>
 ```
 
@@ -62,7 +62,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 ```tsx
 <Row alignCenter relaxed style={{ maxWidth: 320 }}>
   <Column fill>
-    <Slider value={48} min={0} max={100} />
+    <Slider defaultValue={48} min={0} max={100} />
   </Column>
   <Typography small muted style={{ minWidth: 32, textAlign: "right" }}>48</Typography>
 </Row>
@@ -71,7 +71,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 **Don't** — A slider with no readout and no label leaves users guessing what the value is and what it controls.
 
 ```tsx
-<Slider value={48} min={0} max={100} style={{ maxWidth: 320 }} />
+<Slider defaultValue={48} min={0} max={100} style={{ maxWidth: 320 }} />
 ```
 
 ### State
@@ -79,7 +79,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 **Do** — Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.
 
 ```tsx
-<Slider disabled value={20} min={0} max={100} style={{ maxWidth: 320 }} />
+<Slider disabled defaultValue={20} min={0} max={100} style={{ maxWidth: 320 }} />
 ```
 
 **Don't** — Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.

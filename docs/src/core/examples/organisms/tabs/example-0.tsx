@@ -13,7 +13,7 @@ export default function Example(scope: ExampleScope) {
     "Billing",
     "Integrations"
   ]}
-  active={0}
+  defaultActive={0}
 />
   );
 }

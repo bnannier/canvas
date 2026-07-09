@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
   <Row flush>
     <View style={{ width: 24 }} />
     <Column snug>
-      <Checkbox checked>Read</Checkbox>
+      <Checkbox defaultChecked>Read</Checkbox>
       <Checkbox>Write</Checkbox>
       <Checkbox>Delete</Checkbox>
     </Column>

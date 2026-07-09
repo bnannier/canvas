@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { NumberInput } = scope;
   return (
-<NumberInput disabled value={4} min={0} max={10} onChange={() => {}} />
+<NumberInput disabled defaultValue={4} min={0} max={10} onChange={() => {}} />
   );
 }

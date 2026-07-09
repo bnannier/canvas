@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Pending", badge: "12" },
     { label: "Archived", badge: "53" }
   ]}
-  active={0}
+  defaultActive={0}
 />
   );
 }

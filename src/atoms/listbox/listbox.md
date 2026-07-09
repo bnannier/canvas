@@ -104,7 +104,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 **Do** — For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.
 
 ```tsx
-<Select open value="Yes" options={["Yes", "No"]} style={{ width: 192 }} />
+<Select defaultOpen defaultValue="Yes" options={["Yes", "No"]} style={{ width: 192 }} />
 ```
 
 **Don't** — A custom listbox for two short options is heavier than it needs to be and worse on mobile.
@@ -146,7 +146,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 
 ```tsx
 <Column tight style={{ width: 224 }}>
-  <Select value="3 selected" style={{ width: 224 }} />
+  <Select defaultValue="3 selected" style={{ width: 224 }} />
   <Listbox multi bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },

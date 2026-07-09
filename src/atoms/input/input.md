@@ -20,7 +20,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 
 ```tsx
 <Column snug style={{ maxWidth: 320 }}>
-  <Select label="Status" value="Active" options={["Active", "Inactive", "Pending"]} />
+  <Select label="Status" defaultValue="Active" options={["Active", "Inactive", "Pending"]} />
   <Typography tiny muted>We'll use this for account recovery.</Typography>
 </Column>
 ```
@@ -105,13 +105,13 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Reserve a select for picking one of several mutually exclusive options; use a switch or radios for two.
 
 ```tsx
-<Select label="Status" options={["Active", "Inactive", "Pending", "Archived"]} value="Active" style={{ maxWidth: 320 }} />
+<Select label="Status" options={["Active", "Inactive", "Pending", "Archived"]} defaultValue="Active" style={{ maxWidth: 320 }} />
 ```
 
 **Don't** — A select for a single on/off choice buries a one-tap decision behind a dropdown.
 
 ```tsx
-<Select label="Email notifications" options={["On", "Off"]} value="On" style={{ maxWidth: 320 }} />
+<Select label="Email notifications" options={["On", "Off"]} defaultValue="On" style={{ maxWidth: 320 }} />
 ```
 
 ### textarea

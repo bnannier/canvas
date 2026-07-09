@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <View style={{ gap: 8 }}>
   <Text style={{ marginBottom: 4, fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Plan</Text>
   <Checkbox>Free</Checkbox>
-  <Checkbox checked>Pro</Checkbox>
+  <Checkbox defaultChecked>Pro</Checkbox>
   <Checkbox>Enterprise</Checkbox>
 </View>
   );
