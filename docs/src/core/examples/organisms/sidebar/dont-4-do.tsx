@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Tabs } = scope;
   return (
-<Tabs underline active={0} tabs={["Overview", "Sessions", "Audit log"]} />
+<Tabs underline defaultActive={0} tabs={["Overview", "Sessions", "Audit log"]} />
   );
 }

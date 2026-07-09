@@ -6,7 +6,7 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 
 ```tsx
 <Sidebar
-  active="Dashboard"
+  defaultActive="Dashboard"
   onSelect={() => {}}
   sections={[
     { title: "Main", items: [
@@ -28,7 +28,7 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 **Do** — Exactly one item carries the accent background; clicking moves it so the active page is always unambiguous.
 
 ```tsx
-<Sidebar bordered active="Dashboard" sections={[
+<Sidebar bordered defaultActive="Dashboard" sections={[
     { title: "Main", items: [
       { label: "Dashboard", icon: "◉" },
       { label: "Users", icon: "○", badge: "12" },
@@ -137,7 +137,7 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 **Do** — Click a tab: exactly one carries the primary underline so the active facet is always singular.
 
 ```tsx
-<Tabs underline active={0} tabs={["Overview", "Sessions", "Audit log"]} />
+<Tabs underline defaultActive={0} tabs={["Overview", "Sessions", "Audit log"]} />
 ```
 
 **Don't** — Two underlined tabs at once breaks the one-active-facet contract and hides which view you're reading.

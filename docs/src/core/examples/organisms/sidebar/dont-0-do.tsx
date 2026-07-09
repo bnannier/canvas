@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Sidebar } = scope;
   return (
-<Sidebar bordered active="Dashboard" sections={[
+<Sidebar bordered defaultActive="Dashboard" sections={[
     { title: "Main", items: [
       { label: "Dashboard", icon: "◉" },
       { label: "Users", icon: "○", badge: "12" },

@@ -1,5 +1,5 @@
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { type Density, type Frame } from "./sidebar.styles.js";
 
@@ -96,8 +96,10 @@ export interface SidebarProps {
   sections?: SidebarSection[];
   /** Flat list of nav rows, wrapped into a single untitled section. */
   items?: SidebarItem[];
-  /** The active row, by label or by flat index across all rows. */
+  /** The active row (CONTROLLED), by label or by flat index across all rows. Omit for uncontrolled use. */
   active?: string | number;
+  /** Initial active row for uncontrolled use (a bare sidebar moves the highlight on press). */
+  defaultActive?: string | number;
   /** Fired with the selected row and its flat index across all sections. */
   onSelect?: (item: SidebarItem, index: number, event: GestureResponderEvent) => void;
   // Density (pick one; default is the comfortable row).
@@ -127,10 +129,13 @@ function frameOf(p: SidebarProps): Frame {
 /** Build a Sidebar component from a platform skin. */
 export function createSidebar(skin: SidebarSkin) {
   return function Sidebar(props: SidebarProps) {
-    const { sections, items, active, onSelect, testID, style } = props;
+    const { sections, items, onSelect, testID, style } = props;
     const density = densityOf(props);
     const frame = frameOf(props);
     const { tokens } = useTheme();
+    // Controlled when `active` is provided, self-managed otherwise, so a bare
+    // sidebar moves the highlight to the pressed row instead of ignoring the tap.
+    const [active, setActive] = useControllableState<string | number | undefined>(props.active, props.defaultActive);
 
     // Normalize to a sections list; a flat `items` array becomes one untitled
     // section. Sections always win when both are supplied.
@@ -191,7 +196,10 @@ export function createSidebar(skin: SidebarSkin) {
                     // undefined on web/Android.
                     skin.focusOutlineReset,
                   ]}
-                  onPress={(event) => onSelect?.(item, index, event)}
+                  onPress={(event) => {
+                    setActive(index);
+                    onSelect?.(item, index, event);
+                  }}
                   accessibilityRole="button"
                   accessibilityState={{ selected: activeRow }}
                   aria-selected={activeRow}

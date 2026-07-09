@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Sidebar } = scope;
   return (
 <Sidebar
-  active="Dashboard"
+  defaultActive="Dashboard"
   onSelect={() => {}}
   sections={[
     { title: "Main", items: [
