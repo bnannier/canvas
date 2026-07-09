@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup segmented active={0} items={["Day", "Week", "Month", "Quarter", "Year", "5Y", "All"]} />
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month", "Quarter", "Year", "5Y", "All"]} />
   );
 }

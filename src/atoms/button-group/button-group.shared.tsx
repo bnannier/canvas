@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, AnchoredOverlay, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./button-group.styles.js";
 
@@ -98,8 +98,10 @@ export interface ButtonGroupSkin {
 export interface ButtonGroupProps {
   /** Segment labels for segmented/spaced; the values the stepper cycles through. */
   items?: string[];
-  /** Selected segment index (segmented), or the stepper's initial index. */
+  /** Selected segment index (segmented, CONTROLLED), or the stepper's initial index. Omit for uncontrolled use. */
   active?: number;
+  /** Initial selected segment index for uncontrolled use (a bare segmented control selects on press). */
+  defaultActive?: number;
   /** Called with the pressed/selected index and item (and, for the stepper, the new index). */
   onSelect?: (index: number, item: string, event: GestureResponderEvent) => void;
 
@@ -363,10 +365,14 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
   }
 
   return function ButtonGroup(props: ButtonGroupProps) {
-    const { items = DEFAULT_ITEMS, active = 0, onSelect, disabled, testID, style } = props;
+    const { items = DEFAULT_ITEMS, onSelect, disabled, testID, style } = props;
     const { tokens } = useTheme();
     const kind = kindOf(props);
     const size = sizeOf(props);
+    // Controlled when `active` is provided, self-managed otherwise, so a bare
+    // segmented control (or one seeded with `defaultActive`) selects on press
+    // instead of sitting inert. Matches the Tabs / Switch controllable contract.
+    const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0);
 
     // Spaced: detached peers separated by a gap, each with full rounding.
     if (kind === "spaced") {
@@ -439,7 +445,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         leading={i > 0}
         size={size}
         disabled={disabled}
-        onPress={(e) => onSelect?.(i, item, e)}
+        onPress={(e) => {
+          setActive(i);
+          onSelect?.(i, item, e);
+        }}
       />
     ));
     // The segments are a single mutually-exclusive control, so the row is a

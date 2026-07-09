@@ -5,7 +5,7 @@ Segmented controls, split buttons, attached groups.
 ## Usage
 
 ```tsx
-<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} small />
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} small />
 ```
 
 ## Variants
@@ -43,19 +43,19 @@ Segmented controls, split buttons, attached groups.
 ### Size - default
 
 ```tsx
-<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} />
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} />
 ```
 
 ### Size - lg
 
 ```tsx
-<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} large />
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} large />
 ```
 
 ### Disabled
 
 ```tsx
-<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} disabled small />
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} disabled small />
 ```
 
 ## Do & Don't
@@ -65,13 +65,13 @@ Segmented controls, split buttons, attached groups.
 **Do** — Keep a segmented control to a few mutually-exclusive views.
 
 ```tsx
-<ButtonGroup segmented active={0} items={["Day", "Week", "Month"]} />
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} />
 ```
 
 **Don't** — Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.
 
 ```tsx
-<ButtonGroup segmented active={0} items={["Day", "Week", "Month", "Quarter", "Year", "5Y", "All"]} />
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month", "Quarter", "Year", "5Y", "All"]} />
 ```
 
 ### Attached
@@ -85,7 +85,7 @@ Segmented controls, split buttons, attached groups.
 **Don't** — Attaching unrelated actions implies they belong to one control.
 
 ```tsx
-<ButtonGroup segmented active={-1} items={["Save", "Delete", "Export"]} />
+<ButtonGroup segmented defaultActive={-1} items={["Save", "Delete", "Export"]} />
 ```
 
 ### Split
