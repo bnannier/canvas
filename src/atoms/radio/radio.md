@@ -5,29 +5,31 @@ Single-pick selection: stacked, inline, card-style.
 ## Usage
 
 ```tsx
-<Column snug>
-  <Row snug alignStart>
-    <Radio />
-    <Column>
-      <Typography small medium>Hobby</Typography>
-      <Typography tiny muted>For personal projects and experiments.</Typography>
-    </Column>
-  </Row>
-  <Row snug alignStart>
-    <Radio checked />
-    <Column>
-      <Typography small medium>Pro</Typography>
-      <Typography tiny muted>For growing teams that need more control.</Typography>
-    </Column>
-  </Row>
-  <Row snug alignStart>
-    <Radio />
-    <Column>
-      <Typography small medium>Enterprise</Typography>
-      <Typography tiny muted>Advanced security, compliance, and support.</Typography>
-    </Column>
-  </Row>
-</Column>
+<RadioGroup defaultValue="pro">
+  <Column snug>
+    <Row snug alignStart>
+      <Radio value="hobby" />
+      <Column>
+        <Typography small medium>Hobby</Typography>
+        <Typography tiny muted>For personal projects and experiments.</Typography>
+      </Column>
+    </Row>
+    <Row snug alignStart>
+      <Radio value="pro" />
+      <Column>
+        <Typography small medium>Pro</Typography>
+        <Typography tiny muted>For growing teams that need more control.</Typography>
+      </Column>
+    </Row>
+    <Row snug alignStart>
+      <Radio value="enterprise" />
+      <Column>
+        <Typography small medium>Enterprise</Typography>
+        <Typography tiny muted>Advanced security, compliance, and support.</Typography>
+      </Column>
+    </Row>
+  </Column>
+</RadioGroup>
 ```
 
 ## Variants
@@ -79,9 +81,11 @@ Single-pick selection: stacked, inline, card-style.
 ```tsx
 <Column snug>
   <Typography small semibold>Plan</Typography>
-  <Radio>Hobby</Radio>
-  <Radio checked>Pro</Radio>
-  <Radio>Enterprise</Radio>
+  <RadioGroup defaultValue="pro">
+    <Radio value="hobby">Hobby</Radio>
+    <Radio value="pro">Pro</Radio>
+    <Radio value="enterprise">Enterprise</Radio>
+  </RadioGroup>
 </Column>
 ```
 
@@ -131,11 +135,11 @@ Single-pick selection: stacked, inline, card-style.
 **Do** — Use gap-6 between options (gap-2 inside each) so every label clearly pairs with its own control.
 
 ```tsx
-<Row loose wrap>
-  <Radio checked small>Hobby</Radio>
-  <Radio small>Pro</Radio>
-  <Radio small>Enterprise</Radio>
-</Row>
+<RadioGroup row defaultValue="hobby">
+  <Radio value="hobby" small>Hobby</Radio>
+  <Radio value="pro" small>Pro</Radio>
+  <Radio value="enterprise" small>Enterprise</Radio>
+</RadioGroup>
 ```
 
 **Don't** — Cramped gap-1 between options makes each label blur into the next radio, so it is hard to tell which dot belongs to which choice.

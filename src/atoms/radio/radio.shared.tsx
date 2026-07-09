@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
 // brand tokens via useTheme, so colors follow light/dark and the glass surface. The
@@ -17,7 +18,13 @@ import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type
 // and reveals the primary dot.
 
 export interface RadioProps {
-  /** Whether this control is the selected option (controlled). */
+  /**
+   * This option's value within a RadioGroup. When the radio sits inside a
+   * `<RadioGroup>`, its checked state and selection are driven by the group
+   * matching this value; ignored for a standalone radio.
+   */
+  value?: string | number;
+  /** Whether this control is the selected option (controlled; standalone use). */
   checked?: boolean;
   /** Alias for `checked`, for callers that think in terms of "selected". */
   selected?: boolean;
@@ -69,16 +76,29 @@ const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 
 /** Build a Radio component from a platform skin. */
 export function createRadio(skin: RadioSkin) {
   return function Radio(props: RadioProps) {
-    const { checked, selected, onChange, children, disabled, style } = props;
-    const isChecked = !!(checked ?? selected);
+    const { checked, selected, onChange, children, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
+
+    // Inside a RadioGroup the group owns selection: this radio reads checked from
+    // the group matching its `value`, and pressing it tells the group to select
+    // that value. Standalone, it stays a controlled radio driven by checked/
+    // selected. The group can also disable the whole set.
+    const group = useRadioGroup();
+    const inGroup = group != null && props.value !== undefined;
+    const isChecked = inGroup ? group.value === props.value : !!(checked ?? selected);
+    const disabled = !!props.disabled || !!group?.disabled;
+
+    const handlePress = (event: GestureResponderEvent) => {
+      if (inGroup) group.select(props.value as string | number, event);
+      onChange?.(true, event);
+    };
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
       <Pressable
-        onPress={(event) => onChange?.(true, event)}
+        onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
         // Icon-only (no label): grow the small ring's tap target toward ~44pt.

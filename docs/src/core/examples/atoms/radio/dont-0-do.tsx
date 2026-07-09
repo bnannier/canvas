@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Radio, Typography, Column } = scope;
+  const { Radio, RadioGroup, Typography, Column } = scope;
   return (
 <Column snug>
   <Typography small semibold>Plan</Typography>
-  <Radio>Hobby</Radio>
-  <Radio checked>Pro</Radio>
-  <Radio>Enterprise</Radio>
+  <RadioGroup defaultValue="pro">
+    <Radio value="hobby">Hobby</Radio>
+    <Radio value="pro">Pro</Radio>
+    <Radio value="enterprise">Enterprise</Radio>
+  </RadioGroup>
 </Column>
   );
 }

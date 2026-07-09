@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Radio, Row } = scope;
+  const { Radio, RadioGroup } = scope;
   return (
-<Row loose wrap>
-  <Radio checked small>Hobby</Radio>
-  <Radio small>Pro</Radio>
-  <Radio small>Enterprise</Radio>
-</Row>
+<RadioGroup row defaultValue="hobby">
+  <Radio value="hobby" small>Hobby</Radio>
+  <Radio value="pro" small>Pro</Radio>
+  <Radio value="enterprise" small>Enterprise</Radio>
+</RadioGroup>
   );
 }

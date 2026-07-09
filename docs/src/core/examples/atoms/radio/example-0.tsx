@@ -3,30 +3,32 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Radio, Typography, Row, Column } = scope;
+  const { Radio, RadioGroup, Typography, Row, Column } = scope;
   return (
-<Column snug>
-  <Row snug alignStart>
-    <Radio />
-    <Column>
-      <Typography small medium>Hobby</Typography>
-      <Typography tiny muted>For personal projects and experiments.</Typography>
-    </Column>
-  </Row>
-  <Row snug alignStart>
-    <Radio checked />
-    <Column>
-      <Typography small medium>Pro</Typography>
-      <Typography tiny muted>For growing teams that need more control.</Typography>
-    </Column>
-  </Row>
-  <Row snug alignStart>
-    <Radio />
-    <Column>
-      <Typography small medium>Enterprise</Typography>
-      <Typography tiny muted>Advanced security, compliance, and support.</Typography>
-    </Column>
-  </Row>
-</Column>
+<RadioGroup defaultValue="pro">
+  <Column snug>
+    <Row snug alignStart>
+      <Radio value="hobby" />
+      <Column>
+        <Typography small medium>Hobby</Typography>
+        <Typography tiny muted>For personal projects and experiments.</Typography>
+      </Column>
+    </Row>
+    <Row snug alignStart>
+      <Radio value="pro" />
+      <Column>
+        <Typography small medium>Pro</Typography>
+        <Typography tiny muted>For growing teams that need more control.</Typography>
+      </Column>
+    </Row>
+    <Row snug alignStart>
+      <Radio value="enterprise" />
+      <Column>
+        <Typography small medium>Enterprise</Typography>
+        <Typography tiny muted>Advanced security, compliance, and support.</Typography>
+      </Column>
+    </Row>
+  </Column>
+</RadioGroup>
   );
 }
