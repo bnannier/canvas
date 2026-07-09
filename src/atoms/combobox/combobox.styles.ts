@@ -193,6 +193,9 @@ export const iosSkin: ComboboxSkin = {
     backgroundColor: "transparent",
     borderBottomWidth: open ? 1.5 : StyleSheet.hairlineWidth,
     borderBottomColor: open ? t.primary : t.border,
+    // Reserve a constant 1.5pt below the content (hairline + this padding) so the
+    // indicator's thickening on open never reflows the centered value text.
+    paddingBottom: open ? 0 : 1.5 - StyleSheet.hairlineWidth,
     paddingHorizontal: 0,
     height: IOS_FIELD_BOX[size],
   }),
@@ -265,6 +268,9 @@ export const androidSkin: ComboboxSkin = {
     // Rest baseline reads clearly (on-surface-variant ~ muted-foreground) so the M3
     // filled field is distinct from the iOS lineless capsule.
     borderBottomColor: open ? t.ring : t["muted-foreground"],
+    // Reserve a constant 2dp below the content (border + this padding) so the
+    // indicator's 1dp -> 2dp thickening never reflows the centered value text.
+    paddingBottom: open ? 0 : 1,
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     height: ANDROID_FIELD_BOX[size],

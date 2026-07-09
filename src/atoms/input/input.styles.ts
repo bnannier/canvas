@@ -175,7 +175,10 @@ export const iosSkin: InputSkin = {
     // No horizontal inset so the value text aligns flush with the hairline edge,
     // as in the iOS 27 render.
     paddingHorizontal: 0,
-    paddingVertical: 10,
+    paddingTop: 10,
+    // Reserve a constant 2pt below the content (hairline + this padding) so the
+    // hairline's 1pt -> 2pt thickening on focus never reflows the centered value text.
+    paddingBottom: focused || error ? 10 : 11,
     color: t.foreground,
   }),
   groupContainer: (t, borderColor, focused, error) => ({
@@ -185,6 +188,9 @@ export const iosSkin: InputSkin = {
     // The whole row shares the single bottom hairline; no fill, no box, no radius.
     backgroundColor: "transparent",
     ...iosHairline(t, borderColor, focused, error),
+    // Keep the row's content height constant as the shared hairline thickens on
+    // focus, so the grouped field's centered value text does not shift.
+    paddingBottom: focused || error ? 0 : 1,
   }),
   groupField: (t, leadingIcon, trailingIcon) => ({
     flexGrow: 1,
@@ -263,7 +269,10 @@ export const androidSkin: InputSkin = {
     ...androidUnderline(t, borderColor, focused, error),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingTop: 8,
+    // Reserve a constant 2dp below the content (indicator + this padding) so the
+    // indicator's 1dp -> 2dp thickening on focus never reflows the centered value text.
+    paddingBottom: focused || error ? 8 : 9,
     color: t.foreground,
   }),
   groupContainer: (t, borderColor, focused, error) => ({
@@ -274,6 +283,9 @@ export const androidSkin: InputSkin = {
     borderTopEndRadius: ANDROID_TOP_RADIUS,
     ...androidUnderline(t, borderColor, focused, error),
     overflow: "hidden",
+    // Keep the row's content height constant as the indicator thickens on focus,
+    // so the grouped field's centered value text does not shift.
+    paddingBottom: focused || error ? 0 : 1,
     backgroundColor: t.muted,
   }),
   groupField: (t, leadingIcon, trailingIcon) => ({
