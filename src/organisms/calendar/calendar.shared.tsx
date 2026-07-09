@@ -1,5 +1,5 @@
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CalendarSkin, type Density } from "./calendar.styles.js";
 
 // Shared Calendar shell. The structure (header with prev/next chevrons + month
@@ -21,8 +21,10 @@ import { type CalendarSkin, type Density } from "./calendar.styles.js";
 export interface CalendarProps {
   /** Month + year label shown in the header, e.g. "June 2026". */
   month?: string;
-  /** The day number currently selected (primary highlight). */
+  /** The day number currently selected (CONTROLLED, primary highlight). Omit for uncontrolled use. */
   selected?: number;
+  /** Initial selected day for uncontrolled use (a bare calendar highlights the day on press). */
+  defaultSelected?: number;
   /** The day number that is today (primary highlight when unselected). */
   today?: number;
   /** Number of days in the month. */
@@ -57,7 +59,6 @@ export function createCalendar(skin: CalendarSkin) {
   return function Calendar(props: CalendarProps) {
     const {
       month = "June 2026",
-      selected,
       today,
       daysInMonth = 30,
       startWeekday = 0,
@@ -68,6 +69,9 @@ export function createCalendar(skin: CalendarSkin) {
       style,
     } = props;
 
+    // Controlled when `selected` is provided, self-managed otherwise, so a bare
+    // calendar highlights the pressed day instead of ignoring the tap.
+    const [selected, setSelected] = useControllableState<number | undefined>(props.selected, props.defaultSelected);
     const { tokens } = useTheme();
     const density = densityOf(props);
     const m = skin.metrics[density];
@@ -136,7 +140,10 @@ export function createCalendar(skin: CalendarSkin) {
                   skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                 ]}
                 android_ripple={ripple}
-                onPress={() => onSelect?.(day)}
+                onPress={() => {
+                  setSelected(day);
+                  onSelect?.(day);
+                }}
                 accessibilityRole="button"
                 accessibilityLabel={`${day}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}`}
                 accessibilityState={{ selected: isSelected }}

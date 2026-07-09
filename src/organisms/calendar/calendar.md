@@ -8,7 +8,7 @@ Date picker, event list. Production: wrap react-day-picker.
 <Calendar
   month="May 2026"
   today={23}
-  selected={24}
+  defaultSelected={24}
   daysInMonth={31}
   startWeekday={4}
 />
@@ -20,7 +20,7 @@ Date picker, event list. Production: wrap react-day-picker.
 
 ```tsx
 <Row loose wrap alignStart>
-  <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
+  <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
   <Card grow style={{ minWidth: 240 }}>
     <CardHeader>
       <Typography small semibold>May 24</Typography>
@@ -55,7 +55,7 @@ Date picker, event list. Production: wrap react-day-picker.
 **Do** — Exactly one selected day (primary), with today marked separately in the accent tone.
 
 ```tsx
-<Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
+<Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
 ```
 
 **Don't** — Painting several days with the primary selected style makes a single-date picker look like a multi-select.
@@ -82,7 +82,7 @@ Date picker, event list. Production: wrap react-day-picker.
 
 ```tsx
 <Row loose wrap alignStart>
-  <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
+  <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
   <Card grow style={{ minWidth: 240 }}>
     <CardHeader>
       <Typography small semibold>May 24</Typography>
@@ -102,7 +102,7 @@ Date picker, event list. Production: wrap react-day-picker.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
-  <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
+  <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
   <Card style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
     <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
       <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Pick a date to see events.</Text>

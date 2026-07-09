@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Calendar, Card, CardContent, CardHeader, CardSeparator, Divider, Typography, Row, Column } = scope;
   return (
 <Row loose wrap alignStart>
-  <Calendar month="May 2026" today={23} selected={24} daysInMonth={31} startWeekday={4} />
+  <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
   <Card grow style={{ minWidth: 240 }}>
     <CardHeader>
       <Typography small semibold>May 24</Typography>
