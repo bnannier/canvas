@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Navbar
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
-  active={0}
+  defaultActive={0}
   actionLabel="New"
   avatar="RC"
   bordered

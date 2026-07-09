@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Navbar } = scope;
   return (
-<Navbar bordered brand="Canvas" active={0} links={[
+<Navbar bordered brand="Canvas" defaultActive={0} links={[
     "Dashboard",
     "Users",
     "Settings",

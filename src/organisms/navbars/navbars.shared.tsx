@@ -1,4 +1,4 @@
-import { View, Pressable, Text, useTheme, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { type Surface } from "./navbars.styles.js";
@@ -67,8 +67,10 @@ export interface NavbarProps {
   brand: string;
   /** Ordered navigation link labels rendered in the middle row. */
   links: string[];
-  /** Index of the active link (its label reads in the foreground color). */
+  /** Index of the active link (CONTROLLED; its label reads in the foreground color). Omit for uncontrolled use. */
   active?: number;
+  /** Initial active link for uncontrolled use (a bare navbar moves the active link on press). */
+  defaultActive?: number;
   /** Optional primary action; renders a <Button primary small> on the right. */
   actionLabel?: string;
   /** Called when the action button is pressed. */
@@ -96,9 +98,12 @@ function surfaceOf(p: NavbarProps): Surface {
 /** Build a Navbar component from a platform skin. */
 export function createNavbar(skin: NavbarSkin) {
   return function Navbar(props: NavbarProps) {
-    const { brand, links, active = 0, actionLabel, onAction, avatar, onSelect, testID, style } = props;
+    const { brand, links, actionLabel, onAction, avatar, onSelect, testID, style } = props;
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
+    // Controlled when `active` is provided, self-managed otherwise, so a bare
+    // navbar moves the active link to the pressed one instead of ignoring taps.
+    const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0);
 
     // The bar joins the functional glass layer: GlassSurface paints the native
     // Liquid Glass (iOS) or frost (web/Android) in glass mode, and the solid skin
@@ -121,7 +126,10 @@ export function createNavbar(skin: NavbarSkin) {
               return (
                 <Pressable
                   key={`${link}-${index}`}
-                  onPress={onSelect ? () => onSelect(index) : undefined}
+                  onPress={() => {
+                    setActive(index);
+                    onSelect?.(index);
+                  }}
                   android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                   accessibilityRole="link"
                   accessibilityState={{ selected: isActive }}

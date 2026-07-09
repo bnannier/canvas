@@ -8,7 +8,7 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 <Navbar
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
-  active={0}
+  defaultActive={0}
   actionLabel="New"
   avatar="RC"
   bordered
@@ -23,7 +23,7 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 <Navbar
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
-  active={0}
+  defaultActive={0}
   actionLabel="New"
   avatar="RC"
   bordered
@@ -36,7 +36,7 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 <Navbar
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
-  active={0}
+  defaultActive={0}
   actionLabel="New"
   avatar="RC"
 />
@@ -49,13 +49,13 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 **Do** — Keep a few primary links inline and fold the rest behind a More menu.
 
 ```tsx
-<Navbar bordered brand="Canvas" active={0} links={["Dashboard", "Users", "Settings"]} actionLabel="New" avatar="RC" />
+<Navbar bordered brand="Canvas" defaultActive={0} links={["Dashboard", "Users", "Settings"]} actionLabel="New" avatar="RC" />
 ```
 
 **Don't** — Cramming every destination into the bar wraps the row and buries the primary links.
 
 ```tsx
-<Navbar bordered brand="Canvas" active={0} links={[
+<Navbar bordered brand="Canvas" defaultActive={0} links={[
     "Dashboard",
     "Users",
     "Settings",
