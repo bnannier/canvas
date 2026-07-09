@@ -65,6 +65,27 @@ export interface CheckboxSkin {
 // The row: box + optional label, top-aligned so a multi-line label hangs from the box.
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
 
+// The glyph sits on its own absolutely-positioned layer that fills the box and
+// centers the check/dash with flexbox. This is deliberate: on native Android
+// (Fabric) an IN-FLOW <Text> child drives its parent View's main-axis size and
+// overrides the box's explicit `width`, collapsing the box to the glyph's measured
+// width (~5dp) while the cross-axis `height` is honored — an 18dp square renders as
+// a thin vertical sliver. (The Radio never hits this: its checked child is a <View>
+// dot, not text.) Taking the glyph out of flow removes it from the box's content
+// measurement, so `width` wins. Absolute + flex-center behaves identically on iOS,
+// react-native-web, and native Android, so this is a cross-platform fix, not a
+// per-platform escape hatch — the look is unchanged everywhere.
+const GLYPH_LAYER: ViewStyle = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  alignItems: "center",
+  justifyContent: "center",
+  pointerEvents: "none", // the Pressable owns the touch; keep this layer inert
+};
+
 /** Build a Checkbox component from a platform skin. */
 export function createCheckbox(skin: CheckboxSkin) {
   return function Checkbox(props: CheckboxProps) {
@@ -113,7 +134,11 @@ export function createCheckbox(skin: CheckboxSkin) {
         ]}
       >
         <View style={skin.box(tokens, filled, size)}>
-          {filled ? <Text style={skin.glyph(tokens, size)}>{glyph}</Text> : null}
+          {filled ? (
+            <View style={GLYPH_LAYER}>
+              <Text style={skin.glyph(tokens, size)}>{glyph}</Text>
+            </View>
+          ) : null}
         </View>
         {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
       </Pressable>
