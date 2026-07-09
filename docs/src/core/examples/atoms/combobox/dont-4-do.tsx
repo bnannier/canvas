@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Combobox } = scope;
   return (
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Search a person…" helperText="Deactivated users are hidden from the list." style={{ maxWidth: 280 }} />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultOpen placeholder="Search a person…" helperText="Deactivated users are hidden from the list." style={{ maxWidth: 280 }} />
   );
 }

@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Command } = scope;
   return (
 <Command
-  active={0}
+  defaultActive={0}
   placeholder="Type a command..."
   groups={[
     { heading: "Actions", items: [

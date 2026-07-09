@@ -60,17 +60,21 @@ export interface ComboboxProps {
   onQueryChange?: (query: string) => void;
   /** The full list of selectable option labels. */
   options?: string[];
-  /** The currently selected option label, marked with a check in the list. */
+  /** The currently selected option label (CONTROLLED), marked with a check in the list. Omit for uncontrolled use. */
   value?: string;
+  /** Initial selected option for uncontrolled use (selecting a row updates it). */
+  defaultValue?: string;
   /** Prompt shown in the field when there is no query or value. */
   placeholder?: string;
   /**
-   * Whether the option list is open. Uncontrolled and closed by default;
-   * focusing or typing in the field opens it, the chevron toggles it. Pass
-   * `open` to render the list open (the docs render it this way). A disabled
-   * control stays closed regardless.
+   * Whether the option list is open (CONTROLLED). Uncontrolled and closed by
+   * default; focusing or typing in the field opens it, the chevron toggles it.
+   * Pass `open` to pin it open, or `defaultOpen` to render it open initially
+   * while staying interactive. A disabled control stays closed regardless.
    */
   open?: boolean;
+  /** Render the list open initially for uncontrolled use (selecting or the chevron closes it). */
+  defaultOpen?: boolean;
   /** Fired when the open state changes (focus, typing, chevron, select). */
   onOpenChange?: (open: boolean) => void;
   /** Optional stacked field label rendered above the field. */
@@ -118,7 +122,6 @@ export function createCombobox(skin: ComboboxSkin) {
   const Combobox = forwardRef<RNTextInput, ComboboxProps>(function Combobox(props, ref) {
     const {
       options = [],
-      value,
       label,
       helperText,
       placeholder = "Search…",
@@ -140,9 +143,17 @@ export function createCombobox(skin: ComboboxSkin) {
       onQueryChange,
     );
 
+    // Controlled when `value` is provided, self-managed otherwise, so selecting
+    // a row actually updates the shown selection instead of firing onSelect into
+    // the void.
+    const [value, setValue] = useControllableState<string | undefined>(
+      props.value,
+      props.defaultValue,
+    );
+
     // Uncontrolled by default: focus/typing opens the list, the chevron
-    // toggles it, a select closes it.
-    const [internalOpen, setInternalOpen] = useState(false);
+    // toggles it, a select closes it. `defaultOpen` seeds it open initially.
+    const [internalOpen, setInternalOpen] = useState(props.defaultOpen ?? false);
     const open = openProp ?? internalOpen;
     const setOpen = (next: boolean) => {
       if (openProp === undefined) setInternalOpen(next);
@@ -261,6 +272,7 @@ export function createCombobox(skin: ComboboxSkin) {
                       pressed ? skin.rowPressed(tokens) : null,
                     ]}
                     onPress={() => {
+                      setValue(option);
                       onSelect?.(option);
                       // Reset the filter so the field falls back to showing the
                       // selected value and the next open lists every option.

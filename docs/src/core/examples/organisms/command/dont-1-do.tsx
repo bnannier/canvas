@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Command } = scope;
   return (
-<Command open placeholder="Type a command..." active={0} groups={[
+<Command open placeholder="Type a command..." defaultActive={0} groups={[
     { heading: "Actions", items: [
       { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
       { label: "Save", icon: "💾", shortcut: "Ctrl+S" }

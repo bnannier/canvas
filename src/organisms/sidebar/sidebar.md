@@ -164,7 +164,7 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 **Do** — A search icon and esc hint signal input, and a single highlighted row shows exactly what Enter will run.
 
 ```tsx
-<Command open active={0} placeholder="Type a command or search..." groups={[
+<Command open defaultActive={0} placeholder="Type a command or search..." groups={[
     { heading: "Actions", items: [
       { label: "Create identity", shortcut: "C" },
       { label: "Invite teammate" }

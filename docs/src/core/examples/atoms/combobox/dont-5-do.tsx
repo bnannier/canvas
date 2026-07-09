@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Combobox } = scope;
   return (
-<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} value="Devon Webb" disabled helperText="Set by the project owner and can't be changed here." style={{ maxWidth: 280 }} />
+<Combobox label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" disabled helperText="Set by the project owner and can't be changed here." style={{ maxWidth: 280 }} />
   );
 }

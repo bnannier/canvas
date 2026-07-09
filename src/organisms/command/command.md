@@ -6,7 +6,7 @@ Cmd+K search: navigation, actions, recent items.
 
 ```tsx
 <Command
-  active={0}
+  defaultActive={0}
   placeholder="Type a command..."
   trigger
   groups={[
@@ -29,7 +29,7 @@ Cmd+K search: navigation, actions, recent items.
 
 ```tsx
 <Command
-  active={0}
+  defaultActive={0}
   placeholder="Type a command..."
   groups={[
     { heading: "Actions", items: [
@@ -49,7 +49,7 @@ Cmd+K search: navigation, actions, recent items.
 
 ```tsx
 <Command
-  active={0}
+  defaultActive={0}
   placeholder="Type a command..."
   trigger
   footer
@@ -91,7 +91,7 @@ Cmd+K search: navigation, actions, recent items.
 **Do** — Group commands under labels with separators and highlight the first match so results stay scannable.
 
 ```tsx
-<Command open placeholder="Type a command..." active={0} groups={[
+<Command open placeholder="Type a command..." defaultActive={0} groups={[
     { heading: "Actions", items: [
       { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
       { label: "Save", icon: "💾", shortcut: "Ctrl+S" }
@@ -106,7 +106,7 @@ Cmd+K search: navigation, actions, recent items.
 **Don't** — Dumping every command into one flat list with no labels makes the palette hard to scan.
 
 ```tsx
-<Command open placeholder="Type a command..." active={-1} groups={[
+<Command open placeholder="Type a command..." defaultActive={-1} groups={[
     { items: [
       { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
       { label: "Save", icon: "💾", shortcut: "Ctrl+S" },

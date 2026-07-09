@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Command } = scope;
   return (
-<Command open active={0} placeholder="Type a command or search..." groups={[
+<Command open defaultActive={0} placeholder="Type a command or search..." groups={[
     { heading: "Actions", items: [
       { label: "Create identity", shortcut: "C" },
       { label: "Invite teammate" }

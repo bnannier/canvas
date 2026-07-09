@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type Role } from "react-native";
-import { View, Text, Pressable, useTheme, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
 // list container casts it. The value is correct on both web (DOM role) and native.
@@ -58,10 +58,14 @@ export interface CommandProps {
   placeholder?: string;
   /** Grouped result rows. */
   groups?: CommandGroup[];
-  /** Flat index of the highlighted row, counted across all groups. */
+  /** Flat index of the highlighted row (CONTROLLED), counted across all groups. Omit for uncontrolled use. */
   active?: number;
+  /** Initial highlighted row for uncontrolled use (hovering a row moves it). */
+  defaultActive?: number;
   /** Controlled open state. Omit for uncontrolled (the search trigger toggles it). */
   open?: boolean;
+  /** Render the palette open initially for uncontrolled use (selecting a row closes it). */
+  defaultOpen?: boolean;
   /** Fired when the open state changes. */
   onOpenChange?: (open: boolean) => void;
   /**
@@ -90,7 +94,6 @@ export function createCommand(skin: CommandSkin) {
     const {
       placeholder = "Type a command or search...",
       groups = [],
-      active = 0,
       open: openProp,
       trigger,
       footer,
@@ -101,9 +104,14 @@ export function createCommand(skin: CommandSkin) {
     } = props;
     const { tokens } = useTheme();
 
+    // Controlled when `active` is provided, self-managed otherwise, so the
+    // highlight follows hover instead of sitting frozen on the initial row.
+    const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0);
+
     // Uncontrolled by default: in trigger mode the palette starts closed and the
-    // collapsed search trigger toggles it; the bare card (no trigger) starts open.
-    const [internalOpen, setInternalOpen] = useState(() => !trigger);
+    // collapsed search trigger toggles it; the bare card (no trigger) starts
+    // open. `defaultOpen` forces it open initially even in trigger mode.
+    const [internalOpen, setInternalOpen] = useState(() => props.defaultOpen ?? !trigger);
     const open = openProp ?? internalOpen;
     const setOpen = (next: boolean) => {
       if (openProp === undefined) setInternalOpen(next);
@@ -151,7 +159,9 @@ export function createCommand(skin: CommandSkin) {
                       : null,
                     skin.rowPressedOpacity != null && pressed ? { opacity: skin.rowPressedOpacity } : null,
                   ]}
+                  onHoverIn={() => setActive(index)}
                   onPress={() => {
+                    setActive(index);
                     onSelect?.(item, index);
                     setOpen(false);
                   }}
