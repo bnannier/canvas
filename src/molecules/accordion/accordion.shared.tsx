@@ -39,9 +39,11 @@ import { Icon } from "../../atoms/icon/icon.js";
 //   - `multiple`: any number of panels may be open at once; each header toggles
 //     its own panel independently.
 //
-// The chevron rotates 0 -> 90deg when its panel opens (chevronRight glyph), the
-// HIG/Radix disclosure affordance. The panel reveal uses LayoutAnimation natively
-// (a smooth height ease) and a plain show/hide on web, which is robust everywhere.
+// The chevron glyph and its open-rotation come from the skin: iOS/web use the
+// HIG/Radix right caret (chevronRight, 0 -> 90deg, points down when open); Android
+// uses the M3 in-place-expansion chevron (chevronDown, 0 -> 180deg, points up when
+// open). The panel reveal uses LayoutAnimation natively (a smooth height ease) and
+// a plain show/hide on web, which is robust everywhere.
 
 // The platform-varying surface. Everything shape/color/feedback-bearing the rows
 // need lives here, built from the active tokens (so each follows light/dark).
@@ -61,6 +63,14 @@ export interface AccordionSkin {
    *  (the HIG tertiary-gray / M3 on-surface-variant disclosure tint) on every
    *  platform, via the kit Icon's `muted` color prop. */
   chevronSize: number;
+  /** The disclosure chevron glyph at rest: `chevronRight` on iOS/web (the HIG/Radix
+   *  tree-disclosure caret, points right and rotates to point down), or `chevronDown`
+   *  on Android (the M3 in-place-expansion affordance, points down and rotates to
+   *  point up). */
+  chevronGlyph: "chevronRight" | "chevronDown";
+  /** Degrees the chevron rotates to when OPEN: 90 for the iOS/web right->down idiom,
+   *  180 for the M3 down->up (expand_more -> expand_less) idiom. */
+  chevronSpinTo: number;
 
   /** The optional outer container shape (iOS inset-grouped card; flat on web/Android). */
   container: (t: ColorTokens) => ViewStyle;
@@ -159,7 +169,9 @@ export function createAccordion(skin: AccordionSkin) {
     const reduced = useReducedMotion();
     const disabled = !!item.disabled || !!groupDisabled;
 
-    // Chevron rotation: 0deg collapsed -> 90deg open (chevronRight points down).
+    // Chevron rotation: 0deg collapsed -> skin.chevronSpinTo open. The skin picks
+    // the idiom: iOS/web rotate the right caret 0->90deg (points down when open);
+    // Android rotates the M3 down chevron 0->180deg (points up when open).
     // Reduce Motion snaps it (duration 0) rather than easing.
     const spin = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
@@ -169,7 +181,7 @@ export function createAccordion(skin: AccordionSkin) {
         useNativeDriver: supportsNativeDriver,
       }).start();
     }, [open, spin, reduced]);
-    const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "90deg"] });
+    const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", `${skin.chevronSpinTo}deg`] });
 
     const headerStyle: StyleProp<ViewStyle> = [
       skin.header(tokens),
@@ -200,7 +212,8 @@ export function createAccordion(skin: AccordionSkin) {
             {item.title}
           </Text>
           <Animated.View style={{ transform: [{ rotate }] }}>
-            <Icon chevronRight muted size={skin.chevronSize} />
+            {/* Skin picks the disclosure glyph: chevronRight (iOS/web) or chevronDown (M3). */}
+            <Icon {...{ [skin.chevronGlyph]: true }} muted size={skin.chevronSize} />
           </Animated.View>
         </Pressable>
         {open ? (

@@ -1,5 +1,7 @@
+import { type ComponentType } from "react";
 import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { Button } from "../../atoms/button/button.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
+import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./empty-state.styles.js";
 import { type Tone, type EmptyStateSkin } from "./empty-state.styles.js";
 
@@ -59,7 +61,22 @@ function toneOf(p: EmptyStateProps): Tone {
   return p.positive ? "positive" : "default";
 }
 
-export function createEmptyState(skin: EmptyStateSkin) {
+// The action's Button atom, typed as its component so the public Button API is
+// preserved across every build path.
+export type ButtonComponent = ComponentType<ButtonProps>;
+
+/**
+ * Build an EmptyState from a platform skin.
+ *
+ * `Button` is the platform-correct action atom the EmptyState composes. Each
+ * platform's thin `.tsx`/`.ios`/`.android` file passes the Button it already
+ * resolves for that platform, so the action matches the molecule's platform on
+ * every build path (notably the WEB docs 3-up preview, where a barrel import would
+ * otherwise resolve the web atom). Defaults to the web-base Button when omitted,
+ * which is also correct on a real device (Metro resolves the right extension there
+ * regardless).
+ */
+export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent = WebButton) {
   return function EmptyState(props: EmptyStateProps) {
     const { icon, title, description, actionLabel, onAction, bordered, compact, testID, style } = props;
     const { tokens } = useTheme();

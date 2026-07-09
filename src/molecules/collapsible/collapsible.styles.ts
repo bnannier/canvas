@@ -25,9 +25,9 @@ import { type CollapsibleSkin } from "./collapsible.shared.js";
 //     Native iOS grouped surfaces are flat (no shadow). Press = opacity dim (~0.8).
 //   Android (Material 3 expandable list row): M3 has no accordion/expansion-panel
 //     component, so the disclosure follows M3 list-item conventions: no outer
-//     container, a 16sp titleMedium-ish title, a 24px muted chevron rotating
-//     0->90deg, M3 list density (16dp insets), and a header `android_ripple` state
-//     layer instead of an opacity dim.
+//     container, a 16sp titleMedium-ish title, a 24px muted M3 expansion chevron
+//     (down at rest, rotating 0->180deg to point up on open), M3 list density (16dp
+//     insets), and a header `android_ripple` state layer instead of an opacity dim.
 
 // =============================================================================
 // Web: the established Canvas / shadcn look.
@@ -43,6 +43,9 @@ export const webSkin: CollapsibleSkin = {
 
   // Chevron: a 16px muted glyph (shadcn ChevronDown, h-4 w-4, text-muted-foreground).
   chevronSize: 16,
+  // Radix/shadcn tree-disclosure caret: right at rest, rotates 0->90deg (points down) on open.
+  chevronGlyph: "chevronRight",
+  chevronSpinTo: 90,
 
   // No outer container on web: the disclosure sits flush in its layout.
   container() {
@@ -82,6 +85,9 @@ export const iosSkin: CollapsibleSkin = {
 
   // SF chevron: ~15pt, tertiary-gray tint.
   chevronSize: 15,
+  // HIG tree-disclosure caret: right at rest, rotates 0->90deg (points down) on open.
+  chevronGlyph: "chevronRight",
+  chevronSpinTo: 90,
 
   // Inset-grouped card: rounded 12px, a hairline border, a flat (no-shadow)
   // grouped surface filled with the content `card` token (solid).
@@ -128,6 +134,10 @@ export const androidSkin: CollapsibleSkin = {
 
   // M3 list trailing icon: 24px, on-surface-variant (muted).
   chevronSize: 24,
+  // M3 in-place expansion: a down chevron (expand_more) at rest that rotates
+  // 0->180deg to point up (expand_less) on open, NOT the iOS/web drill-in caret.
+  chevronGlyph: "chevronDown",
+  chevronSpinTo: 180,
 
   // No outer container: an M3 expandable list row sits flush on the surface.
   container() {
