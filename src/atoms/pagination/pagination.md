@@ -5,7 +5,7 @@ Page-of-N navigation for tables and lists.
 ## Usage
 
 ```tsx
-<Pagination page={2} total={12} compact pageSize={10} pageSizes={[10, 25, 50]} />
+<Pagination defaultPage={2} total={12} compact defaultPageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
 ## Variants
@@ -13,13 +13,13 @@ Page-of-N navigation for tables and lists.
 ### Variant - numbered
 
 ```tsx
-<Pagination page={2} total={12} pageSize={10} pageSizes={[10, 25, 50]} />
+<Pagination defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
 ### Variant - with-size
 
 ```tsx
-<Pagination page={2} total={12} withSize pageSize={10} pageSizes={[10, 25, 50]} />
+<Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
 ## Do & Don't
@@ -29,7 +29,7 @@ Page-of-N navigation for tables and lists.
 **Do** — Pair the buttons with a "Showing X–Y of N" range so position and total are always visible.
 
 ```tsx
-<Pagination compact page={2} total={12} />
+<Pagination compact defaultPage={2} total={12} />
 ```
 
 **Don't** — Bare Previous/Next with no range label leaves the user unable to tell where they are or how much is left.
@@ -50,7 +50,7 @@ Page-of-N navigation for tables and lists.
 **Do** — Truncate the middle with an ellipsis; keep first, last, and a window around the current page.
 
 ```tsx
-<Pagination page={2} total={12} />
+<Pagination defaultPage={2} total={12} />
 ```
 
 **Don't** — Rendering every page number overflows and stops being scannable past a handful.
@@ -107,7 +107,7 @@ Page-of-N navigation for tables and lists.
 **Do** — Show "Page X of N" beside the size selector and reset to page 1 when the size changes.
 
 ```tsx
-<Pagination withSize page={2} total={12} pageSize={10} pageSizes={[10, 25, 50]} />
+<Pagination withSize defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
 **Don't** — Offering a page-size selector without a page indicator hides which page the new size landed on.

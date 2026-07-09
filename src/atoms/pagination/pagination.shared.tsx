@@ -1,4 +1,4 @@
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle, type ColorTokens } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, type StyleProp, type ViewStyle, type ColorTokens } from "../../style/index.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
 
@@ -38,8 +38,10 @@ import { type Size, type PaginationSkin } from "./pagination.styles.js";
 // glyph ("…").
 
 export interface PaginationProps {
-  /** Current page, 1-based. Clamped into the 1..total range before rendering. */
+  /** Current page, 1-based (CONTROLLED). Clamped into the 1..total range before rendering. Omit for uncontrolled use. */
   page?: number;
+  /** Initial page for uncontrolled use (a bare pagination navigates on press). */
+  defaultPage?: number;
   /** Total number of pages. */
   total?: number;
   /** Fired with the next 1-based page when a control or number is pressed. */
@@ -55,8 +57,10 @@ export interface PaginationProps {
   withSize?: boolean;
 
   // Content for the `withSize` selector.
-  /** Currently selected rows-per-page value shown in the selector. */
+  /** Currently selected rows-per-page value shown in the selector (CONTROLLED). Omit for uncontrolled use. */
   pageSize?: number;
+  /** Initial rows-per-page value for uncontrolled use (the selector cycles on press). */
+  defaultPageSize?: number;
   /** Selectable rows-per-page values; pressing the selector advances through them. */
   pageSizes?: number[];
   /** Fired with the next rows-per-page value when the selector is pressed. */
@@ -159,7 +163,14 @@ export function createPagination(skin: PaginationSkin) {
 
     // Clamp inputs so the control never renders an out-of-range current page.
     const total = Math.max(1, Math.floor(props.total ?? 1));
-    const current = Math.min(Math.max(1, Math.floor(props.page ?? 1)), total);
+    // Controlled when `page` is provided, self-managed otherwise, so Prev/Next and
+    // the numbered buttons actually move the current page instead of no-op'ing.
+    const [page, setPage] = useControllableState<number>(props.page, props.defaultPage ?? 1);
+    const current = Math.min(Math.max(1, Math.floor(page)), total);
+    // Rows-per-page selector: controlled via `pageSize`, self-managed otherwise so
+    // pressing it cycles the value on screen.
+    const sizes = props.pageSizes ?? [10, 25, 50];
+    const [pageSize, setPageSize] = useControllableState<number>(props.pageSize, props.defaultPageSize ?? sizes[0] ?? 10);
 
     const atStart = current <= 1;
     const atEnd = current >= total;
@@ -167,7 +178,10 @@ export function createPagination(skin: PaginationSkin) {
     const go = (next: number) => {
       if (disabled) return;
       const clamped = Math.min(Math.max(1, next), total);
-      if (clamped !== current) onChange?.(clamped);
+      if (clamped !== current) {
+        setPage(clamped);
+        onChange?.(clamped);
+      }
     };
 
     const prev = (
@@ -208,13 +222,14 @@ export function createPagination(skin: PaginationSkin) {
     // Prev/Next controls. There is no native select, so the selector is a closed
     // trigger (value + caret) that advances through `pageSizes` on press.
     if (variant === "withSize") {
-      const sizes = props.pageSizes ?? [10, 25, 50];
-      const pageSize = props.pageSize ?? sizes[0] ?? 10;
       const cycleSize = () => {
         if (disabled) return;
         const i = sizes.indexOf(pageSize);
         const nextSize = sizes[(i + 1) % sizes.length];
-        if (nextSize !== undefined && nextSize !== pageSize) props.onPageSizeChange?.(nextSize);
+        if (nextSize !== undefined && nextSize !== pageSize) {
+          setPageSize(nextSize);
+          props.onPageSizeChange?.(nextSize);
+        }
       };
       return (
         <View testID={testID} style={[s.withSizeRow, style]}>
