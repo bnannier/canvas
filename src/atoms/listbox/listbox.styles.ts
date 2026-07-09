@@ -5,7 +5,7 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // Co-located Listbox skins, one per platform. Layout-only fragments are static
 // objects; anything that reads a color is a function of the active tokens (so the
 // bordered surface, the selected/press fill, and the label/detail colors follow
-// light/dark and the glass surface via tokens.popover/accent).
+// light/dark via tokens.card/accent).
 //
 // Listbox is a "Shared" platform treatment: iOS has no native listbox control
 // (selecting one option from a list is a pop-up button / picker menu there) and

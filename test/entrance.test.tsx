@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, spyOn } from "bun:test";
-import { render, cleanup, screen } from "@testing-library/react";
-import { AccessibilityInfo, Text } from "react-native";
+import { render, cleanup, screen, waitFor } from "@testing-library/react";
+import { AccessibilityInfo, Animated, Text } from "react-native";
 import { Entrance, entranceTranslation } from "../src/style/entrance.tsx";
 
 // Entrance animates glass overlays open (menus pop from the trigger corner; dialogs
@@ -50,15 +50,49 @@ describe("Entrance", () => {
     expect(screen.getByText("menu item")).toBeDefined();
   });
 
-  it("renders the final frame immediately under Reduce Motion", () => {
-    const spy = spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockReturnValue(Promise.resolve(true));
-    render(
-      <Entrance anchor>
-        <Text>reduced menu</Text>
-      </Entrance>,
-    );
-    // Content is present with no animation gating it.
-    expect(screen.getByText("reduced menu")).toBeDefined();
-    spy.mockRestore();
+  it("skips the spring and renders the final frame under Reduce Motion", async () => {
+    const motion = spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockReturnValue(Promise.resolve(true));
+    // Neuter the spring: with it mocked to a no-op, opacity can ONLY reach 1 through
+    // the Reduce Motion branch (progress.setValue(1)). If that branch were removed,
+    // the wrapper would stay at opacity 0 forever and this waitFor would time out.
+    const spring = spyOn(Animated, "spring").mockReturnValue({
+      start: () => {},
+      stop: () => {},
+      reset: () => {},
+    } as unknown as Animated.CompositeAnimation);
+    try {
+      render(
+        <Entrance>
+          <Text>reduced panel</Text>
+        </Entrance>,
+      );
+      const wrapper = screen.getByText("reduced panel").parentElement as HTMLElement;
+      await waitFor(() => expect(wrapper.style.opacity).toBe("1"));
+    } finally {
+      motion.mockRestore();
+      spring.mockRestore();
+    }
+  });
+
+  it("springs the entrance open when motion is allowed", async () => {
+    const spring = spyOn(Animated, "spring").mockReturnValue({
+      start: () => {},
+      stop: () => {},
+      reset: () => {},
+    } as unknown as Animated.CompositeAnimation);
+    try {
+      render(
+        <Entrance>
+          <Text>animated panel</Text>
+        </Entrance>,
+      );
+      await waitFor(() => expect(spring).toHaveBeenCalled());
+      // Center (panel) mode uses the settle spring — no visible overshoot.
+      const config = spring.mock.calls[0]?.[1] as { stiffness?: number; damping?: number };
+      expect(config.stiffness).toBe(500);
+      expect(config.damping).toBe(44);
+    } finally {
+      spring.mockRestore();
+    }
   });
 });
