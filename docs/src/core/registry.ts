@@ -112,6 +112,7 @@ import e_atoms_chip_example_1 from "./examples/atoms/chip/example-1";
 import e_atoms_chip_example_2 from "./examples/atoms/chip/example-2";
 import e_atoms_chip_example_3 from "./examples/atoms/chip/example-3";
 import e_atoms_chip_example_4 from "./examples/atoms/chip/example-4";
+import e_atoms_chip_example_5 from "./examples/atoms/chip/example-5";
 import e_atoms_chip_dont_0_do from "./examples/atoms/chip/dont-0-do";
 import e_atoms_chip_dont_0_dont from "./examples/atoms/chip/dont-0-dont";
 import e_atoms_combobox_example_0 from "./examples/atoms/combobox/example-0";
@@ -921,7 +922,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Tones", code: "<Row snug wrap alignCenter>\n  <Chip secondary>Draft</Chip>\n  <Chip primary>Published</Chip>\n  <Chip outline>Archived</Chip>\n</Row>", render: e_atoms_chip_example_1 },
       { label: "With leading icon", code: "<Chip primary icon={<Icon check primaryForeground size={14} />}>Verified</Chip>", render: e_atoms_chip_example_2 },
       { label: "Removable filters", code: "<Row snug wrap alignCenter>\n  <Chip primary onRemove={() => {}}>Role: Admin</Chip>\n  <Chip primary onRemove={() => {}}>Status: Active</Chip>\n  <Chip outline onPress={() => {}} icon={<Icon plus muted size={14} />}>Add filter</Chip>\n</Row>", render: e_atoms_chip_example_3 },
-      { label: "Small", code: "<Chip small primary onRemove={() => {}}>Beta</Chip>", render: e_atoms_chip_example_4 },
+      { label: "Selectable", code: "<Row snug wrap alignCenter>\n  <Chip selectable outline defaultSelected>Design</Chip>\n  <Chip selectable outline>Engineering</Chip>\n  <Chip selectable outline>Product</Chip>\n  <Chip selectable outline>Marketing</Chip>\n</Row>", render: e_atoms_chip_example_4 },
+      { label: "Small", code: "<Chip small primary onRemove={() => {}}>Beta</Chip>", render: e_atoms_chip_example_5 },
     ],
     donts: [
       { title: "Removable filter", do: { caption: "Use a Chip with `onRemove` so the pill and its \"×\" stay consistent and accessible.", code: "<Chip primary onRemove={() => {}}>Status: Active</Chip>", render: e_atoms_chip_dont_0_do }, dont: { caption: "Hand-build the pill from a raw Pressable with border-radius, padding, and a text \"×\".", code: "<Pressable style={{ flexDirection: \"row\", alignItems: \"center\", gap: 4, alignSelf: \"flex-start\", borderRadius: 9999, backgroundColor: \"#4f46e5\", paddingHorizontal: 10, paddingVertical: 4 }}>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>Status: Active</Text>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>×</Text>\n</Pressable>", render: e_atoms_chip_dont_0_dont } },

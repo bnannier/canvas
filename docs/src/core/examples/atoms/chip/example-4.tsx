@@ -3,8 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chip } = scope;
+  const { Row, Chip } = scope;
   return (
-<Chip small primary onRemove={() => {}}>Beta</Chip>
+<Row snug wrap alignCenter>
+  <Chip selectable outline defaultSelected>Design</Chip>
+  <Chip selectable outline>Engineering</Chip>
+  <Chip selectable outline>Product</Chip>
+  <Chip selectable outline>Marketing</Chip>
+</Row>
   );
 }

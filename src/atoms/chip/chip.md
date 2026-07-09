@@ -41,6 +41,17 @@ or selected state.
 </Row>
 ```
 
+### Selectable
+
+```tsx
+<Row snug wrap alignCenter>
+  <Chip selectable outline defaultSelected>Design</Chip>
+  <Chip selectable outline>Engineering</Chip>
+  <Chip selectable outline>Product</Chip>
+  <Chip selectable outline>Marketing</Chip>
+</Row>
+```
+
 ### Small
 
 ```tsx
