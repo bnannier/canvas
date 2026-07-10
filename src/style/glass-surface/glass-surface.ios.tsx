@@ -59,15 +59,26 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
   const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID });
   if (degraded) return degraded;
 
-  // iOS 26+: the genuine system Liquid Glass material. (The `GlassView &&` also
-  // narrows it for the JSX below; liquidGlassAvailable() does the safe availability check.)
+  // iOS 26+: the genuine system Liquid Glass material. The translucent `popover` fill
+  // sits UNDER the GlassView, exactly as the frost path below layers it under the blur:
+  // a bare regular-glass panel composites nearly clear over a flat surface (and clear
+  // over the page in a portaled overlay), which turns a fill-and-border-stripped glass
+  // menu or dialog into an invisible hole. The under-fill guarantees a legible material
+  // (Apple: functional-layer glass must stay legible) while the GlassView still refracts
+  // through the remaining translucency. (The `GlassView &&` also narrows it for the JSX
+  // below; liquidGlassAvailable() does the safe availability check.)
   if (GlassView && liquidGlassAvailable()) {
     return (
       <GlassBox
         style={style}
         pointerEvents={pointerEvents}
         testID={testID}
-        material={<GlassView glassEffectStyle="regular" isInteractive={interactive} colorScheme={dark ? "dark" : "light"} style={MATERIAL_FILL} />}
+        material={
+          <>
+            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, pointerEvents: "none" }]} />
+            <GlassView glassEffectStyle="regular" isInteractive={interactive} colorScheme={dark ? "dark" : "light"} style={MATERIAL_FILL} />
+          </>
+        }
       >
         {children}
       </GlassBox>
