@@ -130,32 +130,35 @@ function burstPath(r: number, w: number): string {
   return `M 0 ${-r} L ${w} 0 L 0 ${r} L ${-w} 0 Z M ${-r} 0 L 0 ${-w} L ${r} 0 L 0 ${w} Z`;
 }
 
-// A field of starburst glints, one static SVG per twinkle group; the wrapper's
-// opacity carries the group's counter-phased sparkle. Fancy glints add a smaller
-// 45-degree secondary cross and a bright core.
-export function StarburstField({
-  width,
-  height,
+// A shell of starburst glints flying past the camera: a square box centered on the
+// vanishing point (like the flight shells), scaled outward by its sawtooth phase
+// while the group's counter-phased twinkle rides the wrapper opacity. Fancy glints
+// add a smaller 45-degree secondary cross and a bright core.
+export function StarburstShell({
+  size,
   bursts,
   dark,
+  style,
+  scale,
   opacity,
 }: {
-  width: number;
-  height: number;
+  size: number;
   bursts: Starburst[];
   dark: boolean;
+  style: StyleProp<ViewStyle>;
+  scale: AnimNumber;
   opacity: AnimNumber;
 }) {
   const base = dark ? "#e0e7ff" : "#4338ca";
   const cap = dark ? BURST_ALPHA.dark : BURST_ALPHA.light;
   return (
-    <Animated.View style={{ position: "absolute", top: 0, left: 0, width, height, opacity }}>
-      <Svg width={width} height={height}>
+    <Animated.View style={[style, { width: size, height: size, opacity, transform: [{ scale }] }]}>
+      <Svg width={size} height={size}>
         {bursts.map((b, i) => {
           const tint = b.hue >= 0 ? SPECTRUM[b.hue] : base;
           const w = Math.max(0.9, b.r * 0.11);
           return (
-            <G key={i} transform={`translate(${b.x * width}, ${b.y * height}) rotate(${b.rot})`}>
+            <G key={i} transform={`translate(${b.x * size}, ${b.y * size}) rotate(${b.rot})`}>
               <Path d={burstPath(b.r, w)} fill={tint} fillOpacity={b.a * cap} />
               {b.fancy ? (
                 <G transform="rotate(45)">

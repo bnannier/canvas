@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { useWindowDimensions } from "react-native";
+import { Animated, useWindowDimensions } from "react-native";
 import { View, useTheme, useReducedMotion } from "@olympusoss/canvas";
 import { clock, retainCosmosClock, releaseCosmosClock } from "./cosmos-clock";
-import { Starfield, FlightShell, StreakShell, StarburstField, Nebula, GalaxyCore, Comet } from "./cosmos-layers";
-import { STARS_FAR, SHELL_FIELDS, STREAK_FIELDS, STARBURSTS, STAR_ALPHA, LIGHT_FLOOR, nebulaBlobs } from "./cosmos-sky";
+import { Starfield, FlightShell, StreakShell, StarburstShell, Nebula, GalaxyCore, Comet } from "./cosmos-layers";
+import { STARS_FAR, SHELL_FIELDS, STREAK_FIELDS, BURST_FIELDS, STAR_ALPHA, LIGHT_FLOOR, nebulaBlobs } from "./cosmos-sky";
 
 // The Canvas Universe as a continuous galactic fly-through: the camera travels
 // toward the brand's conic-spectrum galaxy at the vanishing point while seeded star
@@ -30,9 +30,11 @@ const STREAK_SCALE = [0.5, 0.75, 1.15, 1.8, 2.6];
 const FADE_IN = [0, 0.12, 0.78, 0.95, 1];
 
 // The evenly staggered shell offsets, identical on every screen: four dot shells on
-// the quarters, two streak shells on the odd eighths between them.
+// the quarters, two streak shells and two starburst shells interleaved on the odd
+// eighths between them.
 const DOT_OFFSETS = [0, 0.25, 0.5, 0.75];
 const STREAK_OFFSETS = [0.125, 0.625];
+const BURST_OFFSETS = [0.375, 0.875];
 
 // Shell phase (flight + offset) mod 1 as a chained interpolation; the epsilon step
 // avoids a degenerate 0-width segment at the seam.
@@ -76,17 +78,24 @@ export function Cosmos() {
   const shellCap = dark ? 0.58 : 0.34;
   const dotShells = DOT_OFFSETS.map((o, i) => ({ ...shellInterp(o, DOT_SCALE, shellCap), field: SHELL_FIELDS[i] }));
   const streakShells = STREAK_OFFSETS.map((o, i) => ({ ...shellInterp(o, STREAK_SCALE, shellCap), field: STREAK_FIELDS[i] }));
+  // Starburst shells fly like the dot shells; the group's counter-phased twinkle is
+  // multiplied onto the flight fade so glints sparkle while they pass.
+  const burstTwinkles = [
+    clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
+    clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [1, 0.45] }),
+  ];
+  const burstShells = BURST_OFFSETS.map((o, i) => {
+    const s = shellInterp(o, DOT_SCALE, 1);
+    return { scale: s.scale, opacity: Animated.multiply(s.opacity, burstTwinkles[i]), field: BURST_FIELDS[i] };
+  });
 
   const backdropOpacity = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.9] });
 
   // Palindromic keyframes (equal endpoints) keep the nebulae seam-free on the
-  // looping master value; a narrow range reads as slow passing drift. The starburst
-  // groups sparkle in counter-phase on the twinkle clock.
+  // looping master value; a narrow range reads as slow passing drift.
   const nebScaleA = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.85, 1.25, 0.85] });
   const nebScaleB = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1.25, 0.85, 1.25] });
   const nebOpacity = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.7, 1, 0.7] });
-  const burstOpacityA = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] });
-  const burstOpacityB = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [1, 0.45] });
 
   const neb = nebulaBlobs(tokens.primary, dark);
   const neb1Size = 760;
@@ -129,8 +138,9 @@ export function Cosmos() {
         <FlightShell key={i} size={shellSize} dots={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />
       ))}
 
-      <StarburstField width={width} height={height} bursts={STARBURSTS.filter((b) => b.group === 0)} dark={dark} opacity={burstOpacityA} />
-      <StarburstField width={width} height={height} bursts={STARBURSTS.filter((b) => b.group === 1)} dark={dark} opacity={burstOpacityB} />
+      {burstShells.map((s, i) => (
+        <StarburstShell key={i} size={shellSize} bursts={s.field} dark={dark} style={shellStyle} scale={s.scale} opacity={s.opacity} />
+      ))}
 
       {streakShells.map((s, i) => (
         <StreakShell key={i} size={shellSize} streaks={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />

@@ -119,45 +119,41 @@ export const STREAK_FIELDS: ShellStreak[][] = Array.from({ length: 2 }, () => ma
 // Starbursts: the bright foreground glints of the journey, drawn as four-point
 // diffraction sparkles (the astrophotography star-glint: two crossed tapering
 // diamonds, the fancy ones with a smaller 45-degree secondary cross and a bright
-// core). Seeded positions avoid the galaxy core and the exact screen center so
-// text columns stay clean; two counter-phased twinkle groups keep them alive.
+// core). They FLY: positions live in shell-box units (like the flight shells) so
+// the two groups ride staggered sawtooth phases outward past the camera, with a
+// counter-phased twinkle multiplied on top. The inner radius keeps glints off the
+// galaxy core and the central text column.
 // ---------------------------------------------------------------------------
 
 export interface Starburst {
   x: number;
   y: number;
-  /** Ray length in px. */
+  /** Ray length in px at shell scale 1. */
   r: number;
   /** Static rotation in degrees, so the crosses do not all sit axis-aligned. */
   rot: number;
   a: number;
   hue: number; // -1 = base tint, otherwise an index into SPECTRUM
   fancy: boolean;
-  /** Twinkle counter-phase group. */
-  group: 0 | 1;
 }
 
 function makeStarbursts(count: number, rng2: () => number): Starburst[] {
-  const bursts: Starburst[] = [];
-  while (bursts.length < count) {
-    const x = 0.06 + rng2() * 0.88;
-    const y = 0.06 + rng2() * 0.88;
-    // Keep glints off the galaxy core / central column.
-    if (Math.hypot(x - 0.5, y - 0.42) < 0.16) continue;
-    bursts.push({
-      x,
-      y,
+  return Array.from({ length: count }, () => {
+    const angle = rng2() * Math.PI * 2;
+    const radius = 0.12 + rng2() * 0.36; // off the vanishing point, inside the box
+    return {
+      x: 0.5 + Math.cos(angle) * radius,
+      y: 0.5 + Math.sin(angle) * radius,
       r: 6 + rng2() * 12,
       rot: (rng2() - 0.5) * 24,
       a: 0.5 + rng2() * 0.5,
       hue: rng2() < 0.25 ? Math.floor(rng2() * SPECTRUM.length) : -1,
       fancy: rng2() < 0.4,
-      group: bursts.length % 2 === 0 ? 0 : 1,
-    });
-  }
-  return bursts;
+    };
+  });
 }
-export const STARBURSTS = makeStarbursts(IS_ANDROID ? 7 : 10, rng);
+// Two shells of glints, one per staggered flight phase / twinkle counter-phase.
+export const BURST_FIELDS: Starburst[][] = Array.from({ length: 2 }, () => makeStarbursts(IS_ANDROID ? 4 : 6, rng));
 
 // ---------------------------------------------------------------------------
 // Palettes.
