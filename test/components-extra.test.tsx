@@ -128,7 +128,9 @@ describe("Toast (imperative ToastProvider + useToast)", () => {
     expect(screen.queryByText("Hello there")).toBeNull();
     click('[aria-label="fire"]', container);
     expect(screen.getByText("Hello there")).toBeDefined();
-    await waitFor(() => expect(screen.queryByText("Hello there")).toBeNull());
+    // A generous timeout: the 40ms auto-dismiss timer can be starved on a loaded
+    // machine during a full-suite run, which flaked this assertion at the default 1s.
+    await waitFor(() => expect(screen.queryByText("Hello there")).toBeNull(), { timeout: 4000 });
   });
 
   it("keeps a zero-duration toast until dismissed", () => {
