@@ -3,7 +3,6 @@ import { useWindowDimensions, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@olympusoss/canvas";
 import { useRouter } from "expo-router";
-import Svg, { Circle, Defs, RadialGradient, Stop, Filter, FeGaussianBlur, G } from "react-native-svg";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
@@ -123,43 +122,6 @@ function Wrap({ children, style }: { children: ReactNode; style?: object }) {
   return <View style={[{ width: "100%", maxWidth: 1140, alignSelf: "center", paddingHorizontal: 24 }, style]}>{children}</View>;
 }
 
-// The blurred radial wash behind the hero (decorative):
-// three low-opacity color blobs softened by a heavy Gaussian blur so they read as ONE
-// diffuse glow rather than defined dark discs. Without the blur the low-opacity circles
-// over the near-black page render as a hard-edged blob; FeGaussianBlur (the same primitive
-// the hero glow uses, supported on every platform) spreads them into the soft wash.
-function Aurora() {
-  const { tokens } = useTheme();
-  const blobs = [
-    { color: tokens.primary, cx: "62%", cy: "32%", r: "44%", o: 0.3 },
-    { color: "#8b5cf6", cx: "32%", cy: "58%", r: "40%", o: 0.26 },
-    { color: "#06b6d4", cx: "20%", cy: "80%", r: "32%", o: 0.2 },
-  ];
-  return (
-    <View style={{ position: "absolute", top: -260, right: -180, width: 760, height: 760, opacity: 0.7, pointerEvents: "none" }}>
-      <Svg width={760} height={760}>
-        <Defs>
-          {blobs.map((b, i) => (
-            <RadialGradient key={i} id={`aurora-${i}`} cx={b.cx} cy={b.cy} r={b.r}>
-              <Stop offset="0%" stopColor={b.color} stopOpacity={b.o} />
-              <Stop offset="72%" stopColor={b.color} stopOpacity={0} />
-            </RadialGradient>
-          ))}
-          {/* A 40px Gaussian blur over the aurora wash. */}
-          <Filter id="aurora-blur" x="-25%" y="-25%" width="150%" height="150%">
-            <FeGaussianBlur stdDeviation="40" />
-          </Filter>
-        </Defs>
-        <G filter="url(#aurora-blur)">
-          {blobs.map((_, i) => (
-            <Circle key={i} cx={380} cy={380} r={380} fill={`url(#aurora-${i})`} />
-          ))}
-        </G>
-      </Svg>
-    </View>
-  );
-}
-
 function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; title: string; desc: string; titleSize: number }) {
   const { tokens } = useTheme();
   return (
@@ -191,10 +153,11 @@ export function Home() {
   const sectionTitle = Math.round(Math.min(36, Math.max(26, width * 0.034)));
   const ctaTitle = Math.round(Math.min(42, Math.max(28, width * 0.04)));
 
-  // Glass is a theming-level surface mode: the canvas goes transparent so the shell's
-  // GlassAurora reads through (the footer band stays solid).
+  // Glass is a theming-level surface mode: the canvas goes transparent so the Canvas
+  // Universe backdrop reads through (the web shell mounts it; native mounts it via
+  // ScreenFrame, which gets `hero` here for the vivid mood: galaxy, warp, comet).
   return (
-    <ScreenFrame>
+    <ScreenFrame hero>
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       // The hero must start at the very top of the viewport (its Aurora fills behind the
@@ -205,10 +168,6 @@ export function Home() {
       contentInsetAdjustmentBehavior="never"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? 0 : 49) }}
     >
-      {/* The aurora is a full-page background wash. It lives OUTSIDE the hero box (and its
-          overflow:hidden, which used to clip it into a hard-edged cut-off), sitting behind all the
-          scroll content and washing the top of the page down from behind the transparent nav bar. */}
-      <Aurora />
       {/* ── Hero ── */}
       {/* The scroller's content is ALREADY inset below the bar: on native the navigation insets
           the screen content under the (transparent) header, and on web CONTENT_TOP_INSET clears the

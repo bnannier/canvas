@@ -1,24 +1,37 @@
 import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
-import { View, Pressable, Icon } from "@olympusoss/canvas";
+import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuLeaf, type MenuGroup } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";
+import { Cosmos } from "../brand/cosmos";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android overflow sheet) can sit as a sibling of the content. On web
 // this is a no-op passthrough: it renders the scroller exactly as before, with NO wrapping
 // View, so the web build stays byte-identical (an extra flex wrapper there collapses
-// onLayout-measured tile grids).
-export function ScreenFrame({ children }: { children: ReactNode }) {
+// onLayout-measured tile grids). On native it also mounts the Canvas Universe backdrop
+// behind the (transparent-in-glass) scroller, the native counterpart of the web shell's
+// Cosmos mount; `hero` picks the vivid mood (the home screen passes it).
+export function ScreenFrame({ children, hero = false }: { children: ReactNode; hero?: boolean }) {
   if (Platform.OS === "web") return <>{children}</>;
   return (
     <View style={{ flex: 1 }}>
+      <ScreenCosmos hero={hero} />
       {children}
       <NativeHeader />
     </View>
   );
+}
+
+// The per-screen native cosmos: glass-gated like the web mount, and paused whenever the
+// screen is not focused so a stack of pushed screens never runs more than one sky's loops.
+function ScreenCosmos({ hero }: { hero: boolean }) {
+  const { surface } = useTheme();
+  const focused = useIsFocused();
+  if (surface !== "glass") return null;
+  return <Cosmos hero={hero} paused={!focused} />;
 }
 
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,

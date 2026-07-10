@@ -32,8 +32,8 @@ export default function ComponentsIndex() {
   return (
     <ScreenFrame>
     <ScrollView
-      // Glass surface mode: the canvas goes transparent so the shell's GlassAurora reads
-      // through (matching the shared Page); the per-category tiles stay solid content cards.
+      // Glass surface mode: the canvas goes transparent so the Canvas Universe backdrop
+      // reads through (matching the shared Page); the per-category tiles stay solid content cards.
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET + 24, paddingHorizontal: 28, paddingBottom: 80, gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}

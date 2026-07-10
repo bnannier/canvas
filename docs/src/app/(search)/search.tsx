@@ -7,7 +7,7 @@ import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@olympusos
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
 import { geist } from "../../ui/fonts";
-import { GlassAurora } from "../../ui/glass";
+import { Cosmos } from "../../brand/cosmos";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
 // nav bar hosts the system search field (a real UISearchController on iOS 26 / Material search on
@@ -96,10 +96,11 @@ function NativeSearch() {
           },
         }}
       />
-      {/* The aurora backdrop, the same multi-color wash the shell uses, fills the screen for the
-          whole search session (while this screen is focused), so the clear Liquid Glass bubble has
-          the brand's color to refract the moment you enter search. It clears when you leave. */}
-      {glass && active ? <GlassAurora vivid /> : null}
+      {/* The Canvas Universe in its hero mood fills the screen for the whole search session
+          (while this screen is focused): vivid nebulae, the galaxy core, and drifting star
+          charts give the clear Liquid Glass bubble real color and motion to refract the
+          moment you enter search. It clears when you leave. */}
+      {glass && active ? <Cosmos hero /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (
