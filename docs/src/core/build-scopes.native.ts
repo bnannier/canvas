@@ -2,6 +2,7 @@ import * as Canvas from "@olympusoss/canvas";
 import type { ColorTokens } from "@olympusoss/canvas";
 import { Platform } from "react-native";
 import { Stateful } from "./live-state";
+import { withResolvedPhotos } from "./photos";
 import type { ExampleScope, PreviewScope } from "./scope";
 
 // Native build: on a device you ARE the platform — Metro already resolved each
@@ -14,7 +15,17 @@ export function buildScopes(tokens: ColorTokens): PreviewScope[] {
     {
       label: platform === "android" ? "Android" : "iOS",
       platform,
-      scope: { ...Canvas, tokens, Stateful } as unknown as ExampleScope,
+      scope: {
+        ...Canvas,
+        // The docs examples reference sample photos as root-relative paths
+        // (`/rachel-chen.jpg`) that only resolve against the web origin; on a device
+        // they have no host, so resolve them to their bundled modules here (web keeps
+        // the relative path, which the browser resolves).
+        Avatar: withResolvedPhotos(Canvas.Avatar, ["src", "uri"]),
+        MediaObject: withResolvedPhotos(Canvas.MediaObject, ["src"]),
+        tokens,
+        Stateful,
+      } as unknown as ExampleScope,
     },
   ];
 }
