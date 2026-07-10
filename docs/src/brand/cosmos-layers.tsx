@@ -2,7 +2,7 @@ import { useId } from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
 import Svg, { Circle, Path, Rect, G, Line, Defs, RadialGradient, LinearGradient, Stop, Mask, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { glowColor } from "./hero-orbit";
-import { SPECTRUM, CHART_ALPHA, starTint, type Star, type ShellDot, type ShellStreak, type Constellation, type NebulaBlob } from "./cosmos-sky";
+import { SPECTRUM, BURST_ALPHA, starTint, type Star, type ShellDot, type ShellStreak, type Starburst, type NebulaBlob } from "./cosmos-sky";
 
 // Presentational layers for the Canvas Universe. Every layer is ONE Animated.View
 // wrapping a STATIC <Svg>: react-native's Animated must never wrap an Svg directly
@@ -124,56 +124,45 @@ export function StreakShell({
   );
 }
 
-// The chart of component constellations: dashed hairline strokes (the brand's
-// dashed-orbit language) joining vertex stars, riding a gentle palindromic scale so
-// the figures stay legible as distant signposts. The first vertex of each figure
-// carries a quiet spectrum accent.
-export function ConstellationChart({
+// A four-point diffraction glint: two crossed tapering diamonds. The classic
+// astrophotography starburst shape, drawn as one path.
+function burstPath(r: number, w: number): string {
+  return `M 0 ${-r} L ${w} 0 L 0 ${r} L ${-w} 0 Z M ${-r} 0 L 0 ${-w} L ${r} 0 L 0 ${w} Z`;
+}
+
+// A field of starburst glints, one static SVG per twinkle group; the wrapper's
+// opacity carries the group's counter-phased sparkle. Fancy glints add a smaller
+// 45-degree secondary cross and a bright core.
+export function StarburstField({
   width,
   height,
-  figures,
+  bursts,
   dark,
-  scale,
   opacity,
 }: {
   width: number;
   height: number;
-  figures: Constellation[];
+  bursts: Starburst[];
   dark: boolean;
-  scale: AnimNumber;
   opacity: AnimNumber;
 }) {
-  const ink = starTint(dark);
+  const base = dark ? "#e0e7ff" : "#4338ca";
+  const cap = dark ? BURST_ALPHA.dark : BURST_ALPHA.light;
   return (
-    <Animated.View style={{ position: "absolute", top: 0, left: 0, width, height, opacity, transform: [{ scale }] }}>
+    <Animated.View style={{ position: "absolute", top: 0, left: 0, width, height, opacity }}>
       <Svg width={width} height={height}>
-        {figures.map((f, fi) => {
-          const s = f.anchor.scale;
-          const tx = f.anchor.x * width - 50 * s;
-          const ty = f.anchor.y * height - 30 * s;
+        {bursts.map((b, i) => {
+          const tint = b.hue >= 0 ? SPECTRUM[b.hue] : base;
+          const w = Math.max(0.9, b.r * 0.11);
           return (
-            <G key={f.id} transform={`translate(${tx}, ${ty}) scale(${s})`}>
-              {f.strokes.map((d, i) => (
-                <Path
-                  key={i}
-                  d={d}
-                  fill="none"
-                  stroke={ink}
-                  strokeOpacity={dark ? CHART_ALPHA.stroke.dark : CHART_ALPHA.stroke.light}
-                  strokeWidth={1}
-                  strokeDasharray="4 5"
-                />
-              ))}
-              {f.stars.map(([x, y], i) => (
-                <Circle
-                  key={i}
-                  cx={x}
-                  cy={y}
-                  r={1.7}
-                  fill={i === 0 ? SPECTRUM[fi % SPECTRUM.length] : ink}
-                  fillOpacity={dark ? CHART_ALPHA.dot.dark : CHART_ALPHA.dot.light}
-                />
-              ))}
+            <G key={i} transform={`translate(${b.x * width}, ${b.y * height}) rotate(${b.rot})`}>
+              <Path d={burstPath(b.r, w)} fill={tint} fillOpacity={b.a * cap} />
+              {b.fancy ? (
+                <G transform="rotate(45)">
+                  <Path d={burstPath(b.r * 0.45, w * 0.8)} fill={tint} fillOpacity={b.a * cap * 0.7} />
+                </G>
+              ) : null}
+              <Circle cx={0} cy={0} r={1.4} fill={dark ? "#ffffff" : tint} fillOpacity={Math.min(1, b.a * cap * 1.3)} />
             </G>
           );
         })}

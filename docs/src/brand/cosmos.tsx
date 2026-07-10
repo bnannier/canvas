@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { useWindowDimensions } from "react-native";
 import { View, useTheme, useReducedMotion } from "@olympusoss/canvas";
 import { clock, retainCosmosClock, releaseCosmosClock } from "./cosmos-clock";
-import { Starfield, FlightShell, StreakShell, ConstellationChart, Nebula, GalaxyCore, Comet } from "./cosmos-layers";
-import { STARS_FAR, SHELL_FIELDS, STREAK_FIELDS, CHART_A, CHART_B, STAR_ALPHA, LIGHT_FLOOR, nebulaBlobs } from "./cosmos-sky";
+import { Starfield, FlightShell, StreakShell, StarburstField, Nebula, GalaxyCore, Comet } from "./cosmos-layers";
+import { STARS_FAR, SHELL_FIELDS, STREAK_FIELDS, STARBURSTS, STAR_ALPHA, LIGHT_FLOOR, nebulaBlobs } from "./cosmos-sky";
 
 // The Canvas Universe as a continuous galactic fly-through: the camera travels
 // toward the brand's conic-spectrum galaxy at the vanishing point while seeded star
@@ -79,13 +79,14 @@ export function Cosmos() {
 
   const backdropOpacity = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.9] });
 
-  // Palindromic keyframes (equal endpoints) keep the nebulae and chart seam-free on
-  // the looping master value; a narrow range reads as slow passing drift.
+  // Palindromic keyframes (equal endpoints) keep the nebulae seam-free on the
+  // looping master value; a narrow range reads as slow passing drift. The starburst
+  // groups sparkle in counter-phase on the twinkle clock.
   const nebScaleA = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.85, 1.25, 0.85] });
   const nebScaleB = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1.25, 0.85, 1.25] });
   const nebOpacity = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.7, 1, 0.7] });
-  const chartScale = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.92, 1.14, 0.92] });
-  const chartOpacity = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.7] });
+  const burstOpacityA = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] });
+  const burstOpacityB = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [1, 0.45] });
 
   const neb = nebulaBlobs(tokens.primary, dark);
   const neb1Size = 760;
@@ -128,7 +129,8 @@ export function Cosmos() {
         <FlightShell key={i} size={shellSize} dots={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />
       ))}
 
-      <ConstellationChart width={width} height={height} figures={[...CHART_A, ...CHART_B]} dark={dark} scale={chartScale} opacity={chartOpacity} />
+      <StarburstField width={width} height={height} bursts={STARBURSTS.filter((b) => b.group === 0)} dark={dark} opacity={burstOpacityA} />
+      <StarburstField width={width} height={height} bursts={STARBURSTS.filter((b) => b.group === 1)} dark={dark} opacity={burstOpacityB} />
 
       {streakShells.map((s, i) => (
         <StreakShell key={i} size={shellSize} streaks={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />

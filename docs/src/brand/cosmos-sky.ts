@@ -116,68 +116,48 @@ const STREAK_COUNT = IS_ANDROID ? 16 : 26;
 export const STREAK_FIELDS: ShellStreak[][] = Array.from({ length: 2 }, () => makeStreakField(STREAK_COUNT, rng));
 
 // ---------------------------------------------------------------------------
-// Constellations: components are the constellations. Each figure is drawn as a
-// star chart in a local 100x60 box: dashed hairline strokes (the brand's dashed
-// orbit language) joining vertex stars. Anchors are viewport fractions, biased
-// toward edges and corners so the central text column stays clean.
+// Starbursts: the bright foreground glints of the journey, drawn as four-point
+// diffraction sparkles (the astrophotography star-glint: two crossed tapering
+// diamonds, the fancy ones with a smaller 45-degree secondary cross and a bright
+// core). Seeded positions avoid the galaxy core and the exact screen center so
+// text columns stay clean; two counter-phased twinkle groups keep them alive.
 // ---------------------------------------------------------------------------
 
-export interface Constellation {
-  id: string;
-  /** Dashed outline paths in the 100x60 local box. */
-  strokes: string[];
-  /** Vertex stars in the same box. */
-  stars: [number, number][];
-  /** Sky anchor: viewport fractions + a local scale. */
-  anchor: { x: number; y: number; scale: number };
+export interface Starburst {
+  x: number;
+  y: number;
+  /** Ray length in px. */
+  r: number;
+  /** Static rotation in degrees, so the crosses do not all sit axis-aligned. */
+  rot: number;
+  a: number;
+  hue: number; // -1 = base tint, otherwise an index into SPECTRUM
+  fancy: boolean;
+  /** Twinkle counter-phase group. */
+  group: 0 | 1;
 }
 
-// Chart A rides every page (ambient); chart B joins on hero screens.
-export const CHART_A: Constellation[] = [
-  {
-    id: "button",
-    strokes: ["M22 20 H78 Q90 20 90 30 Q90 40 78 40 H22 Q10 40 10 30 Q10 20 22 20 Z"],
-    stars: [
-      [22, 20], [78, 20], [22, 40], [78, 40], [50, 30],
-    ],
-    anchor: { x: 0.84, y: 0.16, scale: 1.05 },
-  },
-  {
-    id: "switch",
-    strokes: ["M30 22 H70 Q80 22 80 30 Q80 38 70 38 H30 Q20 38 20 30 Q20 22 30 22 Z", "M70 30 m-6 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0"],
-    stars: [
-      [30, 22], [70, 30], [30, 38], [20, 30],
-    ],
-    anchor: { x: 0.12, y: 0.62, scale: 0.9 },
-  },
-];
-
-export const CHART_B: Constellation[] = [
-  {
-    id: "card",
-    strokes: ["M15 8 H85 V52 H15 Z", "M22 18 H56"],
-    stars: [
-      [15, 8], [85, 8], [15, 52], [85, 52], [22, 18], [56, 18],
-    ],
-    anchor: { x: 0.16, y: 0.2, scale: 1.0 },
-  },
-  {
-    id: "slider",
-    strokes: ["M12 30 H88", "M58 30 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0"],
-    stars: [
-      [12, 30], [88, 30], [58, 30],
-    ],
-    anchor: { x: 0.86, y: 0.6, scale: 0.95 },
-  },
-  {
-    id: "checkbox",
-    strokes: ["M35 15 H65 V45 H35 Z", "M42 30 L48 37 L58 22"],
-    stars: [
-      [35, 15], [65, 15], [35, 45], [65, 45], [48, 37],
-    ],
-    anchor: { x: 0.3, y: 0.88, scale: 0.8 },
-  },
-];
+function makeStarbursts(count: number, rng2: () => number): Starburst[] {
+  const bursts: Starburst[] = [];
+  while (bursts.length < count) {
+    const x = 0.06 + rng2() * 0.88;
+    const y = 0.06 + rng2() * 0.88;
+    // Keep glints off the galaxy core / central column.
+    if (Math.hypot(x - 0.5, y - 0.42) < 0.16) continue;
+    bursts.push({
+      x,
+      y,
+      r: 6 + rng2() * 12,
+      rot: (rng2() - 0.5) * 24,
+      a: 0.5 + rng2() * 0.5,
+      hue: rng2() < 0.25 ? Math.floor(rng2() * SPECTRUM.length) : -1,
+      fancy: rng2() < 0.4,
+      group: bursts.length % 2 === 0 ? 0 : 1,
+    });
+  }
+  return bursts;
+}
+export const STARBURSTS = makeStarbursts(IS_ANDROID ? 7 : 10, rng);
 
 // ---------------------------------------------------------------------------
 // Palettes.
@@ -200,8 +180,8 @@ export const STAR_ALPHA = {
   near: { dark: 0.65, light: 0.38 },
 };
 
-// Constellation ink: dashed stroke + vertex dots.
-export const CHART_ALPHA = { stroke: { dark: 0.3, light: 0.4 }, dot: { dark: 0.55, light: 0.5 } };
+// Starburst ink caps per scheme (multiplied by each glint's own alpha factor).
+export const BURST_ALPHA = { dark: 0.75, light: 0.5 };
 
 export interface NebulaBlob {
   c: string;

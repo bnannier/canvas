@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Appearance, Platform, useColorScheme } from "react-native";
-import { ThemeProvider, liquidGlassAvailable, type Surface } from "@olympusoss/canvas";
+import { ThemeProvider, type Surface } from "@olympusoss/canvas";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by `scheme` and
 // `surface`; this holds that state and exposes setters to the toggles, so the
@@ -30,14 +30,22 @@ export function useDocsTheme(): DocsThemeContext {
 export function DocsThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const systemScheme: Scheme = system === "dark" ? "dark" : "light";
-  // The scheme FOLLOWS the live OS appearance; only an explicit override wins. The web
-  // topbar sun/moon and the native Appearance controls (the iOS header menu rows, the
-  // Android overflow-sheet footer) set the override; null restores OS tracking.
-  const [override, setOverride] = useState<Scheme | null>(null);
+  // The docs DEFAULT to dark on every platform (the Canvas Universe is the brand
+  // stage and reads best in deep space). The web topbar sun/moon and the native
+  // Appearance controls (the iOS header menu rows, the Android overflow-sheet
+  // footer) change it; choosing System restores live OS tracking.
+  const [override, setOverride] = useState<Scheme | null>("dark");
   const scheme: Scheme = override ?? systemScheme;
-  // Start at the platform default: glass on iOS 26 (matching the OS), solid elsewhere.
-  // The Frost toggle (shown only where glass is opt-in) flips it from there.
-  const [surface, setSurface] = useState<Surface>(liquidGlassAvailable() ? "glass" : "solid");
+  // Frost (glass) is the DEFAULT surface on every platform, not just iOS 26. The
+  // Solid/Frost toggle (shown where glass is not the OS material) flips it.
+  const [surface, setSurface] = useState<Surface>("glass");
+
+  // Sync the native system chrome (the iOS Liquid Glass bars, Android's Material
+  // bars) to the dark default once at startup, since the initial override is set
+  // without going through setScheme.
+  useEffect(() => {
+    if (Platform.OS !== "web") Appearance.setColorScheme("dark");
+  }, []);
 
   // On native the override also drives the SYSTEM appearance for this app via
   // Appearance.setColorScheme, so the real chrome (the iOS 26 Liquid Glass tab bar and
