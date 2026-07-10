@@ -1,10 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
-import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
+import { View, Pressable, Icon, useTheme, liquidGlassAvailable } from "@olympusoss/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuLeaf, type MenuGroup } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";
+import { ThemeToggles } from "./theme-toggles";
+import { useDocsTheme } from "../theme/docs-theme";
 import { Cosmos } from "../brand/cosmos";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
@@ -53,6 +55,7 @@ export function NativeHeader() {
   const router = useRouter();
   const isFocused = useIsFocused();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { override, surface, setScheme, setSurface } = useDocsTheme();
   if (Platform.OS === "web" || !isFocused) return null;
 
   const title = titleFor(pathname).title;
@@ -88,45 +91,84 @@ export function NativeHeader() {
             ...(current ? [{ type: "submenu" as const, label: current.label, inline: true, items: current.items.map(action) }] : []),
             ...model.groups.filter((g) => g !== current).map(submenu),
           ];
+    // The Appearance submenu (web-toggle parity as native UIMenu rows): Light/Dark/System
+    // with a check on the active choice, plus Solid/Frost only where glass is opt-in
+    // (on iOS 26 the platform default is already glass, matching the OS).
+    const schemeRow = (label: string, value: "light" | "dark" | null) => ({
+      type: "action" as const,
+      label,
+      onPress: () => setScheme(value),
+      ...(override === value ? { state: "on" as const } : {}),
+    });
+    const appearance = {
+      type: "submenu" as const,
+      label: "Appearance",
+      icon: { type: "sfSymbol", name: "circle.lefthalf.filled" } as const,
+      items: [
+        schemeRow("Light", "light"),
+        schemeRow("Dark", "dark"),
+        schemeRow("System", null),
+        ...(!liquidGlassAvailable()
+          ? [
+              {
+                type: "action" as const,
+                label: "Solid",
+                onPress: () => setSurface("solid"),
+                ...(surface === "solid" ? { state: "on" as const } : {}),
+              },
+              {
+                type: "action" as const,
+                label: "Frost",
+                onPress: () => setSurface("glass"),
+                ...(surface === "glass" ? { state: "on" as const } : {}),
+              },
+            ]
+          : []),
+      ],
+    };
     return (
       <Stack.Screen
         options={{
           headerTitle: title,
-          unstable_headerRightItems: () =>
-            hasMenu
-              ? [
-                  {
-                    type: "menu" as const,
-                    label: "Menu",
-                    icon: { type: "sfSymbol", name: "line.3.horizontal" } as const,
-                    menu: { items },
-                  },
-                ]
-              : [],
+          // The menu is always present now: section items when this section has them,
+          // and the Appearance submenu on every screen.
+          unstable_headerRightItems: () => [
+            {
+              type: "menu" as const,
+              label: "Menu",
+              icon: { type: "sfSymbol", name: "line.3.horizontal" } as const,
+              menu: { items: [...items, appearance] },
+            },
+          ],
         }}
       />
     );
   }
 
   // Android: a Material header whose trailing hamburger opens the shared overflow sheet
-  // (the full merged section list, since the inline pill row is gone here too). headerRight
-  // is always declared (a no-op node when there is no menu) for the same clear-on-switch
-  // reason as the iOS trailing items.
+  // (the full merged section list, plus the ThemeToggles footer for web parity). The
+  // hamburger and sheet are always present now: even a section with no menu items still
+  // offers the Appearance controls in the footer.
   return (
     <>
       <Stack.Screen
         options={{
           headerTitle: title,
-          headerRight: hasMenu
-            ? () => (
-                <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }}>
-                  <Icon menu size={22} />
-                </Pressable>
-              )
-            : () => null,
+          headerRight: () => (
+            <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }}>
+              <Icon menu size={22} />
+            </Pressable>
+          ),
         }}
       />
-      {hasMenu ? <TabOverflowMenu visible={menuOpen} onClose={() => setMenuOpen(false)} menu={model} activeGroup={activeGroup} activeSlug={activeSlug} /> : null}
+      <TabOverflowMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        menu={model}
+        activeGroup={activeGroup}
+        activeSlug={activeSlug}
+        footer={<ThemeToggles />}
+      />
     </>
   );
 }

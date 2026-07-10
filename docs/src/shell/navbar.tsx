@@ -9,6 +9,7 @@ import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
 import { TabOverflowMenu } from "./tab-overflow-menu";
+import { ThemeToggles } from "./theme-toggles";
 import { Cosmos } from "../brand/cosmos";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
@@ -75,36 +76,8 @@ function sectionIcon(name: string, active: boolean) {
   return { [name]: true, [active ? "primary" : "muted"]: true } as unknown as Omit<IconProps, "key">;
 }
 
-// The scheme + frost toggles, relocated off the iOS-style mobile nav bar (which has none) into
-// the drill-down sheet's footer, so the bar matches the native iOS header exactly.
-function ThemeToggles() {
-  const { tokens } = useTheme();
-  const { scheme, surface, toggleScheme, setSurface } = useDocsTheme();
-  return (
-    <>
-      <Text style={{ fontFamily: geist("500"), fontSize: 13, color: tokens["muted-foreground"] }}>Appearance</Text>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        {!liquidGlassAvailable() ? (
-          <ButtonGroup
-            segmented
-            small
-            items={["Solid", "Frost"]}
-            active={surface === "solid" ? 0 : 1}
-            onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
-          />
-        ) : null}
-        <Button
-          ghost
-          icon
-          small
-          accessibilityLabel="Toggle color scheme"
-          iconLeft={scheme === "dark" ? <Icon sun size={16} /> : <Icon moon size={16} />}
-          onPress={toggleScheme}
-        />
-      </View>
-    </>
-  );
-}
+// The scheme + frost toggles live in ./theme-toggles now, shared with the native Android
+// overflow sheet (iOS hosts the same controls as native UIMenu rows instead).
 
 // Web (every width): desktop = sidebar + glass topbar; narrow = the mobile iOS shell (a
 // bottom kit TabBar for the sections + the glass topbar whose hamburger drills into the
