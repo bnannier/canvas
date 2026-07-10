@@ -1,4 +1,4 @@
-import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
+import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from "react";
 import { View, Image, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle } from "../../style/index.js";
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
@@ -42,10 +42,14 @@ export interface AvatarSkin {
 }
 
 export interface AvatarProps {
-  /** Photo URL. When set, the image fills the circle and the fallback is hidden. */
-  src?: string;
+  /**
+   * The photo. A remote/URI string, or a bundled image module from `require(...)` /
+   * `import`. When set (and it loads), the image fills the circle and the initials
+   * fallback is hidden; if the image fails to load, it falls back to the initials.
+   */
+  src?: string | number;
   /** Alias for `src`, for callers that think in terms of a native image uri. */
-  uri?: string;
+  uri?: string | number;
   /** Full name. Drives the initials fallback AND the accessible label/alt text. */
   name?: string;
   /** Ready-made initials, used verbatim as the glyph (overrides `name`/`children`). */
@@ -140,17 +144,23 @@ export function createAvatar(skin: AvatarSkin) {
     const size = sizeOf(props);
     const shape = shapeOf(props);
     const photo = src ?? uri;
+    // Track a photo that failed to load so we fall back to the initials rather than
+    // showing a blank circle (a broken URL, or a relative URL with no host on native).
+    // Keyed on the photo value, so swapping in a new photo re-attempts the image.
+    const [failedPhoto, setFailedPhoto] = useState<string | number | undefined>(undefined);
+    const showPhoto = photo != null && failedPhoto !== photo;
     // The accessible name: an explicit label, else the full name, else string children.
     const label = accessibilityLabel ?? name ?? (typeof children === "string" ? children : undefined);
 
     const container: StyleProp<ViewStyle> = [containerStyle(tokens, skin, size, shape, !!ring), style];
 
     let inner: ReactNode;
-    if (photo) {
+    if (showPhoto) {
       inner = (
         <Image
           style={imageStyle(skin, shape)}
-          source={{ uri: photo }}
+          source={typeof photo === "number" ? photo : { uri: photo }}
+          onError={() => setFailedPhoto(photo)}
           accessibilityLabel={label}
           aria-label={label}
           resizeMode="cover"

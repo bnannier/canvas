@@ -79,8 +79,8 @@ export interface MediaObjectProps {
   meta?: string;
   /** Initials for the leading avatar (e.g. "RC"); rendered as <Avatar>{avatar}</Avatar>. */
   avatar?: string;
-  /** Photo URL for the leading avatar; takes precedence over initials. */
-  src?: string;
+  /** Photo for the leading avatar (a URI string or a bundled `require(...)` image); takes precedence over initials. */
+  src?: string | number;
   /** A leading icon glyph rendered in a tinted square box (stands in for an SVG icon). */
   icon?: ReactNode;
   /** A trailing action node (e.g. a <Button>), pinned to the right edge. */
@@ -148,7 +148,7 @@ export function createMediaObject(skin: MediaObjectSkin) {
     if (src) {
       media = (
         <View style={[skin.photoBox, { backgroundColor: tokens.muted }]}>
-          <Image style={[skin.photoImage, { width: "100%", height: "100%" }]} source={{ uri: src }} accessibilityLabel={title} resizeMode="cover" />
+          <Image style={[skin.photoImage, { width: "100%", height: "100%" }]} source={typeof src === "number" ? src : { uri: src }} accessibilityLabel={title} resizeMode="cover" />
         </View>
       );
     } else if (avatar) {
