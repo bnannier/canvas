@@ -1,14 +1,14 @@
-import { useEffect, useRef } from "react";
-import { Animated, Easing, useWindowDimensions } from "react-native";
+import { useEffect } from "react";
+import { Animated, useWindowDimensions } from "react-native";
 import { usePathname } from "expo-router";
 import { View, useTheme, useReducedMotion } from "@olympusoss/canvas";
-import { Starfield, ConstellationChart, Nebula, WarpShell, GalaxyCore, Comet } from "./cosmos-layers";
+import { clock, retainCosmosClock, releaseCosmosClock } from "./cosmos-clock";
+import { Starfield, FlightShell, StreakShell, ConstellationChart, Nebula, GalaxyCore, Comet } from "./cosmos-layers";
 import {
   STARS_FAR_AMBIENT,
   STARS_FAR_HERO,
-  STARS_NEAR_AMBIENT,
-  STARS_NEAR_HERO,
-  WARP_SHELLS,
+  SHELL_FIELDS,
+  STREAK_FIELDS,
   CHART_A,
   CHART_B,
   STAR_ALPHA,
@@ -16,139 +16,100 @@ import {
   nebulaBlobs,
 } from "./cosmos-sky";
 
-// The Canvas Universe: the animated backdrop the glass functional layer floats
-// over, on all three platforms from this one file. The design system is the
-// universe: tokens are the stars, components are the constellations, the brand
-// aurora hues are the nebulae, and the conic spectrum is the galaxy core. Two
-// moods: ambient (every content page; calm, legibility first) and hero (home and
-// the native search session; adds the galaxy, warp shells, and a comet).
+// The Canvas Universe as a continuous galactic fly-through: the camera travels
+// toward the brand's conic-spectrum galaxy at the vanishing point while seeded star
+// shells stream outward past the viewer (reference: "Journey to the Center of the
+// Milky Way"). Every mounted instance binds to the SINGLETON clock in
+// cosmos-clock.ts, so the flight carries its exact phase across page changes, tab
+// switches, and back-swipes instead of restarting.
 //
-// Motion rules (see src/style/motion.ts and the hero-orbit precedent): every loop
-// runs on the JS driver (useNativeDriver:false; native-driver loops freeze on
-// react-native-web and stall under the New Architecture), animates ONLY
-// transform/opacity on Animated.View wrappers around static SVG, and freezes to a
-// composed poster frame under Reduce Motion. Loop periods are mutually
-// non-harmonic so the sky never visibly synchronizes.
+// Mechanics: each shell derives a staggered sawtooth phase from the one master
+// flight value via chained interpolations (the wrap seam lands where opacity is 0);
+// scale keyframes approximate exponential growth so the radial motion reads as
+// constant z-velocity; shells are square boxes centered on the core point so
+// scaling radiates exactly from the galaxy. Only transform/opacity animate, over
+// static SVG, per the motion rules; Reduce Motion renders the clock's poster still.
 
-export function Cosmos({ hero, paused = false }: { hero?: boolean; paused?: boolean }) {
+const SCALE_IN = [0, 0.25, 0.5, 0.75, 1];
+const DOT_SCALE = [0.35, 0.55, 0.9, 1.5, 2.4];
+const STREAK_SCALE = [0.5, 0.75, 1.15, 1.8, 2.6];
+const FADE_IN = [0, 0.12, 0.78, 0.95, 1];
+
+// Shell phase (flight + offset) mod 1 as a chained interpolation; the epsilon step
+// avoids a degenerate 0-width segment at the seam.
+function sawtooth(offset: number) {
+  if (offset === 0) return clock.flight;
+  const seam = 1 - offset;
+  return clock.flight.interpolate({
+    inputRange: [0, seam, seam + 1e-6, 1],
+    outputRange: [offset, 1, 0, offset],
+  });
+}
+
+function shellInterp(offset: number, scaleOut: number[], cap: number) {
+  const phase = sawtooth(offset);
+  return {
+    scale: phase.interpolate({ inputRange: SCALE_IN, outputRange: scaleOut }),
+    opacity: phase.interpolate({ inputRange: FADE_IN, outputRange: [0, cap, cap, 0, 0] }),
+  };
+}
+
+export function Cosmos({ hero }: { hero?: boolean }) {
   const pathname = usePathname();
   const isHero = hero ?? pathname === "/";
   const { tokens, dark } = useTheme();
   const { width, height } = useWindowDimensions();
   const reduced = useReducedMotion();
 
-  const twinkle = useRef(new Animated.Value(0)).current;
-  const driftFar = useRef(new Animated.Value(0)).current;
-  const driftNear = useRef(new Animated.Value(0)).current;
-  const driftChart = useRef(new Animated.Value(0)).current;
-  const neb1 = useRef(new Animated.Value(0)).current;
-  const neb2 = useRef(new Animated.Value(0)).current;
-  const warpA = useRef(new Animated.Value(0)).current;
-  const warpB = useRef(new Animated.Value(0)).current;
-  const warpC = useRef(new Animated.Value(0)).current;
-  const galaxySpin = useRef(new Animated.Value(0)).current;
-  const comet = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
-    if (reduced) {
-      // The poster frame: constellations and stars visible at mid-twinkle, nebula
-      // mid-bloom, one warp shell caught mid-travel, the galaxy still, the comet
-      // parked offscreen. A composed still, not a paused accident.
-      twinkle.setValue(0.5);
-      driftFar.setValue(0);
-      driftNear.setValue(0);
-      driftChart.setValue(0);
-      neb1.setValue(0.5);
-      neb2.setValue(0.5);
-      warpA.setValue(0.35);
-      warpB.setValue(0);
-      warpC.setValue(0);
-      galaxySpin.setValue(0);
-      comet.setValue(0);
-      return;
-    }
-    if (paused) return;
+    retainCosmosClock(reduced ? "poster" : "running");
+    return () => releaseCosmosClock();
+  }, [reduced]);
 
-    const linear = (v: Animated.Value, duration: number) =>
-      Animated.loop(Animated.timing(v, { toValue: 1, duration, easing: Easing.linear, useNativeDriver: false }));
-    const breathe = (v: Animated.Value, half: number) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(v, { toValue: 1, duration: half, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-          Animated.timing(v, { toValue: 0, duration: half, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-        ]),
-      );
+  // The vanishing point the flight aims at, slightly above center so page content
+  // breathes below the galaxy.
+  const coreX = width * 0.5;
+  const coreY = height * 0.42;
+  // Shell boxes are squares centered on the core, sized to cover the farthest
+  // viewport corner at scale 1 (RN scales about the view center, so this centers
+  // the radial motion exactly on the galaxy).
+  const shellSize = Math.ceil(2 * Math.hypot(0.5 * width, 0.58 * height));
+  const shellStyle = { position: "absolute" as const, left: coreX - shellSize / 2, top: coreY - shellSize / 2 };
 
-    const running: { start: () => void; stop: () => void }[] = [
-      breathe(twinkle, 3500),
-      linear(driftFar, 240000),
-      linear(driftNear, 150000),
-      linear(driftChart, 330000),
-      breathe(neb1, 45000),
-      breathe(neb2, 32000),
-    ];
-    if (isHero) {
-      // The warp shells launch 14s apart so one is always mid-travel; a loop as
-      // the tail of a sequence runs forever and stop() reaches it.
-      running.push(
-        Animated.sequence([Animated.delay(0), linear(warpA, 42000)]),
-        Animated.sequence([Animated.delay(14000), linear(warpB, 42000)]),
-        Animated.sequence([Animated.delay(28000), linear(warpC, 42000)]),
-        linear(galaxySpin, 180000),
-        Animated.loop(
-          Animated.sequence([
-            Animated.delay(26000),
-            Animated.timing(comet, { toValue: 1, duration: 7000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-          ]),
-        ),
-      );
-    }
-    running.forEach((a) => a.start());
-    return () => running.forEach((a) => a.stop());
-  }, [reduced, paused, isHero, twinkle, driftFar, driftNear, driftChart, neb1, neb2, warpA, warpB, warpC, galaxySpin, comet]);
+  const shellCap = dark ? (isHero ? 0.65 : 0.5) : isHero ? 0.38 : 0.3;
+  const dotShells = isHero
+    ? [0, 1 / 6, 3 / 6, 4 / 6].map((o, i) => ({ ...shellInterp(o, DOT_SCALE, shellCap), field: SHELL_FIELDS[i] }))
+    : [0, 1 / 3, 2 / 3].map((o, i) => ({ ...shellInterp(o, DOT_SCALE, shellCap), field: SHELL_FIELDS[i] }));
+  const streakShells = isHero
+    ? [2 / 6, 5 / 6].map((o, i) => ({ ...shellInterp(o, STREAK_SCALE, shellCap), field: STREAK_FIELDS[i] }))
+    : [];
 
-  // Interpolations are rebuilt on resize (width/height re-render) against the new
-  // viewport while the running 0..1 values carry over, so rotation never glitches.
-  const farY = driftFar.interpolate({ inputRange: [0, 1], outputRange: [0, -height] });
-  const nearY = driftNear.interpolate({ inputRange: [0, 1], outputRange: [0, -height] });
-  const chartY = driftChart.interpolate({ inputRange: [0, 1], outputRange: [0, -height] });
-  const farOpacity = twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.9] });
-  const nearOpacity = twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.9, 0.55] });
-  const chartAOpacity = twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.7] });
-  const chartBOpacity = twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.7, 0.5] });
+  const backdropOpacity = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.9] });
+
+  // Palindromic keyframes (equal endpoints) keep the nebulae and chart seam-free on
+  // the looping master value; a narrow range reads as slow passing drift.
+  const nebScaleA = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.85, 1.25, 0.85] });
+  const nebScaleB = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1.25, 0.85, 1.25] });
+  const nebOpacity = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.7, 1, 0.7] });
+  const chartScale = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.92, 1.14, 0.92] });
+  const chartOpacity = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.7] });
 
   const neb = nebulaBlobs(tokens.primary, dark, isHero);
   const neb1Size = 760;
   const neb2Size = 680;
   const neb1Style = { position: "absolute" as const, left: width * 0.7 - neb1Size / 2, top: height * 0.25 - neb1Size / 2 };
   const neb2Style = { position: "absolute" as const, left: width * 0.2 - neb2Size / 2, top: height * 0.8 - neb2Size / 2 };
-  const neb1X = neb1.interpolate({ inputRange: [0, 1], outputRange: [0, 36] });
-  const neb1Y = neb1.interpolate({ inputRange: [0, 1], outputRange: [0, 24] });
-  const neb1Scale = neb1.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] });
-  const neb1Opacity = neb1.interpolate({ inputRange: [0, 1], outputRange: [0.75, 1] });
-  const neb2X = neb2.interpolate({ inputRange: [0, 1], outputRange: [0, -30] });
-  const neb2Y = neb2.interpolate({ inputRange: [0, 1], outputRange: [0, -20] });
-  const neb2Scale = neb2.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] });
-  const neb2Opacity = neb2.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
 
-  const shellSize = Math.round(Math.min(width, height) * 1.2);
-  const shellStyle = { position: "absolute" as const, left: (width - shellSize) / 2, top: (height - shellSize) / 2 };
-  const warpInterp = (v: Animated.Value) => ({
-    scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.6] }),
-    opacity: v.interpolate({ inputRange: [0, 0.15, 0.7, 1], outputRange: [0, 0.5, 0.4, 0] }),
-  });
-  const warps = [warpInterp(warpA), warpInterp(warpB), warpInterp(warpC)];
+  const minDim = Math.min(width, height);
+  const galaxySize = isHero ? Math.min(340, Math.round(minDim * 0.5)) : Math.min(200, Math.round(minDim * 0.32));
+  const galaxyStyle = { position: "absolute" as const, left: coreX - galaxySize / 2, top: coreY - galaxySize / 2 };
+  const galaxyRotate = clock.coreSpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
+  const galaxyRange: [number, number] = isHero ? (dark ? [0.4, 0.5] : [0.5, 0.62]) : dark ? [0.14, 0.18] : [0.1, 0.14];
+  const galaxyOpacity = clock.coreBreath.interpolate({ inputRange: [0, 1], outputRange: galaxyRange });
 
-  // Anchored low-right, clear of the hero orbit medallion (upper right on desktop)
-  // and the headline column, so the galaxy reads as a distant destination.
-  const galaxySize = Math.min(320, Math.round(Math.min(width, height) * 0.5));
-  const galaxyStyle = { position: "absolute" as const, left: width * 0.84 - galaxySize / 2, top: height * 0.74 - galaxySize / 2 };
-  const galaxyRotate = galaxySpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
-  const galaxyOpacity = twinkle.interpolate({ inputRange: [0, 1], outputRange: dark ? [0.42, 0.5] : [0.55, 0.65] });
-
-  const cometX = comet.interpolate({ inputRange: [0, 1], outputRange: [-240, width * 1.1] });
-  const cometY = comet.interpolate({ inputRange: [0, 1], outputRange: [height * 0.18, height * 0.5] });
-  const cometOpacity = comet.interpolate({ inputRange: [0, 0.1, 0.9, 1], outputRange: [0, 0.7, 0.7, 0] });
+  const cometX = clock.comet.interpolate({ inputRange: [0, 1], outputRange: [-240, width * 1.1] });
+  const cometY = clock.comet.interpolate({ inputRange: [0, 1], outputRange: [height * 0.18, height * 0.5] });
+  const cometOpacity = clock.comet.interpolate({ inputRange: [0, 0.1, 0.9, 1], outputRange: [0, 0.7, 0.7, 0] });
 
   return (
     <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden", pointerEvents: "none" }}>
@@ -156,41 +117,36 @@ export function Cosmos({ hero, paused = false }: { hero?: boolean; paused?: bool
           shell's deep token background directly. */}
       {!dark ? <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: LIGHT_FLOOR }} /> : null}
 
-      {isHero ? <GalaxyCore size={galaxySize} style={galaxyStyle} rotate={galaxyRotate} opacity={galaxyOpacity} /> : null}
-
-      <Nebula size={neb1Size} blobs={neb.one} style={neb1Style} translateX={neb1X} translateY={neb1Y} scale={neb1Scale} opacity={neb1Opacity} />
-      <Nebula size={neb2Size} blobs={neb.two} style={neb2Style} translateX={neb2X} translateY={neb2Y} scale={neb2Scale} opacity={neb2Opacity} />
-
       <Starfield
         width={width}
         height={height}
         stars={isHero ? STARS_FAR_HERO : STARS_FAR_AMBIENT}
         dark={dark}
         alphaCap={dark ? STAR_ALPHA.far.dark : STAR_ALPHA.far.light}
-        translateY={farY}
-        opacity={farOpacity}
+        opacity={backdropOpacity}
       />
 
-      {isHero
-        ? warps.map((w, i) => (
-            <WarpShell key={i} size={shellSize} dots={WARP_SHELLS[i]} dark={dark} style={shellStyle} scale={w.scale} opacity={w.opacity} />
-          ))
-        : null}
+      <GalaxyCore size={galaxySize} style={galaxyStyle} rotate={galaxyRotate} opacity={galaxyOpacity} />
 
-      <ConstellationChart width={width} height={height} figures={CHART_A} dark={dark} translateY={chartY} opacity={chartAOpacity} />
-      {isHero ? (
-        <ConstellationChart width={width} height={height} figures={CHART_B} dark={dark} translateY={chartY} opacity={chartBOpacity} />
-      ) : null}
+      <Nebula size={neb1Size} blobs={neb.one} style={neb1Style} translateX={0} translateY={0} scale={nebScaleA} opacity={nebOpacity} />
+      <Nebula size={neb2Size} blobs={neb.two} style={neb2Style} translateX={0} translateY={0} scale={nebScaleB} opacity={nebOpacity} />
 
-      <Starfield
+      {dotShells.map((s, i) => (
+        <FlightShell key={i} size={shellSize} dots={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />
+      ))}
+
+      <ConstellationChart
         width={width}
         height={height}
-        stars={isHero ? STARS_NEAR_HERO : STARS_NEAR_AMBIENT}
+        figures={isHero ? [...CHART_A, ...CHART_B] : CHART_A}
         dark={dark}
-        alphaCap={dark ? STAR_ALPHA.near.dark : STAR_ALPHA.near.light}
-        translateY={nearY}
-        opacity={nearOpacity}
+        scale={chartScale}
+        opacity={chartOpacity}
       />
+
+      {streakShells.map((s, i) => (
+        <StreakShell key={i} size={shellSize} streaks={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />
+      ))}
 
       {isHero ? <Comet translateX={cometX} translateY={cometY} opacity={cometOpacity} angle="14deg" /> : null}
     </View>

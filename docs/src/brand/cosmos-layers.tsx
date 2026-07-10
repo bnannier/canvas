@@ -1,8 +1,8 @@
 import { useId } from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
-import Svg, { Circle, Path, Rect, G, Defs, RadialGradient, LinearGradient, Stop, Mask, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
+import Svg, { Circle, Path, Rect, G, Line, Defs, RadialGradient, LinearGradient, Stop, Mask, Filter, FeGaussianBlur, FeColorMatrix } from "react-native-svg";
 import { glowColor } from "./hero-orbit";
-import { SPECTRUM, CHART_ALPHA, starTint, type Star, type ShellDot, type Constellation, type NebulaBlob } from "./cosmos-sky";
+import { SPECTRUM, CHART_ALPHA, starTint, type Star, type ShellDot, type ShellStreak, type Constellation, type NebulaBlob } from "./cosmos-sky";
 
 // Presentational layers for the Canvas Universe. Every layer is ONE Animated.View
 // wrapping a STATIC <Svg>: react-native's Animated must never wrap an Svg directly
@@ -21,16 +21,14 @@ function useSvgId(prefix: string): string {
   return prefix + useId().replace(/[^a-zA-Z0-9]/g, "");
 }
 
-// A parallax star layer. The tile is the full viewport; it renders TWICE stacked
-// in a W x 2H canvas so a translateY loop from 0 to -H wraps seamlessly (copy two
-// lands exactly where copy one started at the reset frame).
+// The static backdrop sheet: the deep, unmoving far field behind the flight shells.
+// One viewport-sized SVG; only the wrapper's twinkle opacity animates.
 export function Starfield({
   width,
   height,
   stars,
   dark,
   alphaCap,
-  translateY,
   opacity,
 }: {
   width: number;
@@ -38,88 +36,147 @@ export function Starfield({
   stars: Star[];
   dark: boolean;
   alphaCap: number;
-  translateY: AnimNumber;
   opacity: AnimNumber;
 }) {
   const base = starTint(dark);
   return (
-    <Animated.View style={{ position: "absolute", top: 0, left: 0, width, height: height * 2, opacity, transform: [{ translateY }] }}>
-      <Svg width={width} height={height * 2}>
-        {[0, height].map((offset) => (
-          <G key={offset}>
-            {stars.map((s, i) => (
-              <Circle
-                key={i}
-                cx={s.x * width}
-                cy={s.y * height + offset}
-                r={s.r}
-                fill={s.hue >= 0 ? SPECTRUM[s.hue] : base}
-                fillOpacity={s.a * alphaCap}
-              />
-            ))}
-          </G>
+    <Animated.View style={{ position: "absolute", top: 0, left: 0, width, height, opacity }}>
+      <Svg width={width} height={height}>
+        {stars.map((s, i) => (
+          <Circle key={i} cx={s.x * width} cy={s.y * height} r={s.r} fill={s.hue >= 0 ? SPECTRUM[s.hue] : base} fillOpacity={s.a * alphaCap} />
         ))}
       </Svg>
     </Animated.View>
   );
 }
 
-// A drifting chart of component constellations: dashed hairline strokes (the
-// brand's dashed-orbit language) joining vertex stars, tiled like the starfields.
-// The first vertex of each figure carries a quiet spectrum accent.
+// A flight shell: a full-field dot layer in a square box centered on the vanishing
+// point, scaled outward past the camera. Scaling about the box center moves every
+// dot radially away from the core: the fly-through illusion.
+export function FlightShell({
+  size,
+  dots,
+  dark,
+  alphaCap,
+  style,
+  scale,
+  opacity,
+}: {
+  size: number;
+  dots: ShellDot[];
+  dark: boolean;
+  alphaCap: number;
+  style: StyleProp<ViewStyle>;
+  scale: AnimNumber;
+  opacity: AnimNumber;
+}) {
+  const base = starTint(dark);
+  return (
+    <Animated.View style={[style, { width: size, height: size, opacity, transform: [{ scale }] }]}>
+      <Svg width={size} height={size}>
+        {dots.map((d, i) => (
+          <Circle key={i} cx={d.x * size} cy={d.y * size} r={d.r} fill={d.hue >= 0 ? SPECTRUM[d.hue] : base} fillOpacity={d.a * alphaCap} />
+        ))}
+      </Svg>
+    </Animated.View>
+  );
+}
+
+// A streak shell: the fastest passes render as short radial segments (round caps)
+// pointing away from the vanishing point, reading as motion blur while the shell
+// sweeps outward.
+export function StreakShell({
+  size,
+  streaks,
+  dark,
+  alphaCap,
+  style,
+  scale,
+  opacity,
+}: {
+  size: number;
+  streaks: ShellStreak[];
+  dark: boolean;
+  alphaCap: number;
+  style: StyleProp<ViewStyle>;
+  scale: AnimNumber;
+  opacity: AnimNumber;
+}) {
+  const tint = starTint(dark);
+  return (
+    <Animated.View style={[style, { width: size, height: size, opacity, transform: [{ scale }] }]}>
+      <Svg width={size} height={size}>
+        {streaks.map((s, i) => (
+          <Line
+            key={i}
+            x1={s.x * size}
+            y1={s.y * size}
+            x2={(s.x + s.dx * s.len) * size}
+            y2={(s.y + s.dy * s.len) * size}
+            stroke={tint}
+            strokeOpacity={s.a * alphaCap}
+            strokeWidth={1.4}
+            strokeLinecap="round"
+          />
+        ))}
+      </Svg>
+    </Animated.View>
+  );
+}
+
+// The chart of component constellations: dashed hairline strokes (the brand's
+// dashed-orbit language) joining vertex stars, riding a gentle palindromic scale so
+// the figures stay legible as distant signposts. The first vertex of each figure
+// carries a quiet spectrum accent.
 export function ConstellationChart({
   width,
   height,
   figures,
   dark,
-  translateY,
+  scale,
   opacity,
 }: {
   width: number;
   height: number;
   figures: Constellation[];
   dark: boolean;
-  translateY: AnimNumber;
+  scale: AnimNumber;
   opacity: AnimNumber;
 }) {
   const ink = starTint(dark);
   return (
-    <Animated.View style={{ position: "absolute", top: 0, left: 0, width, height: height * 2, opacity, transform: [{ translateY }] }}>
-      <Svg width={width} height={height * 2}>
-        {[0, height].map((offset) => (
-          <G key={offset}>
-            {figures.map((f, fi) => {
-              const s = f.anchor.scale;
-              const tx = f.anchor.x * width - 50 * s;
-              const ty = f.anchor.y * height + offset - 30 * s;
-              return (
-                <G key={f.id} transform={`translate(${tx}, ${ty}) scale(${s})`}>
-                  {f.strokes.map((d, i) => (
-                    <Path
-                      key={i}
-                      d={d}
-                      fill="none"
-                      stroke={ink}
-                      strokeOpacity={dark ? CHART_ALPHA.stroke.dark : CHART_ALPHA.stroke.light}
-                      strokeWidth={1}
-                      strokeDasharray="4 5"
-                    />
-                  ))}
-                  {f.stars.map(([x, y], i) => (
-                    <Circle
-                      key={i}
-                      cx={x}
-                      cy={y}
-                      r={1.7}
-                      fill={i === 0 ? SPECTRUM[fi % SPECTRUM.length] : ink}
-                      fillOpacity={dark ? CHART_ALPHA.dot.dark : CHART_ALPHA.dot.light}
-                    />
-                  ))}
-                </G>
-              );
-            })}
-          </G>
-        ))}
+    <Animated.View style={{ position: "absolute", top: 0, left: 0, width, height, opacity, transform: [{ scale }] }}>
+      <Svg width={width} height={height}>
+        {figures.map((f, fi) => {
+          const s = f.anchor.scale;
+          const tx = f.anchor.x * width - 50 * s;
+          const ty = f.anchor.y * height - 30 * s;
+          return (
+            <G key={f.id} transform={`translate(${tx}, ${ty}) scale(${s})`}>
+              {f.strokes.map((d, i) => (
+                <Path
+                  key={i}
+                  d={d}
+                  fill="none"
+                  stroke={ink}
+                  strokeOpacity={dark ? CHART_ALPHA.stroke.dark : CHART_ALPHA.stroke.light}
+                  strokeWidth={1}
+                  strokeDasharray="4 5"
+                />
+              ))}
+              {f.stars.map(([x, y], i) => (
+                <Circle
+                  key={i}
+                  cx={x}
+                  cy={y}
+                  r={1.7}
+                  fill={i === 0 ? SPECTRUM[fi % SPECTRUM.length] : ink}
+                  fillOpacity={dark ? CHART_ALPHA.dot.dark : CHART_ALPHA.dot.light}
+                />
+              ))}
+            </G>
+          );
+        })}
       </Svg>
     </Animated.View>
   );
@@ -159,35 +216,6 @@ export function Nebula({
         </Defs>
         {blobs.map((_, i) => (
           <Rect key={i} x={0} y={0} width={size} height={size} fill={`url(#${id}-${i})`} />
-        ))}
-      </Svg>
-    </Animated.View>
-  );
-}
-
-// A warp shell: a sparse jittered ring of dust that scales outward past the viewer
-// while fading, the forward-travel cue. Centered on the viewport by the caller.
-export function WarpShell({
-  size,
-  dots,
-  dark,
-  style,
-  scale,
-  opacity,
-}: {
-  size: number;
-  dots: ShellDot[];
-  dark: boolean;
-  style: StyleProp<ViewStyle>;
-  scale: AnimNumber;
-  opacity: AnimNumber;
-}) {
-  const tint = starTint(dark);
-  return (
-    <Animated.View style={[style, { width: size, height: size, opacity, transform: [{ scale }] }]}>
-      <Svg width={size} height={size}>
-        {dots.map((d, i) => (
-          <Circle key={i} cx={d.x * size} cy={d.y * size} r={d.r} fill={tint} fillOpacity={d.a * (dark ? 0.55 : 0.4)} />
         ))}
       </Svg>
     </Animated.View>

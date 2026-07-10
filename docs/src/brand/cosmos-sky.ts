@@ -51,38 +51,71 @@ function makeStars(count: number, rng: () => number, rMin: number, rMax: number)
 
 // One shared atlas at the maximum (hero) count; consumers slice to their layer
 // count so ambient skies are a strict subset of hero skies (no reshuffle between
-// moods). Android gets fewer dots purely as a perf tuning constant.
+// moods). Android gets fewer dots purely as a perf tuning constant. The far atlas
+// is the static backdrop sheet behind the flight shells.
 const rng = mulberry32(SEED);
 const FAR_ATLAS = makeStars(120, rng, 0.6, 1.4);
-const NEAR_ATLAS = makeStars(60, rng, 1.2, 2.2);
 
 const IS_ANDROID = Platform.OS === "android";
 export const STARS_FAR_AMBIENT = FAR_ATLAS.slice(0, IS_ANDROID ? 56 : 90);
 export const STARS_FAR_HERO = FAR_ATLAS.slice(0, IS_ANDROID ? 72 : 117);
-export const STARS_NEAR_AMBIENT = NEAR_ATLAS.slice(0, IS_ANDROID ? 28 : 44);
-export const STARS_NEAR_HERO = NEAR_ATLAS.slice(0, IS_ANDROID ? 36 : 57);
 
-// Warp shell dots: a sparse jittered ring in a unit box (rendered centered on the
-// viewport and scaled outward for the forward-travel drift).
+// Flight shells: full-field dot distributions in a unit box, scaled outward past the
+// camera by the master flight phase. A mild center bias (pow 1.4 on the radial
+// placement) clusters stars toward the galactic core ahead, like the reference
+// journey. Each shell is one static SVG; depth comes from staggered phases.
 export interface ShellDot {
   x: number;
   y: number;
   r: number;
   a: number;
+  hue: number; // -1 = base tint, otherwise an index into SPECTRUM
 }
-function makeShell(count: number, rng2: () => number): ShellDot[] {
-  return Array.from({ length: count }, (_, i) => {
-    const angle = (i / count) * Math.PI * 2 + rng2() * 0.5;
-    const radius = 0.34 + rng2() * 0.14; // 0.34..0.48 of the box
+function makeShellField(count: number, rng2: () => number): ShellDot[] {
+  return Array.from({ length: count }, () => {
+    const angle = rng2() * Math.PI * 2;
+    const radius = Math.pow(rng2(), 1.4) * 0.5; // 0..0.5 of the box, center-biased
     return {
       x: 0.5 + Math.cos(angle) * radius,
       y: 0.5 + Math.sin(angle) * radius,
-      r: 0.8 + rng2() * 1.2,
+      r: 0.7 + rng2() * 1.5,
+      a: 0.35 + rng2() * 0.65,
+      hue: rng2() < 0.1 ? Math.floor(rng2() * SPECTRUM.length) : -1,
+    };
+  });
+}
+const SHELL_COUNT = IS_ANDROID ? 26 : 42;
+export const SHELL_FIELDS: ShellDot[][] = Array.from({ length: 6 }, () => makeShellField(SHELL_COUNT, rng));
+
+// Streak shells: short segments pointing away from the box center (the radial travel
+// direction), length growing with distance from center, drawn with round caps. As the
+// shell scales outward the segments sweep along their own axis: motion blur.
+export interface ShellStreak {
+  x: number;
+  y: number;
+  dx: number; // unit direction away from center
+  dy: number;
+  len: number; // segment length in box-units at scale 1
+  a: number;
+}
+function makeStreakField(count: number, rng2: () => number): ShellStreak[] {
+  return Array.from({ length: count }, () => {
+    const angle = rng2() * Math.PI * 2;
+    const radius = 0.12 + Math.pow(rng2(), 1.2) * 0.38; // keep streaks off the exact center
+    const x = 0.5 + Math.cos(angle) * radius;
+    const y = 0.5 + Math.sin(angle) * radius;
+    return {
+      x,
+      y,
+      dx: Math.cos(angle),
+      dy: Math.sin(angle),
+      len: 0.012 + radius * 0.05,
       a: 0.3 + rng2() * 0.5,
     };
   });
 }
-export const WARP_SHELLS: ShellDot[][] = [makeShell(22, rng), makeShell(20, rng), makeShell(24, rng)];
+const STREAK_COUNT = IS_ANDROID ? 16 : 26;
+export const STREAK_FIELDS: ShellStreak[][] = Array.from({ length: 2 }, () => makeStreakField(STREAK_COUNT, rng));
 
 // ---------------------------------------------------------------------------
 // Constellations: components are the constellations. Each figure is drawn as a

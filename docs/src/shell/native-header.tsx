@@ -27,13 +27,13 @@ export function ScreenFrame({ children, hero = false }: { children: ReactNode; h
   );
 }
 
-// The per-screen native cosmos: glass-gated like the web mount, and paused whenever the
-// screen is not focused so a stack of pushed screens never runs more than one sky's loops.
+// The per-screen native cosmos, glass-gated like the web mount. It renders even on
+// unfocused screens: the singleton clock keeps every mounted sky phase-identical, so
+// the flight is already live and continuous on the screen a back-swipe reveals.
 function ScreenCosmos({ hero }: { hero: boolean }) {
   const { surface } = useTheme();
-  const focused = useIsFocused();
   if (surface !== "glass") return null;
-  return <Cosmos hero={hero} paused={!focused} />;
+  return <Cosmos hero={hero} />;
 }
 
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,
