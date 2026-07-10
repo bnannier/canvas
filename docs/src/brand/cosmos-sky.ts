@@ -49,16 +49,14 @@ function makeStars(count: number, rng: () => number, rMin: number, rMax: number)
   }));
 }
 
-// One shared atlas at the maximum (hero) count; consumers slice to their layer
-// count so ambient skies are a strict subset of hero skies (no reshuffle between
-// moods). Android gets fewer dots purely as a perf tuning constant. The far atlas
-// is the static backdrop sheet behind the flight shells.
+// The static backdrop sheet behind the flight shells: ONE atlas, identical on every
+// screen (the whole composition is unified so navigation is pixel-continuous).
+// Android gets fewer dots purely as a perf tuning constant.
 const rng = mulberry32(SEED);
 const FAR_ATLAS = makeStars(120, rng, 0.6, 1.4);
 
 const IS_ANDROID = Platform.OS === "android";
-export const STARS_FAR_AMBIENT = FAR_ATLAS.slice(0, IS_ANDROID ? 56 : 90);
-export const STARS_FAR_HERO = FAR_ATLAS.slice(0, IS_ANDROID ? 72 : 117);
+export const STARS_FAR = FAR_ATLAS.slice(0, IS_ANDROID ? 64 : 104);
 
 // Flight shells: full-field dot distributions in a unit box, scaled outward past the
 // camera by the master flight phase. A mild center bias (pow 1.4 on the radial
@@ -214,29 +212,22 @@ export interface NebulaBlob {
   end: number; // gradient fade-out offset
 }
 
-// Nebula palettes derived from the retired GlassAurora BLOBS hues: primary indigo,
-// violet, cyan for the ambient pair; hero raises alphas to the vivid values and
-// adds magenta + teal. `primary` is passed in so the nebulae follow a rebrand.
-export function nebulaBlobs(primary: string, dark: boolean, hero: boolean): { one: NebulaBlob[]; two: NebulaBlob[] } {
-  if (hero) {
-    return {
-      one: [
-        { c: primary, cx: 0.32, cy: 0.3, r: 0.52, o: dark ? 0.3 : 0.42, end: 0.62 },
-        { c: "#8b5cf6", cx: 0.72, cy: 0.42, r: 0.46, o: dark ? 0.34 : 0.48, end: 0.62 },
-        { c: "#ec4899", cx: 0.6, cy: 0.74, r: 0.4, o: dark ? 0.24 : 0.38, end: 0.6 },
-      ],
-      two: [
-        { c: "#06b6d4", cx: 0.62, cy: 0.6, r: 0.5, o: dark ? 0.28 : 0.42, end: 0.62 },
-        { c: "#14b8a6", cx: 0.3, cy: 0.36, r: 0.44, o: dark ? 0.3 : 0.44, end: 0.64 },
-      ],
-    };
-  }
+// The nebula palette, derived from the retired GlassAurora BLOBS hues (primary
+// indigo, violet, magenta, cyan, teal), ONE tuning everywhere: alphas sit between
+// the old ambient and vivid values so the full five-hue field rides every screen
+// while text columns stay readable. `primary` is passed in so the nebulae follow a
+// rebrand.
+export function nebulaBlobs(primary: string, dark: boolean): { one: NebulaBlob[]; two: NebulaBlob[] } {
   return {
     one: [
-      { c: primary, cx: 0.34, cy: 0.32, r: 0.5, o: dark ? 0.12 : 0.22, end: 0.6 },
-      { c: "#8b5cf6", cx: 0.7, cy: 0.46, r: 0.44, o: dark ? 0.14 : 0.24, end: 0.62 },
+      { c: primary, cx: 0.32, cy: 0.3, r: 0.52, o: dark ? 0.2 : 0.3, end: 0.62 },
+      { c: "#8b5cf6", cx: 0.72, cy: 0.42, r: 0.46, o: dark ? 0.22 : 0.32, end: 0.62 },
+      { c: "#ec4899", cx: 0.6, cy: 0.74, r: 0.4, o: dark ? 0.16 : 0.24, end: 0.6 },
     ],
-    two: [{ c: "#06b6d4", cx: 0.6, cy: 0.56, r: 0.5, o: dark ? 0.1 : 0.18, end: 0.62 }],
+    two: [
+      { c: "#06b6d4", cx: 0.62, cy: 0.6, r: 0.5, o: dark ? 0.18 : 0.28, end: 0.62 },
+      { c: "#14b8a6", cx: 0.3, cy: 0.36, r: 0.44, o: dark ? 0.2 : 0.3, end: 0.64 },
+    ],
   };
 }
 

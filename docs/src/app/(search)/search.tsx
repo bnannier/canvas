@@ -96,11 +96,11 @@ function NativeSearch() {
           },
         }}
       />
-      {/* The Canvas Universe in its hero mood fills the screen for the whole search session
-          (while this screen is focused): vivid nebulae, the galaxy core, and drifting star
-          charts give the clear Liquid Glass bubble real color and motion to refract the
-          moment you enter search. It clears when you leave. */}
-      {glass && active ? <Cosmos hero /> : null}
+      {/* The Canvas Universe fills the screen for the whole search session (while this
+          screen is focused), phase-continuous with every other screen's sky, so the
+          clear Liquid Glass bubble has real color and motion to refract the moment you
+          enter search. It clears when you leave. */}
+      {glass && active ? <Cosmos /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (

@@ -155,9 +155,10 @@ export function Home() {
 
   // Glass is a theming-level surface mode: the canvas goes transparent so the Canvas
   // Universe backdrop reads through (the web shell mounts it; native mounts it via
-  // ScreenFrame, which gets `hero` here for the vivid mood: galaxy, warp, comet).
+  // ScreenFrame). The backdrop is identical on every screen so navigation never
+  // interrupts the flight.
   return (
-    <ScreenFrame hero>
+    <ScreenFrame>
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
       // The hero must start at the very top of the viewport (its Aurora fills behind the

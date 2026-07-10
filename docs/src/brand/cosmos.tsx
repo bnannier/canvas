@@ -1,20 +1,9 @@
 import { useEffect } from "react";
-import { Animated, useWindowDimensions } from "react-native";
-import { usePathname } from "expo-router";
+import { useWindowDimensions } from "react-native";
 import { View, useTheme, useReducedMotion } from "@olympusoss/canvas";
 import { clock, retainCosmosClock, releaseCosmosClock } from "./cosmos-clock";
 import { Starfield, FlightShell, StreakShell, ConstellationChart, Nebula, GalaxyCore, Comet } from "./cosmos-layers";
-import {
-  STARS_FAR_AMBIENT,
-  STARS_FAR_HERO,
-  SHELL_FIELDS,
-  STREAK_FIELDS,
-  CHART_A,
-  CHART_B,
-  STAR_ALPHA,
-  LIGHT_FLOOR,
-  nebulaBlobs,
-} from "./cosmos-sky";
+import { STARS_FAR, SHELL_FIELDS, STREAK_FIELDS, CHART_A, CHART_B, STAR_ALPHA, LIGHT_FLOOR, nebulaBlobs } from "./cosmos-sky";
 
 // The Canvas Universe as a continuous galactic fly-through: the camera travels
 // toward the brand's conic-spectrum galaxy at the vanishing point while seeded star
@@ -22,6 +11,11 @@ import {
 // Milky Way"). Every mounted instance binds to the SINGLETON clock in
 // cosmos-clock.ts, so the flight carries its exact phase across page changes, tab
 // switches, and back-swipes instead of restarting.
+//
+// ONE composition everywhere, by requirement: every screen renders the identical
+// sky (same seeded fields, same shell offsets, same galaxy, same alphas), so moving
+// between any two screens is pixel-continuous. There is deliberately no per-screen
+// mood; intensity is tuned once, legibility-first, for content pages.
 //
 // Mechanics: each shell derives a staggered sawtooth phase from the one master
 // flight value via chained interpolations (the wrap seam lands where opacity is 0);
@@ -34,6 +28,11 @@ const SCALE_IN = [0, 0.25, 0.5, 0.75, 1];
 const DOT_SCALE = [0.35, 0.55, 0.9, 1.5, 2.4];
 const STREAK_SCALE = [0.5, 0.75, 1.15, 1.8, 2.6];
 const FADE_IN = [0, 0.12, 0.78, 0.95, 1];
+
+// The evenly staggered shell offsets, identical on every screen: four dot shells on
+// the quarters, two streak shells on the odd eighths between them.
+const DOT_OFFSETS = [0, 0.25, 0.5, 0.75];
+const STREAK_OFFSETS = [0.125, 0.625];
 
 // Shell phase (flight + offset) mod 1 as a chained interpolation; the epsilon step
 // avoids a degenerate 0-width segment at the seam.
@@ -54,9 +53,7 @@ function shellInterp(offset: number, scaleOut: number[], cap: number) {
   };
 }
 
-export function Cosmos({ hero }: { hero?: boolean }) {
-  const pathname = usePathname();
-  const isHero = hero ?? pathname === "/";
+export function Cosmos() {
   const { tokens, dark } = useTheme();
   const { width, height } = useWindowDimensions();
   const reduced = useReducedMotion();
@@ -76,13 +73,9 @@ export function Cosmos({ hero }: { hero?: boolean }) {
   const shellSize = Math.ceil(2 * Math.hypot(0.5 * width, 0.58 * height));
   const shellStyle = { position: "absolute" as const, left: coreX - shellSize / 2, top: coreY - shellSize / 2 };
 
-  const shellCap = dark ? (isHero ? 0.65 : 0.5) : isHero ? 0.38 : 0.3;
-  const dotShells = isHero
-    ? [0, 1 / 6, 3 / 6, 4 / 6].map((o, i) => ({ ...shellInterp(o, DOT_SCALE, shellCap), field: SHELL_FIELDS[i] }))
-    : [0, 1 / 3, 2 / 3].map((o, i) => ({ ...shellInterp(o, DOT_SCALE, shellCap), field: SHELL_FIELDS[i] }));
-  const streakShells = isHero
-    ? [2 / 6, 5 / 6].map((o, i) => ({ ...shellInterp(o, STREAK_SCALE, shellCap), field: STREAK_FIELDS[i] }))
-    : [];
+  const shellCap = dark ? 0.58 : 0.34;
+  const dotShells = DOT_OFFSETS.map((o, i) => ({ ...shellInterp(o, DOT_SCALE, shellCap), field: SHELL_FIELDS[i] }));
+  const streakShells = STREAK_OFFSETS.map((o, i) => ({ ...shellInterp(o, STREAK_SCALE, shellCap), field: STREAK_FIELDS[i] }));
 
   const backdropOpacity = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.9] });
 
@@ -94,17 +87,17 @@ export function Cosmos({ hero }: { hero?: boolean }) {
   const chartScale = clock.flight.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.92, 1.14, 0.92] });
   const chartOpacity = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.7] });
 
-  const neb = nebulaBlobs(tokens.primary, dark, isHero);
+  const neb = nebulaBlobs(tokens.primary, dark);
   const neb1Size = 760;
   const neb2Size = 680;
   const neb1Style = { position: "absolute" as const, left: width * 0.7 - neb1Size / 2, top: height * 0.25 - neb1Size / 2 };
   const neb2Style = { position: "absolute" as const, left: width * 0.2 - neb2Size / 2, top: height * 0.8 - neb2Size / 2 };
 
   const minDim = Math.min(width, height);
-  const galaxySize = isHero ? Math.min(340, Math.round(minDim * 0.5)) : Math.min(200, Math.round(minDim * 0.32));
+  const galaxySize = Math.min(280, Math.round(minDim * 0.42));
   const galaxyStyle = { position: "absolute" as const, left: coreX - galaxySize / 2, top: coreY - galaxySize / 2 };
   const galaxyRotate = clock.coreSpin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
-  const galaxyRange: [number, number] = isHero ? (dark ? [0.4, 0.5] : [0.5, 0.62]) : dark ? [0.14, 0.18] : [0.1, 0.14];
+  const galaxyRange: [number, number] = dark ? [0.26, 0.34] : [0.28, 0.36];
   const galaxyOpacity = clock.coreBreath.interpolate({ inputRange: [0, 1], outputRange: galaxyRange });
 
   const cometX = clock.comet.interpolate({ inputRange: [0, 1], outputRange: [-240, width * 1.1] });
@@ -120,7 +113,7 @@ export function Cosmos({ hero }: { hero?: boolean }) {
       <Starfield
         width={width}
         height={height}
-        stars={isHero ? STARS_FAR_HERO : STARS_FAR_AMBIENT}
+        stars={STARS_FAR}
         dark={dark}
         alphaCap={dark ? STAR_ALPHA.far.dark : STAR_ALPHA.far.light}
         opacity={backdropOpacity}
@@ -135,20 +128,13 @@ export function Cosmos({ hero }: { hero?: boolean }) {
         <FlightShell key={i} size={shellSize} dots={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />
       ))}
 
-      <ConstellationChart
-        width={width}
-        height={height}
-        figures={isHero ? [...CHART_A, ...CHART_B] : CHART_A}
-        dark={dark}
-        scale={chartScale}
-        opacity={chartOpacity}
-      />
+      <ConstellationChart width={width} height={height} figures={[...CHART_A, ...CHART_B]} dark={dark} scale={chartScale} opacity={chartOpacity} />
 
       {streakShells.map((s, i) => (
         <StreakShell key={i} size={shellSize} streaks={s.field} dark={dark} alphaCap={1} style={shellStyle} scale={s.scale} opacity={s.opacity} />
       ))}
 
-      {isHero ? <Comet translateX={cometX} translateY={cometY} opacity={cometOpacity} angle="14deg" /> : null}
+      <Comet translateX={cometX} translateY={cometY} opacity={cometOpacity} angle="14deg" />
     </View>
   );
 }

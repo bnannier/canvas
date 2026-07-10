@@ -15,12 +15,12 @@ import { Cosmos } from "../brand/cosmos";
 // View, so the web build stays byte-identical (an extra flex wrapper there collapses
 // onLayout-measured tile grids). On native it also mounts the Canvas Universe backdrop
 // behind the (transparent-in-glass) scroller, the native counterpart of the web shell's
-// Cosmos mount; `hero` picks the vivid mood (the home screen passes it).
-export function ScreenFrame({ children, hero = false }: { children: ReactNode; hero?: boolean }) {
+// Cosmos mount.
+export function ScreenFrame({ children }: { children: ReactNode }) {
   if (Platform.OS === "web") return <>{children}</>;
   return (
     <View style={{ flex: 1 }}>
-      <ScreenCosmos hero={hero} />
+      <ScreenCosmos />
       {children}
       <NativeHeader />
     </View>
@@ -28,12 +28,13 @@ export function ScreenFrame({ children, hero = false }: { children: ReactNode; h
 }
 
 // The per-screen native cosmos, glass-gated like the web mount. It renders even on
-// unfocused screens: the singleton clock keeps every mounted sky phase-identical, so
-// the flight is already live and continuous on the screen a back-swipe reveals.
-function ScreenCosmos({ hero }: { hero: boolean }) {
+// unfocused screens: the singleton clock keeps every mounted sky phase-identical, and
+// the composition is the same on every screen, so the flight a navigation or
+// back-swipe reveals is pixel-continuous with the one you left.
+function ScreenCosmos() {
   const { surface } = useTheme();
   if (surface !== "glass") return null;
-  return <Cosmos hero={hero} />;
+  return <Cosmos />;
 }
 
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,
