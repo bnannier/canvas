@@ -10,6 +10,9 @@ export default function Example(scope: ExampleScope) {
   <Avatar src="/liang-bao.jpg" name="LB" />
   <Avatar src="/marcus-allen.jpg" name="MA" />
   <Avatar src="/kira-tanaka.jpg" name="KT" />
+  <Avatar src="/ada-lovelace.jpg" name="AL" />
+  <Avatar src="/grace-hopper.jpg" name="GH" />
+  <Avatar src="/noor-park.jpg" name="NP" />
 </AvatarGroup>
   );
 }

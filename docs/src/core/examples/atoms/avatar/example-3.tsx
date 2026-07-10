@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Typography, Row, Column } = scope;
+  const { Avatar, Dropdown, Icon, Chip } = scope;
   return (
-<Row relaxed alignCenter>
-  <Avatar src="/rachel-chen.jpg" name="RC" />
-  <Column>
-    <Typography lead semibold>Rachel Chen</Typography>
-    <Typography small muted>rachel.chen@example.com</Typography>
-  </Column>
-</Row>
+<Dropdown items={[
+    { label: "Your profile", icon: "👤" },
+    { label: "Settings", icon: "⚙" },
+    { label: "Sign out", icon: "↩", separatorBefore: true }
+  ]}>
+  <Chip outline icon={<Avatar small src="/marcus-allen.jpg" name="MA" />} trailing={<Icon chevronDown muted size={12} />}>admin@example.com</Chip>
+</Dropdown>
   );
 }

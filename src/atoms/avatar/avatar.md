@@ -18,10 +18,27 @@ A photo when the account has one, falling back to two initials on a brand gradie
   <Avatar src="/liang-bao.jpg" name="LB" />
   <Avatar src="/marcus-allen.jpg" name="MA" />
   <Avatar src="/kira-tanaka.jpg" name="KT" />
+  <Avatar src="/ada-lovelace.jpg" name="AL" />
+  <Avatar src="/grace-hopper.jpg" name="GH" />
+  <Avatar src="/noor-park.jpg" name="NP" />
 </AvatarGroup>
 ```
 
 ### Variant - topbar
+
+A lone avatar as the account trigger: on iOS the circle is interactive Liquid Glass, so it reads as a control and tapping it opens the account menu, no email or chevron needed.
+
+```tsx
+<Dropdown items={[
+    { label: "Your profile", icon: "👤" },
+    { label: "Settings", icon: "⚙" },
+    { label: "Sign out", icon: "↩", separatorBefore: true }
+  ]}>
+  <Avatar small name="MA" />
+</Dropdown>
+```
+
+### Variant - topbar with email
 
 ```tsx
 <Dropdown items={[
@@ -114,13 +131,13 @@ A photo when the account has one, falling back to two initials on a brand gradie
 
 ### Topbar account menu
 
-**Do** — Pair it with the account name and a chevron so it reads as a trigger.
+**Do** — Wrap the trigger in a Dropdown so it opens the account menu. A lone avatar works (on iOS its glass surface reads as an interactive control); pair it with the account name and a chevron when you want the affordance to be explicit everywhere.
 
 ```tsx
 <Chip outline icon={<Avatar small src="/marcus-allen.jpg" name="MA" />} trailing={<Icon chevronDown muted size={12} />}>admin@example.com</Chip>
 ```
 
-**Don't** — A lone avatar gives no hint that it opens the account menu.
+**Don't** — A bare avatar with no Dropdown around it is decorative, not a trigger, and opens nothing.
 
 ```tsx
 <Avatar small src="/marcus-allen.jpg" name="MA" />

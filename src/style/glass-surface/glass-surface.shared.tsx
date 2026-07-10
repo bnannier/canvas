@@ -24,6 +24,14 @@ export interface GlassSurfaceProps {
   pointerEvents?: ViewProps["pointerEvents"];
   /** E2E hook forwarded to the root element. */
   testID?: string;
+  /**
+   * Render the material as an INTERACTIVE control surface: on iOS 26 the native
+   * Liquid Glass responds to touch with its fluid press animation (Apple's
+   * `isInteractive`). Use for glass that is itself a tappable control (e.g. an
+   * account-trigger avatar), not for passive shells like navbars. Ignored on the
+   * frost/solid fallbacks, which have no interactive material. Defaults to false.
+   */
+  interactive?: boolean;
 }
 
 // Blur strength for the frost. expo-blur maps intensity to a blur radius (~0.2px

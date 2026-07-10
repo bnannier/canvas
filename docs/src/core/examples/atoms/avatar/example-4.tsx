@@ -3,17 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Divider, Typography, Row, Column } = scope;
+  const { Avatar, Typography, Row, Column } = scope;
   return (
-<Column snug>
-  <Row cozy alignCenter>
-    <Avatar src="/ada-lovelace.jpg" name="AL" />
-    <Column>
-      <Typography small semibold>Ada Lovelace</Typography>
-      <Typography tiny muted>admin@example.com</Typography>
-    </Column>
-  </Row>
-  <Divider />
-</Column>
+<Row relaxed alignCenter>
+  <Avatar src="/rachel-chen.jpg" name="RC" />
+  <Column>
+    <Typography lead semibold>Rachel Chen</Typography>
+    <Typography small muted>rachel.chen@example.com</Typography>
+  </Column>
+</Row>
   );
 }

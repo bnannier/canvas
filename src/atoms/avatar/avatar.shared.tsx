@@ -1,5 +1,11 @@
-import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from "react";
+import { Children, cloneElement, isValidElement, useState, type ComponentType, type ReactElement, type ReactNode } from "react";
 import { View, Image, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle } from "../../style/index.js";
+
+// A platform-supplied surface for the initials fallback. iOS passes a GlassSurface
+// wrapper (real Liquid Glass) via createAvatar; web and Android pass nothing, so the
+// fallback stays the original plain, solid box. The glass path never enters the web or
+// Android bundle because only avatar.ios imports GlassSurface.
+export type AvatarSurface = ComponentType<{ style?: StyleProp<ViewStyle>; testID?: string; children?: ReactNode }>;
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
 // back to one or two initials on a muted surface), the boolean-prop axes, the
@@ -136,8 +142,13 @@ function labelStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size): TextStyl
   return { color: tokens["muted-foreground"], ...skin.labelType[size] };
 }
 
-/** Build an Avatar component from a platform skin. */
-export function createAvatar(skin: AvatarSkin) {
+/**
+ * Build an Avatar component from a platform skin. `GlassFallback` is an optional,
+ * platform-supplied surface for the initials fallback: iOS passes its interactive
+ * Liquid Glass surface, web and Android pass nothing (so their box stays solid and
+ * their bundles never pull in the glass material).
+ */
+export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
   return function Avatar(props: AvatarProps) {
     const { src, uri, name, initials, children, ring, accessibilityLabel, onPress, testID, style } = props;
     const { tokens } = useTheme();
@@ -173,25 +184,44 @@ export function createAvatar(skin: AvatarSkin) {
       inner = glyph ? <Text style={labelStyle(tokens, skin, size)}>{glyph}</Text> : null;
     }
 
+    // Glass applies ONLY to the initials fallback, and ONLY when a platform supplied a
+    // glass surface (iOS). A photo avatar, web, and Android all take the original plain
+    // path below: the container (size, shape, muted fill, ring) sits directly on the
+    // View/Pressable, exactly as before, so those platforms are untouched by glass.
+    const useGlass = !showPhoto && GlassFallback != null;
+
+    if (!useGlass) {
+      if (onPress) {
+        return (
+          <Pressable
+            android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+            style={({ pressed }) => [container, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+            onPress={onPress}
+            testID={testID}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            aria-label={label}
+          >
+            {inner}
+          </Pressable>
+        );
+      }
+      return <View style={container} testID={testID}>{inner}</View>;
+    }
+
+    // iOS initials fallback: the injected GlassSurface owns the sized, shaped surface;
+    // its material supplies the fill and, being interactive, its own touch animation. A
+    // pressable avatar wraps it in a bare Pressable (the glass itself signals the press,
+    // so there is no opacity dim on top of the material's animation).
+    const Surface = GlassFallback;
     if (onPress) {
       return (
-        <Pressable
-          android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-          style={({ pressed }) => [
-            container,
-            pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null,
-          ]}
-          onPress={onPress}
-          testID={testID}
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          aria-label={label}
-        >
-          {inner}
+        <Pressable onPress={onPress} testID={testID} accessibilityRole="button" accessibilityLabel={label} aria-label={label}>
+          <Surface style={container}>{inner}</Surface>
         </Pressable>
       );
     }
-    return <View style={container} testID={testID}>{inner}</View>;
+    return <Surface style={container} testID={testID}>{inner}</Surface>;
   };
 }
 
@@ -207,9 +237,9 @@ export type Overlap = "tight" | "snug" | "loose";
 // Overlap (negative marginLeft) per size and tightness. The magic negative margin
 // is owned here, once, instead of at every call site.
 const OVERLAP: Record<Size, Record<Overlap, number>> = {
-  small: { tight: -10, snug: -6, loose: -2 },
-  default: { tight: -12, snug: -8, loose: -4 },
-  large: { tight: -14, snug: -10, loose: -6 },
+  small: { tight: -13, snug: -8, loose: -3 },
+  default: { tight: -16, snug: -10, loose: -5 },
+  large: { tight: -20, snug: -13, loose: -7 },
 };
 
 export interface AvatarGroupProps {
