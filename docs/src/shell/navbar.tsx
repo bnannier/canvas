@@ -9,7 +9,7 @@ import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
 import { TabOverflowMenu } from "./tab-overflow-menu";
-import { GlassAurora } from "../ui/glass";
+import { Cosmos } from "../brand/cosmos";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
@@ -146,7 +146,7 @@ function WebNav() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
         <WebScrollbarTheme />
-        {glass ? <GlassAurora /> : null}
+        {glass ? <Cosmos /> : null}
         <View style={{ flex: 1, minWidth: 0 }}>
           <View style={{ flex: 1 }}>
             <Slot />
@@ -199,7 +199,7 @@ function WebNav() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
-      {glass ? <GlassAurora /> : null}
+      {glass ? <Cosmos /> : null}
       <View style={{ flex: 1, flexDirection: "row" }}>
         <View style={{ width: collapsed ? 56 : 240, borderRightWidth: 1, borderColor: tokens.border }}>
           <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />

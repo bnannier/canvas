@@ -28,14 +28,15 @@ const BADGES: { i: number; color: string; render: (s: number, tint: string) => R
 // stop (most visible green→yellow and blue→purple), so the colour is interpolated with a CLOSED
 // Catmull-Rom spline through the hues instead: it passes through every hue but with a continuous
 // first derivative, so neighbouring hues blend with no slope kink and therefore no seam.
-const GLOW = ["#06b6d4", "#22c55e", "#f59e0b", "#fb6a3c", "#ec4899", "#a855f7"];
+export const GLOW = ["#06b6d4", "#22c55e", "#f59e0b", "#fb6a3c", "#ec4899", "#a855f7"];
 const GLOW_RGB = GLOW.map((h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
 function catmull(p0: number, p1: number, p2: number, p3: number, t: number): number {
   const t2 = t * t, t3 = t2 * t;
   return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 }
 // The conic glow color at a screen angle (deg): a smooth closed Catmull-Rom sweep of the six hues.
-function glowColor(deg: number): string {
+// Exported for the Cosmos galaxy core, which paints the same sweep as a distant galaxy.
+export function glowColor(deg: number): string {
   const n = GLOW_RGB.length;
   const seg = ((((deg % 360) + 360) % 360) / 360) * n; // 0..n around the wheel
   const i = Math.floor(seg) % n, t = seg - Math.floor(seg);
