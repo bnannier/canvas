@@ -161,20 +161,16 @@ export function Home() {
     <ScreenFrame>
     <ScrollView
       style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
-      // The hero must start at the very top of the viewport (its Aurora fills behind the
-      // transparent nav bar), so do NOT inset the content for the top bar. The hero's own
-      // paddingTop brings the copy below the bar; paddingBottom clears the tab bar — both
-      // insets we'd otherwise inherit from "automatic". No-op on web (the Topbar is cleared by
-      // CONTENT_TOP_INSET and there is no native tab bar).
-      contentInsetAdjustmentBehavior="never"
+      // "automatic" lets iOS inset the content below the transparent nav bar (and it is a
+      // no-op on web, where CONTENT_TOP_INSET clears the topbar). The old "never" relied on
+      // the native stack insetting the FIRST scroll view it finds under the screen, which
+      // broke when the Cosmos backdrop became the screen's first child; and the hero no
+      // longer needs to reach the very top itself, since the backdrop fills behind the bar
+      // from outside the scroller.
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? 0 : 49) }}
     >
       {/* ── Hero ── */}
-      {/* The scroller's content is ALREADY inset below the bar: on native the navigation insets
-          the screen content under the (transparent) header, and on web CONTENT_TOP_INSET clears the
-          topbar. So the hero only adds a small gap below that, NOT another status-bar + nav-bar
-          offset (that double-inset was pushing the hero down). The aurora still fills behind the
-          bar because it is absolutely positioned with a negative top, independent of this. */}
       <View style={{ paddingTop: wide ? 18 : 8, paddingBottom: 56 }}>
         <Wrap>
           {/* Tighter copy-to-orbit gap when stacked so the large phone orbit stays fully on screen. */}
