@@ -146,19 +146,24 @@ export function NativeHeader() {
     );
   }
 
-  // Android: a Material header whose trailing hamburger opens the shared overflow sheet
-  // (the full merged section list, plus the ThemeToggles footer for web parity). The
-  // hamburger and sheet are always present now: even a section with no menu items still
-  // offers the Appearance controls in the footer.
+  // Android: a Material top app bar carrying the appearance controls (Solid/Frost + light/dark)
+  // always-visible in the trailing slot, matching the web's top-right controls, followed by the
+  // section-menu hamburger. The hamburger opens the shared overflow sheet (the merged section
+  // list); it is always present so even a menu-less section stays navigable. Appearance no longer
+  // lives in the sheet footer (it was occluded there by the native tab bar and was buried); it is
+  // in the bar now. (iOS hosts appearance in the native header UIMenu; see the branch above.)
   return (
     <>
       <Stack.Screen
         options={{
           headerTitle: title,
           headerRight: () => (
-            <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }}>
-              <Icon menu size={22} />
-            </Pressable>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <ThemeToggles compact />
+              <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }}>
+                <Icon menu size={22} />
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -168,7 +173,6 @@ export function NativeHeader() {
         menu={model}
         activeGroup={activeGroup}
         activeSlug={activeSlug}
-        footer={<ThemeToggles />}
       />
     </>
   );
