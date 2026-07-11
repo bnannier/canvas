@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input multiline placeholder="Describe the change" style={{ maxWidth: 320 }} />
+<Input multiline placeholder="Describe the change" />
   );
 }

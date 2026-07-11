@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Combobox } = scope;
   return (
-<Combobox label="Size" options={["Small", "Medium", "Large"]} defaultOpen placeholder="Search…" style={{ maxWidth: 280 }} />
+<Combobox label="Size" options={["Small", "Medium", "Large"]} defaultOpen placeholder="Search…" />
   );
 }

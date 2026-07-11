@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input, Typography, Column } = scope;
   return (
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Typography small medium>Storage</Typography>
   <Input value="1024" suffix="GB" />
 </Column>

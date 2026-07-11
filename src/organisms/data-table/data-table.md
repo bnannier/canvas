@@ -60,7 +60,7 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
 ```tsx
 <Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <Row snug alignCenter between pad>
-    <Input small placeholder="Search users..." style={{ maxWidth: 240 }} />
+    <Input small narrow placeholder="Search users..." />
     <Button outline small>Export</Button>
   </Row>
   <Divider />

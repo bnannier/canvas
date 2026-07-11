@@ -11,15 +11,15 @@ export default function Example(scope: ExampleScope) {
     <View style={{ marginTop: 16, gap: 16 }}>
       <View>
         <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>New owner email</Text>
-        <Input placeholder="owner@example.com" />
+        <Input block placeholder="owner@example.com" />
       </View>
       <View>
         <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Reason</Text>
-        <Input placeholder="Optional note" />
+        <Input block placeholder="Optional note" />
       </View>
       <View>
         <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Type TRANSFER to confirm</Text>
-        <Input placeholder="TRANSFER" />
+        <Input block placeholder="TRANSFER" />
       </View>
     </View>
     <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>

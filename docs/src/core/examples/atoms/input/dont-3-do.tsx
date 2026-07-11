@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea, Typography, Column } = scope;
   return (
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Typography small medium>Notes</Typography>
   <Textarea rows={4} value="Describe the change in enough detail that a teammate could follow it…" />
 </Column>

@@ -5,9 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea, Typography, Row, Column } = scope;
   return (
-<Column tight style={{ maxWidth: 400 }}>
+<Column tight>
   <Typography small medium>Description</Typography>
-  <Textarea rows={4} placeholder="A few words about this project…" />
+  <Textarea rows={4} wide placeholder="A few words about this project…" />
   <Row end>
     <Typography tiny muted>0 / 280</Typography>
   </Row>

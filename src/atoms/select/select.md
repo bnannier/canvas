@@ -10,7 +10,6 @@ Native select restyled to match Canvas inputs.
   defaultValue="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -25,7 +24,6 @@ Native select restyled to match Canvas inputs.
   defaultValue="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -38,7 +36,6 @@ Native select restyled to match Canvas inputs.
   defaultValue="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -51,7 +48,6 @@ Native select restyled to match Canvas inputs.
   defaultValue="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -64,7 +60,6 @@ Native select restyled to match Canvas inputs.
   defaultValue="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
-  style={{ maxWidth: 280 }}
 />
 ```
 
@@ -74,7 +69,7 @@ Native select restyled to match Canvas inputs.
 
 ```tsx
 <Column style={{ minHeight: 220 }}>
-  <Select defaultOpen label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+  <Select defaultOpen label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} />
 </Column>
 ```
 
@@ -100,7 +95,7 @@ Native select restyled to match Canvas inputs.
 **Don't** — A stacked block label towers over the small control and breaks the dense row it belongs in.
 
 ```tsx
-<Select small label="Rows per page" defaultValue="10" options={["10", "25", "50"]} style={{ maxWidth: 200 }} />
+<Select small narrow label="Rows per page" defaultValue="10" options={["10", "25", "50"]} />
 ```
 
 ### default
@@ -138,7 +133,7 @@ Native select restyled to match Canvas inputs.
 **Do** — Scale the text up with the height so the large select reads as a deliberate, touch-friendly target.
 
 ```tsx
-<Select large label="Plan" defaultValue="Starter" options={["Starter", "Pro", "Enterprise"]} style={{ maxWidth: 320 }} />
+<Select large label="Plan" defaultValue="Starter" options={["Starter", "Pro", "Enterprise"]} />
 ```
 
 **Don't** — Tiny option text inside a tall control wastes the height and looks like an accidental mismatch.

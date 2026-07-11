@@ -18,7 +18,6 @@ export default function Example(scope: ExampleScope) {
   label="Assigned to"
   helperText="The person responsible for this account."
   placeholder="Search a person…"
-  style={{ maxWidth: 300 }}
 />
   );
 }

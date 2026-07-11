@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Select } = scope;
   return (
-<Select small label="Rows per page" defaultValue="10" options={["10", "25", "50"]} style={{ maxWidth: 200 }} />
+<Select small narrow label="Rows per page" defaultValue="10" options={["10", "25", "50"]} />
   );
 }

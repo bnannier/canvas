@@ -18,7 +18,6 @@ export default function Example(scope: ExampleScope) {
   label="Assigned to"
   placeholder="Search a person…"
   disabled
-  style={{ maxWidth: 300 }}
 />
   );
 }

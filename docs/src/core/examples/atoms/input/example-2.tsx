@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Select, Typography, Column } = scope;
   return (
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Select label="Status" defaultValue="Active" options={["Active", "Inactive", "Pending"]} />
   <Typography tiny muted>We'll use this for account recovery.</Typography>
 </Column>

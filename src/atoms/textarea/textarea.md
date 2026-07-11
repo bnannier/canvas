@@ -13,9 +13,9 @@ Multi-line input, with character count, with toolbar.
 ### Character counter
 
 ```tsx
-<Column tight style={{ maxWidth: 400 }}>
+<Column tight>
   <Typography small medium>Description</Typography>
-  <Textarea rows={4} placeholder="A few words about this project…" />
+  <Textarea rows={4} wide placeholder="A few words about this project…" />
   <Row end>
     <Typography tiny muted>0 / 280</Typography>
   </Row>
@@ -51,9 +51,9 @@ Multi-line input, with character count, with toolbar.
 **Do** — Give a sensible min-height and allow vertical resize so users can see and grow their text.
 
 ```tsx
-<Column snug style={{ maxWidth: 400 }}>
+<Column snug>
   <Typography small medium>Description</Typography>
-  <Textarea rows={3} value="This is a longer description that runs past one line and stays readable." />
+  <Textarea rows={3} wide value="This is a longer description that runs past one line and stays readable." />
 </Column>
 ```
 
@@ -71,9 +71,9 @@ Multi-line input, with character count, with toolbar.
 **Do** — Show the live count against the cap and turn it destructive past the limit so the overage is precise.
 
 ```tsx
-<Column snug style={{ maxWidth: 400 }}>
+<Column snug>
   <Typography small medium>Bio</Typography>
-  <Textarea rows={3} invalid value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
+  <Textarea rows={3} wide invalid value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
   <Row end>
     <Typography tiny destructive>123 / 120</Typography>
   </Row>
@@ -126,9 +126,9 @@ Multi-line input, with character count, with toolbar.
 **Do** — Use the disabled attribute so the field blocks editing and focus, matching its dimmed look.
 
 ```tsx
-<Column snug style={{ maxWidth: 400 }}>
+<Column snug>
   <Typography small medium>Description</Typography>
-  <Textarea rows={3} disabled value="Read-only content the user must not change." />
+  <Textarea rows={3} wide disabled value="Read-only content the user must not change." />
 </Column>
 ```
 

@@ -5,7 +5,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 ## Usage
 
 ```tsx
-<Input placeholder="rachel.chen@example.com" style={{ maxWidth: 320 }} />
+<Input placeholder="rachel.chen@example.com" />
 ```
 
 ## Variants
@@ -13,13 +13,13 @@ The Input component is a React Native text field with semantic boolean props (`e
 ### Control - number
 
 ```tsx
-<Input placeholder="1024" style={{ maxWidth: 320 }} />
+<Input placeholder="1024" />
 ```
 
 ### Control - select
 
 ```tsx
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Select label="Status" defaultValue="Active" options={["Active", "Inactive", "Pending"]} />
   <Typography tiny muted>We'll use this for account recovery.</Typography>
 </Column>
@@ -28,43 +28,43 @@ The Input component is a React Native text field with semantic boolean props (`e
 ### Control - textarea
 
 ```tsx
-<Input multiline placeholder="Describe the change" style={{ maxWidth: 320 }} />
+<Input multiline placeholder="Describe the change" />
 ```
 
 ### Addon - prefix
 
 ```tsx
-<Input prefix="https://" placeholder="canvas.dev" style={{ maxWidth: 320 }} />
+<Input prefix="https://" placeholder="canvas.dev" />
 ```
 
 ### Addon - action
 
 ```tsx
-<Input suffix="Copy" action value="cnv_3f9a21b8e7" style={{ maxWidth: 320 }} />
+<Input suffix="Copy" action value="cnv_3f9a21b8e7" />
 ```
 
 ### Addon - icon
 
 ```tsx
-<Input leadingIcon icon="search" placeholder="Search" style={{ maxWidth: 320 }} />
+<Input leadingIcon icon="search" placeholder="Search" />
 ```
 
 ### State - error
 
 ```tsx
-<Input error placeholder="rachel.chen@example.com" style={{ maxWidth: 320 }} />
+<Input error placeholder="rachel.chen@example.com" />
 ```
 
 ### State - disabled
 
 ```tsx
-<Input disabled placeholder="rachel.chen@example.com" style={{ maxWidth: 320 }} />
+<Input disabled placeholder="rachel.chen@example.com" />
 ```
 
 ### State - readonly
 
 ```tsx
-<Input readOnly placeholder="rachel.chen@example.com" style={{ maxWidth: 320 }} />
+<Input readOnly placeholder="rachel.chen@example.com" />
 ```
 
 ## Do & Don't
@@ -74,7 +74,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Pair every field with a persistent .label above the control.
 
 ```tsx
-<Field label="Email" placeholder="ada@acme.dev" style={{ maxWidth: 320 }} />
+<Field label="Email" placeholder="ada@acme.dev" />
 ```
 
 **Don't** — A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.
@@ -88,7 +88,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Use type="number" with inputmode and park the unit in a .input-addon so the value stays purely numeric.
 
 ```tsx
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Typography small medium>Storage</Typography>
   <Input value="1024" suffix="GB" />
 </Column>
@@ -105,7 +105,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Reserve a select for picking one of several mutually exclusive options; use a switch or radios for two.
 
 ```tsx
-<Select label="Status" options={["Active", "Inactive", "Pending", "Archived"]} defaultValue="Active" style={{ maxWidth: 320 }} />
+<Select label="Status" options={["Active", "Inactive", "Pending", "Archived"]} defaultValue="Active" />
 ```
 
 **Don't** — A select for a single on/off choice buries a one-tap decision behind a dropdown.
@@ -119,7 +119,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Give a textarea a min-height for several lines and resize-y so it can grow with the content.
 
 ```tsx
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Typography small medium>Notes</Typography>
   <Textarea rows={4} value="Describe the change in enough detail that a teammate could follow it…" />
 </Column>

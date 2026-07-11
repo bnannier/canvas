@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input placeholder="1024" style={{ maxWidth: 320 }} />
+<Input placeholder="1024" />
   );
 }

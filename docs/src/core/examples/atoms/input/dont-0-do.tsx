@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Field } = scope;
   return (
-<Field label="Email" placeholder="ada@acme.dev" style={{ maxWidth: 320 }} />
+<Field label="Email" placeholder="ada@acme.dev" />
   );
 }
