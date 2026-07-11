@@ -143,7 +143,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "input",
     name: "Input",
-    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>block</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons; <code>multiline</code> turns it into a textarea. Select and the search field share its look, and Field and Form compose a label, the control, and helper text.",
+    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons; <code>multiline</code> turns it into a textarea. Every field renders at the standard width by default (<code>narrow</code> and <code>wide</code> pick the other modes, <code>block</code> fills the container). Select and the search field share its look, and Field and Form compose a label, the control, and helper text.",
     category: "Atoms",
   },
 

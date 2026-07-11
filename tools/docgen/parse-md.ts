@@ -142,6 +142,9 @@ export function scopeNamesFromLiveScope(src: string): string[] {
 // composition, not styling), `overflow`, and `textAlign` (Typography has no align
 // axis yet). "Don't" fences are exempt at the call site (they hand-roll the wrong
 // way on purpose), so this is only run over the example and "Do" fences.
+// EXCEPTION to the width allowance: max/minWidth placed directly on an
+// input-like control is the shim the standard field width axis replaced; see
+// fieldWidthShimViolations below.
 export const BANNED_STYLE_PROPS: string[] = [
   // layout / spacing / positioning — belongs to Row/Column or the component
   "flexDirection", "flexWrap", "flex", "flexGrow", "flexShrink", "flexBasis",
@@ -197,6 +200,61 @@ export function bannedStyleViolations(code: string): string[] {
     for (const key of BANNED_STYLE_PROPS) {
       // Key as an object member: preceded by "{", "," or whitespace, followed by ":".
       if (new RegExp(`(?:^|[{,\\s])${key}\\s*:`).test(expr)) found.add(key);
+    }
+  }
+  return [...found];
+}
+
+// The input-like controls carrying the standard field width axis
+// (block/narrow/wide, src/style/field-width.ts). Width on these is a semantic
+// choice, so a `maxWidth`/`minWidth` in a `style` placed DIRECTLY on one of
+// these tags is the exact shim the axis replaced and is banned in example/"Do"
+// fences. Explicit `width` stays allowed (deliberate side-by-side comparisons),
+// as do width bounds on wrapper Views/Cards (page-layout composition). The
+// `// docgen-allow-style` line opt-out applies here too.
+const FIELD_WIDTH_TAGS = ["Input", "Textarea", "Select", "Combobox", "Field"] as const;
+const FIELD_WIDTH_BANNED = ["maxWidth", "minWidth"] as const;
+
+/**
+ * Violations of the field width axis: each entry is "<key> on <Tag>" for a
+ * max/minWidth style key found inside a style={…} attribute of an input-like
+ * control's opening tag.
+ */
+export function fieldWidthShimViolations(code: string): string[] {
+  const found = new Set<string>();
+  const tagRe = new RegExp(`<(${FIELD_WIDTH_TAGS.join("|")})\\b`, "g");
+  let m: RegExpExecArray | null;
+  while ((m = tagRe.exec(code)) !== null) {
+    // Walk the opening tag to its closing ">", tracking brace depth so a ">"
+    // inside a JSX expression attribute (e.g. an arrow function) doesn't end it.
+    let i = m.index + m[0].length;
+    let depth = 0;
+    let tagEnd = code.length;
+    for (; i < code.length; i++) {
+      const ch = code[i];
+      if (ch === "{") depth++;
+      else if (ch === "}") depth--;
+      else if (ch === ">" && depth === 0) { tagEnd = i; break; }
+    }
+    const tagSrc = code.slice(m.index, tagEnd);
+    // Field's read-only display mode (a rows= label/value table) is NOT a field
+    // and stays uncapped by the axis, so a width bound on it is composition.
+    if (m[1] === "Field" && /[\s{]rows\s*=/.test(tagSrc)) continue;
+    const styleAt = tagSrc.indexOf("style={");
+    if (styleAt === -1) continue;
+
+    // Same per-line opt-out as bannedStyleViolations, on the line where the
+    // style attribute begins.
+    const absAt = m.index + styleAt;
+    const lineStart = code.lastIndexOf("\n", absAt) + 1;
+    let lineEnd = code.indexOf("\n", absAt);
+    if (lineEnd === -1) lineEnd = code.length;
+    if (code.slice(lineStart, lineEnd).includes("docgen-allow-style")) continue;
+
+    for (const key of FIELD_WIDTH_BANNED) {
+      if (new RegExp(`(?:^|[{,\\s])${key}\\s*:`).test(tagSrc.slice(styleAt))) {
+        found.add(`${key} on <${m[1]}>`);
+      }
     }
   }
   return [...found];

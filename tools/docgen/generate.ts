@@ -14,7 +14,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, type Example, type DontPair } from "./parse-md.ts";
+import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, fieldWidthShimViolations, type Example, type DontPair } from "./parse-md.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -79,7 +79,10 @@ const EXEMPT_STYLE_DIRS = new Set(["view", "text", "text-input", "pressable", "s
 const styleViolations: { source: string; kind: string; props: string[] }[] = [];
 function recordFenceStyle(code: string, source: string, kind: string, dir: string) {
   if (EXEMPT_STYLE_DIRS.has(dir)) return;
-  const props = bannedStyleViolations(code);
+  // max/minWidth directly on an input-like control is the shim the standard
+  // field width axis (block/narrow/wide) replaced; report it alongside the
+  // banned style keys.
+  const props = [...bannedStyleViolations(code), ...fieldWidthShimViolations(code)];
   if (props.length) styleViolations.push({ source, kind, props });
 }
 

@@ -6,6 +6,7 @@ import {
   parseDonts,
   scopeNamesFromLiveScope,
   bannedStyleViolations,
+  fieldWidthShimViolations,
 } from "./parse-md.ts";
 
 // Unit tests for the docgen markdown parser (tools/docgen/parse-md.ts). These are
@@ -376,5 +377,53 @@ describe("bannedStyleViolations", () => {
     // Opt-out is per-line, so the two styles must live on separate lines.
     const code = `<V style={{ padding: 16 }} /* docgen-allow-style */>\n  <Text style={{ color: "red" }}>x</Text>\n</V>`;
     expect(bannedStyleViolations(code)).toEqual(["color"]);
+  });
+});
+
+describe("fieldWidthShimViolations", () => {
+  it("flags max/minWidth in a style placed directly on an input-like control", () => {
+    expect(fieldWidthShimViolations(`<Input style={{ maxWidth: 320 }} />`)).toEqual(["maxWidth on <Input>"]);
+    expect(fieldWidthShimViolations(`<Select style={{ minWidth: 200 }} options={[]} />`)).toEqual(["minWidth on <Select>"]);
+    expect(fieldWidthShimViolations(`<Combobox\n  options={[]}\n  style={{ maxWidth: 300 }}\n/>`)).toEqual([
+      "maxWidth on <Combobox>",
+    ]);
+  });
+
+  it("allows explicit width on the control (deliberate side-by-side comparison)", () => {
+    expect(fieldWidthShimViolations(`<Select style={{ width: 192 }} options={[]} />`)).toEqual([]);
+  });
+
+  it("allows width bounds on wrapper Views/Cards (page-layout composition)", () => {
+    const code = `<View style={{ maxWidth: 420 }}>\n  <Input placeholder="x" />\n</View>`;
+    expect(fieldWidthShimViolations(code)).toEqual([]);
+  });
+
+  it("does not leak past the opening tag into a sibling's style", () => {
+    // The Input's tag closes before the View opens; the View's maxWidth is fine.
+    const code = `<Input placeholder="x" />\n<View style={{ maxWidth: 360 }} />`;
+    expect(fieldWidthShimViolations(code)).toEqual([]);
+  });
+
+  it("is not fooled by a '>' inside an expression attribute before the style", () => {
+    const code = `<Input onChangeText={(t) => setV(t)} style={{ maxWidth: 320 }} />`;
+    expect(fieldWidthShimViolations(code)).toEqual(["maxWidth on <Input>"]);
+  });
+
+  it("does not false-match longer tag names (InputOTP is not Input)", () => {
+    expect(fieldWidthShimViolations(`<InputOTP style={{ maxWidth: 320 }} />`)).toEqual([]);
+  });
+
+  it("allows a width bound on Field's display mode (rows= is a table, not a field)", () => {
+    const code = `<Field rows={[{ label: "Plan", value: "Pro" }]} style={{ maxWidth: 400 }} />`;
+    expect(fieldWidthShimViolations(code)).toEqual([]);
+    // Control mode (no rows=) is still flagged.
+    expect(fieldWidthShimViolations(`<Field label="Name" style={{ maxWidth: 400 }} />`)).toEqual([
+      "maxWidth on <Field>",
+    ]);
+  });
+
+  it("respects the // docgen-allow-style opt-out on the style's line", () => {
+    const code = `<Input style={{ maxWidth: 320 }} /> {/* docgen-allow-style */}`;
+    expect(fieldWidthShimViolations(code)).toEqual([]);
   });
 });
