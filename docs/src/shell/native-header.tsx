@@ -1,12 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
-import { View, Pressable, Icon, useTheme, liquidGlassAvailable } from "@olympusoss/canvas";
+import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";
 import { ThemeToggles } from "./theme-toggles";
-import { useDocsTheme } from "../theme/docs-theme";
 import { Cosmos } from "../brand/cosmos";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
@@ -56,7 +55,6 @@ export function NativeHeader() {
   const router = useRouter();
   const isFocused = useIsFocused();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { override, surface, setScheme, setSurface } = useDocsTheme();
   if (Platform.OS === "web" || !isFocused) return null;
 
   const title = titleFor(pathname).title;
@@ -89,53 +87,23 @@ export function NativeHeader() {
           : { type: "submenu", label: n.label, ...(n.inline ? { inline: true as const } : {}), items: toItems(n.items) },
       );
     const items = toItems(nodes);
-    // The Appearance submenu (web-toggle parity as native UIMenu rows): Light/Dark/System
-    // with a check on the active choice, plus Solid/Frost only where glass is opt-in
-    // (on iOS 26 the platform default is already glass, matching the OS).
-    const schemeRow = (label: string, value: "light" | "dark" | null) => ({
-      type: "action" as const,
-      label,
-      onPress: () => setScheme(value),
-      ...(override === value ? { state: "on" as const } : {}),
-    });
-    const appearance = {
-      type: "submenu" as const,
-      label: "Appearance",
-      icon: { type: "sfSymbol", name: "circle.lefthalf.filled" } as const,
-      items: [
-        schemeRow("Light", "light"),
-        schemeRow("Dark", "dark"),
-        schemeRow("System", null),
-        ...(!liquidGlassAvailable()
-          ? [
-              {
-                type: "action" as const,
-                label: "Solid",
-                onPress: () => setSurface("solid"),
-                ...(surface === "solid" ? { state: "on" as const } : {}),
-              },
-              {
-                type: "action" as const,
-                label: "Frost",
-                onPress: () => setSurface("glass"),
-                ...(surface === "glass" ? { state: "on" as const } : {}),
-              },
-            ]
-          : []),
-      ],
-    };
     return (
       <Stack.Screen
         options={{
           headerTitle: title,
-          // The menu is always present now: section items when this section has them,
-          // and the Appearance submenu on every screen.
+          // Two trailing items: the section / site-map menu (a native UIMenu), and the kit
+          // appearance toggles (frost + light/dark) beside it — the SAME ThemeToggles the
+          // Android bar shows. They ride the native bar as a `type:"custom"` item: a React
+          // `headerRight` view is dropped when native items are present, so `custom` is how a
+          // React element composes alongside the native menu (and it is exempt from iOS 26's
+          // auto-collapse-into-a-menu behaviour, so it stays visible).
           unstable_headerRightItems: () => [
+            { type: "custom" as const, element: <ThemeToggles compact /> },
             {
               type: "menu" as const,
               label: "Menu",
               icon: { type: "sfSymbol", name: "line.3.horizontal" } as const,
-              menu: { items: [...items, appearance] },
+              menu: { items },
             },
           ],
         }}

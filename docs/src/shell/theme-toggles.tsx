@@ -2,10 +2,11 @@ import { View, Text, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable }
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 
-// The scheme + frost toggles, shown always-visible in the native Android top app bar
-// (`compact`) and in the mobile web drill-down sheet's footer (labeled). iOS hosts the same
-// controls as native UIMenu rows in the header instead. The Frost pair only shows where glass
-// is opt-in; on iOS 26 the platform default is already glass, matching the OS.
+// The scheme + frost toggles, shown always-visible in the native Android AND iOS top bars
+// (`compact`, placed beside the hamburger) and in the mobile web drill-down sheet's footer
+// (labeled). The compact form always offers the Solid/Frost toggle (both looks are worth
+// switching between even where glass is the OS default); the labeled form only shows it where
+// glass is opt-in.
 export function ThemeToggles({ compact = false }: { compact?: boolean }) {
   const { tokens } = useTheme();
   const { scheme, surface, toggleScheme, setSurface } = useDocsTheme();
@@ -30,16 +31,14 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
       <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-        {frostAvailable ? (
-          <Button
-            ghost
-            icon
-            small
-            accessibilityLabel={surface === "glass" ? "Frost surface on; tap for solid" : "Solid surface; tap for frost"}
-            iconLeft={surface === "glass" ? <Icon layers size={16} primary /> : <Icon layers size={16} muted />}
-            onPress={() => setSurface(surface === "glass" ? "solid" : "glass")}
-          />
-        ) : null}
+        <Button
+          ghost
+          icon
+          small
+          accessibilityLabel={surface === "glass" ? "Frost surface on; tap for solid" : "Solid surface; tap for frost"}
+          iconLeft={surface === "glass" ? <Icon layers size={16} primary /> : <Icon layers size={16} muted />}
+          onPress={() => setSurface(surface === "glass" ? "solid" : "glass")}
+        />
         {schemeToggle}
       </View>
     );
