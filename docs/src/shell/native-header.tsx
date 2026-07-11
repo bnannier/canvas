@@ -101,67 +101,44 @@ export function NativeHeader() {
       onPress: () => setScheme(value),
       ...(override === value ? { state: "on" as const } : {}),
     });
-    // The wired appearance rows, shared by the hamburger's Appearance submenu AND the
-    // avatar account menu below (same real controls, no duplicated logic, no dead rows).
-    const appearanceItems = [
-      schemeRow("Light", "light"),
-      schemeRow("Dark", "dark"),
-      schemeRow("System", null),
-      ...(!liquidGlassAvailable()
-        ? [
-            {
-              type: "action" as const,
-              label: "Solid",
-              onPress: () => setSurface("solid"),
-              ...(surface === "solid" ? { state: "on" as const } : {}),
-            },
-            {
-              type: "action" as const,
-              label: "Frost",
-              onPress: () => setSurface("glass"),
-              ...(surface === "glass" ? { state: "on" as const } : {}),
-            },
-          ]
-        : []),
-    ];
     const appearance = {
       type: "submenu" as const,
       label: "Appearance",
       icon: { type: "sfSymbol", name: "circle.lefthalf.filled" } as const,
-      items: appearanceItems,
+      items: [
+        schemeRow("Light", "light"),
+        schemeRow("Dark", "dark"),
+        schemeRow("System", null),
+        ...(!liquidGlassAvailable()
+          ? [
+              {
+                type: "action" as const,
+                label: "Solid",
+                onPress: () => setSurface("solid"),
+                ...(surface === "solid" ? { state: "on" as const } : {}),
+              },
+              {
+                type: "action" as const,
+                label: "Frost",
+                onPress: () => setSurface("glass"),
+                ...(surface === "glass" ? { state: "on" as const } : {}),
+              },
+            ]
+          : []),
+      ],
     };
     return (
       <Stack.Screen
         options={{
           headerTitle: title,
-          // Two trailing native UIMenus. The avatar (an account chip) opens the appearance
-          // controls with Apple's genuine Liquid Glass morph, demonstrating that the same
-          // native menu the hamburger uses can hang off an avatar. The native menu button
-          // only accepts an image/SF-symbol trigger (not a React view), so the avatar is a
-          // person-in-circle SF Symbol, not the kit <Avatar> component (see the icon note
-          // below for why a real photo can't render here). The hamburger keeps the section
-          // nav + Appearance and is always present (returning [] when a section has no menu
-          // would clear a sibling stack's leftover menu; the Appearance submenu keeps it
-          // non-empty on menu-less sections).
+          // The menu is always present now: section items when this section has them,
+          // and the Appearance submenu on every screen.
           unstable_headerRightItems: () => [
             {
               type: "menu" as const,
               label: "Menu",
               icon: { type: "sfSymbol", name: "line.3.horizontal" } as const,
               menu: { items: [...items, appearance] },
-            },
-            {
-              type: "menu" as const,
-              label: "Account",
-              // A person-in-circle SF Symbol, iOS's idiomatic account/avatar bar button. A
-              // real photo can't be used here: the native nav-bar button renders its image as
-              // a TEMPLATE (tinting every opaque pixel with the bar tint), so a full-bleed
-              // photo comes out as a solid white block, and the react-native-screens icon API
-              // exposes no original-rendering option. The SF Symbol is a template glyph by
-              // design, so it renders as a crisp avatar-shaped person and still opens the exact
-              // same native Liquid Glass UIMenu as the hamburger.
-              icon: { type: "sfSymbol", name: "person.crop.circle.fill" } as const,
-              menu: { items: appearanceItems },
             },
           ],
         }}
