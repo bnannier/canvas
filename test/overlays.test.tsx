@@ -10,6 +10,7 @@ import { Tooltip } from "../src/atoms/tooltip/tooltip.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
+import { OverlayProvider } from "../src/style/portal.tsx";
 
 // Open/close/dismiss/select contract for the kit's overlay surfaces. Each test
 // drives the component the way a user does — open via the trigger, assert the
@@ -26,6 +27,55 @@ import { Select } from "../src/atoms/select/select.tsx";
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
+
+describe("OverlayProvider outlet (click-through)", () => {
+  // Regression guard for the outlet swallowing every click on web. The outlet is a
+  // z-1000 full-bleed layer; it MUST be box-none so an EMPTY outlet lets page taps
+  // through while portaled children still capture. box-none only works through
+  // StyleSheet.create on react-native-web (an inline `{ pointerEvents }` literal is
+  // dropped, leaving the outlet at pointer-events:auto and blanketing the page).
+  // A synthetic .click() bypasses hit-testing, so only a computed-style assertion
+  // catches this — asserting pointer-events resolves to `none`, not `auto`.
+  const findOutlet = (container: HTMLElement) =>
+    [...container.querySelectorAll("div")].find(
+      (d) => getComputedStyle(d).zIndex === "1000" && getComputedStyle(d).position === "absolute",
+    );
+
+  it("renders the outlet transparent to pointers (box-none), not click-eating", () => {
+    const { container } = ui(
+      <OverlayProvider>
+        <Text>page</Text>
+      </OverlayProvider>,
+    );
+    const outlet = findOutlet(container);
+    expect(outlet).toBeDefined();
+    // The box itself is transparent: an empty outlet never intercepts a page click.
+    expect(getComputedStyle(outlet!).pointerEvents).toBe("none");
+  });
+
+  it("still lets portaled children capture (the box-none child-auto half)", () => {
+    const { container } = ui(
+      <OverlayProvider>
+        <Text>page</Text>
+      </OverlayProvider>,
+    );
+    const outlet = findOutlet(container)!;
+    // The outlet carries a pointer-events atomic class whose companion rule sets
+    // direct children back to `auto` — so a portaled menu/backdrop stays clickable.
+    const peClass = [...outlet.classList].find((c) => c.startsWith("r-pointerEvents-"));
+    expect(peClass).toBeDefined();
+    const childAutoRule = [...document.styleSheets]
+      .flatMap((s) => {
+        try {
+          return [...s.cssRules].map((r) => r.cssText);
+        } catch {
+          return [];
+        }
+      })
+      .some((t) => t.includes(`.${peClass}>*`) && t.includes("pointer-events: auto"));
+    expect(childAutoRule).toBe(true);
+  });
+});
 
 describe("Drawer (full-screen Modal overlay)", () => {
   it("renders nothing until opened, then mounts the panel via its trigger", () => {

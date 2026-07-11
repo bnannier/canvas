@@ -9,6 +9,7 @@ import {
   View,
   Text,
   Pressable,
+  StyleSheet,
   useTheme,
   useReducedMotion,
   type ColorTokens,
@@ -135,7 +136,7 @@ export function createCarousel(skin: CarouselSkin) {
     const { tokens } = useTheme();
     const edge = side === "prev" ? { start: skin.arrowInset } : { end: skin.arrowInset };
     return (
-      <View style={[ARROW_LAYER, edge, { pointerEvents: "box-none" }]}>
+      <View style={[arrowLayerStyles.layer, edge]}>
         <Pressable
           onPress={disabled ? undefined : onPress}
           disabled={disabled}
@@ -325,12 +326,20 @@ const ROOT: ViewStyle = { width: "100%", alignSelf: "stretch", minWidth: 240 };
 const VIEWPORT: ViewStyle = { width: "100%", alignSelf: "stretch", overflow: "hidden", position: "relative" };
 
 // The absolute layer an arrow centers within (full height, pinned to one edge).
-const ARROW_LAYER: ViewStyle = {
-  position: "absolute",
-  top: 0,
-  bottom: 0,
-  justifyContent: "center",
-};
+// box-none via StyleSheet.create (not an inline `{ pointerEvents }` object) so
+// react-native-web compiles its pointer-events polyfill: the full-height edge
+// column is transparent to taps, only the arrow Pressable inside it captures. An
+// inline literal is dropped by RNW, leaving the edge column swallowing clicks over
+// the slides. Native honors box-none either way.
+const arrowLayerStyles = StyleSheet.create({
+  layer: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+    pointerEvents: "box-none",
+  },
+});
 
 // opacity-40: the dimmed disabled look applied per end arrow.
 const DISABLED_DIM: ViewStyle = { opacity: 0.4 };

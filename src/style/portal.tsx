@@ -32,7 +32,7 @@ import {
   useRef,
   useSyncExternalStore,
 } from "react";
-import { View, type StyleProp, type ViewStyle } from "react-native";
+import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -60,7 +60,16 @@ const FILL: ViewStyle = { flex: 1 };
 // taps fall through to the page when nothing is portaled (an opaque-to-touch
 // full-bleed layer would otherwise eat every press); each open overlay supplies
 // its own backdrop to catch outside taps while it is shown.
-const OUTLET: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000 };
+//
+// box-none MUST live in a StyleSheet.create style, never an inline `{
+// pointerEvents }` object. react-native-web only compiles its box-none polyfill
+// (the box itself `pointer-events:none`, its portaled children `auto`) for
+// registered styles; an inline literal is silently dropped, leaving this
+// full-bleed z-1000 outlet at `pointer-events:auto` where it swallows every
+// click on the page. Native honors box-none either way; this keeps web correct.
+const outletStyles = StyleSheet.create({
+  outlet: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000, pointerEvents: "box-none" },
+});
 
 export interface OverlayProviderProps {
   children: ReactNode;
@@ -131,7 +140,7 @@ interface OutletProps {
 function Outlet({ outletRef, subscribe, getSnapshot }: OutletProps) {
   const nodes = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   return (
-    <View ref={outletRef} style={[OUTLET, { pointerEvents: "box-none" }]}>
+    <View ref={outletRef} style={outletStyles.outlet}>
       {[...nodes].map(([id, node]) => (
         <Fragment key={id}>{node}</Fragment>
       ))}

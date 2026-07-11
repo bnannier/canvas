@@ -14,6 +14,7 @@ import {
   Pressable,
   Portal,
   GlassSurface,
+  StyleSheet,
   useTheme,
   type ColorTokens,
   type StyleProp,
@@ -303,13 +304,13 @@ export function createToastSystem(skin: ToastSkin) {
             ToastCapsule (no region of their own) to avoid nesting live regions. */}
         <Portal>
           <View
-            style={[STACK, { pointerEvents: "box-none" }]}
+            style={stackStyles.stack}
             role="status"
             accessibilityLiveRegion="polite"
             aria-live="polite"
           >
             {toasts.map((t) => (
-              <View key={t.id} style={[STACK_ITEM, { pointerEvents: "box-none" }]}>
+              <View key={t.id} style={stackStyles.item}>
                 <ToastCapsule
                   message={t.message}
                   description={t.description}
@@ -344,12 +345,20 @@ export function createToastSystem(skin: ToastSkin) {
 const ICON_SLOT: ViewStyle = { alignItems: "center", justifyContent: "center" };
 const TEXT_COL: ViewStyle = { flexShrink: 1, flexGrow: 1, gap: 2 };
 // The portal stack: bottom-anchored, centered, newest at the bottom of the column.
-const STACK: ViewStyle = {
-  position: "absolute",
-  start: 0,
-  end: 0,
-  bottom: STACK_BOTTOM_INSET,
-  alignItems: "center",
-  gap: 8,
-};
-const STACK_ITEM: ViewStyle = { maxWidth: "100%" };
+// box-none goes through StyleSheet.create (not an inline `{ pointerEvents }`
+// object) so react-native-web compiles its pointer-events polyfill: the stack and
+// each item stay transparent to taps, only the toast capsules capture. An inline
+// literal is dropped by RNW, leaving this persistently-mounted full-width stack
+// eating clicks along the bottom of every screen. Native honors box-none either way.
+const stackStyles = StyleSheet.create({
+  stack: {
+    position: "absolute",
+    start: 0,
+    end: 0,
+    bottom: STACK_BOTTOM_INSET,
+    alignItems: "center",
+    gap: 8,
+    pointerEvents: "box-none",
+  },
+  item: { maxWidth: "100%", pointerEvents: "box-none" },
+});

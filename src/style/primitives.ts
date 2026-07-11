@@ -12,6 +12,7 @@ export {
   Image,
   TextInput,
   ScrollView,
+  StyleSheet,
   type ViewProps,
   type TextProps,
   type PressableProps,
