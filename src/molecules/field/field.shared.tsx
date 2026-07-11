@@ -1,5 +1,5 @@
 import { type ComponentType, useId } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useFieldWidth, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -83,7 +83,7 @@ function rowValueText(row: FieldRow): string {
   return row.value ?? row.status ?? row.badge ?? row.copyValue ?? "";
 }
 
-export interface FieldProps {
+export interface FieldProps extends FieldWidthProps {
   /**
    * Read-only key/value rows. When set, Field renders the field-display
    * (label column + composed value) instead of the editable input control.
@@ -116,7 +116,7 @@ export interface FieldProps {
   invalid?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -220,6 +220,11 @@ export function createField(
     // One collision-free id base per field instance, used in control mode to link
     // the visible label and the helper/error message to the Input below.
     const fieldId = useId();
+    // The width axis caps the CONTROL-mode stack (label + Input + message share
+    // one field edge; the inner Input gets `block` so the stack governs). The
+    // read-only display mode is a label/value table, not a field, so it stays
+    // uncapped. Resolved before the mode branch to keep hook order stable.
+    const widthCap = useFieldWidth(props);
 
     // Display mode: a read-only stack of label/value rows. Each row aligns its
     // label to a fixed 180px column (flex, not grid) so every value lines up to
@@ -282,7 +287,7 @@ export function createField(
     const messageId = messageText != null ? `${fieldId}-message` : undefined;
 
     return (
-      <View testID={testID} style={[skin.controlStack, disabled ? s.dimmed : null, style]}>
+      <View testID={testID} style={[skin.controlStack, disabled ? s.dimmed : null, widthCap, style]}>
         {label != null ? (
           <Text nativeID={labelId} style={skin.label(tokens)}>
             {label}
@@ -295,6 +300,7 @@ export function createField(
           placeholder={placeholder}
           disabled={disabled}
           error={invalid}
+          block
           accessibilityLabel={label}
           aria-labelledby={labelId}
           aria-describedby={messageId}

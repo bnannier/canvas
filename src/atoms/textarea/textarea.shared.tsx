@@ -1,6 +1,6 @@
 import { forwardRef, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { TextInput, useTheme, FOCUS_RESET, type StyleProp, type TextStyle } from "../../style/index.js";
+import { TextInput, useTheme, useFieldWidth, FOCUS_RESET, type FieldWidthProps, type StyleProp, type TextStyle } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -15,7 +15,7 @@ import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.st
 // file supplies only its skin (fill, shape, border/underline, focus feedback)
 // and calls createTextarea.
 
-export interface TextareaProps extends TextEntryProps {
+export interface TextareaProps extends TextEntryProps, FieldWidthProps {
   /** Controlled text value. Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Fired with the next text value on each edit. */
@@ -41,7 +41,7 @@ export interface TextareaProps extends TextEntryProps {
    * framed container (e.g. a Card with a formatting toolbar above it).
    */
   flush?: boolean;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
   style?: StyleProp<TextStyle>;
 }
 
@@ -60,6 +60,10 @@ export function createTextarea(skin: TextareaSkin) {
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
+    // Flush implies block: a flush textarea sits inside a framed container (a
+    // toolbar Card) whose frame IS the field edge, so the container governs width
+    // and a standard cap would leave a dead gutter inside the frame.
+    const widthCap = useFieldWidth(flush ? { ...props, block: true } : props);
 
     // Surface the validation problem programmatically, not just as a red border
     // (the border alone fails WCAG 1.4.1 / 4.1.2). `aria-invalid` is the
@@ -117,6 +121,7 @@ export function createTextarea(skin: TextareaSkin) {
             ? { borderWidth: 0, borderTopWidth: 0, borderBottomWidth: 0, borderLeftWidth: 0, borderRightWidth: 0, borderRadius: 0 }
             : null,
           FOCUS_RESET,
+          widthCap,
           style,
         ]}
         {...a11y}

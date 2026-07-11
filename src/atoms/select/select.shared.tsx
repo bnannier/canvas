@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, AnchoredOverlay, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -26,7 +26,7 @@ import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./se
 // absolutely below the trigger (the kit's pre-portal behavior). AnchoredOverlay
 // supplies its own GlassSurface material, so the listbox is passed to it directly.
 
-export interface SelectProps {
+export interface SelectProps extends FieldWidthProps {
   /** Controlled selected option label; omit for uncontrolled use. Empty shows the placeholder. */
   value?: string;
   /** Initial selection for uncontrolled use (a bare <Select options /> picks on its own). */
@@ -54,7 +54,7 @@ export interface SelectProps {
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -80,6 +80,7 @@ export function createSelect(skin: SelectSkin) {
     } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
+    const widthCap = useFieldWidth(props);
     // Controlled when `open`/`value` are provided, self-managed otherwise, so a
     // bare <Select options /> opens and picks out of the box (the standard
     // library contract): the trigger opens/closes the list, a select stores the
@@ -108,7 +109,7 @@ export function createSelect(skin: SelectSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View style={[root, open ? rootLifted : null, style]}>
+      <View style={[root, open ? rootLifted : null, widthCap, style]}>
         {label != null && label !== "" ? (
           <Text style={skin.label(tokens, size)}>{label}</Text>
         ) : null}

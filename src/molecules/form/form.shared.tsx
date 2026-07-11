@@ -171,6 +171,7 @@ export function createForm(
         <Input
           placeholder={field.placeholder}
           value={field.value}
+          block
           accessibilityLabel={field.label}
           aria-labelledby={labelId}
           aria-describedby={helperId}
@@ -236,6 +237,7 @@ export function createForm(
           <Input
             placeholder={field.placeholder}
             value={field.value}
+            block
             accessibilityLabel={field.label}
             aria-labelledby={labelId}
             aria-describedby={helperId}

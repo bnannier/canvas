@@ -8,8 +8,10 @@ import {
   useTheme,
   useControllableState,
   useEscapeKey,
+  useFieldWidth,
   AnchoredOverlay,
   FOCUS_RESET,
+  type FieldWidthProps,
   type StyleProp,
   type ViewStyle,
   type TextStyle,
@@ -44,7 +46,7 @@ import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 // select closes it. The selected option carries a leading "✓" and an accent
 // surface; an empty filtered list shows a muted "No results" row.
 
-export interface ComboboxProps {
+export interface ComboboxProps extends FieldWidthProps {
   /**
    * The text typed into the field (controlled). Filters the option list. Omit
    * and use `defaultQuery` for uncontrolled use: a bare Combobox is typeable
@@ -90,7 +92,7 @@ export interface ComboboxProps {
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -134,6 +136,7 @@ export function createCombobox(skin: ComboboxSkin) {
     } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
+    const widthCap = useFieldWidth(props);
 
     // Controlled when `query` is provided, self-managed otherwise, so a bare
     // <Combobox /> filters as you type (the standard library contract).
@@ -185,7 +188,7 @@ export function createCombobox(skin: ComboboxSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View style={[wrapper, open ? wrapperLifted : null, style]}>
+      <View style={[wrapper, open ? wrapperLifted : null, widthCap, style]}>
         {label != null && label !== "" ? (
           <Text style={skin.label(tokens, size)}>{label}</Text>
         ) : null}

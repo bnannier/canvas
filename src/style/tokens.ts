@@ -505,3 +505,17 @@ export const breakpoints: Record<string, number> = {
   xl: 1280,
   "2xl": 1536,
 };
+
+/**
+ * Standard field widths in px: the desktop max-width caps for the input-like
+ * controls (Input, Textarea, Select, Combobox, Field). Every field defaults to
+ * `base` so stacked fields share one right edge; `narrow`/`wide` are the other
+ * two modes of the width axis. Fields keep `width:"100%"` underneath, so they
+ * still shrink inside narrower parents, and the cap drops entirely at the `sm`
+ * breakpoint and below, where a field fills its container.
+ */
+export const fieldWidths: Record<string, number> = {
+  narrow: 240,
+  base: 320,
+  wide: 480,
+};

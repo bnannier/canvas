@@ -4,7 +4,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useFieldWidth, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -60,7 +60,7 @@ export type TextEntryProps = Pick<
   | "testID"
 >;
 
-export interface InputProps extends TextEntryProps {
+export interface InputProps extends TextEntryProps, FieldWidthProps {
   /** Current text value (controlled). Omit and use `defaultValue` for uncontrolled use. */
   value?: string;
   /** Called with the new text on each keystroke. */
@@ -76,8 +76,9 @@ export interface InputProps extends TextEntryProps {
   // Size (pick one; default is the medium field).
   small?: boolean;
   large?: boolean;
-  /** Full-width field (the default); pass to be explicit. */
-  block?: boolean;
+  // Width axis (block/narrow/wide) comes from FieldWidthProps: a bare field
+  // caps at the standard width on desktop and fills its container at the sm
+  // breakpoint and below; `block` fills the container everywhere.
   /** Multi-line text area instead of a single-line field. Ignored when addons
    *  (prefix/suffix/icons/action) are present, which are single-line only. */
   multiline?: boolean;
@@ -124,7 +125,7 @@ export interface InputProps extends TextEntryProps {
    */
   "aria-describedby"?: string;
 
-  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  /** Outer flex composition within a parent only, never a restyle hook; width comes from the width axis (block/narrow/wide). */
   style?: StyleProp<ViewStyle>;
 }
 
@@ -158,6 +159,7 @@ export function createInput(skin: InputSkin) {
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
+    const widthCap = useFieldWidth(props);
 
     // Border-color precedence: error > focus > default input border. Shared by
     // both layouts; in the grouped layout it lives on the outer border so prefix
@@ -233,6 +235,7 @@ export function createInput(skin: InputSkin) {
             // path and the Combobox/Textarea/NumberInput shells.
             FOCUS_RESET,
             disabled ? { opacity: skin.disabledOpacity } : null,
+            widthCap,
             style,
           ]}
           multiline={multiline}
@@ -248,7 +251,7 @@ export function createInput(skin: InputSkin) {
     const height = skin.groupedHeight(size);
     return (
       <View
-        style={[skin.groupContainer(tokens, borderColor, focused, isError), disabled ? { opacity: skin.disabledOpacity } : null, style]}
+        style={[skin.groupContainer(tokens, borderColor, focused, isError), disabled ? { opacity: skin.disabledOpacity } : null, widthCap, style]}
       >
         {prefix != null ? (
           <View style={skin.addonBox(tokens, "left", height)}>
