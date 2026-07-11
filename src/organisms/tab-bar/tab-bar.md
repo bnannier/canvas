@@ -1,4 +1,4 @@
-# Tab Bar
+# TabBar
 
 Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (iOS HIG tab bar / Material 3 navigation bar), rendered through the glass functional layer.
 

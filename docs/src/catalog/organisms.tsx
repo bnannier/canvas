@@ -354,15 +354,15 @@ function TabsPreview() {
 }
 
 export const ORGANISMS_TILES: CatTile[] = [
-  { title: "Calendars", href: "/components/calendar", Preview: CalendarsPreview },
-  { title: "Charts", href: "/components/charts", Preview: ChartsPreview },
-  { title: "Command Palette", href: "/components/command", Preview: CommandPalettePreview },
-  { title: "Data Tables", href: "/components/data-table", span: true, Preview: DataTablesPreview },
-  { title: "Filter Panels", href: "/components/filter-panel", Preview: FilterPanelsPreview },
-  { title: "Navbars", href: "/components/navbars", Preview: NavbarsPreview },
-  { title: "Navigation", href: "/components/navigation", Preview: NavigationPreview },
+  { title: "Calendar", href: "/components/calendar", Preview: CalendarsPreview },
+  { title: "Chart", href: "/components/charts", Preview: ChartsPreview },
+  { title: "Command", href: "/components/command", Preview: CommandPalettePreview },
+  { title: "DataTable", href: "/components/data-table", span: true, Preview: DataTablesPreview },
+  { title: "FilterPanel", href: "/components/filter-panel", Preview: FilterPanelsPreview },
+  { title: "Navbar", href: "/components/navbars", Preview: NavbarsPreview },
+  { title: "Sidebar", href: "/components/navigation", Preview: NavigationPreview },
   { title: "Dialog", href: "/components/dialog", Preview: DialogPreview },
-  { title: "Overlays", href: "/components/overlays", Preview: OverlaysPreview },
-  { title: "Steppers", href: "/components/stepper", Preview: SteppersPreview },
+  { title: "Overlay", href: "/components/overlays", Preview: OverlaysPreview },
+  { title: "Stepper", href: "/components/stepper", Preview: SteppersPreview },
   { title: "Tabs", href: "/components/tabs", Preview: TabsPreview },
 ];

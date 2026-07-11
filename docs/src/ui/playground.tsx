@@ -28,44 +28,27 @@ function ErrorNote({ message }: { message: string }) {
   );
 }
 
-// Holds a preview sized to the stage. The stage measures its own width and gives the scroller's
-// content container that exact width, so the example tracks the stage FLUIDLY as the viewport
-// resizes (not just at breakpoint thresholds):
+// Holds a preview sized to the stage. The stage measures its own width and CAPS the example at
+// that width, so content that exceeds the stage WRAPS rather than overflowing or scrolling:
 //   - a responsive (width:"100%") example resolves to the stage width and wraps to fit, so it
 //     fills the stage and keeps resizing with it at every width;
-//   - a small example keeps its natural size and is centered (justifyContent on the row);
-//   - an example whose content cannot shrink below the stage still overflows and the horizontal
-//     scroller takes over, so nothing is cropped.
-// It is a fixed `width` (not a `minWidth`): a minWidth lets a wide-content example grow the
-// container past the stage, which stops a width:"100%" example from ever shrinking below its
-// content — the fixed width is what makes it resize down. The component is untouched: it renders at
-// the width it is given and never learns the stage exists. Recomputed on resize via the outer
-// onLayout.
+//   - a wide example (a flex-wrap row of chips/avatars, the icon gallery) is bounded to the stage
+//     width and wraps onto more lines instead of running off the edge;
+//   - a small example shrinks to its natural size and stays centered.
+// The inner wrapper is `maxWidth` (not a fixed `width`): capped at the stage but free to shrink to
+// a small example's content, so it never stretches a bare `<Button>` to full width. Its stretch
+// children (the RN column default) fill that capped width, which is what makes a wide flex-wrap
+// example actually wrap. The component is untouched: it renders within the width it is given and
+// never learns the stage exists. Recomputed on resize via the outer onLayout. No horizontal
+// scroller, so the Carousel's horizontal FlatList is never nested in a same-orientation scroller.
 function FitStage({ children }: { children: ReactNode }) {
   const [avail, setAvail] = useState(0);
   return (
     <View
-      style={{ width: "100%" }}
+      style={{ width: "100%", alignItems: "center", justifyContent: "center" }}
       onLayout={(e) => { const l = e.nativeEvent.layout; if (!l) return; const w = Math.round(l.width); setAvail((a) => (a !== w ? w : a)); }}
     >
-      {Platform.OS === "web" ? (
-        // Web 3-up: a wide example that cannot shrink below its content scrolls
-        // horizontally so nothing is cropped. Native shows a single full-width column
-        // where examples already fit, and a horizontal ScrollView here would nest the
-        // Carousel's horizontal FlatList inside a same-orientation scroller (the RN
-        // "VirtualizedLists should never be nested" warning), so native renders a plain
-        // centering View. The Carousel is the only FlatList-backed component in the kit.
-        <ScrollView
-          horizontal
-          bounces={false}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ width: avail || undefined, alignItems: "center", justifyContent: "center" }}
-        >
-          {children}
-        </ScrollView>
-      ) : (
-        <View style={{ width: avail || "100%", alignItems: "center", justifyContent: "center" }}>{children}</View>
-      )}
+      <View style={{ maxWidth: avail || "100%" }}>{children}</View>
     </View>
   );
 }

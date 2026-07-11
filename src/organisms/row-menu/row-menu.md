@@ -1,4 +1,4 @@
-# Row Menu
+# RowMenu
 
 Vertical action menu items and navigation links.
 

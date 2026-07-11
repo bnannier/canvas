@@ -73,7 +73,7 @@ const ATOMIC_LEVELS: { id: string; label: string; icon: ReactNode; blurb: string
     id: "molecules", label: "Molecules", icon: <Icon shield primary size={16} />,
     blurb: "Small compositions of atoms with a single clear purpose: Card, Field, Empty State. Reusable across pages and built from the same boolean prop API.",
     pages: [
-      { label: "Cards", to: "/components/card" }, { label: "Field Display", to: "/components/field" },
+      { label: "Cards", to: "/components/card" }, { label: "Field", to: "/components/field" },
       { label: "Empty States", to: "/components/empty-state" },
     ],
   },

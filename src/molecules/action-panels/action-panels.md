@@ -1,4 +1,4 @@
-# Action Panel
+# ActionPanel
 
 Section card with headline, body text, and a primary action. Used to surface a single decision or call-to-action.
 

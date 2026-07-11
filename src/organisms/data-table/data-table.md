@@ -1,4 +1,4 @@
-# Data Table
+# DataTable
 
 Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrollable table &rarr; footer. Density tweaks affect padding live.
 

@@ -395,16 +395,16 @@ function StatsPreview() {
 }
 
 export const MOLECULES_TILES: CatTile[] = [
-  { title: "Action Panels", href: "/components/action-panels", Preview: ActionPanelsPreview },
-  { title: "Alerts", href: "/components/alert", Preview: AlertsPreview },
-  { title: "Cards", href: "/components/card", Preview: CardsPreview },
-  { title: "Description Lists", href: "/components/description-lists", Preview: DescriptionListsPreview },
-  { title: "Empty States", href: "/components/empty-state", Preview: EmptyStatesPreview },
-  { title: "Feeds", href: "/components/feeds", Preview: FeedsPreview },
-  { title: "Field Display", href: "/components/field", Preview: FieldDisplayPreview },
-  { title: "Form Layouts", href: "/components/form", Preview: FormLayoutsPreview },
-  { title: "Grid Lists", href: "/components/grid-lists", Preview: GridListsPreview },
-  { title: "Media Objects", href: "/components/media-objects", Preview: MediaObjectsPreview },
-  { title: "Stacked Lists", href: "/components/stacked-lists", Preview: StackedListsPreview },
+  { title: "ActionPanel", href: "/components/action-panels", Preview: ActionPanelsPreview },
+  { title: "Alert", href: "/components/alert", Preview: AlertsPreview },
+  { title: "Card", href: "/components/card", Preview: CardsPreview },
+  { title: "DescriptionList", href: "/components/description-lists", Preview: DescriptionListsPreview },
+  { title: "EmptyState", href: "/components/empty-state", Preview: EmptyStatesPreview },
+  { title: "Feed", href: "/components/feeds", Preview: FeedsPreview },
+  { title: "Field", href: "/components/field", Preview: FieldDisplayPreview },
+  { title: "Form", href: "/components/form", Preview: FormLayoutsPreview },
+  { title: "GridList", href: "/components/grid-lists", Preview: GridListsPreview },
+  { title: "MediaObject", href: "/components/media-objects", Preview: MediaObjectsPreview },
+  { title: "StackedList", href: "/components/stacked-lists", Preview: StackedListsPreview },
   { title: "Stats", href: "/components/stats", Preview: StatsPreview },
 ];

@@ -1,4 +1,4 @@
-# Text Input
+# TextInput
 
 Single-line (or multiline) text entry. Control it with `value` + `onChangeText`, and style the box with the usual View style props. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.
 

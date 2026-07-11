@@ -1,4 +1,4 @@
-# Field Display
+# Field
 
 Read-only key/value pairs. Used in detail views, modal previews, and audit screens. Optional mono mode for IDs, tokens, dates.
 

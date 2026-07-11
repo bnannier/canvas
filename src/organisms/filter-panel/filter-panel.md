@@ -1,4 +1,4 @@
-# Filter Panel
+# FilterPanel
 
 Sidebar filter rail with chip pills for active filters.
 

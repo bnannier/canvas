@@ -30,13 +30,13 @@ export const COMPONENTS: ComponentDoc[] = [
   },
   {
     slug: "text-input",
-    name: "Text Input",
+    name: "TextInput",
     description: "Single-line or multiline text entry, controlled with value and onChangeText.",
     category: "Atoms",
   },
   {
     slug: "scroll-view",
-    name: "Scroll View",
+    name: "ScrollView",
     description: "A scrollable container for content larger than its bounds; vertical by default, horizontal optional.",
     category: "Atoms",
   },
@@ -52,13 +52,13 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "chip",
     name: "Chip",
-    description: "An interactive pill: filter chips, tags, and selectable tokens. Optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove. Tone is a boolean axis (secondary / primary / outline; primary is the active state).",
+    description: "An interactive pill: filter chips, tags, and selectable tokens. A low-emphasis soft-tinted tag (never a saturated button fill), with an optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove. Color is a boolean axis: semantic status (success / warning / error / info / neutral) or a free-form palette hue (red … rose, gray); outline and primary set the emphasis.",
     category: "Atoms",
   },
 
   {
     slug: "icon-tile",
-    name: "Icon Tile",
+    name: "IconTile",
     description: "A tinted rounded square that holds a single Icon, the recurring icon-on-a-soft-background used in cards, media objects, empty states, and feeds. A tone tints the square and paints the glyph to match, so no call site hand-composes the icon background.",
     category: "Atoms",
   },
@@ -93,7 +93,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "button-group",
-    name: "Button Group",
+    name: "ButtonGroup",
     description: "Segmented controls, split buttons, attached groups.",
     category: "Atoms",
   },
@@ -142,7 +142,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "input",
-    name: "Inputs & Forms",
+    name: "Input",
     description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>block</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons; <code>multiline</code> turns it into a textarea. Select and the search field share its look, and Field and Form compose a label, the control, and helper text.",
     category: "Atoms",
   },
@@ -185,7 +185,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "toggle",
     dir: "switch",
-    name: "Toggle",
+    name: "Switch",
     description: "On / off switch, isolated or grouped in a settings list.",
     category: "Atoms",
   },
@@ -206,7 +206,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "alert-dialog",
-    name: "Alert Dialog",
+    name: "AlertDialog",
     description: "Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred backdrop, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.",
     category: "Molecules",
   },
@@ -234,35 +234,35 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "code-block",
-    name: "Code Block",
+    name: "CodeBlock",
     description: "Preformatted code block with monospace font and padding.",
     category: "Molecules",
   },
 
   {
     slug: "empty-state",
-    name: "Empty State",
+    name: "EmptyState",
     description: "Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.",
     category: "Molecules",
   },
 
   {
     slug: "field",
-    name: "Field Display",
+    name: "Field",
     description: "Read-only key/value pairs. Used in detail views, modal previews, and audit screens. Optional mono mode for IDs, tokens, dates.",
     category: "Molecules",
   },
 
   {
     slug: "form",
-    name: "Form Layouts",
+    name: "Form",
     description: "Stacked, two-column, with sidebar description.",
     category: "Molecules",
   },
 
   {
     slug: "filter-panel",
-    name: "Filter Panel",
+    name: "FilterPanel",
     description: "Sidebar filter rail with chip pills for active filters.",
     category: "Organisms",
   },
@@ -276,14 +276,14 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "command",
-    name: "Command Palette",
+    name: "Command",
     description: "Cmd+K search: navigation, actions, recent items.",
     category: "Organisms",
   },
 
   {
     slug: "data-table",
-    name: "Data Table",
+    name: "DataTable",
     description: "Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrollable table &rarr; footer. Density tweaks affect padding live.",
     category: "Organisms",
   },
@@ -311,7 +311,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "navigation",
     dir: "sidebar",
-    name: "Navigation",
+    name: "Sidebar",
     description: "Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this page is a thin adapter over this very Sidebar component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.",
     category: "Organisms",
   },
@@ -325,7 +325,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "tab-bar",
-    name: "Tab Bar",
+    name: "TabBar",
     description: "Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (iOS HIG tab bar / Material 3 navigation bar), rendered through the glass functional layer.",
     category: "Organisms",
   },
@@ -381,21 +381,21 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "action-sheet",
-    name: "Action Sheet",
+    name: "ActionSheet",
     description: "A modal sheet of contextual actions (the iOS action sheet idiom).",
     category: "Organisms",
   },
 
   {
     slug: "number-input",
-    name: "Number Input",
+    name: "NumberInput",
     description: "A numeric stepper with − and + controls plus direct entry (the iOS UIStepper / web number-field idiom).",
     category: "Atoms",
   },
 
   {
     slug: "input-otp",
-    name: "Input OTP",
+    name: "InputOTP",
     description: "A segmented one-time-code field driven by one input, with SMS autofill and paste.",
     category: "Atoms",
   },
@@ -436,21 +436,21 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "row-menu",
-    name: "Row Menu",
+    name: "RowMenu",
     description: "Vertical action menu items and navigation links.",
     category: "Organisms",
   },
 
   {
     slug: "action-panels",
-    name: "Action Panel",
+    name: "ActionPanel",
     description: "Section card with headline, body text, and a primary action. Used to surface a single decision or call-to-action.",
     category: "Molecules",
   },
 
   {
     slug: "description-lists",
-    name: "Description List",
+    name: "DescriptionList",
     description: "Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views.",
     category: "Molecules",
   },
@@ -464,21 +464,21 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "grid-lists",
-    name: "Grid List",
+    name: "GridList",
     description: "Tiled card grids for people directories, item collections, and image galleries.",
     category: "Molecules",
   },
 
   {
     slug: "media-objects",
-    name: "Media Object",
+    name: "MediaObject",
     description: "Image or icon paired with text content. The fundamental building block for list items, notifications, and comment layouts.",
     category: "Molecules",
   },
 
   {
     slug: "stacked-lists",
-    name: "Stacked List",
+    name: "StackedList",
     description: "Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.",
     category: "Molecules",
   },

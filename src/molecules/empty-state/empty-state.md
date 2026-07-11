@@ -1,4 +1,4 @@
-# Empty State
+# EmptyState
 
 Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.
 

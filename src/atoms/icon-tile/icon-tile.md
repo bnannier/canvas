@@ -1,4 +1,4 @@
-# Icon Tile
+# IconTile
 
 A tinted rounded square that holds a single `Icon`, the recurring "icon on a
 soft background" used in cards, media objects, empty states, and feeds. IconTile

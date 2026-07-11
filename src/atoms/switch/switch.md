@@ -1,4 +1,4 @@
-# Toggle
+# Switch
 
 On / off switch, isolated or grouped in a settings list.
 

@@ -1,4 +1,4 @@
-# Alert Dialog
+# AlertDialog
 
 Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred backdrop, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
 

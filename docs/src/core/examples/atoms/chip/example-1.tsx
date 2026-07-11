@@ -6,9 +6,17 @@ export default function Example(scope: ExampleScope) {
   const { Row, Chip } = scope;
   return (
 <Row snug wrap alignCenter>
-  <Chip secondary>Draft</Chip>
-  <Chip primary>Published</Chip>
-  <Chip outline>Archived</Chip>
+  <Chip red>Bug</Chip>
+  <Chip orange>Chore</Chip>
+  <Chip amber>Docs</Chip>
+  <Chip green>Feature</Chip>
+  <Chip teal>Design</Chip>
+  <Chip blue>Backend</Chip>
+  <Chip indigo>Frontend</Chip>
+  <Chip violet>Research</Chip>
+  <Chip purple>Infra</Chip>
+  <Chip pink>Growth</Chip>
+  <Chip gray>Archived</Chip>
 </Row>
   );
 }

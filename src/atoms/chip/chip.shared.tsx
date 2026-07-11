@@ -1,36 +1,51 @@
-import { type ReactNode } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, controlRipple, pressDim, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
+import { View, Text, Pressable, useTheme, useControllableState, controlRipple, pressDim, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
 // a `borderRadius + backgroundColor + padding` Pressable to build a filter chip,
 // tag, or token. A Chip carries an optional leading icon and label, becomes
 // tappable with `onPress` (a filter toggle), and grows a trailing "×" remove
-// button with `onRemove`. Tone is a boolean axis (secondary / primary / outline);
-// `primary` reads as the active/selected state.
+// button with `onRemove`.
+//
+// A chip is a LOW-emphasis tag, not a call to action, so it never wears a saturated
+// button fill: every chip renders a SOFT tint (a light wash + subtle border + strong
+// text; the reverse in dark), the same recipe Badge's status pills use, so the two
+// read as one system. Two orthogonal axes drive the look:
+//   - Color: the tint's hue. A semantic status (success / warning / error / info /
+//     neutral) OR a free-form palette hue (red … rose, gray). Omit for the neutral tag.
+//   - Emphasis: `outline` drops the fill for a border-only chip; `primary` is the
+//     brand-accent (indigo) tint and the state a selectable chip lights up to.
 //
 // Chip is a "Light" platform treatment: one structure and semantic colors (here),
-// with per-OS touches limited to the label type (in the skin).
+// with per-OS touches limited to the label type and shape (in the skin).
 
-export type Tone = "secondary" | "primary" | "outline";
+// Chromatic hues backed by the Tailwind palette; each renders a soft tinted tag.
+export type Hue =
+  | "red" | "orange" | "amber" | "yellow" | "lime" | "green" | "emerald"
+  | "teal" | "cyan" | "sky" | "blue" | "indigo" | "violet" | "fuchsia"
+  | "purple" | "pink" | "rose";
+
+// Literal-hue props, scanned in this order (first match wins) after the status names.
+const HUES: Hue[] = [
+  "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan",
+  "sky", "blue", "indigo", "violet", "fuchsia", "purple", "pink", "rose",
+];
 
 export interface ChipSkin {
-  /** Pill shape + padding + gap (medium). */
+  /** Pill shape + padding + gap (the one, compact size). */
   base: ViewStyle;
-  /** Small-size overrides (padding + gap). */
-  small: ViewStyle;
-  /** Label type (medium / small). */
+  /** Label type. */
   labelType: TextStyle;
-  labelTypeSmall: TextStyle;
-  /** Remove "×" glyph size (medium / small). */
+  /** Remove "×" glyph size. */
   removeSize: number;
-  removeSizeSmall: number;
 }
 
 export interface ChipProps {
   /** The chip label. */
   children?: ReactNode;
-  /** A leading element (e.g. an `<Icon />` or a small `<Avatar />`). */
+  /** A leading element (e.g. an `<Icon />` or a small `<Avatar />`). An `<Icon />` is
+   *  auto-tinted to the chip's label color unless it sets its own color. */
   icon?: ReactNode;
   /** A trailing element (e.g. a chevron for a menu trigger). Rendered after the label. */
   trailing?: ReactNode;
@@ -40,9 +55,10 @@ export interface ChipProps {
   onRemove?: () => void;
   /**
    * Turns the chip into a filter toggle that owns its own selected state: pressing
-   * it flips between its base tone and the active `primary` fill. Selection is
-   * controlled via `selected`, uncontrolled via `defaultSelected`. Use a
-   * non-primary base tone (`secondary`/`outline`) so the selected state reads.
+   * it lights up to the active tint (its color's fill, or the brand `primary` indigo
+   * when the chip has no color) and back. Selection is controlled via `selected`,
+   * uncontrolled via `defaultSelected`. Give it an `outline` base so the unselected
+   * (border-only) and selected (filled) states read apart.
    */
   selectable?: boolean;
   /** Selected state for a selectable chip (CONTROLLED). Omit for uncontrolled use. */
@@ -51,12 +67,39 @@ export interface ChipProps {
   defaultSelected?: boolean;
   /** Fired with the next selected state when a selectable chip is pressed. */
   onSelectedChange?: (selected: boolean) => void;
-  // Tone (pick one; default `secondary`). `primary` is the active/selected fill.
+  // Color axis (pick one; default the neutral tag). Two families, both a soft tint:
+  //  - Semantic status (matches Badge): success / warning / error / info / neutral.
+  success?: boolean;
+  warning?: boolean;
+  error?: boolean;
+  info?: boolean;
+  neutral?: boolean;
+  //  - Free-form palette hues, plus `gray` for an explicit neutral tag.
+  red?: boolean;
+  orange?: boolean;
+  amber?: boolean;
+  yellow?: boolean;
+  lime?: boolean;
+  green?: boolean;
+  emerald?: boolean;
+  teal?: boolean;
+  cyan?: boolean;
+  sky?: boolean;
+  blue?: boolean;
+  indigo?: boolean;
+  violet?: boolean;
+  fuchsia?: boolean;
+  purple?: boolean;
+  pink?: boolean;
+  rose?: boolean;
+  gray?: boolean;
+  // Emphasis (orthogonal to color). `outline` is border-only; `primary` is the
+  // brand-accent (indigo) tint and the selectable "on" look. `secondary` is the
+  // default neutral tag (kept for back-compat; same as passing no color).
   secondary?: boolean;
   primary?: boolean;
   outline?: boolean;
-  // Size (pick one; default medium).
-  small?: boolean;
+  // A chip has ONE compact size, so there is no size axis.
   disabled?: boolean;
   accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
@@ -65,45 +108,59 @@ export interface ChipProps {
   style?: StyleProp<ViewStyle>;
 }
 
-// Tone precedence when more than one is passed: first match wins.
-function toneOf(p: ChipProps): Tone {
-  if (p.primary) return "primary";
-  if (p.outline) return "outline";
-  return "secondary";
+// The three colors a chip paints with: container fill, border, and label/glyph text.
+interface Appearance {
+  bg: string;
+  border: string;
+  text: string;
 }
 
-function surfaceStyle(tokens: ColorTokens, tone: Tone): ViewStyle {
-  switch (tone) {
-    case "secondary":
-      return { backgroundColor: tokens.secondary, borderColor: "transparent" };
-    case "primary":
-      return { backgroundColor: tokens.primary, borderColor: "transparent" };
-    case "outline":
-      return { backgroundColor: "transparent", borderColor: tokens.border };
-  }
+// The chosen hue from the color axis. Status names alias a hue (matching Badge);
+// literal hues resolve to themselves. `neutral`/`gray` carry no hue but flag the
+// muted-gray tag. Status names are scanned first so a semantic intent wins.
+function colorOf(p: ChipProps): { hue: Hue | null; mutedGray: boolean } {
+  if (p.success) return { hue: "green", mutedGray: false };
+  if (p.warning) return { hue: "amber", mutedGray: false };
+  if (p.error) return { hue: "red", mutedGray: false };
+  if (p.info) return { hue: "blue", mutedGray: false };
+  if (p.neutral) return { hue: null, mutedGray: true };
+  for (const h of HUES) if ((p as Record<string, unknown>)[h]) return { hue: h, mutedGray: false };
+  if (p.gray) return { hue: null, mutedGray: true };
+  return { hue: null, mutedGray: false };
 }
 
-function labelColor(tokens: ColorTokens, tone: Tone): string {
-  switch (tone) {
-    case "secondary":
-      return tokens["secondary-foreground"];
-    case "primary":
-      return tokens["primary-foreground"];
-    case "outline":
-      return tokens.foreground;
+// A chromatic hue's soft tint: a light 50 fill + 200 border + 700 text in light, a
+// deep 950 fill + 800 border + 400 text in dark (Badge's status recipe). `outline`
+// drops the fill for a border-only chip in the same hue.
+function hueTint(hue: Hue, dark: boolean, outline: boolean): Appearance {
+  if (outline) {
+    return dark
+      ? { bg: "transparent", border: palette[`${hue}-700`], text: palette[`${hue}-400`] }
+      : { bg: "transparent", border: palette[`${hue}-300`], text: palette[`${hue}-700`] };
   }
+  return dark
+    ? { bg: palette[`${hue}-950`], border: palette[`${hue}-800`], text: palette[`${hue}-400`] }
+    : { bg: palette[`${hue}-50`], border: palette[`${hue}-200`], text: palette[`${hue}-700`] };
+}
+
+// The neutral (uncolored) chip: the default soft-secondary tag, a muted-gray tag
+// (`gray`/`neutral`), or a border-only outline. Neutral stays on the scheme-aware
+// semantic tokens (always legible) rather than the fixed palette.
+function neutralTint(tokens: ColorTokens, outline: boolean, mutedGray: boolean): Appearance {
+  if (outline) return { bg: "transparent", border: tokens.border, text: tokens.foreground };
+  if (mutedGray) return { bg: tokens.muted, border: tokens.border, text: tokens["muted-foreground"] };
+  return { bg: tokens.secondary, border: tokens.border, text: tokens["secondary-foreground"] };
 }
 
 /** Build a Chip from a platform skin. */
 export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
-    const { children, icon, trailing, onPress, onRemove, small, disabled, accessibilityLabel, testID, style } = props;
-    const { tokens } = useTheme();
+    const { children, icon, trailing, onPress, onRemove, disabled, accessibilityLabel, testID, style } = props;
+    const { tokens, dark } = useTheme();
 
     // A selectable chip is a filter toggle that owns its selected state (controlled
     // via `selected`, uncontrolled via `defaultSelected`). It is "selectable" when
-    // asked explicitly or when any selection prop is passed. Selecting maps to the
-    // active `primary` fill; the base tone is what shows when unselected.
+    // asked explicitly or when any selection prop is passed.
     const selectable =
       props.selectable === true ||
       props.selected !== undefined ||
@@ -114,10 +171,27 @@ export function createChip(skin: ChipSkin) {
       props.defaultSelected ?? false,
       props.onSelectedChange,
     );
-    const baseTone = toneOf(props);
-    const isSelected = selectable ? selectedState : baseTone === "primary";
-    const tone: Tone = selectable && selectedState ? "primary" : baseTone;
-    const primaryTone = tone === "primary";
+
+    const { hue, mutedGray } = colorOf(props);
+    const accent = props.primary === true; // brand-accent (indigo) tone / the "active" look
+    const outline = props.outline === true;
+    const selectedActive = selectable && selectedState;
+    // A tappable chip reports its toggle/active state to AT (see the Pressable below).
+    const isSelected = selectable ? selectedState : accent;
+
+    // Resolve the paint. A selected filter chip lights up to a filled tint of its
+    // color (or brand indigo when it has none); otherwise the color axis + `outline`
+    // pick the tint, and `primary` maps to the indigo accent.
+    let appearance: Appearance;
+    if (selectedActive) {
+      appearance = hueTint(hue ?? "indigo", dark, false);
+    } else if (hue) {
+      appearance = hueTint(hue, dark, outline);
+    } else if (accent) {
+      appearance = hueTint("indigo", dark, outline);
+    } else {
+      appearance = neutralTint(tokens, outline, mutedGray);
+    }
 
     const handlePress = () => {
       if (selectable) setSelected(!selectedState);
@@ -126,21 +200,31 @@ export function createChip(skin: ChipSkin) {
 
     const container: StyleProp<ViewStyle> = [
       skin.base,
-      small ? skin.small : null,
-      surfaceStyle(tokens, tone),
+      { backgroundColor: appearance.bg, borderColor: appearance.border },
       disabled ? { opacity: 0.5 } : null,
       style,
     ];
 
+    // Auto-tint a leading/trailing `<Icon />` to the chip's label color so a bare
+    // `<Icon check />` matches its chip's hue without the caller threading the color.
+    // An Icon that sets its own `color` (or a semantic color boolean, which wins
+    // inside Icon) keeps it; a non-Icon node (an Avatar) ignores the injected color.
+    const tint = (node: ReactNode): ReactNode =>
+      isValidElement(node)
+        ? cloneElement(node as ReactElement<Record<string, unknown>>, {
+            color: (node.props as Record<string, unknown>).color ?? appearance.text,
+          })
+        : node;
+
     const inner = (
       <>
-        {icon}
+        {tint(icon)}
         {children != null ? (
-          <Text style={[small ? skin.labelTypeSmall : skin.labelType, { color: labelColor(tokens, tone) }]}>
+          <Text style={[skin.labelType, { color: appearance.text }]}>
             {children}
           </Text>
         ) : null}
-        {trailing}
+        {tint(trailing)}
         {onRemove ? (
           <Pressable
             onPress={onRemove}
@@ -151,12 +235,8 @@ export function createChip(skin: ChipSkin) {
             // Grow the ~14px glyph toward a ~44pt target; bias the slop away from the label (left).
             hitSlop={{ top: 15, bottom: 15, left: 8, right: 15 }}
           >
-            <Icon
-              x
-              size={small ? skin.removeSizeSmall : skin.removeSize}
-              muted={!primaryTone}
-              primaryForeground={primaryTone}
-            />
+            {/* The "×" rides the chip's label color so it matches every hue. */}
+            <Icon x size={skin.removeSize} color={appearance.text} />
           </Pressable>
         ) : null}
       </>
@@ -179,8 +259,8 @@ export function createChip(skin: ChipSkin) {
           // the Switch uses.
           accessibilityState={{ selected: isSelected, disabled: !!disabled }}
           aria-pressed={isSelected}
-          // A small pill is only ~22pt tall; grow its whole tap target toward ~44pt.
-          hitSlop={small ? 11 : undefined}
+          // The compact pill is only ~22pt tall; grow its whole tap target toward ~44pt.
+          hitSlop={11}
           // Android shows a ripple state layer on press; iOS/web keep the opacity dim.
           android_ripple={controlRipple(tokens)}
           style={({ pressed }) => [container, pressDim(pressed, 0.85)]}

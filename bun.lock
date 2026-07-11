@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "@olympusoss/canvas",
-      "dependencies": {
-        "react-native-qrcode-svg": "^6.3.21",
-      },
       "devDependencies": {
         "@changesets/cli": "^2.31.0",
         "@happy-dom/global-registrator": "^20.10.6",
@@ -17,9 +14,11 @@
         "expo-blur": "~56.0.3",
         "expo-glass-effect": "~56.0.4",
         "happy-dom": "^20.10.6",
+        "lucide-static": "^1.24.0",
         "react": "^19.2.7",
         "react-dom": "^19.2.7",
         "react-native": "^0.85.3",
+        "react-native-qrcode-svg": "^6.3.21",
         "react-native-svg": "^15",
         "react-native-web": "^0.21.2",
         "react-test-renderer": "^19.2.7",
@@ -30,11 +29,15 @@
         "expo-glass-effect": "*",
         "react": ">=18",
         "react-native": ">=0.74",
+        "react-native-qrcode-svg": ">=6",
+        "react-native-safe-area-context": ">=4",
         "react-native-svg": ">=14",
       },
       "optionalPeers": [
         "expo-blur",
         "expo-glass-effect",
+        "react-native-qrcode-svg",
+        "react-native-safe-area-context",
       ],
     },
   },
@@ -738,6 +741,8 @@
     "loose-envify": ["loose-envify@1.4.0", "", { "dependencies": { "js-tokens": "^3.0.0 || ^4.0.0" }, "bin": { "loose-envify": "cli.js" } }, "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q=="],
 
     "lru-cache": ["lru-cache@5.1.1", "", { "dependencies": { "yallist": "^3.0.2" } }, "sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w=="],
+
+    "lucide-static": ["lucide-static@1.24.0", "", {}, "sha512-NDSgPb/RWllI9QooPbGXfQCXQi/45oquDmtljeN3qVxqfEUf91uM2C4zijy8bs+pEWxKckA0/WZLZT43YD4Xnw=="],
 
     "lz-string": ["lz-string@1.5.0", "", { "bin": { "lz-string": "bin/bin.js" } }, "sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ=="],
 

@@ -1,4 +1,4 @@
-# Command Palette
+# Command
 
 Cmd+K search: navigation, actions, recent items.
 

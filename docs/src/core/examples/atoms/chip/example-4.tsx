@@ -3,13 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Row, Chip } = scope;
+  const { Icon, Chip } = scope;
   return (
-<Row snug wrap alignCenter>
-  <Chip selectable outline defaultSelected>Design</Chip>
-  <Chip selectable outline>Engineering</Chip>
-  <Chip selectable outline>Product</Chip>
-  <Chip selectable outline>Marketing</Chip>
-</Row>
+<Chip success icon={<Icon check size={14} />}>Verified</Chip>
   );
 }

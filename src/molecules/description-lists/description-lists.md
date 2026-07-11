@@ -1,4 +1,4 @@
-# Description List
+# DescriptionList
 
 Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views.
 

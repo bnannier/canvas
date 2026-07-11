@@ -1,4 +1,4 @@
-# Code Block
+# CodeBlock
 
 Preformatted code block with monospace font and padding.
 

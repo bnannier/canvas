@@ -124,6 +124,43 @@ describe("Chip", () => {
     expect(container.querySelector('[aria-label="Remove Design"]')).not.toBeNull();
     expect(container.querySelector('[aria-label="Remove"]')).toBeNull();
   });
+
+  it("a hue tints the chip, distinct hues differ, and none is the saturated primary button fill", () => {
+    const { container } = ui(
+      <>
+        <Chip testID="neutral">A</Chip>
+        <Chip testID="blue" blue>B</Chip>
+        <Chip testID="green" green>C</Chip>
+        <Chip testID="primary" primary>D</Chip>
+      </>,
+    );
+    const bg = (id: string) => at(container, id).style.backgroundColor;
+    // A color changes the fill, and different colors read apart.
+    expect(bg("blue")).not.toBe(bg("neutral"));
+    expect(bg("blue")).not.toBe(bg("green"));
+    // The whole point: `primary` is now a SOFT accent tint, not the saturated
+    // #4f46e5 primary fill a Button wears, and it is not the neutral gray either.
+    expect(["#4f46e5", "rgb(79, 70, 229)"]).not.toContain(bg("primary"));
+    expect(bg("primary")).not.toBe(bg("neutral"));
+  });
+
+  it("a status name aliases its hue (success renders as green)", () => {
+    const { container } = ui(
+      <>
+        <Chip testID="success" success>A</Chip>
+        <Chip testID="green" green>B</Chip>
+      </>,
+    );
+    expect(at(container, "success").style.backgroundColor).toBe(at(container, "green").style.backgroundColor);
+  });
+
+  it("outline drops the fill but keeps a colored border", () => {
+    const { container } = ui(<Chip testID="ob" blue outline>A</Chip>);
+    const el = at(container, "ob");
+    // A border-only chip has no (or zero-alpha) fill; RNW writes transparent as rgba(…,0).
+    expect(el.style.backgroundColor).toMatch(/^$|transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+    expect(el.style.borderColor).toBeTruthy();
+  });
 });
 
 describe("IconTile", () => {

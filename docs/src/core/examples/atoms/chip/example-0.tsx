@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Chip } = scope;
   return (
-<Chip primary onRemove={() => {}}>Status: Active</Chip>
+<Chip blue onRemove={() => {}}>Status: Active</Chip>
   );
 }

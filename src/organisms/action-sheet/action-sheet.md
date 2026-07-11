@@ -1,4 +1,4 @@
-# Action Sheet
+# ActionSheet
 
 The iOS modal action menu: a bottom sheet of choices summoned in response to a user action. It poses an optional title and message, lists a set of actions (any of which can be destructive), and offers a Cancel. Selecting an action runs it and closes the sheet; tapping the scrim or Cancel closes it without acting. Pass a `trigger` label for a self-contained button that opens the sheet, or drive `open` / `onOpenChange` yourself. For a small contextual menu anchored to a control, reach for Dropdown or RowMenu instead.
 

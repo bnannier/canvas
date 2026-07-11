@@ -1,4 +1,4 @@
-# Stacked List
+# StackedList
 
 Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.
 

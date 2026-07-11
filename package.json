@@ -61,6 +61,7 @@
     "version-packages": "changeset version",
     "release": "changeset publish",
     "docs:gen": "bun tools/docgen/generate.ts",
+    "icons:gen": "bun tools/icongen/generate.ts",
     "docs:gen:check": "bun tools/docgen/generate.ts && git diff --quiet -- docs/src/core/examples docs/src/core/registry.ts docs/src/core/raw-md.ts"
   },
   "publishConfig": {
@@ -99,11 +100,12 @@
     "@types/react": "^19.2.16",
     "expo-blur": "~56.0.3",
     "expo-glass-effect": "~56.0.4",
-    "react-native-qrcode-svg": "^6.3.21",
     "happy-dom": "^20.10.6",
+    "lucide-static": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-native": "^0.85.3",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-svg": "^15",
     "react-native-web": "^0.21.2",
     "react-test-renderer": "^19.2.7",

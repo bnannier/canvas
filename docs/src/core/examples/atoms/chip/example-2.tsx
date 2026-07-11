@@ -3,8 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Icon, Chip } = scope;
+  const { Row, Chip } = scope;
   return (
-<Chip primary icon={<Icon check primaryForeground size={14} />}>Verified</Chip>
+<Row snug wrap alignCenter>
+  <Chip success>Passing</Chip>
+  <Chip warning>Flaky</Chip>
+  <Chip error>Failing</Chip>
+  <Chip info>Queued</Chip>
+  <Chip neutral>Skipped</Chip>
+</Row>
   );
 }

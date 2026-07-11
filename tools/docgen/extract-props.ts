@@ -47,6 +47,13 @@ function program(): ts.Program {
 // those rows. `TextEntryProps` is Input/Textarea's react-native text-entry passthrough.
 const MIXIN_PROP_TYPES = new Set(["TextEntryProps"]);
 
+// Interfaces whose members are documented elsewhere (a gallery, not a table) and
+// so are omitted from a consuming component's prop rows even though they compose
+// in. `IconGlyphProps` is the generated one-boolean-per-glyph name axis (400+
+// props); the `<Icon set />` gallery is its reference, so listing every glyph as
+// a table row would bury Icon's real props.
+const Oproprietary_MEMBER_INTERFACES = new Set(["IconGlyphProps"]);
+
 // A very long resolved type (e.g. react-native's `autoComplete` 50-value union)
 // would bloat both props.ts and the rendered cell; cap it so the table stays
 // readable. Own-member annotations are almost always short and pass through whole.
@@ -124,6 +131,11 @@ function buildProps(checker: ts.TypeChecker, type: ts.Type, node: ts.Declaration
   let carry = "";
   const out: PropDoc[] = [];
   for (const sym of symbols) {
+    // Skip members composed in from a gallery-documented interface (e.g. Icon's
+    // 400+ generated glyph-name booleans from IconGlyphProps).
+    const decl = (sym.getDeclarations() ?? [])[0];
+    const parent = decl?.parent;
+    if (parent && ts.isInterfaceDeclaration(parent) && Oproprietary_MEMBER_INTERFACES.has(parent.name.text)) continue;
     const { desc, source } = describe(checker, sym);
     let description: string;
     if (source === "jsdoc") {

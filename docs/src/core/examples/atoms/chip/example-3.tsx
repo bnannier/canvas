@@ -3,12 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Icon, Row, Chip } = scope;
+  const { Row, Chip } = scope;
   return (
 <Row snug wrap alignCenter>
-  <Chip primary onRemove={() => {}}>Role: Admin</Chip>
-  <Chip primary onRemove={() => {}}>Status: Active</Chip>
-  <Chip outline onPress={() => {}} icon={<Icon plus muted size={14} />}>Add filter</Chip>
+  <Chip>Neutral</Chip>
+  <Chip primary>Accent</Chip>
+  <Chip outline>Outline</Chip>
+  <Chip blue outline>Outline blue</Chip>
 </Row>
   );
 }

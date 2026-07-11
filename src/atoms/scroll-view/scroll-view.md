@@ -1,4 +1,4 @@
-# Scroll View
+# ScrollView
 
 A scrollable container for content larger than its bounds. Unlike a plain View (which clips overflow), a ScrollView lets its children exceed its size and scroll. Vertical by default; pass `horizontal` for a row. Style the frame with `style` and the inner content with `contentContainerStyle`.
 
