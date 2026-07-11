@@ -3,12 +3,21 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Icon, Row, Chip } = scope;
+  const { Stateful, Icon, Row, Chip } = scope;
   return (
-<Row snug wrap alignCenter>
-  <Chip blue onRemove={() => {}}>Role: Admin</Chip>
-  <Chip green onRemove={() => {}}>Status: Active</Chip>
-  <Chip outline onPress={() => {}} icon={<Icon plus size={14} />}>Add filter</Chip>
-</Row>
+<Stateful initial={{ items: ["Role: Admin", "Status: Active"], seq: 1 }}>
+  {(state, setState) => (
+    <Row snug wrap alignCenter>
+      {state.items.map((f) => (
+        <Chip key={f} blue onRemove={() => setState({ ...state, items: state.items.filter((x) => x !== f) })}>
+          {f}
+        </Chip>
+      ))}
+      <Chip outline icon={<Icon plus size={14} />} onPress={() => setState({ items: [...state.items, "Filter " + state.seq], seq: state.seq + 1 })}>
+        Add filter
+      </Chip>
+    </Row>
+  )}
+</Stateful>
   );
 }
