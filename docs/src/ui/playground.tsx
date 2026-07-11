@@ -96,7 +96,7 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
           context, so an open menu on an upper row is clipped by the cell and painted
           under lower rows. A single stage-level outlet floats overlays above every
           row instead. */}
-      <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 16, minHeight: 84 }}>
+      <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 24, minHeight: 84 }}>
         <ExampleErrorBoundary key={resetKey}>
           <FitStage>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
