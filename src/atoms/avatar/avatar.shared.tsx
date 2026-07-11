@@ -88,6 +88,9 @@ export interface AvatarProps {
 // avatar, large the identity-header size. Platform-neutral.
 const BOX: Record<Size, number> = { small: 28, default: 40, large: 48 };
 const CIRCLE_RADIUS = 9999;
+// Width of the separator ring (and the matching "+N" chip border) drawn in the
+// background color when avatars overlap in a stack. A thin hairline, owned once.
+const RING_WIDTH = 1.5;
 
 // Size precedence when more than one is passed: first match wins.
 function sizeOf(p: AvatarProps): Size {
@@ -126,9 +129,9 @@ function containerStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size, shape
     width: BOX[size],
     height: BOX[size],
     borderRadius: radiusFor(skin, shape),
-    // No ring-* equivalent in RN; a 2px background-colored border is the stand-in
-    // for ring-2 ring-background, the separator outline used when avatars overlap.
-    ...(ring ? { borderWidth: 2, borderColor: tokens.background } : null),
+    // No ring-* equivalent in RN; a thin background-colored border is the stand-in
+    // for ring ring-background, the separator outline used when avatars overlap.
+    ...(ring ? { borderWidth: RING_WIDTH, borderColor: tokens.background } : null),
   };
 }
 
@@ -314,7 +317,7 @@ export function createAvatarGroup(skin: AvatarSkin) {
               width: BOX[size],
               height: BOX[size],
               borderRadius: CIRCLE_RADIUS,
-              borderWidth: 2,
+              borderWidth: RING_WIDTH,
               borderColor: tokens.background,
               marginStart: visible.length > 0 ? overlap : 0,
             }}

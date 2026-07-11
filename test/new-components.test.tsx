@@ -92,8 +92,8 @@ describe("AvatarGroup", () => {
         <Avatar name="Bob Cat" />
       </AvatarGroup>,
     );
-    // The group clones each child with ring:true, which paints the 2px outline.
-    expect(at(container, "av0").style.borderWidth).toBe("2px");
+    // The group clones each child with ring:true, which paints the hairline outline.
+    expect(at(container, "av0").style.borderWidth).toBe("1.5px");
   });
 });
 
