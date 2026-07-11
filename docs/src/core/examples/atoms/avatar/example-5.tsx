@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Stateful initial={false}>
   {(open, setOpen) =>
     open ? (
-      <Card raised>
+      <Card raised padded>
         <Column relaxed>
           <Row relaxed alignCenter>
             <Avatar large src="/rachel-chen.jpg" name="RC" />
