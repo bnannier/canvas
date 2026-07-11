@@ -21,9 +21,12 @@ import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 //   `raised` lifts it. (The exact resting/raised shadow is per-OS via the skin.)
 // - Interaction: pass `onPress` to make the whole card pressable; it gains the
 //   pressed affordance (Android ripple, iOS/web pressed dim) and the button role.
-// - Padding: `padded` pads the surface itself (good for a single block of
-//   content); omit when you compose CardHeader/CardContent, which carry their
-//   own padding.
+// - Padding: a card with raw children pads its surface by DEFAULT (the common
+//   case, so a bare `<Card>content</Card>` reads right without ceremony). `flush`
+//   removes the inset for edge-to-edge content (a table, a nav bar) or when you
+//   compose CardHeader/CardContent, which carry their own padding. `padded` is
+//   the explicit form of the default. The data-driven string-prop path renders
+//   self-padding sections, so a childless card stays bare on its own.
 // - Density (pick one): `compact` > `comfortable`. Sets the card's own content
 //   padding and the gap between flat children, tight (compact) or roomy
 //   (comfortable). A density prop pads the surface on its own, so it needs no
@@ -46,8 +49,12 @@ export interface CardProps {
   // Elevation (pick one; default is a soft resting shadow).
   raised?: boolean;
   flat?: boolean;
-  // Padding (orthogonal boolean).
+  // Padding (orthogonal booleans). A card with raw children is padded by default;
+  // `flush` removes the inset for edge-to-edge content or when you compose the
+  // self-padding CardHeader/CardContent. `padded` is the explicit form of the
+  // default (kept for clarity and back-compat).
   padded?: boolean;
+  flush?: boolean;
   /** When set, the whole card becomes pressable (a card that behaves as a control). */
   onPress?: () => void;
   /**
@@ -83,7 +90,7 @@ function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, description, body, footer, padded, onPress, selected, grow, testID, style } = props;
+    const { children, title, description, body, footer, padded, flush, onPress, selected, grow, testID, style } = props;
     const { tokens } = useTheme();
     const elev = elevationOf(props);
     const dens = densityOf(props);
@@ -93,9 +100,12 @@ export function createCard(skin: CardSkin) {
       { borderRadius: skin.radius },
       s.cardSurface(tokens),
       skin.elevation(elev),
-      // Density pads + gaps on its own and wins over `padded`; otherwise `padded`
-      // applies the standard inset, and a bare card stays unpadded for composition.
-      dens !== "default" ? skin.density[dens] : padded ? skin.padded : null,
+      // Density pads + gaps on its own and wins over everything. Otherwise a card
+      // with raw children pads by default (the common case); `flush` opts out
+      // (edge-to-edge content, or composing self-padding CardHeader/CardContent),
+      // and the data-driven string path (no children) stays bare since its own
+      // sections carry the padding. `padded` is the explicit form of the default.
+      dens !== "default" ? skin.density[dens] : flush ? null : padded || children != null ? skin.padded : null,
       // Selected: recolor the border to primary and wash the surface with a soft
       // primary tint (the border width is unchanged, so content never shifts).
       selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,

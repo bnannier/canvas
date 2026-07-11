@@ -63,7 +63,7 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 **Do** — Push utilities to the right, keep one primary button, and demote the rest to ghost so the New action leads.
 
 ```tsx
-<Card style={{ width: 420, maxWidth: "100%" }}>
+<Card flush style={{ width: 420, maxWidth: "100%" }}>
   <Row between alignCenter pad style={{ height: 56 }}>
     <Typography lead semibold>Dashboard</Typography>
     <Row snug>

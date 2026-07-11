@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Card, DataTable, Divider, Input, Typography, Row } = scope;
   return (
-<Card flat style={{ overflow: "hidden", maxWidth: 520 }}>
+<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <Row snug alignCenter between pad>
     <Input small placeholder="Search users..." style={{ maxWidth: 240 }} />
     <Button outline small>Export</Button>

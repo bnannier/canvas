@@ -72,7 +72,7 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 **Do** — Use a button that opens the command palette and advertise the ⌘K shortcut.
 
 ```tsx
-<Card flat style={{ width: "100%", overflow: "hidden" }}>
+<Card flat flush style={{ width: "100%", overflow: "hidden" }}>
   <Row alignCenter snug pad style={{ height: 56 }}>
     <Typography small semibold>Canvas</Typography>
     <Column grow style={{ maxWidth: 400 }}>
@@ -100,7 +100,7 @@ Topbars with navigation links, search, and action buttons. Used as the primary a
 **Do** — Collapse the links into a hamburger and keep only the logo and avatar in the bar.
 
 ```tsx
-<Card flat style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
+<Card flat flush style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
   <Row alignCenter snug pad style={{ height: 56 }}>
     <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
     <Typography small semibold>Canvas</Typography>

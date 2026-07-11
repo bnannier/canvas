@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Card, Typography, Row } = scope;
   return (
-<Card style={{ width: 420, maxWidth: "100%" }}>
+<Card flush style={{ width: 420, maxWidth: "100%" }}>
   <Row between alignCenter pad style={{ height: 56 }}>
     <Typography lead semibold>Dashboard</Typography>
     <Row snug>

@@ -105,7 +105,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 ### Inside a table
 
 ```tsx
-<Card flat style={{ overflow: "hidden" }}>
+<Card flat flush style={{ overflow: "hidden" }}>
   <DataTable columns={["Name", "Email", "Role", "Status"]} rows={[]} />
   <Column alignCenter padLoose>
     <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />

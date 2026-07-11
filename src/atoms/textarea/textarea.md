@@ -25,7 +25,7 @@ Multi-line input, with character count, with toolbar.
 ### Formatting toolbar
 
 ```tsx
-<Card flat style={{ maxWidth: 400, overflow: "hidden" }}>
+<Card flat flush style={{ maxWidth: 400, overflow: "hidden" }}>
   <Row alignCenter tight padTight>
     <Button ghost small>B</Button>
     <Button ghost small>I</Button>
@@ -97,7 +97,7 @@ Multi-line input, with character count, with toolbar.
 **Do** — Make each control a real focusable button that toggles an active state when pressed.
 
 ```tsx
-<Card flat style={{ maxWidth: 400, overflow: "hidden" }}>
+<Card flat flush style={{ maxWidth: 400, overflow: "hidden" }}>
   <Row alignCenter tight padTight>
     <Button ghost small>B</Button>
     <Button ghost small>I</Button>

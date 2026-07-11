@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Row loose wrap alignStart>
   <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
-  <Card grow style={{ minWidth: 240 }}>
+  <Card grow flush style={{ minWidth: 240 }}>
     <CardHeader>
       <Typography small semibold>May 24</Typography>
     </CardHeader>

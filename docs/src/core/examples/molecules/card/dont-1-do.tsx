@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, CardContent, CardHeader, CardSeparator, CardTitle, Typography } = scope;
   return (
-<Card style={{ maxWidth: 360 }}>
+<Card flush style={{ maxWidth: 360 }}>
   <CardHeader>
     <CardTitle>Recent activity</CardTitle>
   </CardHeader>

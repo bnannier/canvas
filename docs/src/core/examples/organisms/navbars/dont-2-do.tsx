@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Avatar, Button, Card, Icon, Typography, Row, Column } = scope;
   return (
-<Card flat style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
+<Card flat flush style={{ width: "100%", maxWidth: 360, overflow: "hidden" }}>
   <Row alignCenter snug pad style={{ height: 56 }}>
     <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
     <Typography small semibold>Canvas</Typography>

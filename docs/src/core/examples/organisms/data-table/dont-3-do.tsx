@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, DataTable, Typography, Column } = scope;
   return (
-<Card flat style={{ overflow: "hidden", maxWidth: 520 }}>
+<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
   <Column alignCenter padLoose>
     <Typography small muted>No results found.</Typography>

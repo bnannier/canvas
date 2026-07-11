@@ -58,7 +58,7 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
 **Do** — Keep the count + pagination footer so the search result is always anchored to the total.
 
 ```tsx
-<Card flat style={{ overflow: "hidden", maxWidth: 520 }}>
+<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <Row snug alignCenter between pad>
     <Input small placeholder="Search users..." style={{ maxWidth: 240 }} />
     <Button outline small>Export</Button>
@@ -153,7 +153,7 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
 **Do** — Keep the header and span a single centered message row so the structure stays intact.
 
 ```tsx
-<Card flat style={{ overflow: "hidden", maxWidth: 520 }}>
+<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
   <Column alignCenter padLoose>
     <Typography small muted>No results found.</Typography>
@@ -172,7 +172,7 @@ Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrolla
 **Do** — Show a spinner in a centered spanning row so the load reads as active and in place.
 
 ```tsx
-<Card flat style={{ overflow: "hidden", maxWidth: 520 }}>
+<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
   <Column alignCenter padLoose>
     <Spinner small />
