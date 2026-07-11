@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { View, Pressable, Icon, useTheme, liquidGlassAvailable } from "@olympusoss/canvas";
 import { titleFor } from "./topbar";
-import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuLeaf, type MenuGroup } from "../data/nav";
+import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { TabOverflowMenu } from "./tab-overflow-menu";
 import { ThemeToggles } from "./theme-toggles";
 import { useDocsTheme } from "../theme/docs-theme";
@@ -60,12 +60,11 @@ export function NativeHeader() {
   if (Platform.OS === "web" || !isFocused) return null;
 
   const title = titleFor(pathname).title;
-  const model = nativeMenuFor(sectionFor(pathname));
-  const hasMenu = model.kind === "flat" ? model.items.length > 0 : model.groups.length > 0;
-  // Where we are now: the current page's category + slug, so the menu reopens reflecting it
-  // instead of restarting at the base category list.
+  // Where we are now: the current page's category + slug, so the menu marks the current page
+  // and (in Components) surfaces its category inline.
   const activeGroup = getActiveGroup(pathname);
   const activeSlug = getActiveSlug(pathname);
+  const nodes = nativeMenuFor(sectionFor(pathname), activeGroup);
 
   // iOS: a native pull-down UIMenu in the trailing slot. Flat sections (Home/Utilities) are
   // action rows; Components is a list of category SUBMENUS, each holding its component pages,
@@ -77,21 +76,19 @@ export function NativeHeader() {
   // sibling tab stacks, so a bare omission would leave a previous section's menu showing here,
   // and an explicit [] clears it.
   if (Platform.OS === "ios") {
-    const action = (leaf: MenuLeaf) => ({
-      type: "action" as const,
-      label: leaf.label,
-      onPress: () => router.push(leaf.href as never),
-      ...(leaf.slug === activeSlug ? { state: "on" as const } : {}),
-    });
-    const submenu = (g: MenuGroup) => ({ type: "submenu" as const, label: g.label, items: g.items.map(action) });
-    const current = model.kind === "groups" && activeGroup ? model.groups.find((g) => g.label === activeGroup) : undefined;
-    const items =
-      model.kind === "flat"
-        ? model.items.map(action)
-        : [
-            ...(current ? [{ type: "submenu" as const, label: current.label, inline: true, items: current.items.map(action) }] : []),
-            ...model.groups.filter((g) => g !== current).map(submenu),
-          ];
+    // Recursively map the menu tree to native UIMenu items: a leaf becomes an action
+    // (check-marked when it is the current page), a submenu becomes a native submenu that
+    // slides over natively (nested arbitrarily deep, e.g. Home -> Components -> Atoms -> page).
+    type NativeMenuItem =
+      | { type: "action"; label: string; onPress: () => void; state?: "on" }
+      | { type: "submenu"; label: string; inline?: boolean; items: NativeMenuItem[] };
+    const toItems = (ns: MenuNode[]): NativeMenuItem[] =>
+      ns.map((n): NativeMenuItem =>
+        n.kind === "leaf"
+          ? { type: "action", label: n.label, onPress: () => router.push(n.href as never), ...(n.slug === activeSlug ? { state: "on" as const } : {}) }
+          : { type: "submenu", label: n.label, ...(n.inline ? { inline: true as const } : {}), items: toItems(n.items) },
+      );
+    const items = toItems(nodes);
     // The Appearance submenu (web-toggle parity as native UIMenu rows): Light/Dark/System
     // with a check on the active choice, plus Solid/Frost only where glass is opt-in
     // (on iOS 26 the platform default is already glass, matching the OS).
@@ -170,7 +167,7 @@ export function NativeHeader() {
       <TabOverflowMenu
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
-        menu={model}
+        menu={nodes}
         activeGroup={activeGroup}
         activeSlug={activeSlug}
       />

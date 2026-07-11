@@ -158,7 +158,7 @@ function WebNav() {
         <TabOverflowMenu
           visible={menuOpen}
           onClose={() => setMenuOpen(false)}
-          menu={nativeMenuFor(section)}
+          menu={nativeMenuFor(section, getActiveGroup(pathname))}
           activeGroup={getActiveGroup(pathname)}
           activeSlug={getActiveSlug(pathname)}
           footer={<ThemeToggles />}

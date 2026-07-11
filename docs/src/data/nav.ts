@@ -119,39 +119,77 @@ export function sectionFor(pathname: string): "home" | "components" | "utilities
 }
 
 // ── Native header menu model ─────────────────────────────────────────────────
-// The hamburger is the active tab's secondary nav, and its SHAPE depends on the tab:
-// Home/Utilities are a flat list of links; Components is a list of categories, each
-// drilling into its component pages. `nativeMenuFor` resolves a tab id (== section)
-// to one of these two shapes, reusing the existing NAV_ROUTES (link registry) and
-// NAV_GROUPS (the category -> components tree the web sidebar already consumes). iOS
-// renders `groups` as native UIMenu submenus; Android renders them as a drill-down sheet.
+// The hamburger is the active tab's secondary nav, modelled as a RECURSIVE tree of
+// leaves (a page link) and submenus (a labelled drill-in). `nativeMenuFor` builds the
+// tree per tab, reusing NAV_ROUTES (link registry) and NAV_GROUPS (the category ->
+// components tree the web sidebar consumes):
+//   • Home is a full SITE MAP: the About/guide links, plus a Components submenu that
+//     drills category -> component page, plus a Utilities submenu, so every page is
+//     reachable from Home.
+//   • Components is the category submenus, with the active category surfaced FIRST as an
+//     inline section (its sibling pages show immediately) and the rest as drill-ins.
+//   • Utilities is a flat list of links.
+// iOS renders the tree as nested native UIMenu submenus; Android/mobile-web render it as
+// an N-level drill-down sheet (TabOverflowMenu).
 export interface MenuLeaf {
   /** The page slug (matches getActiveSlug), so the menu can mark the current page. */
   slug: string;
   label: string;
   href: string;
 }
-export interface MenuGroup {
-  label: string;
-  items: MenuLeaf[];
-}
-export type NativeMenu = { kind: "flat"; items: MenuLeaf[] } | { kind: "groups"; groups: MenuGroup[] };
+export type MenuNode =
+  | ({ kind: "leaf" } & MenuLeaf)
+  | { kind: "submenu"; label: string; inline?: boolean; items: MenuNode[] };
 
-export function nativeMenuFor(section: string): NativeMenu {
+const leafNode = (i: NavItem): MenuNode => ({ kind: "leaf", slug: i.slug, label: i.label, href: i.href });
+
+// Ordered category labels -> a submenu per category holding its component-page leaves.
+// Reused by the Components tab AND Home's Components submenu.
+function categorySubmenus(categories: string[]): MenuNode[] {
+  const byLabel = new Map(NAV_GROUPS.map((g) => [g.label, g] as const));
+  return categories
+    .map((c) => byLabel.get(c))
+    .filter((g): g is NavGroup => Boolean(g))
+    .map((g) => ({ kind: "submenu" as const, label: g.label, items: g.items.map(leafNode) }));
+}
+
+export function nativeMenuFor(section: string, activeGroup?: string | null): MenuNode[] {
   const tab = MOBILE_TABS.find((t) => t.id === section);
   const categories = tab?.topbar?.categories;
+
+  // Components: category submenus, with the active category pulled to the front and marked
+  // inline so its sibling pages render immediately instead of behind a drill-in.
   if (categories && categories.length) {
-    const byLabel = new Map(NAV_GROUPS.map((g) => [g.label, g] as const));
-    const groups: MenuGroup[] = categories
-      .map((c) => byLabel.get(c))
-      .filter((g): g is NavGroup => Boolean(g))
-      .map((g) => ({ label: g.label, items: g.items.map((i) => ({ slug: i.slug, label: i.label, href: i.href })) }));
-    return { kind: "groups", groups };
+    const nodes = categorySubmenus(categories);
+    if (activeGroup) {
+      const idx = nodes.findIndex((n) => n.kind === "submenu" && n.label === activeGroup);
+      if (idx > -1) {
+        const [active] = nodes.splice(idx, 1);
+        if (active.kind === "submenu") active.inline = true;
+        nodes.unshift(active);
+      }
+    }
+    return nodes;
   }
+
   const keys = [...(tab?.topbar?.inline ?? []), ...(tab?.topbar?.overflow ?? [])];
-  const items = keys.map((k) => {
-    const r = routeItem(k);
-    return { slug: r.slug, label: r.label, href: r.href };
-  });
-  return { kind: "flat", items };
+
+  // Home: the full site map. The lone "components" link is replaced by a Components submenu,
+  // and a Utilities submenu is appended, so the whole site drills open from Home.
+  if (section === "home") {
+    const componentsTab = MOBILE_TABS.find((t) => t.id === "components");
+    const utilitiesTab = MOBILE_TABS.find((t) => t.id === "utilities");
+    const utilKeys = [...(utilitiesTab?.topbar?.inline ?? []), ...(utilitiesTab?.topbar?.overflow ?? [])];
+    const guideKeys = keys.filter((k) => k !== "components");
+    const [firstKey, ...restKeys] = guideKeys; // About leads; the remaining guides follow the submenus
+    return [
+      ...(firstKey ? [leafNode(routeItem(firstKey))] : []),
+      { kind: "submenu", label: "Components", items: categorySubmenus(componentsTab?.topbar?.categories ?? []) },
+      { kind: "submenu", label: "Utilities", items: utilKeys.map((k) => leafNode(routeItem(k))) },
+      ...restKeys.map((k) => leafNode(routeItem(k))),
+    ];
+  }
+
+  // Other flat sections (Utilities tab): a flat list of links.
+  return keys.map((k) => leafNode(routeItem(k)));
 }
