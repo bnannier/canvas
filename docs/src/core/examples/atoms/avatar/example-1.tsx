@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Avatar, AvatarGroup } = scope;
   return (
-<AvatarGroup max={4}>
+<AvatarGroup small max={4}>
   <Avatar src="/rachel-chen.jpg" name="RC" />
   <Avatar src="/liang-bao.jpg" name="LB" />
   <Avatar src="/marcus-allen.jpg" name="MA" />

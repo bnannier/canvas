@@ -13,7 +13,7 @@ A photo when the account has one, falling back to two initials on a brand gradie
 ### Variant - stacked
 
 ```tsx
-<AvatarGroup max={4}>
+<AvatarGroup small max={4}>
   <Avatar src="/rachel-chen.jpg" name="RC" />
   <Avatar src="/liang-bao.jpg" name="LB" />
   <Avatar src="/marcus-allen.jpg" name="MA" />
