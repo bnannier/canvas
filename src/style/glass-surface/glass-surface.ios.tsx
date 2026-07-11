@@ -15,6 +15,8 @@ import {
   degradedGlassSurface,
   specularRim,
   GLASS_INTENSITY,
+  SHEER_INTENSITY,
+  SHEER_FILL_OPACITY,
   MATERIAL_FILL,
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
@@ -41,7 +43,7 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, interactive = false }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, interactive = false, sheer }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
 
   if (surface !== "glass") {
@@ -75,7 +77,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
         testID={testID}
         material={
           <>
-            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, pointerEvents: "none" }]} />
+            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
             <GlassView glassEffectStyle="regular" isInteractive={interactive} colorScheme={dark ? "dark" : "light"} style={MATERIAL_FILL} />
           </>
         }
@@ -96,8 +98,8 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
         testID={testID}
         material={
           <>
-            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, pointerEvents: "none" }]} />
-            <BlurView intensity={GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />
+            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
+            <BlurView intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />
             {/* Specular edge (below the content): a lit rim that supplies the surface's
                 edge now that skin borders are stripped under glass. iOS 26's native
                 GlassView above is never decorated. */}

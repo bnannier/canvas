@@ -23,7 +23,11 @@ export function DocsSurface({
 }) {
   const { tokens } = useTheme();
   return (
+    // `sheer`: docs content surfaces float over the live Canvas Universe backdrop and do
+    // not need to occlude it, so they take the lighter, thinner frost (unlike functional
+    // overlays), letting the animation read clearly through them in glass/frost mode.
     <GlassSurface
+      sheer
       style={[
         { backgroundColor: tokens[fill] },
         bordered ? { borderWidth: 1, borderColor: tokens.border, borderRadius: 12, overflow: "hidden" } : null,

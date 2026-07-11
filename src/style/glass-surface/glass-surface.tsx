@@ -16,6 +16,8 @@ import {
   degradedGlassSurface,
   specularRim,
   GLASS_INTENSITY,
+  SHEER_INTENSITY,
+  SHEER_FILL_OPACITY,
   MATERIAL_FILL,
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
@@ -35,7 +37,7 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, sheer }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
 
   if (surface !== "glass") {
@@ -68,9 +70,9 @@ export function GlassSurface({ style, children, pointerEvents, testID }: GlassSu
   // through the remaining translucency.
   const material = (
     <>
-      <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, pointerEvents: "none" }]} />
+      <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
       <BlurView
-        intensity={GLASS_INTENSITY}
+        intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY}
         tint={dark ? "dark" : "light"}
         experimentalBlurMethod="dimezisBlurView"
         style={MATERIAL_FILL}

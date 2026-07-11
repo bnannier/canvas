@@ -32,6 +32,15 @@ export interface GlassSurfaceProps {
    * frost/solid fallbacks, which have no interactive material. Defaults to false.
    */
   interactive?: boolean;
+  /**
+   * Render a SHEER (more see-through) frost: a lighter blur and a thinner fill so
+   * whatever animates behind the surface reads clearly through it. For CONTENT-layer
+   * surfaces that float over a live backdrop and do NOT need to occlude what is behind
+   * them (the docs' example stages, tables, and cards over the Canvas Universe). Do NOT
+   * use it on functional overlays (menus, dropdowns, dialogs), which must stay opaque
+   * enough to occlude the content they open over. Defaults to false (the full frost).
+   */
+  sheer?: boolean;
 }
 
 // Blur strength for the frost. expo-blur maps intensity to a blur radius (~0.2px
@@ -39,6 +48,14 @@ export interface GlassSurfaceProps {
 // expo-blur supplies its own light/dark tint at this intensity, so no extra tint
 // overlay is layered on top (that would double-darken the material).
 export const GLASS_INTENSITY = 80;
+
+// The SHEER frost (GlassSurfaceProps.sheer): a lighter blur plus a thinner popover
+// fill (the fill layer is drawn at SHEER_FILL_OPACITY, so its effective alpha drops
+// from ~0.66-0.72 to ~0.5), so a live backdrop reads clearly through a content
+// surface. The full frost keeps GLASS_INTENSITY + a solid fill for functional
+// overlays, which must occlude what they open over.
+export const SHEER_INTENSITY = 50;
+export const SHEER_FILL_OPACITY = 0.75;
 
 // Under the OS "Increase Contrast" setting, Apple makes Liquid Glass "predominantly
 // black or white and highlights them with a contrasting border". The kit renders the
