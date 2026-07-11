@@ -79,9 +79,9 @@ const ATOMIC_LEVELS: { id: string; label: string; icon: ReactNode; blurb: string
   },
   {
     id: "organisms", label: "Organisms", icon: <Icon appWindow primary size={16} />,
-    blurb: "Self-contained sections of a screen: Data Table, Navigation, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
+    blurb: "Self-contained sections of a screen: Data Table, Sidebar, Dialog, Tabs. The larger pieces that adapt desktop-first down to phone and assemble into product surfaces.",
     pages: [
-      { label: "Data Tables", to: "/components/data-table" }, { label: "Navigation", to: "/components/navigation" },
+      { label: "Data Tables", to: "/components/data-table" }, { label: "Sidebar", to: "/components/sidebar" },
       { label: "Dialog", to: "/components/dialog" }, { label: "Tabs", to: "/components/tabs" },
     ],
   },

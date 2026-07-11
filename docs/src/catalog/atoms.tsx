@@ -486,7 +486,7 @@ function MiniToggle({ on }: { on: boolean }) {
   );
 }
 
-function TogglesPreview() {
+function SwitchPreview() {
   return (
     <View style={{ flexDirection: "row", gap: 12 }}>
       <MiniToggle on />
@@ -533,6 +533,6 @@ export const ATOMS_TILES: CatTile[] = [
   { title: "Select", href: "/components/select", Preview: SelectsPreview },
   { title: "Skeleton", href: "/components/skeleton", Preview: SkeletonsPreview },
   { title: "Textarea", href: "/components/textarea", Preview: TextareasPreview },
-  { title: "Switch", href: "/components/toggle", Preview: TogglesPreview },
+  { title: "Switch", href: "/components/switch", Preview: SwitchPreview },
   { title: "Tooltip", href: "/components/tooltip", Preview: TooltipsPreview },
 ];

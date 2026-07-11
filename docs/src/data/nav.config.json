@@ -55,7 +55,7 @@
           { "slug": "slider", "label": "Slider", "icon": "gauge" },
           { "slug": "spinner", "label": "Spinner", "icon": "loader" },
           { "slug": "textarea", "label": "Textarea", "icon": "align-left" },
-          { "slug": "toggle", "label": "Switch", "icon": "toggle-left" },
+          { "slug": "switch", "label": "Switch", "icon": "toggle-left" },
           { "slug": "tooltip", "label": "Tooltip", "icon": "message-circle" },
           { "slug": "typography", "label": "Typography", "icon": "type" }
         ]
@@ -95,7 +95,7 @@
           { "slug": "drawer", "label": "Drawer", "icon": "panel-right" },
           { "slug": "filter-panel", "label": "FilterPanel", "icon": "filter" },
           { "slug": "navbars", "label": "Navbar", "icon": "navigation" },
-          { "slug": "navigation", "label": "Sidebar", "icon": "navigation" },
+          { "slug": "sidebar", "label": "Sidebar", "icon": "navigation" },
           { "slug": "overlays", "label": "Overlay", "icon": "panel-right" },
           { "slug": "row-menu", "label": "RowMenu", "icon": "more-horizontal" },
           { "slug": "stepper", "label": "Stepper", "icon": "footprints" },

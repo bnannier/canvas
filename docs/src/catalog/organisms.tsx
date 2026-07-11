@@ -221,7 +221,7 @@ function NavbarsPreview() {
   );
 }
 
-function NavigationPreview() {
+function SidebarPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ width: 160, maxWidth: "100%", backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 6, padding: 6 }}>
@@ -360,7 +360,7 @@ export const ORGANISMS_TILES: CatTile[] = [
   { title: "DataTable", href: "/components/data-table", span: true, Preview: DataTablesPreview },
   { title: "FilterPanel", href: "/components/filter-panel", Preview: FilterPanelsPreview },
   { title: "Navbar", href: "/components/navbars", Preview: NavbarsPreview },
-  { title: "Sidebar", href: "/components/navigation", Preview: NavigationPreview },
+  { title: "Sidebar", href: "/components/sidebar", Preview: SidebarPreview },
   { title: "Dialog", href: "/components/dialog", Preview: DialogPreview },
   { title: "Overlay", href: "/components/overlays", Preview: OverlaysPreview },
   { title: "Stepper", href: "/components/stepper", Preview: SteppersPreview },

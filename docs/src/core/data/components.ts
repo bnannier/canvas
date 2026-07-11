@@ -183,8 +183,7 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
-    slug: "toggle",
-    dir: "switch",
+    slug: "switch",
     name: "Switch",
     description: "On / off switch, isolated or grouped in a settings list.",
     category: "Atoms",
@@ -309,8 +308,7 @@ export const COMPONENTS: ComponentDoc[] = [
 },
 
   {
-    slug: "navigation",
-    dir: "sidebar",
+    slug: "sidebar",
     name: "Sidebar",
     description: "Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this page is a thin adapter over this very Sidebar component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.",
     category: "Organisms",

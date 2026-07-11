@@ -4,9 +4,9 @@ export interface ComponentDoc {
   description: string;
   category: Category;
   // Source directory under src/<level>/, when it differs from the URL slug.
-  // The published package keeps its own names (e.g. the Sidebar / Switch
-  // exports), so the docs URL can read /components/navigation while the docs
-  // still load from src/organisms/sidebar/. Defaults to slug when omitted.
+  // Used when one docs page covers multiple exports (e.g. the Row & Column
+  // page reads /components/row-column while loading from src/atoms/layout/).
+  // Defaults to slug when omitted.
   dir?: string;
 }
 
