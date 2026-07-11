@@ -6,6 +6,31 @@
 import { GlobalRegistrator } from "@happy-dom/global-registrator";
 if (!(globalThis as { document?: unknown }).document) GlobalRegistrator.register();
 
+// Give react-native-web a real desktop viewport. RNW's Dimensions reads
+// window.visualViewport (falling back to documentElement.clientWidth), and
+// happy-dom reports both as 0, which flips every useResponsive/useWindowDimensions
+// consumer into its phone (≤ sm) branch. The kit is desktop-first, so tests must
+// exercise the desktop branch by default: stub a fixed 1280x800 visualViewport
+// (RNW multiplies by `scale`, and subscribes via addEventListener) before
+// react-native-web first computes dimensions.
+if (!(window as { visualViewport?: unknown }).visualViewport) {
+  Object.defineProperty(window, "visualViewport", {
+    configurable: true,
+    value: {
+      width: 1280,
+      height: 800,
+      scale: 1,
+      offsetLeft: 0,
+      offsetTop: 0,
+      pageLeft: 0,
+      pageTop: 0,
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent() { return true; },
+    },
+  });
+}
+
 import { plugin } from "bun";
 
 plugin({
