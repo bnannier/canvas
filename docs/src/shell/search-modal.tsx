@@ -5,6 +5,7 @@ import {
   Platform,
   useWindowDimensions,
   type NativeSyntheticEvent,
+  type TextInput as RNTextInput,
   type TextInputKeyPressEventData,
 } from "react-native";
 import { View, Text, Pressable, TextInput, Icon, useTheme, GlassSurface, alpha } from "@olympusoss/canvas";
@@ -31,14 +32,20 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
+  const inputRef = useRef<RNTextInput>(null);
 
   const results = useMemo(() => search(query), [query]);
 
-  // Reset the query and selection each time the modal opens.
+  // Reset the query and selection each time the modal opens, and put focus in the input.
+  // The TextInput's autoFocus alone is not enough on web: RN-Web's Modal focus trap runs
+  // after mount and moves focus to the first focusable descendant (the backdrop), so we
+  // refocus the input here. This effect runs after the trap's, and the trap leaves focus
+  // alone once it is inside the modal, so this focus sticks.
   useEffect(() => {
     if (visible) {
       setQuery("");
       setSelectedIndex(0);
+      inputRef.current?.focus();
     }
   }, [visible]);
 
@@ -109,6 +116,7 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
     >
       <Icon search size={16} muted />
       <TextInput
+        ref={inputRef}
         autoFocus
         value={query}
         onChangeText={setQuery}
