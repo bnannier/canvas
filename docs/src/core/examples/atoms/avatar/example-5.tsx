@@ -3,17 +3,34 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Divider, Typography, Row, Column } = scope;
+  const { Stateful, Avatar, Button, Card, Typography, Row, Column } = scope;
   return (
-<Column snug>
-  <Row cozy alignCenter>
-    <Avatar src="/ada-lovelace.jpg" name="AL" />
-    <Column>
-      <Typography small semibold>Ada Lovelace</Typography>
-      <Typography tiny muted>admin@example.com</Typography>
-    </Column>
-  </Row>
-  <Divider />
-</Column>
+<Stateful initial={false}>
+  {(open, setOpen) =>
+    open ? (
+      <Card raised>
+        <Column relaxed>
+          <Row relaxed alignCenter>
+            <Avatar large src="/rachel-chen.jpg" name="RC" />
+            <Column>
+              <Typography lead semibold>Rachel Chen</Typography>
+              <Typography small muted>Staff Engineer, Platform</Typography>
+            </Column>
+          </Row>
+          <Typography small muted>rachel.chen@example.com</Typography>
+          <Button small outline onPress={() => setOpen(false)}>Back</Button>
+        </Column>
+      </Card>
+    ) : (
+      <Row relaxed alignCenter>
+        <Avatar src="/rachel-chen.jpg" name="RC" onPress={() => setOpen(true)} />
+        <Column>
+          <Typography lead semibold>Rachel Chen</Typography>
+          <Typography small muted>Open profile</Typography>
+        </Column>
+      </Row>
+    )
+  }
+</Stateful>
   );
 }

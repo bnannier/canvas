@@ -62,6 +62,40 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 </Row>
 ```
 
+### Variant - navigable
+
+An avatar as a link: pass `onPress` and it renders as an accessible button, so tapping it opens a fuller profile. `onPress` is the navigation hook throughout Canvas, so in an app you wire it to your router (`onPress={() => router.push("/team/rachel")}`); here it swaps to the detail card.
+
+```tsx
+<Stateful initial={false}>
+  {(open, setOpen) =>
+    open ? (
+      <Card raised>
+        <Column relaxed>
+          <Row relaxed alignCenter>
+            <Avatar large src="/rachel-chen.jpg" name="RC" />
+            <Column>
+              <Typography lead semibold>Rachel Chen</Typography>
+              <Typography small muted>Staff Engineer, Platform</Typography>
+            </Column>
+          </Row>
+          <Typography small muted>rachel.chen@example.com</Typography>
+          <Button small outline onPress={() => setOpen(false)}>Back</Button>
+        </Column>
+      </Card>
+    ) : (
+      <Row relaxed alignCenter>
+        <Avatar src="/rachel-chen.jpg" name="RC" onPress={() => setOpen(true)} />
+        <Column>
+          <Typography lead semibold>Rachel Chen</Typography>
+          <Typography small muted>Open profile</Typography>
+        </Column>
+      </Row>
+    )
+  }
+</Stateful>
+```
+
 ### Variant - menu
 
 ```tsx
