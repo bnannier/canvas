@@ -8,9 +8,9 @@ Floating menus triggered by a button: actions, options, navigation.
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "✎" },
-    { label: "Duplicate", icon: "⧉" },
-    { label: "Settings", icon: "⚙" }
+    { label: "Edit profile", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" }
   ]}
 />
 ```
@@ -24,9 +24,9 @@ Floating menus triggered by a button: actions, options, navigation.
   trigger="Actions"
   label="Actions"
   items={[
-    { label: "Edit profile", icon: "✎" },
-    { label: "Duplicate", icon: "⧉" },
-    { label: "Settings", icon: "⚙" }
+    { label: "Edit profile", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" }
   ]}
 />
 ```
@@ -37,9 +37,9 @@ Floating menus triggered by a button: actions, options, navigation.
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "✎", shortcut: "⌘E" },
-    { label: "Duplicate", icon: "⧉", shortcut: "⌘D" },
-    { label: "Settings", icon: "⚙", shortcut: "⌘," }
+    { label: "Edit profile", icon: "pencil", shortcut: "⌘E" },
+    { label: "Duplicate", icon: "copy", shortcut: "⌘D" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," }
   ]}
 />
 ```
@@ -50,10 +50,10 @@ Floating menus triggered by a button: actions, options, navigation.
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "✎" },
-    { label: "Duplicate", icon: "⧉" },
-    { label: "Settings", icon: "⚙" },
-    { label: "Archive", icon: "📦", disabled: true }
+    { label: "Edit profile", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" },
+    { label: "Archive", icon: "archive", disabled: true }
   ]}
 />
 ```
@@ -64,10 +64,10 @@ Floating menus triggered by a button: actions, options, navigation.
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "✎" },
-    { label: "Duplicate", icon: "⧉" },
-    { label: "Settings", icon: "⚙" },
-    { label: "Delete…", icon: "🗑", destructive: true, separatorBefore: true }
+    { label: "Edit profile", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" },
+    { label: "Delete…", icon: "trash", destructive: true, separatorBefore: true }
   ]}
 />
 ```
@@ -132,9 +132,9 @@ Floating menus triggered by a button: actions, options, navigation.
 
 ```tsx
 <Dropdown trigger="Actions" items={[
-    { label: "Edit", icon: "✎" },
-    { label: "Duplicate", icon: "⧉" },
-    { label: "Settings", icon: "⚙" }
+    { label: "Edit", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" }
   ]} />
 ```
 
@@ -142,9 +142,9 @@ Floating menus triggered by a button: actions, options, navigation.
 
 ```tsx
 <Dropdown trigger="Actions" items={[
-    { label: "Edit", icon: "✎" },
+    { label: "Edit", icon: "pencil" },
     { label: "Duplicate" },
-    { label: "Settings", icon: "⚙" }
+    { label: "Settings", icon: "settings" }
   ]} />
 ```
 

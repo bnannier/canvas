@@ -11,13 +11,13 @@ export default function Example(scope: ExampleScope) {
   trigger
   groups={[
     { heading: "Actions", items: [
-      { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
-      { label: "Open File", icon: "📂", shortcut: "Ctrl+O" },
-      { label: "Save", icon: "💾", shortcut: "Ctrl+S" }
+      { label: "New File", icon: "file", shortcut: "Ctrl+N" },
+      { label: "Open File", icon: "folder", shortcut: "Ctrl+O" },
+      { label: "Save", icon: "save", shortcut: "Ctrl+S" }
     ] },
     { heading: "Navigation", items: [
-      { label: "Go to Dashboard", icon: "▸" },
-      { label: "Go to Settings", icon: "▸" }
+      { label: "Go to Dashboard", icon: "arrowRight" },
+      { label: "Go to Settings", icon: "arrowRight" }
     ] }
   ]}
 />

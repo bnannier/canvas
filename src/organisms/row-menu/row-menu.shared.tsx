@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
@@ -102,14 +103,7 @@ export function createRowMenu(skin: RowMenuSkin) {
           aria-expanded={open}
           {...{ "aria-haspopup": "menu" }}
         >
-          <Text
-            style={skin.triggerGlyph(tokens)}
-            aria-hidden
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-          >
-            ⋯
-          </Text>
+          <Icon moreHorizontal size={skin.triggerIconSize} decorative />
         </Pressable>
 
         <AnchoredOverlay
@@ -138,7 +132,7 @@ export function createRowMenu(skin: RowMenuSkin) {
                 accessibilityRole={links ? "link" : "menuitem"}
               >
                 {item.icon ? (
-                  <Text style={[skin.rowTextSize, skin.rowTextColor(item, links, tokens, dark)]}>{item.icon}</Text>
+                  <Icon {...{ [item.icon]: true }} destructive={item.destructive} size={skin.iconSize} decorative />
                 ) : null}
                 <Text style={[skin.rowTextSize, skin.rowTextColor(item, links, tokens, dark)]}>{item.label}</Text>
               </Pressable>

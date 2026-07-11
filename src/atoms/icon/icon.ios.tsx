@@ -5,4 +5,4 @@ import { iosSkin } from "./icon.styles.js";
 // Icon is a "Shared" treatment: an outline glyph is platform-neutral, so iosSkin
 // equals the web skin — one look on every platform.
 export const Icon = createIcon(iosSkin);
-export type { IconProps } from "./icon.shared.js";
+export type { IconProps, IconName } from "./icon.shared.js";

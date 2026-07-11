@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
+import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
 
 // Shared Dropdown shell. The structure (the trigger plus a floating menu of
@@ -31,8 +32,10 @@ import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./drop
 
 export interface DropdownItem {
   label: string;
-  /** Optional leading glyph rendered before the label (a single character). */
-  icon?: string;
+  /** Optional leading Canvas glyph rendered before the label, named from the kit
+   *  icon set (e.g. `"user"`, `"settings"`, `"logOut"`). Rendered through the
+   *  `Icon` atom, tinted to match the row (destructive rows go red). */
+  icon?: IconName;
   /** Optional trailing keyboard shortcut, right-aligned and muted. */
   shortcut?: string;
   /** Red-tinted row for destructive actions (e.g. Delete). */
@@ -168,9 +171,7 @@ export function createDropdown(skin: DropdownSkin) {
                   aria-disabled={item.disabled}
                 >
                   {item.icon ? (
-                    <Text style={[skin.itemTextType, skin.itemTextColor(tokens, dark, !!item.destructive)]}>
-                      {item.icon}
-                    </Text>
+                    <Icon {...{ [item.icon]: true }} destructive={item.destructive} size={skin.iconSize} decorative />
                   ) : null}
                   <Text style={[skin.itemTextType, skin.itemTextColor(tokens, dark, !!item.destructive)]}>
                     {item.label}

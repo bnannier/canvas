@@ -10,12 +10,12 @@ export default function Example(scope: ExampleScope) {
   onSelect={() => {}}
   sections={[
     { title: "Main", items: [
-      { label: "Dashboard", icon: "◉" },
-      { label: "Users", icon: "○", badge: "12" },
-      { label: "Settings", icon: "◇" }
+      { label: "Dashboard", icon: "layoutGrid" },
+      { label: "Users", icon: "users", badge: "12" },
+      { label: "Settings", icon: "settings" }
     ] },
     { title: "Reports", items: [
-      { label: "Analytics", icon: "△" }
+      { label: "Analytics", icon: "barChart2" }
     ] }
   ]}
 />

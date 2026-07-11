@@ -40,8 +40,10 @@ export interface DropdownSkin {
   /** The fill applied to a pressed row (iOS/web tint here; Android uses a
    *  ripple, so this is null). */
   itemPressed: ((t: ColorTokens) => ViewStyle) | null;
-  /** Item icon + label type scale. */
+  /** Item label type scale. */
   itemTextType: TextStyle;
+  /** Leading Canvas icon size (px), sized to sit with the label per platform. */
+  iconSize: number;
   /** Item icon + label color; branches on `destructive`. */
   itemTextColor: (t: ColorTokens, dark: boolean, destructive: boolean) => TextStyle;
   /** Trailing keyboard shortcut, right-aligned and muted. */
@@ -104,6 +106,7 @@ export const webSkin: DropdownSkin = {
   },
   itemPressed: (t) => ({ backgroundColor: t.accent }),
   itemTextType: { fontSize: 14, lineHeight: 20 },
+  iconSize: 16,
   itemTextColor: (t, dark, destructive) => {
     if (destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
     return { color: t["popover-foreground"] };
@@ -164,6 +167,7 @@ export const iosSkin: DropdownSkin = {
   // Subtle highlight under a pressed row (no ripple on iOS).
   itemPressed: (t) => ({ backgroundColor: t.secondary }),
   itemTextType: { fontSize: 17, lineHeight: 22 },
+  iconSize: 20,
   itemTextColor: (t, _dark, destructive) => {
     if (destructive) return { color: t.destructive };
     return { color: t["popover-foreground"] };
@@ -215,6 +219,7 @@ export const androidSkin: DropdownSkin = {
   // Android uses the ripple, so no static pressed fill.
   itemPressed: null,
   itemTextType: { fontSize: 14, lineHeight: 20 },
+  iconSize: 20,
   itemTextColor: (t, _dark, destructive) => {
     if (destructive) return { color: t.destructive };
     return { color: t["popover-foreground"] };

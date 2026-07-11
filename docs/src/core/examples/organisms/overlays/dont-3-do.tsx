@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { RowMenu } = scope;
   return (
 <RowMenu open sectionLabel="Actions" items={[
-    { label: "Edit", icon: "✎" },
-    { label: "Duplicate", icon: "⧉" },
-    { label: "Delete", icon: "🗑", destructive: true, separatorBefore: true }
+    { label: "Edit", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Delete", icon: "trash", destructive: true, separatorBefore: true }
   ]} />
   );
 }

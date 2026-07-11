@@ -266,6 +266,11 @@ const ICONS: Record<string, Shape[]> = {
     { t: "rect", x: 3, y: 11, width: 18, height: 11, rx: 2, ry: 2 },
     { t: "path", d: "M7 11V7a5 5 0 0 1 10 0v4" },
   ],
+  logOut: [
+    { t: "path", d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" },
+    { t: "polyline", points: "16 17 21 12 16 7" },
+    { t: "line", x1: 21, y1: 12, x2: 9, y2: 12 },
+  ],
   mail: [
     { t: "path", d: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" },
     { t: "polyline", points: "22,6 12,13 2,6" },
@@ -312,6 +317,10 @@ const ICONS: Record<string, Shape[]> = {
     { t: "rect", x: 3, y: 3, width: 18, height: 18, rx: 2 },
     { t: "path", d: "M15 3v18" },
   ],
+  pencil: [
+    { t: "path", d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" },
+    { t: "path", d: "m15 5 4 4" },
+  ],
   plug: [
     { t: "path", d: "M12 22v-5" },
     { t: "path", d: "M9 8V2" },
@@ -334,6 +343,11 @@ const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" },
     { t: "path", d: "M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" },
     { t: "path", d: "M15 12v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" },
+  ],
+  save: [
+    { t: "path", d: "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" },
+    { t: "path", d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" },
+    { t: "path", d: "M7 3v4a1 1 0 0 0 1 1h7" },
   ],
   search: [
     { t: "circle", cx: 11, cy: 11, r: 8 },
@@ -465,6 +479,7 @@ const NAMES: { key: string; label: string }[] = [
   { key: "listChecks", label: "list-checks" },
   { key: "loader", label: "loader" },
   { key: "lock", label: "lock" },
+  { key: "logOut", label: "log-out" },
   { key: "mail", label: "mail" },
   { key: "menu", label: "menu" },
   { key: "messageCircle", label: "msg-circle" },
@@ -477,10 +492,12 @@ const NAMES: { key: string; label: string }[] = [
   { key: "navigation", label: "navigation" },
   { key: "palette", label: "palette" },
   { key: "panelRight", label: "panel-right" },
+  { key: "pencil", label: "pencil" },
   { key: "plug", label: "plug" },
   { key: "plus", label: "plus" },
   { key: "pointer", label: "pointer" },
   { key: "rocket", label: "rocket" },
+  { key: "save", label: "save" },
   { key: "search", label: "search" },
   { key: "settings", label: "settings" },
   { key: "shield", label: "shield" },
@@ -556,6 +573,8 @@ export interface IconProps {
   listChecks?: boolean;
   loader?: boolean;
   lock?: boolean;
+  /** Log-out / sign-out glyph (lucide `log-out`): a door with an outbound arrow. */
+  logOut?: boolean;
   mail?: boolean;
   menu?: boolean;
   messageCircle?: boolean;
@@ -568,10 +587,14 @@ export interface IconProps {
   navigation?: boolean;
   palette?: boolean;
   panelRight?: boolean;
+  /** Edit glyph (lucide `pencil`). */
+  pencil?: boolean;
   plug?: boolean;
   plus?: boolean;
   pointer?: boolean;
   rocket?: boolean;
+  /** Save glyph (lucide `save`): a floppy disk. */
+  save?: boolean;
   search?: boolean;
   settings?: boolean;
   shield?: boolean;
@@ -619,6 +642,28 @@ export interface IconProps {
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
+
+/**
+ * The union of glyph names (the name-axis keys of {@link IconProps}). Derived from
+ * IconProps so it can never drift from the actual glyph set. Data-driven list
+ * components (Dropdown, Command, Sidebar, RowMenu) type their item `icon` as this
+ * so a menu row can only name a real Canvas glyph, then render it via
+ * `<Icon {...{ [name]: true }} />`.
+ */
+export type IconName = Exclude<
+  keyof IconProps,
+  | "primary"
+  | "primaryForeground"
+  | "destructive"
+  | "success"
+  | "muted"
+  | "size"
+  | "set"
+  | "accessibilityLabel"
+  | "decorative"
+  | "testID"
+  | "style"
+>;
 
 // First-match name precedence; defaults to shield (the demo glyph).
 function nameOf(p: IconProps): string {

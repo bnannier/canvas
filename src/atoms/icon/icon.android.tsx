@@ -5,4 +5,4 @@ import { androidSkin } from "./icon.styles.js";
 // Icon is a "Shared" treatment: an outline glyph is platform-neutral, so androidSkin
 // equals the web skin — one look on every platform.
 export const Icon = createIcon(androidSkin);
-export type { IconProps } from "./icon.shared.js";
+export type { IconProps, IconName } from "./icon.shared.js";

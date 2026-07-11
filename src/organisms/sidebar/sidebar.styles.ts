@@ -2,60 +2,62 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type SidebarSkin } from "./sidebar.shared.js";
 
-// Co-located Sidebar skins, one per platform. The shell resolves the density and
-// frame axes, the section grouping, the flat-index active matching, the badges,
-// and the select handler; the skin supplies only the native SHAPE of the nav row
-// (its radius and height), the selected-row highlight (fill + label/icon color),
-// the section heading, the frame (outer column), and the press feedback. The
-// BRAND survives on every platform (the indigo `primary`/`accent` tokens, never a
-// platform default), so each follows light/dark and the glass surface.
+// Co-located Sidebar skins, one per platform. The shell resolves the density,
+// frame, and collapse axes, the section grouping, the flat-index active matching,
+// the accordion open-state, the badges, and the select handler; the skin supplies
+// only the native SHAPE of the nav row (its radius and height), the selected-row
+// highlight (fill + label/icon color), the section heading, the frame (outer
+// column), the collapse + accordion + header/footer chrome, and the press feedback.
+// The BRAND survives on every platform (the indigo `primary`/`accent` tokens, never
+// a platform default), so each follows light/dark and the glass surface.
 //
 //   iOS 27 (Liquid Glass) sidebar: grouped rows; the SELECTED row is a CAPSULE
 //     highlight (radius 9999) filled with the light-gray `accent`, label in
 //     `accent-foreground`, while the leading icon stays TINTED in `primary`;
-//     section headers ~13pt 600 muted; ~36pt rows; press = opacity dim (0.8).
+//     section headers ~13pt 600 muted; ~36pt rows; press = opacity dim (0.8);
+//     collapsible-section chevron = the HIG right caret (0 -> 90deg).
 //   Android (M3 navigation drawer): each nav item is a fully-rounded PILL (radius
 //     9999); the ACTIVE item is a tonal `alpha(primary, 0.12)` pill with the icon
 //     + label in brand `primary`; inactive transparent with `foreground`; ~56dp
-//     item height; press = android_ripple.
+//     item height; press = android_ripple; collapsed rail = the 72dp M3 navigation
+//     rail; collapsible-section chevron = the M3 expand_more (0 -> 180deg).
 //   Web: the established Canvas look (row radius 6, `accent` fill on the active OR
 //     pressed row, foreground/muted label + icon), lifted verbatim from the
-//     original file.
+//     original file; collapsible-section chevron = the Radix right caret (0 -> 90deg).
 
 export type Density = "default" | "compact";
 export type Frame = "flush" | "bordered";
+
+// The outer column, shared across skins: the rail/expanded width, the shell-vs-legacy
+// inner spacing, and the per-frame border. In SHELL mode (a header/footer is present)
+// the column fills the parent height and drops its inner padding/gap onto the scroll
+// body; in LEGACY mode it keeps the content-sized padding/gap exactly as before.
+function makeColumn(radius: number, collapsedWidth: number, pad: ViewStyle) {
+  return (tokens: ColorTokens, frame: Frame, collapsed: boolean, shell: boolean): ViewStyle => {
+    const width = collapsed ? collapsedWidth : 240;
+    const base: ViewStyle = shell
+      ? { width, backgroundColor: tokens.background, flex: 1 }
+      : { width, backgroundColor: tokens.background, ...pad };
+    if (frame === "bordered") {
+      return { ...base, borderRadius: radius, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
+    }
+    return { ...base, borderEndWidth: 1, borderColor: tokens.border };
+  };
+}
 
 // =============================================================================
 // Web: the established Canvas look (lifted verbatim from the original file).
 // =============================================================================
 
 export const webSkin: SidebarSkin = {
-  // Web carries no row ripple; the active-row affordance is the accent fill, also
-  // applied while a row is pressed (the old `active:bg-accent`).
   pressedFill: true,
   pressedOpacity: null,
   ripple: null,
 
-  // Fixed-width column with the standard inset (gap-4 p-2) on the background fill.
-  // The flush frame docks against the page with a single right hairline; the
-  // bordered/floating frame lifts it into a fully ruled, rounded, clipped card.
-  column(tokens, frame) {
-    const base: ViewStyle = {
-      width: 240,
-      backgroundColor: tokens.background,
-      gap: 16,
-      padding: 8,
-    };
-    if (frame === "bordered") {
-      return { ...base, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
-    }
-    return { ...base, borderEndWidth: 1, borderColor: tokens.border };
-  },
+  column: makeColumn(8, 56, { gap: 16, padding: 8 }),
 
-  // A titled group of nav rows.
   group: { gap: 4 },
 
-  // The uppercase, muted, wide-tracked section heading above a group.
   sectionTitle(tokens) {
     return {
       paddingHorizontal: 12,
@@ -69,27 +71,22 @@ export const webSkin: SidebarSkin = {
     };
   },
 
-  // Row container layout per density: a centered icon/label/badge row with the
-  // medium pill radius. The comfortable row matches the documented px-3 py-2;
-  // compact tightens the vertical inset for dense navigation.
-  row(_tokens, density) {
+  row(_tokens, density, collapsed) {
     return {
       flexDirection: "row",
       alignItems: "center",
-      gap: 12,
+      justifyContent: collapsed ? "center" : "flex-start",
+      gap: collapsed ? 0 : 12,
       borderRadius: 6,
-      paddingHorizontal: 12,
+      paddingHorizontal: collapsed ? 0 : 12,
       paddingVertical: density === "compact" ? 6 : 8,
     };
   },
 
-  // The accent fill carried by the active row (and the pressed affordance).
   rowFill(tokens, active) {
     return active ? { backgroundColor: tokens.accent } : null;
   },
 
-  // Label fills the remaining row width (flex-1), truncates to one line, and is
-  // medium-weight foreground when active else muted.
   label(tokens, active, density) {
     return {
       flexGrow: 1,
@@ -100,47 +97,77 @@ export const webSkin: SidebarSkin = {
     };
   },
 
-  // The leading icon glyph: text-base, foreground when active else muted.
-  icon(tokens, active) {
-    return { fontSize: 16, lineHeight: 24, color: active ? tokens.foreground : tokens["muted-foreground"] };
+  iconTint(active) {
+    return active ? {} : { muted: true };
+  },
+  iconSize: 16,
+
+  // --- collapse ---
+  collapsedWidth: 56,
+  collapseToggle: () => ({ padding: 4, borderRadius: 6 }),
+  collapseIconSize: 14,
+
+  // --- shell slots ---
+  header(tokens, collapsed) {
+    return {
+      height: 56,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: collapsed ? 0 : 10,
+      justifyContent: collapsed ? "center" : "flex-start",
+      paddingHorizontal: collapsed ? 0 : 14,
+      borderBottomWidth: 1,
+      borderColor: tokens.border,
+    };
+  },
+  footer(tokens) {
+    return { padding: 8, borderTopWidth: 1, borderColor: tokens.border };
+  },
+  scroll: { flex: 1 },
+  scrollContent(_tokens, collapsed) {
+    return { padding: 8, paddingBottom: 16, gap: collapsed ? 8 : 16 };
+  },
+
+  // --- collapsible section header ---
+  sectionHeaderRow() {
+    return { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 };
+  },
+  sectionHeaderTitle(tokens) {
+    return {
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: "0%",
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: "500",
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+      color: tokens["muted-foreground"],
+    };
+  },
+  sectionChevronGlyph: "chevronRight",
+  sectionChevronSpinTo: 90,
+  sectionChevronSize: 11,
+  activeDot(tokens) {
+    return { width: 4, height: 4, borderRadius: 2, backgroundColor: tokens.primary };
   },
 };
 
 // =============================================================================
-// iOS 27 (Liquid Glass) sidebar: grouped rows; the selected row is a CAPSULE
-// highlight (radius 9999) filled with the light-gray `accent`, label in
-// `accent-foreground`, with the leading icon staying TINTED in `primary`. ~36pt
-// rows, ~13pt 600 section headers, press = opacity dim.
+// iOS 27 (Liquid Glass) sidebar.
 // =============================================================================
 
 export const iosSkin: SidebarSkin = {
-  pressedFill: false, // iOS dims on press instead of painting the accent fill
+  pressedFill: false,
   pressedOpacity: 0.8,
   ripple: null,
 
-  // Suppress the react-native-web keyboard-focus blue ring on each row; a real
-  // iOS device never paints a hardware focus ring on a sidebar nav row, so the
-  // press dim is the only feedback. Web-only: `outlineStyle`/`outlineWidth` are
-  // not in RN's ViewStyle (hence the cast inside FOCUS_RESET), and are a no-op
-  // natively. Matches the Input/Textarea/Pagination focus-outline reset.
   focusOutlineReset: FOCUS_RESET,
 
-  column(tokens, frame) {
-    const base: ViewStyle = {
-      width: 240,
-      backgroundColor: tokens.background,
-      gap: 16,
-      padding: 8,
-    };
-    if (frame === "bordered") {
-      return { ...base, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
-    }
-    return { ...base, borderEndWidth: 1, borderColor: tokens.border };
-  },
+  column: makeColumn(10, 56, { gap: 16, padding: 8 }),
 
   group: { gap: 2 },
 
-  // HIG grouped-list header: ~13pt, semibold, secondary/muted, not uppercase.
   sectionTitle(tokens) {
     return {
       paddingHorizontal: 12,
@@ -152,25 +179,22 @@ export const iosSkin: SidebarSkin = {
     };
   },
 
-  // ~36pt row, fully-rounded CAPSULE (radius 9999) to match the iOS 27 highlight.
-  row(_tokens, density) {
+  row(_tokens, density, collapsed) {
     return {
       flexDirection: "row",
       alignItems: "center",
-      gap: 10,
+      justifyContent: collapsed ? "center" : "flex-start",
+      gap: collapsed ? 0 : 10,
       borderRadius: 9999,
-      paddingHorizontal: 12,
+      paddingHorizontal: collapsed ? 0 : 12,
       paddingVertical: density === "compact" ? 6 : 8,
     };
   },
 
-  // The selected row is a capsule highlight filled with the light-gray `accent`.
   rowFill(tokens, active) {
     return active ? { backgroundColor: tokens.accent } : null;
   },
 
-  // Active label reads in `accent-foreground` (on the accent highlight); inactive
-  // sits in the standard foreground (HIG list rows are not muted when inactive).
   label(tokens, active, density) {
     return {
       flexGrow: 1,
@@ -182,44 +206,73 @@ export const iosSkin: SidebarSkin = {
     };
   },
 
-  // Icon glyph: always the brand `primary` tint, active or not. iOS 27 keeps the
-  // leading glyph tinted even on the selected capsule (HIG glyphs carry the tint).
-  icon(tokens, _active) {
-    return { fontSize: 17, lineHeight: 22, color: tokens.primary };
+  iconTint(_active) {
+    return { primary: true };
+  },
+  iconSize: 17,
+
+  // --- collapse ---
+  collapsedWidth: 56,
+  collapseToggle: () => ({ padding: 4 }),
+  collapseIconSize: 15,
+
+  // --- shell slots ---
+  header(tokens, collapsed) {
+    return {
+      height: 56,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: collapsed ? 0 : 10,
+      justifyContent: collapsed ? "center" : "flex-start",
+      paddingHorizontal: collapsed ? 0 : 14,
+      borderBottomWidth: 1,
+      borderColor: tokens.border,
+    };
+  },
+  footer(tokens) {
+    return { padding: 8, borderTopWidth: 1, borderColor: tokens.border };
+  },
+  scroll: { flex: 1 },
+  scrollContent(_tokens, collapsed) {
+    return { padding: 8, paddingBottom: 16, gap: collapsed ? 8 : 16 };
+  },
+
+  // --- collapsible section header ---
+  sectionHeaderRow() {
+    return { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 };
+  },
+  sectionHeaderTitle(tokens) {
+    return {
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: "0%",
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: "600",
+      color: tokens["muted-foreground"],
+    };
+  },
+  sectionChevronGlyph: "chevronRight",
+  sectionChevronSpinTo: 90,
+  sectionChevronSize: 13,
+  activeDot(tokens) {
+    return { width: 6, height: 6, borderRadius: 3, backgroundColor: tokens.primary };
   },
 };
 
 // =============================================================================
-// Android (Material 3 navigation drawer): each nav item is a fully-rounded PILL
-// (radius 9999); the active item is a tonal alpha(primary, 0.12) pill with the
-// icon + label in brand `primary`; inactive transparent with `foreground`.
-// ~56dp item height; press = android_ripple.
+// Android (Material 3 navigation drawer / rail).
 // =============================================================================
 
 export const androidSkin: SidebarSkin = {
-  pressedFill: false, // Android uses a ripple instead of a pressed fill
+  pressedFill: false,
   pressedOpacity: null,
   ripple: (tokens) => ({ color: alpha(tokens.primary, 0.12), borderless: false }),
 
-  column(tokens, frame) {
-    const base: ViewStyle = {
-      width: 240,
-      backgroundColor: tokens.background,
-      gap: 16,
-      // M3 drawer items inset 12dp from the sheet edge so the pill clears it.
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-    };
-    if (frame === "bordered") {
-      return { ...base, borderRadius: 16, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
-    }
-    return { ...base, borderEndWidth: 1, borderColor: tokens.border };
-  },
+  column: makeColumn(16, 72, { gap: 16, paddingHorizontal: 12, paddingVertical: 8 }),
 
   group: { gap: 2 },
 
-  // M3 drawer section header: titleSmall ~14sp, medium, muted, padded to align
-  // with the pill's inner edge.
   sectionTitle(tokens) {
     return {
       paddingHorizontal: 16,
@@ -231,29 +284,24 @@ export const androidSkin: SidebarSkin = {
     };
   },
 
-  // ~56dp item: a fully-rounded pill (radius 9999) with 16dp horizontal padding.
-  row(_tokens, density) {
+  row(_tokens, density, collapsed) {
     return {
       flexDirection: "row",
       alignItems: "center",
-      gap: 12,
+      justifyContent: collapsed ? "center" : "flex-start",
+      gap: collapsed ? 0 : 12,
       borderRadius: 9999,
-      // Clip the Material ripple to the rounded pill outline (Android bounds the
-      // ripple to the view rectangle without this).
+      // Clip the Material ripple to the rounded pill outline.
       overflow: "hidden",
-      paddingHorizontal: 16,
-      // ~56dp comfortable / ~48dp compact (paddingVertical + ~24 line box).
+      paddingHorizontal: collapsed ? 0 : 16,
       paddingVertical: density === "compact" ? 12 : 16,
     };
   },
 
-  // The active item is a tonal pill: secondaryContainer ~ alpha(primary, 0.12).
   rowFill(tokens, active) {
     return active ? { backgroundColor: alpha(tokens.primary, 0.12) } : null;
   },
 
-  // M3 drawer label: labelLarge ~14sp medium; active carries the brand `primary`,
-  // inactive the on-surface `foreground`.
   label(tokens, active, density) {
     return {
       flexGrow: 1,
@@ -265,8 +313,56 @@ export const androidSkin: SidebarSkin = {
     };
   },
 
-  // Icon glyph: brand `primary` when active, on-surface `foreground` when not.
-  icon(tokens, active) {
-    return { fontSize: 18, lineHeight: 24, color: active ? tokens.primary : tokens.foreground };
+  iconTint(active) {
+    return active ? { primary: true } : {};
+  },
+  iconSize: 18,
+
+  // --- collapse ---
+  collapsedWidth: 72,
+  collapseToggle: () => ({ padding: 8, borderRadius: 9999, overflow: "hidden" }),
+  collapseIconSize: 18,
+
+  // --- shell slots ---
+  header(tokens, collapsed) {
+    return {
+      height: 56,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: collapsed ? 0 : 12,
+      justifyContent: collapsed ? "center" : "flex-start",
+      paddingHorizontal: collapsed ? 0 : 16,
+      borderBottomWidth: 1,
+      borderColor: tokens.border,
+    };
+  },
+  footer(tokens) {
+    return { paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, borderColor: tokens.border };
+  },
+  scroll: { flex: 1 },
+  scrollContent(_tokens, collapsed) {
+    return { paddingHorizontal: 12, paddingVertical: 8, paddingBottom: 16, gap: collapsed ? 8 : 16 };
+  },
+
+  // --- collapsible section header ---
+  sectionHeaderRow() {
+    return { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 9999 };
+  },
+  sectionHeaderTitle(tokens) {
+    return {
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: "0%",
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: "500",
+      color: tokens["muted-foreground"],
+    };
+  },
+  sectionChevronGlyph: "chevronDown",
+  sectionChevronSpinTo: 180,
+  sectionChevronSize: 18,
+  activeDot(tokens) {
+    return { width: 6, height: 6, borderRadius: 3, backgroundColor: tokens.primary };
   },
 };

@@ -7,12 +7,12 @@ export default function Example(scope: ExampleScope) {
   return (
 <Command open placeholder="Type a command..." defaultActive={0} groups={[
     { heading: "Actions", items: [
-      { label: "New File", icon: "📄", shortcut: "Ctrl+N" },
-      { label: "Save", icon: "💾", shortcut: "Ctrl+S" }
+      { label: "New File", icon: "file", shortcut: "Ctrl+N" },
+      { label: "Save", icon: "save", shortcut: "Ctrl+S" }
     ] },
     { heading: "Navigation", items: [
-      { label: "Go to Dashboard", icon: "▸" },
-      { label: "Go to Settings", icon: "▸" }
+      { label: "Go to Dashboard", icon: "arrowRight" },
+      { label: "Go to Settings", icon: "arrowRight" }
     ] }
   ]} />
   );

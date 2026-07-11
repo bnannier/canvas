@@ -46,8 +46,8 @@ export interface CommandSkin {
   rowBase: ViewStyle;
   /** The active/pressed row fill (the brand accent surface on every platform). */
   rowAccent: (t: ColorTokens) => ViewStyle;
-  /** A row's leading glyph type. */
-  rowIcon: (t: ColorTokens) => TextStyle;
+  /** A row's leading Canvas icon size (px), per platform. */
+  iconSize: number;
   /** A row's label type (takes the remaining width). */
   rowLabel: (t: ColorTokens) => TextStyle;
   /** iOS/web dim a row on press; Android ripples instead (null). */
@@ -187,7 +187,7 @@ export const webSkin: CommandSkin = {
     paddingVertical: 8,
   },
   rowAccent: (t) => ({ backgroundColor: t.accent }),
-  rowIcon: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
+  iconSize: 16,
   rowLabel: (t) => ({
     fontSize: 14,
     lineHeight: 20,
@@ -233,7 +233,7 @@ export const iosSkin: CommandSkin = {
     minHeight: 44,
   },
   rowAccent: (t) => ({ backgroundColor: t.accent }),
-  rowIcon: (t) => ({ fontSize: 17, lineHeight: 22, color: t.foreground }),
+  iconSize: 20,
   rowLabel: (t) => ({
     fontSize: 17,
     lineHeight: 22,
@@ -274,7 +274,7 @@ export const androidSkin: CommandSkin = {
     minHeight: 48,
   },
   rowAccent: (t) => ({ backgroundColor: t.accent }),
-  rowIcon: (t) => ({ fontSize: 16, lineHeight: 24, color: t.foreground }),
+  iconSize: 20,
   rowLabel: (t) => ({
     fontSize: 16,
     lineHeight: 24,

@@ -1,6 +1,6 @@
 # Navigation
 
-Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of this very page is the production sidebar: same component, same width, same drawer behavior.
+Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this page is a thin adapter over this very `Sidebar` component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.
 
 ## Usage
 
@@ -10,12 +10,52 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
   onSelect={() => {}}
   sections={[
     { title: "Main", items: [
-      { label: "Dashboard", icon: "◉" },
-      { label: "Users", icon: "○", badge: "12" },
-      { label: "Settings", icon: "◇" }
+      { label: "Dashboard", icon: "layoutGrid" },
+      { label: "Users", icon: "users", badge: "12" },
+      { label: "Settings", icon: "settings" }
     ] },
     { title: "Reports", items: [
-      { label: "Analytics", icon: "△" }
+      { label: "Analytics", icon: "barChart2" }
+    ] }
+  ]}
+/>
+```
+
+## App navigation shell
+
+A full navigation shell: a pinned `header` (brand + the collapse toggle from `collapsible`), a
+scrolling body of pinned and `collapsible` accordion sections, and a pinned `footer`. Tap the
+header chevron to collapse it to the mini icon-rail; a collapsible section auto-opens when it
+holds the active row.
+
+```tsx
+<Sidebar
+  collapsible
+  defaultActive="Dashboard"
+  style={{ height: 420 }}
+  header={(collapsed) =>
+    collapsed ? (
+      <Icon layoutGrid primary size={20} />
+    ) : (
+      <Row snug alignCenter>
+        <Icon layoutGrid primary size={20} />
+        <Typography semibold>Acme</Typography>
+      </Row>
+    )
+  }
+  footer={<Button ghost block small iconLeft={<Icon settings size={16} />}>Settings</Button>}
+  sections={[
+    { items: [
+      { label: "Dashboard", icon: "layoutGrid" },
+      { label: "Inbox", icon: "inbox", badge: "3" }
+    ] },
+    { title: "Reports", icon: "barChart2", collapsible: true, items: [
+      { label: "Analytics", icon: "barChart2" },
+      { label: "Traffic", icon: "activity" }
+    ] },
+    { title: "Team", icon: "users", collapsible: true, items: [
+      { label: "Members", icon: "users" },
+      { label: "Roles", icon: "shield" }
     ] }
   ]}
 />
@@ -30,9 +70,9 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of
 ```tsx
 <Sidebar bordered defaultActive="Dashboard" sections={[
     { title: "Main", items: [
-      { label: "Dashboard", icon: "◉" },
-      { label: "Users", icon: "○", badge: "12" },
-      { label: "Settings", icon: "◇" }
+      { label: "Dashboard", icon: "layoutGrid" },
+      { label: "Users", icon: "users", badge: "12" },
+      { label: "Settings", icon: "settings" }
     ] }
   ]} />
 ```

@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Dropdown } = scope;
   return (
 <Dropdown trigger="Actions" items={[
-    { label: "Edit", icon: "✎" },
+    { label: "Edit", icon: "pencil" },
     { label: "Duplicate" },
-    { label: "Settings", icon: "⚙" }
+    { label: "Settings", icon: "settings" }
   ]} />
   );
 }

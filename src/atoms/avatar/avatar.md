@@ -30,9 +30,9 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 
 ```tsx
 <Dropdown items={[
-    { label: "Your profile", icon: "👤" },
-    { label: "Settings", icon: "⚙" },
-    { label: "Sign out", icon: "↩", separatorBefore: true }
+    { label: "Your profile", icon: "user" },
+    { label: "Settings", icon: "settings" },
+    { label: "Sign out", icon: "logOut", separatorBefore: true }
   ]}>
   <Avatar small name="MA" />
 </Dropdown>
@@ -42,9 +42,9 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 
 ```tsx
 <Dropdown items={[
-    { label: "Your profile", icon: "👤" },
-    { label: "Settings", icon: "⚙" },
-    { label: "Sign out", icon: "↩", separatorBefore: true }
+    { label: "Your profile", icon: "user" },
+    { label: "Settings", icon: "settings" },
+    { label: "Sign out", icon: "logOut", separatorBefore: true }
   ]}>
   <Chip outline icon={<Avatar small src="/marcus-allen.jpg" name="MA" />} trailing={<Icon chevronDown muted size={12} />}>admin@example.com</Chip>
 </Dropdown>

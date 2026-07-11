@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
+import { type IconName } from "../../atoms/icon/icon.js";
 
 // Co-located RowMenu skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface, since
@@ -25,8 +26,10 @@ import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 
 export interface RowMenuItem {
   label: string;
-  /** Optional leading glyph rendered before the label (a single character). */
-  icon?: string;
+  /** Optional leading Canvas glyph, named from the kit icon set (e.g. `"pencil"`,
+   *  `"copy"`, `"trash"`). Rendered through the `Icon` atom, tinted to match the
+   *  row (destructive rows go red). */
+  icon?: IconName;
   /** Red-tinted row for destructive actions (e.g. Delete). */
   destructive?: boolean;
   /** Draw a hairline separator above this row to start a new group. */
@@ -42,8 +45,8 @@ export interface RowMenuSkin {
   anchor: ViewStyle;
   /** The ⋯ icon-button surface (square, centered, platform radius). */
   trigger: ViewStyle;
-  /** The ⋯ glyph text. */
-  triggerGlyph: (t: ColorTokens) => TextStyle;
+  /** The ⋯ (moreHorizontal) Canvas trigger glyph size (px), per platform. */
+  triggerIconSize: number;
   /** The fill applied to the trigger on press (web/iOS tint via this; Android ripples). */
   triggerPressed: (t: ColorTokens) => ViewStyle;
   /** The floating menu card surface (shape, fill, border, shadow, radius). The
@@ -60,8 +63,10 @@ export interface RowMenuSkin {
   /** The hairline separator above a row that sets `separatorBefore`. Always rendered
    *  when an item requests it, on every platform (both HIG and M3 menus use group dividers). */
   separator: (t: ColorTokens) => ViewStyle;
-  /** The shared icon/label text size, so they line up in a row. */
+  /** The row label text size. */
   rowTextSize: TextStyle;
+  /** The leading Canvas icon size (px), sized to sit with the label per platform. */
+  iconSize: number;
   /** The per-row text color (destructive red, link foreground, action popover fg). */
   rowTextColor: (item: RowMenuItem, links: boolean, t: ColorTokens, dark: boolean) => TextStyle;
   /** iOS/web dim the trigger on press; Android ripples instead (null). */
@@ -92,7 +97,7 @@ export const webSkin: RowMenuSkin = {
     justifyContent: "center",
     borderRadius: 6,
   },
-  triggerGlyph: (t) => ({ fontSize: 16, lineHeight: 24, color: t.foreground }),
+  triggerIconSize: 16,
   triggerPressed: (t) => ({ backgroundColor: t.accent }),
   menuCard: (t) => ({
     borderRadius: 6,
@@ -122,6 +127,7 @@ export const webSkin: RowMenuSkin = {
   itemPressed: (t) => ({ backgroundColor: t.accent }),
   separator: (t) => ({ marginVertical: 4, height: 1, backgroundColor: t.border }),
   rowTextSize: { fontSize: 14, lineHeight: 20 },
+  iconSize: 16,
   rowTextColor: (item, links, t, dark) => {
     if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
     return { color: links ? t.foreground : t["popover-foreground"] };
@@ -149,7 +155,7 @@ export const iosSkin: RowMenuSkin = {
     justifyContent: "center",
     borderRadius: 8,
   },
-  triggerGlyph: (t) => ({ fontSize: 17, lineHeight: 22, color: t.foreground }),
+  triggerIconSize: 17,
   // iOS dims the whole trigger on press (pressedOpacity); no fill tint.
   triggerPressed: () => ({}),
   menuCard: (t) => ({
@@ -184,6 +190,7 @@ export const iosSkin: RowMenuSkin = {
   // A full-bleed hairline divider (no horizontal inset) splitting menu groups.
   separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
   rowTextSize: { fontSize: 17, lineHeight: 22 },
+  iconSize: 20,
   rowTextColor: (item, links, t, dark) => {
     if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
     return { color: links ? t.foreground : t["popover-foreground"] };
@@ -211,7 +218,7 @@ export const androidSkin: RowMenuSkin = {
     // RippleDrawable paints a rectangle past the rounded corners on Android).
     overflow: "hidden",
   },
-  triggerGlyph: (t) => ({ fontSize: 20, lineHeight: 24, color: t.foreground }),
+  triggerIconSize: 20,
   // Android tints the trigger via the ripple, not a fill.
   triggerPressed: () => ({}),
   menuCard: (t) => ({
@@ -243,6 +250,7 @@ export const androidSkin: RowMenuSkin = {
   // requests `separatorBefore` gets the M3 menu divider (a 1dp full-width hairline).
   separator: (t) => ({ height: 1, backgroundColor: t.border, marginVertical: 4 }),
   rowTextSize: { fontSize: 16, lineHeight: 24 },
+  iconSize: 20,
   rowTextColor: (item, links, t, dark) => {
     if (item.destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
     return { color: links ? t.foreground : t["popover-foreground"] };

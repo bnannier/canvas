@@ -5,7 +5,7 @@ import { View, Text, Pressable, useTheme, useControllableState, GlassSurface, ty
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
 // list container casts it. The value is correct on both web (DOM role) and native.
 const LISTBOX = "listbox" as Role;
-import { Icon } from "../../atoms/icon/icon.js";
+import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
 import { type CommandSkin } from "./command.styles.js";
 import * as s from "./command.styles.js";
@@ -40,8 +40,9 @@ import * as s from "./command.styles.js";
 export interface CommandItem {
   /** The row's primary text. */
   label: string;
-  /** Optional leading glyph (e.g. an emoji or single character). */
-  icon?: string;
+  /** Optional leading Canvas glyph, named from the kit icon set (e.g. `"file"`,
+   *  `"folder"`, `"save"`). Rendered through the `Icon` atom. */
+  icon?: IconName;
   /** Optional trailing keyboard shortcut, rendered in a Kbd cap. */
   shortcut?: string;
 }
@@ -169,7 +170,7 @@ export function createCommand(skin: CommandSkin) {
                   role="option"
                   aria-selected={isActive}
                 >
-                  {item.icon != null ? <Text style={skin.rowIcon(tokens)}>{item.icon}</Text> : null}
+                  {item.icon != null ? <Icon {...{ [item.icon]: true }} size={skin.iconSize} decorative /> : null}
                   <Text style={skin.rowLabel(tokens)}>{item.label}</Text>
                   {item.shortcut != null ? <Kbd>{item.shortcut}</Kbd> : null}
                 </Pressable>

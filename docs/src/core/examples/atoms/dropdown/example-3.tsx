@@ -8,10 +8,10 @@ export default function Example(scope: ExampleScope) {
 <Dropdown
   trigger="Actions"
   items={[
-    { label: "Edit profile", icon: "✎" },
-    { label: "Duplicate", icon: "⧉" },
-    { label: "Settings", icon: "⚙" },
-    { label: "Archive", icon: "📦", disabled: true }
+    { label: "Edit profile", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" },
+    { label: "Archive", icon: "archive", disabled: true }
   ]}
 />
   );
