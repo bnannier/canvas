@@ -64,7 +64,7 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 
 ### Variant - navigable
 
-An avatar as a link: pass `onPress` and it renders as an accessible button, so tapping it opens a fuller profile. `onPress` is the navigation hook throughout Canvas, so in an app you wire it to your router (`onPress={() => router.push("/team/rachel")}`); here it swaps to the detail card.
+A navigable identity row: pass `onPress` and the whole row (avatar, name, and subtitle) becomes one accessible button, so the tap target is the full area, not just the avatar. It uses `MediaObject`, the kit's tappable media row, so you never hand-roll a Pressable. `onPress` is the navigation hook throughout Canvas (`onPress={() => router.push("/team/rachel")}`); here it swaps to the detail card.
 
 ```tsx
 <Stateful initial={false}>
@@ -84,13 +84,7 @@ An avatar as a link: pass `onPress` and it renders as an accessible button, so t
         </Column>
       </Card>
     ) : (
-      <Row relaxed alignCenter>
-        <Avatar src="/rachel-chen.jpg" name="RC" onPress={() => setOpen(true)} />
-        <Column>
-          <Typography lead semibold>Rachel Chen</Typography>
-          <Typography small muted>Open profile</Typography>
-        </Column>
-      </Row>
+      <MediaObject center src="/rachel-chen.jpg" title="Rachel Chen" description="Open profile" onPress={() => setOpen(true)} />
     )
   }
 </Stateful>

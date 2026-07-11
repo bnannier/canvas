@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Avatar, Button, Card, Typography, Row, Column } = scope;
+  const { Stateful, Avatar, Button, Card, MediaObject, Typography, Row, Column } = scope;
   return (
 <Stateful initial={false}>
   {(open, setOpen) =>
@@ -22,13 +22,7 @@ export default function Example(scope: ExampleScope) {
         </Column>
       </Card>
     ) : (
-      <Row relaxed alignCenter>
-        <Avatar src="/rachel-chen.jpg" name="RC" onPress={() => setOpen(true)} />
-        <Column>
-          <Typography lead semibold>Rachel Chen</Typography>
-          <Typography small muted>Open profile</Typography>
-        </Column>
-      </Row>
+      <MediaObject center src="/rachel-chen.jpg" title="Rachel Chen" description="Open profile" onPress={() => setOpen(true)} />
     )
   }
 </Stateful>
