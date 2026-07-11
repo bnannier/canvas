@@ -21,12 +21,9 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this pa
 />
 ```
 
-## App navigation shell
+## Variants
 
-A full navigation shell: a pinned `header` (brand + the collapse toggle from `collapsible`), a
-scrolling body of pinned and `collapsible` accordion sections, and a pinned `footer`. Tap the
-header chevron to collapse it to the mini icon-rail; a collapsible section auto-opens when it
-holds the active row.
+### App navigation shell
 
 ```tsx
 <Sidebar

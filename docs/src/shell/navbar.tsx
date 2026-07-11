@@ -174,7 +174,9 @@ function WebNav() {
       <WebScrollbarTheme />
       {glass ? <Cosmos /> : null}
       <View style={{ flex: 1, flexDirection: "row" }}>
-        <View style={{ width: collapsed ? 56 : 240, borderRightWidth: 1, borderColor: tokens.border }}>
+        {/* The kit Sidebar's column owns the 240/56 width and the flush right hairline now;
+            this wrapper is just the column context so the sidebar's shell fills the row height. */}
+        <View>
           <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>

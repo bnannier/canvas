@@ -312,7 +312,7 @@ export const COMPONENTS: ComponentDoc[] = [
     slug: "navigation",
     dir: "sidebar",
     name: "Navigation",
-    description: "Sidebar + Topbar + breadcrumbs + page header. The sidebar you see on the left of this very page is the production sidebar: same component, same width, same drawer behavior.",
+    description: "Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this page is a thin adapter over this very Sidebar component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.",
     category: "Organisms",
   },
 
