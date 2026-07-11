@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
@@ -54,6 +55,7 @@ export function NativeHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const [menuOpen, setMenuOpen] = useState(false);
   if (Platform.OS === "web" || !isFocused) return null;
 
@@ -138,6 +140,9 @@ export function NativeHeader() {
         menu={nodes}
         activeGroup={activeGroup}
         activeSlug={activeSlug}
+        // Lift the sheet's content above the native Material tab bar (M3 80dp, which now paints
+        // on top of this in-content overlay). Guarded by the gesture inset for taller nav bars.
+        bottomInset={Math.max(96, insets.bottom + 72)}
       />
     </>
   );

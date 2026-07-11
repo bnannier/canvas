@@ -132,6 +132,17 @@ function WebNav() {
               onMenu={() => setMenuOpen(true)}
             />
           </View>
+          {/* The drill-down sheet fills this content wrapper (above the content, below the
+              floating top nav via its zIndex), so the in-flow bottom TabBar sibling stays on
+              top and visible while the sheet is open. */}
+          <TabOverflowMenu
+            visible={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            menu={nativeMenuFor(section, getActiveGroup(pathname))}
+            activeGroup={getActiveGroup(pathname)}
+            activeSlug={getActiveSlug(pathname)}
+            footer={<ThemeToggles />}
+          />
         </View>
         <TabBar
           items={[
@@ -154,14 +165,6 @@ function WebNav() {
             if (s) router.push(s.href as never);
           }}
           bottomInset={insets.bottom}
-        />
-        <TabOverflowMenu
-          visible={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          menu={nativeMenuFor(section, getActiveGroup(pathname))}
-          activeGroup={getActiveGroup(pathname)}
-          activeSlug={getActiveSlug(pathname)}
-          footer={<ThemeToggles />}
         />
         <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
       </SafeAreaView>
