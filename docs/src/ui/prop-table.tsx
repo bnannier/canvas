@@ -1,5 +1,6 @@
 import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@olympusoss/canvas";
 import type { PropGroup } from "../core/props";
+import { DocsSurface } from "./surface";
 import { geist } from "./fonts";
 
 // The generated prop tables for a component page. Data comes from
@@ -26,21 +27,29 @@ function PropRowName({ name, type, required }: { name: string; type: string; req
 }
 
 function GroupTable({ group }: { group: PropGroup }) {
+  // Wrap the table in a DocsSurface so it reads as a solid card in solid mode and a
+  // real frost in glass/frost mode (DocsSurface routes through the kit GlassSurface),
+  // exactly like the live-example stage and the do/don't cards. Without it the table
+  // is a clear hole: its rows are transparent between the muted stripes, so in frost
+  // mode the Canvas Universe backdrop bleeds straight through and washes the rows out.
+  // The surface owns the rounded bordered frame now, so the table drops its own
+  // `bordered` outline to avoid doubling it.
   return (
-    <DataTable
-      bordered
-      striped
-      compact
-      columns={["Prop", "Description"]}
-      rows={group.props.map((p) => [
-        <PropRowName name={p.name} type={p.type} required={p.required} />,
-        p.description ? (
-          <Typography small>{p.description}</Typography>
-        ) : (
-          <Typography small muted>—</Typography>
-        ),
-      ])}
-    />
+    <DocsSurface bordered>
+      <DataTable
+        striped
+        compact
+        columns={["Prop", "Description"]}
+        rows={group.props.map((p) => [
+          <PropRowName name={p.name} type={p.type} required={p.required} />,
+          p.description ? (
+            <Typography small>{p.description}</Typography>
+          ) : (
+            <Typography small muted>—</Typography>
+          ),
+        ])}
+      />
+    </DocsSurface>
   );
 }
 
