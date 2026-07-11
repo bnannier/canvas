@@ -1,4 +1,4 @@
-# Dropdowns
+# Dropdown
 
 Floating menus triggered by a button: actions, options, navigation.
 

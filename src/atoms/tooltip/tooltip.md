@@ -1,4 +1,4 @@
-# Tooltips
+# Tooltip
 
 Small floating helper text on hover or focus.
 

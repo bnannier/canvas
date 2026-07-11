@@ -1,4 +1,4 @@
-# Buttons
+# Button
 
 Six variants × four sizes × disabled / focus / hover states. Always semantic: variant communicates intent (default = primary action, destructive = irreversible, ghost = chrome).
 

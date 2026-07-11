@@ -1,4 +1,4 @@
-# Skeletons
+# Skeleton
 
 Placeholders for loading content.
 

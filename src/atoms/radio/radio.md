@@ -1,4 +1,4 @@
-# Radios
+# Radio
 
 Single-pick selection: stacked, inline, card-style.
 

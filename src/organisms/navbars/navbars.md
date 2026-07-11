@@ -1,4 +1,4 @@
-# Navbars
+# Navbar
 
 Topbars with navigation links, search, and action buttons. Used as the primary app-level navigation.
 

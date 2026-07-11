@@ -1,4 +1,4 @@
-# Selects
+# Select
 
 Native select restyled to match Canvas inputs.
 

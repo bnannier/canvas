@@ -1,4 +1,4 @@
-# Alerts
+# Alert
 
 Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.
 

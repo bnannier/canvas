@@ -1,4 +1,4 @@
-# Badges
+# Badge
 
 Two families on one Badge component, picked by boolean props. The metadata badge is a rectangular pill for labels like schema, role, or tag (tones: default, secondary, outline, destructive; add `mono` for token names). The status badge (`status`) is a rounded pill with a leading dot for live state like active, pending, or failed (tones: success, warning, error, info, neutral).
 

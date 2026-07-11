@@ -1,4 +1,4 @@
-# Media Objects
+# Media Object
 
 Image or icon paired with text content. The fundamental building block for list items, notifications, and comment layouts.
 

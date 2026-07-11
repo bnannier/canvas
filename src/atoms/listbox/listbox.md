@@ -1,4 +1,4 @@
-# Listboxes
+# Listbox
 
 A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.
 

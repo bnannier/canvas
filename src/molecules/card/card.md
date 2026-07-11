@@ -1,4 +1,4 @@
-# Cards
+# Card
 
 Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
 

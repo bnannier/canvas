@@ -1,4 +1,4 @@
-# Avatars
+# Avatar
 
 A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).
 

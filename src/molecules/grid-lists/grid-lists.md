@@ -1,4 +1,4 @@
-# Grid Lists
+# Grid List
 
 Tiled card grids for people directories, item collections, and image galleries.
 

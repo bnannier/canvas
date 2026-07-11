@@ -1,4 +1,4 @@
-# Dividers
+# Divider
 
 Horizontal, vertical, with label, with action.
 

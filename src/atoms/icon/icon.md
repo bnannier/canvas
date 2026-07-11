@@ -1,4 +1,4 @@
-# Icons
+# Icon
 
 Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so the same icon adapts to any context: set the color on the parent.
 

@@ -1,4 +1,4 @@
-# Textareas
+# Textarea
 
 Multi-line input, with character count, with toolbar.
 

@@ -1,4 +1,4 @@
-# Charts
+# Chart
 
 Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting library required.
 

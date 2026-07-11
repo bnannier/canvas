@@ -72,70 +72,70 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "avatar",
-    name: "Avatars",
+    name: "Avatar",
     description: "A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).",
     category: "Atoms",
   },
 
   {
     slug: "badge",
-    name: "Badges",
+    name: "Badge",
     description: "Two families on one Badge component, picked by boolean props. The metadata badge is a rectangular pill for labels like schema, role, or tag (tones: default, secondary, outline, destructive; add <code>mono</code> for token names). The status badge (<code>status</code>) is a rounded pill with a leading dot for live state like active, pending, or failed (tones: success, warning, error, info, neutral).",
     category: "Atoms",
   },
 
   {
     slug: "breadcrumb",
-    name: "Breadcrumbs",
+    name: "Breadcrumb",
     description: "Hierarchical navigation showing where you are.",
     category: "Atoms",
   },
 
   {
     slug: "button-group",
-    name: "Button Groups",
+    name: "Button Group",
     description: "Segmented controls, split buttons, attached groups.",
     category: "Atoms",
   },
 
   {
   slug: "button",
-  name: "Buttons",
+  name: "Button",
   description: "Six variants × four sizes × disabled / focus / hover states. Always semantic: variant communicates intent (default = primary action, destructive = irreversible, ghost = chrome).",
   category: "Atoms",
 },
 
   {
     slug: "checkbox",
-    name: "Checkboxes",
+    name: "Checkbox",
     description: "Multi-select option, single yes/no, grouped lists.",
     category: "Atoms",
   },
 
   {
     slug: "combobox",
-    name: "Comboboxes",
+    name: "Combobox",
     description: "Text input + dropdown: searchable single-select.",
     category: "Atoms",
   },
 
   {
     slug: "divider",
-    name: "Dividers",
+    name: "Divider",
     description: "Horizontal, vertical, with label, with action.",
     category: "Atoms",
   },
 
   {
     slug: "dropdown",
-    name: "Dropdowns",
+    name: "Dropdown",
     description: "Floating menus triggered by a button: actions, options, navigation.",
     category: "Atoms",
   },
 
   {
     slug: "icon",
-    name: "Icons",
+    name: "Icon",
     description: "Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so the same icon adapts to any context: set the color on the parent.",
     category: "Atoms",
   },
@@ -156,28 +156,28 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "radio",
-    name: "Radios",
+    name: "Radio",
     description: "Single-pick selection: stacked, inline, card-style.",
     category: "Atoms",
   },
 
   {
     slug: "select",
-    name: "Selects",
+    name: "Select",
     description: "Native select restyled to match Canvas inputs.",
     category: "Atoms",
   },
 
   {
     slug: "skeleton",
-    name: "Skeletons",
+    name: "Skeleton",
     description: "Placeholders for loading content.",
     category: "Atoms",
   },
 
   {
     slug: "textarea",
-    name: "Textareas",
+    name: "Textarea",
     description: "Multi-line input, with character count, with toolbar.",
     category: "Atoms",
   },
@@ -185,21 +185,21 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "toggle",
     dir: "switch",
-    name: "Toggles",
+    name: "Toggle",
     description: "On / off switch, isolated or grouped in a settings list.",
     category: "Atoms",
   },
 
   {
     slug: "tooltip",
-    name: "Tooltips",
+    name: "Tooltip",
     description: "Small floating helper text on hover or focus.",
     category: "Atoms",
   },
 
   {
     slug: "alert",
-    name: "Alerts",
+    name: "Alert",
     description: "Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.",
     category: "Molecules",
   },
@@ -213,21 +213,21 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "fieldset",
-    name: "Fieldsets",
+    name: "Fieldset",
     description: "Group related form controls under a legend. Each field pairs a label, control, optional help text, and an inline error, so a set of inputs reads as one labeled unit.",
     category: "Molecules",
   },
 
   {
     slug: "listbox",
-    name: "Listboxes",
+    name: "Listbox",
     description: "A custom (non-native) select: single or multi-select, optional avatars or icons per option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.",
     category: "Atoms",
   },
 
   {
     slug: "card",
-    name: "Cards",
+    name: "Card",
     description: "Three families. <code>StatCard</code> = a single metric, big number + delta. <code>SectionCard</code> = a labeled content surface with optional header and divider. Generic <code>card</code> = bring your own structure. Density: pass <code>compact</code> or <code>comfortable</code> to tighten or relax the card's own padding and the gap between flat children (<code>compact</code> takes precedence, and a density prop pads the surface on its own).",
     category: "Molecules",
   },
@@ -241,7 +241,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "empty-state",
-    name: "Empty States",
+    name: "Empty State",
     description: "Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.",
     category: "Molecules",
   },
@@ -262,14 +262,14 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "filter-panel",
-    name: "Filter Panels",
+    name: "Filter Panel",
     description: "Sidebar filter rail with chip pills for active filters.",
     category: "Organisms",
   },
 
   {
     slug: "calendar",
-    name: "Calendars",
+    name: "Calendar",
     description: "Date picker, event list. Production: wrap react-day-picker.",
     category: "Organisms",
   },
@@ -283,7 +283,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "data-table",
-    name: "Data Tables",
+    name: "Data Table",
     description: "Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrollable table &rarr; footer. Density tweaks affect padding live.",
     category: "Organisms",
   },
@@ -303,7 +303,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "overlays",
-    name: "Overlays",
+    name: "Overlay",
     description: "Floating surfaces: drawers, modals, popovers, toasts.",
     category: "Organisms",
 },
@@ -318,7 +318,7 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "stepper",
-    name: "Steppers",
+    name: "Stepper",
     description: "Multi-step progress indicators: horizontal, vertical, with progress.",
     category: "Organisms",
   },
@@ -443,42 +443,42 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "action-panels",
-    name: "Action Panels",
+    name: "Action Panel",
     description: "Section card with headline, body text, and a primary action. Used to surface a single decision or call-to-action.",
     category: "Molecules",
   },
 
   {
     slug: "description-lists",
-    name: "Description Lists",
+    name: "Description List",
     description: "Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views.",
     category: "Molecules",
   },
 
   {
     slug: "feeds",
-    name: "Feeds",
+    name: "Feed",
     description: "Vertical activity streams with icons and timestamps. Used for audit logs, change history, and notification lists.",
     category: "Molecules",
   },
 
   {
     slug: "grid-lists",
-    name: "Grid Lists",
+    name: "Grid List",
     description: "Tiled card grids for people directories, item collections, and image galleries.",
     category: "Molecules",
   },
 
   {
     slug: "media-objects",
-    name: "Media Objects",
+    name: "Media Object",
     description: "Image or icon paired with text content. The fundamental building block for list items, notifications, and comment layouts.",
     category: "Molecules",
   },
 
   {
     slug: "stacked-lists",
-    name: "Stacked Lists",
+    name: "Stacked List",
     description: "Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.",
     category: "Molecules",
   },
@@ -492,14 +492,14 @@ export const COMPONENTS: ComponentDoc[] = [
 
   {
     slug: "charts",
-    name: "Charts",
+    name: "Chart",
     description: "Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting library required.",
     category: "Organisms",
   },
 
   {
     slug: "navbars",
-    name: "Navbars",
+    name: "Navbar",
     description: "Topbars with navigation links, search, and action buttons. Used as the primary app-level navigation.",
     category: "Organisms",
   },

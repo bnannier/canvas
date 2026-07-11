@@ -1,4 +1,4 @@
-# Steppers
+# Stepper
 
 Multi-step progress indicators: horizontal, vertical, with progress.
 

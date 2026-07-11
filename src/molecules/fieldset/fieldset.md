@@ -1,4 +1,4 @@
-# Fieldsets
+# Fieldset
 
 Group related form controls under a legend. Each field pairs a label, control, optional help text, and an inline error, so a set of inputs reads as one labeled unit.
 

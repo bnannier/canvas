@@ -1,4 +1,4 @@
-# Checkboxes
+# Checkbox
 
 Multi-select option, single yes/no, grouped lists.
 

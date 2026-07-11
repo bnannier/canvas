@@ -1,4 +1,4 @@
-# Comboboxes
+# Combobox
 
 Text input + dropdown: searchable single-select.
 

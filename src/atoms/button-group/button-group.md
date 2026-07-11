@@ -1,4 +1,4 @@
-# Button Groups
+# Button Group
 
 Segmented controls, split buttons, attached groups.
 

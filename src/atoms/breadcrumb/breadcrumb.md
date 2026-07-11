@@ -1,4 +1,4 @@
-# Breadcrumbs
+# Breadcrumb
 
 Hierarchical navigation showing where you are.
 

@@ -1,4 +1,4 @@
-# Calendars
+# Calendar
 
 Date picker, event list. Production: wrap react-day-picker.
 

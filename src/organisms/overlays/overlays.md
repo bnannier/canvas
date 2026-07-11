@@ -1,4 +1,4 @@
-# Overlays
+# Overlay
 
 Floating surfaces: drawers, modals, popovers, toasts.
 
