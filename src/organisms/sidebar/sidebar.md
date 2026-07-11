@@ -40,7 +40,13 @@ Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this pa
       </Row>
     )
   }
-  footer={<Button ghost block small iconLeft={<Icon settings size={16} />}>Settings</Button>}
+  footer={(collapsed) =>
+    collapsed ? (
+      <Button ghost icon small accessibilityLabel="Settings" iconLeft={<Icon settings size={16} />} />
+    ) : (
+      <Button ghost block small iconLeft={<Icon settings size={16} />}>Settings</Button>
+    )
+  }
   sections={[
     { items: [
       { label: "Dashboard", icon: "layoutGrid" },

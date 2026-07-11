@@ -214,8 +214,9 @@ export interface SidebarProps {
    *  collapsed state so it can show a compact mark in the rail. When `header` or
    *  `footer` is set, the panel becomes a pinned header + scrolling body (+ footer). */
   header?: ReactNode | ((collapsed: boolean) => ReactNode);
-  /** Optional bottom slot (pinned below the scrolling sections). */
-  footer?: ReactNode;
+  /** Optional bottom slot (pinned below the scrolling sections). A render function
+   *  receives the collapsed state so it can show a compact (icon-only) footer in the rail. */
+  footer?: ReactNode | ((collapsed: boolean) => ReactNode);
 
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -506,6 +507,7 @@ export function createSidebar(skin: SidebarSkin) {
     // Shell: pinned header (brand slot + collapse toggle) over a scrolling body over
     // a pinned footer.
     const headerNode = typeof header === "function" ? header(collapsed) : header;
+    const footerNode = typeof footer === "function" ? footer(collapsed) : footer;
     const toggleCollapse = () => {
       setCollapsed(!collapsed);
       onToggleCollapse?.();
@@ -547,7 +549,7 @@ export function createSidebar(skin: SidebarSkin) {
         <ScrollView style={skin.scroll} contentContainerStyle={skin.scrollContent(tokens, collapsed)}>
           {sectionsEl}
         </ScrollView>
-        {footer != null ? <View style={skin.footer(tokens, collapsed)}>{footer}</View> : null}
+        {footer != null ? <View style={skin.footer(tokens, collapsed)}>{footerNode}</View> : null}
       </GlassSurface>
     );
   };
