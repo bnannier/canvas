@@ -237,9 +237,9 @@ export type Overlap = "tight" | "snug" | "loose";
 // Overlap (negative marginLeft) per size and tightness. The magic negative margin
 // is owned here, once, instead of at every call site.
 const OVERLAP: Record<Size, Record<Overlap, number>> = {
-  small: { tight: -13, snug: -8, loose: -3 },
-  default: { tight: -16, snug: -10, loose: -5 },
-  large: { tight: -20, snug: -13, loose: -7 },
+  small: { tight: -16, snug: -9, loose: -3 },
+  default: { tight: -22, snug: -12, loose: -5 },
+  large: { tight: -27, snug: -15, loose: -7 },
 };
 
 export interface AvatarGroupProps {
