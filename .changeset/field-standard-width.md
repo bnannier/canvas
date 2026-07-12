@@ -4,14 +4,14 @@
 
 Every input-like control now renders at a standard width by default, so bare
 fields look even without per-call-site width shims. Input, Textarea, Select,
-Combobox, and Field (control mode) render at 320px on desktop, shrink inside
-narrower parents (`maxWidth:"100%"`), and fill their container at the `sm`
-breakpoint (≤640px) and below, the phone form factor. The new width axis picks
-the other modes: `narrow` (240px) for toolbars and short values, `wide`
-(480px) for long values and roomy multiline entry, and `block` to fill the
-container at any viewport. The explicit width is deliberate: it standardizes
-fields even in centered or content-sized layouts, where a bare `width:"100%"`
-would collapse each field to its placeholder text's natural width.
+Combobox, and Field (control mode) render at 320px and shrink inside narrower
+parents (`maxWidth:"100%"`), which is how the phone form factor is handled.
+The new width axis picks the other modes: `narrow` (240px) for toolbars and
+short values, `wide` (480px) for long values and roomy multiline entry, and
+`block` to fill the container. The explicit width is deliberate, and holds on
+every form factor: in a centered or content-sized layout a bare `width:"100%"`
+collapses each field to its content's natural width, uneven per platform and
+resizing on every keystroke.
 
 `block` on Input, previously a documented no-op, now does exactly what it says.
 Field, Form, Fieldset, Dialog, and AlertDialog compose their inner Inputs with

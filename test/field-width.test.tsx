@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Dimensions } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { responsive } from "../src/style/responsive.ts";
+import { useFieldWidth } from "../src/style/field-width.ts";
 import { fieldWidths } from "../src/style/tokens.ts";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
@@ -14,26 +14,27 @@ import { Form } from "../src/molecules/form/form.tsx";
 import { Fieldset } from "../src/molecules/fieldset/fieldset.tsx";
 
 // The standard field width axis (src/style/field-width.ts): a bare input-like
-// control RENDERS AT fieldWidths.base on desktop (narrow/wide pick the other
-// two modes, block fills the container instead), shrinks in narrower parents
-// via maxWidth:"100%", and drops the standard entirely at the sm breakpoint
-// and below. The explicit width (not a width:100% + cap) is the load-bearing
-// part: in a content-sized context (a centered stage, a row) width:100%
-// collapses to the placeholder text's natural width, which is exactly the
-// uneven look the axis exists to fix. react-native-web renders the pair as
-// inline width/max-width, so the axis is assertable at the DOM. These suites
-// rely on the setup.ts desktop viewport (wider than the 640px sm breakpoint);
-// the first test locks that assumption so a harness change fails loudly here
-// instead of silently asserting the phone (fill) branch.
+// control RENDERS AT fieldWidths.base at every viewport (narrow/wide pick the
+// other two modes, block fills the container instead) and shrinks in narrower
+// parents via maxWidth:"100%". The explicit width (not a width:100% + cap) is
+// the load-bearing part: in a content-sized context (a centered stage, a row)
+// width:100% collapses to the content's natural width, which is exactly the
+// uneven look the axis exists to fix, and on a text field it also RESIZES on
+// every keystroke (the placeholder sizes it while empty). The width is
+// deliberately NOT responsive: an earlier sm-drops-the-width revision put
+// phones back on width:100% and reintroduced the type-to-resize bug there.
+// react-native-web renders the pair as inline width/max-width, so the axis is
+// assertable at the DOM.
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 const at = (c: HTMLElement, id: string) => c.querySelector(`[data-testid="${id}"]`) as HTMLElement;
 
 describe("field width axis: harness assumption", () => {
-  it("runs at a desktop viewport (wider than the sm breakpoint)", () => {
-    // What useWindowDimensions/useResponsive actually consume (the setup.ts
-    // visualViewport stub), not the DOM's window.innerWidth.
+  it("runs at a desktop viewport (the setup.ts visualViewport stub)", () => {
+    // The axis itself is viewport-independent, but the rest of the kit's
+    // responsive components (Form, Fieldset, GridLists) branch on this, so
+    // keep the harness's desktop default locked here where it was diagnosed.
     expect(Dimensions.get("window").width).toBeGreaterThan(640);
   });
 });
@@ -132,12 +133,15 @@ describe("field width axis: Combobox", () => {
   });
 });
 
-describe("field width axis: responsive collapse", () => {
-  it("drops the standard at the sm breakpoint and below (null, not undefined)", () => {
-    const map = { base: { width: fieldWidths.base, maxWidth: "100%" }, sm: null };
-    expect(responsive(375, map)).toBeNull();
-    expect(responsive(640, map)).toBeNull();
-    expect(responsive(1024, map)).toEqual({ width: fieldWidths.base, maxWidth: "100%" });
+describe("field width axis: viewport independence", () => {
+  it("emits the same explicit width regardless of viewport (no sm drop)", () => {
+    // The phone form factor is handled by maxWidth:"100%" against the parent,
+    // never by dropping the width: a width:100% field in a content-sized
+    // context resizes to hug the typed value on every keystroke.
+    expect(useFieldWidth({})).toEqual({ width: fieldWidths.base, maxWidth: "100%" });
+    expect(useFieldWidth({ narrow: true })).toEqual({ width: fieldWidths.narrow, maxWidth: "100%" });
+    expect(useFieldWidth({ wide: true })).toEqual({ width: fieldWidths.wide, maxWidth: "100%" });
+    expect(useFieldWidth({ block: true })).toBeNull();
   });
 });
 

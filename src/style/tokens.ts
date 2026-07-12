@@ -507,12 +507,12 @@ export const breakpoints: Record<string, number> = {
 };
 
 /**
- * Standard field widths in px: the desktop widths the input-like controls
- * (Input, Textarea, Select, Combobox, Field) render at. Every field defaults
- * to `base` so stacked fields share one edge; `narrow`/`wide` are the other
- * two modes of the width axis. A `maxWidth:"100%"` rides along so fields still
- * shrink inside narrower parents, and the standard drops entirely at the `sm`
- * breakpoint and below, where a field fills its container.
+ * Standard field widths in px: the widths the input-like controls (Input,
+ * Textarea, Select, Combobox, Field) render at, on every form factor. Every
+ * field defaults to `base` so stacked fields share one edge; `narrow`/`wide`
+ * are the other two modes of the width axis. A `maxWidth:"100%"` rides along
+ * so fields shrink inside narrower parents (which is all a phone screen is);
+ * `block` opts a field out entirely to fill its container.
  */
 export const fieldWidths: Record<string, number> = {
   narrow: 240,
