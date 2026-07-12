@@ -1,6 +1,6 @@
 # Chart
 
-Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting library required.
+Bars, lines, areas, stacked bars, gauges, heatmaps. One token-themed family with a colorblind-validated series palette (the `chart-1`..`chart-8` tokens). No charting library required.
 
 ## Usage
 
@@ -21,6 +21,39 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
 ```
 
 ## Variants
+
+### Chart type - line
+
+```tsx
+<LineChart
+  title="Signups"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  series={[
+    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
+    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+  ]}
+  curved
+  dots
+  style={{ maxWidth: 560 }}
+/>
+```
+
+### Chart type - area
+
+```tsx
+<AreaChart
+  title="Traffic by channel"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[
+    { label: "Direct", values: [40, 55, 45, 70, 65, 30, 25] },
+    { label: "Search", values: [80, 95, 90, 120, 130, 60, 50] },
+    { label: "Social", values: [20, 30, 25, 45, 60, 80, 70] }
+  ]}
+  stacked
+  curved
+  style={{ maxWidth: 560 }}
+/>
+```
 
 ### Chart type - stacked
 
@@ -87,6 +120,37 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 118 }} />
   </View>
 </View>
+```
+
+### Line
+
+**Do** — Compare series that share one scale, and let the legend plus the fixed series colors carry identity.
+
+```tsx
+<LineChart
+  title="Signups"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  series={[
+    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
+    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+  ]}
+  curved
+  style={{ maxWidth: 560 }}
+/>
+```
+
+**Don't** — Mix measures of different scales on one axis: the smaller series flatlines against the baseline and reads as noise. Normalize, or use two charts.
+
+```tsx
+<LineChart
+  title="Revenue vs conversion"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  series={[
+    { label: "Revenue", values: [12000, 18000, 15000, 24000, 30000, 28000] },
+    { label: "Conversion rate", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }
+  ]}
+  style={{ maxWidth: 560 }}
+/>
 ```
 
 ### Stacked bar

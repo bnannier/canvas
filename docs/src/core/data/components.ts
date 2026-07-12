@@ -491,7 +491,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "charts",
     name: "Chart",
-    description: "Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting library required.",
+    description: "Bars, lines, areas, stacked bars, gauges, heatmaps. Token-themed with a colorblind-validated series palette. No charting library required.",
     category: "Organisms",
   },
 

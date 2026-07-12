@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View } = scope;
+  const { LineChart } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>
-  <View style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, width: 520 }}>
-    <View style={{ width: "42%", backgroundColor: "#6366f1" }} />
-    <View style={{ width: "28%", backgroundColor: "#14b8a6" }} />
-    <View style={{ width: "18%", backgroundColor: "#f59e0b" }} />
-    <View style={{ width: "12%", backgroundColor: "#f43f5e" }} />
-  </View>
-</View>
+<LineChart
+  title="Revenue vs conversion"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  series={[
+    { label: "Revenue", values: [12000, 18000, 15000, 24000, 30000, 28000] },
+    { label: "Conversion rate", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }
+  ]}
+  style={{ maxWidth: 560 }}
+/>
   );
 }

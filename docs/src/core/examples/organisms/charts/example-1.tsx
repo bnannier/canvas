@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, StackedBar } = scope;
+  const { LineChart } = scope;
   return (
-<Card padded style={{ maxWidth: 560 }}>
-  <StackedBar
-    segments={[
-      { label: "Direct", value: 42 },
-      { label: "Organic search", value: 28 },
-      { label: "Social", value: 18 },
-      { label: "Referral", value: 12 }
-    ]}
-  />
-</Card>
+<LineChart
+  title="Signups"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  series={[
+    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
+    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+  ]}
+  curved
+  dots
+  style={{ maxWidth: 560 }}
+/>
   );
 }

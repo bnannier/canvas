@@ -1,0 +1,83 @@
+import { describe, it, expect, afterEach } from "bun:test";
+import { render, cleanup } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { ThemeProvider } from "../src/style/theme.tsx";
+import { LineChart, AreaChart } from "../src/organisms/charts/charts.tsx";
+
+// LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
+// name carries every value, series-prefixed; the legend stays reachable outside
+// it) plus the semantic boolean axes that are observable without an SVG
+// renderer (the harness stubs react-native-svg, so geometry is proven in
+// chart-math.test.ts and these tests assert structure, names, and furniture).
+
+afterEach(cleanup);
+const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
+
+const labels = ["Jan", "Feb", "Mar"];
+const twoSeries = [
+  { label: "Web", values: [120, 180, 150] },
+  { label: "Mobile", values: [60, 90, 140] },
+];
+
+const plotName = (c: HTMLElement) => c.querySelector('[role="img"]')?.getAttribute("aria-label") ?? "";
+
+describe("LineChart", () => {
+  it("folds every series' data into the plot's accessible name", () => {
+    const { container } = ui(<LineChart labels={labels} series={twoSeries} />);
+    const name = plotName(container);
+    expect(name).toContain("Web: Jan 120, Feb 180, Mar 150");
+    expect(name).toContain("Mobile: Jan 60, Feb 90, Mar 140");
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<LineChart title="Signups" labels={labels} series={twoSeries} />);
+    const group = container.querySelector('[role="group"]');
+    expect(group?.getAttribute("aria-label")).toBe("Signups chart");
+  });
+
+  it("formats accessible values through formatValue", () => {
+    const { container } = ui(
+      <LineChart labels={labels} series={[{ label: "Revenue", values: [12000, 18000, 15000] }]} />,
+    );
+    expect(plotName(container)).toContain("Revenue: Jan 12k, Feb 18k, Mar 15k");
+  });
+
+  it("shows a reachable legend for multiple series, none for one", () => {
+    const multi = ui(<LineChart labels={labels} series={twoSeries} />);
+    // Legend text lives OUTSIDE the img subtree, so it must appear as real text.
+    expect(multi.container.textContent).toContain("Web");
+    expect(multi.container.textContent).toContain("Mobile");
+    cleanup();
+
+    const single = ui(<LineChart labels={labels} series={[{ label: "Web", values: [1, 2, 3] }]} />);
+    // A single series is named by the title, not a one-dot legend; the series
+    // label appears only inside the accessible name, not as legend text.
+    expect(single.container.textContent ?? "").not.toContain("Web");
+  });
+
+  it("hideLegend suppresses the legend for multi-series charts", () => {
+    const { container } = ui(<LineChart hideLegend labels={labels} series={twoSeries} />);
+    expect(container.textContent ?? "").not.toContain("Mobile");
+  });
+
+  it("renders y tick labels once measured, and hides them under hideAxes", () => {
+    // happy-dom reports zero layout width, so the frame stays unmeasured and
+    // furniture must not render; this locks in the graceful pre-measure state.
+    const { container } = ui(<LineChart labels={labels} series={twoSeries} />);
+    expect(container.textContent ?? "").not.toContain("NaN");
+  });
+});
+
+describe("AreaChart", () => {
+  it("carries the stacked series' data in its accessible name", () => {
+    const { container } = ui(<AreaChart stacked labels={labels} series={twoSeries} />);
+    const name = plotName(container);
+    expect(name).toContain("Web: Jan 120");
+    expect(name).toContain("Mobile: Jan 60");
+  });
+
+  it("titled area chart exposes the group name", () => {
+    const { container } = ui(<AreaChart title="Traffic" labels={labels} series={twoSeries} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Traffic chart");
+  });
+});

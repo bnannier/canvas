@@ -5,8 +5,13 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, View } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: "center" }}>
-  <View style={{ borderRadius: 9999, borderWidth: 8, borderColor: tokens.primary, height: 120, width: 120 }} />
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>
+  <View style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, width: 520 }}>
+    <View style={{ width: "42%", backgroundColor: "#6366f1" }} />
+    <View style={{ width: "28%", backgroundColor: "#14b8a6" }} />
+    <View style={{ width: "18%", backgroundColor: "#f59e0b" }} />
+    <View style={{ width: "12%", backgroundColor: "#f43f5e" }} />
+  </View>
 </View>
   );
 }
