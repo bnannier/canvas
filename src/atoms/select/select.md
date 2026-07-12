@@ -81,6 +81,20 @@ Native select restyled to match Canvas inputs.
 </View>
 ```
 
+### When to use
+
+**Do** — Reserve a select for picking one of several mutually exclusive options; use a switch or radios for two.
+
+```tsx
+<Select label="Status" options={["Active", "Inactive", "Pending", "Archived"]} defaultValue="Active" />
+```
+
+**Don't** — A select for a single on/off choice buries a one-tap decision behind a dropdown.
+
+```tsx
+<Select label="Email notifications" options={["On", "Off"]} defaultValue="On" />
+```
+
 ### sm
 
 **Do** — Keep the small select inline with a short label so it stays compact inside toolbars and table footers.

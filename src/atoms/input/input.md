@@ -10,21 +10,6 @@ The Input component is a React Native text field with semantic boolean props (`e
 
 ## Variants
 
-### Control - number
-
-```tsx
-<Input placeholder="1024" />
-```
-
-### Control - select
-
-```tsx
-<Column snug>
-  <Select label="Status" defaultValue="Active" options={["Active", "Inactive", "Pending"]} />
-  <Typography tiny muted>We'll use this for account recovery.</Typography>
-</Column>
-```
-
 ### Control - textarea
 
 ```tsx
@@ -71,7 +56,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 
 ### text
 
-**Do** — Pair every field with a persistent .label above the control.
+**Do** — Pair every field with a persistent label above the control.
 
 ```tsx
 <Field label="Email" placeholder="ada@acme.dev" />
@@ -85,7 +70,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 
 ### number
 
-**Do** — Use type="number" with inputmode and park the unit in a .input-addon so the value stays purely numeric.
+**Do** — Park the unit in a suffix addon so the value stays purely numeric.
 
 ```tsx
 <Column snug>
@@ -98,20 +83,6 @@ The Input component is a React Native text field with semantic boolean props (`e
 
 ```tsx
 <Field label="Storage" value="1024 GB" style={{ maxWidth: 320 }} />
-```
-
-### select
-
-**Do** — Reserve a select for picking one of several mutually exclusive options; use a switch or radios for two.
-
-```tsx
-<Select label="Status" options={["Active", "Inactive", "Pending", "Archived"]} defaultValue="Active" />
-```
-
-**Don't** — A select for a single on/off choice buries a one-tap decision behind a dropdown.
-
-```tsx
-<Select label="Email notifications" options={["On", "Off"]} defaultValue="On" style={{ maxWidth: 320 }} />
 ```
 
 ### textarea

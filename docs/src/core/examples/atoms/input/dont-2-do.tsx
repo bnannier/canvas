@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Select } = scope;
+  const { Textarea, Typography, Column } = scope;
   return (
-<Select label="Status" options={["Active", "Inactive", "Pending", "Archived"]} defaultValue="Active" />
+<Column snug>
+  <Typography small medium>Notes</Typography>
+  <Textarea rows={4} value="Describe the change in enough detail that a teammate could follow it…" />
+</Column>
   );
 }

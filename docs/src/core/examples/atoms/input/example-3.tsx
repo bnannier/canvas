@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input multiline placeholder="Describe the change" />
+<Input suffix="Copy" action value="cnv_3f9a21b8e7" />
   );
 }

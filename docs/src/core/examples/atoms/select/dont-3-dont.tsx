@@ -3,14 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable } = scope;
+  const { tokens, View, Text, Input, Select } = scope;
   return (
-<View style={{ maxWidth: 320 }}>
-  <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Plan</Text>
-  <Pressable style={{ height: 40, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12 }} accessibilityRole="button">
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens.foreground }}>Starter</Text>
-    <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>▾</Text>
-  </Pressable>
+<View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, maxWidth: 420 }}>
+  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
+    <Input large value="Austin" />
+  </View>
+  <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
+    <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>State</Text>
+    <Select value="Texas" options={["Texas", "Oregon"]} />
+  </View>
 </View>
   );
 }

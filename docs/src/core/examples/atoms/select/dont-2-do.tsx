@@ -3,15 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Select, Row, Column } = scope;
+  const { Select, Typography, Row } = scope;
   return (
-<Row alignEnd cozy style={{ maxWidth: 420 }}>
-  <Column fill>
-    <Field label="City" value="Austin" />
-  </Column>
-  <Column fill>
-    <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />
-  </Column>
+<Row alignCenter snug>
+  <Typography tiny muted>Rows</Typography>
+  <Select small defaultValue="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
 </Row>
   );
 }
