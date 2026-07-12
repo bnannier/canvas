@@ -112,8 +112,9 @@ describe("ThemeProvider brand-token override", () => {
         <StackedBar segments={[{ label: "A", value: 1 }]} />
       </ThemeProvider>,
     );
-    // StackedBar uses palette hues, not tokens.primary, so assert the theme value
-    // itself carried the override via a component that reads tokens.primary.
+    // StackedBar paints the chart-1..8 series tokens, not tokens.primary, so
+    // assert the theme value itself carried the override via a component that
+    // reads tokens.primary.
     expect(container).toBeTruthy();
   });
 

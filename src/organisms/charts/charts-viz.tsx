@@ -1,16 +1,16 @@
 import Svg, { Circle } from "react-native-svg";
 import { View, Text, useTheme, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { seriesFill } from "./charts.styles.js";
 
 // Additional chart types that share the Chart family's token-driven, View/SVG
 // look, so no call site hand-composes a stacked bar, a gauge ring, or a heatmap
 // grid out of raw `width`/`backgroundColor`/`borderRadius` Views. Like Chart,
 // these are a "Shared" platform treatment (data visualization is platform-neutral),
 // so one implementation serves iOS, Android, and the web.
-
-// The categorical series palette for a stacked bar's segments, in order. Chosen to
-// stay legible in light and dark; segments cycle through it by index.
-const SERIES_HUES = ["indigo-500", "teal-500", "amber-500", "rose-500", "violet-500", "cyan-500", "emerald-500", "pink-500"];
-const seriesColor = (i: number): string => palette[SERIES_HUES[i % SERIES_HUES.length]];
+//
+// Series colors come from the theme's chart-1..chart-8 tokens via seriesFill
+// (charts.styles.ts), so the categorical palette is brandable through
+// ThemeProvider token overrides.
 
 // ---------------------------------------------------------------------------
 // StackedBar: one proportional horizontal bar split into colored segments, with a
@@ -64,14 +64,14 @@ export function StackedBar({ segments, label, hideLegend, testID, style }: Stack
     <View testID={testID} style={style} {...(hideLegend ? img : {})}>
       <View {...(hideLegend ? {} : img)} style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10 }}>
         {segments.map((seg, i) => (
-          <View key={i} style={{ width: `${pct(seg.value)}%`, backgroundColor: seriesColor(i) }} />
+          <View key={i} style={{ width: `${pct(seg.value)}%`, backgroundColor: seriesFill(tokens, i) }} />
         ))}
       </View>
       {hideLegend ? null : (
         <View style={{ marginTop: 12, flexDirection: "column", gap: 8 }}>
           {segments.map((seg, i) => (
             <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: seriesColor(i) }} />
+              <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: seriesFill(tokens, i) }} />
               <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>
                 {seg.label}
               </Text>

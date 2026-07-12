@@ -53,6 +53,28 @@ export function barFill(tokens: ColorTokens, tone: Tone): string {
   return tokens.primary;
 }
 
+// --- series fill ------------------------------------------------------------
+
+// The categorical series tokens in their fixed assignment order. Series i is
+// always chart-(i+1): identity follows the series, never its rank, so removing
+// a series from a chart must not repaint the survivors. Past 8 the cycle wraps
+// (callers should prefer aggregating into fewer series before that point).
+const SERIES_TOKENS = [
+  "chart-1",
+  "chart-2",
+  "chart-3",
+  "chart-4",
+  "chart-5",
+  "chart-6",
+  "chart-7",
+  "chart-8",
+] as const;
+
+/** The fill for series `i` (0-based), from the theme's chart tokens. */
+export function seriesFill(tokens: ColorTokens, i: number): string {
+  return tokens[SERIES_TOKENS[i % SERIES_TOKENS.length]];
+}
+
 // --- horizontal layout ------------------------------------------------------
 
 // The horizontal stack of rows (flex-col); the gap is applied by the component.
