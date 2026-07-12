@@ -79,7 +79,7 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 
 ### Plain
 
-**Do** — Use a pre element so whitespace, line breaks, and indentation survive verbatim.
+**Do** — Use CodeBlock so whitespace, line breaks, and indentation survive verbatim.
 
 ```tsx
 <CodeBlock code={`const theme = getTheme();
@@ -96,7 +96,7 @@ setTheme(theme === "dark" ? "light" : "dark");`} />
 
 ### Terminal
 
-**Do** — Mark the prompt select-none so a copy yields only the command, not the shell glyph.
+**Do** — Use the terminal variant: the prompt stays out of the selection, so a copy yields only the command, not the shell glyph.
 
 ```tsx
 <CodeBlock terminal code="npm install @olympusoss/canvas" />
@@ -112,7 +112,7 @@ setTheme(theme === "dark" ? "light" : "dark");`} />
 
 ### Numbered
 
-**Do** — Keep the gutter select-none so copying the block returns clean, runnable code.
+**Do** — Use the numbered variant: the gutter stays out of the selection, so copying the block returns clean, runnable code.
 
 ```tsx
 <CodeBlock numbered code={`const theme = getTheme();

@@ -1,6 +1,6 @@
 # Navbar
 
-Topbars with navigation links, search, and action buttons. Used as the primary app-level navigation.
+Topbars with a brand, navigation links, and an action button. Used as the primary app-level navigation.
 
 ## Usage
 

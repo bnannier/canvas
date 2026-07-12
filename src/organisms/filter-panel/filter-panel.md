@@ -1,6 +1,6 @@
 # FilterPanel
 
-Sidebar filter rail with chip pills for active filters.
+Sidebar filter rail of grouped checkbox options with counts.
 
 ## Usage
 

@@ -78,7 +78,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 
 ### Mono
 
-**Do** — Wrap IDs, hashes, and timestamps in font-mono so every glyph is fixed-width and copy-able.
+**Do** — Mark IDs, hashes, and timestamps `mono` so every glyph is fixed-width and copy-able.
 
 ```tsx
 <Field style={{ maxWidth: 400 }} rows={[

@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { ActionPanel } = scope;
   return (
 <ActionPanel
-  title="Delete this project"
+  title="Discard unsaved changes?"
   description="You have unsaved edits in this form. Leaving now will lose all progress."
   actionLabel="Discard"
   destructive

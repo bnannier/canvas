@@ -132,7 +132,7 @@ Multi-select option, single yes/no, grouped lists.
 
 ### With description
 
-**Do** — Wrap the box, label, and description in a <label> so the whole row toggles.
+**Do** — Pass the label and description as Checkbox children so the whole row toggles.
 
 ```tsx
 <Checkbox defaultChecked>
@@ -141,7 +141,7 @@ Multi-select option, single yes/no, grouped lists.
 </Checkbox>
 ```
 
-**Don't** — A bare div makes only the 16px box clickable; the label text does nothing.
+**Don't** — A detached checkbox makes only the 16px box tappable; the label text does nothing.
 
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>

@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Popover
   trigger="Open popover"
   title="Popover"
-  description="Place your rich content, form fields, or secondary actions here."
+  description="A short prompt with supporting text and one follow-up action."
   actionLabel="Close"
 />
   );

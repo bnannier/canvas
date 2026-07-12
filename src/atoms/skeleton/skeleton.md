@@ -80,7 +80,7 @@ Placeholders for loading content.
 
 ### button
 
-**Do** — Size the placeholder to the button's real height and width (h-9, content-fit).
+**Do** — Size the placeholder to the button's real height and width.
 
 ```tsx
 <Skeleton button animate />

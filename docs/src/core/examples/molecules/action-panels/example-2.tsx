@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { ActionPanel } = scope;
   return (
 <ActionPanel
-  title="Delete this project"
+  title="Two-factor authentication"
   description="Add an extra layer of security to your account by requiring a verification code on login."
   toggle
   defaultChecked

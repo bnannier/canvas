@@ -68,7 +68,7 @@ Animated loading spinner in three sizes.
 </Card>
 ```
 
-**Don't** — Don't stretch it with conflicting w/h utilities; a spinner must stay a perfect circle to spin cleanly.
+**Don't** — Don't stretch it with conflicting width and height; a spinner must stay a perfect circle to spin cleanly.
 
 ```tsx
 <View style={{ borderRadius: 6, backgroundColor: tokens.muted, padding: 12 }}>

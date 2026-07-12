@@ -19,7 +19,7 @@ Section card with headline, body text, and a primary action. Used to surface a s
 
 ```tsx
 <ActionPanel
-  title="Delete this project"
+  title="Discard unsaved changes?"
   description="You have unsaved edits in this form. Leaving now will lose all progress."
   actionLabel="Discard"
   destructive
@@ -31,7 +31,7 @@ Section card with headline, body text, and a primary action. Used to surface a s
 
 ```tsx
 <ActionPanel
-  title="Delete this project"
+  title="Two-factor authentication"
   description="Add an extra layer of security to your account by requiring a verification code on login."
   toggle
   defaultChecked

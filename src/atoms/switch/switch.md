@@ -32,7 +32,7 @@ On / off switch, isolated or grouped in a settings list.
 
 ### Off
 
-**Do** — Keep the standard bg-input off track so off stays clearly interactive and distinct from a disabled control.
+**Do** — Keep the standard input-colored off track so off stays clearly interactive and distinct from a disabled control.
 
 ```tsx
 <Switch style={{ maxWidth: 280 }}>Two-factor auth</Switch>

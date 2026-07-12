@@ -102,7 +102,7 @@ Single-pick selection: stacked, inline, card-style.
 
 ### Stacked
 
-**Do** — Align the control to the first text line (mt-[3px]) so it sits beside the title, with the description flowing below.
+**Do** — Align the control to the first text line so it sits beside the title, with the description flowing below.
 
 ```tsx
 <Column snug>
@@ -116,7 +116,7 @@ Single-pick selection: stacked, inline, card-style.
 </Column>
 ```
 
-**Don't** — With items-center the input floats to the vertical middle of a two-line label, leaving it visually unattached to the title it controls.
+**Don't** — Center-aligning the control floats it to the vertical middle of a two-line label, leaving it visually unattached to the title it controls.
 
 ```tsx
 <View style={{ flexDirection: "column", gap: 10 }}>
@@ -132,7 +132,7 @@ Single-pick selection: stacked, inline, card-style.
 
 ### Inline
 
-**Do** — Use gap-6 between options (gap-2 inside each) so every label clearly pairs with its own control.
+**Do** — Keep generous spacing between options and tighter spacing inside each so every label clearly pairs with its own control.
 
 ```tsx
 <RadioGroup row defaultValue="hobby">
@@ -142,7 +142,7 @@ Single-pick selection: stacked, inline, card-style.
 </RadioGroup>
 ```
 
-**Don't** — Cramped gap-1 between options makes each label blur into the next radio, so it is hard to tell which dot belongs to which choice.
+**Don't** — Cramped spacing between options makes each label blur into the next radio, so it is hard to tell which dot belongs to which choice.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>

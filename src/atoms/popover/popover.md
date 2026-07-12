@@ -1,6 +1,6 @@
 # Popover
 
-Floating panel for rich content triggered by a click.
+Floating panel with a title, supporting text, and a single follow-up action, anchored to its trigger.
 
 ## Usage
 
@@ -8,7 +8,7 @@ Floating panel for rich content triggered by a click.
 <Popover
   trigger="Open popover"
   title="Popover"
-  description="Place your rich content, form fields, or secondary actions here."
+  description="A short prompt with supporting text and one follow-up action."
   actionLabel="Close"
 />
 ```

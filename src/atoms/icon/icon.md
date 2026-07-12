@@ -112,7 +112,7 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 
 ### muted
 
-**Do** — Use text-muted-foreground for secondary, inline hint icons where its color matches the helper text.
+**Do** — Use the muted tone for secondary, inline hint icons where its color matches the helper text.
 
 ```tsx
 <Row alignCenter snug>

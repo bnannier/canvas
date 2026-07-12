@@ -1,6 +1,6 @@
 # DataTable
 
-Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrollable table &rarr; footer. Density tweaks affect padding live.
+A bordered table rendered from column and row data; compose a toolbar above and a footer below when the screen needs them. Density tweaks affect padding live.
 
 ## Usage
 

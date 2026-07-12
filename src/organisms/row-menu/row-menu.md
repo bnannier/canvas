@@ -81,7 +81,7 @@ Vertical action menu items and navigation links.
 
 ### Links
 
-**Do** — Use <a href> anchors so links behave like links, and mark the current page with an active highlight.
+**Do** — Pass `links` so rows render as real navigation links, and mark the current page with an active highlight.
 
 ```tsx
 <RowMenu open links items={[

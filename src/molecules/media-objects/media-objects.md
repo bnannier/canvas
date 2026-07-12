@@ -47,7 +47,7 @@ Image or icon paired with text content. The fundamental building block for list 
 
 ### Avatar
 
-**Do** — Top-align with items-start so the avatar anchors to the first line of the title.
+**Do** — Top-align with `start` so the avatar anchors to the first line of the title.
 
 ```tsx
 <MediaObject bordered start style={{ maxWidth: 480 }} src="/rachel-chen.jpg" title="Rachel Chen" description="Engineering Lead" body="Reviewed the latest pull request and left comments on the auth middleware changes. Need to discuss the token rotation approach before merging." />
@@ -61,7 +61,7 @@ Image or icon paired with text content. The fundamental building block for list 
 
 ### Icon
 
-**Do** — Fix the icon box at h-9 w-9 with an 18px glyph so it reads as a tidy lead affordance.
+**Do** — Keep the lead icon box compact with an 18px glyph so it reads as a tidy lead affordance.
 
 ```tsx
 <MediaObject bordered start style={{ maxWidth: 480 }} title="Security first" description="End-to-end encryption with automatic key rotation." icon={<Icon shield primary size={18} />} />
@@ -83,7 +83,7 @@ Image or icon paired with text content. The fundamental building block for list 
 
 ### Action
 
-**Do** — Use min-w-0 + truncate on the text and shrink-0 on the button to keep the action pinned right.
+**Do** — Pass `truncate` so long text clips in place and the trailing action stays pinned right.
 
 ```tsx
 <MediaObject bordered center truncate style={{ maxWidth: 480 }} src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />

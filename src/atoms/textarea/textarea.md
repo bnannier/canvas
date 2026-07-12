@@ -48,7 +48,7 @@ Multi-line input, with character count, with toolbar.
 
 ### With label
 
-**Do** — Give a sensible min-height and allow vertical resize so users can see and grow their text.
+**Do** — Set `rows` for a sensible starting height so users can see their text; the field grows with the content from there.
 
 ```tsx
 <Column snug>
