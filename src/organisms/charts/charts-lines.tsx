@@ -1,11 +1,12 @@
 import { type ReactNode } from "react";
 import { Circle, Path } from "react-native-svg";
-import { View, Text, useTheme, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useControllableState, alpha, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "./charts.shared.js";
 import { CartesianFrame, chartRootWidth, type CartesianLayout } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
+import { ChartValueFlag, announceSelection } from "./chart-inspect.js";
 import { areaBandPath, areaPath, formatCompact, linePath, monotonePath, stackSeries, type Pt } from "./chart-math.js";
 
 // LineChart and AreaChart: categorical-x series charts drawn through the shared
@@ -51,6 +52,12 @@ interface CartesianSeriesProps {
   hideAxes?: boolean;
   /** Formats tick labels and accessible values (data formatting, not styling). */
   formatValue?: (v: number) => string;
+  /** Press-to-inspect: the selected category index (controlled). Pass null for none. */
+  selected?: number | null;
+  /** Press-to-inspect: the initially selected category (uncontrolled). */
+  defaultSelected?: number;
+  /** Fired when a press selects a category (or clears it with null). */
+  onSelect?: (index: number | null) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -126,7 +133,17 @@ function useSeriesChart(kind: "line" | "area", props: CartesianSeriesProps, stac
     .map((sr) => `${sr.label}: ${labels.map((l, i) => `${l} ${formatValue(finite(sr.values[i]))}`).join(", ")}`)
     .join("; ");
 
-  return { tokens, tone, multi, formatValue, colorOf, yExtent, name };
+  // Press-to-inspect selection (controlled + uncontrolled), announced to
+  // assistive tech since the visual flag is presentational.
+  const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
+  const setSelected = (i: number | null) => {
+    setSelectedRaw(i);
+    if (i != null && labels[i] != null) {
+      announceSelection(`${labels[i]}: ${series.map((sr) => `${sr.label} ${formatValue(finite(sr.values[i]))}`).join(", ")}`);
+    }
+  };
+
+  return { tokens, tone, multi, formatValue, colorOf, yExtent, name, selected, setSelected };
 }
 
 // Points for series `sr` across the frame's categorical bands.
@@ -170,6 +187,22 @@ function chartShell(
           hideGrid={props.hideGrid}
           hideAxes={props.hideAxes}
           formatValue={formatValue}
+          selectedBand={ctx.selected}
+          onBandPress={(i) => ctx.setSelected(ctx.selected === i ? null : i)}
+          overlay={(layout) =>
+            ctx.selected != null && layout.band && labels[ctx.selected] != null ? (
+              <ChartValueFlag
+                title={labels[ctx.selected]}
+                rows={series.map((sr, i) => ({
+                  label: multi ? sr.label : undefined,
+                  color: multi ? colorOf(i) : undefined,
+                  value: formatValue(Number.isFinite(sr.values[ctx.selected!]) ? sr.values[ctx.selected!]! : 0),
+                }))}
+                x={layout.band.center(ctx.selected)}
+                plotW={layout.plotW}
+              />
+            ) : null
+          }
         >
           {marks}
         </CartesianFrame>
@@ -217,6 +250,20 @@ export function createLineChart(skin: ChartSkin) {
               ));
             })
           : null}
+        {/* Emphasized intersection dots on the inspected category. */}
+        {ctx.selected != null && layout.band
+          ? props.series.map((sr, i) => (
+              <Circle
+                key={`sel${sr.id ?? i}`}
+                cx={layout.band!.center(ctx.selected!)}
+                cy={layout.y(finite(sr.values[ctx.selected!]))}
+                r={4.5}
+                fill={ctx.colorOf(i)}
+                stroke={ctx.tokens.card}
+                strokeWidth={1.5}
+              />
+            ))
+          : null}
       </>
     ));
   };
@@ -259,6 +306,19 @@ export function createAreaChart(skin: ChartSkin) {
                 />
               );
             })}
+            {ctx.selected != null
+              ? props.series.map((sr, i) => (
+                  <Circle
+                    key={`sel${sr.id ?? i}`}
+                    cx={band.center(ctx.selected!)}
+                    cy={layout.y(bands[i][ctx.selected!]?.[1] ?? 0)}
+                    r={4.5}
+                    fill={ctx.colorOf(i)}
+                    stroke={ctx.tokens.card}
+                    strokeWidth={1.5}
+                  />
+                ))
+              : null}
           </>
         );
       }
@@ -285,6 +345,19 @@ export function createAreaChart(skin: ChartSkin) {
               />
             );
           })}
+          {ctx.selected != null && layout.band
+            ? props.series.map((sr, i) => (
+                <Circle
+                  key={`sel${sr.id ?? i}`}
+                  cx={layout.band!.center(ctx.selected!)}
+                  cy={layout.y(finite(sr.values[ctx.selected!]))}
+                  r={4.5}
+                  fill={ctx.colorOf(i)}
+                  stroke={ctx.tokens.card}
+                  strokeWidth={1.5}
+                />
+              ))
+            : null}
         </>
       );
     });

@@ -1,7 +1,9 @@
-import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useState } from "react";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { ChartLegend } from "./chart-legend.js";
+import { ChartValueFlag, announceSelection, DIM_OPACITY } from "./chart-inspect.js";
 
 // Shared Chart shell. The structure (a token-themed bar chart built entirely from
 // View views, no SVG and no CSS grid), the boolean-prop axes (tone + orientation +
@@ -80,6 +82,12 @@ export interface ChartProps {
   compact?: boolean;
   /** Hide the series legend (grouped mode shows one by default). */
   hideLegend?: boolean;
+  /** Press-to-inspect: the selected category index (controlled). Pass null for none. Vertical charts only. */
+  selected?: number | null;
+  /** Press-to-inspect: the initially selected category (uncontrolled). */
+  defaultSelected?: number;
+  /** Fired when a press selects a category (or clears it with null). */
+  onSelect?: (index: number | null) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -166,6 +174,29 @@ export function createChart(skin: ChartSkin) {
     // Per-bar gap by density: gap-1.5 (6) compact, gap-2 (8) default.
     const gap = compact ? 6 : 8;
 
+    // Press-to-inspect (vertical charts): pressing a category toggles its
+    // selection, dims the other categories, and (grouped) flags the values.
+    // The announcement mirrors the flag for assistive tech.
+    const categoryName = (i: number): string =>
+      grouped
+        ? `${labels[i]}: ${series.map((sr) => `${sr.label} ${Number.isFinite(sr.values[i]) ? sr.values[i] : 0}`).join(", ")}`
+        : `${data[i]?.label}: ${data[i]?.value}`;
+    const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
+    const setSelected = (i: number | null) => {
+      setSelectedRaw(i);
+      if (i != null) announceSelection(categoryName(i));
+    };
+    const toggle = (i: number) => setSelected(selected === i ? null : i);
+    const dimmed = (i: number): number => (selected != null && selected !== i ? DIM_OPACITY : 1);
+    // The flag positions against the measured plot row (flex columns have no
+    // px coordinates until layout).
+    const [plotWidth, setPlotWidth] = useState(0);
+    const count = grouped ? labels.length : data.length;
+    const columnCenter = (i: number): number => {
+      const colW = count > 0 ? (plotWidth - gap * (count - 1)) / count : 0;
+      return i * (colW + gap) + colW / 2;
+    };
+
     // Summarize the chart for assistive tech: the title if there is one, else a
     // generic name. The container is grouped (role="group") so a screen reader
     // announces the summary and then walks into the per-bar items below.
@@ -192,37 +223,46 @@ export function createChart(skin: ChartSkin) {
           // column, colored by the chart-1..8 tokens in fixed series order. A
           // 2px gap keeps adjacent fills separable (the dataviz spacer rule).
           <View>
-            <View style={[s.verticalBars, { gap, height: plot }]}>
-              {labels.map((label, i) => {
+            <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
+              {labels.map((label, i) => (
                 // Each category is one accessible item announcing every
-                // series' value ("Mon: Revenue 45, Costs 30").
-                const name = `${label}: ${series
-                  .map((sr) => `${sr.label} ${Number.isFinite(sr.values[i]) ? sr.values[i] : 0}`)
-                  .join(", ")}`;
-                return (
-                  <View
-                    key={i}
-                    accessible
-                    accessibilityRole="image"
-                    role="img"
-                    accessibilityLabel={name}
-                    aria-label={name}
-                    style={s.verticalColumn}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2 }}>
-                      {series.map((sr, j) => (
-                        <View
-                          key={sr.id ?? j}
-                          style={[
-                            s.verticalBar(s.seriesFill(tokens, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
-                            { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
-                          ]}
-                        />
-                      ))}
-                    </View>
+                // series' value ("Mon: Revenue 45, Costs 30"); pressing it
+                // toggles the inspection flag.
+                <Pressable
+                  key={i}
+                  accessible
+                  accessibilityRole="image"
+                  role="img"
+                  accessibilityLabel={categoryName(i)}
+                  aria-label={categoryName(i)}
+                  onPress={() => toggle(i)}
+                  style={s.verticalColumn}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2, opacity: dimmed(i) }}>
+                    {series.map((sr, j) => (
+                      <View
+                        key={sr.id ?? j}
+                        style={[
+                          s.verticalBar(s.seriesFill(tokens, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
+                          { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
+                        ]}
+                      />
+                    ))}
                   </View>
-                );
-              })}
+                </Pressable>
+              ))}
+              {selected != null && labels[selected] != null ? (
+                <ChartValueFlag
+                  title={labels[selected]}
+                  rows={series.map((sr, j) => ({
+                    label: sr.label,
+                    color: s.seriesFill(tokens, j),
+                    value: String(Number.isFinite(sr.values[selected]) ? sr.values[selected] : 0),
+                  }))}
+                  x={columnCenter(selected)}
+                  plotW={plotWidth}
+                />
+              ) : null}
             </View>
             {/* Baseline under the clusters. */}
             <View style={s.baseline(tokens)} />
@@ -272,18 +312,22 @@ export function createChart(skin: ChartSkin) {
                 // The value is also rendered as visible Text above the bar so the
                 // magnitude is present in both the UI and the accessibility tree
                 // (it was previously only shown in the horizontal orientation).
-                <View
+                // Pressing a column focuses it (the others dim).
+                <Pressable
                   key={d.id ?? i}
                   accessible
                   accessibilityRole="image"
                   role="img"
                   accessibilityLabel={`${d.label}: ${d.value}`}
                   aria-label={`${d.label}: ${d.value}`}
+                  onPress={() => toggle(i)}
                   style={s.verticalColumn}
                 >
-                  <Text style={s.verticalValue(tokens)}>{d.value}</Text>
-                  <View style={s.verticalBar(fill, lengthPx(d.value), skin.barRadius)} />
-                </View>
+                  <View style={{ opacity: dimmed(i) }}>
+                    <Text style={s.verticalValue(tokens)}>{d.value}</Text>
+                    <View style={s.verticalBar(fill, lengthPx(d.value), skin.barRadius)} />
+                  </View>
+                </Pressable>
               ))}
             </View>
             {/* Baseline under the bars. */}

@@ -69,6 +69,22 @@ Bars, lines, areas, stacked bars, gauges, heatmaps. One token-themed family with
 />
 ```
 
+### Press to inspect
+
+```tsx
+<LineChart
+  title="Signups"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  series={[
+    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
+    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+  ]}
+  curved
+  defaultSelected={4}
+  style={{ maxWidth: 560 }}
+/>
+```
+
 ### Chart type - scatter
 
 ```tsx

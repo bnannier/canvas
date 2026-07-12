@@ -1,5 +1,5 @@
-import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup } from "@testing-library/react";
+import { describe, it, expect, afterEach, mock } from "bun:test";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Chart, LineChart, AreaChart, PieChart, ScatterPlot } from "../src/organisms/charts/charts.tsx";
@@ -20,6 +20,12 @@ const twoSeries = [
 ];
 
 const plotName = (c: HTMLElement) => c.querySelector('[role="img"]')?.getAttribute("aria-label") ?? "";
+
+// Two-category variant for grouped-Chart tests (values align with 2 labels).
+const twoSeriesShort = [
+  { label: "Web", values: [120, 180] },
+  { label: "Mobile", values: [60, 90] },
+];
 
 describe("LineChart", () => {
   it("folds every series' data into the plot's accessible name", () => {
@@ -70,17 +76,17 @@ describe("LineChart", () => {
 
 describe("Chart (grouped bars)", () => {
   it("announces each category as one item carrying every series' value", () => {
-    const { container } = ui(<Chart title="Revenue vs costs" labels={["Q1", "Q2"]} series={twoSeries} />);
+    const { container } = ui(<Chart title="Revenue vs costs" labels={["Q1", "Q2"]} series={twoSeriesShort} />);
     const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
     expect(items).toContain("Q1: Web 120, Mobile 60");
     expect(items).toContain("Q2: Web 180, Mobile 90");
   });
 
   it("shows the series legend, suppressible with hideLegend", () => {
-    const withLegend = ui(<Chart labels={["Q1"]} series={twoSeries} />);
+    const withLegend = ui(<Chart labels={["Q1"]} series={twoSeriesShort.map((sr) => ({ ...sr, values: sr.values.slice(0, 1) }))} />);
     expect(withLegend.container.textContent).toContain("Mobile");
     cleanup();
-    const without = ui(<Chart hideLegend labels={["Q1"]} series={twoSeries} />);
+    const without = ui(<Chart hideLegend labels={["Q1"]} series={twoSeriesShort.map((sr) => ({ ...sr, values: sr.values.slice(0, 1) }))} />);
     expect(without.container.textContent ?? "").not.toContain("Mobile");
   });
 
@@ -89,6 +95,55 @@ describe("Chart (grouped bars)", () => {
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Signups chart");
     const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
     expect(items).toContain("Mon: 3");
+  });
+});
+
+describe("press-to-inspect", () => {
+  it("a bare grouped Chart is inspectable out of the box (uncontrolled)", () => {
+    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} />);
+    const q1 = Array.from(container.querySelectorAll('[role="img"]')).find(
+      (el) => el.getAttribute("aria-label") === "Q1: Web 120, Mobile 60",
+    ) as HTMLElement;
+    fireEvent.click(q1);
+    // The flag repeats the values as visible text (the legend has the labels
+    // but not values, so a value appearing is the flag).
+    expect(container.textContent).toContain("120");
+    // Pressing again clears the selection and the flag.
+    fireEvent.click(q1);
+    expect(container.textContent ?? "").not.toContain("120");
+  });
+
+  it("fires onSelect with the category index, and null on toggle-off", () => {
+    const onSelect = mock((_: number | null) => {});
+    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} onSelect={onSelect} />);
+    const q2 = Array.from(container.querySelectorAll('[role="img"]')).find(
+      (el) => el.getAttribute("aria-label")?.startsWith("Q2"),
+    ) as HTMLElement;
+    fireEvent.click(q2);
+    expect(onSelect).toHaveBeenCalledWith(1);
+    fireEvent.click(q2);
+    expect(onSelect).toHaveBeenCalledWith(null);
+  });
+
+  it("defaultSelected renders the grouped flag without any press", () => {
+    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} defaultSelected={0} />);
+    expect(container.textContent).toContain("60");
+  });
+
+  it("a controlled donut swaps its center to the selected slice", () => {
+    const { container } = ui(
+      <PieChart
+        donut
+        label="Traffic"
+        selected={1}
+        slices={[
+          { label: "Direct", value: 60 },
+          { label: "Search", value: 40 },
+        ]}
+      />,
+    );
+    expect(container.textContent).toContain("40%");
+    expect(container.textContent).toContain("Search");
   });
 });
 

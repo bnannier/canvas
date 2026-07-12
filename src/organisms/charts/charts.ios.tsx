@@ -12,6 +12,6 @@ export const AreaChart = createAreaChart(iosSkin);
 export const ScatterPlot = createScatterPlot(iosSkin);
 export type { ChartProps, ChartDatum } from "./charts.shared.js";
 export type { LineChartProps, AreaChartProps, ChartSeries } from "./charts-lines.js";
-export type { ScatterPlotProps, ScatterSeries, ScatterPoint } from "./charts-scatter.js";
+export type { ScatterPlotProps, ScatterSeries, ScatterPoint, ScatterSelection } from "./charts-scatter.js";
 export { StackedBar, Gauge, Heatmap, PieChart } from "./charts-viz.js";
 export type { StackedBarProps, StackedSegment, GaugeProps, HeatmapProps, PieChartProps } from "./charts-viz.js";

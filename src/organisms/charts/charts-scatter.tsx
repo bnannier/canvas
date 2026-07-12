@@ -1,10 +1,11 @@
 import { Circle } from "react-native-svg";
-import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { type ChartSkin } from "./charts.shared.js";
 import { CartesianFrame, chartRootWidth } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
+import { ChartValueFlag, announceSelection, DIM_OPACITY } from "./chart-inspect.js";
 import { formatCompact } from "./chart-math.js";
 
 // ScatterPlot: numeric x/y point clouds through the shared CartesianFrame
@@ -27,6 +28,12 @@ export interface ScatterSeries {
   points: ScatterPoint[];
 }
 
+/** A scatter selection addresses one point: series index + point index. */
+export interface ScatterSelection {
+  series: number;
+  point: number;
+}
+
 export interface ScatterPlotProps {
   /** The point clouds; colors follow the chart-1..8 tokens in fixed order. */
   series: ScatterSeries[];
@@ -43,6 +50,12 @@ export interface ScatterPlotProps {
   hideAxes?: boolean;
   /** Formats tick labels and accessible values (data formatting, not styling). */
   formatValue?: (v: number) => string;
+  /** Press-to-inspect: the selected point (controlled). Pass null for none. */
+  selected?: ScatterSelection | null;
+  /** Press-to-inspect: the initially selected point (uncontrolled). */
+  defaultSelected?: ScatterSelection;
+  /** Fired when a press selects a point (or clears it with null). */
+  onSelect?: (selection: ScatterSelection | null) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -89,6 +102,27 @@ export function createScatterPlot(skin: ChartSkin) {
     const xDomain: [number, number] = xs.length ? [Math.min(...xs), Math.max(...xs)] : [0, 1];
     const yExtent: [number, number] = ys.length ? [Math.min(...ys), Math.max(...ys)] : [0, 1];
 
+    // Press-to-inspect: pressing a point flags its coordinates and dims the
+    // rest; announced for assistive tech.
+    const [selected, setSelectedRaw] = useControllableState<ScatterSelection | null>(
+      props.selected,
+      props.defaultSelected ?? null,
+      props.onSelect,
+    );
+    const pointText = (sel: ScatterSelection): string => {
+      const p = series[sel.series]?.points[sel.point];
+      if (!p) return "";
+      return `${p.label ?? series[sel.series].label}: (${formatValue(Number.isFinite(p.x) ? p.x : 0)}, ${formatValue(Number.isFinite(p.y) ? p.y : 0)})`;
+    };
+    const setSelected = (sel: ScatterSelection | null) => {
+      setSelectedRaw(sel);
+      if (sel != null) announceSelection(pointText(sel));
+    };
+    const toggle = (sel: ScatterSelection) =>
+      setSelected(selected != null && selected.series === sel.series && selected.point === sel.point ? null : sel);
+    const isSelected = (i: number, j: number) => selected != null && selected.series === i && selected.point === j;
+    const selectedPoint = selected != null ? series[selected.series]?.points[selected.point] : undefined;
+
     // The plot's accessible name carries every point, series-prefixed
     // ("Trial A: (1, 2.4), (2, 3.1); Trial B: ...").
     const name = series
@@ -124,6 +158,21 @@ export function createScatterPlot(skin: ChartSkin) {
             hideGrid={props.hideGrid}
             hideAxes={props.hideAxes}
             formatValue={formatValue}
+            overlay={(layout) =>
+              selected && selectedPoint && Number.isFinite(selectedPoint.x) && Number.isFinite(selectedPoint.y) ? (
+                <ChartValueFlag
+                  title={selectedPoint.label ?? series[selected.series]?.label}
+                  rows={[
+                    {
+                      color: multi ? colorOf(selected.series) : undefined,
+                      value: `(${formatValue(selectedPoint.x)}, ${formatValue(selectedPoint.y)})`,
+                    },
+                  ]}
+                  x={layout.x(selectedPoint.x)}
+                  plotW={layout.plotW}
+                />
+              ) : null
+            }
           >
             {(layout) => (
               <>
@@ -137,6 +186,7 @@ export function createScatterPlot(skin: ChartSkin) {
                         cy={layout.y(p.y)}
                         r={4}
                         fill={color}
+                        fillOpacity={selected != null && !isSelected(i, j) ? DIM_OPACITY : 1}
                         // A surface ring keeps overlapping points separable.
                         stroke={tokens.card}
                         strokeWidth={1.5}
@@ -144,6 +194,32 @@ export function createScatterPlot(skin: ChartSkin) {
                     ) : null,
                   );
                 })}
+                {/* Selection ring under the hit layer. */}
+                {selectedPoint && Number.isFinite(selectedPoint.x) && Number.isFinite(selectedPoint.y) ? (
+                  <Circle
+                    cx={layout.x(selectedPoint.x)}
+                    cy={layout.y(selectedPoint.y)}
+                    r={7}
+                    fill="none"
+                    stroke={colorOf(selected!.series)}
+                    strokeWidth={2}
+                  />
+                ) : null}
+                {/* Generous transparent hit targets on top (r=4 marks are too small to press). */}
+                {series.map((sr, i) =>
+                  sr.points.map((p, j) =>
+                    Number.isFinite(p.x) && Number.isFinite(p.y) ? (
+                      <Circle
+                        key={`hit${sr.id ?? `s${i}`}p${j}`}
+                        cx={layout.x(p.x)}
+                        cy={layout.y(p.y)}
+                        r={12}
+                        fill="transparent"
+                        onPress={() => toggle({ series: i, point: j })}
+                      />
+                    ) : null,
+                  ),
+                )}
               </>
             )}
           </CartesianFrame>

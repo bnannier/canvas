@@ -1,7 +1,8 @@
 import Svg, { Circle, Path } from "react-native-svg";
-import { View, Text, useTheme, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useControllableState, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { seriesFill } from "./charts.styles.js";
 import { ChartLegend } from "./chart-legend.js";
+import { announceSelection, DIM_OPACITY } from "./chart-inspect.js";
 import { arcPath, formatCompact, pieLayout } from "./chart-math.js";
 
 // Additional chart types that share the Chart family's token-driven, View/SVG
@@ -217,13 +218,20 @@ export interface PieChartProps {
   hideLegend?: boolean;
   /** Smaller diameter. */
   compact?: boolean;
+  /** Press-to-inspect: the selected slice index (controlled). Pass null for none. */
+  selected?: number | null;
+  /** Press-to-inspect: the initially selected slice (uncontrolled). */
+  defaultSelected?: number;
+  /** Fired when a press selects a slice (or clears it with null). */
+  onSelect?: (index: number | null) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
   style?: StyleProp<ViewStyle>;
 }
 
-export function PieChart({ slices, label, donut, hideLegend, compact, testID, style }: PieChartProps) {
+export function PieChart(props: PieChartProps) {
+  const { slices, label, donut, hideLegend, compact, testID, style } = props;
   const { tokens } = useTheme();
   const clean = slices.map((sl) => (Number.isFinite(sl.value) && sl.value > 0 ? sl.value : 0));
   const rawTotal = clean.reduce((a, b) => a + b, 0);
@@ -242,6 +250,15 @@ export function PieChart({ slices, label, donut, hideLegend, compact, testID, st
   const rInner = donut ? r * 0.62 : 0;
   const layout = pieLayout(clean);
 
+  // Press-to-inspect: pressing a slice dims the others; a donut swaps its
+  // center readout to the selected slice. Announced for assistive tech.
+  const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
+  const setSelected = (i: number | null) => {
+    setSelectedRaw(i);
+    if (i != null && slices[i]) announceSelection(`${slices[i].label}: ${pctOf(slices[i].value)}%`);
+  };
+  const toggle = (i: number) => setSelected(selected === i ? null : i);
+
   // Same naming formula as StackedBar: the composition lives in the accessible
   // name, and the img role sits on the plot while the legend renders (hoisting
   // to the root when the legend is hidden).
@@ -258,19 +275,26 @@ export function PieChart({ slices, label, donut, hideLegend, compact, testID, st
                 key={i}
                 d={arcPath(r, r, r - 1, rInner, slice.startAngle, slice.endAngle)}
                 fill={seriesFill(tokens, i)}
+                fillOpacity={selected != null && selected !== i ? DIM_OPACITY : 1}
                 // A hairline of the card surface keeps adjacent fills separable.
                 stroke={tokens.card}
                 strokeWidth={2}
+                onPress={() => toggle(i)}
               />
             ) : null,
           )}
         </Svg>
         {donut ? (
+          // The center reads the total, or the selected slice while inspecting.
           <View style={{ alignItems: "center" }}>
             <Text style={{ fontSize: compact ? 20 : 24, lineHeight: compact ? 28 : 32, fontWeight: "600", color: tokens["card-foreground"] }}>
-              {formatCompact(rawTotal)}
+              {selected != null && slices[selected] ? `${pctOf(slices[selected].value)}%` : formatCompact(rawTotal)}
             </Text>
-            {label ? <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{label}</Text> : null}
+            {(selected != null && slices[selected] ? slices[selected].label : label) ? (
+              <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>
+                {selected != null && slices[selected] ? slices[selected].label : label}
+              </Text>
+            ) : null}
           </View>
         ) : null}
       </View>

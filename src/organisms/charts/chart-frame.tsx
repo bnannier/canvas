@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import Svg, { Line } from "react-native-svg";
+import Svg, { Line, Rect } from "react-native-svg";
 import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { bandScale, estimateTextWidth, formatCompact, linearScale, niceTicks, type Band } from "./chart-math.js";
 
@@ -48,6 +48,10 @@ export interface CartesianFrameProps {
   children: (layout: CartesianLayout) => ReactNode;
   /** Optional RN layer absolutely positioned over the plot (tooltips, flags). */
   overlay?: (layout: CartesianLayout) => ReactNode;
+  /** Press-to-inspect: a transparent hit band per category, on top of the marks. */
+  onBandPress?: (index: number) => void;
+  /** Draw the selection guide through this category band. */
+  selectedBand?: number | null;
 }
 
 // Space above the plot so the top tick's label (centered on the top gridline)
@@ -60,7 +64,7 @@ const LABEL_SIZE = 12;
 const LABEL_LINE = 16;
 
 export function CartesianFrame(props: CartesianFrameProps) {
-  const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay } = props;
+  const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay, onBandPress, selectedBand } = props;
   const { tokens } = useTheme();
   const [width, setWidth] = useState(0);
 
@@ -141,7 +145,25 @@ export function CartesianFrame(props: CartesianFrameProps) {
                   : null}
                 {/* Baseline hairline, kept even when the grid is hidden. */}
                 {!hideAxes ? <Line x1={0} y1={plotH - 0.5} x2={plotW} y2={plotH - 0.5} stroke={tokens.border} strokeWidth={1} /> : null}
+                {/* Selection guide through the inspected category. */}
+                {selectedBand != null && band ? (
+                  <Line x1={band.center(selectedBand)} y1={0} x2={band.center(selectedBand)} y2={plotH} stroke={tokens.border} strokeWidth={1} />
+                ) : null}
                 {children(layout)}
+                {/* Press-to-inspect hit bands sit on top of the marks. */}
+                {onBandPress && band && xLabels
+                  ? xLabels.map((_, i) => (
+                      <Rect
+                        key={`hit${i}`}
+                        x={band.position(i)}
+                        y={0}
+                        width={band.step}
+                        height={plotH}
+                        fill="transparent"
+                        onPress={() => onBandPress(i)}
+                      />
+                    ))
+                  : null}
               </Svg>
               {overlay ? overlay(layout) : null}
             </View>
