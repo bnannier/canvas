@@ -69,6 +69,23 @@ Bars, lines, areas, stacked bars, gauges, heatmaps. One token-themed family with
 />
 ```
 
+### Chart type - pie
+
+```tsx
+<Card padded style={{ maxWidth: 280 }}>
+  <PieChart
+    donut
+    label="Traffic"
+    slices={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Referral", value: 12 }
+    ]}
+  />
+</Card>
+```
+
 ### Chart type - stacked
 
 ```tsx
@@ -195,6 +212,48 @@ Bars, lines, areas, stacked bars, gauges, heatmaps. One token-themed family with
     <View style={{ width: "12%", backgroundColor: "#f43f5e" }} />
   </View>
 </View>
+```
+
+### Pie
+
+**Do** — Keep slices to a handful and fold the tail into an "Other" slice; the legend carries exact shares.
+
+```tsx
+<Card padded style={{ maxWidth: 280 }}>
+  <PieChart
+    label="Traffic"
+    slices={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Other", value: 12 }
+    ]}
+  />
+</Card>
+```
+
+**Don't** — A dozen sliver slices cycle the palette and become unreadable; nothing is comparable at a glance.
+
+```tsx
+<Card padded style={{ maxWidth: 280 }}>
+  <PieChart
+    label="Traffic"
+    slices={[
+      { label: "Direct", value: 22 },
+      { label: "Organic", value: 18 },
+      { label: "Social", value: 11 },
+      { label: "Referral", value: 9 },
+      { label: "Email", value: 8 },
+      { label: "Paid", value: 7 },
+      { label: "Video", value: 6 },
+      { label: "Affiliates", value: 6 },
+      { label: "Push", value: 5 },
+      { label: "SMS", value: 4 },
+      { label: "Podcasts", value: 2 },
+      { label: "Misc", value: 2 }
+    ]}
+  />
+</Card>
 ```
 
 ### Gauge

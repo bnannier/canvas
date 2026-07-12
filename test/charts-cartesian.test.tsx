@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Chart, LineChart, AreaChart } from "../src/organisms/charts/charts.tsx";
+import { Chart, LineChart, AreaChart, PieChart } from "../src/organisms/charts/charts.tsx";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -89,6 +89,37 @@ describe("Chart (grouped bars)", () => {
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Signups chart");
     const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
     expect(items).toContain("Mon: 3");
+  });
+});
+
+describe("PieChart", () => {
+  const slices = [
+    { label: "Direct", value: 60 },
+    { label: "Search", value: 40 },
+  ];
+
+  it("folds the composition into the plot's accessible name as percentages", () => {
+    const { container } = ui(<PieChart label="Traffic" slices={slices} />);
+    expect(plotName(container)).toBe("Traffic: Direct 60%, Search 40%");
+  });
+
+  it("hoists the img role to the root when the legend is hidden", () => {
+    const { container } = ui(<PieChart hideLegend label="Traffic" slices={slices} />);
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.getAttribute("aria-label")).toContain("Traffic: Direct 60%");
+    expect(container.textContent ?? "").not.toContain("Direct");
+  });
+
+  it("legend lists each slice with its percentage, reachable as text", () => {
+    const { container } = ui(<PieChart label="Traffic" slices={slices} />);
+    expect(container.textContent).toContain("Direct");
+    expect(container.textContent).toContain("60%");
+  });
+
+  it("donut centers the compact total and the label", () => {
+    const { container } = ui(<PieChart donut label="Traffic" slices={[{ label: "A", value: 1200 }, { label: "B", value: 300 }]} />);
+    expect(container.textContent).toContain("1.5k");
+    expect(container.textContent).toContain("Traffic");
   });
 });
 

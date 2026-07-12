@@ -3,12 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column, Gauge } = scope;
+  const { Card, PieChart } = scope;
   return (
-<Card padded style={{ maxWidth: 200 }}>
-  <Column alignCenter>
-    <Gauge value={72} label="Uptime" />
-  </Column>
+<Card padded style={{ maxWidth: 280 }}>
+  <PieChart
+    label="Traffic"
+    slices={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Other", value: 12 }
+    ]}
+  />
 </Card>
   );
 }

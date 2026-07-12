@@ -3,10 +3,26 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View } = scope;
+  const { Card, PieChart } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: "center" }}>
-  <View style={{ borderRadius: 9999, borderWidth: 8, borderColor: tokens.primary, height: 120, width: 120 }} />
-</View>
+<Card padded style={{ maxWidth: 280 }}>
+  <PieChart
+    label="Traffic"
+    slices={[
+      { label: "Direct", value: 22 },
+      { label: "Organic", value: 18 },
+      { label: "Social", value: 11 },
+      { label: "Referral", value: 9 },
+      { label: "Email", value: 8 },
+      { label: "Paid", value: 7 },
+      { label: "Video", value: 6 },
+      { label: "Affiliates", value: 6 },
+      { label: "Push", value: 5 },
+      { label: "SMS", value: 4 },
+      { label: "Podcasts", value: 2 },
+      { label: "Misc", value: 2 }
+    ]}
+  />
+</Card>
   );
 }

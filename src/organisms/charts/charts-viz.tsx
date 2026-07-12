@@ -1,7 +1,8 @@
-import Svg, { Circle } from "react-native-svg";
+import Svg, { Circle, Path } from "react-native-svg";
 import { View, Text, useTheme, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { seriesFill } from "./charts.styles.js";
 import { ChartLegend } from "./chart-legend.js";
+import { arcPath, formatCompact, pieLayout } from "./chart-math.js";
 
 // Additional chart types that share the Chart family's token-driven, View/SVG
 // look, so no call site hand-composes a stacked bar, a gauge ring, or a heatmap
@@ -195,6 +196,92 @@ export function Heatmap({ values, label, hideLegend, testID, style }: HeatmapPro
           {[0.2, 0.4, 0.6, 0.8, 1].map((v, i) => cell(v, 12, 100 + i))}
           <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>More</Text>
         </View>
+      )}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PieChart: proportional composition as arc slices (donut with the total and a
+// label centered inside), colored by the chart-1..8 tokens in fixed order,
+// with the StackedBar-style legend identifying each slice.
+
+export interface PieChartProps {
+  /** The slices, in order; each takes its share of the circle. */
+  slices: StackedSegment[];
+  /** What the pie measures (e.g. "Traffic sources"); leads the accessible name. */
+  label?: string;
+  /** Draw an annular ring with the total and label centered inside. */
+  donut?: boolean;
+  /** Hide the legend (the labelled dots beside percentages). */
+  hideLegend?: boolean;
+  /** Smaller diameter. */
+  compact?: boolean;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
+  /** For sizing/composition only. */
+  style?: StyleProp<ViewStyle>;
+}
+
+export function PieChart({ slices, label, donut, hideLegend, compact, testID, style }: PieChartProps) {
+  const { tokens } = useTheme();
+  const clean = slices.map((sl) => (Number.isFinite(sl.value) && sl.value > 0 ? sl.value : 0));
+  const rawTotal = clean.reduce((a, b) => a + b, 0);
+  const total = Math.max(1, rawTotal);
+  const pctOf = (v: number) => Math.round(((Number.isFinite(v) && v > 0 ? v : 0) / total) * 100);
+
+  devWarn(slices.length === 0, "[canvas] <PieChart />: `slices` is empty; the chart renders empty.");
+  devWarn(slices.length > 0 && rawTotal <= 0, "[canvas] <PieChart />: all slice values are zero; the chart renders empty.");
+  devWarn(
+    slices.length > 8,
+    "[canvas] <PieChart />: more than 8 slices cycles the series palette; fold small slices into an “Other” slice.",
+  );
+
+  const size = compact ? 120 : 160;
+  const r = size / 2;
+  const rInner = donut ? r * 0.62 : 0;
+  const layout = pieLayout(clean);
+
+  // Same naming formula as StackedBar: the composition lives in the accessible
+  // name, and the img role sits on the plot while the legend renders (hoisting
+  // to the root when the legend is hidden).
+  const name = `${label ?? "Pie chart"}: ${slices.map((sl) => `${sl.label} ${pctOf(sl.value)}%`).join(", ")}`;
+  const img = { accessibilityRole: "image", accessibilityLabel: name, "aria-label": name } as const;
+
+  return (
+    <View testID={testID} style={style} {...(hideLegend ? img : {})}>
+      <View {...(hideLegend ? {} : img)} style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+        <Svg width={size} height={size} style={{ position: "absolute" }}>
+          {layout.map((slice, i) =>
+            slice.fraction > 0 ? (
+              <Path
+                key={i}
+                d={arcPath(r, r, r - 1, rInner, slice.startAngle, slice.endAngle)}
+                fill={seriesFill(tokens, i)}
+                // A hairline of the card surface keeps adjacent fills separable.
+                stroke={tokens.card}
+                strokeWidth={2}
+              />
+            ) : null,
+          )}
+        </Svg>
+        {donut ? (
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: compact ? 20 : 24, lineHeight: compact ? 28 : 32, fontWeight: "600", color: tokens["card-foreground"] }}>
+              {formatCompact(rawTotal)}
+            </Text>
+            {label ? <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{label}</Text> : null}
+          </View>
+        ) : null}
+      </View>
+      {hideLegend ? null : (
+        <ChartLegend
+          items={slices.map((sl, i) => ({
+            label: sl.label,
+            color: seriesFill(tokens, i),
+            detail: `${pctOf(sl.value)}%`,
+          }))}
+        />
       )}
     </View>
   );

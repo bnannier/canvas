@@ -85,6 +85,7 @@ import {
   Heatmap,
   LineChart,
   AreaChart,
+  PieChart,
 } from "@olympusoss/canvas";
 
 // Style helpers an example fence can reference when it styles a raw View/Text.
@@ -198,4 +199,5 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   Heatmap,
   LineChart,
   AreaChart,
+  PieChart,
 };

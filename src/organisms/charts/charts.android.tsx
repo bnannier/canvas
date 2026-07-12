@@ -10,5 +10,5 @@ export const LineChart = createLineChart(androidSkin);
 export const AreaChart = createAreaChart(androidSkin);
 export type { ChartProps, ChartDatum } from "./charts.shared.js";
 export type { LineChartProps, AreaChartProps, ChartSeries } from "./charts-lines.js";
-export { StackedBar, Gauge, Heatmap } from "./charts-viz.js";
-export type { StackedBarProps, StackedSegment, GaugeProps, HeatmapProps } from "./charts-viz.js";
+export { StackedBar, Gauge, Heatmap, PieChart } from "./charts-viz.js";
+export type { StackedBarProps, StackedSegment, GaugeProps, HeatmapProps, PieChartProps } from "./charts-viz.js";
