@@ -8,13 +8,11 @@ import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
-import { TabOverflowMenu } from "./tab-overflow-menu";
-import { ThemeToggles } from "./theme-toggles";
 import { Cosmos } from "../brand/cosmos";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
-import { MOBILE_TABS, nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug } from "../data/nav";
+import { MOBILE_TABS, sectionFor } from "../data/nav";
 
 // The one adaptive navigation component. On the web it is the sidebar + topbar shell at
 // desktop widths, and a mobile iOS-style shell (bottom tab bar + nav bar + category
@@ -132,17 +130,6 @@ function WebNav() {
               onMenu={() => setMenuOpen(true)}
             />
           </View>
-          {/* The drill-down sheet fills this content wrapper (above the content, below the
-              floating top nav via its zIndex), so the in-flow bottom TabBar sibling stays on
-              top and visible while the sheet is open. */}
-          <TabOverflowMenu
-            visible={menuOpen}
-            onClose={() => setMenuOpen(false)}
-            menu={nativeMenuFor(section, getActiveGroup(pathname))}
-            activeGroup={getActiveGroup(pathname)}
-            activeSlug={getActiveSlug(pathname)}
-            footer={<ThemeToggles />}
-          />
         </View>
         <TabBar
           items={[
@@ -166,6 +153,10 @@ function WebNav() {
           }}
           bottomInset={insets.bottom}
         />
+        {/* The hamburger opens the responsive Sidebar as a start-edge navigation drawer — the
+            same kit Sidebar the desktop rail uses, drilled down for the phone. Its Modal covers
+            the bars while open (a full-takeover side drawer). */}
+        <Sidebar responsive open={menuOpen} onOpenChange={setMenuOpen} onNavigate={() => setMenuOpen(false)} />
         <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
       </SafeAreaView>
     );

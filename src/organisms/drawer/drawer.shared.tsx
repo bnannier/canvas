@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { BackHandler, KeyboardAvoidingView, Modal, Platform } from "react-native";
-import { Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Animated, BackHandler, I18nManager, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
+import { Pressable, View, useTheme, useReducedMotion, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaView } from "../../style/safe-area.js";
 import { Button } from "../../atoms/button/button.js";
 import * as s from "./drawer.styles.js";
@@ -102,6 +102,43 @@ export function createDrawer(skin: DrawerSkin) {
       return () => sub.remove();
     }, [open, setOpen]);
 
+    // Side edges (left/right) SLIDE via a manual translateX + scrim fade: RN Modal's
+    // animationType can only slide vertically ("slide" rises from the bottom), so a start-edge
+    // drawer would otherwise just fade in. Keep the Modal mounted through the exit so the
+    // slide-out is visible, then unmount. The BOTTOM sheet keeps RN Modal's native slide.
+    const isSide = edge !== "bottom";
+    const reduced = useReducedMotion();
+    const [mounted, setMounted] = useState(open);
+    const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
+    useEffect(() => {
+      if (!isSide) return;
+      if (open) {
+        setMounted(true);
+        Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
+      } else if (mounted) {
+        Animated.timing(progress, { toValue: 0, duration: reduced ? 0 : 180, useNativeDriver: supportsNativeDriver }).start(({ finished }) => {
+          if (finished) setMounted(false);
+        });
+      }
+    }, [open, mounted, isSide, progress, reduced]);
+
+    // The panel lands on the logical start (left) / end (right) edge via flexbox, which mirrors
+    // under RTL — so the off-screen slide origin follows the PHYSICAL side the panel ends up on.
+    const physicalRight = (edge === "right") !== I18nManager.isRTL;
+    const slideX = progress.interpolate({ inputRange: [0, 1], outputRange: [physicalRight ? width : -width, 0] });
+    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, skin.scrimOpacity] });
+
+    // A no-op press inside the panel keeps taps from falling through to the scrim; it is a pure
+    // event-capture wrapper, hidden from assistive tech. SafeAreaView pads the panel content
+    // clear of the device insets on iOS (a bottom sheet clears the home indicator, a side drawer
+    // the notch/status bar); the opaque `card` fill still reaches the screen edge, and insets
+    // resolve to 0 elsewhere so the layout is unchanged off iOS.
+    const panel = (
+      <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}}>
+        <SafeAreaView style={[skin.panelShape(edge, width, tokens), style]}>{children}</SafeAreaView>
+      </Pressable>
+    );
+
     return (
       <>
         {trigger != null ? (
@@ -110,9 +147,9 @@ export function createDrawer(skin: DrawerSkin) {
           </Button>
         ) : null}
         <Modal
-          visible={open}
+          visible={isSide ? mounted : open}
           transparent
-          animationType={edge === "bottom" ? "slide" : "fade"}
+          animationType={isSide ? "none" : "slide"}
           onRequestClose={() => setOpen(false)}
           testID={testID}
           // Tell assistive tech the content behind this full-screen overlay is
@@ -120,30 +157,26 @@ export function createDrawer(skin: DrawerSkin) {
           // elsewhere). No focus trap is attempted (hard cross-platform).
           accessibilityViewIsModal={true}
         >
-          {/* Lift the panel above the iOS software keyboard so a field inside the
-              drawer (or bottom sheet) stays visible while typing. behavior "padding"
-              shrinks the overlay by the keyboard height on iOS; off iOS no behavior is
-              passed (Android's window handles the resize, web has no soft keyboard), so
-              the wrapper is inert there. */}
+          {/* Lift the panel above the iOS software keyboard so a field inside the drawer stays
+              visible while typing. "padding" shrinks the overlay by the keyboard height on iOS;
+              off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-            {/* The dim backdrop is a dismiss affordance, not a control to land on:
-                keep it out of the focus order and unannounced (matching
-                anchored-overlay's backdrop) so web screen-reader/keyboard users
-                are not stopped on an unlabeled button. Back/escape and the trigger
-                remain the discoverable dismiss paths. */}
-            <Pressable accessible={false} style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
-              {/* A no-op press inside the panel keeps taps from falling through to
-                  the scrim. It is a pure event-capture wrapper, never a control,
-                  so it is hidden from assistive tech to avoid a phantom button. */}
-              <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}}>
-                {/* SafeAreaView pads the panel content clear of the device insets on
-                    iOS: a bottom sheet clears the home indicator, a side drawer clears
-                    the notch/status bar. The opaque `card` fill still reaches the screen
-                    edge (the inset sits as padding inside it); insets resolve to 0
-                    elsewhere, so the layout is unchanged off iOS. */}
-                <SafeAreaView style={[skin.panelShape(edge, width, tokens), style]}>{children}</SafeAreaView>
+            {isSide ? (
+              // The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
+              // layout; the panel rides in on translateX. The dim is a dismiss affordance, not a
+              // control, so it is unannounced (back/escape/trigger remain the discoverable paths).
+              <View style={{ flex: 1 }}>
+                <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
+                <Pressable accessible={false} style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
+                  <Animated.View style={{ transform: [{ translateX: slideX }] }}>{panel}</Animated.View>
+                </Pressable>
+              </View>
+            ) : (
+              // Bottom: RN Modal's native slide + the static scrim dim.
+              <Pressable accessible={false} style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
+                {panel}
               </Pressable>
-            </Pressable>
+            )}
           </KeyboardAvoidingView>
         </Modal>
       </>

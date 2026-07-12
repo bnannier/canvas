@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
-import { TabOverflowMenu } from "./tab-overflow-menu";
+import { Sidebar } from "./sidebar";
 import { ThemeToggles } from "./theme-toggles";
 import { Cosmos } from "../brand/cosmos";
 
@@ -115,10 +115,10 @@ export function NativeHeader() {
 
   // Android: a Material top app bar carrying the appearance controls (Solid/Frost + light/dark)
   // always-visible in the trailing slot, matching the web's top-right controls, followed by the
-  // section-menu hamburger. The hamburger opens the shared overflow sheet (the merged section
-  // list); it is always present so even a menu-less section stays navigable. Appearance no longer
-  // lives in the sheet footer (it was occluded there by the native tab bar and was buried); it is
-  // in the bar now. (iOS hosts appearance in the native header UIMenu; see the branch above.)
+  // section-menu hamburger. The hamburger opens the responsive Sidebar as an M3 start-edge
+  // navigation drawer (the same kit Sidebar the desktop web shows as a rail, drilled down for the
+  // phone). Appearance lives in the bar, not the drawer. (iOS hosts the menu + appearance in the
+  // native header UIMenu; see the branch above.)
   return (
     <>
       <Stack.Screen
@@ -127,22 +127,21 @@ export function NativeHeader() {
           headerRight: () => (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <ThemeToggles compact />
-              <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }}>
+              <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }} accessibilityRole="button" accessibilityLabel="Menu">
                 <Icon menu size={22} />
               </Pressable>
             </View>
           ),
         }}
       />
-      <TabOverflowMenu
-        visible={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        menu={nodes}
-        activeGroup={activeGroup}
-        activeSlug={activeSlug}
-        // Lift the sheet's content above the native Material tab bar (M3 80dp, which now paints
-        // on top of this in-content overlay). Guarded by the gesture inset for taller nav bars.
-        bottomInset={Math.max(96, insets.bottom + 72)}
+      <Sidebar
+        responsive
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        onNavigate={() => setMenuOpen(false)}
+        // Lift the drawer's last rows above the native Material tab bar (M3 80dp, which paints on
+        // top of the drawer's Modal). Guarded by the gesture inset for taller nav bars.
+        drawerContentInsetBottom={Math.max(96, insets.bottom + 72)}
       />
     </>
   );

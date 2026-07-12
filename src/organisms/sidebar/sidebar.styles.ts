@@ -151,6 +151,12 @@ export const webSkin: SidebarSkin = {
   activeDot(tokens) {
     return { width: 4, height: 4, borderRadius: 2, backgroundColor: tokens.primary };
   },
+  drillBackRow(tokens) {
+    return { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderColor: tokens.border, marginBottom: 4 };
+  },
+  drillBackTitle(tokens) {
+    return { fontSize: 15, lineHeight: 20, fontWeight: "600", color: tokens.foreground };
+  },
 };
 
 // =============================================================================
@@ -258,6 +264,12 @@ export const iosSkin: SidebarSkin = {
   activeDot(tokens) {
     return { width: 6, height: 6, borderRadius: 3, backgroundColor: tokens.primary };
   },
+  drillBackRow(tokens) {
+    return { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderColor: tokens.border, marginBottom: 4 };
+  },
+  drillBackTitle(tokens) {
+    return { fontSize: 16, lineHeight: 21, fontWeight: "600", color: tokens.foreground };
+  },
 };
 
 // =============================================================================
@@ -364,5 +376,11 @@ export const androidSkin: SidebarSkin = {
   sectionChevronSize: 18,
   activeDot(tokens) {
     return { width: 6, height: 6, borderRadius: 3, backgroundColor: tokens.primary };
+  },
+  drillBackRow(tokens) {
+    return { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: tokens.border, marginBottom: 4 };
+  },
+  drillBackTitle(tokens) {
+    return { fontSize: 16, lineHeight: 24, fontWeight: "500", color: tokens.foreground };
   },
 };

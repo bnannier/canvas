@@ -1,7 +1,8 @@
-import { Platform } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { Sidebar as KitSidebar, Row, Column, Typography, Button, Icon, type IconName, type SidebarSection } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
+import { ThemeToggles } from "./theme-toggles";
 import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, type NavItem } from "../data/nav";
 
 // The docs sidebar is a THIN ADAPTER over the kit `Sidebar` organism: it maps the docs nav
@@ -21,15 +22,29 @@ export function Sidebar({
   collapsed = false,
   collapsible = false,
   onToggleCollapse,
+  responsive = false,
+  open,
+  onOpenChange,
+  drawerContentInsetBottom,
 }: {
   onNavigate?: () => void;
   collapsed?: boolean;
   collapsible?: boolean;
   onToggleCollapse?: () => void;
+  /** Below the lg breakpoint, render as a start-edge drill-down drawer (opened by `open`). */
+  responsive?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Bottom clearance for the drawer content (e.g. the native tab bar on Android). */
+  drawerContentInsetBottom?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const activeSlug = getActiveSlug(pathname);
+  // At and below lg the sidebar is the drill-down drawer; the drawer footer hosts the appearance
+  // toggles on mobile-web (the old bottom-sheet footer's home), matching the Android header bar.
+  const { width } = useWindowDimensions();
+  const narrow = width > 0 && width <= 1024;
 
   // Overview is pinned (no header); Tokens is pinned with its heading; the category groups
   // are collapsible accordion sections (the kit auto-opens the one holding the active page).
@@ -48,6 +63,10 @@ export function Sidebar({
       collapsed={collapsed}
       collapsible={collapsible}
       onToggleCollapse={onToggleCollapse}
+      responsive={responsive}
+      open={open}
+      onOpenChange={onOpenChange}
+      drawerContentInsetBottom={drawerContentInsetBottom}
       onSelect={(item) => {
         if (item.href) router.push(item.href as never);
         onNavigate?.();
@@ -68,17 +87,20 @@ export function Sidebar({
         )
       }
       footer={
-        // /compare is a web-only QA harness (reference imagery); on native it redirects home,
-        // so the link is surfaced only on web to avoid a dead end. Icon-only in the rail.
-        Platform.OS === "web" ? (
-          collapsed ? (
-            <Button ghost icon small accessibilityLabel={COMPARE_ITEM.label} iconLeft={<Icon gitCompare size={16} />} onPress={() => router.push(COMPARE_ITEM.href as never)} />
-          ) : (
-            <Button ghost block small iconLeft={<Icon gitCompare size={16} />} onPress={() => router.push(COMPARE_ITEM.href as never)}>
-              {COMPARE_ITEM.label}
-            </Button>
-          )
-        ) : undefined
+        Platform.OS !== "web" ? (
+          // Native: appearance lives in the header bar, and /compare redirects home — no footer.
+          undefined
+        ) : narrow ? (
+          // Mobile-web drawer: the appearance toggles (their old bottom-sheet-footer home).
+          <ThemeToggles />
+        ) : // Desktop rail: /compare is a web-only QA harness; surface it only on web. Icon-only in the rail.
+        collapsed ? (
+          <Button ghost icon small accessibilityLabel={COMPARE_ITEM.label} iconLeft={<Icon gitCompare size={16} />} onPress={() => router.push(COMPARE_ITEM.href as never)} />
+        ) : (
+          <Button ghost block small iconLeft={<Icon gitCompare size={16} />} onPress={() => router.push(COMPARE_ITEM.href as never)}>
+            {COMPARE_ITEM.label}
+          </Button>
+        )
       }
       sections={sections}
     />

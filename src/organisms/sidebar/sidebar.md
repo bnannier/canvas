@@ -2,6 +2,8 @@
 
 Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this page is a thin adapter over this very `Sidebar` component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.
 
+Add `responsive` to make it adapt across breakpoints: it stays the accordion rail on desktop, and at and below the `lg` breakpoint (1024px) it becomes a start-edge (left, RTL-aware) **navigation drawer** that drills through the same `sections` one level at a time (tap a group to slide in to its rows, back to return). Drive the drawer's open state with `open` / `onOpenChange` from your own hamburger button; the `header` and `footer` slots pin above and below the drill-down, just as in the rail. (This page's own left nav does exactly this: an accordion rail here, a drill-down drawer on a phone.)
+
 ## Usage
 
 ```tsx

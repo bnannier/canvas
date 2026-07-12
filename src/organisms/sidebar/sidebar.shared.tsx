@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Animated, type GestureResponderEvent } from "react-native";
+import { Animated, useWindowDimensions, type GestureResponderEvent } from "react-native";
 import {
   View,
   Pressable,
@@ -10,6 +10,8 @@ import {
   useReducedMotion,
   supportsNativeDriver,
   GlassSurface,
+  breakpoints,
+  type BreakpointKey,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -17,7 +19,9 @@ import {
 } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
+import { Drawer } from "../drawer/drawer.js";
 import { type Density, type Frame } from "./sidebar.styles.js";
+import { createSidebarDrillDown } from "./sidebar.drilldown.js";
 
 /** The Icon color booleans a nav row's glyph can carry, per active state (the
  *  skin picks foreground (default), `muted`, or brand `primary`). */
@@ -123,6 +127,12 @@ export interface SidebarSkin {
   sectionChevronSize: number;
   /** The brand dot marking a section that holds the active row. */
   activeDot: (t: ColorTokens) => ViewStyle;
+
+  // --- narrow drill-down drawer (responsive) ---
+  /** The back-row layout for a drilled-in level of the responsive drawer. */
+  drillBackRow: (t: ColorTokens) => ViewStyle;
+  /** The back-row title type (the parent section's name). */
+  drillBackTitle: (t: ColorTokens) => TextStyle;
 }
 
 /** One nav row: a label, an optional leading icon glyph, an optional count. */
@@ -210,6 +220,26 @@ export interface SidebarProps {
   /** Allow more than one collapsible section open at once (default: one-open-at-a-time). */
   independentSections?: boolean;
 
+  // Responsive drawer axis: at and below `drawerBreakpoint` the sidebar renders as a
+  // start-edge (left, RTL-aware) DRILL-DOWN Drawer instead of the inline rail, opened by a
+  // consumer-owned hamburger. The rail is unchanged above the breakpoint.
+  /** Opt in to the responsive rail->drawer behavior. Off by default: a bare sidebar is the
+   *  inline rail at every width, byte-identical to before. */
+  responsive?: boolean;
+  /** The narrow drawer's open state (CONTROLLED). The consumer wires its hamburger to this. */
+  open?: boolean;
+  /** Initial open state for the uncontrolled narrow drawer (default closed). */
+  defaultOpen?: boolean;
+  /** Fired when the narrow drawer opens or closes (scrim tap, back, or a leaf selection). */
+  onOpenChange?: (open: boolean) => void;
+  /** The width at and below which `responsive` switches to the drawer (default `lg` = 1024). */
+  drawerBreakpoint?: BreakpointKey;
+  /** The narrow drawer panel width in px (default 288). */
+  drawerWidth?: number;
+  /** Extra bottom padding for the drawer's scrolling content, so its last rows clear persistent
+   *  chrome painting over the drawer (e.g. a native bottom tab bar on Android). */
+  drawerContentInsetBottom?: number;
+
   /** Optional top slot (a brand lockup / logo). A render function receives the
    *  collapsed state so it can show a compact mark in the rail. When `header` or
    *  `footer` is set, the panel becomes a pinned header + scrolling body (+ footer). */
@@ -282,6 +312,9 @@ export function createSidebar(skin: SidebarSkin) {
     );
   }
 
+  // The narrow-viewport drill-down body, built once from this skin (mirrors SectionChevron).
+  const SidebarDrillDown = createSidebarDrillDown(skin);
+
   return function Sidebar(props: SidebarProps) {
     const { sections, items, onSelect, header, footer, collapsible, onToggleCollapse, testID, style } = props;
     const density = densityOf(props);
@@ -292,6 +325,12 @@ export function createSidebar(skin: SidebarSkin) {
     // bare sidebar moves the highlight / collapses on interaction.
     const [active, setActive] = useControllableState<string | number | undefined>(props.active, props.defaultActive);
     const [collapsed, setCollapsed] = useControllableState<boolean>(props.collapsed, props.defaultCollapsed ?? false);
+
+    // Responsive drawer (opt-in): the narrow drawer's open flag + the current mode. Default to
+    // the rail when the width is unknown (0 at first paint) so the layout never flashes.
+    const [drawerOpen, setDrawerOpen] = useControllableState<boolean>(props.open, props.defaultOpen ?? false, props.onOpenChange);
+    const { width } = useWindowDimensions();
+    const asDrawer = !!props.responsive && width > 0 && width <= breakpoints[props.drawerBreakpoint ?? "lg"];
 
     // Normalize to a sections list; a flat `items` array becomes one untitled
     // section. Sections always win when both are supplied.
@@ -379,6 +418,31 @@ export function createSidebar(skin: SidebarSkin) {
       setActive(index);
       onSelect?.(item, index, event);
     };
+
+    // Narrow + responsive: render the start-edge drill-down Drawer instead of the inline rail.
+    // The Drawer owns the slide + scrim + hardware-back-to-close; SidebarDrillDown owns the
+    // two-level navigation. The header/footer slots pin above/below it (a brand lockup, a
+    // settings footer) as in a Material navigation drawer.
+    if (asDrawer) {
+      const drawerHeader = typeof header === "function" ? header(false) : header;
+      const drawerFooter = typeof footer === "function" ? footer(false) : footer;
+      return (
+        <Drawer left open={drawerOpen} onOpenChange={setDrawerOpen} width={props.drawerWidth} testID={testID}>
+          {drawerHeader != null ? <View style={skin.header(tokens, false)}>{drawerHeader}</View> : null}
+          <SidebarDrillDown
+            groups={indexed}
+            activeIndex={activeIndex}
+            activeSectionKey={activeSectionKey}
+            density={density}
+            open={drawerOpen}
+            onSelect={select}
+            onRequestClose={() => setDrawerOpen(false)}
+            contentInsetBottom={props.drawerContentInsetBottom}
+          />
+          {drawerFooter != null ? <View style={skin.footer(tokens, false)}>{drawerFooter}</View> : null}
+        </Drawer>
+      );
+    }
 
     // One nav row: leading icon + label + badge; icon-only and centered in the rail.
     const renderRow = (item: SidebarItem, index: number) => {

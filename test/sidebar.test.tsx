@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
+import { createSidebarDrillDown } from "../src/organisms/sidebar/sidebar.drilldown.tsx";
+import { webSkin } from "../src/organisms/sidebar/sidebar.styles.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -90,5 +92,73 @@ describe("Sidebar shell slots", () => {
     ui(<Sidebar header={<Text>BrandRow</Text>} footer={<Text>FooterRow</Text>} items={[{ label: "X" }]} />);
     expect(screen.getByText("BrandRow")).toBeTruthy();
     expect(screen.getByText("FooterRow")).toBeTruthy();
+  });
+});
+
+describe("Sidebar responsive rail (wide)", () => {
+  const RESP = [
+    { id: "over", items: [{ id: "home", label: "Home" }] },
+    { id: "cat", title: "Category", collapsible: true, items: [{ id: "p1", label: "Page One" }] },
+  ];
+  // The test viewport is a fixed 1280 desktop (test/setup.ts stubs visualViewport), which is
+  // above the lg breakpoint, so `responsive` renders the inline rail — never the drawer Modal.
+  // The narrow drawer switch is exercised end-to-end in the running docs app.
+  it("keeps the inline rail (no drawer Modal) at desktop width", () => {
+    ui(<Sidebar responsive sections={RESP} />);
+    expect(screen.getByText("Home")).toBeTruthy();
+    expect(document.querySelector('[aria-modal="true"]')).toBeNull();
+  });
+});
+
+describe("Sidebar narrow drill-down (SidebarDrillDown)", () => {
+  // Drive the drill-down presentation directly (it is what the responsive drawer renders below
+  // the breakpoint), sidestepping the fixed-1280 test viewport that can't reach the drawer path.
+  const DrillDown = createSidebarDrillDown(webSkin);
+  const GROUPS = [
+    { section: { id: "over", items: [{ id: "home", label: "Home" }] }, key: "over", rows: [{ item: { id: "home", label: "Home" }, index: 0 }] },
+    {
+      section: { id: "cat", title: "Category", collapsible: true, items: [{ id: "p1", label: "Page One" }, { id: "p2", label: "Page Two" }] },
+      key: "cat",
+      rows: [{ item: { id: "p1", label: "Page One" }, index: 1 }, { item: { id: "p2", label: "Page Two" }, index: 2 }],
+    },
+  ];
+  const drill = (extra?: Partial<{ onSelect: (i: { label: string }) => void; onRequestClose: () => void }>) =>
+    ui(
+      <DrillDown
+        groups={GROUPS}
+        activeIndex={-1}
+        activeSectionKey={null}
+        density="default"
+        open
+        onSelect={extra?.onSelect ?? (() => {})}
+        onRequestClose={extra?.onRequestClose ?? (() => {})}
+      />,
+    );
+
+  it("shows pinned rows + drill rows at the root, with section items hidden", () => {
+    drill();
+    expect(screen.getByText("Home")).toBeTruthy();
+    expect(screen.getByText("Category")).toBeTruthy();
+    expect(screen.queryByText("Page One")).toBeNull();
+  });
+
+  it("drills into a section and pops back", () => {
+    drill();
+    fireEvent.click(screen.getByText("Category"));
+    expect(screen.getByText("Page One")).toBeTruthy();
+    const back = document.querySelector('[aria-label="Back to Category"]') as HTMLElement;
+    expect(back).not.toBeNull();
+    fireEvent.click(back);
+    expect(screen.queryByText("Page One")).toBeNull();
+    expect(screen.getByText("Category")).toBeTruthy();
+  });
+
+  it("selecting a leaf fires onSelect and requests close", () => {
+    let picked: string | null = null;
+    let closed = false;
+    drill({ onSelect: (i) => { picked = i.label; }, onRequestClose: () => { closed = true; } });
+    fireEvent.click(screen.getByText("Home"));
+    expect(picked).toBe("Home");
+    expect(closed).toBe(true);
   });
 });

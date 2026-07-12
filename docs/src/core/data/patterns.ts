@@ -522,7 +522,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
       },
       {
         title: "Sidebar - drawer ↔ fixed",
-        description: "On the desktop base the sidebar is a fixed panel. The lg variant applies at 1024px and below, swapping it for a drawer overlay triggered by the hamburger button. Above lg, the fixed panel stays.",
+        description: "The kit Sidebar's `responsive` prop does this: a fixed accordion rail on the desktop base, and at lg (1024px) and below a start-edge drill-down drawer opened by the hamburger button. Above lg, the fixed panel stays.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">lg and below (drawer)</div>
