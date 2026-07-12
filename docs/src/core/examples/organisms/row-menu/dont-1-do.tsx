@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { RowMenu } = scope;
   return (
-<RowMenu open links items={[
-    { label: "Profile" },
-    { label: "Billing" },
-    { label: "Members" }
+<RowMenu open items={[
+    { label: "Edit" },
+    { label: "Duplicate" },
+    { label: "Delete", destructive: true, separatorBefore: true }
   ]} />
   );
 }

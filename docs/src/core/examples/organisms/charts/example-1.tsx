@@ -3,10 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Sparkline } = scope;
+  const { Card, StackedBar } = scope;
   return (
-<Card padded style={{ maxWidth: 200 }}>
-  <Sparkline tall values={[45, 60, 35, 70, 55, 80, 95]} style={{ width: 160 }} />
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    segments={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Referral", value: 12 }
+    ]}
+  />
 </Card>
   );
 }

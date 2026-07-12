@@ -57,6 +57,28 @@ Vertical action menu items and navigation links.
 
 ## Do & Don't
 
+### When to use
+
+**Do** — Collapse per-row actions behind a ··· trigger; keep Delete separated and danger-colored.
+
+```tsx
+<RowMenu open sectionLabel="Actions" items={[
+    { label: "Edit", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Delete", icon: "trash", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+**Don't** — Splaying every row action inline multiplies visual noise across every table row.
+
+```tsx
+<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+  <Button ghost small>Edit</Button>
+  <Button ghost small>Duplicate</Button>
+  <Button destructive small>Delete</Button>
+</View>
+```
+
 ### Actions
 
 **Do** — Click an item: place destructive actions last, color them, and split them off with a divider.

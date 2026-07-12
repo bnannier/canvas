@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { RowMenu } = scope;
   return (
 <RowMenu open items={[
-    { label: "Profile" },
-    { label: "Billing" },
-    { label: "Members" }
+    { label: "Edit" },
+    { label: "Delete", destructive: true },
+    { label: "Duplicate" }
   ]} />
   );
 }

@@ -3,21 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Input, Typography, Row, Column } = scope;
+  const { ActionPanel } = scope;
   return (
-<Card padded style={{ maxWidth: 420 }}>
-  <Column relaxed>
-    <Column tight>
-      <Typography lead semibold>Subscribe to updates</Typography>
-      <Typography small muted>We'll send you a weekly digest of what changed.</Typography>
-    </Column>
-    <Row alignCenter snug>
-      <Column fill>
-        <Input block placeholder="you@example.com" />
-      </Column>
-      <Button primary>Subscribe</Button>
-    </Row>
-  </Column>
-</Card>
+<ActionPanel title="Two-factor authentication" description="Add an extra layer of security to your account by requiring a verification code on login." toggle defaultChecked style={{ maxWidth: 460 }} />
   );
 }

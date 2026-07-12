@@ -3,19 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Row, Column, Sparkline } = scope;
+  const { Card, StackedBar } = scope;
   return (
-<Card padded style={{ maxWidth: 200 }}>
-  <Column snug>
-    <Column tight>
-      <Typography tiny>Tokens issued</Typography>
-      <Row between baseline>
-        <Typography h3>4,847</Typography>
-        <Typography tiny primary>+12%</Typography>
-      </Row>
-    </Column>
-    <Sparkline tall values={[6, 8, 12, 10, 16, 20, 18, 25, 23, 29]} style={{ width: 180 }} />
-  </Column>
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    segments={[
+      { label: "Direct", value: 42 },
+      { label: "Organic search", value: 28 },
+      { label: "Social", value: 18 },
+      { label: "Referral", value: 12 }
+    ]}
+  />
 </Card>
   );
 }

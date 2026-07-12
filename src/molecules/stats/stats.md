@@ -134,18 +134,11 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 **Do** — Pair the sparkline with an explicit delta so the headline reads without decoding the curve.
 
 ```tsx
-<Card padded style={{ maxWidth: 220 }}>
-  <Column snug>
-    <Column tight>
-      <Typography tiny>Requests</Typography>
-      <Row between baseline>
-        <Typography h3>24.5k</Typography>
-        <Typography tiny positive>+8.2%</Typography>
-      </Row>
-    </Column>
-    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
-  </Column>
-</Card>
+<Stats
+  items={[
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }
+  ]}
+/>
 ```
 
 **Don't** — A trend line with no current delta makes you eyeball the slope to guess the direction.

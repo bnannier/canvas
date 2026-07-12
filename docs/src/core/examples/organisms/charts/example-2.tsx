@@ -3,17 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, StackedBar } = scope;
+  const { Card, Column, Gauge } = scope;
   return (
-<Card padded style={{ maxWidth: 560 }}>
-  <StackedBar
-    segments={[
-      { label: "Direct", value: 42 },
-      { label: "Organic search", value: 28 },
-      { label: "Social", value: 18 },
-      { label: "Referral", value: 12 }
-    ]}
-  />
+<Card padded style={{ maxWidth: 200 }}>
+  <Column alignCenter>
+    <Gauge value={72} label="Uptime" />
+  </Column>
 </Card>
   );
 }

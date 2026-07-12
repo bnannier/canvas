@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { RowMenu } = scope;
+  const { View, Button } = scope;
   return (
-<RowMenu open items={[
-    { label: "Edit" },
-    { label: "Delete", destructive: true },
-    { label: "Duplicate" }
-  ]} />
+<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+  <Button ghost small>Edit</Button>
+  <Button ghost small>Duplicate</Button>
+  <Button destructive small>Delete</Button>
+</View>
   );
 }

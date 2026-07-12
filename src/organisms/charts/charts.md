@@ -22,14 +22,6 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
 
 ## Variants
 
-### Chart type - sparkline
-
-```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Sparkline tall values={[45, 60, 35, 70, 55, 80, 95]} style={{ width: 160 }} />
-</Card>
-```
-
 ### Chart type - stacked
 
 ```tsx
@@ -93,45 +85,6 @@ Sparklines, bars, gauges, heatmaps. All SVG, all token-themed. No charting libra
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 77 }} />
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 112 }} />
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 118 }} />
-  </View>
-</View>
-```
-
-### Sparkline
-
-**Do** — Pair the line with the current value and delta and an end dot so it anchors a stat.
-
-```tsx
-<Card padded style={{ maxWidth: 200 }}>
-  <Column snug>
-    <Column tight>
-      <Typography tiny>Tokens issued</Typography>
-      <Row between baseline>
-        <Typography h3>4,847</Typography>
-        <Typography tiny primary>+12%</Typography>
-      </Row>
-    </Column>
-    <Sparkline tall values={[6, 8, 12, 10, 16, 20, 18, 25, 23, 29]} style={{ width: 180 }} />
-  </Column>
-</Card>
-```
-
-**Don't** — A bare line with no value or end dot reads as decoration: you cannot tell the current figure or where it ends.
-
-```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200 }}>
-  <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 1, height: 34, width: 180 }}>
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 6 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 8 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 12 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 10 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 16 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 20 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 18 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 25 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 23 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 29 }} />
-    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 31 }} />
   </View>
 </View>
 ```

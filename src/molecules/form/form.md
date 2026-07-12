@@ -130,3 +130,39 @@ Stacked, two-column, with sidebar description.
     ] }
   ]} />
 ```
+
+### Inline form
+
+**Do** — Keep the input and its submit button on one row so the input + action reads as one step.
+
+```tsx
+<Card padded style={{ maxWidth: 420 }}>
+  <Column relaxed>
+    <Column tight>
+      <Typography lead semibold>Subscribe to updates</Typography>
+      <Typography small muted>We'll send you a weekly digest of what changed.</Typography>
+    </Column>
+    <Row alignCenter snug>
+      <Column fill>
+        <Input block placeholder="you@example.com" />
+      </Column>
+      <Button primary>Subscribe</Button>
+    </Row>
+  </Column>
+</Card>
+```
+
+**Don't** — Stacking the field above its button breaks the single-decision rhythm and adds a row of dead space.
+
+```tsx
+<Card padded style={{ maxWidth: 420, gap: 16 }}>
+  <View style={{ gap: 4 }}>
+    <Text style={{ fontSize: 15, fontWeight: "600", color: tokens["card-foreground"] }}>Subscribe to updates</Text>
+    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>We'll send you a weekly digest of what changed.</Text>
+  </View>
+  <Input block placeholder="you@example.com" />
+  <View style={{ alignItems: "flex-start" }}>
+    <Button primary>Subscribe</Button>
+  </View>
+</Card>
+```
