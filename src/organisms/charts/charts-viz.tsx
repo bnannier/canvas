@@ -1,6 +1,7 @@
 import Svg, { Circle } from "react-native-svg";
 import { View, Text, useTheme, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { seriesFill } from "./charts.styles.js";
+import { ChartLegend } from "./chart-legend.js";
 
 // Additional chart types that share the Chart family's token-driven, View/SVG
 // look, so no call site hand-composes a stacked bar, a gauge ring, or a heatmap
@@ -68,17 +69,13 @@ export function StackedBar({ segments, label, hideLegend, testID, style }: Stack
         ))}
       </View>
       {hideLegend ? null : (
-        <View style={{ marginTop: 12, flexDirection: "column", gap: 8 }}>
-          {segments.map((seg, i) => (
-            <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <View style={{ borderRadius: 9999, height: 8, width: 8, backgroundColor: seriesFill(tokens, i) }} />
-              <Text style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>
-                {seg.label}
-              </Text>
-              <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{Math.round(pct(seg.value))}%</Text>
-            </View>
-          ))}
-        </View>
+        <ChartLegend
+          items={segments.map((seg, i) => ({
+            label: seg.label,
+            color: seriesFill(tokens, i),
+            detail: `${Math.round(pct(seg.value))}%`,
+          }))}
+        />
       )}
     </View>
   );
