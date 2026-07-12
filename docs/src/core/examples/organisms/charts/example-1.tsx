@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { LineChart } = scope;
+  const { Chart } = scope;
   return (
-<LineChart
-  title="Signups"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+<Chart
+  title="Revenue vs costs"
+  labels={["Q1", "Q2", "Q3", "Q4"]}
   series={[
-    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
-    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+    { label: "Revenue", values: [45, 60, 72, 90] },
+    { label: "Costs", values: [30, 38, 41, 52] }
   ]}
-  curved
-  dots
   style={{ maxWidth: 560 }}
 />
   );

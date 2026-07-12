@@ -3,7 +3,7 @@ import { Circle, Path } from "react-native-svg";
 import { View, Text, useTheme, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
-import { type ChartSkin } from "./charts.shared.js";
+import { type ChartSeries, type ChartSkin } from "./charts.shared.js";
 import { CartesianFrame, chartRootWidth, type CartesianLayout } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
 import { areaBandPath, areaPath, formatCompact, linePath, monotonePath, stackSeries, type Pt } from "./chart-math.js";
@@ -25,15 +25,7 @@ import { areaBandPath, areaPath, formatCompact, linePath, monotonePath, stackSer
 // - Density: `compact` shrinks the plot and tick count.
 // - Furniture: `hideLegend`, `hideGrid`, `hideAxes`.
 
-/** One plotted series: a label (legend + accessible name) and one value per x label. */
-export interface ChartSeries {
-  /** Stable identity for React keys when series can reorder. */
-  id?: string | number;
-  /** Series name, shown in the legend and leading the accessible data. */
-  label: string;
-  /** One value per entry in `labels`, aligned by index. */
-  values: number[];
-}
+export { type ChartSeries } from "./charts.shared.js";
 
 interface CartesianSeriesProps {
   /** Category labels along the x axis, one per data column. */

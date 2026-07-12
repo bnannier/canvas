@@ -22,6 +22,20 @@ Bars, lines, areas, stacked bars, gauges, heatmaps. One token-themed family with
 
 ## Variants
 
+### Chart type - grouped bars
+
+```tsx
+<Chart
+  title="Revenue vs costs"
+  labels={["Q1", "Q2", "Q3", "Q4"]}
+  series={[
+    { label: "Revenue", values: [45, 60, 72, 90] },
+    { label: "Costs", values: [30, 38, 41, 52] }
+  ]}
+  style={{ maxWidth: 560 }}
+/>
+```
+
 ### Chart type - line
 
 ```tsx

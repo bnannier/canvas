@@ -1,6 +1,7 @@
 import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
+import { ChartLegend } from "./chart-legend.js";
 
 // Shared Chart shell. The structure (a token-themed bar chart built entirely from
 // View views, no SVG and no CSS grid), the boolean-prop axes (tone + orientation +
@@ -45,20 +46,40 @@ export interface ChartDatum {
   value: number;
 }
 
+/**
+ * One plotted series for the multi-series chart types (grouped Chart bars,
+ * LineChart, AreaChart): a label (legend + accessible name) and one value per
+ * category label, aligned by index.
+ */
+export interface ChartSeries {
+  /** Stable identity for React keys when series can reorder. */
+  id?: string | number;
+  /** Series name, shown in the legend and leading the accessible data. */
+  label: string;
+  /** One value per category label, aligned by index. */
+  values: number[];
+}
+
 export interface ChartProps {
-  /** The bars to render, in order. */
-  data: ChartDatum[];
+  /** The bars to render, in order (single-series mode). */
+  data?: ChartDatum[];
+  /** Category labels along the x axis (grouped mode, with `series`). */
+  labels?: string[];
+  /** Multiple series rendered as grouped columns per category, colored by the chart-1..8 tokens. */
+  series?: ChartSeries[];
   /** Optional heading shown above the plot. */
   title?: string;
-  /** Axis maximum. Defaults to the largest value in `data`. */
+  /** Axis maximum. Defaults to the largest value in the data. */
   max?: number;
-  // Tone (pick one; default is the primary fill).
+  // Tone (pick one; default is the primary fill). Single-series only.
   success?: boolean;
   destructive?: boolean;
-  // Orientation (default is a vertical column chart).
+  // Orientation (default is a vertical column chart). Single-series only.
   horizontal?: boolean;
   // Density (default is the standard plot size).
   compact?: boolean;
+  /** Hide the series legend (grouped mode shows one by default). */
+  hideLegend?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -85,22 +106,52 @@ const PLOT_LENGTH = { default: 140, compact: 96 } as const;
 
 export function createChart(skin: ChartSkin) {
   return function Chart(props: ChartProps) {
-    const { data, title, testID, style } = props;
+    const { title, testID, style } = props;
     const tone = toneOf(props);
-    const horizontal = !!props.horizontal;
     const compact = !!props.compact;
     const { tokens } = useTheme();
 
+    // Grouped mode: `labels` + `series` render clustered columns per category.
+    // Single-series mode: the original `data` shape. Exactly one applies.
+    const grouped = props.series != null && props.series.length > 0;
+    const series = props.series ?? [];
+    const labels = props.labels ?? [];
+    const data = props.data ?? [];
+    const horizontal = !!props.horizontal && !grouped;
+
+    devWarn(
+      props.data != null && props.series != null,
+      "[canvas] <Chart />: pass either `data` (single series) or `labels`+`series` (grouped), not both; `series` wins.",
+    );
+    devWarn(
+      props.data == null && props.series == null,
+      "[canvas] <Chart />: pass `data` (single series) or `labels`+`series` (grouped); the chart renders with no bars.",
+    );
     // Empty data renders a bare surface with no bars: warn so the developer sees
     // the omission instead of a silently blank chart.
-    devWarn(data.length === 0, "[canvas] <Chart />: `data` is empty; the chart renders with no bars.");
+    devWarn(props.data != null && data.length === 0, "[canvas] <Chart />: `data` is empty; the chart renders with no bars.");
+    devWarn(grouped && labels.length === 0, "[canvas] <Chart />: `series` needs `labels` for the category axis; the chart renders with no columns.");
+    devWarn(
+      grouped && series.some((sr) => sr.values.length !== labels.length),
+      "[canvas] <Chart />: a series' `values` length differs from `labels`; missing values are treated as 0.",
+    );
+    devWarn(
+      grouped && !!props.horizontal,
+      "[canvas] <Chart />: `horizontal` applies to single-series charts only; grouped series render vertical columns.",
+    );
+    devWarn(
+      grouped && !!(props.success || props.destructive),
+      "[canvas] <Chart />: tone props apply to single-series charts only; grouped series use the chart-1..8 tokens.",
+    );
 
     const fill = s.barFill(tokens, tone);
     const plot = compact ? PLOT_LENGTH.compact : PLOT_LENGTH.default;
     // Axis max: the caller's, else the largest finite value, else 1 to avoid /0.
     // Non-finite data (NaN / Infinity) is filtered here so a single bad datum
     // cannot poison `max` (and thus every bar) with NaN.
-    const values = data.map((d) => d.value).filter((v) => Number.isFinite(v));
+    const values = grouped
+      ? series.flatMap((sr) => sr.values).filter((v) => Number.isFinite(v))
+      : data.map((d) => d.value).filter((v) => Number.isFinite(v));
     const max = props.max != null && props.max > 0 ? props.max : Math.max(1, ...values);
 
     // Map a value to a clamped pixel length along the plot axis. A non-finite
@@ -136,7 +187,58 @@ export function createChart(skin: ChartSkin) {
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
 
-        {horizontal ? (
+        {grouped ? (
+          // Grouped: each category is a cluster of series bars sharing the
+          // column, colored by the chart-1..8 tokens in fixed series order. A
+          // 2px gap keeps adjacent fills separable (the dataviz spacer rule).
+          <View>
+            <View style={[s.verticalBars, { gap, height: plot }]}>
+              {labels.map((label, i) => {
+                // Each category is one accessible item announcing every
+                // series' value ("Mon: Revenue 45, Costs 30").
+                const name = `${label}: ${series
+                  .map((sr) => `${sr.label} ${Number.isFinite(sr.values[i]) ? sr.values[i] : 0}`)
+                  .join(", ")}`;
+                return (
+                  <View
+                    key={i}
+                    accessible
+                    accessibilityRole="image"
+                    role="img"
+                    accessibilityLabel={name}
+                    aria-label={name}
+                    style={s.verticalColumn}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2 }}>
+                      {series.map((sr, j) => (
+                        <View
+                          key={sr.id ?? j}
+                          style={[
+                            s.verticalBar(s.seriesFill(tokens, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
+                            { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+            {/* Baseline under the clusters. */}
+            <View style={s.baseline(tokens)} />
+            <View style={[s.verticalLabelsRow, { gap }]}>
+              {labels.map((label, i) => (
+                <Text key={i} style={s.verticalLabel(tokens)}>
+                  {label}
+                </Text>
+              ))}
+            </View>
+            {/* Series identity, outside the per-category img items. */}
+            {props.hideLegend ? null : (
+              <ChartLegend horizontal items={series.map((sr, j) => ({ label: sr.label, color: s.seriesFill(tokens, j) }))} />
+            )}
+          </View>
+        ) : horizontal ? (
           // Horizontal: each row is a label, a track-aligned bar, and the value.
           <View style={[s.horizontalStack, { gap }]}>
             {data.map((d, i) => (

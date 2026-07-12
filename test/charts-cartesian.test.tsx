@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { LineChart, AreaChart } from "../src/organisms/charts/charts.tsx";
+import { Chart, LineChart, AreaChart } from "../src/organisms/charts/charts.tsx";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -65,6 +65,30 @@ describe("LineChart", () => {
     // furniture must not render; this locks in the graceful pre-measure state.
     const { container } = ui(<LineChart labels={labels} series={twoSeries} />);
     expect(container.textContent ?? "").not.toContain("NaN");
+  });
+});
+
+describe("Chart (grouped bars)", () => {
+  it("announces each category as one item carrying every series' value", () => {
+    const { container } = ui(<Chart title="Revenue vs costs" labels={["Q1", "Q2"]} series={twoSeries} />);
+    const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
+    expect(items).toContain("Q1: Web 120, Mobile 60");
+    expect(items).toContain("Q2: Web 180, Mobile 90");
+  });
+
+  it("shows the series legend, suppressible with hideLegend", () => {
+    const withLegend = ui(<Chart labels={["Q1"]} series={twoSeries} />);
+    expect(withLegend.container.textContent).toContain("Mobile");
+    cleanup();
+    const without = ui(<Chart hideLegend labels={["Q1"]} series={twoSeries} />);
+    expect(without.container.textContent ?? "").not.toContain("Mobile");
+  });
+
+  it("keeps the single-series data shape working unchanged", () => {
+    const { container } = ui(<Chart title="Signups" data={[{ label: "Mon", value: 3 }]} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Signups chart");
+    const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
+    expect(items).toContain("Mon: 3");
   });
 });
 
