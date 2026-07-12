@@ -26,6 +26,9 @@ export function Sidebar({
   open,
   onOpenChange,
   drawerContentInsetBottom,
+  drawerRight,
+  drawerTop,
+  drawerBottom,
 }: {
   onNavigate?: () => void;
   collapsed?: boolean;
@@ -37,6 +40,10 @@ export function Sidebar({
   onOpenChange?: (open: boolean) => void;
   /** Bottom clearance for the drawer content (e.g. the native tab bar on Android). */
   drawerContentInsetBottom?: number;
+  /** Which edge the drawer slides from (default left). */
+  drawerRight?: boolean;
+  drawerTop?: boolean;
+  drawerBottom?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -67,6 +74,9 @@ export function Sidebar({
       open={open}
       onOpenChange={onOpenChange}
       drawerContentInsetBottom={drawerContentInsetBottom}
+      drawerRight={drawerRight}
+      drawerTop={drawerTop}
+      drawerBottom={drawerBottom}
       onSelect={(item) => {
         if (item.href) router.push(item.href as never);
         onNavigate?.();

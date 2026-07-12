@@ -53,7 +53,9 @@ export interface DrawerProps {
   right?: boolean;
   /** A sheet spanning the width, rising from the bottom. */
   bottom?: boolean;
-  /** Width of a side drawer in px (default 288). Ignored for the bottom sheet. */
+  /** A sheet spanning the width, dropping from the top. */
+  top?: boolean;
+  /** Width of a side drawer in px (default 288). Ignored for the bottom/top sheet. */
   width?: number;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -65,6 +67,7 @@ export interface DrawerProps {
 function edgeOf(p: DrawerProps): Edge {
   if (p.right) return "right";
   if (p.bottom) return "bottom";
+  if (p.top) return "top";
   return "left";
 }
 
@@ -102,16 +105,19 @@ export function createDrawer(skin: DrawerSkin) {
       return () => sub.remove();
     }, [open, setOpen]);
 
-    // Side edges (left/right) SLIDE via a manual translateX + scrim fade: RN Modal's
-    // animationType can only slide vertically ("slide" rises from the bottom), so a start-edge
-    // drawer would otherwise just fade in. Keep the Modal mounted through the exit so the
-    // slide-out is visible, then unmount. The BOTTOM sheet keeps RN Modal's native slide.
-    const isSide = edge !== "bottom";
+    // left/right/top edges SLIDE via a manual translateX/translateY + scrim fade: RN Modal's
+    // animationType can only slide vertically UPWARD ("slide" rises from the bottom), so those
+    // edges would otherwise just fade in. Keep the Modal mounted through the exit so the slide-out
+    // is visible, then unmount. The BOTTOM sheet keeps RN Modal's native slide.
+    const isManual = edge !== "bottom";
+    const isVertical = edge === "top";
     const reduced = useReducedMotion();
     const [mounted, setMounted] = useState(open);
+    // The top sheet slides on Y, so it needs the panel's measured height for its off-screen origin.
+    const [panelH, setPanelH] = useState(0);
     const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
-      if (!isSide) return;
+      if (!isManual) return;
       if (open) {
         setMounted(true);
         Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
@@ -120,21 +126,24 @@ export function createDrawer(skin: DrawerSkin) {
           if (finished) setMounted(false);
         });
       }
-    }, [open, mounted, isSide, progress, reduced]);
+    }, [open, mounted, isManual, progress, reduced]);
 
-    // The panel lands on the logical start (left) / end (right) edge via flexbox, which mirrors
-    // under RTL — so the off-screen slide origin follows the PHYSICAL side the panel ends up on.
+    // Side panels land on the logical start (left) / end (right) edge via flexbox, which mirrors
+    // under RTL — so the horizontal slide origin follows the PHYSICAL side the panel ends up on.
+    // The top sheet drops down from above (translateY = -panelHeight -> 0).
     const physicalRight = (edge === "right") !== I18nManager.isRTL;
-    const slideX = progress.interpolate({ inputRange: [0, 1], outputRange: [physicalRight ? width : -width, 0] });
+    const fromOffset = isVertical ? -(panelH || 600) : physicalRight ? width : -width;
+    const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [fromOffset, 0] });
     const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, skin.scrimOpacity] });
+    const slideTransform = isVertical ? [{ translateY: slide }] : [{ translateX: slide }];
 
     // A no-op press inside the panel keeps taps from falling through to the scrim; it is a pure
-    // event-capture wrapper, hidden from assistive tech. SafeAreaView pads the panel content
-    // clear of the device insets on iOS (a bottom sheet clears the home indicator, a side drawer
-    // the notch/status bar); the opaque `card` fill still reaches the screen edge, and insets
-    // resolve to 0 elsewhere so the layout is unchanged off iOS.
+    // event-capture wrapper, hidden from assistive tech. onLayout measures the top sheet's height
+    // for its slide. SafeAreaView pads the panel content clear of the device insets on iOS (a
+    // bottom sheet clears the home indicator, a side drawer the notch/status bar); the opaque
+    // `card` fill still reaches the screen edge, and insets resolve to 0 elsewhere.
     const panel = (
-      <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}}>
+      <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
         <SafeAreaView style={[skin.panelShape(edge, width, tokens), style]}>{children}</SafeAreaView>
       </Pressable>
     );
@@ -147,9 +156,9 @@ export function createDrawer(skin: DrawerSkin) {
           </Button>
         ) : null}
         <Modal
-          visible={isSide ? mounted : open}
+          visible={isManual ? mounted : open}
           transparent
-          animationType={isSide ? "none" : "slide"}
+          animationType={isManual ? "none" : "slide"}
           onRequestClose={() => setOpen(false)}
           testID={testID}
           // Tell assistive tech the content behind this full-screen overlay is
@@ -161,14 +170,14 @@ export function createDrawer(skin: DrawerSkin) {
               visible while typing. "padding" shrinks the overlay by the keyboard height on iOS;
               off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-            {isSide ? (
+            {isManual ? (
               // The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
-              // layout; the panel rides in on translateX. The dim is a dismiss affordance, not a
-              // control, so it is unannounced (back/escape/trigger remain the discoverable paths).
+              // layout; the panel rides in on translateX/translateY. The dim is a dismiss
+              // affordance, not a control, so it is unannounced (back/escape/trigger dismiss).
               <View style={{ flex: 1 }}>
                 <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
                 <Pressable accessible={false} style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
-                  <Animated.View style={{ transform: [{ translateX: slideX }] }}>{panel}</Animated.View>
+                  <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
                 </Pressable>
               </View>
             ) : (

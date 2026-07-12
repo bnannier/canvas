@@ -54,6 +54,18 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 </Drawer>
 ```
 
+### Edge - top sheet
+
+```tsx
+<Drawer trigger="Top sheet" top>
+  <Column padLoose snug>
+    <Typography lead semibold>What's new</Typography>
+    <Typography small muted>A sheet that drops down from the top edge.</Typography>
+    <Button primary block onPress={() => {}}>See all updates</Button>
+  </Column>
+</Drawer>
+```
+
 ## Do & Don't
 
 ### Right tool for the job

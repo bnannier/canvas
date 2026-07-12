@@ -240,6 +240,15 @@ export interface SidebarProps {
    *  chrome painting over the drawer (e.g. a native bottom tab bar on Android). */
   drawerContentInsetBottom?: number;
 
+  // Responsive drawer EDGE axis: which side the drawer slides from (default = the start/left
+  // edge). First match wins; pass none for the default left. Only applies in drawer mode.
+  /** Slide the drawer in from the end (right) edge instead of the start (left). */
+  drawerRight?: boolean;
+  /** Drop the drawer down from the top edge (a top sheet). */
+  drawerTop?: boolean;
+  /** Raise the drawer up from the bottom edge (a bottom sheet). */
+  drawerBottom?: boolean;
+
   /** Optional top slot (a brand lockup / logo). A render function receives the
    *  collapsed state so it can show a compact mark in the rail. When `header` or
    *  `footer` is set, the panel becomes a pinned header + scrolling body (+ footer). */
@@ -426,8 +435,20 @@ export function createSidebar(skin: SidebarSkin) {
     if (asDrawer) {
       const drawerHeader = typeof header === "function" ? header(false) : header;
       const drawerFooter = typeof footer === "function" ? footer(false) : footer;
+      // Edge axis, default the start/left edge. left/right are full-height (the drill-down fills
+      // the panel); top/bottom are content-sized sheets (the drill-down shrinks within maxHeight).
+      const drawerEdge = props.drawerRight ? "right" : props.drawerTop ? "top" : props.drawerBottom ? "bottom" : "left";
+      const fullHeight = drawerEdge === "left" || drawerEdge === "right";
       return (
-        <Drawer left open={drawerOpen} onOpenChange={setDrawerOpen} width={props.drawerWidth} testID={testID}>
+        <Drawer
+          right={drawerEdge === "right"}
+          top={drawerEdge === "top"}
+          bottom={drawerEdge === "bottom"}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          width={props.drawerWidth}
+          testID={testID}
+        >
           {drawerHeader != null ? <View style={skin.header(tokens, false)}>{drawerHeader}</View> : null}
           <SidebarDrillDown
             groups={indexed}
@@ -438,6 +459,7 @@ export function createSidebar(skin: SidebarSkin) {
             onSelect={select}
             onRequestClose={() => setDrawerOpen(false)}
             contentInsetBottom={props.drawerContentInsetBottom}
+            fill={fullHeight}
           />
           {drawerFooter != null ? <View style={skin.footer(tokens, false)}>{drawerFooter}</View> : null}
         </Drawer>

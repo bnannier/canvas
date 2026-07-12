@@ -25,8 +25,8 @@ import { type ColorTokens, shadow } from "../../style/index.js";
 // would bleed the content through. An opaque panel keeps it legible.
 
 // Edge the panel is anchored to. `left`/`right` are full-height side drawers;
-// `bottom` is a sheet that spans the width and rises from the bottom.
-export type Edge = "left" | "right" | "bottom";
+// `bottom`/`top` are sheets that span the width and rise from the bottom / drop from the top.
+export type Edge = "left" | "right" | "bottom" | "top";
 
 // The contract a platform skin fulfills. The shell owns the full-screen Modal,
 // the scrim, the panel positioner, the edge precedence, the open/close state, and
@@ -48,6 +48,7 @@ export interface DrawerSkin {
 export function scrim(edge: Edge, opacity: number): ViewStyle {
   const base: ViewStyle = { flex: 1, backgroundColor: `rgba(0,0,0,${opacity})` };
   if (edge === "bottom") return { ...base, flexDirection: "column", justifyContent: "flex-end" };
+  if (edge === "top") return { ...base, flexDirection: "column", justifyContent: "flex-start" };
   return { ...base, flexDirection: "row", justifyContent: edge === "right" ? "flex-end" : "flex-start" };
 }
 
@@ -58,6 +59,7 @@ export const panelPos: Record<Edge, ViewStyle> = {
   left: { height: "100%" },
   right: { height: "100%" },
   bottom: { width: "100%" },
+  top: { width: "100%" },
 };
 
 // Shared panel base: the opaque SOLID `card` fill and clipped corners. The skin
@@ -85,6 +87,17 @@ export const webSkin: DrawerSkin = {
         borderColor: t.border,
         borderTopStartRadius: 16,
         borderTopEndRadius: 16,
+      };
+    }
+    if (edge === "top") {
+      return {
+        ...base,
+        width: "100%",
+        maxHeight: "85%",
+        borderBottomWidth: 1,
+        borderColor: t.border,
+        borderBottomStartRadius: 16,
+        borderBottomEndRadius: 16,
       };
     }
     return {
@@ -119,6 +132,16 @@ export const iosSkin: DrawerSkin = {
         ...shadow("xl"),
       };
     }
+    if (edge === "top") {
+      return {
+        ...base,
+        width: "100%",
+        maxHeight: "85%",
+        borderBottomStartRadius: IOS_SHEET_RADIUS,
+        borderBottomEndRadius: IOS_SHEET_RADIUS,
+        ...shadow("xl"),
+      };
+    }
     // The leading (inner) vertical edge rounds; the outer edge sits flush to the
     // screen edge. A left drawer rounds its right corners; a right drawer its left.
     const inner =
@@ -148,6 +171,16 @@ export const androidSkin: DrawerSkin = {
         maxHeight: "85%",
         borderTopStartRadius: ANDROID_SHEET_RADIUS,
         borderTopEndRadius: ANDROID_SHEET_RADIUS,
+        ...shadow("lg"),
+      };
+    }
+    if (edge === "top") {
+      return {
+        ...base,
+        width: "100%",
+        maxHeight: "85%",
+        borderBottomStartRadius: ANDROID_SHEET_RADIUS,
+        borderBottomEndRadius: ANDROID_SHEET_RADIUS,
         ...shadow("lg"),
       };
     }

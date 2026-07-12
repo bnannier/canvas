@@ -35,11 +35,14 @@ export interface SidebarDrillDownProps {
   /** Extra bottom padding so the last rows clear persistent chrome painting over the drawer
    *  (e.g. a native bottom tab bar on Android). */
   contentInsetBottom?: number;
+  /** Fill the panel (a full-height left/right drawer) vs shrink within it (a content-sized
+   *  top/bottom sheet). */
+  fill?: boolean;
 }
 
 /** Build the drill-down body from a Sidebar skin (mirrors createSidebar's skin closure). */
 export function createSidebarDrillDown(skin: SidebarSkin) {
-  return function SidebarDrillDown({ groups, activeIndex, activeSectionKey, density, open, onSelect, onRequestClose, contentInsetBottom }: SidebarDrillDownProps) {
+  return function SidebarDrillDown({ groups, activeIndex, activeSectionKey, density, open, onSelect, onRequestClose, contentInsetBottom, fill = true }: SidebarDrillDownProps) {
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
     // Two levels: null = the root list, a section key = drilled into that section.
@@ -151,7 +154,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
     const drilledGroup = drilled != null ? groups.find((g) => g.key === drilled) : undefined;
 
     return (
-      <Animated.View style={{ flex: 1, transform: [{ translateX: slide }] }}>
+      <Animated.View style={{ ...(fill ? { flex: 1 } : { flexShrink: 1 }), transform: [{ translateX: slide }] }}>
         <ScrollView contentContainerStyle={[skin.scrollContent(tokens, false), contentInsetBottom ? { paddingBottom: contentInsetBottom } : null]}>
           {drilledGroup ? (
             <>

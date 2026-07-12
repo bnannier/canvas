@@ -100,6 +100,19 @@ describe("Drawer (full-screen Modal overlay)", () => {
     expect(document.querySelector('[aria-modal="true"]')).not.toBeNull();
   });
 
+  it("supports every edge, including a top-edge sheet", () => {
+    for (const edge of ["left", "right", "bottom", "top"] as const) {
+      ui(
+        <Drawer open {...{ [edge]: true }}>
+          <Text>{`${edge} panel`}</Text>
+        </Drawer>,
+      );
+      expect(screen.getByText(`${edge} panel`)).toBeTruthy();
+      expect(document.querySelector('[aria-modal="true"]')).not.toBeNull();
+      cleanup();
+    }
+  });
+
   it("dismisses on a scrim tap, reporting the close through onOpenChange", () => {
     let openState: boolean | null = null;
     ui(
