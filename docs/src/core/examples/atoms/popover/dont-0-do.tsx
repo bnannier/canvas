@@ -3,17 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Input, Typography, Row, Column } = scope;
+  const { Input, Popover } = scope;
   return (
-<Card padded style={{ minWidth: 240 }}>
-  <Column snug>
-    <Typography small>Rename this project?</Typography>
-    <Input value="Identity Platform" />
-    <Row snug end>
-      <Button outline small>Cancel</Button>
-      <Button primary small>Rename</Button>
-    </Row>
-  </Column>
-</Card>
+<Popover inline title="Rename this project?" actionLabel="Rename">
+  <Input value="Identity Platform" />
+</Popover>
   );
 }

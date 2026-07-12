@@ -71,6 +71,10 @@ export const cardFloating: ViewStyle = {
   marginTop: 8,
 };
 
+// The custom-content slot (`children`), spaced from the title/description block
+// above it. The shell omits the margin when children are the panel's first content.
+export const bodySlot: ViewStyle = { marginTop: 12 };
+
 // The action row: a right-aligned button, spaced from the body above it.
 export const actionRow: ViewStyle = { marginTop: 12, flexDirection: "row", justifyContent: "flex-end" };
 

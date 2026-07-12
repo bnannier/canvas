@@ -1,16 +1,18 @@
 # Popover
 
-Floating panel with a title, supporting text, and a single follow-up action, anchored to its trigger.
+Floating panel with a title, supporting text, rich content such as form fields, and a single follow-up action, anchored to its trigger. Pass children to host custom content in the panel body, between the description and the action.
 
 ## Usage
 
 ```tsx
 <Popover
   trigger="Open popover"
-  title="Popover"
-  description="A short prompt with supporting text and one follow-up action."
-  actionLabel="Close"
-/>
+  title="Rename project"
+  description="Choose a name your team will recognize."
+  actionLabel="Rename"
+>
+  <Input value="Identity Platform" />
+</Popover>
 ```
 
 ## Do & Don't
@@ -18,16 +20,9 @@ Floating panel with a title, supporting text, and a single follow-up action, anc
 **Do** — Keep popovers compact: a focused prompt with one input and a clear action.
 
 ```tsx
-<Card padded style={{ minWidth: 240 }}>
-  <Column snug>
-    <Typography small>Rename this project?</Typography>
-    <Input value="Identity Platform" />
-    <Row snug end>
-      <Button outline small>Cancel</Button>
-      <Button primary small>Rename</Button>
-    </Row>
-  </Column>
-</Card>
+<Popover inline title="Rename this project?" actionLabel="Rename">
+  <Input value="Identity Platform" />
+</Popover>
 ```
 
 **Don't** — A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident.
