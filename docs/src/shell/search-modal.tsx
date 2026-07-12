@@ -64,12 +64,18 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
 
   // Web keyboard navigation. RN-Web reports the key on nativeEvent.key; native builds
   // never emit these arrow / enter events from the soft keyboard, so the guard keeps
-  // behavior identical there (touch only).
+  // behavior identical there (touch only). Cmd/ctrl-K must be handled HERE too: the
+  // navbar's document-level toggle listener never sees keydowns from inside the input
+  // (RN-Web's TextInput stops their propagation), and the input holds focus while open.
   const onKeyPress = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
       if (Platform.OS !== "web") return;
       const key = e.nativeEvent.key;
-      if (key === "Escape") {
+      const { metaKey, ctrlKey } = e.nativeEvent as unknown as { metaKey?: boolean; ctrlKey?: boolean };
+      if ((metaKey || ctrlKey) && key.toLowerCase() === "k") {
+        (e as unknown as { preventDefault?: () => void }).preventDefault?.();
+        onClose();
+      } else if (key === "Escape") {
         onClose();
       } else if (key === "ArrowDown") {
         (e as unknown as { preventDefault?: () => void }).preventDefault?.();

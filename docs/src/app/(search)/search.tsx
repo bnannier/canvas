@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Platform, StyleSheet, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Keyboard, Platform, StyleSheet, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
 import { Redirect, Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SearchBarCommands } from "react-native-screens";
@@ -55,16 +55,40 @@ function NativeSearch() {
   const showBubble = results.length > 0;
   const searchRef = useRef<SearchBarCommands>(null);
 
-  // Mark the screen active (drives the aurora) while it's focused. We deliberately do NOT
-  // imperatively focus the iOS field: on iOS 26 the integrated toolbar search forces its (iconless)
-  // cancel "X" button whenever the field is focused, and that button can't be suppressed
-  // (the system overrides toggleCancelButton / cancelSearch). Leaving the field unfocused keeps the
-  // bar clean, just the field + the tab accessory, and the user taps to type. Android is unaffected
-  // by that bug, so its `autoFocus` still focuses the field there.
+  // The soft keyboard's current height. The bubble is anchored near the screen bottom, so
+  // while the keyboard is up (now the norm: the field auto-focuses) the bubble must lift
+  // above it or the results render hidden behind the IME.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvent, (e) => setKeyboardHeight(e.endCoordinates.height));
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  // Mark the screen active (drives the aurora) while it's focused, and put the caret in the
+  // system search field on every visit to the tab. Imperative focus is needed because
+  // react-native-screens' `autoFocus` is Android-only AND only fires when the search view is
+  // first created, so revisits to the kept-alive tab screen never refocus. The search view is
+  // created a beat after the screen gains navigation focus and exposes no ready callback, so
+  // fire twice across the transition window; focus() is idempotent. Verified working on
+  // Android (first visit + revisits). KNOWN GAP: on iOS 26 the integrated-placement field
+  // ignores becomeFirstResponder (focus() is a no-op); the only system hook is
+  // UISearchTab.automaticallyActivatesSearch, which needs the UITab API that
+  // react-native-screens (<= 4.26) doesn't use, so iOS stays tap-to-focus until upstream
+  // adopts it. These focus() calls are correct and will light up on iOS when that lands.
   useFocusEffect(
     useCallback(() => {
       setActive(true);
+      const early = setTimeout(() => searchRef.current?.focus(), 80);
+      const late = setTimeout(() => searchRef.current?.focus(), 400);
       return () => {
+        clearTimeout(early);
+        clearTimeout(late);
         setActive(false);
       };
     }, []),
@@ -105,7 +129,16 @@ function NativeSearch() {
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (
         <View
-          style={{ position: "absolute", left: 10, right: 10, top: insets.top + 8, bottom: insets.bottom + 60, pointerEvents: "box-none" }}
+          style={{
+            position: "absolute",
+            left: 10,
+            right: 10,
+            top: insets.top + 8,
+            // At rest, clear the bottom bar (inset + bar height); with the keyboard up, clear
+            // the keyboard plus the search bar riding above it.
+            bottom: (keyboardHeight > 0 ? keyboardHeight : insets.bottom) + 60,
+            pointerEvents: "box-none",
+          }}
         >
           {/* The bubble is a content-sized rounded box (the rows size it); GlassSurface fills
               BEHIND them as an absolute background, since a content-sized GlassSurface would
