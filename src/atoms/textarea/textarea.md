@@ -25,7 +25,7 @@ Multi-line input, with character count, with toolbar.
 ### Formatting toolbar
 
 ```tsx
-<Card flat flush style={{ maxWidth: 400, overflow: "hidden" }}>
+<Card flat flush style={{ width: 400, maxWidth: "100%", overflow: "hidden" }}>
   <Row alignCenter tight padTight>
     <Button ghost small>B</Button>
     <Button ghost small>I</Button>
@@ -97,7 +97,7 @@ Multi-line input, with character count, with toolbar.
 **Do** — Make each control a real focusable button that toggles an active state when pressed.
 
 ```tsx
-<Card flat flush style={{ maxWidth: 400, overflow: "hidden" }}>
+<Card flat flush style={{ width: 400, maxWidth: "100%", overflow: "hidden" }}>
   <Row alignCenter tight padTight>
     <Button ghost small>B</Button>
     <Button ghost small>I</Button>
@@ -111,13 +111,13 @@ Multi-line input, with character count, with toolbar.
 **Don't** — Static, unclickable glyphs look like a toolbar but cannot be pressed or focused.
 
 ```tsx
-<View style={{ maxWidth: 400, overflow: "hidden", borderRadius: 6, borderWidth: 1, borderColor: tokens.border }}>
+<View style={{ width: 400, maxWidth: "100%", overflow: "hidden", borderRadius: 6, borderWidth: 1, borderColor: tokens.border }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 4, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.3), paddingHorizontal: 12, paddingVertical: 8 }}>
     <Text style={{ paddingHorizontal: 8, fontSize: 14, lineHeight: 20, fontWeight: "700" }}>B</Text>
     <Text style={{ paddingHorizontal: 8, fontSize: 14, lineHeight: 20, fontStyle: "italic" }}>I</Text>
     <Text style={{ paddingHorizontal: 8, fontFamily: "monospace", fontSize: 11 }}>{"</>"}</Text>
   </View>
-  <Textarea rows={4} placeholder="Leave a comment" style={{ borderRadius: 0, borderWidth: 0, ...shadow("none") }} />
+  <Textarea rows={4} block placeholder="Leave a comment" style={{ borderRadius: 0, borderWidth: 0, ...shadow("none") }} />
 </View>
 ```
 

@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Dialog open small>
   <Column relaxed>
     <Typography lead semibold>Rename</Typography>
-    <Field label="Name" value="Untitled" />
+    <Field block label="Name" value="Untitled" />
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
       <Button primary small>Save</Button>

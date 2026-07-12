@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Form } = scope;
   return (
-<Form sidebar submitLabel="Save" style={{ maxWidth: 720 }} sections={[
+<Form sidebar submitLabel="Save" style={{ width: 720, maxWidth: "100%" }} sections={[
     { title: "Personal info", fields: [
       { label: "Full name", value: "Rachel Chen" }
     ] },

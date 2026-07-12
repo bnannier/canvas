@@ -18,7 +18,7 @@ export default function Example(scope: ExampleScope) {
     ] }
   ]}
   submitLabel="Save"
-  style={{ maxWidth: 720 }}
+  style={{ width: 720, maxWidth: "100%" }}
 />
   );
 }

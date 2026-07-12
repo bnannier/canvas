@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Card, Divider, Textarea, Row } = scope;
   return (
-<Card flat flush style={{ maxWidth: 400, overflow: "hidden" }}>
+<Card flat flush style={{ width: 400, maxWidth: "100%", overflow: "hidden" }}>
   <Row alignCenter tight padTight>
     <Button ghost small>B</Button>
     <Button ghost small>I</Button>

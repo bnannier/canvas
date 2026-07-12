@@ -14,7 +14,7 @@ export default function Example(scope: ExampleScope) {
   ]}
   submitLabel="Create"
   cancelLabel="Cancel"
-  style={{ maxWidth: 560 }}
+  style={{ width: 560, maxWidth: "100%" }}
 />
   );
 }

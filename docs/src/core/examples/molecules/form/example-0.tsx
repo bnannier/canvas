@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Password" }
   ]}
   submitLabel="Sign in"
-  style={{ maxWidth: 360 }}
+  style={{ width: 360, maxWidth: "100%" }}
 />
   );
 }

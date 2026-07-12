@@ -37,14 +37,17 @@ export type InputComponent = ComponentType<InputProps>;
 
 export type Width = "narrow" | "small" | "medium" | "large";
 
-// Panel max-width per width axis (mirroring Tailwind's max-w-xs..lg). Shared by
+// Panel width per width axis (mirroring Tailwind's max-w-xs..lg). Shared by
 // every platform; the native skins narrow the medium/large footprint a touch but
-// the axis mapping is one source of truth.
+// the axis mapping is one source of truth. The panel RENDERS AT its width
+// (shrinking via maxWidth:"100%" in narrower parents), so it holds its size
+// even in content-sized contexts (a centered docs stage), where a
+// width:"100%" + cap would collapse it to its text's natural width.
 export const panelWidth: Record<Width, ViewStyle> = {
-  narrow: { maxWidth: 320 },
-  small: { maxWidth: 384 },
-  medium: { maxWidth: 448 },
-  large: { maxWidth: 512 },
+  narrow: { width: 320, maxWidth: "100%" },
+  small: { width: 384, maxWidth: "100%" },
+  medium: { width: 448, maxWidth: "100%" },
+  large: { width: 512, maxWidth: "100%" },
 };
 
 // How the action row is structured. "buttons" renders the shell's Button-based

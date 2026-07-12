@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Form } = scope;
   return (
-<Form stacked submitLabel="Sign in" style={{ maxWidth: 360 }} fields={[
+<Form stacked submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }} fields={[
     { label: "Email", placeholder: "you@example.com" },
     { label: "Password" }
   ]} />

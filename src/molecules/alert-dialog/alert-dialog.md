@@ -130,7 +130,7 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 
 ```tsx
 <View style={{ alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: alpha("#000000", 0.5), padding: 32, minHeight: 200 }}>
-  <View style={{ width: "100%", maxWidth: 384, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 24, ...shadow("xl") }}>
+  <View style={{ width: 384, maxWidth: "100%", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 24, ...shadow("xl") }}>
     <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Transfer ownership</Text>
     <View style={{ marginTop: 16, gap: 16 }}>
       <View>

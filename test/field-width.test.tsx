@@ -14,13 +14,17 @@ import { Form } from "../src/molecules/form/form.tsx";
 import { Fieldset } from "../src/molecules/fieldset/fieldset.tsx";
 
 // The standard field width axis (src/style/field-width.ts): a bare input-like
-// control caps at fieldWidths.base on desktop (narrow/wide pick the other two
-// modes, block removes the cap), keeps width:100% underneath, and drops the cap
-// entirely at the sm breakpoint and below. react-native-web renders the cap as
-// an inline max-width, so the axis is assertable at the DOM. These suites rely
-// on happy-dom's desktop default viewport (1024px > the 640px sm breakpoint);
+// control RENDERS AT fieldWidths.base on desktop (narrow/wide pick the other
+// two modes, block fills the container instead), shrinks in narrower parents
+// via maxWidth:"100%", and drops the standard entirely at the sm breakpoint
+// and below. The explicit width (not a width:100% + cap) is the load-bearing
+// part: in a content-sized context (a centered stage, a row) width:100%
+// collapses to the placeholder text's natural width, which is exactly the
+// uneven look the axis exists to fix. react-native-web renders the pair as
+// inline width/max-width, so the axis is assertable at the DOM. These suites
+// rely on the setup.ts desktop viewport (wider than the 640px sm breakpoint);
 // the first test locks that assumption so a harness change fails loudly here
-// instead of silently asserting the phone (uncapped) branch.
+// instead of silently asserting the phone (fill) branch.
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
@@ -35,16 +39,18 @@ describe("field width axis: harness assumption", () => {
 });
 
 describe("field width axis: Input", () => {
-  it("caps a bare field at the standard width over width:100%", () => {
+  it("renders a bare field AT the standard width, shrinking via maxWidth:100%", () => {
     const { container } = ui(<Input placeholder="Email" />);
     const el = container.querySelector("input") as HTMLElement;
-    expect(el.style.maxWidth).toBe(`${fieldWidths.base}px`);
-    expect(el.style.width).toBe("100%");
+    expect(el.style.width).toBe(`${fieldWidths.base}px`);
+    expect(el.style.maxWidth).toBe("100%");
   });
 
-  it("block removes the cap (the former no-op now has effect)", () => {
+  it("block fills the container instead (the former no-op now has effect)", () => {
     const { container } = ui(<Input block placeholder="Email" />);
-    expect((container.querySelector("input") as HTMLElement).style.maxWidth).toBe("");
+    const el = container.querySelector("input") as HTMLElement;
+    expect(el.style.width).toBe("100%");
+    expect(el.style.maxWidth).toBe("");
   });
 
   it("narrow and wide pick the other two modes", () => {
@@ -55,95 +61,101 @@ describe("field width axis: Input", () => {
       </>,
     );
     const [n, w] = Array.from(container.querySelectorAll("input")) as HTMLElement[];
-    expect(n.style.maxWidth).toBe(`${fieldWidths.narrow}px`);
-    expect(w.style.maxWidth).toBe(`${fieldWidths.wide}px`);
+    expect(n.style.width).toBe(`${fieldWidths.narrow}px`);
+    expect(w.style.width).toBe(`${fieldWidths.wide}px`);
   });
 
   it("block wins over narrow/wide when several are passed", () => {
     const { container } = ui(<Input block narrow wide placeholder="b" />);
-    expect((container.querySelector("input") as HTMLElement).style.maxWidth).toBe("");
+    expect((container.querySelector("input") as HTMLElement).style.width).toBe("100%");
   });
 
-  it("caps the grouped (addon) layout on the group container, not the inner field", () => {
+  it("sizes the grouped (addon) layout on the group container, not the inner field", () => {
     const { container } = ui(<Input prefix="$" placeholder="0.00" />);
     const inner = container.querySelector("input") as HTMLElement;
     expect(inner.style.maxWidth).toBe("");
-    // The group container is the field's ancestor View carrying the cap.
+    // The group container is the field's ancestor View carrying the standard.
     let group: HTMLElement | null = inner.parentElement;
-    while (group && group.style.maxWidth === "") group = group.parentElement;
-    expect(group?.style.maxWidth).toBe(`${fieldWidths.base}px`);
+    while (group && group.style.width !== `${fieldWidths.base}px`) group = group.parentElement;
+    expect(group?.style.width).toBe(`${fieldWidths.base}px`);
+    expect(group?.style.maxWidth).toBe("100%");
   });
 });
 
 describe("field width axis: Textarea", () => {
-  it("shares the standard cap by default", () => {
+  it("shares the standard width by default", () => {
     const { container } = ui(<Textarea placeholder="Notes" />);
     const el = container.querySelector("textarea") as HTMLElement;
-    expect(el.style.maxWidth).toBe(`${fieldWidths.base}px`);
+    expect(el.style.width).toBe(`${fieldWidths.base}px`);
+    expect(el.style.maxWidth).toBe("100%");
   });
 
   it("flush implies block (the framed container is the field edge)", () => {
     const { container } = ui(<Textarea flush placeholder="Notes" />);
-    expect((container.querySelector("textarea") as HTMLElement).style.maxWidth).toBe("");
+    expect((container.querySelector("textarea") as HTMLElement).style.width).toBe("100%");
   });
 });
 
 describe("field width axis: Select", () => {
-  it("caps the root (label + trigger share the field edge)", () => {
+  it("renders the root at the standard width (label + trigger share the field edge)", () => {
     const { container } = ui(<Select label="Region" options={["EU", "US"]} />);
     const trigger = container.querySelector("[aria-expanded]") as HTMLElement;
     const root = trigger.parentElement as HTMLElement;
-    expect(root.style.maxWidth).toBe(`${fieldWidths.base}px`);
+    expect(root.style.width).toBe(`${fieldWidths.base}px`);
+    expect(root.style.maxWidth).toBe("100%");
   });
 
-  it("still renders its open option list under the cap", () => {
+  it("still renders its open option list at the standard width", () => {
     const { container } = ui(<Select options={["EU", "US"]} defaultOpen />);
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
   });
 
-  it("block removes the cap", () => {
+  it("block fills the container instead", () => {
     const { container } = ui(<Select block options={["EU", "US"]} />);
     const trigger = container.querySelector("[aria-expanded]") as HTMLElement;
-    expect((trigger.parentElement as HTMLElement).style.maxWidth).toBe("");
+    expect((trigger.parentElement as HTMLElement).style.width).not.toBe(`${fieldWidths.base}px`);
   });
 });
 
 describe("field width axis: Combobox", () => {
-  it("caps the wrapper (label + field share the field edge)", () => {
+  it("renders the wrapper at the standard width (label + field share the field edge)", () => {
     const { container } = ui(<Combobox label="Assignee" options={["Ada", "Grace"]} />);
     const input = container.querySelector("input") as HTMLElement;
     const wrapperEl = input.parentElement?.parentElement as HTMLElement;
-    expect(wrapperEl.style.maxWidth).toBe(`${fieldWidths.base}px`);
+    expect(wrapperEl.style.width).toBe(`${fieldWidths.base}px`);
+    expect(wrapperEl.style.maxWidth).toBe("100%");
   });
 
-  it("still renders its open option list under the cap", () => {
+  it("still renders its open option list at the standard width", () => {
     const { container } = ui(<Combobox options={["Ada", "Grace"]} defaultOpen />);
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
   });
 });
 
 describe("field width axis: responsive collapse", () => {
-  it("drops the cap at the sm breakpoint and below (null, not undefined)", () => {
-    const map = { base: { maxWidth: fieldWidths.base }, sm: null };
+  it("drops the standard at the sm breakpoint and below (null, not undefined)", () => {
+    const map = { base: { width: fieldWidths.base, maxWidth: "100%" }, sm: null };
     expect(responsive(375, map)).toBeNull();
     expect(responsive(640, map)).toBeNull();
-    expect(responsive(1024, map)).toEqual({ maxWidth: fieldWidths.base });
+    expect(responsive(1024, map)).toEqual({ width: fieldWidths.base, maxWidth: "100%" });
   });
 });
 
 describe("field width axis: composition (inner controls are block)", () => {
-  it("Field carries the cap on its control stack; the inner Input fills it", () => {
+  it("Field carries the standard width on its control stack; the inner Input fills it", () => {
     const { container } = ui(<Field testID="f" label="Name" placeholder="Ada" />);
-    expect(at(container, "f").style.maxWidth).toBe(`${fieldWidths.base}px`);
-    expect((container.querySelector("input") as HTMLElement).style.maxWidth).toBe("");
+    expect(at(container, "f").style.width).toBe(`${fieldWidths.base}px`);
+    expect(at(container, "f").style.maxWidth).toBe("100%");
+    expect((container.querySelector("input") as HTMLElement).style.width).toBe("100%");
   });
 
-  it("Field display mode (read-only rows) stays uncapped", () => {
+  it("Field display mode (read-only rows) stays unsized", () => {
     const { container } = ui(<Field testID="d" rows={[{ label: "Plan", value: "Pro" }]} />);
+    expect(at(container, "d").style.width).toBe("");
     expect(at(container, "d").style.maxWidth).toBe("");
   });
 
-  it("Form and Fieldset inner Inputs fill their column (no per-input cap)", () => {
+  it("Form and Fieldset inner Inputs fill their column (no per-input standard)", () => {
     const { container } = ui(
       <>
         <Form fields={[{ label: "Email", placeholder: "you@example.com" }]} />
@@ -152,6 +164,6 @@ describe("field width axis: composition (inner controls are block)", () => {
     );
     const inputs = Array.from(container.querySelectorAll("input")) as HTMLElement[];
     expect(inputs.length).toBe(2);
-    for (const el of inputs) expect(el.style.maxWidth).toBe("");
+    for (const el of inputs) expect(el.style.width).toBe("100%");
   });
 });

@@ -123,9 +123,13 @@ export const cardLayout: ViewStyle = { width: "100%", padding: 24 };
 // scale-fade. The card's own padding stays on cardLayout, inside the wrapper.
 export const cardSizing: ViewStyle = { width: "100%" };
 
-// Per-size max width cap.
+// Per-size panel width: the dialog RENDERS AT its size (a dialog is its width,
+// not its content's), shrinking via maxWidth:"100%" inside narrower parents.
+// The explicit width (not width:100% + a cap) keeps the panel at size even in
+// content-sized contexts (a centered docs stage), where width:"100%" would
+// collapse the card to its text's natural width.
 export function cardWidth(size: Size): ViewStyle {
-  return { maxWidth: PANEL_MAX_WIDTH[size] };
+  return { width: PANEL_MAX_WIDTH[size], maxWidth: "100%" };
 }
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------

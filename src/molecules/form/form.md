@@ -12,7 +12,7 @@ Stacked, two-column, with sidebar description.
     { label: "Password" }
   ]}
   submitLabel="Sign in"
-  style={{ maxWidth: 360 }}
+  style={{ width: 360, maxWidth: "100%" }}
 />
 ```
 
@@ -30,7 +30,7 @@ Stacked, two-column, with sidebar description.
   ]}
   submitLabel="Create"
   cancelLabel="Cancel"
-  style={{ maxWidth: 560 }}
+  style={{ width: 560, maxWidth: "100%" }}
 />
 ```
 
@@ -50,7 +50,7 @@ Stacked, two-column, with sidebar description.
     ] }
   ]}
   submitLabel="Save"
-  style={{ maxWidth: 720 }}
+  style={{ width: 720, maxWidth: "100%" }}
 />
 ```
 
@@ -61,7 +61,7 @@ Stacked, two-column, with sidebar description.
 **Do** — Keep short forms one field per row so each label sits directly above its input and the eye flows straight down.
 
 ```tsx
-<Form stacked submitLabel="Sign in" style={{ maxWidth: 360 }} fields={[
+<Form stacked submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }} fields={[
     { label: "Email", placeholder: "you@example.com" },
     { label: "Password" }
   ]} />
@@ -70,7 +70,7 @@ Stacked, two-column, with sidebar description.
 **Don't** — Pairing an email and password side by side cramps a sign-in form and breaks the natural top-to-bottom reading order.
 
 ```tsx
-<Form twoColumn submitLabel="Sign in" style={{ maxWidth: 360 }} fields={[
+<Form twoColumn submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }} fields={[
     { label: "Email", placeholder: "you@example.com" },
     { label: "Password" }
   ]} />
@@ -81,14 +81,14 @@ Stacked, two-column, with sidebar description.
 **Do** — Pair fields of similar width (city / ZIP) in a row and give a full-width field like the street its own line.
 
 ```tsx
-<Column cozy style={{ maxWidth: 560 }}>
-  <Field label="Street address" placeholder="123 Market St" />
+<Column cozy style={{ width: 560, maxWidth: "100%" }}>
+  <Field block label="Street address" placeholder="123 Market St" />
   <Row cozy>
     <Column fill>
-      <Field label="City" placeholder="San Francisco" />
+      <Field block label="City" placeholder="San Francisco" />
     </Column>
     <Column fill>
-      <Field label="ZIP" placeholder="94103" />
+      <Field block label="ZIP" placeholder="94103" />
     </Column>
   </Row>
 </Column>
@@ -97,7 +97,7 @@ Stacked, two-column, with sidebar description.
 **Don't** — Putting a wide field next to a tiny one in the same two-column row leaves the short input awkwardly oversized.
 
 ```tsx
-<Form twoColumn submitLabel="Save" style={{ maxWidth: 560 }} fields={[
+<Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }} fields={[
     { label: "Street address", placeholder: "123 Market St" },
     { label: "ZIP", placeholder: "94103" }
   ]} />
@@ -108,7 +108,7 @@ Stacked, two-column, with sidebar description.
 **Do** — Pair each sidebar heading with a line of helper text so the left column explains what the section's fields are for.
 
 ```tsx
-<Form sidebar submitLabel="Save" style={{ maxWidth: 720 }} sections={[
+<Form sidebar submitLabel="Save" style={{ width: 720, maxWidth: "100%" }} sections={[
     { title: "Personal info", description: "Displayed on your public profile.", fields: [
       { label: "Full name", value: "Rachel Chen" }
     ] },
@@ -121,7 +121,7 @@ Stacked, two-column, with sidebar description.
 **Don't** — A bare section heading with no helper text wastes the sidebar column and gives the user no context for the group.
 
 ```tsx
-<Form sidebar submitLabel="Save" style={{ maxWidth: 720 }} sections={[
+<Form sidebar submitLabel="Save" style={{ width: 720, maxWidth: "100%" }} sections={[
     { title: "Personal info", fields: [
       { label: "Full name", value: "Rachel Chen" }
     ] },

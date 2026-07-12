@@ -12,8 +12,8 @@ export default function Example(scope: ExampleScope) {
       <Typography small muted>Update how your name and email appear to teammates.</Typography>
     </Column>
     <Column relaxed>
-      <Field label="Name" value="Ada Lovelace" />
-      <Field label="Email" value="ada@example.com" />
+      <Field block label="Name" value="Ada Lovelace" />
+      <Field block label="Email" value="ada@example.com" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>

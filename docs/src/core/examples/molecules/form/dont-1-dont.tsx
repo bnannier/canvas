@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Form } = scope;
   return (
-<Form twoColumn submitLabel="Save" style={{ maxWidth: 560 }} fields={[
+<Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }} fields={[
     { label: "Street address", placeholder: "123 Market St" },
     { label: "ZIP", placeholder: "94103" }
   ]} />

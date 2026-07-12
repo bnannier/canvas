@@ -5,14 +5,14 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Field, Row, Column } = scope;
   return (
-<Column cozy style={{ maxWidth: 560 }}>
-  <Field label="Street address" placeholder="123 Market St" />
+<Column cozy style={{ width: 560, maxWidth: "100%" }}>
+  <Field block label="Street address" placeholder="123 Market St" />
   <Row cozy>
     <Column fill>
-      <Field label="City" placeholder="San Francisco" />
+      <Field block label="City" placeholder="San Francisco" />
     </Column>
     <Column fill>
-      <Field label="ZIP" placeholder="94103" />
+      <Field block label="ZIP" placeholder="94103" />
     </Column>
   </Row>
 </Column>

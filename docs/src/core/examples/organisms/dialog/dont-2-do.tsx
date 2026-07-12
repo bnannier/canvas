@@ -9,8 +9,8 @@ export default function Example(scope: ExampleScope) {
   <Column relaxed>
     <Typography lead semibold>Create project</Typography>
     <Column relaxed>
-      <Field label="Name" placeholder="Acme website" />
-      <Field label="Key" placeholder="ACME" />
+      <Field block label="Name" placeholder="Acme website" />
+      <Field block label="Key" placeholder="ACME" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
