@@ -303,12 +303,12 @@ export function formatCompact(v: number): string {
 // This is the workaround for React Native SVG/Text having no synchronous
 // measurement API (no getBBox / measureText off the DOM).
 function charFactor(ch: string): number {
-  if (ch >= "0" && ch <= "9") return 0.62;
-  if (ch === "." || ch === ",") return 0.3;
-  if (ch === "-" || ch === " ") return 0.36;
-  if (ch === "%") return 0.98;
-  if (ch >= "A" && ch <= "Z") return 0.74;
-  return 0.56; // lowercase and everything else
+  if (ch >= "0" && ch <= "9") return 0.66;
+  if (ch === "." || ch === ",") return 0.32;
+  if (ch === "-" || ch === " ") return 0.38;
+  if (ch === "%") return 1.0;
+  if (ch >= "A" && ch <= "Z") return 0.78;
+  return 0.6; // lowercase and everything else
 }
 
 /** Estimated rendered width in px of `text` at `fontSize`. */

@@ -1,8 +1,9 @@
+import { StyleSheet } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
-import { View, Text, useTheme, useControllableState, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, palette, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { seriesFill } from "./charts.styles.js";
 import { ChartLegend } from "./chart-legend.js";
-import { announceSelection, DIM_OPACITY } from "./chart-inspect.js";
+import { announceSelection, pressPoint, DIM_OPACITY } from "./chart-inspect.js";
 import { arcPath, formatCompact, pieLayout } from "./chart-math.js";
 
 // Additional chart types that share the Chart family's token-driven, View/SVG
@@ -258,6 +259,21 @@ export function PieChart(props: PieChartProps) {
     if (i != null && slices[i]) announceSelection(`${slices[i].label}: ${pctOf(slices[i].value)}%`);
   };
   const toggle = (i: number) => setSelected(selected === i ? null : i);
+  // Slice hit-testing from the press position (radius + clockwise angle from
+  // 12 o'clock), on an RN Pressable - SVG touchables leak responder props to
+  // the DOM on web. Pressing the donut hole (or outside the disc) clears.
+  const onPlotPress = (locationX: number, locationY: number) => {
+    const dx = locationX - r;
+    const dy = locationY - r;
+    const dist = Math.hypot(dx, dy);
+    if (dist > r || (donut && dist < rInner)) {
+      setSelected(null);
+      return;
+    }
+    const angle = (Math.atan2(dx, -dy) + 2 * Math.PI) % (2 * Math.PI);
+    const idx = layout.findIndex((sl) => sl.fraction > 0 && angle >= sl.startAngle && angle < sl.endAngle);
+    if (idx >= 0) toggle(idx);
+  };
 
   // Same naming formula as StackedBar: the composition lives in the accessible
   // name, and the img role sits on the plot while the legend renders (hoisting
@@ -279,7 +295,6 @@ export function PieChart(props: PieChartProps) {
                 // A hairline of the card surface keeps adjacent fills separable.
                 stroke={tokens.card}
                 strokeWidth={2}
-                onPress={() => toggle(i)}
               />
             ) : null,
           )}
@@ -297,6 +312,16 @@ export function PieChart(props: PieChartProps) {
             ) : null}
           </View>
         ) : null}
+        {/* Empty hit layer on top: the press target must be this Pressable
+            itself so web offsetX coordinates are plot-relative. */}
+        <Pressable
+          accessible={false}
+          onPress={(e) => {
+            const point = pressPoint(e);
+            if (point) onPlotPress(point.x, point.y);
+          }}
+          style={StyleSheet.absoluteFill}
+        />
       </View>
       {hideLegend ? null : (
         <ChartLegend

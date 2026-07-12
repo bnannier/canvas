@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import Svg, { Line, Rect } from "react-native-svg";
-import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import Svg, { Line } from "react-native-svg";
+import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { pressPoint } from "./chart-inspect.js";
 import { bandScale, estimateTextWidth, formatCompact, linearScale, niceTicks, type Band } from "./chart-math.js";
 
 // The shared cartesian plot frame for the Chart family's SVG types (line,
@@ -48,7 +49,12 @@ export interface CartesianFrameProps {
   children: (layout: CartesianLayout) => ReactNode;
   /** Optional RN layer absolutely positioned over the plot (tooltips, flags). */
   overlay?: (layout: CartesianLayout) => ReactNode;
-  /** Press-to-inspect: a transparent hit band per category, on top of the marks. */
+  /**
+   * Press-to-inspect: called with the pressed category's band index. The hit
+   * layer is a single RN Pressable over the plot with the band computed from
+   * the press position - never an SVG touchable, whose web path leaks RN
+   * responder props onto DOM nodes (six React warnings per page).
+   */
   onBandPress?: (index: number) => void;
   /** Draw the selection guide through this category band. */
   selectedBand?: number | null;
@@ -150,21 +156,22 @@ export function CartesianFrame(props: CartesianFrameProps) {
                   <Line x1={band.center(selectedBand)} y1={0} x2={band.center(selectedBand)} y2={plotH} stroke={tokens.border} strokeWidth={1} />
                 ) : null}
                 {children(layout)}
-                {/* Press-to-inspect hit bands sit on top of the marks. */}
-                {onBandPress && band && xLabels
-                  ? xLabels.map((_, i) => (
-                      <Rect
-                        key={`hit${i}`}
-                        x={band.position(i)}
-                        y={0}
-                        width={band.step}
-                        height={plotH}
-                        fill="transparent"
-                        onPress={() => onBandPress(i)}
-                      />
-                    ))
-                  : null}
               </Svg>
+              {/* Press-to-inspect hit layer: one Pressable over the plot; the
+                  band index comes from the press position. Presentational
+                  (the plot's accessible name already carries the data). */}
+              {onBandPress && band && xLabels && xLabels.length > 0 && band.step > 0 ? (
+                <Pressable
+                  accessible={false}
+                  onPress={(e) => {
+                    const point = pressPoint(e);
+                    if (!point) return;
+                    const i = Math.floor(point.x / band.step);
+                    onBandPress(Math.max(0, Math.min(xLabels.length - 1, i)));
+                  }}
+                  style={StyleSheet.absoluteFill}
+                />
+              ) : null}
               {overlay ? overlay(layout) : null}
             </View>
 

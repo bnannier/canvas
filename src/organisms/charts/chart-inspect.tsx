@@ -35,7 +35,9 @@ function flagWidth(title: string | undefined, rows: FlagRow[]): number {
     ...rows.map((r) => (r.color ? 14 : 0) + (r.label ? estimateTextWidth(r.label, TEXT) + 6 : 0) + estimateTextWidth(r.value, TEXT)),
     24,
   );
-  return Math.ceil(widest) + PAD * 2;
+  // A small margin on top of the estimate: an ellipsized value in the flag is
+  // worse than a few px of slack.
+  return Math.ceil(widest) + PAD * 2 + 6;
 }
 
 export interface ChartValueFlagProps {
@@ -105,6 +107,21 @@ export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
  */
 export function announceSelection(text: string): void {
   AccessibilityInfo.announceForAccessibility?.(text);
+}
+
+/**
+ * The press position relative to the pressed element, or null when the event
+ * carries none (never let a NaN reach the selection math). Native provides
+ * `locationX`; react-native-web's responder events compute it lazily, but a
+ * Pressable press driven by a mouse click can surface a raw MouseEvent, where
+ * only `offsetX` exists. offsetX is TARGET-relative, so hit-layer Pressables
+ * must be empty (nothing inside to become the target).
+ */
+export function pressPoint(e: { nativeEvent: unknown }): { x: number; y: number } | null {
+  const ne = e.nativeEvent as Partial<{ locationX: number; locationY: number; offsetX: number; offsetY: number }>;
+  const x = Number.isFinite(ne.locationX) ? (ne.locationX as number) : Number.isFinite(ne.offsetX) ? (ne.offsetX as number) : NaN;
+  const y = Number.isFinite(ne.locationY) ? (ne.locationY as number) : Number.isFinite(ne.offsetY) ? (ne.offsetY as number) : NaN;
+  return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
 }
 
 /** Opacity applied to marks OUTSIDE the current selection. */

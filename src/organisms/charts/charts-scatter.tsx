@@ -1,11 +1,12 @@
+import { StyleSheet } from "react-native";
 import { Circle } from "react-native-svg";
-import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { type ChartSkin } from "./charts.shared.js";
 import { CartesianFrame, chartRootWidth } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
-import { ChartValueFlag, announceSelection, DIM_OPACITY } from "./chart-inspect.js";
+import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "./chart-inspect.js";
 import { formatCompact } from "./chart-math.js";
 
 // ScatterPlot: numeric x/y point clouds through the shared CartesianFrame
@@ -158,21 +159,52 @@ export function createScatterPlot(skin: ChartSkin) {
             hideGrid={props.hideGrid}
             hideAxes={props.hideAxes}
             formatValue={formatValue}
-            overlay={(layout) =>
-              selected && selectedPoint && Number.isFinite(selectedPoint.x) && Number.isFinite(selectedPoint.y) ? (
-                <ChartValueFlag
-                  title={selectedPoint.label ?? series[selected.series]?.label}
-                  rows={[
-                    {
-                      color: multi ? colorOf(selected.series) : undefined,
-                      value: `(${formatValue(selectedPoint.x)}, ${formatValue(selectedPoint.y)})`,
-                    },
-                  ]}
-                  x={layout.x(selectedPoint.x)}
-                  plotW={layout.plotW}
+            overlay={(layout) => (
+              <>
+                {/* Nearest-point hit layer: one Pressable over the plot (r=4
+                    marks are too small to press; SVG touchables leak responder
+                    props to the DOM on web). Empty space clears. */}
+                <Pressable
+                  accessible={false}
+                  onPress={(e) => {
+                    const point = pressPoint(e);
+                    if (!point) return;
+                    const lx = point.x;
+                    const ly = point.y;
+                    let best: ScatterSelection | null = null;
+                    let bestD = 14 * 14;
+                    series.forEach((sr, i) =>
+                      sr.points.forEach((p, j) => {
+                        if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
+                        const dx = layout.x(p.x) - lx;
+                        const dy = layout.y(p.y) - ly;
+                        const d = dx * dx + dy * dy;
+                        if (d < bestD) {
+                          bestD = d;
+                          best = { series: i, point: j };
+                        }
+                      }),
+                    );
+                    if (best) toggle(best);
+                    else setSelected(null);
+                  }}
+                  style={StyleSheet.absoluteFill}
                 />
-              ) : null
-            }
+                {selected && selectedPoint && Number.isFinite(selectedPoint.x) && Number.isFinite(selectedPoint.y) ? (
+                  <ChartValueFlag
+                    title={selectedPoint.label ?? series[selected.series]?.label}
+                    rows={[
+                      {
+                        color: multi ? colorOf(selected.series) : undefined,
+                        value: `(${formatValue(selectedPoint.x)}, ${formatValue(selectedPoint.y)})`,
+                      },
+                    ]}
+                    x={layout.x(selectedPoint.x)}
+                    plotW={layout.plotW}
+                  />
+                ) : null}
+              </>
+            )}
           >
             {(layout) => (
               <>
@@ -205,21 +237,6 @@ export function createScatterPlot(skin: ChartSkin) {
                     strokeWidth={2}
                   />
                 ) : null}
-                {/* Generous transparent hit targets on top (r=4 marks are too small to press). */}
-                {series.map((sr, i) =>
-                  sr.points.map((p, j) =>
-                    Number.isFinite(p.x) && Number.isFinite(p.y) ? (
-                      <Circle
-                        key={`hit${sr.id ?? `s${i}`}p${j}`}
-                        cx={layout.x(p.x)}
-                        cy={layout.y(p.y)}
-                        r={12}
-                        fill="transparent"
-                        onPress={() => toggle({ series: i, point: j })}
-                      />
-                    ) : null,
-                  ),
-                )}
               </>
             )}
           </CartesianFrame>
