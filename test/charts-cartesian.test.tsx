@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Chart, LineChart, AreaChart, PieChart } from "../src/organisms/charts/charts.tsx";
+import { Chart, LineChart, AreaChart, PieChart, ScatterPlot } from "../src/organisms/charts/charts.tsx";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -89,6 +89,36 @@ describe("Chart (grouped bars)", () => {
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Signups chart");
     const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
     expect(items).toContain("Mon: 3");
+  });
+});
+
+describe("ScatterPlot", () => {
+  it("folds every point into the plot's accessible name, series-prefixed", () => {
+    const { container } = ui(
+      <ScatterPlot
+        series={[
+          { label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] },
+          { label: "B", points: [{ x: 5, y: 6, label: "peak" }] },
+        ]}
+      />,
+    );
+    const name = plotName(container);
+    expect(name).toContain("A: (1, 2), (3, 4)");
+    expect(name).toContain("B: peak (5, 6)");
+  });
+
+  it("names the root group after the title and shows the legend for multi-series", () => {
+    const { container } = ui(
+      <ScatterPlot
+        title="Load vs latency"
+        series={[
+          { label: "us-east", points: [{ x: 1, y: 2 }] },
+          { label: "eu-west", points: [{ x: 3, y: 4 }] },
+        ]}
+      />,
+    );
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Load vs latency chart");
+    expect(container.textContent).toContain("eu-west");
   });
 });
 

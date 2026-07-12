@@ -1,5 +1,6 @@
 import { createChart } from "./charts.shared.js";
 import { createAreaChart, createLineChart } from "./charts-lines.js";
+import { createScatterPlot } from "./charts-scatter.js";
 import { iosSkin } from "./charts.styles.js";
 
 // iOS (HIG Charts / Swift Charts) Chart. Metro resolves this file on iOS; the docs
@@ -8,7 +9,9 @@ import { iosSkin } from "./charts.styles.js";
 export const Chart = createChart(iosSkin);
 export const LineChart = createLineChart(iosSkin);
 export const AreaChart = createAreaChart(iosSkin);
+export const ScatterPlot = createScatterPlot(iosSkin);
 export type { ChartProps, ChartDatum } from "./charts.shared.js";
 export type { LineChartProps, AreaChartProps, ChartSeries } from "./charts-lines.js";
+export type { ScatterPlotProps, ScatterSeries, ScatterPoint } from "./charts-scatter.js";
 export { StackedBar, Gauge, Heatmap, PieChart } from "./charts-viz.js";
 export type { StackedBarProps, StackedSegment, GaugeProps, HeatmapProps, PieChartProps } from "./charts-viz.js";

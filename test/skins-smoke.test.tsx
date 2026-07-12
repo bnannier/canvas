@@ -124,6 +124,7 @@ const CASES: SkinCase[] = [
   { name: "Heatmap", dir: "organisms/charts", file: "charts", props: { label: "Activity", values: [0.1, 0.4, 0.8, 0.2, 0.9, 0.5] } },
   { name: "LineChart", dir: "organisms/charts", file: "charts", props: { title: "Signups", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Web", values: [1, 3, 2] }, { label: "Mobile", values: [2, 1, 4] }] } },
   { name: "PieChart", dir: "organisms/charts", file: "charts", props: { label: "Traffic", donut: true, slices: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
+  { name: "ScatterPlot", dir: "organisms/charts", file: "charts", props: { title: "Load vs latency", series: [{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }] } },
   { name: "AreaChart", dir: "organisms/charts", file: "charts", props: { title: "Traffic", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Direct", values: [1, 3, 2] }, { label: "Search", values: [2, 1, 4] }], stacked: true } },
   { name: "Command", dir: "organisms/command", file: "command", props: { open: true, placeholder: "Search…", active: 0, groups: [{ heading: "Actions", items: [{ label: "New file" }, { label: "Open" }] }] } },
   { name: "DataTable", dir: "organisms/data-table", file: "data-table", props: { columns: ["Name", "Role"], rows: [["Ada", "Eng"], ["Bob", "PM"]] } },
