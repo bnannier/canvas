@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, EmptyState } = scope;
+  const { View, EmptyState, Icon } = scope;
   return (
 <EmptyState
-  icon="🔔"
+  icon={<Icon bell />}
   title="All caught up"
   description="No new notifications."
   actionLabel="View archive"

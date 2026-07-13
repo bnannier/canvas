@@ -86,6 +86,14 @@ const ATOMIC_LEVELS: { id: string; label: string; icon: ReactNode; blurb: string
     ],
   },
   {
+    id: "charts", label: "Charts", icon: <Icon chartLine primary size={16} />,
+    blurb: "The data-viz tier: bars, lines, areas, pies, scatter, and the trading set (candlesticks, depth, price lines), all token-themed with a colorblind-validated series palette and scrub-to-inspect.",
+    pages: [
+      { label: "LineChart", to: "/components/line-chart" }, { label: "Candlestick", to: "/components/candlestick-chart" },
+      { label: "PieChart", to: "/components/pie-chart" }, { label: "DepthChart", to: "/components/depth-chart" },
+    ],
+  },
+  {
     id: "templates", label: "Templates", icon: <Icon home primary size={16} />,
     blurb: "Full screen compositions showing how atoms, molecules, and organisms assemble into real product surfaces, from a dashboard to a sign-in flow.",
     pages: [

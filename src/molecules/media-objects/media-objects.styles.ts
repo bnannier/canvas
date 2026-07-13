@@ -15,9 +15,10 @@ import { type MediaObjectSkin } from "./media-objects.shared.js";
 // - Android: no native media-object control; the closest M3 idiom is a list item with a
 //   leading avatar, icon, or video thumbnail. So the Android skin keeps the structure and
 //   applies Material 3 conventions only: more rounding (M3 medium container radius 12 on
-//   the bordered card and the icon box), M3 label tracking (+0.1 body, +0.1 title), M3
-//   filled-card elevation level 1, denser list-row spacing (gap 16), and a native ripple
-//   on press (so the opacity dim is suppressed).
+//   the bordered card and the icon box), M3 type roles (title-small 14/20/500/+0.1,
+//   body-medium 14/20/400/+0.25, body-small 12/16/400/+0.4), an M3 ELEVATED card
+//   (level-1 elevation, no outline), denser list-row spacing (gap 16), and a native
+//   ripple on press (so the opacity dim is suppressed).
 // - Web: keeps the CURRENT Canvas look EXACTLY (rounded-lg / lg-8 radius, gap-3, no
 //   shadow, the existing type scale, an opacity dim on press).
 
@@ -64,27 +65,35 @@ export const webSkin: MediaObjectSkin = {
   // Trailing action wrapper: shrink-0.
   actionBox: { flexShrink: 0 },
   pressedOpacity: 0.9,
+  // Web keeps its content-height rows; the tappable target is a mouse pointer, so no
+  // minimum tap height is applied (0 = no change to the established web layout).
+  minTarget: 0,
 };
 
 // ── iOS (SF / HIG conventions; flat inset-group surface, tightened SF tracking) ──────
 
 export const iosSkin: MediaObjectSkin = {
   containerBase: { gap: 12 },
-  // Inset-grouped corner radius (~10), flat (no shadow; HIG groups carry a hairline).
-  borderedSurface: { borderRadius: 10, borderWidth: 1, padding: 16 },
+  // Inset-grouped corner radius (~10) with Apple's continuous (superellipse) corner
+  // curve, flat (no shadow; HIG groups carry a hairline). borderCurve is an iOS-only
+  // RN style prop (device-only visual; a no-op elsewhere and in the web docs preview).
+  borderedSurface: { borderRadius: 10, borderCurve: "continuous", borderWidth: 1, padding: 16 },
   photoBox: { flexShrink: 0, width: 40, height: 40, overflow: "hidden", borderRadius: 9999 },
   photoImage: { borderRadius: 9999 },
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8 },
-  iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.08 },
+  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, borderCurve: "continuous" },
+  // SF Pro Text tracking at 16pt = -0.31 (Apple tracking table).
+  iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.31 },
   content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 },
-  // SF body/subhead with the kit's slight negative tracking (matches the badge iOS skin).
-  title: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24 },
-  description: { fontSize: 12, lineHeight: 16, letterSpacing: -0.08 },
-  body: { fontSize: 14, lineHeight: 28, letterSpacing: -0.24 },
-  meta: { flexShrink: 0, fontSize: 12, lineHeight: 16, letterSpacing: -0.08 },
+  // SF Pro Text tracking: 14pt = -0.15 (title/body), 12pt = 0 (description/meta).
+  title: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 },
+  description: { fontSize: 12, lineHeight: 16, letterSpacing: 0 },
+  body: { fontSize: 14, lineHeight: 28, letterSpacing: -0.15 },
+  meta: { flexShrink: 0, fontSize: 12, lineHeight: 16, letterSpacing: 0 },
   actionBox: { flexShrink: 0 },
   // HIG press: opacity dim ~0.8.
   pressedOpacity: 0.8,
+  // HIG minimum tappable area 44x44pt (bare row backstop).
+  minTarget: 44,
 };
 
 // ── Android (Material 3 list-item conventions; more rounding, M3 tracking, elevation) ─
@@ -92,20 +101,28 @@ export const iosSkin: MediaObjectSkin = {
 export const androidSkin: MediaObjectSkin = {
   // Denser M3 list-row spacing.
   containerBase: { gap: 16 },
-  // M3 medium container radius (12); filled-card elevation level 1 (the `sm` preset → elevation 1).
+  // M3 medium container radius (12) as an M3 ELEVATED card: level-1 elevation (the `sm`
+  // preset = elevation 1) and NO visible outline (M3 never combines an outline with
+  // nonzero elevation, mirroring the kit Card fix). The 1dp border WIDTH is kept but
+  // painted transparent (see borderedBorderColor) so content metrics stay identical.
   borderedSurface: { borderRadius: 12, borderWidth: 1, padding: 16, ...shadow("sm") },
+  // Elevation separates the M3 elevated card, so the outline is transparent.
+  borderedBorderColor: () => "transparent",
   photoBox: { flexShrink: 0, width: 40, height: 40, overflow: "hidden", borderRadius: 9999 },
   photoImage: { borderRadius: 9999 },
   // M3 medium container radius on the leading icon box.
   iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 12 },
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600" },
   content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 },
-  // M3 title-medium / body tracking (+0.1 / +0.25).
-  title: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: 0.1 },
-  description: { fontSize: 12, lineHeight: 16, letterSpacing: 0.25 },
-  body: { fontSize: 14, lineHeight: 28, letterSpacing: 0.25 },
-  meta: { flexShrink: 0, fontSize: 12, lineHeight: 16, letterSpacing: 0.25 },
+  // M3 title-small: 14/20/500/+0.1 (500 is the role weight; 600 is not an M3 weight).
+  title: { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 },
+  // M3 body-small: 12/16/400/+0.4 (description/meta); M3 body-medium: 14/20/400/+0.25 (body).
+  description: { fontSize: 12, lineHeight: 16, letterSpacing: 0.4 },
+  body: { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 },
+  meta: { flexShrink: 0, fontSize: 12, lineHeight: 16, letterSpacing: 0.4 },
   actionBox: { flexShrink: 0 },
   // The native ripple carries press feedback; pressDim suppresses the opacity dim on Android.
   pressedOpacity: 0.9,
+  // M3 minimum touch target 48x48dp (bare row backstop).
+  minTarget: 48,
 };

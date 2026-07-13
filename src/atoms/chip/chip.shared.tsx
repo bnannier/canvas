@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, controlRipple, pressDim, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, surfaceRipple, pressDim, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
@@ -18,7 +18,8 @@ import { Icon } from "../icon/icon.js";
 //     brand-accent (indigo) tint and the state a selectable chip lights up to.
 //
 // Chip is a "Light" platform treatment: one structure and semantic colors (here),
-// with per-OS touches limited to the label type and shape (in the skin).
+// with the per-OS look in the skin: label type, shape, and the Android M3 anatomy
+// (32dp sizing, icon-side insets, the selected filter-chip checkmark).
 
 // Chromatic hues backed by the Tailwind palette; each renders a soft tinted tag.
 export type Hue =
@@ -33,12 +34,23 @@ const HUES: Hue[] = [
 ];
 
 export interface ChipSkin {
-  /** Pill shape + padding + gap (the one, compact size). */
+  /** Container shape + padding + gap (the one, compact size). */
   base: ViewStyle;
   /** Label type. */
   labelType: TextStyle;
   /** Remove "×" glyph size. */
   removeSize: number;
+  /** Remove-button hitSlop, sized so glyph + slop reaches the platform's minimum
+   *  touch target (44pt iOS / 48dp Android), biased away from the label (left). */
+  removeHitSlop: { top: number; bottom: number; left: number; right: number };
+  /** Per-side horizontal insets, for a platform that pads an icon-bearing side
+   *  tighter than a text side (M3: 16dp beside text, 8dp beside an icon). The
+   *  shell resolves paddingStart/End from it; omit to keep `base`'s padding. */
+  sidePadding?: { text: number; icon: number };
+  /** M3 selected filter-chip anatomy: while selected, the chip leads with a
+   *  checkmark at this size and drops its outline (skin-threaded, like the
+   *  Accordion chevron). Omit on iOS/web: their selected look is the tint swap. */
+  selectedCheckSize?: number;
 }
 
 export interface ChipProps {
@@ -176,6 +188,11 @@ export function createChip(skin: ChipSkin) {
     const accent = props.primary === true; // brand-accent (indigo) tone / the "active" look
     const outline = props.outline === true;
     const selectedActive = selectable && selectedState;
+    // M3 selected filter-chip anatomy, threaded through the skin (the Android skin
+    // sets `selectedCheckSize`): while selected, the chip leads with a checkmark
+    // (replacing any custom leading icon) and sheds its outline. iOS/web omit the
+    // size, so their selected look stays the tint swap alone.
+    const selectedCheck = selectedActive ? skin.selectedCheckSize : undefined;
     // A tappable chip reports its toggle/active state to AT (see the Pressable below).
     const isSelected = selectable ? selectedState : accent;
 
@@ -198,9 +215,26 @@ export function createChip(skin: ChipSkin) {
       onPress?.();
     };
 
+    // M3 pads an icon-bearing side tighter than a text side; the Android skin opts
+    // in via `sidePadding` and the shell resolves the per-side insets here. The
+    // selected checkmark and the remove button count as icons on their sides.
+    const hasLeading = icon != null || selectedCheck != null;
+    const hasTrailing = trailing != null || onRemove != null;
+
     const container: StyleProp<ViewStyle> = [
       skin.base,
-      { backgroundColor: appearance.bg, borderColor: appearance.border },
+      {
+        backgroundColor: appearance.bg,
+        // A selected M3 filter chip drops its outline (the fill carries the
+        // state); the borderWidth stays so the box doesn't shift between states.
+        borderColor: selectedCheck != null ? "transparent" : appearance.border,
+      },
+      skin.sidePadding
+        ? {
+            paddingStart: hasLeading ? skin.sidePadding.icon : skin.sidePadding.text,
+            paddingEnd: hasTrailing ? skin.sidePadding.icon : skin.sidePadding.text,
+          }
+        : null,
       disabled ? { opacity: 0.5 } : null,
       style,
     ];
@@ -218,7 +252,14 @@ export function createChip(skin: ChipSkin) {
 
     const inner = (
       <>
-        {tint(icon)}
+        {selectedCheck != null ? (
+          // The M3 selected filter chip's leading checkmark, riding the label
+          // color. Decorative: the Pressable already reports the selected state
+          // (accessibilityState.selected / aria-pressed).
+          <Icon check decorative size={selectedCheck} color={appearance.text} />
+        ) : (
+          tint(icon)
+        )}
         {children != null ? (
           <Text style={[skin.labelType, { color: appearance.text }]}>
             {children}
@@ -232,8 +273,10 @@ export function createChip(skin: ChipSkin) {
             accessibilityRole="button"
             // Name the specific chip, not a bare "Remove", when the label is a string.
             accessibilityLabel={typeof children === "string" ? `Remove ${children}` : "Remove"}
-            // Grow the ~14px glyph toward a ~44pt target; bias the slop away from the label (left).
-            hitSlop={{ top: 15, bottom: 15, left: 8, right: 15 }}
+            // Grow the glyph to the platform minimum target (44pt iOS, 48dp
+            // Android per the M3 input-chip close target); per-skin values,
+            // biased away from the label (left).
+            hitSlop={skin.removeHitSlop}
           >
             {/* The "×" rides the chip's label color so it matches every hue. */}
             <Icon x size={skin.removeSize} color={appearance.text} />
@@ -259,10 +302,13 @@ export function createChip(skin: ChipSkin) {
           // the Switch uses.
           accessibilityState={{ selected: isSelected, disabled: !!disabled }}
           aria-pressed={isSelected}
-          // The compact pill is only ~22pt tall; grow its whole tap target toward ~44pt.
+          // The compact chip is short (a ~20px pill on web/iOS, a 32dp M3 chip on
+          // Android); grow the whole tap target toward the 44pt/48dp minimums.
           hitSlop={11}
-          // Android shows a ripple state layer on press; iOS/web keep the opacity dim.
-          android_ripple={controlRipple(tokens)}
+          // Android shows a BOUNDED ripple state layer on press (the M3 chip state
+          // layer fills the container; the Android skin clips it to the rounded
+          // outline via overflow hidden); iOS/web keep the opacity dim.
+          android_ripple={surfaceRipple(tokens)}
           style={({ pressed }) => [container, pressDim(pressed, 0.85)]}
         >
           {inner}

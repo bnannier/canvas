@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { EmptyState, Icon } = scope;
   return (
-<EmptyState bordered icon="📈" title="No activity" description="Events will appear as they happen." />
+<EmptyState bordered icon={<Icon chartLine />} title="No activity" description="Events will appear as they happen." />
   );
 }

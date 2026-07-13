@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { type GestureResponderEvent } from "react-native";
+import { I18nManager, type GestureResponderEvent } from "react-native";
 import {
   View,
   Pressable,
@@ -33,8 +33,8 @@ import { Icon } from "../icon/icon.js";
 // Boolean-prop API, one axis: the separator style. Pick one of `chevron`
 // (default), `slash`, or `dot`; first match wins (mirrors Button's intentOf). The
 // foundation has no SVG utility here, so the chevron is a reading-direction glyph
-// (the single-guillemet "›") rather than an icon, keeping every separator a Text
-// glyph pointing in the reading direction.
+// (the single-guillemet "›" in LTR, "‹" under RTL) rather than an icon, keeping
+// every separator a Text glyph pointing in the reading direction.
 
 // The press feedback an Android ripple wants: the ink color + borderless flag for
 // the Pressable's android_ripple prop. The link/home crumbs are text-sized targets,
@@ -68,6 +68,13 @@ export interface BreadcrumbSkin {
   pressedOpacity: number | null;
   /** The home-icon glyph size (kept small to sit on the text baseline). */
   homeIconSize: number;
+  /**
+   * Minimum effective touch target for the link/home crumbs (HIG 44pt on iOS,
+   * Material 48dp on Android). The shell pads the text-sized Pressables out to
+   * this with hitSlop, so the tap area meets the platform minimum without
+   * changing the visual layout. Inert for pointer input on web.
+   */
+  minTarget: number;
 }
 
 export interface BreadcrumbProps {
@@ -111,9 +118,11 @@ function separatorOf(p: BreadcrumbProps): Separator {
 
 // The divider glyph per style. A centered middot for `dot`, a forward slash for
 // `slash`, and a reading-direction single guillemet for `chevron` (stands in for
-// the SVG chevron not rendered here).
+// the SVG chevron not rendered here). Guillemets are quotation marks, EXCLUDED
+// from Unicode bidi mirroring, so RTL needs the mirrored U+2039 picked explicitly
+// or the divider would keep pointing against the reading direction.
 const SEPARATOR_GLYPH: Record<Separator, string> = {
-  chevron: "›",
+  chevron: I18nManager.isRTL ? "‹" : "›",
   slash: "/",
   dot: "·",
 };
@@ -142,6 +151,19 @@ const CRUMB: ViewStyle = {
   gap: 6,
 };
 
+// The label line-height every skin renders (text-sm, 14/20); the vertical hitSlop
+// pads this out to the skin's minimum touch target.
+const LABEL_LINE_HEIGHT = 20;
+// Horizontal hitSlop for the text links: modest, so adjacent crumbs (6px gap)
+// keep distinct targets while the tap area still extends past the label edges.
+const LINK_HORIZONTAL_SLOP = 8;
+
+// Vertical padding that takes a `visible`-tall crumb to the skin's minimum
+// effective touch target (44pt HIG / 48dp M3) without changing the layout.
+function targetSlop(minTarget: number, visible: number): number {
+  return Math.max(0, Math.ceil((minTarget - visible) / 2));
+}
+
 /** Build a Breadcrumb (and its matching BreadcrumbItem) from a platform skin. */
 export function createBreadcrumb(skin: BreadcrumbSkin) {
   // A single crumb. Current crumbs are plain emphasized text; ancestors are muted,
@@ -163,16 +185,21 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
         </Text>
       );
     }
+    // Pad the ~20px-tall text link out to the platform minimum touch target
+    // vertically; horizontally a modest fixed slop keeps neighbors distinct.
+    const linkType = skin.link(tokens);
+    const vertical = targetSlop(skin.minTarget, linkType.lineHeight ?? LABEL_LINE_HEIGHT);
     return (
       <Pressable
         onPress={onPress}
         accessibilityRole="link"
         android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+        hitSlop={{ top: vertical, bottom: vertical, left: LINK_HORIZONTAL_SLOP, right: LINK_HORIZONTAL_SLOP }}
       >
         {({ pressed }) => (
           <Text
             style={[
-              skin.link(tokens),
+              linkType,
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               style,
             ]}
@@ -224,6 +251,9 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
               accessibilityRole="link"
               accessibilityLabel="Home"
               android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+              // The glyph is only homeIconSize (14px) square; pad all four sides
+              // out to the platform minimum touch target.
+              hitSlop={targetSlop(skin.minTarget, skin.homeIconSize)}
               style={({ pressed }) =>
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null
               }

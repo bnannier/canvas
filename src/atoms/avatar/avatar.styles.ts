@@ -9,10 +9,12 @@ import { type AvatarSkin, type Size } from "./avatar.shared.js";
 //
 // Web keeps the current Canvas look (Catalyst-style): a 6px rounded square and a
 // medium-weight (500) initials. iOS uses SF conventions: semibold (600) initials,
-// a slightly tightened tracking on small type, and a softer 10px continuous-feel
-// corner; press dims opacity to 0.8 (HIG). Android follows Material 3: a 12px
-// rounded square (M3 medium shape token), a medium (500) label with M3's slight
-// positive tracking, and a native ripple on press (no opacity dim).
+// SF Pro Text tracking per point size, and a softer 10px continuous-feel corner;
+// press dims opacity to 0.8 (HIG). Android follows Material 3: a 12px rounded
+// square (M3 medium shape token), a medium (500) label with M3's slight positive
+// tracking, and a native ripple on press (no opacity dim). Each skin also carries
+// its platform minimum touch target (HIG 44pt / M3 48dp) so the shell can pad a
+// pressable trigger's hit area with hitSlop.
 
 // Web initials type, ~40% of the diameter (the current Canvas look), weight 500.
 const WEB_LABEL: Record<Size, TextStyle> = {
@@ -21,10 +23,11 @@ const WEB_LABEL: Record<Size, TextStyle> = {
   large: { fontWeight: "500", fontSize: 18, lineHeight: 28 },
 };
 
-// iOS SF conventions: semibold initials, with the standard SF tightening on the
-// smaller sizes so dense initials read crisply.
+// iOS SF conventions: semibold initials, tracked per the SF Pro Text table for
+// each point size (12pt = 0, 16pt = -0.31, 18pt = -0.43), so dense initials read
+// crisply without over-tightening the small size.
 const IOS_LABEL: Record<Size, TextStyle> = {
-  small: { fontWeight: "600", fontSize: 12, lineHeight: 16, letterSpacing: -0.08 },
+  small: { fontWeight: "600", fontSize: 12, lineHeight: 16 },
   default: { fontWeight: "600", fontSize: 16, lineHeight: 24, letterSpacing: -0.31 },
   large: { fontWeight: "600", fontSize: 18, lineHeight: 28, letterSpacing: -0.43 },
 };
@@ -44,6 +47,8 @@ export const webSkin: AvatarSkin = {
   labelType: WEB_LABEL,
   ripple: null,
   pressedOpacity: 0.9,
+  // Inert for pointer input; keeps a touch-driven web tap area at the 44px floor.
+  minTarget: 44,
 };
 
 // iOS (HIG): composed from an image view / person.crop.circle SF Symbol. A softer
@@ -54,6 +59,8 @@ export const iosSkin: AvatarSkin = {
   labelType: IOS_LABEL,
   ripple: null,
   pressedOpacity: 0.8,
+  // HIG minimum tappable area: 44x44pt.
+  minTarget: 44,
 };
 
 // Material 3: avatars live inside lists, chips, and app bars. A 12px rounded
@@ -64,4 +71,6 @@ export const androidSkin: AvatarSkin = {
   labelType: ANDROID_LABEL,
   ripple: (tokens: ColorTokens) => controlRipple(tokens),
   pressedOpacity: null,
+  // Material 3 accessibility minimum touch target: 48x48dp.
+  minTarget: 48,
 };

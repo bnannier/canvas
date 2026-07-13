@@ -176,7 +176,7 @@ export function createFieldset(
     const container: StyleProp<ViewStyle> = [
       s.containerBase,
       skin.surface(tokens, surface),
-      disabled ? s.disabledDim : null,
+      disabled ? { opacity: skin.disabledOpacity } : null,
       style,
     ];
 
@@ -225,7 +225,7 @@ export function createFieldset(
           {header}
           <View style={{ gap: skin.checkboxGap }}>
             {checkboxes.map((c, i) => (
-              <Checkbox key={i} defaultChecked={c.checked} disabled={disabled}>
+              <Checkbox key={i} defaultChecked={c.checked} disabled={disabled} style={skin.checkboxRow}>
                 {c.label}
               </Checkbox>
             ))}

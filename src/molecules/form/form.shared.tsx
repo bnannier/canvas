@@ -122,6 +122,10 @@ export interface FormSkin {
   stackGap4: ViewStyle;
   /** Outer stack gap for the sidebar / sectioned layouts. */
   stackGap6: ViewStyle;
+  /** Min-height + vertical centering for each checkbox row in a section so its
+   *  effective tap target reaches the platform minimum (>=44pt iOS / >=48dp
+   *  Android). Empty on web so the established web layout is unchanged. */
+  checkboxRow: ViewStyle;
 }
 
 type Layout = "stacked" | "twoColumn" | "sidebar";
@@ -202,7 +206,7 @@ export function createForm(
         <View style={[s.flex1, { gap: 12 }, rightFull]}>
           {section.checkboxes
             ? section.checkboxes.map((c, i) => (
-                <Checkbox key={i} defaultChecked={c.checked}>
+                <Checkbox key={i} defaultChecked={c.checked} style={skin.checkboxRow}>
                   {c.label}
                 </Checkbox>
               ))

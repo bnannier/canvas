@@ -1,6 +1,6 @@
 # Accordion
 
-A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates 0 to 90deg when open) over a collapsible content panel. Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`).
+A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel. Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`).
 
 ## Usage
 

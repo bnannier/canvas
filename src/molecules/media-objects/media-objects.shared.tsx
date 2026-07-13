@@ -1,8 +1,13 @@
-import { type ReactNode } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import { type ImageStyle } from "react-native";
-import { View, Pressable, Image, Text, useTheme, surfaceRipple, pressDim, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Avatar } from "../../atoms/avatar/avatar.js";
+import { View, Pressable, Image, Text, useTheme, surfaceRipple, pressDim, rippleClip, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
+import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
+
+// The composed Avatar type, so each platform can pass its own resolved atom (web
+// base by default) for the leading initials avatar without widening to `any`.
+export type AvatarComponent = ComponentType<AvatarProps>;
 
 // Shared MediaObject shell. The structure, the boolean-prop axes, the data shape,
 // the accessibility, the leading-media precedence (photo > initials > icon), the
@@ -40,10 +45,14 @@ export interface MediaObjectSkin {
   /** Row gap between the leading media, content column, and trailing slot. */
   containerBase: ViewStyle;
   /** bordered card surface: corner radius + border width + padding (+ elevation). The
-   *  border color and the card fill (which read the tokens and follow light/dark; the
-   *  card stays SOLID under glass) are supplied by shared; the skin carries only the
-   *  shape/density/shadow. */
+   *  card fill (which reads the tokens and follows light/dark; the card stays SOLID
+   *  under glass) is supplied by shared; the skin carries the shape/density/shadow. */
   borderedSurface: ViewStyle;
+  /** bordered-card border-color resolver. web/iOS paint the hairline tokens.border; on
+   *  Android the M3 ELEVATED card separates by elevation, not an outline, so it returns
+   *  "transparent" while keeping the border WIDTH so content metrics stay identical
+   *  across platforms. Omit to default to the hairline tokens.border. */
+  borderedBorderColor?: (tokens: ColorTokens) => string;
   /** Leading photo wrapper shape: size + corner radius (the muted fill comes from shared). */
   photoBox: ViewStyle;
   /** The photo itself: matching corner radius. */
@@ -66,6 +75,13 @@ export interface MediaObjectSkin {
   actionBox: ViewStyle;
   /** Press opacity dim for iOS/web (null on Android, where the ripple carries it). */
   pressedOpacity: number;
+  /**
+   * Minimum effective touch height for a BARE (non-bordered) tappable row, applied as
+   * a native minHeight so the tap target reaches the platform minimum (HIG 44pt on iOS,
+   * Material 48dp on Android) without changing web layout (web = 0). A bordered row is
+   * already tall enough from its padding, so this only backstops the bare row.
+   */
+  minTarget: number;
 }
 
 export interface MediaObjectProps {
@@ -120,15 +136,30 @@ function directionOf(p: MediaObjectProps): Direction {
   return "leading";
 }
 
-// The bordered card surface color (platform-neutral): border + card fill read the
-// active tokens, so the surface follows light/dark. MediaObject is a CONTENT-layer
-// surface that paints tokens.card, which stays SOLID under glass (only the
-// functional/popover layer frosts). The skin carries only the shape/density/shadow.
-function borderedColors(tokens: ColorTokens): ViewStyle {
-  return { borderColor: tokens.border, backgroundColor: tokens.card };
+// The bordered card surface color: the card fill reads the active tokens, so the
+// surface follows light/dark. MediaObject is a CONTENT-layer surface that paints
+// tokens.card, which stays SOLID under glass (only the functional/popover layer
+// frosts). The border color comes from the skin (web/iOS hairline tokens.border;
+// Android's M3 ELEVATED card paints it transparent so elevation, not an outline,
+// separates it). The skin carries the shape/density/shadow.
+function borderedColors(tokens: ColorTokens, skin: MediaObjectSkin): ViewStyle {
+  return {
+    borderColor: skin.borderedBorderColor ? skin.borderedBorderColor(tokens) : tokens.border,
+    backgroundColor: tokens.card,
+  };
 }
 
-export function createMediaObject(skin: MediaObjectSkin) {
+/**
+ * Build a MediaObject from a platform skin and the platform-correct leading Avatar
+ * atom. The Avatar is passed in by each platform's thin `.tsx`/`.ios`/`.android`
+ * file, so the leading initials avatar matches the row's platform on every build
+ * path. This matters for the WEB docs 3-up preview: a bare barrel import always
+ * resolves the WEB Avatar in a browser bundler, which would paint a web-styled
+ * avatar inside the iOS/Android rows; each platform file passes its own `.ios`/
+ * `.android` atom so the row reads native. On a real device Metro resolves the
+ * right atom by extension regardless, so the default (the web base) is correct too.
+ */
+export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent = WebAvatar) {
   return function MediaObject(props: MediaObjectProps) {
     const { title, description, body, meta, avatar, src, icon, action, truncate, testID, style } = props;
     const { tokens } = useTheme();
@@ -138,7 +169,7 @@ export function createMediaObject(skin: MediaObjectSkin) {
     const container: StyleProp<ViewStyle> = [
       skin.containerBase,
       { flexDirection: DIRECTION_ROW[direction], alignItems: ALIGN_ITEMS[align] },
-      props.bordered ? [skin.borderedSurface, borderedColors(tokens)] : null,
+      props.bordered ? [skin.borderedSurface, borderedColors(tokens, skin)] : null,
       style,
     ];
 
@@ -193,6 +224,10 @@ export function createMediaObject(skin: MediaObjectSkin) {
       // would expose an unlabeled button, so fall back to the first available text
       // prop to give the control a name for screen readers.
       const a11yLabel = title ?? description ?? meta ?? undefined;
+      // A bare (non-bordered) row is only as tall as its content, so back it out to the
+      // platform minimum tap height (native minHeight; web = 0, unchanged). A bordered
+      // row is already tall enough from its padding.
+      const minTarget = !props.bordered && skin.minTarget ? { minHeight: skin.minTarget } : null;
       return (
         <Pressable
           accessibilityRole="button"
@@ -200,7 +235,10 @@ export function createMediaObject(skin: MediaObjectSkin) {
           onPress={props.onPress}
           testID={testID}
           android_ripple={surfaceRipple(tokens)}
-          style={({ pressed }) => [container, pressDim(pressed, skin.pressedOpacity)]}
+          // Android clips the bounded ripple to the rounded (bordered) surface; the M3
+          // elevation shadow is drawn around the outline by the platform, so it survives
+          // the clip. iOS/web keep their opacity dim and are unaffected (no clip there).
+          style={({ pressed }) => [container, minTarget, pressDim(pressed, skin.pressedOpacity), rippleClip()]}
         >
           {inner}
         </Pressable>

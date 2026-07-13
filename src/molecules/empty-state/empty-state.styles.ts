@@ -10,13 +10,13 @@ import { type ColorTokens, alpha } from "../../style/index.js";
 // ContentUnavailableView is code-only) or Android (Material 3 dropped the M1/M2
 // empty-states pattern), so there is no native shape to match — each skin keeps the
 // established structure and applies only the platform's own surface conventions:
-//   iOS (HIG): a continuous-corner bordered card (radius 12, the grouped-inset
-//     feel), SF-style type with tightened tracking on the title (-0.4) and
-//     description (-0.2); press feedback is N/A (the surface has no pressable of its
-//     own; the action is the iOS-skinned Button atom).
-//   Android (Material 3): an M3 medium-shape card (radius 12), M3 type tracking
-//     (title +0.15, body +0.25); the action is the M3-skinned Button atom, which
-//     carries its own ripple, so this surface adds none.
+//   iOS (HIG): a continuous-corner bordered card (radius 12 with
+//     borderCurve:"continuous", the grouped-inset feel), SF Pro Text tracking on the
+//     title (16pt: -0.31) and description (14pt: -0.15); press feedback is N/A (the
+//     surface has no pressable of its own; the action is the iOS-skinned Button atom).
+//   Android (Material 3): an M3 medium-shape card (radius 12), M3 type roles
+//     (title-medium 16/24/500/+0.15, body-medium 14/20/+0.25); the action is the
+//     M3-skinned Button atom, which carries its own ripple, so this surface adds none.
 //   Web: the established Canvas look (the current empty-state, lifted verbatim) — a
 //     rounded-md bordered card (radius 8), padding 16/24 (compact) or 24/32, a
 //     16pt/600 title and a 14pt `muted-foreground` description, no extra tracking.
@@ -109,10 +109,11 @@ export const webSkin: EmptyStateSkin = {
   actionSpacing: ACTION_SPACING,
 };
 
-// ---- iOS (HIG): continuous-corner grouped-inset feel, tightened SF tracking --
+// ---- iOS (HIG): continuous-corner grouped-inset feel, SF Pro Text tracking ---
 export const iosSkin: EmptyStateSkin = {
   container: CONTAINER,
-  borderedBase: { borderRadius: 12, borderWidth: 1 },
+  // The superellipse corner curve of Apple's grouped-inset surfaces (iOS-only prop).
+  borderedBase: { borderRadius: 12, borderWidth: 1, borderCurve: "continuous" },
   borderedPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 24 },
     default: { paddingHorizontal: 24, paddingVertical: 32 },
@@ -124,7 +125,7 @@ export const iosSkin: EmptyStateSkin = {
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
-    letterSpacing: -0.4,
+    letterSpacing: -0.31,
     color: tokens.foreground,
   }),
   description: (tokens) => ({
@@ -132,13 +133,13 @@ export const iosSkin: EmptyStateSkin = {
     textAlign: "center",
     fontSize: 14,
     lineHeight: 20,
-    letterSpacing: -0.2,
+    letterSpacing: -0.15,
     color: tokens["muted-foreground"],
   }),
   actionSpacing: ACTION_SPACING,
 };
 
-// ---- Android (Material 3): M3 medium shape, M3 type tracking -----------------
+// ---- Android (Material 3): M3 medium shape, M3 type roles --------------------
 export const androidSkin: EmptyStateSkin = {
   container: CONTAINER,
   borderedBase: { borderRadius: 12, borderWidth: 1 },
@@ -149,10 +150,11 @@ export const androidSkin: EmptyStateSkin = {
   discBase: DISC,
   glyph: GLYPH,
   title: (tokens) => ({
+    // M3 title-medium: 16/24, weight 500, +0.15 tracking.
     textAlign: "center",
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: "600",
+    fontWeight: "500",
     letterSpacing: 0.15,
     color: tokens.foreground,
   }),

@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { EmptyState, Icon } = scope;
   return (
 <EmptyState
-  icon="📈"
+  icon={<Icon chartLine />}
   title="No activity"
   description="Events will appear as they happen."
   actionLabel="Refresh"

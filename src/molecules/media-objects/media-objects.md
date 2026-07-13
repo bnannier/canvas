@@ -92,5 +92,5 @@ Image or icon paired with text content. The fundamental building block for list 
 **Don't** — Without truncation a long email wraps and pushes the trailing button out of alignment.
 
 ```tsx
-<MediaObject bordered center style={{ maxWidth: 480 }} src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
+<MediaObject bordered center style={{ maxWidth: 320 }} src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada.lovelace@analytical-engine.example.com" action={<Button outline small>Invite</Button>} />
 ```

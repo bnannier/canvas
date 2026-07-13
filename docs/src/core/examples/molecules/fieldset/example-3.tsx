@@ -8,10 +8,9 @@ export default function Example(scope: ExampleScope) {
 <Fieldset
   legend="Shipping details"
   description="Where should we send your order?"
-  disabled
   items={[
     { label: "Full name", placeholder: "Ada Lovelace" },
-    { label: "Email", placeholder: "ada@example.com", value: "ada@", help: "We'll only use this for order updates." },
+    { label: "Email", placeholder: "ada@example.com", value: "ada@", help: "We'll only use this for order updates.", error: "Enter a valid email address" },
     { label: "Country", placeholder: "United States" }
   ]}
 />

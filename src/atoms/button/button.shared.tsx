@@ -1,5 +1,5 @@
-import { type ReactNode } from "react";
-import { ActivityIndicator, type GestureResponderEvent } from "react-native";
+import { useState, type ReactNode } from "react";
+import { ActivityIndicator, type GestureResponderEvent, type Insets, type LayoutChangeEvent } from "react-native";
 import { Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
@@ -69,6 +69,17 @@ function sizeOf(p: ButtonProps): Size {
   return "base";
 }
 
+/**
+ * Insets that grow a `width` x `height` box to a `minTarget` square touch area
+ * (half the shortfall per side, per axis), or undefined when the box already
+ * meets the minimum. Internal: exported for the shell and its tests only.
+ */
+export function minTargetSlop(minTarget: number, width: number, height: number): Insets | undefined {
+  const h = Math.max(0, (minTarget - width) / 2);
+  const v = Math.max(0, (minTarget - height) / 2);
+  return h > 0 || v > 0 ? { top: v, bottom: v, left: h, right: h } : undefined;
+}
+
 /** Build a Button component from a platform skin. */
 export function createButton(skin: ButtonSkin) {
   return function Button(props: ButtonProps) {
@@ -80,11 +91,30 @@ export function createButton(skin: ButtonSkin) {
     const container = skin.container(tokens, intent, size, { icon: !!icon, block: !!block, dim: !!(disabled || loading) });
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
 
+    // Native minimum touch target (skin-declared: iOS HIG 44pt, Android M3 48dp; web
+    // declares none). Sub-minimum buttons (small text, icon squares) keep their visual
+    // size; the rendered box is measured and hitSlop extends only the TOUCH area, so
+    // there is no layout shift on any platform.
+    const [hitSlop, setHitSlop] = useState<Insets | undefined>(undefined);
+    const minTarget = skin.minTarget;
+    const onTargetLayout =
+      minTarget == null
+        ? undefined
+        : (e: LayoutChangeEvent) => {
+            const { width, height } = e.nativeEvent.layout;
+            const next = minTargetSlop(minTarget, width, height);
+            // Bail out (same reference) unless the insets changed: onLayout fires on
+            // every layout pass. top/left imply bottom/right (half-shortfall per side).
+            setHitSlop((prev) => (prev?.top === next?.top && prev?.left === next?.left ? prev : next));
+          };
+
     return (
       <Pressable
         onPress={onPress}
         disabled={disabled || loading}
         testID={testID}
+        onLayout={onTargetLayout}
+        hitSlop={hitSlop}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}

@@ -24,6 +24,14 @@ export interface ButtonSkin {
   /** iOS/web dim the fill on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   ripple: ((t: ColorTokens, intent: Intent) => { color: string; borderless: boolean }) | null;
+  /**
+   * Platform minimum touch target in pt/dp (iOS HIG 44pt, Android M3 48dp). When set,
+   * the shell measures the rendered control and extends the TOUCH area with hitSlop on
+   * whichever axis falls short (e.g. the 36pt iOS / 30dp Android `small` text button and
+   * the sub-minimum icon squares). hitSlop never affects layout, so the visual size is
+   * untouched. null (web) skips the measurement entirely: pointer targets stay visual.
+   */
+  minTarget: number | null;
 }
 
 // --- shared brand mapping (identical across platforms) ----------------------
@@ -97,6 +105,7 @@ export const webSkin: ButtonSkin = {
   }),
   pressedOpacity: 0.9,
   ripple: null,
+  minTarget: null, // web is pointer-first: no touch-target extension, layout untouched
 };
 
 // ---------- iOS (HIG / iOS 26+ Liquid Glass): capsule, semibold, dim on press ----------
@@ -123,6 +132,7 @@ export const iosSkin: ButtonSkin = {
   }),
   pressedOpacity: 0.8,
   ripple: null,
+  minTarget: 44, // HIG minimum tappable area 44x44pt (small = 36pt tall, extended via hitSlop)
 };
 
 // ---------- Android (Material 3 filled): pill, medium label, flat, ripple ----------
@@ -151,6 +161,7 @@ export const androidSkin: ButtonSkin = {
   }),
   pressedOpacity: null,
   ripple: androidRipple,
+  minTarget: 48, // M3 minimum touch target 48x48dp (small = 30dp, base = 40dp; extended via hitSlop)
 };
 
 function sq(d: number): ViewStyle {

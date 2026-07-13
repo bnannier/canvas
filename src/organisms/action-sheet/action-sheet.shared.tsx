@@ -69,7 +69,8 @@ export interface ActionSheetProps {
    * and opens itself on press (uncontrolled). Omit when you drive `open` yourself.
    */
   trigger?: string;
-  /** Optional header title (a short, centered gray heading on iOS/web). */
+  /** Optional header title (a left-aligned primary-label heading on iOS, a short
+   *  centered gray heading on web, left-aligned on Android). */
   title?: string;
   /** Optional header message under the title. */
   message?: string;
@@ -137,8 +138,9 @@ export function createActionSheet(skin: ActionSheetSkin) {
       skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null;
 
     // The header (optional title/message) plus the action rows, drawn into the
-    // actions card. On iOS/web a hairline divider separates the header from the
-    // rows and one row from the next; on Android the rows sit flush.
+    // actions card. On web a hairline divider separates the header from the rows and
+    // one row from the next; on iOS the rows are detached capsules with a gap (no
+    // dividers) and on Android the rows sit flush.
     const headerNode = hasHeader ? (
       <Fragment>
         <View style={skin.header}>
@@ -162,15 +164,18 @@ export function createActionSheet(skin: ActionSheetSkin) {
           // weight that the red color signals visually.
           accessibilityHint={action.destructive ? "Destructive action" : undefined}
           android_ripple={ripple}
-          style={({ pressed }) => [skin.row, pressFeedback(pressed)]}
+          // iOS paints each row as a detached capsule (its own translucent fill);
+          // web/Android leave rowFill null so the rows take the card's fill.
+          style={({ pressed }) => [skin.row, skin.rowFill?.(tokens), pressFeedback(pressed)]}
         >
           <Text style={skin.rowLabel(tokens, !!action.destructive, !!action.disabled)}>{action.label}</Text>
         </Pressable>
       </Fragment>
     ));
 
-    // The Cancel affordance. On iOS/web it is a SEPARATE rounded card below the
-    // actions card; on Android it folds into the same sheet as the last list row.
+    // The Cancel affordance. On iOS it is a SEPARATE detached capsule below the
+    // container; on web a separate rounded card; on Android it folds into the same
+    // sheet as the last list row.
     const cancelRow = (
       <Pressable
         onPress={close}
@@ -233,8 +238,10 @@ export function createActionSheet(skin: ActionSheetSkin) {
                     {/* The handle (Android) sits above the header inside the sheet. */}
                     {skin.handle ? <View style={skin.handle(tokens)} /> : null}
                     {headerNode}
-                    {/* The rows scroll if they overflow the viewport (a long action list). */}
-                    <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                    {/* The rows scroll if they overflow the viewport (a long action list).
+                        rowsContent spaces the rows on iOS (the detached-capsule gap);
+                        web/Android leave it undefined so the rows stay flush. */}
+                    <ScrollView bounces={false} style={{ maxHeight: 360 }} contentContainerStyle={skin.rowsContent}>
                       {actionRows}
                       {/* Android: Cancel is the last row in the same sheet. */}
                       {skin.cancelLayout === "lastRow" ? (

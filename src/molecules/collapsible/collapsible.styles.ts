@@ -1,4 +1,4 @@
-import { alpha, FOCUS_RESET } from "../../style/index.js";
+import { FOCUS_RESET, surfaceRipple } from "../../style/index.js";
 import { type CollapsibleSkin } from "./collapsible.shared.js";
 
 // Co-located Collapsible skins, one per platform. The shell resolves the open
@@ -19,15 +19,17 @@ import { type CollapsibleSkin } from "./collapsible.shared.js";
 //     90deg on open; the content panel pads `pb-4` and reads in 14px muted text.
 //     Press dims the header. A standalone disclosure has no sibling, so there is no
 //     row divider (matching the accordion's last-row, where the rule is dropped).
-//   iOS (HIG inset-grouped disclosure / SwiftUI DisclosureGroup): a rounded (12px)
-//     inset-grouped card with a hairline `border`, ~17pt SF title, a 15px
-//     tertiary-gray chevron rotating 0->90deg, and a roomier (16px) content inset.
-//     Native iOS grouped surfaces are flat (no shadow). Press = opacity dim (~0.8).
+//   iOS (HIG inset-grouped disclosure / SwiftUI DisclosureGroup): a rounded (12px,
+//     continuous-curve) inset-grouped card with a hairline `border`, ~17pt SF title
+//     (with SF tracking), a 15px tertiary-gray chevron rotating 0->90deg, and a
+//     roomier (16px) content inset. Native iOS grouped surfaces are flat (no
+//     shadow). Press = opacity dim (~0.8).
 //   Android (Material 3 expandable list row): M3 has no accordion/expansion-panel
 //     component, so the disclosure follows M3 list-item conventions: no outer
-//     container, a 16sp titleMedium-ish title, a 24px muted M3 expansion chevron
-//     (down at rest, rotating 0->180deg to point up on open), M3 list density (16dp
-//     insets), and a header `android_ripple` state layer instead of an opacity dim.
+//     container, a 16sp title-medium title (+0.15 tracking), a 24px muted M3
+//     expansion chevron (down at rest, rotating 0->180deg to point up on open), M3
+//     one-line list density (56dp row, 16dp insets), and a header `android_ripple`
+//     state layer instead of an opacity dim.
 
 // =============================================================================
 // Web: the established Canvas / shadcn look.
@@ -36,6 +38,8 @@ import { type CollapsibleSkin } from "./collapsible.shared.js";
 export const webSkin: CollapsibleSkin = {
   // iOS/web dim the header on press; Android uses a ripple (null here).
   pressedOpacity: 0.85,
+  // Disabled dim: shadcn `disabled:opacity-50`.
+  disabledOpacity: 0.5,
   ripple: null,
   // Suppress the react-native-web keyboard-focus blue ring on the header
   // Pressable; the kit paints its own press feedback. No-op natively.
@@ -80,6 +84,7 @@ export const webSkin: CollapsibleSkin = {
 
 export const iosSkin: CollapsibleSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
+  disabledOpacity: 0.5, // HIG dimmed disclosure
   ripple: null,
   focusOutlineReset: FOCUS_RESET,
 
@@ -89,11 +94,14 @@ export const iosSkin: CollapsibleSkin = {
   chevronGlyph: "chevronRight",
   chevronSpinTo: 90,
 
-  // Inset-grouped card: rounded 12px, a hairline border, a flat (no-shadow)
-  // grouped surface filled with the content `card` token (solid).
+  // Inset-grouped card: rounded 12px with the iOS superellipse (continuous) corner
+  // curve, a hairline border, a flat (no-shadow) grouped surface filled with the
+  // content `card` token (solid). `borderCurve` is an RN iOS-only prop (no-op
+  // elsewhere).
   container(t) {
     return {
       borderRadius: 12,
+      borderCurve: "continuous",
       borderWidth: 1,
       borderColor: t.border,
       backgroundColor: t.card,
@@ -111,16 +119,17 @@ export const iosSkin: CollapsibleSkin = {
       paddingHorizontal: 16,
     };
   },
-  // ~17pt SF body title.
+  // ~17pt SF body title with SF Pro Text tracking (17pt = -0.43).
   title(t) {
-    return { flexShrink: 1, fontSize: 17, lineHeight: 22, fontWeight: "400", color: t.foreground };
+    return { flexShrink: 1, fontSize: 17, lineHeight: 22, fontWeight: "400", letterSpacing: -0.43, color: t.foreground };
   },
   // Roomier grouped content inset; leading aligns with the title (16px).
   content() {
     return { paddingHorizontal: 16, paddingBottom: 14, paddingTop: 2 };
   },
+  // 15pt content with SF Pro Text tracking (15pt = -0.24).
   contentText(t) {
-    return { fontSize: 15, lineHeight: 21, color: t["muted-foreground"] };
+    return { fontSize: 15, lineHeight: 21, letterSpacing: -0.24, color: t["muted-foreground"] };
   },
 };
 
@@ -130,12 +139,15 @@ export const iosSkin: CollapsibleSkin = {
 
 export const androidSkin: CollapsibleSkin = {
   pressedOpacity: null, // Android uses a ripple instead
-  ripple: (t) => ({ color: alpha(t.foreground, 0.1), borderless: false }),
+  disabledOpacity: 0.38, // M3 disabled content = 38% on-surface
+  // M3 state-layer ripple, routed through the shared surfaceRipple helper (neutral
+  // foreground ink at 10% alpha); the unrounded row needs no clip.
+  ripple: (t) => surfaceRipple(t),
 
   // M3 list trailing icon: 24px, on-surface-variant (muted).
   chevronSize: 24,
   // M3 in-place expansion: a down chevron (expand_more) at rest that rotates
-  // 0->180deg to point up (expand_less) on open, NOT the iOS/web drill-in caret.
+  // 0->180deg to point up (expand_less) on open, NOT the iOS drill-in caret.
   chevronGlyph: "chevronDown",
   chevronSpinTo: 180,
 
@@ -143,26 +155,28 @@ export const androidSkin: CollapsibleSkin = {
   container() {
     return {};
   },
-  // M3 list item: 16dp horizontal inset, taller (14dp) vertical for a 56dp row.
+  // M3 one-line list item: 16dp horizontal inset; paddingVertical 16 + the 24sp
+  // title line gives a true 56dp M3 list-item container height.
   header() {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       gap: 16,
-      paddingVertical: 14,
+      paddingVertical: 16,
       paddingHorizontal: 16,
     };
   },
-  // M3 titleMedium-ish: 16sp, medium weight, on-surface.
+  // M3 title-medium: 16sp / 24 line / 500 weight / +0.15 tracking, on-surface.
   title(t) {
-    return { flexShrink: 1, fontSize: 16, lineHeight: 24, fontWeight: "500", color: t.foreground };
+    return { flexShrink: 1, fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t.foreground };
   },
   // M3 supporting-text content inset, aligned to the title.
   content() {
     return { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 };
   },
+  // M3 body-medium: 14sp / 20 line / +0.25 tracking.
   contentText(t) {
-    return { fontSize: 14, lineHeight: 20, color: t["muted-foreground"] };
+    return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t["muted-foreground"] };
   },
 };

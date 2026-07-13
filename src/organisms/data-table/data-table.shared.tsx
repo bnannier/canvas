@@ -1,5 +1,5 @@
-import { type ComponentType, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { type ComponentType, type ReactNode, useState } from "react";
+import { View, Pressable, Text, useTheme, breakpoints, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import {
   type Density,
@@ -78,6 +78,17 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
     const density = densityOf(props);
     const { tokens } = useTheme();
 
+    // Measure the table's OWN width so the compact-width collapse tracks the
+    // container, not the window: the docs 3-up and a real iPhone both render the
+    // table narrower than a desktop window would report, so useWindowDimensions
+    // cannot see the narrow column.
+    const [measuredWidth, setMeasuredWidth] = useState(0);
+    // SwiftUI Table collapses to its PRIMARY (first) column in compact width on
+    // iPhone; the iOS skin opts in. Every other platform renders all columns.
+    const collapsed =
+      !!skin.collapsesToPrimaryColumn && measuredWidth > 0 && measuredWidth < breakpoints.sm;
+    const visibleColumns = collapsed ? columns.slice(0, 1) : columns;
+
     const wrap: StyleProp<ViewStyle> = [
       skin.wrap,
       // RN has no ring; a rounded 1px border is the bordered outline.
@@ -88,10 +99,18 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
-      <View testID={testID} style={wrap} role="table">
+      <View
+        testID={testID}
+        style={wrap}
+        role="table"
+        onLayout={(e) => {
+          const w = Math.round(e.nativeEvent.layout.width);
+          setMeasuredWidth((prev) => (prev !== w ? w : prev));
+        }}
+      >
         <View style={[skin.headerRow(tokens), skin.headerPad[density]]} role="row">
           {selectable ? <View style={skin.selectCol} role="columnheader" /> : null}
-          {columns.map((label, i) => (
+          {visibleColumns.map((label, i) => (
             <Text key={`h-${i}`} style={skin.headerCell(tokens)} role="columnheader">
               {label}
             </Text>
@@ -104,17 +123,17 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
           const cells = (
             <>
               {selectable ? (
-                <View style={[skin.selectCell, skin.cellPad[density]]} role="cell">
-                  {/* DataTable carries no per-row selection state in its public
-                      API (rows are raw ReactNode cells; `selectable` only adds
-                      the column), so the selection checkbox is an unselected
-                      affordance. Make that explicit rather than leaving the
-                      prop off, so the unchecked state is intentional, not a
-                      forgotten binding. */}
+                <View style={[skin.selectCell, skin.cellPad[density], { pointerEvents: "none" }]} role="cell">
+                  {/* DataTable carries no per-row selection state in its public API
+                      (rows are raw ReactNode cells; `selectable` only adds the
+                      column), so the selection checkbox is a NON-INTERACTIVE
+                      affordance. `pointerEvents:"none"` lets a row press pass THROUGH
+                      the checkbox to onRowPress instead of dead-ending on the
+                      checkbox's own Pressable (a permanently dead tap zone). */}
                   <Checkbox checked={false} />
                 </View>
               ) : null}
-              {columns.map((_col, c) => {
+              {visibleColumns.map((_col, c) => {
                 const cell = cellOf(row, c);
                 return (
                   <View key={`c-${rowId}-${c}`} style={[skin.dataCell, skin.cellPad[density]]} role="cell">
@@ -126,6 +145,10 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
                   </View>
                 );
               })}
+              {/* An inset row separator (iOS), absolutely positioned so it does not
+                  affect the flex layout; web/Android use the dataRow's full-bleed
+                  borderBottom instead (skin.separator is null there). */}
+              {skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null}
             </>
           );
           // The striped tint sits on odd-index rows for either layout.
@@ -142,6 +165,9 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
               accessibilityLabel={rowLabel(row)}
               style={({ pressed }) => [
                 skin.dataRow(tokens),
+                // Hold the platform minimum tap target (iOS 44pt / M3 48dp) so a
+                // compact pressable row is not sub-minimum; web omits it.
+                skin.pressableMinHeight != null ? { minHeight: skin.pressableMinHeight } : null,
                 stripe,
                 // Android ripples; iOS/web tint the row fill on press.
                 skin.ripple == null && pressed ? skin.pressTint(tokens) : null,

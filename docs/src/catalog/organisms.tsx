@@ -46,25 +46,6 @@ function CalendarsPreview() {
   );
 }
 
-function ChartsPreview() {
-  const { tokens } = useTheme();
-  // viewBox 0 0 100 30, points scaled to a 200x40 box (non-scaling-stroke -> strokeWidth 1.5).
-  const W = 200;
-  const H = 40;
-  const pts = [
-    [0, 24], [10, 20], [20, 22], [30, 14], [40, 16], [50, 10],
-    [60, 12], [70, 6], [80, 8], [90, 4], [100, 2],
-  ] as const;
-  const scaled = pts.map(([x, y]) => `${(x / 100) * W},${(y / 30) * H}`).join(" ");
-  return (
-    <View style={{ width: W, maxWidth: "100%" }}>
-      <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
-        <Polyline points={scaled} fill="none" stroke={tokens.primary} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-      </Svg>
-    </View>
-  );
-}
-
 function CommandPalettePreview() {
   const { tokens } = useTheme();
   return (
@@ -355,7 +336,6 @@ function TabsPreview() {
 
 export const ORGANISMS_TILES: CatTile[] = [
   { title: "Calendar", href: "/components/calendar", Preview: CalendarsPreview },
-  { title: "Chart", href: "/components/charts", Preview: ChartsPreview },
   { title: "Command", href: "/components/command", Preview: CommandPalettePreview },
   { title: "DataTable", href: "/components/data-table", span: true, Preview: DataTablesPreview },
   { title: "FilterPanel", href: "/components/filter-panel", Preview: FilterPanelsPreview },

@@ -29,8 +29,12 @@ import { Icon } from "../../atoms/icon/icon.js";
 //   1. The presentational <Toast> — the skinned notification capsule: an optional
 //      intent icon, a message + optional description, an optional trailing action,
 //      and an optional dismiss (x). It is a FUNCTIONAL-layer overlay, so it renders
-//      through GlassSurface (real Liquid Glass on iOS 26+, a frost on web/Android,
-//      a solid popover fill as the fallback) rather than a hand-painted surface.
+//      through GlassSurface (real Liquid Glass on iOS 26+, a frost on web, a solid
+//      popover fill as the fallback) rather than a hand-painted surface — except
+//      where a skin opts out via `solidSurface`: the Android M3 snackbar is an
+//      inverse-surface bar with no glass idiom, so it stays a solid painted bar
+//      even in glass mode (the glass token swap would strip its inverse fill and
+//      leave its inverse text illegible on the frost).
 //
 //   2. The imperative runtime — <ToastProvider> + useToast(). The provider owns a
 //      queue of live toasts, auto-dismisses each after its duration, and renders the
@@ -83,8 +87,18 @@ export interface ToastProps {
 // The platform-varying surface. Everything shape/type/feedback-bearing the capsule
 // needs lives here, built from the active tokens (so each follows light/dark).
 export interface ToastSkin {
-  /** The capsule shape + density (radius, padding, gap, minHeight, shadow, maxWidth). */
-  container: (t: ColorTokens) => ViewStyle;
+  /** The capsule shape + density (radius, padding, gap, minHeight, shadow, maxWidth).
+   *  `hasTrailing` is true when a trailing action/dismiss control renders, so a skin
+   *  can tighten the trailing padding (M3: 8dp beside a trailing control). */
+  container: (t: ColorTokens, hasTrailing: boolean) => ViewStyle;
+  /** Render the auto intent glyph (success / destructive / info) in the leading
+   *  slot. The M3 snackbar anatomy has no leading icon, so the Android skin turns
+   *  this off; an explicit `icon` prop always renders. */
+  intentIcon: boolean;
+  /** Paint the capsule as a SOLID bar, skipping the GlassSurface material even in
+   *  glass mode. The M3 snackbar is an inverse-surface bar with no glass idiom, so
+   *  the Android skin opts out; iOS/web render through GlassSurface. */
+  solidSurface: boolean;
   /** The intent icon glyph size, in px. */
   iconSize: number;
   /** The message line type. */
@@ -95,13 +109,24 @@ export interface ToastSkin {
   actionButton: (t: ColorTokens) => ViewStyle;
   /** The trailing action label type (brand-tinted). */
   actionLabel: (t: ColorTokens) => TextStyle;
+  /** Extra touch area (px, all edges) around the action button so its target
+   *  reaches the platform minimum (44pt iOS / 48dp Android); null on web. */
+  actionHitSlop: number | null;
   /** The dismiss (x) control shape. */
   dismissButton: (t: ColorTokens) => ViewStyle;
   /** The dismiss glyph size, in px. */
   dismissIconSize: number;
+  /** The dismiss glyph color; null keeps the default muted glyph. The Android skin
+   *  paints the inverse on-surface tone (`background`) so the x reads on the
+   *  inverted bar. */
+  dismissColor: ((t: ColorTokens) => string) | null;
+  /** Extra touch area (px, all edges) around the dismiss control (same platform
+   *  minimums as `actionHitSlop`); null on web. */
+  dismissHitSlop: number | null;
   /** iOS/web dim the action/dismiss on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
-  /** Android action/dismiss ripple; null on iOS/web. */
+  /** Android action/dismiss ripple; null on iOS/web. On the inverse Android bar the
+   *  ink is background-family (a foreground-ink ripple would paint bar-on-bar). */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
@@ -159,8 +184,9 @@ const STACK_BOTTOM_INSET = 24;
  * re-export all three; an app mounts one ToastProvider near its root.
  */
 export function createToastSystem(skin: ToastSkin) {
-  // The skinned capsule alone: the GlassSurface (real glass on iOS 26+, frost on
-  // web/Android, solid popover fill otherwise) with the icon, text column, action,
+  // The skinned capsule alone: the surface (GlassSurface — real glass on iOS 26+,
+  // frost on web, solid popover fill otherwise — or a plain solid bar where the
+  // skin opts out, the Android M3 snackbar) with the icon, text column, action,
   // and dismiss. It carries NO live-region semantics of its own: the standalone
   // <Toast> wraps it in a status region, while <ToastProvider> swaps capsules
   // inside its single persistent region (a per-capsule region would both nest
@@ -175,10 +201,15 @@ export function createToastSystem(skin: ToastSkin) {
     const pressFeedback = (pressed: boolean): ViewStyle | null =>
       skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null;
 
-    const glyph = icon !== undefined ? icon : <IntentIcon intent={intent} size={skin.iconSize} />;
+    // The auto intent glyph only where the skin's anatomy carries one (the M3
+    // snackbar has no leading icon); an explicit `icon` prop always wins.
+    const auto = skin.intentIcon ? <IntentIcon intent={intent} size={skin.iconSize} /> : null;
+    const glyph = icon !== undefined ? icon : auto;
+    const hasTrailing = action != null || onDismiss != null;
+    const containerStyle = skin.container(tokens, hasTrailing);
 
-    return (
-      <GlassSurface style={skin.container(tokens)}>
+    const content = (
+      <>
         {glyph != null && glyph !== false ? <View style={ICON_SLOT}>{glyph}</View> : null}
         <View style={TEXT_COL}>
           <Text style={skin.message(tokens)} numberOfLines={2}>
@@ -196,6 +227,7 @@ export function createToastSystem(skin: ToastSkin) {
             accessibilityRole="button"
             accessibilityLabel={action.label}
             android_ripple={ripple}
+            hitSlop={skin.actionHitSlop ?? undefined}
             style={({ pressed }) => [skin.actionButton(tokens), pressFeedback(pressed)]}
           >
             <Text style={skin.actionLabel(tokens)}>{action.label}</Text>
@@ -207,12 +239,27 @@ export function createToastSystem(skin: ToastSkin) {
             accessibilityRole="button"
             accessibilityLabel="Dismiss"
             android_ripple={ripple}
+            hitSlop={skin.dismissHitSlop ?? undefined}
             style={({ pressed }) => [skin.dismissButton(tokens), pressFeedback(pressed)]}
           >
-            <Icon x muted size={skin.dismissIconSize} />
+            <Icon
+              x
+              muted={skin.dismissColor == null}
+              color={skin.dismissColor ? skin.dismissColor(tokens) : undefined}
+              size={skin.dismissIconSize}
+            />
           </Pressable>
         ) : null}
-      </GlassSurface>
+      </>
+    );
+
+    // The M3 snackbar exemption: a skin that opts out of the glass material paints
+    // its own solid fill (the inverse-surface bar) on a plain View, in glass mode
+    // too; every other skin renders through GlassSurface.
+    return skin.solidSurface ? (
+      <View style={containerStyle}>{content}</View>
+    ) : (
+      <GlassSurface style={containerStyle}>{content}</GlassSurface>
     );
   }
 
