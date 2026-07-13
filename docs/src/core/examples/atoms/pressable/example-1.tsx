@@ -3,12 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable } = scope;
+  const { tokens, Stateful, View, Text, Pressable } = scope;
   return (
-<Pressable onPress={() => {}} style={({ pressed }) => ({ alignSelf: "flex-start", opacity: pressed ? 0.5 : 1 })}>
-  <View style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
-    <Text style={{ color: tokens.foreground }}>Dims while pressed</Text>
-  </View>
-</Pressable>
+<Stateful initial={false}>
+  {(on, setOn) => (
+    <Pressable onPress={() => setOn(!on)} style={({ pressed }) => ({ alignSelf: "flex-start", opacity: pressed ? 0.5 : 1 })}>
+      <View style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
+        <Text style={{ color: tokens.foreground }}>{on ? "On - tap to turn off" : "Off - tap to turn on"}</Text>
+      </View>
+    </Pressable>
+  )}
+</Stateful>
   );
 }

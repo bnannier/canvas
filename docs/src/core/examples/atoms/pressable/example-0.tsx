@@ -3,19 +3,25 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, Text, Pressable } = scope;
+  const { tokens, alpha, Stateful, Text, Pressable } = scope;
   return (
-<Pressable
-  onPress={() => {}}
-  style={({ pressed }) => ({
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-    backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary,
-  })}
->
-  <Text style={{ color: "#ffffff", fontWeight: "600" }}>Press me</Text>
-</Pressable>
+<Stateful initial={0}>
+  {(count, setCount) => (
+    <Pressable
+      onPress={() => setCount(count + 1)}
+      style={({ pressed }) => ({
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        alignSelf: "flex-start",
+        backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary,
+      })}
+    >
+      <Text style={{ color: tokens["primary-foreground"], fontWeight: "600" }}>
+        Pressed {count} {count === 1 ? "time" : "times"}
+      </Text>
+    </Pressable>
+  )}
+</Stateful>
   );
 }
