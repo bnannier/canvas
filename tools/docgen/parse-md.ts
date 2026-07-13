@@ -259,3 +259,75 @@ export function fieldWidthShimViolations(code: string): string[] {
   }
   return [...found];
 }
+
+// Prose guardrail. Canvas is a React Native kit, so its docs prose must describe
+// the real component API, never a web/CSS-framework idiom the kit does not expose.
+// This is the same disease as the banned style shims, one layer out: not a raw
+// `style={…}` in a fence, but a Tailwind utility class (`gap-6`, `items-center`,
+// `bg-input`, `mt-[3px]`), a CSS property (`min-height`, `resize-y`), an HTML
+// element (`<label>`, "a bare div", "pre element"), or a CSS class reference
+// (`.label`, `.input-addon`) sitting in an intro paragraph or a "Do" caption.
+// Each pattern matches framework-specific SYNTAX with no plain-English meaning, so
+// ordinary words ("a label", "the gap between rows") never trip it.
+const PROSE_PHANTOM_PATTERNS: [RegExp, string][] = [
+  // Tailwind utility-class tokens.
+  [/\b[a-z][a-z-]*-\[[^\]\s]+\]/g, "tailwind arbitrary value (e.g. mt-[3px])"],
+  [/\b(?:gap|space)-(?:[xy]-)?\d/g, "tailwind gap utility"],
+  [/\b[mp][trblxye]?-\d(?![\d.])/g, "tailwind margin/padding utility"],
+  [/\b(?:min-)?[wh]-\d/g, "tailwind size utility"],
+  [/\b(?:items|self|content)-(?:center|start|end|stretch|baseline)\b/g, "tailwind align utility"],
+  [/\bjustify-(?:center|between|around|evenly|start|end)\b/g, "tailwind justify utility"],
+  [/\bbg-[a-z][a-z-]*/g, "tailwind background utility"],
+  [/\btext-(?:muted|xs|sm|lg|xl|center|left|right)[a-z-]*/g, "tailwind text utility"],
+  [/\bfont-(?:mono|sans|serif|medium|semibold|bold|light|normal)\b/g, "tailwind font utility"],
+  [/\bselect-(?:none|text|all)\b/g, "tailwind select utility"],
+  [/\brounded-(?:sm|md|lg|xl|full|none)\b/g, "tailwind rounded utility"],
+  [/\b(?:shrink|grow)-\d/g, "tailwind flex utility"],
+  [/\bflex-(?:row|col|1|none|wrap)\b/g, "tailwind flex-direction utility"],
+  [/\b(?:leading|tracking)-(?:none|tight|snug|normal|relaxed|loose|wide|wider)\b/g, "tailwind leading/tracking utility"],
+  [/\bw\/h\b/g, "w/h utilities shorthand"],
+  // CSS property names (kebab-case) in prose — the kit uses camelCase props/tokens.
+  [/\b(?:min|max)-(?:width|height)\b/g, "CSS property (use the width axis / rows)"],
+  [/\bresize-(?:y|x|none|both)\b/g, "CSS resize (RN has no resize handle)"],
+  [/\b(?:z-index|line-height|font-size|font-weight|border-radius|box-shadow|letter-spacing|backdrop-filter)\b/g, "CSS property name"],
+  // HTML elements / attributes.
+  [/<\/?(?:div|span|label|ul|ol|li|pre|p|a|button|section|nav|img|table)\b/g, "HTML element"],
+  [/\bdivs?\b/gi, "HTML element (div)"],
+  [/\b(?:pre|div|span) element\b/g, "HTML element reference"],
+  [/\b(?:className|htmlFor|inputmode)\b/g, "HTML/DOM attribute"],
+  [/<a href/g, "HTML anchor"],
+  // CSS class references (`.label`, `.input-addon`), excluding file-extension tokens.
+  [/(?:^|[\s(])\.[a-z][a-z-]{2,}\b/g, "CSS class reference"],
+];
+const PROSE_FILE_EXT = /^\.(?:md|tsx?|jsx?|json|png|svg|css|html|sh|dev|com|io|env)$/;
+
+/**
+ * Phantom-API references in a component's `.md` PROSE (intro paragraph + "Do"
+ * captions + any other non-fence, non-"Don't"-caption line). "Don't" captions are
+ * exempt for the same reason "Don't" fences are exempt from the style guardrail:
+ * they describe the wrong-way idiom on purpose. A line carrying
+ * `docgen-allow-prose` is skipped (a last-resort escape). Returns one entry per
+ * distinct match so the codegen can fail with a located, actionable list.
+ */
+export function prosePhantomApiViolations(md: string): { line: number; token: string; kind: string }[] {
+  const lines = md.replace(/\r\n/g, "\n").split("\n");
+  const out: { line: number; token: string; kind: string }[] = [];
+  let inFence = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^```/.test(line)) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    if (/^\*\*Don['’]t\*\*/.test(line)) continue; // anti-pattern caption
+    if (line.includes("docgen-allow-prose")) continue;
+    for (const [re, kind] of PROSE_PHANTOM_PATTERNS) {
+      re.lastIndex = 0;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(line)) !== null) {
+        const token = m[0].trim();
+        if (kind === "CSS class reference" && PROSE_FILE_EXT.test(token)) continue;
+        out.push({ line: i + 1, token, kind });
+      }
+    }
+  }
+  return out;
+}

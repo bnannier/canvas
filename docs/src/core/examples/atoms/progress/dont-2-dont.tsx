@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, alpha, View } = scope;
   return (
-<View style={{ maxWidth: 320, height: 8, borderRadius: 4, backgroundColor: alpha(tokens.primary, 0.2), overflow: "hidden" }}>
+<View style={{ width: 320, maxWidth: "100%", height: 8, borderRadius: 4, backgroundColor: alpha(tokens.primary, 0.2), overflow: "hidden" }}>
   <View style={{ height: "100%", width: "35%", borderRadius: 4, backgroundColor: tokens.primary }} />
 </View>
   );

@@ -3,6 +3,7 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { surfaceRipple, type ColorTokens } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
+import { type ButtonProps } from "../../atoms/button/button.shared.js";
 
 // Per-OS FilterPanel skins. FilterPanel is a "Light" treatment: identical
 // structure and semantic colors (those live in filter-panel.shared.tsx); only the
@@ -28,6 +29,7 @@ export type Density = "compact" | "base";
 // The atoms FilterPanel composes are passed in per platform (see createFilterPanel).
 export type CheckboxComponent = ComponentType<CheckboxProps>;
 export type BadgeComponent = ComponentType<BadgeProps>;
+export type ButtonComponent = ComponentType<ButtonProps>;
 
 // The only thing a platform skin owns: the panel shape, the density paddings/gaps,
 // the header/group/row layout fragments, the group-heading type, and the press
@@ -66,6 +68,10 @@ export interface FilterPanelSkin {
 // Fixed panel width (w-[280px]) and column layout.
 const PANEL_BASE: ViewStyle = { width: 280, flexDirection: "column" };
 
+// Android side-sheet container token: 256dp width (M3 side sheets docked-modal
+// container width; max 400dp). The web/iOS panel keeps the established 280 rail.
+const ANDROID_PANEL_BASE: ViewStyle = { width: 256, flexDirection: "column" };
+
 // Header row: title cluster on the left, the Clear action on the right.
 const HEADER_ROW: ViewStyle = {
   flexDirection: "row",
@@ -87,10 +93,23 @@ const OPTION_ROW: ViewStyle = {
   gap: 8,
 };
 
-// Panel inset per density (p-3 compact / p-4 base). Shared by all platforms.
+// The native option rows raise the tap target to the platform minimum while
+// keeping the same centered checkbox/label/count layout (alignItems center holds
+// the visual rhythm). iOS HIG minimum interactive target = 44pt; M3 = 48dp.
+const IOS_OPTION_ROW: ViewStyle = { ...OPTION_ROW, minHeight: 44 };
+const ANDROID_OPTION_ROW: ViewStyle = { ...OPTION_ROW, minHeight: 48 };
+
+// Panel inset per density (p-3 compact / p-4 base). Shared by web/iOS.
 const PANEL_PAD: Record<Density, ViewStyle> = {
   compact: { padding: 12 },
   base: { padding: 16 },
+};
+
+// Android inset: M3 side sheets use 24dp start/end padding. Only the base density
+// takes the wider inset (the compact density keeps the tighter 12dp all-around).
+const ANDROID_PANEL_PAD: Record<Density, ViewStyle> = {
+  compact: { padding: 12 },
+  base: { paddingHorizontal: 24, paddingVertical: 16 },
 };
 
 // Vertical rhythm between the header and groups, and between groups
@@ -107,9 +126,32 @@ const GROUP_GAP: Record<Density, ViewStyle> = {
   base: { gap: 8 },
 };
 
-// "Filters" heading: small, semibold, on the foreground token (shared).
+// "Filters" heading: small, semibold, on the foreground token (web/established look).
 function titleText(tokens: ColorTokens): TextStyle {
   return { fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground };
+}
+
+// iOS: same 14/20 semibold header, plus SF Pro Text tracking at 14pt = -0.15.
+function iosTitleText(tokens: ColorTokens): TextStyle {
+  return {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    color: tokens.foreground,
+  };
+}
+
+// Android: M3 title-small = 14/20, weight 500 (600 is not an M3 role weight),
+// tracking +0.1.
+function androidTitleText(tokens: ColorTokens): TextStyle {
+  return {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+    color: tokens.foreground,
+  };
 }
 
 // ---------- Web: the established Canvas look ----------
@@ -149,9 +191,12 @@ export const webSkin: FilterPanelSkin = {
 // ---------- iOS (HIG): grouped sheet/popover surface, dim on press ----------
 export const iosSkin: FilterPanelSkin = {
   panelBase: PANEL_BASE,
-  // iOS grouped surfaces are softly rounded; bump the card radius to 12.
+  // iOS grouped surfaces are softly rounded; bump the card radius to 12, with the
+  // continuous (superellipse) corner curve HIG surfaces use (RN iOS-only, no-op on
+  // web/Android).
   borderedSurface: (tokens) => ({
     borderRadius: 12,
+    borderCurve: "continuous",
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
@@ -161,7 +206,7 @@ export const iosSkin: FilterPanelSkin = {
   groupGap: GROUP_GAP,
   headerRow: HEADER_ROW,
   titleCluster: TITLE_CLUSTER,
-  titleText,
+  titleText: iosTitleText,
   groupColumn: GROUP_COLUMN,
   // SF-style footnote header: uppercase, slightly tighter tracking than web.
   groupTitle: (tokens) => ({
@@ -172,7 +217,8 @@ export const iosSkin: FilterPanelSkin = {
     letterSpacing: 0.2,
     color: tokens["muted-foreground"],
   }),
-  optionRow: OPTION_ROW,
+  // 44pt minimum tap target (HIG); the checkbox stays centered.
+  optionRow: IOS_OPTION_ROW,
   // iOS press idiom: dim the row to ~0.8.
   rowPressedOpacity: 0.8,
   rowRipple: null,
@@ -180,7 +226,8 @@ export const iosSkin: FilterPanelSkin = {
 
 // ---------- Android (Material 3): side-sheet surface, ripple on press ----------
 export const androidSkin: FilterPanelSkin = {
-  panelBase: PANEL_BASE,
+  // M3 side sheets docked-modal container width token = 256dp.
+  panelBase: ANDROID_PANEL_BASE,
   // M3 side sheets / large containers use a 16dp corner radius.
   borderedSurface: (tokens) => ({
     borderRadius: 16,
@@ -188,23 +235,26 @@ export const androidSkin: FilterPanelSkin = {
     borderColor: tokens.border,
     backgroundColor: tokens.card,
   }),
-  panelPad: PANEL_PAD,
+  // M3 side sheets: 24dp start/end padding on the standard (base) density.
+  panelPad: ANDROID_PANEL_PAD,
   panelStack: PANEL_STACK,
   groupGap: GROUP_GAP,
   headerRow: HEADER_ROW,
   titleCluster: TITLE_CLUSTER,
-  titleText,
+  // M3 title-small (14/20/500/+0.1) for the "Filters" header.
+  titleText: androidTitleText,
   groupColumn: GROUP_COLUMN,
-  // M3 section header: title-small tracking (+0.1), Title case (NOT uppercased,
+  // M3 label-medium (12/16/500/+0.5) group heading, Title case (NOT uppercased,
   // which is the M3 convention for list/section subheaders).
   groupTitle: (tokens) => ({
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
-    letterSpacing: 0.1,
+    letterSpacing: 0.5,
     color: tokens["muted-foreground"],
   }),
-  optionRow: OPTION_ROW,
+  // 48dp minimum tap target (M3); the checkbox stays centered.
+  optionRow: ANDROID_OPTION_ROW,
   // M3 row press is a ripple state layer, not an opacity dim.
   rowPressedOpacity: null,
   rowRipple: (tokens) => surfaceRipple(tokens),

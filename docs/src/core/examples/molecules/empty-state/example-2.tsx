@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { EmptyState, Icon } = scope;
   return (
 <EmptyState
-  icon="📄"
+  icon={<Icon fileText />}
   title="No files"
   description="Upload or drag files here."
   actionLabel="Upload files"

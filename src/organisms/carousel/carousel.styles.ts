@@ -1,4 +1,4 @@
-import { type ColorTokens, alpha, shadow, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, controlRipple, FOCUS_RESET } from "../../style/index.js";
 import { type CarouselSkin } from "./carousel.shared.js";
 
 // Co-located Carousel skins, one per platform. The shell resolves the paging,
@@ -10,13 +10,18 @@ import { type CarouselSkin } from "./carousel.shared.js";
 // follows light/dark.
 //
 //   iOS: the App Store paged-card idiom with a UIPageControl dot strip. Small
-//     circular dots (7px): the active one fills brand `primary`, inactive ones
-//     are `muted-foreground` at low alpha. Slide radius 12. Arrows are present
-//     but subtle (a translucent circular chip); press = opacity dim ~0.8.
-//   Android M3: the M3 carousel feel. Rounded slide corners (28), and an M3
-//     position indicator whose ACTIVE dot widens to a brand `primary` pill while
-//     inactive dots stay small `muted-foreground`/alpha circles. Arrows are flat
-//     `card` chips with a hairline border; press = android_ripple (no shadow).
+//     circular dots (7px, ~16pt on center): the active one fills brand `primary`,
+//     inactive ones are `muted-foreground` at low alpha. Slide radius 12 with
+//     Apple's continuous (superellipse) corners. Arrows default OFF (App Store
+//     cards swipe with page-control dots, no overlay chrome); the `showArrows`
+//     prop opts them in as a subtle translucent circular chip, press = dim ~0.8.
+//   Android M3: the M3 carousel feel. Rounded slide corners (28dp, extra-large on
+//     every M3 layout) with snap-scroll navigation. The M3 carousel anatomy is
+//     container + items ONLY, so there are NO overlay arrows and NO position/dot
+//     indicator: both default OFF here, and `showArrows`/`showDots` opt them back
+//     in for a common Android pager. When shown, an arrow is a flat `card` chip
+//     with a hairline border and a `controlRipple` press (no shadow), and the
+//     active dot widens to a brand `primary` pill while inactive dots stay small.
 //   Web (Embla/shadcn): visible circular OUTLINE arrow buttons (32px, radius
 //     9999, `card` fill + 1px `border`) overlaid on the left/right edges, with a
 //     small drop shadow; the dot strip sits below (active = wider `primary`
@@ -30,6 +35,11 @@ export const webSkin: CarouselSkin = {
   pressedOpacity: 0.9,
   ripple: null,
   focusOutlineReset: FOCUS_RESET,
+
+  // Web (pointer): the established Canvas look shows both arrows and dots, and a
+  // mouse has no minimum touch target, so no hitSlop padding.
+  defaultShowArrows: true,
+  defaultShowDots: true,
 
   slide(tokens) {
     return {
@@ -83,8 +93,9 @@ export const webSkin: CarouselSkin = {
 
 // =============================================================================
 // iOS: App Store paged cards with a UIPageControl dot strip. Small round dots,
-// active filled brand `primary`, inactive muted-alpha; subtle translucent
-// arrows; slide radius 12. Press = opacity dim.
+// active filled brand `primary`, inactive muted-alpha; slide radius 12,
+// continuous corners. Arrows default OFF (opt in via `showArrows`); when shown
+// they are a subtle translucent chip. Press = opacity dim.
 // =============================================================================
 
 export const iosSkin: CarouselSkin = {
@@ -92,9 +103,20 @@ export const iosSkin: CarouselSkin = {
   ripple: null,
   focusOutlineReset: FOCUS_RESET,
 
+  // App Store paged cards: swipe + UIPageControl dots, no overlay arrows by
+  // default (the `showArrows` prop opts them back in for pointer/iPad).
+  defaultShowArrows: false,
+  defaultShowDots: true,
+  // 30pt arrow chip -> >= 44pt HIG target; 7pt dot -> a 44pt-tall UIPageControl
+  // strip (cross-axis 19 each) while the main-axis slop (5 each) stays near half
+  // the ~16pt inter-dot pitch so adjacent dot targets barely overlap.
+  arrowHitSlop: 7,
+  dotHitSlop: { top: 19, bottom: 19, left: 5, right: 5 },
+
   slide(tokens) {
     return {
       borderRadius: 12,
+      borderCurve: "continuous", // Apple superellipse corners on the rounded slide
       overflow: "hidden",
       backgroundColor: tokens.card,
     };
@@ -120,7 +142,7 @@ export const iosSkin: CarouselSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: 7,
+      gap: 9, // ~9pt inter-dot spacing -> 16pt center-to-center (UIPageControl)
       paddingTop: 12,
     };
   },
@@ -135,20 +157,33 @@ export const iosSkin: CarouselSkin = {
     };
   },
 
+  // SF Pro Text at 17pt: line height 22, tracking -0.43 (Apple SF tracking table).
   slideText(tokens) {
-    return { fontSize: 17, lineHeight: 24, fontWeight: "600", color: tokens.foreground };
+    return { fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, color: tokens.foreground };
   },
 };
 
 // =============================================================================
-// Android (Material 3): rounded slide corners, flat `card` arrow chips with a
-// hairline border (ripple on press, no shadow), and an M3 position indicator
-// whose active dot widens to a brand `primary` pill.
+// Android (Material 3): rounded slide corners + snap-scroll. Per the M3 carousel
+// anatomy (container + items only) there are NO arrows and NO position/dot
+// indicator, so both default OFF. When opted in, arrows are flat `card` chips
+// with a hairline border (controlRipple on press, no shadow) and the active dot
+// widens to a brand `primary` pill.
 // =============================================================================
 
 export const androidSkin: CarouselSkin = {
   pressedOpacity: null, // Android uses a ripple instead
-  ripple: (tokens) => ({ color: alpha(tokens.foreground, 0.12), borderless: true }),
+  ripple: (tokens) => controlRipple(tokens), // borderless 12%-alpha foreground ripple
+
+  // M3 carousel anatomy = container + items ONLY: no overlay arrows and no
+  // position/dot indicator. Both default OFF; `showArrows`/`showDots` opt them
+  // back in for a common Android pager.
+  defaultShowArrows: false,
+  defaultShowDots: false,
+  // 32dp arrow chip -> >= 48dp M3 target; 8dp dot -> a 48dp-tall strip (cross-axis
+  // 20 each), main-axis slop 3 kept near half the ~14dp inter-dot pitch.
+  arrowHitSlop: 8,
+  dotHitSlop: { top: 20, bottom: 20, left: 3, right: 3 },
 
   slide(tokens) {
     return {
@@ -185,8 +220,9 @@ export const androidSkin: CarouselSkin = {
       paddingTop: 12,
     };
   },
-  // M3 carousel position indicator: the active item widens to a brand `primary`
-  // pill, inactive items stay small muted-alpha circles.
+  // Off-anatomy for M3 (which defines no position indicator), so `showDots`
+  // defaults off; when opted in, the active item widens to a brand `primary`
+  // pill and inactive items stay small muted-alpha circles (a common Android pager).
   dot(tokens, active) {
     return {
       height: 8,
@@ -196,7 +232,8 @@ export const androidSkin: CarouselSkin = {
     };
   },
 
+  // M3 title-medium: 16/24/500 with +0.15 tracking.
   slideText(tokens) {
-    return { fontSize: 16, lineHeight: 24, fontWeight: "500", color: tokens.foreground };
+    return { fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: tokens.foreground };
   },
 };

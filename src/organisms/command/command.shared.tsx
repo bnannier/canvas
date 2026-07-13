@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { type Role } from "react-native";
-import { View, Text, Pressable, useTheme, useControllableState, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, useEscapeKey, AnchoredOverlay, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
 // list container casts it. The value is correct on both web (DOM role) and native.
@@ -24,9 +24,13 @@ import * as s from "./command.styles.js";
 // shortcut rendered as a Kbd cap. The active row (a flat index across all
 // groups) is highlighted with the accent surface.
 //
-// This is the OPEN, INLINE palette card on its own: no full-screen portal,
-// Modal, or backdrop. `open` (default true) gates whether the card renders, so
-// the docs playground can show the palette in its open state.
+// In BARE mode (no `trigger`) this is the OPEN, inline palette card on its own:
+// no Modal, no scrim. `open` (default true) gates whether the card renders, so
+// the docs playground can show the palette in its open state. In TRIGGER mode the
+// floating palette card is portaled below the collapsed trigger through
+// AnchoredOverlay (like Dropdown/Popover/RowMenu), so it escapes the trigger's
+// stacking context and is never overpainted by a later sibling or clipped by an
+// ancestor; it falls back to the inline absolute anchor with no OverlayProvider.
 //
 // Command is a "Light" platform treatment: ONE structure with small per-OS
 // touches (row density/height, type, and press feedback). The panel material
@@ -119,6 +123,14 @@ export function createCommand(skin: CommandSkin) {
       onOpenChange?.(next);
     };
 
+    // The trigger view AnchoredOverlay measures to anchor (and portal) the card.
+    const triggerRef = useRef<View>(null);
+
+    // Escape dismisses the open TRIGGER-mode palette on web (no-op natively). The
+    // bare inline card is left alone: it has no trigger to reopen it, so escape
+    // would only strand it closed.
+    useEscapeKey(!!trigger && open, () => setOpen(false));
+
     // In trigger mode the collapsed search button is always shown; the palette
     // card below it is still gated by `open`. Otherwise the bare card is gated by
     // `open` and renders nothing when closed.
@@ -129,12 +141,16 @@ export function createCommand(skin: CommandSkin) {
     // Walk a flat counter across every group so `active` indexes the whole list.
     let flat = -1;
 
-    const card = open ? (
-      // In bare (trigger-less) mode the card IS the root, so it carries the
-      // testID; in trigger mode the wrapper View below is the root and takes it.
-      <GlassSurface testID={trigger ? undefined : testID} style={[s.card(tokens), trigger ? s.cardFloating : null]}>
+    // The card's inner content (search row + grouped result rows + optional
+    // footer), WITHOUT the surface wrapper: the bare card wraps it in its own
+    // GlassSurface, and in trigger mode AnchoredOverlay supplies the GlassSurface
+    // (portaling the card over the page). The search magnifier is the kit `Icon`
+    // (a template-tintable monochrome glyph) tinted muted-foreground — never a
+    // color emoji (which ignores tint and renders full-color on device).
+    const cardContent = (
+      <>
         <View style={skin.searchRow(tokens)}>
-          <Text style={skin.searchGlyph(tokens)}>🔍</Text>
+          <Icon search muted decorative size={skin.searchGlyphSize} />
           <Text style={skin.searchPlaceholder(tokens)}>{placeholder}</Text>
         </View>
 
@@ -197,25 +213,49 @@ export function createCommand(skin: CommandSkin) {
             </View>
           </View>
         ) : null}
-      </GlassSurface>
-    ) : null;
+      </>
+    );
 
-    if (!trigger) return card;
+    // Bare (trigger-less) mode: the card IS the root and carries the testID. The
+    // early return above already gated it on `open`, so it renders open here; the
+    // per-OS `cardShape` layers the iOS continuous corner over the shared card.
+    if (!trigger) {
+      return (
+        <GlassSurface testID={testID} style={[s.card(tokens), skin.cardShape]}>
+          {cardContent}
+        </GlassSurface>
+      );
+    }
 
+    // Trigger mode: the collapsed full-width search trigger, with the palette card
+    // portaled below it through AnchoredOverlay (gap 12 = the old mt-3). When an
+    // OverlayProvider hosts it the card floats OVER the page with an outside-tap
+    // dismiss backdrop; with no provider it falls back to the inline absolute
+    // anchor (s.cardFloating). The wrapper still lifts its own stacking context
+    // while open for that inline-fallback case.
     return (
-      <View testID={testID} style={[s.triggerWrapper, open ? s.triggerWrapperLifted : null, style]}>
+      <View ref={triggerRef} testID={testID} style={[s.triggerWrapper, open ? s.triggerWrapperLifted : null, style]}>
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
           aria-expanded={open}
-          style={s.triggerRow(tokens)}
+          style={[s.triggerRow(tokens), { minHeight: skin.triggerMinHeight }]}
           onPress={() => setOpen(!open)}
         >
           <Icon search muted size={14} />
           <Text style={s.triggerLabel(tokens)}>Search...</Text>
           <Kbd style={s.triggerKbd}>⌘K</Kbd>
         </Pressable>
-        {card}
+        <AnchoredOverlay
+          open={open}
+          onDismiss={() => setOpen(false)}
+          triggerRef={triggerRef}
+          gap={12}
+          cardStyle={[s.card(tokens), skin.cardShape]}
+          inlineStyle={s.cardFloating}
+        >
+          {cardContent}
+        </AnchoredOverlay>
       </View>
     );
   };

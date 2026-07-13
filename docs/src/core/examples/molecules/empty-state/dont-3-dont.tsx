@@ -3,14 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View, Text } = scope;
+  const { EmptyState, Icon } = scope;
   return (
-<View style={{ alignItems: "center", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, paddingHorizontal: 24, paddingVertical: 32 }}>
-  <View style={{ marginBottom: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: alpha(tokens.destructive, 0.1) }}>
-    <Text style={{ fontSize: 20, lineHeight: 28, color: tokens.destructive }}>⚠️</Text>
-  </View>
-  <Text style={{ textAlign: "center", fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens.foreground }}>No activity</Text>
-  <Text style={{ marginTop: 4, textAlign: "center", fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Events will appear as they happen.</Text>
-</View>
+<EmptyState bordered icon={<Icon alertTriangle destructive />} title="No activity" description="Events will appear as they happen." />
   );
 }

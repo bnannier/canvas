@@ -13,7 +13,7 @@ export default function Example(scope: ExampleScope) {
     </View>
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingTop: 2 }}>
       <Text style={{ fontSize: 14, lineHeight: 20 }}>
-        <Text style={{ fontWeight: "500" }}>Rachel Chen </Text>
+        <Text style={{ fontWeight: "500", color: tokens.foreground }}>Rachel Chen </Text>
         <Text style={{ color: tokens["muted-foreground"] }}>approved the request</Text>
       </Text>
       <Text style={{ marginTop: 2, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>2 hours ago</Text>
@@ -26,7 +26,7 @@ export default function Example(scope: ExampleScope) {
     </View>
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", paddingTop: 2 }}>
       <Text style={{ fontSize: 14, lineHeight: 20 }}>
-        <Text style={{ fontWeight: "500" }}>System </Text>
+        <Text style={{ fontWeight: "500", color: tokens.foreground }}>System </Text>
         <Text style={{ color: tokens["muted-foreground"] }}>created the project</Text>
       </Text>
       <Text style={{ marginTop: 2, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>3 days ago</Text>

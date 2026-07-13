@@ -59,7 +59,7 @@ export interface DocEntry {
   // The source directory / `.md` stem (src/<category>/<dir>/<dir>.md). The URL slug
   // can differ (see the components data); the consuming page maps slug -> dir.
   dir: string;
-  category: "atoms" | "molecules" | "organisms";
+  category: "atoms" | "molecules" | "organisms" | "charts";
   examples: DocExample[];
   donts: DocDontPair[];
 }

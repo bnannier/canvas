@@ -6,12 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Fieldset } = scope;
   return (
 <Fieldset
-  legend="Email notifications"
-  description="Choose what we email you about."
-  checkboxes={[
-    { label: "Product updates", checked: true },
-    { label: "Security alerts", checked: true },
-    { label: "Weekly digest", checked: false }
+  bordered
+  legend="Shipping details"
+  description="Where should we send your order?"
+  items={[
+    { label: "Full name", placeholder: "Ada Lovelace" },
+    { label: "Email", placeholder: "ada@example.com", value: "ada@", help: "We'll only use this for order updates." },
+    { label: "Country", placeholder: "United States" }
   ]}
 />
   );

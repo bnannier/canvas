@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { EmptyState, Icon } = scope;
   return (
-<EmptyState bordered positive icon="✅" title="No pending reviews" description="3 accounts are locked and waiting on you." />
+<EmptyState bordered positive icon={<Icon circleCheck />} title="No pending reviews" description="3 accounts are locked and waiting on you." />
   );
 }

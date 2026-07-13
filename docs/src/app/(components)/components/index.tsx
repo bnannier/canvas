@@ -9,10 +9,11 @@ import { TOKENS_TILES } from "../../../catalog/tokens";
 import { ATOMS_TILES } from "../../../catalog/atoms";
 import { MOLECULES_TILES } from "../../../catalog/molecules";
 import { ORGANISMS_TILES } from "../../../catalog/organisms";
+import { CHARTS_TILES } from "../../../catalog/charts";
 import { TEMPLATES_TILES } from "../../../catalog/templates";
 import { PATTERNS_TILES } from "../../../catalog/patterns";
 
-const CATEGORY_IDS = ["Tokens", "Atoms", "Molecules", "Organisms", "Templates", "Patterns"];
+const CATEGORY_IDS = ["Tokens", "Atoms", "Molecules", "Organisms", "Charts", "Templates", "Patterns"];
 
 // A live catalog: a category pill bar + intro, then a tile
 // grid per category, each tile a small mockup preview of the component linking to its reference.
@@ -24,6 +25,7 @@ export default function ComponentsIndex() {
     Atoms: byCat("Atoms"),
     Molecules: byCat("Molecules"),
     Organisms: byCat("Organisms"),
+    Charts: byCat("Charts"),
     Templates: 8,
     Patterns: 6,
   };
@@ -49,6 +51,7 @@ export default function ComponentsIndex() {
       <CatGroup label="Atoms" count={counts.Atoms} tiles={ATOMS_TILES} />
       <CatGroup label="Molecules" count={counts.Molecules} tiles={MOLECULES_TILES} />
       <CatGroup label="Organisms" count={counts.Organisms} tiles={ORGANISMS_TILES} />
+      <CatGroup label="Charts" count={counts.Charts} tiles={CHARTS_TILES} />
       <CatGroup label="Templates" count={counts.Templates} tiles={TEMPLATES_TILES} />
       <CatGroup label="Patterns" count={counts.Patterns} tiles={PATTERNS_TILES} />
 

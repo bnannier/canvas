@@ -17,7 +17,10 @@ import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 //     bordered cells that share borders (gap 0), only the outer corners rounded (md/6),
 //     active cell tinted `ring` with a soft 3px ring at 50% alpha. Base cell ~36x36.
 // Disabled dims the whole control (opacity in the shell). Each cell centers its digit;
-// the empty active cell draws a thin `foreground` caret bar.
+// the empty active cell draws a thin caret bar — brand `primary` and blinking on the
+// native rows (the iOS insertion point is always the tint color, the M3 cursor is the
+// primary color, and both blink), static `foreground` on the web row (the established
+// Canvas baseline).
 
 // ---- shared geometry helpers ----
 const CELL_BASE: ViewStyle = {
@@ -26,6 +29,7 @@ const CELL_BASE: ViewStyle = {
 };
 
 // Digit type scale per size (the digit is the value; size scales it with the box).
+// Used by the web (18 base, the established Canvas look) and iOS (600 weight) skins.
 function digitText(t: ColorTokens, size: Size, weight: TextStyle["fontWeight"]): TextStyle {
   const fontSize = size === "large" ? 22 : size === "small" ? 15 : 18;
   return {
@@ -37,11 +41,32 @@ function digitText(t: ColorTokens, size: Size, weight: TextStyle["fontWeight"]):
   };
 }
 
+// Android digit type, mapped to REAL M3 type roles (M3 has no OTP component, so the
+// digit borrows the 500-weight title scale): title-small 14/20/+0.1 (small),
+// title-medium 16/24/+0.15 (base), and the title-large 22/28 metrics for the large
+// cell, held at the 500 title weight so the digit emphasis stays constant across sizes
+// (title-large's 400 would read lighter than the base cell).
+function androidDigitText(t: ColorTokens, size: Size): TextStyle {
+  const [fontSize, lineHeight, letterSpacing] =
+    size === "large" ? [22, 28, 0] : size === "small" ? [14, 20, 0.1] : [16, 24, 0.15];
+  return {
+    fontSize,
+    lineHeight,
+    letterSpacing,
+    fontWeight: "500",
+    color: t.foreground,
+    textAlign: "center",
+  };
+}
+
 // The caret bar: a thin vertical rule centered in the empty active cell, sized to
-// the digit cap height per size (matches shadcn's h-4 w-px caret).
-function caretBar(t: ColorTokens, size: Size): ViewStyle {
+// the digit cap height per size (matches shadcn's h-4 w-px caret geometry). The COLOR
+// is per-skin: iOS/Android pass the brand `primary` (the native insertion-point/cursor
+// idiom), web keeps the established `foreground` bar. The blink lives in the shell
+// (see `caretBlink` on the skin contract).
+function caretBar(color: string, size: Size): ViewStyle {
   const height = size === "large" ? 22 : size === "small" ? 15 : 18;
-  return { width: 1.5, height, borderRadius: 1, backgroundColor: t.foreground };
+  return { width: 1.5, height, borderRadius: 1, backgroundColor: color };
 }
 
 // ---------- iOS (HIG): rounded-square filled cells, separated, primary ring on active ----------
@@ -57,6 +82,9 @@ export const iosSkin: InputOTPSkin = {
     width: IOS_W[size],
     height: IOS_H[size],
     borderRadius: IOS_RADIUS,
+    // Apple rounded rects are superellipses: the continuous corner curve (iOS-only
+    // RN style prop, a no-op elsewhere), not the default circular arc.
+    borderCurve: "continuous",
     // HIG field-style fill so the empty cells read as tappable slots on both schemes.
     backgroundColor: t.secondary,
     // Active cell gets a brand ring; resting cells are borderless (the fill defines them).
@@ -64,7 +92,9 @@ export const iosSkin: InputOTPSkin = {
     borderColor: active ? t.primary : "transparent",
   }),
   digit: (t, size) => digitText(t, size, "600"),
-  caret: caretBar,
+  // iOS insertion-point idiom: the caret is the tint color (brand primary) and blinks.
+  caret: (t, size) => caretBar(t.primary, size),
+  caretBlink: true,
   disabledOpacity: 0.5,
 };
 
@@ -86,9 +116,11 @@ export const androidSkin: InputOTPSkin = {
     borderWidth: active ? 2 : 1,
     borderColor: active ? t.primary : t.border,
   }),
-  // M3 body-large digit scale.
-  digit: (t, size) => digitText(t, size, "500"),
-  caret: caretBar,
+  // M3 title-role digit scale (see androidDigitText).
+  digit: androidDigitText,
+  // M3 text-field cursor idiom: the caret is the primary color and blinks.
+  caret: (t, size) => caretBar(t.primary, size),
+  caretBlink: true,
   disabledOpacity: 0.38, // M3 disabled opacity
 };
 
@@ -135,6 +167,8 @@ export const webSkin: InputOTPSkin = {
     } as ViewStyle;
   },
   digit: (t, size) => digitText(t, size, "500"),
-  caret: caretBar,
+  // The established Canvas caret: a static `foreground` bar (the web row is the baseline).
+  caret: (t, size) => caretBar(t.foreground, size),
+  caretBlink: false,
   disabledOpacity: 0.5,
 };

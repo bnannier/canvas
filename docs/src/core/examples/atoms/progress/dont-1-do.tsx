@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Progress, Typography, Column } = scope;
   return (
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Typography small muted>Connecting…</Typography>
   <Progress indeterminate />
 </Column>

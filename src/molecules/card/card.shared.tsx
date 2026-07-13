@@ -10,9 +10,11 @@ import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 // padding) and calls createCard.
 //
 // Card is a "Light" platform treatment: one structure and one set of (semantic)
-// colors, with per-OS touches limited to the corner radius, the card's own content
-// density, the resting elevation, and the press feedback (Android android_ripple,
-// iOS/web pressed opacity). The composition subcomponents are static and shared.
+// colors, with per-OS touches limited to the corner radius (+ the iOS continuous
+// corner curve), the surface's border-vs-elevation treatment (Android's M3
+// elevated default hides the outline), the card's own content density, the
+// resting elevation, and the press feedback (Android android_ripple, iOS/web
+// pressed opacity). The composition subcomponents are static and shared.
 //
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). Axes:
@@ -97,8 +99,13 @@ export function createCard(skin: CardSkin) {
 
     const container: StyleProp<ViewStyle> = [
       s.cardBase,
-      { borderRadius: skin.radius },
-      s.cardSurface(tokens),
+      // Shape: per-OS radius; iOS adds Apple's continuous (superellipse) corner
+      // curve (an iOS-only RN style prop, omitted entirely on the other skins).
+      { borderRadius: skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) },
+      // Surface colors per elevation variant: web/iOS always show the Light-
+      // treatment hairline; Android paints it transparent on the non-outlined
+      // (M3 elevated) variants and shows it only on `flat` (M3 outlined).
+      skin.surface(tokens, elev),
       skin.elevation(elev),
       // Density pads + gaps on its own and wins over everything. Otherwise a card
       // with raw children pads by default (the common case); `flush` opts out
@@ -107,7 +114,9 @@ export function createCard(skin: CardSkin) {
       // sections carry the padding. `padded` is the explicit form of the default.
       dens !== "default" ? skin.density[dens] : flush ? null : padded || children != null ? skin.padded : null,
       // Selected: recolor the border to primary and wash the surface with a soft
-      // primary tint (the border width is unchanged, so content never shifts).
+      // primary tint (the border width is unchanged, so content never shifts; on
+      // Android's elevated default the resting hairline is transparent, so this
+      // paints it in).
       selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,
       grow ? { flexGrow: 1 } : null,
       style,

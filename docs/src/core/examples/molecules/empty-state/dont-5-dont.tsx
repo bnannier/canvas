@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { EmptyState, Icon } = scope;
   return (
-<EmptyState bordered icon="🔍" title="No errors" description="Nothing was found." />
+<EmptyState bordered icon={<Icon search />} title="No errors" description="Nothing was found." />
   );
 }

@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import {
   View,
   Pressable,
@@ -9,8 +9,13 @@ import {
   type ViewStyle,
   type TextStyle,
 } from "../../style/index.js";
-import { Avatar } from "../../atoms/avatar/avatar.js";
+import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
+import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import * as s from "./feeds.styles.js";
+
+// The composed Avatar type so each platform can pass its own resolved atom (the
+// web base by default) without widening to `any`.
+export type AvatarComponent = ComponentType<AvatarProps>;
 
 // Shared Feed shell. The structure (a card surface framing connector-node rows or
 // avatar rows, with an actor/action line plus a relative timestamp), the
@@ -114,6 +119,13 @@ export interface FeedSkin {
   pressedOpacity: number | null;
   /** Android ripple over pressable rows; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /**
+   * Minimum effective touch-target height for a pressable row (HIG 44pt on iOS,
+   * Material 48dp on Android). Rows already taller than this are unaffected; it
+   * only floors the short final connector row (~40pt) up to the platform
+   * minimum. 0 on web (pointer input, no finger-target rule; layout unchanged).
+   */
+  minTarget: number;
 }
 
 // Lead precedence when more than one is passed: first match wins.
@@ -132,7 +144,7 @@ function initialsFrom(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function createFeed(skin: FeedSkin) {
+export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) {
   return function Feed(props: FeedProps) {
     const { items = [], onItemPress, testID, style } = props;
     const { tokens } = useTheme();
@@ -143,6 +155,11 @@ export function createFeed(skin: FeedSkin) {
     // Press feedback differs per OS: Android shows a native ripple (state layer)
     // on the row, iOS/web dim the row's opacity. The skin decides which.
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+
+    // Floor a pressable row to the platform's minimum touch target (44pt iOS /
+    // 48dp Android); web is 0 so its layout is unchanged. Only the short final
+    // connector row is actually grown; avatar and non-last rows already exceed it.
+    const targetFloor: ViewStyle | null = skin.minTarget > 0 ? { minHeight: skin.minTarget } : null;
 
     const renderContent = (item: FeedItem) => (
       <View style={s.contentColumn}>
@@ -228,6 +245,7 @@ export function createFeed(skin: FeedSkin) {
             android_ripple={ripple}
             style={({ pressed }) => [
               rowStyle,
+              targetFloor,
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
           >

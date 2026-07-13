@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { EmptyState, Icon } = scope;
   return (
 <EmptyState
-  icon="🔍"
+  icon={<Icon search />}
   title="No results found"
   description="Try adjusting your search filters."
   actionLabel="Clear filters"

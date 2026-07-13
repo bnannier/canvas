@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Progress } = scope;
   return (
-<Progress value={0.4} style={{ maxWidth: 320 }} />
+<Progress value={0.4} />
   );
 }

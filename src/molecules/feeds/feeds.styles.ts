@@ -18,10 +18,11 @@ import { type FeedSkin } from "./feeds.shared.js";
 //     list-row highlight. No connector/avatar structure changes (iOS composes
 //     feeds from plain lists, so the kit keeps its structure and applies only
 //     iOS conventions).
-//   Android (Material 3): the larger M3 corner (16-radius, M3 medium-container),
-//     a flat surface (no shadow — M3 cards are flat unless elevation is
-//     specified; the kit keeps the 1px hairline so the card stays legible on
-//     either theme), M3 type tracking (+0.1 body, +0.25 timestamp), and a brand
+//   Android (Material 3): the M3 medium-shape corner (12-radius, matching M3
+//     cards and the kit's own Android Card atom), a flat surface (no shadow — M3
+//     cards are flat unless elevation is specified; the kit keeps the 1px
+//     hairline so the card stays legible on either theme), M3 type tracking
+//     (body-medium +0.25 action, body-small +0.4 timestamp), and a brand
 //     state-layer android_ripple on pressable rows instead of an opacity dim.
 
 // --- shared layout fragments (identical across platforms) -------------------
@@ -92,6 +93,8 @@ export const webSkin: FeedSkin = {
   timeLabel: (t) => ({ marginTop: 2, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
   pressedOpacity: 0.7,
   ripple: null,
+  // Web pointer input has no finger-target minimum; keep the row layout as-is.
+  minTarget: 0,
 };
 
 // ---------- iOS (HIG / SF conventions): softer card, tighter SF tracking ----------
@@ -105,6 +108,8 @@ export const iosSkin: FeedSkin = {
     width: "100%",
     maxWidth: 560,
     borderRadius: 12,
+    // Apple's smooth/continuous (superellipse) corners; RN iOS-only, no-op elsewhere.
+    borderCurve: "continuous",
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.card,
@@ -126,28 +131,33 @@ export const iosSkin: FeedSkin = {
     backgroundColor: t.card,
   }),
   connectorLine: (t) => ({ position: "absolute", bottom: 0, start: 13, top: 28, width: 1, backgroundColor: t.border }),
-  nodeInitials: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", letterSpacing: -0.08, color: t["muted-foreground"] }),
-  lineText: { fontSize: 15, lineHeight: 20, letterSpacing: -0.2 },
-  actorLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2, color: t.foreground }),
-  actionLabel: (t) => ({ fontSize: 15, lineHeight: 20, letterSpacing: -0.2, color: t["muted-foreground"] }),
+  // SF Pro Text tracking: 12pt = 0 (initials), 15pt = -0.24 (line), 13pt = -0.08 (time).
+  nodeInitials: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", letterSpacing: 0, color: t["muted-foreground"] }),
+  lineText: { fontSize: 15, lineHeight: 20, letterSpacing: -0.24 },
+  actorLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t.foreground }),
+  actionLabel: (t) => ({ fontSize: 15, lineHeight: 20, letterSpacing: -0.24, color: t["muted-foreground"] }),
   timeLabel: (t) => ({ marginTop: 2, fontSize: 13, lineHeight: 16, letterSpacing: -0.08, color: t["muted-foreground"] }),
   pressedOpacity: 0.8,
   ripple: null,
+  // HIG minimum interactive target (floors the short final connector row up to 44pt).
+  minTarget: 44,
 };
 
 // ---------- Android (Material 3): larger corner, flat surface, ripple ----------
 // M3 has no activity-feed component (feeds compose from lists/cards), so the kit
-// keeps its structure and applies M3 surface conventions: the larger M3 medium-
-// container corner (16 radius), a flat surface (no shadow; M3 cards are flat
-// unless elevation is specified — the kit keeps the 1px hairline so the card is
-// legible on either theme), M3 body type tracking (+0.1 body, +0.25 timestamp),
-// and a brand state-layer android_ripple on pressable rows in place of the
-// opacity dim. The brand survives; the ripple ink is the foreground at low alpha.
+// keeps its structure and applies M3 surface conventions: the M3 medium-shape
+// corner (12 radius, matching M3 cards and the kit's own Android Card atom), a
+// flat surface (no shadow; M3 cards are flat unless elevation is specified — the
+// kit keeps the 1px hairline so the card is legible on either theme), M3 body
+// type tracking (body-medium +0.25 action, body-small +0.4 timestamp), and a
+// brand state-layer android_ripple on pressable rows in place of the opacity
+// dim. The brand survives; the ripple ink is the foreground at low alpha.
 export const androidSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
     maxWidth: 560,
-    borderRadius: 16,
+    // M3 medium shape (12dp), matching M3 cards and the kit's own Android Card atom.
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.card,
@@ -170,10 +180,14 @@ export const androidSkin: FeedSkin = {
   }),
   connectorLine: (t) => ({ position: "absolute", bottom: 0, start: 13, top: 28, width: 1, backgroundColor: t.border }),
   nodeInitials: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.1, color: t["muted-foreground"] }),
+  // actorLabel = M3 title-small (14/20/500/+0.1); actionLabel = body-medium
+  // (14/20/400/+0.25); timeLabel = body-small (12/16/400/+0.4).
   lineText: { fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
   actorLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
-  actionLabel: (t) => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.1, color: t["muted-foreground"] }),
-  timeLabel: (t) => ({ marginTop: 2, fontSize: 12, lineHeight: 16, letterSpacing: 0.25, color: t["muted-foreground"] }),
+  actionLabel: (t) => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t["muted-foreground"] }),
+  timeLabel: (t) => ({ marginTop: 2, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
   pressedOpacity: null,
   ripple: (t) => surfaceRipple(t),
+  // M3 minimum touch target (floors the short final connector row up to 48dp).
+  minTarget: 48,
 };

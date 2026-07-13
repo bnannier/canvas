@@ -1,10 +1,13 @@
-import { type ReactNode } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { Avatar } from "../../atoms/avatar/avatar.js";
-import { Badge } from "../../atoms/badge/badge.js";
-import { Button } from "../../atoms/button/button.js";
+import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
+import { Badge as WebBadge } from "../../atoms/badge/badge.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
+import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
+import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./stacked-lists.styles.js";
 import { type StackedListSkin } from "./stacked-lists.styles.js";
 
@@ -103,7 +106,25 @@ function variantOf(p: StackedListProps): Variant {
   return "two-line";
 }
 
-export function createStackedList(skin: StackedListSkin) {
+// The composed-atom component types, so each platform can pass its own resolved
+// atoms (web base by default) without widening to `any`.
+export type AvatarComponent = ComponentType<AvatarProps>;
+export type BadgeComponent = ComponentType<BadgeProps>;
+export type ButtonComponent = ComponentType<ButtonProps>;
+
+// createStackedList threads the platform skin AND the platform-styled composed
+// atoms. The atom params default to the web base atoms so the web entry (and any
+// barrel import) composes web-styled rows; the .ios/.android entry files pass the
+// literal per-OS atoms so the WEB docs 3-up renders each row's avatar/badge/Add
+// button in its own platform skin (a barrel import would resolve the web atoms in
+// the browser bundle). The signature change is internal; the public component
+// export is unchanged, so it stays backward-compatible.
+export function createStackedList(
+  skin: StackedListSkin,
+  Avatar: AvatarComponent = WebAvatar,
+  Badge: BadgeComponent = WebBadge,
+  Button: ButtonComponent = WebButton,
+) {
   return function StackedList(props: StackedListProps) {
     const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, testID, style } = props;
     const variant = variantOf(props);
@@ -148,15 +169,18 @@ export function createStackedList(skin: StackedListSkin) {
 
     const renderTrailing = (item: StackedListItem) => {
       if (item.badge != null) return <Badge secondary>{item.badge}</Badge>;
-      if (item.meta != null) return <Text style={skin.mutedLabel(tokens)}>{item.meta}</Text>;
+      if (item.meta != null) return <Text style={skin.metaLabel(tokens)}>{item.meta}</Text>;
       return null;
     };
 
     // A ghost overflow ("...") action-menu button drawn as three horizontal dots;
-    // the Icon set has no more-horizontal glyph, so the dots are primitives.
+    // the Icon set has no more-horizontal glyph, so the dots are primitives. The
+    // hitSlop (native skins only) grows the effective target to the platform
+    // minimum (44pt iOS / 48dp Android) while the visual box stays 28.
     const renderMenu = (index: number) => (
       <Pressable
         style={({ pressed }) => [skin.menuButton, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
+        hitSlop={skin.menuHitSlop}
         android_ripple={ripple}
         onPress={(event) => onPressItemMenu?.(index, event)}
         accessibilityRole="button"
@@ -167,6 +191,25 @@ export function createStackedList(skin: StackedListSkin) {
         <View style={s.menuDot(tokens)} />
       </Pressable>
     );
+
+    // The decorative drilldown chevron: an SF-semibold text glyph on iOS/web, a
+    // 24dp Icon on Android (the M3 trailing affordance). Either way it is hidden
+    // from assistive tech (the row's `button` role already conveys actionability;
+    // the Icon glyph is `decorative`, the text glyph carries the aria-hidden
+    // aliases; importantForAccessibility is not forwarded on web).
+    const renderChevron = () =>
+      skin.chevronIcon != null ? (
+        <Icon chevronRight muted decorative size={skin.chevronIcon} />
+      ) : (
+        <Text
+          style={skin.chevronGlyph!(tokens)}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          aria-hidden
+        >
+          {"›"}
+        </Text>
+      );
 
     const renderAvatar = (item: StackedListItem) => (
       // `name` flows the human name to Avatar for the accessible label/alt text;
@@ -194,18 +237,7 @@ export function createStackedList(skin: StackedListSkin) {
             {renderColumn(item)}
             {renderTrailing(item)}
             {rowMenu ? renderMenu(index) : null}
-            {/* Decorative drilldown chevron: the row's `button` role already
-                conveys it is actionable, so hide the glyph from assistive tech
-                (aria-hidden is the RNW alias; importantForAccessibility is not
-                forwarded on web). */}
-            <Text
-              style={skin.mutedLabel(tokens)}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              aria-hidden
-            >
-              {"›"}
-            </Text>
+            {renderChevron()}
           </Pressable>
         );
       }

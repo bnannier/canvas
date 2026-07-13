@@ -29,9 +29,10 @@ export type Size = "small" | "default" | "large";
 export type Shape = "circle" | "rounded";
 
 // The only things a platform skin owns: the rounded-square corner radius, the
-// initials type (size / line-height / weight / tracking) per size, and the press
-// feedback for the optional trigger. The circle radius (9999), the box sizes, the
-// muted fallback surface, and the ring outline are platform-neutral and live below.
+// initials type (size / line-height / weight / tracking) per size, the press
+// feedback for the optional trigger, and the platform's minimum touch target.
+// The circle radius (9999), the box sizes, the muted fallback surface, and the
+// ring outline are platform-neutral and live below.
 //
 // Android sets `ripple` (an android_ripple config) and leaves `pressedOpacity`
 // null; iOS and web set `pressedOpacity` and leave `ripple` null, so the press
@@ -45,6 +46,13 @@ export interface AvatarSkin {
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean }) | null;
   /** iOS/web press dim opacity for the pressable trigger, or null on Android. */
   pressedOpacity: number | null;
+  /**
+   * Minimum effective touch target for the pressable trigger (HIG 44pt on iOS,
+   * Material 48dp on Android). The shell pads a smaller visual box out to this
+   * with hitSlop, so the tap area meets the platform minimum without changing
+   * the rendered size. Inert for pointer input on web.
+   */
+  minTarget: number;
 }
 
 export interface AvatarProps {
@@ -168,6 +176,13 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
 
     const container: StyleProp<ViewStyle> = [containerStyle(tokens, skin, size, shape, !!ring), style];
 
+    // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
+    // M3) when the avatar is pressable: e.g. the 28px `small` topbar trigger gets
+    // hitSlop 8 on iOS (28 + 2*8 = 44) and 10 on Android (28 + 2*10 = 48). The
+    // large 48px box already meets both minimums, so its slop resolves to 0.
+    const targetSlop = Math.max(0, Math.ceil((skin.minTarget - BOX[size]) / 2));
+    const hitSlop = targetSlop > 0 ? targetSlop : undefined;
+
     let inner: ReactNode;
     if (showPhoto) {
       inner = (
@@ -200,6 +215,7 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
             android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
             style={({ pressed }) => [container, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
             onPress={onPress}
+            hitSlop={hitSlop}
             testID={testID}
             accessibilityRole="button"
             accessibilityLabel={label}
@@ -219,7 +235,7 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
     const Surface = GlassFallback;
     if (onPress) {
       return (
-        <Pressable onPress={onPress} testID={testID} accessibilityRole="button" accessibilityLabel={label} aria-label={label}>
+        <Pressable onPress={onPress} hitSlop={hitSlop} testID={testID} accessibilityRole="button" accessibilityLabel={label} aria-label={label}>
           <Surface style={container}>{inner}</Surface>
         </Pressable>
       );

@@ -14,9 +14,10 @@ import { type ColorTokens, shadow } from "../../style/index.js";
 // the type live in the controls and the shared shell); only the native SHAPE
 // (corner radius), DENSITY (padding / inter-field gap), TYPE TRACKING, and surface
 // ELEVATION shift per OS:
-//   iOS (HIG Boxes / SwiftUI GroupBox): a rounded grouped box (~12pt continuous-
-//     corner radius) over the `card` fill, ~16pt inset, no shadow (a flat grouped
-//     surface); SF-style type with tightened tracking on the legend.
+//   iOS (HIG Boxes / SwiftUI GroupBox): a rounded grouped box (12pt continuous-
+//     corner radius) over the `secondary` background fill (HIG boxes separate their
+//     contents with a fill, not a shadow: iOS uses the secondary/tertiary background
+//     colors), ~16pt inset, no shadow; SF Pro Text tracking on the legend/label.
 //   Android (none: M3 has no fieldset; related fields are grouped with layout,
 //     section headers, and dividers). We keep the structure and apply M3
 //     conventions: a more-rounded surface (12dp), a subtly elevated card (M3
@@ -57,15 +58,18 @@ export interface FieldsetSkin {
   twoColumnGap: number;
   /** Vertical gap between rows in the checkbox group. */
   checkboxGap: number;
+  /** Min-height + vertical centering for each checkbox row so its effective tap
+   *  target reaches the platform minimum (>=44pt iOS / >=48dp Android). Empty on
+   *  web so the established web layout is unchanged. */
+  checkboxRow: ViewStyle;
+  /** Opacity applied to the whole group when disabled. */
+  disabledOpacity: number;
 }
 
 // --- shared layout fragments (identical across platforms) -------------------
 
 // Outer container: full width, capped at 576px. (w-full max-w-[576px])
 export const containerBase: ViewStyle = { width: "100%", maxWidth: 576 };
-
-// The disabled dim applied to the whole group. (opacity-60)
-export const disabledDim: ViewStyle = { opacity: 0.6 };
 
 // A single field's wrapper. (w-full)
 export const fieldWrap: ViewStyle = { width: "100%" };
@@ -93,28 +97,35 @@ export const webSkin: FieldsetSkin = {
   groupGap: 16,
   twoColumnGap: 16,
   checkboxGap: 8,
+  checkboxRow: {},
+  disabledOpacity: 0.6,
 };
 
 // ---------- iOS (HIG Boxes / SwiftUI GroupBox): rounded grouped box, flat ----------
-// A grouped box: a rounded section (~12pt continuous-corner radius) over the `card`
-// fill with NO shadow (HIG grouped surfaces are flat, set off by fill rather than a
-// drop shadow); a 16pt inset. SF-style type: the legend tightens tracking (-0.2),
-// the body keeps the same brand sizing. The plain group stays borderless.
+// A grouped box: a rounded section (12pt continuous/superellipse corners) over the
+// secondary background fill with NO shadow (HIG boxes separate their contents with a
+// fill, not a drop shadow: iOS/iPadOS "use the secondary and tertiary background
+// colors in boxes"); a 16pt inset. SF-style type: SF Pro Text tracking (legend 16pt
+// = -0.31, label 14pt = -0.15, help/error 12pt = 0); the plain group stays borderless.
 const IOS_RADIUS = 12;
 export const iosSkin: FieldsetSkin = {
   surface: (t, s) =>
     s === "bordered"
-      ? { borderRadius: IOS_RADIUS, backgroundColor: t.card, padding: 16 }
+      ? { borderRadius: IOS_RADIUS, borderCurve: "continuous", backgroundColor: t.secondary, padding: 16 }
       : {},
-  legend: (t) => ({ fontSize: 16, lineHeight: 22, fontWeight: "600", letterSpacing: -0.2, color: t.foreground }),
+  legend: (t) => ({ fontSize: 16, lineHeight: 22, fontWeight: "600", letterSpacing: -0.31, color: t.foreground }),
   description: (t) => ({ marginTop: 4, fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
   header: { marginBottom: 16 },
-  fieldLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: -0.08, color: t.foreground }),
-  fieldHelp: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, letterSpacing: -0.06, color: t["muted-foreground"] }),
-  fieldError: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, letterSpacing: -0.06, color: t.destructive }),
+  fieldLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: -0.15, color: t.foreground }),
+  fieldHelp: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, letterSpacing: 0, color: t["muted-foreground"] }),
+  fieldError: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, letterSpacing: 0, color: t.destructive }),
   groupGap: 16,
   twoColumnGap: 16,
   checkboxGap: 8,
+  // HIG minimum touch target 44x44pt; grouped-list selection rows are 44pt. The
+  // checkbox row is a flex ROW, so alignItems (cross axis) centers it vertically.
+  checkboxRow: { minHeight: 44, alignItems: "center" },
+  disabledOpacity: 0.6,
 };
 
 // ---------- Android (none: M3 has no fieldset) — M3 conventions on the shared shell ----------
@@ -129,13 +140,21 @@ export const androidSkin: FieldsetSkin = {
     s === "bordered"
       ? { borderRadius: ANDROID_RADIUS, backgroundColor: t.card, padding: 16, ...shadow("sm") }
       : {},
-  legend: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: 0.1, color: t.foreground }),
+  // Legend = M3 title-medium: 16sp / 24 line / 500 weight / +0.15 tracking (600 is
+  // not an M3 type-scale weight; M3 uses 400/500/700 only).
+  legend: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t.foreground }),
   description: (t) => ({ marginTop: 4, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
   header: { marginBottom: 16 },
   fieldLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
-  fieldHelp: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
-  fieldError: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t.destructive }),
+  // M3 text-field supporting text: body-small inset 16dp to align with the field's
+  // text, 4dp below the container.
+  fieldHelp: (t) => ({ marginTop: 4, paddingHorizontal: 16, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
+  fieldError: (t) => ({ marginTop: 4, paddingHorizontal: 16, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t.destructive }),
   groupGap: 12,
   twoColumnGap: 12,
   checkboxGap: 8,
+  // M3 minimum touch target 48x48dp; selection-list rows reserve a 48dp target.
+  checkboxRow: { minHeight: 48, alignItems: "center" },
+  // M3 disabled content = 38% opacity.
+  disabledOpacity: 0.38,
 };

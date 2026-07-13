@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Button, Row } = scope;
+  const { Alert, Button, Icon, Row } = scope;
   return (
 <Alert
   warning
-  icon="⚠"
+  icon={<Icon alertTriangle size={16} />}
   title="Action required"
   description="Your trial expires in 3 days."
   dismissible

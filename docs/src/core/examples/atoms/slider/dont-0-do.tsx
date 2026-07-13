@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Slider, Typography, Column } = scope;
   return (
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Typography small medium>Volume</Typography>
   <Slider defaultValue={65} min={0} max={100} />
 </Column>

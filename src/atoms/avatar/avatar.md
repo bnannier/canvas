@@ -1,6 +1,6 @@
 # Avatar
 
-A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).
+A photo when the account has one, falling back to one or two initials on the muted token surface (real Liquid Glass on iOS 26+ under glass surface mode). Sizes scale font proportionally (40% of diameter).
 
 ## Usage
 

@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import {
   View,
   Pressable,
@@ -51,13 +51,20 @@ export interface AlertSkin {
   dismissType: TextStyle;
   /** Pressed opacity for the dismiss control (iOS/web dim; Android stays opaque under ripple). */
   dismissPressedOpacity: number;
+  /**
+   * Hit-area inset per side (pt/dp) padding the 24px dismiss box out to the platform
+   * minimum touch target (HIG 44x44pt on iOS, M3 48x48dp on Android) without changing
+   * the rendered size. null (web) keeps pointer targets visual.
+   */
+  dismissHitSlop: number | null;
 }
 
 export interface AlertProps {
   // Content.
   title?: string;
   description?: string;
-  // A leading glyph (a single Text character; the foundation has no icon set).
+  // A leading glyph: a single Text character, or an element (e.g. an `<Icon />`,
+  // auto-tinted to the tone's icon color unless it sets its own color).
   icon?: ReactNode;
   // Tone (pick one; omit for the neutral default).
   info?: boolean;
@@ -124,10 +131,25 @@ function bodyColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
 }
 
 export function createAlert(skin: AlertSkin) {
+  // Element icons (an `<Icon />`) sit in a View slot centered on the text glyph's
+  // line height, so both icon forms align with the title's first line.
+  const iconSlot: ViewStyle = { height: skin.iconType.lineHeight, justifyContent: "center" };
+
   return function Alert(props: AlertProps) {
     const { title, description, icon, children, dismissible, onDismiss, testID, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
+
+    // Auto-tint a leading `<Icon />` element to the tone's icon color, so a bare
+    // `<Icon info />` matches the banner hue without the caller threading a color
+    // (the same idiom Chip uses for its leading icon). An Icon that sets its own
+    // `color` (or a semantic color boolean, which wins inside Icon) keeps it; a
+    // non-Icon element ignores the injected prop.
+    const tintedIcon = isValidElement(icon)
+      ? cloneElement(icon as ReactElement<Record<string, unknown>>, {
+          color: (icon.props as Record<string, unknown>).color ?? iconColor(tokens, dark, tone).color,
+        })
+      : null;
 
     // An Alert is an inline notification surface, so it announces itself as an
     // alert and rides a live region (assistive tech reads the message without
@@ -144,7 +166,13 @@ export function createAlert(skin: AlertSkin) {
         aria-live={live}
         style={[skin.container, containerColor(tokens, dark, tone), style]}
       >
-        {icon != null ? <Text style={[skin.iconType, iconColor(tokens, dark, tone)]}>{icon}</Text> : null}
+        {icon != null ? (
+          tintedIcon != null ? (
+            <View style={iconSlot}>{tintedIcon}</View>
+          ) : (
+            <Text style={[skin.iconType, iconColor(tokens, dark, tone)]}>{icon}</Text>
+          )
+        ) : null}
         <View style={CONTENT}>
           {title != null && title !== "" ? (
             <Text style={[skin.titleType, titleColor(tokens, dark, tone)]}>{title}</Text>
@@ -159,6 +187,7 @@ export function createAlert(skin: AlertSkin) {
             onPress={onDismiss}
             accessibilityRole="button"
             accessibilityLabel="Dismiss"
+            hitSlop={skin.dismissHitSlop ?? undefined}
             android_ripple={controlRipple(tokens)}
             style={({ pressed }) => [skin.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
           >

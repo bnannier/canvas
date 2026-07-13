@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { EmptyState } = scope;
+  const { EmptyState, Icon } = scope;
   return (
 <EmptyState
-  icon="👥"
+  icon={<Icon users />}
   title="No users"
   description="Invite your first team member."
   actionLabel="Invite member"

@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
+  type Insets,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -49,9 +50,9 @@ import { Icon } from "../../atoms/icon/icon.js";
 // slides, arrows, and dots need lives here, built from the active tokens (so
 // each follows light/dark).
 export interface CarouselSkin {
-  /** iOS/web dim the arrow on press; Android uses a ripple instead (null). */
+  /** iOS/web dim the arrow/dot on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
-  /** Android arrow ripple; null on iOS/web. */
+  /** Android arrow/dot ripple; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
    * Web-only focus-outline reset for the arrow/dot Pressables, so the
@@ -59,6 +60,33 @@ export interface CarouselSkin {
    * is suppressed. No-op natively, where `outline*` are not real styles.
    */
   focusOutlineReset?: ViewStyle;
+
+  /**
+   * Whether the overlaid prev/next arrows show when the `showArrows` prop is
+   * unset. Platform-adaptive: on for web (Embla), OFF for iOS (App Store cards
+   * swipe with page-control dots, no overlay chrome) and Android (M3 carousel
+   * anatomy is container + items only, snap-scroll navigation, no arrows). The
+   * `showArrows` prop still opts them back in for pointer/iPad contexts.
+   */
+  defaultShowArrows: boolean;
+  /**
+   * Whether the dot indicator strip shows when the `showDots` prop is unset.
+   * Platform-adaptive: on for web + iOS (UIPageControl idiom), OFF for Android
+   * (M3 defines no position/dot indicator). The `showDots` prop opts them in.
+   */
+  defaultShowDots: boolean;
+  /**
+   * hitSlop padding each arrow's touch target out to the platform minimum
+   * (>= 44pt iOS / >= 48dp Android). hitSlop never affects layout, so the visual
+   * arrow size stays. Undefined on web (no touch-target minimum for a pointer).
+   */
+  arrowHitSlop?: number | Insets;
+  /**
+   * hitSlop padding each dot's touch target out to the platform minimum. Larger
+   * on the cross axis (to reach the 44/48 strip height) than the main axis (kept
+   * near half the inter-dot pitch so adjacent dot targets barely overlap).
+   */
+  dotHitSlop?: number | Insets;
 
   /** The slide wrapper shape (corner radius; the content clips to it). */
   slide: (t: ColorTokens) => ViewStyle;
@@ -98,9 +126,11 @@ export interface CarouselProps {
   onIndexChange?: (index: number) => void;
   /** Wrap from the last slide to the first (and first to last) on arrow nav. */
   loop?: boolean;
-  /** Show the overlaid prev/next chevron buttons (default true). */
+  /** Show the overlaid prev/next chevron buttons. Default is platform-adaptive:
+   *  on for web, off for iOS + Android (swipe idioms); pass `true` to opt in. */
   showArrows?: boolean;
-  /** Show the centered dot indicators below the slides (default true). */
+  /** Show the centered dot indicators below the slides. Default is
+   *  platform-adaptive: on for web + iOS (UIPageControl), off for Android M3. */
   showDots?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -140,6 +170,7 @@ export function createCarousel(skin: CarouselSkin) {
         <Pressable
           onPress={disabled ? undefined : onPress}
           disabled={disabled}
+          hitSlop={skin.arrowHitSlop}
           android_ripple={skin.ripple && !disabled ? skin.ripple(tokens) : undefined}
           accessibilityRole="button"
           accessibilityLabel={side === "prev" ? "Previous slide" : "Next slide"}
@@ -169,14 +200,19 @@ export function createCarousel(skin: CarouselSkin) {
       defaultIndex = 0,
       onIndexChange,
       loop = false,
-      showArrows = true,
-      showDots = true,
+      showArrows,
+      showDots,
       testID,
       style,
     } = props;
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
     const count = items.length;
+
+    // Arrow/dot visibility is platform-adaptive: the prop wins when set, else the
+    // skin's default (web shows both; iOS shows dots only; Android shows neither).
+    const arrowsVisible = showArrows ?? skin.defaultShowArrows;
+    const dotsVisible = showDots ?? skin.defaultShowDots;
 
     // Uncontrolled store, seeded once from defaultIndex; ignored when controlled.
     const [internal, setInternal] = useState(() => nextIndex(defaultIndex, count, false));
@@ -283,7 +319,7 @@ export function createCarousel(skin: CarouselSkin) {
             <View style={skin.slide(tokens)}>{slideBody(items[current])}</View>
           ) : null}
 
-          {showArrows && count > 1 ? (
+          {arrowsVisible && count > 1 ? (
             <>
               <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(current - 1)} />
               <Arrow side="next" disabled={nextDisabled} onPress={() => goTo(current + 1)} />
@@ -291,12 +327,14 @@ export function createCarousel(skin: CarouselSkin) {
           ) : null}
         </View>
 
-        {showDots && count > 1 ? (
+        {dotsVisible && count > 1 ? (
           <View style={skin.dotsRow(tokens)}>
             {items.map((item, i) => (
               <Pressable
                 key={item.key}
                 onPress={() => goTo(i)}
+                hitSlop={skin.dotHitSlop}
+                android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 accessibilityRole="button"
                 accessibilityLabel={`Go to slide ${i + 1}`}
                 accessibilityState={{ selected: i === current }}

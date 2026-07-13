@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, palette, shadow, alpha, surfaceRipple } from "../../style/index.js";
 import { type StatsSkin } from "./stats.shared.js";
 
 // Co-located Stats skins, one per platform, all driven by the brand tokens
@@ -21,15 +21,17 @@ import { type StatsSkin } from "./stats.shared.js";
 //     the plain parent at p24, gaps 14/24, value 24/600 with -0.4 tracking, label
 //     14 muted, delta 12/500. Press = opacity dim (0.9).
 //   iOS (HIG / SF): iOS has no stat-tile control, so this stays a card-like inset
-//     surface following SF conventions — a softer 12-radius corner, the same hairline
-//     border with NO shadow (iOS inset-grouped surfaces read flat), slightly tighter
-//     density, and SF tracking tightened on the value (-0.5) and the label (-0.2).
-//     Press = opacity dim (~0.8).
+//     surface following SF conventions — a softer 12-radius continuous
+//     (superellipse) corner, the same hairline border with NO shadow (iOS
+//     inset-grouped surfaces read flat), slightly tighter density, SF tracking
+//     tightened on the value (-0.5), and SF Pro Text table tracking on the rest
+//     (16pt -0.31, 14pt -0.15, 12pt 0). Press = opacity dim (~0.8).
 //   Android (Material 3 card): M3 has no stat component, so this stays an M3
 //     outlined card — a 12-radius corner, a 1px outline and NO shadow (M3 outlined
-//     cards are flat), M3 label tracking (+0.1 on the value, +0.1 on the label/delta
-//     for M3 label/body styles). Press = android_ripple (neutral surface state
-//     layer); no opacity dim.
+//     cards are flat), M3 type roles (value headline-small 24/32/400/0, title
+//     title-medium 16/24/500/+0.15 or title-small 14/20/500/+0.1, label body-medium
+//     14/20/400/+0.25, delta label-medium 12/16/500/+0.5). Press = android_ripple
+//     via surfaceRipple (neutral surface state layer); no opacity dim.
 
 export type Surface = "card" | "plain";
 
@@ -107,6 +109,8 @@ export const webSkin: StatsSkin = {
 export const iosSkin: StatsSkin = {
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
     borderRadius: 12,
+    // The superellipse corner curve of Apple's inset-grouped surfaces (iOS-only prop).
+    borderCurve: "continuous",
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
@@ -115,17 +119,19 @@ export const iosSkin: StatsSkin = {
   }),
   plainContainer: (tokens: ColorTokens): ViewStyle => ({
     borderRadius: 12,
+    borderCurve: "continuous",
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
     padding: 22,
   }),
   rowGap: { card: { gap: 12 }, plain: { gap: 22 } },
+  // SF Pro Text tracking table: 16pt -0.31, 14pt -0.15, 12pt 0.
   title: (tokens: ColorTokens, surface: Surface): TextStyle =>
     surface === "card"
-      ? { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2, color: tokens.foreground, marginBottom: 12 }
-      : { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.3, color: tokens.foreground, marginBottom: 16 },
-  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, letterSpacing: -0.2, color: tokens["muted-foreground"] }),
+      ? { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15, color: tokens.foreground, marginBottom: 12 }
+      : { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.31, color: tokens.foreground, marginBottom: 16 },
+  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, letterSpacing: -0.15, color: tokens["muted-foreground"] }),
   valueText: (tokens: ColorTokens): TextStyle => ({
     marginTop: 4,
     fontSize: 24,
@@ -134,7 +140,7 @@ export const iosSkin: StatsSkin = {
     letterSpacing: -0.5,
     color: tokens.foreground,
   }),
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: -0.1 },
+  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0 },
   pressedOpacity: 0.8,
   ripple: null,
 };
@@ -159,20 +165,26 @@ export const androidSkin: StatsSkin = {
     padding: 24,
   }),
   rowGap: { card: { gap: 12 }, plain: { gap: 24 } },
+  // M3 type roles: title-small (card) 14/20/500/+0.1, title-medium (plain) 16/24/500/+0.15.
   title: (tokens: ColorTokens, surface: Surface): TextStyle =>
     surface === "card"
-      ? { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: 0.1, color: tokens.foreground, marginBottom: 12 }
-      : { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: 0.15, color: tokens.foreground, marginBottom: 16 },
-  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.1, color: tokens["muted-foreground"] }),
+      ? { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: tokens.foreground, marginBottom: 12 }
+      : { fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: tokens.foreground, marginBottom: 16 },
+  // M3 body-medium: 14/20/400/+0.25.
+  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: tokens["muted-foreground"] }),
+  // M3 headline-small: 24/32/400/0.
   valueText: (tokens: ColorTokens): TextStyle => ({
     marginTop: 4,
     fontSize: 24,
     lineHeight: 32,
-    fontWeight: "600",
+    fontWeight: "400",
     letterSpacing: 0,
     color: tokens.foreground,
   }),
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.1 },
+  // M3 label-medium: 12/16/500/+0.5.
+  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5 },
   pressedOpacity: null,
-  ripple: (tokens) => ({ color: alpha(tokens.foreground, 0.1), borderless: false }),
+  // Bounded neutral state layer from the shared ripple helper (the cardSurface's
+  // overflow:"hidden" clips it to the rounded outline).
+  ripple: surfaceRipple,
 };

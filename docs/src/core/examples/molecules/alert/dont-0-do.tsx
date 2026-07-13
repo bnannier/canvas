@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert } = scope;
+  const { Alert, Icon } = scope;
   return (
-<Alert info icon="ℹ" title="Heads up" description="Maintenance window scheduled for Sunday 2:00 UTC." />
+<Alert info icon={<Icon info size={16} />} title="Heads up" description="Maintenance window scheduled for Sunday 2:00 UTC." />
   );
 }

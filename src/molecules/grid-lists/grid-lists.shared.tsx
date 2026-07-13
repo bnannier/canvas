@@ -1,9 +1,14 @@
+import { type ComponentType } from "react";
 import { type DimensionValue } from "react-native";
 import { View, Pressable, Text, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Card } from "../card/card.js";
-import { Avatar } from "../../atoms/avatar/avatar.js";
-import { Badge } from "../../atoms/badge/badge.js";
-import { Button } from "../../atoms/button/button.js";
+import { Card as WebCard } from "../card/card.js";
+import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
+import { Badge as WebBadge } from "../../atoms/badge/badge.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
+import { type CardProps } from "../card/card.shared.js";
+import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
+import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
+import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./grid-lists.styles.js";
 import { type Columns } from "./grid-lists.styles.js";
 
@@ -44,6 +49,8 @@ import { type Columns } from "./grid-lists.styles.js";
 export interface GridListSkin {
   /** Gallery thumbnail block corner radius (6 web, 10 iOS, 12 M3). */
   galleryRadius: number;
+  /** iOS continuous (superellipse) corner curve for the gallery thumbnail; omitted (no-op) elsewhere. */
+  galleryCurve?: ViewStyle["borderCurve"];
   /** Inter-tile grid gap per density (default vs compact). */
   gap: { default: number; compact: number };
   /** Per-tile padding for the people card per density (default vs compact). */
@@ -52,11 +59,26 @@ export interface GridListSkin {
   galleryTitle: (t: ColorTokens) => TextStyle;
   /** People-tile title type (size/line-height/weight + per-OS tracking). */
   cardTitle: (t: ColorTokens) => TextStyle;
+  /** Gallery filename subtitle type (size/line-height + per-OS tracking). */
+  gallerySubtitle: (t: ColorTokens) => TextStyle;
+  /** People-tile subtitle type (size/line-height + per-OS tracking). */
+  cardSubtitle: (t: ColorTokens) => TextStyle;
   /** iOS/web dim-on-press for the gallery pressable; null on Android. */
   pressedOpacity: number | null;
   /** Android ripple over the gallery pressable; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
+
+// The composed atoms (Card / Avatar / Badge / Button) are passed in by each
+// platform entry file (grid-lists.ios.tsx / .android.tsx) so the people tile's
+// surface, avatar, status badge, and action buttons all match the active OS. In
+// the WEB docs 3-up preview this threading is load-bearing: a bare barrel import
+// always resolves the WEB atoms in a browser bundle, so createGridList takes the
+// per-OS atoms as parameters (defaulting to the web atoms for the web build).
+export type CardComponent = ComponentType<CardProps>;
+export type AvatarComponent = ComponentType<AvatarProps>;
+export type BadgeComponent = ComponentType<BadgeProps>;
+export type ButtonComponent = ComponentType<ButtonProps>;
 
 /** A trailing tile action, rendered as a Button in people mode. */
 export interface GridListAction {
@@ -121,7 +143,13 @@ function columnsOf(p: GridListProps): Columns {
   return "cols2";
 }
 
-export function createGridList(skin: GridListSkin) {
+export function createGridList(
+  skin: GridListSkin,
+  Card: CardComponent = WebCard,
+  Avatar: AvatarComponent = WebAvatar,
+  Badge: BadgeComponent = WebBadge,
+  Button: ButtonComponent = WebButton,
+) {
   // A borderless gallery thumbnail: a square color block with a filename and size
   // below. Owns the responsive width so it collapses to full width on phones.
   function GalleryTile({ item, columns, onPress }: { item: GridListItem; columns: Columns; onPress?: () => void }) {
@@ -131,10 +159,16 @@ export function createGridList(skin: GridListSkin) {
       <>
         {/* Square color block. A single translucent tint stands in for the legacy
             gradient swatch. */}
-        <View style={[s.galleryBlock, { borderRadius: skin.galleryRadius }, s.galleryBlockFill(tokens, item.color)]} />
+        <View
+          style={[
+            s.galleryBlock,
+            { borderRadius: skin.galleryRadius, ...(skin.galleryCurve ? { borderCurve: skin.galleryCurve } : null) },
+            s.galleryBlockFill(tokens, item.color),
+          ]}
+        />
         <View style={s.galleryMeta}>
           <Text style={skin.galleryTitle(tokens)}>{item.title}</Text>
-          {item.subtitle != null ? <Text style={s.gallerySubtitle(tokens)}>{item.subtitle}</Text> : null}
+          {item.subtitle != null ? <Text style={skin.gallerySubtitle(tokens)}>{item.subtitle}</Text> : null}
         </View>
       </>
     );
@@ -176,7 +210,7 @@ export function createGridList(skin: GridListSkin) {
             {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
           </Avatar>
           <Text style={skin.cardTitle(tokens)}>{item.title}</Text>
-          {item.subtitle != null ? <Text style={s.cardSubtitle(tokens)}>{item.subtitle}</Text> : null}
+          {item.subtitle != null ? <Text style={skin.cardSubtitle(tokens)}>{item.subtitle}</Text> : null}
           {item.badge != null ? (
             <View style={s.badgeSpacing}>
               <Badge secondary>{item.badge}</Badge>

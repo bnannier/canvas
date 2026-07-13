@@ -9,6 +9,8 @@ import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Slider } from "../src/atoms/slider/slider.tsx";
+import { Progress } from "../src/atoms/progress/progress.tsx";
 import { Field } from "../src/molecules/field/field.tsx";
 import { Form } from "../src/molecules/form/form.tsx";
 import { Fieldset } from "../src/molecules/fieldset/fieldset.tsx";
@@ -130,6 +132,62 @@ describe("field width axis: Combobox", () => {
   it("still renders its open option list at the standard width", () => {
     const { container } = ui(<Combobox options={["Ada", "Grace"]} defaultOpen />);
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
+  });
+});
+
+describe("field width axis: Progress", () => {
+  it("renders the track AT the standard width, shrinking via maxWidth:100%", () => {
+    // The output-only bar shares the axis: in a content-sized context a
+    // width:100% track collapses to zero (nothing renders at all, there is no
+    // placeholder to size it), which is how the docs stage originally hid it.
+    const { container } = ui(<Progress testID="p" value={0.5} />);
+    expect(at(container, "p").style.width).toBe(`${fieldWidths.base}px`);
+    expect(at(container, "p").style.maxWidth).toBe("100%");
+  });
+
+  it("narrow and wide pick the other two modes", () => {
+    const { container } = ui(
+      <>
+        <Progress testID="pn" narrow value={0.5} />
+        <Progress testID="pw" wide value={0.5} />
+      </>,
+    );
+    expect(at(container, "pn").style.width).toBe(`${fieldWidths.narrow}px`);
+    expect(at(container, "pw").style.width).toBe(`${fieldWidths.wide}px`);
+  });
+
+  it("block fills the container instead", () => {
+    const { container } = ui(<Progress testID="pb" block value={0.5} />);
+    expect(at(container, "pb").style.width).toBe("100%");
+    expect(at(container, "pb").style.maxWidth).toBe("");
+  });
+});
+
+describe("field width axis: Slider", () => {
+  it("renders the interactive row AT the standard width, shrinking via maxWidth:100%", () => {
+    // The slider shares the axis: in a content-sized context a width:100%
+    // container collapses to zero (no track, no fill, no drag width), which is
+    // how the docs stage originally hid it.
+    const { container } = ui(<Slider testID="s" defaultValue={40} />);
+    expect(at(container, "s").style.width).toBe(`${fieldWidths.base}px`);
+    expect(at(container, "s").style.maxWidth).toBe("100%");
+  });
+
+  it("narrow and wide pick the other two modes", () => {
+    const { container } = ui(
+      <>
+        <Slider testID="sn" narrow defaultValue={40} />
+        <Slider testID="sw" wide defaultValue={40} />
+      </>,
+    );
+    expect(at(container, "sn").style.width).toBe(`${fieldWidths.narrow}px`);
+    expect(at(container, "sw").style.width).toBe(`${fieldWidths.wide}px`);
+  });
+
+  it("block fills the container instead", () => {
+    const { container } = ui(<Slider testID="sb" block defaultValue={40} />);
+    expect(at(container, "sb").style.width).toBe("100%");
+    expect(at(container, "sb").style.maxWidth).toBe("");
   });
 });
 

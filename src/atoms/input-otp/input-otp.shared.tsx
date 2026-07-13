@@ -1,11 +1,12 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { type TextInput as RNTextInput } from "react-native";
+import { Animated, type TextInput as RNTextInput } from "react-native";
 import {
   View,
   Text,
   Pressable,
   TextInput,
   useTheme,
+  useReducedMotion,
   FOCUS_RESET,
   type ColorTokens,
   type StyleProp,
@@ -41,7 +42,7 @@ export interface InputOTPProps {
   onComplete?: (code: string) => void;
   /** Disable input and dim the cells. */
   disabled?: boolean;
-  /** Render a bullet (•) instead of the digit, for passcode entry. */
+  /** Render a bullet (●) instead of the digit, for passcode entry. */
   masked?: boolean;
   // Size (pick one; default is the medium cell).
   small?: boolean;
@@ -68,8 +69,11 @@ export interface InputOTPSkin {
   ) => ViewStyle;
   /** The digit (or bullet) text inside a cell. */
   digit: (t: ColorTokens, size: Size) => TextStyle;
-  /** The blinking-style caret bar drawn in the active empty cell. */
+  /** The caret bar drawn in the active empty cell. */
   caret: (t: ColorTokens, size: Size) => ViewStyle;
+  /** Whether the caret blinks (~1s cycle), the native insertion-point idiom on iOS/Android.
+   *  The web skin keeps its established static bar. */
+  caretBlink: boolean;
   /** Opacity applied to the whole control when disabled. */
   disabledOpacity: number;
 }
@@ -83,6 +87,35 @@ function sizeOf(p: InputOTPProps): Size {
 }
 
 const DIGITS_ONLY = /\D/g;
+
+// The active-cell caret. Native insertion points blink — the iOS caret and the M3
+// text-field cursor both pulse on a ~1s cycle — so the iOS/Android skins opt in via
+// `caretBlink` and the bar loops its opacity: visible ~380ms, a quick 120ms fade out,
+// hidden ~380ms, a 120ms fade back in (a 1000ms cycle). The loop runs on the JS driver
+// on EVERY platform: Animated.loop + useNativeDriver:true runs one pass then freezes on
+// react-native-web and does not loop under the New Architecture (src/style/motion.ts),
+// and a 1Hz opacity toggle is free on the JS thread. Reduce Motion holds the caret
+// solid — the bar alone still marks the insertion point.
+function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
+  const opacity = useRef(new Animated.Value(1)).current;
+  const reduced = useReducedMotion();
+  const active = blink && !reduced;
+  useEffect(() => {
+    if (!active) {
+      opacity.setValue(1);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0, duration: 120, delay: 380, useNativeDriver: false }),
+        Animated.timing(opacity, { toValue: 1, duration: 120, delay: 380, useNativeDriver: false }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [active, opacity]);
+  return <Animated.View style={active ? [style, { opacity }] : style} />;
+}
 
 /** Build an InputOTP component from a platform skin. */
 export function createInputOTP(skin: InputOTPSkin) {
@@ -149,9 +182,12 @@ export function createInputOTP(skin: InputOTPSkin) {
                 importantForAccessibility="no-hide-descendants"
               >
                 {filled ? (
-                  <Text style={skin.digit(tokens, size)}>{masked ? "•" : char}</Text>
+                  // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
+                  // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
+                  // at secure-entry weight (the iOS/Android password-dot idiom).
+                  <Text style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
                 ) : showCaret ? (
-                  <View style={skin.caret(tokens, size)} />
+                  <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} />
                 ) : null}
               </View>
             );

@@ -14,12 +14,12 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, fieldWidthShimViolations, type Example, type DontPair } from "./parse-md.ts";
+import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, fieldWidthShimViolations, prosePhantomApiViolations, type Example, type DontPair } from "./parse-md.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
-const CATEGORIES = ["atoms", "molecules", "organisms"] as const;
+const CATEGORIES = ["atoms", "molecules", "organisms", "charts"] as const;
 type Category = (typeof CATEGORIES)[number];
 
 const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
@@ -76,6 +76,15 @@ const STYLE_STRICT = process.env.DOCGEN_STYLE_STRICT !== "0";
 // the explicitly-allowed foundation (and RN's Image can't take semantic props), so
 // their own pages are exempt from the styling-escape-hatch guardrail.
 const EXEMPT_STYLE_DIRS = new Set(["view", "text", "text-input", "pressable", "scroll-view", "image"]);
+// Prose guardrail (companion to the style guardrail): the intro + "Do" captions
+// must name the real component API, not a web/CSS-framework idiom the RN kit does
+// not expose (a Tailwind class, a CSS property, an HTML element). Same STRICT gate.
+const proseViolations: { source: string; hits: { line: number; token: string; kind: string }[] }[] = [];
+function recordProse(md: string, source: string) {
+  const hits = prosePhantomApiViolations(md);
+  if (hits.length) proseViolations.push({ source, hits });
+}
+
 const styleViolations: { source: string; kind: string; props: string[] }[] = [];
 function recordFenceStyle(code: string, source: string, kind: string, dir: string) {
   if (EXEMPT_STYLE_DIRS.has(dir)) return;
@@ -294,6 +303,7 @@ function main() {
       if (!fs.existsSync(md)) continue;
       const content = fs.readFileSync(md, "utf8");
       rawMd[`../../../src/${category}/${dir}/${dir}.md`] = content;
+      recordProse(content, `src/${category}/${dir}/${dir}.md`);
       const { examples, donts } = splitDoc(content);
       if (examples.length === 0 && donts.length === 0) continue;
       entries.push(buildEntry(category, dir, examples, donts));
@@ -330,6 +340,22 @@ function main() {
       `${styleViolations.length} example/"Do" fence(s) across ${bySource.size} component(s) still pass a banned ` +
       `style={{…}} (CLAUDE.md "No styling escape hatches"). Fix with Row/Column, Typography tone/weight, Chip, ` +
       `IconTile, Divider, or the component's own props.`;
+    if (STYLE_STRICT) {
+      throw new Error(`docs:gen — ${header}\n${lines.join("\n")}`);
+    }
+    console.warn(`\n⚠ docs:gen — ${header}\n${lines.join("\n")}\n  (warning only; set DOCGEN_STYLE_STRICT=1 to fail.)\n`);
+  }
+
+  if (proseViolations.length) {
+    const totalHits = proseViolations.reduce((n, v) => n + v.hits.length, 0);
+    const lines = proseViolations
+      .sort((a, b) => a.source.localeCompare(b.source))
+      .flatMap((v) => v.hits.map((h) => `    ${v.source}:${h.line}  "${h.token}"  (${h.kind})`));
+    const header =
+      `${totalHits} web/CSS-framework idiom(s) in prose across ${proseViolations.length} component(s). Canvas is a ` +
+      `React Native kit: docs prose must name the real prop or token (rows, mono, links, the muted tone, the width ` +
+      `axis), not a Tailwind class, CSS property, or HTML element. Reword the "Do"/intro text, or add ` +
+      `docgen-allow-prose to the line as a last resort.`;
     if (STYLE_STRICT) {
       throw new Error(`docs:gen — ${header}\n${lines.join("\n")}`);
     }

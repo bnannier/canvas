@@ -1,6 +1,7 @@
 import { type ComponentType } from "react";
 import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { Card } from "../card/card.js";
+import { Card as WebCard } from "../card/card.js";
+import { type CardProps } from "../card/card.shared.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Switch as WebSwitch } from "../../atoms/switch/switch.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -10,8 +11,8 @@ import { type ActionPanelSkin, type Tone, type Layout, titleColor } from "./acti
 // Shared ActionPanel shell. The structure (a settings card with a copy block and
 // a single action), the boolean-prop axes with first-match precedence, the
 // layout selection, and the tone-color logic live here once; a platform file
-// supplies only its skin (type + spacing) and the platform-correct Button/Switch
-// atoms, then calls createActionPanel.
+// supplies only its skin (type + spacing) and the platform-correct Card / Button
+// / Switch atoms, then calls createActionPanel.
 //
 // An action panel is a settings card: a headline and a line of consequence copy
 // on one side, and a single action (a Button) that acts on it. It surfaces one
@@ -70,7 +71,8 @@ export interface ActionPanelProps {
 }
 
 // The atoms the molecule composes are typed by their public props, so each
-// platform passes the Button/Switch it already resolves for that platform.
+// platform passes the Card/Button/Switch it already resolves for that platform.
+export type CardComponent = ComponentType<CardProps>;
 export type ButtonComponent = ComponentType<ButtonProps>;
 export type SwitchComponent = ComponentType<SwitchProps>;
 
@@ -103,19 +105,21 @@ const actionStacked: ViewStyle = { alignItems: "flex-start" };
 /**
  * Build an ActionPanel component from a platform skin.
  *
- * `Button` and `Switch` are the platform-correct atoms for the action, passed in
- * by each platform's thin `.tsx`/`.ios`/`.android` file, so the action matches
- * the panel's platform on every build path. This matters for the WEB docs 3-up
- * preview: a bare barrel import always resolves the WEB atom in a browser
- * bundler, which would paint a web-styled Button/Switch inside the iOS/Android
- * rows; each row must show that platform's action. On a real device Metro
- * resolves the right atom by extension regardless, so the default (the web base)
- * is correct there too. Both default to the web base when omitted.
+ * `Card`, `Button`, and `Switch` are the platform-correct atoms, passed in by
+ * each platform's thin `.tsx`/`.ios`/`.android` file, so the panel surface and
+ * the action match the panel's platform on every build path. This matters for
+ * the WEB docs 3-up preview: a bare barrel import always resolves the WEB atom in
+ * a browser bundler, which would paint a web-styled Card/Button/Switch inside the
+ * iOS/Android rows; each row must show that platform's surface and action. On a
+ * real device Metro resolves the right atom by extension regardless, so the
+ * default (the web base) is correct there too. All three default to the web base
+ * when omitted.
  */
 export function createActionPanel(
   skin: ActionPanelSkin,
   Button: ButtonComponent = WebButton,
   Switch: SwitchComponent = WebSwitch,
+  Card: CardComponent = WebCard,
 ) {
   return function ActionPanel(props: ActionPanelProps) {
     const { title, description, actionLabel, onAction, toggle, checked, defaultChecked, onToggle, testID, style } = props;
@@ -160,7 +164,7 @@ export function createActionPanel(
     return (
       <Card padded testID={testID} style={[cardWidth, style]}>
         {layout === "inline" ? (
-          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: skin.inlineGap }}>
+          <View style={{ flexDirection: "row", alignItems: skin.inlineAlign, gap: skin.inlineGap }}>
             {copy}
             {action}
           </View>

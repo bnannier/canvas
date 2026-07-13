@@ -34,6 +34,15 @@ Views to draw an inline trend on a stat card or dashboard.
 </Column>
 ```
 
+### Line
+
+```tsx
+<Column relaxed style={{ maxWidth: 200 }}>
+  <Sparkline line success values={[187.2, 188.4, 186.9, 189.3, 190.8, 190.1, 191.6]} />
+  <Sparkline line destructive values={[191.6, 190.1, 190.8, 188.3, 188.9, 187.4, 186.2]} />
+</Column>
+```
+
 ## Do & Don't
 
 ### Pair with a value

@@ -48,6 +48,9 @@ import { Icon } from "../../atoms/icon/icon.js";
 export interface CollapsibleSkin {
   /** iOS/web dim the header on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
+  /** Disabled-header dim opacity: 0.5 on web/iOS (shadcn / HIG), 0.38 on Android
+   *  (M3 disabled content = 38% on-surface). */
+  disabledOpacity: number;
   /** Android header ripple; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
@@ -149,7 +152,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
     const headerStyle: StyleProp<ViewStyle> = [
       skin.header(tokens),
       skin.focusOutlineReset,
-      disabled ? DISABLED_DIM : null,
+      disabled ? { opacity: skin.disabledOpacity } : null,
     ];
 
     // A sensible accessibility label when only a custom trigger is given.
@@ -203,6 +206,3 @@ export function createCollapsible(skin: CollapsibleSkin) {
 // The custom-trigger slot fills the leading space so the chevron stays trailing,
 // mirroring the title's flexShrink behavior.
 const TRIGGER_SLOT: ViewStyle = { flexShrink: 1, flexGrow: 1 };
-
-// opacity-50: the dimmed disabled look applied to the header.
-const DISABLED_DIM: ViewStyle = { opacity: 0.5 };

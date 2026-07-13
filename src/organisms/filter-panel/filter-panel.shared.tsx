@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
-import { Button } from "../../atoms/button/button.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
 import { Checkbox as WebCheckbox } from "../../atoms/checkbox/checkbox.js";
 import {
   type Density,
   type FilterPanelSkin,
   type CheckboxComponent,
   type BadgeComponent,
+  type ButtonComponent,
 } from "./filter-panel.styles.js";
 
 // Shared FilterPanel shell. The structure (the fixed-width column, the
@@ -18,12 +19,13 @@ import {
 // density, group-heading type, and the press feedback on this component's OWN
 // option rows) and calls createFilterPanel.
 //
-// FilterPanel COMPOSES the already-skinned Checkbox and Badge atoms: each
-// platform wrapper passes its own Checkbox/Badge variant into createFilterPanel
-// (the way alert-dialog passes the platform Input), so the rows read native per
-// OS without this organism re-skinning either atom. The literal `.ios`/`.android`
-// atom imports in those wrappers are required for the WEB docs 3-up, where a
-// barrel import would resolve the web atoms in every column.
+// FilterPanel COMPOSES the already-skinned Checkbox, Badge, and Button atoms: each
+// platform wrapper passes its own Checkbox/Badge/Button variant into
+// createFilterPanel (the way field passes the platform Input/Button), so the rows
+// and the header Clear action read native per OS without this organism re-skinning
+// any atom. The literal `.ios`/`.android` atom imports in those wrappers are
+// required for the WEB docs 3-up, where a barrel import would resolve the web
+// atoms in every column.
 //
 // FilterPanel is a "Light" platform treatment: one structure, with per-OS touches
 // limited to panel radius, spacing density, group-heading tracking, and press
@@ -74,18 +76,19 @@ function densityOf(p: FilterPanelProps): Density {
 /**
  * Build a FilterPanel component from a platform skin.
  *
- * `Checkbox` / `Badge` are the platform-correct atoms for the option rows and
- * counts. Each platform's thin `.tsx`/`.ios`/`.android` file passes the variants
- * it already resolves for that platform, so the rows match the panel's OS. They
- * default to the WEB atoms because a bare barrel import always resolves the WEB
- * atoms in a browser bundler, which is wrong in the docs 3-up; the device Metro
- * resolves the right atoms by extension regardless, so the defaults only matter
- * for the web column.
+ * `Checkbox` / `Badge` / `Button` are the platform-correct atoms for the option
+ * rows, the counts, and the header Clear action. Each platform's thin
+ * `.tsx`/`.ios`/`.android` file passes the variants it already resolves for that
+ * platform, so the panel matches its OS. They default to the WEB atoms because a
+ * bare barrel import always resolves the WEB atoms in a browser bundler, which is
+ * wrong in the docs 3-up; the device Metro resolves the right atoms by extension
+ * regardless, so the defaults only matter for the web column.
  */
 export function createFilterPanel(
   skin: FilterPanelSkin,
   Checkbox: CheckboxComponent = WebCheckbox,
   Badge: BadgeComponent = WebBadge,
+  Button: ButtonComponent = WebButton,
 ) {
   return function FilterPanel(props: FilterPanelProps) {
     const { groups, activeCount, onClear, onChange, bordered, testID, style } = props;

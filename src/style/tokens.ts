@@ -30,6 +30,21 @@ export interface ColorTokens {
   border: string;
   input: string;
   ring: string;
+  // Categorical data-viz series colors, assigned to series in fixed order
+  // (series 1 is always chart-1, never re-ranked when a series is filtered
+  // out). One validated palette serves both schemes: every value passes the
+  // computable data-viz checks (OKLCH lightness band, chroma floor, adjacent-
+  // pair colorblind separation, >=3:1 contrast) against the light AND dark
+  // card surfaces, and none collides with a reserved status token
+  // (destructive/success/warning).
+  "chart-1": string;
+  "chart-2": string;
+  "chart-3": string;
+  "chart-4": string;
+  "chart-5": string;
+  "chart-6": string;
+  "chart-7": string;
+  "chart-8": string;
 }
 
 export const lightColors: ColorTokens = {
@@ -56,6 +71,14 @@ export const lightColors: ColorTokens = {
   border: "#e4e4e7",
   input: "#e4e4e7",
   ring: "#4f46e5",
+  "chart-1": "#6366f1", // indigo-500
+  "chart-2": "#0d9488", // teal-600
+  "chart-3": "#ea580c", // orange-600
+  "chart-4": "#f43f5e", // rose-500
+  "chart-5": "#8b5cf6", // violet-500
+  "chart-6": "#0891b2", // cyan-600
+  "chart-7": "#059669", // emerald-600
+  "chart-8": "#ec4899", // pink-500
 };
 
 export const darkColors: ColorTokens = {
@@ -82,6 +105,16 @@ export const darkColors: ColorTokens = {
   border: "#27272a",
   input: "#27272a",
   ring: "#6366f1",
+  // Same series values as light: the palette was validated against both
+  // surfaces, so brand overrides stay consistent across schemes by default.
+  "chart-1": "#6366f1",
+  "chart-2": "#0d9488",
+  "chart-3": "#ea580c",
+  "chart-4": "#f43f5e",
+  "chart-5": "#8b5cf6",
+  "chart-6": "#0891b2",
+  "chart-7": "#059669",
+  "chart-8": "#ec4899",
 };
 
 export const colorsByScheme: Record<ColorScheme, ColorTokens> = {

@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, surfaceRipple } from "../../style/index.js";
 
 // Co-located Command skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface, since
@@ -23,9 +23,10 @@ import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 //     tightened tracking, a slightly larger search row; the active/pressed row
 //     tints with the brand `accent` and the row dims to ~0.8 opacity on press
 //     (no ripple).
-//   Android (Material 3 list items): ~48dp rows, body-large type (16/24), an
-//     M3 search row; the active/pressed row tints with `accent` and press shows
-//     an android_ripple (alpha(primary, 0.12) state layer).
+//   Android (Material 3 list items): ~48dp rows, body-large type (16/24 with
+//     +0.5 tracking), an M3 search row; the active/pressed row tints with
+//     `accent` and press shows an android_ripple (the surfaceRipple state layer:
+//     on-surface ink at ~10%).
 //   Web: the established Canvas look (the current command rows, lifted verbatim)
 //     — a 12/12 search row, 14/20 muted type, 12/8 result rows, 14/20 foreground
 //     type, the `accent` fill for both the active and the pressed row.
@@ -38,10 +39,17 @@ import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 export interface CommandSkin {
   /** The search row at the top of the panel: gap, padding, hairline under it. */
   searchRow: (t: ColorTokens) => ViewStyle;
-  /** The leading magnifier glyph in the search row. */
-  searchGlyph: (t: ColorTokens) => TextStyle;
+  /** The leading magnifier glyph size (px), rendered through the kit `Icon`
+   *  atom (`search`, tinted muted-foreground) — never a color emoji. */
+  searchGlyphSize: number;
   /** The muted placeholder text in the search row. */
   searchPlaceholder: (t: ColorTokens) => TextStyle;
+  /** The card's per-OS shape override (radius, and `borderCurve` on iOS): merged
+   *  over the shared `card()` base so iOS gets a rounder, continuous corner. */
+  cardShape: ViewStyle;
+  /** The collapsed trigger row's minimum tap height (px): the HIG/M3 minimum on
+   *  the native rows (44pt iOS, 48dp Android), the web look on web. */
+  triggerMinHeight: number;
   /** A single result row layout (gap, padding, min height). */
   rowBase: ViewStyle;
   /** The active/pressed row fill (the brand accent surface on every platform). */
@@ -57,14 +65,20 @@ export interface CommandSkin {
 }
 
 // ---------- card shell (shared across platforms) ----------
-// The floating palette card: fixed width, rounded, bordered, raised, clipping
-// its rounded corners. (w-[420px] rounded-lg border border-border bg-popover
-// shadow-xl overflow-hidden.) GlassSurface strips the fill and supplies the
-// material when the surface is glass; the shape (radius/border/clip) is the
-// skin's. This is identical on every platform: only the rows are re-skinned.
+// The floating palette card: the standard 420px width, rounded, bordered,
+// raised, clipping its rounded corners. (w-[420px] rounded-lg border
+// border-border bg-popover shadow-xl overflow-hidden.) `maxWidth:"100%"` is the
+// documented Canvas field-width pattern (src/style/field-width.ts): it keeps the
+// 420px desktop palette but shrinks the card inside a narrower parent, so it
+// never overflows a 390/393pt iPhone or a 360dp Android phone. GlassSurface
+// strips the fill and supplies the material when the surface is glass; the shape
+// (radius/border/clip) is the skin's, with the per-OS radius/curve layered on via
+// `skin.cardShape`. This base is identical on every platform: only the rows and
+// the corner shape are re-skinned.
 export function card(tokens: ColorTokens): ViewStyle {
   return {
     width: 420,
+    maxWidth: "100%",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: tokens.border,
@@ -177,8 +191,14 @@ export const webSkin: CommandSkin = {
     paddingHorizontal: 12,
     paddingVertical: 12,
   }),
-  searchGlyph: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
+  // shadcn/cmdk renders a 16px (h-4 w-4) search icon at 50% opacity; the kit uses
+  // a real monochrome Icon tinted muted-foreground (never a color emoji).
+  searchGlyphSize: 16,
   searchPlaceholder: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
+  // Web keeps the shadcn rounded-lg (8px) card corner.
+  cardShape: { borderRadius: 8 },
+  // Web keeps the shadcn trigger height (px-3 py-1.5 = 32px); native rows raise it.
+  triggerMinHeight: 32,
   rowBase: {
     flexDirection: "row",
     alignItems: "center",
@@ -216,14 +236,23 @@ export const iosSkin: CommandSkin = {
     borderColor: t.border,
     paddingHorizontal: 16,
     paddingVertical: 14,
+    minHeight: 44,
   }),
-  searchGlyph: (t) => ({ fontSize: 17, lineHeight: 22, color: t["muted-foreground"] }),
+  // A 20px monochrome search Icon (muted-foreground) pairs with the 17/22
+  // placeholder — never the color emoji the shell used to draw.
+  searchGlyphSize: 20,
   searchPlaceholder: (t) => ({
     fontSize: 17,
     lineHeight: 22,
     letterSpacing: -0.4,
     color: t["muted-foreground"],
   }),
+  // iOS floating functional surfaces read rounder and smooth-cornered: a larger
+  // 16pt radius with the continuous (superellipse) corner curve (borderCurve is a
+  // no-op on web/Android). GlassSurface strips the border under Frost.
+  cardShape: { borderRadius: 16, borderCurve: "continuous" },
+  // HIG minimum interactive target 44x44pt.
+  triggerMinHeight: 44,
   rowBase: {
     flexDirection: "row",
     alignItems: "center",
@@ -250,9 +279,10 @@ export const iosSkin: CommandSkin = {
 // ---------- Android (Material 3 list items): 48dp rows, body-large, ripple ----------
 // Android has no native command palette, so the structure is unchanged; the rows
 // follow M3 list-item conventions: a ~48dp row height, M3 body-large type
-// (16/24), an M3 search row (px-4 py-3.5, 16/24 muted). The active/pressed row
-// tints with the brand `accent`, and press shows an android_ripple (the M3 state
-// layer: alpha(primary, 0.12)).
+// (16/24 with +0.5 body-large tracking), an M3 search row (px-4 py-3.5, 16/24
+// muted). The active/pressed row tints with the brand `accent`, and press shows
+// an android_ripple (the surfaceRipple M3 state layer: on-surface ink at ~10%,
+// bounded).
 export const androidSkin: CommandSkin = {
   searchRow: (t) => ({
     flexDirection: "row",
@@ -262,9 +292,21 @@ export const androidSkin: CommandSkin = {
     borderColor: t.border,
     paddingHorizontal: 16,
     paddingVertical: 14,
+    minHeight: 48,
   }),
-  searchGlyph: (t) => ({ fontSize: 16, lineHeight: 24, color: t["muted-foreground"] }),
-  searchPlaceholder: (t) => ({ fontSize: 16, lineHeight: 24, color: t["muted-foreground"] }),
+  // A 20dp monochrome search Icon (muted-foreground ≈ M3 on-surface-variant) —
+  // the M3 search idiom, never the Noto color-emoji magnifier.
+  searchGlyphSize: 20,
+  searchPlaceholder: (t) => ({
+    fontSize: 16,
+    lineHeight: 24,
+    letterSpacing: 0.5,
+    color: t["muted-foreground"],
+  }),
+  // Android keeps the 8px card corner (the shared web look; borderCurve is iOS-only).
+  cardShape: { borderRadius: 8 },
+  // M3 minimum touch target 48x48dp.
+  triggerMinHeight: 48,
   rowBase: {
     flexDirection: "row",
     alignItems: "center",
@@ -278,11 +320,15 @@ export const androidSkin: CommandSkin = {
   rowLabel: (t) => ({
     fontSize: 16,
     lineHeight: 24,
+    letterSpacing: 0.5,
     color: t.foreground,
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
   }),
   rowPressedOpacity: null,
-  ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
+  // The M3 pressed state layer for a neutral list row is on-surface ink at ~10%,
+  // bounded (the card's overflow:"hidden" clips it) — the kit's surfaceRipple,
+  // not a primary-tinted ink.
+  ripple: (t) => surfaceRipple(t),
 };

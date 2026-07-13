@@ -44,6 +44,13 @@ export interface ActionPanelSkin {
   inlineGap: number;
   /** Vertical gap between the copy and the action in the stacked layout. */
   stackedGap: number;
+  /**
+   * Cross-axis alignment of the pinned action against the copy block in the
+   * inline/toggle row. Web keeps the Tailwind-Plus top-align; the native settings
+   * rows center the trailing control against the full copy block (iOS Settings
+   * rows, M3 switch list items).
+   */
+  inlineAlign: ViewStyle["alignItems"];
 }
 
 // The danger-zone red rides the Tailwind palette (fixed per scheme so it stays a
@@ -67,28 +74,34 @@ export const webSkin: ActionPanelSkin = {
   copyGap: 4,
   inlineGap: 24,
   stackedGap: 16,
+  inlineAlign: "flex-start",
 };
 
 // ---------- iOS (HIG / SwiftUI grouped-list & Form rows) ----------
 // iOS settings rows use SF type. Keeping Canvas's 14pt scale, the title takes the
-// SF tightened tracking (-0.24) and the inline action sits with a roomier gap (the
-// iOS grouped-row rhythm); the stacked gap matches.
+// SF Pro Text 14pt tracking (-0.15) and the inline action sits with a roomier gap
+// (the iOS grouped-row rhythm); the stacked gap matches. The inline/toggle action
+// centers against the copy, matching the iOS Settings-app row.
 export const iosSkin: ActionPanelSkin = {
-  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24 },
+  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 },
   descriptionType: { fontSize: 14, lineHeight: 20, letterSpacing: -0.16 },
   copyGap: 4,
   inlineGap: 28,
   stackedGap: 16,
+  inlineAlign: "center",
 };
 
 // ---------- Android (Material 3 list / card) ----------
-// M3 uses positive label tracking. The title takes the M3 title-medium tracking
-// (+0.15) and the body the M3 body tracking (+0.25) over Canvas's 14pt scale; the
-// action row sits a touch tighter (the M3 card-action rhythm).
+// The title takes the M3 title-small role (14sp / 20 line / weight 500 / +0.1
+// tracking) and the body the M3 body-medium tracking (+0.25) over Canvas's 14pt
+// scale; the action row sits a touch tighter (the M3 card-action rhythm). The
+// inline/toggle action centers against the copy (M3 switch list items center the
+// trailing control).
 export const androidSkin: ActionPanelSkin = {
-  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: 0.15 },
+  titleType: { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 },
   descriptionType: { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 },
   copyGap: 4,
   inlineGap: 24,
   stackedGap: 16,
+  inlineAlign: "center",
 };

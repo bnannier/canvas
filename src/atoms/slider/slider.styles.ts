@@ -6,14 +6,21 @@ import { type SliderSkin, type Size } from "./slider.shared.js";
 // in from useTheme so they follow light/dark). The BRAND survives on every platform:
 // the filled range is always the indigo `primary`, never a platform default (no iOS
 // system blue, no M3 default). Only the native SHAPE changes per OS:
-//   iOS (HIG / iOS 27 kit Sliders): a THIN ~4pt rounded rail, a large ~28pt WHITE
-//     circular knob with a soft drop shadow and a hairline border, brand fill. Press
-//     dims the knob slightly (iOS opacity feedback), it does not grow.
-//   Android (Material 3): a ~4pt rounded track, a SMALLER ~20pt circular thumb that
-//     gains a translucent primary state-layer ring on press (the M3 handle state
-//     layer), brand fill. Flat (no drop shadow), per M3. The ripple-style feedback is
-//     the state-layer ring here rather than an android_ripple, because the parent
-//     PanResponder owns the whole drag/tap gesture (see slider.shared.tsx).
+//   iOS (iOS 27 kit, Sliders symbol group): a 6pt rail with 3pt radius and Apple
+//     smooth (continuous) corners, and a 37x24pt WHITE CAPSULE knob (borderCurve
+//     continuous, soft drop shadow, hairline border), brand fill. The knob stays
+//     fully OPAQUE through a press: the on-device drag feedback is the capsule
+//     stretch, never an opacity dim. Stepped sliders show small gray tick dots
+//     along the rail (the kit's Ticks layer), under the fill.
+//   Android (M3 Expressive sliders, m3.material.io/components/sliders/specs): the
+//     THICK-track redesign. XS (default): a 16dp track with 8dp shape split into an
+//     active (primary) and an inactive (secondary container -> `muted` token)
+//     segment, a 4dp-wide x 44dp-tall BAR handle in primary inset by a 6dp gap from
+//     BOTH segments, and a 4dp stop indicator dot in the inactive track end. The
+//     `large` size maps to M3 S (24dp track, same 44dp handle). Flat, no shadow,
+//     and NO circular thumb or state-layer disc (Expressive dropped both). Stepped
+//     sliders add 4dp stop dots at each interior step (on-primary over the active
+//     segment, on-secondary-container -> `muted-foreground` over the inactive one).
 //   Web: the established Canvas look, an iOS-like thin rail with a small bordered
 //     white thumb (matched to shadcn's slider: h-1.5 bg-muted track, bg-primary
 //     range, a size-4 white thumb with a primary border and a soft shadow).
@@ -24,82 +31,120 @@ const RAIL: ViewStyle = { width: "100%", borderRadius: 999, overflow: "visible" 
 const FILL_BASE: ViewStyle = { position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: 999 };
 const THUMB_BASE: ViewStyle = { position: "absolute", borderRadius: 999 };
 
-// iOS soft knob shadow (HIG sliders float the knob just off the rail).
+// iOS soft knob shadow (the iOS 27 kit floats the knob just off the rail).
 const IOS_THUMB_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.18, elevation: 3 });
 
-// ----- iOS (HIG): thin 4pt rail, ~28pt white circular knob -----
-const IOS_TRACK_H: Record<Size, number> = { small: 3, base: 4, large: 5 };
-const IOS_THUMB: Record<Size, number> = { small: 24, base: 28, large: 32 };
+// ----- iOS (iOS 27 kit): 6pt rail (radius 3), 37x24pt capsule knob -----
+// Rail: the kit's Track/Fill are 6pt tall with 3pt radius and Apple smooth
+// (continuous) corners; small/large scale the base proportionally.
+const IOS_TRACK_H: Record<Size, number> = { small: 5, base: 6, large: 7 };
+// Knob: the kit's Knob symbol is a 37x24pt horizontal capsule (NOT a circle);
+// small/large scale it proportionally, radius = height / 2.
+const IOS_KNOB: Record<Size, { w: number; h: number }> = {
+  small: { w: 32, h: 21 },
+  base: { w: 37, h: 24 },
+  large: { w: 42, h: 27 },
+};
 
 export const iosSkin: SliderSkin = {
   trackHeight: (size) => IOS_TRACK_H[size],
-  thumbSize: (size) => IOS_THUMB[size],
+  thumbWidth: (size) => IOS_KNOB[size].w,
+  thumbHeight: (size) => IOS_KNOB[size].h,
+  // HIG minimum touch target: the interactive row is never shorter than 44pt.
+  minRowHeight: 44,
   track: (t, size) => ({
-    ...RAIL,
+    width: "100%",
     height: IOS_TRACK_H[size],
+    borderRadius: IOS_TRACK_H[size] / 2,
+    borderCurve: "continuous",
+    overflow: "visible",
     // The iOS inactive rail is a light fill; `muted` reads correctly on both schemes.
     backgroundColor: t.muted,
   }),
   fill: (t, size, disabled) => ({
-    ...FILL_BASE,
+    position: "absolute",
+    left: 0,
+    top: 0,
     height: IOS_TRACK_H[size],
+    borderRadius: IOS_TRACK_H[size] / 2,
+    borderCurve: "continuous",
     backgroundColor: disabled ? t["muted-foreground"] : t.primary,
   }),
-  thumb: (_t, size, _disabled, pressed) => {
-    const d = IOS_THUMB[size];
+  thumb: (_t, size) => {
+    const k = IOS_KNOB[size];
     return {
-      ...THUMB_BASE,
-      width: d,
-      height: d,
-      // The shell sets `top` to vertically center the thumb on the rail.
+      position: "absolute",
+      width: k.w,
+      height: k.h,
+      borderRadius: k.h / 2,
+      borderCurve: "continuous",
+      // The shell sets `top` to vertically center the knob on the rail.
       backgroundColor: "#ffffff",
       borderWidth: 0.5,
       borderColor: alpha("#000000", 0.04),
       ...IOS_THUMB_SHADOW,
-      // iOS press feedback: a subtle opacity dim on the knob (no growth).
-      opacity: pressed ? 0.85 : 1,
+      // No pressed treatment: the iOS knob stays fully opaque through a drag.
     };
   },
+  // Stepped sliders: small gray tick dots along the rail (the kit's Ticks layer
+  // sits UNDER the Fill, so the filled side covers its dots).
+  tick: (t) => ({ backgroundColor: t["muted-foreground"] }),
 };
 
-// ----- Android (Material 3): 4pt track, ~20pt thumb, state-layer ring on press -----
-const M3_TRACK_H: Record<Size, number> = { small: 4, base: 4, large: 6 };
-const M3_THUMB: Record<Size, number> = { small: 18, base: 20, large: 24 };
-// The state layer is the M3 pressed ring: a translucent disc behind the thumb. We
-// emulate it by widening the thumb's border (a ring of the primary at low alpha)
-// when pressed, since the shell positions a single thumb node.
-const M3_STATE_RING = 5;
+// ----- Android (M3 Expressive): thick split track, 4x44dp bar handle -----
+// XS (default): track 16dp / shape 8dp; `large` maps to S: track 24dp / shape 8dp
+// (M3 has no size below XS, so `small` also renders the XS anatomy). Handle is a
+// 4dp-wide x 44dp-tall primary bar at every mapped size, inset by a 6dp gap from
+// both track segments; the inactive end carries a 4dp stop indicator dot.
+const M3_TRACK_H: Record<Size, number> = { small: 16, base: 16, large: 24 };
+const M3_TRACK_R = 8; // outer track shape (XS + S)
+const M3_INNER_R = 2; // the segment edge facing the handle gap
+const M3_HANDLE_W = 4;
+const M3_HANDLE_H = 44;
 
 export const androidSkin: SliderSkin = {
   trackHeight: (size) => M3_TRACK_H[size],
-  thumbSize: (size) => M3_THUMB[size],
-  track: (t, size) => ({
-    ...RAIL,
-    height: M3_TRACK_H[size],
-    // M3 inactive track is the surface-variant tint; `muted` is the closest token.
+  thumbWidth: () => M3_HANDLE_W,
+  thumbHeight: () => M3_HANDLE_H,
+  // The Expressive gap between the handle and BOTH track segments.
+  trackGap: 6,
+  // M3 minimum touch target: the interactive row is never shorter than 48dp.
+  minRowHeight: 48,
+  // The 4dp stop indicator dot in the inactive track end.
+  endStop: true,
+  tickSize: 4,
+  track: (t) => ({
+    // Inactive segment: M3 secondary container; `muted` is the closest token.
     backgroundColor: t.muted,
+    // Outer end fully shaped (8dp), inner edge lightly rounded toward the gap.
+    borderTopLeftRadius: M3_INNER_R,
+    borderBottomLeftRadius: M3_INNER_R,
+    borderTopRightRadius: M3_TRACK_R,
+    borderBottomRightRadius: M3_TRACK_R,
   }),
-  fill: (t, size, disabled) => ({
-    ...FILL_BASE,
-    height: M3_TRACK_H[size],
+  fill: (t, _size, disabled) => ({
+    // Active segment: brand primary (M3 active track = primary).
     backgroundColor: disabled ? t["muted-foreground"] : t.primary,
+    borderTopLeftRadius: M3_TRACK_R,
+    borderBottomLeftRadius: M3_TRACK_R,
+    borderTopRightRadius: M3_INNER_R,
+    borderBottomRightRadius: M3_INNER_R,
   }),
-  thumb: (t, size, disabled, pressed) => {
-    const d = M3_THUMB[size];
-    const fill = disabled ? t["muted-foreground"] : t.primary;
-    return {
-      ...THUMB_BASE,
-      width: d,
-      height: d,
-      // The shell sets `top` to vertically center the thumb on the rail.
-      backgroundColor: fill,
-      // M3 is flat (no drop shadow). The pressed state layer is a translucent
-      // primary ring around the thumb.
-      ...(pressed && !disabled
-        ? { borderWidth: M3_STATE_RING, borderColor: alpha(t.primary, 0.2) }
-        : { borderWidth: 0 }),
-    };
-  },
+  thumb: (t, _size, disabled) => ({
+    ...THUMB_BASE,
+    width: M3_HANDLE_W,
+    height: M3_HANDLE_H,
+    borderRadius: M3_HANDLE_W / 2,
+    // The shell sets `top` to vertically center the bar handle on the track.
+    backgroundColor: disabled ? t["muted-foreground"] : t.primary,
+    // Flat and static: M3 Expressive dropped the drop shadow AND the pressed
+    // state-layer disc (the handle is plain primary in every state).
+  }),
+  // Stop indicator roles: on-primary over the active segment, on-secondary-container
+  // over the inactive one (`muted-foreground` pairs with the `muted` track token).
+  tick: (t, _size, _disabled, onActive) => ({
+    backgroundColor: onActive ? t["primary-foreground"] : t["muted-foreground"],
+  }),
 };
 
 // ----- Web: the established Canvas look (shadcn-matched) -----
@@ -108,7 +153,8 @@ const WEB_THUMB: Record<Size, number> = { small: 14, base: 16, large: 20 };
 
 export const webSkin: SliderSkin = {
   trackHeight: (size) => WEB_TRACK_H[size],
-  thumbSize: (size) => WEB_THUMB[size],
+  thumbWidth: (size) => WEB_THUMB[size],
+  thumbHeight: (size) => WEB_THUMB[size],
   track: (t, size) => ({
     ...RAIL,
     height: WEB_TRACK_H[size],

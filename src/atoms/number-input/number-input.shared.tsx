@@ -81,10 +81,20 @@ export interface NumberInputSkin {
   divider: ((t: ColorTokens, disabled: boolean) => ViewStyle) | null;
   /** The ± glyph color token and px size for a given size/state. */
   glyph: (t: ColorTokens, size: Size, disabled: boolean) => { color: keyof ColorTokens; size: number };
-  /** iOS/web dim a ± button on press; Android uses a ripple instead (null). */
+  /**
+   * Web dims a ± button on press. null on Android (ripple carries the feedback)
+   * and on iOS (the skin's `button` paints a highlight fill on the pressed half
+   * instead — the iOS 27 stepper never dims its glyph).
+   */
   pressedOpacity: number | null;
   /** Android ripple over a ± button; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /**
+   * Uniform hitSlop (px per edge) padding a ± button's touch target out to the
+   * platform minimum (Android M3 48dp); null = no padding (web, and iOS where
+   * Apple's own 32pt UIStepper sets the precedent).
+   */
+  hitSlop: ((size: Size) => number) | null;
   /** Layout order: the iOS HIG puts the value field to the LEFT of the [ − | + ] pill. */
   fieldOnLeft: boolean;
 }
@@ -196,6 +206,7 @@ export function createNumberInput(skin: NumberInputSkin) {
 
     const glyph = skin.glyph(tokens, size, !!disabled);
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+    const hitSlop = skin.hitSlop ? skin.hitSlop(size) : undefined;
 
     const MinusButton = (
       <Pressable
@@ -206,6 +217,7 @@ export function createNumberInput(skin: NumberInputSkin) {
         accessibilityState={{ disabled: atMin }}
         aria-disabled={atMin}
         android_ripple={ripple}
+        hitSlop={hitSlop}
         style={({ pressed }) => [
           skin.button(tokens, size, "left", atMin, pressed),
           skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null,
@@ -224,6 +236,7 @@ export function createNumberInput(skin: NumberInputSkin) {
         accessibilityState={{ disabled: atMax }}
         aria-disabled={atMax}
         android_ripple={ripple}
+        hitSlop={hitSlop}
         style={({ pressed }) => [
           skin.button(tokens, size, "right", atMax, pressed),
           skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null,

@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Collapsible } = scope;
+  const { Text, Collapsible, Typography } = scope;
   return (
 <Collapsible
-  trigger={<Text>Order #1024 — 3 items</Text>}
+  trigger={<Typography medium>Order #1024, 3 items</Typography>}
   defaultOpen
 >
   <Text>Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.</Text>

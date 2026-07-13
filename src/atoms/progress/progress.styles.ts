@@ -7,15 +7,16 @@ import { type ProgressSkin, type Size } from "./progress.shared.js";
 // SHAPE of the bar (track thickness, end radius, and the inactive-track tone) changes per
 // OS, matched to each platform's real progress reference:
 //
-//   iOS (UIProgressView / SwiftUI ProgressView, iOS 27 kit Progress Indicators): a THIN
-//     ~4pt track with FULLY ROUNDED ends (radius = height/2 → a capsule). The inactive
-//     track is a faint tint of the fill (~20% primary), the iOS look where the trackTint
-//     is a light wash of the progressTint.
-//   Android (Material 3 linear progress indicator): a 4dp track, fully rounded ends, with
-//     the inactive track on the `secondary`/container tone (more visible than iOS's faint
-//     wash). M3 leaves a small gap + stop indicator on the real control; the gap is omitted
-//     here to keep one cross-platform structure, but the thickness, rounded ends, and
-//     container-toned track match M3.
+//   iOS (UIProgressView / SwiftUI ProgressView, iOS 27 kit Progress Indicators, Table
+//     View Row symbol): a THIN ~4pt track with FULLY ROUNDED ends (radius = height/2 → a
+//     capsule). The inactive track is a NEUTRAL GRAY system fill — rgba(120,120,120,0.2)
+//     in Light, rgba(120,120,128,0.36) (Fills/Dark/1 Primary) in Dark — never a tint of
+//     the progress color; only the fill carries the accent.
+//   Android (Material 3 linear progress indicator): a 4dp track, fully rounded ends, the
+//     inactive track on the `secondary`/container tone (the secondary-container mapping),
+//     plus the M3 segmented anatomy: a 4dp GAP between the active indicator and the
+//     track, and the 4x4dp stop indicator dot in the active color at the trailing edge
+//     (rendered by the shell via trackGap/stopIndicator; determinate only, per M3).
 //   Web: the established Canvas / shadcn look (Radix Progress): an h-2 (8px) FULLY ROUNDED
 //     track, `bg-primary/20` inactive track, `bg-primary` fill. Kept verbatim as the
 //     web-appropriate default.
@@ -40,9 +41,11 @@ const WEB_RADIUS: Record<Size, number> = { small: 3, base: 4, large: 6 };
 export const iosSkin: ProgressSkin = {
   height: IOS_HEIGHT,
   radius: IOS_RADIUS,
-  // iOS trackTint: a faint wash of the progressTint (the fill). ~20% primary reads as the
-  // light gray-violet inactive track on a white sheet, and tints correctly in dark.
-  trackColor: (t: ColorTokens) => alpha(t.primary, 0.18),
+  // iOS trackTint: a NEUTRAL translucent system fill, never a wash of the progressTint.
+  // The iOS 27 kit track is rgba(120,120,120,0.2) in Light and rgba(120,120,128,0.36) in
+  // Dark; a 25% wash of the neutral `muted-foreground` token (#71717a light / #a1a1aa
+  // dark) lands on both effective grays while staying on the theme's neutral ramp.
+  trackColor: (t: ColorTokens) => alpha(t["muted-foreground"], 0.25),
   fillColor: (t: ColorTokens) => t.primary,
   indeterminateWidth: 0.3,
 };
@@ -50,11 +53,16 @@ export const iosSkin: ProgressSkin = {
 export const androidSkin: ProgressSkin = {
   height: ANDROID_HEIGHT,
   radius: ANDROID_RADIUS,
-  // M3 inactive track sits on the container tone (more present than iOS's faint wash); the
-  // `secondary` token is the closest semantic surface in light and dark.
+  // M3 inactive track = secondary container; the `secondary` token is the closest
+  // semantic surface in light and dark. Active indicator + stop indicator = primary.
   trackColor: (t: ColorTokens) => t.secondary,
   fillColor: (t: ColorTokens) => t.primary,
   indeterminateWidth: 0.35,
+  // M3 measurements (m3.material.io/components/progress-indicators/specs): a 4dp gap
+  // between the active indicator's trailing edge and the inactive track, and the 4x4dp
+  // stop indicator dot at the track's trailing edge. The shell renders both.
+  trackGap: 4,
+  stopIndicator: true,
 };
 
 export const webSkin: ProgressSkin = {

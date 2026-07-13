@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Progress, Typography, Row, Column } = scope;
   return (
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Row flush between>
     <Typography small>Uploading…</Typography>
     <Typography small muted>72%</Typography>

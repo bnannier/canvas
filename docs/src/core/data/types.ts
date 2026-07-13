@@ -13,12 +13,14 @@ export interface ComponentDoc {
 export type Category =
   | "Atoms"
   | "Molecules"
-  | "Organisms";
+  | "Organisms"
+  | "Charts";
 
 export const CATEGORIES: Category[] = [
   "Atoms",
   "Molecules",
   "Organisms",
+  "Charts",
 ];
 
 export interface GuidePage {

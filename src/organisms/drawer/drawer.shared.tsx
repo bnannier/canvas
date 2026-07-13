@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, BackHandler, I18nManager, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { Pressable, View, useTheme, useReducedMotion, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaView } from "../../style/safe-area.js";
-import { Button } from "../../atoms/button/button.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
+import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./drawer.styles.js";
 import { type Edge, type DrawerSkin } from "./drawer.styles.js";
+
+// The trigger Button type, so each platform can pass its own resolved Button
+// (web base by default) without widening to `any`.
+export type ButtonComponent = ComponentType<ButtonProps>;
 
 // Shared Drawer shell. The structure (a full-screen Modal whose scrim lays an
 // opaque panel against an edge), the public boolean-prop API, the edge
@@ -71,11 +76,22 @@ function edgeOf(p: DrawerProps): Edge {
   return "left";
 }
 
-/** Build a Drawer component from a platform skin. */
-export function createDrawer(skin: DrawerSkin) {
+/**
+ * Build a Drawer component from a platform skin and the platform-correct trigger
+ * Button.
+ *
+ * The trigger Button is passed in by each platform's thin `.tsx`/`.ios`/`.android`
+ * file so the built-in `trigger` reads native on every build path. This matters
+ * for the WEB docs 3-up preview: a bare barrel import always resolves the WEB
+ * Button in a browser bundler, which would paint a web-styled trigger inside the
+ * iOS/Android rows; each platform file passes its own `.ios`/`.android` Button so
+ * the row's trigger reads native. On a real device Metro resolves the right Button
+ * by extension regardless, so the default (the web base) is correct there too.
+ */
+export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButton) {
   return function Drawer(props: DrawerProps) {
     const { children, open: openProp, onOpenChange, trigger, width = 288, testID, style } = props;
-    const { tokens } = useTheme();
+    const { tokens, scheme } = useTheme();
     const edge = edgeOf(props);
 
     // Uncontrolled by default: the trigger opens the drawer and the scrim closes it; a
@@ -134,8 +150,27 @@ export function createDrawer(skin: DrawerSkin) {
     const physicalRight = (edge === "right") !== I18nManager.isRTL;
     const fromOffset = isVertical ? -(panelH || 600) : physicalRight ? width : -width;
     const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [fromOffset, 0] });
-    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, skin.scrimOpacity] });
+    // The scrim dim resolves per color scheme (iOS dims lighter in light, darker in dark).
+    const scrimAlpha = skin.scrimOpacity(scheme);
+    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, scrimAlpha] });
     const slideTransform = isVertical ? [{ translateY: slide }] : [{ translateX: slide }];
+
+    // A sheet caps its width (Android M3 640dp) and centers on wide windows; the cap
+    // rides on the panel positioner so the no-op tap-catcher shrinks with the sheet
+    // (a tap on the exposed scrim beside a capped sheet still dismisses). Side drawers
+    // and iOS/web sheets pass no cap and span as before.
+    const isSheet = edge === "bottom" || edge === "top";
+    const sheetCap: ViewStyle | null =
+      skin.sheetMaxWidth != null && isSheet ? { maxWidth: skin.sheetMaxWidth, alignSelf: "center" } : null;
+
+    // The optional grabber/drag handle for a sheet edge (the iOS grabber, the M3
+    // drag handle); a decorative bar, hidden from assistive tech. It sits at the
+    // panel's near edge: above the content on a bottom sheet, below it on a top
+    // sheet. Side drawers and web return none.
+    const handleStyle = skin.handle ? skin.handle(edge, tokens) : null;
+    const handleNode = handleStyle ? (
+      <View accessible={false} importantForAccessibility="no-hide-descendants" style={handleStyle} />
+    ) : null;
 
     // A no-op press inside the panel keeps taps from falling through to the scrim; it is a pure
     // event-capture wrapper, hidden from assistive tech. onLayout measures the top sheet's height
@@ -143,15 +178,28 @@ export function createDrawer(skin: DrawerSkin) {
     // bottom sheet clears the home indicator, a side drawer the notch/status bar); the opaque
     // `card` fill still reaches the screen edge, and insets resolve to 0 elsewhere.
     const panel = (
-      <Pressable accessible={false} style={s.panelPos[edge]} onPress={() => {}} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
-        <SafeAreaView style={[skin.panelShape(edge, width, tokens), style]}>{children}</SafeAreaView>
+      <Pressable accessible={false} style={[s.panelPos[edge], sheetCap]} onPress={() => {}} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
+        <SafeAreaView style={[skin.panelShape(edge, width, tokens), style]}>
+          {edge === "bottom" ? handleNode : null}
+          {children}
+          {edge === "top" ? handleNode : null}
+        </SafeAreaView>
       </Pressable>
     );
 
     return (
       <>
         {trigger != null ? (
-          <Button outline small onPress={() => setOpen(true)}>
+          // The built-in trigger floors its height to the platform touch minimum
+          // (iOS HIG 44pt, M3 48dp) via the skin; web is pointer-first (no floor,
+          // layout untouched). The Button is the platform-resolved one so the docs
+          // 3-up shows each row's native trigger.
+          <Button
+            outline
+            small
+            onPress={() => setOpen(true)}
+            style={skin.triggerMinHeight != null ? { minHeight: skin.triggerMinHeight } : undefined}
+          >
             {trigger}
           </Button>
         ) : null}
@@ -182,7 +230,7 @@ export function createDrawer(skin: DrawerSkin) {
               </View>
             ) : (
               // Bottom: RN Modal's native slide + the static scrim dim.
-              <Pressable accessible={false} style={s.scrim(edge, skin.scrimOpacity)} onPress={() => setOpen(false)}>
+              <Pressable accessible={false} style={s.scrim(edge, scrimAlpha)} onPress={() => setOpen(false)}>
                 {panel}
               </Pressable>
             )}

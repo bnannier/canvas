@@ -1,6 +1,6 @@
 # Slider
 
-Drag (or tap) along a track to pick a value in a range. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`.
+Drag (or tap) along a track to pick a value in a range. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`. Like the other input-like controls, a bare slider renders at the standard field width; `narrow` / `wide` pick the other widths and `block` fills the container.
 
 ## Usage
 
@@ -13,25 +13,25 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 ### Size - sm
 
 ```tsx
-<Slider small defaultValue={40} style={{ maxWidth: 280 }} />
+<Slider small defaultValue={40} />
 ```
 
 ### Size - lg
 
 ```tsx
-<Slider large defaultValue={75} style={{ maxWidth: 280 }} />
+<Slider large defaultValue={75} />
 ```
 
 ### Stepped
 
 ```tsx
-<Slider defaultValue={6} min={0} max={10} step={2} style={{ maxWidth: 280 }} />
+<Slider defaultValue={6} min={0} max={10} step={2} />
 ```
 
 ### Disabled
 
 ```tsx
-<Slider disabled defaultValue={30} style={{ maxWidth: 280 }} />
+<Slider disabled defaultValue={30} />
 ```
 
 ## Do & Don't
@@ -41,7 +41,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 **Do** — Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance.
 
 ```tsx
-<Column snug style={{ maxWidth: 320 }}>
+<Column snug>
   <Typography small medium>Volume</Typography>
   <Slider defaultValue={65} min={0} max={100} />
 </Column>
@@ -60,18 +60,16 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 **Do** — Pair the slider with its current value so the number is explicit, not just inferred from the thumb position.
 
 ```tsx
-<Row alignCenter relaxed style={{ maxWidth: 320 }}>
-  <Column fill>
-    <Slider defaultValue={48} min={0} max={100} />
-  </Column>
-  <Typography small muted style={{ minWidth: 32, textAlign: "right" }}>48</Typography>
+<Row alignCenter relaxed>
+  <Slider narrow defaultValue={48} min={0} max={100} />
+  <Typography small muted>48</Typography>
 </Row>
 ```
 
 **Don't** — A slider with no readout and no label leaves users guessing what the value is and what it controls.
 
 ```tsx
-<Slider defaultValue={48} min={0} max={100} style={{ maxWidth: 320 }} />
+<Slider defaultValue={48} min={0} max={100} />
 ```
 
 ### State
@@ -79,13 +77,13 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 **Do** — Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.
 
 ```tsx
-<Slider disabled defaultValue={20} min={0} max={100} style={{ maxWidth: 320 }} />
+<Slider disabled defaultValue={20} min={0} max={100} />
 ```
 
 **Don't** — Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.
 
 ```tsx
-<View style={{ maxWidth: 320, height: 20, justifyContent: "center" }}>
+<View style={{ width: 320, height: 20, justifyContent: "center" }}>
   <View style={{ width: "100%", height: 4, borderRadius: 999, backgroundColor: tokens.muted }}>
     <View style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "20%", borderRadius: 999, backgroundColor: alpha(tokens.primary, 0.4) }} />
   </View>

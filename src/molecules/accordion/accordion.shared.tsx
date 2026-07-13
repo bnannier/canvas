@@ -39,11 +39,11 @@ import { Icon } from "../../atoms/icon/icon.js";
 //   - `multiple`: any number of panels may be open at once; each header toggles
 //     its own panel independently.
 //
-// The chevron glyph and its open-rotation come from the skin: iOS/web use the
-// HIG/Radix right caret (chevronRight, 0 -> 90deg, points down when open); Android
-// uses the M3 in-place-expansion chevron (chevronDown, 0 -> 180deg, points up when
-// open). The panel reveal uses LayoutAnimation natively (a smooth height ease) and
-// a plain show/hide on web, which is robust everywhere.
+// The chevron glyph and its open-rotation come from the skin: iOS uses the HIG
+// right caret (chevronRight, 0 -> 90deg, points down when open); web and Android
+// use the ChevronDown (0 -> 180deg, points up when open, the shadcn / M3
+// in-place-expansion idiom). The panel reveal uses LayoutAnimation natively (a
+// smooth height ease) and a plain show/hide on web, which is robust everywhere.
 
 // The platform-varying surface. Everything shape/color/feedback-bearing the rows
 // need lives here, built from the active tokens (so each follows light/dark).
@@ -74,8 +74,10 @@ export interface AccordionSkin {
 
   /** The optional outer container shape (iOS inset-grouped card; flat on web/Android). */
   container: (t: ColorTokens) => ViewStyle;
-  /** One item's wrapper: the row divider (and any leading inset). `first`/`last` for edge rules. */
-  item: (t: ColorTokens, first: boolean, last: boolean) => ViewStyle;
+  /** The inter-row divider line, rendered by the shell only between rows (never after
+   *  the last one): a full-bleed hairline on web/Android, inset to the text leading
+   *  edge on iOS (the grouped-list separator). */
+  separator: (t: ColorTokens) => ViewStyle;
   /** The header trigger row layout/insets. */
   header: (t: ColorTokens) => ViewStyle;
   /** The header title type. */
@@ -154,14 +156,12 @@ export function createAccordion(skin: AccordionSkin) {
     item,
     open,
     groupDisabled,
-    first,
     last,
     onToggle,
   }: {
     item: AccordionItem;
     open: boolean;
     groupDisabled?: boolean;
-    first: boolean;
     last: boolean;
     onToggle: () => void;
   }) {
@@ -190,7 +190,7 @@ export function createAccordion(skin: AccordionSkin) {
     ];
 
     return (
-      <View style={skin.item(tokens, first, last)}>
+      <View>
         <Pressable
           onPress={disabled ? undefined : onToggle}
           disabled={disabled}
@@ -212,7 +212,7 @@ export function createAccordion(skin: AccordionSkin) {
             {item.title}
           </Text>
           <Animated.View style={{ transform: [{ rotate }] }}>
-            {/* Skin picks the disclosure glyph: chevronRight (iOS/web) or chevronDown (M3). */}
+            {/* Skin picks the disclosure glyph: chevronRight (iOS) or chevronDown (web/M3). */}
             <Icon {...{ [skin.chevronGlyph]: true }} muted size={skin.chevronSize} />
           </Animated.View>
         </Pressable>
@@ -225,6 +225,9 @@ export function createAccordion(skin: AccordionSkin) {
             )}
           </View>
         ) : null}
+        {/* Inter-row divider: the skin styles it (full-bleed on web/Android, inset
+            on iOS); dropped after the last row. */}
+        {!last ? <View style={skin.separator(tokens)} /> : null}
       </View>
     );
   }
@@ -265,7 +268,6 @@ export function createAccordion(skin: AccordionSkin) {
             item={item}
             open={open.has(item.key)}
             groupDisabled={disabled}
-            first={i === 0}
             last={i === items.length - 1}
             onToggle={() => toggle(item.key)}
           />
