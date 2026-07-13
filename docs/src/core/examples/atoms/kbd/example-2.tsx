@@ -3,13 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Kbd, Typography, Row } = scope;
+  const { Kbd } = scope;
   return (
-<Row wrap alignCenter tight>
-  <Typography small>Press </Typography>
-  <Kbd>⌘</Kbd>
-  <Kbd>K</Kbd>
-  <Typography small> to search.</Typography>
-</Row>
+<Kbd keys="⌘ ⇧ P" />
   );
 }

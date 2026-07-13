@@ -1,15 +1,16 @@
-import { type ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { View, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
-// Shared Kbd shell. Kbd is a keyboard shortcut indicator: a single key cap, a small
-// bordered, slightly raised label with monospace-ish small text. The key label comes
-// from children. One cap = one key; compose multiple Kbd caps with a separator for a
-// chord (e.g. ⌘ + K), per the docs.
+// Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, slightly
+// raised key cap with monospace-ish small text. A single key comes from `children`
+// (<Kbd>Esc</Kbd>); a whole shortcut comes from `keys` (<Kbd keys="⌘ K" />), which
+// renders one cap per key with a separator between them so the component owns the
+// composition instead of pushing a Row + N caps + N-1 separators onto every call site.
 //
 // The cap has one fixed look (no size or intent variants), so there are no boolean
 // axes to map: the structure, accessibility, and token-driven colors live here once,
-// and a platform file supplies only its skin (cap geometry + label type) and calls
-// createKbd.
+// and a platform file supplies only its skin (cap geometry, label type, chord row)
+// and calls createKbd.
 //
 // Kbd is a "Shared" platform treatment: neither iOS (no native keyboard-key cap
 // element) nor Material 3 (no keyboard-key cap component) has a native control, so all
@@ -21,10 +22,25 @@ export interface KbdSkin {
   capBox: ViewStyle;
   /** The key label type (size / line-height / weight / tracking). */
   labelType: TextStyle;
+  /** The chord wrapper: a centered row holding each cap and its separator. */
+  chordRow: ViewStyle;
 }
 
 export interface KbdProps {
+  /** A single key label, rendered as one cap. Ignored when `keys` is set. */
   children?: ReactNode;
+  /**
+   * A multi-key shortcut, rendered as one cap per key with a separator between them.
+   * Pass a whitespace-separated string (`"⌘ K"`) or an array (`["⌘", "K"]`). A single
+   * entry renders one cap, identical to passing that key as `children`. When set, `keys`
+   * takes precedence over `children`.
+   */
+  keys?: string | string[];
+  /**
+   * Render a key SEQUENCE (press one, then the next), separating caps with a gap
+   * instead of the default `+` combo joiner. Only affects the `keys` form.
+   */
+  sequence?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -38,19 +54,73 @@ function capSurface(tokens: ColorTokens): ViewStyle {
   return { borderColor: tokens.border, backgroundColor: tokens.muted };
 }
 
-// The label color: muted foreground (platform-neutral, token-driven).
+// The label color: muted foreground (platform-neutral, token-driven). The chord
+// separator ("+") reuses this so it matches the key labels.
 function labelColor(tokens: ColorTokens): TextStyle {
   return { color: tokens["muted-foreground"] };
 }
 
+// A key sequence gets a touch more air between caps than a combo, so the "then" pause
+// reads (a combo keeps its caps snug around the "+"). Internal only.
+const SEQUENCE_GAP: ViewStyle = { gap: 8 };
+
+/** Normalize `keys` into a clean list of key labels, or null when unset/empty. */
+function keyList(keys: string | string[] | undefined): string[] | null {
+  if (keys == null) return null;
+  const list = (Array.isArray(keys) ? keys : keys.split(/\s+/)).map((k) => `${k}`.trim()).filter(Boolean);
+  return list.length > 0 ? list : null;
+}
+
 /** Build a Kbd component from a platform skin. */
 export function createKbd(skin: KbdSkin) {
-  return function Kbd({ children, testID, style }: KbdProps) {
+  return function Kbd({ children, keys, sequence, testID, style }: KbdProps) {
     const { tokens } = useTheme();
 
+    const list = keyList(keys);
+
+    // Single cap: a 1-key `keys` list, or `children`. Renders exactly as before.
+    if (list == null || list.length === 1) {
+      const label = list != null ? list[0] : children;
+      return (
+        <View testID={testID} style={[skin.capBox, capSurface(tokens), style]}>
+          {label != null ? <Text style={[skin.labelType, labelColor(tokens)]}>{label}</Text> : null}
+        </View>
+      );
+    }
+
+    // Chord: one cap per key with a separator between them. The whole shortcut reads
+    // as a single accessible name (e.g. "⌘+K"), so a screen reader announces the
+    // shortcut once instead of each cap in turn; the caps and separators are hidden
+    // from the tree as decorative.
+    const name = list.join(sequence ? " " : "+");
     return (
-      <View testID={testID} style={[skin.capBox, capSurface(tokens), style]}>
-        {children != null ? <Text style={[skin.labelType, labelColor(tokens)]}>{children}</Text> : null}
+      <View
+        testID={testID}
+        accessibilityRole="text"
+        accessibilityLabel={name}
+        aria-label={name}
+        style={[skin.chordRow, sequence ? SEQUENCE_GAP : null, style]}
+      >
+        {list.map((key, i) => (
+          <Fragment key={i}>
+            {i > 0 && !sequence ? (
+              <Text
+                style={[skin.labelType, labelColor(tokens)]}
+                importantForAccessibility="no-hide-descendants"
+                aria-hidden
+              >
+                +
+              </Text>
+            ) : null}
+            <View
+              style={[skin.capBox, capSurface(tokens)]}
+              importantForAccessibility="no-hide-descendants"
+              aria-hidden
+            >
+              <Text style={[skin.labelType, labelColor(tokens)]}>{key}</Text>
+            </View>
+          </Fragment>
+        ))}
       </View>
     );
   };

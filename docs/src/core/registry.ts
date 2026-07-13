@@ -208,6 +208,8 @@ import e_atoms_input_otp_dont_0_dont from "./examples/atoms/input-otp/dont-0-don
 import e_atoms_kbd_example_0 from "./examples/atoms/kbd/example-0";
 import e_atoms_kbd_example_1 from "./examples/atoms/kbd/example-1";
 import e_atoms_kbd_example_2 from "./examples/atoms/kbd/example-2";
+import e_atoms_kbd_example_3 from "./examples/atoms/kbd/example-3";
+import e_atoms_kbd_example_4 from "./examples/atoms/kbd/example-4";
 import e_atoms_kbd_dont_0_do from "./examples/atoms/kbd/dont-0-do";
 import e_atoms_kbd_dont_0_dont from "./examples/atoms/kbd/dont-0-dont";
 import e_atoms_kbd_dont_1_do from "./examples/atoms/kbd/dont-1-do";
@@ -1056,14 +1058,16 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "kbd",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Row alignCenter tight>\n  <Kbd>⌘</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>K</Kbd>\n</Row>", render: e_atoms_kbd_example_0 },
-      { label: "Mode - single", code: "<Kbd>⌘</Kbd>", render: e_atoms_kbd_example_1 },
-      { label: "Mode - in a sentence", code: "<Row wrap alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd>⌘</Kbd>\n  <Kbd>K</Kbd>\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_2 },
+      { label: "Default", code: "<Kbd keys=\"⌘ K\" />", render: e_atoms_kbd_example_0 },
+      { label: "Mode - single", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_example_1 },
+      { label: "Mode - combo", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_example_2 },
+      { label: "Mode - sequence", code: "<Kbd keys=\"⌘K ⌘S\" sequence />", render: e_atoms_kbd_example_3 },
+      { label: "Mode - in a sentence", code: "<Row wrap alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_4 },
     ],
     donts: [
-      { title: "Single", do: { caption: "Use the single mode for one real key; give each cap exactly one key.", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_dont_0_do }, dont: { caption: "Packing a whole shortcut into one key cap reads as a single keystroke that does not exist.", code: "<Kbd>⌘K</Kbd>", render: e_atoms_kbd_dont_0_dont } },
-      { title: "Combo", do: { caption: "Separate each key with a + so the combo reads as keys pressed together.", code: "<Row alignCenter tight>\n  <Kbd>⌘</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>⇧</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>P</Kbd>\n</Row>", render: e_atoms_kbd_dont_1_do }, dont: { caption: "Caps butted together with no separator blur into one token and hide that it is a chord.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\" }}>\n  <Kbd>⌘</Kbd>\n  <Kbd>⇧</Kbd>\n  <Kbd>P</Kbd>\n</View>", render: e_atoms_kbd_dont_1_dont } },
-      { title: "In a sentence", do: { caption: "Wrap each key in a kbd so shortcuts read as physical keys.", code: "<Row alignCenter tight>\n  <Typography small>Press</Typography>\n  <Kbd>Ctrl</Kbd>\n  <Kbd>K</Kbd>\n  <Typography small>to search.</Typography>\n</Row>", render: e_atoms_kbd_dont_2_do }, dont: { caption: "Plain-text shortcuts blend into the prose and are easy to miss.", code: "<Text style={{ fontSize: 14, lineHeight: 20 }}>Press Ctrl+K to search.</Text>", render: e_atoms_kbd_dont_2_dont } },
+      { title: "Single", do: { caption: "Use `children` for one real key; give each cap exactly one key.", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_dont_0_do }, dont: { caption: "Packing a whole shortcut into one key cap reads as a single keystroke that does not exist.", code: "<Kbd>⌘K</Kbd>", render: e_atoms_kbd_dont_0_dont } },
+      { title: "Combo", do: { caption: "Pass every key to `keys`; Kbd lays out the caps with `+` separators and reads as one shortcut to a screen reader.", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_dont_1_do }, dont: { caption: "Hand-assembling caps and separators is verbose and drops the combined accessible name; let `keys` compose the chord.", code: "<Row alignCenter tight>\n  <Kbd>⌘</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>⇧</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>P</Kbd>\n</Row>", render: e_atoms_kbd_dont_1_dont } },
+      { title: "In a sentence", do: { caption: "Drop a `keys` Kbd inline so the shortcut reads as physical keys.", code: "<Row wrap alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"Ctrl K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_dont_2_do }, dont: { caption: "Plain-text shortcuts blend into the prose and are easy to miss.", code: "<Typography small>Press Ctrl+K to search.</Typography>", render: e_atoms_kbd_dont_2_dont } },
     ],
   },
   "layout": {

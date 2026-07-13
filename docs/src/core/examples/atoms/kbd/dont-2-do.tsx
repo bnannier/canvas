@@ -5,11 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Kbd, Typography, Row } = scope;
   return (
-<Row alignCenter tight>
-  <Typography small>Press</Typography>
-  <Kbd>Ctrl</Kbd>
-  <Kbd>K</Kbd>
-  <Typography small>to search.</Typography>
+<Row wrap alignCenter tight>
+  <Typography small>Press </Typography>
+  <Kbd keys="Ctrl K" />
+  <Typography small> to search.</Typography>
 </Row>
   );
 }

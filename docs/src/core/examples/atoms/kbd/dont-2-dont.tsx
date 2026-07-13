@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text } = scope;
+  const { Typography } = scope;
   return (
-<Text style={{ fontSize: 14, lineHeight: 20 }}>Press Ctrl+K to search.</Text>
+<Typography small>Press Ctrl+K to search.</Typography>
   );
 }

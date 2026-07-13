@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Kbd } = scope;
+  const { Kbd, Typography, Row } = scope;
   return (
-<View style={{ flexDirection: "row", alignItems: "center" }}>
+<Row alignCenter tight>
   <Kbd>⌘</Kbd>
+  <Typography tiny muted>+</Typography>
   <Kbd>⇧</Kbd>
+  <Typography tiny muted>+</Typography>
   <Kbd>P</Kbd>
-</View>
+</Row>
   );
 }

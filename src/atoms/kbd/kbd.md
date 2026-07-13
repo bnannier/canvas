@@ -5,11 +5,7 @@ Keyboard shortcut indicator badge.
 ## Usage
 
 ```tsx
-<Row alignCenter tight>
-  <Kbd>⌘</Kbd>
-  <Typography tiny muted>+</Typography>
-  <Kbd>K</Kbd>
-</Row>
+<Kbd keys="⌘ K" />
 ```
 
 ## Variants
@@ -17,7 +13,19 @@ Keyboard shortcut indicator badge.
 ### Mode - single
 
 ```tsx
-<Kbd>⌘</Kbd>
+<Kbd>Esc</Kbd>
+```
+
+### Mode - combo
+
+```tsx
+<Kbd keys="⌘ ⇧ P" />
+```
+
+### Mode - sequence
+
+```tsx
+<Kbd keys="⌘K ⌘S" sequence />
 ```
 
 ### Mode - in a sentence
@@ -25,8 +33,7 @@ Keyboard shortcut indicator badge.
 ```tsx
 <Row wrap alignCenter tight>
   <Typography small>Press </Typography>
-  <Kbd>⌘</Kbd>
-  <Kbd>K</Kbd>
+  <Kbd keys="⌘ K" />
   <Typography small> to search.</Typography>
 </Row>
 ```
@@ -35,7 +42,7 @@ Keyboard shortcut indicator badge.
 
 ### Single
 
-**Do** — Use the single mode for one real key; give each cap exactly one key.
+**Do** — Use `children` for one real key; give each cap exactly one key.
 
 ```tsx
 <Kbd>Esc</Kbd>
@@ -49,7 +56,13 @@ Keyboard shortcut indicator badge.
 
 ### Combo
 
-**Do** — Separate each key with a + so the combo reads as keys pressed together.
+**Do** — Pass every key to `keys`; Kbd lays out the caps with `+` separators and reads as one shortcut to a screen reader.
+
+```tsx
+<Kbd keys="⌘ ⇧ P" />
+```
+
+**Don't** — Hand-assembling caps and separators is verbose and drops the combined accessible name; let `keys` compose the chord.
 
 ```tsx
 <Row alignCenter tight>
@@ -61,31 +74,20 @@ Keyboard shortcut indicator badge.
 </Row>
 ```
 
-**Don't** — Caps butted together with no separator blur into one token and hide that it is a chord.
-
-```tsx
-<View style={{ flexDirection: "row", alignItems: "center" }}>
-  <Kbd>⌘</Kbd>
-  <Kbd>⇧</Kbd>
-  <Kbd>P</Kbd>
-</View>
-```
-
 ### In a sentence
 
-**Do** — Wrap each key in a kbd so shortcuts read as physical keys.
+**Do** — Drop a `keys` Kbd inline so the shortcut reads as physical keys.
 
 ```tsx
-<Row alignCenter tight>
-  <Typography small>Press</Typography>
-  <Kbd>Ctrl</Kbd>
-  <Kbd>K</Kbd>
-  <Typography small>to search.</Typography>
+<Row wrap alignCenter tight>
+  <Typography small>Press </Typography>
+  <Kbd keys="Ctrl K" />
+  <Typography small> to search.</Typography>
 </Row>
 ```
 
 **Don't** — Plain-text shortcuts blend into the prose and are easy to miss.
 
 ```tsx
-<Text style={{ fontSize: 14, lineHeight: 20 }}>Press Ctrl+K to search.</Text>
+<Typography small>Press Ctrl+K to search.</Typography>
 ```

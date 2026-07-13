@@ -23,10 +23,16 @@ const CAP_BOX: ViewStyle = {
 // The key label: small, medium-weight text.
 const LABEL_TYPE: TextStyle = { fontSize: 12, lineHeight: 16, fontWeight: "500" };
 
+// The chord wrapper: a centered row that lays out each cap and its "+" separator with
+// a snug gap (spacing-1, matching the docs' old Row `tight`). A sequence widens this
+// gap in the shell.
+const CHORD_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
+
 // Web: the current Canvas look, matched to shadcn/ui's kbd.
 export const webSkin: KbdSkin = {
   capBox: CAP_BOX,
   labelType: LABEL_TYPE,
+  chordRow: CHORD_ROW,
 };
 
 // Shared treatment: iOS and Android render the identical web look (no native keycap).

@@ -244,7 +244,7 @@ export function createCommand(skin: CommandSkin) {
         >
           <Icon search muted size={14} />
           <Text style={s.triggerLabel(tokens)}>Search...</Text>
-          <Kbd style={s.triggerKbd}>⌘K</Kbd>
+          <Kbd keys="⌘ K" style={s.triggerKbd} />
         </Pressable>
         <AnchoredOverlay
           open={open}
