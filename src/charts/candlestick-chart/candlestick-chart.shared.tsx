@@ -5,7 +5,7 @@ import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 import { CartesianFrame, chartRootWidth, type CartesianLayout } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
-import { formatCompact, linePath, linearScale } from "../shared/chart-math.js";
+import { DENSE_SERIES, formatCompact, linePath, linearScale } from "../shared/chart-math.js";
 
 // CandlestickChart: the trading instrument view. OHLC candles (a body between
 // open and close, a wick between high and low) colored by direction from the
@@ -85,11 +85,6 @@ export function createCandlestickChart(skin: ChartSkin) {
       overlays.some((sr) => sr.values.length !== labels.length),
       "[canvas] <CandlestickChart />: an overlay's `values` length differs from `labels`; missing values are treated as 0.",
     );
-    devWarn(
-      candles.length * 4 > 60,
-      `[canvas] <CandlestickChart />: the accessible name carries every candle's OHLC and this chart has ${candles.length} candles; consider a coarser period.`,
-    );
-
     // Price extent from lows/highs plus any overlays; never forced through 0.
     const count = Math.min(labels.length, candles.length);
     const lows = candles.slice(0, count).map((c) => num(c.low));
@@ -103,15 +98,23 @@ export function createCandlestickChart(skin: ChartSkin) {
     const volumePane = volume ? VOLUME_PANE[compact ? "compact" : "default"] : 0;
 
     // The accessible name carries every candle's OHLC (and volume), per the
-    // chart a11y contract.
-    const name = labels
-      .slice(0, count)
-      .map((l, i) => {
-        const c = candles[i];
-        const vol = volume ? `, volume ${formatValue(num(volume[i]))}` : "";
-        return `${l} open ${formatValue(num(c.open))}, high ${formatValue(num(c.high))}, low ${formatValue(num(c.low))}, close ${formatValue(num(c.close))}${vol}`;
-      })
-      .join("; ");
+    // chart a11y contract. A dense chart summarizes the period instead: listing
+    // 30+ candles' OHLC is unusable to a screen reader, so it names the range,
+    // endpoints, and extremes (scrubbing still announces the focused candle).
+    let name: string;
+    if (count > DENSE_SERIES) {
+      const closes = candles.slice(0, count).map((c) => num(c.close));
+      name = `${title ?? "Candlestick chart"}: ${count} periods from ${labels[0]} to ${labels[count - 1]}, open ${formatValue(num(candles[0].open))}, close ${formatValue(closes[count - 1])}, low ${formatValue(Math.min(...lows))}, high ${formatValue(Math.max(...highs))}`;
+    } else {
+      name = labels
+        .slice(0, count)
+        .map((l, i) => {
+          const c = candles[i];
+          const vol = volume ? `, volume ${formatValue(num(volume[i]))}` : "";
+          return `${l} open ${formatValue(num(c.open))}, high ${formatValue(num(c.high))}, low ${formatValue(num(c.low))}, close ${formatValue(num(c.close))}${vol}`;
+        })
+        .join("; ");
+    }
 
     // Scrub-to-inspect selection; announcements mirror the flag.
     const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);

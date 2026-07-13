@@ -8,6 +8,7 @@ import {
   bandScale,
   estimateTextWidth,
   formatCompact,
+  seriesAccessibleName,
   linePath,
   linearScale,
   monotonePath,
@@ -267,6 +268,31 @@ describe("order-book depth", () => {
       true,
     );
     expect(d).toBe("M0,20 L0,60 L50,60 L50,140 L0,140 Z");
+  });
+});
+
+describe("seriesAccessibleName", () => {
+  const fmt = (v: number) => String(v);
+
+  it("lists every value for a sparse series", () => {
+    const name = seriesAccessibleName("Web", [12, 19, 15], ["Jan", "Feb", "Mar"], fmt);
+    expect(name).toBe("Web: Jan 12, Feb 19, Mar 15");
+  });
+
+  it("summarizes a dense series by endpoints and range", () => {
+    const values = Array.from({ length: 30 }, (_, i) => 100 + i);
+    const labels = Array.from({ length: 30 }, (_, i) => `d${i}`);
+    const name = seriesAccessibleName("Price", values, labels, fmt);
+    expect(name).toBe("Price: 30 points from 100 to 129, low 100, high 129");
+    expect(name).not.toContain("d15"); // no per-point listing
+  });
+
+  it("treats non-finite values as zero in the summary", () => {
+    const values = [NaN, ...Array.from({ length: 30 }, () => 5)];
+    const labels = Array.from({ length: 31 }, (_, i) => `d${i}`);
+    const name = seriesAccessibleName("S", values, labels, fmt);
+    expect(name).toContain("from 0 to 5");
+    expect(name).toContain("low 0");
   });
 });
 

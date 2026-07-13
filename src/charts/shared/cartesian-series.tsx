@@ -6,7 +6,7 @@ import { type ChartSeries, type ChartSkin } from "./types.js";
 import { CartesianFrame, chartRootWidth, type CartesianLayout } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
 import { ChartValueFlag, announceSelection } from "./chart-inspect.js";
-import { formatCompact, type Pt } from "./chart-math.js";
+import { formatCompact, seriesAccessibleName, type Pt } from "./chart-math.js";
 
 // The shared core of the categorical-x series charts (LineChart, AreaChart):
 // the props contract, the per-chart setup hook (warnings, tone/color
@@ -89,10 +89,6 @@ export function useSeriesChart(
     multi && !!(props.success || props.destructive),
     `[canvas] <${kind === "line" ? "LineChart" : "AreaChart"} />: tone props apply to single-series charts only; multi-series charts use the chart-1..8 tokens.`,
   );
-  devWarn(
-    series.length * labels.length > 50,
-    `[canvas] <${kind === "line" ? "LineChart" : "AreaChart"} />: the accessible name carries every value and this chart has ${series.length * labels.length} datapoints; consider pre-aggregating.`,
-  );
 
   const colorOf = (i: number): string => (multi ? s.seriesFill(tokens, i) : s.barFill(tokens, tone));
 
@@ -115,10 +111,9 @@ export function useSeriesChart(
 
   // The accessible name carries the data itself, series-prefixed, so a screen
   // reader hears "Revenue: Jan 12, Feb 19, ...; Costs: Jan 8, ..." (role="img"
-  // subtrees are presentational, so the name is the data's only channel).
-  const name = series
-    .map((sr) => `${sr.label}: ${labels.map((l, i) => `${l} ${formatValue(finite(sr.values[i]))}`).join(", ")}`)
-    .join("; ");
+  // subtrees are presentational, so the name is the data's only channel). Dense
+  // series summarize their shape instead of listing every value.
+  const name = series.map((sr) => seriesAccessibleName(sr.label, sr.values, labels, formatValue)).join("; ");
 
   // Scrub-to-inspect selection (controlled + uncontrolled), announced to
   // assistive tech since the visual flag is presentational. Repeat scrub

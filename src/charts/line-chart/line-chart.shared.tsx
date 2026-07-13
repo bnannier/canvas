@@ -100,7 +100,10 @@ export function createLineChart(skin: ChartSkin) {
             />
           );
         })}
-        {dots
+        {/* Dots are width-aware: on a dense plot where bands are narrower than
+            a dot, the markers would blob into the line, so they auto-suppress
+            and the line alone carries the shape. */}
+        {dots && layout.band && layout.band.step >= 14
           ? props.series.flatMap((sr, i) => {
               const pts = seriesPoints(sr, props.labels, layout);
               const color = ctx.colorOf(i);

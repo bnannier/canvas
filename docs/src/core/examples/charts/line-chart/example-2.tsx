@@ -6,14 +6,14 @@ export default function Example(scope: ExampleScope) {
   const { LineChart } = scope;
   return (
 <LineChart
-  title="Signups"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  title="Active users"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
   series={[
-    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
-    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+    { label: "Web", values: [204, 229, 252, 254, 271, 275, 272, 274, 281, 305, 313, 333] },
+    { label: "Mobile", values: [128, 155, 167, 183, 185, 199, 220, 228, 254, 270, 281, 291] }
   ]}
   curved
-  defaultSelected={4}
+  defaultSelected={8}
   style={{ maxWidth: 560 }}
 />
   );

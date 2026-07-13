@@ -5,15 +5,17 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, PieChart } = scope;
   return (
-<Card padded style={{ maxWidth: 280 }}>
+<Card padded style={{ maxWidth: 320 }}>
   <PieChart
     donut
     label="Traffic"
     slices={[
-      { label: "Direct", value: 42 },
-      { label: "Organic search", value: 28 },
-      { label: "Social", value: 18 },
-      { label: "Referral", value: 12 }
+      { label: "Direct", value: 38 },
+      { label: "Organic search", value: 24 },
+      { label: "Social", value: 15 },
+      { label: "Referral", value: 11 },
+      { label: "Email", value: 8 },
+      { label: "Paid", value: 4 }
     ]}
   />
 </Card>

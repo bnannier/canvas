@@ -6,11 +6,12 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 
 ```tsx
 <LineChart
-  title="Signups"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  title="Active users"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]}
   series={[
-    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
-    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+    { label: "Web", values: [119, 119, 122, 114, 131, 154, 147, 164, 157, 155, 176, 175, 179, 182] },
+    { label: "Mobile", values: [63, 68, 93, 104, 101, 98, 121, 143, 162, 186, 207, 230, 228, 251] },
+    { label: "API", values: [32, 41, 41, 38, 35, 37, 39, 47, 50, 62, 71, 69, 81, 79] }
   ]}
   curved
   dots
@@ -24,11 +25,12 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 
 ```tsx
 <LineChart
-  title="OLY"
-  labels={["10a", "11a", "12p", "1p", "2p", "3p", "4p"]}
-  series={[{ label: "Price", values: [187.2, 188.4, 186.9, 189.3, 190.8, 190.1, 191.6] }]}
+  title="OLY · today"
+  labels={["9:30a", "9:40a", "9:50a", "10:00a", "10:10a", "10:20a", "10:30a", "10:40a", "10:50a", "11:00a", "11:10a", "11:20a", "11:30a", "11:40a", "11:50a", "12:00p", "12:10p", "12:20p", "12:30p", "12:40p", "12:50p", "1:00p", "1:10p", "1:20p", "1:30p", "1:40p", "1:50p", "2:00p", "2:10p", "2:20p", "2:30p", "2:40p", "2:50p", "3:00p", "3:10p", "3:20p", "3:30p", "3:40p", "3:50p"]}
+  series={[{ label: "Price", values: [186.1, 186.6, 186.4, 187.1, 187.5, 187.5, 187.6, 187.3, 186.8, 187.5, 187.0, 186.6, 186.7, 187.1, 186.7, 187.4, 187.5, 187.4, 188.1, 187.6, 188.5, 188.4, 188.9, 189.2, 189.5, 189.6, 190.5, 190.6, 190.7, 190.4, 190.2, 190.8, 190.5, 190.5, 191.4, 191.1, 191.8, 191.6, 191.7] }]}
   baseline={188}
   fade
+  curved
   style={{ maxWidth: 560 }}
 />
 ```
@@ -37,14 +39,14 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 
 ```tsx
 <LineChart
-  title="Signups"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+  title="Active users"
+  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
   series={[
-    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
-    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+    { label: "Web", values: [204, 229, 252, 254, 271, 275, 272, 274, 281, 305, 313, 333] },
+    { label: "Mobile", values: [128, 155, 167, 183, 185, 199, 220, 228, 254, 270, 281, 291] }
   ]}
   curved
-  defaultSelected={4}
+  defaultSelected={8}
   style={{ maxWidth: 560 }}
 />
 ```

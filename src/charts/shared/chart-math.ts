@@ -350,6 +350,30 @@ export function formatCompact(v: number): string {
   return s;
 }
 
+// --- accessible names --------------------------------------------------------------
+
+// Past this many categories, a series' accessible name summarizes its shape
+// rather than listing every value: folding 30+ numbers into one aria-label is
+// both unwieldy to author and useless to a screen reader, so dense charts get
+// "first, last, low, high, N points" instead. Below it, every value is named.
+export const DENSE_SERIES = 24;
+
+/**
+ * The accessible name for one labeled series across `labels`, formatted with
+ * `fmt`. Dense series (more than DENSE_SERIES points) are summarized by their
+ * endpoints and range; sparse series list every "<label> <value>" pair.
+ */
+export function seriesAccessibleName(label: string, values: number[], labels: string[], fmt: (v: number) => string): string {
+  const at = (i: number) => (Number.isFinite(values[i]) ? values[i] : 0);
+  if (labels.length > DENSE_SERIES) {
+    const nums = labels.map((_, i) => at(i));
+    const lo = Math.min(...nums);
+    const hi = Math.max(...nums);
+    return `${label}: ${labels.length} points from ${fmt(at(0))} to ${fmt(at(labels.length - 1))}, low ${fmt(lo)}, high ${fmt(hi)}`;
+  }
+  return `${label}: ${labels.map((l, i) => `${l} ${fmt(at(i))}`).join(", ")}`;
+}
+
 // --- text measurement --------------------------------------------------------------
 
 // Per-character width factors (em units) for the UI font, deliberately a touch
