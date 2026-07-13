@@ -3,19 +3,25 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, PieChart } = scope;
+  const { DepthChart } = scope;
   return (
-<Card padded style={{ maxWidth: 280 }}>
-  <PieChart
-    donut
-    label="Traffic"
-    slices={[
-      { label: "Direct", value: 42 },
-      { label: "Organic search", value: 28 },
-      { label: "Social", value: 18 },
-      { label: "Referral", value: 12 }
-    ]}
-  />
-</Card>
+<DepthChart
+  title="OLY order book"
+  bids={[
+    { price: 191.2, size: 120 },
+    { price: 191, size: 340 },
+    { price: 190.8, size: 260 },
+    { price: 190.5, size: 480 },
+    { price: 190.2, size: 380 }
+  ]}
+  asks={[
+    { price: 191.6, size: 150 },
+    { price: 191.9, size: 290 },
+    { price: 192.1, size: 310 },
+    { price: 192.4, size: 520 },
+    { price: 192.8, size: 300 }
+  ]}
+  style={{ maxWidth: 560 }}
+/>
   );
 }

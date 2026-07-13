@@ -275,6 +275,56 @@ export function arcPath(cx: number, cy: number, rOuter: number, rInner: number, 
   );
 }
 
+// --- order-book depth ---------------------------------------------------------------
+
+export interface DepthLevel {
+  price: number;
+  size: number;
+}
+
+export interface DepthPoint {
+  price: number;
+  /** Cumulative size at this price (away from the spread). */
+  depth: number;
+}
+
+/**
+ * Cumulative order-book depth per level, sorted by ascending price. Bids
+ * accumulate away from the best bid (suffix sums: the lowest price carries
+ * the total), asks away from the best ask (prefix sums). Non-finite and
+ * non-positive sizes are dropped.
+ */
+export function cumulativeDepth(levels: DepthLevel[], side: "bids" | "asks"): DepthPoint[] {
+  const clean = levels
+    .filter((l) => Number.isFinite(l.price) && Number.isFinite(l.size) && l.size > 0)
+    .sort((a, b) => a.price - b.price);
+  if (clean.length === 0) return [];
+  const depths = new Array<number>(clean.length);
+  if (side === "asks") {
+    let run = 0;
+    for (let i = 0; i < clean.length; i++) depths[i] = run += clean[i].size;
+  } else {
+    let run = 0;
+    for (let i = clean.length - 1; i >= 0; i--) depths[i] = run += clean[i].size;
+  }
+  return clean.map((l, i) => ({ price: l.price, depth: depths[i] }));
+}
+
+/**
+ * Closed step-area path through `points` (ascending x): horizontal to the
+ * next x, vertical to its y (step-after), then down to the baseline and back.
+ */
+export function stepAreaPath(points: Pt[], baselineY: number): string {
+  if (points.length === 0) return "";
+  let d = `M${fmt(points[0].x)},${fmt(points[0].y)}`;
+  for (let i = 1; i < points.length; i++) {
+    d += ` L${fmt(points[i].x)},${fmt(points[i - 1].y)} L${fmt(points[i].x)},${fmt(points[i].y)}`;
+  }
+  const last = points[points.length - 1];
+  const first = points[0];
+  return `${d} L${fmt(last.x)},${fmt(baselineY)} L${fmt(first.x)},${fmt(baselineY)} Z`;
+}
+
 // --- formatting -------------------------------------------------------------------
 
 /**

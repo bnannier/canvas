@@ -126,6 +126,7 @@ const CASES: SkinCase[] = [
   { name: "PieChart", dir: "organisms/charts", file: "charts", props: { label: "Traffic", donut: true, slices: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "ScatterPlot", dir: "organisms/charts", file: "charts", props: { title: "Load vs latency", series: [{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }] } },
   { name: "CandlestickChart", dir: "organisms/charts", file: "charts", props: { title: "Daily", labels: ["Mon", "Tue"], candles: [{ open: 1, high: 3, low: 0.5, close: 2 }, { open: 2, high: 4, low: 1.5, close: 1.8 }], volume: [10, 12] } },
+  { name: "DepthChart", dir: "organisms/charts", file: "charts", props: { title: "Book", bids: [{ price: 10, size: 5 }], asks: [{ price: 11, size: 4 }] } },
   { name: "AreaChart", dir: "organisms/charts", file: "charts", props: { title: "Traffic", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Direct", values: [1, 3, 2] }, { label: "Search", values: [2, 1, 4] }], stacked: true } },
   { name: "Command", dir: "organisms/command", file: "command", props: { open: true, placeholder: "Search…", active: 0, groups: [{ heading: "Actions", items: [{ label: "New file" }, { label: "Open" }] }] } },
   { name: "DataTable", dir: "organisms/data-table", file: "data-table", props: { columns: ["Name", "Role"], rows: [["Ada", "Eng"], ["Bob", "PM"]] } },

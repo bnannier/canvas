@@ -1,6 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import {
   arcPath,
+  cumulativeDepth,
+  stepAreaPath,
   areaBandPath,
   areaPath,
   bandScale,
@@ -203,6 +205,56 @@ describe("pieLayout + arcPath", () => {
 
   it("a zero-sweep slice renders nothing", () => {
     expect(arcPath(50, 50, 40, 0, 1, 1)).toBe("");
+  });
+});
+
+describe("order-book depth", () => {
+  it("bids accumulate away from the best bid (suffix sums, ascending price)", () => {
+    const pts = cumulativeDepth(
+      [
+        { price: 191, size: 340 },
+        { price: 191.2, size: 120 },
+        { price: 190.8, size: 260 },
+      ],
+      "bids",
+    );
+    expect(pts.map((p) => p.price)).toEqual([190.8, 191, 191.2]);
+    expect(pts.map((p) => p.depth)).toEqual([720, 460, 120]);
+  });
+
+  it("asks accumulate away from the best ask (prefix sums)", () => {
+    const pts = cumulativeDepth(
+      [
+        { price: 191.9, size: 290 },
+        { price: 191.6, size: 150 },
+      ],
+      "asks",
+    );
+    expect(pts.map((p) => p.price)).toEqual([191.6, 191.9]);
+    expect(pts.map((p) => p.depth)).toEqual([150, 440]);
+  });
+
+  it("drops non-finite and non-positive sizes", () => {
+    const pts = cumulativeDepth(
+      [
+        { price: 1, size: 0 },
+        { price: 2, size: NaN },
+        { price: 3, size: 5 },
+      ],
+      "asks",
+    );
+    expect(pts).toEqual([{ price: 3, depth: 5 }]);
+  });
+
+  it("stepAreaPath steps between points and closes to the baseline", () => {
+    const d = stepAreaPath(
+      [
+        { x: 0, y: 20 },
+        { x: 50, y: 60 },
+      ],
+      140,
+    );
+    expect(d).toBe("M0,20 L50,20 L50,60 L50,140 L0,140 Z");
   });
 });
 

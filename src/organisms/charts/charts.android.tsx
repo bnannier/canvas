@@ -2,6 +2,7 @@ import { createChart } from "./charts.shared.js";
 import { createAreaChart, createLineChart } from "./charts-lines.js";
 import { createScatterPlot } from "./charts-scatter.js";
 import { createCandlestickChart } from "./charts-candles.js";
+import { createDepthChart } from "./charts-depth.js";
 import { androidSkin } from "./charts.styles.js";
 
 // Material 3 Chart. Metro resolves this file on Android; the docs import it for
@@ -12,9 +13,11 @@ export const LineChart = createLineChart(androidSkin);
 export const AreaChart = createAreaChart(androidSkin);
 export const ScatterPlot = createScatterPlot(androidSkin);
 export const CandlestickChart = createCandlestickChart(androidSkin);
+export const DepthChart = createDepthChart(androidSkin);
 export type { ChartProps, ChartDatum } from "./charts.shared.js";
 export type { LineChartProps, AreaChartProps, ChartSeries } from "./charts-lines.js";
 export type { ScatterPlotProps, ScatterSeries, ScatterPoint, ScatterSelection } from "./charts-scatter.js";
 export type { CandlestickChartProps, Candle } from "./charts-candles.js";
+export type { DepthChartProps, DepthLevel } from "./charts-depth.js";
 export { StackedBar, Gauge, Heatmap, PieChart } from "./charts-viz.js";
 export type { StackedBarProps, StackedSegment, GaugeProps, HeatmapProps, PieChartProps } from "./charts-viz.js";
