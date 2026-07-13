@@ -340,6 +340,7 @@ import e_atoms_slider_dont_2_dont from "./examples/atoms/slider/dont-2-dont";
 import e_atoms_sparkline_example_0 from "./examples/atoms/sparkline/example-0";
 import e_atoms_sparkline_example_1 from "./examples/atoms/sparkline/example-1";
 import e_atoms_sparkline_example_2 from "./examples/atoms/sparkline/example-2";
+import e_atoms_sparkline_example_3 from "./examples/atoms/sparkline/example-3";
 import e_atoms_sparkline_dont_0_do from "./examples/atoms/sparkline/dont-0-do";
 import e_atoms_sparkline_dont_0_dont from "./examples/atoms/sparkline/dont-0-dont";
 import e_atoms_spinner_example_0 from "./examples/atoms/spinner/example-0";
@@ -1265,6 +1266,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Default", code: "<Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} style={{ width: 160 }} />", render: e_atoms_sparkline_example_0 },
       { label: "Tones", code: "<Column relaxed style={{ maxWidth: 200 }}>\n  <Sparkline primary values={[6, 10, 8, 14, 12, 18, 22]} />\n  <Sparkline success values={[6, 10, 8, 14, 12, 18, 22]} />\n  <Sparkline destructive values={[22, 18, 20, 12, 14, 8, 6]} />\n  <Sparkline muted values={[10, 12, 9, 13, 11, 14, 12]} />\n</Column>", render: e_atoms_sparkline_example_1 },
       { label: "Sizes", code: "<Column relaxed style={{ maxWidth: 200 }}>\n  <Sparkline compact values={[6, 10, 8, 14, 12, 18, 22]} />\n  <Sparkline values={[6, 10, 8, 14, 12, 18, 22]} />\n  <Sparkline tall values={[6, 10, 8, 14, 12, 18, 22]} />\n</Column>", render: e_atoms_sparkline_example_2 },
+      { label: "Line", code: "<Column relaxed style={{ maxWidth: 200 }}>\n  <Sparkline line success values={[187.2, 188.4, 186.9, 189.3, 190.8, 190.1, 191.6]} />\n  <Sparkline line destructive values={[191.6, 190.1, 190.8, 188.3, 188.9, 187.4, 186.2]} />\n</Column>", render: e_atoms_sparkline_example_3 },
     ],
     donts: [
       { title: "Pair with a value", do: { caption: "Anchor the sparkline to an explicit headline value and delta.", code: "<Card padded style={{ maxWidth: 220 }}>\n  <Column tight>\n    <Typography caption>Requests</Typography>\n    <Row between baseline>\n      <Typography h3 semibold>24.5k</Typography>\n      <Typography tiny positive>+8.2%</Typography>\n    </Row>\n    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />\n  </Column>\n</Card>", render: e_atoms_sparkline_dont_0_do }, dont: { caption: "Draw a bare trend strip with no current value; the reader has to decode the slope.", code: "<View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 2, height: 24 }}>\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 8 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 16 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 24 }} />\n</View>", render: e_atoms_sparkline_dont_0_dont } },

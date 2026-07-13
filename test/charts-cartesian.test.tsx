@@ -164,6 +164,15 @@ describe("scrub-to-inspect", () => {
   });
 });
 
+describe("Sparkline line variant", () => {
+  it("keeps the accessible name and renders without a measured width", async () => {
+    const { Sparkline } = await import("../src/atoms/sparkline/sparkline.tsx");
+    const { container } = ui(<Sparkline line success accessibilityLabel="price, last 7 hours" values={[187, 188, 191]} />);
+    const img = container.querySelector('[role="img"]');
+    expect(img?.getAttribute("aria-label")).toBe("price, last 7 hours");
+  });
+});
+
 describe("CandlestickChart", () => {
   const candles = [
     { open: 182, high: 188, low: 180, close: 186 },
