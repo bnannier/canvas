@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field } = scope;
+  const { Input } = scope;
   return (
-<Field label="Email" placeholder="ada@acme.dev" />
+<Input label="Email" placeholder="ada@acme.dev" />
   );
 }

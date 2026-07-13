@@ -51,6 +51,29 @@ export interface InputSkin {
   pressedOpacity: number | null;
   /** Android ripple over the action suffix; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+
+  // --- optional label placement (Input `label`) ----------------------------
+  // How this platform positions the field's label. iOS + web render the label
+  // ABOVE the field (the static look the Field/Form composers produce today);
+  // Android renders the M3 IN-CONTAINER FLOATING label (rest = body-large muted
+  // centered; floated = body-small at the top). Only these five members vary;
+  // the label's COLOR (muted at rest, brand `ring` on focus, `destructive` on
+  // error) is animated in the shell from the active tokens, so it is not here.
+  /** true on the Android skin (floating label); false on iOS/web (label above). */
+  floatingLabel: boolean;
+  /** iOS/web: the static above-field label type (color is applied in the shell). */
+  labelAbove?: (t: ColorTokens, size: Size) => TextStyle;
+  /** Android: the resting (unfocused, empty) label type — body-large, centered like a placeholder. */
+  labelRest?: (t: ColorTokens, size: Size) => TextStyle;
+  /** Android: the floated label type — body-small at the top. Only its `fontSize`
+   *  is used (to derive the transform scale = floated/rest); the label is RENDERED
+   *  at `labelRest` and scaled, never re-sized, so the animation stays on the
+   *  transform driver (Fabric/RNW-safe). */
+  labelFloated?: (t: ColorTokens, size: Size) => TextStyle;
+  /** Android: the state-independent top padding the bare field reserves for the
+   *  floated label, spread by the shell so `bareField`'s signature (and the
+   *  active-indicator invariant it is tested against) stays intact. */
+  labelReserve?: (size: Size) => TextStyle;
 }
 
 // --- shared type scale (identical across platforms; brand type, not a face) --
@@ -117,6 +140,15 @@ export const webSkin: InputSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
+  // Web keeps the established Canvas look: the label sits ABOVE the field (the
+  // exact visual the Field/Form composers render today — 14/20 medium weight).
+  floatingLabel: false,
+  labelAbove: (t, size) => ({
+    fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
+    lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
+    fontWeight: "500",
+    color: t.foreground,
+  }),
 };
 
 // ---------- iOS (HIG): .roundedBorder filled field ----------
@@ -207,6 +239,17 @@ export const iosSkin: InputSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,
   ripple: null,
+  // iOS (HIG): the label sits ABOVE the field, as a form-row title. SF Pro Text
+  // tracking (letterSpacing -0.15 at 14pt, Apple's SF tracking table) and a
+  // semibold (600) weight, the iOS field-label convention.
+  floatingLabel: false,
+  labelAbove: (t, size) => ({
+    fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
+    lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    color: t.foreground,
+  }),
 };
 
 // ---------- Android (Material 3 filled): subtle fill, top radius, bottom active indicator ----------
@@ -292,4 +335,21 @@ export const androidSkin: InputSkin = {
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: t.primary, borderless: false }),
+  // Android (Material 3): the IN-CONTAINER FLOATING label. At rest it sits
+  // vertically centered like a placeholder (body-large, matching the field text
+  // per size); when the field is focused OR populated it floats to the top,
+  // shrinking to body-small (12sp). The shell renders the label at `labelRest`
+  // and drives translateY + scale on the transform driver; `labelFloated`'s
+  // fontSize only supplies the scale ratio (12 / restFontSize). `labelReserve`
+  // is the constant top padding the value field gives up so the floated label
+  // clears the value. M3 body tracking: body-large 0.5, body-medium 0.25,
+  // body-small 0.4.
+  floatingLabel: true,
+  labelRest: (_t, size) => {
+    if (size === "large") return { fontSize: 18, lineHeight: 26, letterSpacing: 0.5 };
+    if (size === "small") return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
+    return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
+  },
+  labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
+  labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
 };

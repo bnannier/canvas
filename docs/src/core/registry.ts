@@ -194,6 +194,8 @@ import e_atoms_input_example_3 from "./examples/atoms/input/example-3";
 import e_atoms_input_example_4 from "./examples/atoms/input/example-4";
 import e_atoms_input_example_5 from "./examples/atoms/input/example-5";
 import e_atoms_input_example_6 from "./examples/atoms/input/example-6";
+import e_atoms_input_example_7 from "./examples/atoms/input/example-7";
+import e_atoms_input_example_8 from "./examples/atoms/input/example-8";
 import e_atoms_input_dont_0_do from "./examples/atoms/input/dont-0-do";
 import e_atoms_input_dont_0_dont from "./examples/atoms/input/dont-0-dont";
 import e_atoms_input_dont_1_do from "./examples/atoms/input/dont-1-do";
@@ -1031,15 +1033,17 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Input placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_0 },
-      { label: "Addon - prefix", code: "<Input prefix=\"https://\" placeholder=\"canvas.dev\" />", render: e_atoms_input_example_1 },
-      { label: "Addon - action", code: "<Input suffix=\"Copy\" action value=\"cnv_3f9a21b8e7\" />", render: e_atoms_input_example_2 },
-      { label: "Addon - icon", code: "<Input leadingIcon icon=\"search\" placeholder=\"Search\" />", render: e_atoms_input_example_3 },
-      { label: "State - error", code: "<Input error placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_4 },
-      { label: "State - disabled", code: "<Input disabled placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_5 },
-      { label: "State - readonly", code: "<Input readOnly placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_6 },
+      { label: "Floating label", code: "<Input label=\"Email\" placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_1 },
+      { label: "Floating label - required", code: "<Input label=\"Full name\" required placeholder=\"Rachel Chen\" />", render: e_atoms_input_example_2 },
+      { label: "Addon - prefix", code: "<Input prefix=\"https://\" placeholder=\"canvas.dev\" />", render: e_atoms_input_example_3 },
+      { label: "Addon - action", code: "<Input suffix=\"Copy\" action value=\"cnv_3f9a21b8e7\" />", render: e_atoms_input_example_4 },
+      { label: "Addon - icon", code: "<Input leadingIcon icon=\"search\" placeholder=\"Search\" />", render: e_atoms_input_example_5 },
+      { label: "State - error", code: "<Input error placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_6 },
+      { label: "State - disabled", code: "<Input disabled placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_7 },
+      { label: "State - readonly", code: "<Input readOnly placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_8 },
     ],
     donts: [
-      { title: "text", do: { caption: "Pair every field with a persistent label above the control.", code: "<Field label=\"Email\" placeholder=\"ada@acme.dev\" />", render: e_atoms_input_dont_0_do }, dont: { caption: "A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.", code: "<Input placeholder=\"Email\" style={{ maxWidth: 320 }} />", render: e_atoms_input_dont_0_dont } },
+      { title: "text", do: { caption: "Pass `label` so every field carries a persistent, programmatically-linked name.", code: "<Input label=\"Email\" placeholder=\"ada@acme.dev\" />", render: e_atoms_input_dont_0_do }, dont: { caption: "A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.", code: "<Input placeholder=\"Email\" style={{ maxWidth: 320 }} />", render: e_atoms_input_dont_0_dont } },
       { title: "number", do: { caption: "Park the unit in a suffix addon so the value stays purely numeric.", code: "<Column snug>\n  <Typography small medium>Storage</Typography>\n  <Input value=\"1024\" suffix=\"GB\" />\n</Column>", render: e_atoms_input_dont_1_do }, dont: { caption: "A plain text field lets users type the unit into the value, breaking parsing and validation.", code: "<Field label=\"Storage\" value=\"1024 GB\" style={{ maxWidth: 320 }} />", render: e_atoms_input_dont_1_dont } },
     ],
   },

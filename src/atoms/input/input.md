@@ -1,6 +1,6 @@
 # Input
 
-The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `block`, `disabled`), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Select and the search field share its look, and Field and Form compose a label, the control, and helper text.
+The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `block`, `disabled`), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label. Select and the search field share its look, and Field and Form compose that label with helper and error text.
 
 ## Usage
 
@@ -9,6 +9,18 @@ The Input component is a React Native text field with semantic boolean props (`e
 ```
 
 ## Variants
+
+### Floating label
+
+```tsx
+<Input label="Email" placeholder="rachel.chen@example.com" />
+```
+
+### Floating label - required
+
+```tsx
+<Input label="Full name" required placeholder="Rachel Chen" />
+```
 
 ### Addon - prefix
 
@@ -50,10 +62,10 @@ The Input component is a React Native text field with semantic boolean props (`e
 
 ### text
 
-**Do** — Pair every field with a persistent label above the control.
+**Do** — Pass `label` so every field carries a persistent, programmatically-linked name.
 
 ```tsx
-<Field label="Email" placeholder="ada@acme.dev" />
+<Input label="Email" placeholder="ada@acme.dev" />
 ```
 
 **Don't** — A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.

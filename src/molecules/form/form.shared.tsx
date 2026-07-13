@@ -160,24 +160,21 @@ export function createForm(
     return <Text nativeID={id} style={skin.helper(tokens)}>{text}</Text>;
   }
 
-  // A label sitting above its input (stacked and two-column layouts). The visible
-  // label is linked to the field (aria-labelledby + accessibilityLabel) and the
-  // helper text is wired as the field's description (aria-describedby), so a screen
-  // reader announces the field with its name and hint.
+  // A label sitting above its input (stacked and two-column layouts). The label is
+  // delegated to the Input, which places it per platform (above on iOS/web, the M3
+  // floating label on Android) and owns its accessible-name wiring; the helper text
+  // stays here and is linked as the field's description (aria-describedby), so a
+  // screen reader announces the field with its name and hint.
   function StackedField({ field }: { field: FormField }) {
-    const { tokens } = useTheme();
     const base = useId();
-    const labelId = `${base}-label`;
     const helperId = field.helper ? `${base}-helper` : undefined;
     return (
       <View>
-        <Text nativeID={labelId} style={[skin.label(tokens), skin.labelSpacing]}>{field.label}</Text>
         <Input
+          label={field.label}
           placeholder={field.placeholder}
           value={field.value}
           block
-          accessibilityLabel={field.label}
-          aria-labelledby={labelId}
           aria-describedby={helperId}
         />
         <Helper text={field.helper} id={helperId} />

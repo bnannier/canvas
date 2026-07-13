@@ -110,28 +110,23 @@ export function createFieldset(
     const { tokens } = useTheme();
     const fieldId = useId();
     const msg = item.error ?? (error ? "Enter a valid value" : "");
-    // The label must reach the control programmatically, not just sit above it: the
-    // composed Input renders a bare field with only a placeholder, and a placeholder
-    // is not a label (it vanishes on focus and is skipped by many screen readers). So
-    // the visible label Text is linked to the Input via aria-labelledby (with the RN
-    // accessibilityLabel as the native name) and the help/error is wired as its
-    // description. RNW forwards neither the name nor a plain accessibilityState to the
-    // DOM on its own, hence the aria-* aliases. The set's own grouping comes from the
-    // Fieldset container's legend (one group per set, not one per field), so the row
-    // is a plain layout View, not a redundant inner group named after its lone control.
-    const labelId = item.label ? `${fieldId}-label` : undefined;
+    // The label is delegated to the composed Input, which places it per platform
+    // (above on iOS/web, the M3 floating label on Android) and owns its accessible
+    // name (a placeholder is not a label — it vanishes on focus and is skipped by
+    // many screen readers). The set's own grouping comes from the Fieldset
+    // container's legend (one group per set, not one per field), so the row stays a
+    // plain layout View. Fieldset keeps only the help/error below and links it as the
+    // field's description (aria-describedby).
     const messageId = msg || item.help ? `${fieldId}-message` : undefined;
     return (
       <View style={s.fieldWrap}>
-        {item.label ? <Text nativeID={labelId} style={skin.fieldLabel(tokens)}>{item.label}</Text> : null}
         <Input
+          label={item.label || undefined}
           value={item.value}
           placeholder={item.placeholder}
           disabled={disabled}
           error={!!msg}
           block
-          accessibilityLabel={item.label}
-          aria-labelledby={labelId}
           aria-describedby={messageId}
         />
         {msg ? (

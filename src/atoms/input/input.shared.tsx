@@ -1,10 +1,11 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useId, useState, type ReactNode } from "react";
 import {
+  Animated,
   type GestureResponderEvent,
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useFieldWidth, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -67,6 +68,22 @@ export interface InputProps extends TextEntryProps, FieldWidthProps {
   onChangeText?: (text: string) => void;
   /** Placeholder shown while the field is empty. */
   placeholder?: string;
+  /**
+   * The field's persistent label. Its placement is platform-adaptive: iOS and
+   * web render it ABOVE the field (the static title the Field/Form composers
+   * produce today); Android renders the Material 3 in-container FLOATING label
+   * (centered like a placeholder at rest, floating to the top once the field is
+   * focused or filled). The label is the field's programmatic name (wired via
+   * both accessibilityLabel and aria-labelledby), so a placeholder is no longer
+   * needed for the accessible name.
+   */
+  label?: string;
+  /**
+   * Marks the field as required: appends a destructive "*" to the label (hidden
+   * from the accessible name) and sets aria-required on the control. Takes effect
+   * only alongside `label`.
+   */
+  required?: boolean;
   // State (orthogonal). `error` (alias `invalid`) flags a validation problem.
   error?: boolean;
   invalid?: boolean;
@@ -134,6 +151,151 @@ function sizeOf(p: InputProps): Size {
   return "base";
 }
 
+// A style bump keeping the label above/beside its field spaced from it (the 6px
+// the Field/Form control stacks use between the label and the control).
+const LABEL_GAP: ViewStyle = { gap: 6 };
+
+// Marks a decorative node out of the accessibility tree on every platform: the
+// required "*" must NOT pollute the field's accessible name (that comes from the
+// label text alone), so it is hidden natively (accessibilityElementsHidden /
+// importantForAccessibility) and on web (aria-hidden, which excludes it from the
+// aria-labelledby name computation).
+const HIDDEN_FROM_A11Y = {
+  accessibilityElementsHidden: true,
+  importantForAccessibility: "no-hide-descendants" as const,
+  "aria-hidden": true,
+} as const;
+
+// Read a numeric style value (height / paddingTop), falling back when absent.
+const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
+
+/**
+ * The label text plus, when required, a trailing destructive "*". The star is
+ * hidden from assistive tech so the accessible name stays the bare label.
+ */
+function LabelContent({ label, required, starColor }: { label: string; required?: boolean; starColor: string }): ReactNode {
+  return (
+    <>
+      {label}
+      {required ? (
+        <Text {...HIDDEN_FROM_A11Y} style={{ color: starColor }}>
+          {" *"}
+        </Text>
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * The Material 3 in-container floating label (Android skin only). It overlays the
+ * field, pinned to the leading edge, and animates between the resting (centered,
+ * placeholder-like) and floated (top, small) positions.
+ *
+ * Split-driver animation (the crux — must run on iOS, Android New-Arch/Fabric,
+ * AND react-native-web):
+ *  - `pos` (0->1) drives ONLY the transform (translateY center->top + scale
+ *    1->floated/rest), on the native driver where available (a one-shot, so the
+ *    loop-freeze caveat does not apply) and the JS driver on web. It NEVER
+ *    animates fontSize/top/width (those are Fabric-stuck). Target = focused ||
+ *    populated.
+ *  - `tint` (0->1) drives ONLY the color, on the JS driver ALWAYS (color can't be
+ *    native-driven). Target = focused || error, so a filled-but-unfocused valid
+ *    field floats yet stays muted.
+ * transformOrigin "0% 50%" pins the leading edge while it scales (no measurement,
+ * no translateX); RTL uses the logical `start` inset.
+ */
+function FloatingLabel({
+  skin,
+  size,
+  tokens,
+  label,
+  required,
+  labelId,
+  focused,
+  populated,
+  isError,
+}: {
+  skin: InputSkin;
+  size: Size;
+  tokens: ColorTokens;
+  label: string;
+  required?: boolean;
+  labelId: string;
+  focused: boolean;
+  populated: boolean;
+  isError: boolean;
+}) {
+  const reduced = useReducedMotion();
+  const posTarget = focused || populated ? 1 : 0;
+  const tintTarget = focused || isError ? 1 : 0;
+  // Seed each value at its target so a prefilled/defaultValue field starts floated
+  // (and a required-invalid field starts tinted) with no opening animation.
+  const [pos] = useState(() => new Animated.Value(posTarget));
+  const [tint] = useState(() => new Animated.Value(tintTarget));
+
+  // pos drives the TRANSFORM (translateY + scale): native driver where available
+  // (one-shot, so the loop-freeze caveat does not apply), JS on web. Reduced
+  // motion snaps to the final frame (mirrors Entrance), the label still moves.
+  useEffect(() => {
+    if (reduced) {
+      pos.setValue(posTarget);
+      return;
+    }
+    Animated.timing(pos, { toValue: posTarget, duration: 150, useNativeDriver: supportsNativeDriver }).start();
+  }, [pos, posTarget, reduced]);
+
+  // tint drives ONLY the COLOR, always on the JS driver (color can't be native-
+  // driven; never interpolate it off `pos`).
+  useEffect(() => {
+    if (reduced) {
+      tint.setValue(tintTarget);
+      return;
+    }
+    Animated.timing(tint, { toValue: tintTarget, duration: 150, useNativeDriver: false }).start();
+  }, [tint, tintTarget, reduced]);
+
+  const rest = skin.labelRest!(tokens, size) as TextStyle;
+  const floated = skin.labelFloated!(tokens, size) as TextStyle;
+  const restLine = asNum(rest.lineHeight, 24);
+  const restSize = asNum(rest.fontSize, 16);
+  const scaleTo = asNum(floated.fontSize, 12) / restSize;
+  const reserve = asNum((skin.labelReserve!(size) as TextStyle).paddingTop, 24);
+  const height = asNum((skin.bareBox(size) as TextStyle).height, 56);
+  // The floated label's bottom edge lands at `reserve` (where the value begins),
+  // so the value clears it. Its center is that minus half the scaled line box;
+  // translateY carries the resting center (the field's vertical middle) to it.
+  const floatedCenter = reserve - (restLine * scaleTo) / 2;
+  const translateYTo = floatedCenter - height / 2;
+
+  const translateY = pos.interpolate({ inputRange: [0, 1], outputRange: [0, translateYTo] });
+  const scale = pos.interpolate({ inputRange: [0, 1], outputRange: [1, scaleTo] });
+  const color = tint.interpolate({
+    inputRange: [0, 1],
+    outputRange: [tokens["muted-foreground"], isError ? tokens.destructive : tokens.ring],
+  });
+
+  return (
+    <Animated.View
+      // Fills the field vertically and centers the label; the transform floats it.
+      // pointerEvents:none so taps fall through to the field beneath.
+      style={{
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        start: 16,
+        justifyContent: "center",
+        pointerEvents: "none",
+        transformOrigin: "0% 50%",
+        transform: [{ translateY }, { scale }],
+      }}
+    >
+      <Animated.Text nativeID={labelId} numberOfLines={1} style={[rest, { color }]}>
+        <LabelContent label={label} required={required} starColor={tokens.destructive} />
+      </Animated.Text>
+    </Animated.View>
+  );
+}
+
 /** Build an Input component from a platform skin. */
 export function createInput(skin: InputSkin) {
   const Input = forwardRef<RNTextInput, InputProps>(function Input(props, ref) {
@@ -141,6 +303,8 @@ export function createInput(skin: InputSkin) {
       value,
       onChangeText,
       placeholder,
+      label,
+      required,
       disabled,
       readOnly,
       prefix,
@@ -157,6 +321,27 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
     const widthCap = useFieldWidth(props);
+    // One collision-free id for the label so the field can name itself via
+    // aria-labelledby (unconditional hook: the id is cheap and always available).
+    const labelId = useId();
+
+    // Whether the field currently holds text — the Android floating label floats
+    // when the field is focused OR populated. Seeded from value/defaultValue so a
+    // prefilled field starts floated; for a controlled field the value is the
+    // source of truth, otherwise the wrapped onChangeText keeps it in sync.
+    const [hasText, setHasText] = useState(() => (((value ?? props.defaultValue) ?? "") + "").length > 0);
+    const populated = value != null ? value.length > 0 : hasText;
+    const handleChangeText = (next: string) => {
+      setHasText(next.length > 0);
+      onChangeText?.(next);
+    };
+
+    // Accessible name + label link. The label (when present) is the field's
+    // programmatic name on BOTH channels: accessibilityLabel/aria-label (RN + the
+    // web alias) and aria-labelledby -> the label Text's nativeID. An explicit
+    // accessibilityLabel / aria-labelledby from the caller still wins.
+    const accessibleName = props.accessibilityLabel ?? label;
+    const ariaLabelledby = props["aria-labelledby"] ?? (label != null ? labelId : undefined);
 
     // Border-color precedence: error > focus > default input border. Shared by
     // both layouts; in the grouped layout it lives on the outer border so prefix
@@ -170,7 +355,7 @@ export function createInput(skin: InputSkin) {
 
     const common = {
       value,
-      onChangeText,
+      onChangeText: handleChangeText,
       placeholder,
       placeholderTextColor: tokens["muted-foreground"],
       editable: !disabled && !readOnly,
@@ -205,36 +390,95 @@ export function createInput(skin: InputSkin) {
       // announce the field as invalid. Undefined when valid so the attribute is
       // omitted entirely rather than emitting aria-invalid="false".
       "aria-invalid": isError || undefined,
+      // Required is surfaced programmatically (aria-required), not just via the "*"
+      // glyph, and omitted entirely when the field is optional.
+      "aria-required": required || undefined,
       // Accessible name + descriptions, forwarded to the TextInput so a Form/Field
       // control is announced with its label and helper/error text. aria-label is
       // the web alias for accessibilityLabel; aria-labelledby/aria-describedby link
       // to a visible label / helper Text by nativeID (RNW forwards them to the DOM).
-      accessibilityLabel: props.accessibilityLabel,
-      "aria-label": props.accessibilityLabel,
-      "aria-labelledby": props["aria-labelledby"],
+      // When `label` is set the field names itself (accessibleName / ariaLabelledby).
+      accessibilityLabel: accessibleName,
+      "aria-label": accessibleName,
+      "aria-labelledby": ariaLabelledby,
       "aria-describedby": props["aria-describedby"],
     };
 
+    // Label placement: iOS/web render it ABOVE the field; the Android skin floats
+    // it inside the container (M3). Addons force the above layout everywhere (the
+    // floating label can't share the container with a prefix/suffix box); the
+    // Field/Form composers never pass addons, so this is only an edge case.
+    const floating = label != null && skin.floatingLabel && !hasAddons;
+    const above = label != null && !floating;
+    // The above-field label type: the skin's `labelAbove` on iOS/web; on the
+    // Android skin (which has none) fall back to its resting label type as a
+    // foreground title so the grouped fallback still reads.
+    const aboveLabelStyle: TextStyle = skin.labelAbove
+      ? skin.labelAbove(tokens, size)
+      : { ...(skin.labelRest ? skin.labelRest(tokens, size) : text), fontWeight: "500", color: tokens.foreground };
+    const aboveLabel = above ? (
+      <Text nativeID={labelId} style={aboveLabelStyle}>
+        <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+      </Text>
+    ) : null;
+
     // Bare field: no addons.
     if (!hasAddons) {
+      // Suppress the browser's default focus outline on web (RN Web draws it on the
+      // <input>/<textarea>). Every skin paints its own focus affordance (web: border
+      // -> ring, iOS: hairline, Android: bottom indicator), so the outline is
+      // redundant and, over the filled Android skin, reads as a blue rectangle on
+      // top of the indicator. No-op on native; matches the grouped path and the
+      // Combobox/Textarea/Stepper shells.
+      const bareStyle = [skin.bareField(tokens, borderColor, focused, isError), skin.bareBox(size), text, FOCUS_RESET];
+      const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
+
+      // Android M3 floating label: the field reserves top space for the floated
+      // label, the animated label overlays it, and the placeholder is gated to the
+      // focused state (at rest the label itself is the placeholder). The wrapper
+      // (not the field) carries the width cap, the style escape hatch, and the
+      // disabled dim so the label dims with the field.
+      if (floating) {
+        return (
+          <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
+            <TextInput
+              ref={ref}
+              style={[...bareStyle, skin.labelReserve!(size)]}
+              textAlignVertical="center"
+              {...common}
+              placeholder={focused ? placeholder : undefined}
+            />
+            <FloatingLabel
+              skin={skin}
+              size={size}
+              tokens={tokens}
+              label={label!}
+              required={required}
+              labelId={labelId}
+              focused={focused}
+              populated={populated}
+              isError={isError}
+            />
+          </View>
+        );
+      }
+
+      // iOS / web: the label sits above the field. The wrapper carries the width
+      // cap, style, and disabled dim; the field fills it (its skin sets width:100%).
+      if (above) {
+        return (
+          <View style={[LABEL_GAP, disabledDim, widthCap, style]}>
+            {aboveLabel}
+            <TextInput ref={ref} style={bareStyle} textAlignVertical="center" {...common} />
+          </View>
+        );
+      }
+
+      // No label: the original bare field, unchanged (byte-identical root).
       return (
         <TextInput
           ref={ref}
-          style={[
-            skin.bareField(tokens, borderColor, focused, isError),
-            skin.bareBox(size),
-            text,
-            // Suppress the browser's default focus outline on web (RN Web draws it
-            // on the <input>/<textarea>). Every skin paints its own focus affordance
-            // (web: border -> ring, iOS: hairline, Android: bottom indicator), so the
-            // outline is redundant and, over the filled Android skin, reads as a blue
-            // rectangle on top of the indicator. No-op on native; matches the grouped
-            // path and the Combobox/Textarea/Stepper shells.
-            FOCUS_RESET,
-            disabled ? { opacity: skin.disabledOpacity } : null,
-            widthCap,
-            style,
-          ]}
+          style={[...bareStyle, disabledDim, widthCap, style]}
           textAlignVertical="center"
           {...common}
         />
@@ -243,11 +487,19 @@ export function createInput(skin: InputSkin) {
 
     // Grouped field: prefix/suffix addons, overlaid icons, optional action button.
     // The whole group shares one border, so it owns the focus state and the inner
-    // field's default outline is suppressed (see FOCUS_RESET).
+    // field's default outline is suppressed (see FOCUS_RESET). When a label is
+    // present the floating label can't share the container with the addon boxes, so
+    // the label falls back to the above layout: the wrapper owns width/style/dim and
+    // the group container drops them.
     const height = skin.groupedHeight(size);
-    return (
+    const groupedField = (
       <View
-        style={[skin.groupContainer(tokens, borderColor, focused, isError), disabled ? { opacity: skin.disabledOpacity } : null, widthCap, style]}
+        style={[
+          skin.groupContainer(tokens, borderColor, focused, isError),
+          above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
+          above ? null : widthCap,
+          above ? null : style,
+        ]}
       >
         {prefix != null ? (
           <View style={skin.addonBox(tokens, "left", height)}>
@@ -291,6 +543,18 @@ export function createInput(skin: InputSkin) {
         ) : null}
       </View>
     );
+
+    // Label + addons: render the label above the grouped control (documented
+    // fallback). The wrapper carries width/style/dim; the group drops them above.
+    if (above) {
+      return (
+        <View style={[LABEL_GAP, disabled ? { opacity: skin.disabledOpacity } : null, widthCap, style]}>
+          {aboveLabel}
+          {groupedField}
+        </View>
+      );
+    }
+    return groupedField;
   });
   Input.displayName = "Input";
   return Input;

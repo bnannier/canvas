@@ -278,31 +278,24 @@ export function createField(
     // Error takes precedence over the resting helper below the control.
     const showError = !!invalid && !!error;
     const messageText = showError ? error : helper;
-    // Programmatically associate the visible label and the helper/error with the
-    // control: the label Text carries an id named via aria-labelledby (with the RN
-    // accessibilityLabel as the native name), and the message Text is wired as the
-    // field's description. Without this the Input is announced as an unlabeled edit
-    // field (WCAG 4.1.2 Name/Role/Value).
-    const labelId = label != null ? `${fieldId}-label` : undefined;
+    // The label is delegated to the Input, which places it per platform (above on
+    // iOS/web, the M3 floating label on Android) and owns its accessible-name
+    // wiring (accessibilityLabel + aria-labelledby). Field keeps only the message
+    // below the control and links it as the field's description (aria-describedby),
+    // so a screen reader still reads the field name then the helper/error text.
     const messageId = messageText != null ? `${fieldId}-message` : undefined;
 
     return (
       <View testID={testID} style={[skin.controlStack, disabled ? s.dimmed : null, widthCap, style]}>
-        {label != null ? (
-          <Text nativeID={labelId} style={skin.label(tokens)}>
-            {label}
-            {required ? <Text style={{ color: tokens.destructive }}> *</Text> : null}
-          </Text>
-        ) : null}
         <Input
+          label={label}
+          required={required}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           disabled={disabled}
           error={invalid}
           block
-          accessibilityLabel={label}
-          aria-labelledby={labelId}
           aria-describedby={messageId}
         />
         {messageText != null ? <Text nativeID={messageId} style={skin.message(tokens, showError)}>{messageText}</Text> : null}
