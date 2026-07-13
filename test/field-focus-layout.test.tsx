@@ -75,6 +75,59 @@ describe("field active indicator: content box stays fixed across the active stat
 });
 
 // ---------------------------------------------------------------------------
+// Part C: a prefix/suffix affix must hug the value on the inline-affix skins.
+//
+// On iOS and Android the prefix/suffix is INLINE affix text sharing the field
+// surface (no separate fill, no divider), so the value follows it with only a
+// small gap; the affix owns the container's leading/trailing inset. The Android
+// skin regressed to a padded box (addon paddingHorizontal 16 + a 1px divider +
+// the field's own 16 inset => a ~33dp void between "https://" and the value).
+// This locks the inline behavior: the affix->value gap is tight and there is no
+// divider, while the container inset before the affix is preserved.
+// ---------------------------------------------------------------------------
+
+// Resolve a horizontal edge padding, honoring paddingHorizontal as the fallback.
+function hpad(s: ViewStyle | TextStyle, edge: "start" | "end"): number {
+  const st = s as Record<string, unknown>;
+  const ph = num(st.paddingHorizontal);
+  const v = edge === "start" ? st.paddingStart : st.paddingEnd;
+  return v != null ? num(v) : ph;
+}
+
+describe("grouped affix hugs the value on the inline-affix skins", () => {
+  const H = 56; // grouped height passed by the shell; addon padding is height-independent
+  const prefixField = (skin: typeof inputAndroid) =>
+    skin.groupField(t, { leadingIcon: false, trailingIcon: false, hasPrefix: true, hasSuffix: false });
+  const suffixField = (skin: typeof inputAndroid) =>
+    skin.groupField(t, { leadingIcon: false, trailingIcon: false, hasPrefix: false, hasSuffix: true });
+
+  for (const [plat, skin] of [["ios", inputIos], ["android", inputAndroid]] as const) {
+    it(`Input ${plat}: prefix -> value gap is tight (<= 8) and there is no divider`, () => {
+      const addon = skin.addonBox(t, "left", H) as Record<string, unknown>;
+      const gap = hpad(addon, "end") + hpad(prefixField(skin), "start");
+      expect(gap).toBeLessThanOrEqual(8);
+      // Inline affix: no fill of its own and no separator rule.
+      expect(addon.borderEndWidth).toBeUndefined();
+      expect(addon.borderStartWidth).toBeUndefined();
+    });
+
+    it(`Input ${plat}: suffix -> value gap is tight (<= 8) and there is no divider`, () => {
+      const addon = skin.addonBox(t, "right", H) as Record<string, unknown>;
+      const gap = hpad(addon, "start") + hpad(suffixField(skin), "end");
+      expect(gap).toBeLessThanOrEqual(8);
+      expect(addon.borderStartWidth).toBeUndefined();
+      expect(addon.borderEndWidth).toBeUndefined();
+    });
+  }
+
+  it("Input android: the prefix still keeps the 16dp container leading inset", () => {
+    // The affix owns the container edge inset (M3 content padding), so only the
+    // gap toward the value shrinks, not the leading edge.
+    expect(hpad(inputAndroid.addonBox(t, "left", H), "start")).toBe(16);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Part B: the browser's default focus outline must be suppressed on web.
 //
 // react-native-web paints its default focus outline on the <input>/<textarea>.

@@ -261,7 +261,7 @@ export function createInput(skin: InputSkin) {
           </View>
         ) : null}
 
-        <TextInput ref={ref} style={[skin.groupField(tokens, !!leadingIcon, !!trailingIcon), text, FOCUS_RESET]} {...common} />
+        <TextInput ref={ref} style={[skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: !!trailingIcon, hasPrefix: prefix != null, hasSuffix: suffix != null }), text, FOCUS_RESET]} {...common} />
 
         {trailingIcon && iconName != null ? (
           <View style={[skin.iconOverlay("right"), { pointerEvents: "none" }]}>

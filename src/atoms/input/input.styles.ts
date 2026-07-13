@@ -36,8 +36,9 @@ export interface InputSkin {
   bareField: (t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean) => TextStyle;
   /** The grouped (addon) outer: the row that shares one border/underline. */
   groupContainer: (t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean) => ViewStyle;
-  /** The inner field inside the group (grows to fill; pads away from icons). */
-  groupField: (t: ColorTokens, leadingIcon: boolean, trailingIcon: boolean) => TextStyle;
+  /** The inner field inside the group (grows to fill; pads away from icons and
+   *  from prefix/suffix affixes so the value hugs an inline affix — see groupField). */
+  groupField: (t: ColorTokens, opts: { leadingIcon: boolean; trailingIcon: boolean; hasPrefix: boolean; hasSuffix: boolean }) => TextStyle;
   /** A prefix/suffix addon box. */
   addonBox: (t: ColorTokens, side: "left" | "right", height: number) => ViewStyle;
   addonText: (t: ColorTokens) => TextStyle;
@@ -84,7 +85,7 @@ export const webSkin: InputSkin = {
     overflow: "hidden",
     backgroundColor: t.background,
   }),
-  groupField: (t, leadingIcon, trailingIcon) => ({
+  groupField: (t, { leadingIcon, trailingIcon }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
@@ -180,7 +181,7 @@ export const iosSkin: InputSkin = {
     backgroundColor: "transparent",
     ...iosHairline(t, borderColor, focused, error, 0),
   }),
-  groupField: (t, leadingIcon, trailingIcon) => ({
+  groupField: (t, { leadingIcon, trailingIcon }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
@@ -265,25 +266,27 @@ export const androidSkin: InputSkin = {
     overflow: "hidden",
     backgroundColor: t.muted,
   }),
-  groupField: (t, leadingIcon, trailingIcon) => ({
+  groupField: (t, { leadingIcon, trailingIcon, hasPrefix, hasSuffix }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
     height: "100%",
-    paddingHorizontal: 16,
     paddingVertical: 8,
     color: t.foreground,
-    ...(leadingIcon ? { paddingStart: 44 } : null),
-    ...(trailingIcon ? { paddingEnd: 44 } : null),
+    // Content inset is 16dp per side, EXCEPT when a prefix/suffix affix already
+    // supplies that inset plus a tight gap: there the field drops its padding so
+    // the value hugs the affix (M3 inline prefix/suffix text, not a padded box).
+    // An overlaid icon uses a 44dp gutter instead.
+    paddingStart: leadingIcon ? 44 : hasPrefix ? 0 : 16,
+    paddingEnd: trailingIcon ? 44 : hasSuffix ? 0 : 16,
   }),
-  // The addon shares the field fill (M3 leading/trailing content sits inside the
-  // filled container) with a hairline separator.
-  addonBox: (t, side, height) => ({
+  // M3 prefix/suffix is inline affix text inside the filled container: it shares
+  // the field surface (no separate fill, no divider) and the value follows it
+  // directly. The affix owns the 16dp container inset and keeps an 8dp gap to the
+  // value; the field zeroes its padding on that side (see groupField).
+  addonBox: (_t, side, height) => ({
     justifyContent: "center",
-    backgroundColor: t.muted,
-    paddingHorizontal: 16,
-    borderColor: t.border,
-    ...(side === "left" ? { borderEndWidth: 1 } : { borderStartWidth: 1 }),
+    ...(side === "left" ? { paddingStart: 16, paddingEnd: 8 } : { paddingStart: 8, paddingEnd: 16 }),
     height,
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
