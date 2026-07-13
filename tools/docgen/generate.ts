@@ -339,7 +339,7 @@ function main() {
     const header =
       `${styleViolations.length} example/"Do" fence(s) across ${bySource.size} component(s) still pass a banned ` +
       `style={{…}} (CLAUDE.md "No styling escape hatches"). Fix with Row/Column, Typography tone/weight, Chip, ` +
-      `IconTile, Divider, or the component's own props.`;
+      `Emblem, Divider, or the component's own props.`;
     if (STYLE_STRICT) {
       throw new Error(`docs:gen — ${header}\n${lines.join("\n")}`);
     }

@@ -12,7 +12,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <IconTile primary label="U" />
+    <Emblem primary label="U" />
   </Row>
 </Card>
 ```
@@ -50,7 +50,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <IconTile success label="S" />
+    <Emblem success label="S" />
   </Row>
 </Card>
 ```
@@ -65,7 +65,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <IconTile primary label="O" />
+    <Emblem primary label="O" />
   </Row>
 </Card>
 ```
@@ -80,7 +80,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <IconTile destructive label="!" />
+    <Emblem destructive label="!" />
   </Row>
 </Card>
 ```
@@ -95,7 +95,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <IconTile muted label="T" />
+    <Emblem muted label="T" />
   </Row>
 </Card>
 ```
@@ -114,7 +114,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <IconTile primary label="U" />
+    <Emblem primary label="U" />
   </Row>
 </Card>
 ```

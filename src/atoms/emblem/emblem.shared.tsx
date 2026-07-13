@@ -1,23 +1,23 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { type IconTileSkin } from "./icon-tile.styles.js";
+import { type EmblemSkin } from "./emblem.styles.js";
 
-// Shared IconTile shell. The tinted rounded square that holds a single Icon,
-// recurring across cards, media objects, empty states, and feeds, so no call site
-// hand-composes `borderRadius + backgroundColor + padding` to build an icon
-// background. IconTile owns the surface AND the icon color: it tints the square
-// from a semantic tone and clones its Icon child to paint the matching color, so
-// the caller only picks the glyph.
+// Shared Emblem shell. The tinted rounded square (or circle) that holds a single
+// Icon or a short monogram, recurring across cards, media objects, empty states,
+// and feeds, so no call site hand-composes `borderRadius + backgroundColor + padding`
+// to build an icon background. Emblem owns the surface AND the icon color: it tints
+// the square from a semantic tone and clones its Icon child to paint the matching
+// color, so the caller only picks the glyph.
 //
-// IconTile is a "Light" platform treatment: one structure and semantic colors
-// (here), with per-OS touches limited to the corner radius (Material rounds more),
-// the iOS continuous corner curve, and the monogram label type.
+// Emblem is a "Light" platform treatment: one structure and semantic colors (here),
+// with per-OS touches limited to the corner radius (Material rounds more), the iOS
+// continuous corner curve (the app-icon tile idiom), and the monogram label type.
 
 export type Tone = "primary" | "destructive" | "success" | "muted";
-export type TileSize = "small" | "default" | "large";
+export type EmblemSize = "small" | "default" | "large";
 
-export interface IconTileProps {
-  /** A single `<Icon />` element; IconTile tints it to match the tone. */
+export interface EmblemProps {
+  /** A single `<Icon />` element; Emblem tints it to match the tone. */
   children?: ReactNode;
   /** A monogram letter (or two) instead of an icon, painted in the tone color. */
   label?: string;
@@ -38,14 +38,14 @@ export interface IconTileProps {
 }
 
 // Tone precedence when more than one is passed: first match wins.
-function toneOf(p: IconTileProps): Tone {
+function toneOf(p: EmblemProps): Tone {
   if (p.primary) return "primary";
   if (p.destructive) return "destructive";
   if (p.success) return "success";
   return "muted";
 }
 
-function sizeOf(p: IconTileProps): TileSize {
+function sizeOf(p: EmblemProps): EmblemSize {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
@@ -88,9 +88,9 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
   }
 }
 
-/** Build an IconTile from a platform skin. */
-export function createIconTile(skin: IconTileSkin) {
-  return function IconTile(props: IconTileProps) {
+/** Build an Emblem from a platform skin. */
+export function createEmblem(skin: EmblemSkin) {
+  return function Emblem(props: EmblemProps) {
     const { children, label, circle, testID, style } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);

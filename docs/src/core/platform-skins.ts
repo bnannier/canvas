@@ -113,8 +113,8 @@ import { Toast as ToastIOS } from "../../../src/organisms/toast/toast.ios.js";
 import { Toast as ToastAndroid } from "../../../src/organisms/toast/toast.android.js";
 import { Chip as ChipIOS } from "../../../src/atoms/chip/chip.ios.js";
 import { Chip as ChipAndroid } from "../../../src/atoms/chip/chip.android.js";
-import { IconTile as IconTileIOS } from "../../../src/atoms/icon-tile/icon-tile.ios.js";
-import { IconTile as IconTileAndroid } from "../../../src/atoms/icon-tile/icon-tile.android.js";
+import { Emblem as EmblemIOS } from "../../../src/atoms/emblem/emblem.ios.js";
+import { Emblem as EmblemAndroid } from "../../../src/atoms/emblem/emblem.android.js";
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
@@ -131,7 +131,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     NumberInput: NumberInputIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
-    Carousel: CarouselIOS, Toast: ToastIOS, Chip: ChipIOS, IconTile: IconTileIOS,
+    Carousel: CarouselIOS, Toast: ToastIOS, Chip: ChipIOS, Emblem: EmblemIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
@@ -147,6 +147,6 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     NumberInput: NumberInputAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
-    Carousel: CarouselAndroid, Toast: ToastAndroid, Chip: ChipAndroid, IconTile: IconTileAndroid,
+    Carousel: CarouselAndroid, Toast: ToastAndroid, Chip: ChipAndroid, Emblem: EmblemAndroid,
   },
 };

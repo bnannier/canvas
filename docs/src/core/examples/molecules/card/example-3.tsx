@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Row, Column, IconTile } = scope;
+  const { Card, Typography, Row, Column, Emblem } = scope;
   return (
 <Card padded style={{ width: 280 }}>
   <Row between alignStart>
@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
       <Typography h3 bold>12,348</Typography>
       <Typography tiny muted>+142 today</Typography>
     </Column>
-    <IconTile success label="S" />
+    <Emblem success label="S" />
   </Row>
 </Card>
   );

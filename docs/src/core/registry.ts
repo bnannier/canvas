@@ -162,6 +162,13 @@ import e_atoms_dropdown_dont_4_do from "./examples/atoms/dropdown/dont-4-do";
 import e_atoms_dropdown_dont_4_dont from "./examples/atoms/dropdown/dont-4-dont";
 import e_atoms_dropdown_dont_5_do from "./examples/atoms/dropdown/dont-5-do";
 import e_atoms_dropdown_dont_5_dont from "./examples/atoms/dropdown/dont-5-dont";
+import e_atoms_emblem_example_0 from "./examples/atoms/emblem/example-0";
+import e_atoms_emblem_example_1 from "./examples/atoms/emblem/example-1";
+import e_atoms_emblem_example_2 from "./examples/atoms/emblem/example-2";
+import e_atoms_emblem_example_3 from "./examples/atoms/emblem/example-3";
+import e_atoms_emblem_example_4 from "./examples/atoms/emblem/example-4";
+import e_atoms_emblem_dont_0_do from "./examples/atoms/emblem/dont-0-do";
+import e_atoms_emblem_dont_0_dont from "./examples/atoms/emblem/dont-0-dont";
 import e_atoms_icon_example_0 from "./examples/atoms/icon/example-0";
 import e_atoms_icon_example_1 from "./examples/atoms/icon/example-1";
 import e_atoms_icon_example_2 from "./examples/atoms/icon/example-2";
@@ -177,12 +184,6 @@ import e_atoms_icon_dont_3_do from "./examples/atoms/icon/dont-3-do";
 import e_atoms_icon_dont_3_dont from "./examples/atoms/icon/dont-3-dont";
 import e_atoms_icon_dont_4_do from "./examples/atoms/icon/dont-4-do";
 import e_atoms_icon_dont_4_dont from "./examples/atoms/icon/dont-4-dont";
-import e_atoms_icon_tile_example_0 from "./examples/atoms/icon-tile/example-0";
-import e_atoms_icon_tile_example_1 from "./examples/atoms/icon-tile/example-1";
-import e_atoms_icon_tile_example_2 from "./examples/atoms/icon-tile/example-2";
-import e_atoms_icon_tile_example_3 from "./examples/atoms/icon-tile/example-3";
-import e_atoms_icon_tile_dont_0_do from "./examples/atoms/icon-tile/dont-0-do";
-import e_atoms_icon_tile_dont_0_dont from "./examples/atoms/icon-tile/dont-0-dont";
 import e_atoms_image_example_0 from "./examples/atoms/image/example-0";
 import e_atoms_image_example_1 from "./examples/atoms/image/example-1";
 import e_atoms_image_example_2 from "./examples/atoms/image/example-2";
@@ -979,6 +980,20 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Destructive item", do: { caption: "Click an item: separate destructive actions with a divider, color them, and place them last.", code: "<Dropdown trigger=\"Actions\" items={[\n    { label: \"Edit\" },\n    { label: \"Duplicate\" },\n    { label: \"Delete\", destructive: true, separatorBefore: true }\n  ]} />", render: e_atoms_dropdown_dont_5_do }, dont: { caption: "Click an item: a destructive action wedged between routine ones invites a costly misclick.", code: "<Dropdown trigger=\"Actions\" items={[\n    { label: \"Edit\" },\n    { label: \"Delete\" },\n    { label: \"Duplicate\" }\n  ]} />", render: e_atoms_dropdown_dont_5_dont } },
     ],
   },
+  "emblem": {
+    dir: "emblem",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<Emblem primary>\n  <Icon shield />\n</Emblem>", render: e_atoms_emblem_example_0 },
+      { label: "Tones", code: "<Row snug alignCenter>\n  <Emblem primary><Icon shield /></Emblem>\n  <Emblem success><Icon check /></Emblem>\n  <Emblem destructive><Icon trash /></Emblem>\n  <Emblem muted><Icon bell /></Emblem>\n</Row>", render: e_atoms_emblem_example_1 },
+      { label: "Sizes", code: "<Row snug alignCenter>\n  <Emblem small primary><Icon bell /></Emblem>\n  <Emblem primary><Icon bell /></Emblem>\n  <Emblem large primary><Icon bell /></Emblem>\n</Row>", render: e_atoms_emblem_example_2 },
+      { label: "Monogram", code: "<Row snug alignCenter>\n  <Emblem primary label=\"U\" />\n  <Emblem success label=\"S\" />\n</Row>", render: e_atoms_emblem_example_3 },
+      { label: "Circle", code: "<Emblem circle success>\n  <Icon check />\n</Emblem>", render: e_atoms_emblem_example_4 },
+    ],
+    donts: [
+      { title: "Surface", do: { caption: "Use Emblem so the tint and icon color stay in sync from one tone prop.", code: "<Emblem primary>\n  <Icon shield />\n</Emblem>", render: e_atoms_emblem_dont_0_do }, dont: { caption: "Hand-compose the tinted square with raw `borderRadius`, `backgroundColor`, and padding.", code: "<View style={{ height: 40, width: 40, alignItems: \"center\", justifyContent: \"center\", borderRadius: 8, backgroundColor: \"rgba(79,70,229,0.1)\" }}>\n  <Icon shield primary />\n</View>", render: e_atoms_emblem_dont_0_dont } },
+    ],
+  },
   "icon": {
     dir: "icon",
     category: "atoms",
@@ -995,19 +1010,6 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "primary", do: { caption: "Reserve text-primary for the one active or selected icon; keep the rest muted.", code: "<Row alignCenter relaxed>\n  <Icon home muted size={22} />\n  <Icon star primary size={22} />\n  <Icon settings muted size={22} />\n</Row>", render: e_atoms_icon_dont_2_do }, dont: { caption: "Painting a whole toolbar primary spends the accent on everything, so nothing reads as emphasized.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 20 }}>\n  <Icon home primary size={22} />\n  <Icon search primary size={22} />\n  <Icon settings primary size={22} />\n</View>", render: e_atoms_icon_dont_2_dont } },
       { title: "destructive", do: { caption: "Keep text-destructive for genuinely destructive actions like delete, so red always means consequence.", code: "<Icon trash destructive size={28} />", render: e_atoms_icon_dont_3_do }, dont: { caption: "A red download icon implies danger on a perfectly safe action and trains users to ignore the warning color.", code: "<Icon download destructive size={28} />", render: e_atoms_icon_dont_3_dont } },
       { title: "muted", do: { caption: "Use the muted tone for secondary, inline hint icons where its color matches the helper text.", code: "<Row alignCenter snug>\n  <Icon info muted size={16} />\n  <Typography small muted>Optional, used only for recovery</Typography>\n</Row>", render: e_atoms_icon_dont_4_do }, dont: { caption: "A muted icon inside a solid primary button reads as disabled and clashes with the high-contrast label.", code: "<Pressable style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", gap: 8, borderRadius: 6, backgroundColor: tokens.primary, paddingHorizontal: 16, paddingVertical: 8 }}>\n  <Icon plus muted size={16} />\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"primary-foreground\"] }}>New project</Text>\n</Pressable>", render: e_atoms_icon_dont_4_dont } },
-    ],
-  },
-  "icon-tile": {
-    dir: "icon-tile",
-    category: "atoms",
-    examples: [
-      { label: "Default", code: "<IconTile primary>\n  <Icon shield />\n</IconTile>", render: e_atoms_icon_tile_example_0 },
-      { label: "Tones", code: "<Row snug alignCenter>\n  <IconTile primary><Icon shield /></IconTile>\n  <IconTile success><Icon check /></IconTile>\n  <IconTile destructive><Icon trash /></IconTile>\n  <IconTile muted><Icon bell /></IconTile>\n</Row>", render: e_atoms_icon_tile_example_1 },
-      { label: "Sizes", code: "<Row snug alignCenter>\n  <IconTile small primary><Icon bell /></IconTile>\n  <IconTile primary><Icon bell /></IconTile>\n  <IconTile large primary><Icon bell /></IconTile>\n</Row>", render: e_atoms_icon_tile_example_2 },
-      { label: "Circle", code: "<IconTile circle success>\n  <Icon check />\n</IconTile>", render: e_atoms_icon_tile_example_3 },
-    ],
-    donts: [
-      { title: "Surface", do: { caption: "Use IconTile so the tint and icon color stay in sync from one tone prop.", code: "<IconTile primary>\n  <Icon shield />\n</IconTile>", render: e_atoms_icon_tile_dont_0_do }, dont: { caption: "Hand-compose the tinted square with raw `borderRadius`, `backgroundColor`, and padding.", code: "<View style={{ height: 40, width: 40, alignItems: \"center\", justifyContent: \"center\", borderRadius: 8, backgroundColor: \"rgba(79,70,229,0.1)\" }}>\n  <Icon shield primary />\n</View>", render: e_atoms_icon_tile_dont_0_dont } },
     ],
   },
   "image": {
@@ -1485,16 +1487,16 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "card",
     category: "molecules",
     examples: [
-      { label: "Default", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <IconTile primary label=\"U\" />\n  </Row>\n</Card>", render: e_molecules_card_example_0 },
+      { label: "Default", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem primary label=\"U\" />\n  </Row>\n</Card>", render: e_molecules_card_example_0 },
       { label: "Type - section", code: "<Card\n  onPress={() => {}}\n  title=\"Recent activity\"\n  body=\"A labeled content surface. Drop fields, a list, or any module of content here.\"\n/>", render: e_molecules_card_example_1 },
       { label: "Type - generic", code: "<Card\n  padded\n  onPress={() => {}}\n  title=\"Anything goes here\"\n  body=\"The card surface gives you the border, radius, and shadow. You bring the content.\"\n/>", render: e_molecules_card_example_2 },
-      { label: "Icon tone - success", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <IconTile success label=\"S\" />\n  </Row>\n</Card>", render: e_molecules_card_example_3 },
-      { label: "Icon tone - primary", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <IconTile primary label=\"O\" />\n  </Row>\n</Card>", render: e_molecules_card_example_4 },
-      { label: "Icon tone - destructive", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <IconTile destructive label=\"!\" />\n  </Row>\n</Card>", render: e_molecules_card_example_5 },
-      { label: "Icon tone - muted", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <IconTile muted label=\"T\" />\n  </Row>\n</Card>", render: e_molecules_card_example_6 },
+      { label: "Icon tone - success", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem success label=\"S\" />\n  </Row>\n</Card>", render: e_molecules_card_example_3 },
+      { label: "Icon tone - primary", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem primary label=\"O\" />\n  </Row>\n</Card>", render: e_molecules_card_example_4 },
+      { label: "Icon tone - destructive", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem destructive label=\"!\" />\n  </Row>\n</Card>", render: e_molecules_card_example_5 },
+      { label: "Icon tone - muted", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem muted label=\"T\" />\n  </Row>\n</Card>", render: e_molecules_card_example_6 },
     ],
     donts: [
-      { title: "stat", do: { caption: "One big number, a short label, a small delta. The metric is scannable in a glance.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <IconTile primary label=\"U\" />\n  </Row>\n</Card>", render: e_molecules_card_dont_0_do }, dont: { caption: "Prose where the number should be: the eye has nothing big to land on, so the card stops being a stat.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: \"500\", textTransform: \"uppercase\", letterSpacing: 0.4, color: tokens[\"muted-foreground\"] }}>This month</Text>\n  <Text style={{ marginTop: 4, fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"card-foreground\"] }}>We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>\n</Card>", render: e_molecules_card_dont_0_dont } },
+      { title: "stat", do: { caption: "One big number, a short label, a small delta. The metric is scannable in a glance.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem primary label=\"U\" />\n  </Row>\n</Card>", render: e_molecules_card_dont_0_do }, dont: { caption: "Prose where the number should be: the eye has nothing big to land on, so the card stops being a stat.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: \"500\", textTransform: \"uppercase\", letterSpacing: 0.4, color: tokens[\"muted-foreground\"] }}>This month</Text>\n  <Text style={{ marginTop: 4, fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"card-foreground\"] }}>We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>\n</Card>", render: e_molecules_card_dont_0_dont } },
       { title: "section", do: { caption: "Keep the divider between header and body; it anchors the title.", code: "<Card flush style={{ maxWidth: 360 }}>\n  <CardHeader>\n    <CardTitle>Recent activity</CardTitle>\n  </CardHeader>\n  <CardSeparator />\n  <CardContent>\n    <Typography small>Two events today.</Typography>\n  </CardContent>\n</Card>", render: e_molecules_card_dont_1_do }, dont: { caption: "Without the divider the header floats and stops reading as a header.", code: "<Card flush style={{ maxWidth: 360 }}>\n  <CardHeader>\n    <CardTitle>Recent activity</CardTitle>\n  </CardHeader>\n  <CardContent>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"card-foreground\"] }}>Two events today.</Text>\n  </CardContent>\n</Card>", render: e_molecules_card_dont_1_dont } },
       { title: "generic", do: { caption: "Use the surface once and layout the content with plain spacing inside it.", code: "<Card padded style={{ maxWidth: 360 }}>\n  <Column tight>\n    <Typography lead semibold>Anything goes here</Typography>\n    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>\n  </Column>\n</Card>", render: e_molecules_card_dont_2_do }, dont: { caption: "Nesting one card surface inside another stacks border on border and shadow on shadow; the inner block looks dropped in.", code: "<Card padded style={{ maxWidth: 360 }}>\n  <Card padded>\n    <Text style={{ marginBottom: 4, fontSize: 15, fontWeight: \"600\", color: tokens[\"card-foreground\"] }}>Nested surface</Text>\n    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens[\"muted-foreground\"] }}>A card inside a card doubles the border and shadow.</Text>\n  </Card>\n</Card>", render: e_molecules_card_dont_2_dont } },
     ],

@@ -156,7 +156,7 @@ export const BANNED_STYLE_PROPS: string[] = [
   "position", "top", "left", "right", "bottom", "zIndex",
   // typography — belongs to Typography's role / tone / weight
   "fontSize", "lineHeight", "fontWeight", "color", "letterSpacing", "textTransform", "fontFamily",
-  // surface — belongs to the relevant component (Card, Chip, IconTile, Divider, …)
+  // surface — belongs to the relevant component (Card, Chip, Emblem, Divider, …)
   "backgroundColor", "borderWidth", "borderColor", "borderRadius",
   "borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth",
   "borderTopColor", "borderBottomColor", "borderLeftColor", "borderRightColor",

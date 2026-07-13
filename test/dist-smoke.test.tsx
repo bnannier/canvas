@@ -20,7 +20,7 @@ describe.skipIf(!hasDist)("dist artifact", () => {
     // A representative spread: primitives, atoms, molecules, organisms, theme.
     for (const name of [
       "View", "Text", "Pressable",
-      "Button", "Badge", "Avatar", "AvatarGroup", "Chip", "IconTile", "Row", "Column", "Sparkline",
+      "Button", "Badge", "Avatar", "AvatarGroup", "Chip", "Emblem", "Row", "Column", "Sparkline",
       "Card", "Field", "Stats",
       "Chart", "StackedBar", "Gauge", "Heatmap", "LineChart", "AreaChart", "PieChart", "ScatterPlot", "CandlestickChart", "DepthChart", "DataTable", "Dialog", "Toast",
       "ThemeProvider", "GlassSurface", "QRCode",

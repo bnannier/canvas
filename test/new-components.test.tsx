@@ -8,7 +8,7 @@ import { Avatar, AvatarGroup } from "../src/atoms/avatar/avatar.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
 import { createChip } from "../src/atoms/chip/chip.shared.tsx";
 import { androidSkin as chipAndroidSkin, iosSkin as chipIosSkin } from "../src/atoms/chip/chip.styles.ts";
-import { IconTile } from "../src/atoms/icon-tile/icon-tile.tsx";
+import { Emblem } from "../src/atoms/emblem/emblem.tsx";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 import { Gauge, Heatmap } from "../src/index.ts";
 import { Typography } from "../src/atoms/typography/typography.tsx";
@@ -17,7 +17,7 @@ import { Breadcrumb } from "../src/atoms/breadcrumb/breadcrumb.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 
 // Behavior + a11y coverage for the "no styling escape hatches" component wave:
-// Row/Column, AvatarGroup, Chip, IconTile, Sparkline, the Gauge/Heatmap charts,
+// Row/Column, AvatarGroup, Chip, Emblem, Sparkline, the Gauge/Heatmap charts,
 // plus the new Typography tone/weight axes, Card selected/grow, Breadcrumb
 // collapse, and the Textarea flush variant. react-native-web renders these to
 // readable inline styles, so a semantic boolean prop can be checked at the DOM
@@ -217,17 +217,17 @@ describe("Chip (Android M3 selected filter anatomy)", () => {
   });
 });
 
-describe("IconTile", () => {
+describe("Emblem", () => {
   it("renders a monogram label", () => {
-    const { getByText } = ui(<IconTile label="JS" />);
+    const { getByText } = ui(<Emblem label="JS" />);
     expect(getByText("JS")).toBeDefined();
   });
 
   it("tints the surface from the semantic tone", () => {
     const { container } = ui(
       <>
-        <IconTile primary label="A" testID="pri" />
-        <IconTile muted label="A" testID="mut" />
+        <Emblem primary label="A" testID="pri" />
+        <Emblem muted label="A" testID="mut" />
       </>,
     );
     const pri = at(container, "pri").style.backgroundColor;

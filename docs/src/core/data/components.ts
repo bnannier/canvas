@@ -57,9 +57,9 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
-    slug: "icon-tile",
-    name: "IconTile",
-    description: "A tinted rounded square that holds a single Icon, the recurring icon-on-a-soft-background used in cards, media objects, empty states, and feeds. A tone tints the square and paints the glyph to match, so no call site hand-composes the icon background.",
+    slug: "emblem",
+    name: "Emblem",
+    description: "A tinted rounded square (or circle) that holds a single Icon or a short monogram, the recurring icon-on-a-soft-background used in cards, media objects, empty states, and feeds. A tone tints the square and paints the glyph to match, so no call site hand-composes the icon background.",
     category: "Atoms",
   },
 

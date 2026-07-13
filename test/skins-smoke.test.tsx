@@ -69,7 +69,7 @@ const CASES: SkinCase[] = [
   { name: "Combobox", dir: "atoms/combobox", file: "combobox", props: { options: ["Apple", "Banana"], open: true } },
   { name: "Divider", dir: "atoms/divider", file: "divider" },
   { name: "Dropdown", dir: "atoms/dropdown", file: "dropdown", props: { label: "Menu", items: [{ label: "One" }, { label: "Two" }] } },
-  { name: "IconTile", dir: "atoms/icon-tile", file: "icon-tile", props: { label: "AB", primary: true } },
+  { name: "Emblem", dir: "atoms/emblem", file: "emblem", props: { label: "AB", primary: true } },
   { name: "Icon", dir: "atoms/icon", file: "icon", props: { check: true } },
   { name: "InputOTP", dir: "atoms/input-otp", file: "input-otp", props: { value: "12", length: 6, onChange: noop } },
   { name: "Input", dir: "atoms/input", file: "input", props: { placeholder: "Email" } },

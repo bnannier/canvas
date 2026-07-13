@@ -110,7 +110,7 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
           >
             {isValidElement(icon) ? (
               // An element glyph (the kit Icon atom): own its tint + size by cloning,
-              // the same way IconTile paints its child. The injected `color` is the
+              // the same way Emblem paints its child. The injected `color` is the
               // tone tint; a semantic color boolean set on the element takes
               // precedence inside Icon, so a deliberate override still reads.
               cloneElement(icon as ReactElement<Record<string, unknown>>, {
