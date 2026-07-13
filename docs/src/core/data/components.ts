@@ -548,7 +548,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "heatmap",
     name: "Heatmap",
-    description: "A wrapping grid of cells whose fill intensity encodes each value, with a less-to-more legend.",
+    description: "Density cells whose fill encodes each value. A `calendar` layout gives a GitHub-style contribution graph with weekday and month labels and inspect-on-hover.",
     category: "Charts",
   },
 

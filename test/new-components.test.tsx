@@ -271,6 +271,47 @@ describe("Charts — Gauge & Heatmap", () => {
     expect(name).toContain("Activity");
     expect(name).toContain("3 cells");
   });
+
+  it("Heatmap accepts cell objects, reading intensity off `value`", () => {
+    const { container } = ui(<Heatmap values={[{ value: 0.2 }, { value: 0.8, count: 5 }]} label="Commits" hideLegend />);
+    const name = container.querySelector("[aria-label]")?.getAttribute("aria-label") ?? "";
+    expect(name).toContain("Commits");
+    expect(name).toContain("2 cells");
+  });
+
+  it("Heatmap calendar mode shows weekday + month labels and names the day span", () => {
+    // Fourteen consecutive days spanning a month boundary (Jan → Feb 2026).
+    const values = Array.from({ length: 14 }, (_, i) => {
+      const day = 25 + i; // Jan 25 … Feb 7
+      const iso = day <= 31 ? `2026-01-${String(day).padStart(2, "0")}` : `2026-02-${String(day - 31).padStart(2, "0")}`;
+      return { value: (i % 5) / 4, count: i, date: iso };
+    });
+    const { container } = ui(<Heatmap calendar values={values} label="Contribution activity" />);
+    const name = container.querySelector("[aria-label]")?.getAttribute("aria-label") ?? "";
+    expect(name).toContain("Contribution activity");
+    expect(name).toContain("14 days");
+    const text = container.textContent ?? "";
+    // GitHub-style furniture: alternating weekday labels + the two month names.
+    expect(text).toContain("Mon");
+    expect(text).toContain("Wed");
+    expect(text).toContain("Fri");
+    expect(text).toContain("Jan");
+    expect(text).toContain("Feb");
+    // The discrete less-to-more legend renders by default.
+    expect(text).toContain("Less");
+    expect(text).toContain("More");
+  });
+
+  it("Heatmap calendar name reports the contribution total when cells carry counts", () => {
+    const values = [
+      { value: 1, count: 4, date: "2026-03-01" },
+      { value: 0.5, count: 2, date: "2026-03-02" },
+      { value: 0, count: 0, date: "2026-03-03" },
+    ];
+    const { container } = ui(<Heatmap calendar hideLegend values={values} label="Streak" />);
+    const name = container.querySelector("[aria-label]")?.getAttribute("aria-label") ?? "";
+    expect(name).toContain("6 total");
+  });
 });
 
 describe("Typography — tone & weight axes", () => {

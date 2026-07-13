@@ -5,8 +5,20 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Heatmap } = scope;
   return (
-<Card padded style={{ maxWidth: 320 }}>
-  <Heatmap label="Contribution activity" values={[0.06, 0.83, 0.38, 0.86, 0.0, 0.73, 0.13, 0.0, 0.0, 0.97, 0.95, 0.28, 0.2, 0.3, 0.37, 0.6, 0.61, 0.17, 0.22, 0.73, 0.13, 0.23, 0.01, 0.56, 0.7, 0.13, 0.03, 0.96, 0.01, 0.21, 0.21, 0.01, 0.01, 0.39, 0.6, 0.01, 0.37, 0.86, 0.07, 0.35, 0.12, 0.1, 0.26, 0.51, 0.1, 0.03, 0.76, 0.39, 0.14, 0.99, 0.23, 0.03, 0.06, 0.85, 0.35, 0.24, 0.03, 0.19, 0.03, 0.0, 0.48, 0.58, 0.02, 0.29, 0.55, 0.78, 0.14, 0.17, 0.41, 0.69]} />
+<Card padded>
+  <Heatmap
+    calendar
+    label="Contribution activity"
+    caption="1,203 contributions in the last year"
+    values={Array.from({ length: 371 }, (_, i) => {
+      const d = new Date(Date.UTC(2025, 6, 6));
+      d.setUTCDate(d.getUTCDate() + i);
+      const noise = Math.sin(i * 12.9898) * 43758.5453;
+      const r = noise - Math.floor(noise);
+      const value = r < 0.5 ? 0 : (r - 0.5) / 0.5;
+      return { value, count: Math.round(value * 14), date: d.toISOString().slice(0, 10) };
+    })}
+  />
 </Card>
   );
 }
