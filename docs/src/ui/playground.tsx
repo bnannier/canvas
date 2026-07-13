@@ -1,6 +1,6 @@
 import { Component, type ReactNode, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Pressable, OverlayProvider, useTheme } from "@olympusoss/canvas";
+import { ScrollView, View, Text, Tabs, OverlayProvider, useTheme } from "@olympusoss/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
@@ -145,28 +145,23 @@ export function Playground({ examples }: { examples: DocExample[] }) {
 
   if (examples.length <= 1) return stage;
 
-  const pills = examples.map((e, i) => {
-    const active = i === selected;
-    return (
-      <Pressable
-        key={e.label}
-        onPress={() => setSelected(i)}
-        style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: active ? tokens.foreground : "transparent" }}
-      >
-        <Text style={{ fontFamily: geist("500"), fontSize: 13, color: active ? tokens.background : tokens["muted-foreground"] }}>{e.label}</Text>
-      </Pressable>
-    );
-  });
+  // The example switcher is the kit Tabs component, so the docs dogfood a real
+  // selectable control instead of a hand-rolled pill row (which read as loose,
+  // affordance-less text). One label per example; controlled by `selected`.
+  const labels = examples.map((e) => e.label);
 
-  // Wide: a fixed 200px vertical rail beside the stage. Narrow: a wrapping row of pills.
-  // (A horizontal ScrollView here grows to the column's leftover height on react-native-web,
-  // which stretched the active pill into a tall bar — so wrap instead of scroll.)
+  // Wide: Tabs' `vertical` rail (a settings-style side rail, active row filled)
+  // beside the stage, in a fixed 200px scroller so many examples still scroll.
+  // Narrow: the horizontal `underline` tab bar above the stage, in a horizontal
+  // scroller so long/many labels overflow by scrolling rather than cramping.
   const rail = wide ? (
-    <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 2 }}>
-      {pills}
+    <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false}>
+      <Tabs vertical block tabs={labels} active={selected} onChange={setSelected} />
     </ScrollView>
   ) : (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 6 }}>{pills}</View>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
+      <Tabs underline tabs={labels} active={selected} onChange={setSelected} />
+    </ScrollView>
   );
 
   return (
