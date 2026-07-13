@@ -1,4 +1,4 @@
-import { type ComponentType } from "react";
+import { cloneElement, isValidElement, type ComponentType, type ReactElement } from "react";
 import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -34,8 +34,13 @@ import { type Tone, type EmptyStateSkin } from "./empty-state.styles.js";
 // - Density axis: `compact` tightens the card padding for dense table cells.
 
 export interface EmptyStateProps {
-  /** A glyph (emoji or icon character) shown in the disc. */
-  icon?: string;
+  /**
+   * The glyph shown in the disc: a monochrome `<Icon />` element (cloned with the
+   * tone's tint and the disc's glyph size, so it follows `positive`/default like the
+   * disc wash does; a semantic color boolean on the element still wins) or an
+   * emoji/character string.
+   */
+  icon?: string | ReactElement;
   /** Short, neutral headline naming the empty result. */
   title?: string;
   /** One reassuring line, ideally pointing at the next step. */
@@ -103,7 +108,18 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
             importantForAccessibility="no-hide-descendants"
             aria-hidden
           >
-            <Text style={[skin.glyph, s.glyphTone(tokens, tone)]}>{icon}</Text>
+            {isValidElement(icon) ? (
+              // An element glyph (the kit Icon atom): own its tint + size by cloning,
+              // the same way IconTile paints its child. The injected `color` is the
+              // tone tint; a semantic color boolean set on the element takes
+              // precedence inside Icon, so a deliberate override still reads.
+              cloneElement(icon as ReactElement<Record<string, unknown>>, {
+                color: s.glyphTone(tokens, tone).color,
+                size: skin.glyph.fontSize ?? 20,
+              })
+            ) : (
+              <Text style={[skin.glyph, s.glyphTone(tokens, tone)]}>{icon}</Text>
+            )}
           </View>
         ) : null}
         {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}

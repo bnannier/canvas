@@ -6,6 +6,8 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { Row, Column } from "../src/atoms/layout/layout.tsx";
 import { Avatar, AvatarGroup } from "../src/atoms/avatar/avatar.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
+import { createChip } from "../src/atoms/chip/chip.shared.tsx";
+import { androidSkin as chipAndroidSkin, iosSkin as chipIosSkin } from "../src/atoms/chip/chip.styles.ts";
 import { IconTile } from "../src/atoms/icon-tile/icon-tile.tsx";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 import { Gauge, Heatmap } from "../src/organisms/charts/charts.tsx";
@@ -160,6 +162,58 @@ describe("Chip", () => {
     // A border-only chip has no (or zero-alpha) fill; RNW writes transparent as rgba(…,0).
     expect(el.style.backgroundColor).toMatch(/^$|transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
     expect(el.style.borderColor).toBeTruthy();
+  });
+});
+
+// The M3 selected filter-chip anatomy is threaded through the skin (like the
+// Accordion chevron), so it is exercised on createChip(androidSkin) directly;
+// the iOS/web skins omit the flag and keep the tint swap alone.
+describe("Chip (Android M3 selected filter anatomy)", () => {
+  const AndroidChip = createChip(chipAndroidSkin);
+  const IOSChip = createChip(chipIosSkin);
+  // The bun harness renders no real <svg>, so decorative Icons are counted via
+  // their aria-hidden wrappers (see the Icon-render memory note).
+  const icons = (c: HTMLElement) => c.querySelectorAll('[aria-hidden="true"]').length;
+
+  it("selecting grows the leading 18dp checkmark and drops the outline", () => {
+    const { container } = ui(
+      <AndroidChip testID="mc" selectable outline>Engineering</AndroidChip>,
+    );
+    const el = at(container, "mc");
+    const restingIcons = icons(container);
+    expect(el.style.borderColor).not.toMatch(/transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+    fireEvent.click(container.querySelector('[role="button"]') as Element);
+    // Selected: one leading checkmark appears and the outline goes transparent
+    // (the borderWidth stays, so the box does not shift).
+    expect(icons(container)).toBe(restingIcons + 1);
+    expect(el.style.borderColor).toMatch(/transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+  });
+
+  it("pads 16dp beside text and 8dp beside an icon (M3 side insets)", () => {
+    const { container } = ui(
+      <>
+        <AndroidChip testID="plain">A</AndroidChip>
+        <AndroidChip testID="removable" onRemove={() => {}}>B</AndroidChip>
+      </>,
+    );
+    const pad = (id: string) => {
+      const s = at(container, id).style;
+      return {
+        start: s.paddingInlineStart || s.paddingLeft,
+        end: s.paddingInlineEnd || s.paddingRight,
+      };
+    };
+    expect(pad("plain")).toEqual({ start: "16px", end: "16px" });
+    // The remove button counts as a trailing icon: its side tightens to 8dp.
+    expect(pad("removable")).toEqual({ start: "16px", end: "8px" });
+  });
+
+  it("the iOS skin keeps the tint-swap selected look (no checkmark, border kept)", () => {
+    const { container } = ui(<IOSChip testID="ic" selectable outline>Engineering</IOSChip>);
+    const restingIcons = icons(container);
+    fireEvent.click(container.querySelector('[role="button"]') as Element);
+    expect(icons(container)).toBe(restingIcons);
+    expect(at(container, "ic").style.borderColor).not.toMatch(/transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
   });
 });
 

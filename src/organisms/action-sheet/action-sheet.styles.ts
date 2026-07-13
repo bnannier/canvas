@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, surfaceRipple } from "../../style/index.js";
 
 // Co-located ActionSheet skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when
@@ -8,20 +8,23 @@ import { type ColorTokens, alpha, shadow } from "../../style/index.js";
 // indigo `primary` action tint and the `destructive` red), only the native SHAPE,
 // structure, sizing, type, and press feedback change per OS:
 //
-//   iOS (iOS 27 / HIG action sheet): TWO separated rounded-14 cards anchored to
-//     the bottom — an "actions" card (an optional centered 13pt gray title/message
-//     header over a hairline divider, then the action rows separated by hairlines,
-//     ~17pt brand-tinted labels, red `destructive`) and a SEPARATE rounded-14 card
-//     below it holding a single bold (600) Cancel row. ~8pt gap between the cards,
-//     ~8pt side inset. Press = opacity dim (~0.8).
+//   iOS (iOS 27 Liquid Glass action sheet): ONE container anchored to the bottom —
+//     corner radius 34 with continuous (superellipse) corners, 14pt inner padding,
+//     a LEFT-aligned header (17/22 semibold primary-label title + 15/18 secondary
+//     message) over a vertical stack of DETACHED ~48pt full-capsule action buttons
+//     (gap 10, translucent neutral fill, 17/22 MEDIUM primary-label labels; red
+//     `destructive` only, no hairline dividers). Cancel is a SEPARATE detached
+//     capsule below it, aligned with the action buttons. ~8pt side inset, capped at
+//     640 on wide viewports. Press = opacity dim (~0.8).
 //   Android (Material 3 modal bottom sheet): a SINGLE rounded-top (28dp) sheet that
 //     spans the width, a 32x4 drag handle at the top, then left-aligned list items
 //     at 16sp; the destructive item tints its label red. Cancel is the LAST row in
 //     the same sheet (M3 has no separate cancel card). Flat (the sheet's own
 //     elevation comes from the scrim), press = android_ripple (neutral state layer).
-//   Web: the established Canvas look = the iOS action sheet (two separated rounded
-//     cards), since no web library ships an action sheet and the iOS idiom reads
-//     cleanly on the web. Press = opacity dim.
+//   Web: the established Canvas look (two separated rounded-14 cards with a centered
+//     gray header and hairline-divided rows), since no web library ships an action
+//     sheet. The stack is capped at 640 and centered so it never renders edge-to-edge
+//     on a wide desktop window. Press = opacity dim.
 
 // The destructive tint and brand action tint are read from tokens so light/dark
 // (and glass) keep working; the skin never hard-codes the iOS system blue.
@@ -43,6 +46,12 @@ export interface ActionSheetSkin {
   cancelLayout: CancelLayout;
   /** The bottom-anchored stack container (side inset + gap between the cards). */
   stack: ViewStyle;
+  /**
+   * contentContainerStyle for the action-rows ScrollView. iOS uses it to space the
+   * detached capsule buttons (gap 10); web/Android leave it undefined so the rows
+   * sit flush (their separation comes from hairline dividers or M3 list spacing).
+   */
+  rowsContent?: ViewStyle;
   /** The actions card surface shape (radius, fill, shadow); fed to GlassSurface. */
   actionsCard: (t: ColorTokens) => ViewStyle;
   /** The separate Cancel card surface shape (iOS/web only); null on Android. */
@@ -59,6 +68,12 @@ export interface ActionSheetSkin {
   divider: ((t: ColorTokens) => ViewStyle) | null;
   /** A single action row container (sizing + alignment). */
   row: ViewStyle;
+  /**
+   * A token-derived fill painted on each action row (iOS gives each capsule a
+   * translucent neutral fill); null on web/Android, where the rows are flush and
+   * take the card's fill.
+   */
+  rowFill: ((t: ColorTokens) => ViewStyle) | null;
   /** An action row label; `destructive` tints it red, `disabled` dims it. */
   rowLabel: (t: ColorTokens, destructive: boolean, disabled: boolean) => TextStyle;
   /** The Cancel row container (its own card on iOS/web; the last list row on Android). */
@@ -94,10 +109,14 @@ export const scrimContent: ViewStyle = { zIndex: 1 };
 // hairline-divided ~17pt brand action rows, a red destructive label, and a
 // separate bold Cancel card. Press = opacity dim.
 const WEB_RADIUS = 14;
+// Cap the bottom stack so it never spans a wide desktop window edge-to-edge (an
+// uncapped action sheet reads as broken at ~2000px). 640 mirrors the M3 bottom-sheet
+// max-width; alignSelf centers it in the scrim.
+const STACK_MAX_WIDTH = 640;
 export const webSkin: ActionSheetSkin = {
   scrimOpacity: 0.4,
   cancelLayout: "separateCard",
-  stack: { paddingHorizontal: 8, paddingTop: 8, gap: 8 },
+  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingTop: 8, gap: 8 },
   actionsCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
   cancelCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
   handle: null,
@@ -106,6 +125,7 @@ export const webSkin: ActionSheetSkin = {
   headerMessage: (t) => ({ marginTop: 2, fontSize: 13, lineHeight: 18, color: t["muted-foreground"], textAlign: "center" }),
   divider: (t) => ({ height: 1, backgroundColor: t.border }),
   row: { minHeight: 57, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  rowFill: null,
   rowLabel: (t, destructive, disabled) => ({
     fontSize: 17,
     lineHeight: 22,
@@ -120,36 +140,65 @@ export const webSkin: ActionSheetSkin = {
   ripple: null,
 };
 
-// ---------- iOS 27 (HIG action sheet): two separated rounded-14 cards ----------
-// Apple's modal action sheet: two cards anchored to the bottom over a dimmed
-// scrim. The actions card carries an optional centered 13pt gray title/message
-// header over a hairline divider, then the action rows separated by hairlines
-// (~17pt rows; the brand tint replaces the iOS system blue, red `destructive`).
-// A SEPARATE rounded-14 card below it holds a single bold (600) Cancel row, with
-// an ~8pt gap between the cards. ~8pt side inset. Press = opacity dim (~0.8).
-const IOS_RADIUS = 14;
+// ---------- iOS 27 (Liquid Glass action sheet): ONE container, capsule rows ----------
+// The iOS 26/27 redesign (iOS 27 UI Kit "Action Sheets" symbol, inspected 2026-07-12).
+// A single Liquid Glass container anchored to the bottom over a dimmed scrim:
+//   - Container: corner radius 34, continuous (superellipse) corners, 14pt inner
+//     padding. GlassSurface supplies the material (fill stripped under glass); the
+//     `popover` fill + shadow render on the solid fallback.
+//   - Header: LEFT-aligned inside padding 8 (sides/top) / 24 (bottom), 10pt gap.
+//     Title = SF Pro Semibold (600) 17/22 in the PRIMARY label color (foreground);
+//     message = SF Pro Regular (400) 15/18 at 68% foreground (secondary label).
+//   - Actions: a vertical stack of DETACHED full-capsule buttons, each 48pt tall
+//     with a translucent neutral fill, gap 10, no hairline dividers. Labels are
+//     SF Pro MEDIUM (500) 17/22 CENTERED in the primary label color — red is
+//     reserved for `destructive`; a disabled row swaps to the tertiary gray label
+//     (not a faded accent). The brand tint no longer stands in for system blue: the
+//     current OS idiom is neutral-labeled.
+//   - Cancel: a SEPARATE detached capsule below the container (its own glass card),
+//     aligned with the action buttons via a 14pt side margin; bold (600) primary
+//     label. Press = opacity dim (~0.8).
+const IOS_RADIUS = 34;
+const IOS_CAPSULE = 9999; // full capsule (calc(infinity*1px)); the renderer clamps to height/2
+const IOS_ROW_FILL = 0.1; // translucent neutral fill on the capsules (iOS system-fill idiom)
 export const iosSkin: ActionSheetSkin = {
   scrimOpacity: 0.4,
   cancelLayout: "separateCard",
-  stack: { paddingHorizontal: 8, paddingTop: 8, gap: 8 },
-  actionsCard: (t) => ({ borderRadius: IOS_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
-  cancelCard: (t) => ({ borderRadius: IOS_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
+  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingTop: 8, gap: 8 },
+  rowsContent: { gap: 10 },
+  actionsCard: (t) => ({ borderRadius: IOS_RADIUS, borderCurve: "continuous", padding: 14, backgroundColor: t.popover, ...shadow("lg") }),
+  // A separate standalone Cancel capsule, inset 14 so it lines up with the action
+  // buttons inside the container's 14pt padding.
+  cancelCard: (t) => ({ marginHorizontal: 14, borderRadius: IOS_CAPSULE, borderCurve: "continuous", backgroundColor: t.popover, ...shadow("lg") }),
   handle: null,
-  header: { paddingVertical: 14, paddingHorizontal: 16, alignItems: "center" },
-  headerTitle: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t["muted-foreground"], textAlign: "center" }),
-  headerMessage: (t) => ({ marginTop: 2, fontSize: 13, lineHeight: 18, color: t["muted-foreground"], textAlign: "center" }),
-  divider: (t) => ({ height: 1, backgroundColor: t.border }),
-  row: { minHeight: 57, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  header: { paddingTop: 8, paddingHorizontal: 8, paddingBottom: 24, gap: 10, alignItems: "flex-start" },
+  headerTitle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, color: t.foreground }),
+  headerMessage: (t) => ({ fontSize: 15, lineHeight: 18, fontWeight: "400", letterSpacing: -0.24, color: alpha(t.foreground, 0.68) }),
+  divider: null,
+  row: {
+    minHeight: 48,
+    borderRadius: IOS_CAPSULE,
+    borderCurve: "continuous",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  // The translucent neutral capsule fill. It sits on the row (not on the
+  // GlassSurface itself), so it survives the glass fill-strip and shows as a subtle
+  // capsule on the frosted/solid surface; it adapts to the scheme via foreground.
+  rowFill: (t) => ({ backgroundColor: alpha(t.foreground, IOS_ROW_FILL) }),
   rowLabel: (t, destructive, disabled) => ({
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: "400",
+    fontWeight: "500",
+    letterSpacing: -0.43,
     textAlign: "center",
-    color: destructive ? t.destructive : t.primary,
-    opacity: disabled ? 0.4 : 1,
+    // Neutral primary label; red only for destructive; a disabled row goes tertiary
+    // gray (the iOS "swap to the tertiary label color" disabled treatment).
+    color: disabled ? alpha(t.foreground, 0.3) : destructive ? t.destructive : t.foreground,
   }),
-  cancelRow: { minHeight: 57, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
-  cancelLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", textAlign: "center", color: t.primary }),
+  cancelRow: { minHeight: 56, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  cancelLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, textAlign: "center", color: t.foreground }),
   pressedOpacity: 0.8,
   ripple: null,
 };
@@ -165,7 +214,10 @@ const ANDROID_RADIUS = 28;
 export const androidSkin: ActionSheetSkin = {
   scrimOpacity: 0.32,
   cancelLayout: "lastRow",
-  stack: {},
+  // M3 bottom sheets span the full width only up to 640dp; on a wider window they
+  // cap at 640dp and center (fixes the edge-to-edge render on a desktop window).
+  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center" },
+  rowsContent: undefined,
   actionsCard: (t) => ({
     borderTopStartRadius: ANDROID_RADIUS,
     borderTopEndRadius: ANDROID_RADIUS,
@@ -175,30 +227,37 @@ export const androidSkin: ActionSheetSkin = {
   cancelCard: null,
   // The M3 drag handle: a 32x4 rounded bar, centered at the top, in the on-surface
   // color at low alpha (the M3 "surfaceContainerHighest on-surface variant" cue).
+  // M3 pads it 22dp top AND bottom so the handle sits in a ~48dp touch zone.
   handle: (t) => ({
     width: 32,
     height: 4,
     borderRadius: 2,
     alignSelf: "center",
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 22,
+    marginBottom: 22,
     backgroundColor: alpha(t["muted-foreground"], 0.4),
   }),
   header: { paddingTop: 8, paddingBottom: 12, paddingHorizontal: 24, alignItems: "flex-start" },
-  headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", color: t["popover-foreground"] }),
+  // M3 title-medium: 16/24/500 with +0.15 tracking.
+  headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t["popover-foreground"] }),
   headerMessage: (t) => ({ marginTop: 4, fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
   // M3 list items are flush (no hairline rules between rows).
   divider: null,
   row: { minHeight: 56, flexDirection: "row", alignItems: "center", paddingHorizontal: 24 },
+  rowFill: null,
+  // M3 body-large: 16/24/400 with +0.5 tracking.
   rowLabel: (t, destructive, disabled) => ({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "400",
+    letterSpacing: 0.5,
     color: destructive ? t.destructive : t["popover-foreground"],
     opacity: disabled ? 0.38 : 1,
   }),
   cancelRow: { minHeight: 56, flexDirection: "row", alignItems: "center", paddingHorizontal: 24 },
-  cancelLabel: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "400", color: t["popover-foreground"] }),
+  cancelLabel: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "400", letterSpacing: 0.5, color: t["popover-foreground"] }),
   pressedOpacity: null,
-  ripple: (t) => ({ color: alpha(t.foreground, 0.1), borderless: false }),
+  // Route the neutral M3 state-layer ripple through the shared helper (same output
+  // as the previous inline value; keeps the ripple definition in one place).
+  ripple: (t) => surfaceRipple(t),
 };

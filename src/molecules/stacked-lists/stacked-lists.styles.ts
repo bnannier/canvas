@@ -13,17 +13,24 @@ import { type ColorTokens, shadow, surfaceRipple } from "../../style/index.js";
 //     between ruled rows; text-sm/font-medium name + text-xs muted detail; a
 //     14/600 header title; the overflow menu rounded-md (6). Press = the accent
 //     surface (no opacity dim, no ripple), matching the current web behavior.
-//   iOS (SF / HIG inset-grouped list): a 10-radius bordered card with NO shadow
-//     (inset-grouped lists are flat); slightly tighter rows (px-4 py-2.5, 16/10);
-//     hairline separators INSET from the leading content (left margin past the
-//     avatar, per iOS), plus an accent press surface AND a press-opacity dim
-//     (~0.8); SF-style type with tightened tracking (name 15/600 -0.2, detail
-//     13/-0.08); a 15/600 header title; overflow menu rounded-md (6).
+//   iOS (SF / HIG inset-grouped list, iOS 27 kit Lists/Rows/Large): a 26-radius
+//     card with the continuous (superellipse) corner curve, FLAT and BORDERLESS
+//     (the iOS 27 grouped Table View is fill-differentiated, not outlined, and
+//     separators are the only hairlines); the two-line row is a FIXED 68pt
+//     centered horizontal stack, gap 16, padding 16 sides / 0 vertical; hairline
+//     separators INSET from the leading content (left margin past the avatar, per
+//     iOS), plus an accent press surface AND a press-opacity dim (~0.8); SF type
+//     (name Title 17/22 regular -0.43, subtitle 15/18 regular -0.24, trailing
+//     detail 17/22 regular -0.43); a 15/600 header title -0.24; the drilldown
+//     chevron is an SF semibold 17/22 tertiary glyph; overflow menu rounded-md
+//     (6) with a 44pt hitSlop target.
 //   Android (Material 3 list / card): a 12-radius bordered card, FLAT (no shadow,
-//     M3 outlined card); taller rows for the M3 two-line list item (px-4 py-3,
-//     16/12); a full-width hairline divider; M3 body type with M3 tracking
-//     (name body-large 16/+0.15, detail body-medium 14/+0.25 on muted); a 16/500
-//     header title; overflow menu rounded-full (M3 icon-button target). Press =
+//     M3 outlined card); the two-line list item is a FIXED 72dp row (M3 lists
+//     token); a full-width hairline divider; M3 body type with M3 tracking
+//     (name body-large 16/24/+0.5, subtitle body-medium 14/20/+0.25 on muted,
+//     trailing supporting text label-small 11/16/500/+0.5); a 16/500/+0.15
+//     title-medium header; the drilldown chevron is a 24dp Icon (the M3 trailing
+//     affordance); overflow menu rounded-full with a 48dp hitSlop target. Press =
 //     android_ripple (a neutral surface state layer); no opacity dim.
 
 // The contract a platform skin fulfills. The shell renders the outer frame, the
@@ -41,14 +48,26 @@ export interface StackedListSkin {
   pressedSurface: (t: ColorTokens) => ViewStyle;
   /** The primary (name) line type. */
   nameLabel: (t: ColorTokens) => TextStyle;
-  /** The secondary (detail) line type, also the trailing meta + chevron. */
+  /** The secondary (detail/subtitle) line type. */
   mutedLabel: (t: ColorTokens) => TextStyle;
+  /** The trailing metadata text type (distinct from the subtitle line: iOS 27
+   *  detail 17/22, M3 trailing supporting text label-small 11/16). */
+  metaLabel: (t: ColorTokens) => TextStyle;
   /** The titled header container (row, justify, rule, padding). */
   header: (t: ColorTokens) => ViewStyle;
   /** The header title type. */
   headerTitle: (t: ColorTokens) => TextStyle;
+  /** The drilldown chevron as a styled text glyph (web/iOS); null when the skin
+   *  renders it as an Icon instead (Android's 24dp M3 affordance). */
+  chevronGlyph: ((t: ColorTokens) => TextStyle) | null;
+  /** The drilldown chevron as a kit Icon at this px size (Android); null when the
+   *  skin renders it as a text glyph instead (web/iOS). Exactly one is set. */
+  chevronIcon: number | null;
   /** The overflow ("...") menu button base (size + shape). */
   menuButton: ViewStyle;
+  /** Extra touch area around the overflow menu button so the effective target
+   *  reaches the platform minimum (>=44pt iOS / >=48dp Android); 0 on web. */
+  menuHitSlop: number;
   /** iOS/web dim on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   /** Android ripple over the component's own pressable rows; null on iOS/web. */
@@ -108,6 +127,7 @@ export const webSkin: StackedListSkin = {
   pressedSurface: (t) => ({ backgroundColor: t.accent }),
   nameLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
   mutedLabel: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  metaLabel: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
   header: (t) => ({
     flexDirection: "row",
     alignItems: "center",
@@ -118,34 +138,41 @@ export const webSkin: StackedListSkin = {
     paddingVertical: 12,
   }),
   headerTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", color: t.foreground }),
+  chevronGlyph: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  chevronIcon: null,
   menuButton: { ...MENU, borderRadius: 6 },
+  menuHitSlop: 0,
   pressedOpacity: null,
   ripple: null,
 };
 
-// ---------- iOS 27 (SF / HIG inset-grouped list) ----------
-// A 10-radius bordered card that is FLAT (inset-grouped lists carry no shadow);
-// rows are a touch tighter (px-4 py-2.5, 16/10) for the iOS row rhythm; the
-// hairline separators are INSET from the leading content (left margin past the
-// avatar), per iOS list separators; SF-style type with tightened tracking. Press
-// = the accent surface plus an opacity dim (~0.8), the iOS row highlight.
-const IOS_RADIUS = 10;
-// Separators inset past the leading avatar (avatar default ~40 + the 12 row gap +
-// the 16 leading padding), so the rule starts at the text column, matching iOS.
-const IOS_SEPARATOR_INSET = 68;
+// ---------- iOS 27 (SF / HIG inset-grouped list, kit Lists/Rows/Large) ----------
+// A 26-radius card with the continuous (superellipse) corner curve, FLAT and
+// BORDERLESS: the iOS 27 grouped Table View is fill-differentiated, not outlined,
+// with hairline separators as the only rules. The two-line row is a FIXED 68pt
+// centered horizontal stack (gap 16, 16 side padding, 0 vertical); separators are
+// INSET past the leading avatar so the rule starts at the text column, per iOS.
+// SF type: Title 17/22 regular (letter-spacing Auto -> -0.43), subtitle 15/18
+// regular (-0.24), trailing detail 17/22 regular (-0.43). Press = the accent
+// surface plus an opacity dim (~0.8), the iOS row highlight.
+const IOS_RADIUS = 26;
+const IOS_ROW_HEIGHT = 68;
+// Separators inset past the leading avatar (avatar default 40 + the 16 row gap +
+// the 16 leading padding = 72), so the rule starts at the text column.
+const IOS_SEPARATOR_INSET = 72;
 export const iosSkin: StackedListSkin = {
   cardSurface: (t) => ({
     borderRadius: IOS_RADIUS,
-    borderWidth: 1,
-    borderColor: t.border,
+    borderCurve: "continuous",
     backgroundColor: t.card,
     overflow: "hidden",
   }),
-  rowBase: { ...ROW, gap: 12, paddingHorizontal: 16, paddingVertical: 10 },
+  rowBase: { ...ROW, gap: 16, paddingHorizontal: 16, paddingVertical: 0, minHeight: IOS_ROW_HEIGHT },
   rowDivider: (t) => ({ borderBottomWidth: 1, borderColor: t.border, marginStart: IOS_SEPARATOR_INSET }),
   pressedSurface: (t) => ({ backgroundColor: t.accent }),
-  nameLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2, color: t.foreground }),
-  mutedLabel: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
+  nameLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "400", letterSpacing: -0.43, color: t.foreground }),
+  mutedLabel: (t) => ({ fontSize: 15, lineHeight: 18, fontWeight: "400", letterSpacing: -0.24, color: t["muted-foreground"] }),
+  metaLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "400", letterSpacing: -0.43, color: t["muted-foreground"] }),
   header: (t) => ({
     flexDirection: "row",
     alignItems: "center",
@@ -153,22 +180,30 @@ export const iosSkin: StackedListSkin = {
     borderBottomWidth: 1,
     borderColor: t.border,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
   }),
-  headerTitle: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2, color: t.foreground }),
+  headerTitle: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t.foreground }),
+  // The iOS 27 kit row chevron: SF semibold 17/22, tertiary (muted) color.
+  chevronGlyph: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, color: t["muted-foreground"] }),
+  chevronIcon: null,
   menuButton: { ...MENU, borderRadius: 6 },
+  // 28pt box + 8pt each side = a 44pt HIG-minimum touch target.
+  menuHitSlop: 8,
   pressedOpacity: 0.8,
   ripple: null,
 };
 
 // ---------- Android (Material 3 list / outlined card) ----------
 // A 12-radius bordered card, FLAT (M3 outlined card: a 1px outline, no shadow);
-// rows are taller for the M3 two-line list item (px-4 py-3, 16/12 ~ 72dp); a
-// full-width 1px divider; M3 body type with M3 tracking (name body-large
-// 16/+0.15, detail body-medium 14/+0.25); a 16/500 header title; the overflow
-// menu is rounded-full (the M3 icon-button hit target). Press = android_ripple
-// (a neutral surface state layer); no opacity dim.
+// the two-line list item is a FIXED 72dp row (M3 lists container-height token);
+// a full-width 1px divider; M3 body type with M3 tracking (name body-large
+// 16/24/+0.5, subtitle body-medium 14/20/+0.25, trailing supporting text
+// label-small 11/16/500/+0.5); a 16/500/+0.15 title-medium header; the drilldown
+// affordance is a 24dp Icon, and the overflow menu is rounded-full with a 48dp
+// hitSlop target (the M3 icon-button target auto-fills the item height). Press =
+// android_ripple (a neutral surface state layer); no opacity dim.
 const ANDROID_RADIUS = 12;
+const ANDROID_ROW_HEIGHT = 72;
 export const androidSkin: StackedListSkin = {
   cardSurface: (t) => ({
     borderRadius: ANDROID_RADIUS,
@@ -177,11 +212,12 @@ export const androidSkin: StackedListSkin = {
     backgroundColor: t.card,
     overflow: "hidden",
   }),
-  rowBase: { ...ROW, gap: 16, paddingHorizontal: 16, paddingVertical: 12 },
+  rowBase: { ...ROW, gap: 16, paddingHorizontal: 16, paddingVertical: 12, minHeight: ANDROID_ROW_HEIGHT },
   rowDivider: (t) => ({ borderBottomWidth: 1, borderColor: t.border }),
   pressedSurface: () => ({}),
-  nameLabel: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "400", letterSpacing: 0.15, color: t.foreground }),
+  nameLabel: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "400", letterSpacing: 0.5, color: t.foreground }),
   mutedLabel: (t) => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t["muted-foreground"] }),
+  metaLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5, color: t["muted-foreground"] }),
   header: (t) => ({
     flexDirection: "row",
     alignItems: "center",
@@ -192,8 +228,13 @@ export const androidSkin: StackedListSkin = {
     paddingVertical: 12,
   }),
   headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t.foreground }),
+  // The M3 trailing drilldown affordance is a 24dp icon, not a text glyph.
+  chevronGlyph: null,
+  chevronIcon: 24,
   // overflow:hidden clips the bounded Material ripple to the rounded (circular) outline.
   menuButton: { ...MENU, borderRadius: 9999, overflow: "hidden" },
+  // 28dp box + 10dp each side = a 48dp M3-minimum touch target.
+  menuHitSlop: 10,
   pressedOpacity: null,
   ripple: (t) => surfaceRipple(t),
 };

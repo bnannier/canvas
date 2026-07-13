@@ -10,7 +10,8 @@ import { type IconTileSkin } from "./icon-tile.styles.js";
 // the caller only picks the glyph.
 //
 // IconTile is a "Light" platform treatment: one structure and semantic colors
-// (here), with per-OS touches limited to the corner radius (Material rounds more).
+// (here), with per-OS touches limited to the corner radius (Material rounds more),
+// the iOS continuous corner curve, and the monogram label type.
 
 export type Tone = "primary" | "destructive" | "success" | "muted";
 export type TileSize = "small" | "default" | "large";
@@ -101,7 +102,7 @@ export function createIconTile(skin: IconTileSkin) {
     // size by cloning the Icon child, so the caller writes only the glyph.
     const inner =
       label != null ? (
-        <Text style={{ color: labelColor(tokens, tone), fontWeight: "600", fontSize: Math.round(glyph * 0.85), lineHeight: glyph }}>
+        <Text style={[skin.monogram, { color: labelColor(tokens, tone), fontSize: Math.round(glyph * 0.85), lineHeight: glyph }]}>
           {label}
         </Text>
       ) : isValidElement(children) ? (
@@ -123,6 +124,7 @@ export function createIconTile(skin: IconTileSkin) {
             borderRadius: circle ? 9999 : skin.radius[size],
             backgroundColor: tintBg(tokens, tone),
           },
+          skin.shape,
           style,
         ]}
       >

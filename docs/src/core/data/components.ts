@@ -73,7 +73,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "avatar",
     name: "Avatar",
-    description: "A photo when the account has one, falling back to two initials on a brand gradient (seeded admin accounts). Sizes scale font proportionally (40% of diameter).",
+    description: "A photo when the account has one, falling back to one or two initials on the muted token surface (real Liquid Glass on iOS 26+ under glass surface mode). Sizes scale font proportionally (40% of diameter).",
     category: "Atoms",
   },
 
@@ -262,7 +262,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "filter-panel",
     name: "FilterPanel",
-    description: "Sidebar filter rail with chip pills for active filters.",
+    description: "Sidebar filter rail: grouped checkbox options with count badges and a Clear header.",
     category: "Organisms",
   },
 

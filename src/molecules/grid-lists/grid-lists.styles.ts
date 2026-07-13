@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle, type DimensionValue } from "react-native";
-import { type ColorTokens, palette, alpha } from "../../style/index.js";
+import { type ColorTokens, palette, alpha, surfaceRipple } from "../../style/index.js";
 import { type GridListSkin } from "./grid-lists.shared.js";
 
 // Co-located GridList skins, one per platform. GridList is a "Light" treatment:
@@ -18,12 +18,14 @@ import { type GridListSkin } from "./grid-lists.shared.js";
 //     gap 14 (compact 8), tile padding 20 (compact 16), title 14/600, subtitle 12,
 //     press = opacity dim (~0.9), no tracking adjustment.
 //   iOS (HIG Collections): SF conventions — a slightly softer 10pt thumbnail
-//     radius, the same comfortable spacing, and a small negative tracking on the
-//     title/subtitle (the SF optical tightening); press = opacity dim (~0.9).
+//     radius with Apple's continuous (superellipse) corner curve, the same
+//     comfortable spacing, and SF Pro Text tracking (galleryTitle 12pt = 0,
+//     cardTitle 14pt = -0.15, subtitles 12pt = 0); press = opacity dim (~0.9).
 //   Android (Material 3): M3 corner + type conventions — a more-rounded 12dp
 //     thumbnail (M3 medium shape), a touch more breathing room in the grid gap,
-//     M3 label tracking (+0.1 title, +0.25 subtitle, weight 500 title); press =
-//     android_ripple (a neutral surface state layer), no opacity dim.
+//     and M3 type roles: galleryTitle = label-medium (12/16/500/+0.5), cardTitle =
+//     title-small (14/20/500/+0.1), subtitles = body-small (12/16/400/+0.4); press
+//     = surfaceRipple (a neutral surface state layer), no opacity dim.
 
 export type Columns = "cols2" | "cols3";
 
@@ -58,14 +60,13 @@ export function galleryBlockFill(tokens: ColorTokens, color?: string): ViewStyle
 
 export const galleryMeta: ViewStyle = { marginTop: 8 };
 
-export function gallerySubtitle(tokens: ColorTokens): TextStyle {
-  return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
-}
-
 // People card tile inner column (the avatar/title/subtitle stack inside Card).
 export const cardInner: ViewStyle = { alignItems: "center", gap: 8 };
 
-export function cardSubtitle(tokens: ColorTokens): TextStyle {
+// Shared subtitle base (size/line-height/color are identical on every platform);
+// the per-OS tracking is layered on in each skin's gallerySubtitle/cardSubtitle
+// (iOS SF 12pt = 0, Android M3 body-small +0.4, web none).
+function subtitleBase(tokens: ColorTokens): TextStyle {
   return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
 }
 
@@ -91,37 +92,46 @@ export const webSkin: GridListSkin = {
   tilePad: { default: 20, compact: 16 },
   galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["card-foreground"] }),
   cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", color: t["card-foreground"] }),
+  gallerySubtitle: (t) => subtitleBase(t),
+  cardSubtitle: (t) => subtitleBase(t),
   pressedOpacity: 0.9,
   ripple: null,
 };
 
 // ---------- iOS (HIG Collections): SF type tightening, softer thumbnail ----------
 // HIG Collections describe a flexible grid of content tiles; iOS keeps the same
-// comfortable spacing as web, softens the thumbnail corner a touch (10pt, between
-// the 6pt web block and an iOS continuous corner), and applies SF's small optical
-// tracking on the title/subtitle. Press = opacity dim (~0.9), the iOS norm.
+// comfortable spacing as web, softens the thumbnail corner to a 10pt Apple
+// continuous (superellipse) curve, and applies SF Pro Text tracking: 12pt = 0
+// (galleryTitle / subtitles carry no adjustment) and 14pt = -0.15 (cardTitle).
+// Press = opacity dim (~0.9), the iOS norm.
 export const iosSkin: GridListSkin = {
   galleryRadius: 10,
+  galleryCurve: "continuous",
   gap: { default: 14, compact: 8 },
   tilePad: { default: 20, compact: 16 },
-  galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: -0.08, color: t["card-foreground"] }),
-  cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2, color: t["card-foreground"] }),
+  galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["card-foreground"] }),
+  cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15, color: t["card-foreground"] }),
+  gallerySubtitle: (t) => subtitleBase(t),
+  cardSubtitle: (t) => subtitleBase(t),
   pressedOpacity: 0.9,
   ripple: null,
 };
 
-// ---------- Android (Material 3): more rounding, M3 label tracking, ripple ----------
+// ---------- Android (Material 3): more rounding, M3 type roles, ripple ----------
 // M3 has no grid list, so this applies M3 CONVENTIONS to the shared structure:
 // the thumbnail takes the M3 medium-shape 12dp corner, the grid breathes a touch
-// more (gap 16, compact 8), and the labels carry M3 label tracking (title +0.1
-// weight 500, subtitle +0.25). Press = android_ripple (a neutral surface state
-// layer) instead of an opacity dim.
+// more (gap 16, compact 8), and the labels map to real M3 type-scale roles:
+// galleryTitle = label-medium (12/16/500/+0.5), cardTitle = title-small
+// (14/20/500/+0.1), subtitles = body-small (12/16/400/+0.4). Press = the shared
+// surfaceRipple state layer (src/style/ripple.ts), no opacity dim.
 export const androidSkin: GridListSkin = {
   galleryRadius: 12,
   gap: { default: 16, compact: 8 },
   tilePad: { default: 20, compact: 16 },
-  galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.25, color: t["card-foreground"] }),
+  galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5, color: t["card-foreground"] }),
   cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t["card-foreground"] }),
+  gallerySubtitle: (t) => ({ ...subtitleBase(t), letterSpacing: 0.4 }),
+  cardSubtitle: (t) => ({ ...subtitleBase(t), letterSpacing: 0.4 }),
   pressedOpacity: null,
-  ripple: (t) => ({ color: alpha(t.foreground, 0.1), borderless: false }),
+  ripple: surfaceRipple,
 };

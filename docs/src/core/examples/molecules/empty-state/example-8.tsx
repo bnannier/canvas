@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, DataTable, EmptyState, Column } = scope;
+  const { Card, DataTable, EmptyState, Icon, Column } = scope;
   return (
 <Card flat flush style={{ overflow: "hidden" }}>
   <DataTable columns={["Name", "Email", "Role", "Status"]} rows={[]} />
   <Column alignCenter padLoose>
-    <EmptyState bordered icon="🔍" title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
+    <EmptyState bordered icon={<Icon search />} title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
   </Column>
 </Card>
   );

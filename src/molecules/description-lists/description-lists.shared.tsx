@@ -1,6 +1,9 @@
-import { View, Text, useTheme, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Badge } from "../../atoms/badge/badge.js";
-import { Button } from "../../atoms/button/button.js";
+import { type ComponentType } from "react";
+import { View, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { Badge as WebBadge } from "../../atoms/badge/badge.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
+import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
+import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./description-lists.styles.js";
 import { type Layout } from "./description-lists.styles.js";
 
@@ -38,13 +41,20 @@ import { type Layout } from "./description-lists.styles.js";
 //
 // Layout, rows, and surface are orthogonal axes and combine freely.
 //
-// DescriptionList is a "Light" platform treatment: one structure and one set of
-// (semantic) colors, with per-OS touches limited to the card corner radius, row
-// density/spacing, type tracking, and the surface elevation (iOS/web cast a soft
-// shadow; Material 3 keeps the outlined surface flat). The skin carries only
-// those pieces; the colors and structure are shared here. The list has no
-// pressable rows of its own (the only interactive affordance is the already-
-// skinned Button link), so no per-OS press feedback is needed at this level.
+// DescriptionList keeps one structure and one set of semantic colors on every
+// platform, but the per-OS row TYPE ROLES differ. Web/Android keep the Catalyst
+// idiom (a small muted term beside a full-weight foreground value); iOS follows
+// the iOS 27 kit Lists value row, where the term is the PRIMARY 17/22 label and
+// the value is the SECONDARY gray 17/22 detail (the label/value emphasis is
+// inverted and the type is larger), inside a flat 26-radius inset-grouped card
+// with the continuous corner curve. The skin carries the card shape/elevation,
+// row density and metrics, and the full term/value/header type per OS.
+//
+// The list has no pressable rows of its own; the only interactive affordance is
+// the composed Button link, which brings its own per-OS press feedback and touch
+// target (skin.minTarget: iOS 44pt / M3 48dp) from its own skin. The composed
+// Badge and Button are threaded per-OS (the field.ios.tsx pattern) so the docs
+// web 3-up shows the native atom inside each platform row, not the web atom.
 
 export interface DescriptionListItem {
   term: string;
@@ -78,26 +88,41 @@ export interface DescriptionListProps {
   style?: StyleProp<ViewStyle>;
 }
 
+// The composed-atom component types, so each platform can pass its own resolved
+// atoms (web base by default) without widening to `any`.
+export type BadgeComponent = ComponentType<BadgeProps>;
+export type ButtonComponent = ComponentType<ButtonProps>;
+
 // The per-OS-varying style pieces. Everything else (structure, semantic colors,
 // hairline rules, layout axes) is shared. Web keeps the current Canvas look;
-// iOS uses SF/HIG conventions; Android uses Material 3.
+// iOS follows the iOS 27 kit Lists value rows; Android uses Material 3.
 export interface DescriptionListSkin {
-  /** Card surface corner radius (web 8, iOS 12 inset-grouped, M3 12). */
+  /** Card surface corner radius (web 8, iOS 26 inset-grouped, M3 12). */
   cardRadius: number;
-  /** Card surface elevation: a soft shadow on iOS/web, flat on Material 3. */
+  /** Card corner curve: iOS continuous (superellipse); circular elsewhere (no-op off iOS). */
+  cardCurve: "circular" | "continuous";
+  /** Card surface elevation: a soft shadow on web, flat on the iOS grouped list + Material 3. */
   cardShadow: ViewStyle;
   /** Vertical gap between rows (and the rows-under-header group). */
   rowGap: number;
-  /** Self-padding of a card with no header band. */
+  /** Card inner padding: all sides for a header-less card, horizontal inset for the header band + rows. */
   cardPadding: number;
-  /** Per-OS type tracking for the muted term label (inline / two-column). */
-  termTracking: TextStyle;
-  /** Per-OS type tracking for the small uppercase stacked term label. */
+  /** Horizontal-row (inline / two-column) cross-axis alignment. */
+  rowAlign: "baseline" | "center";
+  /** Horizontal-row minimum height (iOS 52pt Lists row); omit for content height. */
+  rowMinHeight?: number;
+  /** Divided-row bottom padding beneath the hairline rule. */
+  dividedPadBottom: number;
+  /** Horizontal-row term type (size / line-height / weight / color / tracking). */
+  termType: (t: ColorTokens) => TextStyle;
+  /** Horizontal-row value type (size / line-height / weight / color / tracking). */
+  valueType: (t: ColorTokens) => TextStyle;
+  /** Stacked-layout term tracking (the small uppercase muted label). */
   stackedTermTracking: TextStyle;
-  /** Per-OS type tracking for the full-weight value label. */
-  valueTracking: TextStyle;
-  /** Per-OS type tracking for the card header title. */
-  headerTitleTracking: TextStyle;
+  /** Stacked-layout value type (full-weight foreground; per-OS tracking). */
+  stackedValueType: (t: ColorTokens) => TextStyle;
+  /** Card header title type (size / line-height / weight / color / tracking). */
+  headerTitleType: (t: ColorTokens) => TextStyle;
 }
 
 // Layout precedence when more than one is passed: first match wins.
@@ -111,18 +136,38 @@ function layoutOf(p: DescriptionListProps): Layout {
   return "stacked";
 }
 
-// Render a value cell: a badge family, a monospace token, or plain text.
-function Value({ item, align, skin }: { item: DescriptionListItem; align?: boolean; skin: DescriptionListSkin }) {
-  const { tokens } = useTheme();
-  if (item.status) return <Badge status success>{item.value}</Badge>;
-  if (item.badge) return <Badge secondary>{item.value}</Badge>;
-  if (item.mono) {
-    return <Text style={[s.valueLabel(tokens), skin.valueTracking, s.valueMono]}>{item.value}</Text>;
+/**
+ * Build a DescriptionList component from a platform skin and the platform-correct
+ * composed atoms.
+ *
+ * The composed atoms (Badge / Button) are passed in by each platform's thin
+ * `.ios`/`.android` file, so a value row's status/metadata Badge and the trailing
+ * Update link match the list's platform on every build path. This matters for the
+ * WEB docs 3-up preview: a bare barrel import always resolves the WEB atoms in a
+ * browser bundler, which would paint web-styled atoms inside the iOS/Android rows;
+ * each platform file passes its own `.ios`/`.android` atoms so the row reads
+ * native. On a real device Metro resolves the right atoms by extension regardless,
+ * so the defaults (the web base) are correct there too. The iOS/Android Button
+ * skins also carry the native minimum touch target (skin.minTarget: HIG 44pt /
+ * M3 48dp), so threading them lifts the Update affordance to a compliant target.
+ */
+export function createDescriptionList(
+  skin: DescriptionListSkin,
+  Badge: BadgeComponent = WebBadge,
+  Button: ButtonComponent = WebButton,
+) {
+  // Render a value cell: a badge family, a monospace token, or plain text. The
+  // value type (foreground full-weight on web/Android, secondary gray 17pt on
+  // iOS; stacked keeps a full-weight foreground value) is resolved by the caller.
+  function Value({ item, align, valueStyle }: { item: DescriptionListItem; align?: boolean; valueStyle: TextStyle }) {
+    if (item.status) return <Badge status success>{item.value}</Badge>;
+    if (item.badge) return <Badge secondary>{item.value}</Badge>;
+    if (item.mono) {
+      return <Text style={[valueStyle, s.valueMono]}>{item.value}</Text>;
+    }
+    return <Text style={[valueStyle, align ? s.valueAlignRight : null]}>{item.value}</Text>;
   }
-  return <Text style={[s.valueLabel(tokens), skin.valueTracking, align ? s.valueAlignRight : null]}>{item.value}</Text>;
-}
 
-export function createDescriptionList(skin: DescriptionListSkin) {
   return function DescriptionList(props: DescriptionListProps) {
     const { items, title, subtitle, divided, card, testID, style } = props;
     const { tokens } = useTheme();
@@ -137,27 +182,32 @@ export function createDescriptionList(skin: DescriptionListSkin) {
       style,
     ];
 
+    const stacked = layout === "stacked";
+    // Stacked keeps a full-weight foreground value; the horizontal rows carry the
+    // per-OS value type (secondary gray on iOS, full-weight foreground otherwise).
+    const valueStyle = stacked ? skin.stackedValueType(tokens) : skin.valueType(tokens);
+
     const rows = items.map((item, index) => {
       const last = index === items.length - 1;
       // A divided list draws a hairline under each row except the last, and pads
       // the row vertically so the rule sits clear of the text.
       const row: StyleProp<ViewStyle> = [
-        s.rowLayout[layout],
-        divided ? s.rowDividedPad : null,
+        s.rowLayout(layout, skin),
+        divided ? s.rowDividedPad(skin) : null,
         divided && !last ? s.rowDivider(tokens) : null,
       ];
       return (
         <View key={`${item.term}-${index}`} style={row}>
           <Text
             style={[
-              layout === "stacked" ? [s.termStacked(tokens), skin.stackedTermTracking] : [s.termLabel(tokens), skin.termTracking],
+              stacked ? [s.termStacked(tokens), skin.stackedTermTracking] : skin.termType(tokens),
               layout === "twoColumn" ? s.termColumn : null,
             ]}
           >
             {item.term}
           </Text>
           <View style={layout === "twoColumn" ? s.twoColumnValueCell : null}>
-            <Value item={item} align={layout === "inline"} skin={skin} />
+            <Value item={item} align={layout === "inline"} valueStyle={valueStyle} />
             {item.update ? (
               <Button link small accessibilityLabel={`Update ${item.term}`}>
                 Update
@@ -171,8 +221,8 @@ export function createDescriptionList(skin: DescriptionListSkin) {
     return (
       <View testID={testID} style={container}>
         {hasHeader ? (
-          <View style={s.headerBand(tokens)}>
-            <Text style={[s.headerTitle(tokens), skin.headerTitleTracking]}>{title}</Text>
+          <View style={s.headerBand(tokens, skin)}>
+            <Text style={skin.headerTitleType(tokens)}>{title}</Text>
             {subtitle ? <Text style={s.headerSubtitle(tokens)}>{subtitle}</Text> : null}
           </View>
         ) : null}

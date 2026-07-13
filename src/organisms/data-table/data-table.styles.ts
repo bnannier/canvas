@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha } from "../../style/index.js";
+import { type ColorTokens, alpha, surfaceRipple } from "../../style/index.js";
 
 // Co-located DataTable skins, one per platform. The table is laid out as flex
 // rows of equal-width flex-1 cells (there is no CSS table primitive). Layout-only
@@ -18,18 +18,23 @@ import { type ColorTokens, alpha } from "../../style/index.js";
 //     12/16 uppercase muted-foreground labels at +0.4 tracking; data cells
 //     px-16/py-12 (py-8 compact) with 14/20 foreground text; 1px `border`
 //     hairline under each row; stripe = muted @ 30%; press = `accent` fill.
-//   iOS (SwiftUI Table / grouped-list rhythm): a 10-radius continuous outer
-//     corner; the header reads as a grouped-list section header (13/18, weight
-//     600, uppercase, +0.6 tracking, secondary color); ~44pt-rhythm rows
-//     (py-12, py-8 compact) with 17/22 body text; thin ~0.5pt separator color
-//     hairlines; stripe = muted @ 24%; press = `secondary` system fill.
+//     Header and data cells both carry per-cell horizontal padding (shadcn th/td
+//     px-2 class) so labels never jam, and the wrap holds a 320 width floor.
+//   iOS (SwiftUI Table / grouped-list rhythm): a 10-radius CONTINUOUS outer
+//     corner; the header reads as regular-case secondary labels (13/18, weight
+//     400, -0.08 tracking — HIG title-style column headings, NOT the uppercase
+//     grouped-section-header idiom); ~52pt-rhythm rows (py-15, py-8 compact) with
+//     17/22 body text at -0.43 SF tracking; thin ~0.5pt separator hairlines INSET
+//     16pt to the content leading edge; stripe = muted @ 24%; press = `secondary`
+//     system fill. Below the compact (sm) width the table collapses to its
+//     PRIMARY (first) column, matching SwiftUI Table on iPhone.
 //   Android (Material 3 list rhythm; M3 has no data table, so the M3 LIST
 //     conventions apply): a flat 8-radius wrap (M3 surfaces are flat, no
-//     shadow); the header is an M3 label band (12/16, weight 500, +0.5
-//     tracking, NOT uppercased — M3 labels are sentence/normal case); ~48dp
-//     rows (py-14, py-10 compact) with 16/24 body-large text; 1px
+//     shadow); the header is an M3 label-medium band (12/16, weight 500, +0.5
+//     tracking, NOT uppercased — M3 labels are sentence/normal case); ~52dp
+//     rows (py-14, py-10 compact) with 16/24/+0.5 body-large text; 1px
 //     outline-variant hairlines; stripe = surface-variant (muted) @ 20%; press
-//     = an android_ripple (alpha(primary, 0.12) state layer).
+//     = an android_ripple carrying the M3 on-surface state layer (surfaceRipple).
 
 export type Density = "compact" | "regular";
 
@@ -44,7 +49,7 @@ export interface DataTableSkin {
   borderedOutline: (t: ColorTokens) => ViewStyle;
   /** The header band (a flex row on the muted surface). */
   headerRow: (t: ColorTokens) => ViewStyle;
-  /** Header vertical/horizontal padding per density. */
+  /** Header vertical padding per density (horizontal padding lives on the cell). */
   headerPad: Record<Density, ViewStyle>;
   /** A header column label (equal-width, the platform's label type). */
   headerCell: (t: ColorTokens) => TextStyle;
@@ -64,6 +69,25 @@ export interface DataTableSkin {
   dataCell: ViewStyle;
   /** A data cell's text (the platform's body type on the foreground color). */
   cellText: (t: ColorTokens) => TextStyle;
+  /**
+   * An inset row separator hairline (iOS lists inset the separator to the content
+   * leading edge). When set, the shell renders it as an absolutely-positioned
+   * bottom hairline inside each row and the `dataRow` carries no borderBottom;
+   * null keeps the full-bleed borderBottom on `dataRow` (web/Android).
+   */
+  separator: ((t: ColorTokens) => ViewStyle) | null;
+  /**
+   * Collapse a multicolumn table to its PRIMARY (first) column below the compact
+   * (`sm`) width, matching SwiftUI Table's compact-width behavior on iPhone. iOS
+   * only; web/Android render every column at every width.
+   */
+  collapsesToPrimaryColumn?: boolean;
+  /**
+   * Minimum height for a pressable row so the tap target clears the platform
+   * minimum (iOS 44pt / M3 48dp), applied only when `onRowPress` is set. Web omits
+   * it (no touch-target requirement on the pointer web).
+   */
+  pressableMinHeight?: number;
   /** Android ripple over a pressable row; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
@@ -71,8 +95,12 @@ export interface DataTableSkin {
 // --- shared layout fragments (identical structure across platforms) ---------
 
 // The table clips its rounded corners so the header tint and bottom hairlines
-// stay inside the bordered outline.
-const WRAP: ViewStyle = { overflow: "hidden" };
+// stay inside the bordered outline. A 320px width floor (the field-width base)
+// keeps the table usable in content-sized contexts (a centered stage, a
+// shrink-to-fit Card): without it the flex-1 columns collapse to the header
+// labels' min-content and jam together. In a bounded parent the table still
+// stretches to fill — minWidth only sets the floor, it does not cap growth.
+const WRAP: ViewStyle = { overflow: "hidden", minWidth: 320 };
 
 // The leading checkbox column, kept narrow and fixed (flex-none) so it does not
 // eat into the flex-1 content cells.
@@ -94,13 +122,17 @@ export const webSkin: DataTableSkin = {
   borderedOutline: (t) => ({ borderRadius: 8, borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
   headerPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 6 },
-    regular: { paddingHorizontal: 16, paddingVertical: 8 },
+    compact: { paddingVertical: 6 },
+    regular: { paddingVertical: 8 },
   },
   headerCell: (t) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
+    // Per-cell horizontal padding (shadcn th px-2 class) so column labels never
+    // touch; the header edge inset now comes from the cells, matching the data
+    // cells' padding, so headings sit directly over their columns.
+    paddingHorizontal: 16,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
@@ -124,72 +156,85 @@ export const webSkin: DataTableSkin = {
   },
   dataCell: DATA_CELL,
   cellText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
+  separator: null,
   ripple: null,
 };
 
 // ---------- iOS (SwiftUI Table / grouped-list rhythm) ----------
-// The header reads like a grouped-list section header (uppercase, tracked,
-// secondary); rows sit on the iOS ~44pt rhythm with 17pt body text and thin
-// (~0.5pt) separator hairlines; a 10pt continuous outer corner; pressed rows
-// take the iOS `secondary` system fill (no ripple).
+// The header reads like SwiftUI Table column headings (title-style / regular
+// case, 13pt regular, secondary color — HIG "descriptive column headings ...
+// title-style capitalization", NOT the uppercase grouped-section-header idiom);
+// rows sit on the iOS one-line list rhythm (52pt) with 17pt body text and thin
+// (~0.5pt) separator hairlines inset 16pt to the content leading edge; a 10pt
+// continuous outer corner; pressed rows take the iOS `secondary` system fill (no
+// ripple). Below the compact width the table collapses to its primary column.
 export const iosSkin: DataTableSkin = {
   wrap: WRAP,
-  borderedOutline: (t) => ({ borderRadius: 10, borderWidth: 1, borderColor: t.border }),
+  borderedOutline: (t) => ({ borderRadius: 10, borderCurve: "continuous", borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
   headerPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 6 },
-    regular: { paddingHorizontal: 16, paddingVertical: 8 },
+    compact: { paddingVertical: 6 },
+    regular: { paddingVertical: 8 },
   },
   headerCell: (t) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
+    paddingHorizontal: 16,
     fontSize: 13,
     lineHeight: 18,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
+    // Title-style secondary label (SwiftUI Table column heading): regular weight,
+    // sentence/title case (no textTransform), SF Pro Text 13pt tracking.
+    fontWeight: "400",
+    letterSpacing: -0.08,
     color: t["muted-foreground"],
   }),
   selectCol: SELECT_COL,
   selectCell: { ...SELECT_COL },
-  dataRow: (t) => ({
+  dataRow: () => ({
     flexDirection: "row",
     alignItems: "center",
-    // A thin iOS-style hairline separator.
-    borderBottomWidth: 0.5,
-    borderColor: t.border,
+    // The hairline is a separate inset element (skin.separator), not a full-bleed
+    // borderBottom, so it aligns with the content leading edge (iOS list idiom).
   }),
   stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.24) }),
   // The iOS system row highlight on press.
   pressTint: (t) => ({ backgroundColor: t.secondary }),
   cellPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 8 },
-    regular: { paddingHorizontal: 16, paddingVertical: 12 },
+    // 22pt line + 2x15 = 52pt, the iOS one-line list/table row rhythm.
+    regular: { paddingHorizontal: 16, paddingVertical: 15 },
   },
   dataCell: DATA_CELL,
-  cellText: (t) => ({ fontSize: 17, lineHeight: 22, color: t.foreground }),
+  cellText: (t) => ({ fontSize: 17, lineHeight: 22, letterSpacing: -0.43, color: t.foreground }),
+  // Thin (~0.5pt) separator inset 16pt from the leading edge to align with the
+  // content (iOS list/table separators do not run full-bleed).
+  separator: (t) => ({ position: "absolute", left: 16, right: 0, bottom: 0, height: 0.5, backgroundColor: t.border }),
+  collapsesToPrimaryColumn: true,
+  pressableMinHeight: 44,
   ripple: null,
 };
 
 // ---------- Android (Material 3 list rhythm) ----------
-// M3 has no data table; the M3 LIST conventions apply. The header is an M3 label
-// band (NOT uppercased — M3 labels are normal case), rows sit on the ~48dp M3
-// rhythm with 16sp body-large text and 1px outline-variant hairlines, the wrap
-// is flat (M3 surfaces carry no shadow), and press = an android_ripple
-// (alpha(primary, 0.12) state layer).
+// M3 has no data table; the M3 LIST conventions apply. The header is an M3
+// label-medium band (NOT uppercased — M3 labels are normal case), rows sit on the
+// M3 list rhythm with 16sp body-large text (+0.5 tracking) and 1px outline-variant
+// hairlines, the wrap is flat (M3 surfaces carry no shadow), and press = an
+// android_ripple carrying the M3 on-surface state layer (surfaceRipple: the
+// foreground token at low alpha, NOT the primary tint).
 export const androidSkin: DataTableSkin = {
   wrap: WRAP,
   borderedOutline: (t) => ({ borderRadius: 8, borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
   headerPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 8 },
-    regular: { paddingHorizontal: 16, paddingVertical: 10 },
+    compact: { paddingVertical: 8 },
+    regular: { paddingVertical: 10 },
   },
   headerCell: (t) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
+    paddingHorizontal: 16,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
@@ -212,6 +257,11 @@ export const androidSkin: DataTableSkin = {
     regular: { paddingHorizontal: 16, paddingVertical: 14 },
   },
   dataCell: DATA_CELL,
-  cellText: (t) => ({ fontSize: 16, lineHeight: 24, color: t.foreground }),
-  ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
+  // M3 body-large: 16/24/400 with +0.5 tracking.
+  cellText: (t) => ({ fontSize: 16, lineHeight: 24, letterSpacing: 0.5, color: t.foreground }),
+  separator: null,
+  pressableMinHeight: 48,
+  // M3 list-row state layer: on-surface (foreground) ink at ~10% alpha, routed
+  // through the shared ripple helper (the wrap's overflow:"hidden" clips it).
+  ripple: (t) => surfaceRipple(t),
 };

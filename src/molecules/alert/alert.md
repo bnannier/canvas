@@ -7,7 +7,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 ```tsx
 <Alert
   info
-  icon="ℹ"
+  icon={<Icon info size={16} />}
   title="Heads up"
   description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
@@ -41,7 +41,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 ```tsx
 <Alert
   warning
-  icon="⚠"
+  icon={<Icon alertTriangle size={16} />}
   title="Action required"
   description="Your trial expires in 3 days."
   dismissible
@@ -75,13 +75,13 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 **Do** — Reserve info for passive, non-urgent context (notices, tips); escalate to warning or destructive when action is required.
 
 ```tsx
-<Alert info icon="ℹ" title="Heads up" description="Maintenance window scheduled for Sunday 2:00 UTC." />
+<Alert info icon={<Icon info size={16} />} title="Heads up" description="Maintenance window scheduled for Sunday 2:00 UTC." />
 ```
 
 **Don't** — Dressing an act-now message in the neutral info tone hides the urgency; users skim past it like an FYI.
 
 ```tsx
-<Alert info icon="ℹ" title="Trial expires today" description="Upgrade now or you'll lose access to your projects." />
+<Alert info icon={<Icon info size={16} />} title="Trial expires today" description="Upgrade now or you'll lose access to your projects." />
 ```
 
 ### success
@@ -107,7 +107,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 **Do** — State the consequence, the deadline, and the action: name what's wrong and give a button to resolve it.
 
 ```tsx
-<Alert warning icon="⚠" title="Action required" description="Your trial expires in 3 days. Upgrade to keep your projects.">
+<Alert warning icon={<Icon alertTriangle size={16} />} title="Action required" description="Your trial expires in 3 days. Upgrade to keep your projects.">
   <Row snug>
     <Button primary small>Upgrade plan</Button>
   </Row>
@@ -117,7 +117,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 **Don't** — A warning with no specifics or next step leaves the user guessing what to fix and by when.
 
 ```tsx
-<Alert warning icon="⚠" title="Action required" description="Something needs your attention." />
+<Alert warning icon={<Icon alertTriangle size={16} />} title="Action required" description="Something needs your attention." />
 ```
 
 ### destructive

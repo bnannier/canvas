@@ -1,6 +1,6 @@
 # Collapsible
 
-A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates 0 to 90deg when open) over one collapsible content panel. Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
+A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel. Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
 
 ## Usage
 
@@ -32,7 +32,7 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
 
 ```tsx
 <Collapsible
-  trigger={<Text>Order #1024 — 3 items</Text>}
+  trigger={<Typography medium>Order #1024, 3 items</Typography>}
   defaultOpen
 >
   <Text>Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.</Text>

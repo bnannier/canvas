@@ -18,6 +18,21 @@ Group related form controls under a legend. Each field pairs a label, control, o
 
 ## Variants
 
+### Bordered
+
+```tsx
+<Fieldset
+  bordered
+  legend="Shipping details"
+  description="Where should we send your order?"
+  items={[
+    { label: "Full name", placeholder: "Ada Lovelace" },
+    { label: "Email", placeholder: "ada@example.com", value: "ada@", help: "We'll only use this for order updates." },
+    { label: "Country", placeholder: "United States" }
+  ]}
+/>
+```
+
 ### Content - checkboxes
 
 ```tsx
