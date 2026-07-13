@@ -19,7 +19,7 @@ import { extractProps, type PropGroup } from "./extract-props.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
-const CATEGORIES = ["atoms", "molecules", "organisms"] as const;
+const CATEGORIES = ["atoms", "molecules", "organisms", "charts"] as const;
 type Category = (typeof CATEGORIES)[number];
 
 const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");

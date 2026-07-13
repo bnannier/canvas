@@ -14,7 +14,7 @@ import {
   niceTicks,
   pieLayout,
   stackSeries,
-} from "../src/organisms/charts/chart-math.ts";
+} from "../src/charts/shared/chart-math.ts";
 
 describe("linearScale", () => {
   it("maps the domain onto the range linearly", () => {

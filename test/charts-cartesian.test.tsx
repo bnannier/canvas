@@ -2,7 +2,12 @@ import { describe, it, expect, afterEach, mock } from "bun:test";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Chart, LineChart, AreaChart, PieChart, ScatterPlot, CandlestickChart } from "../src/organisms/charts/charts.tsx";
+import { Chart } from "../src/charts/chart/chart.tsx";
+import { LineChart } from "../src/charts/line-chart/line-chart.tsx";
+import { AreaChart } from "../src/charts/area-chart/area-chart.tsx";
+import { PieChart } from "../src/charts/pie-chart/pie-chart.tsx";
+import { ScatterPlot } from "../src/charts/scatter-plot/scatter-plot.tsx";
+import { CandlestickChart } from "../src/charts/candlestick-chart/candlestick-chart.tsx";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -118,7 +123,7 @@ describe("scrub-to-inspect", () => {
   // scrub state machine and the rendering paths via controlled props; the
   // live gesture is verified on the running docs (web + device).
   it("scrubEvent: grant selects, move scrubs, stationary re-press clears", async () => {
-    const { scrubEvent } = await import("../src/organisms/charts/chart-inspect.tsx");
+    const { scrubEvent } = await import("../src/charts/shared/chart-inspect.tsx");
     // Fresh press on band 2 selects it.
     let step = scrubEvent("grant", 2, { index: null, wasSelected: false, moved: false }, null);
     expect(step.select).toBe(2);

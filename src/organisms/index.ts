@@ -2,7 +2,6 @@
 export * from "./action-sheet/action-sheet.js";
 export * from "./calendar/calendar.js";
 export * from "./carousel/carousel.js";
-export * from "./charts/charts.js";
 export * from "./command/command.js";
 export * from "./data-table/data-table.js";
 export * from "./dialog/dialog.js";

@@ -10,7 +10,7 @@ import { createChip } from "../src/atoms/chip/chip.shared.tsx";
 import { androidSkin as chipAndroidSkin, iosSkin as chipIosSkin } from "../src/atoms/chip/chip.styles.ts";
 import { IconTile } from "../src/atoms/icon-tile/icon-tile.tsx";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
-import { Gauge, Heatmap } from "../src/organisms/charts/charts.tsx";
+import { Gauge, Heatmap } from "../src/index.ts";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Breadcrumb } from "../src/atoms/breadcrumb/breadcrumb.tsx";

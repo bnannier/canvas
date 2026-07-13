@@ -1,0 +1,27 @@
+# CandlestickChart
+
+The trading instrument view: OHLC candles colored by direction from the success/destructive tokens, an optional docked volume pane, and optional overlay series (moving averages) in the series tokens. Press or scrub a candle to read its Open/High/Low/Close and volume.
+
+## Usage
+
+```tsx
+<CandlestickChart
+  title="OLY - daily"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Mon", "Tue", "Wed", "Thu", "Fri"]}
+  candles={[
+    { open: 182, high: 188, low: 180, close: 186 },
+    { open: 186, high: 191, low: 184, close: 189 },
+    { open: 189, high: 190, low: 183, close: 184 },
+    { open: 184, high: 186, low: 178, close: 180 },
+    { open: 180, high: 185, low: 179, close: 184 },
+    { open: 184, high: 189, low: 182, close: 188 },
+    { open: 188, high: 194, low: 187, close: 193 },
+    { open: 193, high: 195, low: 189, close: 190 },
+    { open: 190, high: 192, low: 185, close: 187 },
+    { open: 187, high: 193, low: 186, close: 192 }
+  ]}
+  volume={[24, 31, 28, 42, 26, 30, 38, 33, 29, 35]}
+  overlays={[{ label: "5-day average", values: [183, 185, 185, 184.6, 184.6, 184, 185.8, 187, 188.4, 190] }]}
+  style={{ maxWidth: 560 }}
+/>
+```

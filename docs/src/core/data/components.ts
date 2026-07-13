@@ -488,11 +488,68 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Molecules",
   },
 
+  // Charts: the data-viz tier. One component per chart type, all sharing the
+  // token-themed frame, the colorblind-validated chart-1..8 series palette,
+  // and scrub-to-inspect. No charting library required.
   {
-    slug: "charts",
+    slug: "chart",
     name: "Chart",
-    description: "Bars, lines, areas, stacked bars, gauges, heatmaps. Token-themed with a colorblind-validated series palette. No charting library required.",
-    category: "Organisms",
+    description: "Single- or multi-series bar chart: vertical columns or horizontal rows, grouped clusters via labels + series, press or scrub a category to inspect it.",
+    category: "Charts",
+  },
+  {
+    slug: "line-chart",
+    name: "LineChart",
+    description: "Categorical-x series lines with monotone curves, dot markers, and the trading price idiom: a dashed baseline with gain/loss auto-toning and a gradient fade.",
+    category: "Charts",
+  },
+  {
+    slug: "area-chart",
+    name: "AreaChart",
+    description: "Series fills: overlapping translucent areas, or running-sum bands with stacked. Shares the line chart's curve, density, and inspect axes.",
+    category: "Charts",
+  },
+  {
+    slug: "pie-chart",
+    name: "PieChart",
+    description: "Proportional arc slices with a percent legend; donut centers the total, and pressing a slice dims the rest and swaps the center readout.",
+    category: "Charts",
+  },
+  {
+    slug: "scatter-plot",
+    name: "ScatterPlot",
+    description: "Numeric x/y point clouds with nice ticks and gridlines on both axes; pressing near a point rings it and flags its coordinates.",
+    category: "Charts",
+  },
+  {
+    slug: "candlestick-chart",
+    name: "CandlestickChart",
+    description: "OHLC candles colored by direction, an optional docked volume pane, and moving-average overlays. Scrub to read Open/High/Low/Close and volume.",
+    category: "Charts",
+  },
+  {
+    slug: "depth-chart",
+    name: "DepthChart",
+    description: "The order-book view: cumulative bid and ask step areas mirrored around the spread on a numeric price axis.",
+    category: "Charts",
+  },
+  {
+    slug: "stacked-bar",
+    name: "StackedBar",
+    description: "One proportional bar split into colored segments with a legend carrying each share.",
+    category: "Charts",
+  },
+  {
+    slug: "gauge",
+    name: "Gauge",
+    description: "A radial dial: muted track, tone-colored fill arc, and the value centered inside.",
+    category: "Charts",
+  },
+  {
+    slug: "heatmap",
+    name: "Heatmap",
+    description: "A wrapping grid of cells whose fill intensity encodes each value, with a less-to-more legend.",
+    category: "Charts",
   },
 
   {

@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap } from "../src/organisms/charts/charts.tsx";
+import { Chart, StackedBar, Gauge, Heatmap } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an

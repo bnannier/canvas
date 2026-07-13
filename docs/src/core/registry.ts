@@ -652,31 +652,6 @@ import e_organisms_carousel_example_1 from "./examples/organisms/carousel/exampl
 import e_organisms_carousel_example_2 from "./examples/organisms/carousel/example-2";
 import e_organisms_carousel_dont_0_do from "./examples/organisms/carousel/dont-0-do";
 import e_organisms_carousel_dont_0_dont from "./examples/organisms/carousel/dont-0-dont";
-import e_organisms_charts_example_0 from "./examples/organisms/charts/example-0";
-import e_organisms_charts_example_1 from "./examples/organisms/charts/example-1";
-import e_organisms_charts_example_2 from "./examples/organisms/charts/example-2";
-import e_organisms_charts_example_3 from "./examples/organisms/charts/example-3";
-import e_organisms_charts_example_4 from "./examples/organisms/charts/example-4";
-import e_organisms_charts_example_5 from "./examples/organisms/charts/example-5";
-import e_organisms_charts_example_6 from "./examples/organisms/charts/example-6";
-import e_organisms_charts_example_7 from "./examples/organisms/charts/example-7";
-import e_organisms_charts_example_8 from "./examples/organisms/charts/example-8";
-import e_organisms_charts_example_9 from "./examples/organisms/charts/example-9";
-import e_organisms_charts_example_10 from "./examples/organisms/charts/example-10";
-import e_organisms_charts_example_11 from "./examples/organisms/charts/example-11";
-import e_organisms_charts_example_12 from "./examples/organisms/charts/example-12";
-import e_organisms_charts_dont_0_do from "./examples/organisms/charts/dont-0-do";
-import e_organisms_charts_dont_0_dont from "./examples/organisms/charts/dont-0-dont";
-import e_organisms_charts_dont_1_do from "./examples/organisms/charts/dont-1-do";
-import e_organisms_charts_dont_1_dont from "./examples/organisms/charts/dont-1-dont";
-import e_organisms_charts_dont_2_do from "./examples/organisms/charts/dont-2-do";
-import e_organisms_charts_dont_2_dont from "./examples/organisms/charts/dont-2-dont";
-import e_organisms_charts_dont_3_do from "./examples/organisms/charts/dont-3-do";
-import e_organisms_charts_dont_3_dont from "./examples/organisms/charts/dont-3-dont";
-import e_organisms_charts_dont_4_do from "./examples/organisms/charts/dont-4-do";
-import e_organisms_charts_dont_4_dont from "./examples/organisms/charts/dont-4-dont";
-import e_organisms_charts_dont_5_do from "./examples/organisms/charts/dont-5-do";
-import e_organisms_charts_dont_5_dont from "./examples/organisms/charts/dont-5-dont";
 import e_organisms_command_example_0 from "./examples/organisms/command/example-0";
 import e_organisms_command_example_1 from "./examples/organisms/command/example-1";
 import e_organisms_command_example_2 from "./examples/organisms/command/example-2";
@@ -781,6 +756,31 @@ import e_organisms_toast_example_3 from "./examples/organisms/toast/example-3";
 import e_organisms_toast_example_4 from "./examples/organisms/toast/example-4";
 import e_organisms_toast_dont_0_do from "./examples/organisms/toast/dont-0-do";
 import e_organisms_toast_dont_0_dont from "./examples/organisms/toast/dont-0-dont";
+import e_charts_area_chart_example_0 from "./examples/charts/area-chart/example-0";
+import e_charts_candlestick_chart_example_0 from "./examples/charts/candlestick-chart/example-0";
+import e_charts_chart_example_0 from "./examples/charts/chart/example-0";
+import e_charts_chart_example_1 from "./examples/charts/chart/example-1";
+import e_charts_chart_dont_0_do from "./examples/charts/chart/dont-0-do";
+import e_charts_chart_dont_0_dont from "./examples/charts/chart/dont-0-dont";
+import e_charts_depth_chart_example_0 from "./examples/charts/depth-chart/example-0";
+import e_charts_gauge_example_0 from "./examples/charts/gauge/example-0";
+import e_charts_gauge_dont_0_do from "./examples/charts/gauge/dont-0-do";
+import e_charts_gauge_dont_0_dont from "./examples/charts/gauge/dont-0-dont";
+import e_charts_heatmap_example_0 from "./examples/charts/heatmap/example-0";
+import e_charts_heatmap_dont_0_do from "./examples/charts/heatmap/dont-0-do";
+import e_charts_heatmap_dont_0_dont from "./examples/charts/heatmap/dont-0-dont";
+import e_charts_line_chart_example_0 from "./examples/charts/line-chart/example-0";
+import e_charts_line_chart_example_1 from "./examples/charts/line-chart/example-1";
+import e_charts_line_chart_example_2 from "./examples/charts/line-chart/example-2";
+import e_charts_line_chart_dont_0_do from "./examples/charts/line-chart/dont-0-do";
+import e_charts_line_chart_dont_0_dont from "./examples/charts/line-chart/dont-0-dont";
+import e_charts_pie_chart_example_0 from "./examples/charts/pie-chart/example-0";
+import e_charts_pie_chart_dont_0_do from "./examples/charts/pie-chart/dont-0-do";
+import e_charts_pie_chart_dont_0_dont from "./examples/charts/pie-chart/dont-0-dont";
+import e_charts_scatter_plot_example_0 from "./examples/charts/scatter-plot/example-0";
+import e_charts_stacked_bar_example_0 from "./examples/charts/stacked-bar/example-0";
+import e_charts_stacked_bar_dont_0_do from "./examples/charts/stacked-bar/dont-0-do";
+import e_charts_stacked_bar_dont_0_dont from "./examples/charts/stacked-bar/dont-0-dont";
 
 // Every documented component, keyed by its source directory (the `.md` stem). The
 // consuming page maps a URL slug to its dir via the components data, then renders
@@ -1720,33 +1720,6 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { do: { caption: "Keep one current slide and let the dots mirror it, so the position in", code: "<Carousel\n  items={[\n    { key: \"do1\", content: (\n      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}\n        <Typography lead medium>Step 1</Typography>\n      </Column>\n    ) },\n    { key: \"do2\", content: (\n      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}\n        <Typography lead medium>Step 2</Typography>\n      </Column>\n    ) }\n  ]}\n  defaultIndex={0}\n  onIndexChange={() => {}}\n/>", render: e_organisms_carousel_dont_0_do }, dont: { caption: "Stack the slides yourself with a manual row of pressables; it loses", code: "<View style={{ flexDirection: \"row\", gap: 8 }}>\n  <View style={{ width: 200, height: 140, borderRadius: 8, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n    <Text style={{ fontSize: 16, color: tokens.foreground }}>Slide 1</Text>\n  </View>\n  <View style={{ width: 200, height: 140, borderRadius: 8, alignItems: \"center\", justifyContent: \"center\", backgroundColor: tokens.muted }}>\n    <Text style={{ fontSize: 16, color: tokens.foreground }}>Slide 2</Text>\n  </View>\n</View>", render: e_organisms_carousel_dont_0_dont } },
     ],
   },
-  "charts": {
-    dir: "charts",
-    category: "organisms",
-    examples: [
-      { label: "Default", code: "<Chart\n  title=\"Signups\"\n  data={[\n    { label: \"Mon\", value: 45 },\n    { label: \"Tue\", value: 60 },\n    { label: \"Wed\", value: 35 },\n    { label: \"Thu\", value: 70 },\n    { label: \"Fri\", value: 55 },\n    { label: \"Sat\", value: 80 },\n    { label: \"Sun\", value: 95 }\n  ]}\n  max={100}\n/>", render: e_organisms_charts_example_0 },
-      { label: "Chart type - grouped bars", code: "<Chart\n  title=\"Revenue vs costs\"\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  series={[\n    { label: \"Revenue\", values: [45, 60, 72, 90] },\n    { label: \"Costs\", values: [30, 38, 41, 52] }\n  ]}\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_1 },
-      { label: "Chart type - line", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n    { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n  ]}\n  curved\n  dots\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_2 },
-      { label: "Line - price vs previous close", code: "<LineChart\n  title=\"OLY\"\n  labels={[\"10a\", \"11a\", \"12p\", \"1p\", \"2p\", \"3p\", \"4p\"]}\n  series={[{ label: \"Price\", values: [187.2, 188.4, 186.9, 189.3, 190.8, 190.1, 191.6] }]}\n  baseline={188}\n  fade\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_3 },
-      { label: "Chart type - area", code: "<AreaChart\n  title=\"Traffic by channel\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"]}\n  series={[\n    { label: \"Direct\", values: [40, 55, 45, 70, 65, 30, 25] },\n    { label: \"Search\", values: [80, 95, 90, 120, 130, 60, 50] },\n    { label: \"Social\", values: [20, 30, 25, 45, 60, 80, 70] }\n  ]}\n  stacked\n  curved\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_4 },
-      { label: "Press to inspect", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n    { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n  ]}\n  curved\n  defaultSelected={4}\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_5 },
-      { label: "Chart type - candlestick", code: "<CandlestickChart\n  title=\"OLY - daily\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"]}\n  candles={[\n    { open: 182, high: 188, low: 180, close: 186 },\n    { open: 186, high: 191, low: 184, close: 189 },\n    { open: 189, high: 190, low: 183, close: 184 },\n    { open: 184, high: 186, low: 178, close: 180 },\n    { open: 180, high: 185, low: 179, close: 184 },\n    { open: 184, high: 189, low: 182, close: 188 },\n    { open: 188, high: 194, low: 187, close: 193 },\n    { open: 193, high: 195, low: 189, close: 190 },\n    { open: 190, high: 192, low: 185, close: 187 },\n    { open: 187, high: 193, low: 186, close: 192 }\n  ]}\n  volume={[24, 31, 28, 42, 26, 30, 38, 33, 29, 35]}\n  overlays={[{ label: \"5-day average\", values: [183, 185, 185, 184.6, 184.6, 184, 185.8, 187, 188.4, 190] }]}\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_6 },
-      { label: "Chart type - scatter", code: "<ScatterPlot\n  title=\"Load vs latency\"\n  series={[\n    { label: \"us-east\", points: [{ x: 120, y: 38 }, { x: 260, y: 52 }, { x: 400, y: 61 }, { x: 610, y: 88 }, { x: 750, y: 112 }] },\n    { label: \"eu-west\", points: [{ x: 150, y: 45 }, { x: 300, y: 64 }, { x: 480, y: 79 }, { x: 640, y: 105 }, { x: 820, y: 140 }] }\n  ]}\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_7 },
-      { label: "Chart type - depth", code: "<DepthChart\n  title=\"OLY order book\"\n  bids={[\n    { price: 191.2, size: 120 },\n    { price: 191, size: 340 },\n    { price: 190.8, size: 260 },\n    { price: 190.5, size: 480 },\n    { price: 190.2, size: 380 }\n  ]}\n  asks={[\n    { price: 191.6, size: 150 },\n    { price: 191.9, size: 290 },\n    { price: 192.1, size: 310 },\n    { price: 192.4, size: 520 },\n    { price: 192.8, size: 300 }\n  ]}\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_example_8 },
-      { label: "Chart type - pie", code: "<Card padded style={{ maxWidth: 280 }}>\n  <PieChart\n    donut\n    label=\"Traffic\"\n    slices={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>", render: e_organisms_charts_example_9 },
-      { label: "Chart type - stacked", code: "<Card padded style={{ maxWidth: 560 }}>\n  <StackedBar\n    segments={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>", render: e_organisms_charts_example_10 },
-      { label: "Chart type - gauge", code: "<Card padded style={{ maxWidth: 200 }}>\n  <Column alignCenter>\n    <Gauge value={72} label=\"Uptime\" />\n  </Column>\n</Card>", render: e_organisms_charts_example_11 },
-      { label: "Chart type - heatmap", code: "<Card padded style={{ maxWidth: 260 }}>\n  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />\n</Card>", render: e_organisms_charts_example_12 },
-    ],
-    donts: [
-      { title: "Bar", do: { caption: "Keep a labelled axis row and a single bar tone so the buckets read at a glance.", code: "<Chart title=\"Signups\" max={100} style={{ maxWidth: 560 }} data={[\n    { label: \"Mon\", value: 45 },\n    { label: \"Tue\", value: 60 },\n    { label: \"Wed\", value: 35 },\n    { label: \"Thu\", value: 70 },\n    { label: \"Fri\", value: 55 },\n    { label: \"Sat\", value: 80 },\n    { label: \"Sun\", value: 95 }\n  ]} />", render: e_organisms_charts_dont_0_do }, dont: { caption: "Every bar the same full-strength fill and no labels: nothing is emphasized and the axis is unreadable.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>\n  <View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 4, height: 120, width: 520 }}>\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 63 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 84 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 49 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 98 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 77 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 112 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 118 }} />\n  </View>\n</View>", render: e_organisms_charts_dont_0_dont } },
-      { title: "Line", do: { caption: "Compare series that share one scale, and let the legend plus the fixed series colors carry identity.", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n    { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n  ]}\n  curved\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_dont_1_do }, dont: { caption: "Mix measures of different scales on one axis: the smaller series flatlines against the baseline and reads as noise. Normalize, or use two charts.", code: "<LineChart\n  title=\"Revenue vs conversion\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Revenue\", values: [12000, 18000, 15000, 24000, 30000, 28000] },\n    { label: \"Conversion rate\", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }\n  ]}\n  style={{ maxWidth: 560 }}\n/>", render: e_organisms_charts_dont_1_dont } },
-      { title: "Stacked bar", do: { caption: "Always ship a legend with a colored dot, label, and percentage per segment.", code: "<Card padded style={{ maxWidth: 560 }}>\n  <StackedBar\n    segments={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>", render: e_organisms_charts_dont_2_do }, dont: { caption: "Colored segments with no legend force the reader to guess which channel each band represents.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>\n  <View style={{ flexDirection: \"row\", overflow: \"hidden\", borderRadius: 9999, height: 10, width: 520 }}>\n    <View style={{ width: \"42%\", backgroundColor: \"#6366f1\" }} />\n    <View style={{ width: \"28%\", backgroundColor: \"#14b8a6\" }} />\n    <View style={{ width: \"18%\", backgroundColor: \"#f59e0b\" }} />\n    <View style={{ width: \"12%\", backgroundColor: \"#f43f5e\" }} />\n  </View>\n</View>", render: e_organisms_charts_dont_2_dont } },
-      { title: "Pie", do: { caption: "Keep slices to a handful and fold the tail into an \"Other\" slice; the legend carries exact shares.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <PieChart\n    label=\"Traffic\"\n    slices={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Other\", value: 12 }\n    ]}\n  />\n</Card>", render: e_organisms_charts_dont_3_do }, dont: { caption: "A dozen sliver slices cycle the palette and become unreadable; nothing is comparable at a glance.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <PieChart\n    label=\"Traffic\"\n    slices={[\n      { label: \"Direct\", value: 22 },\n      { label: \"Organic\", value: 18 },\n      { label: \"Social\", value: 11 },\n      { label: \"Referral\", value: 9 },\n      { label: \"Email\", value: 8 },\n      { label: \"Paid\", value: 7 },\n      { label: \"Video\", value: 6 },\n      { label: \"Affiliates\", value: 6 },\n      { label: \"Push\", value: 5 },\n      { label: \"SMS\", value: 4 },\n      { label: \"Podcasts\", value: 2 },\n      { label: \"Misc\", value: 2 }\n    ]}\n  />\n</Card>", render: e_organisms_charts_dont_3_dont } },
-      { title: "Gauge", do: { caption: "Put a muted track behind the fill and the numeric value plus label in the center.", code: "<Card padded style={{ maxWidth: 200 }}>\n  <Column alignCenter>\n    <Gauge value={72} label=\"Uptime\" />\n  </Column>\n</Card>", render: e_organisms_charts_dont_4_do }, dont: { caption: "An arc with no track and no number: there is no baseline to read the fill against and no exact value.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: \"center\" }}>\n  <View style={{ borderRadius: 9999, borderWidth: 8, borderColor: tokens.primary, height: 120, width: 120 }} />\n</View>", render: e_organisms_charts_dont_4_dont } },
-      { title: "Heatmap", do: { caption: "Pair the grid with a discrete less-to-more legend so the density scale is legible.", code: "<Card padded style={{ maxWidth: 260 }}>\n  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />\n</Card>", render: e_organisms_charts_dont_5_do }, dont: { caption: "A density grid with no legend leaves the alpha-to-value mapping a mystery.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 260 }}>\n  <View style={{ flexDirection: \"row\", flexWrap: \"wrap\", gap: 4, maxWidth: 220 }}>\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.15)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.4)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.7)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,1)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.55)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.25)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.85)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.35)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.6)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.9)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.2)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.5)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.75)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.3)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.95)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.45)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.65)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.1)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.8)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.4)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.7)\" }} />\n  </View>\n</View>", render: e_organisms_charts_dont_5_dont } },
-    ],
-  },
   "command": {
     dir: "command",
     category: "organisms",
@@ -1924,6 +1897,109 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { do: { caption: "Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.", code: "<Toast success message=\"Copied to clipboard\" />", render: e_organisms_toast_dont_0_do }, dont: { caption: "Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.", code: "<Toast\n  message=\"We were unable to complete your request because the server returned an unexpected error and the operation was rolled back\"\n/>", render: e_organisms_toast_dont_0_dont } },
+    ],
+  },
+  "area-chart": {
+    dir: "area-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<AreaChart\n  title=\"Traffic by channel\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"]}\n  series={[\n    { label: \"Direct\", values: [40, 55, 45, 70, 65, 30, 25] },\n    { label: \"Search\", values: [80, 95, 90, 120, 130, 60, 50] },\n    { label: \"Social\", values: [20, 30, 25, 45, 60, 80, 70] }\n  ]}\n  stacked\n  curved\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_area_chart_example_0 },
+    ],
+    donts: [
+
+    ],
+  },
+  "candlestick-chart": {
+    dir: "candlestick-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<CandlestickChart\n  title=\"OLY - daily\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"]}\n  candles={[\n    { open: 182, high: 188, low: 180, close: 186 },\n    { open: 186, high: 191, low: 184, close: 189 },\n    { open: 189, high: 190, low: 183, close: 184 },\n    { open: 184, high: 186, low: 178, close: 180 },\n    { open: 180, high: 185, low: 179, close: 184 },\n    { open: 184, high: 189, low: 182, close: 188 },\n    { open: 188, high: 194, low: 187, close: 193 },\n    { open: 193, high: 195, low: 189, close: 190 },\n    { open: 190, high: 192, low: 185, close: 187 },\n    { open: 187, high: 193, low: 186, close: 192 }\n  ]}\n  volume={[24, 31, 28, 42, 26, 30, 38, 33, 29, 35]}\n  overlays={[{ label: \"5-day average\", values: [183, 185, 185, 184.6, 184.6, 184, 185.8, 187, 188.4, 190] }]}\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_candlestick_chart_example_0 },
+    ],
+    donts: [
+
+    ],
+  },
+  "chart": {
+    dir: "chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Chart\n  title=\"Signups\"\n  data={[\n    { label: \"Mon\", value: 45 },\n    { label: \"Tue\", value: 60 },\n    { label: \"Wed\", value: 35 },\n    { label: \"Thu\", value: 70 },\n    { label: \"Fri\", value: 55 },\n    { label: \"Sat\", value: 80 },\n    { label: \"Sun\", value: 95 }\n  ]}\n  max={100}\n/>", render: e_charts_chart_example_0 },
+      { label: "Grouped bars", code: "<Chart\n  title=\"Revenue vs costs\"\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  series={[\n    { label: \"Revenue\", values: [45, 60, 72, 90] },\n    { label: \"Costs\", values: [30, 38, 41, 52] }\n  ]}\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_chart_example_1 },
+    ],
+    donts: [
+      { title: "Bar", do: { caption: "Keep a labelled axis row and a single bar tone so the buckets read at a glance.", code: "<Chart title=\"Signups\" max={100} style={{ maxWidth: 560 }} data={[\n    { label: \"Mon\", value: 45 },\n    { label: \"Tue\", value: 60 },\n    { label: \"Wed\", value: 35 },\n    { label: \"Thu\", value: 70 },\n    { label: \"Fri\", value: 55 },\n    { label: \"Sat\", value: 80 },\n    { label: \"Sun\", value: 95 }\n  ]} />\n", render: e_charts_chart_dont_0_do }, dont: { caption: "Every bar the same full-strength fill and no labels: nothing is emphasized and the axis is unreadable.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>\n  <View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 4, height: 120, width: 520 }}>\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 63 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 84 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 49 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 98 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 77 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 112 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 118 }} />\n  </View>\n</View>\n", render: e_charts_chart_dont_0_dont } },
+    ],
+  },
+  "depth-chart": {
+    dir: "depth-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<DepthChart\n  title=\"OLY order book\"\n  bids={[\n    { price: 191.2, size: 120 },\n    { price: 191, size: 340 },\n    { price: 190.8, size: 260 },\n    { price: 190.5, size: 480 },\n    { price: 190.2, size: 380 }\n  ]}\n  asks={[\n    { price: 191.6, size: 150 },\n    { price: 191.9, size: 290 },\n    { price: 192.1, size: 310 },\n    { price: 192.4, size: 520 },\n    { price: 192.8, size: 300 }\n  ]}\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_depth_chart_example_0 },
+    ],
+    donts: [
+
+    ],
+  },
+  "gauge": {
+    dir: "gauge",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Card padded style={{ maxWidth: 200 }}>\n  <Column alignCenter>\n    <Gauge value={72} label=\"Uptime\" />\n  </Column>\n</Card>", render: e_charts_gauge_example_0 },
+    ],
+    donts: [
+      { title: "Gauge", do: { caption: "Put a muted track behind the fill and the numeric value plus label in the center.", code: "<Card padded style={{ maxWidth: 200 }}>\n  <Column alignCenter>\n    <Gauge value={72} label=\"Uptime\" />\n  </Column>\n</Card>\n", render: e_charts_gauge_dont_0_do }, dont: { caption: "An arc with no track and no number: there is no baseline to read the fill against and no exact value.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: \"center\" }}>\n  <View style={{ borderRadius: 9999, borderWidth: 8, borderColor: tokens.primary, height: 120, width: 120 }} />\n</View>\n", render: e_charts_gauge_dont_0_dont } },
+    ],
+  },
+  "heatmap": {
+    dir: "heatmap",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Card padded style={{ maxWidth: 260 }}>\n  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />\n</Card>", render: e_charts_heatmap_example_0 },
+    ],
+    donts: [
+      { title: "Heatmap", do: { caption: "Pair the grid with a discrete less-to-more legend so the density scale is legible.", code: "<Card padded style={{ maxWidth: 260 }}>\n  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />\n</Card>\n", render: e_charts_heatmap_dont_0_do }, dont: { caption: "A density grid with no legend leaves the alpha-to-value mapping a mystery.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 260 }}>\n  <View style={{ flexDirection: \"row\", flexWrap: \"wrap\", gap: 4, maxWidth: 220 }}>\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.15)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.4)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.7)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,1)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.55)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.25)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.85)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.35)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.6)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.9)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.2)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.5)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.75)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.3)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.95)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.45)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.65)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.1)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.8)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.4)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.7)\" }} />\n  </View>\n</View>\n", render: e_charts_heatmap_dont_0_dont } },
+    ],
+  },
+  "line-chart": {
+    dir: "line-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n    { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n  ]}\n  curved\n  dots\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_line_chart_example_0 },
+      { label: "Price vs previous close", code: "<LineChart\n  title=\"OLY\"\n  labels={[\"10a\", \"11a\", \"12p\", \"1p\", \"2p\", \"3p\", \"4p\"]}\n  series={[{ label: \"Price\", values: [187.2, 188.4, 186.9, 189.3, 190.8, 190.1, 191.6] }]}\n  baseline={188}\n  fade\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_line_chart_example_1 },
+      { label: "Press to inspect", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n    { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n  ]}\n  curved\n  defaultSelected={4}\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_line_chart_example_2 },
+    ],
+    donts: [
+      { title: "Line", do: { caption: "Compare series that share one scale, and let the legend plus the fixed series colors carry identity.", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n    { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n  ]}\n  curved\n  style={{ maxWidth: 560 }}\n/>\n", render: e_charts_line_chart_dont_0_do }, dont: { caption: "Mix measures of different scales on one axis: the smaller series flatlines against the baseline and reads as noise. Normalize, or use two charts.", code: "<LineChart\n  title=\"Revenue vs conversion\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Revenue\", values: [12000, 18000, 15000, 24000, 30000, 28000] },\n    { label: \"Conversion rate\", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }\n  ]}\n  style={{ maxWidth: 560 }}\n/>\n", render: e_charts_line_chart_dont_0_dont } },
+    ],
+  },
+  "pie-chart": {
+    dir: "pie-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Card padded style={{ maxWidth: 280 }}>\n  <PieChart\n    donut\n    label=\"Traffic\"\n    slices={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>", render: e_charts_pie_chart_example_0 },
+    ],
+    donts: [
+      { title: "Pie", do: { caption: "Keep slices to a handful and fold the tail into an \"Other\" slice; the legend carries exact shares.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <PieChart\n    label=\"Traffic\"\n    slices={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Other\", value: 12 }\n    ]}\n  />\n</Card>\n", render: e_charts_pie_chart_dont_0_do }, dont: { caption: "A dozen sliver slices cycle the palette and become unreadable; nothing is comparable at a glance.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <PieChart\n    label=\"Traffic\"\n    slices={[\n      { label: \"Direct\", value: 22 },\n      { label: \"Organic\", value: 18 },\n      { label: \"Social\", value: 11 },\n      { label: \"Referral\", value: 9 },\n      { label: \"Email\", value: 8 },\n      { label: \"Paid\", value: 7 },\n      { label: \"Video\", value: 6 },\n      { label: \"Affiliates\", value: 6 },\n      { label: \"Push\", value: 5 },\n      { label: \"SMS\", value: 4 },\n      { label: \"Podcasts\", value: 2 },\n      { label: \"Misc\", value: 2 }\n    ]}\n  />\n</Card>\n", render: e_charts_pie_chart_dont_0_dont } },
+    ],
+  },
+  "scatter-plot": {
+    dir: "scatter-plot",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<ScatterPlot\n  title=\"Load vs latency\"\n  series={[\n    { label: \"us-east\", points: [{ x: 120, y: 38 }, { x: 260, y: 52 }, { x: 400, y: 61 }, { x: 610, y: 88 }, { x: 750, y: 112 }] },\n    { label: \"eu-west\", points: [{ x: 150, y: 45 }, { x: 300, y: 64 }, { x: 480, y: 79 }, { x: 640, y: 105 }, { x: 820, y: 140 }] }\n  ]}\n  style={{ maxWidth: 560 }}\n/>", render: e_charts_scatter_plot_example_0 },
+    ],
+    donts: [
+
+    ],
+  },
+  "stacked-bar": {
+    dir: "stacked-bar",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Card padded style={{ maxWidth: 560 }}>\n  <StackedBar\n    segments={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>", render: e_charts_stacked_bar_example_0 },
+    ],
+    donts: [
+      { title: "Stacked bar", do: { caption: "Always ship a legend with a colored dot, label, and percentage per segment.", code: "<Card padded style={{ maxWidth: 560 }}>\n  <StackedBar\n    segments={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>\n", render: e_charts_stacked_bar_dont_0_do }, dont: { caption: "Colored segments with no legend force the reader to guess which channel each band represents.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>\n  <View style={{ flexDirection: \"row\", overflow: \"hidden\", borderRadius: 9999, height: 10, width: 520 }}>\n    <View style={{ width: \"42%\", backgroundColor: \"#6366f1\" }} />\n    <View style={{ width: \"28%\", backgroundColor: \"#14b8a6\" }} />\n    <View style={{ width: \"18%\", backgroundColor: \"#f59e0b\" }} />\n    <View style={{ width: \"12%\", backgroundColor: \"#f43f5e\" }} />\n  </View>\n</View>\n", render: e_charts_stacked_bar_dont_0_dont } },
     ],
   },
 };

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Slider } from "../src/atoms/slider/slider.tsx";
-import { StackedBar } from "../src/organisms/charts/charts.tsx";
+import { StackedBar } from "../src/index.ts";
 import { ToastProvider } from "../src/organisms/toast/toast.tsx";
 
 // Locks in the WS3/WS4 audit fixes: Escape-to-dismiss on anchored overlays, web
