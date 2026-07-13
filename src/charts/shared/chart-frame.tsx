@@ -178,16 +178,21 @@ export function CartesianFrame(props: CartesianFrameProps) {
               {overlay ? overlay(layout) : null}
             </View>
 
-            {/* X labels: band-centered (categorical) or tick-positioned (numeric). */}
+            {/* X labels: band-centered (categorical) or tick-positioned (numeric).
+                A thinned label spans its whole stride (band.step * xLabelStep)
+                centered on its band, so on a dense axis it has room to read in
+                full instead of truncating to one narrow band's width. */}
             {!hideAxes && xLabels && band
-              ? xLabels.map((label, i) =>
-                  i % xLabelStep === 0 ? (
+              ? xLabels.map((label, i) => {
+                  if (i % xLabelStep !== 0) return null;
+                  const slot = band.step * xLabelStep;
+                  return (
                     <Text
                       key={`xl${i}`}
                       style={{
                         position: "absolute",
-                        left: gutter + band.position(i),
-                        width: band.step,
+                        left: gutter + band.center(i) - slot / 2,
+                        width: slot,
                         top: TOP_PAD + plotH + 4,
                         textAlign: "center",
                         fontSize: LABEL_SIZE,
@@ -198,8 +203,8 @@ export function CartesianFrame(props: CartesianFrameProps) {
                     >
                       {label}
                     </Text>
-                  ) : null,
-                )
+                  );
+                })
               : null}
             {!hideAxes && xTicksInfo
               ? xTicksInfo.ticks.map((t, i) => (
