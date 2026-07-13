@@ -9,6 +9,7 @@ import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Slider } from "../src/atoms/slider/slider.tsx";
 import { Progress } from "../src/atoms/progress/progress.tsx";
 import { Field } from "../src/molecules/field/field.tsx";
@@ -132,6 +133,43 @@ describe("field width axis: Combobox", () => {
   it("still renders its open option list at the standard width", () => {
     const { container } = ui(<Combobox options={["Ada", "Grace"]} defaultOpen />);
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
+  });
+});
+
+describe("field width axis: Listbox", () => {
+  const items = [{ label: "Backend" }, { label: "Frontend" }];
+
+  it("renders the root list AT the standard width, shrinking via maxWidth:100%", () => {
+    // Each row is a fixed 16px checkmark gutter + a flexBasis:"0%" label stack.
+    // Without a definite width the labels collapse to zero in a content-sized or
+    // centered parent on native (Yoga resolves the % basis against an indefinite
+    // width to 0), which is the iOS/Android "only the checkmark shows" bug.
+    const { container } = ui(<Listbox testID="lb" items={items} />);
+    expect(at(container, "lb").style.width).toBe(`${fieldWidths.base}px`);
+    expect(at(container, "lb").style.maxWidth).toBe("100%");
+  });
+
+  it("narrow and wide pick the other two modes", () => {
+    const { container } = ui(
+      <>
+        <Listbox testID="lbn" narrow items={items} />
+        <Listbox testID="lbw" wide items={items} />
+      </>,
+    );
+    expect(at(container, "lbn").style.width).toBe(`${fieldWidths.narrow}px`);
+    expect(at(container, "lbw").style.width).toBe(`${fieldWidths.wide}px`);
+  });
+
+  it("block fills the container instead (the width:100% base shows through)", () => {
+    const { container } = ui(<Listbox testID="lbb" block items={items} />);
+    expect(at(container, "lbb").style.width).toBe("100%");
+    expect(at(container, "lbb").style.maxWidth).toBe("");
+  });
+
+  it("carries the axis on the bordered container too", () => {
+    const { container } = ui(<Listbox testID="lbc" bordered items={items} />);
+    expect(at(container, "lbc").style.width).toBe(`${fieldWidths.base}px`);
+    expect(at(container, "lbc").style.maxWidth).toBe("100%");
   });
 });
 

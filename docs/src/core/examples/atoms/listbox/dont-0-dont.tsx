@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Listbox } = scope;
   return (
-<Listbox bordered style={{ width: 192 }} items={[
+<Listbox narrow bordered items={[
     { label: "Yes", selected: true },
     { label: "No" }
   ]} />

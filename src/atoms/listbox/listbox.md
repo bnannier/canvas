@@ -67,6 +67,38 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 />
 ```
 
+### Width - narrow
+
+```tsx
+<Listbox
+  narrow
+  bordered
+  items={[
+    { label: "Backend", selected: true },
+    { label: "Frontend", selected: false },
+    { label: "Design", selected: false },
+    { label: "Platform", selected: false },
+    { label: "Security", selected: false }
+  ]}
+/>
+```
+
+### Width - wide
+
+```tsx
+<Listbox
+  wide
+  bordered
+  items={[
+    { label: "Backend", selected: true },
+    { label: "Frontend", selected: false },
+    { label: "Design", selected: false },
+    { label: "Platform", selected: false },
+    { label: "Security", selected: false }
+  ]}
+/>
+```
+
 ### Detail line
 
 ```tsx
@@ -104,13 +136,13 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 **Do** — For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.
 
 ```tsx
-<Select defaultOpen defaultValue="Yes" options={["Yes", "No"]} style={{ width: 192 }} />
+<Select narrow defaultOpen defaultValue="Yes" options={["Yes", "No"]} />
 ```
 
 **Don't** — A custom listbox for two short options is heavier than it needs to be and worse on mobile.
 
 ```tsx
-<Listbox bordered style={{ width: 192 }} items={[
+<Listbox narrow bordered items={[
     { label: "Yes", selected: true },
     { label: "No" }
   ]} />
@@ -121,7 +153,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 **Do** — Show exactly one checkmark, mirror it in the trigger value, and close the panel on pick.
 
 ```tsx
-<Listbox bordered style={{ width: 224 }} items={[
+<Listbox narrow bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend" },
     { label: "Design" },
@@ -132,7 +164,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 **Don't** — Single-select with two checkmarks lies about state: only one option can be the value.
 
 ```tsx
-<Listbox bordered style={{ width: 224 }} items={[
+<Listbox narrow bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },
     { label: "Design" },
@@ -145,9 +177,9 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 **Do** — Keep the panel open, toggle each option's own checkmark, and summarize the count in the trigger.
 
 ```tsx
-<Column tight style={{ width: 224 }}>
-  <Select defaultValue="3 selected" style={{ width: 224 }} />
-  <Listbox multi bordered items={[
+<Column tight>
+  <Select narrow defaultValue="3 selected" />
+  <Listbox narrow multi bordered items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: true },
     { label: "Design" },
