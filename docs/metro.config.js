@@ -24,7 +24,14 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Live-source pin: the package's main/exports point at dist (the publish
   // artifact), but docs development must track src edits without a rebuild.
   if (moduleName === "@olympusoss/canvas") {
-    return { type: "sourceFile", filePath: path.join(repoRoot, "src", "index.ts") };
+    // Resolve through the node_modules symlink path (docs/node_modules/@olympusoss/
+    // canvas -> repoRoot), NOT a raw repoRoot path: Metro's file map indexes the kit
+    // under the node_modules path it crawls, so the raw out-of-tree path misses on the
+    // Linux CI runner and `expo export` fails "Failed to get the SHA-1 for src/index.ts".
+    return {
+      type: "sourceFile",
+      filePath: path.join(projectRoot, "node_modules", "@olympusoss", "canvas", "src", "index.ts"),
+    };
   }
   if (moduleName.endsWith(".js") && (moduleName.startsWith("./") || moduleName.startsWith("../"))) {
     try {
