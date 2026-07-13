@@ -22,7 +22,21 @@ import type { ColorTokens } from "@olympusoss/canvas";
 // import; keep it in sync with the `Stateful` component in ./live-state.tsx.
 type StatefulHelper = <T>(props: { initial: T; children: (value: T, set: (next: T) => void) => ReactNode }) => ReactNode;
 
-export type ExampleScope = typeof import("@olympusoss/canvas") & { tokens: ColorTokens; Stateful: StatefulHelper };
+// The docs-only live-example ticker (./live-state.tsx): auto-steps a value through `values`
+// so a fence can show a component driving itself (e.g. a Progress bar filling). Keep in sync
+// with the `Ticker` component in ./live-state.tsx.
+type TickerHelper = <T>(props: {
+  values: T[];
+  interval?: number;
+  restIndex?: number;
+  children: (value: T) => ReactNode;
+}) => ReactNode;
+
+export type ExampleScope = typeof import("@olympusoss/canvas") & {
+  tokens: ColorTokens;
+  Stateful: StatefulHelper;
+  Ticker: TickerHelper;
+};
 
 // A generated example module's default export.
 export type ExampleRender = (scope: ExampleScope) => ReactNode;

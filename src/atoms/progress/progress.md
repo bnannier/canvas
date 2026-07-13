@@ -10,6 +10,25 @@ A rounded bar that reports how far a task has gotten, or that work is underway. 
 
 ## Variants
 
+### Live
+
+The determinate fill eases to each new `value` instead of jumping, so a bar wired to real
+progress fills smoothly. (Reduce Motion snaps instead.)
+
+```tsx
+<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>
+  {(value) => (
+    <Column snug>
+      <Row flush between>
+        <Typography small>Uploading…</Typography>
+        <Typography small muted>{Math.round(value * 100)}%</Typography>
+      </Row>
+      <Progress value={value} />
+    </Column>
+  )}
+</Ticker>
+```
+
 ### Determinate
 
 ```tsx

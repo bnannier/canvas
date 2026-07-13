@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useReducedMotion } from "../../../src/style/index.js";
 
 // Docs-only live-example infrastructure (not a Canvas component, not shipped): a
 // render-prop state holder so a stateless example fence can still demonstrate
@@ -29,4 +30,33 @@ export function Stateful<T>({
 }): ReactNode {
   const [value, setValue] = useState<T>(initial);
   return <>{children(value, setValue)}</>;
+}
+
+// Docs-only live-example ticker (not a Canvas export): steps a value through `values` on
+// an interval so a fence can show a component driving ITSELF, e.g. a determinate Progress
+// bar filling. Like Stateful it owns the hook state in its own fiber (a fence is a plain
+// function and cannot call hooks). Honors Reduce Motion — it stops auto-advancing and holds
+// one representative frame (`restIndex`, default the midpoint) so the page carries no
+// perpetual motion for users who opted out. Keep its type in sync with the `TickerHelper`
+// alias in ./scope.ts.
+export function Ticker<T>({
+  values,
+  interval = 1400,
+  restIndex = Math.floor((values.length - 1) / 2),
+  children,
+}: {
+  values: T[];
+  interval?: number;
+  restIndex?: number;
+  children: (value: T) => ReactNode;
+}): ReactNode {
+  const reduced = useReducedMotion();
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (reduced) return; // honor Reduce Motion: hold a single frame, no auto-advance
+    const id = setInterval(() => setIndex((n) => (n + 1) % values.length), interval);
+    return () => clearInterval(id);
+  }, [interval, values.length, reduced]);
+  const value = reduced ? values[Math.min(restIndex, values.length - 1)] : values[index];
+  return <>{children(value)}</>;
 }

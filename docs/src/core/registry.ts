@@ -264,6 +264,7 @@ import e_atoms_progress_example_1 from "./examples/atoms/progress/example-1";
 import e_atoms_progress_example_2 from "./examples/atoms/progress/example-2";
 import e_atoms_progress_example_3 from "./examples/atoms/progress/example-3";
 import e_atoms_progress_example_4 from "./examples/atoms/progress/example-4";
+import e_atoms_progress_example_5 from "./examples/atoms/progress/example-5";
 import e_atoms_progress_dont_0_do from "./examples/atoms/progress/dont-0-do";
 import e_atoms_progress_dont_0_dont from "./examples/atoms/progress/dont-0-dont";
 import e_atoms_progress_dont_1_do from "./examples/atoms/progress/dont-1-do";
@@ -1150,10 +1151,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Progress value={0.6} />", render: e_atoms_progress_example_0 },
-      { label: "Determinate", code: "<Progress value={0.4} />", render: e_atoms_progress_example_1 },
-      { label: "Indeterminate", code: "<Progress indeterminate />", render: e_atoms_progress_example_2 },
-      { label: "Size - sm", code: "<Progress small value={0.6} />", render: e_atoms_progress_example_3 },
-      { label: "Size - lg", code: "<Progress large value={0.6} />", render: e_atoms_progress_example_4 },
+      { label: "Live", code: "<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>\n  {(value) => (\n    <Column snug>\n      <Row flush between>\n        <Typography small>Uploading…</Typography>\n        <Typography small muted>{Math.round(value * 100)}%</Typography>\n      </Row>\n      <Progress value={value} />\n    </Column>\n  )}\n</Ticker>", render: e_atoms_progress_example_1 },
+      { label: "Determinate", code: "<Progress value={0.4} />", render: e_atoms_progress_example_2 },
+      { label: "Indeterminate", code: "<Progress indeterminate />", render: e_atoms_progress_example_3 },
+      { label: "Size - sm", code: "<Progress small value={0.6} />", render: e_atoms_progress_example_4 },
+      { label: "Size - lg", code: "<Progress large value={0.6} />", render: e_atoms_progress_example_5 },
     ],
     donts: [
       { title: "Determinate", do: { caption: "Use a determinate bar when you know the share of work done, and pair it with a percent or count so the number and the bar agree.", code: "<Column snug>\n  <Row flush between>\n    <Typography small>Uploading…</Typography>\n    <Typography small muted>72%</Typography>\n  </Row>\n  <Progress value={0.72} />\n</Column>", render: e_atoms_progress_dont_0_do }, dont: { caption: "Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.", code: "<View style={{ gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>\n  <Progress value={0.5} />\n</View>", render: e_atoms_progress_dont_0_dont } },
