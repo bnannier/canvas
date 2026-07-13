@@ -256,6 +256,18 @@ describe("order-book depth", () => {
     );
     expect(d).toBe("M0,20 L50,20 L50,60 L50,140 L0,140 Z");
   });
+
+  it("stepAreaPath before-mode steps at the current x first (bid side)", () => {
+    const d = stepAreaPath(
+      [
+        { x: 0, y: 20 },
+        { x: 50, y: 60 },
+      ],
+      140,
+      true,
+    );
+    expect(d).toBe("M0,20 L0,60 L50,60 L50,140 L0,140 Z");
+  });
 });
 
 describe("formatCompact", () => {

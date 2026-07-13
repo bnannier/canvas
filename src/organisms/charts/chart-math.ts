@@ -311,14 +311,18 @@ export function cumulativeDepth(levels: DepthLevel[], side: "bids" | "asks"): De
 }
 
 /**
- * Closed step-area path through `points` (ascending x): horizontal to the
- * next x, vertical to its y (step-after), then down to the baseline and back.
+ * Closed step-area path through `points` (ascending x), then down to the
+ * baseline and back. Step-after (default) holds each y until the NEXT x (an
+ * ask book: depth rises AT each level price); `before` steps at the CURRENT
+ * x first (a bid book: depth drops AT each level price moving right).
  */
-export function stepAreaPath(points: Pt[], baselineY: number): string {
+export function stepAreaPath(points: Pt[], baselineY: number, before = false): string {
   if (points.length === 0) return "";
   let d = `M${fmt(points[0].x)},${fmt(points[0].y)}`;
   for (let i = 1; i < points.length; i++) {
-    d += ` L${fmt(points[i].x)},${fmt(points[i - 1].y)} L${fmt(points[i].x)},${fmt(points[i].y)}`;
+    d += before
+      ? ` L${fmt(points[i - 1].x)},${fmt(points[i].y)} L${fmt(points[i].x)},${fmt(points[i].y)}`
+      : ` L${fmt(points[i].x)},${fmt(points[i - 1].y)} L${fmt(points[i].x)},${fmt(points[i].y)}`;
   }
   const last = points[points.length - 1];
   const first = points[0];

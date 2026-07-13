@@ -98,14 +98,18 @@ export function createDepthChart(skin: ChartSkin) {
             {(layout) => {
               const toPts = (pts: { price: number; depth: number }[]) =>
                 pts.map((p) => ({ x: layout.x(p.price), y: layout.y(p.depth) }));
+              // Extend each side's total-depth shelf to its plot edge, so the
+              // outermost step has width instead of ending in a bare spike.
               const bidPts = toPts(bidDepth);
+              if (bidPts.length) bidPts.unshift({ x: 0, y: bidPts[0].y });
               const askPts = toPts(askDepth);
+              if (askPts.length) askPts.push({ x: layout.plotW, y: askPts[askPts.length - 1].y });
               return (
                 <>
                   {bidPts.length ? (
                     <>
-                      <Path d={stepAreaPath(bidPts, layout.plotH)} fill={alpha(tokens.success, 0.25)} />
-                      <Path d={stepAreaPath(bidPts, layout.plotH)} fill="none" stroke={tokens.success} strokeWidth={2} strokeLinejoin="round" />
+                      <Path d={stepAreaPath(bidPts, layout.plotH, true)} fill={alpha(tokens.success, 0.25)} />
+                      <Path d={stepAreaPath(bidPts, layout.plotH, true)} fill="none" stroke={tokens.success} strokeWidth={2} strokeLinejoin="round" />
                     </>
                   ) : null}
                   {askPts.length ? (
