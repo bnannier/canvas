@@ -1,5 +1,6 @@
+import { useRef } from "react";
 import { AccessibilityInfo, StyleSheet } from "react-native";
-import { View, Text, useTheme, shadow } from "../../style/index.js";
+import { View, Text, useTheme, shadow, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { estimateTextWidth } from "./chart-math.js";
 
 // Press-to-inspect support shared by the Chart family: the in-plot value flag
@@ -126,3 +127,80 @@ export function pressPoint(e: { nativeEvent: unknown }): { x: number; y: number 
 
 /** Opacity applied to marks OUTSIDE the current selection. */
 export const DIM_OPACITY = 0.45;
+
+// ---------------------------------------------------------------------------
+// ScrubSurface: the shared drag-to-inspect hit layer. Built on the core RN
+// responder system (no gesture-handler): react-native-web implements these
+// responder events with real locationX getters, so coordinates work on every
+// platform, unlike Pressable's mouse-click path. A press selects, dragging
+// scrubs continuously, and releasing without leaving the initially-selected
+// band clears it (preserving tap-to-toggle). A parent ScrollView can still
+// steal the responder for vertical scrolls (onResponderTerminate keeps the
+// last selection).
+
+export interface ScrubSurfaceProps {
+  /** Map a plot-local point to a selection index (null = nothing there). */
+  indexAt: (x: number, y: number) => number | null;
+  /** The currently selected index (for tap-on-selected-clears). */
+  selected: number | null;
+  /** SET the selection (null clears). */
+  onScrub: (index: number | null) => void;
+  style?: StyleProp<ViewStyle>;
+}
+
+export interface ScrubGesture {
+  index: number | null;
+  wasSelected: boolean;
+  moved: boolean;
+}
+
+/**
+ * The pure scrub state machine (exported for tests; the DOM test harness
+ * cannot drive real responder events at zero layout width). Returns the next
+ * gesture bookkeeping plus the selection to apply (`undefined` = no change,
+ * `null` = clear).
+ */
+export function scrubEvent(
+  phase: "grant" | "move" | "release",
+  index: number | null,
+  gesture: ScrubGesture,
+  selected: number | null,
+): { gesture: ScrubGesture; select: number | null | undefined } {
+  if (phase === "grant") {
+    return {
+      gesture: { index, wasSelected: index != null && index === selected, moved: false },
+      select: index ?? undefined,
+    };
+  }
+  if (phase === "move") {
+    if (index == null) return { gesture, select: undefined };
+    return { gesture: { ...gesture, moved: gesture.moved || index !== gesture.index }, select: index };
+  }
+  // release: a stationary press on the already-selected index toggles it off.
+  if (!gesture.moved && gesture.wasSelected && index === gesture.index) return { gesture, select: null };
+  return { gesture, select: undefined };
+}
+
+export function ScrubSurface({ indexAt, selected, onScrub, style }: ScrubSurfaceProps) {
+  // Gesture bookkeeping in a ref: the surface never re-renders for it.
+  const gesture = useRef<ScrubGesture>({ index: null, wasSelected: false, moved: false });
+
+  const handle = (phase: "grant" | "move" | "release") => (e: { nativeEvent: unknown }) => {
+    const p = pressPoint(e);
+    const i = p ? indexAt(p.x, p.y) : null;
+    const next = scrubEvent(phase, i, gesture.current, selected);
+    gesture.current = next.gesture;
+    if (next.select !== undefined) onScrub(next.select);
+  };
+
+  return (
+    <View
+      accessible={false}
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={handle("grant")}
+      onResponderMove={handle("move")}
+      onResponderRelease={handle("release")}
+      style={style}
+    />
+  );
+}

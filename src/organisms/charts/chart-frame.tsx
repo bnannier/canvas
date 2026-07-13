@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
-import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
-import { pressPoint } from "./chart-inspect.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { ScrubSurface } from "./chart-inspect.js";
 import { bandScale, estimateTextWidth, formatCompact, linearScale, niceTicks, type Band } from "./chart-math.js";
 
 // The shared cartesian plot frame for the Chart family's SVG types (line,
@@ -40,6 +40,13 @@ export interface CartesianFrameProps {
   xDomain?: [number, number];
   /** Plot-area height in px (chart component picks it by density). */
   plotHeight: number;
+  /**
+   * Reserve this many px at the bottom of the plot for a docked companion
+   * pane (e.g. candlestick volume): the y scale and its gridlines compress to
+   * the region above it, while the plot, baseline, x labels, and scrub keep
+   * the full height.
+   */
+  plotInsetBottom?: number;
   compact?: boolean;
   hideGrid?: boolean;
   hideAxes?: boolean;
@@ -50,12 +57,12 @@ export interface CartesianFrameProps {
   /** Optional RN layer absolutely positioned over the plot (tooltips, flags). */
   overlay?: (layout: CartesianLayout) => ReactNode;
   /**
-   * Press-to-inspect: called with the pressed category's band index. The hit
-   * layer is a single RN Pressable over the plot with the band computed from
-   * the press position - never an SVG touchable, whose web path leaks RN
-   * responder props onto DOM nodes (six React warnings per page).
+   * Scrub-to-inspect: SET the selection to the band under the press/drag
+   * (null clears, from a stationary tap on the selected band). The hit layer
+   * is a responder-based ScrubSurface over the plot - never an SVG touchable,
+   * whose web path leaks RN responder props onto DOM nodes.
    */
-  onBandPress?: (index: number) => void;
+  onBandScrub?: (index: number | null) => void;
   /** Draw the selection guide through this category band. */
   selectedBand?: number | null;
 }
@@ -70,7 +77,7 @@ const LABEL_SIZE = 12;
 const LABEL_LINE = 16;
 
 export function CartesianFrame(props: CartesianFrameProps) {
-  const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay, onBandPress, selectedBand } = props;
+  const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay, onBandScrub, selectedBand } = props;
   const { tokens } = useTheme();
   const [width, setWidth] = useState(0);
 
@@ -87,8 +94,9 @@ export function CartesianFrame(props: CartesianFrameProps) {
 
   const plotW = Math.max(0, width - gutter);
   const plotH = plotHeight;
+  const inset = Math.max(0, Math.min(props.plotInsetBottom ?? 0, plotH - 24));
 
-  const y = linearScale(niceMin, niceMax, plotH, 0);
+  const y = linearScale(niceMin, niceMax, plotH - inset, 0);
 
   // X axis: categorical equal bands (labels centered under each band) or a
   // niced numeric domain (scatter).
@@ -157,18 +165,13 @@ export function CartesianFrame(props: CartesianFrameProps) {
                 ) : null}
                 {children(layout)}
               </Svg>
-              {/* Press-to-inspect hit layer: one Pressable over the plot; the
-                  band index comes from the press position. Presentational
-                  (the plot's accessible name already carries the data). */}
-              {onBandPress && band && xLabels && xLabels.length > 0 && band.step > 0 ? (
-                <Pressable
-                  accessible={false}
-                  onPress={(e) => {
-                    const point = pressPoint(e);
-                    if (!point) return;
-                    const i = Math.floor(point.x / band.step);
-                    onBandPress(Math.max(0, Math.min(xLabels.length - 1, i)));
-                  }}
+              {/* Scrub-to-inspect hit layer, presentational (the plot's
+                  accessible name already carries the data). */}
+              {onBandScrub && band && xLabels && xLabels.length > 0 && band.step > 0 ? (
+                <ScrubSurface
+                  indexAt={(x) => Math.max(0, Math.min(xLabels.length - 1, Math.floor(x / band.step)))}
+                  selected={selectedBand ?? null}
+                  onScrub={onBandScrub}
                   style={StyleSheet.absoluteFill}
                 />
               ) : null}

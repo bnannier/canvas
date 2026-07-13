@@ -133,10 +133,12 @@ function useSeriesChart(kind: "line" | "area", props: CartesianSeriesProps, stac
     .map((sr) => `${sr.label}: ${labels.map((l, i) => `${l} ${formatValue(finite(sr.values[i]))}`).join(", ")}`)
     .join("; ");
 
-  // Press-to-inspect selection (controlled + uncontrolled), announced to
-  // assistive tech since the visual flag is presentational.
+  // Scrub-to-inspect selection (controlled + uncontrolled), announced to
+  // assistive tech since the visual flag is presentational. Repeat scrub
+  // events on the same band are dropped so announcements fire once per band.
   const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
   const setSelected = (i: number | null) => {
+    if (i === selected) return;
     setSelectedRaw(i);
     if (i != null && labels[i] != null) {
       announceSelection(`${labels[i]}: ${series.map((sr) => `${sr.label} ${formatValue(finite(sr.values[i]))}`).join(", ")}`);
@@ -188,7 +190,7 @@ function chartShell(
           hideAxes={props.hideAxes}
           formatValue={formatValue}
           selectedBand={ctx.selected}
-          onBandPress={(i) => ctx.setSelected(ctx.selected === i ? null : i)}
+          onBandScrub={ctx.setSelected}
           overlay={(layout) =>
             ctx.selected != null && layout.band && labels[ctx.selected] != null ? (
               <ChartValueFlag

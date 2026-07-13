@@ -3,14 +3,25 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ScatterPlot } = scope;
+  const { CandlestickChart } = scope;
   return (
-<ScatterPlot
-  title="Load vs latency"
-  series={[
-    { label: "us-east", points: [{ x: 120, y: 38 }, { x: 260, y: 52 }, { x: 400, y: 61 }, { x: 610, y: 88 }, { x: 750, y: 112 }] },
-    { label: "eu-west", points: [{ x: 150, y: 45 }, { x: 300, y: 64 }, { x: 480, y: 79 }, { x: 640, y: 105 }, { x: 820, y: 140 }] }
+<CandlestickChart
+  title="OLY - daily"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Mon", "Tue", "Wed", "Thu", "Fri"]}
+  candles={[
+    { open: 182, high: 188, low: 180, close: 186 },
+    { open: 186, high: 191, low: 184, close: 189 },
+    { open: 189, high: 190, low: 183, close: 184 },
+    { open: 184, high: 186, low: 178, close: 180 },
+    { open: 180, high: 185, low: 179, close: 184 },
+    { open: 184, high: 189, low: 182, close: 188 },
+    { open: 188, high: 194, low: 187, close: 193 },
+    { open: 193, high: 195, low: 189, close: 190 },
+    { open: 190, high: 192, low: 185, close: 187 },
+    { open: 187, high: 193, low: 186, close: 192 }
   ]}
+  volume={[24, 31, 28, 42, 26, 30, 38, 33, 29, 35]}
+  overlays={[{ label: "5-day average", values: [183, 185, 185, 184.6, 184.6, 184, 185.8, 187, 188.4, 190] }]}
   style={{ maxWidth: 560 }}
 />
   );

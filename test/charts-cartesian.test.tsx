@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, mock } from "bun:test";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Chart, LineChart, AreaChart, PieChart, ScatterPlot } from "../src/organisms/charts/charts.tsx";
+import { Chart, LineChart, AreaChart, PieChart, ScatterPlot, CandlestickChart } from "../src/organisms/charts/charts.tsx";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -98,31 +98,34 @@ describe("Chart (grouped bars)", () => {
   });
 });
 
-describe("press-to-inspect", () => {
-  it("a bare grouped Chart is inspectable out of the box (uncontrolled)", () => {
-    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} />);
-    const q1 = Array.from(container.querySelectorAll('[role="img"]')).find(
-      (el) => el.getAttribute("aria-label") === "Q1: Web 120, Mobile 60",
-    ) as HTMLElement;
-    fireEvent.click(q1);
-    // The flag repeats the values as visible text (the legend has the labels
-    // but not values, so a value appearing is the flag).
-    expect(container.textContent).toContain("120");
-    // Pressing again clears the selection and the flag.
-    fireEvent.click(q1);
-    expect(container.textContent ?? "").not.toContain("120");
+describe("scrub-to-inspect", () => {
+  // Real gestures need layout coordinates the DOM harness cannot provide
+  // (zero-width plots), so the gesture semantics are proven on the pure
+  // scrub state machine and the rendering paths via controlled props; the
+  // live gesture is verified on the running docs (web + device).
+  it("scrubEvent: grant selects, move scrubs, stationary re-press clears", async () => {
+    const { scrubEvent } = await import("../src/organisms/charts/chart-inspect.tsx");
+    // Fresh press on band 2 selects it.
+    let step = scrubEvent("grant", 2, { index: null, wasSelected: false, moved: false }, null);
+    expect(step.select).toBe(2);
+    // Dragging onto band 3 scrubs (and marks the gesture as moved).
+    step = scrubEvent("move", 3, step.gesture, 2);
+    expect(step.select).toBe(3);
+    expect(step.gesture.moved).toBe(true);
+    // Releasing after a move keeps the selection.
+    expect(scrubEvent("release", 3, step.gesture, 3).select).toBeUndefined();
+    // A stationary press on the already-selected band clears on release.
+    let tap = scrubEvent("grant", 3, { index: null, wasSelected: false, moved: false }, 3);
+    expect(tap.select).toBe(3);
+    expect(scrubEvent("release", 3, tap.gesture, 3).select).toBeNull();
+    // Moves outside the plot are ignored.
+    expect(scrubEvent("move", null, tap.gesture, 3).select).toBeUndefined();
   });
 
-  it("fires onSelect with the category index, and null on toggle-off", () => {
-    const onSelect = mock((_: number | null) => {});
-    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} onSelect={onSelect} />);
-    const q2 = Array.from(container.querySelectorAll('[role="img"]')).find(
-      (el) => el.getAttribute("aria-label")?.startsWith("Q2"),
-    ) as HTMLElement;
-    fireEvent.click(q2);
-    expect(onSelect).toHaveBeenCalledWith(1);
-    fireEvent.click(q2);
-    expect(onSelect).toHaveBeenCalledWith(null);
+  it("a controlled selection dims the other categories", () => {
+    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} selected={0} />);
+    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
+    expect(styles.some((st) => st.includes("opacity: 0.45"))).toBe(true);
   });
 
   it("defaultSelected renders the grouped flag without any press", () => {
@@ -144,6 +147,35 @@ describe("press-to-inspect", () => {
     );
     expect(container.textContent).toContain("40%");
     expect(container.textContent).toContain("Search");
+  });
+});
+
+describe("CandlestickChart", () => {
+  const candles = [
+    { open: 182, high: 188, low: 180, close: 186 },
+    { open: 186, high: 191, low: 184, close: 183 },
+  ];
+
+  it("folds every candle's OHLC and volume into the accessible name", () => {
+    const { container } = ui(
+      <CandlestickChart labels={["Mon", "Tue"]} candles={candles} volume={[24000, 31000]} />,
+    );
+    const name = plotName(container);
+    expect(name).toContain("Mon open 182, high 188, low 180, close 186, volume 24k");
+    expect(name).toContain("Tue open 186, high 191, low 184, close 183, volume 31k");
+  });
+
+  it("names the root group after the title and lists overlays in the legend", () => {
+    const { container } = ui(
+      <CandlestickChart
+        title="OLY - daily"
+        labels={["Mon", "Tue"]}
+        candles={candles}
+        overlays={[{ label: "5-day average", values: [183, 185] }]}
+      />,
+    );
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("OLY - daily chart");
+    expect(container.textContent).toContain("5-day average");
   });
 });
 

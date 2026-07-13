@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { StyleSheet } from "react-native";
+import { View, Text, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { ChartLegend } from "./chart-legend.js";
-import { ChartValueFlag, announceSelection, DIM_OPACITY } from "./chart-inspect.js";
+import { ChartValueFlag, ScrubSurface, announceSelection, DIM_OPACITY } from "./chart-inspect.js";
 
 // Shared Chart shell. The structure (a token-themed bar chart built entirely from
 // View views, no SVG and no CSS grid), the boolean-prop axes (tone + orientation +
@@ -183,19 +184,22 @@ export function createChart(skin: ChartSkin) {
         : `${data[i]?.label}: ${data[i]?.value}`;
     const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
     const setSelected = (i: number | null) => {
+      if (i === selected) return;
       setSelectedRaw(i);
       if (i != null) announceSelection(categoryName(i));
     };
-    const toggle = (i: number) => setSelected(selected === i ? null : i);
     const dimmed = (i: number): number => (selected != null && selected !== i ? DIM_OPACITY : 1);
-    // The flag positions against the measured plot row (flex columns have no
-    // px coordinates until layout).
+    // The flag and the scrub surface position against the measured plot row
+    // (flex columns have no px coordinates until layout).
     const [plotWidth, setPlotWidth] = useState(0);
     const count = grouped ? labels.length : data.length;
+    const columnStep = count > 0 ? (plotWidth + gap) / count : 0;
     const columnCenter = (i: number): number => {
       const colW = count > 0 ? (plotWidth - gap * (count - 1)) / count : 0;
       return i * (colW + gap) + colW / 2;
     };
+    const columnAt = (x: number): number | null =>
+      columnStep > 0 ? Math.max(0, Math.min(count - 1, Math.floor(x / columnStep))) : null;
 
     // Summarize the chart for assistive tech: the title if there is one, else a
     // generic name. The container is grouped (role="group") so a screen reader
@@ -226,16 +230,15 @@ export function createChart(skin: ChartSkin) {
             <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
               {labels.map((label, i) => (
                 // Each category is one accessible item announcing every
-                // series' value ("Mon: Revenue 45, Costs 30"); pressing it
-                // toggles the inspection flag.
-                <Pressable
+                // series' value ("Mon: Revenue 45, Costs 30"); the scrub
+                // surface below drives the inspection flag.
+                <View
                   key={i}
                   accessible
                   accessibilityRole="image"
                   role="img"
                   accessibilityLabel={categoryName(i)}
                   aria-label={categoryName(i)}
-                  onPress={() => toggle(i)}
                   style={s.verticalColumn}
                 >
                   <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2, opacity: dimmed(i) }}>
@@ -249,8 +252,9 @@ export function createChart(skin: ChartSkin) {
                       />
                     ))}
                   </View>
-                </Pressable>
+                </View>
               ))}
+              <ScrubSurface indexAt={columnAt} selected={selected} onScrub={setSelected} style={StyleSheet.absoluteFill} />
               {selected != null && labels[selected] != null ? (
                 <ChartValueFlag
                   title={labels[selected]}
@@ -306,29 +310,29 @@ export function createChart(skin: ChartSkin) {
           // Vertical: a baseline-aligned row of columns, each a value over a bar,
           // with the category label beneath the baseline.
           <View>
-            <View style={[s.verticalBars, { gap, height: plot }]}>
+            <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
               {data.map((d, i) => (
                 // Each column is one accessible item announcing "label: value".
                 // The value is also rendered as visible Text above the bar so the
                 // magnitude is present in both the UI and the accessibility tree
                 // (it was previously only shown in the horizontal orientation).
-                // Pressing a column focuses it (the others dim).
-                <Pressable
+                // Pressing or scrubbing a column focuses it (the others dim).
+                <View
                   key={d.id ?? i}
                   accessible
                   accessibilityRole="image"
                   role="img"
                   accessibilityLabel={`${d.label}: ${d.value}`}
                   aria-label={`${d.label}: ${d.value}`}
-                  onPress={() => toggle(i)}
                   style={s.verticalColumn}
                 >
                   <View style={{ opacity: dimmed(i) }}>
                     <Text style={s.verticalValue(tokens)}>{d.value}</Text>
                     <View style={s.verticalBar(fill, lengthPx(d.value), skin.barRadius)} />
                   </View>
-                </Pressable>
+                </View>
               ))}
+              <ScrubSurface indexAt={columnAt} selected={selected} onScrub={setSelected} style={StyleSheet.absoluteFill} />
             </View>
             {/* Baseline under the bars. */}
             <View style={s.baseline(tokens)} />
