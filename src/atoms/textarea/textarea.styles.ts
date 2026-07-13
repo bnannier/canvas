@@ -1,5 +1,5 @@
 import { type TextStyle } from "react-native";
-import { type ColorTokens, alpha } from "../../style/index.js";
+import { type ColorTokens, alpha, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Textarea skins, one per platform. The field is a multiline
 // TextInput, so every fragment is a TextStyle. The BRAND survives on every
@@ -30,11 +30,29 @@ export interface TextareaFieldState {
   focused: boolean;
 }
 
-// The only thing a platform skin owns: the field surface for a given state.
-// `sizeText` and `minHeight` are shared (the brand type scale and the rows math
-// are identical across platforms), so the shell composes them around the skin.
-export interface TextareaSkin {
+// The field surface for a given state, plus the label-placement slice contributed
+// by FloatingLabelStyles<Size> (iOS/web render the label ABOVE via `labelAbove`;
+// Android FLOATS the M3 in-container label via `labelRest`/`labelFloated`/
+// `labelReserve` — a MULTILINE float pinned to the top text line). `sizeText` and
+// `minHeight` are shared (the brand type scale and the rows math are identical
+// across platforms), so the shell composes them around the skin.
+export interface TextareaSkin extends FloatingLabelStyles<Size> {
   field: (tokens: ColorTokens, state: TextareaFieldState) => TextStyle;
+}
+
+// --- shared label type scale (mirrors the M3 Input, keyed to Textarea sizes) ---
+// The Android floating label rests at the FIELD text size so it reads as the
+// placeholder it replaces, then floats to body-small (12sp). M3 body tracking:
+// body-large 0.5, body-medium 0.25, body-small 0.4.
+function labelRestType(size: Size): TextStyle {
+  if (size === "large") return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
+  if (size === "small") return { fontSize: 12, lineHeight: 16, letterSpacing: 0.4 };
+  return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
+}
+function aboveLabelType(size: Size): TextStyle {
+  if (size === "large") return { fontSize: 16, lineHeight: 24 };
+  if (size === "small") return { fontSize: 12, lineHeight: 16 };
+  return { fontSize: 14, lineHeight: 20 };
 }
 
 // --- shared, platform-neutral fragments -------------------------------------
@@ -71,6 +89,10 @@ export const webSkin: TextareaSkin = {
     paddingVertical: 8,
     color: t.foreground,
   }),
+  // Web keeps the established Canvas look: the label sits ABOVE the field (14/20
+  // medium weight per size, matching the Field/Form composers and the Input).
+  floatingLabel: false,
+  labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "500", color: t.foreground }),
 };
 
 // ---------- iOS (HIG): .roundedBorder filled multiline field ----------
@@ -92,6 +114,10 @@ export const iosSkin: TextareaSkin = {
     paddingVertical: 10,
     color: t.foreground,
   }),
+  // iOS (HIG): the label sits ABOVE the field as a form-row title — SF Pro Text
+  // tracking (-0.15) and a semibold weight, mirroring the single-line Input.
+  floatingLabel: false,
+  labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "600", letterSpacing: -0.15, color: t.foreground }),
 };
 
 // ---------- Android (Material 3 filled): subtle fill + active indicator ------
@@ -117,4 +143,16 @@ export const androidSkin: TextareaSkin = {
     paddingBottom: 8,
     color: t.foreground,
   }),
+  // Android (Material 3): the IN-CONTAINER FLOATING label. M3 multiline fields DO
+  // float the label — but pinned to the TOP text line (the value is top-aligned),
+  // not the box middle. At rest the label sits on the first line like a placeholder
+  // (at the FIELD text size per size); when the field is focused OR filled it floats
+  // to the top, shrinking to body-small. `labelReserve` is the top padding the value
+  // gives up so it starts below the floated label; the shell renders the FloatingLabel
+  // in `multiline` mode. The label is rendered at `labelRest` and scaled on the
+  // transform driver (`labelFloated`'s fontSize supplies the scale ratio only).
+  floatingLabel: true,
+  labelRest: (_t, size) => labelRestType(size),
+  labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
+  labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
 };

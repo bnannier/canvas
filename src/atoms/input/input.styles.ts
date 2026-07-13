@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, FOCUS_RESET, activeIndicator } from "../../style/index.js";
+import { type ColorTokens, FOCUS_RESET, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Input skins, one per platform. The BRAND survives on every platform
 // (the cursor/selection is always the indigo `primary`, the focus accent is the
@@ -25,7 +25,7 @@ export type Size = "small" | "base" | "large";
 // row) and the size/state inputs the shell resolves are passed in; the skin maps
 // them to RN style objects. `borderColor` is a token key (error > focus > input)
 // the shell already resolved; the skin reads tokens[borderColor].
-export interface InputSkin {
+export interface InputSkin extends FloatingLabelStyles<Size> {
   /** Type scale per size; the field and its addons share it so they line up. */
   text: (t: ColorTokens, size: Size) => TextStyle;
   /** Height of the single-line bare field. */
@@ -52,28 +52,11 @@ export interface InputSkin {
   /** Android ripple over the action suffix; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 
-  // --- optional label placement (Input `label`) ----------------------------
-  // How this platform positions the field's label. iOS + web render the label
-  // ABOVE the field (the static look the Field/Form composers produce today);
-  // Android renders the M3 IN-CONTAINER FLOATING label (rest = body-large muted
-  // centered; floated = body-small at the top). Only these five members vary;
-  // the label's COLOR (muted at rest, brand `ring` on focus, `destructive` on
-  // error) is animated in the shell from the active tokens, so it is not here.
-  /** true on the Android skin (floating label); false on iOS/web (label above). */
-  floatingLabel: boolean;
-  /** iOS/web: the static above-field label type (color is applied in the shell). */
-  labelAbove?: (t: ColorTokens, size: Size) => TextStyle;
-  /** Android: the resting (unfocused, empty) label type — body-large, centered like a placeholder. */
-  labelRest?: (t: ColorTokens, size: Size) => TextStyle;
-  /** Android: the floated label type — body-small at the top. Only its `fontSize`
-   *  is used (to derive the transform scale = floated/rest); the label is RENDERED
-   *  at `labelRest` and scaled, never re-sized, so the animation stays on the
-   *  transform driver (Fabric/RNW-safe). */
-  labelFloated?: (t: ColorTokens, size: Size) => TextStyle;
-  /** Android: the state-independent top padding the bare field reserves for the
-   *  floated label, spread by the shell so `bareField`'s signature (and the
-   *  active-indicator invariant it is tested against) stays intact. */
-  labelReserve?: (size: Size) => TextStyle;
+  // Label placement (the `label` prop) is contributed by FloatingLabelStyles<Size>:
+  // `floatingLabel` (Android true / iOS+web false), `labelAbove` (iOS/web static
+  // title), and `labelRest`/`labelFloated`/`labelReserve` (the Android M3 floating
+  // label geometry). Shared verbatim with Combobox, Select, and Textarea so the
+  // four filled-field controls float their label identically.
 }
 
 // --- shared type scale (identical across platforms; brand type, not a face) --

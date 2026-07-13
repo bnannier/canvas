@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, activeIndicator } from "../../style/index.js";
+import { type ColorTokens, shadow, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Combobox skins, one per platform. A Combobox is a searchable
 // single-select: an editable field that filters an open option list. The BRAND
@@ -28,10 +28,12 @@ export type Size = "small" | "default" | "large";
 // open/selected/pressed/muted state and asks the skin to map them to RN style
 // objects. The skin owns shape, fill, border/underline, popover elevation, the
 // row layout, and the press-feedback channel (iOS/web opacity vs Android ripple).
-export interface ComboboxSkin {
+export interface ComboboxSkin extends FloatingLabelStyles<Size> {
   /** Type scale per size; the field text and the option rows share it. */
   text: (size: Size) => TextStyle;
-  /** Stacked field label above the field. */
+  /** Stacked (above-field) label type, used on iOS + web (`floatingLabel: false`).
+   *  On Android the label FLOATS inside the field instead (see FloatingLabelStyles:
+   *  `floatingLabel`, `labelRest`/`labelFloated`/`labelReserve`). */
   label: (t: ColorTokens, size: Size) => TextStyle;
   /** The editable field surface: shape, fill, border/underline for the open state. */
   field: (t: ColorTokens, size: Size, open: boolean) => ViewStyle;
@@ -152,6 +154,8 @@ export const webSkin: ComboboxSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: null, // web shows press via the active accent fill, not opacity
   ripple: null,
+  // Web keeps the established Canvas look: the label sits ABOVE the field.
+  floatingLabel: false,
 };
 
 // ---------- iOS (HIG): .roundedBorder field, large-radius glass menu ----------
@@ -235,6 +239,8 @@ export const iosSkin: ComboboxSkin = {
   disabledOpacity: 0.4,
   pressedOpacity: 0.8,
   ripple: null,
+  // iOS (HIG): the label sits ABOVE the field, rendered from `label` above.
+  floatingLabel: false,
 };
 
 // ---------- Android (Material 3 filled): subtle fill, top radius, bottom indicator, elevated menu ----------
@@ -305,4 +311,20 @@ export const androidSkin: ComboboxSkin = {
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: t.accent, borderless: false }),
+  // Android (Material 3): the IN-CONTAINER FLOATING label, identical geometry to
+  // the M3 Input. At rest it sits vertically centered like the field's placeholder
+  // (body-large per size); once the list is open OR a value fills the field it
+  // floats to the top, shrinking to body-small (12sp). The shell reserves
+  // `labelReserve` of top padding so the value clears the floated label, and drives
+  // translateY + scale on the transform driver (`labelFloated`'s fontSize supplies
+  // the scale ratio only — the label is rendered at `labelRest` and scaled, never
+  // re-sized). M3 body tracking: body-large 0.5, body-medium 0.25, body-small 0.4.
+  floatingLabel: true,
+  labelRest: (_t, size) => {
+    if (size === "large") return { fontSize: 18, lineHeight: 26, letterSpacing: 0.5 };
+    if (size === "small") return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
+    return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
+  },
+  labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
+  labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
 };

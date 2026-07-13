@@ -1,6 +1,6 @@
 # Textarea
 
-Multi-line input, with character count, with toolbar.
+Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box.
 
 ## Usage
 
@@ -9,6 +9,18 @@ Multi-line input, with character count, with toolbar.
 ```
 
 ## Variants
+
+### Floating label
+
+```tsx
+<Textarea label="Description" rows={4} placeholder="A few words about this project…" />
+```
+
+### Floating label - required
+
+```tsx
+<Textarea label="Bio" required rows={4} placeholder="Tell us about yourself…" />
+```
 
 ### Character counter
 

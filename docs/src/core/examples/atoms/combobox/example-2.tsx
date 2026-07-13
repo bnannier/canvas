@@ -16,8 +16,8 @@ export default function Example(scope: ExampleScope) {
     "Rachel Chen"
   ]}
   label="Assigned to"
+  helperText="The person responsible for this account."
   placeholder="Search a person…"
-  disabled
 />
   );
 }

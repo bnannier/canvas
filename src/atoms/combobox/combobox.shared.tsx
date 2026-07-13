@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState } from "react";
+import { forwardRef, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput } from "react-native";
 import {
   View,
@@ -10,6 +10,8 @@ import {
   useEscapeKey,
   useFieldWidth,
   AnchoredOverlay,
+  FloatingLabel,
+  LabelContent,
   FOCUS_RESET,
   type FieldWidthProps,
   type StyleProp,
@@ -79,8 +81,19 @@ export interface ComboboxProps extends FieldWidthProps {
   defaultOpen?: boolean;
   /** Fired when the open state changes (focus, typing, chevron, select). */
   onOpenChange?: (open: boolean) => void;
-  /** Optional stacked field label rendered above the field. */
+  /**
+   * The field's persistent label. Its placement is platform-adaptive: iOS and web
+   * render it ABOVE the field; Android renders the Material 3 in-container FLOATING
+   * label (centered like a placeholder at rest, floating to the top once the list
+   * opens or a value fills the field). The label names the field for assistive tech.
+   */
   label?: string;
+  /**
+   * Marks the field as required: appends a destructive "*" to the label (hidden
+   * from the accessible name) and sets aria-required on the field. Takes effect
+   * only alongside `label`.
+   */
+  required?: boolean;
   /** Optional muted helper line rendered below the option list. */
   helperText?: string;
   /** Dims the control and blocks interaction. */
@@ -108,6 +121,9 @@ function sizeOf(p: ComboboxProps): Size {
 // gutter) governs the footprint exactly as it did around the old static text.
 const fieldInput: TextStyle = { flex: 1, paddingVertical: 0, paddingHorizontal: 0 };
 
+// Read a numeric style value (the Android field height), falling back when absent.
+const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
+
 // Full-height touch target for the chevron toggle. It centers the glyph
 // without moving it from where the static chevron sat in the field row.
 const chevronHit: ViewStyle = { alignSelf: "stretch", justifyContent: "center" };
@@ -125,6 +141,7 @@ export function createCombobox(skin: ComboboxSkin) {
     const {
       options = [],
       label,
+      required,
       helperText,
       placeholder = "Search…",
       open: openProp,
@@ -137,6 +154,8 @@ export function createCombobox(skin: ComboboxSkin) {
     const size = sizeOf(props);
     const { tokens } = useTheme();
     const widthCap = useFieldWidth(props);
+    // One collision-free id for the label so the floated label carries a nativeID.
+    const labelId = useId();
 
     // Controlled when `query` is provided, self-managed otherwise, so a bare
     // <Combobox /> filters as you type (the standard library contract).
@@ -187,16 +206,31 @@ export function createCombobox(skin: ComboboxSkin) {
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
+    // Label placement: iOS/web render it ABOVE the field; the Android skin FLOATS
+    // it inside the container (M3). The float signal is the list being open (the
+    // combobox's focus equivalent) OR the field holding a query/value; the native
+    // placeholder is gated so the resting label is the sole placeholder there.
+    const hasLabel = label != null && label !== "";
+    const floating = hasLabel && skin.floatingLabel;
+    const above = hasLabel && !floating;
+    const populated = fieldValue !== "";
+    const fieldHeight = asNum((skin.field(tokens, size, open) as { height?: unknown }).height, 56);
+
     return (
       <View style={[wrapper, open ? wrapperLifted : null, widthCap, style]}>
-        {label != null && label !== "" ? (
-          <Text style={skin.label(tokens, size)}>{label}</Text>
+        {above ? (
+          <Text nativeID={labelId} style={skin.label(tokens, size)}>
+            <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+          </Text>
         ) : null}
         <View
           ref={fieldRef}
           onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
           style={[
             skin.field(tokens, size, open),
+            // Android floating label: reserve top padding so the value clears the
+            // floated label (state-independent, mirrors the M3 Input).
+            floating ? skin.labelReserve!(size) : null,
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
@@ -213,7 +247,9 @@ export function createCombobox(skin: ComboboxSkin) {
             onFocus={() => {
               if (!open) setOpen(true);
             }}
-            placeholder={placeholder}
+            // Floating label owns the resting placeholder: hide the native
+            // placeholder until the list opens (matching the M3 Input).
+            placeholder={floating && !open ? undefined : placeholder}
             placeholderTextColor={skin.fieldText(tokens, size, true).color}
             editable={!disabled}
             selectionColor={tokens.primary} // brand cursor / selection on every platform
@@ -224,10 +260,12 @@ export function createCombobox(skin: ComboboxSkin) {
             accessibilityState={{ expanded: open, disabled: !!disabled }}
             aria-expanded={open}
             aria-disabled={!!disabled}
-            // Tie the visible stacked label to the field so a screen reader announces
-            // the field's name (not just the inner value/placeholder) on both channels.
-            accessibilityLabel={label != null && label !== "" ? label : undefined}
-            aria-label={label != null && label !== "" ? label : undefined}
+            // Required is surfaced programmatically (aria-required), omitted when optional.
+            aria-required={required || undefined}
+            // Tie the visible label to the field so a screen reader announces the
+            // field's name (not just the inner value/placeholder) on both channels.
+            accessibilityLabel={hasLabel ? label : undefined}
+            aria-label={hasLabel ? label : undefined}
           />
           <Pressable
             style={({ pressed }) => [
@@ -246,6 +284,20 @@ export function createCombobox(skin: ComboboxSkin) {
           >
             <Text style={skin.chevron(tokens, size)}>▾</Text>
           </Pressable>
+          {floating ? (
+            <FloatingLabel
+              styles={skin}
+              size={size}
+              tokens={tokens}
+              label={label!}
+              required={required}
+              labelId={labelId}
+              focused={open}
+              populated={populated}
+              isError={false}
+              height={fieldHeight}
+            />
+          ) : null}
         </View>
 
         <AnchoredOverlay

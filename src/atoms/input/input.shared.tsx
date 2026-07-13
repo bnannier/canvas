@@ -1,11 +1,10 @@
-import { forwardRef, useEffect, useId, useState, type ReactNode } from "react";
+import { forwardRef, useId, useState } from "react";
 import {
-  Animated,
   type GestureResponderEvent,
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useFieldWidth, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -155,146 +154,8 @@ function sizeOf(p: InputProps): Size {
 // the Field/Form control stacks use between the label and the control).
 const LABEL_GAP: ViewStyle = { gap: 6 };
 
-// Marks a decorative node out of the accessibility tree on every platform: the
-// required "*" must NOT pollute the field's accessible name (that comes from the
-// label text alone), so it is hidden natively (accessibilityElementsHidden /
-// importantForAccessibility) and on web (aria-hidden, which excludes it from the
-// aria-labelledby name computation).
-const HIDDEN_FROM_A11Y = {
-  accessibilityElementsHidden: true,
-  importantForAccessibility: "no-hide-descendants" as const,
-  "aria-hidden": true,
-} as const;
-
-// Read a numeric style value (height / paddingTop), falling back when absent.
+// Read a numeric style value (the bare field height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
-
-/**
- * The label text plus, when required, a trailing destructive "*". The star is
- * hidden from assistive tech so the accessible name stays the bare label.
- */
-function LabelContent({ label, required, starColor }: { label: string; required?: boolean; starColor: string }): ReactNode {
-  return (
-    <>
-      {label}
-      {required ? (
-        <Text {...HIDDEN_FROM_A11Y} style={{ color: starColor }}>
-          {" *"}
-        </Text>
-      ) : null}
-    </>
-  );
-}
-
-/**
- * The Material 3 in-container floating label (Android skin only). It overlays the
- * field, pinned to the leading edge, and animates between the resting (centered,
- * placeholder-like) and floated (top, small) positions.
- *
- * Split-driver animation (the crux — must run on iOS, Android New-Arch/Fabric,
- * AND react-native-web):
- *  - `pos` (0->1) drives ONLY the transform (translateY center->top + scale
- *    1->floated/rest), on the native driver where available (a one-shot, so the
- *    loop-freeze caveat does not apply) and the JS driver on web. It NEVER
- *    animates fontSize/top/width (those are Fabric-stuck). Target = focused ||
- *    populated.
- *  - `tint` (0->1) drives ONLY the color, on the JS driver ALWAYS (color can't be
- *    native-driven). Target = focused || error, so a filled-but-unfocused valid
- *    field floats yet stays muted.
- * transformOrigin "0% 50%" pins the leading edge while it scales (no measurement,
- * no translateX); RTL uses the logical `start` inset.
- */
-function FloatingLabel({
-  skin,
-  size,
-  tokens,
-  label,
-  required,
-  labelId,
-  focused,
-  populated,
-  isError,
-}: {
-  skin: InputSkin;
-  size: Size;
-  tokens: ColorTokens;
-  label: string;
-  required?: boolean;
-  labelId: string;
-  focused: boolean;
-  populated: boolean;
-  isError: boolean;
-}) {
-  const reduced = useReducedMotion();
-  const posTarget = focused || populated ? 1 : 0;
-  const tintTarget = focused || isError ? 1 : 0;
-  // Seed each value at its target so a prefilled/defaultValue field starts floated
-  // (and a required-invalid field starts tinted) with no opening animation.
-  const [pos] = useState(() => new Animated.Value(posTarget));
-  const [tint] = useState(() => new Animated.Value(tintTarget));
-
-  // pos drives the TRANSFORM (translateY + scale): native driver where available
-  // (one-shot, so the loop-freeze caveat does not apply), JS on web. Reduced
-  // motion snaps to the final frame (mirrors Entrance), the label still moves.
-  useEffect(() => {
-    if (reduced) {
-      pos.setValue(posTarget);
-      return;
-    }
-    Animated.timing(pos, { toValue: posTarget, duration: 150, useNativeDriver: supportsNativeDriver }).start();
-  }, [pos, posTarget, reduced]);
-
-  // tint drives ONLY the COLOR, always on the JS driver (color can't be native-
-  // driven; never interpolate it off `pos`).
-  useEffect(() => {
-    if (reduced) {
-      tint.setValue(tintTarget);
-      return;
-    }
-    Animated.timing(tint, { toValue: tintTarget, duration: 150, useNativeDriver: false }).start();
-  }, [tint, tintTarget, reduced]);
-
-  const rest = skin.labelRest!(tokens, size) as TextStyle;
-  const floated = skin.labelFloated!(tokens, size) as TextStyle;
-  const restLine = asNum(rest.lineHeight, 24);
-  const restSize = asNum(rest.fontSize, 16);
-  const scaleTo = asNum(floated.fontSize, 12) / restSize;
-  const reserve = asNum((skin.labelReserve!(size) as TextStyle).paddingTop, 24);
-  const height = asNum((skin.bareBox(size) as TextStyle).height, 56);
-  // The floated label's bottom edge lands at `reserve` (where the value begins),
-  // so the value clears it. Its center is that minus half the scaled line box;
-  // translateY carries the resting center (the field's vertical middle) to it.
-  const floatedCenter = reserve - (restLine * scaleTo) / 2;
-  const translateYTo = floatedCenter - height / 2;
-
-  const translateY = pos.interpolate({ inputRange: [0, 1], outputRange: [0, translateYTo] });
-  const scale = pos.interpolate({ inputRange: [0, 1], outputRange: [1, scaleTo] });
-  const color = tint.interpolate({
-    inputRange: [0, 1],
-    outputRange: [tokens["muted-foreground"], isError ? tokens.destructive : tokens.ring],
-  });
-
-  return (
-    <Animated.View
-      // Fills the field vertically and centers the label; the transform floats it.
-      // pointerEvents:none so taps fall through to the field beneath.
-      style={{
-        position: "absolute",
-        top: 0,
-        bottom: 0,
-        start: 16,
-        justifyContent: "center",
-        pointerEvents: "none",
-        transformOrigin: "0% 50%",
-        transform: [{ translateY }, { scale }],
-      }}
-    >
-      <Animated.Text nativeID={labelId} numberOfLines={1} style={[rest, { color }]}>
-        <LabelContent label={label} required={required} starColor={tokens.destructive} />
-      </Animated.Text>
-    </Animated.View>
-  );
-}
 
 /** Build an Input component from a platform skin. */
 export function createInput(skin: InputSkin) {
@@ -449,7 +310,7 @@ export function createInput(skin: InputSkin) {
               placeholder={focused ? placeholder : undefined}
             />
             <FloatingLabel
-              skin={skin}
+              styles={skin}
               size={size}
               tokens={tokens}
               label={label!}
@@ -458,6 +319,7 @@ export function createInput(skin: InputSkin) {
               focused={focused}
               populated={populated}
               isError={isError}
+              height={asNum(skin.bareBox(size).height, 56)}
             />
           </View>
         );

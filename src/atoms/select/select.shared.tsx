@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, FloatingLabel, LabelContent, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -33,8 +33,19 @@ export interface SelectProps extends FieldWidthProps {
   defaultValue?: string;
   /** The list of selectable option labels. */
   options?: string[];
-  /** Optional stacked field label rendered above the trigger. */
+  /**
+   * The field's persistent label. Its placement is platform-adaptive: iOS and web
+   * render it ABOVE the trigger; Android renders the Material 3 in-container
+   * FLOATING label (centered like a placeholder at rest, floating to the top once
+   * the menu opens or a value is selected). The label names the field for a11y.
+   */
   label?: string;
+  /**
+   * Marks the field as required: appends a destructive "*" to the label (hidden
+   * from the accessible name) and sets aria-required on the trigger. Takes effect
+   * only alongside `label`.
+   */
+  required?: boolean;
   /** Renders a leading globe glyph inside the trigger, indented so the value clears it. */
   icon?: boolean;
   /** Prompt shown in the trigger when no value is selected. */
@@ -65,12 +76,16 @@ function sizeOf(p: SelectProps): Size {
   return "default";
 }
 
+// Read a numeric style value (the Android trigger height), falling back when absent.
+const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
+
 /** Build a Select component from a platform skin. */
 export function createSelect(skin: SelectSkin) {
   return function Select(props: SelectProps) {
     const {
       options = [],
       label,
+      required,
       icon,
       placeholder = "Select an option",
       onOpenChange,
@@ -81,6 +96,8 @@ export function createSelect(skin: SelectSkin) {
     const size = sizeOf(props);
     const { tokens } = useTheme();
     const widthCap = useFieldWidth(props);
+    // One collision-free id for the label so the floated label carries a nativeID.
+    const labelId = useId();
     // Controlled when `open`/`value` are provided, self-managed otherwise, so a
     // bare <Select options /> opens and picks out of the box (the standard
     // library contract): the trigger opens/closes the list, a select stores the
@@ -108,16 +125,33 @@ export function createSelect(skin: SelectSkin) {
     const hasValue = value !== "";
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
+    // Label placement: iOS/web render it ABOVE the trigger; the Android skin FLOATS
+    // it inside the container (M3). The float signal is the menu being open (the
+    // select's focus equivalent) OR a value being selected; the trigger's resting
+    // placeholder text is hidden while the floating label is the placeholder.
+    const hasLabel = label != null && label !== "";
+    const floating = hasLabel && skin.floatingLabel;
+    const above = hasLabel && !floating;
+    const triggerHeight = asNum((skin.trigger(tokens, size, open) as { height?: unknown }).height, 56);
+    // Floating label owns the resting placeholder: show nothing until the menu opens
+    // (matching the M3 Input); a selected value always shows.
+    const displayText = hasValue ? value : floating && !open ? "" : placeholder;
+
     return (
       <View style={[root, open ? rootLifted : null, widthCap, style]}>
-        {label != null && label !== "" ? (
-          <Text style={skin.label(tokens, size)}>{label}</Text>
+        {above ? (
+          <Text nativeID={labelId} style={skin.label(tokens, size)}>
+            <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+          </Text>
         ) : null}
         <Pressable
           ref={triggerRef}
           onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
           style={({ pressed }) => [
             skin.trigger(tokens, size, open),
+            // Android floating label: reserve top padding so the value clears the
+            // floated label (state-independent, mirrors the M3 Input).
+            floating ? skin.labelReserve!(size) : null,
             disabled ? { opacity: skin.disabledOpacity } : null,
             skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
@@ -127,12 +161,32 @@ export function createSelect(skin: SelectSkin) {
           testID={props.testID}
           accessibilityRole="button"
           aria-expanded={open}
+          // Required is surfaced programmatically (aria-required), omitted when optional.
+          aria-required={required || undefined}
+          // Name the trigger by its label on both channels so a screen reader
+          // announces the field's name, not just the selected value/placeholder.
+          accessibilityLabel={hasLabel ? label : undefined}
+          aria-label={hasLabel ? label : undefined}
         >
           <View style={skin.triggerValue}>
             {icon ? <Icon globe muted size={14} /> : null}
-            <Text style={skin.valueText(tokens, size, hasValue)}>{hasValue ? value : placeholder}</Text>
+            <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
           </View>
           <Text style={skin.chevron(tokens, size, open)}>{skin.chevronGlyph}</Text>
+          {floating ? (
+            <FloatingLabel
+              styles={skin}
+              size={size}
+              tokens={tokens}
+              label={label!}
+              required={required}
+              labelId={labelId}
+              focused={open}
+              populated={hasValue}
+              isError={false}
+              height={triggerHeight}
+            />
+          ) : null}
         </Pressable>
 
         <AnchoredOverlay

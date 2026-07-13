@@ -1,6 +1,6 @@
 # Combobox
 
-Text input + dropdown: searchable single-select.
+Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field.
 
 ## Usage
 
@@ -21,6 +21,25 @@ Text input + dropdown: searchable single-select.
 ```
 
 ## Variants
+
+### Required field
+
+```tsx
+<Combobox
+  options={[
+    "Ada Lovelace",
+    "Grace Hopper",
+    "Kira Tanaka",
+    "Liang Bao",
+    "Marcus Allen",
+    "Noor Park",
+    "Rachel Chen"
+  ]}
+  label="Assigned to"
+  required
+  placeholder="Search a person…"
+/>
+```
 
 ### With helper text
 

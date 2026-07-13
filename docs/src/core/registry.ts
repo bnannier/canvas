@@ -121,6 +121,7 @@ import e_atoms_chip_dont_0_dont from "./examples/atoms/chip/dont-0-dont";
 import e_atoms_combobox_example_0 from "./examples/atoms/combobox/example-0";
 import e_atoms_combobox_example_1 from "./examples/atoms/combobox/example-1";
 import e_atoms_combobox_example_2 from "./examples/atoms/combobox/example-2";
+import e_atoms_combobox_example_3 from "./examples/atoms/combobox/example-3";
 import e_atoms_combobox_dont_0_do from "./examples/atoms/combobox/dont-0-do";
 import e_atoms_combobox_dont_0_dont from "./examples/atoms/combobox/dont-0-dont";
 import e_atoms_combobox_dont_1_do from "./examples/atoms/combobox/dont-1-do";
@@ -296,6 +297,7 @@ import e_atoms_select_example_1 from "./examples/atoms/select/example-1";
 import e_atoms_select_example_2 from "./examples/atoms/select/example-2";
 import e_atoms_select_example_3 from "./examples/atoms/select/example-3";
 import e_atoms_select_example_4 from "./examples/atoms/select/example-4";
+import e_atoms_select_example_5 from "./examples/atoms/select/example-5";
 import e_atoms_select_dont_0_do from "./examples/atoms/select/dont-0-do";
 import e_atoms_select_dont_0_dont from "./examples/atoms/select/dont-0-dont";
 import e_atoms_select_dont_1_do from "./examples/atoms/select/dont-1-do";
@@ -382,6 +384,8 @@ import e_atoms_textarea_example_0 from "./examples/atoms/textarea/example-0";
 import e_atoms_textarea_example_1 from "./examples/atoms/textarea/example-1";
 import e_atoms_textarea_example_2 from "./examples/atoms/textarea/example-2";
 import e_atoms_textarea_example_3 from "./examples/atoms/textarea/example-3";
+import e_atoms_textarea_example_4 from "./examples/atoms/textarea/example-4";
+import e_atoms_textarea_example_5 from "./examples/atoms/textarea/example-5";
 import e_atoms_textarea_dont_0_do from "./examples/atoms/textarea/dont-0-do";
 import e_atoms_textarea_dont_0_dont from "./examples/atoms/textarea/dont-0-dont";
 import e_atoms_textarea_dont_1_do from "./examples/atoms/textarea/dont-1-do";
@@ -938,8 +942,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Combobox\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_combobox_example_0 },
-      { label: "With helper text", code: "<Combobox\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  helperText=\"The person responsible for this account.\"\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_combobox_example_1 },
-      { label: "Disabled", code: "<Combobox\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  placeholder=\"Search a person…\"\n  disabled\n/>", render: e_atoms_combobox_example_2 },
+      { label: "Required field", code: "<Combobox\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  required\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_combobox_example_1 },
+      { label: "With helper text", code: "<Combobox\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  helperText=\"The person responsible for this account.\"\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_combobox_example_2 },
+      { label: "Disabled", code: "<Combobox\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  placeholder=\"Search a person…\"\n  disabled\n/>", render: e_atoms_combobox_example_3 },
     ],
     donts: [
       { title: "When to use", do: { caption: "A plain select for short, fixed lists; reserve the combobox for long, searchable ones.", code: "<Select label=\"Size\" options={[\"Small\", \"Medium\", \"Large\"]} defaultOpen placeholder=\"Select a size\" />", render: e_atoms_combobox_dont_0_do }, dont: { caption: "Type or click: a search field for three fixed options is overhead with nothing to filter.", code: "<Combobox label=\"Size\" options={[\"Small\", \"Medium\", \"Large\"]} defaultOpen placeholder=\"Search…\" />", render: e_atoms_combobox_dont_0_dont } },
@@ -1211,10 +1216,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Select\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_0 },
-      { label: "Size - sm", code: "<Select\n  small\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_1 },
-      { label: "Size - lg", code: "<Select\n  large\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_2 },
-      { label: "With leading icon", code: "<Select\n  label=\"Country\"\n  icon\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_3 },
-      { label: "Disabled", code: "<Select\n  disabled\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_4 },
+      { label: "Required field", code: "<Select\n  label=\"Country\"\n  required\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_1 },
+      { label: "Size - sm", code: "<Select\n  small\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_2 },
+      { label: "Size - lg", code: "<Select\n  large\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_3 },
+      { label: "With leading icon", code: "<Select\n  label=\"Country\"\n  icon\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_4 },
+      { label: "Disabled", code: "<Select\n  disabled\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_5 },
     ],
     donts: [
       { do: { caption: "Mark the placeholder disabled and selected so it prompts without being a valid choice.", code: "<Column style={{ minHeight: 220 }}>\n  <Select defaultOpen label=\"Country\" placeholder=\"Choose a country…\" options={[\"United States\", \"Canada\", \"Mexico\"]} />\n</Column>", render: e_atoms_select_dont_0_do }, dont: { caption: "A placeholder as a normal option can be submitted as a real value.", code: "<View style={{ minHeight: 260 }}>\n  <Select defaultOpen label=\"Country\" defaultValue=\"Choose a country…\" options={[\"Choose a country…\", \"United States\", \"Canada\", \"Mexico\"]} style={{ maxWidth: 280 }} />\n</View>", render: e_atoms_select_dont_0_dont } },
@@ -1348,9 +1354,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Textarea rows={4} placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_0 },
-      { label: "Character counter", code: "<Column tight>\n  <Typography small medium>Description</Typography>\n  <Textarea rows={4} wide placeholder=\"A few words about this project…\" />\n  <Row end>\n    <Typography tiny muted>0 / 280</Typography>\n  </Row>\n</Column>", render: e_atoms_textarea_example_1 },
-      { label: "Formatting toolbar", code: "<Card flat flush style={{ width: 400, maxWidth: \"100%\", overflow: \"hidden\" }}>\n  <Row alignCenter tight padTight>\n    <Button ghost small>B</Button>\n    <Button ghost small>I</Button>\n    <Button ghost small>{\"</>\"}</Button>\n    <Divider vertical style={{ height: 16 }} />\n    <Button ghost small>Comment</Button>\n  </Row>\n  <Divider />\n  <Textarea rows={4} flush placeholder=\"Leave a comment…\" />\n</Card>", render: e_atoms_textarea_example_2 },
-      { label: "Disabled", code: "<Textarea rows={4} disabled placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_3 },
+      { label: "Floating label", code: "<Textarea label=\"Description\" rows={4} placeholder=\"A few words about this project…\" />", render: e_atoms_textarea_example_1 },
+      { label: "Floating label - required", code: "<Textarea label=\"Bio\" required rows={4} placeholder=\"Tell us about yourself…\" />", render: e_atoms_textarea_example_2 },
+      { label: "Character counter", code: "<Column tight>\n  <Typography small medium>Description</Typography>\n  <Textarea rows={4} wide placeholder=\"A few words about this project…\" />\n  <Row end>\n    <Typography tiny muted>0 / 280</Typography>\n  </Row>\n</Column>", render: e_atoms_textarea_example_3 },
+      { label: "Formatting toolbar", code: "<Card flat flush style={{ width: 400, maxWidth: \"100%\", overflow: \"hidden\" }}>\n  <Row alignCenter tight padTight>\n    <Button ghost small>B</Button>\n    <Button ghost small>I</Button>\n    <Button ghost small>{\"</>\"}</Button>\n    <Divider vertical style={{ height: 16 }} />\n    <Button ghost small>Comment</Button>\n  </Row>\n  <Divider />\n  <Textarea rows={4} flush placeholder=\"Leave a comment…\" />\n</Card>", render: e_atoms_textarea_example_4 },
+      { label: "Disabled", code: "<Textarea rows={4} disabled placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_5 },
     ],
     donts: [
       { title: "With label", do: { caption: "Set `rows` for a sensible starting height so users can see their text; the field grows with the content from there.", code: "<Column snug>\n  <Typography small medium>Description</Typography>\n  <Textarea rows={3} wide value=\"This is a longer description that runs past one line and stays readable.\" />\n</Column>", render: e_atoms_textarea_dont_0_do }, dont: { caption: "A locked, single-line textarea hides long content with no way to expand.", code: "<View style={{ maxWidth: 400, flexDirection: \"column\", gap: 6 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Description</Text>\n  <TextInput numberOfLines={1} value=\"This is a longer description that runs past one line and gets clipped.\" style={{ height: 32, width: \"100%\", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 4, fontSize: 14, lineHeight: 20, color: tokens.foreground }} />\n</View>", render: e_atoms_textarea_dont_0_dont } },

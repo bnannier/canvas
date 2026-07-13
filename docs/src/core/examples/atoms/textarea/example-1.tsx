@@ -3,14 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Textarea, Typography, Row, Column } = scope;
+  const { Textarea } = scope;
   return (
-<Column tight>
-  <Typography small medium>Description</Typography>
-  <Textarea rows={4} wide placeholder="A few words about this project…" />
-  <Row end>
-    <Typography tiny muted>0 / 280</Typography>
-  </Row>
-</Column>
+<Textarea label="Description" rows={4} placeholder="A few words about this project…" />
   );
 }

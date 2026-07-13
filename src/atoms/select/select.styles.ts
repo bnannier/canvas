@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, activeIndicator } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface, since
@@ -43,10 +43,12 @@ function textType(size: Size): TextStyle {
 // objects. `selectedSide` tells the shell where to render the selection
 // indicator (a leading gutter glyph on web, a trailing brand check on iOS), and
 // `selectedGlyph` is the character it draws there.
-export interface SelectSkin {
+export interface SelectSkin extends FloatingLabelStyles<Size> {
   /** Type scale per size; label, trigger value, and rows share it so they line up. */
   text: (size: Size) => TextStyle;
-  /** The stacked field label above the trigger. */
+  /** The stacked (above-trigger) label type, used on iOS + web (`floatingLabel:
+   *  false`). On Android the label FLOATS inside the trigger instead (see
+   *  FloatingLabelStyles: `floatingLabel`, `labelRest`/`labelFloated`/`labelReserve`). */
   label: (t: ColorTokens, size: Size) => TextStyle;
   /** The trigger surface: shape, fill, border/underline; `open` lights the active state. */
   trigger: (t: ColorTokens, size: Size, open: boolean) => ViewStyle;
@@ -162,6 +164,8 @@ export const webSkin: SelectSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
+  // Web keeps the established Canvas look: the label sits ABOVE the trigger.
+  floatingLabel: false,
 };
 
 // ---------- iOS 26 (Liquid Glass) pop-up button + menu ----------
@@ -241,6 +245,8 @@ export const iosSkin: SelectSkin = {
   disabledOpacity: 0.4,
   pressedOpacity: 0.8,
   ripple: null,
+  // iOS (HIG): the label sits ABOVE the trigger, rendered from `label` above.
+  floatingLabel: false,
 };
 
 // ---------- Android (Material 3 exposed dropdown): filled field, top radius, active indicator ----------
@@ -312,4 +318,20 @@ export const androidSkin: SelectSkin = {
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
+  // Android (Material 3 exposed dropdown): the IN-CONTAINER FLOATING label,
+  // identical geometry to the M3 Input. At rest it sits vertically centered like
+  // the trigger's placeholder (body per size); once the menu opens OR a value is
+  // selected it floats to the top, shrinking to body-small (12sp). The shell
+  // reserves `labelReserve` of top padding so the value clears the floated label,
+  // and drives translateY + scale on the transform driver (`labelFloated`'s
+  // fontSize supplies the scale ratio only). M3 body tracking: body-large 0.5,
+  // body-medium 0.25, body-small 0.4.
+  floatingLabel: true,
+  labelRest: (_t, size) => {
+    if (size === "large") return { fontSize: 18, lineHeight: 26, letterSpacing: 0.5 };
+    if (size === "small") return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
+    return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
+  },
+  labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
+  labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
 };

@@ -1,6 +1,6 @@
 # Select
 
-Native select restyled to match Canvas inputs.
+Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected.
 
 ## Usage
 
@@ -14,6 +14,18 @@ Native select restyled to match Canvas inputs.
 ```
 
 ## Variants
+
+### Required field
+
+```tsx
+<Select
+  label="Country"
+  required
+  defaultValue="United States"
+  options={["United States", "Canada", "Mexico", "United Kingdom"]}
+  placeholder="Select a country"
+/>
+```
 
 ### Size - sm
 
