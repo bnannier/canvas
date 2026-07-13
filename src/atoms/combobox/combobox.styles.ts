@@ -154,11 +154,11 @@ export const webSkin: ComboboxSkin = {
   ripple: null,
 };
 
-// ---------- iOS 27 (iOS 26+/Liquid Glass): plain hairline field, large-radius glass menu ----------
-// The iOS 27 combo box reads like the new iOS text field: NO filled capsule and
-// no box, just the value text on a transparent surface above a thin bottom
-// hairline (`border` at rest, the brand indigo `primary` when the list is open,
-// echoing the field's blue caret in the reference). The field value, placeholder,
+// ---------- iOS (HIG): .roundedBorder field, large-radius glass menu ----------
+// The iOS combo box reads like SwiftUI's `.roundedBorder` text field: a subtly filled,
+// rounded rectangle (continuous corners) with a 1pt border that tints to the brand
+// `ring` when the list is open. A full border box, never a bottom underline, so it
+// reads as a native iOS field rather than the Material one. The field value, placeholder,
 // and label use the iOS-native scale (13/15/17pt). The open list is the iOS 26+
 // menu surface: a large continuous-corner `popover` card (26 radius, matching the
 // co-located iOS Select menu) floating on a soft shadow, with roomy ~42pt rows
@@ -183,18 +183,18 @@ const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: ComboboxSkin = {
   text: (size) => IOS_TEXT[size],
   label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
-  // Plain field: transparent, square (no capsule), bottom hairline only. The
-  // hairline thickens and tints to the brand `primary` when the list is open.
+  // Filled rounded rect (.roundedBorder), continuous corners; the border tints to the
+  // brand `ring` when the list is open. A full border box, not a bottom underline.
   field: (t, size, open) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 0,
-    backgroundColor: "transparent",
-    // The iOS field rule thickens hairline -> 1.5pt and tints to the brand primary on
-    // open. activeIndicator keeps the content-box height fixed across the change.
-    ...activeIndicator({ active: open, restColor: t.border, activeColor: t.primary, restWidth: StyleSheet.hairlineWidth, activeWidth: 1.5 }),
-    paddingHorizontal: 0,
+    borderRadius: 10,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    borderColor: open ? t.ring : t.input,
+    backgroundColor: t.secondary,
+    paddingHorizontal: 12,
     height: IOS_FIELD_BOX[size],
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...IOS_TEXT[size] }),

@@ -119,24 +119,20 @@ export const webSkin: InputSkin = {
   ripple: null,
 };
 
-// ---------- iOS (HIG, iOS 26+/Liquid Glass): plain field, transparent, bottom hairline ----------
-// Apple's plain text field on iOS 26+: the value text sits directly on a
-// TRANSPARENT surface with a single bottom HAIRLINE rule (1pt separator) and no
-// fill, no surrounding box, no rounded capsule. Canvas keeps the brand by
-// thickening + tinting that hairline to the brand `ring` on focus (and
-// `destructive` on error); at rest it is the faint `border` separator. The
-// cursor/selection is always the indigo `primary` (set in the shell).
+// ---------- iOS (HIG): .roundedBorder filled field ----------
+// The iOS text field reads as SwiftUI's `.roundedBorder`: the value text sits in a
+// subtly filled, rounded rectangle (continuous corners) with a 1pt border that
+// resolves error > focus(`ring`) > `input`. It is a full border box, never a bottom
+// underline, so the field reads as a native iOS field rather than the Material
+// filled/underlined one. The cursor/selection is always the indigo `primary` (set in
+// the shell); focus tints the whole border to the brand `ring`.
 
-// On iOS the plain field must show NO box at all on focus: only the bottom
-// hairline reacts. react-native-web otherwise paints its default focus outline
-// (a bright-blue rectangle) and a browser-default caret, which would turn the
-// plain hairline field into a generic boxed input the instant it is focused.
-// These web-only style props suppress that outline and pin the caret to the
-// brand `primary`, matching `selectionColor`. They are iOS-skin-only (the web
-// skin draws its own visible border and is left untouched) and are no-ops on
-// real iOS, which has no CSS outline. `caretColor`/`cursorColor`/`outlineStyle`
-// /`outlineWidth` are not in RN's TextStyle, hence the cast (as in the shell's
-// FIELD_OUTLINE_RESET).
+// react-native-web paints a default focus outline (a bright-blue rectangle) and a
+// browser-default caret on the field. These web-only style props suppress that outline
+// (the skin draws its own border) and pin the caret to the brand `primary`, matching
+// `selectionColor`. They are no-ops on real iOS, which has no CSS outline.
+// `caretColor`/`cursorColor`/`outlineStyle`/`outlineWidth` are not in RN's TextStyle,
+// hence the cast (as in the shell's FIELD_OUTLINE_RESET).
 function iosWebFieldReset(t: ColorTokens): TextStyle {
   return {
     ...FOCUS_RESET, // shared outline-ring suppression (outlineStyle/outlineWidth)
@@ -145,63 +141,57 @@ function iosWebFieldReset(t: ColorTokens): TextStyle {
   } as unknown as TextStyle;
 }
 
-// The iOS field rule: a faint `border` separator at rest, thickening to 2pt and tinting
-// to the shell-resolved brand color (ring on focus, destructive on error) when active.
-// `gap` is the padding kept below the content (match the field's top padding), so the
-// thickening reserves a constant band and never reflows the value text (see activeIndicator).
-function iosHairline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean, gap: number): ViewStyle {
-  return activeIndicator({ active: focused || error, restColor: t.border, activeColor: t[borderColor], gap });
-}
 export const iosSkin: InputSkin = {
   text: webText,
   bareBox: (size) => ({ height: size === "large" ? 50 : size === "small" ? 36 : 44 }),
   groupedHeight: (size) => (size === "large" ? 50 : size === "small" ? 36 : 44),
-  bareField: (t, borderColor, focused, error) => ({
+  // Filled rounded rect, continuous corners; the border carries the shell-resolved
+  // state color (error > focus(ring) > input).
+  bareField: (t, borderColor) => ({
     width: "100%",
-    // Plain field: transparent surface, no box/radius, only a bottom hairline (gap 10
-    // keeps its no-reflow padding balanced with paddingTop).
-    backgroundColor: "transparent",
-    ...iosHairline(t, borderColor, focused, error, 10),
-    // Suppress the react-native-web focus outline box and pin the caret to the
-    // brand `primary` (the bare path never got the shell's FIELD_OUTLINE_RESET,
-    // so on focus it showed a browser-blue rectangle).
+    borderRadius: 10,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    borderColor: t[borderColor],
+    backgroundColor: t.secondary,
     ...iosWebFieldReset(t),
-    // No horizontal inset so the value text aligns flush with the hairline edge,
-    // as in the iOS 27 render.
-    paddingHorizontal: 0,
-    paddingTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     color: t.foreground,
   }),
-  groupContainer: (t, borderColor, focused, error) => ({
+  // The grouped (addon) row shares one rounded border box; joined edges are clipped.
+  groupContainer: (t, borderColor) => ({
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
-    // The whole row shares the single bottom hairline; no fill, no box, no radius. The
-    // hairline's no-reflow padding (gap 0) keeps the grouped field's centered text stable.
-    backgroundColor: "transparent",
-    ...iosHairline(t, borderColor, focused, error, 0),
+    borderRadius: 10,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    borderColor: t[borderColor],
+    overflow: "hidden",
+    backgroundColor: t.secondary,
   }),
-  groupField: (t, { leadingIcon, trailingIcon }) => ({
+  groupField: (t, { leadingIcon, trailingIcon, hasPrefix, hasSuffix }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
     height: "100%",
-    paddingHorizontal: 0,
     paddingVertical: 10,
     color: t.foreground,
-    // Brand caret + outline suppression on the inner grouped field too, so the
-    // caret matches the bare field (the shell already adds FIELD_OUTLINE_RESET
-    // to the grouped field, but not the caret color).
+    // Brand caret + outline suppression on the inner grouped field too.
     ...iosWebFieldReset(t),
-    ...(leadingIcon ? { paddingStart: 28 } : null),
-    ...(trailingIcon ? { paddingEnd: 28 } : null),
+    // 12pt content inset per side, EXCEPT where an inline prefix/suffix affix already
+    // supplies that inset plus a tight gap (then the value hugs the affix); an overlaid
+    // icon uses a wider gutter.
+    paddingStart: leadingIcon ? 36 : hasPrefix ? 0 : 12,
+    paddingEnd: trailingIcon ? 36 : hasSuffix ? 0 : 12,
   }),
-  // Addons are inline on the transparent field (no filled box, no separator) so
-  // the row reads as one plain line over the shared hairline.
+  // Prefix/suffix is inline affix text inside the rounded box: no separate fill, no
+  // divider. The affix owns the 12pt box inset and keeps an 8pt gap to the value; the
+  // field zeroes its padding on that side (see groupField).
   addonBox: (_t, side, height) => ({
     justifyContent: "center",
-    backgroundColor: "transparent",
-    ...(side === "left" ? { paddingEnd: 8 } : { paddingStart: 8 }),
+    ...(side === "left" ? { paddingStart: 12, paddingEnd: 8 } : { paddingStart: 8, paddingEnd: 12 }),
     height,
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
@@ -212,7 +202,7 @@ export const iosSkin: InputSkin = {
     bottom: 0,
     zIndex: 10,
     justifyContent: "center",
-    ...(side === "left" ? { start: 0 } : { end: 0 }),
+    ...(side === "left" ? { start: 0, paddingStart: 12 } : { end: 0, paddingEnd: 12 }),
   }),
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,

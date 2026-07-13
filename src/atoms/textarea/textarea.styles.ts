@@ -73,31 +73,25 @@ export const webSkin: TextareaSkin = {
   }),
 };
 
-// ---------- iOS (HIG, iOS 27 / Liquid Glass): plain transparent field, bottom hairline ----------
-// The iOS 27 plain multiline text view: no fill, no box, a transparent field
-// with a single subtle bottom hairline rule. The rule is the faint `border`
-// separator at rest (1pt), thickening to 2pt and tinting to the brand focus
-// accent `ring` on focus (and `destructive` on error), mirroring the single-line
-// input's iosHairline exactly. Horizontal padding drops to 0 so the text and the
-// rule align to the field's edges like the reference; vertical padding is 10 to
-// match the sibling iOS field's density.
+// ---------- iOS (HIG): .roundedBorder filled multiline field ----------
+// The iOS multiline text view reads as SwiftUI's `.roundedBorder`: a subtly filled,
+// rounded rectangle (continuous corners) with a 1pt border that resolves error >
+// focus(`ring`) > `input`. A full border box, never a bottom underline, so the field
+// reads as a native iOS field rather than the Material filled/underlined one; the
+// brand cursor/selection is the indigo `primary` (set on the shell). Mirrors the
+// single-line Input's iOS skin exactly.
 export const iosSkin: TextareaSkin = {
-  field: (t, st) => {
-    // Focus or error make the field "active": the hairline thickens 1pt -> 2pt
-    // and tints to the brand accent (ring on focus, destructive on error).
-    const active = st.focused || st.error;
-    return {
-      width: "100%",
-      backgroundColor: "transparent",
-      // The only chrome: a bottom hairline that carries focus/error.
-      borderBottomWidth: active ? 2 : 1,
-      borderBottomColor: st.error ? t.destructive : st.focused ? t.ring : t.border,
-      paddingHorizontal: 0,
-      paddingTop: 10,
-      paddingBottom: 10,
-      color: t.foreground,
-    };
-  },
+  field: (t, st) => ({
+    width: "100%",
+    borderRadius: 10,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    borderColor: st.error ? t.destructive : st.focused ? t.ring : t.input,
+    backgroundColor: t.secondary,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: t.foreground,
+  }),
 };
 
 // ---------- Android (Material 3 filled): subtle fill + active indicator ------
