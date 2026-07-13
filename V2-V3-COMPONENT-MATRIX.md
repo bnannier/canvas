@@ -94,7 +94,7 @@ count gap suggests.
 | SectionCard | 🔀 Folded | Cards (`section-card.css`) |
 | StatCard | 🔀 Folded | Cards / Stats (`stat-card.css`) |
 | StatusBadge | 🔀 Folded | Badges — `.status-badge` |
-| Stepper | ✅ Carried | Steppers (`stepper`) — re-tiered to Organism |
+| Steps | ✅ Carried | Steppers (`steps`); re-tiered to Organism, renamed Stepper to Steps |
 | Table | 🔀 Folded | Data Tables (`data-table`) |
 | Terminal | ❌ Dropped | terminal/console display |
 | ToggleGroup | 🔀 Folded | Button Groups |

@@ -12,7 +12,7 @@ import { webSkin as inputWeb, iosSkin as inputIos, androidSkin as inputAndroid }
 import { Input } from "../src/atoms/input/input.tsx";
 import { Combobox } from "../src/atoms/combobox/combobox.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
-import { NumberInput } from "../src/atoms/number-input/number-input.tsx";
+import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 
 // ---------------------------------------------------------------------------
 // Part A: the active indicator must not reflow the value text.
@@ -170,8 +170,8 @@ describe("field focus outline is suppressed on web", () => {
     assertOutlineSuppressed(container.querySelector("textarea"));
   });
 
-  it("NumberInput", () => {
-    const { container } = ui(<NumberInput placeholder="x" />);
+  it("Stepper", () => {
+    const { container } = ui(<Stepper placeholder="x" />);
     assertOutlineSuppressed(container.querySelector("input"));
   });
 });

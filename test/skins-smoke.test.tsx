@@ -77,7 +77,7 @@ const CASES: SkinCase[] = [
   { name: "Row", dir: "atoms/layout", file: "layout", children: txt("row") },
   { name: "Column", dir: "atoms/layout", file: "layout", children: txt("col") },
   { name: "Listbox", dir: "atoms/listbox", file: "listbox", props: { items: [{ label: "One", selected: true }, { label: "Two" }] } },
-  { name: "NumberInput", dir: "atoms/number-input", file: "number-input", props: { value: 3, min: 0, max: 10, onChange: noop } },
+  { name: "Stepper", dir: "atoms/stepper", file: "stepper", props: { value: 3, min: 0, max: 10, onChange: noop } },
   { name: "Pagination", dir: "atoms/pagination", file: "pagination", props: { page: 1, total: 5, onChange: noop } },
   // `inline` renders the popover card body directly (no trigger click needed).
   { name: "Popover", dir: "atoms/popover", file: "popover", props: { inline: true, title: "Title", description: "Body", actionLabel: "OK" } },
@@ -137,7 +137,7 @@ const CASES: SkinCase[] = [
   { name: "Overlay", dir: "organisms/overlays", file: "overlays", props: { open: true, onOpenChange: noop, title: "Details", description: "More info here.", drawer: true } },
   { name: "RowMenu", dir: "organisms/row-menu", file: "row-menu", props: { open: true, items: [{ label: "Edit" }, { label: "Delete", destructive: true }] } },
   { name: "Sidebar", dir: "organisms/sidebar", file: "sidebar", props: { items: [{ label: "Dashboard", icon: "■" }, { label: "Settings", badge: "3" }], active: 0 } },
-  { name: "Stepper", dir: "organisms/stepper", file: "stepper", props: { current: 1, steps: [{ label: "Cart" }, { label: "Shipping" }, { label: "Payment" }] } },
+  { name: "Steps", dir: "organisms/steps", file: "steps", props: { current: 1, steps: [{ label: "Cart" }, { label: "Shipping" }, { label: "Payment" }] } },
   { name: "TabBar", dir: "organisms/tab-bar", file: "tab-bar", props: { active: "a", onSelect: noop, items: [{ key: "a", label: "Home", icon: () => txt("H") }, { key: "b", label: "Search", icon: () => txt("S") }] } },
   { name: "Tabs", dir: "organisms/tabs", file: "tabs", props: { tabs: ["One", "Two", "Three"], active: 0 } },
   { name: "Toast", dir: "organisms/toast", file: "toast", props: { message: "Saved", success: true } },

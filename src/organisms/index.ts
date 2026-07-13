@@ -11,7 +11,7 @@ export * from "./navbars/navbars.js";
 export * from "./overlays/overlays.js";
 export * from "./row-menu/row-menu.js";
 export * from "./sidebar/sidebar.js";
-export * from "./stepper/stepper.js";
+export * from "./steps/steps.js";
 export * from "./tab-bar/tab-bar.js";
 export * from "./tabs/tabs.js";
 export * from "./toast/toast.js";

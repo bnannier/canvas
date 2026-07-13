@@ -214,8 +214,8 @@
             "icon": "list-checks"
           },
           {
-            "slug": "number-input",
-            "label": "NumberInput",
+            "slug": "stepper",
+            "label": "Stepper",
             "icon": "plus"
           },
           {
@@ -445,8 +445,8 @@
             "icon": "more-horizontal"
           },
           {
-            "slug": "stepper",
-            "label": "Stepper",
+            "slug": "steps",
+            "label": "Steps",
             "icon": "footprints"
           },
           {

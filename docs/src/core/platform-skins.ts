@@ -45,8 +45,8 @@ import { Tabs as TabsIOS } from "../../../src/organisms/tabs/tabs.ios.js";
 import { Tabs as TabsAndroid } from "../../../src/organisms/tabs/tabs.android.js";
 import { Pagination as PaginationIOS } from "../../../src/atoms/pagination/pagination.ios.js";
 import { Pagination as PaginationAndroid } from "../../../src/atoms/pagination/pagination.android.js";
-import { Stepper as StepperIOS } from "../../../src/organisms/stepper/stepper.ios.js";
-import { Stepper as StepperAndroid } from "../../../src/organisms/stepper/stepper.android.js";
+import { Steps as StepsIOS } from "../../../src/organisms/steps/steps.ios.js";
+import { Steps as StepsAndroid } from "../../../src/organisms/steps/steps.android.js";
 import { Navbar as NavbarIOS } from "../../../src/organisms/navbars/navbars.ios.js";
 import { Navbar as NavbarAndroid } from "../../../src/organisms/navbars/navbars.android.js";
 import { Sidebar as SidebarIOS } from "../../../src/organisms/sidebar/sidebar.ios.js";
@@ -101,8 +101,8 @@ import { Drawer as DrawerIOS } from "../../../src/organisms/drawer/drawer.ios.js
 import { Drawer as DrawerAndroid } from "../../../src/organisms/drawer/drawer.android.js";
 import { FilterPanel as FilterPanelIOS } from "../../../src/organisms/filter-panel/filter-panel.ios.js";
 import { FilterPanel as FilterPanelAndroid } from "../../../src/organisms/filter-panel/filter-panel.android.js";
-import { NumberInput as NumberInputIOS } from "../../../src/atoms/number-input/number-input.ios.js";
-import { NumberInput as NumberInputAndroid } from "../../../src/atoms/number-input/number-input.android.js";
+import { Stepper as StepperIOS } from "../../../src/atoms/stepper/stepper.ios.js";
+import { Stepper as StepperAndroid } from "../../../src/atoms/stepper/stepper.android.js";
 import { InputOTP as InputOTPIOS } from "../../../src/atoms/input-otp/input-otp.ios.js";
 import { InputOTP as InputOTPAndroid } from "../../../src/atoms/input-otp/input-otp.android.js";
 import { Collapsible as CollapsibleIOS } from "../../../src/molecules/collapsible/collapsible.ios.js";
@@ -122,7 +122,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Combobox: ComboboxIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS, Overlay: OverlayIOS,
-    Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Stepper: StepperIOS,
+    Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
     Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
@@ -130,7 +130,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     EmptyState: EmptyStateIOS, Feed: FeedIOS, Field: FieldIOS, Fieldset: FieldsetIOS, Form: FormIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
-    NumberInput: NumberInputIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
+    Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS, Toast: ToastIOS, Chip: ChipIOS, Emblem: EmblemIOS,
   },
   android: {
@@ -138,7 +138,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Combobox: ComboboxAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid, Overlay: OverlayAndroid,
-    Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Stepper: StepperAndroid,
+    Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
     Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
@@ -146,7 +146,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Field: FieldAndroid, Fieldset: FieldsetAndroid, Form: FormAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
-    NumberInput: NumberInputAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
+    Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, Chip: ChipAndroid, Emblem: EmblemAndroid,
   },
 };

@@ -268,7 +268,7 @@ function OverlaysPreview() {
   );
 }
 
-function SteppersPreview() {
+function StepsPreview() {
   const { tokens } = useTheme();
   const steps = [true, true, false, false];
   return (
@@ -343,6 +343,6 @@ export const ORGANISMS_TILES: CatTile[] = [
   { title: "Sidebar", href: "/components/sidebar", Preview: SidebarPreview },
   { title: "Dialog", href: "/components/dialog", Preview: DialogPreview },
   { title: "Overlay", href: "/components/overlays", Preview: OverlaysPreview },
-  { title: "Stepper", href: "/components/stepper", Preview: SteppersPreview },
+  { title: "Steps", href: "/components/steps", Preview: StepsPreview },
   { title: "Tabs", href: "/components/tabs", Preview: TabsPreview },
 ];

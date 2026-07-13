@@ -315,8 +315,8 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
-    slug: "stepper",
-    name: "Stepper",
+    slug: "steps",
+    name: "Steps",
     description: "Multi-step progress indicators: horizontal, vertical, with progress.",
     category: "Organisms",
   },
@@ -385,9 +385,9 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
-    slug: "number-input",
-    name: "NumberInput",
-    description: "A numeric stepper with − and + controls plus direct entry (the iOS UIStepper / web number-field idiom).",
+    slug: "stepper",
+    name: "Stepper",
+    description: "A ± numeric control: − and + buttons around an editable field, clamped to a range (the iOS UIStepper idiom). For a multi-step progress indicator, see Steps.",
     category: "Atoms",
   },
 

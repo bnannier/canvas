@@ -3,7 +3,7 @@ import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/re
 import type { ReactNode } from "react";
 import { Pressable, Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { NumberInput } from "../src/atoms/number-input/number-input.tsx";
+import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 import { InputOTP } from "../src/atoms/input-otp/input-otp.tsx";
 import { Collapsible } from "../src/molecules/collapsible/collapsible.tsx";
 import { Carousel } from "../src/organisms/carousel/carousel.tsx";
@@ -13,23 +13,23 @@ afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 const click = (sel: string, c: HTMLElement) => fireEvent.click(c.querySelector(sel) as Element);
 
-describe("NumberInput", () => {
+describe("Stepper", () => {
   it("increments and decrements by step, clamped, and exposes the value", () => {
     let v = 5;
     const { container, rerender } = ui(
-      <NumberInput value={v} min={0} max={10} step={1} onChange={(n) => { v = n; }} />,
+      <Stepper value={v} min={0} max={10} step={1} onChange={(n) => { v = n; }} />,
     );
     expect(container.querySelector("[aria-valuenow]")?.getAttribute("aria-valuenow")).toBe("5");
     click('[aria-label="Increase"]', container);
     expect(v).toBe(6);
-    rerender(<ThemeProvider><NumberInput value={v} min={0} max={10} onChange={(n) => { v = n; }} /></ThemeProvider>);
+    rerender(<ThemeProvider><Stepper value={v} min={0} max={10} onChange={(n) => { v = n; }} /></ThemeProvider>);
     click('[aria-label="Decrease"]', container);
     expect(v).toBe(5);
   });
 
   it("disables the minus control at the lower bound", () => {
     let called = false;
-    const { container } = ui(<NumberInput value={0} min={0} max={10} onChange={() => { called = true; }} />);
+    const { container } = ui(<Stepper value={0} min={0} max={10} onChange={() => { called = true; }} />);
     const minus = container.querySelector('[aria-label="Decrease"]');
     expect(minus?.getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(minus as Element);

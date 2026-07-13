@@ -71,7 +71,7 @@ const PATTERNS: PatternDoc[] = [
   </div>
   <div class="section-card" style="padding:16px">
     <div style="font-size:13px;font-weight:600;margin-bottom:8px">Value</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Slider, Progress, NumberInput</div>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Slider, Progress, Stepper</div>
     <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">aria-valuemin / valuemax<br>aria-valuenow</code>
   </div>
 </div>`,
