@@ -1,7 +1,7 @@
 import * as Canvas from "@olympusoss/canvas";
 import type { ColorTokens } from "@olympusoss/canvas";
 import { PLATFORM_SKINS } from "./platform-skins";
-import { Stateful } from "./live-state";
+import { Stateful, Ticker } from "./live-state";
 import type { ExampleScope, PreviewScope } from "./scope";
 
 // Web build: render the example under all three platform skins side by side — the
@@ -10,8 +10,8 @@ import type { ExampleScope, PreviewScope } from "./scope";
 // registry. `tokens` is the live, theme-aware value, injected by the caller.
 export function buildScopes(tokens: ColorTokens): PreviewScope[] {
   return [
-    { label: "iOS", platform: "ios", scope: { ...Canvas, ...PLATFORM_SKINS.ios, tokens, Stateful } as unknown as ExampleScope },
-    { label: "Android", platform: "android", scope: { ...Canvas, ...PLATFORM_SKINS.android, tokens, Stateful } as unknown as ExampleScope },
-    { label: "Web", platform: "web", scope: { ...Canvas, tokens, Stateful } as unknown as ExampleScope },
+    { label: "iOS", platform: "ios", scope: { ...Canvas, ...PLATFORM_SKINS.ios, tokens, Stateful, Ticker } as unknown as ExampleScope },
+    { label: "Android", platform: "android", scope: { ...Canvas, ...PLATFORM_SKINS.android, tokens, Stateful, Ticker } as unknown as ExampleScope },
+    { label: "Web", platform: "web", scope: { ...Canvas, tokens, Stateful, Ticker } as unknown as ExampleScope },
   ];
 }
