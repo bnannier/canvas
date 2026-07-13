@@ -3,17 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { LineChart } = scope;
+  const { AreaChart } = scope;
   return (
-<LineChart
-  title="Signups"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+<AreaChart
+  title="Traffic by channel"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
   series={[
-    { label: "Web", values: [120, 180, 150, 240, 300, 280] },
-    { label: "Mobile", values: [60, 90, 140, 160, 220, 260] }
+    { label: "Direct", values: [40, 55, 45, 70, 65, 30, 25] },
+    { label: "Search", values: [80, 95, 90, 120, 130, 60, 50] },
+    { label: "Social", values: [20, 30, 25, 45, 60, 80, 70] }
   ]}
+  stacked
   curved
-  defaultSelected={4}
   style={{ maxWidth: 560 }}
 />
   );

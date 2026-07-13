@@ -3,18 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { AreaChart } = scope;
+  const { LineChart } = scope;
   return (
-<AreaChart
-  title="Traffic by channel"
-  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-  series={[
-    { label: "Direct", values: [40, 55, 45, 70, 65, 30, 25] },
-    { label: "Search", values: [80, 95, 90, 120, 130, 60, 50] },
-    { label: "Social", values: [20, 30, 25, 45, 60, 80, 70] }
-  ]}
-  stacked
-  curved
+<LineChart
+  title="OLY"
+  labels={["10a", "11a", "12p", "1p", "2p", "3p", "4p"]}
+  series={[{ label: "Price", values: [187.2, 188.4, 186.9, 189.3, 190.8, 190.1, 191.6] }]}
+  baseline={188}
+  fade
   style={{ maxWidth: 560 }}
 />
   );

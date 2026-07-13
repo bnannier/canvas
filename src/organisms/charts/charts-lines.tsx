@@ -1,5 +1,5 @@
-import { type ReactNode } from "react";
-import { Circle, Path } from "react-native-svg";
+import { useId, type ReactNode } from "react";
+import { Circle, Defs, LinearGradient, Line as SvgLine, Path, Stop } from "react-native-svg";
 import { View, Text, useTheme, useControllableState, alpha, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
@@ -67,6 +67,15 @@ interface CartesianSeriesProps {
 export interface LineChartProps extends CartesianSeriesProps {
   /** Mark each datum with a dot. */
   dots?: boolean;
+  /**
+   * Reference value (e.g. previous close) drawn as a dashed line. A single
+   * series with no explicit tone auto-tones success/destructive by whether
+   * its last value sits above or below the baseline - the trading-app
+   * gain/loss idiom.
+   */
+  baseline?: number;
+  /** Soft gradient fade under each line (the price-chart look). */
+  fade?: boolean;
 }
 
 export interface AreaChartProps extends CartesianSeriesProps {
@@ -90,10 +99,16 @@ const finite = (v: number | undefined): number => (Number.isFinite(v) ? (v as nu
 
 // Shared per-chart setup: warnings, tone/color resolution, the y extent, the
 // accessible name, and the frame + legend + surface shell around the marks.
-function useSeriesChart(kind: "line" | "area", props: CartesianSeriesProps, stacked: boolean) {
+function useSeriesChart(
+  kind: "line" | "area",
+  props: CartesianSeriesProps,
+  stacked: boolean,
+  opts?: { extraExtent?: number[]; autoTone?: Tone },
+) {
   const { labels, series } = props;
   const { tokens } = useTheme();
-  const tone = toneOf(props);
+  // An explicit tone boolean always wins over a derived (gain/loss) tone.
+  const tone = props.success || props.destructive ? toneOf(props) : (opts?.autoTone ?? toneOf(props));
   const multi = series.length > 1;
   const formatValue = props.formatValue ?? formatCompact;
 
@@ -123,8 +138,10 @@ function useSeriesChart(kind: "line" | "area", props: CartesianSeriesProps, stac
   } else {
     dataMax = Math.max(0, ...values);
   }
-  const dataMin = Math.min(0, ...values);
-  const yExtent: [number, number] = [props.min ?? dataMin, props.max ?? (dataMax === 0 ? 1 : dataMax)];
+  const extra = (opts?.extraExtent ?? []).filter((v) => Number.isFinite(v));
+  const dataMin = Math.min(0, ...values, ...extra);
+  const dataMaxAll = Math.max(dataMax, ...(extra.length ? extra : [-Infinity]));
+  const yExtent: [number, number] = [props.min ?? dataMin, props.max ?? (dataMaxAll <= 0 ? 1 : dataMaxAll)];
 
   // The accessible name carries the data itself, series-prefixed, so a screen
   // reader hears "Revenue: Jan 12, Feb 19, ...; Costs: Jan 8, ..." (role="img"
@@ -222,12 +239,53 @@ function chartShell(
 /** Build a LineChart from a platform skin. */
 export function createLineChart(skin: ChartSkin) {
   return function LineChart(props: LineChartProps) {
-    const ctx = useSeriesChart("line", props, false);
+    const baseline = Number.isFinite(props.baseline) ? (props.baseline as number) : undefined;
+    // Gain/loss auto tone: single series vs the baseline, by its last value.
+    const lastValue = props.series.length === 1 ? finite(props.series[0].values[props.labels.length - 1]) : undefined;
+    const autoTone = baseline != null && lastValue != null ? (lastValue >= baseline ? "success" : "destructive") : undefined;
+    const ctx = useSeriesChart("line", props, false, {
+      extraExtent: baseline != null ? [baseline] : undefined,
+      autoTone,
+    });
     const curved = !!props.curved;
     const dots = !!props.dots;
+    const gradientId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
 
     return chartShell(skin, props, ctx, (layout) => (
       <>
+        {/* Soft fade under each line (defs ids are unique per chart instance:
+            SVG ids are document-global on the web). */}
+        {props.fade ? (
+          <Defs>
+            {props.series.map((sr, i) => (
+              <LinearGradient key={`g${sr.id ?? i}`} id={`${gradientId}f${i}`} x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor={ctx.colorOf(i)} stopOpacity={0.28} />
+                <Stop offset="1" stopColor={ctx.colorOf(i)} stopOpacity={0.02} />
+              </LinearGradient>
+            ))}
+          </Defs>
+        ) : null}
+        {props.fade
+          ? props.series.map((sr, i) => (
+              <Path
+                key={`fade${sr.id ?? i}`}
+                d={areaPath(seriesPoints(sr, props.labels, layout), layout.plotH, curved)}
+                fill={`url(#${gradientId}f${i})`}
+              />
+            ))
+          : null}
+        {/* Dashed reference line (e.g. previous close). */}
+        {baseline != null ? (
+          <SvgLine
+            x1={0}
+            y1={layout.y(baseline)}
+            x2={layout.plotW}
+            y2={layout.y(baseline)}
+            stroke={ctx.tokens["muted-foreground"]}
+            strokeWidth={1}
+            strokeDasharray="4,4"
+          />
+        ) : null}
         {props.series.map((sr, i) => {
           const pts = seriesPoints(sr, props.labels, layout);
           const color = ctx.colorOf(i);

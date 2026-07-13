@@ -52,6 +52,19 @@ Bars, lines, areas, stacked bars, gauges, heatmaps. One token-themed family with
 />
 ```
 
+### Line - price vs previous close
+
+```tsx
+<LineChart
+  title="OLY"
+  labels={["10a", "11a", "12p", "1p", "2p", "3p", "4p"]}
+  series={[{ label: "Price", values: [187.2, 188.4, 186.9, 189.3, 190.8, 190.1, 191.6] }]}
+  baseline={188}
+  fade
+  style={{ maxWidth: 560 }}
+/>
+```
+
 ### Chart type - area
 
 ```tsx

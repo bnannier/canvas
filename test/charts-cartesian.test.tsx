@@ -66,6 +66,20 @@ describe("LineChart", () => {
     expect(container.textContent ?? "").not.toContain("Mobile");
   });
 
+  it("baseline + fade render with the data intact in the accessible name", () => {
+    const { container } = ui(
+      <LineChart
+        labels={["10a", "11a"]}
+        series={[{ label: "Price", values: [187.2, 191.6] }]}
+        baseline={188}
+        fade
+      />,
+    );
+    expect(plotName(container)).toContain("Price: 10a 187.2, 11a 191.6");
+    // Single series stays legend-free even with the baseline furniture.
+    expect(container.textContent ?? "").not.toContain("Price");
+  });
+
   it("renders y tick labels once measured, and hides them under hideAxes", () => {
     // happy-dom reports zero layout width, so the frame stays unmeasured and
     // furniture must not render; this locks in the graceful pre-measure state.
