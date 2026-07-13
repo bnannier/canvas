@@ -81,7 +81,7 @@ describe("field active indicator: content box stays fixed across the active stat
 // Every field skin paints its own focus affordance (web border -> ring, iOS
 // hairline, Android indicator), so the shared FOCUS_RESET suppresses the browser
 // outline. This locks that the field shells apply it on every rendered field
-// (the bare/multiline Input path was the one that regressed).
+// (the bare Input path was the one that regressed).
 // ---------------------------------------------------------------------------
 
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
@@ -100,11 +100,6 @@ describe("field focus outline is suppressed on web", () => {
   it("Input (bare single-line)", () => {
     const { container } = ui(<Input placeholder="x" />);
     assertOutlineSuppressed(container.querySelector("input"));
-  });
-
-  it("Input (multiline / text area)", () => {
-    const { container } = ui(<Input multiline placeholder="x" />);
-    assertOutlineSuppressed(container.querySelector("textarea"));
   });
 
   it("Input (grouped with addon)", () => {

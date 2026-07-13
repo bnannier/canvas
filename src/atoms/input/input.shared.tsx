@@ -79,9 +79,7 @@ export interface InputProps extends TextEntryProps, FieldWidthProps {
   // Width axis (block/narrow/wide) comes from FieldWidthProps: a bare field
   // caps at the standard width on desktop and fills its container at the sm
   // breakpoint and below; `block` fills the container everywhere.
-  /** Multi-line text area instead of a single-line field. Ignored when addons
-   *  (prefix/suffix/icons/action) are present, which are single-line only. */
-  multiline?: boolean;
+  // Multi-line entry is a separate concern: use the dedicated `Textarea` atom.
 
   // Addons. Passing any of these switches the field to the grouped layout: a
   // single control where a leading prefix and/or trailing suffix share one outer
@@ -145,7 +143,6 @@ export function createInput(skin: InputSkin) {
       placeholder,
       disabled,
       readOnly,
-      multiline,
       prefix,
       suffix,
       leadingIcon,
@@ -218,14 +215,14 @@ export function createInput(skin: InputSkin) {
       "aria-describedby": props["aria-describedby"],
     };
 
-    // Bare field (and the multiline text area): no addons.
+    // Bare field: no addons.
     if (!hasAddons) {
       return (
         <TextInput
           ref={ref}
           style={[
             skin.bareField(tokens, borderColor, focused, isError),
-            skin.bareBox(size, !!multiline),
+            skin.bareBox(size),
             text,
             // Suppress the browser's default focus outline on web (RN Web draws it
             // on the <input>/<textarea>). Every skin paints its own focus affordance
@@ -238,8 +235,7 @@ export function createInput(skin: InputSkin) {
             widthCap,
             style,
           ]}
-          multiline={multiline}
-          textAlignVertical={multiline ? "top" : "center"}
+          textAlignVertical="center"
           {...common}
         />
       );

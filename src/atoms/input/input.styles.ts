@@ -28,8 +28,8 @@ export type Size = "small" | "base" | "large";
 export interface InputSkin {
   /** Type scale per size; the field and its addons share it so they line up. */
   text: (t: ColorTokens, size: Size) => TextStyle;
-  /** Height (single line) or min-height (multiline) of the bare field. */
-  bareBox: (size: Size, multiline: boolean) => TextStyle;
+  /** Height of the single-line bare field. */
+  bareBox: (size: Size) => TextStyle;
   /** Fixed row height for the grouped layout (addon boxes set it). */
   groupedHeight: (size: Size) => number;
   /** The bare field surface: shape, fill, border/underline for the active state. */
@@ -62,10 +62,7 @@ function webText(_t: ColorTokens, size: Size): TextStyle {
 // ---------- Web: the established Canvas look ----------
 export const webSkin: InputSkin = {
   text: webText,
-  bareBox: (size, multiline) => {
-    if (multiline) return { minHeight: size === "large" ? 96 : size === "small" ? 64 : 80 };
-    return { height: size === "large" ? 40 : size === "small" ? 32 : 36 };
-  },
+  bareBox: (size) => ({ height: size === "large" ? 40 : size === "small" ? 32 : 36 }),
   groupedHeight: (size) => (size === "large" ? 40 : size === "small" ? 32 : 36),
   bareField: (t, borderColor) => ({
     width: "100%",
@@ -156,10 +153,7 @@ function iosHairline(t: ColorTokens, borderColor: keyof ColorTokens, focused: bo
 }
 export const iosSkin: InputSkin = {
   text: webText,
-  bareBox: (size, multiline) => {
-    if (multiline) return { minHeight: size === "large" ? 110 : size === "small" ? 76 : 92 };
-    return { height: size === "large" ? 50 : size === "small" ? 36 : 44 };
-  },
+  bareBox: (size) => ({ height: size === "large" ? 50 : size === "small" ? 36 : 44 }),
   groupedHeight: (size) => (size === "large" ? 50 : size === "small" ? 36 : 44),
   bareField: (t, borderColor, focused, error) => ({
     width: "100%",
@@ -168,8 +162,8 @@ export const iosSkin: InputSkin = {
     backgroundColor: "transparent",
     ...iosHairline(t, borderColor, focused, error, 10),
     // Suppress the react-native-web focus outline box and pin the caret to the
-    // brand `primary` (the bare + multiline path never got the shell's
-    // FIELD_OUTLINE_RESET, so on focus it showed a browser-blue rectangle).
+    // brand `primary` (the bare path never got the shell's FIELD_OUTLINE_RESET,
+    // so on focus it showed a browser-blue rectangle).
     ...iosWebFieldReset(t),
     // No horizontal inset so the value text aligns flush with the hairline edge,
     // as in the iOS 27 render.
@@ -245,10 +239,7 @@ export const androidSkin: InputSkin = {
     if (size === "small") return { fontSize: 14, lineHeight: 20 };
     return { fontSize: 16, lineHeight: 24 };
   },
-  bareBox: (size, multiline) => {
-    if (multiline) return { minHeight: size === "large" ? 120 : size === "small" ? 88 : 104 };
-    return { height: size === "large" ? 60 : size === "small" ? 48 : 56 };
-  },
+  bareBox: (size) => ({ height: size === "large" ? 60 : size === "small" ? 48 : 56 }),
   groupedHeight: (size) => (size === "large" ? 60 : size === "small" ? 48 : 56),
   bareField: (t, borderColor, focused, error) => ({
     width: "100%",

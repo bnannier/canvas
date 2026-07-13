@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input error placeholder="rachel.chen@example.com" />
+<Input disabled placeholder="rachel.chen@example.com" />
   );
 }
