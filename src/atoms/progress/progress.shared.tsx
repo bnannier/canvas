@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, useTheme, useFieldWidth, type ColorTokens, type FieldWidthProps, type ViewStyle, type StyleProp } from "../../style/index.js";
+import { View, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, type ColorTokens, type FieldWidthProps, type ViewStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill colors follow
@@ -13,7 +13,9 @@ import { View, useTheme, useFieldWidth, type ColorTokens, type FieldWidthProps, 
 // Progress is OUTPUT-ONLY: it reports task completion, so there is no onChange and the
 // control is never interactive (no Pressable, no press feedback).
 //
-//   Determinate  (default): the fill width is `value`, clamped to 0..1.
+//   Determinate  (default): the fill reaches `value` (clamped to 0..1) and EASES to it on
+//     every change (an upload ticking up slides rather than jumps), like the reference
+//     platforms; Reduce Motion snaps instead. See the animatedFraction block below.
 //   Indeterminate (`indeterminate`): `value` is ignored and a short bar slides and loops
 //     across the track (on iOS the entry threads the kit Spinner instead: iOS has no
 //     linear indeterminate idiom, the activity indicator is the unknown-duration control).
@@ -159,6 +161,44 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
       outputRange: [-barWidth, trackWidth],
     });
 
+    // Determinate fill animation. The active fill's extent EASES toward `value` on every
+    // change (an upload ticking 0.30 → 0.55 slides rather than jumps), matching the
+    // reference platforms: iOS UIProgressView setProgress:animated:, Material 3's animated
+    // indicator, and the shadcn/Radix web bar's transitioned fill. `animatedFraction` holds
+    // the eased 0..1 position, initialised to the first fraction so the bar paints its value
+    // at rest (no fill-up-on-mount). The fill is positioned by translateX (a transform, so it
+    // is native-driver-safe off-thread and, unlike an animated width, is NOT frozen under the
+    // Android New Architecture); web falls back to the JS driver. Reduced Motion snaps to the
+    // value instead of easing — the fill is information-bearing, so it still updates; only the
+    // decorative transition is dropped (per WCAG 2.3.3, matching motion.ts's contract).
+    const reduced = useReducedMotion();
+    const animatedFraction = useRef(new Animated.Value(fraction)).current;
+    useEffect(() => {
+      if (indeterminate) return; // determinate only; the sliding bar owns `progress`
+      if (reduced) {
+        animatedFraction.setValue(fraction);
+        return;
+      }
+      const anim = Animated.timing(animatedFraction, {
+        toValue: fraction,
+        duration: 450,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: supportsNativeDriver,
+      });
+      anim.start();
+      return () => anim.stop();
+    }, [fraction, indeterminate, reduced, animatedFraction]);
+
+    // The active fill is a full-width bar translated left so its rounded trailing edge sits
+    // at `fraction` of the track, clipped by the track's overflow (the shadcn/Radix model:
+    // the leading corner keeps its radius, with no scaleX cap distortion). The translate is
+    // in measured px; until the first onLayout reports a width the render falls back to a
+    // static percent-width fill so the value paints immediately with no empty flash.
+    const activeTranslateX = animatedFraction.interpolate({
+      inputRange: [0, 1],
+      outputRange: [-trackWidth, 0],
+    });
+
     // iOS indeterminate idiom: iOS has no linear indeterminate bar (the iOS 27 kit's
     // unknown-duration control is the activity indicator), so when the entry threads a
     // Spinner the skin path swaps the visual while the cross-platform `indeterminate`
@@ -183,6 +223,17 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const stopSize = !indeterminate && skin.stopIndicator ? Math.min(4, height) : 0;
     const stopInset = (height - stopSize) / 2;
 
+    // Segmented (M3) inactive track: a full-width bar translated to start a `gap` past the
+    // active edge (its trailing overflow is clipped). The gap only opens once there is some
+    // progress (outputRange 0 at fraction 0), so at rest-empty the track spans the full rail,
+    // matching the static anatomy. Driven by the same eased `animatedFraction` as the fill.
+    const inactiveTranslateX = segmented
+      ? Animated.add(
+          animatedFraction.interpolate({ inputRange: [0, 1], outputRange: [0, trackWidth] }),
+          animatedFraction.interpolate({ inputRange: [0, 0.0001, 1], outputRange: [0, gap, gap] }),
+        )
+      : null;
+
     return (
       <View
         accessibilityRole="progressbar"
@@ -198,11 +249,12 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         testID={testID}
         onLayout={onLayout}
         style={[
-          { width: "100%", height, borderRadius: radius },
-          // The continuous structure paints the inactive track as the container fill and
-          // clips the sliding/filled bar; the segmented (M3) structure draws its own
-          // track segment, so the container stays transparent.
-          segmented ? null : { backgroundColor: trackColor, overflow: "hidden" as const },
+          // overflow:hidden clips the sliding indeterminate bar AND the translated
+          // determinate fill/segments to the rounded rail. The continuous structure paints
+          // the inactive track as the container fill; the segmented (M3) structure draws its
+          // own track segment, so the container stays transparent there.
+          { width: "100%", height, borderRadius: radius, overflow: "hidden" as const },
+          segmented ? null : { backgroundColor: trackColor },
           widthStyle,
           style,
         ]}
@@ -221,32 +273,66 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
           />
         ) : segmented ? (
           <>
-            {/* Inactive track segment: from (active edge + gap) to the trailing end.
-                Percent `start` + marginStart render without waiting for measurement;
-                at 100% the over-constrained box resolves to zero width. At 0 there is
-                no active bar, so the track spans the full rail with no gap. */}
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                bottom: 0,
-                start: `${fraction * 100}%`,
-                end: 0,
-                marginStart: fraction > 0 ? gap : 0,
-                borderRadius: radius,
-                backgroundColor: trackColor,
-              }}
-            />
-            {fraction > 0 ? (
-              <View
-                style={{
-                  height: "100%",
-                  width: `${fraction * 100}%`,
-                  borderRadius: radius,
-                  backgroundColor: fillColor,
-                }}
-              />
-            ) : null}
+            {trackWidth > 0 ? (
+              <>
+                {/* Inactive track: full-width, translated to start a `gap` past the active
+                    edge; the trailing overflow is clipped by the container. */}
+                <Animated.View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    width: trackWidth,
+                    borderRadius: radius,
+                    backgroundColor: trackColor,
+                    transform: [{ translateX: inactiveTranslateX! }],
+                  }}
+                />
+                {/* Active indicator: full-width, translated left so its rounded trailing
+                    edge sits at `fraction` of the track (eased). */}
+                <Animated.View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    width: trackWidth,
+                    borderRadius: radius,
+                    backgroundColor: fillColor,
+                    transform: [{ translateX: activeTranslateX }],
+                  }}
+                />
+              </>
+            ) : (
+              // Pre-measurement fallback: the static percent-based M3 anatomy, so the value
+              // paints immediately (the inactive segment from active edge + gap to the end,
+              // the active bar, and no gap at rest-empty).
+              <>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    start: `${fraction * 100}%`,
+                    end: 0,
+                    marginStart: fraction > 0 ? gap : 0,
+                    borderRadius: radius,
+                    backgroundColor: trackColor,
+                  }}
+                />
+                {fraction > 0 ? (
+                  <View
+                    style={{
+                      height: "100%",
+                      width: `${fraction * 100}%`,
+                      borderRadius: radius,
+                      backgroundColor: fillColor,
+                    }}
+                  />
+                ) : null}
+              </>
+            )}
             {stopSize > 0 ? (
               // M3 stop indicator: a 4x4dp dot in the active color pinned at the
               // trailing edge (vertically centered: flush on the 4dp base track, 2dp
@@ -264,7 +350,23 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
               />
             ) : null}
           </>
+        ) : trackWidth > 0 ? (
+          // Continuous (iOS/web): full-width fill translated left so its rounded trailing
+          // edge sits at `fraction` of the track (eased), clipped by the container overflow.
+          <Animated.View
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: trackWidth,
+              borderRadius: radius,
+              backgroundColor: fillColor,
+              transform: [{ translateX: activeTranslateX }],
+            }}
+          />
         ) : (
+          // Pre-measurement fallback: static percent-width fill so the value paints at once.
           <View
             style={{
               height: "100%",
