@@ -32,8 +32,15 @@ export interface RadioProps {
   onChange?: (checked: boolean, event: GestureResponderEvent) => void;
   /** E2E hook forwarded to the pressable row. */
   testID?: string;
-  /** Label text shown beside the control. */
+  /** Label text (the option's title) shown beside the control. */
   children?: ReactNode;
+  /**
+   * Optional muted secondary line rendered under the label, for the common
+   * title-plus-description option (a plan picker, a settings choice). Supplying it
+   * builds the stacked title/description layout inside the control, so the caller
+   * never hand-composes a Row + Column + two Typography nodes per option.
+   */
+  description?: ReactNode;
   // Size (pick one; default is the 16px control).
   small?: boolean;
   large?: boolean;
@@ -61,6 +68,8 @@ export interface RadioSkin {
   dot: (tokens: ColorTokens, size: Size) => ViewStyle;
   /** The label text to the right of the ring. */
   label: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
+  /** The muted secondary description line, rendered under the label when present. */
+  description: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
   /** Opacity applied to the row when disabled. */
   disabledOpacity: number;
   /** iOS/web dim the row on press; Android uses a ripple instead (null). */
@@ -73,12 +82,20 @@ export interface RadioSkin {
 // multi-line label hangs from the ring's first line.
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
 
+// Stacks the title over its description beside the ring. The 8px gap matches the
+// kit's default column spacing (the arrangement callers used to hand-compose), so
+// the built-in layout reproduces the established look. `flexShrink` lets a long
+// description wrap within the row instead of forcing the row wider.
+const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
+
 /** Build a Radio component from a platform skin. */
 export function createRadio(skin: RadioSkin) {
   return function Radio(props: RadioProps) {
-    const { checked, selected, onChange, children, style } = props;
+    const { checked, selected, onChange, children, description, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
+    // Whether the control carries any text at all (title and/or description).
+    const hasText = children != null || description != null;
 
     // Inside a RadioGroup the group owns selection: this radio reads checked from
     // the group matching its `value`, and pressing it tells the group to select
@@ -101,9 +118,9 @@ export function createRadio(skin: RadioSkin) {
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
-        // Icon-only (no label): grow the small ring's tap target toward ~44pt.
+        // Icon-only (no text): grow the small ring's tap target toward ~44pt.
         // With a label the whole row is already a generous target, so leave it.
-        hitSlop={children == null ? 8 : undefined}
+        hitSlop={!hasText ? 8 : undefined}
         accessibilityRole="radio"
         accessibilityState={{ checked: isChecked, disabled: !!disabled }}
         aria-checked={isChecked}
@@ -115,10 +132,19 @@ export function createRadio(skin: RadioSkin) {
           style,
         ]}
       >
-        <View style={skin.ring(tokens, size, isChecked, children != null)}>
+        <View style={skin.ring(tokens, size, isChecked, hasText)}>
           {isChecked ? <View style={skin.dot(tokens, size)} /> : null}
         </View>
-        {children != null ? <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text> : null}
+        {hasText ? (
+          description != null ? (
+            <View style={TEXT_COLUMN}>
+              {children != null ? <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text> : null}
+              <Text style={skin.description(tokens, size, !!disabled)}>{description}</Text>
+            </View>
+          ) : (
+            <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text>
+          )
+        ) : null}
       </Pressable>
     );
   };

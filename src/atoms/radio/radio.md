@@ -6,29 +6,9 @@ Single-pick selection: stacked, inline, card-style.
 
 ```tsx
 <RadioGroup defaultValue="pro">
-  <Column snug>
-    <Row snug alignStart>
-      <Radio value="hobby" />
-      <Column>
-        <Typography small medium>Hobby</Typography>
-        <Typography tiny muted>For personal projects and experiments.</Typography>
-      </Column>
-    </Row>
-    <Row snug alignStart>
-      <Radio value="pro" />
-      <Column>
-        <Typography small medium>Pro</Typography>
-        <Typography tiny muted>For growing teams that need more control.</Typography>
-      </Column>
-    </Row>
-    <Row snug alignStart>
-      <Radio value="enterprise" />
-      <Column>
-        <Typography small medium>Enterprise</Typography>
-        <Typography tiny muted>Advanced security, compliance, and support.</Typography>
-      </Column>
-    </Row>
-  </Column>
+  <Radio value="hobby" description="For personal projects and experiments.">Hobby</Radio>
+  <Radio value="pro" description="For growing teams that need more control.">Pro</Radio>
+  <Radio value="enterprise" description="Advanced security, compliance, and support.">Enterprise</Radio>
 </RadioGroup>
 ```
 
@@ -102,18 +82,10 @@ Single-pick selection: stacked, inline, card-style.
 
 ### Stacked
 
-**Do** — Align the control to the first text line so it sits beside the title, with the description flowing below.
+**Do** — Pass a `description` and the control stacks the title over its secondary line for you, ring aligned to the first text line.
 
 ```tsx
-<Column snug>
-  <Row snug alignStart>
-    <Radio checked />
-    <Column>
-      <Typography small medium>Pro</Typography>
-      <Typography tiny muted>For growing teams that need more control.</Typography>
-    </Column>
-  </Row>
-</Column>
+<Radio checked description="For growing teams that need more control.">Pro</Radio>
 ```
 
 **Don't** — Center-aligning the control floats it to the vertical middle of a two-line label, leaving it visually unattached to the title it controls.

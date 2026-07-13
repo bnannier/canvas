@@ -46,6 +46,21 @@ function label(tokens: ColorTokens, size: Size, disabled: boolean): TextStyle {
   };
 }
 
+// Description type per size — one step below the label, matching the kit's other
+// title+description controls (Switch). Muted secondary color on every platform.
+const DESCRIPTION_TYPE: Record<Size, TextStyle> = {
+  small: { fontSize: 11, lineHeight: 15 },
+  default: { fontSize: 12, lineHeight: 16 },
+  large: { fontSize: 14, lineHeight: 20 },
+};
+
+// The muted secondary line under the label. The whole row already dims when
+// disabled, so the description keeps the muted token in either state. Shared across
+// every platform (brand secondary type, not a platform face).
+function description(tokens: ColorTokens, size: Size, _disabled: boolean): TextStyle {
+  return { color: tokens["muted-foreground"], ...DESCRIPTION_TYPE[size] };
+}
+
 // Ring base: a perfect circle, centered, nudged down (`marginTop: 3`) to align with
 // the label's first line. Per-platform border weight is layered on by each skin.
 function ringBase(box: number, nudge: boolean): ViewStyle {
@@ -75,6 +90,7 @@ export const webSkin: RadioSkin = {
   }),
   dot: (t, size) => ({ ...dotBase(WEB_DOT[size]), backgroundColor: t.primary }),
   label,
+  description,
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
@@ -89,6 +105,7 @@ export const iosSkin: RadioSkin = {
   }),
   dot: (t, size) => ({ ...dotBase(IOS_DOT[size]), backgroundColor: t.primary }),
   label,
+  description,
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,
   ripple: null,
@@ -103,6 +120,7 @@ export const androidSkin: RadioSkin = {
   }),
   dot: (t, size) => ({ ...dotBase(ANDROID_DOT[size]), backgroundColor: t.primary }),
   label,
+  description,
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: t.primary, borderless: true, radius: 20 }), // 40dp state layer

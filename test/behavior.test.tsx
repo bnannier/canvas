@@ -5,6 +5,7 @@ import type { TextInput } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
+import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
 import { Combobox } from "../src/atoms/combobox/combobox.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
@@ -111,6 +112,32 @@ describe("Radio", () => {
     expect(container.querySelector("[aria-checked]")?.getAttribute("aria-checked")).toBe("false");
     fireEvent.click(screen.getByText("Option A"));
     expect(toggled).toBe(true);
+  });
+
+  it("renders the built-in title and description without hand-composed layout", () => {
+    ui(<Radio checked description="For growing teams that need more control.">Pro</Radio>);
+    expect(screen.getByText("Pro")).not.toBeNull();
+    expect(screen.getByText("For growing teams that need more control.")).not.toBeNull();
+  });
+});
+
+describe("RadioGroup", () => {
+  it("selects on press and moves the single selection to the pressed option", () => {
+    let picked: string | number | undefined;
+    const { container } = ui(
+      <RadioGroup defaultValue="pro" onChange={(v) => { picked = v; }}>
+        <Radio value="hobby" description="For personal projects.">Hobby</Radio>
+        <Radio value="pro" description="For growing teams.">Pro</Radio>
+        <Radio value="enterprise" description="Advanced security.">Enterprise</Radio>
+      </RadioGroup>,
+    );
+    // Exactly one option is chosen out of the box (defaultValue).
+    const checked = Array.from(container.querySelectorAll('[aria-checked="true"]'));
+    expect(checked.length).toBe(1);
+    // Pressing another option moves the selection to it.
+    fireEvent.click(screen.getByText("Enterprise"));
+    expect(picked).toBe("enterprise");
+    expect(container.querySelectorAll('[aria-checked="true"]').length).toBe(1);
   });
 });
 

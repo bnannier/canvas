@@ -3,16 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Radio, Typography, Row, Column } = scope;
+  const { Radio } = scope;
   return (
-<Column snug>
-  <Row snug alignStart>
-    <Radio checked />
-    <Column>
-      <Typography small medium>Pro</Typography>
-      <Typography tiny muted>For growing teams that need more control.</Typography>
-    </Column>
-  </Row>
-</Column>
+<Radio checked description="For growing teams that need more control.">Pro</Radio>
   );
 }
