@@ -103,7 +103,7 @@ function useSeriesChart(
   kind: "line" | "area",
   props: CartesianSeriesProps,
   stacked: boolean,
-  opts?: { extraExtent?: number[]; autoTone?: Tone },
+  opts?: { extraExtent?: number[]; autoTone?: Tone; zeroBased?: boolean },
 ) {
   const { labels, series } = props;
   const { tokens } = useTheme();
@@ -139,7 +139,10 @@ function useSeriesChart(
     dataMax = Math.max(0, ...values);
   }
   const extra = (opts?.extraExtent ?? []).filter((v) => Number.isFinite(v));
-  const dataMin = Math.min(0, ...values, ...extra);
+  // Category charts are zero-based (bars/areas encode magnitude); the price
+  // idiom (a baseline) hugs the data range instead, like a scatter axis.
+  const pool = [...values, ...extra];
+  const dataMin = pool.length === 0 ? 0 : opts?.zeroBased === false ? Math.min(...pool) : Math.min(0, ...pool);
   const dataMaxAll = Math.max(dataMax, ...(extra.length ? extra : [-Infinity]));
   const yExtent: [number, number] = [props.min ?? dataMin, props.max ?? (dataMaxAll <= 0 ? 1 : dataMaxAll)];
 
@@ -246,6 +249,9 @@ export function createLineChart(skin: ChartSkin) {
     const ctx = useSeriesChart("line", props, false, {
       extraExtent: baseline != null ? [baseline] : undefined,
       autoTone,
+      // A baseline marks the price idiom: the domain hugs the data instead of
+      // anchoring at zero, so intraday moves stay readable.
+      zeroBased: baseline == null,
     });
     const curved = !!props.curved;
     const dots = !!props.dots;
