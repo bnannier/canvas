@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Popover } = scope;
+  const { Input, Popover } = scope;
   return (
 <Popover
   trigger="Open popover"
-  title="Popover"
-  description="A short prompt with supporting text and one follow-up action."
-  actionLabel="Close"
-/>
+  title="Rename project"
+  description="Choose a name your team will recognize."
+  actionLabel="Rename"
+>
+  <Input value="Identity Platform" />
+</Popover>
   );
 }

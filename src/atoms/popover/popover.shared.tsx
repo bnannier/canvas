@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
@@ -27,11 +27,14 @@ import * as s from "./popover.styles.js";
 //   above-the-trigger `top` anchoring is not yet supported (see the note by the
 //   AnchoredOverlay call).
 //
-// Content props (the children-less / data-driven case):
+// Content props:
 //
 // - `trigger`: label for the trigger Button (rendered as <Button outline small>).
 // - `title`: the popover heading.
 // - `description`: the supporting line beneath the title.
+// - `children`: custom panel content (an input, a form row, any node), rendered
+//   in the card body between the description and the action row. Composes with
+//   the data-driven props — pass any subset of the four.
 // - `actionLabel`: when set, renders a <Button primary small> action row.
 //
 // State:
@@ -46,6 +49,8 @@ export interface PopoverProps {
   title?: string;
   /** Supporting line beneath the title. */
   description?: string;
+  /** Custom panel content (an input, a form row, any node), rendered in the card body between the description and the action row. Composes with the data-driven props. */
+  children?: ReactNode;
   /** When set, renders a primary action button at the bottom of the card. */
   actionLabel?: string;
   // Placement (pick one; default is `bottom`). The card anchors below the trigger
@@ -77,7 +82,7 @@ function placementOf(p: PopoverProps): Placement {
 /** Build a Popover component from a platform skin. */
 export function createPopover(skin: PopoverSkin) {
   return function Popover(props: PopoverProps) {
-    const { trigger, title, description, actionLabel, inline, onOpenChange, testID, style } = props;
+    const { trigger, title, description, children, actionLabel, inline, onOpenChange, testID, style } = props;
     const { tokens, surface } = useTheme();
     const [internalOpen, setInternalOpen] = useState(false);
     // In static (inline) mode the card is always shown; otherwise it is
@@ -101,12 +106,17 @@ export function createPopover(skin: PopoverSkin) {
     const [triggerWidth, setTriggerWidth] = useState(0);
     const triggerRef = useRef<View>(null);
 
-    // The card body (heading, supporting line, optional action), shared by the
-    // static inline panel and the floating overlay card.
+    // The card body (heading, supporting line, custom content, optional action),
+    // shared by the static inline panel and the floating overlay card.
     const panelBody = (
       <>
         {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
         {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
+        {children != null ? (
+          // The custom-content slot, spaced from the title/description block above
+          // it; when children are the panel's first content the margin is omitted.
+          <View style={title != null || description != null ? s.bodySlot : null}>{children}</View>
+        ) : null}
         {actionLabel != null ? (
           <View style={s.actionRow}>
             <Button primary small onPress={() => setOpen(false)}>
