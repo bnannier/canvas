@@ -57,6 +57,9 @@ export interface AlertSkin {
    * the rendered size. null (web) keeps pointer targets visual.
    */
   dismissHitSlop: number | null;
+  /** Footer action region: the row layout + gap between action buttons, plus the
+   *  top separation dividing them from the body above. */
+  actions: ViewStyle;
 }
 
 export interface AlertProps {
@@ -78,6 +81,14 @@ export interface AlertProps {
   children?: ReactNode;
   /** E2E hook forwarded to the root element. */
   testID?: string;
+  /**
+   * A footer action region rendered under the body. The Alert owns the layout: it
+   * separates the actions from the description above and lays the buttons out in a
+   * row, so a call site passes the buttons directly
+   * (`actions={<Button primary small>Upgrade plan</Button>}`) with no wrapper.
+   * Pass a fragment for more than one action.
+   */
+  actions?: ReactNode;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
@@ -136,7 +147,7 @@ export function createAlert(skin: AlertSkin) {
   const iconSlot: ViewStyle = { height: skin.iconType.lineHeight, justifyContent: "center" };
 
   return function Alert(props: AlertProps) {
-    const { title, description, icon, children, dismissible, onDismiss, testID, style } = props;
+    const { title, description, icon, children, actions, dismissible, onDismiss, testID, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
 
@@ -181,6 +192,7 @@ export function createAlert(skin: AlertSkin) {
             <Text style={[skin.bodyType, bodyColor(tokens, dark, tone)]}>{description}</Text>
           ) : null}
           {children}
+          {actions != null ? <View style={skin.actions}>{actions}</View> : null}
         </View>
         {dismissible ? (
           <Pressable

@@ -38,6 +38,12 @@ const DISMISS: ViewStyle = {
   justifyContent: "center",
 };
 
+// Footer action row: the action buttons in a row (gap 8), separated from the
+// description above by a 12px lead. Identical on every platform today (the banner's
+// action spacing), factored here alongside CONTAINER/DISMISS so a skin can still
+// tune it per OS later.
+const ACTIONS: ViewStyle = { flexDirection: "row", gap: 8, marginTop: 12 };
+
 export const webSkin: AlertSkin = {
   container: { ...CONTAINER, borderRadius: 8 },
   iconType: { fontSize: 16, lineHeight: 20 },
@@ -47,6 +53,7 @@ export const webSkin: AlertSkin = {
   dismissType: { fontSize: 16, lineHeight: 16 },
   dismissPressedOpacity: 0.7,
   dismissHitSlop: null, // pointer targets stay visual on web
+  actions: ACTIONS,
 };
 
 export const iosSkin: AlertSkin = {
@@ -59,6 +66,7 @@ export const iosSkin: AlertSkin = {
   dismissType: { fontSize: 16, lineHeight: 16 },
   dismissPressedOpacity: 0.7,
   dismissHitSlop: 10, // 24pt box + 2*10 = HIG 44x44pt minimum touch target
+  actions: ACTIONS,
 };
 
 export const androidSkin: AlertSkin = {
@@ -71,4 +79,5 @@ export const androidSkin: AlertSkin = {
   dismissType: { fontSize: 16, lineHeight: 16 },
   dismissPressedOpacity: 1,
   dismissHitSlop: 12, // 24dp box + 2*12 = M3 48x48dp minimum touch target
+  actions: ACTIONS,
 };

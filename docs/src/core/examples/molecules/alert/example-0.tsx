@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Button, Icon, Row } = scope;
+  const { Alert, Button, Icon } = scope;
   return (
 <Alert
   info
@@ -11,10 +11,7 @@ export default function Example(scope: ExampleScope) {
   title="Heads up"
   description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
->
-  <Row snug>
-    <Button link small>Learn more</Button>
-  </Row>
-</Alert>
+  actions={<Button link small>Learn more</Button>}
+/>
   );
 }

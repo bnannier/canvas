@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Button, Row } = scope;
+  const { Alert, Button } = scope;
   return (
 <Alert
   error
@@ -11,10 +11,7 @@ export default function Example(scope: ExampleScope) {
   title="Something went wrong"
   description="Could not save your changes. Please try again."
   dismissible
->
-  <Row snug>
-    <Button primary small>Retry</Button>
-  </Row>
-</Alert>
+  actions={<Button primary small>Retry</Button>}
+/>
   );
 }
