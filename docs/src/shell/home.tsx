@@ -14,7 +14,7 @@ import { useLatestVersion } from "../ui/use-latest-version";
 import { CONTENT_TOP_INSET } from "./topbar";
 import { ScreenFrame } from "./native-header";
 
-const REPO_URL = "https://github.com/OlympusOSS/canvas";
+const REPO_URL = "https://github.com/bnannier/canvas";
 const NPM_URL = "https://www.npmjs.com/package/@olympusoss/canvas";
 const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
 

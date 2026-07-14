@@ -2,7 +2,7 @@
 
 **One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
 
-[![npm](https://img.shields.io/npm/v/@olympusoss/canvas.svg)](https://www.npmjs.com/package/@olympusoss/canvas) [![license](https://img.shields.io/npm/l/@olympusoss/canvas.svg)](./LICENSE) [Documentation](https://olympusoss.github.io/canvas/)
+[![npm](https://img.shields.io/npm/v/@olympusoss/canvas.svg)](https://www.npmjs.com/package/@olympusoss/canvas) [![license](https://img.shields.io/npm/l/@olympusoss/canvas.svg)](./LICENSE) [Documentation](https://bnannier.github.io/canvas/)
 
 Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; elsewhere it falls back to a genuine frost or a solid surface.
 
@@ -107,11 +107,11 @@ const brand = { primary: "#7c3aed" };
 
 ## Documentation and components
 
-Full docs, live examples, and the complete prop reference live at **<https://olympusoss.github.io/canvas/>**.
+Full docs, live examples, and the complete prop reference live at **<https://bnannier.github.io/canvas/>**.
 
 The kit exports 60+ components across atoms, molecules, and organisms, all from `@olympusoss/canvas`:
 
-- **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Number Input, Input OTP, Select, Combobox, Listbox.
+- **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Combobox, Listbox.
 - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown, Action Sheet, Toast, Command palette.
 - **Navigation**: Tabs, Tab Bar, Navbars, Sidebar, Breadcrumb, Pagination, Steps.
 - **Data and content**: Data Table, Stacked / Grid Lists, Stats, Calendar, Charts, Card, Avatar, Badge, Description Lists, Media Objects, QR Code.
@@ -121,7 +121,7 @@ Alongside the components, the package exports the style foundation: the theme ru
 
 ## Contributing
 
-Issues and pull requests are welcome at <https://github.com/OlympusOSS/canvas>. Report bugs at <https://github.com/OlympusOSS/canvas/issues>.
+Issues and pull requests are welcome at <https://github.com/bnannier/canvas>. Report bugs at <https://github.com/bnannier/canvas/issues>.
 
 ## License
 

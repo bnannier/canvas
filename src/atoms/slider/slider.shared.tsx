@@ -7,6 +7,7 @@ import {
   type AccessibilityActionEvent,
 } from "react-native";
 import { View, useTheme, useControllableState, useFieldWidth, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type StyleProp } from "../../style/index.js";
+import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill/thumb
@@ -99,10 +100,6 @@ export interface SliderSkin {
    * no ticks (the web look).
    */
   tick?: (tokens: ColorTokens, size: Size, disabled: boolean, onActive: boolean) => ViewStyle;
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, v));
 }
 
 // Snap a raw value to the step grid, anchored at `min`, then clamp to [min, max].
