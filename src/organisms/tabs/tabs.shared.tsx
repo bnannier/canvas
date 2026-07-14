@@ -1,4 +1,5 @@
-import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { I18nManager } from "react-native";
+import { View, Pressable, Text, useTheme, useControllableState, useRovingFocus, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -156,10 +157,20 @@ export function createTabs(skin: TabsSkin) {
     block?: boolean;
     disabled?: boolean;
     onPress?: () => void;
+    /** Roving-focus wiring (the single tab stop + arrow-key handler) from useRovingFocus. */
+    itemProps?: RovingItemProps;
   }
 
-  function Trigger({ label, badge, selected, variant, block, disabled, onPress }: TriggerProps) {
+  function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps }: TriggerProps) {
     const { tokens, dark } = useTheme();
+    // The roving tab stop + web arrow-key handler ride onto the Pressable. `ref` is
+    // passed explicitly (React never spreads it); `onKeyDown` is web-only, so the
+    // pair goes through a cast (RN's Pressable types omit onKeyDown), the same idiom
+    // the Slider uses for its own keyboard handler.
+    const itemRef = itemProps?.ref;
+    const rovingProps = itemProps
+      ? { focusable: itemProps.focusable, tabIndex: itemProps.tabIndex, onKeyDown: itemProps.onKeyDown }
+      : {};
 
     if (variant === "vertical") {
       // Vertical rail: a full-width, left-aligned row; the active item is filled
@@ -172,6 +183,8 @@ export function createTabs(skin: TabsSkin) {
       ];
       return (
         <Pressable
+          ref={itemRef}
+          {...(rovingProps as object)}
           onPress={onPress}
           disabled={disabled}
           android_ripple={ripple ? ripple(tokens) : undefined}
@@ -197,6 +210,8 @@ export function createTabs(skin: TabsSkin) {
       ];
       return (
         <Pressable
+          ref={itemRef}
+          {...(rovingProps as object)}
           onPress={onPress}
           disabled={disabled}
           android_ripple={ripple ? ripple(tokens) : undefined}
@@ -223,6 +238,8 @@ export function createTabs(skin: TabsSkin) {
     ];
     return (
       <Pressable
+        ref={itemRef}
+        {...(rovingProps as object)}
         onPress={onPress}
         disabled={disabled}
         android_ripple={ripple ? ripple(tokens) : undefined}
@@ -248,6 +265,17 @@ export function createTabs(skin: TabsSkin) {
     // <Tabs /> switches tabs out of the box (the standard library contract).
     const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0, onSelect);
 
+    // Roving-focus keyboard navigation (the WAI-ARIA tablist pattern): the row is one
+    // tab stop and the arrows move + activate. Horizontal for the underline/pills
+    // rows, vertical for the rail; RTL flips the horizontal arrows on the web.
+    const { getItemProps } = useRovingFocus({
+      count: tabs.length,
+      active,
+      onActivate: disabled ? () => {} : setActive,
+      orientation: variant === "vertical" ? "vertical" : "horizontal",
+      rtl: I18nManager.isRTL,
+    });
+
     if (variant === "vertical") {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
@@ -263,6 +291,7 @@ export function createTabs(skin: TabsSkin) {
               block={props.block}
               disabled={disabled}
               onPress={() => setActive(i)}
+              itemProps={disabled ? undefined : getItemProps(i)}
             />
           ))}
         </View>
@@ -282,6 +311,7 @@ export function createTabs(skin: TabsSkin) {
               block={props.block}
               disabled={disabled}
               onPress={() => setActive(i)}
+              itemProps={disabled ? undefined : getItemProps(i)}
             />
           ))}
         </View>
@@ -302,6 +332,7 @@ export function createTabs(skin: TabsSkin) {
             block={props.block}
             disabled={disabled}
             onPress={() => setActive(i)}
+              itemProps={disabled ? undefined : getItemProps(i)}
           />
         ))}
       </View>

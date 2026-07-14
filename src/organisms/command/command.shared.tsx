@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { type Role } from "react-native";
-import { View, Text, Pressable, useTheme, useControllableState, useEscapeKey, AnchoredOverlay, GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, useEscapeKey, AnchoredOverlay, GlassSurface, FOCUS_RESET, type StyleProp, type ViewProps, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
 // list container casts it. The value is correct on both web (DOM role) and native.
@@ -131,6 +131,50 @@ export function createCommand(skin: CommandSkin) {
     // would only strand it closed.
     useEscapeKey(!!trigger && open, () => setOpen(false));
 
+    // Keyboard operability (the flat command-palette pattern the footer advertises):
+    // the search row is the focusable driver, ArrowUp/Down move the highlighted
+    // `active` row (clamped), and Enter selects it. Focus stays on the search row and
+    // aria-activedescendant points at the active option, so a web screen reader
+    // announces the moving highlight. Web-only in effect (natively there is no
+    // onKeyDown and a View has no focus()), mirroring the Slider's own key handler.
+    const flatItems = groups.flatMap((g) => g.items);
+    const total = flatItems.length;
+    const baseId = useId();
+    const optionId = (i: number) => `${baseId}-opt-${i}`;
+    const searchRef = useRef<View>(null);
+    const onSearchKeyDown = (event: { key: string; preventDefault: () => void }) => {
+      if (total === 0) return;
+      switch (event.key) {
+        case "ArrowDown":
+          event.preventDefault();
+          setActive(Math.min(active + 1, total - 1));
+          break;
+        case "ArrowUp":
+          event.preventDefault();
+          setActive(Math.max(active - 1, 0));
+          break;
+        case "Enter": {
+          event.preventDefault();
+          const item = flatItems[active];
+          if (item) {
+            onSelect?.(item, active);
+            setOpen(false);
+          }
+          break;
+        }
+        default:
+          return; // Escape is handled by useEscapeKey (trigger mode only).
+      }
+    };
+    const searchKeyProps = { onKeyDown: onSearchKeyDown } as unknown as ViewProps;
+    // Move focus into the palette when it opens via a trigger (a deliberate action);
+    // never for the always-open bare card, which would steal focus on page load.
+    useEffect(() => {
+      if (!trigger || !open) return;
+      const node = searchRef.current as unknown as { focus?: () => void } | null;
+      node?.focus?.();
+    }, [trigger, open]);
+
     // In trigger mode the collapsed search button is always shown; the palette
     // card below it is still gated by `open`. Otherwise the bare card is gated by
     // `open` and renders nothing when closed.
@@ -149,7 +193,17 @@ export function createCommand(skin: CommandSkin) {
     // color emoji (which ignores tint and renders full-color on device).
     const cardContent = (
       <>
-        <View style={skin.searchRow(tokens)}>
+        <View
+          ref={searchRef}
+          {...searchKeyProps}
+          focusable={total > 0}
+          accessibilityRole="search"
+          accessibilityLabel={placeholder}
+          aria-label={placeholder}
+          // The search row drives the listbox highlight; point AT to the active row.
+          {...({ "aria-activedescendant": total > 0 ? optionId(active) : undefined } as object)}
+          style={[skin.searchRow(tokens), FOCUS_RESET]}
+        >
           <Icon search muted decorative size={skin.searchGlyphSize} />
           <Text style={skin.searchPlaceholder(tokens)}>{placeholder}</Text>
         </View>
@@ -165,6 +219,7 @@ export function createCommand(skin: CommandSkin) {
               return (
                 <Pressable
                   key={`item-${gi}-${ii}`}
+                  nativeID={optionId(index)}
                   style={({ pressed }) => [
                     skin.rowBase,
                     // The active row always takes the brand accent highlight. The

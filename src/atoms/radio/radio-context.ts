@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import { type GestureResponderEvent } from "react-native";
+import { type RovingItemProps } from "../../style/index.js";
 
 // Shared context that lets a RadioGroup own the single-select state and a child
 // Radio read it. A radio, unlike a checkbox, cannot be the source of its own
@@ -16,6 +17,9 @@ export interface RadioGroupContextValue {
   select: (value: string | number, event: GestureResponderEvent) => void;
   /** When true, every radio in the group is disabled. */
   disabled?: boolean;
+  /** Roving-focus props for the radio with this value (the group's arrow-key nav);
+   *  undefined when the group is disabled or the value is not a known option. */
+  itemProps?: (value: string | number) => RovingItemProps | undefined;
 }
 
 export const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);

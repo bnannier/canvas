@@ -1,5 +1,6 @@
-import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, type FieldWidthProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { useState } from "react";
+import { I18nManager, type Role } from "react-native";
+import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, useRovingFocus, type FieldWidthProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
@@ -163,6 +164,23 @@ export function createListbox(skin: ListboxSkin) {
       onSelect?.(index);
     };
 
+    // Roving-focus keyboard navigation (the WAI-ARIA listbox pattern): one tab stop,
+    // arrows move a focus cursor down/up. Single-select follows focus (arrowing
+    // selects); multi-select moves focus only and toggles on Enter/Space. The cursor
+    // starts on the first selected row (or the first row).
+    const [focusedIndex, setFocusedIndex] = useState(() => selectedArr[0] ?? 0);
+    const { getItemProps } = useRovingFocus({
+      count: items.length,
+      active: Math.min(focusedIndex, Math.max(0, items.length - 1)),
+      onActivate: (i) => {
+        if (disabled) return;
+        setFocusedIndex(i);
+        if (mode === "single") press(i);
+      },
+      orientation: "vertical",
+      rtl: I18nManager.isRTL,
+    });
+
     const container: StyleProp<ViewStyle> = [
       // Base: fill the parent's content width. The width axis (widthCap) overrides
       // this with the explicit 320 / 240 / 480 for the default / narrow / wide
@@ -191,9 +209,29 @@ export function createListbox(skin: ListboxSkin) {
             mode === "single" && selected ? skin.rowSelected(tokens) : null,
           ];
 
+          // Roving props for this row; Enter/Space toggles the focused row (both
+          // modes) before delegating the arrows to the roving handler. `onKeyDown`
+          // is web-only, so it rides through a cast (RN's Pressable types omit it).
+          const roving = disabled ? undefined : getItemProps(index);
+          const onRowKeyDown = roving
+            ? (e: { key: string; preventDefault: () => void }) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  press(index);
+                  return;
+                }
+                roving.onKeyDown(e);
+              }
+            : undefined;
+          const rovingProps = roving
+            ? { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: onRowKeyDown }
+            : {};
+
           return (
             <Pressable
               key={index}
+              ref={roving?.ref}
+              {...(rovingProps as object)}
               // Android shows the Material ripple (a no-op off Android). The
               // selected-style press fill (the old `active:bg-accent`) is the
               // accent, applied only when enabled; a skin may also add an opacity
