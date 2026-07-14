@@ -1234,9 +1234,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "skeleton",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Skeleton text animate style={{ width: \"60%\" }} />", render: e_atoms_skeleton_example_0 },
+      { label: "Default", code: "<Column snug style={{ width: 320 }}>\n  <Skeleton text animate />\n  <Skeleton text animate style={{ width: \"60%\" }} />\n</Column>", render: e_atoms_skeleton_example_0 },
       { label: "Shape - avatar", code: "<Skeleton avatar animate />", render: e_atoms_skeleton_example_1 },
-      { label: "Shape - button", code: "<Skeleton button animate style={{ width: \"60%\" }} />", render: e_atoms_skeleton_example_2 },
+      { label: "Shape - button", code: "<Skeleton button animate />", render: e_atoms_skeleton_example_2 },
       { label: "Shape - card", code: "<Skeleton card animate />", render: e_atoms_skeleton_example_3 },
       { label: "Shape - list", code: "<Skeleton list animate />", render: e_atoms_skeleton_example_4 },
       { label: "Shape - table", code: "<Skeleton table animate />", render: e_atoms_skeleton_example_5 },
