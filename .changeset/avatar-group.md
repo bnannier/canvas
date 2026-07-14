@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add `AvatarGroup`, the overlapping avatar stack, so no call site writes a magic

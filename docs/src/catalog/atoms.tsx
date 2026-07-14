@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha } from "@bnannier/canvas";
+import { View, Text, useTheme, alpha } from "@nannier/canvas";
 import Svg, { Path, Circle, Polygon } from "react-native-svg";
 import { geist } from "../ui/fonts";
 import { MiniBtn, MiniInput, type CatTile } from "./tile";

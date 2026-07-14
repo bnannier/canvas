@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Accessibility improvements to `Sparkline`, `Popover`, and `Button`.

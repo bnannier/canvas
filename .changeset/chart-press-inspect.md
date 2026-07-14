@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Press-to-inspect across the chart family, on by default and controllable via

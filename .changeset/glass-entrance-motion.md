@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Glass overlays now animate open, following Apple's Liquid Glass "morph between

@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 API-completeness foundation. `Input` and `Textarea` forward the curated

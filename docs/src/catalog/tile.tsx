@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { useWindowDimensions } from "react-native";
-import { View, Text, Pressable, Icon, useTheme, alpha } from "@bnannier/canvas";
+import { View, Text, Pressable, Icon, useTheme, alpha } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { geist } from "../ui/fonts";
 

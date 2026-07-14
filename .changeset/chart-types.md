@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add three chart types to the charts family so a stacked bar, a gauge, or a

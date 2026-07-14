@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Listbox joins the standard field width axis (`block` / `narrow` / `wide`).

@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add a development-only `devWarn` helper (plus `resetDevWarnings` for tests) and wire

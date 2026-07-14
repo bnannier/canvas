@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": major
+"@nannier/canvas": major
 ---
 
 Remove the `multiline` prop from `Input`; use the dedicated `Textarea` atom for multi-line entry.

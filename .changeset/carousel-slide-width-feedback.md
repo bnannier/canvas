@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Fix Carousel slides rendering off-screen in a shrink-to-content parent.

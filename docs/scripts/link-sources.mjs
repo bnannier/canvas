@@ -14,10 +14,10 @@ import { fileURLToPath } from "node:url";
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(projectRoot, "..");
 
-// `@bnannier/canvas` resolves through the repo-root package.json (main/exports →
+// `@nannier/canvas` resolves through the repo-root package.json (main/exports →
 // src/index.ts).
 const links = [
-  ["node_modules/@bnannier/canvas", repoRoot],
+  ["node_modules/@nannier/canvas", repoRoot],
 ];
 
 for (const [rel, target] of links) {

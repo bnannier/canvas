@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add `success` / `success-foreground` / `warning` / `warning-foreground` semantic

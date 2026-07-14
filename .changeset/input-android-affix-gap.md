@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Fix the oversized gap between an `Input` prefix/suffix affix and its value on the

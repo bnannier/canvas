@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 `Combobox` now portals its open option list through `AnchoredOverlay` (the same

@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Combobox, Select, and Textarea gain the platform-adaptive floating `label` for M3 parity with Input.

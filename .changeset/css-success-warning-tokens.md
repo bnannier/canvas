@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Add the `success` and `warning` semantic color tokens (and their foregrounds) to the

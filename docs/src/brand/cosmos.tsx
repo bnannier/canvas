@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Animated, useWindowDimensions } from "react-native";
-import { View, useTheme, useReducedMotion } from "@bnannier/canvas";
+import { View, useTheme, useReducedMotion } from "@nannier/canvas";
 import { clock, retainCosmosClock, releaseCosmosClock } from "./cosmos-clock";
 import { Starfield, FlightShell, StreakShell, StarburstShell, Nebula, GalaxyCore, Comet } from "./cosmos-layers";
 import { STARS_FAR, SHELL_FIELDS, STREAK_FIELDS, BURST_FIELDS, STAR_ALPHA, LIGHT_FLOOR, nebulaBlobs } from "./cosmos-sky";

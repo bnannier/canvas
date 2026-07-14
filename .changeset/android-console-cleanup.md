@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Clear the Android dev-console errors and warnings:

@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Material 3 conformance corrections across the Android skins, from a full visual audit

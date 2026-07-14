@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": major
+"@nannier/canvas": major
 ---
 
 `InputOTP` is now controllable both ways and its change callback is renamed

@@ -1,4 +1,4 @@
-import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@bnannier/canvas";
+import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@nannier/canvas";
 import type { PropGroup } from "../core/props";
 import { DocsSurface } from "./surface";
 import { geist } from "./fonts";

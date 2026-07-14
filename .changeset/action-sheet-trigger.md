@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add an optional `trigger` prop to ActionSheet, matching Dialog and Drawer.

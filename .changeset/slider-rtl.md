@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 `Slider` is now right-to-left aware. In an RTL locale (`I18nManager.isRTL`) the fill

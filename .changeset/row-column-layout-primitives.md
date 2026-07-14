@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add `Row` and `Column` layout primitives. They own arrangement through semantic

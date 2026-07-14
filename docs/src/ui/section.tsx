@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View } from "@bnannier/canvas";
+import { View } from "@nannier/canvas";
 import { H2 } from "./prose";
 
 // A titled content section with consistent vertical rhythm.

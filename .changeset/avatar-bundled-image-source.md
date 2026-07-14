@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Avatar and MediaObject now accept a bundled image for `src` (a `require(...)` /

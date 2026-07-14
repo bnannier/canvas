@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Trading charts, part 3. New `DepthChart`: the order-book view - cumulative

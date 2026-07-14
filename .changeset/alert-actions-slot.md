@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add an `actions` footer slot to `Alert`. It renders below the body, owns the top

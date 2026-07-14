@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": major
+"@nannier/canvas": major
 ---
 
 Align the status/intent prop names across the kit (breaking).

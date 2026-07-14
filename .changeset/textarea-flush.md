@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add a `flush` prop to `Textarea` that drops the field's own border and radius so

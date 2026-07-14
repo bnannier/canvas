@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Glass surfaces now honor the OS accessibility settings, following Apple's Liquid

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Platform, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, useTheme, alpha, ScrollView } from "@bnannier/canvas";
+import { View, Text, Pressable, useTheme, alpha, ScrollView } from "@nannier/canvas";
 import type { SearchEntry } from "../core/data/types";
 import { geist } from "../ui/fonts";
 

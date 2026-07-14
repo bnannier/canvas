@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Guard the theme/surface/density helpers against a missing `document`. `getTheme`,

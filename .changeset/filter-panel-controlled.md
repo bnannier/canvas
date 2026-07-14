@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 `FilterPanel` selection is now controllable. New `value` / `defaultValue` props (the

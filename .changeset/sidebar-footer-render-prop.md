@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Sidebar's `footer` slot now also accepts a `(collapsed: boolean) => ReactNode` render function,

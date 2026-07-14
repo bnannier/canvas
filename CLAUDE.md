@@ -1,6 +1,6 @@
 # Canvas
 
-Canvas is a React Native UI kit, published as `@bnannier/canvas`. It runs
+Canvas is a React Native UI kit, published as `@nannier/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
 ## React-Native-everywhere principle
@@ -29,7 +29,7 @@ look-alike. The rule, in order:
 - Need a control the kit already exports? Import and use it.
 - The kit has no such component? CREATE IT IN THE KIT (`src/atoms` | `molecules` |
   `organisms`, with its skins/styles), export it, then use it. Add a changeset, since
-  it ships in `@bnannier/canvas`.
+  it ships in `@nannier/canvas`.
 - A Canvas component almost fits but lacks a capability (an icon slot, a `ReactNode`
   cell, a prop, a variant)? EXTEND that kit component (backward-compatibly) rather
   than re-implementing it in the docs. (This is how `Button` got `iconLeft`/`iconRight`
