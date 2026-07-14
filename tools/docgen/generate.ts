@@ -24,7 +24,6 @@ type Category = (typeof CATEGORIES)[number];
 
 const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
-const RAW_MD_FILE = path.join(REPO, "docs", "src", "core", "raw-md.ts");
 const PROPS_FILE = path.join(REPO, "docs", "src", "core", "props.ts");
 
 // The source files a dir's prop tables are extracted from: every `.tsx` in the dir
@@ -35,10 +34,6 @@ const IS_PROP_SOURCE = (name: string) =>
   name.endsWith(".tsx") &&
   !/\.(ios|android|web)\.tsx$/.test(name) &&
   !/\.test\.tsx$/.test(name);
-
-// The raw markdown of every component, keyed exactly like the web docs'
-// import.meta.glob (so the reused Compare page can read it on Metro instead).
-const rawMd: Record<string, string> = {};
 
 // The names an example fence may reference, taken straight from the docs runtime
 // scope so the destructure list never drifts from the single source of truth.
@@ -302,7 +297,6 @@ function main() {
       const md = path.join(catDir, dir, `${dir}.md`);
       if (!fs.existsSync(md)) continue;
       const content = fs.readFileSync(md, "utf8");
-      rawMd[`../../../src/${category}/${dir}/${dir}.md`] = content;
       recordProse(content, `src/${category}/${dir}/${dir}.md`);
       const { examples, donts } = splitDoc(content);
       if (examples.length === 0 && donts.length === 0) continue;
@@ -367,11 +361,6 @@ function main() {
   pruneOrphans(EXAMPLES_DIR);
 
   writeFileIfChanged(REGISTRY_FILE, renderRegistry(entries));
-  writeFileIfChanged(
-    RAW_MD_FILE,
-    `${GENERATED_HEADER}\n// Raw component markdown, keyed like the web docs' import.meta.glob.\n` +
-      `export const RAW: Record<string, string> = ${JSON.stringify(rawMd)};\n`,
-  );
 
   const props = extractProps(propSources);
   writeFileIfChanged(PROPS_FILE, renderProps(props));

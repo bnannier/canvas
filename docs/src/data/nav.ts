@@ -93,8 +93,6 @@ for (const group of NAV_GROUPS) {
   group.items.sort((a, b) => a.label.localeCompare(b.label));
 }
 
-export const COMPARE_ITEM: NavItem = { slug: "compare", label: "Compare", href: "/compare", icon: "gitCompare" };
-
 export function getActiveGroup(pathname: string): string | null {
   const slug = getActiveSlug(pathname);
   for (const g of NAV_GROUPS) {

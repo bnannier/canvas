@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactNode, useId } from "react";
+import { type ComponentType, type ReactNode, createContext, useCallback, useContext, useId, useMemo, useState } from "react";
 import { type DimensionValue } from "react-native";
 import { View, Text, useTheme, useResponsive, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -38,9 +38,14 @@ export type InputComponent = ComponentType<InputProps>;
 export interface FormField {
   /** Visible label above (or beside) the input. */
   label: string;
+  /**
+   * Key this field's typed value is collected under in the record passed to
+   * `onSubmit`. Defaults to the visible `label` when omitted.
+   */
+  name?: string;
   /** Placeholder shown while the field is empty. */
   placeholder?: string;
-  /** Pre-filled value shown in the input (controlled). */
+  /** Pre-filled value the field starts with (the user can then edit it). */
   value?: string;
   /** Optional helper text rendered below the input. */
   helper?: string;
@@ -50,7 +55,12 @@ export interface FormField {
 export interface FormCheckbox {
   /** Visible label beside the box. */
   label: string;
-  /** Whether the box starts ticked (uncontrolled seed; the Checkbox toggles itself on press). */
+  /**
+   * Key this checkbox's state is collected under in the record passed to
+   * `onSubmit`. Defaults to the visible `label` when omitted.
+   */
+  name?: string;
+  /** Whether the box starts ticked. */
   checked?: boolean;
 }
 
@@ -97,8 +107,42 @@ export interface FormProps {
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: ViewStyle;
-  onSubmit?: () => void;
+  /**
+   * Called when the submit button is pressed, with the collected field values
+   * keyed by each field/checkbox `name` (falling back to its `label`). Text
+   * fields yield their current string; checkboxes yield their boolean state.
+   */
+  onSubmit?: (values: Record<string, string | boolean>) => void;
   onCancel?: () => void;
+}
+
+// Form owns the entered values so its composed inputs are editable (a controlled
+// Input with no change handler is frozen on react-native-web) and so `onSubmit`
+// can hand them back. The field/checkbox rows read and write through this context
+// rather than threading value + handler props down every layout branch.
+interface FormValueApi {
+  get: (key: string) => string | boolean | undefined;
+  setText: (key: string, value: string) => void;
+  setBool: (key: string, value: boolean) => void;
+}
+const FormValues = createContext<FormValueApi | null>(null);
+
+// The stable key a field/checkbox is stored under: its explicit `name`, else its
+// visible label.
+function fieldKey(f: { name?: string; label: string }): string {
+  return f.name ?? f.label;
+}
+
+// Initial values record, walked once from the props: text fields seed from their
+// `value`, checkboxes from their `checked`.
+function seedValues(props: FormProps): Record<string, string | boolean> {
+  const out: Record<string, string | boolean> = {};
+  for (const f of props.fields ?? []) out[fieldKey(f)] = f.value ?? "";
+  for (const sec of props.sections ?? []) {
+    for (const f of sec.fields ?? []) out[fieldKey(f)] = f.value ?? "";
+    for (const c of sec.checkboxes ?? []) out[fieldKey(c)] = c.checked ?? false;
+  }
+  return out;
 }
 
 // The per-OS-varying style pieces the Form's own surface contributes. Everything
@@ -168,12 +212,16 @@ export function createForm(
   function StackedField({ field }: { field: FormField }) {
     const base = useId();
     const helperId = field.helper ? `${base}-helper` : undefined;
+    const values = useContext(FormValues);
+    const key = fieldKey(field);
+    const value = (values?.get(key) as string | undefined) ?? field.value ?? "";
     return (
       <View>
         <Input
           label={field.label}
           placeholder={field.placeholder}
-          value={field.value}
+          value={value}
+          onChangeText={(t) => values?.setText(key, t)}
           block
           aria-describedby={helperId}
         />
@@ -188,6 +236,7 @@ export function createForm(
   // hairline divider sits on every section except the last.
   function Section({ section, last }: { section: FormSection; last: boolean }) {
     const { tokens } = useTheme();
+    const values = useContext(FormValues);
     const row = useResponsive<ViewStyle>({
       base: { flexDirection: "row", gap: 32 },
       sm: { flexDirection: "column", gap: 12 },
@@ -202,11 +251,19 @@ export function createForm(
         </View>
         <View style={[s.flex1, { gap: 12 }, rightFull]}>
           {section.checkboxes
-            ? section.checkboxes.map((c, i) => (
-                <Checkbox key={i} defaultChecked={c.checked} style={skin.checkboxRow}>
-                  {c.label}
-                </Checkbox>
-              ))
+            ? section.checkboxes.map((c, i) => {
+                const key = fieldKey(c);
+                return (
+                  <Checkbox
+                    key={i}
+                    checked={Boolean(values?.get(key) ?? c.checked)}
+                    onChange={(next) => values?.setBool(key, next)}
+                    style={skin.checkboxRow}
+                  >
+                    {c.label}
+                  </Checkbox>
+                );
+              })
             : (section.fields ?? []).map((field, i) => (
                 <StackedField key={i} field={field} />
               ))}
@@ -222,6 +279,9 @@ export function createForm(
     const base = useId();
     const labelId = `${base}-label`;
     const helperId = field.helper ? `${base}-helper` : undefined;
+    const values = useContext(FormValues);
+    const key = fieldKey(field);
+    const value = (values?.get(key) as string | undefined) ?? field.value ?? "";
     const row = useResponsive<ViewStyle>({
       base: { flexDirection: "row", gap: 32 },
       sm: { flexDirection: "column", gap: 6 },
@@ -237,7 +297,8 @@ export function createForm(
         <View style={[s.flex1, rightFull]}>
           <Input
             placeholder={field.placeholder}
-            value={field.value}
+            value={value}
+            onChangeText={(t) => values?.setText(key, t)}
             block
             accessibilityLabel={field.label}
             aria-labelledby={labelId}
@@ -293,47 +354,57 @@ export function createForm(
     const { fields, submitLabel = "Submit", cancelLabel, testID, style, onSubmit, onCancel } = props;
     const layout = layoutOf(props);
 
+    const [values, setValues] = useState<Record<string, string | boolean>>(() => seedValues(props));
+    const api = useMemo<FormValueApi>(
+      () => ({
+        get: (k) => values[k],
+        setText: (k, v) => setValues((prev) => ({ ...prev, [k]: v })),
+        setBool: (k, v) => setValues((prev) => ({ ...prev, [k]: v })),
+      }),
+      [values],
+    );
+    const submit = useCallback(() => onSubmit?.(values), [onSubmit, values]);
+
+    let body: ReactNode;
     if (layout === "twoColumn") {
-      return (
+      body = (
         <View testID={testID} style={[skin.stackGap4, style]}>
           <TwoColumnBody fields={fields ?? []} />
-          <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
+          <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
         </View>
       );
-    }
-
-    if (layout === "sidebar") {
+    } else if (layout === "sidebar") {
       // Sectioned sidebar: section headings span a group of fields / a checkbox
       // group. Falls back to the per-field sidebar when no sections are given.
       const sections = props.sections;
-      if (sections && sections.length > 0) {
-        return (
+      body =
+        sections && sections.length > 0 ? (
           <View testID={testID} style={[skin.stackGap6, style]}>
             {sections.map((section, i) => (
               <Section key={i} section={section} last={i === sections.length - 1} />
             ))}
-            <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
+            <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
+          </View>
+        ) : (
+          <View testID={testID} style={[skin.stackGap6, style]}>
+            {(fields ?? []).map((field, i) => (
+              <SidebarField key={i} field={field} />
+            ))}
+            <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
           </View>
         );
-      }
-      return (
-        <View testID={testID} style={[skin.stackGap6, style]}>
+    } else {
+      // stacked (default): one field per row, full width, label above input.
+      body = (
+        <View testID={testID} style={[skin.stackGap4, style]}>
           {(fields ?? []).map((field, i) => (
-            <SidebarField key={i} field={field} />
+            <StackedField key={i} field={field} />
           ))}
-          <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
+          <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
         </View>
       );
     }
 
-    // stacked (default): one field per row, full width, label above input.
-    return (
-      <View testID={testID} style={[skin.stackGap4, style]}>
-        {(fields ?? []).map((field, i) => (
-          <StackedField key={i} field={field} />
-        ))}
-        <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={onSubmit} onCancel={onCancel} />
-      </View>
-    );
+    return <FormValues.Provider value={api}>{body}</FormValues.Provider>;
   };
 }
