@@ -2,7 +2,7 @@
 
 **One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
 
-[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![license](https://img.shields.io/npm/l/@nannier/canvas.svg)](./LICENSE) [Documentation](https://bnannier.github.io/canvas/)
+[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [Documentation](https://bnannier.github.io/canvas/)
 
 Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; elsewhere it falls back to a genuine frost or a solid surface.
 
@@ -125,4 +125,4 @@ Issues and pull requests are welcome at <https://github.com/bnannier/canvas>. Re
 
 ## License
 
-proprietary
+Proprietary. Copyright (c) 2026 Bobby Nannier. All rights reserved. See [LICENSE](./LICENSE).
