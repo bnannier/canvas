@@ -1,3 +1,4 @@
+import { Row, Column, Card, Typography, Input, Button, CodeBlock } from "@nannier/canvas";
 import type { PatternDoc } from "./types";
 
 const PATTERNS: PatternDoc[] = [
@@ -118,66 +119,72 @@ const PATTERNS: PatternDoc[] = [
       {
         title: "How it works",
         description: "Set data-density on <html> (or any container) to switch between compact, regular (default), and comfy spacing. Canvas components read density-aware custom properties.",
-        html: `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:13px">
-  <div class="section-card" style="padding:16px;text-align:center">
-    <div style="font-weight:600;margin-bottom:4px">Compact</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">data-density="compact"</code>
-    <div style="margin-top:12px;font-size:12px;color:var(--muted-foreground)">Tight spacing for dense data views (tables, admin panels)</div>
-  </div>
-  <div class="section-card" style="padding:16px;text-align:center;border-color:var(--primary)">
-    <div style="font-weight:600;margin-bottom:4px">Regular</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">default</code>
-    <div style="margin-top:12px;font-size:12px;color:var(--muted-foreground)">Balanced spacing for most interfaces</div>
-  </div>
-  <div class="section-card" style="padding:16px;text-align:center">
-    <div style="font-weight:600;margin-bottom:4px">Comfy</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">data-density="comfy"</code>
-    <div style="margin-top:12px;font-size:12px;color:var(--muted-foreground)">Generous spacing for reading-heavy or touch-friendly layouts</div>
-  </div>
-</div>`,
+        render: () => (
+          <Row relaxed wrap>
+            {[
+              { label: "Compact", code: 'data-density="compact"', blurb: "Tight spacing for dense data views (tables, admin panels)" },
+              { label: "Regular", code: "default", blurb: "Balanced spacing for most interfaces", selected: true },
+              { label: "Comfy", code: 'data-density="comfy"', blurb: "Generous spacing for reading-heavy or touch-friendly layouts" },
+            ].map((d) => (
+              <Card key={d.label} grow selected={d.selected}>
+                <Column alignCenter tight>
+                  <Typography semibold>{d.label}</Typography>
+                  <Typography mono tiny muted>{d.code}</Typography>
+                  <Typography small muted>{d.blurb}</Typography>
+                </Column>
+              </Card>
+            ))}
+          </Row>
+        ),
       },
       {
         title: "Live demo",
-        description: "The same toolbar and table row rendered at each density level.",
-        html: `<div style="display:flex;flex-direction:column;gap:16px">
-  <div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:6px">Compact</div>
-    <div class="section-card" style="padding:8px 12px">
-      <div style="display:flex;align-items:center;gap:6px">
-        <input class="input" placeholder="Search..." style="height:28px;font-size:12px;padding:0 8px;max-width:180px">
-        <button class="btn btn-outline" style="height:28px;font-size:11px;padding:0 10px">Filter</button>
-        <span style="margin-left:auto;font-size:11px;color:var(--muted-foreground)">24 results</span>
-      </div>
-    </div>
-  </div>
-  <div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:6px">Regular (default)</div>
-    <div class="section-card" style="padding:12px 16px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <input class="input" placeholder="Search..." style="max-width:200px">
-        <button class="btn btn-outline btn-sm">Filter</button>
-        <span style="margin-left:auto;font-size:12px;color:var(--muted-foreground)">24 results</span>
-      </div>
-    </div>
-  </div>
-  <div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:6px">Comfy</div>
-    <div class="section-card" style="padding:16px 20px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <input class="input" placeholder="Search..." style="height:40px;font-size:14px;max-width:220px">
-        <button class="btn btn-outline" style="height:40px;font-size:13px">Filter</button>
-        <span style="margin-left:auto;font-size:13px;color:var(--muted-foreground)">24 results</span>
-      </div>
-    </div>
-  </div>
-</div>`,
+        description: "The same search toolbar rendered at each density level.",
+        render: () => (
+          <Column relaxed>
+            {[
+              { label: "Compact", density: "compact" as const, size: "small" as const },
+              { label: "Regular (default)", density: "regular" as const, size: undefined },
+              { label: "Comfy", density: "comfy" as const, size: "large" as const },
+            ].map((d) => (
+              <Column key={d.label} tight>
+                <Typography tiny semibold muted>{d.label}</Typography>
+                <Card compact={d.density === "compact"} comfortable={d.density === "comfy"}>
+                  <Row alignCenter between>
+                    <Row alignCenter snug>
+                      <Input
+                        narrow
+                        placeholder="Search..."
+                        small={d.size === "small"}
+                        large={d.size === "large"}
+                      />
+                      <Button
+                        outline
+                        small={d.size === "small"}
+                        large={d.size === "large"}
+                      >
+                        Filter
+                      </Button>
+                    </Row>
+                    <Typography small muted>24 results</Typography>
+                  </Row>
+                </Card>
+              </Column>
+            ))}
+          </Column>
+        ),
       },
       {
         title: "Extending",
         anatomy: "Use the compact and comfy density selectors in your own components to shrink or grow padding the same way the built-ins do.",
-        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12.5px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">html[data-density="compact"] .my-row { padding: 0.5rem 0.75rem; }
-.my-row                               { padding: 0.75rem 1rem; }
-html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }</div>`,
+        render: () => (
+          <CodeBlock
+            language="css"
+            code={`html[data-density="compact"] .my-row { padding: 0.5rem 0.75rem; }
+.my-row                              { padding: 0.75rem 1rem; }
+html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }`}
+          />
+        ),
       },
     ],
   },

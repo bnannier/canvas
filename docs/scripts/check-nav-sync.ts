@@ -2,12 +2,24 @@
 // src/data/nav.config.json must exist in the docs core data (and vice versa), so a page can
 // never silently drift out of the navigation. Run by CI (docs.yml) and `bun run check:nav`.
 //
-// Imports only the JSON + the docs core data registries (no React Native), so it runs in
-// plain bun/node.
+// Stays free of React Native so it runs in plain bun/node: the component registry is
+// a plain data module (imported), while the pattern/template data files now compose
+// real kit components (they import @nannier/canvas), so their slugs are read straight
+// from the source text instead of importing the module graph.
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import navConfig from "../src/data/nav.config.json";
 import { COMPONENTS } from "../src/core/data/components";
-import { getAllTemplates } from "../src/core/data/templates";
-import { getAllPatterns } from "../src/core/data/patterns";
+
+const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "core", "data");
+// Each pattern/template doc entry carries one top-level `slug: "..."`; sections have
+// none, and the `getX(slug: string)` params have no quote, so this matches only entries.
+function dataSlugs(file: string): string[] {
+  return [...readFileSync(join(DATA_DIR, file), "utf8").matchAll(/slug:\s*"([^"]+)"/g)].map((m) => m[1]);
+}
+const templateSlugs = dataSlugs("templates.tsx");
+const patternSlugs = dataSlugs("patterns.tsx");
 
 interface SidebarGroup {
   group: string;
@@ -37,8 +49,8 @@ function diff(name: string, navSlugs: string[], coreSlugs: string[]): string[] {
 
 const errors = [
   ...diff("components", navLeafSlugs("/components"), COMPONENTS.map((c) => c.slug)),
-  ...diff("templates", navLeafSlugs("/templates"), getAllTemplates().map((t) => t.slug)),
-  ...diff("patterns", navLeafSlugs("/patterns"), getAllPatterns().map((p) => p.slug)),
+  ...diff("templates", navLeafSlugs("/templates"), templateSlugs),
+  ...diff("patterns", navLeafSlugs("/patterns"), patternSlugs),
 ];
 
 if (errors.length) {
@@ -48,5 +60,5 @@ if (errors.length) {
 
 console.log(
   `✓ nav.config.json in sync with the docs core ` +
-    `(${COMPONENTS.length} components, ${getAllTemplates().length} templates, ${getAllPatterns().length} patterns)`,
+    `(${COMPONENTS.length} components, ${templateSlugs.length} templates, ${patternSlugs.length} patterns)`,
 );
