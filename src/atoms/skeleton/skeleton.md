@@ -5,7 +5,10 @@ Placeholders for loading content.
 ## Usage
 
 ```tsx
-<Skeleton text animate style={{ width: "60%" }} />
+<Column snug style={{ width: 320 }}>
+  <Skeleton text animate />
+  <Skeleton text animate style={{ width: "60%" }} />
+</Column>
 ```
 
 ## Variants
@@ -19,7 +22,7 @@ Placeholders for loading content.
 ### Shape - button
 
 ```tsx
-<Skeleton button animate style={{ width: "60%" }} />
+<Skeleton button animate />
 ```
 
 ### Shape - card
