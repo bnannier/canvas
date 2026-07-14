@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 `Checkbox` adopts `useControllableState` (`defaultChecked`; a bare

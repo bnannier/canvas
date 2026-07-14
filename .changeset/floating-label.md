@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Input gains a platform-adaptive `label` (and `required`).

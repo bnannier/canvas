@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@olympusoss/canvas",
+      "name": "@bnannier/canvas",
       "devDependencies": {
         "@changesets/cli": "^2.31.0",
         "@eslint/js": "^9",

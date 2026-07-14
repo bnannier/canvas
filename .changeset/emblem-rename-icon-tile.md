@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": major
+"@bnannier/canvas": major
 ---
 
 rename the `IconTile` atom to `Emblem`

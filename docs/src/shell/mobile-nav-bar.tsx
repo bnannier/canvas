@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, Pressable, Icon, GlassSurface, useTheme, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, Icon, GlassSurface, useTheme, alpha } from "@bnannier/canvas";
 import { geist } from "../ui/fonts";
 
 // The mobile-web top bar, built to match the iOS UINavigationBar: a centered title flanked by

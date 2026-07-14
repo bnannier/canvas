@@ -1,4 +1,4 @@
-import { View, Text, useTheme, useResponsive } from "@olympusoss/canvas";
+import { View, Text, useTheme, useResponsive } from "@bnannier/canvas";
 import { useRouter } from "expo-router";
 import type { DocExample, ExampleScope } from "../../../core/scope";
 import { Page } from "../../../ui/page";

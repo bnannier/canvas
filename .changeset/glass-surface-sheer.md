@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 `GlassSurface` gains a `sheer` prop: a lighter, thinner frost for CONTENT-layer surfaces that

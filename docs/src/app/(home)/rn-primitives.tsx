@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, DataTable, useTheme } from "@olympusoss/canvas";
+import { ScrollView, View, Text, DataTable, useTheme } from "@bnannier/canvas";
 import { useRouter } from "expo-router";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
@@ -32,7 +32,7 @@ const NOT_WRAPPED: string[][] = [
 
 const SCROLL_ROWS = ["Ada Lovelace", "Grace Hopper", "Kira Tanaka", "Liang Bao", "Marcus Allen", "Noor Park", "Rachel Chen"];
 
-const SCROLL_CODE = `import { ScrollView, View, Text, useTheme } from "@olympusoss/canvas";
+const SCROLL_CODE = `import { ScrollView, View, Text, useTheme } from "@bnannier/canvas";
 
 // style sizes the FRAME (give it a bounded height so it scrolls);
 // contentContainerStyle styles the inner content (padding, gap, centering).
@@ -52,7 +52,7 @@ function List({ rows }) {
   );
 }`;
 
-const IMAGE_CODE = `import { Image, View } from "@olympusoss/canvas";
+const IMAGE_CODE = `import { Image, View } from "@bnannier/canvas";
 
 // style carries size + radius; source / resizeMode are normal RN ImageProps.
 // RN clips a photo to the circle via an overflow-hidden parent.
@@ -60,7 +60,7 @@ const IMAGE_CODE = `import { Image, View } from "@olympusoss/canvas";
   <Image style={{ width: "100%", height: "100%" }} source={{ uri: photo }} resizeMode="cover" />
 </View>`;
 
-const TEXT_INPUT_CODE = `import { TextInput, useTheme } from "@olympusoss/canvas";
+const TEXT_INPUT_CODE = `import { TextInput, useTheme } from "@bnannier/canvas";
 
 // Low-level primitive: no focus border and no react-native-web outline reset.
 // Prefer the Input / Textarea COMPONENTS for real form fields. RN does not take
@@ -86,7 +86,7 @@ function PinField() {
   );
 }`;
 
-const ESCAPE_CODE = `import { useTheme } from "@olympusoss/canvas";
+const ESCAPE_CODE = `import { useTheme } from "@bnannier/canvas";
 import { FlatList } from "react-native";
 
 // For any RN component Canvas does not ship, build the style object from tokens

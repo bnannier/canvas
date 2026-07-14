@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Pressable, Icon, useTheme } from "@olympusoss/canvas";
+import { View, Pressable, Icon, useTheme } from "@bnannier/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { Sidebar } from "./sidebar";

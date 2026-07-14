@@ -2,7 +2,7 @@
 
 > **Historical.** This document analyzes an abandoned "CSS-first, zero-component"
 > v3 line (3.2.1). It does NOT describe the current product: Canvas today
-> (`@olympusoss/canvas` v6+) is a React Native UI kit of 60+ components with per-OS
+> (`@bnannier/canvas` v6+) is a React Native UI kit of 60+ components with per-OS
 > skins. Kept for history; do not use it as a guide to the current architecture.
 
 Companion to [V2-V3-COMPONENT-MATRIX.md](V2-V3-COMPONENT-MATRIX.md). Everything below

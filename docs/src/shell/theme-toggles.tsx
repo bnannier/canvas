@@ -1,4 +1,4 @@
-import { View, Text, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@olympusoss/canvas";
+import { View, Text, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@bnannier/canvas";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 

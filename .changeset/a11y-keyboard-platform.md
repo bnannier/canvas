@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Accessibility, keyboard, and platform correctness.

@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Chart docs now showcase realistic, dense data (intraday-scale price series,

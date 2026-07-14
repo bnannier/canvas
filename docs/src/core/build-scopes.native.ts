@@ -1,5 +1,5 @@
-import * as Canvas from "@olympusoss/canvas";
-import type { ColorTokens } from "@olympusoss/canvas";
+import * as Canvas from "@bnannier/canvas";
+import type { ColorTokens } from "@bnannier/canvas";
 import { Platform } from "react-native";
 import { Stateful, Ticker } from "./live-state";
 import { withResolvedPhotos } from "./photos";

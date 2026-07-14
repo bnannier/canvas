@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": patch
+"@bnannier/canvas": patch
 ---
 
 Clear the react-native-web console deprecation warnings (so the web, iOS, and Android

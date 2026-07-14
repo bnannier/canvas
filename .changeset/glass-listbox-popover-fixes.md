@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": patch
+"@bnannier/canvas": patch
 ---
 
 Two glass-mode fixes:

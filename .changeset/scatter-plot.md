@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 New `ScatterPlot` component: numeric x/y point clouds on the shared cartesian

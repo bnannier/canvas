@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Trading charts, part 1. New `CandlestickChart`: OHLC candles (body + wick)

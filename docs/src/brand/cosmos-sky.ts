@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { type ColorTokens } from "@olympusoss/canvas";
+import { type ColorTokens } from "@bnannier/canvas";
 
 // Pure data for the Canvas Universe backdrop: a seeded star atlas, the component
 // constellations, and the brand-derived palettes. No React here; cosmos-layers.tsx

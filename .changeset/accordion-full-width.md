@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": patch
+"@bnannier/canvas": patch
 ---
 
 Accordion fills its parent's width by default.

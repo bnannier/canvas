@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 `Icon` gains a `warning` color boolean (the scheme-aware `warning` token), joining

@@ -1,4 +1,4 @@
-import { View, Button, useTheme } from "@olympusoss/canvas";
+import { View, Button, useTheme } from "@bnannier/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { FLAT_PAGES } from "../data/nav";
 

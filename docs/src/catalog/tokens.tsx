@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha } from "@olympusoss/canvas";
+import { View, Text, useTheme, alpha } from "@bnannier/canvas";
 import { geist, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
 

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme } from "@olympusoss/canvas";
+import { View, Text, useTheme } from "@bnannier/canvas";
 import { geist, geistMono } from "./fonts";
 
 // Prose primitives matching the previous web docs CSS exactly (Geist faces, the same sizes,

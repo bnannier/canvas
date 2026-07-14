@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": patch
+"@bnannier/canvas": patch
 ---
 
 Guard the theme/surface/density helpers against a missing `document`. `getTheme`,

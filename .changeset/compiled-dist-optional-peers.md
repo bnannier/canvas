@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": major
+"@bnannier/canvas": major
 ---
 
 Ship a compiled package instead of raw TypeScript, and make optional peers truly

@@ -81,10 +81,10 @@ jobs:
       - name: Authenticate npm (npmjs.org)
         run: |
           # Auth against the public npmjs.org registry. Package name is
-          # `@olympusoss/canvas` so the scope must be a real org on npmjs.org
+          # `@bnannier/canvas` so the scope must be a real org on npmjs.org
           # with publish access for the token's owner.
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          echo "@olympusoss:registry=https://registry.npmjs.org" >> .npmrc
+          echo "@bnannier:registry=https://registry.npmjs.org" >> .npmrc
 
       - name: Publish to npmjs.org
         run: bun run release

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Icon, palette, useTheme } from "@olympusoss/canvas";
+import { View, Text, Icon, palette, useTheme } from "@bnannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair, ExampleScope } from "../core/scope";
 import { ExampleErrorBoundary } from "./playground";

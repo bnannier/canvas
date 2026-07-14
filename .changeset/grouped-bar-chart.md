@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 `Chart` gains grouped multi-series bars: pass `labels` + `series` (the shared

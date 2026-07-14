@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@olympusoss/canvas";
+import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@bnannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -15,7 +15,7 @@ import { CONTENT_TOP_INSET } from "./topbar";
 import { ScreenFrame } from "./native-header";
 
 const REPO_URL = "https://github.com/bnannier/canvas";
-const NPM_URL = "https://www.npmjs.com/package/@olympusoss/canvas";
+const NPM_URL = "https://www.npmjs.com/package/@bnannier/canvas";
 const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
 
 // The hosted EAS Update preview link that opens these docs in Expo Go. Set this to the
@@ -25,10 +25,10 @@ const APP_INSTALL_URL = "";
 const EXPO_GO_IOS = "https://apps.apple.com/app/expo-go/id982107779";
 const EXPO_GO_ANDROID = "https://play.google.com/store/apps/details?id=host.exp.exponent";
 
-const INSTALL_BASH = "bun add @olympusoss/canvas";
+const INSTALL_BASH = "bun add @bnannier/canvas";
 const INSTALL_TSX = [
-  'import "@olympusoss/canvas/styles/canvas.css";',
-  'import { Button } from "@olympusoss/canvas";',
+  'import "@bnannier/canvas/styles/canvas.css";',
+  'import { Button } from "@bnannier/canvas";',
   "",
   "// The prop name is the value: <Button primary large />",
   "<Button primary large>Save changes</Button>",
@@ -198,7 +198,7 @@ export function Home() {
                     onPress={() => Linking.openURL(NPM_URL)}
                     style={{ color: tokens.primary }}
                   >
-                    @olympusoss/canvas
+                    @bnannier/canvas
                   </Text>
                 </Text>
               </View>
@@ -423,7 +423,7 @@ export function Home() {
             </View>
           </View>
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8, paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
-            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Olympus · @olympusoss/canvas {version}</Text>
+            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Olympus · @bnannier/canvas {version}</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
           </View>
         </Wrap>

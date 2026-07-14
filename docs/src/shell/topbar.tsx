@@ -1,5 +1,5 @@
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@olympusoss/canvas";
+import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@bnannier/canvas";
 import { usePathname } from "expo-router";
 import { getComponent } from "../core/data/components";
 import { useDocsTheme } from "../theme/docs-theme";

@@ -1,5 +1,5 @@
 import { Platform, useWindowDimensions } from "react-native";
-import { Sidebar as KitSidebar, Row, Column, Typography, type IconName, type SidebarSection } from "@olympusoss/canvas";
+import { Sidebar as KitSidebar, Row, Column, Typography, type IconName, type SidebarSection } from "@bnannier/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
 import { ThemeToggles } from "./theme-toggles";

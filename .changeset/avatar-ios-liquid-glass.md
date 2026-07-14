@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": patch
+"@bnannier/canvas": patch
 ---
 
 On iOS 26 the Avatar's initials fallback now renders on Apple's real, interactive Liquid

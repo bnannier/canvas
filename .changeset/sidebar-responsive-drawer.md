@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Sidebar is now responsive. Add `responsive` (opt-in, off by default) and the sidebar renders as its
