@@ -1,3 +1,5 @@
+import { type ReactNode } from "react";
+
 export interface ComponentDoc {
   slug: string;
   name: string;
@@ -34,7 +36,12 @@ export interface TemplateSection {
   title: string;
   description?: string;
   anatomy?: string;
-  html: string;
+  /** Legacy raw-HTML mockup, rendered through the interpreter. Being replaced by
+   *  `render` (real kit components); a section supplies one or the other. */
+  html?: string;
+  /** The section's live example built from real Canvas components (the dogfood
+   *  path). When present it renders instead of `html`. */
+  render?: () => ReactNode;
 }
 
 export interface TemplateDoc {
@@ -48,7 +55,12 @@ export interface PatternSection {
   title: string;
   description?: string;
   anatomy?: string;
-  html: string;
+  /** Legacy raw-HTML mockup, rendered through the interpreter. Being replaced by
+   *  `render` (real kit components); a section supplies one or the other. */
+  html?: string;
+  /** The section's live example built from real Canvas components (the dogfood
+   *  path). When present it renders instead of `html`. */
+  render?: () => ReactNode;
 }
 
 export interface PatternDoc {

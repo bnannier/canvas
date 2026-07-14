@@ -6,7 +6,9 @@ import { Callout } from "./tokens-kit";
 import { Mockup } from "./mockup";
 import { geist } from "./fonts";
 
-type DocSection = { title: string; description?: string; anatomy?: string; html: string };
+import { type ReactNode } from "react";
+
+type DocSection = { title: string; description?: string; anatomy?: string; html?: string; render?: () => ReactNode };
 
 // The shared layout for a pattern or template doc page: a title (.h2, 24/600), a muted
 // description, then one section per entry, each a `.h4` heading + muted `.body-sm` blurb
@@ -30,7 +32,7 @@ export function MockupDocPage({ name, description, sections }: { name: string; d
             ) : null}
             {s.anatomy ? <Callout label="Anatomy.">{s.anatomy}</Callout> : null}
             <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 12, backgroundColor: tokens.card, padding: 24 }}>
-              <Mockup html={s.html} />
+              {s.render ? s.render() : s.html ? <Mockup html={s.html} /> : null}
             </View>
           </View>
         ))}
