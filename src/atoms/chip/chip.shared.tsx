@@ -250,7 +250,9 @@ export function createChip(skin: ChipSkin) {
           })
         : node;
 
-    const inner = (
+    // The chip's content minus the remove control: the leading check/icon, the
+    // label, and any trailing element.
+    const bodyContent = (
       <>
         {selectedCheck != null ? (
           // The M3 selected filter chip's leading checkmark, riding the label
@@ -266,28 +268,57 @@ export function createChip(skin: ChipSkin) {
           </Text>
         ) : null}
         {tint(trailing)}
-        {onRemove ? (
-          <Pressable
-            onPress={onRemove}
-            disabled={disabled}
-            accessibilityRole="button"
-            // Name the specific chip, not a bare "Remove", when the label is a string.
-            accessibilityLabel={typeof children === "string" ? `Remove ${children}` : "Remove"}
-            // Grow the glyph to the platform minimum target (44pt iOS, 48dp
-            // Android per the M3 input-chip close target); per-skin values,
-            // biased away from the label (left).
-            hitSlop={skin.removeHitSlop}
-          >
-            {/* The "×" rides the chip's label color so it matches every hue. */}
-            <Icon x size={skin.removeSize} color={appearance.text} />
-          </Pressable>
-        ) : null}
       </>
     );
 
-    // Tappable chip (a filter toggle): the whole pill is the Pressable, kept even when
-    // disabled so it holds its button role + disabled state (a plain View would drop
-    // both). The remove button, when present, is a nested Pressable with its own handler.
+    // The trailing "×" remove control, a button in its own right.
+    const removeButton = onRemove ? (
+      <Pressable
+        onPress={onRemove}
+        disabled={disabled}
+        accessibilityRole="button"
+        // Name the specific chip, not a bare "Remove", when the label is a string.
+        accessibilityLabel={typeof children === "string" ? `Remove ${children}` : "Remove"}
+        // Grow the glyph to the platform minimum target (44pt iOS, 48dp
+        // Android per the M3 input-chip close target); per-skin values,
+        // biased away from the label (left).
+        hitSlop={skin.removeHitSlop}
+      >
+        {/* The "×" rides the chip's label color so it matches every hue. */}
+        <Icon x size={skin.removeSize} color={appearance.text} />
+      </Pressable>
+    ) : null;
+
+    // Interactive AND removable: the pill is a plain View shell (its appearance and
+    // padding), holding TWO sibling buttons — the toggle body and the remove "×" —
+    // so neither nests inside the other (a role="button" inside role="button" is
+    // invalid on the web, and a nested remove press would bubble to the toggle).
+    // The shell's own gap (from skin.base) separates them; the body reuses that gap
+    // for its icon/label row. The press feedback + ripple move onto the toggle body.
+    if ((onPress || selectable) && onRemove) {
+      const bodyGap = (skin.base as { gap?: number }).gap;
+      return (
+        <View style={container} testID={testID}>
+          <Pressable
+            onPress={handlePress}
+            disabled={disabled}
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel}
+            accessibilityState={{ selected: isSelected, disabled: !!disabled }}
+            aria-pressed={isSelected}
+            hitSlop={11}
+            android_ripple={surfaceRipple(tokens)}
+            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, pressDim(pressed, 0.85)]}
+          >
+            {bodyContent}
+          </Pressable>
+          {removeButton}
+        </View>
+      );
+    }
+
+    // Tappable chip (a filter toggle) with no remove control: the whole pill is the
+    // Pressable, kept even when disabled so it holds its button role + disabled state.
     if (onPress || selectable) {
       return (
         <Pressable
@@ -311,14 +342,17 @@ export function createChip(skin: ChipSkin) {
           android_ripple={surfaceRipple(tokens)}
           style={({ pressed }) => [container, pressDim(pressed, 0.85)]}
         >
-          {inner}
+          {bodyContent}
         </Pressable>
       );
     }
 
+    // Static chip (not tappable): a View; a remove "×" here is a lone button in a
+    // non-interactive container, so there is no nesting to resolve.
     return (
       <View style={container} testID={testID} accessibilityLabel={accessibilityLabel}>
-        {inner}
+        {bodyContent}
+        {removeButton}
       </View>
     );
   };
