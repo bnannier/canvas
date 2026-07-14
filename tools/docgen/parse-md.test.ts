@@ -7,6 +7,7 @@ import {
   scopeNamesFromLiveScope,
   bannedStyleViolations,
   fieldWidthShimViolations,
+  prosePhantomApiViolations,
 } from "./parse-md.ts";
 
 // Unit tests for the docgen markdown parser (tools/docgen/parse-md.ts). These are
@@ -425,5 +426,54 @@ describe("fieldWidthShimViolations", () => {
   it("respects the // docgen-allow-style opt-out on the style's line", () => {
     const code = `<Input style={{ maxWidth: 320 }} /> {/* docgen-allow-style */}`;
     expect(fieldWidthShimViolations(code)).toEqual([]);
+  });
+});
+
+describe("prosePhantomApiViolations", () => {
+  const tokens = (md: string) => prosePhantomApiViolations(md).map((v) => v.token);
+
+  it("passes clean prose that names only real Canvas API", () => {
+    const md = `# Button\n\nA primary, large button. Pass \`primary\` and \`large\`; it reads like natural language.`;
+    expect(prosePhantomApiViolations(md)).toEqual([]);
+  });
+
+  it("flags a CSS property name written in prose", () => {
+    expect(tokens(`Set the border-radius to round the card.`)).toContain("border-radius");
+    expect(tokens(`It controls the font-size of the label.`)).toContain("font-size");
+  });
+
+  it("flags an HTML element mentioned in prose", () => {
+    expect(tokens(`Renders as a <div> under the hood.`)).toContain("<div");
+    expect(tokens(`Composes a bunch of divs together.`)).toContain("divs");
+  });
+
+  it("flags a Tailwind utility referenced in prose", () => {
+    expect(tokens(`The row uses flex-row to lay out.`)).toContain("flex-row");
+  });
+
+  it("ignores everything inside a fenced code block (examples are exempt)", () => {
+    const md = `Intro line.\n\n${F}tsx\n<View style={{ borderRadius: 8 }} className="flex-row" />\n${F}\n\nOutro line.`;
+    expect(prosePhantomApiViolations(md)).toEqual([]);
+  });
+
+  it("exempts a \"Don't\" caption (it describes the wrong-way idiom on purpose)", () => {
+    const md = `**Don't** — Reach for a raw <div> with border-radius to fake a card.`;
+    expect(prosePhantomApiViolations(md)).toEqual([]);
+  });
+
+  it("respects the docgen-allow-prose escape hatch on a line", () => {
+    const md = `This mentions border-radius deliberately. docgen-allow-prose`;
+    expect(prosePhantomApiViolations(md)).toEqual([]);
+  });
+
+  it("does not flag a file-extension token as a CSS class reference", () => {
+    // `.md` / `.tsx` look like `.class` but are excluded via PROSE_FILE_EXT.
+    expect(tokens(`See the component's .md and its .tsx entry.`)).not.toContain(".md");
+  });
+
+  it("reports the 1-based line number of a violation", () => {
+    const md = `Clean intro.\n\nA line with box-shadow in it.`;
+    const found = prosePhantomApiViolations(md);
+    expect(found.some((v) => v.token === "box-shadow" && v.line === 3)).toBe(true);
   });
 });
