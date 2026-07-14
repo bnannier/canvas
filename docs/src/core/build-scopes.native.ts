@@ -1,7 +1,7 @@
 import * as Canvas from "@olympusoss/canvas";
 import type { ColorTokens } from "@olympusoss/canvas";
 import { Platform } from "react-native";
-import { Stateful } from "./live-state";
+import { Stateful, Ticker } from "./live-state";
 import { withResolvedPhotos } from "./photos";
 import type { ExampleScope, PreviewScope } from "./scope";
 
@@ -25,6 +25,7 @@ export function buildScopes(tokens: ColorTokens): PreviewScope[] {
         MediaObject: withResolvedPhotos(Canvas.MediaObject, ["src"]),
         tokens,
         Stateful,
+        Ticker,
       } as unknown as ExampleScope,
     },
   ];
