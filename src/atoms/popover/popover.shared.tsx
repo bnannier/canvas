@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
-import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { type Role } from "react-native";
+import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useEscapeKey, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -96,6 +97,10 @@ export function createPopover(skin: PopoverSkin) {
     // panel is an always-visible surface, not a dismissable overlay, so it
     // never subscribes.
     useEscapeKey(open && !inline, () => setOpen(false));
+    // Move focus into the panel when the floating card opens and restore it to the
+    // trigger on close (non-modal: no focus trap, unlike Dialog). Inline panels are
+    // always-visible content, so they never take focus.
+    const panelRef = usePopoverFocus(open && !inline);
     // Resolve the placement axis (drives which edge the iOS beak rides; the card
     // itself always anchors below the trigger).
     const placement = placementOf(props);
@@ -157,7 +162,7 @@ export function createPopover(skin: PopoverSkin) {
         onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
       >
         <View style={s.triggerWrap}>
-          <Button outline small expanded={open} onPress={() => setOpen(!open)}>
+          <Button outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
             {trigger ?? "Open popover"}
           </Button>
         </View>
@@ -181,7 +186,12 @@ export function createPopover(skin: PopoverSkin) {
               rounded card is exactly how iOS 26 menus read. (It was previously clipped
               away by the GlassSurface clip box anyway; this makes the intent explicit.) */}
           {skin.arrow != null && surface !== "glass" ? skin.arrow(tokens, placement) : null}
-          {panelBody}
+          {/* A focusable (tabIndex -1) container so opening the popover moves focus
+              here and closing restores it to the trigger (usePopoverFocus). role
+              "dialog" pairs with the trigger's aria-haspopup="dialog". */}
+          <View ref={panelRef} tabIndex={-1} role={"dialog" as Role}>
+            {panelBody}
+          </View>
         </AnchoredOverlay>
       </View>
     );

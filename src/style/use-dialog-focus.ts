@@ -79,3 +79,26 @@ export function useDialogFocus(
 
   return panelRef;
 }
+
+// Lighter focus handling for a NON-MODAL popover: move focus into the panel on open
+// and restore it to the trigger on close, WITHOUT trapping Tab. A popover does not
+// take over the page (Escape or an outside tap dismisses it, and Tab may leave it),
+// so it only needs the move-in / restore-out halves, not the trap. Attach the
+// returned ref to a focusable `tabIndex={-1}` panel container and pass the open
+// state. No-op natively and during SSR (guarded on `document`), like useDialogFocus.
+export function usePopoverFocus(open: boolean) {
+  const panelRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return;
+    const panel = panelRef.current as unknown as HTMLElement | null;
+    if (panel == null) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    panel.focus();
+    return () => {
+      previouslyFocused?.focus?.();
+    };
+  }, [open]);
+
+  return panelRef;
+}

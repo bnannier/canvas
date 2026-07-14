@@ -52,6 +52,19 @@ function sizeOf(p: SparklineProps): Size {
   return "default";
 }
 
+// A data-derived accessible name for a sparkline that has no explicit
+// `accessibilityLabel`, so it never ships as an unnamed `role="img"` (WCAG 1.1.1).
+// Summarizes the series by count, range, and latest value.
+function fallbackLabel(values: number[]): string {
+  const finite = values.filter((v) => Number.isFinite(v));
+  if (finite.length === 0) return "Sparkline: no data";
+  const fmt = (n: number) => (Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100));
+  const min = Math.min(...finite);
+  const max = Math.max(...finite);
+  const latest = finite[finite.length - 1];
+  return `Sparkline: ${finite.length} points, from ${fmt(min)} to ${fmt(max)}, latest ${fmt(latest)}`;
+}
+
 // A soft wash of the tone color (matches the established sparkline look).
 function barColor(tokens: ColorTokens, tone: Tone): string {
   switch (tone) {
@@ -74,6 +87,8 @@ export function createSparkline(skin: SparklineSkin) {
     const tone = toneOf(props);
     const plot = skin.height[sizeOf(props)];
     const fill = barColor(tokens, tone);
+    // Always carry an accessible name: the caller's, else a summary of the data.
+    const label = accessibilityLabel ?? fallbackLabel(values);
 
     // No values means no bars: warn so an empty series is not mistaken for a
     // flat trend.
@@ -108,8 +123,8 @@ export function createSparkline(skin: SparklineSkin) {
       return (
         <View
           role="img"
-          accessibilityLabel={accessibilityLabel}
-          aria-label={accessibilityLabel}
+          accessibilityLabel={label}
+          aria-label={label}
           testID={testID}
           onLayout={(e) => setLineWidth(e.nativeEvent.layout.width)}
           style={[root, style]}
@@ -136,8 +151,8 @@ export function createSparkline(skin: SparklineSkin) {
     return (
       <View
         role="img"
-        accessibilityLabel={accessibilityLabel}
-        aria-label={accessibilityLabel}
+        accessibilityLabel={label}
+        aria-label={label}
         testID={testID}
         style={[root, style]}
       >

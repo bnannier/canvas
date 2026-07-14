@@ -45,6 +45,12 @@ export interface ButtonProps {
    * button. So a Button that toggles a Dropdown/Popover stays accessible.
    */
   expanded?: boolean;
+  /**
+   * Announces that the button opens a popup of this kind (aria-haspopup), for a
+   * menu / dialog / listbox trigger. Pair it with `expanded` so assistive tech
+   * reads both the popup relationship and its open state. Web-only; a no-op natively.
+   */
+  haspopup?: "menu" | "dialog" | "listbox" | "grid" | "tree" | true;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -120,6 +126,7 @@ export function createButton(skin: ButtonSkin) {
         accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
         aria-busy={loading ? true : undefined}
         aria-expanded={props.expanded}
+        aria-haspopup={props.haspopup}
         android_ripple={ripple}
         style={({ pressed }) => [
           container,
