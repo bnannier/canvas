@@ -144,16 +144,21 @@ const CASES: SkinCase[] = [
   { name: "ToastProvider", dir: "organisms/toast", file: "toast", children: txt("App content") },
 ];
 
-const PLATFORMS = ["ios", "android"] as const;
+// "web" is the bare `<file>.tsx` build (no platform suffix); ios/android are the
+// per-OS skin forks. Mounting the web build here too means the components that live
+// ONLY in this suite (the behaviorally smoke-only ones) still get their web render
+// exercised, not just their native skins.
+const PLATFORMS = ["web", "ios", "android"] as const;
 
 for (const platform of PLATFORMS) {
   describe(`${platform} skins mount inside ThemeProvider`, () => {
     for (const c of CASES) {
       it(`${c.name}`, async () => {
-        const mod = (await import(`../src/${c.dir}/${c.file}.${platform}.tsx`)) as Record<string, unknown>;
+        const suffix = platform === "web" ? "" : `.${platform}`;
+        const mod = (await import(`../src/${c.dir}/${c.file}${suffix}.tsx`)) as Record<string, unknown>;
         const Comp = mod[c.name];
         // A renamed/dropped export in a skin file is itself a defect this catches.
-        expect(Comp, `${c.name} not exported from ${c.dir}/${c.file}.${platform}.tsx`).toBeDefined();
+        expect(Comp, `${c.name} not exported from ${c.dir}/${c.file}${suffix}.tsx`).toBeDefined();
         const kids = typeof c.children === "function" ? (c.children as (m: Record<string, unknown>) => ReactNode)(mod) : c.children;
         // The core assertion: the skin renders on this platform without throwing
         // (a missing token, bad StyleSheet, or runtime error surfaces here).
