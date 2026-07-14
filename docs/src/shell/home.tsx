@@ -121,7 +121,7 @@ const FOOTER_COLS: { head: string; links: { label: string; to?: string; url?: st
     { label: "Responsive", to: "/patterns/responsive" }, { label: "Integration", to: "/integration" },
   ] },
   { head: "Project", links: [
-    { label: "GitHub", url: REPO_URL }, { label: "npm", url: NPM_URL }, { label: "Compare", to: "/compare" },
+    { label: "GitHub", url: REPO_URL }, { label: "npm", url: NPM_URL },
   ] },
 ];
 

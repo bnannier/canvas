@@ -96,6 +96,54 @@ describe("accessible names on composed fields", () => {
     expect(screen.getByLabelText("City")).toBe(screen.getByPlaceholderText("Austin"));
   });
 
+  it("Form keeps a pre-filled field editable and reports collected values on submit", () => {
+    let submitted: Record<string, string | boolean> | null = null;
+    ui(
+      <Form
+        stacked
+        submitLabel="Save"
+        fields={[
+          { label: "Full name", value: "Ada" },
+          { name: "email", label: "Email", placeholder: "ada@acme.dev" },
+        ]}
+        onSubmit={(v) => { submitted = v; }}
+      />,
+    );
+    // A pre-filled controlled input must still accept edits (the RNW frozen-input regression).
+    const name = screen.getByLabelText("Full name") as HTMLInputElement;
+    expect(name.value).toBe("Ada");
+    fireEvent.change(name, { target: { value: "Ada Lovelace" } });
+    expect(name.value).toBe("Ada Lovelace");
+    const email = screen.getByPlaceholderText("ada@acme.dev") as HTMLInputElement;
+    fireEvent.change(email, { target: { value: "ada@acme.dev" } });
+    fireEvent.click(screen.getByText("Save"));
+    // Keyed by `name` when given, else the label.
+    expect(submitted).toEqual({ "Full name": "Ada Lovelace", email: "ada@acme.dev" });
+  });
+
+  it("Form (sectioned) collects checkbox state on submit", () => {
+    let submitted: Record<string, string | boolean> | null = null;
+    ui(
+      <Form
+        sidebar
+        submitLabel="Save"
+        sections={[
+          {
+            title: "Notifications",
+            checkboxes: [
+              { name: "news", label: "Newsletter", checked: true },
+              { label: "SMS" },
+            ],
+          },
+        ]}
+        onSubmit={(v) => { submitted = v; }}
+      />,
+    );
+    fireEvent.click(screen.getByText("SMS"));
+    fireEvent.click(screen.getByText("Save"));
+    expect(submitted).toEqual({ news: true, SMS: true });
+  });
+
   it("Fieldset names each item's control by its label", () => {
     ui(<Fieldset legend="Address" items={[{ label: "Street", placeholder: "123 Market St" }]} />);
     expect(screen.getByLabelText("Street")).toBe(screen.getByPlaceholderText("123 Market St"));

@@ -1,9 +1,9 @@
 import { Platform, useWindowDimensions } from "react-native";
-import { Sidebar as KitSidebar, Row, Column, Typography, Button, Icon, type IconName, type SidebarSection } from "@olympusoss/canvas";
+import { Sidebar as KitSidebar, Row, Column, Typography, type IconName, type SidebarSection } from "@olympusoss/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
 import { ThemeToggles } from "./theme-toggles";
-import { NAV_GROUPS, COMPARE_ITEM, getActiveSlug, type NavItem } from "../data/nav";
+import { NAV_GROUPS, getActiveSlug, type NavItem } from "../data/nav";
 
 // The docs sidebar is a THIN ADAPTER over the kit `Sidebar` organism: it maps the docs nav
 // tree (NAV_GROUPS) + the active route onto the kit component and wires navigation. All the
@@ -97,20 +97,10 @@ export function Sidebar({
         )
       }
       footer={
-        Platform.OS !== "web" ? (
-          // Native: appearance lives in the header bar, and /compare redirects home — no footer.
-          undefined
-        ) : narrow ? (
-          // Mobile-web drawer: the appearance toggles (their old bottom-sheet-footer home).
-          <ThemeToggles />
-        ) : // Desktop rail: /compare is a web-only QA harness; surface it only on web. Icon-only in the rail.
-        collapsed ? (
-          <Button ghost icon small accessibilityLabel={COMPARE_ITEM.label} iconLeft={<Icon gitCompare size={16} />} onPress={() => router.push(COMPARE_ITEM.href as never)} />
-        ) : (
-          <Button ghost block small iconLeft={<Icon gitCompare size={16} />} onPress={() => router.push(COMPARE_ITEM.href as never)}>
-            {COMPARE_ITEM.label}
-          </Button>
-        )
+        // Only the mobile-web drawer carries a footer: the appearance toggles (their old
+        // bottom-sheet-footer home). Native puts appearance in the header bar; the desktop
+        // rail has no footer.
+        Platform.OS === "web" && narrow ? <ThemeToggles /> : undefined
       }
       sections={sections}
     />

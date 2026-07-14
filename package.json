@@ -62,7 +62,7 @@
     "release": "changeset publish",
     "docs:gen": "bun tools/docgen/generate.ts",
     "icons:gen": "bun tools/icongen/generate.ts",
-    "docs:gen:check": "bun tools/docgen/generate.ts && git diff --quiet -- docs/src/core/examples docs/src/core/registry.ts docs/src/core/raw-md.ts"
+    "docs:gen:check": "bun tools/docgen/generate.ts && git diff --quiet -- docs/src/core/examples docs/src/core/registry.ts"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
