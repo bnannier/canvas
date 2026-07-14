@@ -1,5 +1,6 @@
-import { useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { I18nManager } from "react-native";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, useRovingFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -98,6 +99,28 @@ export function createDropdown(skin: DropdownSkin) {
     // Escape dismisses the open menu on web (no-op natively).
     useEscapeKey(open, () => setOpen(false));
 
+    // Roving-focus keyboard navigation for the open menu (the WAI-ARIA menu pattern):
+    // on open, focus moves to the first enabled row; the arrows move focus among the
+    // rows and Enter/Space activates the focused one. Web-only in effect (natively
+    // there is no onKeyDown and a View has no focus()).
+    const [focusedIndex, setFocusedIndex] = useState(0);
+    const { getItemProps, focusItem } = useRovingFocus({
+      count: items.length,
+      active: focusedIndex,
+      onActivate: setFocusedIndex,
+      orientation: "vertical",
+      rtl: I18nManager.isRTL,
+    });
+    useEffect(() => {
+      if (!open) return;
+      const first = items.findIndex((it) => !it.disabled);
+      const start = first >= 0 ? first : 0;
+      setFocusedIndex(start);
+      focusItem(start);
+      // Focus the first row once the menu opens; items are mounted by this point.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
+
     // Match the menu width to the trigger (and let longer rows grow past it), so a
     // wide trigger like a topbar account chip gets a menu of the same width.
     // Measured via the wrapper's layout; the menu is absolute, so it never feeds
@@ -150,12 +173,29 @@ export function createDropdown(skin: DropdownSkin) {
                 {label}
               </Text>
             ) : null}
-            {items.map((item, index) => (
+            {items.map((item, index) => {
+              // Roving props for this row; Enter/Space activates the focused row
+              // before delegating the arrows to the roving handler. `onKeyDown` is
+              // web-only, so it rides through a cast (RN's Pressable types omit it).
+              const roving = getItemProps(index);
+              const selectItem = () => { onSelect?.(item, index); setOpen(false); };
+              const onItemKeyDown = (e: { key: string; preventDefault: () => void }) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (!item.disabled) selectItem();
+                  return;
+                }
+                roving.onKeyDown(e);
+              };
+              const rovingProps = { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: onItemKeyDown };
+              return (
               <View key={`${item.label}-${index}`}>
                 {item.separatorBefore && skin.separator ? (
                   <View style={skin.separator(tokens)} />
                 ) : null}
                 <Pressable
+                  ref={roving.ref}
+                  {...(rovingProps as object)}
                   style={({ pressed }) => [
                     skin.itemRow,
                     // iOS/web tint the row on press here; Android uses the ripple instead.
@@ -163,7 +203,7 @@ export function createDropdown(skin: DropdownSkin) {
                     skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                     item.disabled ? { opacity: skin.disabledOpacity } : null,
                   ]}
-                  onPress={item.disabled ? undefined : () => { onSelect?.(item, index); setOpen(false); }}
+                  onPress={item.disabled ? undefined : selectItem}
                   disabled={item.disabled}
                   android_ripple={ripple}
                   accessibilityRole="menuitem"
@@ -183,7 +223,8 @@ export function createDropdown(skin: DropdownSkin) {
                   ) : null}
                 </Pressable>
               </View>
-            ))}
+              );
+            })}
             </View>
         </AnchoredOverlay>
       </View>

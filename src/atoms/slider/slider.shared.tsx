@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {
+  I18nManager,
   PanResponder,
   type LayoutChangeEvent,
   type GestureResponderEvent,
@@ -127,6 +128,10 @@ export function createSlider(skin: SliderSkin) {
     const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
+    // In a right-to-left locale the whole control mirrors: min sits on the RIGHT and
+    // the fill/thumb grow leftward, the physical tap maps flipped, and the horizontal
+    // arrows reverse (the drawer's I18nManager.isRTL physical-computation pattern).
+    const rtl = I18nManager.isRTL;
     // The standard field width axis (block/narrow/wide), appended after the base
     // width:"100%" so a bare slider renders AT 320px (shrinking via maxWidth:"100%")
     // instead of collapsing in content-sized contexts; `block` restores width:"100%".
@@ -176,7 +181,9 @@ export function createSlider(skin: SliderSkin) {
       const w = widthRef.current;
       const travel = Math.max(1, w - thumbW);
       const f = clamp((localX - thumbW / 2) / travel, 0, 1);
-      return snap(min + f * (max - min), min, max, step);
+      // RTL: the physical-left edge is MAX, so the fraction runs the other way.
+      const fraction = rtl ? 1 - f : f;
+      return snap(min + fraction * (max - min), min, max, step);
     };
 
     const emit = (next: number) => {
@@ -230,13 +237,17 @@ export function createSlider(skin: SliderSkin) {
     // invokes it, so this is a no-op there — additive web-only EVENT handling, the
     // same pattern as useEscapeKey, NOT a web-only render branch.
     const pageStep = step * 10;
+    // The horizontal arrows follow the visual direction: ArrowRight always moves the
+    // thumb visually rightward, which is +step in LTR but -step in RTL (per APG). The
+    // vertical arrows and Home/End keep their logical meaning in both directions.
+    const rightStep = rtl ? -step : step;
     const onKeyDown = (event: { key: string; preventDefault: () => void }) => {
       if (disabled) return;
       let next: number;
       switch (event.key) {
-        case "ArrowRight":
+        case "ArrowRight": next = current + rightStep; break;
         case "ArrowUp": next = current + step; break;
-        case "ArrowLeft":
+        case "ArrowLeft": next = current - rightStep; break;
         case "ArrowDown": next = current - step; break;
         case "PageUp": next = current + pageStep; break;
         case "PageDown": next = current - pageStep; break;
@@ -282,9 +293,12 @@ export function createSlider(skin: SliderSkin) {
         }
       }
     }
+    // Mirror a physical-left coordinate for RTL (the fill/thumb/ticks all paint with
+    // physical `left`, so RTL flips the anchor around the measured track width).
+    const mirrorX = (x: number): number => (rtl ? trackWidth - x : x);
     const tickBox = (cx: number, cy: number): ViewStyle => ({
       position: "absolute",
-      left: cx - dot / 2,
+      left: mirrorX(cx) - dot / 2,
       top: cy - dot / 2,
       width: dot,
       height: dot,
@@ -348,18 +362,19 @@ export function createSlider(skin: SliderSkin) {
           // pointerEvents:"none" so the container's PanResponder receives the raw
           // touch (locationX stays container-relative).
           <>
-            {/* The active segment, from the left edge to `gap` before the handle. */}
+            {/* The active segment, from the value edge (left in LTR, right in RTL) to
+                `gap` before the handle. */}
             <View
               style={[
                 skin.fill(tokens, size, !!disabled),
-                { position: "absolute", left: 0, top: trackTop, width: activeWidth, height: trackHeight, pointerEvents: "none" },
+                { position: "absolute", left: rtl ? Math.max(0, trackWidth - activeWidth) : 0, top: trackTop, width: activeWidth, height: trackHeight, pointerEvents: "none" },
               ]}
             />
-            {/* The inactive segment, from `gap` after the handle to the right edge. */}
+            {/* The inactive segment, from `gap` after the handle to the far edge. */}
             <View
               style={[
                 skin.track(tokens, size, !!disabled),
-                { position: "absolute", left: inactiveLeft, top: trackTop, width: inactiveWidth, height: trackHeight, pointerEvents: "none" },
+                { position: "absolute", left: rtl ? Math.max(0, trackWidth - inactiveLeft - inactiveWidth) : inactiveLeft, top: trackTop, width: inactiveWidth, height: trackHeight, pointerEvents: "none" },
               ]}
             />
             {/* Stop indicator dots at the interior steps, hidden where the handle
@@ -386,8 +401,9 @@ export function createSlider(skin: SliderSkin) {
                   <View key={cx} style={[skin.tick!(tokens, size, !!disabled, cx <= fillWidth), tickBox(cx, trackHeight / 2)]} />
                 ))
               : null}
-            {/* The filled range, from the left edge to the value. */}
-            <View style={[skin.fill(tokens, size, !!disabled), { width: fillWidth }]} />
+            {/* The filled range, from the value edge to the value. The skin anchors it
+                left:0; in RTL re-anchor it to the right so it grows from the min end. */}
+            <View style={[skin.fill(tokens, size, !!disabled), { width: fillWidth, left: rtl ? Math.max(0, trackWidth - fillWidth) : 0 }]} />
           </View>
         )}
         {/* The thumb. The parent View's PanResponder owns the whole gesture (tapping the
@@ -398,7 +414,7 @@ export function createSlider(skin: SliderSkin) {
             pointerEvents="none" so it never competes with the parent for the touch
             responder, keeping the drag/jump on one code path. */}
         <View
-          style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: thumbLeft, top: thumbTop, pointerEvents: "none" }]}
+          style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop, pointerEvents: "none" }]}
         />
       </View>
     );

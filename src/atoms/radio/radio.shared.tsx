@@ -113,8 +113,19 @@ export function createRadio(skin: RadioSkin) {
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
+    // Roving-focus wiring from the group (web arrow-key nav): the group makes only
+    // the selected radio a tab stop and the arrows move + select. `ref` passes
+    // explicitly; `focusable`/`tabIndex`/`onKeyDown` ride through a cast (RN's
+    // Pressable types omit onKeyDown). Undefined for a standalone radio.
+    const roving = inGroup ? group.itemProps?.(props.value as string | number) : undefined;
+    const rovingProps = roving
+      ? { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: roving.onKeyDown }
+      : {};
+
     return (
       <Pressable
+        ref={roving?.ref}
+        {...(rovingProps as object)}
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
