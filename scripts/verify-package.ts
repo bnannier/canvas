@@ -73,6 +73,31 @@ for (const file of [...jsFiles, ...dtsFiles]) {
 }
 if (broken === 0) ok(`${specCount} relative specifiers all resolve`);
 
+// 2b. Optional peers must never be STATICALLY imported (an ES `import` statement).
+// They are loaded through a guarded `require()` so a consumer who skips the peer
+// still builds; a value import would crash their bundler at resolve time. Guarded
+// require() calls and type-only imports (erased by tsc) are fine — only ES import
+// statements referencing these bare specifiers are flagged.
+const OPTIONAL_PEERS = [
+  "expo-blur",
+  "expo-glass-effect",
+  "react-native-qrcode-svg",
+  "react-native-safe-area-context",
+];
+const PEER_IMPORT_RE = new RegExp(
+  `import\\s+(?:[^;'"]*?\\sfrom\\s*)?["'](${OPTIONAL_PEERS.join("|")})["']`,
+  "g",
+);
+let peerViolations = 0;
+for (const file of jsFiles) {
+  const src = stripComments(fs.readFileSync(file, "utf8"));
+  for (const m of src.matchAll(PEER_IMPORT_RE)) {
+    peerViolations++;
+    fail(`${path.relative(REPO, file)} → static import of optional peer "${m[1]}" (use a guarded require())`);
+  }
+}
+if (peerViolations === 0) ok(`no static imports of optional peers (${OPTIONAL_PEERS.length} checked)`);
+
 // 3. Platform forks preserved
 const iosForks = jsFiles.filter((f) => f.endsWith(".ios.js")).length;
 const androidForks = jsFiles.filter((f) => f.endsWith(".android.js")).length;

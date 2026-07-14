@@ -1,0 +1,29 @@
+version: 2
+updates:
+  # GitHub Actions used by the CI / deploy workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+
+  # Root dev toolchain and peer dependencies. This repo uses a bun.lock, which
+  # Dependabot does not natively resolve, so it updates the package.json ranges;
+  # run `bun install` after merging a bump to refresh the lockfile.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+    open-pull-requests-limit: 5
+
+  # The docs app.
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps-docs)"
+    open-pull-requests-limit: 5

@@ -44,6 +44,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Lint
+        run: bun run lint
+
       - name: Build package (dist)
         run: bun run build
 
@@ -71,11 +74,8 @@ jobs:
       - name: Validate theme tokens
         run: bun run validate-tokens
 
-      - name: Check CSS size budget
+      - name: Check CSS + JS size budgets
         run: bun run check-size
-
-      - name: Check for duplicate class definitions
-        run: bun run check-duplicates
 
   # Docs build: the universal RN app (docs) is what the Pages deploy ships, so a
   # broken web export fails CI before it can be deployed.
@@ -101,6 +101,12 @@ jobs:
       - name: Install docs deps
         working-directory: docs
         run: bun install --frozen-lockfile
+
+      # Fail here if the nav config drifts from the generated docs core, instead of
+      # merging green and only breaking a later Pages deploy.
+      - name: Check nav config is in sync
+        working-directory: docs
+        run: bun run check:nav
 
       - name: Typecheck docs
         working-directory: docs

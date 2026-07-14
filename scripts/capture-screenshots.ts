@@ -173,7 +173,7 @@ function compareImages(
   }
 
   // Dimensions match; compare pixels.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+   
   const { utils } = require("playwright-core/lib/coreBundle");
   const compare = utils.getComparator("image/png");
 
