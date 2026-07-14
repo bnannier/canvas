@@ -5,7 +5,7 @@ import { type ColorTokens, alpha } from "../../style/index.js";
 // treatment: identical structure and semantic colors (those live below as the
 // shared tone helpers); only the bordered card's RADIUS, the column DENSITY/
 // SPACING, and the title/description TYPE TRACKING shift per OS. The BRAND survives
-// on every platform (the `positive` green wash and the `primary` action Button stay
+// on every platform (the `success` green wash and the `primary` action Button stay
 // the same); React Native gives no native empty-state control on iOS (SwiftUI's
 // ContentUnavailableView is code-only) or Android (Material 3 dropped the M1/M2
 // empty-states pattern), so there is no native shape to match — each skin keeps the
@@ -21,7 +21,7 @@ import { type ColorTokens, alpha } from "../../style/index.js";
 //     rounded-md bordered card (radius 8), padding 16/24 (compact) or 24/32, a
 //     16pt/600 title and a 14pt `muted-foreground` description, no extra tracking.
 
-export type Tone = "positive" | "default";
+export type Tone = "success" | "default";
 
 // The contract a platform skin fulfills. The shell renders the centered column,
 // the optional bordered card, the icon disc, the title/description, and the action
@@ -47,7 +47,7 @@ export interface EmptyStateSkin {
 
 // ---- Shared, platform-neutral color logic (the same on every OS) -------------
 // The bordered card's border color follows the semantic `border` token. The
-// `positive` tone paints the disc and glyph green from the semantic `success`
+// `success` tone paints the disc and glyph green from the semantic `success`
 // token (so it follows light/dark), while the default tone stays on the semantic
 // muted / muted-foreground tokens so it follows light/dark/glass.
 
@@ -55,15 +55,15 @@ export function borderedSurface(tokens: ColorTokens): ViewStyle {
   return { borderColor: tokens.border };
 }
 
-// Disc fill per tone: a 10% green wash when positive, the muted token otherwise.
+// Disc fill per tone: a 10% green wash when success, the muted token otherwise.
 export function discTone(tokens: ColorTokens, tone: Tone): ViewStyle {
-  return tone === "positive"
+  return tone === "success"
     ? { backgroundColor: alpha(tokens.success, 0.1) }
     : { backgroundColor: tokens.muted };
 }
 
 export function glyphTone(tokens: ColorTokens, tone: Tone): TextStyle {
-  return tone === "positive" ? { color: tokens.success } : { color: tokens["muted-foreground"] };
+  return tone === "success" ? { color: tokens.success } : { color: tokens["muted-foreground"] };
 }
 
 // ---- Shared layout fragments reused across the skins -------------------------

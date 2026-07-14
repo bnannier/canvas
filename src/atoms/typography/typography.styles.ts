@@ -123,9 +123,9 @@ export const MONO_ROLES = new Set<Role>(["code", "mono"]);
 // Tone axis: an orthogonal color layer over the role's own color. Its names are
 // deliberately collision-free with the roles (so `muted`/`small`/`tiny`/`caption`
 // keep their existing muted color as roles, and tone adds the colored intents).
-// When no tone prop is set the role's own color stands. positive/warning read the
+// When no tone prop is set the role's own color stands. success/warning read the
 // semantic success/warning tokens (scheme-aware); subtle is a translucent foreground.
-export type Tone = "muted" | "subtle" | "primary" | "destructive" | "positive" | "warning";
+export type Tone = "muted" | "subtle" | "primary" | "destructive" | "success" | "warning";
 
 export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   switch (tone) {
@@ -137,7 +137,7 @@ export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextS
       return { color: tokens.primary };
     case "destructive":
       return { color: tokens.destructive };
-    case "positive":
+    case "success":
       return { color: tokens.success };
     case "warning":
       return { color: tokens.warning };

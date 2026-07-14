@@ -6,6 +6,7 @@ import {
   Pressable,
   TextInput,
   useTheme,
+  useControllableState,
   useReducedMotion,
   FOCUS_RESET,
   type ColorTokens,
@@ -25,19 +26,23 @@ import {
 // made visually invisible (transparent text + caret hidden), so tapping anywhere
 // on the segmented row focuses it and autofill/paste land in it. The visible
 // segment cells (a View + a Text per character) are laid out underneath and read
-// from the controlled `value`; the "active" cell (index === value.length, clamped
+// from the resolved `value`; the "active" cell (index === value.length, clamped
 // to the last cell) shows a caret/ring while the input is focused. Focus is tracked
-// in local state for the active-cell highlight ONLY — the value stays controlled.
+// in local state for the active-cell highlight ONLY; the value flows through
+// useControllableState, so InputOTP works controlled OR uncontrolled (a bare one is typeable).
 
 export type Size = "small" | "base" | "large";
 
 export interface InputOTPProps {
   /** Number of segment cells (and the max code length). Default 6. */
   length?: number;
-  /** Current code (controlled). Only the typed digits, e.g. "123". */
-  value: string;
-  /** Called with the new code (digits only, sliced to `length`) on each change. */
-  onChange: (code: string) => void;
+  /** Current code (controlled). Only the typed digits, e.g. "123". Omit and use
+   *  `defaultValue` (or neither) for uncontrolled use; a bare <InputOTP /> is typeable. */
+  value?: string;
+  /** Initial code for uncontrolled use (a bare <InputOTP /> accepts input out of the box). */
+  defaultValue?: string;
+  /** Called with the new code (digits only, sliced to `length`) on each change (both modes). */
+  onChangeText?: (code: string) => void;
   /** Fired once when the code reaches `length` digits. */
   onComplete?: (code: string) => void;
   /** Disable input and dim the cells. */
@@ -120,10 +125,14 @@ function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
 /** Build an InputOTP component from a platform skin. */
 export function createInputOTP(skin: InputOTPSkin) {
   const InputOTP = forwardRef<RNTextInput, InputOTPProps>(function InputOTP(props, ref) {
-    const { length = 6, value, onChange, onComplete, disabled, masked, testID, style } = props;
+    const { length = 6, onChangeText, onComplete, disabled, masked, testID, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
     const [focused, setFocused] = useState(false);
+
+    // Controlled when `value` is provided, self-managed otherwise, so a bare
+    // <InputOTP /> accepts typing/paste/autofill out of the box.
+    const [value, setValue] = useControllableState<string>(props.value, props.defaultValue ?? "", onChangeText);
 
     // Fire onComplete exactly once per "reaches full length" transition: track the
     // last completed code so re-renders with the same full value don't re-fire.
@@ -143,7 +152,7 @@ export function createInputOTP(skin: InputOTPSkin) {
 
     const handleChange = (raw: string) => {
       const cleaned = raw.replace(DIGITS_ONLY, "").slice(0, length);
-      onChange(cleaned);
+      setValue(cleaned);
     };
 
     const gap = skin.gap(size);

@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
   title="All clear"
   description="No locked accounts or pending reviews."
   actionLabel="View history"
-  positive
+  success
   bordered
 />
   );

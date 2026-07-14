@@ -24,7 +24,7 @@ import { type Role, type Tone, type Weight, roleColor, toneColor, weightStyle, M
 // Boolean-prop API: one boolean per role on a single axis, first-match
 // precedence (mirrors Button's intentOf / Badge's toneOf). Roles are mutually
 // exclusive; pass at most one. Two orthogonal axes layer on top: an optional
-// tone (subtle / primary / destructive / positive / warning) sets the color and
+// tone (subtle / primary / destructive / success / warning) sets the color and
 // a weight (regular / medium / semibold / bold) sets the fontWeight; each is
 // mutually exclusive within itself and null by default, so the role's own color
 // and weight stand when the axis is untouched. The text content comes from
@@ -57,7 +57,7 @@ export interface TypographyProps {
   subtle?: boolean;
   primary?: boolean;
   destructive?: boolean;
-  positive?: boolean;
+  success?: boolean;
   warning?: boolean;
   // Weight (pick one; orthogonal to role). When omitted, the role's own weight is used.
   regular?: boolean;
@@ -122,7 +122,7 @@ function roleOf(p: TypographyProps): Role {
 function toneOf(p: TypographyProps): Tone | null {
   if (p.destructive) return "destructive";
   if (p.warning) return "warning";
-  if (p.positive) return "positive";
+  if (p.success) return "success";
   if (p.primary) return "primary";
   if (p.subtle) return "subtle";
   // `muted` is also a role; as a tone it layers muted color onto a larger role

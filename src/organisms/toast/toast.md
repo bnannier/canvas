@@ -19,7 +19,13 @@ A transient notification capsule. Render a `<Toast>` directly, or drive them imp
 ### Error
 
 ```tsx
-<Toast destructive message="Upload failed" description="Check your connection and try again." action={{ label: "Retry", onPress: () => {} }} />
+<Toast error message="Upload failed" description="Check your connection and try again." action={{ label: "Retry", onPress: () => {} }} />
+```
+
+### Warning
+
+```tsx
+<Toast warning message="Storage almost full" description="Free up space to keep syncing." action={{ label: "Manage", onPress: () => {} }} />
 ```
 
 ### With an action
@@ -36,7 +42,7 @@ A transient notification capsule. Render a `<Toast>` directly, or drive them imp
 
 ## Do & Don't
 
-**Do** — Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.
+**Do** — Keep a toast to one short, plain message (with an optional one-line description), and pair an error or success intent with the matching message.
 
 ```tsx
 <Toast success message="Copied to clipboard" />

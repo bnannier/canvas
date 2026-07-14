@@ -40,17 +40,24 @@ describe("Stepper", () => {
 describe("InputOTP", () => {
   it("strips non-digits and reports the cleaned code", () => {
     let code = "";
-    const { container } = ui(<InputOTP value="12" length={6} onChange={(c) => { code = c; }} />);
+    const { container } = ui(<InputOTP value="12" length={6} onChangeText={(c) => { code = c; }} />);
     const input = container.querySelector("input") as HTMLInputElement;
     expect(input.getAttribute("aria-label")).toBe("One-time code");
     fireEvent.change(input, { target: { value: "12a4" } });
     expect(code).toBe("124");
   });
 
+  it("is typeable uncontrolled: a bare field accepts input and updates its cells", () => {
+    const { container } = ui(<InputOTP length={6} />);
+    const input = container.querySelector("input") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "42" } });
+    expect(input.value).toBe("42");
+  });
+
   it("fires onComplete once the value fills every cell", () => {
     let done = "";
-    const { rerender } = ui(<InputOTP value="123" length={4} onChange={() => {}} onComplete={(c) => { done = c; }} />);
-    rerender(<ThemeProvider><InputOTP value="1234" length={4} onChange={() => {}} onComplete={(c) => { done = c; }} /></ThemeProvider>);
+    const { rerender } = ui(<InputOTP value="123" length={4} onChangeText={() => {}} onComplete={(c) => { done = c; }} />);
+    rerender(<ThemeProvider><InputOTP value="1234" length={4} onChangeText={() => {}} onComplete={(c) => { done = c; }} /></ThemeProvider>);
     expect(done).toBe("1234");
   });
 });

@@ -26,7 +26,7 @@ import { type Tone, type EmptyStateSkin } from "./empty-state.styles.js";
 // Boolean-prop API: flat booleans grouped into axes, first-match precedence within
 // an axis (mirrors Button's intentOf).
 //
-// - Tone axis: `positive` paints the disc and glyph green for states where
+// - Tone axis: `success` paints the disc and glyph green for states where
 //   emptiness is good news (no errors, all caught up). The default tone keeps the
 //   disc muted and the glyph muted-foreground for routinely-empty states.
 // - Container axis: `bordered` wraps the column in a rounded, bordered card (used
@@ -36,7 +36,7 @@ import { type Tone, type EmptyStateSkin } from "./empty-state.styles.js";
 export interface EmptyStateProps {
   /**
    * The glyph shown in the disc: a monochrome `<Icon />` element (cloned with the
-   * tone's tint and the disc's glyph size, so it follows `positive`/default like the
+   * tone's tint and the disc's glyph size, so it follows `success`/default like the
    * disc wash does; a semantic color boolean on the element still wins) or an
    * emoji/character string.
    */
@@ -50,7 +50,7 @@ export interface EmptyStateProps {
   /** Called when the action button is pressed. */
   onAction?: () => void;
   // Tone axis (pick one; default keeps the disc muted).
-  positive?: boolean;
+  success?: boolean;
   // Container axis: wrap the column in a bordered card.
   bordered?: boolean;
   // Density axis (only affects the bordered card's padding).
@@ -63,7 +63,7 @@ export interface EmptyStateProps {
 
 // Tone precedence: first match wins.
 function toneOf(p: EmptyStateProps): Tone {
-  return p.positive ? "positive" : "default";
+  return p.success ? "success" : "default";
 }
 
 // The action's Button atom, typed as its component so the public Button API is

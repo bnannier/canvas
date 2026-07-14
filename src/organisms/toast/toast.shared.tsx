@@ -45,13 +45,13 @@ import { Icon } from "../../atoms/icon/icon.js";
 //      useToast() returns { toast, dismiss }: toast(options) enqueues and returns
 //      an id; dismiss(id) removes one early.
 //
-// The intent axis is a set of mutually exclusive booleans (success / destructive /
-// info, with a neutral default); each maps to an icon glyph and a theme color. The
-// whole system is built once from React Native primitives, so it renders identically
-// on iOS, Android, and the web.
+// The intent axis is a set of mutually exclusive booleans (success / error /
+// warning / info, with a neutral default); each maps to an icon glyph and a theme
+// color, and the names match Alert's tone axis. The whole system is built once from
+// React Native primitives, so it renders identically on iOS, Android, and the web.
 
 /** The intent axis: pick one (or none for the neutral default). */
-type Intent = "success" | "destructive" | "info" | "neutral";
+type Intent = "success" | "error" | "warning" | "info" | "neutral";
 
 /** A trailing action button on a toast. */
 export interface ToastAction {
@@ -71,7 +71,9 @@ export interface ToastProps {
   /** Green success intent (icon + tint). */
   success?: boolean;
   /** Red error intent (icon + tint). */
-  destructive?: boolean;
+  error?: boolean;
+  /** Amber warning intent (icon + tint). */
+  warning?: boolean;
   /** Brand-tinted informational intent (icon + tint). */
   info?: boolean;
   /** Override the auto intent icon; pass any node, or omit to use the intent glyph. */
@@ -91,7 +93,7 @@ export interface ToastSkin {
    *  `hasTrailing` is true when a trailing action/dismiss control renders, so a skin
    *  can tighten the trailing padding (M3: 8dp beside a trailing control). */
   container: (t: ColorTokens, hasTrailing: boolean) => ViewStyle;
-  /** Render the auto intent glyph (success / destructive / info) in the leading
+  /** Render the auto intent glyph (success / error / warning / info) in the leading
    *  slot. The M3 snackbar anatomy has no leading icon, so the Android skin turns
    *  this off; an explicit `icon` prop always renders. */
   intentIcon: boolean;
@@ -131,8 +133,10 @@ export interface ToastSkin {
 }
 
 // Intent precedence when more than one boolean is passed: first match wins.
-function intentOf(p: { success?: boolean; destructive?: boolean; info?: boolean }): Intent {
-  if (p.destructive) return "destructive";
+// Mirrors Alert's tone precedence (error, warning, success, info).
+function intentOf(p: { success?: boolean; error?: boolean; warning?: boolean; info?: boolean }): Intent {
+  if (p.error) return "error";
+  if (p.warning) return "warning";
   if (p.success) return "success";
   if (p.info) return "info";
   return "neutral";
@@ -142,7 +146,8 @@ function intentOf(p: { success?: boolean; destructive?: boolean; info?: boolean 
 // carries no icon (the message stands alone).
 function IntentIcon({ intent, size }: { intent: Intent; size: number }): ReactNode {
   if (intent === "success") return <Icon circleCheck success size={size} />;
-  if (intent === "destructive") return <Icon circleX destructive size={size} />;
+  if (intent === "error") return <Icon circleX destructive size={size} />;
+  if (intent === "warning") return <Icon alertTriangle warning size={size} />;
   if (intent === "info") return <Icon info primary size={size} />;
   return null;
 }
@@ -153,7 +158,8 @@ export interface ToastOptions {
   description?: string;
   action?: ToastAction;
   success?: boolean;
-  destructive?: boolean;
+  error?: boolean;
+  warning?: boolean;
   info?: boolean;
   icon?: ReactNode;
   /** Auto-dismiss after this many ms (default 4000). Pass 0 or Infinity to keep it
@@ -363,7 +369,8 @@ export function createToastSystem(skin: ToastSkin) {
                   description={t.description}
                   action={t.action}
                   success={t.success}
-                  destructive={t.destructive}
+                  error={t.error}
+                  warning={t.warning}
                   info={t.info}
                   icon={t.icon}
                   onDismiss={() => dismiss(t.id)}

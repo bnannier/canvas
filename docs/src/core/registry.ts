@@ -765,6 +765,7 @@ import e_organisms_toast_example_1 from "./examples/organisms/toast/example-1";
 import e_organisms_toast_example_2 from "./examples/organisms/toast/example-2";
 import e_organisms_toast_example_3 from "./examples/organisms/toast/example-3";
 import e_organisms_toast_example_4 from "./examples/organisms/toast/example-4";
+import e_organisms_toast_example_5 from "./examples/organisms/toast/example-5";
 import e_organisms_toast_dont_0_do from "./examples/organisms/toast/dont-0-do";
 import e_organisms_toast_dont_0_dont from "./examples/organisms/toast/dont-0-dont";
 import e_charts_area_chart_example_0 from "./examples/charts/area-chart/example-0";
@@ -1057,14 +1058,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "input-otp",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<InputOTP value=\"123\" onChange={() => {}} />", render: e_atoms_input_otp_example_0 },
-      { label: "Length - six vs four digits", code: "<Column relaxed>\n  <InputOTP length={6} value=\"1234\" onChange={() => {}} />\n  <InputOTP length={4} value=\"12\" onChange={() => {}} />\n</Column>", render: e_atoms_input_otp_example_1 },
-      { label: "Masked", code: "<InputOTP masked value=\"1234\" onChange={() => {}} />", render: e_atoms_input_otp_example_2 },
-      { label: "Sizes", code: "<Column relaxed>\n  <InputOTP small value=\"123\" onChange={() => {}} />\n  <InputOTP value=\"123\" onChange={() => {}} />\n  <InputOTP large value=\"123\" onChange={() => {}} />\n</Column>", render: e_atoms_input_otp_example_3 },
-      { label: "Disabled", code: "<InputOTP disabled value=\"1234\" onChange={() => {}} />", render: e_atoms_input_otp_example_4 },
+      { label: "Default", code: "<InputOTP defaultValue=\"123\" />", render: e_atoms_input_otp_example_0 },
+      { label: "Length - six vs four digits", code: "<Column relaxed>\n  <InputOTP length={6} defaultValue=\"1234\" />\n  <InputOTP length={4} defaultValue=\"12\" />\n</Column>", render: e_atoms_input_otp_example_1 },
+      { label: "Masked", code: "<InputOTP masked defaultValue=\"1234\" />", render: e_atoms_input_otp_example_2 },
+      { label: "Sizes", code: "<Column relaxed>\n  <InputOTP small defaultValue=\"123\" />\n  <InputOTP defaultValue=\"123\" />\n  <InputOTP large defaultValue=\"123\" />\n</Column>", render: e_atoms_input_otp_example_3 },
+      { label: "Disabled", code: "<InputOTP disabled defaultValue=\"1234\" />", render: e_atoms_input_otp_example_4 },
     ],
     donts: [
-      { do: { caption: "Size the field to the real code length with `length`, so every digit has its own cell and the user can see how many remain.", code: "<InputOTP length={6} value=\"123\" onChange={() => {}} />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked value=\"123456\" onChange={() => {}} />", render: e_atoms_input_otp_dont_0_dont } },
+      { do: { caption: "Size the field to the real code length with `length`, so every digit has its own cell and the user can see how many remain.", code: "<InputOTP length={6} defaultValue=\"123\" />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked defaultValue=\"123456\" />", render: e_atoms_input_otp_dont_0_dont } },
     ],
   },
   "kbd": {
@@ -1276,7 +1277,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Line", code: "<Column relaxed style={{ maxWidth: 220 }}>\n  <Sparkline line success values={[185.3, 184.0, 183.5, 185.0, 185.8, 186.2, 187.2, 188.7, 189.1, 187.8, 187.7, 187.0, 186.9, 187.0, 188.1, 187.5, 188.9, 188.8, 189.8, 190.6, 189.4, 188.1, 189.0, 190.1, 191.6, 192.6, 193.6, 194.4, 195.8, 194.7, 193.4, 192.8, 191.7, 191.0]} />\n  <Sparkline line destructive values={[191.0, 191.7, 192.8, 193.4, 194.7, 195.8, 194.4, 193.6, 192.6, 191.6, 190.1, 189.0, 188.1, 189.4, 190.6, 189.8, 188.8, 188.9, 187.5, 188.1, 187.0, 186.9, 187.0, 187.7, 187.8, 189.1, 188.7, 187.2, 186.2, 185.8, 185.0, 183.5, 184.0, 185.3]} />\n</Column>", render: e_atoms_sparkline_example_3 },
     ],
     donts: [
-      { title: "Pair with a value", do: { caption: "Anchor the sparkline to an explicit headline value and delta.", code: "<Card padded style={{ maxWidth: 220 }}>\n  <Column tight>\n    <Typography caption>Requests</Typography>\n    <Row between baseline>\n      <Typography h3 semibold>24.5k</Typography>\n      <Typography tiny positive>+8.2%</Typography>\n    </Row>\n    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />\n  </Column>\n</Card>", render: e_atoms_sparkline_dont_0_do }, dont: { caption: "Draw a bare trend strip with no current value; the reader has to decode the slope.", code: "<View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 2, height: 24 }}>\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 8 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 16 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 24 }} />\n</View>", render: e_atoms_sparkline_dont_0_dont } },
+      { title: "Pair with a value", do: { caption: "Anchor the sparkline to an explicit headline value and delta.", code: "<Card padded style={{ maxWidth: 220 }}>\n  <Column tight>\n    <Typography caption>Requests</Typography>\n    <Row between baseline>\n      <Typography h3 semibold>24.5k</Typography>\n      <Typography tiny success>+8.2%</Typography>\n    </Row>\n    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />\n  </Column>\n</Card>", render: e_atoms_sparkline_dont_0_do }, dont: { caption: "Draw a bare trend strip with no current value; the reader has to decode the slope.", code: "<View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 2, height: 24 }}>\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 8 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 16 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 24 }} />\n</View>", render: e_atoms_sparkline_dont_0_dont } },
     ],
   },
   "spinner": {
@@ -1407,7 +1408,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Style - lead", code: "<Typography lead>The quick brown fox</Typography>", render: e_atoms_typography_example_13 },
       { label: "Weight - semibold", code: "<Typography lead semibold>Rachel Chen</Typography>", render: e_atoms_typography_example_14 },
       { label: "Tone - primary", code: "<Typography body primary>View invoices</Typography>", render: e_atoms_typography_example_15 },
-      { label: "Tone - positive", code: "<Typography small positive>+12.4% this week</Typography>", render: e_atoms_typography_example_16 },
+      { label: "Tone - success", code: "<Typography small success>+12.4% this week</Typography>", render: e_atoms_typography_example_16 },
       { label: "Tone - destructive", code: "<Typography small destructive>Payment failed</Typography>", render: e_atoms_typography_example_17 },
     ],
     donts: [
@@ -1572,8 +1573,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Variant - files", code: "<EmptyState\n  icon={<Icon fileText />}\n  title=\"No files\"\n  description=\"Upload or drag files here.\"\n  actionLabel=\"Upload files\"\n  bordered\n/>", render: e_molecules_empty_state_example_2 },
       { label: "Variant - activity", code: "<EmptyState\n  icon={<Icon chartLine />}\n  title=\"No activity\"\n  description=\"Events will appear as they happen.\"\n  actionLabel=\"Refresh\"\n  bordered\n/>", render: e_molecules_empty_state_example_3 },
       { label: "Variant - notifications", code: "<EmptyState\n  icon={<Icon bell />}\n  title=\"All caught up\"\n  description=\"No new notifications.\"\n  actionLabel=\"View archive\"\n  bordered\n/>", render: e_molecules_empty_state_example_4 },
-      { label: "Variant - errors", code: "<EmptyState\n  icon={<Icon circleCheck />}\n  title=\"No errors\"\n  description=\"Everything is running smoothly.\"\n  actionLabel=\"View logs\"\n  positive\n  bordered\n/>", render: e_molecules_empty_state_example_5 },
-      { label: "Variant - all-clear", code: "<EmptyState\n  icon={<Icon circleCheck />}\n  title=\"All clear\"\n  description=\"No locked accounts or pending reviews.\"\n  actionLabel=\"View history\"\n  positive\n  bordered\n/>", render: e_molecules_empty_state_example_6 },
+      { label: "Variant - errors", code: "<EmptyState\n  icon={<Icon circleCheck />}\n  title=\"No errors\"\n  description=\"Everything is running smoothly.\"\n  actionLabel=\"View logs\"\n  success\n  bordered\n/>", render: e_molecules_empty_state_example_5 },
+      { label: "Variant - all-clear", code: "<EmptyState\n  icon={<Icon circleCheck />}\n  title=\"All clear\"\n  description=\"No locked accounts or pending reviews.\"\n  actionLabel=\"View history\"\n  success\n  bordered\n/>", render: e_molecules_empty_state_example_6 },
       { label: "Single action", code: "<EmptyState\n  icon={<Icon search />}\n  title=\"No results found\"\n  description=\"Try adjusting your search filters.\"\n  actionLabel=\"Create identity\"\n  bordered\n/>", render: e_molecules_empty_state_example_7 },
       { label: "Inside a table", code: "<Card flat flush style={{ overflow: \"hidden\" }}>\n  <DataTable columns={[\"Name\", \"Email\", \"Role\", \"Status\"]} rows={[]} />\n  <Column alignCenter padLoose>\n    <EmptyState bordered icon={<Icon search />} title=\"No results found\" description=\"Try adjusting your search filters.\" actionLabel=\"Clear filters\" />\n  </Column>\n</Card>", render: e_molecules_empty_state_example_8 },
     ],
@@ -1583,8 +1584,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "files", do: { caption: "Name the gesture that fills the empty space so the next step is obvious.", code: "<EmptyState bordered icon={<Icon fileText />} title=\"No files\" description=\"Upload or drag files here.\" />", render: e_molecules_empty_state_dont_2_do }, dont: { caption: "Generic 'nothing here' copy never tells the user how files would get into the folder.", code: "<EmptyState bordered icon={<Icon fileText />} title=\"Nothing here\" description=\"This folder is empty.\" />", render: e_molecules_empty_state_dont_2_dont } },
       { title: "activity", do: { caption: "Keep a routinely-empty state calm: muted icon, reassuring copy, no urgency.", code: "<EmptyState bordered icon={<Icon chartLine />} title=\"No activity\" description=\"Events will appear as they happen.\" />", render: e_molecules_empty_state_dont_3_do }, dont: { caption: "An alarming red icon turns a calm, expected empty feed into a false error.", code: "<EmptyState bordered icon={<Icon alertTriangle destructive />} title=\"No activity\" description=\"Events will appear as they happen.\" />", render: e_molecules_empty_state_dont_3_dont } },
       { title: "notifications", do: { caption: "Celebrate a cleared queue: 'All caught up' reads as success, not absence.", code: "<EmptyState bordered icon={<Icon bell />} title=\"All caught up\" description=\"No new notifications.\" />", render: e_molecules_empty_state_dont_4_do }, dont: { caption: "Apologetic, sad-toned copy frames an inbox-zero win as a letdown.", code: "<EmptyState bordered icon={<Icon bell />} title=\"Nothing to see\" description=\"You have no notifications. Sorry, it's quiet in here.\" />", render: e_molecules_empty_state_dont_4_dont } },
-      { title: "errors", do: { caption: "Signal the good news with a green check: zero errors is a passing state, not an empty one.", code: "<EmptyState bordered positive icon={<Icon circleCheck />} title=\"No errors\" description=\"Everything is running smoothly.\" />", render: e_molecules_empty_state_dont_5_do }, dont: { caption: "A grey 'nothing found' disc reads as a failed query, not as a healthy, error-free system.", code: "<EmptyState bordered icon={<Icon search />} title=\"No errors\" description=\"Nothing was found.\" />", render: e_molecules_empty_state_dont_5_dont } },
-      { title: "all-clear", do: { caption: "Reserve the green all-clear for genuinely empty queues: nothing locked, nothing waiting.", code: "<EmptyState bordered positive icon={<Icon circleCheck />} title=\"All clear\" description=\"No locked accounts or pending reviews.\" />", render: e_molecules_empty_state_dont_6_do }, dont: { caption: "A green all-clear over copy that admits work is pending hides the action the user must take.", code: "<EmptyState bordered positive icon={<Icon circleCheck />} title=\"No pending reviews\" description=\"3 accounts are locked and waiting on you.\" />", render: e_molecules_empty_state_dont_6_dont } },
+      { title: "errors", do: { caption: "Signal the good news with a green check: zero errors is a passing state, not an empty one.", code: "<EmptyState bordered success icon={<Icon circleCheck />} title=\"No errors\" description=\"Everything is running smoothly.\" />", render: e_molecules_empty_state_dont_5_do }, dont: { caption: "A grey 'nothing found' disc reads as a failed query, not as a healthy, error-free system.", code: "<EmptyState bordered icon={<Icon search />} title=\"No errors\" description=\"Nothing was found.\" />", render: e_molecules_empty_state_dont_5_dont } },
+      { title: "all-clear", do: { caption: "Reserve the green all-clear for genuinely empty queues: nothing locked, nothing waiting.", code: "<EmptyState bordered success icon={<Icon circleCheck />} title=\"All clear\" description=\"No locked accounts or pending reviews.\" />", render: e_molecules_empty_state_dont_6_do }, dont: { caption: "A green all-clear over copy that admits work is pending hides the action the user must take.", code: "<EmptyState bordered success icon={<Icon circleCheck />} title=\"No pending reviews\" description=\"3 accounts are locked and waiting on you.\" />", render: e_molecules_empty_state_dont_6_dont } },
     ],
   },
   "feeds": {
@@ -1914,12 +1915,13 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     examples: [
       { label: "Default", code: "<Toast message=\"Your changes were saved.\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_0 },
       { label: "Success", code: "<Toast success message=\"Profile updated\" description=\"Your changes are now live.\" action={{ label: \"View\", onPress: () => {} }} />", render: e_organisms_toast_example_1 },
-      { label: "Error", code: "<Toast destructive message=\"Upload failed\" description=\"Check your connection and try again.\" action={{ label: \"Retry\", onPress: () => {} }} />", render: e_organisms_toast_example_2 },
-      { label: "With an action", code: "<Toast message=\"Message archived\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_3 },
-      { label: "Dismissible, informational", code: "<Toast info message=\"A new version is available\" onDismiss={() => {}} />", render: e_organisms_toast_example_4 },
+      { label: "Error", code: "<Toast error message=\"Upload failed\" description=\"Check your connection and try again.\" action={{ label: \"Retry\", onPress: () => {} }} />", render: e_organisms_toast_example_2 },
+      { label: "Warning", code: "<Toast warning message=\"Storage almost full\" description=\"Free up space to keep syncing.\" action={{ label: \"Manage\", onPress: () => {} }} />", render: e_organisms_toast_example_3 },
+      { label: "With an action", code: "<Toast message=\"Message archived\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_4 },
+      { label: "Dismissible, informational", code: "<Toast info message=\"A new version is available\" onDismiss={() => {}} />", render: e_organisms_toast_example_5 },
     ],
     donts: [
-      { do: { caption: "Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.", code: "<Toast success message=\"Copied to clipboard\" />", render: e_organisms_toast_dont_0_do }, dont: { caption: "Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.", code: "<Toast\n  message=\"We were unable to complete your request because the server returned an unexpected error and the operation was rolled back\"\n/>", render: e_organisms_toast_dont_0_dont } },
+      { do: { caption: "Keep a toast to one short, plain message (with an optional one-line description), and pair an error or success intent with the matching message.", code: "<Toast success message=\"Copied to clipboard\" />", render: e_organisms_toast_dont_0_do }, dont: { caption: "Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.", code: "<Toast\n  message=\"We were unable to complete your request because the server returned an unexpected error and the operation was rolled back\"\n/>", render: e_organisms_toast_dont_0_dont } },
     ],
   },
   "area-chart": {
