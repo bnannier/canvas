@@ -17,6 +17,7 @@ import {
   type ViewStyle,
   type TextStyle,
 } from "../../style/index.js";
+import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Stepper shell. A numeric value with a − button, an editable numeric
@@ -97,10 +98,6 @@ export interface StepperSkin {
   hitSlop: ((size: Size) => number) | null;
   /** Layout order: the iOS HIG puts the value field to the LEFT of the [ − | + ] pill. */
   fieldOnLeft: boolean;
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, v));
 }
 
 // Map a glyph color token to the Icon atom's boolean color prop. A disabled (at-bound)

@@ -7,6 +7,9 @@ import { PageNav } from "../../ui/page-nav";
 
 const INSTALL = `npm install @olympusoss/canvas react react-native react-native-svg`;
 
+const OPTIONAL_INSTALL = `# add only the ones whose feature you use
+npm install react-native-qrcode-svg react-native-safe-area-context expo-blur expo-glass-effect`;
+
 const QUICK_START = `import { ThemeProvider, Button } from "@olympusoss/canvas";
 
 // Wrap the app once in ThemeProvider; it follows the OS appearance by default
@@ -151,6 +154,31 @@ export default function IntegrationScreen() {
             <InlineCode>react-native-svg</InlineCode> as peer dependencies.
           </P>
           <CodeBlock code={INSTALL} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Optional peers">
+          <P muted>
+            These back specific features. Skip any you don't use; Canvas still works and degrades gracefully.
+          </P>
+          <P muted>
+            <InlineCode>react-native-qrcode-svg</InlineCode> — renders the <InlineCode>QRCode</InlineCode> component;
+            without it, <InlineCode>QRCode</InlineCode> shows an empty labeled frame.
+          </P>
+          <P muted>
+            <InlineCode>expo-glass-effect</InlineCode> — real iOS 26 Liquid Glass for overlays and bars; without it, glass
+            mode falls back to a translucent fill.
+          </P>
+          <P muted>
+            <InlineCode>expo-blur</InlineCode> — a real frosted blur for glass mode on web, Android, and iOS &lt; 26;
+            without it, glass mode falls back to a translucent fill.
+          </P>
+          <P muted>
+            <InlineCode>react-native-safe-area-context</InlineCode> — safe-area insets for the overlays that use them
+            (Drawer, sheets); without it, they fall back to fixed insets.
+          </P>
+          <CodeBlock code={OPTIONAL_INSTALL} />
         </Section>
 
         <Rule />

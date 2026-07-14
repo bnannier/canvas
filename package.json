@@ -3,13 +3,13 @@
   "version": "6.23.2",
   "description": "Universal React Native UI kit styled with Tailwind",
   "license": "UNLICENSED",
-  "homepage": "https://olympusoss.github.io/canvas/",
+  "homepage": "https://bnannier.github.io/canvas/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OlympusOSS/canvas.git"
+    "url": "git+https://github.com/bnannier/canvas.git"
   },
   "bugs": {
-    "url": "https://github.com/OlympusOSS/canvas/issues"
+    "url": "https://github.com/bnannier/canvas/issues"
   },
   "keywords": [
     "react-native",
