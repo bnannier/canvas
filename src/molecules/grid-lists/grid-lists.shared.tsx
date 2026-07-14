@@ -1,6 +1,6 @@
-import { type ComponentType } from "react";
-import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { Fragment, type ComponentType } from "react";
+import { FlatList, StyleSheet, type DimensionValue } from "react-native";
+import { View, Pressable, Text, useTheme, useResponsive, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -130,6 +130,13 @@ export interface GridListProps {
    *  every tile renders as a Pressable with a button role and a pressed
    *  affordance, so a tappable grid needs no hand-rolled Pressable. */
   onPressItem?: (index: number) => void;
+  /**
+   * Render the tiles through a windowed `FlatList` instead of mounting every tile up
+   * front, for large grids. Give the grid a bounded height (via `style`, e.g.
+   * `{ maxHeight: 480 }`) so it can scroll; without one it warns and renders eagerly
+   * anyway. Default (omitted) mounts all tiles, unchanged.
+   */
+  virtualized?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -231,20 +238,64 @@ export function createGridList(
   }
 
   return function GridList(props: GridListProps) {
-    const { items, gallery, compact, testID, style, onPressItem } = props;
+    const { items, gallery, compact, virtualized, testID, style, onPressItem } = props;
     const columns = columnsOf(props);
     const gap = compact ? skin.gap.compact : skin.gap.default;
+    // FlatList lays out `numColumns` tiles per row itself (mirrors the flex-wrap
+    // grid's column count): cols3 -> 3, cols2 (the default) -> 2.
+    const numColumns = columns === "cols3" ? 3 : 2;
+
+    // One tile, keyless so it can be used both by the eager `.map` (which supplies
+    // the key via a Fragment) and by FlatList's renderItem (which keys via keyExtractor).
+    const renderTile = (item: GridListItem, index: number) => {
+      const onPress = onPressItem ? () => onPressItem(index) : undefined;
+      return gallery ? (
+        <GalleryTile item={item} columns={columns} onPress={onPress} />
+      ) : (
+        <PeopleTile item={item} columns={columns} compact={!!compact} onPress={onPress} />
+      );
+    };
+
+    // Stable identity per tile; matches the eager path's key so switching to the
+    // windowed path keeps a tile mapped to the same item.
+    const keyOf = (item: GridListItem, index: number) => `${item.title}-${index}`;
+
+    // A windowed grid needs a bounded height to scroll (and to actually window). Warn
+    // once if `virtualized` is set without one; a FlatList with no height falls back
+    // to rendering every tile anyway, so the flag would be a silent no-op.
+    const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+    const bounded = flat.height != null || flat.maxHeight != null || flat.flex != null || flat.flexBasis != null;
+    devWarn(
+      !!virtualized && !bounded,
+      "[canvas] <GridList virtualized>: give the grid a bounded height (e.g. style={{ maxHeight: 480 }}) so it can window and scroll; rendering eagerly for now.",
+    );
+
+    // The windowed path: FlatList tiles the items into `numColumns` per row. The
+    // eager grid's single flex `gap` is split back into its two axes: the
+    // inter-column gap onto each row wrapper, the inter-row gap onto the content
+    // container, so the spacing matches the eager grid. The eager path below keeps
+    // the flex-wrap container's DOM byte-for-byte identical.
+    if (virtualized && bounded) {
+      return (
+        <FlatList
+          testID={testID}
+          style={style}
+          data={items}
+          renderItem={({ item, index }) => renderTile(item, index)}
+          keyExtractor={keyOf}
+          numColumns={numColumns}
+          columnWrapperStyle={numColumns > 1 ? { gap } : undefined}
+          contentContainerStyle={{ gap }}
+          showsVerticalScrollIndicator={false}
+        />
+      );
+    }
 
     return (
       <View testID={testID} style={[s.container, { gap }, style]}>
-        {items.map((item, index) => {
-          const onPress = onPressItem ? () => onPressItem(index) : undefined;
-          return gallery ? (
-            <GalleryTile key={`${item.title}-${index}`} item={item} columns={columns} onPress={onPress} />
-          ) : (
-            <PeopleTile key={`${item.title}-${index}`} item={item} columns={columns} compact={!!compact} onPress={onPress} />
-          );
-        })}
+        {items.map((item, index) => (
+          <Fragment key={keyOf(item, index)}>{renderTile(item, index)}</Fragment>
+        ))}
       </View>
     );
   };

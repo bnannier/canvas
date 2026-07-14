@@ -1,6 +1,6 @@
-import { type ComponentType, type ReactNode } from "react";
-import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Fragment, type ComponentType, type ReactNode } from "react";
+import { FlatList, StyleSheet, type GestureResponderEvent } from "react-native";
+import { View, Pressable, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -91,6 +91,13 @@ export interface StackedListProps {
   card?: boolean;
   // Divider modifier: rows are ruled by default; `flush` removes the hairlines.
   flush?: boolean;
+  /**
+   * Render the rows through a windowed `FlatList` instead of mounting every row up
+   * front, for large lists. Give the list a bounded height (via `style`, e.g.
+   * `{ maxHeight: 400 }`) so it can scroll; without one it warns and renders eagerly
+   * anyway. Default (omitted) mounts all rows, unchanged.
+   */
+  virtualized?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -126,7 +133,7 @@ export function createStackedList(
   Button: ButtonComponent = WebButton,
 ) {
   return function StackedList(props: StackedListProps) {
-    const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, testID, style } = props;
+    const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, testID, style } = props;
     const variant = variantOf(props);
     const { tokens } = useTheme();
 
@@ -218,16 +225,13 @@ export function createStackedList(
       <Avatar src={item.avatar} name={item.name} initials={item.initials} />
     );
 
-    const rows = items.map((item, index) => {
+    // One row, keyless so it can be used both by the eager `.map` (which supplies
+    // the key) and by FlatList's renderItem (which keys via keyExtractor).
+    const renderRow = (item: StackedListItem, index: number) => {
       const divider = ruled && index < lastIndex ? skin.rowDivider(tokens) : null;
-      // Stable identity when the caller supplies one; the array index is the
-      // fallback for static lists only (see StackedListItem.id).
-      const key = item.id ?? index;
-
       if (variant === "clickable") {
         return (
           <Pressable
-            key={key}
             style={({ pressed }) => [skin.rowBase, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed), divider]}
             android_ripple={ripple}
             onPress={(event) => onPressItem?.(index, event)}
@@ -241,16 +245,19 @@ export function createStackedList(
           </Pressable>
         );
       }
-
       return (
-        <View key={key} style={[skin.rowBase, divider]}>
+        <View style={[skin.rowBase, divider]}>
           {renderAvatar(item)}
           {renderColumn(item)}
           {renderTrailing(item)}
           {rowMenu ? renderMenu(index) : null}
         </View>
       );
-    });
+    };
+
+    // Stable identity when the caller supplies one; the array index is the fallback
+    // for static lists only (see StackedListItem.id).
+    const keyOf = (item: StackedListItem, index: number) => String(item.id ?? index);
 
     const header =
       title != null ? (
@@ -260,10 +267,32 @@ export function createStackedList(
         </View>
       ) : null;
 
+    // A windowed list needs a bounded height to scroll (and to actually window). Warn
+    // once if `virtualized` is set without one; a FlatList with no height falls back
+    // to rendering every row anyway, so the flag would be a silent no-op.
+    const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+    const bounded = flat.height != null || flat.maxHeight != null || flat.flex != null || flat.flexBasis != null;
+    devWarn(
+      !!virtualized && !bounded,
+      "[canvas] <StackedList virtualized>: give the list a bounded height (e.g. style={{ maxHeight: 400 }}) so it can window and scroll; rendering eagerly for now.",
+    );
+
+    const body =
+      virtualized && bounded ? (
+        <FlatList
+          data={items}
+          renderItem={({ item, index }) => renderRow(item, index)}
+          keyExtractor={keyOf}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
+      );
+
     return (
       <View testID={testID} style={[s.outer, framed ? skin.cardSurface(tokens) : null, style]}>
         {header}
-        {rows}
+        {body}
       </View>
     );
   };
