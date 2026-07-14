@@ -1,9 +1,11 @@
-import { type ComponentType, type ReactNode } from "react";
+import { Fragment, type ComponentType, type ReactNode } from "react";
+import { FlatList, StyleSheet } from "react-native";
 import {
   View,
   Pressable,
   Text,
   useTheme,
+  devWarn,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -78,6 +80,13 @@ export interface FeedProps {
   compact?: boolean;
   /** When set, each event row is pressable, reporting the row index. */
   onItemPress?: (index: number) => void;
+  /**
+   * Render the rows through a windowed `FlatList` instead of mounting every row up
+   * front, for large lists. Give the list a bounded height (via `style`, e.g.
+   * `{ maxHeight: 400 }`) so it can scroll; without one it warns and renders eagerly
+   * anyway. Default (omitted) mounts all rows, unchanged.
+   */
+  virtualized?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -146,11 +155,25 @@ function initialsFrom(name: string): string {
 
 export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) {
   return function Feed(props: FeedProps) {
-    const { items = [], onItemPress, testID, style } = props;
+    const { items = [], onItemPress, virtualized, testID, style } = props;
     const { tokens } = useTheme();
     const lead = leadOf(props);
     const compact = !!props.compact;
     const lastIndex = items.length - 1;
+
+    // Stable identity when the caller supplies one; the array index is the fallback
+    // for static lists only (see FeedItem.id).
+    const keyOf = (item: FeedItem, index: number) => String(item.id ?? index);
+
+    // A windowed list needs a bounded height to scroll (and to actually window). Warn
+    // once if `virtualized` is set without one; a FlatList with no height falls back
+    // to rendering every row anyway, so the flag would be a silent no-op.
+    const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+    const bounded = flat.height != null || flat.maxHeight != null || flat.flex != null || flat.flexBasis != null;
+    devWarn(
+      !!virtualized && !bounded,
+      "[canvas] <Feed virtualized>: give the list a bounded height (e.g. style={{ maxHeight: 400 }}) so it can window and scroll; rendering eagerly for now.",
+    );
 
     // Press feedback differs per OS: Android shows a native ripple (state layer)
     // on the row, iOS/web dim the row's opacity. The skin decides which.
@@ -174,9 +197,10 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
 
     if (lead === "avatar") {
       // Avatar lead: each row leads with the actor's avatar; rows are ruled by a
-      // hairline between items (the last row keeps no rule).
-      const rows = items.map((item, index) => {
-        const rowKey = item.id ?? index;
+      // hairline between items (the last row keeps no rule). Keyless so it can be
+      // used both by the eager `.map` (which supplies the key via Fragment) and by
+      // FlatList's renderItem (which keys via keyExtractor).
+      const renderRow = (item: FeedItem, index: number) => {
         const divider = index < lastIndex ? skin.avatarDivider(tokens) : null;
         const rowStyle: StyleProp<ViewStyle> = [s.avatarRow, skin.avatarRowPad(compact), divider];
         const inner: ReactNode = (
@@ -190,7 +214,6 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         if (onItemPress) {
           return (
             <Pressable
-              key={rowKey}
               accessibilityRole="button"
               onPress={() => onItemPress(index)}
               android_ripple={ripple}
@@ -203,19 +226,30 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
             </Pressable>
           );
         }
-        return (
-          <View key={rowKey} style={rowStyle}>
-            {inner}
-          </View>
+        return <View style={rowStyle}>{inner}</View>;
+      };
+
+      const body =
+        virtualized && bounded ? (
+          <FlatList
+            data={items}
+            renderItem={({ item, index }) => renderRow(item, index)}
+            keyExtractor={keyOf}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+          items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
         );
-      });
-      return <View testID={testID} style={[skin.cardSurface(tokens), style]}>{rows}</View>;
+      return <View testID={testID} style={[skin.cardSurface(tokens), style]}>{body}</View>;
     }
 
     // Connector lead: a bordered node per row with a vertical line linking each
-    // event to the next. The line is dropped on the final item.
-    const rows = items.map((item, index) => {
-      const rowKey = item.id ?? index;
+    // event to the next. The line is dropped on the final item. Keyless so it can be
+    // used both by the eager `.map` (which supplies the key via Fragment) and by
+    // FlatList's renderItem (which keys via keyExtractor). The connector line is
+    // drawn per-row off the index, so it keeps terminating on the last item under a
+    // windowed FlatList (each row still knows whether it is last).
+    const renderRow = (item: FeedItem, index: number) => {
       const isLast = index === lastIndex;
       const rowStyle: StyleProp<ViewStyle> = [s.connectorRow, isLast ? null : skin.connectorRowGap(compact)];
       const inner: ReactNode = (
@@ -239,7 +273,6 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
       if (onItemPress) {
         return (
           <Pressable
-            key={rowKey}
             accessibilityRole="button"
             onPress={() => onItemPress(index)}
             android_ripple={ripple}
@@ -253,13 +286,21 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
           </Pressable>
         );
       }
-      return (
-        <View key={rowKey} style={rowStyle}>
-          {inner}
-        </View>
-      );
-    });
+      return <View style={rowStyle}>{inner}</View>;
+    };
 
-    return <View testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), style]}>{rows}</View>;
+    const body =
+      virtualized && bounded ? (
+        <FlatList
+          data={items}
+          renderItem={({ item, index }) => renderRow(item, index)}
+          keyExtractor={keyOf}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
+      );
+
+    return <View testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), style]}>{body}</View>;
   };
 }

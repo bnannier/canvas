@@ -1,5 +1,6 @@
-import { type ComponentType, type ReactNode, useState } from "react";
-import { View, Pressable, Text, useTheme, breakpoints, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Fragment, type ComponentType, type ReactNode, useState } from "react";
+import { FlatList, StyleSheet } from "react-native";
+import { View, Pressable, Text, useTheme, devWarn, breakpoints, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import {
   type Density,
@@ -46,6 +47,13 @@ export interface DataTableProps {
   /** When set, each data row is pressable, reporting the row data and index. */
   onRowPress?: (row: ReactNode[], index: number) => void;
   /**
+   * Render the data rows through a windowed `FlatList` instead of mounting every
+   * row up front, for large tables. The header row stays fixed above it. Give the
+   * table a bounded height (via `style`, e.g. `{ maxHeight: 400 }`) so the body can
+   * scroll; without one it warns and renders eagerly. Default mounts all rows.
+   */
+  virtualized?: boolean;
+  /**
    * Stable key for a row, derived from the row data and its index. Supply this
    * whenever rows can be reordered, inserted, or deleted AND a cell is a stateful
    * custom ReactNode (an input, a toggle, a Badge with internal state): the shape
@@ -74,7 +82,7 @@ function densityOf(p: DataTableProps): Density {
  */
 export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<CheckboxProps>) {
   return function DataTable(props: DataTableProps) {
-    const { columns, rows, striped, bordered, selectable, onRowPress, rowKey, testID, style } = props;
+    const { columns, rows, striped, bordered, selectable, onRowPress, rowKey, virtualized, testID, style } = props;
     const density = densityOf(props);
     const { tokens } = useTheme();
 
@@ -98,6 +106,31 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
+    const keyOf = (row: ReactNode[], r: number) => String(rowKey ? rowKey(row, r) : r);
+
+    // A windowed body needs a bounded height to scroll (and to window). Warn once if
+    // `virtualized` is set without one; the FlatList would otherwise render every row.
+    const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+    const bounded = flat.height != null || flat.maxHeight != null || flat.flex != null || flat.flexBasis != null;
+    devWarn(
+      !!virtualized && !bounded,
+      "[canvas] <DataTable virtualized>: give the table a bounded height (e.g. style={{ maxHeight: 400 }}) so the body can window and scroll; rendering eagerly for now.",
+    );
+
+    // The data rows: a windowed FlatList when asked (and bounded), else every row
+    // mounted (the default). The header row above stays fixed either way.
+    const body =
+      virtualized && bounded ? (
+        <FlatList
+          data={rows}
+          renderItem={({ item, index }) => renderDataRow(item, index)}
+          keyExtractor={keyOf}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        rows.map((row, r) => <Fragment key={keyOf(row, r)}>{renderDataRow(row, r)}</Fragment>)
+      );
+
     return (
       <View
         testID={testID}
@@ -116,73 +149,73 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
             </Text>
           ))}
         </View>
-        {rows.map((row, r) => {
-          // Prefer a caller-supplied stable key so stateful custom cells keep
-          // their identity across reorder/insert/delete; fall back to the index.
-          const rowId = rowKey ? rowKey(row, r) : r;
-          const cells = (
-            <>
-              {selectable ? (
-                <View style={[skin.selectCell, skin.cellPad[density], { pointerEvents: "none" }]} role="cell">
-                  {/* DataTable carries no per-row selection state in its public API
-                      (rows are raw ReactNode cells; `selectable` only adds the
-                      column), so the selection checkbox is a NON-INTERACTIVE
-                      affordance. `pointerEvents:"none"` lets a row press pass THROUGH
-                      the checkbox to onRowPress instead of dead-ending on the
-                      checkbox's own Pressable (a permanently dead tap zone). */}
-                  <Checkbox checked={false} />
-                </View>
-              ) : null}
-              {visibleColumns.map((_col, c) => {
-                const cell = cellOf(row, c);
-                return (
-                  <View key={`c-${rowId}-${c}`} style={[skin.dataCell, skin.cellPad[density]]} role="cell">
-                    {typeof cell === "string" || typeof cell === "number" ? (
-                      <Text style={skin.cellText(tokens)}>{cell}</Text>
-                    ) : (
-                      cell
-                    )}
-                  </View>
-                );
-              })}
-              {/* An inset row separator (iOS), absolutely positioned so it does not
-                  affect the flex layout; web/Android use the dataRow's full-bleed
-                  borderBottom instead (skin.separator is null there). */}
-              {skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null}
-            </>
-          );
-          // The striped tint sits on odd-index rows for either layout.
-          const stripe = striped && r % 2 === 1 ? skin.stripeTint(tokens) : null;
-          return onRowPress ? (
-            <Pressable
-              key={`r-${rowId}`}
-              onPress={() => onRowPress(row, r)}
-              android_ripple={ripple}
-              role="button"
-              // Announce the actionable row's content: read off the plain
-              // string/number cells (custom ReactNode cells carry their own
-              // labels, so they are skipped here).
-              accessibilityLabel={rowLabel(row)}
-              style={({ pressed }) => [
-                skin.dataRow(tokens),
-                // Hold the platform minimum tap target (iOS 44pt / M3 48dp) so a
-                // compact pressable row is not sub-minimum; web omits it.
-                skin.pressableMinHeight != null ? { minHeight: skin.pressableMinHeight } : null,
-                stripe,
-                // Android ripples; iOS/web tint the row fill on press.
-                skin.ripple == null && pressed ? skin.pressTint(tokens) : null,
-              ]}
-            >
-              {cells}
-            </Pressable>
-          ) : (
-            <View key={`r-${rowId}`} style={[skin.dataRow(tokens), stripe]} role="row">
-              {cells}
-            </View>
-          );
-        })}
+        {body}
       </View>
     );
+
+    // A keyless data row (the key is supplied by the eager map / FlatList keyExtractor).
+    function renderDataRow(row: ReactNode[], r: number) {
+      const rowId = rowKey ? rowKey(row, r) : r;
+      const cells = (
+        <>
+          {selectable ? (
+            <View style={[skin.selectCell, skin.cellPad[density], { pointerEvents: "none" }]} role="cell">
+              {/* DataTable carries no per-row selection state in its public API
+                  (rows are raw ReactNode cells; `selectable` only adds the
+                  column), so the selection checkbox is a NON-INTERACTIVE
+                  affordance. `pointerEvents:"none"` lets a row press pass THROUGH
+                  the checkbox to onRowPress instead of dead-ending on the
+                  checkbox's own Pressable (a permanently dead tap zone). */}
+              <Checkbox checked={false} />
+            </View>
+          ) : null}
+          {visibleColumns.map((_col, c) => {
+            const cell = cellOf(row, c);
+            return (
+              <View key={`c-${rowId}-${c}`} style={[skin.dataCell, skin.cellPad[density]]} role="cell">
+                {typeof cell === "string" || typeof cell === "number" ? (
+                  <Text style={skin.cellText(tokens)}>{cell}</Text>
+                ) : (
+                  cell
+                )}
+              </View>
+            );
+          })}
+          {/* An inset row separator (iOS), absolutely positioned so it does not
+              affect the flex layout; web/Android use the dataRow's full-bleed
+              borderBottom instead (skin.separator is null there). */}
+          {skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null}
+        </>
+      );
+      // The striped tint sits on odd-index rows for either layout.
+      const stripe = striped && r % 2 === 1 ? skin.stripeTint(tokens) : null;
+      return onRowPress ? (
+        <Pressable
+          onPress={() => onRowPress(row, r)}
+          android_ripple={ripple}
+          role="button"
+          // Announce the actionable row's content: read off the plain
+          // string/number cells (custom ReactNode cells carry their own
+          // labels, so they are skipped here).
+          accessibilityLabel={rowLabel(row)}
+          style={({ pressed }) => [
+            skin.dataRow(tokens),
+            // Hold the platform minimum tap target (iOS 44pt / M3 48dp) so a
+            // compact pressable row is not sub-minimum; web omits it.
+            skin.pressableMinHeight != null ? { minHeight: skin.pressableMinHeight } : null,
+            stripe,
+            // Android ripples; iOS/web tint the row fill on press.
+            skin.ripple == null && pressed ? skin.pressTint(tokens) : null,
+          ]}
+        >
+          {cells}
+        </Pressable>
+      ) : (
+        <View style={[skin.dataRow(tokens), stripe]} role="row">
+          {cells}
+        </View>
+      );
+    }
   };
 }
 
