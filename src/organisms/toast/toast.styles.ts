@@ -8,7 +8,7 @@ import { type ToastSkin } from "./toast.shared.js";
 // through GlassSurface by the shell, so each skin supplies the SHAPE/type/feedback
 // only; the `backgroundColor: popover` is a fallback GlassSurface overrides with the
 // active material. Toast is a "Full" treatment: the BRAND survives on every platform
-// (the indigo `primary` action tint, the semantic `success`/`destructive` intents),
+// (the indigo `primary` action tint, the semantic `success`/`error`/`warning` intents),
 // only the native shape, type, and press feedback change per OS:
 //
 //   iOS (HIG banner): a rounded-16 floating capsule (continuous corner curve), 15pt

@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { InputOTP } = scope;
   return (
-<InputOTP length={6} value="123" onChange={() => {}} />
+<InputOTP length={6} defaultValue="123" />
   );
 }

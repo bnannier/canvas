@@ -71,7 +71,7 @@ const CASES: SkinCase[] = [
   { name: "Dropdown", dir: "atoms/dropdown", file: "dropdown", props: { label: "Menu", items: [{ label: "One" }, { label: "Two" }] } },
   { name: "Emblem", dir: "atoms/emblem", file: "emblem", props: { label: "AB", primary: true } },
   { name: "Icon", dir: "atoms/icon", file: "icon", props: { check: true } },
-  { name: "InputOTP", dir: "atoms/input-otp", file: "input-otp", props: { value: "12", length: 6, onChange: noop } },
+  { name: "InputOTP", dir: "atoms/input-otp", file: "input-otp", props: { value: "12", length: 6, onChangeText: noop } },
   { name: "Input", dir: "atoms/input", file: "input", props: { placeholder: "Email" } },
   { name: "Kbd", dir: "atoms/kbd", file: "kbd", children: "K" },
   { name: "Row", dir: "atoms/layout", file: "layout", children: txt("row") },

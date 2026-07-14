@@ -86,8 +86,9 @@ export interface TabsProps {
   active?: number;
   /** Initial active index for uncontrolled use (a bare <Tabs /> switches out of the box). */
   defaultActive?: number;
-  /** Called with the pressed trigger's index (both modes). */
-  onChange?: (index: number) => void;
+  /** Called with the pressed trigger's index (both modes). Matches TabBar and
+   *  ButtonGroup, which also fire `onSelect` for the active-index change. */
+  onSelect?: (index: number) => void;
   /** E2E hook forwarded to the tablist row. */
   testID?: string;
 
@@ -239,13 +240,13 @@ export function createTabs(skin: TabsSkin) {
   }
 
   return function Tabs(props: TabsProps) {
-    const { tabs = DEFAULT_TABS, onChange, disabled, style, testID } = props;
+    const { tabs = DEFAULT_TABS, onSelect, disabled, style, testID } = props;
     const variant = variantOf(props);
     const { tokens } = useTheme();
 
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // <Tabs /> switches tabs out of the box (the standard library contract).
-    const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0, onChange);
+    const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0, onSelect);
 
     if (variant === "vertical") {
       // A left-aligned column rail of stacked triggers; width hugs its content

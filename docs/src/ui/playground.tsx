@@ -156,11 +156,11 @@ export function Playground({ examples }: { examples: DocExample[] }) {
   // scroller so long/many labels overflow by scrolling rather than cramping.
   const rail = wide ? (
     <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false}>
-      <Tabs vertical block tabs={labels} active={selected} onChange={setSelected} />
+      <Tabs vertical block tabs={labels} active={selected} onSelect={setSelected} />
     </ScrollView>
   ) : (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-      <Tabs underline tabs={labels} active={selected} onChange={setSelected} />
+      <Tabs underline tabs={labels} active={selected} onSelect={setSelected} />
     </ScrollView>
   );
 

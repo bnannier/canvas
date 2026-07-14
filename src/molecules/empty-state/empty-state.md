@@ -72,7 +72,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   title="No errors"
   description="Everything is running smoothly."
   actionLabel="View logs"
-  positive
+  success
   bordered
 />
 ```
@@ -85,7 +85,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
   title="All clear"
   description="No locked accounts or pending reviews."
   actionLabel="View history"
-  positive
+  success
   bordered
 />
 ```
@@ -190,7 +190,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 **Do** — Signal the good news with a green check: zero errors is a passing state, not an empty one.
 
 ```tsx
-<EmptyState bordered positive icon={<Icon circleCheck />} title="No errors" description="Everything is running smoothly." />
+<EmptyState bordered success icon={<Icon circleCheck />} title="No errors" description="Everything is running smoothly." />
 ```
 
 **Don't** — A grey 'nothing found' disc reads as a failed query, not as a healthy, error-free system.
@@ -204,11 +204,11 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 **Do** — Reserve the green all-clear for genuinely empty queues: nothing locked, nothing waiting.
 
 ```tsx
-<EmptyState bordered positive icon={<Icon circleCheck />} title="All clear" description="No locked accounts or pending reviews." />
+<EmptyState bordered success icon={<Icon circleCheck />} title="All clear" description="No locked accounts or pending reviews." />
 ```
 
 **Don't** — A green all-clear over copy that admits work is pending hides the action the user must take.
 
 ```tsx
-<EmptyState bordered positive icon={<Icon circleCheck />} title="No pending reviews" description="3 accounts are locked and waiting on you." />
+<EmptyState bordered success icon={<Icon circleCheck />} title="No pending reviews" description="3 accounts are locked and waiting on you." />
 ```

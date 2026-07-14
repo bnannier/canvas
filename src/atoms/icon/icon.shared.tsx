@@ -26,7 +26,7 @@ import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js"
 //
 // Axes (pass at most one per axis; first match wins):
 //   - Name:  one boolean per glyph (activity, bell, search, shield, …). Default shield.
-//   - Color: primary, primaryForeground, destructive, success, muted. Default foreground.
+//   - Color: primary, primaryForeground, destructive, success, warning, muted. Default foreground.
 //     (primaryForeground is the contrast color for a glyph on a primary surface.)
 //     `color` sets an explicit paint for hues the booleans do not name (kit-internal,
 //     e.g. a Chip tinting its remove glyph); the semantic booleans take precedence.
@@ -52,6 +52,8 @@ export interface IconProps extends IconGlyphProps {
   destructive?: boolean;
   /** Positive/green status (matches Alert's success tone, scheme-aware). */
   success?: boolean;
+  /** Caution/amber status (the warning token, scheme-aware; matches Alert/Toast warning). */
+  warning?: boolean;
   muted?: boolean;
   /**
    * An explicit glyph color (a theme or palette value), for the hues the semantic
@@ -104,6 +106,7 @@ function strokeOf(p: IconProps, tokens: ColorTokens, dark: boolean): string {
   if (p.primaryForeground) return tokens["primary-foreground"];
   if (p.destructive) return tokens.destructive;
   if (p.success) return dark ? palette["green-400"] : palette["green-600"];
+  if (p.warning) return tokens.warning;
   if (p.muted) return tokens["muted-foreground"];
   return p.color ?? tokens.foreground;
 }

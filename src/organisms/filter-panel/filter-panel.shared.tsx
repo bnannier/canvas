@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, Text, Pressable, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useMemo } from "react";
+import { View, Text, Pressable, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Checkbox as WebCheckbox } from "../../atoms/checkbox/checkbox.js";
@@ -34,7 +34,14 @@ import {
 export interface FilterOption {
   /** Row label, shown beside the checkbox. */
   label: string;
-  /** Whether this option is initially checked (uncontrolled seed). */
+  /**
+   * Stable key this option is identified by in the controlled `value`/`defaultValue`
+   * arrays. Defaults to `"groupIndex:optionIndex"`; set it (e.g. a slug) when you
+   * drive selection from a URL/query so reordering groups doesn't break the mapping.
+   */
+  value?: string;
+  /** Whether this option is initially checked (seeds uncontrolled state when
+   *  `defaultValue` is not given). */
   checked?: boolean;
   /** Optional trailing count, rendered as a secondary badge. */
   count?: string;
@@ -50,11 +57,24 @@ export interface FilterGroup {
 export interface FilterPanelProps {
   /** Filter groups, each a heading plus its checkbox options. */
   groups: FilterGroup[];
+  /**
+   * Controlled selection: the keys of the checked options (each option's `value`,
+   * falling back to `"groupIndex:optionIndex"`). Provide it with `onSelectionChange`
+   * to drive or reset selection from a parent (e.g. from a URL query).
+   */
+  value?: string[];
+  /** Initial selection for uncontrolled use. When omitted, the panel seeds from each
+   *  option's `checked` flag. */
+  defaultValue?: string[];
   /** Active-filter count shown next to the "Filters" title. Omit to derive it from the checked options. */
   activeCount?: number;
   /** Fired when the header "Clear" action is pressed. */
   onClear?: () => void;
-  /** Fired when an option row toggles, with its group/option indexes and next value. */
+  /** Fired with the full set of checked keys whenever the selection changes (both
+   *  modes) — the controlled signal a parent mirrors into `value`. */
+  onSelectionChange?: (selected: string[]) => void;
+  /** Fired when a single option row toggles, with its group/option indexes and next
+   *  value. Fires alongside `onSelectionChange`. */
   onChange?: (groupIndex: number, optionIndex: number, next: boolean) => void;
   // Surface (pick one path): a rounded, bordered card vs. a bare panel.
   bordered?: boolean;
@@ -91,43 +111,48 @@ export function createFilterPanel(
   Button: ButtonComponent = WebButton,
 ) {
   return function FilterPanel(props: FilterPanelProps) {
-    const { groups, activeCount, onClear, onChange, bordered, testID, style } = props;
+    const { groups, activeCount, onClear, onChange, onSelectionChange, bordered, testID, style } = props;
     const { tokens } = useTheme();
     const density = densityOf(props);
 
     const ripple = skin.rowRipple ? skin.rowRipple(tokens) : undefined;
 
-    // Uncontrolled checked state, seeded from each option's `checked` flag, so a
-    // bare panel actually toggles filters on press instead of ignoring the tap.
-    // `onChange` still fires so a parent can mirror the selection.
-    const [checkedKeys, setCheckedKeys] = useState<Set<string>>(() => {
-      const seeded = new Set<string>();
-      props.groups.forEach((group, gi) =>
+    // Each option's stable key: its explicit `value`, else its group/option index.
+    const keyOf = (gi: number, oi: number) => groups[gi].options[oi].value ?? `${gi}:${oi}`;
+
+    // Selection is controllable: `value` drives it (a parent can sync or reset it),
+    // otherwise the panel owns it, seeded from `defaultValue` or each option's
+    // `checked` flag, so a bare panel toggles filters on press. `onSelectionChange`
+    // fires the full set in both modes; `onChange` still fires per-toggle.
+    const seededDefault = useMemo<string[]>(() => {
+      if (props.defaultValue) return props.defaultValue;
+      const seeded: string[] = [];
+      groups.forEach((group, gi) =>
         group.options.forEach((option, oi) => {
-          if (option.checked) seeded.add(`${gi}:${oi}`);
+          if (option.checked) seeded.push(option.value ?? `${gi}:${oi}`);
         }),
       );
       return seeded;
-    });
-    const isChecked = (gi: number, oi: number) => checkedKeys.has(`${gi}:${oi}`);
+      // Seed is read once by useControllableState on mount; recomputing later is inert.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    const [selected, setSelected] = useControllableState<string[]>(props.value, seededDefault, onSelectionChange);
+    const selectedSet = useMemo(() => new Set(selected), [selected]);
+
+    const isChecked = (gi: number, oi: number) => selectedSet.has(keyOf(gi, oi));
     const toggle = (gi: number, oi: number) => {
-      const key = `${gi}:${oi}`;
-      const next = !checkedKeys.has(key);
-      setCheckedKeys((prev) => {
-        const updated = new Set(prev);
-        if (next) updated.add(key);
-        else updated.delete(key);
-        return updated;
-      });
+      const key = keyOf(gi, oi);
+      const next = !selectedSet.has(key);
+      setSelected(next ? [...selected, key] : selected.filter((k) => k !== key));
       onChange?.(gi, oi, next);
     };
     const clearAll = () => {
-      setCheckedKeys(new Set());
+      setSelected([]);
       onClear?.();
     };
     // The header badge tracks the live checked count; an explicit `activeCount`
     // overrides it for callers that manage the number themselves.
-    const shownCount = activeCount ?? checkedKeys.size;
+    const shownCount = activeCount ?? selectedSet.size;
 
     return (
       <View

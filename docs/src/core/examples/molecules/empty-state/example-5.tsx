@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
   title="No errors"
   description="Everything is running smoothly."
   actionLabel="View logs"
-  positive
+  success
   bordered
 />
   );

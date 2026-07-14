@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { InputOTP } = scope;
   return (
-<InputOTP masked value="123456" onChange={() => {}} />
+<InputOTP masked defaultValue="123456" />
   );
 }

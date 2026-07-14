@@ -100,10 +100,10 @@ Type scale classes for headings, body text, and helper styles.
 <Typography body primary>View invoices</Typography>
 ```
 
-### Tone - positive
+### Tone - success
 
 ```tsx
-<Typography small positive>+12.4% this week</Typography>
+<Typography small success>+12.4% this week</Typography>
 ```
 
 ### Tone - destructive
