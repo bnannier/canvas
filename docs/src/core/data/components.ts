@@ -2,7 +2,7 @@ import type { ComponentDoc } from "./types";
 
 export const COMPONENTS: ComponentDoc[] = [
   // Primitives: the raw React Native building blocks Canvas re-exports
-  // (@olympusoss/canvas). Styled with plain RN style objects, identical on every
+  // (@bnannier/canvas). Styled with plain RN style objects, identical on every
   // platform. The foundation every higher-level component is built from.
   {
     slug: "view",

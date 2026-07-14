@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Add a `trailing` slot to `Chip` (a trailing element such as a chevron, so a

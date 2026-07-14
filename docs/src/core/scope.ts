@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ColorTokens } from "@olympusoss/canvas";
+import type { ColorTokens } from "@bnannier/canvas";
 
 // The scope an example fence renders against: every Canvas export (components,
 // primitives, the alpha/shadow/palette style helpers) plus the live, theme-aware
@@ -32,7 +32,7 @@ type TickerHelper = <T>(props: {
   children: (value: T) => ReactNode;
 }) => ReactNode;
 
-export type ExampleScope = typeof import("@olympusoss/canvas") & {
+export type ExampleScope = typeof import("@bnannier/canvas") & {
   tokens: ColorTokens;
   Stateful: StatefulHelper;
   Ticker: TickerHelper;

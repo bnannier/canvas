@@ -1,7 +1,7 @@
 # Canvas v2 → v3 component comparison matrix
 
 > **Historical.** Compares v2 against an abandoned "CSS-first" v3 line, NOT the
-> current product. Canvas today (`@olympusoss/canvas` v6+) is a React Native UI kit
+> current product. Canvas today (`@bnannier/canvas` v6+) is a React Native UI kit
 > of 60+ components. Kept for history only.
 
 Baseline: **v2.20.2** (last v2 React-component release) vs **current `main`** (the

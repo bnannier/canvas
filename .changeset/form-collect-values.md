@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 `Form` now collects the values its composed inputs hold and hands them to `onSubmit`.

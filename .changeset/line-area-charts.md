@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 New `LineChart` and `AreaChart` components: categorical-x series charts with

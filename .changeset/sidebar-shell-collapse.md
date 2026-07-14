@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Sidebar gains an app-navigation shell: a collapsible mini icon-rail

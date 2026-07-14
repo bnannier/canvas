@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { View, Text, useTheme } from "@olympusoss/canvas";
+import { View, Text, useTheme } from "@bnannier/canvas";
 import { COMPONENTS, getComponent } from "../../../core/data/components";
 import { COMPONENT_DOCS } from "../../../core/registry";
 import { COMPONENT_PROPS } from "../../../core/props";

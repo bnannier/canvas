@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Text, Button, useTheme, palette } from "@olympusoss/canvas";
+import { ScrollView, View, Text, Button, useTheme, palette } from "@bnannier/canvas";
 import { MONO } from "./prose";
 
 // A token-themed TSX highlighter standing in for Shiki (which emits HTML and can't run

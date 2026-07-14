@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, AccessibilityInfo } from "react-native";
-import { View, Text, useTheme, alpha } from "@olympusoss/canvas";
+import { View, Text, useTheme, alpha } from "@bnannier/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { geist, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";

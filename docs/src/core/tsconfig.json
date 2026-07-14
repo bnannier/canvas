@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@olympusoss/canvas": ["../../../src/index.ts"]
+      "@bnannier/canvas": ["../../../src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"]

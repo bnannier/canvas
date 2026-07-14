@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": major
+"@bnannier/canvas": major
 ---
 
 `Tabs` now fires `onSelect` (was `onChange`) when the active tab changes, matching

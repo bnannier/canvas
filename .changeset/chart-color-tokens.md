@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Add `chart-1`..`chart-8` categorical series tokens to `ColorTokens` (light and

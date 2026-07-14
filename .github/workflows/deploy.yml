@@ -12,7 +12,7 @@ on:
         type: boolean
         default: true
       npm:
-        description: "Publish @olympusoss/canvas to npm"
+        description: "Publish @bnannier/canvas to npm"
         type: boolean
         default: true
       ios:

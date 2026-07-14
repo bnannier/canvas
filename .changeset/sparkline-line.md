@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Trading charts, part 4. `Sparkline` gains a `line` boolean: a continuous 2px

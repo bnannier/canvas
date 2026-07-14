@@ -1,4 +1,4 @@
-import { View, Text, DataTable, useTheme } from "@olympusoss/canvas";
+import { View, Text, DataTable, useTheme } from "@bnannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, InlineCode, Rule, MONO } from "../../ui/prose";
@@ -71,7 +71,7 @@ export default function BrowserSupportScreen() {
 
         <Section title="Peer Dependencies">
           <P muted>
-            These peers set the platform floor. Install them alongside <InlineCode>@olympusoss/canvas</InlineCode>.
+            These peers set the platform floor. Install them alongside <InlineCode>@bnannier/canvas</InlineCode>.
           </P>
           <DocsSurface bordered>
             <DataTable

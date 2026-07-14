@@ -1,16 +1,16 @@
-import { View } from "@olympusoss/canvas";
+import { View } from "@bnannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, InlineCode, Rule } from "../../ui/prose";
 import { CodeBlock } from "../../ui/code-block";
 import { PageNav } from "../../ui/page-nav";
 
-const INSTALL = `npm install @olympusoss/canvas react react-native react-native-svg`;
+const INSTALL = `npm install @bnannier/canvas react react-native react-native-svg`;
 
 const OPTIONAL_INSTALL = `# add only the ones whose feature you use
 npm install react-native-qrcode-svg react-native-safe-area-context expo-blur expo-glass-effect`;
 
-const QUICK_START = `import { ThemeProvider, Button } from "@olympusoss/canvas";
+const QUICK_START = `import { ThemeProvider, Button } from "@bnannier/canvas";
 
 // Wrap the app once in ThemeProvider; it follows the OS appearance by default
 // (pass scheme="light" | "dark" to force one). Components are React Native, so
@@ -46,10 +46,10 @@ export default defineConfig({
 });`;
 
 const WEB_ENTRY = `import { createRoot } from "react-dom/client";
-import { ThemeProvider } from "@olympusoss/canvas";
+import { ThemeProvider } from "@bnannier/canvas";
 // The CSS token layer: custom properties + the .dark / [data-surface] / [data-density]
 // hooks. Needed only for the DOM theme helpers and any custom CSS you write with var().
-import "@olympusoss/canvas/styles/canvas.css";
+import "@bnannier/canvas/styles/canvas.css";
 import { App } from "./app";
 import { useHtmlScheme } from "./use-html-scheme";
 
@@ -85,14 +85,14 @@ export function useHtmlScheme(): "light" | "dark" {
   return useSyncExternalStore(subscribe, getSnapshot, () => "light");
 }`;
 
-const THEME_API = `import { setTheme, toggleTheme, setSurface, setDensity } from "@olympusoss/canvas";
+const THEME_API = `import { setTheme, toggleTheme, setSurface, setDensity } from "@bnannier/canvas";
 
 setTheme("dark");       // toggles <html class="dark"> and persists to localStorage
 toggleTheme();          // flips light <-> dark, returns the next theme
 setSurface("glass");    // <html data-surface="glass">  (solid is the default)
 setDensity("compact");  // <html data-density="compact"> (regular is the default)`;
 
-const TOKEN = `import { token } from "@olympusoss/canvas";
+const TOKEN = `import { token } from "@bnannier/canvas";
 
 // Web only: reads a CSS custom property off <html>, so it reflects the live theme.
 // Requires canvas.css to be loaded; on native, theme values come from ThemeProvider.
@@ -103,7 +103,7 @@ token("radius-md");   // "0.375rem"
 // For an alpha variant, compose in CSS:
 //   color-mix(in oklch, var(--primary) 50%, transparent)`;
 
-const BUILDING = `import { View, Text, useTheme } from "@olympusoss/canvas";
+const BUILDING = `import { View, Text, useTheme } from "@bnannier/canvas";
 
 // Build your own components the way Canvas does: raw RN View/Text styled with a
 // style object built from the tokens, with flat boolean props for each style
@@ -127,12 +127,12 @@ export function Callout({ children, primary }: CalloutProps) {
 
 const EXPORTS = [
   {
-    path: "@olympusoss/canvas",
+    path: "@bnannier/canvas",
     content:
       "Components, the style foundation (ThemeProvider, useTheme, useResponsive, shadow, alpha, and the View / Text / Pressable / Image / TextInput / ScrollView primitives), and the token / theme utilities. Ships as TypeScript source.",
   },
   {
-    path: "@olympusoss/canvas/styles/canvas.css",
+    path: "@bnannier/canvas/styles/canvas.css",
     content:
       "Tailwind v4 token layer: the CSS custom properties plus the .dark / [data-surface] / [data-density] theme hooks. Web only.",
   },
@@ -149,7 +149,7 @@ export default function IntegrationScreen() {
 
         <Section title="Installation">
           <P muted>
-            Canvas is published as <InlineCode>@olympusoss/canvas</InlineCode> and lists{" "}
+            Canvas is published as <InlineCode>@bnannier/canvas</InlineCode> and lists{" "}
             <InlineCode>react</InlineCode>, <InlineCode>react-native</InlineCode>, and{" "}
             <InlineCode>react-native-svg</InlineCode> as peer dependencies.
           </P>

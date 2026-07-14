@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ButtonGroup, useTheme } from "@olympusoss/canvas";
+import { View, Text, ButtonGroup, useTheme } from "@bnannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { H3, P, Rule, InlineCode } from "../../ui/prose";
@@ -10,7 +10,7 @@ import { geist } from "../../ui/fonts";
 import { useDocsTheme } from "../../theme/docs-theme";
 
 // Snippets ported verbatim (fence-stripped) from the previous web docs' theming snippets.
-const NATIVE_PROVIDER = `import { ThemeProvider } from "@olympusoss/canvas";
+const NATIVE_PROVIDER = `import { ThemeProvider } from "@bnannier/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
 // pass scheme to force one, and surface="glass" for the frosted surfaces.
@@ -21,7 +21,7 @@ export function App() {
     </ThemeProvider>
   );
 }`;
-const USE_THEME = `import { useTheme } from "@olympusoss/canvas";
+const USE_THEME = `import { useTheme } from "@bnannier/canvas";
 
 // Read the active theme anywhere under the provider.
 const { scheme, surface, tokens, dark } = useTheme();
@@ -32,12 +32,12 @@ const DARK_TOGGLE = `<!-- Light (default) -->
 
 <!-- Dark -->
 <html class="dark">`;
-const JS_THEME = `import { getTheme, setTheme, toggleTheme } from "@olympusoss/canvas";
+const JS_THEME = `import { getTheme, setTheme, toggleTheme } from "@bnannier/canvas";
 
 getTheme();        // "light" | "dark"
 setTheme("dark");  // applies .dark to <html>, persists to localStorage
 toggleTheme();     // switches and returns the new theme`;
-const SYSTEM_PREF = `import { setTheme } from "@olympusoss/canvas";
+const SYSTEM_PREF = `import { setTheme } from "@bnannier/canvas";
 
 // Web only. On native, ThemeProvider already follows the OS appearance.
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -45,7 +45,7 @@ setTheme(mq.matches ? "dark" : "light");
 mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
 const GLASS = `<html data-surface="glass">
 <html class="dark" data-surface="glass">`;
-const JS_SURFACE = `import { getSurface, setSurface } from "@olympusoss/canvas";
+const JS_SURFACE = `import { getSurface, setSurface } from "@bnannier/canvas";
 
 getSurface();            // "solid" | "glass"
 setSurface("glass");     // sets data-surface="glass"
@@ -58,14 +58,14 @@ const DENSITY = `<!-- Regular (default, no attribute needed) -->
 
 <!-- Comfy -->
 <html data-density="comfy">`;
-const JS_DENSITY = `import { getDensity, setDensity } from "@olympusoss/canvas";
+const JS_DENSITY = `import { getDensity, setDensity } from "@bnannier/canvas";
 
 getDensity();            // "compact" | "regular" | "comfy"
 setDensity("compact");   // sets data-density="compact"
 setDensity("regular");   // removes the attribute`;
 const COMBINING = `<!-- Web: the three axes are independent HTML hooks -->
 <html class="dark" data-surface="glass" data-density="compact">`;
-const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@olympusoss/canvas";
+const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@bnannier/canvas";
 
 setTheme("dark");
 setSurface("glass");

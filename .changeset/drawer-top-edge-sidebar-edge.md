@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 The `Drawer` gains a `top` edge: a sheet that drops down from the top (mirroring the `bottom`

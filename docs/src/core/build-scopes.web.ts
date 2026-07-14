@@ -1,5 +1,5 @@
-import * as Canvas from "@olympusoss/canvas";
-import type { ColorTokens } from "@olympusoss/canvas";
+import * as Canvas from "@bnannier/canvas";
+import type { ColorTokens } from "@bnannier/canvas";
 import { PLATFORM_SKINS } from "./platform-skins";
 import { Stateful, Ticker } from "./live-state";
 import type { ExampleScope, PreviewScope } from "./scope";

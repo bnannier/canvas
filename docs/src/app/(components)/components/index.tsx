@@ -1,4 +1,4 @@
-import { View, Text, useTheme, ScrollView } from "@olympusoss/canvas";
+import { View, Text, useTheme, ScrollView } from "@bnannier/canvas";
 import { COMPONENTS } from "../../../core/data/components";
 import { CONTENT_TOP_INSET } from "../../../shell/topbar";
 import { ScreenFrame } from "../../../shell/native-header";

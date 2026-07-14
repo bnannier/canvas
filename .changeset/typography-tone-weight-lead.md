@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Extend `Typography` with orthogonal tone and weight axes plus a `lead` role, so

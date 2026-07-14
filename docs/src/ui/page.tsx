@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { ScrollView, View, useTheme } from "@olympusoss/canvas";
+import { ScrollView, View, useTheme } from "@bnannier/canvas";
 import { CONTENT_TOP_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";

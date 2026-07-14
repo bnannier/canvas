@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Add a `Sparkline` atom: a compact trend strip (a row of thin bars whose heights

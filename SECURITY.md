@@ -3,7 +3,7 @@
 ## Supported versions
 
 Security fixes are released against the latest published version of
-`@olympusoss/canvas` on npm. Please upgrade to the latest release before
+`@bnannier/canvas` on npm. Please upgrade to the latest release before
 reporting an issue.
 
 ## Reporting a vulnerability

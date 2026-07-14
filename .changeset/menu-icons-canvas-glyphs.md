@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 Menu and nav rows now render real Canvas `Icon` glyphs instead of raw emoji/symbol

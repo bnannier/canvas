@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { GlassSurface, useTheme, type StyleProp, type ViewStyle } from "@olympusoss/canvas";
+import { GlassSurface, useTheme, type StyleProp, type ViewStyle } from "@bnannier/canvas";
 
 // A docs content surface that is SOLID in solid mode and a FROST in frost (glass) mode,
 // so the previews, tables, and cards never read as a clear hole. It leans on the kit's

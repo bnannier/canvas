@@ -1,5 +1,5 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, useTheme } from "@olympusoss/canvas";
+import { View, Text, useTheme } from "@bnannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { geist, geistMono } from "../../../ui/fonts";

@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": patch
+"@bnannier/canvas": patch
 ---
 
 Fix invalid button-in-button nesting in `Chip`. When a chip was both interactive

@@ -1,4 +1,4 @@
-import { View, Text, Icon, useTheme, alpha } from "@olympusoss/canvas";
+import { View, Text, Icon, useTheme, alpha } from "@bnannier/canvas";
 import { Page, PageHeader } from "../../../ui/page";
 import { Section } from "../../../ui/section";
 import { P, H3, InlineCode, Rule } from "../../../ui/prose";
@@ -14,7 +14,7 @@ const PLANNED = [
   {
     title: "Clone and run",
     description:
-      "A starter app pre-wired with @olympusoss/canvas, the ThemeProvider, and the Geist fonts, so you get a running iOS, Android, and web app from the first commit instead of a blank Expo project.",
+      "A starter app pre-wired with @bnannier/canvas, the ThemeProvider, and the Geist fonts, so you get a running iOS, Android, and web app from the first commit instead of a blank Expo project.",
   },
   {
     title: "Opinionated structure",

@@ -1,5 +1,5 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, useTheme, colorsByScheme, type ColorTokens } from "@olympusoss/canvas";
+import { View, Text, useTheme, colorsByScheme, type ColorTokens } from "@bnannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { CodeBlock } from "../../../ui/code-block";
@@ -102,7 +102,7 @@ const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note
     good: { code: `backgroundColor: tokens.primary,\ncolor: tokens["primary-foreground"]`, note: "Pair every fill with its foreground token; contrast holds in light and dark." },
   },
   {
-    bad: { code: `import { darkColors } from "@olympusoss/canvas"\nconst bg = darkColors.primary`, note: "Frozen to one scheme. Ignores the active theme and the surface mode." },
+    bad: { code: `import { darkColors } from "@bnannier/canvas"\nconst bg = darkColors.primary`, note: "Frozen to one scheme. Ignores the active theme and the surface mode." },
     good: { code: `const { tokens } = useTheme()\nconst bg = tokens.primary`, note: "Reads the active scheme and re-renders when the theme changes." },
   },
   {

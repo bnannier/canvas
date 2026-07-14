@@ -1,5 +1,5 @@
 ---
-"@olympusoss/canvas": minor
+"@bnannier/canvas": minor
 ---
 
 RTL support: the kit now uses logical `start`/`end` style properties instead of
