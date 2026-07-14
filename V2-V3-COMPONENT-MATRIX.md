@@ -195,6 +195,6 @@ For completeness, v3 added entries with no direct v2 predecessor (several others
 are v2 concepts re-cut, e.g. Stats←StatCard, Feeds←ActivityItem, Description
 Lists←FieldDisplay, Stacked Lists←NotificationList, Row Menu←ContextMenu):
 
-- **Atoms:** Combobox, Input Group, Kbd, Typography, Spinner (was v2 code-only)
+- **Atoms:** Autocomplete, Input Group, Kbd, Typography, Spinner (was v2 code-only)
 - **Molecules:** Media Objects, Grid Lists, Action Panels
 - **Organisms:** Filter Panels

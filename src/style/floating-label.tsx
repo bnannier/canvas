@@ -5,7 +5,7 @@ import { type ColorTokens } from "./tokens.js";
 import { useReducedMotion, supportsNativeDriver } from "./motion.js";
 
 // The Material 3 in-container FLOATING label, shared by every filled field family
-// (Input, Combobox, Select, Textarea). It is the SINGLE source of truth for the
+// (Input, Autocomplete, Select, Textarea). It is the SINGLE source of truth for the
 // label placement contract and its animation, so the four controls float their
 // label identically and a fix lands once. The BRAND survives (the floated tint is
 // the `ring`, the error tint the `destructive`, never a platform default); only

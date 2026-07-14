@@ -144,6 +144,11 @@
             "icon": "bar-chart-2"
           },
           {
+            "slug": "autocomplete",
+            "label": "Autocomplete",
+            "icon": "search"
+          },
+          {
             "slug": "avatar",
             "label": "Avatar",
             "icon": "user"
@@ -172,11 +177,6 @@
             "slug": "checkbox",
             "label": "Checkbox",
             "icon": "check-square"
-          },
-          {
-            "slug": "combobox",
-            "label": "Combobox",
-            "icon": "search"
           },
           {
             "slug": "divider",

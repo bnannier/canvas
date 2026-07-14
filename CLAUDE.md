@@ -107,7 +107,7 @@ platforms), or `surface="solid"` to force the flat look; on the web the DOM help
 `setSurface("glass")` / `setSurface("solid")`. The platform default is computed from
 `liquidGlassAvailable()` (exported from the kit). Following Apple's Liquid Glass model,
 glass is the material for the FUNCTIONAL layer only: overlays (popovers, menus,
-dropdowns, selects, comboboxes, dialogs, alert dialogs, sheets, drawers, command)
+dropdowns, selects, autocompletes, dialogs, alert dialogs, sheets, drawers, command)
 and the bar/sidebar shells (navbars, sidebar) read as glass. The `card` token stays
 SOLID, so content surfaces (cards, lists, tables, calendars, charts) do NOT go glass
 (Apple: "don't use Liquid Glass in the content layer").

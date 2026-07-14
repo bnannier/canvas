@@ -3,7 +3,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 
-// The Material 3 in-container floating label, extended from Input to Combobox,
+// The Material 3 in-container floating label, extended from Input to Autocomplete,
 // Select, and Textarea for M3 parity. All four consume the SAME shared
 // `FloatingLabel` helper (src/style/floating-label.tsx): iOS + web render the
 // label ABOVE the field (`floatingLabel: false`), Android FLOATS the M3
@@ -13,9 +13,9 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 // The docs/web bundler renders every skin through react-native-web, so all three
 // are assertable at the DOM here.
 
-import { Combobox as ComboboxWeb } from "../src/atoms/combobox/combobox.tsx";
-import { Combobox as ComboboxIOS } from "../src/atoms/combobox/combobox.ios.tsx";
-import { Combobox as ComboboxAndroid } from "../src/atoms/combobox/combobox.android.tsx";
+import { Autocomplete as AutocompleteWeb } from "../src/atoms/autocomplete/autocomplete.tsx";
+import { Autocomplete as AutocompleteIOS } from "../src/atoms/autocomplete/autocomplete.ios.tsx";
+import { Autocomplete as AutocompleteAndroid } from "../src/atoms/autocomplete/autocomplete.android.tsx";
 import { Select as SelectWeb } from "../src/atoms/select/select.tsx";
 import { Select as SelectIOS } from "../src/atoms/select/select.ios.tsx";
 import { Select as SelectAndroid } from "../src/atoms/select/select.android.tsx";
@@ -23,7 +23,7 @@ import { Textarea as TextareaWeb } from "../src/atoms/textarea/textarea.tsx";
 import { Textarea as TextareaIOS } from "../src/atoms/textarea/textarea.ios.tsx";
 import { Textarea as TextareaAndroid } from "../src/atoms/textarea/textarea.android.tsx";
 
-import { webSkin as comboWeb, iosSkin as comboIos, androidSkin as comboAndroid } from "../src/atoms/combobox/combobox.styles.ts";
+import { webSkin as comboWeb, iosSkin as comboIos, androidSkin as comboAndroid } from "../src/atoms/autocomplete/autocomplete.styles.ts";
 import { webSkin as selectWeb, iosSkin as selectIos, androidSkin as selectAndroid } from "../src/atoms/select/select.styles.ts";
 import { webSkin as areaWeb, iosSkin as areaIos, androidSkin as areaAndroid } from "../src/atoms/textarea/textarea.styles.ts";
 
@@ -33,7 +33,7 @@ const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 // --- the label-placement contract each skin declares ------------------------
 describe("floatingLabel: Android floats the M3 label, iOS + web render it above", () => {
   const FAMILIES = [
-    ["Combobox", comboWeb, comboIos, comboAndroid],
+    ["Autocomplete", comboWeb, comboIos, comboAndroid],
     ["Select", selectWeb, selectIos, selectAndroid],
     ["Textarea", areaWeb, areaIos, areaAndroid],
   ] as const;
@@ -51,10 +51,10 @@ describe("floatingLabel: Android floats the M3 label, iOS + web render it above"
 });
 
 // --- the label names the field on every skin (getByLabelText) ---------------
-describe("Combobox label names the field on every skin", () => {
-  for (const [plat, Combobox] of [["web", ComboboxWeb], ["ios", ComboboxIOS], ["android", ComboboxAndroid]] as const) {
+describe("Autocomplete label names the field on every skin", () => {
+  for (const [plat, Autocomplete] of [["web", AutocompleteWeb], ["ios", AutocompleteIOS], ["android", AutocompleteAndroid]] as const) {
     it(`${plat}: the visible label is the field's accessible name`, () => {
-      ui(<Combobox label="Assignee" options={["Ada", "Grace"]} placeholder="Search…" />);
+      ui(<Autocomplete label="Assignee" options={["Ada", "Grace"]} placeholder="Search…" />);
       const field = screen.getByLabelText("Assignee");
       expect(field.tagName.toLowerCase()).toBe("input");
       expect(field.getAttribute("role")).toBe("combobox");
@@ -87,8 +87,8 @@ describe("Textarea label names the field on every skin", () => {
 
 // --- the required star never pollutes the accessible name -------------------
 describe("required marks aria-required but the name stays the bare label", () => {
-  it("Combobox (android floating)", () => {
-    ui(<ComboboxAndroid label="Assignee" required options={["Ada"]} placeholder="Search…" />);
+  it("Autocomplete (android floating)", () => {
+    ui(<AutocompleteAndroid label="Assignee" required options={["Ada"]} placeholder="Search…" />);
     // getByLabelText is exact: it only resolves if the name is "Assignee", not "Assignee *".
     expect(screen.getByLabelText("Assignee").getAttribute("aria-required")).toBe("true");
   });
@@ -101,15 +101,15 @@ describe("required marks aria-required but the name stays the bare label", () =>
     expect(screen.getByLabelText("Description").getAttribute("aria-required")).toBe("true");
   });
   it("omits aria-required entirely when the field is optional", () => {
-    ui(<ComboboxWeb label="Assignee" options={["Ada"]} placeholder="Search…" />);
+    ui(<AutocompleteWeb label="Assignee" options={["Ada"]} placeholder="Search…" />);
     expect(screen.getByLabelText("Assignee").getAttribute("aria-required")).toBeNull();
   });
 });
 
 // --- Android floating actually engages (M3 placeholder gating) --------------
 describe("Android floating label owns the resting placeholder", () => {
-  it("Combobox: the field hides its placeholder until the list opens", () => {
-    const { container } = ui(<ComboboxAndroid label="Assignee" options={["Ada"]} placeholder="Search…" />);
+  it("Autocomplete: the field hides its placeholder until the list opens", () => {
+    const { container } = ui(<AutocompleteAndroid label="Assignee" options={["Ada"]} placeholder="Search…" />);
     const input = container.querySelector("input") as HTMLInputElement;
     // At rest the floating label IS the placeholder, so no placeholder attribute.
     expect(input.getAttribute("placeholder")).toBeNull();
@@ -117,8 +117,8 @@ describe("Android floating label owns the resting placeholder", () => {
     expect(input.getAttribute("placeholder")).toBe("Search…");
   });
 
-  it("Combobox: web keeps the placeholder visible at rest (label is above)", () => {
-    const { container } = ui(<ComboboxWeb label="Assignee" options={["Ada"]} placeholder="Search…" />);
+  it("Autocomplete: web keeps the placeholder visible at rest (label is above)", () => {
+    const { container } = ui(<AutocompleteWeb label="Assignee" options={["Ada"]} placeholder="Search…" />);
     expect((container.querySelector("input") as HTMLInputElement).getAttribute("placeholder")).toBe("Search…");
   });
 
@@ -160,8 +160,8 @@ describe("Android floating label owns the resting placeholder", () => {
 
 // --- the no-label path is unchanged (bare root) -----------------------------
 describe("the no-label path stays bare (backward compatible)", () => {
-  it("Combobox emits no name link when `label` is omitted", () => {
-    const { container } = ui(<ComboboxWeb options={["Ada"]} placeholder="Search…" />);
+  it("Autocomplete emits no name link when `label` is omitted", () => {
+    const { container } = ui(<AutocompleteWeb options={["Ada"]} placeholder="Search…" />);
     expect((container.querySelector("input") as HTMLElement).getAttribute("aria-label")).toBeNull();
   });
   it("Textarea emits no name link when `label` is omitted", () => {

@@ -55,7 +55,7 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   // Label placement (the `label` prop) is contributed by FloatingLabelStyles<Size>:
   // `floatingLabel` (Android true / iOS+web false), `labelAbove` (iOS/web static
   // title), and `labelRest`/`labelFloated`/`labelReserve` (the Android M3 floating
-  // label geometry). Shared verbatim with Combobox, Select, and Textarea so the
+  // label geometry). Shared verbatim with Autocomplete, Select, and Textarea so the
   // four filled-field controls float their label identically.
 }
 

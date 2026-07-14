@@ -3,7 +3,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
@@ -12,7 +12,7 @@ import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 // Escape / dismiss contract for overlays whose close behavior was previously
 // untested.
 //
-// Combobox, Select, and RowMenu are anchored overlays that share the shared
+// Autocomplete, Select, and RowMenu are anchored overlays that share the shared
 // `useEscapeKey` hook: it binds a DOCUMENT-level `keydown` listener while open, so
 // pressing Escape anywhere closes the panel. With no OverlayProvider mounted each
 // renders its open panel INLINE (the AnchoredOverlay fallback), so the content is
@@ -32,9 +32,9 @@ afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 const escapeKeyDown = () => fireEvent.keyDown(document, { key: "Escape" });
 
-describe("Combobox — Escape dismisses the option list", () => {
+describe("Autocomplete — Escape dismisses the option list", () => {
   it("opens via the chevron, then Escape closes the list", () => {
-    ui(<Combobox options={["Apple", "Banana", "Cherry"]} />);
+    ui(<Autocomplete options={["Apple", "Banana", "Cherry"]} />);
     // Closed initially: no option rows rendered.
     expect(screen.queryByText("Banana")).toBeNull();
     // The trailing chevron toggles the list open (no query -> all options show).

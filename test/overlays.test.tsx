@@ -16,7 +16,7 @@ import { OverlayProvider } from "../src/style/portal.tsx";
 // drives the component the way a user does — open via the trigger, assert the
 // floating content mounts, invoke an item/close affordance, assert it unmounts —
 // and locks the role/aria the surface exposes to assistive tech. (Dialog is
-// covered in its own suite; the listbox mechanics of Select/Combobox forced
+// covered in its own suite; the listbox mechanics of Select/Autocomplete forced
 // `open` live in a11y-state.test.tsx — here we cover the trigger-driven flows.)
 //
 // react-native-web renders a Modal by portaling into document.body rather than

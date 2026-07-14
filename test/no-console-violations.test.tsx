@@ -8,7 +8,7 @@ import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { Toast } from "../src/organisms/toast/toast.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
-import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
@@ -108,7 +108,7 @@ describe("no DOM-nesting console violations at render", () => {
         />
         <Toast message="Changes saved" action={{ label: "Undo", onPress: () => {} }} onDismiss={() => {}} />
         <Select open options={["Low", "Medium", "High"]} value="Medium" onSelect={() => {}} />
-        <Combobox open options={["Apple", "Banana"]} value="Banana" onSelect={() => {}} />
+        <Autocomplete open options={["Apple", "Banana"]} value="Banana" onSelect={() => {}} />
         <Dropdown label="Actions" items={[{ label: "Rename" }, { label: "Move" }]} />
         <Command open active={0} groups={[{ items: [{ label: "New file" }, { label: "Open" }] }]} onSelect={() => {}} />
         <TabBar

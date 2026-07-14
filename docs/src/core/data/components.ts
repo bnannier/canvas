@@ -71,6 +71,13 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "autocomplete",
+    name: "Autocomplete",
+    description: "Text input + dropdown: searchable single-select.",
+    category: "Atoms",
+  },
+
+  {
     slug: "avatar",
     name: "Avatar",
     description: "A photo when the account has one, falling back to one or two initials on the muted token surface (real Liquid Glass on iOS 26+ under glass surface mode). Sizes scale font proportionally (40% of diameter).",
@@ -109,13 +116,6 @@ export const COMPONENTS: ComponentDoc[] = [
     slug: "checkbox",
     name: "Checkbox",
     description: "Multi-select option, single yes/no, grouped lists.",
-    category: "Atoms",
-  },
-
-  {
-    slug: "combobox",
-    name: "Combobox",
-    description: "Text input + dropdown: searchable single-select.",
     category: "Atoms",
   },
 

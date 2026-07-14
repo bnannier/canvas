@@ -14,7 +14,7 @@ export interface ActiveIndicatorOptions {
   /**
    * Padding kept between the content and the indicator when active (default 0). Set it to the
    * field's top padding so the value text stays vertically balanced; leave 0 when the text sits
-   * directly on the rule (Select / Combobox) or when a separate inner field owns the padding.
+   * directly on the rule (Select / Autocomplete) or when a separate inner field owns the padding.
    */
   gap?: number;
 }
@@ -30,7 +30,7 @@ export interface ActiveIndicatorOptions {
  * `borderBottomWidth + paddingBottom` never changes and the content box stays put across states.
  *
  * Spread onto the element that carries the indicator (the field/trigger, or the grouped container
- * that shares one border). One source of truth for the whole M3 field family (Select, Combobox,
+ * that shares one border). One source of truth for the whole M3 field family (Select, Autocomplete,
  * Input); the invariant it guarantees is locked by `test/field-focus-layout.test.tsx` Part A.
  */
 export function activeIndicator(o: ActiveIndicatorOptions): ViewStyle {

@@ -6,11 +6,11 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors as t } from "../src/style/tokens.ts";
 
 import { webSkin as selectWeb, iosSkin as selectIos, androidSkin as selectAndroid } from "../src/atoms/select/select.styles.ts";
-import { webSkin as comboWeb, iosSkin as comboIos, androidSkin as comboAndroid } from "../src/atoms/combobox/combobox.styles.ts";
+import { webSkin as comboWeb, iosSkin as comboIos, androidSkin as comboAndroid } from "../src/atoms/autocomplete/autocomplete.styles.ts";
 import { webSkin as inputWeb, iosSkin as inputIos, androidSkin as inputAndroid } from "../src/atoms/input/input.styles.ts";
 
 import { Input } from "../src/atoms/input/input.tsx";
-import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 
@@ -18,7 +18,7 @@ import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 // Part A: the active indicator must not reflow the value text.
 //
 // The M3/iOS field thickens its bottom active-indicator when it becomes active
-// (Select/Combobox on open, Input on focus). Each such field has a fixed height,
+// (Select/Autocomplete on open, Input on focus). Each such field has a fixed height,
 // box-sizing:border-box, and vertically-centered content, so any change to the
 // total vertical border+padding shifts the centered value text. The fix reserves
 // a constant amount below the content (border + compensating padding); this test
@@ -55,7 +55,7 @@ describe("field active indicator: content box stays fixed across the active stat
 
   for (const [plat, skin] of [["web", comboWeb], ["ios", comboIos], ["android", comboAndroid]] as const) {
     for (const size of SIZES) {
-      it(`Combobox ${plat} ${size} field`, () => {
+      it(`Autocomplete ${plat} ${size} field`, () => {
         expect(vInset(skin.field(t, size, true))).toBe(vInset(skin.field(t, size, false)));
       });
     }
@@ -160,8 +160,8 @@ describe("field focus outline is suppressed on web", () => {
     assertOutlineSuppressed(container.querySelector("input"));
   });
 
-  it("Combobox", () => {
-    const { container } = ui(<Combobox placeholder="x" options={["Ada", "Grace"]} />);
+  it("Autocomplete", () => {
+    const { container } = ui(<Autocomplete placeholder="x" options={["Ada", "Grace"]} />);
     assertOutlineSuppressed(container.querySelector("input"));
   });
 

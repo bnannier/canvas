@@ -8,7 +8,7 @@ import { fieldWidths } from "../src/style/tokens.ts";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
-import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Slider } from "../src/atoms/slider/slider.tsx";
 import { Progress } from "../src/atoms/progress/progress.tsx";
@@ -121,9 +121,9 @@ describe("field width axis: Select", () => {
   });
 });
 
-describe("field width axis: Combobox", () => {
+describe("field width axis: Autocomplete", () => {
   it("renders the wrapper at the standard width (label + field share the field edge)", () => {
-    const { container } = ui(<Combobox label="Assignee" options={["Ada", "Grace"]} />);
+    const { container } = ui(<Autocomplete label="Assignee" options={["Ada", "Grace"]} />);
     const input = container.querySelector("input") as HTMLElement;
     const wrapperEl = input.parentElement?.parentElement as HTMLElement;
     expect(wrapperEl.style.width).toBe(`${fieldWidths.base}px`);
@@ -131,7 +131,7 @@ describe("field width axis: Combobox", () => {
   });
 
   it("still renders its open option list at the standard width", () => {
-    const { container } = ui(<Combobox options={["Ada", "Grace"]} defaultOpen />);
+    const { container } = ui(<Autocomplete options={["Ada", "Grace"]} defaultOpen />);
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
   });
 });
