@@ -173,6 +173,32 @@ describe("Popover (anchored card)", () => {
     fireEvent.click(screen.getByText("Got it"));
     expect(screen.queryByText("Heads up")).toBeNull();
   });
+
+  it("hosts custom children in the panel body, between the description and the action", () => {
+    ui(
+      <Popover trigger="Rename" title="Rename project" description="Pick a clear name." actionLabel="Save">
+        <Text>Custom body</Text>
+      </Popover>,
+    );
+    // Closed: the children unmount with the rest of the card.
+    expect(screen.queryByText("Custom body")).toBeNull();
+    fireEvent.click(screen.getByText("Rename"));
+    const child = screen.getByText("Custom body");
+    // The slot renders after the supporting line and before the action row.
+    const description = screen.getByText("Pick a clear name.");
+    const action = screen.getByText("Save");
+    expect(description.compareDocumentPosition(child) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(child.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("renders children in the static inline panel too", () => {
+    ui(
+      <Popover inline title="Rename this project?">
+        <Text>Inline body</Text>
+      </Popover>,
+    );
+    expect(screen.getByText("Inline body")).toBeDefined();
+  });
 });
 
 describe("Tooltip", () => {
