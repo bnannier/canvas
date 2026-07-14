@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 The Icon set grows from ~90 hand-transcribed glyphs to 413 curated Lucide glyphs,

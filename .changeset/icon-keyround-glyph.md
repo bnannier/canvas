@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Rename the `Icon` credential glyph prop from `key` to `keyRound` (lucide's own name

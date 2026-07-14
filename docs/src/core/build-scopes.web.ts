@@ -1,5 +1,5 @@
-import * as Canvas from "@bnannier/canvas";
-import type { ColorTokens } from "@bnannier/canvas";
+import * as Canvas from "@nannier/canvas";
+import type { ColorTokens } from "@nannier/canvas";
 import { PLATFORM_SKINS } from "./platform-skins";
 import { Stateful, Ticker } from "./live-state";
 import type { ExampleScope, PreviewScope } from "./scope";

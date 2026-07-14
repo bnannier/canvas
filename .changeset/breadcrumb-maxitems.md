@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add a `maxItems` prop to `Breadcrumb` that collapses a long trail: it keeps the

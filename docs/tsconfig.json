@@ -4,7 +4,7 @@
     "strict": true,
     "skipLibCheck": true,
     "paths": {
-      "@bnannier/canvas": ["../src/index.ts"]
+      "@nannier/canvas": ["../src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"]

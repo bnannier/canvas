@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column snug style={{ maxWidth: 360 }}>
   <Typography body>Run the setup command:</Typography>
-  <CodeBlock code={`npm install @bnannier/canvas
+  <CodeBlock code={`npm install @nannier/canvas
 npm run build`} />
 </Column>
   );

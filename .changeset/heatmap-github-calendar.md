@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 **Heatmap gains a GitHub-style contribution calendar.** Pass `calendar` to lay

@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 `Combobox` is actually typeable. The field is now a real `TextInput` (was a

@@ -2,7 +2,7 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, alpha, type IconProps } from "@bnannier/canvas";
+import { View, Text, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";

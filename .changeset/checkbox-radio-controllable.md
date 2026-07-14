@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 `Checkbox` adopts `useControllableState` (`defaultChecked`; a bare

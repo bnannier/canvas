@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Glass surfaces no longer draw a skin hairline border on top of the material.

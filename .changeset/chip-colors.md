@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Reshape `Chip` to read as a chip, not a button, and give it a color axis.

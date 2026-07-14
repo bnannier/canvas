@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions } from "react-native";
-import { View, Text, useTheme } from "@bnannier/canvas";
+import { View, Text, useTheme } from "@nannier/canvas";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { geist, geistMono } from "./fonts";
 import { alpha, readableText } from "./color";

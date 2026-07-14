@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add a `trailing` slot to `Chip` (a trailing element such as a chevron, so a

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@bnannier/canvas",
+      "name": "@nannier/canvas",
       "devDependencies": {
         "@changesets/cli": "^2.31.0",
         "@eslint/js": "^9",

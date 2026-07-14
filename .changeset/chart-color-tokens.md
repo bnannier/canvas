@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Add `chart-1`..`chart-8` categorical series tokens to `ColorTokens` (light and

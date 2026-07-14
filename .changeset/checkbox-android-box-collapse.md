@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Fix the Checkbox box collapsing to a thin vertical sliver on native Android

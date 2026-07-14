@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 20
 
-      # Install root deps first: docs consumes the source-only @bnannier/canvas
+      # Install root deps first: docs consumes the source-only @nannier/canvas
       # library as a live symlink (created by the docs postinstall), so it must exist
       # before the docs install.
       - name: Install root deps

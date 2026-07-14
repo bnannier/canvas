@@ -1,6 +1,6 @@
 import { Component, type ReactNode, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Tabs, OverlayProvider, useTheme } from "@bnannier/canvas";
+import { ScrollView, View, Text, Tabs, OverlayProvider, useTheme } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";

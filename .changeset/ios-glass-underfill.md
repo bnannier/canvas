@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Fix invisible glass surfaces on iOS 26. The Liquid Glass (`GlassView`) material path

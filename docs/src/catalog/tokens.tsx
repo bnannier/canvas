@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha } from "@bnannier/canvas";
+import { View, Text, useTheme, alpha } from "@nannier/canvas";
 import { geist, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
 

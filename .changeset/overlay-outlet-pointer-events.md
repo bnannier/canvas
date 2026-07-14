@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 Fix the overlay outlet (and the toast stack and carousel arrow layer) swallowing every mouse click on the web.

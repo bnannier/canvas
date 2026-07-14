@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 **Kbd composes whole shortcuts.** `Kbd` now takes a `keys` prop, so a chord is

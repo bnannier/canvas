@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Card now pads its surface by default when it has content, so a bare `<Card>Content</Card>`

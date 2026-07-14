@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": major
+"@nannier/canvas": major
 ---
 
 Rename two components so their names match what they do.

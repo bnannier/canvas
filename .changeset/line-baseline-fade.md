@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Trading charts, part 2. `LineChart` gains the price-chart idiom: a

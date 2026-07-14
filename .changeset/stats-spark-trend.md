@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": minor
+"@nannier/canvas": minor
 ---
 
 Stats items can carry a per-metric trend: pass `spark` (a `number[]`) on a

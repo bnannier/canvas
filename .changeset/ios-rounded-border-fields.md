@@ -1,5 +1,5 @@
 ---
-"@bnannier/canvas": patch
+"@nannier/canvas": patch
 ---
 
 iOS text fields render as SwiftUI's `.roundedBorder` instead of a Material-style underline.

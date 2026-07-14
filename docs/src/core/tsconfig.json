@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@bnannier/canvas": ["../../../src/index.ts"]
+      "@nannier/canvas": ["../../../src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"]

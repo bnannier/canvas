@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Appearance, Platform, useColorScheme } from "react-native";
-import { ThemeProvider, type Surface } from "@bnannier/canvas";
+import { ThemeProvider, type Surface } from "@nannier/canvas";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by `scheme` and
 // `surface`; this holds that state and exposes setters to the toggles, so the
