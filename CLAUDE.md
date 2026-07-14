@@ -184,3 +184,37 @@ exists today (e.g. `Avatar`'s overlap margin), the real capability replaces it.
 This is the STYLING escape-hatch ban. It is separate from, and additional to,
 the ban on web-only DOM/CSS platform escape hatches in the
 "React-Native-everywhere principle" above.
+
+## Preview links on every completed piece of work
+
+Whenever a piece of work is complete, end the report with a "Preview" block of three
+clickable links (Web, iOS, Android) that open the feature on each platform, so it can
+be eyeballed without hunting for the route. This is in addition to (not a replacement
+for) the "Visually inspect UI after changes" global directive; the links are how the
+user jumps straight to what changed.
+
+All three are real `http://` links, so every one is clickable from a terminal (a raw
+`canvas://` deep link is not: the OS looks for a Mac handler and never reaches a
+simulator). The native two point at the local preview opener started by `bun run dev`
+(`docs/scripts/preview-server.mjs`), which runs the deep link on the booted simulator
+or emulator via `simctl` / `adb`.
+
+Resolve the feature's docs route first, then emit exactly these three links. The route
+is the expo-router path in `docs/src/app`, most commonly `components/<slug>` (where
+`<slug>` is the component name, e.g. `components/button`), and otherwise
+`patterns/<slug>`, `templates/<slug>`, `tokens/<name>`, or a home route such as
+`theming`. Substitute the route for `<route>`, and format each as a Markdown link so
+it is clickable:
+
+- **Web**: `http://localhost:8081/<route>` (loads the docs in the browser)
+- **iOS**: `http://localhost:8790/ios?route=<route>` (opener runs it on the booted iOS simulator)
+- **Android**: `http://localhost:8790/android?route=<route>` (opener runs it on the booted Android emulator)
+
+These assume `bun run dev` is running in `docs/` (it starts Metro on 8081 and the
+opener on 8790) and, for the native two, a simulator/emulator booted with the Canvas
+docs dev app installed. If the opener cannot reach a device it returns the exact
+`xcrun` / `adb` command to run by hand.
+
+If the completed work does not map to a docs route (pure tooling, CI, build, or an
+internal refactor with no screen), say so in place of the block rather than inventing
+a link. When several routes are affected, list a block per route.

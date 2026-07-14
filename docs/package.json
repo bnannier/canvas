@@ -35,6 +35,7 @@
   },
   "scripts": {
     "postinstall": "node scripts/link-sources.mjs",
+    "dev": "node scripts/dev.mjs",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
