@@ -7,7 +7,7 @@ import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
-import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
@@ -84,16 +84,16 @@ describe("listbox a11y (options announce as a selectable list, operably)", () =>
     expect(picked).toBe("B");
   });
 
-  it("Combobox: role=listbox + role=option rows carry aria-selected", () => {
-    const { container } = ui(<Combobox open options={["A", "B"]} value="B" onSelect={() => {}} />);
+  it("Autocomplete: role=listbox + role=option rows carry aria-selected", () => {
+    const { container } = ui(<Autocomplete open options={["A", "B"]} value="B" onSelect={() => {}} />);
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(2);
     expect(opts[1].getAttribute("aria-selected")).toBe("true");
   });
 
-  it("Combobox: the field is a real text input with role=combobox + aria-expanded", () => {
-    const { container } = ui(<Combobox options={["A", "B"]} />);
+  it("Autocomplete: the field is a real text input with role=combobox + aria-expanded", () => {
+    const { container } = ui(<Autocomplete options={["A", "B"]} />);
     const field = container.querySelector('input[role="combobox"]');
     expect(field).not.toBeNull();
     expect(field?.getAttribute("aria-expanded")).toBe("false");

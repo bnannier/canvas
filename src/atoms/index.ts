@@ -1,4 +1,5 @@
 // Atoms: the React Native UI kit components at the atoms atomic level.
+export * from "./autocomplete/autocomplete.js";
 export * from "./avatar/avatar.js";
 export * from "./badge/badge.js";
 export * from "./breadcrumb/breadcrumb.js";
@@ -6,7 +7,6 @@ export * from "./button/button.js";
 export * from "./button-group/button-group.js";
 export * from "./checkbox/checkbox.js";
 export * from "./chip/chip.js";
-export * from "./combobox/combobox.js";
 export * from "./divider/divider.js";
 export * from "./dropdown/dropdown.js";
 export * from "./emblem/emblem.js";

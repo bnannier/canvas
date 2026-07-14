@@ -290,7 +290,7 @@ export function createInput(skin: InputSkin) {
       // -> ring, iOS: hairline, Android: bottom indicator), so the outline is
       // redundant and, over the filled Android skin, reads as a blue rectangle on
       // top of the indicator. No-op on native; matches the grouped path and the
-      // Combobox/Textarea/Stepper shells.
+      // Autocomplete/Textarea/Stepper shells.
       const bareStyle = [skin.bareField(tokens, borderColor, focused, isError), skin.bareBox(size), text, FOCUS_RESET];
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
 

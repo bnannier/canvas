@@ -1,5 +1,5 @@
 // The standard field width axis shared by the input-like controls (Input,
-// Textarea, Select, Combobox, Field). A bare field RENDERS AT the standard
+// Textarea, Select, Autocomplete, Field). A bare field RENDERS AT the standard
 // width at every viewport so stacked fields share one edge; `maxWidth:"100%"`
 // shrinks it inside narrower parents (which is all a phone screen is).
 //

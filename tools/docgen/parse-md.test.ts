@@ -385,8 +385,8 @@ describe("fieldWidthShimViolations", () => {
   it("flags max/minWidth in a style placed directly on an input-like control", () => {
     expect(fieldWidthShimViolations(`<Input style={{ maxWidth: 320 }} />`)).toEqual(["maxWidth on <Input>"]);
     expect(fieldWidthShimViolations(`<Select style={{ minWidth: 200 }} options={[]} />`)).toEqual(["minWidth on <Select>"]);
-    expect(fieldWidthShimViolations(`<Combobox\n  options={[]}\n  style={{ maxWidth: 300 }}\n/>`)).toEqual([
-      "maxWidth on <Combobox>",
+    expect(fieldWidthShimViolations(`<Autocomplete\n  options={[]}\n  style={{ maxWidth: 300 }}\n/>`)).toEqual([
+      "maxWidth on <Autocomplete>",
     ]);
   });
 

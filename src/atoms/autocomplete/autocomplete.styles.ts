@@ -1,7 +1,7 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
 
-// Co-located Combobox skins, one per platform. A Combobox is a searchable
+// Co-located Autocomplete skins, one per platform. An Autocomplete is a searchable
 // single-select: an editable field that filters an open option list. The BRAND
 // survives on every platform (the indigo `primary`/`accent` tokens stay; the
 // focus accent is the `ring`, never a platform default) and only the native
@@ -17,7 +17,7 @@ import { type ColorTokens, shadow, activeIndicator, type FloatingLabelStyles } f
 //     2dp `ring` brand when open); the menu surface is a flat-cornered (~4)
 //     elevated `popover` sheet (M3 elevation, no soft drop shadow), full-width
 //     rows ~48dp tall; press = android_ripple.
-//   Web: the established Canvas look (the current combobox, lifted verbatim) —
+//   Web: the established Canvas look (the current field, lifted verbatim) —
 //     full 1px `input` border, 6 radius, `background` fill, h-8/9/10; the popover
 //     is a 6-radius bordered `popover` card with `shadow-lg`, 4px padding, 2-radius
 //     accent rows. Press dims nothing (the active accent fill is the feedback).
@@ -28,7 +28,7 @@ export type Size = "small" | "default" | "large";
 // open/selected/pressed/muted state and asks the skin to map them to RN style
 // objects. The skin owns shape, fill, border/underline, popover elevation, the
 // row layout, and the press-feedback channel (iOS/web opacity vs Android ripple).
-export interface ComboboxSkin extends FloatingLabelStyles<Size> {
+export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
   /** Type scale per size; the field text and the option rows share it. */
   text: (size: Size) => TextStyle;
   /** Stacked (above-field) label type, used on iOS + web (`floatingLabel: false`).
@@ -109,7 +109,7 @@ function webText(size: Size): TextStyle {
 const WEB_FIELD_BOX: Record<Size, number> = { small: 32, default: 36, large: 40 };
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
-export const webSkin: ComboboxSkin = {
+export const webSkin: AutocompleteSkin = {
   text: webText,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
   field: (t, size) => ({
@@ -184,7 +184,7 @@ const IOS_TEXT: Record<Size, TextStyle> = {
 // Menu rows hold the iOS body size (17pt) regardless of the field's size axis,
 // matching the kit's fixed "Menu Item, Title" type and select.styles.ts IOS_ROW_TEXT.
 const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
-export const iosSkin: ComboboxSkin = {
+export const iosSkin: AutocompleteSkin = {
   text: (size) => IOS_TEXT[size],
   label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
   // Filled rounded rect (.roundedBorder), continuous corners; the border tints to the
@@ -252,7 +252,7 @@ export const iosSkin: ComboboxSkin = {
 // is the `accent` state layer. The action feedback is android_ripple.
 const ANDROID_TOP_RADIUS = 4;
 const ANDROID_FIELD_BOX: Record<Size, number> = { small: 48, default: 56, large: 60 };
-export const androidSkin: ComboboxSkin = {
+export const androidSkin: AutocompleteSkin = {
   // M3 body text is 16sp; nudge base/large up, keep small readable.
   text: (size) => {
     if (size === "large") return { fontSize: 18, lineHeight: 26 };

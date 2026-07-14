@@ -40,7 +40,7 @@ export interface ListboxItem {
 
 // Listbox is an input-like control, so it carries the standard field width axis
 // (`block` / `narrow` / `wide`, defaulting to the 320px base) shared by Input,
-// Select, Combobox and the rest via FieldWidthProps. This is not cosmetic: the
+// Select, Autocomplete and the rest via FieldWidthProps. This is not cosmetic: the
 // axis gives the list a DEFINITE width, without which the rows collapse. Each
 // row is `checkmark(16) + a flexBasis:"0%" label stack`; in a content-sized or
 // centered parent (a phone screen, a centered stage) with no definite width,

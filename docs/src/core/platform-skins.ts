@@ -21,8 +21,8 @@ import { ButtonGroup as ButtonGroupIOS } from "../../../src/atoms/button-group/b
 import { ButtonGroup as ButtonGroupAndroid } from "../../../src/atoms/button-group/button-group.android.js";
 import { Select as SelectIOS } from "../../../src/atoms/select/select.ios.js";
 import { Select as SelectAndroid } from "../../../src/atoms/select/select.android.js";
-import { Combobox as ComboboxIOS } from "../../../src/atoms/combobox/combobox.ios.js";
-import { Combobox as ComboboxAndroid } from "../../../src/atoms/combobox/combobox.android.js";
+import { Autocomplete as AutocompleteIOS } from "../../../src/atoms/autocomplete/autocomplete.ios.js";
+import { Autocomplete as AutocompleteAndroid } from "../../../src/atoms/autocomplete/autocomplete.android.js";
 import { Dropdown as DropdownIOS } from "../../../src/atoms/dropdown/dropdown.ios.js";
 import { Dropdown as DropdownAndroid } from "../../../src/atoms/dropdown/dropdown.android.js";
 import { Popover as PopoverIOS } from "../../../src/atoms/popover/popover.ios.js";
@@ -120,7 +120,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
   ios: {
     Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Radio: RadioIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
-    Combobox: ComboboxIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
+    Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS, Overlay: OverlayIOS,
     Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
@@ -136,7 +136,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
-    Combobox: ComboboxAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
+    Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid, Overlay: OverlayAndroid,
     Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,

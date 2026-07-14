@@ -6,7 +6,7 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
 import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
-import { Combobox } from "../src/atoms/combobox/combobox.tsx";
+import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Calendar } from "../src/organisms/calendar/calendar.tsx";
@@ -36,10 +36,10 @@ describe("Pagination", () => {
   });
 });
 
-describe("Combobox", () => {
+describe("Autocomplete", () => {
   it("filters the option list by the query", () => {
     const { container } = ui(
-      <Combobox open options={["Apple", "Banana", "Avocado"]} query="av" onSelect={() => {}} />,
+      <Autocomplete open options={["Apple", "Banana", "Avocado"]} query="av" onSelect={() => {}} />,
     );
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(1);
@@ -47,12 +47,12 @@ describe("Combobox", () => {
   });
 
   it("shows a no-results state when nothing matches", () => {
-    ui(<Combobox open options={["Apple", "Banana"]} query="zzz" onSelect={() => {}} />);
+    ui(<Autocomplete open options={["Apple", "Banana"]} query="zzz" onSelect={() => {}} />);
     expect(screen.getByText("No results")).toBeDefined();
   });
 
   it("is typeable out of the box: keystrokes filter the list (uncontrolled query)", () => {
-    const { container } = ui(<Combobox open options={["Apple", "Banana", "Avocado"]} onSelect={() => {}} />);
+    const { container } = ui(<Autocomplete open options={["Apple", "Banana", "Avocado"]} onSelect={() => {}} />);
     fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "ban" } });
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(1);
@@ -61,7 +61,7 @@ describe("Combobox", () => {
 
   it("reports each keystroke through onQueryChange", () => {
     let typed = "";
-    ui(<Combobox open options={["Apple"]} onQueryChange={(q) => { typed = q; }} />);
+    ui(<Autocomplete open options={["Apple"]} onQueryChange={(q) => { typed = q; }} />);
     fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "ap" } });
     expect(typed).toBe("ap");
   });
@@ -69,7 +69,7 @@ describe("Combobox", () => {
   it("seeds the filter from defaultQuery and forwards a ref to the text field", () => {
     const ref = createRef<TextInput>();
     const { container } = ui(
-      <Combobox ref={ref} open defaultQuery="av" options={["Apple", "Banana", "Avocado"]} onSelect={() => {}} />,
+      <Autocomplete ref={ref} open defaultQuery="av" options={["Apple", "Banana", "Avocado"]} onSelect={() => {}} />,
     );
     expect(container.querySelectorAll('[role="option"]').length).toBe(1);
     expect(typeof ref.current?.focus).toBe("function");
@@ -78,19 +78,19 @@ describe("Combobox", () => {
   it("resets the query on select so the field falls back to the value", () => {
     let query = "unset";
     const { container } = ui(
-      <Combobox open defaultQuery="av" options={["Avocado"]} onSelect={() => {}} onQueryChange={(q) => { query = q; }} />,
+      <Autocomplete open defaultQuery="av" options={["Avocado"]} onSelect={() => {}} onQueryChange={(q) => { query = q; }} />,
     );
     fireEvent.click(container.querySelector('[role="option"]') as Element);
     expect(query).toBe("");
   });
 
   it("shows the selected value in the field when there is no query", () => {
-    ui(<Combobox options={["Devon Webb"]} value="Devon Webb" onSelect={() => {}} />);
+    ui(<Autocomplete options={["Devon Webb"]} value="Devon Webb" onSelect={() => {}} />);
     expect(screen.getByDisplayValue("Devon Webb")).toBeDefined();
   });
 
   it("sets a displayName for DevTools/stack traces", () => {
-    expect((Combobox as { displayName?: string }).displayName).toBe("Combobox");
+    expect((Autocomplete as { displayName?: string }).displayName).toBe("Autocomplete");
   });
 });
 

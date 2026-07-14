@@ -105,7 +105,7 @@ export function Playground({ examples }: { examples: DocExample[] }) {
 
   const stage = (
     // ONE overlay host per stage (not per cell). A portaled overlay (an open
-    // Dropdown / Select / Combobox / Popover / Row-menu menu) renders into this
+    // Dropdown / Select / Autocomplete / Popover / Row-menu menu) renders into this
     // stage-level outlet, which paints above ALL device rows AND the code block, so
     // it is neither clipped by the stage nor occluded by a lower row's trigger.
     // Anchoring stays correct: AnchoredOverlay measures the trigger relative to this

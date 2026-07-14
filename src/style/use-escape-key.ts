@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-// Escape-to-dismiss for anchored overlays (Dropdown, Popover, Select, Combobox,
+// Escape-to-dismiss for anchored overlays (Dropdown, Popover, Select, Autocomplete,
 // RowMenu). While `active`, a document-level keydown listener catches Escape on
 // the web and calls `onEscape` (close the overlay) no matter where focus sits:
 // the trigger, an option row, or nowhere at all. Natively there is no `document`

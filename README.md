@@ -111,7 +111,7 @@ Full docs, live examples, and the complete prop reference live at **<https://bna
 
 The kit exports 60+ components across atoms, molecules, and organisms, all from `@nannier/canvas`:
 
-- **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Combobox, Listbox.
+- **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Autocomplete, Listbox.
 - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown, Action Sheet, Toast, Command palette.
 - **Navigation**: Tabs, Tab Bar, Navbars, Sidebar, Breadcrumb, Pagination, Steps.
 - **Data and content**: Data Table, Stacked / Grid Lists, Stats, Calendar, Charts, Card, Avatar, Badge, Description Lists, Media Objects, QR Code.

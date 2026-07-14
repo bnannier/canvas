@@ -265,7 +265,7 @@ function CheckboxesPreview() {
   );
 }
 
-function ComboboxesPreview() {
+function AutocompletePreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ width: "100%", maxWidth: 180 }}>
@@ -517,13 +517,13 @@ export const ATOMS_TILES: CatTile[] = [
   { title: "Image", href: "/components/image", Preview: ImagePreview },
   { title: "TextInput", href: "/components/text-input", Preview: TextInputPreview },
   { title: "ScrollView", href: "/components/scroll-view", Preview: ScrollViewPreview },
+  { title: "Autocomplete", href: "/components/autocomplete", Preview: AutocompletePreview },
   { title: "Avatar", href: "/components/avatar", Preview: AvatarsPreview },
   { title: "Badge", href: "/components/badge", Preview: BadgesPreview },
   { title: "Breadcrumb", href: "/components/breadcrumb", Preview: BreadcrumbsPreview },
   { title: "ButtonGroup", href: "/components/button-group", Preview: ButtonGroupsPreview },
   { title: "Button", href: "/components/button", Preview: ButtonsPreview },
   { title: "Checkbox", href: "/components/checkbox", Preview: CheckboxesPreview },
-  { title: "Combobox", href: "/components/combobox", Preview: ComboboxesPreview },
   { title: "Divider", href: "/components/divider", Preview: DividersPreview },
   { title: "Dropdown", href: "/components/dropdown", Preview: DropdownsPreview },
   { title: "Icon", href: "/components/icon", Preview: IconsPreview },

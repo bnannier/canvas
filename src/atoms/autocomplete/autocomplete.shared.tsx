@@ -22,10 +22,10 @@ import {
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
 const LISTBOX = "listbox" as Role;
-import { wrapper, wrapperLifted } from "./combobox.styles.js";
-import { type ComboboxSkin, type Size } from "./combobox.styles.js";
+import { wrapper, wrapperLifted } from "./autocomplete.styles.js";
+import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 
-// Shared Combobox shell. A Combobox is a searchable single-select: it mirrors
+// Shared Autocomplete shell. An Autocomplete is a searchable single-select: it mirrors
 // Select's structure (a field plus an open option list) and adds text
 // filtering. The field is a REAL text input: typing edits the query
 // (controlled via `query`, self-managed via `defaultQuery`, the standard
@@ -37,7 +37,7 @@ import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 // public boolean-prop API, the size precedence, accessibility, refs, and
 // handlers all live here once. A platform file supplies only its skin (field
 // shape, fill, border/underline, popover elevation, row layout, press
-// feedback) and calls createCombobox.
+// feedback) and calls createAutocomplete.
 //
 // The open list renders through AnchoredOverlay: when an OverlayProvider is
 // mounted (an app root, or a docs example stage) it portals over the page,
@@ -48,10 +48,10 @@ import { type ComboboxSkin, type Size } from "./combobox.styles.js";
 // select closes it. The selected option carries a leading "✓" and an accent
 // surface; an empty filtered list shows a muted "No results" row.
 
-export interface ComboboxProps extends FieldWidthProps {
+export interface AutocompleteProps extends FieldWidthProps {
   /**
    * The text typed into the field (controlled). Filters the option list. Omit
-   * and use `defaultQuery` for uncontrolled use: a bare Combobox is typeable
+   * and use `defaultQuery` for uncontrolled use: a bare Autocomplete is typeable
    * out of the box.
    */
   query?: string;
@@ -110,7 +110,7 @@ export interface ComboboxProps extends FieldWidthProps {
 }
 
 // First match wins when more than one size flag is passed.
-function sizeOf(p: ComboboxProps): Size {
+function sizeOf(p: AutocompleteProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
@@ -135,9 +135,9 @@ const chevronHit: ViewStyle = { alignSelf: "stretch", justifyContent: "center" }
 // field's width; the skin owns the card's shape/fill/shadow.
 const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
 
-/** Build a Combobox component from a platform skin. */
-export function createCombobox(skin: ComboboxSkin) {
-  const Combobox = forwardRef<RNTextInput, ComboboxProps>(function Combobox(props, ref) {
+/** Build an Autocomplete component from a platform skin. */
+export function createAutocomplete(skin: AutocompleteSkin) {
+  const Autocomplete = forwardRef<RNTextInput, AutocompleteProps>(function Autocomplete(props, ref) {
     const {
       options = [],
       label,
@@ -158,7 +158,7 @@ export function createCombobox(skin: ComboboxSkin) {
     const labelId = useId();
 
     // Controlled when `query` is provided, self-managed otherwise, so a bare
-    // <Combobox /> filters as you type (the standard library contract).
+    // <Autocomplete /> filters as you type (the standard library contract).
     const [query, setQuery] = useControllableState<string>(
       props.query,
       props.defaultQuery ?? "",
@@ -228,9 +228,6 @@ export function createCombobox(skin: ComboboxSkin) {
           onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
           style={[
             skin.field(tokens, size, open),
-            // Android floating label: reserve top padding so the value clears the
-            // floated label (state-independent, mirrors the M3 Input).
-            floating ? skin.labelReserve!(size) : null,
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
@@ -238,7 +235,19 @@ export function createCombobox(skin: ComboboxSkin) {
             ref={ref}
             // The field paints its own focus state (the skin's open border), so
             // the RNW default outline is suppressed; no-op on native.
-            style={[skin.fieldText(tokens, size, false), fieldInput, FOCUS_RESET]}
+            textAlignVertical="center"
+            style={[
+              skin.fieldText(tokens, size, false),
+              fieldInput,
+              // Android floating label: the reserve (top padding that lets the value
+              // clear the floated label, mirroring the M3 Input) belongs to the VALUE
+              // field only, not the whole row. Stretched to full height, the field
+              // centers its text below the reserve, while the trailing chevron toggle
+              // stays vertically centered in the full field (M3 centers a trailing
+              // dropdown icon in the container, unaffected by the label).
+              floating ? [{ alignSelf: "stretch" as const }, skin.labelReserve!(size)] : null,
+              FOCUS_RESET,
+            ]}
             value={fieldValue}
             onChangeText={(text) => {
               setQuery(text);
@@ -356,6 +365,6 @@ export function createCombobox(skin: ComboboxSkin) {
       </View>
     );
   });
-  Combobox.displayName = "Combobox";
-  return Combobox;
+  Autocomplete.displayName = "Autocomplete";
+  return Autocomplete;
 }
