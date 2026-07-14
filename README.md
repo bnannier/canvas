@@ -119,10 +119,6 @@ The kit exports 60+ components across atoms, molecules, and organisms, all from 
 
 Alongside the components, the package exports the style foundation: the theme runtime (`ThemeProvider`, `useTheme`), the design tokens (`token`, `hsl`), the responsive and motion helpers (`useResponsive`, `useReducedMotion`), the glass helpers (`liquidGlassAvailable`, `setSurface`), and the raw React Native primitives (`View`, `Text`, `Pressable`, `Image`, `TextInput`, `ScrollView`).
 
-## Contributing
-
-Issues and pull requests are welcome at <https://github.com/bnannier/canvas>. Report bugs at <https://github.com/bnannier/canvas/issues>.
-
 ## License
 
 Proprietary. Copyright (c) 2026 Bobby Nannier. All rights reserved. See [LICENSE](./LICENSE).
