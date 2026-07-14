@@ -49,13 +49,13 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "verify-package": "bun scripts/verify-package.ts",
     "prepublishOnly": "bun run build && bun run verify-package",
     "test": "bun test",
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
-    "check-duplicates": "bun scripts/check-duplicates.ts",
     "screenshots": "bun scripts/capture-screenshots.ts",
     "changeset": "changeset",
     "version-packages": "changeset version",
@@ -93,11 +93,15 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
+    "@eslint/js": "^9",
     "@happy-dom/global-registrator": "^20.10.6",
     "@playwright/test": "^1.60.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.16",
+    "eslint": "^9",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "expo-blur": "~56.0.3",
     "expo-glass-effect": "~56.0.4",
     "happy-dom": "^20.10.6",
@@ -109,6 +113,7 @@
     "react-native-svg": "^15",
     "react-native-web": "^0.21.2",
     "react-test-renderer": "^19.2.7",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.64.0"
   }
 }
