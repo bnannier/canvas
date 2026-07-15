@@ -83,15 +83,23 @@ export function Sidebar({
       }}
       header={(isCollapsed) =>
         isCollapsed ? (
-          <CanvasMark size={26.62} />
+          <CanvasMark size={26} />
         ) : (
+          // The brand lockup is row zero of the nav, so it sits on the same two columns the
+          // items below use: the header's 14px inset + a 26 mark puts the mark's ink center on
+          // the item ICON column's center (x=28), and + the `snug` 8px gap starts the wordmark
+          // exactly on the item LABEL column (x=48). `lead` keeps the wordmark on `foreground`
+          // (the `small` role would mute it); `tiny` alone is already muted-foreground, and
+          // adding `muted` would win the role axis and render the tagline at the wordmark's
+          // own 14px. `flush` lets the two line boxes set the lockup's rhythm: 24 + 16 = 40,
+          // which centers in the 56px header with even breathing room above and below.
           <Row snug alignCenter>
-            <CanvasMark size={26.62} />
-            <Column tight>
-              <Typography semibold>Canvas</Typography>
-              <Typography tiny muted>
-                design system
+            <CanvasMark size={26} />
+            <Column flush>
+              <Typography lead semibold>
+                Canvas
               </Typography>
+              <Typography tiny>design system</Typography>
             </Column>
           </Row>
         )
