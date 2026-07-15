@@ -3,8 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button } = scope;
+  const { Stateful, Button, Typography, Column } = scope;
   return (
-<Button primary icon>+</Button>
+<Stateful initial={0}>
+  {(added, setAdded) => (
+    <Column snug alignCenter>
+      <Button primary icon onPress={() => setAdded(added + 1)}>+</Button>
+      <Typography muted>{added === 0 ? "Nothing added yet" : `Added ${added} ${added === 1 ? "item" : "items"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
   );
 }
