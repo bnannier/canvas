@@ -1,7 +1,14 @@
 name: CI — canvas
 
+# The single per-push validation pipeline: library checks + docs build in ONE job, so
+# runner spin-up (checkout, setup-bun, root install) and docgen happen once per run.
+# Deploys never run from here; they live behind the manual deploy.yml button.
 on:
   push:
+    # main only: branch work gets CI through its pull request instead, so a Dependabot
+    # branch push no longer runs CI twice. Also keeps tag pushes from triggering CI
+    # (paths filters are not evaluated for tag pushes).
+    branches: [main]
     paths:
       - 'src/**'
       - 'styles/**'
@@ -16,8 +23,21 @@ on:
       - '.github/workflows/**'
   pull_request:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'styles/**'
+      - 'docs/**'
+      - 'tools/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'tsconfig*.json'
+      - 'scripts/**'
+      - 'test/**'
+      - '.changeset/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
+# Only the newest tip of a ref needs to be green; superseded runs are cancelled.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -26,18 +46,30 @@ permissions:
   contents: read
 
 jobs:
-  # Library checks: the published package is the COMPILED dist (ES modules +
-  # .d.ts from tsconfig.build.json), so CI builds it, verifies the artifact is
-  # consumable (specifier resolution, platform forks, no raw TS, no DOM-typed
-  # public surface), and smoke-renders components FROM dist in the test suite.
+  # Library checks first (cheap, fail fast), then the docs app build. The published
+  # package is the COMPILED dist (ES modules + .d.ts from tsconfig.build.json), so CI
+  # builds it, verifies the artifact is consumable (specifier resolution, platform
+  # forks, no raw TS, no DOM-typed public surface), and smoke-renders components FROM
+  # dist in the test suite (test/dist-smoke.test.tsx).
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+      # setup-bun does not cache installs. Bun's global content-addressable download
+      # cache serves BOTH the root and docs installs, so one entry covers them.
+      - name: Cache bun downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
 
       - run: bun install --frozen-lockfile
 
@@ -53,23 +85,15 @@ jobs:
       - name: Verify package artifact
         run: bun run verify-package
 
-      # Includes test/dist-smoke.test.tsx, which imports and renders components
-      # from the freshly built dist — the consumer's-eye check.
       - name: Unit tests
         run: bun test
 
-      # The docs example modules are generated from each component's .md fences
-      # (tools/docgen). Fail if the committed output is stale, then type-check every
-      # generated fence against the real component prop types, so a breaking prop
-      # change or a forgotten `bun run docs:gen` is caught here, not at native build.
-      - name: Check generated docs examples are up to date
+      # Runs docgen ONCE for the whole pipeline and fails on ANY drift under
+      # docs/src/core (tracked or untracked), so a breaking prop change or a forgotten
+      # `bun run docs:gen` is caught here, and the docs steps below consume a validated
+      # docs core with no rerun.
+      - name: Check generated docs core is up to date
         run: bun run docs:gen:check
-
-      - name: Typecheck generated docs examples
-        run: bunx tsc --noEmit -p docs/src/core/tsconfig.json
-
-      - name: Verify package exports
-        run: bun -e "import { cn, getTheme, token } from './src/index.ts'; console.log('JS exports OK')"
 
       - name: Validate theme tokens
         run: bun run validate-tokens
@@ -77,41 +101,30 @@ jobs:
       - name: Check CSS + JS size budgets
         run: bun run check-size
 
-  # Docs build: the universal RN app (docs) is what the Pages deploy ships, so a
-  # broken web export fails CI before it can be deployed.
-  docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
+      # --- Docs app (the universal RN app the Pages deploy ships) ---
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install root deps (for the source symlink)
-        run: bun install --frozen-lockfile
-
-      - name: Regenerate docs core
-        run: bun run docs:gen
-
+      # docs consumes the source-only kit + the generated docs core as live symlinks
+      # (docs postinstall), which is why the root install above must come first.
       - name: Install docs deps
         working-directory: docs
         run: bun install --frozen-lockfile
 
-      # Fail here if the nav config drifts from the generated docs core, instead of
-      # merging green and only breaking a later Pages deploy.
+      # The single nav source of truth (nav.config.json) must stay 1:1 with the
+      # generated docs core data.
       - name: Check nav config is in sync
         working-directory: docs
         run: bun run check:nav
 
-      - name: Typecheck docs
+      # docs/tsconfig.json includes docs/src/core/** and maps @nannier/canvas to
+      # ../src/index.ts, so this also typechecks every generated example against the
+      # real component prop types.
+      - name: Typecheck docs (includes generated examples)
         working-directory: docs
         run: bunx tsc --noEmit
 
+      # Kept per-push: it is the only check that catches CI-only Metro/export bugs
+      # before a Pages deploy trips over them. Same EXPO_BASE_URL as the deploy so CI
+      # exercises the exact Pages configuration. Node comes from the runner image.
       - name: Export web build
         working-directory: docs
         run: npx expo export -p web

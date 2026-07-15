@@ -1,9 +1,26 @@
 name: Deploy — canvas
 
-# THE manual deploy button. Click "Run workflow" to ship any or all four targets in PARALLEL:
-# GitHub Pages (web docs), npm (the kit), TestFlight (iOS), and Google Play internal (Android).
-# Each target is also runnable on its own via its reusable workflow's "Run workflow". Nothing here
-# runs on push: deploys are manual-only by design (CI still validates every push).
+# THE manual deploy button, and the only deploy surface in this repo. Click
+# "Run workflow" to ship any or all targets in parallel: GitHub Pages (web docs),
+# npm (the kit), and EAS native builds of the docs app (iOS/Android). Nothing here
+# runs on push: deploys are manual-only by design (ci.yml validates every push).
+#
+# The `profile` input picks the EAS build profile: `production` auto-submits to
+# TestFlight / Google Play internal (the only profile with a submit config in
+# docs/eas.json); `preview` / `development` produce internal-distribution builds
+# (Android APK + ad-hoc iOS) shared by URL, with no store submission.
+#
+# EAS ONE-TIME SETUP (until done, the native job shows as "skipped"):
+#   1. EXPO_TOKEN repo secret (expo.dev -> account settings -> Access Tokens).
+#   2. iOS: distribution cert + provisioning profile + an App Store Connect API key
+#      on EAS (`eas credentials -p ios`) so submission runs unattended.
+#   3. Android: app created in the Play Console for com.olympusoss.canvasdocs, a
+#      Google service-account key on EAS (`eas credentials -p android`), and the
+#      VERY FIRST .aab uploaded manually once (Google's API cannot create the first
+#      release).
+#   4. Set the repo VARIABLE `EAS_ENABLED` to `true` (Settings -> Secrets and
+#      variables -> Actions -> Variables). It gates the native job at the job level
+#      because `secrets` cannot be read in a job-level `if`.
 on:
   workflow_dispatch:
     inputs:
@@ -16,56 +33,241 @@ on:
         type: boolean
         default: true
       ios:
-        description: "Build iOS docs app + submit to TestFlight"
+        description: "EAS-build the iOS docs app"
         type: boolean
         default: true
       android:
-        description: "Build Android docs app + submit to Google Play (internal)"
+        description: "EAS-build the Android docs app"
         type: boolean
         default: true
+      profile:
+        description: "EAS build profile (production auto-submits to the stores)"
+        type: choice
+        options: [production, preview, development]
+        default: production
 
-# Union of every callee's needs. Reusable-workflow permissions do NOT inherit: each calling job
-# re-scopes to what it uses, and a callee sees the INTERSECTION of (its job's grant) and (its own
-# permissions block).
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
+# Deploys are serialized and never cancelled: two npm publishes racing could
+# double-commit version bumps, and an in-flight Pages deploy should always finish.
 concurrency:
   group: deploy
   cancel-in-progress: false
 
+# No workflow-level grant: each job scopes exactly the permissions it uses.
+
 jobs:
+  # ---------------------------------------------------------------- GitHub Pages
+  # Single-job build + deploy (the shape of GitHub's own pages/static.yml starter):
+  # build, upload the Pages artifact, and deploy from one runner.
   pages:
     if: ${{ inputs.pages }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       pages: write
       id-token: write
-    secrets: inherit
-    uses: ./.github/workflows/deploy-pages.yml
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Root deps first: docs consumes the source-only kit as a live symlink
+      # (docs postinstall), so the root tree must exist before the docs install.
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      # Regenerates the docs core and fails on ANY drift under docs/src/core, so a
+      # stale committed core can never be deployed.
+      - name: Check generated docs core is up to date
+        run: bun run docs:gen:check
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck docs
+        working-directory: docs
+        run: bunx tsc --noEmit
+
+      - name: Check nav config is in sync
+        working-directory: docs
+        run: bun run check:nav
+
+      - name: Export web build
+        working-directory: docs
+        run: npx expo export -p web
+        env:
+          # Served under /canvas/ on Pages; app.config.js reads this into
+          # experiments.baseUrl.
+          EXPO_BASE_URL: /canvas
+
+      - name: SPA fallback + .nojekyll
+        working-directory: docs
+        run: |
+          # Pages serves 404.html for unknown paths; a copy of index.html lets the
+          # SPA boot and client-route deep links (e.g. /canvas/components/button).
+          # .nojekyll keeps Jekyll from ignoring the _expo/ dir.
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+
+      - uses: actions/configure-pages@v5
+        with:
+          # Auto-enables Pages (Source: GitHub Actions) if it is off, instead of
+          # failing with "Get Pages site failed".
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist
+
+      - uses: actions/deploy-pages@v4
+        id: deployment
+
+  # ------------------------------------------------------------------------ npm
+  # Changesets release. If there are pending changesets, consume them (version bump
+  # + CHANGELOG) and commit directly to main; then ALWAYS run `changeset publish`.
+  # Publish is idempotent: it only publishes versions missing from npm, so a publish
+  # that failed once converges on the next run without a fresh changeset. Avoids the
+  # PR-creation path entirely (no "Actions can create PRs" repo setting needed).
   npm:
     if: ${{ inputs.npm }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
-      id-token: write
-    secrets: inherit
-    uses: ./.github/workflows/release.yml
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  ios:
-    if: ${{ inputs.ios }}
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Check for pending changesets
+        id: has_changesets
+        run: |
+          # count .md files in .changeset/ that aren't README.md
+          count=$(find .changeset -maxdepth 1 -name "*.md" ! -name "README.md" 2>/dev/null | wc -l | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Found $count pending changeset(s)."
+
+      - name: Configure git
+        if: steps.has_changesets.outputs.count != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # The [skip ci] matters: ci.yml's paths filter includes package.json and
+      # .changeset/**, so without it the version commit would burn a CI run.
+      - name: Version packages
+        if: steps.has_changesets.outputs.count != '0'
+        run: |
+          bun run version-packages
+          git add .
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+          else
+            git commit -m "chore: version packages [skip ci]"
+            # Rebase onto latest main, then push. Retried because concurrent
+            # worktree pushes can land on main between the rebase and the push,
+            # rejecting it as non-fast-forward.
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                break
+              fi
+              if [ "$attempt" = "3" ]; then
+                echo "::error::could not push the version commit after 3 attempts (main kept advancing). Re-run the deploy."
+                exit 1
+              fi
+              echo "Push rejected (main advanced); retrying ($attempt/3)..."
+            done
+          fi
+
+      - name: Authenticate npm (npmjs.org)
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          echo "@nannier:registry=https://registry.npmjs.org" >> .npmrc
+
+      # Runs UNCONDITIONALLY (not gated on pending changesets): publish is
+      # idempotent, so this also retries any version already on main but missing
+      # from npm.
+      - name: Publish to npmjs.org
+        run: bun run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push release tags
+        run: git push --tags
+
+  # -------------------------------------------------------- EAS native (iOS/Android)
+  # ONE job for both platforms: the setup (installs + docgen) is identical, and with
+  # --no-wait the eas command only QUEUES the remote build, so the runner exits in
+  # seconds instead of idling while EAS compiles. Green here means "queued on EAS";
+  # build + store-submission results live on expo.dev (links land in the run summary).
+  native:
+    if: ${{ (inputs.ios || inputs.android) && vars.EAS_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
-    secrets: inherit
-    uses: ./.github/workflows/deploy-testflight.yml
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # ios+android -> all; otherwise just the selected platform.
+      EAS_PLATFORM: ${{ inputs.ios && inputs.android && 'all' || inputs.ios && 'ios' || 'android' }}
+      EAS_PROFILE: ${{ inputs.profile }}
+    steps:
+      - uses: actions/checkout@v6
 
-  android:
-    if: ${{ inputs.android }}
-    permissions:
-      contents: read
-    secrets: inherit
-    uses: ./.github/workflows/deploy-android.yml
-    # No `needs:` anywhere in this file: the four jobs run in parallel and independently, so one
-    # target's failure (e.g. an Android cert issue) never blocks another (Pages, npm, iOS).
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # The native app consumes the source-only kit + the generated docs core through
+      # symlinks (docs postinstall), so root deps + docgen must precede the EAS build.
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate docs core
+        run: bun run docs:gen
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      # --auto-submit only for production: docs/eas.json defines only
+      # submit.production (TestFlight / Play internal draft); preview + development
+      # are internal distribution and must not be submitted. --auto-submit composes
+      # with --no-wait: EAS creates the submission server-side when the build
+      # completes.
+      - name: EAS build (queued remotely; runner exits immediately)
+        working-directory: docs
+        run: |
+          args=(--platform "$EAS_PLATFORM" --profile "$EAS_PROFILE" --non-interactive --no-wait --json)
+          if [ "$EAS_PROFILE" = "production" ]; then
+            args+=(--auto-submit)
+          fi
+          builds=$(eas build "${args[@]}")
+          echo "$builds"
+          {
+            echo "### EAS builds queued (profile: $EAS_PROFILE)"
+            echo "$builds" | jq -r '.[] | "- \(.platform): \(.buildDetailsPageUrl // ("https://expo.dev/builds/" + .id))"' \
+              || echo "- Track progress at https://expo.dev"
+          } >> "$GITHUB_STEP_SUMMARY"
