@@ -1,6 +1,6 @@
 // Guards the single source of truth: every component/template/pattern enumerated in
 // src/data/nav.config.json must exist in the docs core data (and vice versa), so a page can
-// never silently drift out of the navigation. Run by CI (docs.yml) and `bun run check:nav`.
+// never silently drift out of the navigation. Run by CI (ci.yml) and `bun run check:nav`.
 //
 // Stays free of React Native so it runs in plain bun/node: the component registry is
 // a plain data module (imported), while the pattern/template data files now compose
