@@ -1,5 +1,33 @@
 # @nannier/canvas
 
+## 8.0.0
+
+### Major Changes
+
+- 7064c3f: Change the license from proprietary to proprietary (`UNLICENSED`). The source is private and
+  all rights are reserved; no universal grant applies. Note that the already-published
+  `7.0.0` stays proprietary (a published version's license cannot be retroactively revoked), so
+  this takes effect for new versions going forward.
+- 5607a53: Rename the `Combobox` component to `Autocomplete`. The searchable single-select (a
+  text input paired with a filtering dropdown) is unchanged in behavior, props, and
+  accessibility, but its export, type, and docs route are renamed: `Combobox` →
+  `Autocomplete`, `ComboboxProps` → `AutocompleteProps`, and `/components/combobox` →
+  `/components/autocomplete` (the old route redirects). The underlying ARIA
+  `role="combobox"` on the field is intentionally kept, since that is the WAI-ARIA role
+  for this pattern. To migrate, replace `import { Combobox } from "@nannier/canvas"`
+  with `import { Autocomplete } from "@nannier/canvas"` and rename the JSX tag and any
+  `ComboboxProps` references.
+
+### Minor Changes
+
+- a58ad6d: `DataTable`, `Feed`, `StackedList`, and `GridList` gain an opt-in `virtualized`
+  boolean that renders their rows/tiles through a windowed `FlatList` instead of
+  mounting every one up front, for large datasets. Give the list a bounded height (via
+  `style`, e.g. `{ maxHeight: 400 }`) so it can window and scroll; without one it warns
+  in development and renders eagerly. DataTable keeps its header row fixed above the
+  windowed body and preserves its `role="table"` rows. The default (omitting
+  `virtualized`) mounts every row exactly as before, so existing usage is unchanged.
+
 ## 7.0.0
 
 ### Major Changes
