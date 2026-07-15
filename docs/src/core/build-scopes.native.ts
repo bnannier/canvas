@@ -2,7 +2,7 @@ import * as Canvas from "@nannier/canvas";
 import type { ColorTokens } from "@nannier/canvas";
 import { Platform } from "react-native";
 import { Stateful, Ticker } from "./live-state";
-import { withResolvedPhotos } from "./photos";
+import { applyResolvedPhotos } from "./photos";
 import type { ExampleScope, PreviewScope } from "./scope";
 
 // Native build: on a device you ARE the platform — Metro already resolved each
@@ -11,22 +11,20 @@ import type { ExampleScope, PreviewScope } from "./scope";
 // `button.ios` on an Android device would force the wrong-OS skin onto a real device.
 export function buildScopes(tokens: ColorTokens): PreviewScope[] {
   const platform = Platform.OS === "android" ? "android" : "ios";
+  // The docs examples name sample photos as root-absolute paths (`/rachel-chen.jpg`);
+  // a device has no web origin, so resolve them to their bundled assets here. The web
+  // scope applies the very same helper (for its own reason: a subpath-hosted export
+  // cannot resolve them either), so the two platforms cannot drift apart again.
+  const scope: Record<string, unknown> = { ...Canvas };
+  applyResolvedPhotos(scope);
+  scope.tokens = tokens;
+  scope.Stateful = Stateful;
+  scope.Ticker = Ticker;
   return [
     {
       label: platform === "android" ? "Android" : "iOS",
       platform,
-      scope: {
-        ...Canvas,
-        // The docs examples reference sample photos as root-relative paths
-        // (`/rachel-chen.jpg`) that only resolve against the web origin; on a device
-        // they have no host, so resolve them to their bundled modules here (web keeps
-        // the relative path, which the browser resolves).
-        Avatar: withResolvedPhotos(Canvas.Avatar, ["src", "uri"]),
-        MediaObject: withResolvedPhotos(Canvas.MediaObject, ["src"]),
-        tokens,
-        Stateful,
-        Ticker,
-      } as unknown as ExampleScope,
+      scope: scope as unknown as ExampleScope,
     },
   ];
 }
