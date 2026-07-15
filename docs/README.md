@@ -22,21 +22,22 @@ iOS builds need a UTF-8 locale or CocoaPods crashes during `pod install`:
 LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 npx expo run:ios
 ```
 
-## Native builds — EAS internal distribution
+## Native builds (EAS)
 
-Native builds are produced by EAS and wired into CI
-(`.github/workflows/docs-native.yml`), which **skips until the project is linked**.
-One-time setup (needs your Expo / Apple accounts — these cannot be automated):
+Native builds are produced by EAS through the manual **Deploy** workflow
+(`.github/workflows/deploy.yml`): check the `ios` / `android` inputs and pick a build
+profile. `production` auto-submits to TestFlight / Google Play internal; `preview` and
+`development` produce internal-distribution builds (an installable Android APK + an
+ad-hoc iOS build) shared by URL with no store review. The workflow queues the build on
+EAS and exits (`--no-wait`); progress and store submission live on expo.dev (links
+appear in the run summary). The job stays "skipped" until EAS is configured. One-time
+setup (needs your Expo / Apple accounts; these cannot be automated):
 
 1. `npm i -g eas-cli && eas login`
-2. `cd docs && eas init` — links the repo to an Expo project (writes the project id into the config)
+2. `cd docs && eas init` links the repo to an Expo project (writes the project id into the config)
 3. iOS ad-hoc: `eas device:create` to register tester device UDIDs; EAS manages signing
 4. Add an `EXPO_TOKEN` repository secret (an Expo access token) so CI can authenticate
-
-Then a push to `main` (or the manual **docs-native** workflow) runs
-`eas build --profile preview --platform all` → an installable **Android APK** and an
-**ad-hoc iOS** build, shared by URL with no app-store review. The `production` profile +
-`eas submit` are the later path to the public stores.
+5. Set the `EAS_ENABLED` repository variable to `true` to un-skip the deploy job
 
 ## Notes
 
@@ -45,5 +46,5 @@ Then a push to `main` (or the manual **docs-native** workflow) runs
 - `experiments.baseUrl` is set from `EXPO_BASE_URL` (see `app.config.js`) so the static
   web export can be hosted under a subpath (e.g. `/canvas/`); local dev stays at root.
 - This is the single documentation site for every platform: the web target deploys to
-  GitHub Pages (`.github/workflows/docs.yml`) and the native targets ship via EAS. It
+  GitHub Pages (`.github/workflows/deploy.yml`) and the native targets ship via EAS. It
   replaced the previous Vite-based web docs.
