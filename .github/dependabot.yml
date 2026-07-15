@@ -8,22 +8,8 @@ updates:
     commit-message:
       prefix: "ci"
 
-  # Root dev toolchain and peer dependencies. This repo uses a bun.lock, which
-  # Dependabot does not natively resolve, so it updates the package.json ranges;
-  # run `bun install` after merging a bump to refresh the lockfile.
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "chore(deps)"
-    open-pull-requests-limit: 5
-
-  # The docs app.
-  - package-ecosystem: "npm"
-    directory: "/docs"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "chore(deps-docs)"
-    open-pull-requests-limit: 5
+  # No npm ecosystems on purpose: this repo uses bun.lock, which Dependabot does not
+  # resolve, so its npm PRs change package.json without the lockfile and every one
+  # fails CI at `bun install --frozen-lockfile` (wasted red runs on a metered private
+  # repo). Dependency freshness comes from running `bun update` locally; Dependabot
+  # SECURITY ALERTS are unaffected (they are separate from version-update PRs).
