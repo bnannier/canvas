@@ -26,6 +26,23 @@ const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
 const PROPS_FILE = path.join(REPO, "docs", "src", "core", "props.ts");
 
+// `--check` (the pre-push gate) answers "is the generated output in sync with the
+// component markdown?" without touching the working tree: every would-be write and
+// every orphan is recorded as drift instead of applied, and the run exits non-zero
+// naming the stale paths.
+//
+// The gate used to regenerate for real and then ask `git status --porcelain
+// docs/src/core` whether the tree went dirty. That conflated two different things:
+// docs/src/core holds the three paths below AND hand-written modules (photos.ts,
+// build-scopes.*.ts, scope.ts), so any uncommitted edit to a hand-written file failed
+// the push and blamed codegen for work codegen never did. Asking the generator itself
+// keeps the gate scoped to exactly what it owns, needs no second copy of that path list
+// here or in package.json, names the offending file instead of the whole directory, and
+// leaves a dirty tree alone on failure.
+const CHECK = process.argv.includes("--check");
+const drift: string[] = [];
+const rel = (file: string) => path.relative(REPO, file);
+
 // The source files a dir's prop tables are extracted from: every `.tsx` in the dir
 // except the platform forks (which only wire skins, no Props) and tests. Scanning
 // all of them lets a dir with more than one Props-bearing file (e.g. charts.shared
@@ -109,6 +126,10 @@ function writeFileIfChanged(file: string, content: string): void {
     existing = null;
   }
   if (existing === content) return;
+  if (CHECK) {
+    drift.push(`${rel(file)} (${existing === null ? "never generated" : "stale"})`);
+    return;
+  }
   fs.writeFileSync(file, content);
 }
 
@@ -122,9 +143,10 @@ function pruneOrphans(root: string): void {
     const full = path.join(root, entry.name);
     if (entry.isDirectory()) {
       pruneOrphans(full);
-      if (fs.readdirSync(full).length === 0) fs.rmdirSync(full);
+      if (!CHECK && fs.readdirSync(full).length === 0) fs.rmdirSync(full);
     } else if (!writtenExampleFiles.has(full)) {
-      fs.rmSync(full);
+      if (CHECK) drift.push(`${rel(full)} (orphan; its fence is gone)`);
+      else fs.rmSync(full);
     }
   }
 }
@@ -170,7 +192,7 @@ function writeModule(category: Category, dir: string, name: string, code: string
   file: string;
 } {
   const outDir = path.join(EXAMPLES_DIR, category, dir);
-  fs.mkdirSync(outDir, { recursive: true });
+  if (!CHECK) fs.mkdirSync(outDir, { recursive: true });
   const file = path.join(outDir, `${name}.tsx`);
   writeFileIfChanged(file, exampleModule(code, source));
   writtenExampleFiles.add(file);
@@ -369,6 +391,20 @@ function main() {
     (n, groups) => n + groups.reduce((m, g) => m + g.props.length, 0),
     0,
   );
+
+  if (CHECK) {
+    if (drift.length) {
+      throw new Error(
+        `docs:gen --check found ${drift.length} generated file(s) out of sync with the component markdown. ` +
+          `Run \`bun run docs:gen\` and commit the result:\n${drift
+            .sort()
+            .map((d) => `    ${d}`)
+            .join("\n")}`,
+      );
+    }
+    console.log(`docs:gen --check verified ${entries.length} components; the generated output is in sync.`);
+    return;
+  }
 
   console.log(
     `docs:gen — ${entries.length} components, ${exampleCount} examples, ${dontCount} Do/Don't pairs ` +
