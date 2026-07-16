@@ -91,15 +91,19 @@ export function Sidebar({
           // exactly on the item LABEL column (x=48). `lead` keeps the wordmark on `foreground`
           // (the `small` role would mute it); `tiny` alone is already muted-foreground, and
           // adding `muted` would win the role axis and render the tagline at the wordmark's
-          // own 14px. `flush` lets the two line boxes set the lockup's rhythm: 24 + 16 = 40,
-          // which centers in the 56px header with even breathing room above and below.
+          // own 14px. The two lines are one lockup, not prose, so `tightLeading` pulls both
+          // line boxes to 1.25x (20 and 15) and `flush` adds nothing between them, leaving
+          // 3.5px of optical gap; the roles reading leading would put 6px there, and a gap
+          // prop can only add. The 35px block centers in the 56px header.
           <Row snug alignCenter>
             <CanvasMark size={26} />
             <Column flush>
-              <Typography lead semibold>
+              <Typography lead semibold tightLeading>
                 Canvas
               </Typography>
-              <Typography tiny>design system</Typography>
+              <Typography tiny tightLeading>
+                design system
+              </Typography>
             </Column>
           </Row>
         )

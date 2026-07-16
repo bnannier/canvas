@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { Typography, Column } = scope;
   return (
-<Typography body primary>View invoices</Typography>
+<Column flush>
+  <Typography lead semibold tightLeading>Canvas</Typography>
+  <Typography tiny tightLeading>design system</Typography>
+</Column>
   );
 }

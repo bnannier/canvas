@@ -158,3 +158,34 @@ const WEIGHT: Record<Weight, TextStyle["fontWeight"]> = {
 export function weightStyle(weight: Weight): TextStyle {
   return { fontWeight: WEIGHT[weight] };
 }
+
+// Leading axis: an orthogonal line-height layer over the role's own line box. When
+// no leading prop is set the role's line height stands.
+//
+// Why the axis exists: the roles bake a reading line height (`lead` 16/24, `tiny`
+// 12/16), which is right for prose and too airy for a STACKED LOCKUP, where two lines
+// read as one unit (a wordmark over its tagline, a title over its subtitle). There the
+// half-leading of both lines lands between them: 4px under a `lead` line plus 2px over
+// a `tiny` one is 6px of dead air that no gap prop can remove, because a Column's gap
+// only adds. Since `lineHeight` at a call site is a banned restyle, the tightening has
+// to be a semantic prop, so it is one.
+export type Leading = "tight";
+
+// Cap ratio for `tight`: a line box 1.25x the font size. Chosen as the tightest value
+// that still clears Latin descenders + diacritics at every role's size (a 16px line at
+// 20px leaves 4px, which "design system"'s g/y need), so it never clips.
+const TIGHT_RATIO = 1.25;
+
+// `tight` only ever TIGHTENS: the result is the role's own line height or the capped
+// one, whichever is smaller. Without the min, the ratio would LOOSEN the display scale,
+// whose line boxes are already at or below 1.25 (display 48/48 = 1.0, h1 36/40 = 1.11,
+// h2 30/36 = 1.2), so `<Typography display tightLeading>` would silently grow its line
+// box to 60. The clamp makes the prop safe on every role, which is what lets it be a
+// free-standing axis rather than one that is only valid on some roles.
+export function leadingStyle(roleType: TextStyle, leading: Leading): TextStyle | null {
+  const fontSize = roleType.fontSize;
+  const current = roleType.lineHeight;
+  if (typeof fontSize !== "number" || typeof current !== "number") return null;
+  const lineHeight = Math.min(current, Math.round(fontSize * (leading === "tight" ? TIGHT_RATIO : 1)));
+  return lineHeight === current ? null : { lineHeight };
+}

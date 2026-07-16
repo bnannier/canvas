@@ -94,6 +94,15 @@ Type scale classes for headings, body text, and helper styles.
 <Typography lead semibold>Rachel Chen</Typography>
 ```
 
+### Leading - tightLeading
+
+```tsx
+<Column flush>
+  <Typography lead semibold tightLeading>Canvas</Typography>
+  <Typography tiny tightLeading>design system</Typography>
+</Column>
+```
+
 ### Tone - primary
 
 ```tsx
