@@ -1,6 +1,16 @@
 import { type ReactNode } from "react";
 import { Text, useTheme, MONO_FONT, type StyleProp, type TextStyle } from "../../style/index.js";
-import { type Role, type Tone, type Weight, roleColor, toneColor, weightStyle, MONO_ROLES } from "./typography.styles.js";
+import {
+  type Role,
+  type Tone,
+  type Weight,
+  type Leading,
+  roleColor,
+  toneColor,
+  weightStyle,
+  leadingStyle,
+  MONO_ROLES,
+} from "./typography.styles.js";
 
 // Shared Typography shell. The structure (a single styled Text), the role axis
 // and its first-match precedence, the token-backed color resolution, and the
@@ -64,6 +74,14 @@ export interface TypographyProps {
   medium?: boolean;
   semibold?: boolean;
   bold?: boolean;
+  /**
+   * Leading (orthogonal to role). Pulls the line box in to 1.25x the font size for a
+   * STACKED LOCKUP, where two lines read as one unit (a wordmark over its tagline, a
+   * title over its subtitle) and the roles reading leading would leave dead air between
+   * them. Only ever tightens, so it is safe on every role. Omit for prose: the role's
+   * own line height is the reading value.
+   */
+  tightLeading?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
@@ -142,6 +160,13 @@ function weightOf(p: TypographyProps): Weight | null {
   return null;
 }
 
+// Leading: a single-value axis today, so there is no precedence to resolve. Returns
+// null when the prop is absent, so the role's own line height stands.
+function leadingOf(p: TypographyProps): Leading | null {
+  if (p.tightLeading) return "tight";
+  return null;
+}
+
 /** Build a Typography component from a platform skin. */
 export function createTypography(skin: TypographySkin) {
   return function Typography(props: TypographyProps) {
@@ -150,6 +175,7 @@ export function createTypography(skin: TypographySkin) {
     const role = roleOf(props);
     const tone = toneOf(props);
     const weight = weightOf(props);
+    const leading = leadingOf(props);
 
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
@@ -171,6 +197,9 @@ export function createTypography(skin: TypographySkin) {
           roleColor(tokens, role),
           tone ? toneColor(tokens, dark, tone) : null,
           weight ? weightStyle(weight) : null,
+          // After the role, whose line height it overrides; the skin's own scale is the
+          // input it clamps against, so this reads the active platform's value.
+          leading ? leadingStyle(skin.roleType[role], leading) : null,
           monoStyle,
           style,
         ]}

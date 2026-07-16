@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { View, Typography } = scope;
   return (
-<Typography small success>+12.4% this week</Typography>
+<Typography body primary>View invoices</Typography>
   );
 }
