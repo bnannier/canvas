@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -170,27 +170,33 @@ export function createDialog(skin: DialogSkin) {
         </View>
       ) : skin.textButton != null ? (
         <View style={skin.footer(tokens)}>
-          {/* Android: flat text buttons, Cancel then Confirm. */}
-          <Pressable
-            accessibilityRole="button"
-            onPress={cancel}
-            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
-            style={skin.textButton}
-          >
-            {skin.textButtonLabel != null ? (
-              <Text style={skin.textButtonLabel(tokens, false)}>{cancelLabel}</Text>
-            ) : null}
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={confirm}
-            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
-            style={skin.textButton}
-          >
-            {skin.textButtonLabel != null ? (
-              <Text style={skin.textButtonLabel(tokens, !!destructive)}>{confirmLabel}</Text>
-            ) : null}
-          </Pressable>
+          {/* Android: flat text buttons, Cancel then Confirm. Each bounded ripple is
+              clipped to the br20 outline by its RippleClip parent (a node can't clip
+              its own ripple). Bare wrappers — the text buttons are shrink-wrap. */}
+          <RippleClip shape={cornerRadii(skin.textButton)}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={cancel}
+              android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+              style={skin.textButton}
+            >
+              {skin.textButtonLabel != null ? (
+                <Text style={skin.textButtonLabel(tokens, false)}>{cancelLabel}</Text>
+              ) : null}
+            </Pressable>
+          </RippleClip>
+          <RippleClip shape={cornerRadii(skin.textButton)}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={confirm}
+              android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+              style={skin.textButton}
+            >
+              {skin.textButtonLabel != null ? (
+                <Text style={skin.textButtonLabel(tokens, !!destructive)}>{confirmLabel}</Text>
+              ) : null}
+            </Pressable>
+          </RippleClip>
         </View>
       ) : (
         <View style={skin.footer(tokens)}>

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, AnchoredOverlay, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./button-group.styles.js";
 
@@ -162,12 +162,18 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     corners: ViewStyle;
     /** This segment overlaps the previous border / draws a leading divider. */
     leading: boolean;
+    /**
+     * A detached (spaced) peer that is its OWN rounded surface, so its bounded Android
+     * ripple needs a rounded `overflow:"hidden"` RippleClip parent to clip it. Attached
+     * segments are left unwrapped: they are clipped by the segmentedWrap ancestor.
+     */
+    standalone?: boolean;
     size: Size;
     disabled?: boolean;
     onPress?: (event: GestureResponderEvent) => void;
   }
 
-  function Segment({ label, selected, selectable, corners, leading, size, disabled, onPress }: SegmentProps) {
+  function Segment({ label, selected, selectable, corners, leading, standalone, size, disabled, onPress }: SegmentProps) {
     const { tokens } = useTheme();
     const container: StyleProp<ViewStyle> = [
       s.segmentBase,
@@ -186,7 +192,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const selectionA11y = selectable
       ? { accessibilityRole: "tab" as const, accessibilityState: { selected, disabled: !!disabled }, "aria-selected": selected }
       : { accessibilityRole: "button" as const, accessibilityState: { disabled: !!disabled } };
-    return (
+    const button = (
       <Pressable
         style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         onPress={onPress}
@@ -200,6 +206,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         <Text style={[s.sizeLabel[size], skin.segmentLabel(tokens, selected)]}>{label}</Text>
       </Pressable>
     );
+    // A detached (spaced) peer carries its own radius with no clipping ancestor, so its
+    // bounded Android ripple is clipped by a rounded overflow:"hidden" RippleClip parent.
+    // An attached segment is left bare: the segmentedWrap ancestor already clips it (Shape 3).
+    // RippleClip is a transparent layout passthrough on iOS/web. See src/style/ripple-clip.
+    return standalone ? <RippleClip shape={cornerRadii(container)}>{button}</RippleClip> : button;
   }
 
   // The split kind's secondary control: a chevron that toggles a floating dropdown
@@ -246,31 +257,37 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         testID={testID}
         onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
       >
-        <Pressable
-          style={({ pressed }) => [skin.splitPrimary(tokens), s.sizeContainer[size], skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-          onPress={(e) => onSelect?.(0, primary, e)}
-          disabled={disabled}
-          android_ripple={ripple ? ripple(tokens) : undefined}
-          accessibilityRole="button"
-        >
-          <Text style={[skin.splitPrimaryLabel(tokens), s.sizeLabel[size]]}>{primary}</Text>
-        </Pressable>
+        {/* Each half is its own rounded surface, so its bounded Android ripple is clipped
+            to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
+        <RippleClip shape={cornerRadii(skin.splitPrimary(tokens))}>
+          <Pressable
+            style={({ pressed }) => [skin.splitPrimary(tokens), s.sizeContainer[size], skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            onPress={(e) => onSelect?.(0, primary, e)}
+            disabled={disabled}
+            android_ripple={ripple ? ripple(tokens) : undefined}
+            accessibilityRole="button"
+          >
+            <Text style={[skin.splitPrimaryLabel(tokens), s.sizeLabel[size]]}>{primary}</Text>
+          </Pressable>
+        </RippleClip>
         {/* Hairline divider so the chevron reads as a distinct trigger. */}
         <View style={skin.splitDivider(tokens, triggerHeight)} />
-        <Pressable
-          style={({ pressed }) => [skin.splitTrigger(tokens, triggerHeight), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-          onPress={() => setOpen((o) => !o)}
-          disabled={disabled}
-          android_ripple={ripple ? ripple(tokens) : undefined}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: open }}
-          aria-expanded={open}
-          accessibilityLabel="More actions"
-        >
-          <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
-            <Icon chevronDown size={s.chevronSize[size]} {...iconColorProps(skin.splitChevronColor)} />
-          </View>
-        </Pressable>
+        <RippleClip shape={cornerRadii(skin.splitTrigger(tokens, triggerHeight))}>
+          <Pressable
+            style={({ pressed }) => [skin.splitTrigger(tokens, triggerHeight), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            onPress={() => setOpen((o) => !o)}
+            disabled={disabled}
+            android_ripple={ripple ? ripple(tokens) : undefined}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: open }}
+            aria-expanded={open}
+            accessibilityLabel="More actions"
+          >
+            <View style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}>
+              <Icon chevronDown size={s.chevronSize[size]} {...iconColorProps(skin.splitChevronColor)} />
+            </View>
+          </Pressable>
+        </RippleClip>
         <AnchoredOverlay
           open={open}
           onDismiss={() => setOpen(false)}
@@ -329,6 +346,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const i = clamp(index);
     const chevron = s.chevronSize[size];
     const height = s.sizeHeight[size];
+    // The right arrow's shared-border overlap (marginStart) is OUTER positioning that must
+    // ride the RippleClip wrapper, not the Pressable: a negative margin inside the wrapper's
+    // overflow:"hidden" would clip 1px off the arrow and lose the overlap. Split it from the
+    // corner radii, which stay on the Pressable (and drive the clip shape).
+    const { marginStart: rightOverlap, ...stepperArrowRightCorners } = skin.stepperArrowRight;
     const step = (dir: number, e: GestureResponderEvent) => {
       if (count === 0) return;
       const next = (i + dir + count) % count;
@@ -337,29 +359,38 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     };
     return (
       <View style={[s.stepperContainer, disabled ? s.dim : null, style]} testID={testID}>
-        <Pressable
-          style={({ pressed }) => [skin.stepperArrow(tokens, height), skin.stepperArrowLeft, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-          onPress={(e) => step(-1, e)}
-          disabled={disabled}
-          android_ripple={ripple ? ripple(tokens) : undefined}
-          accessibilityRole="button"
-          accessibilityLabel="Previous"
-        >
-          <Icon chevronLeft size={chevron} {...iconColorProps(skin.stepperChevronColor)} />
-        </Pressable>
+        {/* Each pill-cornered arrow is its own rounded surface, so its bounded Android ripple
+            is clipped to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
+        <RippleClip shape={cornerRadii([skin.stepperArrow(tokens, height), skin.stepperArrowLeft])}>
+          <Pressable
+            style={({ pressed }) => [skin.stepperArrow(tokens, height), skin.stepperArrowLeft, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            onPress={(e) => step(-1, e)}
+            disabled={disabled}
+            android_ripple={ripple ? ripple(tokens) : undefined}
+            accessibilityRole="button"
+            accessibilityLabel="Previous"
+          >
+            <Icon chevronLeft size={chevron} {...iconColorProps(skin.stepperChevronColor)} />
+          </Pressable>
+        </RippleClip>
         <View style={[skin.stepperMiddle(tokens), s.sizeContainer[size]]}>
           <Text style={[skin.stepperLabel(tokens), s.sizeLabel[size]]}>{items[i] ?? ""}</Text>
         </View>
-        <Pressable
-          style={({ pressed }) => [skin.stepperArrow(tokens, height), skin.stepperArrowRight, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-          onPress={(e) => step(1, e)}
-          disabled={disabled}
-          android_ripple={ripple ? ripple(tokens) : undefined}
-          accessibilityRole="button"
-          accessibilityLabel="Next"
+        <RippleClip
+          shape={cornerRadii([skin.stepperArrow(tokens, height), stepperArrowRightCorners])}
+          style={{ marginStart: rightOverlap }}
         >
-          <Icon chevronRight size={chevron} {...iconColorProps(skin.stepperChevronColor)} />
-        </Pressable>
+          <Pressable
+            style={({ pressed }) => [skin.stepperArrow(tokens, height), stepperArrowRightCorners, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            onPress={(e) => step(1, e)}
+            disabled={disabled}
+            android_ripple={ripple ? ripple(tokens) : undefined}
+            accessibilityRole="button"
+            accessibilityLabel="Next"
+          >
+            <Icon chevronRight size={chevron} {...iconColorProps(skin.stepperChevronColor)} />
+          </Pressable>
+        </RippleClip>
       </View>
     );
   }
@@ -386,6 +417,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               selectable={false}
               corners={skin.spacedCorners}
               leading={false}
+              standalone
               size={size}
               disabled={disabled}
               onPress={(e) => onSelect?.(i, item, e)}

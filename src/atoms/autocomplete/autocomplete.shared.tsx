@@ -13,6 +13,8 @@ import {
   FloatingLabel,
   LabelContent,
   FOCUS_RESET,
+  RippleClip,
+  cornerRadii,
   type FieldWidthProps,
   type StyleProp,
   type ViewStyle,
@@ -322,6 +324,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                 <Text style={skin.emptyText(tokens, size)}>No results</Text>
               </View>
             ) : (
+              // The option rows have borderRadius:0 and sit inside the rounded `popover`
+              // card, which has NO overflow clip; this RippleClip parent clips their bounded
+              // Android ripples to the popover's corners. See src/style/ripple-clip.
+              <RippleClip shape={cornerRadii(skin.popover(tokens))}>
               <View role={LISTBOX}>
               {matches.map((option, index) => {
                 const selected = option === value;
@@ -356,6 +362,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                 );
               })}
               </View>
+              </RippleClip>
             )}
         </AnchoredOverlay>
 

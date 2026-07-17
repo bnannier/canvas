@@ -1,5 +1,5 @@
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -71,19 +71,23 @@ export function createSteps(skin: StepsSkin) {
     );
     if (onPress) {
       const ripple = skin.ripple ? skin.ripple(tokens, state) : undefined;
+      // The bounded ripple is clipped to the round circle by this RippleClip parent
+      // (a node can never clip its own ripple on Android); no outer layout to move.
       return (
-        <Pressable
-          style={({ pressed }) => [
-            s.circleBase,
-            skin.circleState(tokens, state),
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-          ]}
-          android_ripple={ripple}
-          onPress={onPress}
-          accessibilityRole="button"
-        >
-          {glyph}
-        </Pressable>
+        <RippleClip shape={cornerRadii(s.circleBase)}>
+          <Pressable
+            style={({ pressed }) => [
+              s.circleBase,
+              skin.circleState(tokens, state),
+              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            ]}
+            android_ripple={ripple}
+            onPress={onPress}
+            accessibilityRole="button"
+          >
+            {glyph}
+          </Pressable>
+        </RippleClip>
       );
     }
     return <View style={[s.circleBase, skin.circleState(tokens, state)]}>{glyph}</View>;

@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, surfaceRipple, pressDim, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, useControllableState, surfaceRipple, pressDim, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
@@ -321,29 +321,34 @@ export function createChip(skin: ChipSkin) {
     // Pressable, kept even when disabled so it holds its button role + disabled state.
     if (onPress || selectable) {
       return (
-        <Pressable
-          onPress={handlePress}
-          disabled={disabled}
-          testID={testID}
-          accessibilityRole="button"
-          accessibilityLabel={accessibilityLabel}
-          // Toggle state to AT: the active/selected chip reads as pressed. Announce
-          // it natively via accessibilityState.selected and on the web via
-          // aria-pressed (RNW drops accessibilityState at the DOM), the dual alias
-          // the Switch uses.
-          accessibilityState={{ selected: isSelected, disabled: !!disabled }}
-          aria-pressed={isSelected}
-          // The compact chip is short (a ~20px pill on web/iOS, a 32dp M3 chip on
-          // Android); grow the whole tap target toward the 44pt/48dp minimums.
-          hitSlop={11}
-          // Android shows a BOUNDED ripple state layer on press (the M3 chip state
-          // layer fills the container; the Android skin clips it to the rounded
-          // outline via overflow hidden); iOS/web keep the opacity dim.
-          android_ripple={surfaceRipple(tokens)}
-          style={({ pressed }) => [container, pressDim(pressed, 0.85)]}
-        >
-          {bodyContent}
-        </Pressable>
+        // The whole-pill ripple is clipped to the rounded chip by this RippleClip parent
+        // (Android only). A bounded android_ripple is the pressable's own rectangular-masked
+        // background, which its own overflow:"hidden" cannot clip. See src/style/ripple-clip.
+        <RippleClip shape={cornerRadii(container)}>
+          <Pressable
+            onPress={handlePress}
+            disabled={disabled}
+            testID={testID}
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel}
+            // Toggle state to AT: the active/selected chip reads as pressed. Announce
+            // it natively via accessibilityState.selected and on the web via
+            // aria-pressed (RNW drops accessibilityState at the DOM), the dual alias
+            // the Switch uses.
+            accessibilityState={{ selected: isSelected, disabled: !!disabled }}
+            aria-pressed={isSelected}
+            // The compact chip is short (a ~20px pill on web/iOS, a 32dp M3 chip on
+            // Android); grow the whole tap target toward the 44pt/48dp minimums.
+            hitSlop={11}
+            // Android shows a BOUNDED ripple state layer on press (the M3 chip state layer
+            // fills the container), clipped to the rounded outline by the RippleClip parent;
+            // iOS/web keep the opacity dim.
+            android_ripple={surfaceRipple(tokens)}
+            style={({ pressed }) => [container, pressDim(pressed, 0.85)]}
+          >
+            {bodyContent}
+          </Pressable>
+        </RippleClip>
       );
     }
 

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Sparkline } from "../../atoms/sparkline/sparkline.js";
 import { deltaTone, item as itemLayout, row, sparkStrip, type Surface } from "./stats.styles.js";
 
@@ -95,7 +95,10 @@ export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
   function StatItemView({ item, surface, onPress }: { item: StatItem; surface: Surface; onPress?: () => void }): ReactNode {
     const { tokens, dark } = useTheme();
-    const container = [surface === "card" ? skin.cardSurface(tokens) : null, itemLayout[surface]];
+    // Split the surface shape (radius/border/fill/padding) from the outer flex sizing:
+    // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
+    const cardShape = surface === "card" ? skin.cardSurface(tokens) : null;
+    const container = [cardShape, itemLayout[surface]];
     const inner = (
       <>
         <Text style={skin.labelText(tokens)}>{item.label}</Text>
@@ -111,14 +114,20 @@ export function createStats(skin: StatsSkin) {
     if (onPress) {
       const android_ripple = skin.ripple ? skin.ripple(tokens) : undefined;
       return (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onPress}
-          android_ripple={android_ripple}
-          style={({ pressed }) => [container, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
-        >
-          {inner}
-        </Pressable>
+        // Android: the bounded card ripple is clipped to the br12 outline by this
+        // RippleClip parent (a node can't clip its own ripple). The outer flex sizing
+        // rides the wrapper so the card keeps its grid/full-width footprint; the shape,
+        // padding, fill, and pressed-dim stay on the Pressable.
+        <RippleClip shape={cornerRadii(cardShape)} style={itemLayout[surface]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onPress}
+            android_ripple={android_ripple}
+            style={({ pressed }) => [cardShape, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+          >
+            {inner}
+          </Pressable>
+        </RippleClip>
       );
     }
     return <View style={container}>{inner}</View>;

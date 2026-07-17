@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, BackHandler, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, ScrollView, useTheme, useReducedMotion, supportsNativeDriver } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useReducedMotion, supportsNativeDriver } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type Density } from "./sidebar.styles.js";
@@ -99,26 +99,30 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
     const renderLeaf = (item: SidebarItem, index: number) => {
       const active = index === activeIndex;
       return (
-        <Pressable
-          key={item.id ?? item.label}
-          android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-          style={({ pressed }) => [
-            skin.row(tokens, density, false),
-            skin.rowFill(tokens, active || (skin.pressedFill && pressed)),
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-            skin.focusOutlineReset,
-          ]}
-          onPress={(event) => select(item, index, event)}
-          accessibilityRole="button"
-          accessibilityState={{ selected: active }}
-          aria-selected={active}
-        >
-          {item.icon != null ? <Icon {...{ [item.icon]: true }} {...skin.iconTint(active)} size={skin.iconSize} decorative /> : null}
-          <Text style={skin.label(tokens, active, density)} numberOfLines={1}>
-            {item.label}
-          </Text>
-          {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
-        </Pressable>
+        // Round the leaf row's bounded Android ripple to the row's corners via this
+        // RippleClip parent (Android only; a passthrough on iOS/web). The row fills the
+        // drawer width, so the wrapper stretches to match.
+        <RippleClip key={item.id ?? item.label} shape={cornerRadii(skin.row(tokens, density, false))} style={{ alignSelf: "stretch" }}>
+          <Pressable
+            android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+            style={({ pressed }) => [
+              skin.row(tokens, density, false),
+              skin.rowFill(tokens, active || (skin.pressedFill && pressed)),
+              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+              skin.focusOutlineReset,
+            ]}
+            onPress={(event) => select(item, index, event)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            aria-selected={active}
+          >
+            {item.icon != null ? <Icon {...{ [item.icon]: true }} {...skin.iconTint(active)} size={skin.iconSize} decorative /> : null}
+            <Text style={skin.label(tokens, active, density)} numberOfLines={1}>
+              {item.label}
+            </Text>
+            {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
+          </Pressable>
+        </RippleClip>
       );
     };
 
@@ -126,28 +130,32 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
     const renderDrillRow = (g: SidebarDrillGroup) => {
       const holdsActive = g.key === activeSectionKey;
       return (
-        <Pressable
-          key={g.key}
-          android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-          style={({ pressed }) => [
-            skin.row(tokens, density, false),
-            skin.rowFill(tokens, holdsActive || (skin.pressedFill && pressed)),
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-            skin.focusOutlineReset,
-          ]}
-          onPress={() => {
-            setDrilled(g.key);
-            animateIn(1);
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={g.section.title}
-        >
-          {g.section.icon != null ? <Icon {...{ [g.section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} decorative /> : null}
-          <Text style={skin.label(tokens, holdsActive, density)} numberOfLines={1}>
-            {g.section.title}
-          </Text>
-          <Icon chevronRight muted size={skin.sectionChevronSize} decorative />
-        </Pressable>
+        // Round the drill row's bounded Android ripple to the row's corners via this
+        // RippleClip parent (Android only). The row fills the drawer width, so the wrapper
+        // stretches to match.
+        <RippleClip key={g.key} shape={cornerRadii(skin.row(tokens, density, false))} style={{ alignSelf: "stretch" }}>
+          <Pressable
+            android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+            style={({ pressed }) => [
+              skin.row(tokens, density, false),
+              skin.rowFill(tokens, holdsActive || (skin.pressedFill && pressed)),
+              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+              skin.focusOutlineReset,
+            ]}
+            onPress={() => {
+              setDrilled(g.key);
+              animateIn(1);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={g.section.title}
+          >
+            {g.section.icon != null ? <Icon {...{ [g.section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} decorative /> : null}
+            <Text style={skin.label(tokens, holdsActive, density)} numberOfLines={1}>
+              {g.section.title}
+            </Text>
+            <Icon chevronRight muted size={skin.sectionChevronSize} decorative />
+          </Pressable>
+        </RippleClip>
       );
     };
 

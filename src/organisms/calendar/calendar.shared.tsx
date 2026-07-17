@@ -1,5 +1,5 @@
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CalendarSkin, type Density } from "./calendar.styles.js";
 
 // Shared Calendar shell. The structure (header with prev/next chevrons + month
@@ -131,26 +131,30 @@ export function createCalendar(skin: CalendarSkin) {
             const isToday = today != null && day === today;
             const state = { selected: isSelected, today: isToday };
             return (
-              <Pressable
-                key={day}
-                style={({ pressed }) => [
-                  skin.dayCellBase,
-                  m.cell,
-                  skin.dayCellState(tokens, state),
-                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                ]}
-                android_ripple={ripple}
-                onPress={() => {
-                  setSelected(day);
-                  onSelect?.(day);
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={`${day}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}`}
-                accessibilityState={{ selected: isSelected }}
-                aria-selected={isSelected}
-              >
-                <Text style={[m.label, skin.dayLabel(tokens, state)]}>{day}</Text>
-              </Pressable>
+              // The bounded day-cell ripple is clipped to the round cell by this
+              // RippleClip parent (a node can never clip its own ripple on Android);
+              // fixed-size square, so no outer layout moves to the wrapper.
+              <RippleClip key={day} shape={cornerRadii(skin.dayCellBase)}>
+                <Pressable
+                  style={({ pressed }) => [
+                    skin.dayCellBase,
+                    m.cell,
+                    skin.dayCellState(tokens, state),
+                    skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                  ]}
+                  android_ripple={ripple}
+                  onPress={() => {
+                    setSelected(day);
+                    onSelect?.(day);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${day}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}`}
+                  accessibilityState={{ selected: isSelected }}
+                  aria-selected={isSelected}
+                >
+                  <Text style={[m.label, skin.dayLabel(tokens, state)]}>{day}</Text>
+                </Pressable>
+              </RippleClip>
             );
           })}
         </View>

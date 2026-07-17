@@ -1,6 +1,7 @@
 import { type ComponentType, type ReactNode } from "react";
 import { type ImageStyle } from "react-native";
-import { View, Pressable, Image, Text, useTheme, surfaceRipple, pressDim, rippleClip, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { StyleSheet } from "react-native";
+import { View, Pressable, Image, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -166,11 +167,12 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
     const align = alignOf(props);
     const direction = directionOf(props);
 
-    const container: StyleProp<ViewStyle> = [
+    // The row's visual box WITHOUT outer layout. On a bordered row the rounded surface
+    // (and its elevation) live in `skin.borderedSurface`.
+    const surface: StyleProp<ViewStyle> = [
       skin.containerBase,
       { flexDirection: DIRECTION_ROW[direction], alignItems: ALIGN_ITEMS[align] },
       props.bordered ? [skin.borderedSurface, borderedColors(tokens, skin)] : null,
-      style,
     ];
 
     // Leading media: photo > initials avatar > icon box. Only one renders. The
@@ -228,23 +230,30 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       // platform minimum tap height (native minHeight; web = 0, unchanged). A bordered
       // row is already tall enough from its padding.
       const minTarget = !props.bordered && skin.minTarget ? { minHeight: skin.minTarget } : null;
+      // The bounded ripple is clipped to the rounded bordered surface by the RippleClip parent
+      // (Android only; a same-node overflow:"hidden" cannot clip it — see src/style/ripple-clip).
+      // That parent-clip would cut the child's own Android elevation shadow, so the bordered
+      // surface's `elevation` moves to the wrapper while the inner keeps the iOS `shadow*`.
+      const borderedElevation = props.bordered
+        ? { elevation: (StyleSheet.flatten(skin.borderedSurface) as ViewStyle).elevation }
+        : null;
+      const { parent: elevParent, child: elevZero } = splitElevation(borderedElevation);
       return (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={a11yLabel}
-          onPress={props.onPress}
-          testID={testID}
-          android_ripple={surfaceRipple(tokens)}
-          // Android clips the bounded ripple to the rounded (bordered) surface; the M3
-          // elevation shadow is drawn around the outline by the platform, so it survives
-          // the clip. iOS/web keep their opacity dim and are unaffected (no clip there).
-          style={({ pressed }) => [container, minTarget, pressDim(pressed, skin.pressedOpacity), rippleClip()]}
-        >
-          {inner}
-        </Pressable>
+        <RippleClip shape={props.bordered ? cornerRadii(skin.borderedSurface) : undefined} style={[elevParent, style]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={a11yLabel}
+            onPress={props.onPress}
+            testID={testID}
+            android_ripple={surfaceRipple(tokens)}
+            style={({ pressed }) => [surface, minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
+          >
+            {inner}
+          </Pressable>
+        </RippleClip>
       );
     }
 
-    return <View testID={testID} style={container}>{inner}</View>;
+    return <View testID={testID} style={[surface, style]}>{inner}</View>;
   };
 }

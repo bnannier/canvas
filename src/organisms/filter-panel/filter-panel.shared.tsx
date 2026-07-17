@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Checkbox as WebCheckbox } from "../../atoms/checkbox/checkbox.js";
@@ -182,6 +182,13 @@ export function createFilterPanel(
         {groups.map((group, gi) => (
           <View key={gi} style={[skin.groupColumn, skin.groupGap[density]]}>
             <Text style={skin.groupTitle(tokens)}>{group.title}</Text>
+            {/* RippleClip clips the Android bounded-ripple option rows to the bordered
+                card's rounded corners (a no-op on iOS/web, and only clips when
+                `bordered` so the bare panel keeps rectangular ripples). */}
+            <RippleClip
+              shape={bordered ? cornerRadii(skin.borderedSurface(tokens)) : undefined}
+              style={{ alignSelf: "stretch" }}
+            >
             <View style={[skin.groupColumn, skin.groupGap[density]]}>
               {group.options.map((option, oi) => (
                 // The option row is this component's OWN pressable: tapping it
@@ -231,6 +238,7 @@ export function createFilterPanel(
                 </Pressable>
               ))}
             </View>
+            </RippleClip>
           </View>
         ))}
       </View>

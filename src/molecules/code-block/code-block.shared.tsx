@@ -1,5 +1,5 @@
-import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, rippleClip, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { type GestureResponderEvent, StyleSheet } from "react-native";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { MONO, type Variant } from "./code-block.styles.js";
 
 // Shared CodeBlock shell. The structure (the muted code surface and its terminal /
@@ -151,18 +151,28 @@ export function createCodeBlock(skin: CodeBlockSkin) {
   }) {
     const { tokens } = useTheme();
     const isDark = !!dark;
+    // The bounded ripple is clipped to the rounded chip by the RippleClip parent (Android only; a
+    // same-node overflow:"hidden" cannot clip it — see src/style/ripple-clip). The chip is absolutely
+    // positioned, so its placement moves to the wrapper (a wrapper around an absolute child would
+    // collapse to zero size and clip the ripple away). Its Android `elevation` also moves to the
+    // wrapper (whose own shadow is unclipped by its child-overflow); the light chip's iOS `shadow*`
+    // stays on the inner Pressable, so iOS is unchanged.
+    const { position, top, end, zIndex, alignSelf, elevation, ...box } = StyleSheet.flatten(
+      skin.copyButton(tokens, isDark),
+    ) as ViewStyle & { elevation?: number };
+    const { parent: elevParent } = splitElevation({ elevation });
     return (
-      <Pressable
-        android_ripple={surfaceRipple(tokens)}
-        // Android clips the bounded ripple to the rounded chip; the light chip's elevation shadow is
-        // drawn around the outline by the platform, so it survives. iOS keeps its shadow* (no clip).
-        style={({ pressed }) => [skin.copyButton(tokens, isDark), pressDim(pressed, skin.copyPressedOpacity), rippleClip()]}
-        onPress={(e) => onCopy?.(text, e)}
-        accessibilityRole="button"
-        accessibilityLabel="Copy code"
-      >
-        <Text style={skin.copyText(tokens, isDark)}>Copy</Text>
-      </Pressable>
+      <RippleClip shape={cornerRadii(box)} style={[{ position, top, end, zIndex, alignSelf }, elevParent]}>
+        <Pressable
+          android_ripple={surfaceRipple(tokens)}
+          style={({ pressed }) => [box, pressDim(pressed, skin.copyPressedOpacity)]}
+          onPress={(e) => onCopy?.(text, e)}
+          accessibilityRole="button"
+          accessibilityLabel="Copy code"
+        >
+          <Text style={skin.copyText(tokens, isDark)}>Copy</Text>
+        </Pressable>
+      </RippleClip>
     );
   }
 

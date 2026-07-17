@@ -1,4 +1,4 @@
-import { View, Pressable, Text, useTheme, useControllableState, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { type Surface } from "./navbars.styles.js";
@@ -124,24 +124,29 @@ export function createNavbar(skin: NavbarSkin) {
             {links.map((link, index) => {
               const isActive = index === active;
               return (
-                <Pressable
-                  key={`${link}-${index}`}
-                  onPress={() => {
-                    setActive(index);
-                    onSelect?.(index);
-                  }}
-                  android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-                  accessibilityRole="link"
-                  accessibilityState={{ selected: isActive }}
-                  aria-current={isActive ? "page" : undefined}
-                  style={({ pressed }) => [
-                    skin.linkTile(tokens, isActive),
-                    skin.focusOutlineReset,
-                    skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                  ]}
-                >
-                  <Text style={skin.linkLabel(tokens, isActive)}>{link}</Text>
-                </Pressable>
+                // The bounded Android ripple on a link tile is masked to a rectangle and
+                // cannot clip itself; this RippleClip parent rounds it to the tile's own
+                // corners (Android only; a transparent layout passthrough on iOS/web).
+                // Link tiles hug their labels, so there is no outer layout to move.
+                <RippleClip key={`${link}-${index}`} shape={cornerRadii(skin.linkTile(tokens, isActive))}>
+                  <Pressable
+                    onPress={() => {
+                      setActive(index);
+                      onSelect?.(index);
+                    }}
+                    android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+                    accessibilityRole="link"
+                    accessibilityState={{ selected: isActive }}
+                    aria-current={isActive ? "page" : undefined}
+                    style={({ pressed }) => [
+                      skin.linkTile(tokens, isActive),
+                      skin.focusOutlineReset,
+                      skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                    ]}
+                  >
+                    <Text style={skin.linkLabel(tokens, isActive)}>{link}</Text>
+                  </Pressable>
+                </RippleClip>
               );
             })}
           </View>

@@ -228,6 +228,11 @@ export function createListbox(skin: ListboxSkin) {
             : {};
 
           return (
+            // No RippleClip here on purpose: a listbox row is a `role="option"`/`"checkbox"`
+            // that must be a DIRECT child of the `role="listbox"` container, so a wrapper View
+            // between them would break the ARIA relationship (and the roving-focus DOM walk).
+            // The row's own radius is only 2px, so a rectangular ripple bleed at those corners
+            // is imperceptible and needs no clip. See src/style/ripple-clip.
             <Pressable
               key={index}
               ref={roving?.ref}

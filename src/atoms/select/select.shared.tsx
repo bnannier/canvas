@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, FloatingLabel, LabelContent, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -144,14 +144,17 @@ export function createSelect(skin: SelectSkin) {
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}
+        {/* The trigger's bounded Android ripple is clipped to its rounded (top-corner)
+            outline by this RippleClip parent; the ripple is the Pressable's OWN background,
+            which its same-node overflow:"hidden" cannot clip. See src/style/ripple-clip.
+            `alignSelf:"stretch"` keeps the wrapper (and the trigger inside it) filling the
+            field's standard width, which lives on the root View. */}
+        <RippleClip shape={cornerRadii(skin.trigger(tokens, size, open))} style={{ alignSelf: "stretch" }}>
         <Pressable
           ref={triggerRef}
           onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
           style={({ pressed }) => [
             skin.trigger(tokens, size, open),
-            // Android floating label: reserve top padding so the value clears the
-            // floated label (state-independent, mirrors the M3 Input).
-            floating ? skin.labelReserve!(size) : null,
             disabled ? { opacity: skin.disabledOpacity } : null,
             skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
@@ -168,7 +171,18 @@ export function createSelect(skin: SelectSkin) {
           accessibilityLabel={hasLabel ? label : undefined}
           aria-label={hasLabel ? label : undefined}
         >
-          <View style={skin.triggerValue}>
+          <View
+            style={[
+              skin.triggerValue,
+              // Android floating label: the reserve (top padding that lets the value
+              // clear the floated label, mirroring the M3 Input) belongs to the VALUE
+              // cluster only, not the whole trigger row. Stretched to full height, the
+              // cluster centers its value within the space below the reserve, while the
+              // trailing chevron stays vertically centered in the full field (M3 centers
+              // a trailing dropdown icon in the container, unaffected by the label).
+              floating ? [{ alignSelf: "stretch" as const }, skin.labelReserve!(size)] : null,
+            ]}
+          >
             {icon ? <Icon globe muted size={14} /> : null}
             <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
           </View>
@@ -188,6 +202,7 @@ export function createSelect(skin: SelectSkin) {
             />
           ) : null}
         </Pressable>
+        </RippleClip>
 
         <AnchoredOverlay
           open={open}
@@ -197,6 +212,10 @@ export function createSelect(skin: SelectSkin) {
           cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
           inlineStyle={PANEL_ANCHOR}
         >
+            {/* The option rows have no radius of their own and sit inside the rounded
+                (4dp) `panel` card, which has NO overflow clip; this RippleClip parent clips
+                their bounded Android ripples to the panel's corners. See src/style/ripple-clip. */}
+            <RippleClip shape={cornerRadii(skin.panel(tokens))}>
             <View role={LISTBOX}>
             {options.map((option, i) => {
               const selected = option === value;
@@ -233,6 +252,7 @@ export function createSelect(skin: SelectSkin) {
               );
             })}
             </View>
+            </RippleClip>
         </AnchoredOverlay>
       </View>
     );

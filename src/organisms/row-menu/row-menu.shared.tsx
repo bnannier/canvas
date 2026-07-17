@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -85,6 +85,9 @@ export function createRowMenu(skin: RowMenuSkin) {
         style={[skin.anchor, open ? anchorLifted : null, style]}
         onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
       >
+        {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
+            outline (a no-op on iOS/web). */}
+        <RippleClip shape={cornerRadii(skin.trigger)}>
         <Pressable
           style={({ pressed }) => [
             skin.trigger,
@@ -105,6 +108,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         >
           <Icon moreHorizontal size={skin.triggerIconSize} decorative />
         </Pressable>
+        </RippleClip>
 
         <AnchoredOverlay
           open={open}
@@ -114,6 +118,9 @@ export function createRowMenu(skin: RowMenuSkin) {
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
           inlineStyle={MENU_ANCHOR}
         >
+          {/* RippleClip clips the Android bounded-ripple rows to the menu card's
+              rounded corners (a no-op on iOS/web; the card keeps no overflow). */}
+          <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
           {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
           {items.map((item, index) => (
             <View key={`${item.label}-${index}`}>
@@ -138,6 +145,7 @@ export function createRowMenu(skin: RowMenuSkin) {
               </Pressable>
             </View>
           ))}
+          </RippleClip>
         </AnchoredOverlay>
       </View>
     );

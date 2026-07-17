@@ -9,6 +9,8 @@ import {
   View,
   Text,
   Pressable,
+  RippleClip,
+  cornerRadii,
   useTheme,
   useControllableState,
   FOCUS_RESET,
@@ -205,42 +207,50 @@ export function createStepper(skin: StepperSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const hitSlop = skin.hitSlop ? skin.hitSlop(size) : undefined;
 
+    // Each ± button is its own rounded surface (a circle on Android), so its bounded
+    // android_ripple is clipped to those corners by a RippleClip parent (a transparent
+    // passthrough on iOS/web; the corner radii are constant across pressed/disabled). See
+    // src/style/ripple-clip.
     const MinusButton = (
-      <Pressable
-        onPress={decrement}
-        disabled={atMin}
-        accessibilityRole="button"
-        accessibilityLabel="Decrease"
-        accessibilityState={{ disabled: atMin }}
-        aria-disabled={atMin}
-        android_ripple={ripple}
-        hitSlop={hitSlop}
-        style={({ pressed }) => [
-          skin.button(tokens, size, "left", atMin, pressed),
-          skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null,
-        ]}
-      >
-        <Icon minus {...glyphColorProps(glyph.color, atMin)} size={glyph.size} />
-      </Pressable>
+      <RippleClip shape={cornerRadii(skin.button(tokens, size, "left", atMin, false))}>
+        <Pressable
+          onPress={decrement}
+          disabled={atMin}
+          accessibilityRole="button"
+          accessibilityLabel="Decrease"
+          accessibilityState={{ disabled: atMin }}
+          aria-disabled={atMin}
+          android_ripple={ripple}
+          hitSlop={hitSlop}
+          style={({ pressed }) => [
+            skin.button(tokens, size, "left", atMin, pressed),
+            skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null,
+          ]}
+        >
+          <Icon minus {...glyphColorProps(glyph.color, atMin)} size={glyph.size} />
+        </Pressable>
+      </RippleClip>
     );
 
     const PlusButton = (
-      <Pressable
-        onPress={increment}
-        disabled={atMax}
-        accessibilityRole="button"
-        accessibilityLabel="Increase"
-        accessibilityState={{ disabled: atMax }}
-        aria-disabled={atMax}
-        android_ripple={ripple}
-        hitSlop={hitSlop}
-        style={({ pressed }) => [
-          skin.button(tokens, size, "right", atMax, pressed),
-          skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null,
-        ]}
-      >
-        <Icon plus {...glyphColorProps(glyph.color, atMax)} size={glyph.size} />
-      </Pressable>
+      <RippleClip shape={cornerRadii(skin.button(tokens, size, "right", atMax, false))}>
+        <Pressable
+          onPress={increment}
+          disabled={atMax}
+          accessibilityRole="button"
+          accessibilityLabel="Increase"
+          accessibilityState={{ disabled: atMax }}
+          aria-disabled={atMax}
+          android_ripple={ripple}
+          hitSlop={hitSlop}
+          style={({ pressed }) => [
+            skin.button(tokens, size, "right", atMax, pressed),
+            skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null,
+          ]}
+        >
+          <Icon plus {...glyphColorProps(glyph.color, atMax)} size={glyph.size} />
+        </Pressable>
+      </RippleClip>
     );
 
     const Field = (

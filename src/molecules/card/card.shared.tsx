@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, rippleClip, alpha, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 
@@ -97,16 +97,18 @@ export function createCard(skin: CardSkin) {
     const elev = elevationOf(props);
     const dens = densityOf(props);
 
-    const container: StyleProp<ViewStyle> = [
+    // Shape: per-OS radius; iOS adds Apple's continuous (superellipse) corner curve
+    // (an iOS-only RN style prop, omitted entirely on the other skins).
+    const shape: ViewStyle = { borderRadius: skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) };
+    // The card's visual box WITHOUT the elevation shadow and WITHOUT outer layout: shape, the
+    // per-variant surface colors, density padding, and the selected tint.
+    const surface: StyleProp<ViewStyle> = [
       s.cardBase,
-      // Shape: per-OS radius; iOS adds Apple's continuous (superellipse) corner
-      // curve (an iOS-only RN style prop, omitted entirely on the other skins).
-      { borderRadius: skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) },
+      shape,
       // Surface colors per elevation variant: web/iOS always show the Light-
       // treatment hairline; Android paints it transparent on the non-outlined
       // (M3 elevated) variants and shows it only on `flat` (M3 outlined).
       skin.surface(tokens, elev),
-      skin.elevation(elev),
       // Density pads + gaps on its own and wins over everything. Otherwise a card
       // with raw children pads by default (the common case); `flush` opts out
       // (edge-to-edge content, or composing self-padding CardHeader/CardContent),
@@ -118,9 +120,10 @@ export function createCard(skin: CardSkin) {
       // Android's elevated default the resting hairline is transparent, so this
       // paints it in).
       selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,
-      grow ? { flexGrow: 1 } : null,
-      style,
     ];
+    // Outer layout composition, carried on the outermost node (the plain View, or the
+    // RippleClip wrapper on a pressable card).
+    const outer: StyleProp<ViewStyle> = [grow ? { flexGrow: 1 } : null, style];
 
     // Children win: when composed, render exactly what the caller passed.
     // Otherwise build a representative structure from the simple string props.
@@ -161,21 +164,27 @@ export function createCard(skin: CardSkin) {
     // A pressable card swaps View for Pressable, adding the pressed affordance:
     // Android gets the surface ripple, iOS/web get the pressed opacity dim.
     if (onPress) {
+      // The bounded ripple is clipped to the rounded card by the RippleClip parent (Android only).
+      // A same-node overflow:"hidden" cannot clip it (see src/style/ripple-clip). Because that
+      // parent-clip WOULD cut the child's own Android elevation shadow, the Android `elevation`
+      // moves onto the wrapper (whose own shadow is drawn around its outline, unclipped) while the
+      // iOS `shadow*` stays on the inner node — so iOS is unchanged.
+      const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(elev));
       return (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onPress}
-          testID={testID}
-          android_ripple={surfaceRipple(tokens)}
-          // Android clips the bounded ripple to the rounded card; the M3 elevation shadow is drawn
-          // around the outline by the platform, so it survives the clip. iOS keeps its shadow* (no clip).
-          style={({ pressed }) => [container, pressDim(pressed), rippleClip()]}
-        >
-          {inner}
-        </Pressable>
+        <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onPress}
+            testID={testID}
+            android_ripple={surfaceRipple(tokens)}
+            style={({ pressed }) => [surface, elevChild, pressDim(pressed)]}
+          >
+            {inner}
+          </Pressable>
+        </RippleClip>
       );
     }
-    return <View testID={testID} style={container}>{inner}</View>;
+    return <View testID={testID} style={[surface, skin.elevation(elev), outer]}>{inner}</View>;
   };
 }
 
