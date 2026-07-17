@@ -14,7 +14,7 @@ name: Deploy — canvas
 #   1. EXPO_TOKEN repo secret (expo.dev -> account settings -> Access Tokens).
 #   2. iOS: distribution cert + provisioning profile + an App Store Connect API key
 #      on EAS (`eas credentials -p ios`) so submission runs unattended.
-#   3. Android: app created in the Play Console for com.olympusoss.canvasdocs, a
+#   3. Android: app created in the Play Console for com.nannier.canvas, a
 #      Google service-account key on EAS (`eas credentials -p android`), and the
 #      VERY FIRST .aab uploaded manually once (Google's API cannot create the first
 #      release).
