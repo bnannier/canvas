@@ -1,0 +1,61 @@
+name: Bug report
+description: Something renders or behaves wrong in a Canvas component.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. A minimal reproduction is the single most useful
+        thing you can provide.
+  - type: input
+    id: version
+    attributes:
+      label: Canvas version
+      description: The @nannier/canvas version (see your package.json or lockfile).
+      placeholder: "8.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform(s) affected
+      multiple: true
+      options:
+        - iOS
+        - Android
+        - Web (React Native Web)
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: React Native / Expo / react-native-web versions, OS version, device or browser.
+      placeholder: "Expo SDK 55, RN 0.85, iOS 26 simulator"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Smallest snippet or step list that shows the problem. JSX fences welcome.
+      placeholder: |
+        1. Render `<Button primary loading>` inside ...
+        2. Press ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happens instead. Screenshots or recordings help a lot for visual bugs.
+    validations:
+      required: true
