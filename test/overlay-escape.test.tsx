@@ -82,8 +82,12 @@ describe("Drawer — Escape fires the Modal's onRequestClose", () => {
       </Drawer>,
     );
     expect(screen.getByText("Drawer body")).toBeDefined();
-    // RNW's Modal listens on `keyup` (not keydown) for Escape.
-    fireEvent.keyUp(document, { key: "Escape" });
+    // RNW's Modal listens on `keyup` (not keydown) for Escape, on `document` in the
+    // bubble phase, so firing on a rendered element still reaches it. Fired on an
+    // element (not `document`) so the event target has a tagName: RNW PressResponder's
+    // document-level keyup handler dereferences event.target.tagName, and the Document
+    // node has none.
+    fireEvent.keyUp(screen.getByText("Drawer body"), { key: "Escape" });
     expect(openState).toBe(false);
   });
 });
