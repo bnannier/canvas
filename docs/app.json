@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "scheme": "canvas",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "icon": "./assets/images/icon.png",
     "ios": {
       "bundleIdentifier": "com.nannier.canvas",
@@ -25,7 +24,9 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-font",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": false
