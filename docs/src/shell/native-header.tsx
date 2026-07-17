@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Pressable, Icon, useTheme } from "@nannier/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
+import { GLYPH_RASTERS } from "../core/glyph-rasters";
 import { Sidebar } from "./sidebar";
 import { ThemeToggles } from "./theme-toggles";
 import { Cosmos } from "../brand/cosmos";
@@ -79,14 +80,24 @@ export function NativeHeader() {
     // Recursively map the menu tree to native UIMenu items: a leaf becomes an action
     // (check-marked when it is the current page), a submenu becomes a native submenu that
     // slides over natively (nested arbitrarily deep, e.g. Home -> Components -> Atoms -> page).
+    // The lucide glyph as a native menu-item image: a bundled template PNG (its Metro
+    // module id) that iOS tints to the menu label color, so the row shows the SAME icon
+    // the web sidebar / Android drawer render. Every menu glyph is baked by
+    // `bun run raster:gen`, so a lookup miss means a stale map (regenerate); undefined
+    // then just omits the icon rather than crashing.
+    type MenuIcon = { type: "image"; source: number; tinted: true };
+    const glyphIcon = (name: string): MenuIcon | undefined => {
+      const source = GLYPH_RASTERS[name];
+      return source != null ? { type: "image", source, tinted: true } : undefined;
+    };
     type NativeMenuItem =
-      | { type: "action"; label: string; onPress: () => void; state?: "on" }
-      | { type: "submenu"; label: string; inline?: boolean; items: NativeMenuItem[] };
+      | { type: "action"; label: string; icon?: MenuIcon; onPress: () => void; state?: "on" }
+      | { type: "submenu"; label: string; icon?: MenuIcon; inline?: boolean; items: NativeMenuItem[] };
     const toItems = (ns: MenuNode[]): NativeMenuItem[] =>
       ns.map((n): NativeMenuItem =>
         n.kind === "leaf"
-          ? { type: "action", label: n.label, onPress: () => router.push(n.href as never), ...(n.slug === activeSlug ? { state: "on" as const } : {}) }
-          : { type: "submenu", label: n.label, ...(n.inline ? { inline: true as const } : {}), items: toItems(n.items) },
+          ? { type: "action", label: n.label, icon: glyphIcon(n.icon), onPress: () => router.push(n.href as never), ...(n.slug === activeSlug ? { state: "on" as const } : {}) }
+          : { type: "submenu", label: n.label, icon: glyphIcon(n.icon), ...(n.inline ? { inline: true as const } : {}), items: toItems(n.items) },
       );
     const items = toItems(nodes);
     return (

@@ -1,4 +1,5 @@
 bun run typecheck
 bun test
 bun run docs:gen:check
+bun run raster:gen:check
 bunx tsc --noEmit -p docs/src/core/tsconfig.json

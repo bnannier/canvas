@@ -95,6 +95,12 @@ jobs:
       - name: Check generated docs core is up to date
         run: bun run docs:gen:check
 
+      # Coverage gate for the native iOS menu glyph rasters: every nav glyph must have a
+      # bundled PNG + map entry, so a forgotten `bun run raster:gen` after a nav-icon change
+      # is caught. Coverage only (not PNG bytes), since sharp output can differ macOS<->CI.
+      - name: Check menu-glyph rasters are up to date
+        run: bun run raster:gen:check
+
       - name: Validate theme tokens
         run: bun run validate-tokens
 
