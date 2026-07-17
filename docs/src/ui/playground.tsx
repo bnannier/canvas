@@ -159,7 +159,13 @@ export function Playground({ examples }: { examples: DocExample[] }) {
       <Tabs vertical block tabs={labels} active={selected} onSelect={setSelected} />
     </ScrollView>
   ) : (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
+    // flexGrow: 0 mirrors the wide rail. Without it, RNW's ScrollView default
+    // (flexGrow: 1) competes with the stage's flex-basis-0 in the content-sized
+    // column: web flexbox hands the rail a share of the stage's min-content
+    // height, inflating the ~41px tab strip to ~200px of empty band above the
+    // stage. Native yoga resolves the same tree without the inflation, so the
+    // gap was web-only.
+    <ScrollView horizontal style={{ flexGrow: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
       <Tabs underline tabs={labels} active={selected} onSelect={setSelected} />
     </ScrollView>
   );
