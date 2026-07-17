@@ -63,6 +63,8 @@
     "docs:gen": "bun tools/docgen/generate.ts",
     "icons:gen": "bun tools/icongen/generate.ts",
     "favicon:gen": "bun tools/favicongen/generate.ts",
+    "raster:gen": "bun tools/rastergen/generate.ts",
+    "raster:gen:check": "bun tools/rastergen/generate.ts --check",
     "docs:gen:check": "bun tools/docgen/generate.ts --check"
   },
   "publishConfig": {

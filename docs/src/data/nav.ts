@@ -134,12 +134,21 @@ export interface MenuLeaf {
   slug: string;
   label: string;
   href: string;
+  /** A kit `Icon` glyph key (camelCase), same as the web/Android sidebar row's icon. */
+  icon: string;
 }
 export type MenuNode =
   | ({ kind: "leaf" } & MenuLeaf)
-  | { kind: "submenu"; label: string; inline?: boolean; items: MenuNode[] };
+  // A submenu carries its own glyph (a category's group icon), so iOS can show it on the
+  // drill-in row exactly as the sidebar shows the category icon.
+  | { kind: "submenu"; label: string; icon: string; inline?: boolean; items: MenuNode[] };
 
-const leafNode = (i: NavItem): MenuNode => ({ kind: "leaf", slug: i.slug, label: i.label, href: i.href });
+const leafNode = (i: NavItem): MenuNode => ({ kind: "leaf", slug: i.slug, label: i.label, href: i.href, icon: i.icon });
+
+// Glyphs for Home's two synthetic drill-in submenus (which have no single nav group to
+// borrow an icon from). Both are already in the nav glyph set, so they need no extra raster.
+const HOME_COMPONENTS_ICON = "layoutGrid";
+const HOME_UTILITIES_ICON = "palette";
 
 // Ordered category labels -> a submenu per category holding its component-page leaves.
 // Reused by the Components tab AND Home's Components submenu.
@@ -148,7 +157,7 @@ function categorySubmenus(categories: string[]): MenuNode[] {
   return categories
     .map((c) => byLabel.get(c))
     .filter((g): g is NavGroup => Boolean(g))
-    .map((g) => ({ kind: "submenu" as const, label: g.label, items: g.items.map(leafNode) }));
+    .map((g) => ({ kind: "submenu" as const, label: g.label, icon: g.icon, items: g.items.map(leafNode) }));
 }
 
 export function nativeMenuFor(section: string, activeGroup?: string | null): MenuNode[] {
@@ -182,12 +191,27 @@ export function nativeMenuFor(section: string, activeGroup?: string | null): Men
     const [firstKey, ...restKeys] = guideKeys; // About leads; the remaining guides follow the submenus
     return [
       ...(firstKey ? [leafNode(routeItem(firstKey))] : []),
-      { kind: "submenu", label: "Components", items: categorySubmenus(componentsTab?.topbar?.categories ?? []) },
-      { kind: "submenu", label: "Utilities", items: utilKeys.map((k) => leafNode(routeItem(k))) },
+      { kind: "submenu", label: "Components", icon: HOME_COMPONENTS_ICON, items: categorySubmenus(componentsTab?.topbar?.categories ?? []) },
+      { kind: "submenu", label: "Utilities", icon: HOME_UTILITIES_ICON, items: utilKeys.map((k) => leafNode(routeItem(k))) },
       ...restKeys.map((k) => leafNode(routeItem(k))),
     ];
   }
 
   // Other flat sections (Utilities tab): a flat list of links.
   return keys.map((k) => leafNode(routeItem(k)));
+}
+
+// Every kit `Icon` glyph the native iOS menu can render: one per nav leaf, one per
+// category group, plus Home's two synthetic submenu glyphs. The single source of truth
+// for `tools/rastergen` (which PNGs to bake) AND its coverage gate (which glyphs must have
+// a raster). Sorted + de-duped so the generated map stays stable.
+export function menuGlyphNames(): string[] {
+  const s = new Set<string>();
+  for (const g of NAV_GROUPS) {
+    s.add(g.icon);
+    for (const i of g.items) s.add(i.icon);
+  }
+  s.add(HOME_COMPONENTS_ICON);
+  s.add(HOME_UTILITIES_ICON);
+  return [...s].sort();
 }
