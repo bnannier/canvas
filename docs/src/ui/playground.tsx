@@ -41,7 +41,7 @@ function ErrorNote({ message }: { message: string }) {
 // example actually wrap. The component is untouched: it renders within the width it is given and
 // never learns the stage exists. Recomputed on resize via the outer onLayout. No horizontal
 // scroller, so the Carousel's horizontal FlatList is never nested in a same-orientation scroller.
-function FitStage({ children }: { children: ReactNode }) {
+export function FitStage({ children }: { children: ReactNode }) {
   const [avail, setAvail] = useState(0);
   return (
     <View
