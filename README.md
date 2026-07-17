@@ -121,4 +121,4 @@ Alongside the components, the package exports the style foundation: the theme ru
 
 ## License
 
-Proprietary. Copyright (c) 2026 Bobby Nannier. All rights reserved. See [LICENSE](./LICENSE).
+[proprietary](./LICENSE) © 2026 Bobby Nannier. All rights reserved.
