@@ -1,7 +1,7 @@
 {
   "name": "@nannier/canvas",
   "version": "8.0.0",
-  "description": "Universal React Native UI kit styled with Tailwind",
+  "description": "Universal React Native UI kit: one component API renders natively on iOS, Android, and web.",
   "license": "UNLICENSED",
   "homepage": "https://bnannier.github.io/canvas/",
   "repository": {
@@ -23,6 +23,7 @@
     "universal",
     "cross-platform",
     "liquid-glass",
+    "material-design",
     "accessibility",
     "tailwind",
     "expo"
