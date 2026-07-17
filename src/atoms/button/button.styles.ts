@@ -25,6 +25,12 @@ export interface ButtonSkin {
   pressedOpacity: number | null;
   ripple: ((t: ColorTokens, intent: Intent) => { color: string; borderless: boolean }) | null;
   /**
+   * The rounded shape the shell's `<RippleClip>` parent clips the bounded ripple to (the
+   * same corner radii `container` draws). Only the Android skin sets it — a bounded ripple
+   * is Android-only; iOS/web omit it so no clip wrapper is applied. See src/style/ripple-clip.
+   */
+  rippleClipShape?: (size: Size, opts: ButtonSkinOpts) => ViewStyle;
+  /**
    * Platform minimum touch target in pt/dp (iOS HIG 44pt, Android M3 48dp). When set,
    * the shell measures the rendered control and extends the TOUCH area with hitSlop on
    * whichever axis falls short (e.g. the 36pt iOS / 30dp Android `small` text button and
@@ -94,7 +100,7 @@ export const webSkin: ButtonSkin = {
       : size === "large" ? { paddingHorizontal: 24, paddingVertical: 12 }
       : { paddingHorizontal: 16, paddingVertical: 8 }),
     ...fill(t, intent),
-    ...(o.block ? { width: "100%" } : null),
+    // `block` (full width) lives on the shell's <RippleClip> wrapper, the outer node.
     ...(o.dim ? { opacity: 0.5 } : null),
   }),
   label: (t, intent, size) => ({
@@ -122,7 +128,7 @@ export const iosSkin: ButtonSkin = {
       : size === "large" ? { paddingHorizontal: 26, paddingVertical: 18 }
       : { paddingHorizontal: 20, paddingVertical: 14 }),
     ...fill(t, intent),
-    ...(o.block ? { width: "100%" } : null),
+    // `block` (full width) lives on the shell's <RippleClip> wrapper, the outer node.
     ...(o.dim ? { opacity: 0.4 } : null), // iOS disabled control alpha (more muted than 0.5)
   }),
   label: (t, intent, size) => ({
@@ -141,17 +147,16 @@ export const androidSkin: ButtonSkin = {
     ...ROW,
     gap: 8,
     borderRadius: 9999, // M3 filled button = fully rounded (stadium); icon = circle
-    // Clip the Material ripple to the rounded outline. android_ripple paints a RippleDrawable
-    // bounded to the view's RECTANGLE; without clipToOutline (overflow:hidden) it bleeds past the
-    // pill's corners. Safe here: the M3 filled button is flat (no elevation/shadow to clip).
-    overflow: "hidden",
+    // The Material ripple is clipped to this pill by the shell's <RippleClip> parent, NOT here:
+    // a bounded android_ripple is the pressable's own rectangular-masked background, which a
+    // same-node overflow:"hidden" cannot clip (RN only path-clips CHILDREN). See ripple-clip.tsx.
     ...(o.icon
       ? sq(size === "small" ? 32 : size === "large" ? 48 : 40)
       : size === "small" ? { paddingHorizontal: 16, paddingVertical: 6 }
       : size === "large" ? { paddingHorizontal: 24, paddingVertical: 13 }
       : { paddingHorizontal: 24, paddingVertical: 10 }),
     ...fill(t, intent),
-    ...(o.block ? { width: "100%" } : null),
+    // `block` (full width) lives on the shell's <RippleClip> wrapper, the outer node.
     ...(o.dim ? { opacity: 0.38 } : null), // M3 disabled opacity
   }),
   label: (t, intent, size) => ({
@@ -161,6 +166,9 @@ export const androidSkin: ButtonSkin = {
   }),
   pressedOpacity: null,
   ripple: androidRipple,
+  // Clip the bounded ripple to the pill (icon = circle). Same 9999 radius as `container`, so
+  // the <RippleClip> parent's rounded outline matches the button's own corners at every size.
+  rippleClipShape: () => ({ borderRadius: 9999 }),
   minTarget: 48, // M3 minimum touch target 48x48dp (small = 30dp, base = 40dp; extended via hitSlop)
 };
 
