@@ -85,18 +85,18 @@ export function Sidebar({
         isCollapsed ? (
           <CanvasMark size={26} />
         ) : (
-          // The brand lockup is row zero of the nav, so it sits on the same two columns the
-          // items below use: the header's 14px inset + a 26 mark puts the mark's ink center on
-          // the item ICON column's center (x=28), and + the `snug` 8px gap starts the wordmark
-          // exactly on the item LABEL column (x=48). `lead` keeps the wordmark on `foreground`
-          // (the `small` role would mute it); `tiny` alone is already muted-foreground, and
-          // adding `muted` would win the role axis and render the tagline at the wordmark's
-          // own 14px. The two lines are one lockup, not prose, so `tightLeading` pulls both
-          // line boxes to 1.25x (20 and 15) and `flush` adds nothing between them, leaving
-          // 3.5px of optical gap; the roles reading leading would put 6px there, and a gap
-          // prop can only add. The 35px block centers in the 56px header.
+          // The mark is sized to the text lockup beside it: a 35 mark box equals the two-line
+          // text block's 35px line box (`lead`+`tiny`, both `tightLeading` to 1.25x -> 20 + 15),
+          // and `alignCenter` co-centers them, so the logo reads the same height as the text.
+          // (Matching that height is why the wordmark no longer starts on the item LABEL column:
+          // with the 14px header inset + `snug` 8px gap, only a 26 mark lands the text at x=48,
+          // and any larger mark pushes it right. The bigger logo wins that trade.) `lead` keeps
+          // the wordmark on `foreground` (`small` would mute it); `tiny` alone is already
+          // muted-foreground, and adding `muted` would win the role axis and size the tagline at
+          // the wordmark's 14px. `flush` adds nothing between the lines (a gap prop can only add),
+          // leaving the roles' own ~3.5px optical gap.
           <Row snug alignCenter>
-            <CanvasMark size={26} />
+            <CanvasMark size={35} />
             <Column flush>
               <Typography lead semibold tightLeading>
                 Canvas
