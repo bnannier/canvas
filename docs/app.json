@@ -9,11 +9,11 @@
     "newArchEnabled": true,
     "icon": "./assets/images/icon.png",
     "ios": {
-      "bundleIdentifier": "com.olympusoss.canvasdocs",
+      "bundleIdentifier": "com.nannier.canvas",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.olympusoss.canvasdocs",
+      "package": "com.nannier.canvas",
       "adaptiveIcon": {
         "backgroundColor": "#0B0B0F",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
