@@ -7,6 +7,7 @@ import { type ReactNode, createContext, useContext, useMemo } from "react";
 import { useColorScheme } from "react-native";
 import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
+import { GlassBackdrop } from "./glass-surface/glass-backdrop.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
 
 // Surface treatment. "glass" makes the functional layer's fills translucent across
@@ -123,7 +124,15 @@ export function ThemeProvider({ scheme, surface, tokens, children }: ThemeProvid
       increasedContrast,
     };
   }, [active, resolved, tokens, reducedTransparency, increasedContrast]);
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  // GlassBackdrop wires the frost's blur backdrop where a platform needs one: on
+  // Android (expo-blur 57+) it wraps the children in the BlurTargetView every frost
+  // surface blurs; on web and iOS it is a no-op passthrough. Nested ThemeProviders
+  // render it too, but it guards against double-wrapping (one app-root target).
+  return (
+    <ThemeContext.Provider value={value}>
+      <GlassBackdrop>{children}</GlassBackdrop>
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme(): ThemeValue {

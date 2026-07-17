@@ -7,6 +7,7 @@
 // expo-glass-effect is NOT imported here, so web and Android bundles never pull
 // the iOS-only Liquid Glass native module. iOS resolves glass-surface.ios.tsx.
 
+import { useContext } from "react";
 import type * as ExpoBlurTypes from "expo-blur";
 import { View } from "react-native";
 import { useTheme } from "../theme.js";
@@ -14,7 +15,9 @@ import {
   GlassBox,
   PlainSurface,
   degradedGlassSurface,
+  frostMethodProps,
   specularRim,
+  GlassBlurTargetContext,
   GLASS_INTENSITY,
   SHEER_INTENSITY,
   SHEER_FILL_OPACITY,
@@ -27,11 +30,20 @@ import {
 // installed still include it) instead of a static import (which fails module
 // resolution for everyone who skipped the optional peer). Undefined when absent
 // or in a pure-ESM runtime with no `require` — then we fall back below.
+// BlurTargetView doubles as the API-generation detector: expo-blur 57+ exports it
+// and wants `blurMethod` + `blurTarget`; older expo-blur takes the legacy
+// `experimentalBlurMethod` (see frostMethodProps).
 declare const require: ((id: string) => unknown) | undefined;
 let BlurView: typeof ExpoBlurTypes.BlurView | undefined;
+let supportsBlurTarget = false;
 try {
   if (typeof require === "function") {
-    BlurView = (require("expo-blur") as { BlurView?: typeof ExpoBlurTypes.BlurView }).BlurView;
+    const mod = require("expo-blur") as {
+      BlurView?: typeof ExpoBlurTypes.BlurView;
+      BlurTargetView?: typeof ExpoBlurTypes.BlurTargetView;
+    };
+    BlurView = mod.BlurView;
+    supportsBlurTarget = mod.BlurTargetView !== undefined;
   }
 } catch {
   BlurView = undefined;
@@ -39,6 +51,10 @@ try {
 
 export function GlassSurface({ style, children, pointerEvents, testID, sheer }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
+  // The Android blur target published by GlassBackdrop (null on web, where the
+  // backdrop is a passthrough, and for the first frame on Android while the target
+  // ref attaches). Read unconditionally: hooks must not sit behind the early returns.
+  const blurTarget = useContext(GlassBlurTargetContext);
 
   if (surface !== "glass") {
     return (
@@ -74,7 +90,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, sheer }: 
       <BlurView
         intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY}
         tint={dark ? "dark" : "light"}
-        experimentalBlurMethod="dimezisBlurView"
+        {...frostMethodProps(supportsBlurTarget, blurTarget)}
         style={MATERIAL_FILL}
       />
       {/* Specular edge on top of the frost (below the content): a lit rim that reads as glass. */}

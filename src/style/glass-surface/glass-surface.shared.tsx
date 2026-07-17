@@ -12,8 +12,9 @@
 // byte the pre-glass behavior, so non-glass themes and module-absent cases never
 // change layout.
 
-import { type ReactNode } from "react";
+import { createContext, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
+import type * as ExpoBlurTypes from "expo-blur";
 import { type ColorTokens } from "../tokens.js";
 
 export interface GlassSurfaceProps {
@@ -41,6 +42,36 @@ export interface GlassSurfaceProps {
    * enough to occlude the content they open over. Defaults to false (the full frost).
    */
   sheer?: boolean;
+}
+
+// The Android blur-backdrop plumbing for expo-blur 57+. Its new Android API blurs an
+// explicitly designated BlurTargetView (passed by ref) instead of whatever sits behind
+// the BlurView; without a target the dimezis method silently falls back to no blur.
+// GlassBackdrop (mounted by ThemeProvider, forked to wrap the app content in a
+// BlurTargetView on Android) publishes the target ref here ONCE the ref is attached —
+// expo-blur resolves `blurTarget.current` when the BlurView receives the prop, so
+// publishing a not-yet-attached ref would freeze the frost at "no target".
+export const GlassBlurTargetContext = createContext<RefObject<View | null> | null>(null);
+
+// True inside a mounted GlassBackdrop, provided synchronously (unlike the target ref
+// above). Nested ThemeProviders (the docs' theming page embeds one per example) must
+// NOT wrap again: the wrapper is a flex:1 View, which collapses to zero height in a
+// content-sized parent, and one app-root target is the correct backdrop anyway.
+export const GlassBackdropPresenceContext = createContext(false);
+
+// The Android blur-method props for the frost BlurView, chosen by which expo-blur API
+// generation is installed. expo-blur 57+ (detected by its BlurTargetView export) wants
+// `blurMethod` + `blurTarget`; passing the legacy prop there logs a deprecation
+// warning, and naming the dimezis method without a target logs a fallback warning, so
+// without a target it asks for "none" outright (the popover fill under the blur keeps
+// the surface a substantial material). Older expo-blur keeps the legacy prop
+// unchanged. Web ignores all three props (its backdrop-filter path never reads them).
+export function frostMethodProps(
+  supportsBlurTarget: boolean,
+  target: RefObject<View | null> | null,
+): Partial<ExpoBlurTypes.BlurViewProps> {
+  if (!supportsBlurTarget) return { experimentalBlurMethod: "dimezisBlurView" };
+  return target ? { blurMethod: "dimezisBlurView", blurTarget: target } : { blurMethod: "none" };
 }
 
 // Blur strength for the frost. expo-blur maps intensity to a blur radius (~0.2px
