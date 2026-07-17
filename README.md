@@ -2,7 +2,9 @@
 
 **One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
 
-[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [Documentation](https://bnannier.github.io/canvas/)
+[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [![license: proprietary](https://img.shields.io/badge/license-proprietary-blue.svg)](./LICENSE) [Documentation](https://bnannier.github.io/canvas/)
+
+**Try it live:** the [component catalog](https://bnannier.github.io/canvas/components) renders all 81 components (atoms, molecules, organisms, and a full chart family) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
 Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; elsewhere it falls back to a genuine frost or a solid surface.
 
@@ -118,6 +120,18 @@ The kit exports 60+ components across atoms, molecules, and organisms, all from 
 - **Disclosure and feedback**: Accordion, Collapsible, Carousel, Progress, Skeleton, Spinner, Alert, Empty State.
 
 Alongside the components, the package exports the style foundation: the theme runtime (`ThemeProvider`, `useTheme`), the design tokens (`token`, `hsl`), the responsive and motion helpers (`useResponsive`, `useReducedMotion`), the glass helpers (`liquidGlassAvailable`, `setSurface`), and the raw React Native primitives (`View`, `Text`, `Pressable`, `Image`, `TextInput`, `ScrollView`).
+
+## Contributing
+
+Contributions are welcome. [CONTRIBUTING.md](./CONTRIBUTING.md) covers the Bun-based
+setup, the docs app you develop against, the check battery, and the design principles
+(semantic boolean props, no styling escape hatches, React Native everywhere) that
+pull requests are reviewed against.
+
+## Security
+
+Please report vulnerabilities privately; see [SECURITY.md](./SECURITY.md). Do not open
+public issues for security problems.
 
 ## License
 
