@@ -1,5 +1,63 @@
 # @nannier/canvas
 
+## 8.1.0
+
+### Minor Changes
+
+- 4964457: Relicense Canvas under the License.
+
+  Canvas is now free and universal. The previous proprietary "all rights reserved"
+  license is replaced with proprietary, and the `license` field in `package.json` changes from
+  `UNLICENSED` to `proprietary`, so the published package is legally usable, modifiable, and
+  redistributable by anyone. No code or API changes accompany this: it only removes the
+  usage restriction that blocked adoption.
+
+- 76ce950: Typography: add a `tightLeading` leading axis.
+
+  A fourth axis alongside role, tone, and weight. It pulls the line box in to 1.25x the
+  font size for a stacked lockup, where two lines read as one unit (a wordmark over its
+  tagline, a title over its subtitle) and the roles' reading leading leaves dead air
+  between them. Previously nothing could close that space: the leading is baked into each
+  role, a Column's gap can only add, and `lineHeight` at a call site is a banned restyle.
+
+  `tightLeading` only ever tightens, clamping against the role's own line height, so it is
+  safe on every role including the already-tight display scale (`display` 48/48, `h1`
+  36/40). Omit it for prose, where the role's line height is the reading value. Additive
+  and backward-compatible: no existing call site changes.
+
+### Patch Changes
+
+- 9955c0f: Fix the Android Material ripple bleeding past a control's rounded corners, kit-wide.
+
+  A bounded `android_ripple` is installed as the pressable's OWN background drawable, masked to a
+  rectangle. React Native implements `overflow:"hidden"` as a path-clip applied only in
+  `ViewGroup.dispatchDraw` (children only) and never enables `clipToOutline`, so a node can never
+  clip its own ripple: the rectangle bleeds past the rounded corners. Setting `overflow:"hidden"` on
+  the same node as the ripple (the kit's previous approach across ~20 rounded controls) does nothing
+  on a real Android device.
+
+  New `RippleClip` primitive: a rounded, `overflow:"hidden"` PARENT that wraps a bounded-ripple
+  pressable so the parent's child-clip rounds the ripple. It is Android-only (no ripple to clip on
+  iOS/web) and a transparent layout passthrough elsewhere, so node structure and layout are identical
+  across platforms. Helpers `cornerRadii` (match the child's corners with no hard-coded radius) and
+  `splitElevation` (keep an elevated card's shadow while its ripple is clipped) ship alongside it. The
+  same-node `rippleClip()` helper is re-documented for its only correct use — an `overflow` on the
+  rounded PARENT of ripple rows.
+
+  Every rounded, bounded-ripple control now routes its ripple through the correct clip: Button,
+  ButtonGroup, Chip, Pagination, Stepper, Select, Autocomplete, Listbox rows (left unwrapped — 2px
+  radius, and a wrapper would break `listbox`/`option`), Navbars, Sidebar, Tabs, Steps, Toast,
+  Calendar, StackedLists, AlertDialog, Dialog, Stats, Card, MediaObject, CodeBlock, and the menu
+  surfaces Dropdown, RowMenu, ActionSheet, and FilterPanel.
+
+- 2df3866: Correct the npm package description.
+
+  The description said "styled with Tailwind", which misrepresents the public API:
+  Tailwind utilities are an internal implementation detail, and the consumer-facing
+  styling surface is semantic boolean props. The description now reads "Universal React
+  Native UI kit: one component API renders natively on iOS, Android, and web." Also adds
+  a `material-design` keyword alongside the existing platform keywords.
+
 ## 8.0.0
 
 ### Major Changes
