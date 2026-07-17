@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@nannier/canvas";
+import { View, Text, Pressable, Button, ScrollView, Icon, Image, QRCode, useTheme } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -249,6 +249,39 @@ export function Home() {
           </View>
         </Wrap>
       </View>
+
+      {/* ── Three native looks ── the comparison hero: real captures of the same docs
+           page on an iPhone simulator, a Pixel emulator, and the browser. The heading,
+           code chip, and CTAs are live text; the image bakes only the three panes and
+           their platform labels (transparent canvas, so it sits on any theme). */}
+      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
+        <SectionHead
+          eyebrow="Platform-adaptive"
+          title="One component API. Three native looks."
+          desc="Every Canvas component carries a skin per platform: an iOS look, Material 3 on Android, and a web look, all driven by the same JSX and the same semantic boolean props. These are real captures of one docs page on an iPhone simulator, a Pixel emulator, and the browser."
+          titleSize={sectionTitle}
+        />
+        {/* Aspect-ratio container + absolute-fill image: RNW ignores aspectRatio on an
+            Image whose height is auto (it falls back to the intrinsic pixel height),
+            so the container owns the geometry and the image just fills it. */}
+        <View style={{ width: "100%", maxWidth: 1040, alignSelf: "center", aspectRatio: 2280 / 1456 }}>
+          <Image
+            source={require("../../assets/images/three-native-looks.webp")}
+            accessibilityLabel="The same Select component rendered three ways: an iOS rounded filled field with its label above, a Material 3 field with the floating label inside the box, and the web skin, side by side"
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={{ alignItems: "center", marginTop: 20, gap: 18 }}>
+          <View style={{ paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
+            <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{'<Select label="Country" options={countries} />'}</Text>
+          </View>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+            <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components")}>See every component live</Button>
+            <Button outline large onPress={() => go("/components/select")}>Open Select</Button>
+          </View>
+        </View>
+      </Wrap>
 
       {/* ── Get the app ── (hidden until the EAS Update preview URL is set; there is
            nothing to scan before the hosted update is published). */}
