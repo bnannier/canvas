@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a new component, prop, or capability for the kit.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Canvas styles through semantic boolean props on fixed axes (intent, size,
+        density, state) and has no styling escape hatches, so feature requests
+        usually take the shape of a new boolean prop, a new component, or a new
+        capability on an existing component.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to build?
+      description: The concrete UI or behavior you need, not the solution shape.
+    validations:
+      required: true
+  - type: textarea
+    id: gap
+    attributes:
+      label: What is missing today?
+      description: Which component almost fits and what capability it lacks, or why no component fits.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API (optional)
+      description: If you have a shape in mind, sketch it as JSX with boolean props.
+      placeholder: "<DataTable stickyHeader> ... </DataTable>"
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform(s) where you need it
+      multiple: true
+      options:
+        - iOS
+        - Android
+        - Web (React Native Web)
+        - All platforms
+    validations:
+      required: true

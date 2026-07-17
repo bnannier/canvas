@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://bnannier.github.io/canvas/
+    about: Component reference, theming guide, and the live catalog of every component.
+  - name: Live component catalog
+    url: https://bnannier.github.io/canvas/components
+    about: Every component rendered live, with dark mode, glass surface, and density toggles.
