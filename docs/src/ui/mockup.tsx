@@ -1,5 +1,5 @@
 import { type ReactNode, useMemo } from "react";
-import { View, Text, useTheme, type ColorTokens } from "@nannier/canvas";
+import { View, Text, ScrollView, useTheme, useResponsive, type ColorTokens } from "@nannier/canvas";
 import Svg, { Path, Circle, Rect, Line } from "react-native-svg";
 import { geist, geistMono } from "./fonts";
 import { alpha } from "./color";
@@ -227,8 +227,16 @@ function border(val: string, side: string, out: Record<string, unknown>, tokens:
 function gridChildren(tmpl: string, count: number): Record<string, unknown>[] {
   const auto = tmpl.match(/repeat\(auto-fit,\s*minmax\(\s*([0-9.]+)px/);
   if (auto) { const basis = parseFloat(auto[1]); return Array.from({ length: count }, () => ({ flexGrow: 1, flexBasis: basis, minWidth: basis })); }
+  // repeat(n,1fr): with more children than tracks (calendar weeks), a percentage
+  // basis pins exactly n cells per row instead of wrapping by content; exact only
+  // at zero gap, which is what a multi-row grid in this subset uses. A single row
+  // of n children divides by flex so a declared gap stays accounted for.
   const rep = tmpl.match(/repeat\((\d+),\s*1fr\)/);
-  if (rep) return Array.from({ length: count }, () => ({ flex: 1, minWidth: 0 }));
+  if (rep) {
+    const n = parseInt(rep[1], 10) || 1;
+    if (count > n) return Array.from({ length: count }, () => ({ flexBasis: `${100 / n}%`, flexGrow: 1, minWidth: 0 }));
+    return Array.from({ length: count }, () => ({ flex: 1, minWidth: 0 }));
+  }
   const tracks = tmpl.trim().split(/\s+/);
   if (tracks.length > 1) return Array.from({ length: count }, (_, i) => {
     const t = tracks[i % tracks.length];
@@ -370,7 +378,7 @@ function SvgNode({ node, color: cur }: { node: Extract<Node, { type: "el" }>; co
   );
 }
 
-function renderNode(node: Node, key: string, inherited: Record<string, unknown>, t: ColorTokens, dark: boolean, override?: Record<string, unknown>): ReactNode {
+function renderNode(node: Node, key: string, inherited: Record<string, unknown>, t: ColorTokens, dark: boolean, narrow: boolean, override?: Record<string, unknown>): ReactNode {
   if (node.type === "text") {
     const txt = node.text.replace(/\s+/g, " ");
     if (!txt.trim()) return null;
@@ -434,7 +442,7 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
       </View>
     );
   }
-  if (tag === "table") return <TableEl key={key} node={node} t={t} dark={dark} inherited={text} />;
+  if (tag === "table") return <TableEl key={key} node={node} t={t} dark={dark} narrow={narrow} inherited={text} />;
 
   // Text-only node.
   if (isTextOnly(node)) {
@@ -456,37 +464,61 @@ function renderNode(node: Node, key: string, inherited: Record<string, unknown>,
     );
   }
 
-  // Container with element children.
+  // Container with element children. `.tpl-grid` marks the page-level multi-column
+  // grids (split-screen, sidebar + form, stat strips) that collapse to a single
+  // stacked column on phone widths, mirroring the old web docs' max-width media
+  // query; other grids (calendar weeks, auto-fit card grids) keep their tracks.
   const els = node.children.filter((c) => !(c.type === "el" && (c.tag === "br")));
-  const overrides = parsed.grid ? gridChildren(attrs["data-grid"] || gridTemplate(attrs.style || ""), els.length) : undefined;
-  if (parsed.grid) { view.flexDirection = "row"; view.flexWrap = "wrap"; if (view.gap === undefined) view.gap = 12; }
-  return (
-    <View key={key} style={view as object}>
-      {els.map((c, i) => renderNode(c, `${key}.${i}`, text, t, dark, overrides?.[i]))}
-    </View>
-  );
+  const stack = !!parsed.grid && narrow && classes.includes("tpl-grid");
+  const overrides = parsed.grid && !stack ? gridChildren(attrs["data-grid"] || gridTemplate(attrs.style || ""), els.length) : undefined;
+  // CSS grid defaults to zero gap; grids that want a gutter declare one inline.
+  // alignContent stretch mirrors grid's default row stretch (RN wrap rows pack
+  // lines at the start instead, leaving dead space under a min-height grid).
+  if (stack) view.flexDirection = "column";
+  else if (parsed.grid) { view.flexDirection = "row"; view.flexWrap = "wrap"; if (view.alignContent === undefined) view.alignContent = "stretch"; }
+  const kids = els.map((c, i) => renderNode(c, `${key}.${i}`, text, t, dark, narrow, overrides?.[i]));
+  // `.tpl-scroll` marks containers whose content keeps a fixed min width (the
+  // calendar's 7-track week grids): on phone widths they pan horizontally inside
+  // their own frame, like the old web docs' overflow-x:auto preview stage. The
+  // container's declared min-width becomes the pan area's definite width so
+  // percentage-based grid tracks resolve against it.
+  if (narrow && classes.includes("tpl-scroll")) {
+    const { minWidth, ...frame } = view;
+    return (
+      <View key={key} style={frame as object}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={{ flexGrow: 1, width: typeof minWidth === "number" ? minWidth : undefined }}>{kids}</View>
+        </ScrollView>
+      </View>
+    );
+  }
+  return <View key={key} style={view as object}>{kids}</View>;
 }
 function gridTemplate(style: string): string {
   const m = style.match(/grid-template-columns:\s*([^;]+)/);
   return m ? m[1] : "1fr 1fr";
 }
 
-function TableEl({ node, t, dark, inherited }: { node: Extract<Node, { type: "el" }>; t: ColorTokens; dark: boolean; inherited: Record<string, unknown> }) {
+function TableEl({ node, t, dark, narrow, inherited }: { node: Extract<Node, { type: "el" }>; t: ColorTokens; dark: boolean; narrow: boolean; inherited: Record<string, unknown> }) {
   const rows: Extract<Node, { type: "el" }>[] = [];
   const walk = (n: Extract<Node, { type: "el" }>) => n.children.forEach((c) => { if (c.type === "el") { if (c.tag === "tr") rows.push(c); else walk(c); } });
   walk(node);
-  return (
-    <View style={{ borderWidth: 1, borderColor: t.border, borderRadius: 10, overflow: "hidden" }}>
+  // Fixed column widths declared on the header row (e.g. a 40px checkbox column)
+  // bind every row, like CSS table column sizing; the rest share the leftover.
+  const headCells = rows[0]?.children.filter((c): c is Extract<Node, { type: "el" }> => c.type === "el" && (c.tag === "td" || c.tag === "th")) ?? [];
+  const colWidths = headCells.map((c) => { const w = parseStyle(c.attrs.style || "", t).view.width; return typeof w === "number" ? w : undefined; });
+  const table = (
+    <View style={{ borderWidth: 1, borderColor: t.border, borderRadius: 10, overflow: "hidden", ...(narrow ? { minWidth: Math.max(headCells.length, 1) * 110, flexGrow: 1 } : {}) }}>
       {rows.map((tr, r) => {
         const cells = tr.children.filter((c): c is Extract<Node, { type: "el" }> => c.type === "el" && (c.tag === "td" || c.tag === "th"));
         const head = cells.some((c) => c.tag === "th");
         return (
           <View key={r} style={{ flexDirection: "row", backgroundColor: head ? t.muted : "transparent", borderTopWidth: r === 0 ? 0 : 1, borderColor: t.border }}>
             {cells.map((cell, i) => (
-              <View key={i} style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 9 }}>
+              <View key={i} style={{ ...(colWidths[i] !== undefined ? { width: colWidths[i], flexShrink: 0 } : { flex: 1 }), paddingHorizontal: 12, paddingVertical: 9 }}>
                 {isTextOnly(cell)
                   ? <Text style={finalizeText({ ...inherited, fontSize: head ? 11 : 12, fontFamily: head ? geist("600") : geist("400"), color: head ? t.foreground : (i === 0 ? t.foreground : t["muted-foreground"]) }) as object}>{joinText(cell)}</Text>
-                  : renderNode(cell, `${r}.${i}`, { ...inherited, fontSize: 12 }, t, dark)}
+                  : renderNode(cell, `${r}.${i}`, { ...inherited, fontSize: 12 }, t, dark, narrow)}
               </View>
             ))}
           </View>
@@ -494,13 +526,24 @@ function TableEl({ node, t, dark, inherited }: { node: Extract<Node, { type: "el
       })}
     </View>
   );
+  // On phone widths an over-wide table pans horizontally inside the stage,
+  // mirroring the old web docs' overflow-x:auto preview stage.
+  if (!narrow) return table;
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
+      {table}
+    </ScrollView>
+  );
 }
 
 // The public renderer: parse the mockup html once and render it as RN.
 export function Mockup({ html }: { html: string }) {
   const { tokens, dark } = useTheme();
+  // Phone-width flag for the `.tpl-grid` single-column collapse (desktop-first,
+  // applies at the sm breakpoint and below).
+  const narrow = useResponsive({ base: false, sm: true });
   const nodes = useMemo(() => parseHtml(html), [html]);
   const inherited = { fontSize: 13, color: tokens.foreground, fontFamily: geist("400") };
-  return <View style={{ gap: 0 }}>{nodes.map((n, i) => renderNode(n, String(i), inherited, tokens, dark))}</View>;
+  return <View style={{ gap: 0 }}>{nodes.map((n, i) => renderNode(n, String(i), inherited, tokens, dark, narrow))}</View>;
 }
 

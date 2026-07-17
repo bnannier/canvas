@@ -1,4 +1,4 @@
-import { View, Text, useTheme } from "@nannier/canvas";
+import { View, Text, useTheme, useResponsive } from "@nannier/canvas";
 import { Page } from "./page";
 import { H2 } from "./prose";
 import { PageNav } from "./page-nav";
@@ -16,6 +16,9 @@ type DocSection = { title: string; description?: string; anatomy?: string; html?
 // mockups rendered by <Mockup>.
 export function MockupDocPage({ name, description, sections }: { name: string; description: string; sections: DocSection[] }) {
   const { tokens } = useTheme();
+  // The mockup stage keeps its desktop inset but gives the width back to the
+  // mockup on phone screens, where every horizontal pixel counts.
+  const stagePadding = useResponsive({ base: 24, sm: 16 });
   return (
     <Page>
       <View style={{ gap: 28, maxWidth: 960 }}>
@@ -31,7 +34,7 @@ export function MockupDocPage({ name, description, sections }: { name: string; d
               <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20, color: tokens["muted-foreground"], maxWidth: 640 }}>{s.description}</Text>
             ) : null}
             {s.anatomy ? <Callout label="Anatomy.">{s.anatomy}</Callout> : null}
-            <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 12, backgroundColor: tokens.card, padding: 24 }}>
+            <View style={{ borderWidth: 1, borderColor: tokens.border, borderRadius: 12, backgroundColor: tokens.card, padding: stagePadding }}>
               {s.render ? s.render() : s.html ? <Mockup html={s.html} /> : null}
             </View>
           </View>
