@@ -64,7 +64,7 @@ jobs:
       # setup-bun does not cache installs. Bun's global content-addressable download
       # cache serves BOTH the root and docs installs, so one entry covers them.
       - name: Cache bun downloads
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock') }}
