@@ -22,6 +22,9 @@
  * entry AND its three density PNGs exist, and throws naming any gap. It is a COVERAGE check,
  * not a byte-for-byte PNG check — sharp/libvips output can differ across macOS and CI Linux,
  * and the sibling favicon raster (tools/favicongen) has no gate for the same reason.
+ *
+ * When bumping the `sharp` devDependency, rerun `bun run raster:gen` and commit any PNG
+ * byte changes alongside the bump, so the committed rasters stay in step with the encoder.
  */
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
