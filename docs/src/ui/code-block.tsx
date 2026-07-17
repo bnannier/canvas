@@ -6,6 +6,8 @@ import { MONO } from "./prose";
 // A token-themed TSX highlighter standing in for Shiki (which emits HTML and can't run
 // on native). Colors approximate github-dark/light. Matches `.docs-code-wrap`: bordered,
 // radius-lg, pre padding 16/20 at 13px/1.6 on the muted surface, with a Copy button.
+// Copy is `secondary` (solid chip): it floats over horizontally-overflowing code, and a
+// transparent outline button lets the line show through the chip mid-scroll.
 const KEYWORDS = new Set([
   "const", "let", "var", "return", "function", "import", "from", "export",
   "true", "false", "null", "undefined", "await", "async", "new", "if", "else",
@@ -99,7 +101,7 @@ export function CodeBlock({ code, flush }: { code: string; flush?: boolean }) {
         onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setCopyWidth((w) => Math.max(w, l.width)); }}
         style={{ position: "absolute", top: 8, right: 8 }}
       >
-        <Button outline small onPress={copy}>
+        <Button secondary small onPress={copy}>
           {copied ? "Copied" : "Copy"}
         </Button>
       </View>
