@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { ActivityIndicator, type GestureResponderEvent, type Insets, type LayoutChangeEvent } from "react-native";
-import { Pressable, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Pressable, RippleClip, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -94,8 +94,13 @@ export function createButton(skin: ButtonSkin) {
     const intent = intentOf(props);
     const size = sizeOf(props);
 
-    const container = skin.container(tokens, intent, size, { icon: !!icon, block: !!block, dim: !!(disabled || loading) });
+    const opts = { icon: !!icon, block: !!block, dim: !!(disabled || loading) };
+    const container = skin.container(tokens, intent, size, opts);
     const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
+    // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded
+    // android_ripple bleeds past rounded corners unless a rounded overflow:"hidden" PARENT clips
+    // it — <RippleClip> is that parent. See src/style/ripple-clip.
+    const clipShape = skin.rippleClipShape?.(size, opts);
 
     // Native minimum touch target (skin-declared: iOS HIG 44pt, Android M3 48dp; web
     // declares none). Sub-minimum buttons (small text, icon squares) keep their visual
@@ -114,31 +119,35 @@ export function createButton(skin: ButtonSkin) {
             setHitSlop((prev) => (prev?.top === next?.top && prev?.left === next?.left ? prev : next));
           };
 
+    // Outer layout (block/full width + the consumer `style`) lives on the <RippleClip> wrapper,
+    // the outermost node on every platform, so positioning is identical with or without the clip
+    // and the Pressable stretches to fill a block button.
     return (
-      <Pressable
-        onPress={onPress}
-        disabled={disabled || loading}
-        testID={testID}
-        onLayout={onTargetLayout}
-        hitSlop={hitSlop}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
-        aria-busy={loading ? true : undefined}
-        aria-expanded={props.expanded}
-        aria-haspopup={props.haspopup}
-        android_ripple={ripple}
-        style={({ pressed }) => [
-          container,
-          skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-          style,
-        ]}
-      >
-        {loading ? <ActivityIndicator size="small" color={tokens[FG_TOKEN[intent]]} /> : null}
-        {!loading && iconLeft != null ? iconLeft : null}
-        {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
-        {!loading && iconRight != null ? iconRight : null}
-      </Pressable>
+      <RippleClip shape={clipShape} style={[block ? { width: "100%" } : null, style]}>
+        <Pressable
+          onPress={onPress}
+          disabled={disabled || loading}
+          testID={testID}
+          onLayout={onTargetLayout}
+          hitSlop={hitSlop}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
+          aria-busy={loading ? true : undefined}
+          aria-expanded={props.expanded}
+          aria-haspopup={props.haspopup}
+          android_ripple={ripple}
+          style={({ pressed }) => [
+            container,
+            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+          ]}
+        >
+          {loading ? <ActivityIndicator size="small" color={tokens[FG_TOKEN[intent]]} /> : null}
+          {!loading && iconLeft != null ? iconLeft : null}
+          {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
+          {!loading && iconRight != null ? iconRight : null}
+        </Pressable>
+      </RippleClip>
     );
   };
 }

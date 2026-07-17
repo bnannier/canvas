@@ -27,13 +27,16 @@ export function pressDim(pressed: boolean, opacity = 0.9) {
   return pressed && Platform.OS !== "android" ? { opacity } : null;
 }
 
-// Clip a BOUNDED ripple to its rounded node on Android. android_ripple paints a RippleDrawable
-// bounded to the view's RECTANGLE; overflow:"hidden" (clipToOutline) masks it to the rounded
-// outline. The native Android elevation shadow is drawn around the outline by the platform, so it
-// SURVIVES the clip; iOS/web (which dim instead of rippling, and whose shadow* WOULD be clipped) get
-// null. Add to the SAME node that carries the borderRadius + android_ripple, when that node also has
-// an elevation/shadow (so the clip cannot be put unconditionally in a shared style). A rounded
-// shadow-free Android skin style should just set overflow:"hidden" directly instead.
+// DEPRECATED — does NOT clip a bounded android_ripple. Use `<RippleClip>` (a rounded
+// overflow:"hidden" PARENT) instead; see src/style/ripple-clip.tsx for the why.
+//
+// The original premise here — that `overflow:"hidden"` on the SAME node as the ripple
+// masks it to the rounded outline — is false on this architecture. React Native does not
+// use clipToOutline; it clips `overflow:"hidden"` as a manual path-clip in
+// `ViewGroup.dispatchDraw`, which only affects CHILD views. A bounded ripple is the node's
+// OWN background drawable (drawn before dispatchDraw) with a rectangular mask, so a node
+// can never clip its own ripple — the rectangle bleeds past the corners regardless of this
+// style. Retained only for the remaining call sites until they migrate to `RippleClip`.
 export function rippleClip() {
   return Platform.OS === "android" ? ({ overflow: "hidden" } as const) : null;
 }
