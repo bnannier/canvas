@@ -10,7 +10,7 @@ const TEMPLATES: TemplateDoc[] = [
       {
         title: "Centered card",
         anatomy: "Logo + card (email, password, submit) + social divider + OAuth buttons. Max-width 400px, vertically centered.",
-        html: `<div style="display:flex;align-items:center;justify-content:center;min-height:420px;background:color-mix(in oklch, var(--muted) 15%, transparent);border-radius:var(--radius-lg,12px);padding:2rem">
+        html: `<div style="display:flex;align-items:center;justify-content:center;min-height:420px;background:color-mix(in oklch, var(--muted) 15%, transparent);border-radius:var(--radius-lg,12px);padding:1rem">
   <div class="card" style="width:100%;max-width:400px">
     <div class="card-header" style="text-align:center">
       <div style="width:40px;height:40px;border-radius:var(--radius-md,8px);background:var(--primary);display:inline-flex;align-items:center;justify-content:center;color:var(--primary-foreground);font-weight:700;font-size:18px;margin-bottom:12px">C</div>
@@ -61,7 +61,7 @@ const TEMPLATES: TemplateDoc[] = [
       {
         title: "Magic link",
         anatomy: "Single email field + submit. No password. Confirmation state swaps the form for a success message.",
-        html: `<div style="display:flex;align-items:center;justify-content:center;min-height:340px;background:color-mix(in oklch, var(--muted) 15%, transparent);border-radius:var(--radius-lg,12px);padding:2rem">
+        html: `<div style="display:flex;align-items:center;justify-content:center;min-height:340px;background:color-mix(in oklch, var(--muted) 15%, transparent);border-radius:var(--radius-lg,12px);padding:1rem">
   <div class="card" style="width:100%;max-width:400px;text-align:center">
     <div class="card-header">
       <div style="width:48px;height:48px;border-radius:50%;background:color-mix(in oklch, var(--primary) 12%, transparent);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
@@ -234,7 +234,7 @@ const TEMPLATES: TemplateDoc[] = [
     </div>
   </div>
 
-  <div class="section-card" style="padding:0;overflow:hidden">
+  <div class="section-card tpl-scroll" style="padding:0;overflow:hidden;min-width:420px">
     <!-- Weekday header -->
     <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)">
       <div style="padding:8px;text-align:center;font-size:11px;font-weight:600;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:0.05em">Mon</div>
