@@ -61,3 +61,18 @@ plugin({
     });
   },
 });
+
+// Sweep leaked react-native-web PressResponder listeners after every test, suite-wide.
+// An Enter/Space keydown on any RNW Pressable registers a document-level keyup listener
+// that is removed only by a matching valid keyup; tests that fire keydown without keyup
+// leak it across files (one shared happy-dom document per bun test process), and a later
+// keyup whose target lacks a tagName then throws inside the leaked handler
+// ("undefined is not an object (evaluating 'element.tagName.toLowerCase')"). A benign
+// Enter keyup on <body> (an Element, so tagName exists) drives each leaked handler
+// through its removal branch; no onPress can fire because the stale responder element
+// never equals <body>. Registered in preload, so this afterEach runs after each file's
+// own afterEach(cleanup), when trees are already unmounted and only leaks remain.
+import { afterEach } from "bun:test";
+afterEach(() => {
+  document.body.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", bubbles: true }));
+});

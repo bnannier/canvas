@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Pressable, Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -135,9 +135,14 @@ describe("Toast (imperative ToastProvider + useToast)", () => {
     expect(screen.queryByText("Hello there")).toBeNull();
     click('[aria-label="fire"]', container);
     expect(screen.getByText("Hello there")).toBeDefined();
-    // A generous timeout: the 40ms auto-dismiss timer can be starved on a loaded
-    // machine during a full-suite run, which flaked this assertion at the default 1s.
-    await waitFor(() => expect(screen.queryByText("Hello there")).toBeNull(), { timeout: 4000 });
+    // Deterministic, load-immune: the 40ms auto-dismiss timer is due before this 60ms
+    // sleep, and timers on the same clock fire in due order however starved the runner
+    // is (a stall delays both equally). Sleeping inside act() flushes the dismiss state
+    // update before the single synchronous assertion; no DOM polling window.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 60));
+    });
+    expect(screen.queryByText("Hello there")).toBeNull();
   });
 
   it("keeps a zero-duration toast until dismissed", () => {
