@@ -51,9 +51,9 @@ try {
 
 export function GlassSurface({ style, children, pointerEvents, testID, sheer }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
-  // The Android blur target published by GlassBackdrop (null on web, where the
-  // backdrop is a passthrough, and for the first frame on Android while the target
-  // ref attaches). Read unconditionally: hooks must not sit behind the early returns.
+  // The Android blur target (see GlassBlurTargetContext in the shared file: always
+  // null today, so the Android frost renders fill-only under expo-blur 57). Read
+  // unconditionally: hooks must not sit behind the early returns.
   const blurTarget = useContext(GlassBlurTargetContext);
 
   if (surface !== "glass") {

@@ -44,28 +44,31 @@ export interface GlassSurfaceProps {
   sheer?: boolean;
 }
 
-// The Android blur-backdrop plumbing for expo-blur 57+. Its new Android API blurs an
-// explicitly designated BlurTargetView (passed by ref) instead of whatever sits behind
-// the BlurView; without a target the dimezis method silently falls back to no blur.
-// GlassBackdrop (mounted by ThemeProvider, forked to wrap the app content in a
-// BlurTargetView on Android) publishes the target ref here ONCE the ref is attached —
-// expo-blur resolves `blurTarget.current` when the BlurView receives the prop, so
-// publishing a not-yet-attached ref would freeze the frost at "no target".
+// The Android blur-target plumbing for expo-blur 57+, whose new Android API blurs an
+// explicitly designated BlurTargetView (passed by ref) instead of whatever renders
+// behind the BlurView (the pre-57 behavior the frost relied on). NOBODY publishes a
+// target yet, deliberately: the obvious wiring — wrap the app content in one
+// BlurTargetView and point every frost surface at it — hard-crashes Android, because
+// the kit's frost surfaces (bar shells, the in-content drawer, sheer content panels)
+// are DESCENDANTS of that target, and a BlurView whose target is its own ancestor
+// creates a render-node cycle that libhwui recurses on until the RenderThread
+// segfaults (verified on device: RenderNode::prepareTreeImpl recursion → SIGSEGV).
+// The new API can only blur a SIBLING subtree safely, so restoring real Android blur
+// means publishing per-surface sibling targets here — safe only where the BlurView
+// renders in a different native window than the target (an RN Modal), never for
+// in-content surfaces. GlassSurface already consumes this context, so publishing a
+// target is all a future provider needs to do.
 export const GlassBlurTargetContext = createContext<RefObject<View | null> | null>(null);
-
-// True inside a mounted GlassBackdrop, provided synchronously (unlike the target ref
-// above). Nested ThemeProviders (the docs' theming page embeds one per example) must
-// NOT wrap again: the wrapper is a flex:1 View, which collapses to zero height in a
-// content-sized parent, and one app-root target is the correct backdrop anyway.
-export const GlassBackdropPresenceContext = createContext(false);
 
 // The Android blur-method props for the frost BlurView, chosen by which expo-blur API
 // generation is installed. expo-blur 57+ (detected by its BlurTargetView export) wants
 // `blurMethod` + `blurTarget`; passing the legacy prop there logs a deprecation
 // warning, and naming the dimezis method without a target logs a fallback warning, so
 // without a target it asks for "none" outright (the popover fill under the blur keeps
-// the surface a substantial material). Older expo-blur keeps the legacy prop
-// unchanged. Web ignores all three props (its backdrop-filter path never reads them).
+// the surface a substantial material; see glass-backdrop.tsx for why no target exists
+// on Android today). Older expo-blur keeps the legacy prop unchanged, which still
+// blurs the content behind the surface there. Web ignores all three props (its
+// backdrop-filter path never reads them).
 export function frostMethodProps(
   supportsBlurTarget: boolean,
   target: RefObject<View | null> | null,
