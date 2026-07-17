@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { StyleSheet } from "react-native";
-import { rippleClipWrapperStyle } from "../src/style/ripple-clip.tsx";
+import { rippleClipWrapperStyle, cornerRadii, splitElevation } from "../src/style/ripple-clip.tsx";
 import { iosSkin, androidSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { lightColors } from "../src/style/tokens.ts";
 
@@ -28,6 +28,40 @@ describe("rippleClipWrapperStyle", () => {
 
   it("adds no clip when there is no shape, even on Android", () => {
     expect(rippleClipWrapperStyle(undefined, true)).toBeNull();
+  });
+});
+
+describe("cornerRadii", () => {
+  it("extracts a uniform borderRadius and drops everything else", () => {
+    expect(cornerRadii({ borderRadius: 9999, backgroundColor: "#fff", padding: 12 })).toEqual({
+      borderRadius: 9999,
+    });
+  });
+
+  it("extracts per-corner radii (a split button / top-only field)", () => {
+    const shape = { borderTopStartRadius: 8, borderBottomStartRadius: 8, paddingHorizontal: 16 };
+    expect(cornerRadii(shape)).toEqual({ borderTopStartRadius: 8, borderBottomStartRadius: 8 });
+  });
+
+  it("flattens a style array before extracting (the common call form)", () => {
+    expect(cornerRadii([{ flexDirection: "row" }, { borderRadius: 4 }])).toEqual({ borderRadius: 4 });
+  });
+
+  it("returns {} for a shape with no radius, so the wrapper adds no clip", () => {
+    expect(cornerRadii({ flexDirection: "row", padding: 8 })).toEqual({});
+    expect(cornerRadii(null)).toEqual({});
+  });
+});
+
+describe("splitElevation", () => {
+  // The render harness reports web, so this exercises the off-Android branch: the shadow stays
+  // wholly on the child and iOS/web are unchanged. The Android branch (elevation → parent, 0 on
+  // child) is covered by the source contract; verified visually on device.
+  it("off Android, keeps the whole shadow on the child and adds nothing to the parent", () => {
+    const shadow = { shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 6, elevation: 6 };
+    const { parent, child } = splitElevation(shadow);
+    expect(parent).toBeNull();
+    expect(child).toMatchObject(shadow);
   });
 });
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { I18nManager } from "react-native";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, useRovingFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, useRovingFocus, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -166,7 +166,10 @@ export function createDropdown(skin: DropdownSkin) {
           inlineStyle={MENU_ANCHOR}
         >
             {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
-                each menuitem is orphaned and web SRs/validators flag it. */}
+                each menuitem is orphaned and web SRs/validators flag it. The RippleClip
+                parent clips the Android bounded-ripple rows to the menu card's rounded
+                corners (a no-op on iOS/web; the card itself keeps no overflow). */}
+            <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
             <View accessibilityRole="menu" role="menu">
             {label ? (
               <Text style={skin.menuLabel(tokens)}>
@@ -226,6 +229,7 @@ export function createDropdown(skin: DropdownSkin) {
               );
             })}
             </View>
+            </RippleClip>
         </AnchoredOverlay>
       </View>
     );

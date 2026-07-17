@@ -5,6 +5,8 @@ import {
   Pressable,
   Text,
   ScrollView,
+  RippleClip,
+  cornerRadii,
   useTheme,
   useControllableState,
   useReducedMotion,
@@ -470,35 +472,40 @@ export function createSidebar(skin: SidebarSkin) {
     const renderRow = (item: SidebarItem, index: number) => {
       const activeRow = index === activeIndex;
       return (
-        <Pressable
-          key={item.id ?? item.label}
-          android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-          style={({ pressed }) => [
-            skin.row(tokens, density, collapsed),
-            // The active row carries its highlight persistently; on web a press paints it too.
-            skin.rowFill(tokens, activeRow || (skin.pressedFill && pressed)),
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-            skin.focusOutlineReset,
-          ]}
-          onPress={(event) => select(item, index, event)}
-          accessibilityRole="button"
-          accessibilityState={{ selected: activeRow }}
-          aria-selected={activeRow}
-          // Collapsed rail hides the label; keep the accessible name (+ badge count).
-          accessibilityLabel={collapsed ? rowA11yLabel(item) : undefined}
-        >
-          {item.icon != null ? (
-            <Icon {...{ [item.icon]: true }} {...skin.iconTint(activeRow)} size={skin.iconSize} decorative />
-          ) : null}
-          {collapsed ? null : (
-            <>
-              <Text style={skin.label(tokens, activeRow, density)} numberOfLines={1}>
-                {item.label}
-              </Text>
-              {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
-            </>
-          )}
-        </Pressable>
+        // The bounded Android ripple on a nav row is masked to a rectangle and cannot
+        // clip itself; this RippleClip parent rounds it to the row's own corners (Android
+        // only; a transparent passthrough on iOS/web). The row fills the sidebar width, so
+        // the wrapper stretches to match (the row inside it fills the wrapper in turn).
+        <RippleClip key={item.id ?? item.label} shape={cornerRadii(skin.row(tokens, density, collapsed))} style={{ alignSelf: "stretch" }}>
+          <Pressable
+            android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+            style={({ pressed }) => [
+              skin.row(tokens, density, collapsed),
+              // The active row carries its highlight persistently; on web a press paints it too.
+              skin.rowFill(tokens, activeRow || (skin.pressedFill && pressed)),
+              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+              skin.focusOutlineReset,
+            ]}
+            onPress={(event) => select(item, index, event)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: activeRow }}
+            aria-selected={activeRow}
+            // Collapsed rail hides the label; keep the accessible name (+ badge count).
+            accessibilityLabel={collapsed ? rowA11yLabel(item) : undefined}
+          >
+            {item.icon != null ? (
+              <Icon {...{ [item.icon]: true }} {...skin.iconTint(activeRow)} size={skin.iconSize} decorative />
+            ) : null}
+            {collapsed ? null : (
+              <>
+                <Text style={skin.label(tokens, activeRow, density)} numberOfLines={1}>
+                  {item.label}
+                </Text>
+                {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
+              </>
+            )}
+          </Pressable>
+        </RippleClip>
       );
     };
 
@@ -512,27 +519,31 @@ export function createSidebar(skin: SidebarSkin) {
       if (collapsed) {
         if (isCollapsible) {
           return (
-            <Pressable
-              key={key}
-              android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-              style={({ pressed }) => [
-                skin.row(tokens, density, true),
-                skin.rowFill(tokens, holdsActive || (skin.pressedFill && pressed)),
-                skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                skin.focusOutlineReset,
-              ]}
-              onPress={() => {
-                setCollapsed(false);
-                onToggleCollapse?.();
-                openSection(key);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={section.title}
-            >
-              {section.icon != null ? (
-                <Icon {...{ [section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} decorative />
-              ) : null}
-            </Pressable>
+            // Collapsed-rail collapsible header button: round its bounded Android ripple to
+            // the row's corners via this RippleClip parent (Android only). The rail row fills
+            // the rail width, so the wrapper stretches to match.
+            <RippleClip key={key} shape={cornerRadii(skin.row(tokens, density, true))} style={{ alignSelf: "stretch" }}>
+              <Pressable
+                android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+                style={({ pressed }) => [
+                  skin.row(tokens, density, true),
+                  skin.rowFill(tokens, holdsActive || (skin.pressedFill && pressed)),
+                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                  skin.focusOutlineReset,
+                ]}
+                onPress={() => {
+                  setCollapsed(false);
+                  onToggleCollapse?.();
+                  openSection(key);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={section.title}
+              >
+                {section.icon != null ? (
+                  <Icon {...{ [section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} decorative />
+                ) : null}
+              </Pressable>
+            </RippleClip>
           );
         }
         return (

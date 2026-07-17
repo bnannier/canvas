@@ -14,6 +14,8 @@ import {
   Pressable,
   Portal,
   GlassSurface,
+  RippleClip,
+  cornerRadii,
   StyleSheet,
   useTheme,
   type ColorTokens,
@@ -228,33 +230,39 @@ export function createToastSystem(skin: ToastSkin) {
           ) : null}
         </View>
         {action ? (
-          <Pressable
-            onPress={action.onPress}
-            accessibilityRole="button"
-            accessibilityLabel={action.label}
-            android_ripple={ripple}
-            hitSlop={skin.actionHitSlop ?? undefined}
-            style={({ pressed }) => [skin.actionButton(tokens), pressFeedback(pressed)]}
-          >
-            <Text style={skin.actionLabel(tokens)}>{action.label}</Text>
-          </Pressable>
+          // The bounded ripple is clipped to the button's corners by this RippleClip
+          // parent (a node can never clip its own ripple on Android); nothing to move.
+          <RippleClip shape={cornerRadii(skin.actionButton(tokens))}>
+            <Pressable
+              onPress={action.onPress}
+              accessibilityRole="button"
+              accessibilityLabel={action.label}
+              android_ripple={ripple}
+              hitSlop={skin.actionHitSlop ?? undefined}
+              style={({ pressed }) => [skin.actionButton(tokens), pressFeedback(pressed)]}
+            >
+              <Text style={skin.actionLabel(tokens)}>{action.label}</Text>
+            </Pressable>
+          </RippleClip>
         ) : null}
         {onDismiss ? (
-          <Pressable
-            onPress={onDismiss}
-            accessibilityRole="button"
-            accessibilityLabel="Dismiss"
-            android_ripple={ripple}
-            hitSlop={skin.dismissHitSlop ?? undefined}
-            style={({ pressed }) => [skin.dismissButton(tokens), pressFeedback(pressed)]}
-          >
-            <Icon
-              x
-              muted={skin.dismissColor == null}
-              color={skin.dismissColor ? skin.dismissColor(tokens) : undefined}
-              size={skin.dismissIconSize}
-            />
-          </Pressable>
+          <RippleClip shape={cornerRadii(skin.dismissButton(tokens))}>
+            <Pressable
+              onPress={onDismiss}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss"
+              android_ripple={ripple}
+              hitSlop={skin.dismissHitSlop ?? undefined}
+              style={({ pressed }) => [skin.dismissButton(tokens), pressFeedback(pressed)]}
+            >
+              <Icon
+                x
+                muted={skin.dismissColor == null}
+                color={skin.dismissColor ? skin.dismissColor(tokens) : undefined}
+                size={skin.dismissIconSize}
+              />
+            </Pressable>
+          </RippleClip>
         ) : null}
       </>
     );

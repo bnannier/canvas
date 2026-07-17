@@ -27,16 +27,18 @@ export function pressDim(pressed: boolean, opacity = 0.9) {
   return pressed && Platform.OS !== "android" ? { opacity } : null;
 }
 
-// DEPRECATED — does NOT clip a bounded android_ripple. Use `<RippleClip>` (a rounded
-// overflow:"hidden" PARENT) instead; see src/style/ripple-clip.tsx for the why.
+// Android-only `overflow:"hidden"`. Add it to a rounded PARENT so it clips a bounded-ripple
+// CHILD (a menu/list card whose rows carry the ripple) to the parent's rounded corners. The
+// clip is Android-only so an iOS shadow on the parent (which `overflow:"hidden"` would mask)
+// survives; the Android elevation shadow is drawn around the outline by the platform and is
+// not clipped by the parent's own overflow.
 //
-// The original premise here — that `overflow:"hidden"` on the SAME node as the ripple
-// masks it to the rounded outline — is false on this architecture. React Native does not
-// use clipToOutline; it clips `overflow:"hidden"` as a manual path-clip in
-// `ViewGroup.dispatchDraw`, which only affects CHILD views. A bounded ripple is the node's
-// OWN background drawable (drawn before dispatchDraw) with a rectangular mask, so a node
-// can never clip its own ripple — the rectangle bleeds past the corners regardless of this
-// style. Retained only for the remaining call sites until they migrate to `RippleClip`.
+// IMPORTANT — this only works on a PARENT of the ripple node, never on the ripple node
+// ITSELF. React Native does not use clipToOutline; it clips `overflow:"hidden"` as a manual
+// path-clip in `ViewGroup.dispatchDraw`, which affects only CHILD views. A bounded ripple is
+// the node's OWN background drawable (a rectangle, drawn before dispatchDraw), so a node can
+// never clip its own ripple. When the ripple node is itself the rounded surface (no clipping
+// parent exists), use `<RippleClip>` to introduce one instead. See src/style/ripple-clip.tsx.
 export function rippleClip() {
   return Platform.OS === "android" ? ({ overflow: "hidden" } as const) : null;
 }

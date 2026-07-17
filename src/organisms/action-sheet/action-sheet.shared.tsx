@@ -7,6 +7,8 @@ import {
   Pressable,
   ScrollView,
   GlassSurface,
+  RippleClip,
+  cornerRadii,
   useTheme,
   type StyleProp,
   type ViewStyle,
@@ -241,8 +243,18 @@ export function createActionSheet(skin: ActionSheetSkin) {
                     {/* The rows scroll if they overflow the viewport (a long action list).
                         rowsContent spaces the rows on iOS (the detached-capsule gap);
                         web/Android leave it undefined so the rows stay flush. */}
-                    <ScrollView bounces={false} style={{ maxHeight: 360 }} contentContainerStyle={skin.rowsContent}>
-                      {actionRows}
+                    <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                      {/* RippleClip clips the Android bounded-ripple action rows to the
+                          card's rounded top corners (a no-op on iOS/web). It also carries
+                          the iOS detached-capsule gap (skin.rowsContent), moved off the
+                          ScrollView's contentContainer so it now spaces the rows inside
+                          the clip and iOS layout is unchanged. */}
+                      <RippleClip
+                        shape={cornerRadii(skin.actionsCard(tokens))}
+                        style={[skin.rowsContent, { alignSelf: "stretch" }]}
+                      >
+                        {actionRows}
+                      </RippleClip>
                       {/* Android: Cancel is the last row in the same sheet. */}
                       {skin.cancelLayout === "lastRow" ? (
                         <Fragment>

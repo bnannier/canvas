@@ -103,8 +103,9 @@ describe("field width axis: Textarea", () => {
 describe("field width axis: Select", () => {
   it("renders the root at the standard width (label + trigger share the field edge)", () => {
     const { container } = ui(<Select label="Region" options={["EU", "US"]} />);
-    const trigger = container.querySelector("[aria-expanded]") as HTMLElement;
-    const root = trigger.parentElement as HTMLElement;
+    // The field width lives on the outermost root View (which holds the label + the
+    // trigger); the trigger sits inside it, now under a RippleClip ripple-clip wrapper.
+    const root = container.firstElementChild as HTMLElement;
     expect(root.style.width).toBe(`${fieldWidths.base}px`);
     expect(root.style.maxWidth).toBe("100%");
   });
@@ -116,8 +117,8 @@ describe("field width axis: Select", () => {
 
   it("block fills the container instead", () => {
     const { container } = ui(<Select block options={["EU", "US"]} />);
-    const trigger = container.querySelector("[aria-expanded]") as HTMLElement;
-    expect((trigger.parentElement as HTMLElement).style.width).not.toBe(`${fieldWidths.base}px`);
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.style.width).not.toBe(`${fieldWidths.base}px`);
   });
 });
 

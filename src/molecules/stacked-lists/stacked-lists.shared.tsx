@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType, type ReactNode } from "react";
 import { FlatList, StyleSheet, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -185,18 +185,23 @@ export function createStackedList(
     // hitSlop (native skins only) grows the effective target to the platform
     // minimum (44pt iOS / 48dp Android) while the visual box stays 28.
     const renderMenu = (index: number) => (
-      <Pressable
-        style={({ pressed }) => [skin.menuButton, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
-        hitSlop={skin.menuHitSlop}
-        android_ripple={ripple}
-        onPress={(event) => onPressItemMenu?.(index, event)}
-        accessibilityRole="button"
-        accessibilityLabel="Actions"
-      >
-        <View style={s.menuDot(tokens)} />
-        <View style={s.menuDot(tokens)} />
-        <View style={s.menuDot(tokens)} />
-      </Pressable>
+      // The bounded ripple is clipped to the round menu button by this RippleClip
+      // parent (a node can never clip its own ripple on Android); fixed-size icon
+      // button, so no outer layout moves to the wrapper.
+      <RippleClip shape={cornerRadii(skin.menuButton)}>
+        <Pressable
+          style={({ pressed }) => [skin.menuButton, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
+          hitSlop={skin.menuHitSlop}
+          android_ripple={ripple}
+          onPress={(event) => onPressItemMenu?.(index, event)}
+          accessibilityRole="button"
+          accessibilityLabel="Actions"
+        >
+          <View style={s.menuDot(tokens)} />
+          <View style={s.menuDot(tokens)} />
+          <View style={s.menuDot(tokens)} />
+        </Pressable>
+      </RippleClip>
     );
 
     // The decorative drilldown chevron: an SF-semibold text glyph on iOS/web, a

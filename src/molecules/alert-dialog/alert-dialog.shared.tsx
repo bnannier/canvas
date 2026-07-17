@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -200,25 +200,32 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
         // red LABEL on a transparent button (never a filled red button) and
         // mirrors the plain Dialog's Android footer.
         <View style={skin.actions}>
-          <Pressable
-            onPress={handleCancel}
-            accessibilityRole="button"
-            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
-            style={skin.textButton}
-          >
-            <Text style={skin.textButtonLabel!(tokens, false)}>{cancelLabel}</Text>
-          </Pressable>
-          <Pressable
-            onPress={handleConfirm}
-            disabled={confirmGated}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: confirmGated }}
-            aria-disabled={confirmGated || undefined}
-            android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
-            style={[skin.textButton, confirmGated ? { opacity: 0.38 } : null]}
-          >
-            <Text style={skin.textButtonLabel!(tokens, !!destructive)}>{confirmLabel}</Text>
-          </Pressable>
+          {/* Android: the bounded text-button ripple is clipped to the br20 outline by
+              this RippleClip parent (a node can't clip its own ripple). Bare wrapper —
+              the text button is shrink-wrap with no outer layout to move. */}
+          <RippleClip shape={cornerRadii(skin.textButton)}>
+            <Pressable
+              onPress={handleCancel}
+              accessibilityRole="button"
+              android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+              style={skin.textButton}
+            >
+              <Text style={skin.textButtonLabel!(tokens, false)}>{cancelLabel}</Text>
+            </Pressable>
+          </RippleClip>
+          <RippleClip shape={cornerRadii(skin.textButton)}>
+            <Pressable
+              onPress={handleConfirm}
+              disabled={confirmGated}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: confirmGated }}
+              aria-disabled={confirmGated || undefined}
+              android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
+              style={[skin.textButton, confirmGated ? { opacity: 0.38 } : null]}
+            >
+              <Text style={skin.textButtonLabel!(tokens, !!destructive)}>{confirmLabel}</Text>
+            </Pressable>
+          </RippleClip>
         </View>
       ) : (
         <View style={skin.actions}>

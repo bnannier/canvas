@@ -1,4 +1,4 @@
-import { View, Pressable, Text, useTheme, useControllableState, type StyleProp, type ViewStyle, type ColorTokens } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle, type ColorTokens } from "../../style/index.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
 
@@ -133,25 +133,30 @@ export function createPagination(skin: PaginationSkin) {
   // A Prev/Next chevron control. Reads as a square page button without a number.
   function Control({ glyph, size, tokens, disabled, accessibilityLabel, onPress }: ControlProps) {
     return (
-      <Pressable
-        style={({ pressed }) => [
-          skin.controlBox(tokens),
-          s.itemSize[size],
-          skin.focusOutlineReset,
-          disabled ? { opacity: 0.5 } : null,
-          skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-        ]}
-        onPress={onPress}
-        disabled={disabled}
-        hitSlop={8}
-        android_ripple={ripple ? ripple(tokens, false) : undefined}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        accessibilityState={{ disabled }}
-        aria-disabled={disabled}
-      >
-        <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{glyph}</Text>
-      </Pressable>
+      // The rounded cell's bounded Android ripple is clipped to its corners by this RippleClip
+      // parent (no-op on iOS/web). A same-node overflow:"hidden" cannot clip a node's own
+      // ripple. See src/style/ripple-clip.
+      <RippleClip shape={cornerRadii(skin.controlBox(tokens))}>
+        <Pressable
+          style={({ pressed }) => [
+            skin.controlBox(tokens),
+            s.itemSize[size],
+            skin.focusOutlineReset,
+            disabled ? { opacity: 0.5 } : null,
+            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+          ]}
+          onPress={onPress}
+          disabled={disabled}
+          hitSlop={8}
+          android_ripple={ripple ? ripple(tokens, false) : undefined}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          accessibilityState={{ disabled }}
+          aria-disabled={disabled}
+        >
+          <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{glyph}</Text>
+        </Pressable>
+      </RippleClip>
     );
   }
 
@@ -235,26 +240,30 @@ export function createPagination(skin: PaginationSkin) {
         <View testID={testID} style={[s.withSizeRow, style]}>
           <View style={s.selectorCluster}>
             <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>Rows per page</Text>
-            <Pressable
-              style={({ pressed }) => [
-                skin.selectorBox(tokens),
-                s.itemSize[size],
-                skin.focusOutlineReset,
-                disabled ? { opacity: 0.5 } : null,
-                skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-              ]}
-              onPress={cycleSize}
-              disabled={disabled}
-              hitSlop={8}
-              android_ripple={ripple ? ripple(tokens, false) : undefined}
-              accessibilityRole="button"
-              accessibilityLabel="Rows per page"
-              accessibilityState={{ disabled: !!disabled }}
-              aria-disabled={!!disabled}
-            >
-              <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{pageSize}</Text>
-              <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>▾</Text>
-            </Pressable>
+            {/* The selector cell's bounded Android ripple is clipped to its corners by this
+                RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}
+            <RippleClip shape={cornerRadii(skin.selectorBox(tokens))}>
+              <Pressable
+                style={({ pressed }) => [
+                  skin.selectorBox(tokens),
+                  s.itemSize[size],
+                  skin.focusOutlineReset,
+                  disabled ? { opacity: 0.5 } : null,
+                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                ]}
+                onPress={cycleSize}
+                disabled={disabled}
+                hitSlop={8}
+                android_ripple={ripple ? ripple(tokens, false) : undefined}
+                accessibilityRole="button"
+                accessibilityLabel="Rows per page"
+                accessibilityState={{ disabled: !!disabled }}
+                aria-disabled={!!disabled}
+              >
+                <Text style={[skin.controlLabel(tokens), s.labelSize[size]]}>{pageSize}</Text>
+                <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>▾</Text>
+              </Pressable>
+            </RippleClip>
           </View>
           <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>
             {`Page ${current} of ${total}`}
@@ -287,27 +296,31 @@ export function createPagination(skin: PaginationSkin) {
           }
           const selected = p === current;
           return (
-            <Pressable
-              key={`page-${p}`}
-              style={({ pressed }) => [
-                skin.pageBox(tokens, selected),
-                s.itemSize[size],
-                skin.focusOutlineReset,
-                disabled ? { opacity: 0.5 } : null,
-                skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-              ]}
-              onPress={() => go(p)}
-              disabled={disabled}
-              hitSlop={4}
-              android_ripple={ripple ? ripple(tokens, selected) : undefined}
-              accessibilityRole="button"
-              accessibilityLabel={`Page ${p}`}
-              accessibilityState={{ selected, disabled: !!disabled }}
-              aria-current={selected ? "page" : undefined}
-              aria-disabled={!!disabled}
-            >
-              <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size]]}>{p}</Text>
-            </Pressable>
+            // The page cell's bounded Android ripple is clipped to its corners by this
+            // RippleClip parent (no-op on iOS/web). The list `key` rides the outer node.
+            // See src/style/ripple-clip.
+            <RippleClip key={`page-${p}`} shape={cornerRadii(skin.pageBox(tokens, selected))}>
+              <Pressable
+                style={({ pressed }) => [
+                  skin.pageBox(tokens, selected),
+                  s.itemSize[size],
+                  skin.focusOutlineReset,
+                  disabled ? { opacity: 0.5 } : null,
+                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                ]}
+                onPress={() => go(p)}
+                disabled={disabled}
+                hitSlop={4}
+                android_ripple={ripple ? ripple(tokens, selected) : undefined}
+                accessibilityRole="button"
+                accessibilityLabel={`Page ${p}`}
+                accessibilityState={{ selected, disabled: !!disabled }}
+                aria-current={selected ? "page" : undefined}
+                aria-disabled={!!disabled}
+              >
+                <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size]]}>{p}</Text>
+              </Pressable>
+            </RippleClip>
           );
         })}
         {next}

@@ -21,7 +21,7 @@
 // (radial, unmasked) need no clip and must not use it.
 
 import { type ReactNode } from "react";
-import { Platform, type StyleProp, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { View } from "./primitives.js";
 
 // The clip itself. Kept separate (not merged into `shape`) so the rounded outline comes
@@ -62,4 +62,58 @@ export function RippleClip({ shape, style, children }: RippleClipProps): ReactNo
   return (
     <View style={[rippleClipWrapperStyle(shape, Platform.OS === "android"), style]}>{children}</View>
   );
+}
+
+// Every corner-radius key, so `cornerRadii` matches a per-corner shape (a split button, a
+// top-only field) as well as a uniform `borderRadius`.
+const RADIUS_KEYS = [
+  "borderRadius",
+  "borderTopLeftRadius",
+  "borderTopRightRadius",
+  "borderBottomLeftRadius",
+  "borderBottomRightRadius",
+  "borderTopStartRadius",
+  "borderTopEndRadius",
+  "borderBottomStartRadius",
+  "borderBottomEndRadius",
+] as const;
+
+/**
+ * Extract only the corner-radius keys from a resolved style, so a `<RippleClip>` parent can
+ * clip to the SAME corners its child draws with no hard-coded, drift-prone radius. Pass the
+ * child's own (static) shape style: `<RippleClip shape={cornerRadii(skin.trigger(tokens))}>`.
+ */
+export function cornerRadii(style: StyleProp<ViewStyle>): ViewStyle {
+  const flat = StyleSheet.flatten(style) as Record<string, unknown> | undefined;
+  if (!flat) return {};
+  const out: Record<string, unknown> = {};
+  for (const key of RADIUS_KEYS) {
+    if (flat[key] != null) out[key] = flat[key];
+  }
+  return out as ViewStyle;
+}
+
+/**
+ * Split an elevation/shadow style for an ELEVATED node whose ripple is being clipped by a
+ * `<RippleClip>` parent. On Android the parent's child-clip would cut the child's own elevation
+ * shadow, so the Android `elevation` must move to the PARENT (whose own elevation shadow, drawn
+ * around its outline, is not clipped by its child-overflow). The iOS `shadow*` props must stay on
+ * the child, exactly where they are today, so iOS is byte-identical.
+ *
+ * Returns `{ parent, child }`:
+ *  - `parent`: the Android `elevation` to spread on the RippleClip (null off Android).
+ *  - `child`: the original shadow with `elevation` zeroed on Android (so it is not drawn twice),
+ *    and returned UNCHANGED off Android (iOS keeps its shadow* verbatim).
+ *
+ * Usage: `const { parent, child } = splitElevation(skin.elevation(e));`
+ * then `<RippleClip shape={...} style={parent}><Pressable style={[base, child, ...]} .../>`.
+ */
+export function splitElevation(shadowStyle: StyleProp<ViewStyle>): {
+  parent: ViewStyle | null;
+  child: ViewStyle;
+} {
+  const flat = (StyleSheet.flatten(shadowStyle) ?? {}) as ViewStyle;
+  if (Platform.OS !== "android") return { parent: null, child: flat };
+  const { elevation, ...rest } = flat as ViewStyle & { elevation?: number };
+  return { parent: elevation ? { elevation } : null, child: { ...rest, elevation: 0 } };
 }

@@ -1,5 +1,5 @@
 import { I18nManager } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useRovingFocus, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -182,77 +182,98 @@ export function createTabs(skin: TabsSkin) {
         disabled ? s.disabledDim : null,
       ];
       return (
-        <Pressable
-          ref={itemRef}
-          {...(rovingProps as object)}
-          onPress={onPress}
-          disabled={disabled}
-          android_ripple={ripple ? ripple(tokens) : undefined}
-          accessibilityRole="tab"
-          accessibilityState={{ selected, disabled: !!disabled }}
-          aria-selected={selected}
-          aria-disabled={disabled || undefined}
-          style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-        >
-          <Text style={skin.verticalLabel(tokens, selected)}>{label}</Text>
-          {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
-        </Pressable>
+        // Round the vertical trigger's bounded Android ripple to its corners via this
+        // RippleClip parent (Android only). The rail stretches its children (alignItems
+        // "stretch") and the trigger is width:"100%", so the wrapper fills the rail and the
+        // trigger fills the wrapper; there is no flex/width on the container to move.
+        <RippleClip shape={cornerRadii(container)}>
+          <Pressable
+            ref={itemRef}
+            {...(rovingProps as object)}
+            onPress={onPress}
+            disabled={disabled}
+            android_ripple={ripple ? ripple(tokens) : undefined}
+            accessibilityRole="tab"
+            accessibilityState={{ selected, disabled: !!disabled }}
+            aria-selected={selected}
+            aria-disabled={disabled || undefined}
+            style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+          >
+            <Text style={skin.verticalLabel(tokens, selected)}>{label}</Text>
+            {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
+          </Pressable>
+        </RippleClip>
       );
     }
 
     if (variant === "pills") {
+      // In block mode each trigger flexes to share the row equally. That flex now rides the
+      // RippleClip wrapper (the flex item in the pills row), not the Pressable, so the wrapper
+      // grows and the Pressable fills it; keeping the flex on the Pressable would double it.
       const container: StyleProp<ViewStyle> = [
         skin.pillsTrigger(tokens, selected),
-        block ? s.flex1 : null,
         skin.pillsFill(tokens, selected, dark),
         skin.focusOutlineReset,
         disabled ? s.disabledDim : null,
       ];
       return (
-        <Pressable
-          ref={itemRef}
-          {...(rovingProps as object)}
-          onPress={onPress}
-          disabled={disabled}
-          android_ripple={ripple ? ripple(tokens) : undefined}
-          accessibilityRole="tab"
-          accessibilityState={{ selected, disabled: !!disabled }}
-          aria-selected={selected}
-          aria-disabled={disabled || undefined}
-          style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-        >
-          <Text style={skin.pillsLabel(tokens, selected)}>{label}</Text>
-          {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
-        </Pressable>
+        // Round the pill trigger's bounded Android ripple to its capsule corners via this
+        // RippleClip parent (Android only). Block-mode flex moves here so the tab still shares
+        // the row width.
+        <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null}>
+          <Pressable
+            ref={itemRef}
+            {...(rovingProps as object)}
+            onPress={onPress}
+            disabled={disabled}
+            android_ripple={ripple ? ripple(tokens) : undefined}
+            accessibilityRole="tab"
+            accessibilityState={{ selected, disabled: !!disabled }}
+            aria-selected={selected}
+            aria-disabled={disabled || undefined}
+            style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+          >
+            <Text style={skin.pillsLabel(tokens, selected)}>{label}</Text>
+            {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
+          </Pressable>
+        </RippleClip>
       );
     }
 
     // Underline: the active trigger gets the emphasized label and an indicator
     // drawn as an explicit sliver pinned to the trigger's bottom edge (iOS draws
     // a raised pill instead, supplied through underlineTrigger).
+    // In block mode each trigger flexes to share the row equally. That flex rides the
+    // RippleClip wrapper (the flex item in the row), not the Pressable, so the wrapper grows
+    // and the Pressable fills it via the wrapper's default stretch.
     const container: StyleProp<ViewStyle> = [
       skin.underlineTrigger(tokens, selected, dark),
-      block ? s.flex1 : null,
       skin.focusOutlineReset,
       disabled ? s.disabledDim : null,
     ];
     return (
-      <Pressable
-        ref={itemRef}
-        {...(rovingProps as object)}
-        onPress={onPress}
-        disabled={disabled}
-        android_ripple={ripple ? ripple(tokens) : undefined}
-        accessibilityRole="tab"
-        accessibilityState={{ selected, disabled: !!disabled }}
-        aria-selected={selected}
-        aria-disabled={disabled || undefined}
-        style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-      >
-        <Text style={skin.underlineLabel(tokens, selected)}>{label}</Text>
-        {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
-        <View style={skin.underlineIndicator(tokens, selected)} />
-      </Pressable>
+      // Round the underline trigger's bounded Android ripple to its corners via this
+      // RippleClip parent (Android only; iOS draws a capsule pill instead). Block-mode flex
+      // moves here so the tab still shares the row width. The absolute bottom indicator stays
+      // inside the Pressable, which fills this wrapper.
+      <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null}>
+        <Pressable
+          ref={itemRef}
+          {...(rovingProps as object)}
+          onPress={onPress}
+          disabled={disabled}
+          android_ripple={ripple ? ripple(tokens) : undefined}
+          accessibilityRole="tab"
+          accessibilityState={{ selected, disabled: !!disabled }}
+          aria-selected={selected}
+          aria-disabled={disabled || undefined}
+          style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+        >
+          <Text style={skin.underlineLabel(tokens, selected)}>{label}</Text>
+          {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
+          <View style={skin.underlineIndicator(tokens, selected)} />
+        </Pressable>
+      </RippleClip>
     );
   }
 
