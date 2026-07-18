@@ -961,7 +961,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "divider",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Divider />", render: e_atoms_divider_example_0 },
+      { label: "Default", code: "<Column snug style={{ width: 320 }}>\n  <Typography small>Profile</Typography>\n  <Divider />\n  <Typography small>Account</Typography>\n</Column>", render: e_atoms_divider_example_0 },
       { label: "Orientation - vertical", code: "<Row alignCenter cozy>\n  <Typography small>Edit</Typography>\n  <Divider vertical style={{ height: 16 }} />\n  <Typography small>Delete</Typography>\n</Row>", render: e_atoms_divider_example_1 },
       { label: "Variant - label", code: "<Divider>Or continue with</Divider>", render: e_atoms_divider_example_2 },
       { label: "Variant - action", code: "<Column cozy style={{ width: 320 }}>\n  <Column snug>\n    <Card padded>\n      <Typography small>Ada commented on the draft</Typography>\n    </Card>\n    <Card padded>\n      <Typography small>Grace approved the request</Typography>\n    </Card>\n  </Column>\n  <Divider>\n    <Button ghost small>Show more</Button>\n  </Divider>\n</Column>", render: e_atoms_divider_example_3 },
