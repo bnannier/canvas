@@ -65,6 +65,10 @@ export interface FieldSkin {
 // The value column grows to fill the row beside the fixed label column.
 export const valueFill: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
+// Display-mode label column override for phone widths (sm and below): the
+// desktop 180px column would starve the value into hard wraps there.
+export const labelNarrow: TextStyle = { width: 120 };
+
 // An overlapping avatar stack row.
 export const avatarRow: ViewStyle = { flexDirection: "row", alignItems: "center" };
 

@@ -1,5 +1,5 @@
 import { type ComponentType, useId } from "react";
-import { View, Text, useTheme, useFieldWidth, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useFieldWidth, useResponsive, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -225,9 +225,14 @@ export function createField(
     // read-only display mode is a label/value table, not a field, so it stays
     // uncapped. Resolved before the mode branch to keep hook order stable.
     const widthCap = useFieldWidth(props);
+    // Display-mode label column: the skins' 180px column reads well on desktop,
+    // but on phone widths it starves the value column into hard wraps, so it
+    // narrows at the sm breakpoint and below. Resolved unconditionally (before
+    // the mode branch) to keep hook order stable.
+    const narrowLabel = useResponsive({ base: false, sm: true });
 
     // Display mode: a read-only stack of label/value rows. Each row aligns its
-    // label to a fixed 180px column (flex, not grid) so every value lines up to
+    // label to a fixed-width column (flex, not grid) so every value lines up to
     // one baseline.
     if (rows) {
       return (
@@ -253,7 +258,7 @@ export function createField(
                     })}
               >
                 <Text
-                  style={skin.fieldLabel(tokens)}
+                  style={[skin.fieldLabel(tokens), narrowLabel ? s.labelNarrow : null]}
                   {...(interactive
                     ? {}
                     : { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const })}
