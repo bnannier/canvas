@@ -308,6 +308,9 @@ export function createCommand(skin: CommandSkin) {
           gap={12}
           cardStyle={[s.card(tokens), skin.cardShape]}
           inlineStyle={s.cardFloating}
+          // A controlled `open` with no onOpenChange can never actually close, so
+          // the hosted dismiss backdrop is skipped (it would only block the page).
+          dismissable={openProp === undefined || onOpenChange !== undefined}
         >
           {cardContent}
         </AnchoredOverlay>

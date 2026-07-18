@@ -178,6 +178,9 @@ export function createPopover(skin: PopoverSkin) {
           gap={4}
           cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
           inlineStyle={s.cardFloating}
+          // A controlled `open` with no onOpenChange can never actually close, so
+          // the hosted dismiss backdrop is skipped (it would only block the page).
+          dismissable={props.open === undefined || onOpenChange !== undefined}
         >
           {/* The anchor beak, drawn only when the skin supplies one (iOS) and only in
               SOLID mode. Under glass the beak is intentionally omitted: a flat

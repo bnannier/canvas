@@ -164,6 +164,9 @@ export function createDropdown(skin: DropdownSkin) {
           gap={4}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
           inlineStyle={MENU_ANCHOR}
+          // A controlled `open` with no onOpenChange can never actually close, so
+          // the hosted dismiss backdrop is skipped (it would only block the page).
+          dismissable={openProp === undefined || onOpenChange !== undefined}
         >
             {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
                 each menuitem is orphaned and web SRs/validators flag it. The RippleClip

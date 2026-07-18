@@ -77,6 +77,58 @@ describe("OverlayProvider outlet (click-through)", () => {
   });
 });
 
+describe("AnchoredOverlay dismiss backdrop (hosted)", () => {
+  // The hosted (portaled) overlay adds a full-bleed backdrop so an outside tap
+  // dismisses — but ONLY when a tap can actually close the card. A controlled
+  // `open` with no onOpenChange (e.g. a docs example pinned open) must render
+  // WITHOUT it, or the backdrop blankets the host and blocks every click under
+  // an overlay that can never close.
+  const findOutlet = (container: HTMLElement) =>
+    [...container.querySelectorAll("div")].find(
+      (d) => getComputedStyle(d).zIndex === "1000" && getComputedStyle(d).position === "absolute",
+    )!;
+  // The backdrop is the outlet child pinned to all four edges (the positioned
+  // card wrapper carries explicit left/top only).
+  const findBackdrop = (outlet: HTMLElement) =>
+    [...outlet.children].find((c) => {
+      const s = getComputedStyle(c);
+      return s.top === "0px" && s.bottom === "0px" && s.left === "0px" && s.right === "0px";
+    });
+  const items = [{ label: "Edit" }, { label: "Duplicate" }];
+
+  it("renders the backdrop for an uncontrolled menu opened via its trigger", () => {
+    const { container } = ui(
+      <OverlayProvider>
+        <Dropdown trigger="Actions" items={items} />
+      </OverlayProvider>,
+    );
+    fireEvent.click(screen.getByText("Actions"));
+    expect(findBackdrop(findOutlet(container))).toBeDefined();
+  });
+
+  it("renders the backdrop for a controlled menu WITH onOpenChange, and taps report the close", () => {
+    let openState: boolean | null = null;
+    const { container } = ui(
+      <OverlayProvider>
+        <Dropdown trigger="Actions" open onOpenChange={(o) => { openState = o; }} items={items} />
+      </OverlayProvider>,
+    );
+    const backdrop = findBackdrop(findOutlet(container))!;
+    expect(backdrop).toBeDefined();
+    fireEvent.click(backdrop);
+    expect(openState).toBe(false);
+  });
+
+  it("skips the backdrop when dismissal is a no-op (controlled open, no handler)", () => {
+    const { container } = ui(
+      <OverlayProvider>
+        <Dropdown trigger="Actions" open items={items} />
+      </OverlayProvider>,
+    );
+    expect(findBackdrop(findOutlet(container))).toBeUndefined();
+  });
+});
+
 describe("Drawer (full-screen Modal overlay)", () => {
   it("renders nothing until opened, then mounts the panel via its trigger", () => {
     ui(

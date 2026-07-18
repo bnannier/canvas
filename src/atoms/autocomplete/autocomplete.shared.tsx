@@ -318,6 +318,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           gap={4}
           cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
           inlineStyle={POPOVER_ANCHOR}
+          // A controlled `open` with no onOpenChange can never actually close, so
+          // the hosted dismiss backdrop is skipped (it would only block the page).
+          dismissable={openProp === undefined || onOpenChange !== undefined}
         >
             {matches.length === 0 ? (
               <View style={skin.emptyRow}>
