@@ -78,6 +78,10 @@ export const avatarOverlap: ViewStyle = { marginStart: -8 };
 // A copyable value: the value text followed by a ghost Copy button.
 export const copyRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
 
+// The copy row's value must yield to the Copy button in a tight row (RN Text
+// defaults to flexShrink 0, which would push the button out of the card).
+export const copyValueText: TextStyle = { flexShrink: 1 };
+
 // The dimmed look applied to the whole field when disabled.
 export const dimmed: ViewStyle = { opacity: 0.5 };
 
@@ -103,6 +107,9 @@ export const webSkin: FieldSkin = {
   displayRow: { flexDirection: "row", alignItems: "center", gap: 16 },
   fieldLabel: (t) => ({
     width: 180,
+    // In a narrow parent (a sidebar card), cap the label column so the value and
+    // any trailing Copy control stay inside the row instead of overflowing it.
+    maxWidth: "45%",
     flexShrink: 0,
     fontSize: 14,
     lineHeight: 20,
@@ -132,6 +139,9 @@ export const iosSkin: FieldSkin = {
   displayRow: { flexDirection: "row", alignItems: "center", gap: 16 },
   fieldLabel: (t) => ({
     width: 180,
+    // In a narrow parent (a sidebar card), cap the label column so the value and
+    // any trailing Copy control stay inside the row instead of overflowing it.
+    maxWidth: "45%",
     flexShrink: 0,
     fontSize: 14,
     lineHeight: 20,
@@ -175,6 +185,9 @@ export const androidSkin: FieldSkin = {
   displayRow: { flexDirection: "row", alignItems: "center", gap: 16 },
   fieldLabel: (t) => ({
     width: 180,
+    // In a narrow parent (a sidebar card), cap the label column so the value and
+    // any trailing Copy control stay inside the row instead of overflowing it.
+    maxWidth: "45%",
     flexShrink: 0,
     fontSize: 14,
     lineHeight: 20,

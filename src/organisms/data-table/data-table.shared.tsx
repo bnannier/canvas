@@ -1,11 +1,21 @@
 import { Fragment, type ComponentType, type ReactNode, useState } from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { FlatList, ScrollView, StyleSheet } from "react-native";
 import { View, Pressable, Text, useTheme, devWarn, breakpoints, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import {
   type Density,
   type DataTableSkin,
 } from "./data-table.styles.js";
+
+// Compact-width pan sizing: each column keeps a readable minimum and the
+// selection column its checkbox share, so the scroller's content width is
+// columns * minimum (+ selector) rather than a crushed fit.
+const MIN_COLUMN_WIDTH = 110;
+const SELECT_COLUMN_WIDTH = 48;
+const s = StyleSheet.create({
+  panContent: { flexGrow: 1 },
+  panInner: { flexGrow: 1 },
+});
 
 // Shared DataTable shell. The data table lays a grid out as flex rows of
 // equal-width flex-1 cells (RN has no CSS table primitive; tables are flex
@@ -96,6 +106,12 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
     const collapsed =
       !!skin.collapsesToPrimaryColumn && measuredWidth > 0 && measuredWidth < breakpoints.sm;
     const visibleColumns = collapsed ? columns.slice(0, 1) : columns;
+    // Where the table does NOT collapse (web, Android), a compact container must
+    // not crush the flex-1 cells into letter-wrapped slivers: below the sm width
+    // the header+body pan together inside a horizontal scroller, each column
+    // keeping a readable minimum (the Material phone data-table treatment).
+    const pans = !collapsed && !skin.collapsesToPrimaryColumn && columns.length > 1 && measuredWidth > 0 && measuredWidth < breakpoints.sm;
+    const panMinWidth = columns.length * MIN_COLUMN_WIDTH + (selectable ? SELECT_COLUMN_WIDTH : 0);
 
     const wrap: StyleProp<ViewStyle> = [
       skin.wrap,
@@ -131,6 +147,20 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
         rows.map((row, r) => <Fragment key={keyOf(row, r)}>{renderDataRow(row, r)}</Fragment>)
       );
 
+    const table = (
+      <>
+        <View style={[skin.headerRow(tokens), skin.headerPad[density]]} role="row">
+          {selectable ? <View style={skin.selectCol} role="columnheader" /> : null}
+          {visibleColumns.map((label, i) => (
+            <Text key={`h-${i}`} style={skin.headerCell(tokens)} role="columnheader">
+              {label}
+            </Text>
+          ))}
+        </View>
+        {body}
+      </>
+    );
+
     return (
       <View
         testID={testID}
@@ -141,15 +171,13 @@ export function createDataTable(skin: DataTableSkin, Checkbox: ComponentType<Che
           setMeasuredWidth((prev) => (prev !== w ? w : prev));
         }}
       >
-        <View style={[skin.headerRow(tokens), skin.headerPad[density]]} role="row">
-          {selectable ? <View style={skin.selectCol} role="columnheader" /> : null}
-          {visibleColumns.map((label, i) => (
-            <Text key={`h-${i}`} style={skin.headerCell(tokens)} role="columnheader">
-              {label}
-            </Text>
-          ))}
-        </View>
-        {body}
+        {pans ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.panContent}>
+            <View style={[s.panInner, { minWidth: panMinWidth }]}>{table}</View>
+          </ScrollView>
+        ) : (
+          table
+        )}
       </View>
     );
 
