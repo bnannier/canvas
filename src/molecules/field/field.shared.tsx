@@ -169,7 +169,7 @@ export function createField(
       const copyValue = row.copyValue;
       return (
         <View style={s.copyRow}>
-          <Text style={[skin.fieldValue(tokens), row.mono ? skin.monoStyle : null]}>
+          <Text style={[skin.fieldValue(tokens), row.mono ? skin.monoStyle : null, s.copyValueText]} numberOfLines={1}>
             {row.value ?? copyValue}
           </Text>
           <Button
