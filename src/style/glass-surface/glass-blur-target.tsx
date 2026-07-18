@@ -7,13 +7,18 @@
 // provider always had: content then outlet in one styled View, byte-for-byte the
 // pre-target structure. glass-blur-target.android.tsx supplies the real host.
 
-import { View } from "react-native";
+import { View, type StyleProp, type ViewStyle } from "react-native";
 import { type GlassBlurTargetHostProps } from "./glass-surface.shared.js";
 
 // Whether this platform mounted a BlurTargetView the provider can publish. False
 // here: the targetRef is never attached, so OverlayProvider publishes null and
 // every frost keeps its current per-platform blur path.
 export const glassBlurTargetAvailable = false;
+
+/** Per-instance form of the flag; always false off Android (see the Android fork). */
+export function blurTargetMountable(_style: StyleProp<ViewStyle>): boolean {
+  return false;
+}
 
 export function GlassBlurTargetHost({ style, children, outlet }: GlassBlurTargetHostProps) {
   return (

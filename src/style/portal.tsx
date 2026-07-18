@@ -37,7 +37,7 @@ import {
   GlassBlurTargetContext,
   GlassWindowBlurTargetContext,
 } from "./glass-surface/glass-surface.shared.js";
-import { GlassBlurTargetHost, glassBlurTargetAvailable } from "./glass-surface/glass-blur-target.js";
+import { GlassBlurTargetHost, blurTargetMountable } from "./glass-surface/glass-blur-target.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -100,9 +100,12 @@ export function OverlayProvider({ children, style }: OverlayProviderProps) {
   // GlassBlurTargetContext so portaled frost overlays blur the page. The outlet
   // must get this provider's OWN target, never an inherited one: an outer
   // provider's target contains this whole subtree, outlet included, and an
-  // ancestor target segfaults Android's RenderThread.
+  // ancestor target segfaults Android's RenderThread. Only a flex-sized host
+  // mounts a target (see blurTargetMountable), so a content-sized host publishes
+  // null and its frosts fall back to fill-only instead of holding a dangling ref.
   const blurTargetRef = useRef<View>(null);
-  const ownBlurTarget = glassBlurTargetAvailable ? blurTargetRef : null;
+  const hostStyle: StyleProp<ViewStyle> = [FILL, style];
+  const ownBlurTarget = blurTargetMountable(hostStyle) ? blurTargetRef : null;
   // Separate-native-window surfaces (RN Modal — Drawer, ActionSheet) instead take
   // the window-level target, where OUTERMOST wins so a Modal opened from a nested
   // host (a docs stage) blurs the page, not just its stage. Safe at any depth: a
@@ -144,7 +147,7 @@ export function OverlayProvider({ children, style }: OverlayProviderProps) {
     <OverlayContext.Provider value={host}>
       <GlassWindowBlurTargetContext.Provider value={windowBlurTarget}>
         <GlassBlurTargetHost
-          style={[FILL, style]}
+          style={hostStyle}
           targetRef={blurTargetRef}
           outlet={
             <GlassBlurTargetContext.Provider value={ownBlurTarget}>
