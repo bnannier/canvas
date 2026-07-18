@@ -7,7 +7,7 @@ import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
 import { HeroOrbit } from "../brand/hero-orbit";
-import { ThreeLooksRotator } from "./three-looks-rotator";
+import { ThreeLooksRotator, LOOKS_AVAILABLE } from "./three-looks-rotator";
 import { CodeBlock } from "../ui/code-block";
 import { geist, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
@@ -251,19 +251,22 @@ export function Home() {
         </Wrap>
       </View>
 
-      {/* ── Three native looks ── the comparison hero: LIVE components, not
-           screenshots. Rotates alphabetically through every atom with an example,
-           rendered through the playground's per-platform scopes (three columns on
-           web, the device's own skin on native); the CTA follows the atom on stage. */}
-      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
-        <SectionHead
-          eyebrow="Platform-adaptive"
-          title="One component API. Three native looks."
-          desc="Every Canvas component carries a skin per platform: an iOS look, Material 3 on Android, and a web look, all driven by the same JSX and the same semantic boolean props. These are the real components rendering live, one atom at a time."
-          titleSize={sectionTitle}
-        />
-        <ThreeLooksRotator />
-      </Wrap>
+      {/* ── Three native looks ── the comparison hero: full-mobile screenshots of
+           each atom's page on the iPhone simulator, the Pixel emulator, and phone
+           web, rotating alphabetically with the CTA following the atom on stage.
+           Web-only (LOOKS_AVAILABLE gates on the platform-split shot map): on a
+           device you ARE the platform, and the native bundles skip the images. */}
+      {LOOKS_AVAILABLE ? (
+        <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
+          <SectionHead
+            eyebrow="Platform-adaptive"
+            title="One component API. Three native looks."
+            desc="Every Canvas component carries a skin per platform: an iOS look, Material 3 on Android, and a web look, all driven by the same JSX and the same semantic boolean props. These are real captures of every atom's page, straight from the iPhone simulator, the Pixel emulator, and the browser."
+            titleSize={sectionTitle}
+          />
+          <ThreeLooksRotator />
+        </Wrap>
+      ) : null}
 
       {/* ── Get the app ── (hidden until the EAS Update preview URL is set; there is
            nothing to scan before the hosted update is published). */}

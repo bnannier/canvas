@@ -1,27 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Animated, Platform, useWindowDimensions } from "react-native";
-import { View, Text, Button, Icon, OverlayProvider, useTheme, useReducedMotion } from "@nannier/canvas";
+import { View, Text, Button, Icon, Image, useTheme, useReducedMotion } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { COMPONENT_DOCS } from "../core/registry";
-import { buildScopes } from "../core/build-scopes";
-import { ExampleErrorBoundary, FitStage } from "../ui/playground";
-import { DocsSurface } from "../ui/surface";
+import { LOOKS_SHOTS, LOOKS_ASPECT } from "./looks-shots";
 import { geist, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 
-// The landing page's live comparison hero: rotates alphabetically through every
-// Atom that has a live example, rendering the SAME first example through the
-// playground's per-platform scopes — the web build shows the iOS / Android / Web
-// skins side by side, a device shows its own skin (you are the platform). Live
-// components, not screenshots, so new atoms join the rotation automatically and
-// the "Open <Atom>" CTA below always targets the atom on stage.
+// The landing page's comparison hero: full-mobile screenshots of each atom's docs
+// page captured on the real iPhone simulator, Pixel emulator, and phone-width web,
+// rotating alphabetically through every atom with a captured set. Baked images (not
+// live renders) so each pane is the platform's true full-screen mobile view — app
+// chrome, tabs, and all; the code chip and the "Open <Atom>" CTA follow the atom on
+// stage. Regenerate the shots with the capture pipeline in looks-shots.ts.
 const INTERVAL_MS = 4000;
 
-const ATOMS = COMPONENTS.filter((c) => c.category === "Atoms")
+const PLATFORMS = [
+  { key: "ios", label: "iOS" },
+  { key: "android", label: "Android" },
+  { key: "web", label: "Web" },
+] as const;
+
+const ATOMS = COMPONENTS.filter((c) => c.category === "Atoms" && LOOKS_SHOTS[c.slug])
   .map((c) => ({ ...c, entry: COMPONENT_DOCS[c.dir ?? c.slug] }))
-  .filter((c) => c.entry && c.entry.examples.length > 0)
   .sort((a, b) => a.name.localeCompare(b.name));
+
+// False on native, where looks-shots.ts resolves to the empty fallback map: the
+// section is web-only (on a device you ARE the platform), and gating on the data
+// keeps the home shell free of Platform branches.
+export const LOOKS_AVAILABLE = ATOMS.length > 0;
 
 // First line of the example's JSX, elided when the fence is longer: the chip is a
 // scent of the API, the component page has the full code.
@@ -34,15 +42,16 @@ function codePreview(code: string) {
 
 export function ThreeLooksRotator() {
   const { tokens } = useTheme();
+  if (ATOMS.length === 0) return null; // shot map not generated yet
   const { width } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
   const router = useRouter();
   const [index, setIndex] = useState(0);
-  const columns = width > 920;
+  const columns = width > 760;
 
   const atom = ATOMS[index % ATOMS.length];
-  const example = atom.entry!.examples[0];
-  const scopes = useMemo(() => buildScopes(tokens), [tokens]);
+  const shots = LOOKS_SHOTS[atom.slug];
+  const code = atom.entry?.examples[0]?.code;
 
   // Auto-advance unless the user prefers reduced motion; the arrows always work.
   useEffect(() => {
@@ -75,44 +84,35 @@ export function ThreeLooksRotator() {
         <Button ghost small iconLeft={<Icon chevronRight size={15} />} accessibilityLabel="Next atom" onPress={() => step(1)} />
       </View>
 
-      {/* One card per platform scope: three side-by-side columns on wide web,
-          stacked when narrow, a single device card on native. One overlay host
-          around the whole stage (the playground's rule) so open menus float.
-          The provider's positioning wrapper defaults to flex:1 (app-root fill);
-          inside a ScrollView's content column that collapses the native scroll
-          range, so cancel every flex axis and stay content-sized. */}
-      <OverlayProvider style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto", width: "100%" }}>
-        <Animated.View style={{ opacity: fade, flexDirection: columns ? "row" : "column", gap: 16 }}>
-          {scopes.map((p) => (
-            <DocsSurface
-              key={p.platform}
-              fill="card"
-              // A content-sized GlassSurface (no width/height/flex) collapses to 0 on
-              // native, so the stacked layout pins the card to the full row width.
-              style={{ flex: columns ? 1 : undefined, width: columns ? undefined : "100%", minWidth: 0, borderWidth: 1, borderColor: tokens.border, borderRadius: 14, overflow: "hidden" }}
-            >
-              <View style={{ paddingVertical: 8, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.28) }}>
-                <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"], textAlign: "center" }}>
-                  {p.label}
-                </Text>
-              </View>
-              <View style={{ minHeight: 150, alignItems: "center", justifyContent: "center", paddingVertical: 22, paddingHorizontal: 20 }}>
-                {/* Remount per atom so stateful examples reset cleanly. */}
-                <ExampleErrorBoundary key={`${atom.slug}:${p.platform}`}>
-                  <FitStage>{example.render(p.scope)}</FitStage>
-                </ExampleErrorBoundary>
-              </View>
-            </DocsSurface>
-          ))}
-        </Animated.View>
-      </OverlayProvider>
+      {/* One phone pane per platform: three side-by-side columns on wide viewports,
+          stacked when narrow. Each pane is an aspect-ratio container with an
+          absolute-fill image (RNW ignores aspectRatio on an auto-height Image). */}
+      <Animated.View style={{ opacity: fade, flexDirection: columns ? "row" : "column", gap: 16, width: "100%", maxWidth: 1040, alignSelf: "center" }}>
+        {PLATFORMS.map((p) => (
+          <View key={p.key} style={{ flex: columns ? 1 : undefined, width: columns ? undefined : "100%", minWidth: 0 }}>
+            <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"], textAlign: "center", marginBottom: 8 }}>
+              {p.label}
+            </Text>
+            <View style={{ width: "100%", aspectRatio: LOOKS_ASPECT, borderRadius: 18, borderWidth: 1, borderColor: tokens.border, overflow: "hidden", backgroundColor: tokens.card }}>
+              <Image
+                source={shots[p.key]}
+                accessibilityLabel={`The ${atom.name} docs page as it renders on ${p.label}`}
+                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            </View>
+          </View>
+        ))}
+      </Animated.View>
 
       <View style={{ alignItems: "center", gap: 18 }}>
-        <View style={{ paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26), maxWidth: "100%" }}>
-          <Text numberOfLines={1} style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>
-            {codePreview(example.code)}
-          </Text>
-        </View>
+        {code ? (
+          <View style={{ paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26), maxWidth: "100%" }}>
+            <Text numberOfLines={1} style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>
+              {codePreview(code)}
+            </Text>
+          </View>
+        ) : null}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
           <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => router.push("/components" as never)}>
             See every component live
