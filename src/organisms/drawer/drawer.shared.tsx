@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, BackHandler, I18nManager, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
-import { Pressable, View, useTheme, useReducedMotion, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { GlassModalBlurTarget, Pressable, View, useTheme, useReducedMotion, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaView } from "../../style/safe-area.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -214,6 +214,10 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           // elsewhere). No focus trap is attempted (hard cross-platform).
           accessibilityViewIsModal={true}
         >
+          {/* The Modal renders in its own native window, so the app's Android blur
+              target is a sibling render tree here — re-publish it and the panel's
+              frost blurs the page behind the drawer (a no-op off Android). */}
+          <GlassModalBlurTarget>
           {/* Lift the panel above the iOS software keyboard so a field inside the drawer stays
               visible while typing. "padding" shrinks the overlay by the keyboard height on iOS;
               off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
@@ -235,6 +239,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
               </Pressable>
             )}
           </KeyboardAvoidingView>
+          </GlassModalBlurTarget>
         </Modal>
       </>
     );

@@ -12,7 +12,7 @@
 // byte the pre-glass behavior, so non-glass themes and module-absent cases never
 // change layout.
 
-import { createContext, type ReactNode, type RefObject } from "react";
+import { createContext, useContext, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import type * as ExpoBlurTypes from "expo-blur";
 import { type ColorTokens } from "../tokens.js";
@@ -46,29 +46,75 @@ export interface GlassSurfaceProps {
 
 // The Android blur-target plumbing for expo-blur 57+, whose new Android API blurs an
 // explicitly designated BlurTargetView (passed by ref) instead of whatever renders
-// behind the BlurView (the pre-57 behavior the frost relied on). NOBODY publishes a
-// target yet, deliberately: the obvious wiring — wrap the app content in one
-// BlurTargetView and point every frost surface at it — hard-crashes Android, because
-// the kit's frost surfaces (bar shells, the in-content drawer, sheer content panels)
-// are DESCENDANTS of that target, and a BlurView whose target is its own ancestor
-// creates a render-node cycle that libhwui recurses on until the RenderThread
-// segfaults (verified on device: RenderNode::prepareTreeImpl recursion → SIGSEGV).
-// The new API can only blur a SIBLING subtree safely, so restoring real Android blur
-// means publishing per-surface sibling targets here — safe only where the BlurView
-// renders in a different native window than the target (an RN Modal), never for
-// in-content surfaces. GlassSurface already consumes this context, so publishing a
-// target is all a future provider needs to do.
+// behind the BlurView (the pre-57 behavior the frost relied on). A target is only
+// safe when the frost BlurView is NOT a descendant of it: a BlurView whose target is
+// its own ancestor creates a render-node cycle that libhwui recurses on until the
+// RenderThread segfaults (verified on device: RenderNode::prepareTreeImpl recursion
+// → SIGSEGV). So this context carries a target ONLY where the consuming surface is a
+// genuine native sibling of it:
+//
+// - <OverlayProvider> (portal.tsx) wraps its page content in a BlurTargetView (the
+//   Android glass-blur-target fork) and provides that ref around its OUTLET alone —
+//   the outlet is a native sibling of the content, so portaled overlays (menus,
+//   dropdowns, selects, popovers, toasts) blur the page safely.
+// - <GlassModalBlurTarget> re-provides the nearest window-level target (below)
+//   inside an RN Modal, which renders in a separate native window — never an
+//   ancestor of the main-window target, whatever the React nesting.
+//
+// Everywhere else the context stays null and the frost renders fill-only
+// (frostMethodProps asks for "none"): in-content surfaces (bar shells, the inline
+// dialogs, sheer content panels) are descendants of any enclosing target, so giving
+// them one would recreate the crash.
 export const GlassBlurTargetContext = createContext<RefObject<View | null> | null>(null);
+
+// The window-level Android blur target: the OUTERMOST <OverlayProvider>'s content
+// wrapper, published to its whole subtree (unlike GlassBlurTargetContext, which
+// only ever wraps an outlet or a Modal). Consumers that render in a SEPARATE native
+// window (RN Modal — Drawer, ActionSheet) bridge it into GlassBlurTargetContext via
+// <GlassModalBlurTarget>; nothing in the main window may consume it directly, since
+// everything under the provider is a descendant of that target. Outermost wins so a
+// Modal blurs the largest safe region (the page, not just the docs stage its
+// trigger happens to sit in).
+export const GlassWindowBlurTargetContext = createContext<RefObject<View | null> | null>(null);
+
+/**
+ * Re-publish the window-level Android blur target inside an RN Modal, so the
+ * Modal's frost surfaces (a sheet, a drawer panel) blur the main window's content.
+ * A Modal renders in its own native window, which is never a descendant of the
+ * main-window target — the one arrangement expo-blur 57's Android API can blur
+ * without the ancestor-target render-node cycle. A no-op (provides null) on every
+ * other platform and when no <OverlayProvider> published a target.
+ */
+export function GlassModalBlurTarget({ children }: { children?: ReactNode }) {
+  const target = useContext(GlassWindowBlurTargetContext);
+  return <GlassBlurTargetContext.Provider value={target}>{children}</GlassBlurTargetContext.Provider>;
+}
+
+// The contract between OverlayProvider and the per-platform GlassBlurTargetHost
+// (glass-blur-target.tsx / .android.tsx): the provider hands over its wrapper
+// style, the ref the Android fork attaches to its BlurTargetView, and the outlet
+// subtree, which every fork must keep OUTSIDE the target so outlet overlays can
+// blur the content as a sibling.
+export interface GlassBlurTargetHostProps {
+  /** The provider wrapper's style (OverlayProvider's [FILL, style]). */
+  style?: StyleProp<ViewStyle>;
+  /** Attached to the BlurTargetView on Android when expo-blur 57+ is installed;
+   *  left unattached (current stays null) everywhere else. */
+  targetRef: RefObject<View | null>;
+  /** The overlay outlet subtree; rendered after (and never inside) the target. */
+  outlet: ReactNode;
+  children?: ReactNode;
+}
 
 // The Android blur-method props for the frost BlurView, chosen by which expo-blur API
 // generation is installed. expo-blur 57+ (detected by its BlurTargetView export) wants
 // `blurMethod` + `blurTarget`; passing the legacy prop there logs a deprecation
 // warning, and naming the dimezis method without a target logs a fallback warning, so
 // without a target it asks for "none" outright (the popover fill under the blur keeps
-// the surface a substantial material; see glass-backdrop.tsx for why no target exists
-// on Android today). Older expo-blur keeps the legacy prop unchanged, which still
-// blurs the content behind the surface there. Web ignores all three props (its
-// backdrop-filter path never reads them).
+// the surface a substantial material; only surfaces with a safe sibling target — see
+// GlassBlurTargetContext above — get one). Older expo-blur keeps the legacy prop
+// unchanged, which still blurs the content behind the surface there. Web ignores all
+// three props (its backdrop-filter path never reads them).
 export function frostMethodProps(
   supportsBlurTarget: boolean,
   target: RefObject<View | null> | null,
