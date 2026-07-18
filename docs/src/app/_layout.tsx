@@ -1,5 +1,5 @@
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ToastProvider } from "@nannier/canvas";
+import { OverlayProvider, ToastProvider } from "@nannier/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
 import { Navbar } from "../shell/navbar";
@@ -13,16 +13,21 @@ export const unstable_settings = { initialRouteName: "(home)" };
 // The whole app renders inside Canvas's ThemeProvider (via DocsThemeProvider) and a
 // single adaptive Navbar: the sidebar/topbar shell on web, a native tab bar on iOS and
 // Android. Everything below the providers is platform-agnostic screen content. The
-// ToastProvider hosts the imperative toast() stack the live template demos fire.
+// root OverlayProvider is the app-level overlay host: it is flex-sized (outside any
+// scroller), so on Android it carries the window blur target for Modal frosts, and
+// the ToastProvider's stack portals into its outlet, above every page. Page-level
+// hosts still exist inside each scroller so anchored menus scroll with their triggers.
 export default function RootLayout() {
   const [fontsLoaded] = useDocsFonts();
   return (
     <SafeAreaProvider>
       <DocsThemeProvider>
         {fontsLoaded ? (
-          <ToastProvider>
-            <Navbar />
-          </ToastProvider>
+          <OverlayProvider>
+            <ToastProvider>
+              <Navbar />
+            </ToastProvider>
+          </OverlayProvider>
         ) : null}
       </DocsThemeProvider>
     </SafeAreaProvider>
