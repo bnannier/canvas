@@ -117,6 +117,9 @@ export function createRowMenu(skin: RowMenuSkin) {
           gap={4}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
           inlineStyle={MENU_ANCHOR}
+          // A controlled `open` with no onOpenChange can never actually close, so
+          // the hosted dismiss backdrop is skipped (it would only block the page).
+          dismissable={props.open === undefined || onOpenChange !== undefined}
         >
           {/* RippleClip clips the Android bounded-ripple rows to the menu card's
               rounded corners (a no-op on iOS/web; the card keeps no overflow). */}

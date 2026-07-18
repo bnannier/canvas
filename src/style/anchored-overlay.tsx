@@ -43,6 +43,14 @@ export interface AnchoredOverlayProps {
   /** The caller's inline absolute anchor (e.g. position:absolute, top:"100%"),
    *  used only in the no-host fallback. */
   inlineStyle?: StyleProp<ViewStyle>;
+  /**
+   * Whether an outside tap can actually dismiss the card (default true). Pass
+   * false when dismissal is a no-op — a controlled `open` with no change handler
+   * (e.g. a docs example pinned open) — so the full-bleed dismiss backdrop is
+   * skipped instead of silently swallowing every tap under an overlay that can
+   * never close.
+   */
+  dismissable?: boolean;
 }
 
 export function AnchoredOverlay({
@@ -53,6 +61,7 @@ export function AnchoredOverlay({
   children,
   cardStyle,
   inlineStyle,
+  dismissable = true,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
 
@@ -75,6 +84,7 @@ export function AnchoredOverlay({
       triggerRef={triggerRef}
       gap={gap}
       cardStyle={cardStyle}
+      dismissable={dismissable}
     >
       {children}
     </HostedAnchoredOverlay>
@@ -88,6 +98,7 @@ interface HostedProps {
   triggerRef: RefObject<View | null>;
   gap: number;
   cardStyle?: StyleProp<ViewStyle>;
+  dismissable: boolean;
   children: ReactNode;
 }
 
@@ -98,7 +109,7 @@ interface Rect {
   height: number;
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, children }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, children }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // Re-measure on viewport changes (rotation / resize). Width/height feed the
   // effect deps; the values themselves aren't read.
@@ -135,7 +146,10 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
 
   return (
     <Portal>
-      <Pressable accessible={false} style={BACKDROP} onPress={onDismiss} />
+      {/* The dismiss backdrop only earns its keep when a tap on it can close the
+          card; a non-dismissable overlay renders without it so the page under an
+          always-open card stays interactive. */}
+      {dismissable ? <Pressable accessible={false} style={BACKDROP} onPress={onDismiss} /> : null}
       {/* Hold the card until the first measurement lands, so it never flashes at
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}

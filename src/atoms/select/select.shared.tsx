@@ -211,6 +211,9 @@ export function createSelect(skin: SelectSkin) {
           gap={4}
           cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
           inlineStyle={PANEL_ANCHOR}
+          // A controlled `open` with no onOpenChange can never actually close, so
+          // the hosted dismiss backdrop is skipped (it would only block the page).
+          dismissable={props.open === undefined || onOpenChange !== undefined}
         >
             {/* The option rows have no radius of their own and sit inside the rounded
                 (4dp) `panel` card, which has NO overflow clip; this RippleClip parent clips
