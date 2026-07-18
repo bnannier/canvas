@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { tokens, Image } = scope;
   return (
 <Image
-  source={{ uri: "https://picsum.photos/seed/canvas/240/160" }}
+  source={{ uri: "/liang-bao.jpg" }}
   resizeMode="contain"
-  style={{ width: 120, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
+  style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
 />
   );
 }

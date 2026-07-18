@@ -1028,9 +1028,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "image",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Image\n  source={{ uri: \"https://picsum.photos/seed/canvas/240/160\" }}\n  style={{ width: 240, height: 160, borderRadius: 12 }}\n/>", render: e_atoms_image_example_0 },
-      { label: "resizeMode - contain", code: "<Image\n  source={{ uri: \"https://picsum.photos/seed/canvas/240/160\" }}\n  resizeMode=\"contain\"\n  style={{ width: 120, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}\n/>", render: e_atoms_image_example_1 },
-      { label: "Rounded (avatar)", code: "<Image\n  source={{ uri: \"https://picsum.photos/seed/ada/80/80\" }}\n  style={{ width: 80, height: 80, borderRadius: 40 }}\n/>", render: e_atoms_image_example_2 },
+      { label: "Default", code: "<Image\n  source={{ uri: \"/kira-tanaka.jpg\" }}\n  style={{ width: 120, height: 120, borderRadius: 12 }}\n/>", render: e_atoms_image_example_0 },
+      { label: "resizeMode - contain", code: "<Image\n  source={{ uri: \"/liang-bao.jpg\" }}\n  resizeMode=\"contain\"\n  style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}\n/>", render: e_atoms_image_example_1 },
+      { label: "Rounded (avatar)", code: "<Image\n  source={{ uri: \"/ada-lovelace.jpg\" }}\n  style={{ width: 80, height: 80, borderRadius: 40 }}\n/>", render: e_atoms_image_example_2 },
     ],
     donts: [
 
