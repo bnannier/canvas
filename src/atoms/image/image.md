@@ -6,8 +6,8 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 
 ```tsx
 <Image
-  source={{ uri: "https://picsum.photos/seed/canvas/240/160" }}
-  style={{ width: 240, height: 160, borderRadius: 12 }}
+  source={{ uri: "/kira-tanaka.jpg" }}
+  style={{ width: 120, height: 120, borderRadius: 12 }}
 />
 ```
 
@@ -17,9 +17,9 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 
 ```tsx
 <Image
-  source={{ uri: "https://picsum.photos/seed/canvas/240/160" }}
+  source={{ uri: "/liang-bao.jpg" }}
   resizeMode="contain"
-  style={{ width: 120, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
+  style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
 />
 ```
 
@@ -27,7 +27,7 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 
 ```tsx
 <Image
-  source={{ uri: "https://picsum.photos/seed/ada/80/80" }}
+  source={{ uri: "/ada-lovelace.jpg" }}
   style={{ width: 80, height: 80, borderRadius: 40 }}
 />
 ```

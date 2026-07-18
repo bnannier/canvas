@@ -107,9 +107,9 @@ function resolveDeep(value: unknown, depth: number): unknown {
   return next ?? value;
 }
 
-// Wrap an image-bearing component (Avatar, MediaObject, GridList, Feed, Field) so any
-// sample photo path in its props resolves to the bundled asset before the real component
-// renders. Keeps the example code clean and copy-pasteable (`src="/rachel-chen.jpg"`)
+// Wrap an image-bearing component (Image, Avatar, MediaObject, GridList, Feed, Field) so
+// any sample photo path in its props resolves to the bundled asset before the real
+// component renders. Keeps the example code clean and copy-pasteable (`src="/rachel-chen.jpg"`)
 // while making the photos load on iOS, Android, and a subpath-hosted web export.
 export function withResolvedPhotos<P>(Component: ComponentType<P>): ComponentType<P> {
   const Loose = Component as ComponentType<Record<string, unknown>>;
@@ -128,13 +128,16 @@ export function withResolvedPhotos<P>(Component: ComponentType<P>): ComponentTyp
 }
 
 /** The scope keys whose components can carry a sample photo (see withResolvedPhotos). */
-export const PHOTO_COMPONENTS = ["Avatar", "MediaObject", "GridList", "Feed", "Field"] as const;
+export const PHOTO_COMPONENTS = ["Image", "Avatar", "MediaObject", "GridList", "Feed", "Field"] as const;
 
 /** Wrap every photo-bearing component in a built example scope, in place. */
 export function applyResolvedPhotos(scope: Record<string, unknown>): void {
   for (const key of PHOTO_COMPONENTS) {
     const component = scope[key];
-    if (typeof component === "function") {
+    // Kit components are plain functions, but the RN primitives (Image) are
+    // forwardRef/memo exotics, i.e. objects; createElement renders both, so a
+    // function-only guard would silently skip the primitives.
+    if (typeof component === "function" || (typeof component === "object" && component !== null)) {
       scope[key] = withResolvedPhotos(component as ComponentType<Record<string, unknown>>);
     }
   }

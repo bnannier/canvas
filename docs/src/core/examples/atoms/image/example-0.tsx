@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Image } = scope;
   return (
 <Image
-  source={{ uri: "https://picsum.photos/seed/canvas/240/160" }}
-  style={{ width: 240, height: 160, borderRadius: 12 }}
+  source={{ uri: "/kira-tanaka.jpg" }}
+  style={{ width: 120, height: 120, borderRadius: 12 }}
 />
   );
 }

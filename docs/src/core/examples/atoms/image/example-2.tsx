@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Image } = scope;
   return (
 <Image
-  source={{ uri: "https://picsum.photos/seed/ada/80/80" }}
+  source={{ uri: "/ada-lovelace.jpg" }}
   style={{ width: 80, height: 80, borderRadius: 40 }}
 />
   );
