@@ -1,12 +1,24 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Tabs, Icon, Accordion } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, DataTable, Tabs, Icon, Accordion, useToast } from "@nannier/canvas";
+import type { ToastOptions } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Live pricing page built from real Canvas components (the dogfood path): a
 // billing-cycle toggle that reprices the tiers, three plan cards, a feature
 // comparison table, and a billing FAQ.
 
-const TIERS = [
+type Tier = {
+  name: string;
+  monthly: number;
+  yearly: number;
+  blurb: string;
+  cta: string;
+  featured: boolean;
+  features: string[];
+  toast: ToastOptions;
+};
+
+const TIERS: Tier[] = [
   {
     name: "Starter",
     monthly: 0,
@@ -15,6 +27,7 @@ const TIERS = [
     cta: "Start for free",
     featured: false,
     features: ["3 projects", "Community support", "1 GB storage"],
+    toast: { success: true, message: "Starter activated", description: "Your workspace is on the free plan. Upgrade anytime." },
   },
   {
     name: "Pro",
@@ -24,6 +37,7 @@ const TIERS = [
     cta: "Start free trial",
     featured: true,
     features: ["Unlimited projects", "Priority support", "100 GB storage", "Custom domains"],
+    toast: { success: true, message: "Trial started", description: "Pro is free for 14 days. No card required." },
   },
   {
     name: "Enterprise",
@@ -33,11 +47,13 @@ const TIERS = [
     cta: "Contact sales",
     featured: false,
     features: ["SSO / SAML", "Audit logs", "Dedicated support", "1 TB storage"],
+    toast: { info: true, message: "Sales will reach out", description: "Expect a reply within one business day." },
   },
 ];
 
 function PlansLive() {
   const [cycle, setCycle] = useState(0);
+  const { toast } = useToast();
   const yearly = cycle === 1;
   return (
     <Column loose>
@@ -65,7 +81,7 @@ function PlansLive() {
                   </Row>
                 ))}
               </Column>
-              <Button block primary={t.featured} outline={!t.featured}>
+              <Button block primary={t.featured} outline={!t.featured} onPress={() => toast(t.toast)}>
                 {t.cta}
               </Button>
             </Column>
