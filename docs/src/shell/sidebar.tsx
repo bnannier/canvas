@@ -87,16 +87,16 @@ export function Sidebar({
         ) : (
           // The mark is sized to the text lockup beside it: a 35 mark box equals the two-line
           // text block's 35px line box (`lead`+`tiny`, both `tightLeading` to 1.25x -> 20 + 15),
-          // and `alignCenter` co-centers them, so the logo reads the same height as the text.
-          // (Matching that height is why the wordmark no longer starts on the item LABEL column:
-          // with the 14px header inset + `snug` 8px gap, only a 26 mark lands the text at x=48,
-          // and any larger mark pushes it right. The bigger logo wins that trade.) `lead` keeps
-          // the wordmark on `foreground` (`small` would mute it); `tiny` alone is already
-          // muted-foreground, and adding `muted` would win the role axis and size the tagline at
-          // the wordmark's 14px. `flush` adds nothing between the lines (a gap prop can only add),
-          // leaving the roles' own ~3.5px optical gap.
+          // trimmed 5% to 33.25 so the logo sits a touch under the text height, `alignCenter`
+          // co-centering the two. (A mark larger than 26 is why the wordmark no longer starts on
+          // the item LABEL column: with the 14px header inset + `snug` 8px gap, only a 26 mark
+          // lands the text at x=48, and any larger mark pushes it right. The bigger logo wins
+          // that trade.) `lead` keeps the wordmark on `foreground` (`small` would mute it); `tiny`
+          // alone is already muted-foreground, and adding `muted` would win the role axis and size
+          // the tagline at the wordmark's 14px. `flush` adds nothing between the lines (a gap prop
+          // can only add), leaving the roles' own ~3.5px optical gap.
           <Row snug alignCenter>
-            <CanvasMark size={35} />
+            <CanvasMark size={33.25} />
             <Column flush>
               <Typography lead semibold tightLeading>
                 Canvas
