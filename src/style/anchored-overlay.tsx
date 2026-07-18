@@ -121,21 +121,39 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
       return;
     }
     let cancelled = false;
-    // rAF so the trigger is laid out before we measure (measuring in the same
-    // tick as open returns zeros).
-    const raf = requestAnimationFrame(() => {
+    let raf = 0;
+    // Bounded retry: during initial page mount (an overlay that is open on its
+    // very first render, e.g. a docs example pinned open) the measure callbacks
+    // can silently not complete, or report a zero-size box for a not-yet-laid-out
+    // trigger — and a one-shot leaves the card unmounted forever. Re-attempt on
+    // the next frame until a real measurement lands, capped so a pathological
+    // case (trigger gone while open) cannot spin indefinitely.
+    let attempts = 0;
+    const MAX_ATTEMPTS = 60;
+    const attempt = () => {
+      if (cancelled || attempts >= MAX_ATTEMPTS) return;
+      attempts += 1;
+      let landed = false;
       const trigger = triggerRef.current;
-      if (!trigger) return;
-      // measureInWindow on BOTH the trigger and the outlet, then subtract, gives
-      // the trigger's box relative to the outlet — correct for a screen-level
-      // host and a stage-scoped one alike, with scroll offsets cancelling out.
-      trigger.measureInWindow((tx, ty, tw, th) => {
-        host.measureOutlet((ox, oy) => {
-          if (cancelled) return;
-          setRect({ x: tx - ox, y: ty - oy, width: tw, height: th });
+      if (trigger) {
+        // measureInWindow on BOTH the trigger and the outlet, then subtract, gives
+        // the trigger's box relative to the outlet — correct for a screen-level
+        // host and a stage-scoped one alike, with scroll offsets cancelling out.
+        trigger.measureInWindow((tx, ty, tw, th) => {
+          host.measureOutlet((ox, oy) => {
+            if (cancelled || (tw === 0 && th === 0)) return;
+            landed = true;
+            setRect({ x: tx - ox, y: ty - oy, width: tw, height: th });
+          });
         });
+      }
+      raf = requestAnimationFrame(() => {
+        if (!cancelled && !landed) attempt();
       });
-    });
+    };
+    // First attempt on the next frame, so the trigger is laid out before we
+    // measure (measuring in the same tick as open returns zeros).
+    raf = requestAnimationFrame(attempt);
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
