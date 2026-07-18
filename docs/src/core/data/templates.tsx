@@ -1,4 +1,14 @@
 import type { TemplateDoc } from "./types";
+import { ACTIVITY_TEMPLATE } from "./templates/activity";
+import { API_KEYS_TEMPLATE } from "./templates/api-keys";
+import { BILLING_TEMPLATE } from "./templates/billing";
+import { CHAT_TEMPLATE } from "./templates/chat";
+import { ERRORS_TEMPLATE } from "./templates/errors";
+import { INBOX_TEMPLATE } from "./templates/inbox";
+import { KANBAN_TEMPLATE } from "./templates/kanban";
+import { PRICING_TEMPLATE } from "./templates/pricing";
+import { SIGNUP_TEMPLATE } from "./templates/signup";
+import { TEAM_TEMPLATE } from "./templates/team";
 
 const TEMPLATES: TemplateDoc[] = [
   // ── Sign-in ─────────────────────────────────────────────
@@ -697,6 +707,21 @@ const TEMPLATES: TemplateDoc[] = [
     ],
   },
 ];
+
+// Render-based templates (live Canvas components) live in ./templates/, one
+// file per template; the HTML-string templates above are the legacy mockup path.
+TEMPLATES.push(
+  ACTIVITY_TEMPLATE,
+  API_KEYS_TEMPLATE,
+  BILLING_TEMPLATE,
+  CHAT_TEMPLATE,
+  ERRORS_TEMPLATE,
+  INBOX_TEMPLATE,
+  KANBAN_TEMPLATE,
+  PRICING_TEMPLATE,
+  SIGNUP_TEMPLATE,
+  TEAM_TEMPLATE,
+);
 
 export function getTemplate(slug: string): TemplateDoc | undefined {
   return TEMPLATES.find((t) => t.slug === slug);
