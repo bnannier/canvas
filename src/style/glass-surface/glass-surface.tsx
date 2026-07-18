@@ -51,9 +51,12 @@ try {
 
 export function GlassSurface({ style, children, pointerEvents, testID, sheer }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
-  // The Android blur target (see GlassBlurTargetContext in the shared file: always
-  // null today, so the Android frost renders fill-only under expo-blur 57). Read
-  // unconditionally: hooks must not sit behind the early returns.
+  // The Android blur target (see GlassBlurTargetContext in the shared file):
+  // non-null only where blurring it is native-sibling-safe — inside an
+  // OverlayProvider's outlet or an RN Modal bridged by GlassModalBlurTarget.
+  // Elsewhere (in-content shells, web, iOS) it stays null and the frost renders
+  // fill-only under expo-blur 57+. Read unconditionally: hooks must not sit
+  // behind the early returns.
   const blurTarget = useContext(GlassBlurTargetContext);
 
   if (surface !== "glass") {

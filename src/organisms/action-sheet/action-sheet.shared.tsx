@@ -10,6 +10,7 @@ import {
   RippleClip,
   cornerRadii,
   useTheme,
+  GlassModalBlurTarget,
   type StyleProp,
   type ViewStyle,
 } from "../../style/index.js";
@@ -207,6 +208,10 @@ export function createActionSheet(skin: ActionSheetSkin) {
           // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
           accessibilityViewIsModal={true}
         >
+          {/* The Modal renders in its own native window, so the app's Android blur
+              target is a sibling render tree here — re-publish it and the sheet's
+              frost blurs the page behind it (a no-op off Android). */}
+          <GlassModalBlurTarget>
           {/* Lift the sheet above the iOS software keyboard so a field summoned over
               the sheet stays visible while typing. behavior "padding" shrinks the
               overlay by the keyboard height on iOS; off iOS no behavior is passed
@@ -272,6 +277,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
               </SafeAreaView>
             </View>
           </KeyboardAvoidingView>
+          </GlassModalBlurTarget>
         </Modal>
       </Fragment>
     );

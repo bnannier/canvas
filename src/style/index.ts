@@ -31,3 +31,7 @@ export * from "./anchored-overlay.js";
 export * from "./entrance.js";
 export * from "./glass-surface/glass-surface.js";
 export * from "./glass-surface/liquid-glass.js";
+// The Modal-side bridge for the Android sibling blur target (the contexts and the
+// per-platform host stay internal; the bridge is public so an app hosting its own
+// RN Modal can give its frost surfaces the same page blur the kit's sheets get).
+export { GlassModalBlurTarget } from "./glass-surface/glass-surface.shared.js";

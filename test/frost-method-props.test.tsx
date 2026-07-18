@@ -3,10 +3,12 @@ import { frostMethodProps } from "../src/style/glass-surface/glass-surface.share
 
 // frostMethodProps picks the frost BlurView's Android blur-method props by expo-blur
 // API generation (57+ exports BlurTargetView and wants blurMethod + blurTarget; older
-// releases take the legacy experimentalBlurMethod). No provider publishes a target
-// today — an ancestor target render-node-cycles libhwui into a segfault, see
-// GlassBlurTargetContext — so the with-target case covers the future sibling-target
-// providers the context is kept for.
+// releases take the legacy experimentalBlurMethod). A target reaches a surface only
+// where blurring it is sibling-safe — an OverlayProvider's outlet or a Modal bridged
+// by GlassModalBlurTarget (an ancestor target render-node-cycles libhwui into a
+// segfault, see GlassBlurTargetContext; that wiring is covered in
+// glass-blur-target.test.tsx) — so the no-target case still covers every in-content
+// surface.
 
 describe("frostMethodProps", () => {
   it("keeps the legacy prop on expo-blur < 57 (no BlurTargetView export)", () => {

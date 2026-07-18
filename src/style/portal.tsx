@@ -33,6 +33,11 @@ import {
   useSyncExternalStore,
 } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+import {
+  GlassBlurTargetContext,
+  GlassWindowBlurTargetContext,
+} from "./glass-surface/glass-surface.shared.js";
+import { GlassBlurTargetHost, glassBlurTargetAvailable } from "./glass-surface/glass-blur-target.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -89,6 +94,22 @@ export function OverlayProvider({ children, style }: OverlayProviderProps) {
   const listeners = useRef<Set<() => void>>(new Set());
   const outletRef = useRef<View>(null);
 
+  // The Android sibling blur target (expo-blur 57+; see GlassBlurTargetContext in
+  // glass-surface.shared). The host wraps `children` in a BlurTargetView holding
+  // this ref, and the outlet — a native SIBLING of that content — gets the ref via
+  // GlassBlurTargetContext so portaled frost overlays blur the page. The outlet
+  // must get this provider's OWN target, never an inherited one: an outer
+  // provider's target contains this whole subtree, outlet included, and an
+  // ancestor target segfaults Android's RenderThread.
+  const blurTargetRef = useRef<View>(null);
+  const ownBlurTarget = glassBlurTargetAvailable ? blurTargetRef : null;
+  // Separate-native-window surfaces (RN Modal — Drawer, ActionSheet) instead take
+  // the window-level target, where OUTERMOST wins so a Modal opened from a nested
+  // host (a docs stage) blurs the page, not just its stage. Safe at any depth: a
+  // Modal's window is never a descendant of the main window's target.
+  const inheritedWindowTarget = useContext(GlassWindowBlurTargetContext);
+  const windowBlurTarget = inheritedWindowTarget ?? ownBlurTarget;
+
   const host = useMemo<OverlayHost>(() => {
     const emit = () => listeners.current.forEach((l) => l());
     return {
@@ -121,10 +142,19 @@ export function OverlayProvider({ children, style }: OverlayProviderProps) {
 
   return (
     <OverlayContext.Provider value={host}>
-      <View style={[FILL, style]}>
-        {children}
-        <Outlet outletRef={outletRef} subscribe={subscribe} getSnapshot={getSnapshot} />
-      </View>
+      <GlassWindowBlurTargetContext.Provider value={windowBlurTarget}>
+        <GlassBlurTargetHost
+          style={[FILL, style]}
+          targetRef={blurTargetRef}
+          outlet={
+            <GlassBlurTargetContext.Provider value={ownBlurTarget}>
+              <Outlet outletRef={outletRef} subscribe={subscribe} getSnapshot={getSnapshot} />
+            </GlassBlurTargetContext.Provider>
+          }
+        >
+          {children}
+        </GlassBlurTargetHost>
+      </GlassWindowBlurTargetContext.Provider>
     </OverlayContext.Provider>
   );
 }
