@@ -2,6 +2,8 @@ import { Platform, useWindowDimensions } from "react-native";
 import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@nannier/canvas";
 import { usePathname } from "expo-router";
 import { getComponent } from "../core/data/components";
+import { getTemplate } from "../core/data/templates";
+import { getPattern } from "../core/data/patterns";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 
@@ -41,8 +43,8 @@ export function titleFor(pathname: string): { title: string; subtitle?: string }
     const c = getComponent(seg[1]);
     if (c) return { title: c.name, subtitle: c.category };
   }
-  if (seg[0] === "templates" && seg[1]) return { title: titleize(seg[1]), subtitle: "Templates" };
-  if (seg[0] === "patterns" && seg[1]) return { title: titleize(seg[1]), subtitle: "Patterns" };
+  if (seg[0] === "templates" && seg[1]) return { title: getTemplate(seg[1])?.name ?? titleize(seg[1]), subtitle: "Templates" };
+  if (seg[0] === "patterns" && seg[1]) return { title: getPattern(seg[1])?.name ?? titleize(seg[1]), subtitle: "Patterns" };
   return { title: "Canvas" };
 }
 
