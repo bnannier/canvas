@@ -233,11 +233,15 @@ export function createStackedList(
     // One row, keyless so it can be used both by the eager `.map` (which supplies
     // the key) and by FlatList's renderItem (which keys via keyExtractor).
     const renderRow = (item: StackedListItem, index: number) => {
-      const divider = ruled && index < lastIndex ? skin.rowDivider(tokens) : null;
+      // The divider is an absolute bottom hairline CHILD, never a border+margin
+      // merged into the row's own style: the iOS skin insets the rule past the
+      // avatar (marginStart-style), and on the row itself that margin would
+      // shift the entire row's content, not just the separator.
+      const divider = ruled && index < lastIndex ? <View pointerEvents="none" style={skin.rowDivider(tokens)} /> : null;
       if (variant === "clickable") {
         return (
           <Pressable
-            style={({ pressed }) => [skin.rowBase, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed), divider]}
+            style={({ pressed }) => [skin.rowBase, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
             android_ripple={ripple}
             onPress={(event) => onPressItem?.(index, event)}
             accessibilityRole="button"
@@ -247,15 +251,17 @@ export function createStackedList(
             {renderTrailing(item)}
             {rowMenu ? renderMenu(index) : null}
             {renderChevron()}
+            {divider}
           </Pressable>
         );
       }
       return (
-        <View style={[skin.rowBase, divider]}>
+        <View style={skin.rowBase}>
           {renderAvatar(item)}
           {renderColumn(item)}
           {renderTrailing(item)}
           {rowMenu ? renderMenu(index) : null}
+          {divider}
         </View>
       );
     };
