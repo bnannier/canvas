@@ -95,7 +95,6 @@ function hpad(s: ViewStyle | TextStyle, edge: "start" | "end"): number {
 }
 
 describe("grouped affix hugs the value on the inline-affix skins", () => {
-  const H = 56; // grouped height passed by the shell; addon padding is height-independent
   const prefixField = (skin: typeof inputAndroid) =>
     skin.groupField(t, { leadingIcon: false, trailingIcon: false, hasPrefix: true, hasSuffix: false });
   const suffixField = (skin: typeof inputAndroid) =>
@@ -103,7 +102,7 @@ describe("grouped affix hugs the value on the inline-affix skins", () => {
 
   for (const [plat, skin] of [["ios", inputIos], ["android", inputAndroid]] as const) {
     it(`Input ${plat}: prefix -> value gap is tight (<= 8) and there is no divider`, () => {
-      const addon = skin.addonBox(t, "left", H) as Record<string, unknown>;
+      const addon = skin.addonBox(t, "left") as Record<string, unknown>;
       const gap = hpad(addon, "end") + hpad(prefixField(skin), "start");
       expect(gap).toBeLessThanOrEqual(8);
       // Inline affix: no fill of its own and no separator rule.
@@ -112,7 +111,7 @@ describe("grouped affix hugs the value on the inline-affix skins", () => {
     });
 
     it(`Input ${plat}: suffix -> value gap is tight (<= 8) and there is no divider`, () => {
-      const addon = skin.addonBox(t, "right", H) as Record<string, unknown>;
+      const addon = skin.addonBox(t, "right") as Record<string, unknown>;
       const gap = hpad(addon, "start") + hpad(suffixField(skin), "end");
       expect(gap).toBeLessThanOrEqual(8);
       expect(addon.borderStartWidth).toBeUndefined();
@@ -123,7 +122,46 @@ describe("grouped affix hugs the value on the inline-affix skins", () => {
   it("Input android: the prefix still keeps the 16dp container leading inset", () => {
     // The affix owns the container edge inset (M3 content padding), so only the
     // gap toward the value shrinks, not the leading edge.
-    expect(hpad(inputAndroid.addonBox(t, "left", H), "start")).toBe(16);
+    expect(hpad(inputAndroid.addonBox(t, "left"), "start")).toBe(16);
+  });
+
+  it("Input: addon boxes stretch to the row instead of setting their own height", () => {
+    // The shell owns the group height (minHeight on the container); a box that
+    // set its own height would inflate the row past groupedHeight by the
+    // border/indicator band.
+    for (const skin of [inputWeb, inputIos, inputAndroid]) {
+      for (const side of ["left", "right"] as const) {
+        expect((skin.addonBox(t, side) as Record<string, unknown>).height).toBeUndefined();
+      }
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Part D: grouped icon overlays anchor to the field area, not the container.
+//
+// The Android group container swaps bottom border for compensating padding when
+// focus thickens the active indicator (1dp+1dp -> 2dp+0dp). The border is outside
+// an absolute child's positioning box but the padding is inside it, so an overlay
+// stretched top:0/bottom:0 across the CONTAINER spans a band that changes by 1dp
+// with focus and its centered icon hops by half that (the reported Android bug).
+// The shell therefore nests the overlays next to the TextInput inside a flexible
+// field-area wrapper (the container's content box, constant by Part A).
+// ---------------------------------------------------------------------------
+
+describe("grouped icon overlay anchors to the field area", () => {
+  it("Input (leading icon): the overlay is a sibling of the input inside an unbordered wrapper", () => {
+    const { container } = ui(<Input leadingIcon icon="search" placeholder="x" />);
+    const input = container.querySelector("input");
+    expect(input).not.toBeNull();
+    const area = input!.parentElement as HTMLElement;
+    const overlay = Array.from(area.children).find(
+      (c) => c !== input && (c as HTMLElement).style.position === "absolute",
+    ) as HTMLElement | undefined;
+    expect(overlay).toBeDefined();
+    // The wrapper is the flexible field cell, not the bordered group container.
+    expect(area.style.flexGrow).toBe("1");
+    expect(area.style.borderBottomWidth === "" || area.style.borderBottomWidth === "0px").toBe(true);
   });
 });
 

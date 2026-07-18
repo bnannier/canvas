@@ -154,6 +154,25 @@ function sizeOf(p: InputProps): Size {
 // the Field/Form control stacks use between the label and the control).
 const LABEL_GAP: ViewStyle = { gap: 6 };
 
+// The grouped layout's field area: the flexible cell between the addon boxes that
+// holds the TextInput and its overlaid icons. The icon overlays anchor to THIS
+// wrapper (the container's content box) rather than to the bordered container:
+// the Android active indicator swaps border for compensating padding on focus
+// (1dp+1dp -> 2dp+0dp), and an overlay stretched across the container would span
+// that shifting band and re-center its icon half the change lower/higher — a
+// visible one-pixel hop on focus. The content box is constant by design (see
+// activeIndicator), so overlays centered on it never move.
+// A row + alignItems stretch (never height:"100%") sizes the input: a percentage
+// height against this auto-sized wrapper resolves unpredictably on Fabric Android
+// (the field ballooned to the available screen height).
+const GROUP_FIELD_AREA: ViewStyle = {
+  flexGrow: 1,
+  flexShrink: 1,
+  flexBasis: "0%",
+  flexDirection: "row",
+  alignItems: "stretch",
+};
+
 // Read a numeric style value (the bare field height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
 
@@ -353,41 +372,48 @@ export function createInput(skin: InputSkin) {
     // present the floating label can't share the container with the addon boxes, so
     // the label falls back to the above layout: the wrapper owns width/style/dim and
     // the group container drops them.
+    // minHeight (not addon-box heights) owns the row height: the addon boxes and
+    // the field area stretch to it, so an icon-only group is as tall as the bare
+    // field, and the total stays groupedHeight — the indicator/border band lives
+    // INSIDE it rather than inflating past it.
     const height = skin.groupedHeight(size);
     const groupedField = (
       <View
         style={[
           skin.groupContainer(tokens, borderColor, focused, isError),
+          { minHeight: height },
           above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
           above ? null : widthCap,
           above ? null : style,
         ]}
       >
         {prefix != null ? (
-          <View style={skin.addonBox(tokens, "left", height)}>
+          <View style={skin.addonBox(tokens, "left")}>
             <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>
           </View>
         ) : null}
 
-        {leadingIcon && iconName != null ? (
-          <View style={[skin.iconOverlay("left"), { pointerEvents: "none" }]}>
-            <Icon {...{ [iconName]: true }} muted size={16} />
-          </View>
-        ) : null}
+        <View style={GROUP_FIELD_AREA}>
+          {leadingIcon && iconName != null ? (
+            <View style={[skin.iconOverlay("left"), { pointerEvents: "none" }]}>
+              <Icon {...{ [iconName]: true }} muted size={16} />
+            </View>
+          ) : null}
 
-        <TextInput ref={ref} style={[skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: !!trailingIcon, hasPrefix: prefix != null, hasSuffix: suffix != null }), text, FOCUS_RESET]} {...common} />
+          <TextInput ref={ref} style={[skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: !!trailingIcon, hasPrefix: prefix != null, hasSuffix: suffix != null }), text, FOCUS_RESET]} textAlignVertical="center" {...common} />
 
-        {trailingIcon && iconName != null ? (
-          <View style={[skin.iconOverlay("right"), { pointerEvents: "none" }]}>
-            <Icon {...{ [iconName]: true }} muted size={16} />
-          </View>
-        ) : null}
+          {trailingIcon && iconName != null ? (
+            <View style={[skin.iconOverlay("right"), { pointerEvents: "none" }]}>
+              <Icon {...{ [iconName]: true }} muted size={16} />
+            </View>
+          ) : null}
+        </View>
 
         {suffix != null ? (
           action ? (
             <Pressable
               style={({ pressed }) => [
-                skin.addonBox(tokens, "right", height),
+                skin.addonBox(tokens, "right"),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               onPress={onActionPress}
@@ -398,7 +424,7 @@ export function createInput(skin: InputSkin) {
               <Text style={[skin.actionText(tokens), text]}>{suffix}</Text>
             </Pressable>
           ) : (
-            <View style={skin.addonBox(tokens, "right", height)}>
+            <View style={skin.addonBox(tokens, "right")}>
               <Text style={[skin.addonText(tokens), text]}>{suffix}</Text>
             </View>
           )
