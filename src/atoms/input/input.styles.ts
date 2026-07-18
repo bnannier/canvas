@@ -30,20 +30,28 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   text: (t: ColorTokens, size: Size) => TextStyle;
   /** Height of the single-line bare field. */
   bareBox: (size: Size) => TextStyle;
-  /** Fixed row height for the grouped layout (addon boxes set it). */
+  /** Total (border-box) height of the grouped layout, matching the bare field.
+   *  The shell enforces it as minHeight on the group container, so the row keeps
+   *  its height even when no addon box is present (icon-only groups). */
   groupedHeight: (size: Size) => number;
   /** The bare field surface: shape, fill, border/underline for the active state. */
   bareField: (t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean) => TextStyle;
   /** The grouped (addon) outer: the row that shares one border/underline. */
   groupContainer: (t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean) => ViewStyle;
-  /** The inner field inside the group (grows to fill; pads away from icons and
+  /** The inner field inside the group (fills the field area; pads away from icons and
    *  from prefix/suffix affixes so the value hugs an inline affix — see groupField). */
   groupField: (t: ColorTokens, opts: { leadingIcon: boolean; trailingIcon: boolean; hasPrefix: boolean; hasSuffix: boolean }) => TextStyle;
-  /** A prefix/suffix addon box. */
-  addonBox: (t: ColorTokens, side: "left" | "right", height: number) => ViewStyle;
+  /** A prefix/suffix addon box. Stretches to the row height (alignItems stretch);
+   *  it must not set its own height, or it would re-inflate the container past
+   *  groupedHeight by the border/indicator band. */
+  addonBox: (t: ColorTokens, side: "left" | "right") => ViewStyle;
   addonText: (t: ColorTokens) => TextStyle;
   actionText: (t: ColorTokens) => TextStyle;
-  /** Overlaid icon position inside the field (left or right gutter). */
+  /** Overlaid icon position inside the field area (left or right gutter). The shell
+   *  anchors it to the field-area wrapper — the container's CONTENT box — never to
+   *  the bordered container itself: the Android active indicator changes the
+   *  container's border/padding band on focus, and an overlay spanning that band
+   *  would re-center and visibly shift its icon by half the change. */
   iconOverlay: (side: "left" | "right") => ViewStyle;
   /** Opacity applied to the field when disabled. */
   disabledOpacity: number;
@@ -91,24 +99,24 @@ export const webSkin: InputSkin = {
     overflow: "hidden",
     backgroundColor: t.background,
   }),
+  // No vertical padding: the container's minHeight (groupedHeight) owns the row
+  // height, the stretched input fills it, and a single line self-centers. Any
+  // vertical padding would only inflate the row past the bare field's height.
   groupField: (t, { leadingIcon, trailingIcon }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
-    height: "100%",
     paddingHorizontal: 12,
-    paddingVertical: 8,
     color: t.foreground,
     ...(leadingIcon ? { paddingStart: 36 } : null),
     ...(trailingIcon ? { paddingEnd: 36 } : null),
   }),
-  addonBox: (t, side, height) => ({
+  addonBox: (t, side) => ({
     justifyContent: "center",
     backgroundColor: t.muted,
     paddingHorizontal: 12,
     borderColor: t.border,
     ...(side === "left" ? { borderEndWidth: 1 } : { borderStartWidth: 1 }),
-    height,
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
   actionText: (t) => ({ fontWeight: "500", color: t.foreground }),
@@ -186,12 +194,12 @@ export const iosSkin: InputSkin = {
     overflow: "hidden",
     backgroundColor: t.secondary,
   }),
+  // No vertical padding (see webSkin.groupField): minHeight + stretch own the
+  // row height and the single-line value self-centers.
   groupField: (t, { leadingIcon, trailingIcon, hasPrefix, hasSuffix }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
-    height: "100%",
-    paddingVertical: 10,
     color: t.foreground,
     // Brand caret + outline suppression on the inner grouped field too.
     ...iosWebFieldReset(t),
@@ -204,10 +212,9 @@ export const iosSkin: InputSkin = {
   // Prefix/suffix is inline affix text inside the rounded box: no separate fill, no
   // divider. The affix owns the 12pt box inset and keeps an 8pt gap to the value; the
   // field zeroes its padding on that side (see groupField).
-  addonBox: (_t, side, height) => ({
+  addonBox: (_t, side) => ({
     justifyContent: "center",
     ...(side === "left" ? { paddingStart: 12, paddingEnd: 8 } : { paddingStart: 8, paddingEnd: 12 }),
-    height,
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
   actionText: (t) => ({ fontWeight: "600", color: t.primary }),
@@ -282,12 +289,12 @@ export const androidSkin: InputSkin = {
     overflow: "hidden",
     backgroundColor: t.muted,
   }),
+  // No vertical padding (see webSkin.groupField): minHeight + stretch own the
+  // row height and the single-line value self-centers.
   groupField: (t, { leadingIcon, trailingIcon, hasPrefix, hasSuffix }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
-    height: "100%",
-    paddingVertical: 8,
     color: t.foreground,
     // Content inset is 16dp per side, EXCEPT when a prefix/suffix affix already
     // supplies that inset plus a tight gap: there the field drops its padding so
@@ -300,10 +307,9 @@ export const androidSkin: InputSkin = {
   // the field surface (no separate fill, no divider) and the value follows it
   // directly. The affix owns the 16dp container inset and keeps an 8dp gap to the
   // value; the field zeroes its padding on that side (see groupField).
-  addonBox: (_t, side, height) => ({
+  addonBox: (_t, side) => ({
     justifyContent: "center",
     ...(side === "left" ? { paddingStart: 16, paddingEnd: 8 } : { paddingStart: 8, paddingEnd: 16 }),
-    height,
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
   actionText: (t) => ({ fontWeight: "500", color: t.primary, textTransform: "uppercase", letterSpacing: 0.5 }),
