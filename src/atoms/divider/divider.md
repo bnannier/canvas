@@ -4,8 +4,14 @@ Horizontal, vertical, with label, with action.
 
 ## Usage
 
+A divider spans the width of its parent, so give it a bounded container.
+
 ```tsx
-<Divider />
+<Column snug style={{ width: 320 }}>
+  <Typography small>Profile</Typography>
+  <Divider />
+  <Typography small>Account</Typography>
+</Column>
 ```
 
 ## Variants
