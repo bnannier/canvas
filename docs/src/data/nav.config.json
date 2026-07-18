@@ -531,9 +531,29 @@
         "base": "/templates",
         "components": [
           {
+            "slug": "activity",
+            "label": "Activity",
+            "icon": "activity"
+          },
+          {
+            "slug": "api-keys",
+            "label": "API keys",
+            "icon": "key-round"
+          },
+          {
+            "slug": "billing",
+            "label": "Billing",
+            "icon": "credit-card"
+          },
+          {
             "slug": "calendar",
             "label": "Calendar",
             "icon": "calendar"
+          },
+          {
+            "slug": "chat",
+            "label": "Chat",
+            "icon": "message-circle"
           },
           {
             "slug": "dashboard",
@@ -546,14 +566,34 @@
             "icon": "panel-right"
           },
           {
+            "slug": "errors",
+            "label": "Errors & empty",
+            "icon": "circle-alert"
+          },
+          {
             "slug": "identities",
             "label": "Identities",
             "icon": "users"
           },
           {
+            "slug": "inbox",
+            "label": "Inbox",
+            "icon": "inbox"
+          },
+          {
+            "slug": "kanban",
+            "label": "Kanban",
+            "icon": "columns-2"
+          },
+          {
             "slug": "onboarding",
             "label": "Onboarding",
             "icon": "check"
+          },
+          {
+            "slug": "pricing",
+            "label": "Pricing",
+            "icon": "tag"
           },
           {
             "slug": "profile",
@@ -569,6 +609,16 @@
             "slug": "signin",
             "label": "Sign-in",
             "icon": "lock"
+          },
+          {
+            "slug": "signup",
+            "label": "Sign-up",
+            "icon": "user-plus"
+          },
+          {
+            "slug": "team",
+            "label": "Team",
+            "icon": "user-check"
           }
         ]
       },
