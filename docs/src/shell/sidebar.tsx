@@ -85,20 +85,21 @@ export function Sidebar({
         isCollapsed ? (
           <CanvasMark size={26} />
         ) : (
-          // The mark is sized to the text lockup beside it: a 35 mark box equals the two-line
-          // text block's 35px line box (`lead`+`tiny`, both `tightLeading` to 1.25x -> 20 + 15),
-          // trimmed 5% to 33.25 so the logo sits a touch under the text height, `alignCenter`
-          // co-centering the two. (A mark larger than 26 is why the wordmark no longer starts on
-          // the item LABEL column: with the 14px header inset + `snug` 8px gap, only a 26 mark
-          // lands the text at x=48, and any larger mark pushes it right. The bigger logo wins
-          // that trade.) `lead` keeps the wordmark on `foreground` (`small` would mute it); `tiny`
-          // alone is already muted-foreground, and adding `muted` would win the role axis and size
-          // the tagline at the wordmark's 14px. `flush` adds nothing between the lines (a gap prop
-          // can only add), leaving the roles' own ~3.5px optical gap.
+          // The mark is sized to the text lockup beside it: the two-line text block is 33px
+          // (`body` 14 + `tiny` 12, both `tightLeading` to 1.25x -> 18 + 15), and the 33.25 mark
+          // box matches it, `alignCenter` co-centering the two so the logo reads the same height
+          // as the text. (A mark larger than 26 is why the wordmark no longer starts on the item
+          // LABEL column: with the 14px header inset + `snug` 8px gap, only a 26 mark lands the
+          // text at x=48, and any larger mark pushes it right. The bigger logo wins that trade.)
+          // `body` keeps the wordmark on `foreground` at 14 (the next step down from `lead`; the
+          // 14px `small`/`muted` roles would grey it). `tiny` alone is already muted-foreground,
+          // and adding `muted` would win the role axis and size the tagline at the wordmark's own
+          // size. `flush` adds nothing between the lines (a gap prop can only add), leaving the
+          // roles' own optical gap.
           <Row snug alignCenter>
             <CanvasMark size={33.25} />
             <Column flush>
-              <Typography lead semibold tightLeading>
+              <Typography body semibold tightLeading>
                 Canvas
               </Typography>
               <Typography tiny tightLeading>
