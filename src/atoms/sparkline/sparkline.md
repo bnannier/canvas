@@ -47,19 +47,10 @@ Views to draw an inline trend on a stat card or dashboard.
 
 ### Pair with a value
 
-**Do** — Anchor the sparkline to an explicit headline value and delta.
+**Do** — Anchor the sparkline to an explicit headline value and delta with the Stats molecule, which owns the metric-card anatomy and renders the trend strip from its `spark` field.
 
 ```tsx
-<Card padded style={{ maxWidth: 220 }}>
-  <Column tight>
-    <Typography caption>Requests</Typography>
-    <Row between baseline>
-      <Typography h3 semibold>24.5k</Typography>
-      <Typography tiny success>+8.2%</Typography>
-    </Row>
-    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
-  </Column>
-</Card>
+<Stats style={{ maxWidth: 220 }} items={[{ label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }]} />
 ```
 
 **Don't** — Draw a bare trend strip with no current value; the reader has to decode the slope.

@@ -42,7 +42,24 @@ export interface IconSkin {
 }
 
 
-export interface IconProps extends IconGlyphProps {
+/**
+ * Kit-internal Icon paint channel, kept OFF the published prop surface (hidden from
+ * the generated prop table via Oproprietary_MEMBER_INTERFACES in tools/docgen/extract-props).
+ * This is the raw-string escape hatch the "No styling escape hatches" directive bans
+ * from the public API; it exists only so kit composites can tint a glyph to match a
+ * computed color they already own (e.g. a `Chip` tinting its remove "×" to its label
+ * color). Consumer-facing code picks hues with the semantic color booleans instead.
+ */
+export interface IconInternalProps {
+  /**
+   * An explicit glyph color (a theme or palette value), for the hues the semantic
+   * color booleans do not name. The semantic booleans take precedence; this replaces
+   * the default `foreground` when none is set. Kit-internal only.
+   */
+  color?: string;
+}
+
+export interface IconProps extends IconGlyphProps, IconInternalProps {
   // Name axis (one boolean per glyph, first-match precedence, default shield) is
   // supplied by IconGlyphProps, generated in ./icon.glyphs.ts from tools/icongen.
   // Color axis: pass one (default foreground). First match wins.
@@ -55,13 +72,6 @@ export interface IconProps extends IconGlyphProps {
   /** Caution/amber status (the warning token, scheme-aware; matches Alert/Toast warning). */
   warning?: boolean;
   muted?: boolean;
-  /**
-   * An explicit glyph color (a theme or palette value), for the hues the semantic
-   * color booleans above do not name, e.g. a `Chip` tinting its remove "×" to match
-   * its own label color. The semantic booleans take precedence; this replaces the
-   * default `foreground` when none is set. Prefer a semantic boolean when one fits.
-   */
-  color?: string;
   // Single-glyph size in px (default 24).
   size?: number;
   // Render the whole gallery instead of a single glyph.

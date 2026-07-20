@@ -51,8 +51,11 @@ const MIXIN_PROP_TYPES = new Set(["TextEntryProps"]);
 // so are omitted from a consuming component's prop rows even though they compose
 // in. `IconGlyphProps` is the generated one-boolean-per-glyph name axis (400+
 // props); the `<Icon set />` gallery is its reference, so listing every glyph as
-// a table row would bury Icon's real props.
-const Oproprietary_MEMBER_INTERFACES = new Set(["IconGlyphProps"]);
+// a table row would bury Icon's real props. `IconInternalProps` is the kit-internal
+// raw-string paint channel (`color`), deliberately kept off the published surface
+// (it is the escape hatch the "No styling escape hatches" directive bans publicly;
+// consumers use the semantic color booleans).
+const Oproprietary_MEMBER_INTERFACES = new Set(["IconGlyphProps", "IconInternalProps"]);
 
 // A very long resolved type (e.g. react-native's `autoComplete` 50-value union)
 // would bloat both props.ts and the rendered cell; cap it so the table stays

@@ -5,10 +5,12 @@ import {
   type Tone,
   type Weight,
   type Leading,
+  type Decoration,
   roleColor,
   toneColor,
   weightStyle,
   leadingStyle,
+  decorationStyle,
   MONO_ROLES,
 } from "./typography.styles.js";
 
@@ -33,12 +35,12 @@ import {
 //
 // Boolean-prop API: one boolean per role on a single axis, first-match
 // precedence (mirrors Button's intentOf / Badge's toneOf). Roles are mutually
-// exclusive; pass at most one. Two orthogonal axes layer on top: an optional
-// tone (subtle / primary / destructive / success / warning) sets the color and
-// a weight (regular / medium / semibold / bold) sets the fontWeight; each is
-// mutually exclusive within itself and null by default, so the role's own color
-// and weight stand when the axis is untouched. The text content comes from
-// children.
+// exclusive; pass at most one. Orthogonal axes layer on top: an optional tone
+// (subtle / primary / destructive / success / warning) sets the color, a weight
+// (regular / medium / semibold / bold) sets the fontWeight, and a decoration
+// (underline) sets textDecorationLine; each is mutually exclusive within itself
+// and null by default, so the role's own color, weight, and undecorated look
+// stand when the axis is untouched. The text content comes from children.
 //
 // Two roles want a monospace face (code, mono). There is no font-family
 // utility, so each requests RN's cross-platform monospace alias via inline
@@ -82,6 +84,12 @@ export interface TypographyProps {
    * own line height is the reading value.
    */
   tightLeading?: boolean;
+  /**
+   * Decoration (orthogonal to role / tone / weight). Underlines the text so an inline
+   * text link reads as a link, replacing the banned raw `textDecorationLine` style
+   * shim. Combines freely with every role, tone, and weight; omit for undecorated text.
+   */
+  underline?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
@@ -167,6 +175,13 @@ function leadingOf(p: TypographyProps): Leading | null {
   return null;
 }
 
+// Decoration: a single-value axis today, so there is no precedence to resolve. Returns
+// null when the prop is absent, so the text keeps the role's own undecorated look.
+function decorationOf(p: TypographyProps): Decoration | null {
+  if (p.underline) return "underline";
+  return null;
+}
+
 /** Build a Typography component from a platform skin. */
 export function createTypography(skin: TypographySkin) {
   return function Typography(props: TypographyProps) {
@@ -176,6 +191,7 @@ export function createTypography(skin: TypographySkin) {
     const tone = toneOf(props);
     const weight = weightOf(props);
     const leading = leadingOf(props);
+    const decoration = decorationOf(props);
 
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
@@ -200,6 +216,9 @@ export function createTypography(skin: TypographySkin) {
           // After the role, whose line height it overrides; the skin's own scale is the
           // input it clamps against, so this reads the active platform's value.
           leading ? leadingStyle(skin.roleType[role], leading) : null,
+          // Decoration is orthogonal to color/weight/leading (it sets textDecorationLine),
+          // so its placement in the cascade is free; it layers on before the escape hatch.
+          decoration ? decorationStyle(decoration) : null,
           monoStyle,
           style,
         ]}

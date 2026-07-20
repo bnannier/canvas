@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Slider, Typography, Column } = scope;
+  const { Slider } = scope;
   return (
-<Column snug>
-  <Typography small medium>Volume</Typography>
-  <Slider defaultValue={65} min={0} max={100} />
-</Column>
+<Slider defaultValue={65} min={0} max={100}>Volume</Slider>
   );
 }

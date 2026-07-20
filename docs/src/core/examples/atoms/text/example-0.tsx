@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, Text } = scope;
   return (
-<Text style={{ fontSize: 16, fontWeight: "600", color: tokens.foreground }}>
+<Text numberOfLines={1} style={{ color: tokens.foreground }}>
   The quick brown fox jumps over the lazy dog.
 </Text>
   );

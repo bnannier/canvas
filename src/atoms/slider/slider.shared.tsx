@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   I18nManager,
   PanResponder,
@@ -6,7 +6,7 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, useTheme, useControllableState, useFieldWidth, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useTheme, useControllableState, useFieldWidth, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -34,6 +34,22 @@ export interface SliderProps extends FieldWidthProps {
   onChange?: (value: number) => void;
   /** E2E hook forwarded to the slider container. */
   testID?: string;
+  /**
+   * The title line, rendered ABOVE the track (a slider's label sits above the rail,
+   * not beside it). Supplying it builds the component-owned header so the caller
+   * never hand-composes a Column + Typography above a bare slider, and the visible
+   * title also names the control for assistive tech (see `accessibilityLabel`).
+   */
+  children?: ReactNode;
+  /** Optional muted secondary line rendered under the title, for a hint or unit note. */
+  description?: ReactNode;
+  /**
+   * Render the live current value (the same value the thumb sits at) as a trailing
+   * readout on the title line, right-aligned. With no title it still renders the
+   * value as a standalone trailing readout above the track. The number tracks the
+   * drag in real time and uses tabular figures so it does not jitter.
+   */
+  showValue?: boolean;
   // Size (pick one; default is the standard track + thumb).
   small?: boolean;
   large?: boolean;
@@ -100,6 +116,12 @@ export interface SliderSkin {
    * no ticks (the web look).
    */
   tick?: (tokens: ColorTokens, size: Size, disabled: boolean, onActive: boolean) => ViewStyle;
+  /** The title line above the track (component-owned label type; brand, not a platform face). */
+  label: (tokens: ColorTokens, size: Size) => TextStyle;
+  /** The muted secondary description line under the title. */
+  description: (tokens: ColorTokens, size: Size) => TextStyle;
+  /** The live value readout trailing the title line (muted, tabular figures). */
+  value: (tokens: ColorTokens, size: Size) => TextStyle;
 }
 
 // Snap a raw value to the step grid, anchored at `min`, then clamp to [min, max].
@@ -119,12 +141,43 @@ function snap(raw: number, min: number, max: number, step: number): number {
 // kit Ticks layer are for coarse, discrete scales).
 const MAX_TICK_INTERVALS = 20;
 
+// The stacked header the Slider owns above its track: a title row (the label with an
+// optional trailing live-value readout) over a muted description line. `OUTER` is the
+// column that wraps the header and the interactive rail; its snug 8px gap reproduces
+// the `<Column snug>` a caller used to hand-compose above a bare slider, and it now
+// carries the field-width cap so the label aligns to the track's width. `HEADER`
+// tightly pairs the description under its title (4px). `TITLE_ROW` lays the title and
+// readout on one line; the shell picks the justification (label + readout split ends,
+// a lone readout trails to the end). The component owns this column, its gaps, and the
+// type (from the skin), so the caller never rebuilds the anatomy around the control.
+const OUTER: ViewStyle = { width: "100%", gap: 8 };
+const HEADER: ViewStyle = { gap: 4 };
+const TITLE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
+
+// Format the readout to at most the step's decimal places (mirroring `snap`'s
+// decimal handling), so an integer-step slider shows "48" and a 0.5-step slider
+// shows "2.5" without floating-point tails.
+function formatValue(v: number, step: number): string {
+  const decimals = (String(step).split(".")[1] ?? "").length;
+  return decimals > 0 ? v.toFixed(decimals) : String(v);
+}
+
 /** Build a Slider component from a platform skin. */
 export function createSlider(skin: SliderSkin) {
   return function Slider(props: SliderProps) {
-    const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style } = props;
+    const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style, children, description, showValue } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
+    // Whether the component-owned header (title / description / value readout) renders
+    // at all. A bare <Slider /> passes none of these and renders exactly as before —
+    // no header, no wrapper node.
+    const hasHeader = children != null || description != null || !!showValue;
+    // The visible title names the control for assistive tech: when no explicit
+    // accessibilityLabel is given but the title is plain text, derive the accessible
+    // name from it (the visible label labels the control). An explicit
+    // accessibilityLabel always wins, and a non-string title (a ReactNode) is left to
+    // the caller's accessibilityLabel.
+    const accessibleName = accessibilityLabel ?? (typeof children === "string" ? children : undefined);
     // In a right-to-left locale the whole control mirrors: min sits on the RIGHT and
     // the fill/thumb grow leftward, the physical tap maps flipped, and the horizontal
     // arrows reverse (the drawer's I18nManager.isRTL physical-computation pattern).
@@ -308,7 +361,13 @@ export function createSlider(skin: SliderSkin) {
     const showEndStop =
       !!skin.endStop && !!skin.tick && trackWidth > 0 && endStopCx - dot / 2 >= inactiveLeft;
 
-    return (
+    // The interactive rail: the pressable/adjustable track + thumb. Rendered
+    // identically whether or not a header sits above it. When a header IS present the
+    // field-width cap and the caller's `style` move up to the wrapping column (so the
+    // label aligns to the track width and the caller sizes the whole labeled group),
+    // and the rail simply fills that column; with no header this View is the root and
+    // renders byte-for-byte as before.
+    const interactive = (
       <View
         {...pan.panHandlers}
         {...webKeyboardProps}
@@ -321,7 +380,7 @@ export function createSlider(skin: SliderSkin) {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         accessibilityRole="adjustable"
-        accessibilityLabel={accessibilityLabel}
+        accessibilityLabel={accessibleName}
         accessibilityValue={{ min, max, now: current }}
         // Cross-platform ARIA value props: map to accessibilityValue on native, and RNW
         // renders them as aria-valuemin/max/now (which RNW does NOT derive from
@@ -349,8 +408,11 @@ export function createSlider(skin: SliderSkin) {
           FOCUS_RESET,
           // The standard field width (width 320 + maxWidth:"100%", or narrow/wide);
           // null under `block`, where the base width:"100%" above fills the container.
-          widthCap,
-          style,
+          // With a header these move up to the wrapping column (below) so the label
+          // aligns to the track width; a bare slider keeps them here and renders
+          // byte-for-byte as before.
+          hasHeader ? null : widthCap,
+          hasHeader ? null : style,
         ]}
       >
         {segmented ? (
@@ -413,6 +475,31 @@ export function createSlider(skin: SliderSkin) {
         <View
           style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop, pointerEvents: "none" }]}
         />
+      </View>
+    );
+
+    // No header: the interactive rail IS the root, exactly as before.
+    if (!hasHeader) return interactive;
+
+    // With a header: the component owns a stacked column above the rail. The title row
+    // carries the label at the leading edge and the optional live-value readout at the
+    // trailing edge (a lone readout, with no title, trails to the end on its own); the
+    // muted description sits under the title.
+    const titleJustify: ViewStyle["justifyContent"] =
+      children != null && showValue ? "space-between" : showValue ? "flex-end" : "flex-start";
+
+    return (
+      <View style={[OUTER, widthCap, style]}>
+        <View style={HEADER}>
+          {children != null || showValue ? (
+            <View style={[TITLE_ROW, { justifyContent: titleJustify }]}>
+              {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
+              {showValue ? <Text style={skin.value(tokens, size)}>{formatValue(current, step)}</Text> : null}
+            </View>
+          ) : null}
+          {description != null ? <Text style={skin.description(tokens, size)}>{description}</Text> : null}
+        </View>
+        {interactive}
       </View>
     );
   };

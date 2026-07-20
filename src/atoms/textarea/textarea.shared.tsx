@@ -8,6 +8,11 @@ import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.st
 // Field/Form control stacks use), mirroring the single-line Input.
 const LABEL_GAP: ViewStyle = { gap: 6 };
 
+// The character-count line's own layout: end-aligned under the field, with a
+// 4px gap from the control. The count line is part of the component's own
+// anatomy (the component owns its layout + type), never a call-site shim.
+const COUNT_ROW: ViewStyle = { flexDirection: "row", justifyContent: "flex-end", marginTop: 4 };
+
 // Read a numeric style value (the resolved min height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
 
@@ -51,6 +56,19 @@ export interface TextareaProps extends TextEntryProps, FieldWidthProps {
    * padding); the field still grows with content past this floor.
    */
   rows?: number;
+  /**
+   * Show a live character-count line inside the field's own anatomy: an
+   * end-aligned muted caption under the control reading "N / max" (just "N"
+   * when no `maxLength` is set), where N is the current text length.
+   *
+   * When on, `maxLength` becomes a SOFT cap rather than a hard one: it is NOT
+   * forwarded to the native TextInput (a hard cap silently drops the extra
+   * keystroke, so the overage could never be seen), the user can type past it,
+   * and once N exceeds `maxLength` the count turns destructive AND the field
+   * enters its error state automatically (red border/underline). Leave
+   * `showCount` off to keep `maxLength` as a hard input cap.
+   */
+  showCount?: boolean;
   // State (pick one; orthogonal to size).
   /** Error/validation state: a destructive cue. `invalid` is an alias. */
   error?: boolean;
@@ -79,8 +97,7 @@ function sizeOf(p: TextareaProps): Size {
 /** Build a Textarea component from a platform skin. */
 export function createTextarea(skin: TextareaSkin) {
   const Textarea = forwardRef<RNTextInput, TextareaProps>(function Textarea(props, ref) {
-    const { value, onChangeText, placeholder, label, required, rows, disabled, flush, style } = props;
-    const isError = !!props.error || !!props.invalid;
+    const { value, onChangeText, placeholder, label, required, rows, disabled, flush, showCount, style } = props;
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
@@ -91,16 +108,30 @@ export function createTextarea(skin: TextareaSkin) {
     // One collision-free id linking the field to its label (aria-labelledby).
     const labelId = useId();
 
-    // Whether the field holds text — the Android floating label floats when the
-    // field is focused OR populated. Seeded from value/defaultValue so a prefilled
-    // field starts floated; a controlled field trusts its value, otherwise the
-    // wrapped onChangeText keeps it in sync (mirrors the single-line Input).
-    const [hasText, setHasText] = useState(() => (((value ?? props.defaultValue) ?? "") + "").length > 0);
-    const populated = value != null ? value.length > 0 : hasText;
+    // The current text, mirrored so the shell can float the Android label AND
+    // measure the character count in BOTH modes. Seeded from value/defaultValue
+    // so a prefilled field starts floated/counted; a controlled field trusts its
+    // `value` prop, otherwise the wrapped onChangeText keeps the mirror in sync
+    // (mirrors the single-line Input, which only needs the boolean).
+    const [innerText, setInnerText] = useState(() => ((value ?? props.defaultValue) ?? "") + "");
+    const currentText = value != null ? value : innerText;
+    const populated = currentText.length > 0;
     const handleChangeText = (next: string) => {
-      setHasText(next.length > 0);
+      setInnerText(next);
       onChangeText?.(next);
     };
+
+    // Character count. When `showCount` is on, `maxLength` is the SOFT cap: the
+    // target shown in "N / max" and the threshold the count/field go destructive
+    // past (see the maxLength note in `common`). Without a maxLength the line is
+    // an informational "N" that never goes over.
+    const count = currentText.length;
+    const softLimit = showCount ? props.maxLength : undefined;
+    const over = softLimit != null && count > softLimit;
+    // The overage is a validation problem, so it drives the error cue too: the
+    // caller's explicit error/invalid still wins, and passing the soft cap adds
+    // the destructive border/underline on top.
+    const isError = !!props.error || !!props.invalid || over;
 
     // Label placement: iOS/web render it ABOVE the field; the Android skin FLOATS
     // it inside the container (M3 multiline float, pinned to the top text line).
@@ -147,7 +178,10 @@ export function createTextarea(skin: TextareaSkin) {
       autoComplete: props.autoComplete,
       autoCorrect: props.autoCorrect,
       autoFocus: props.autoFocus,
-      maxLength: props.maxLength,
+      // Soft cap under `showCount`: withhold maxLength from the native TextInput
+      // so the user can type PAST the limit and the overage becomes visible (the
+      // count + field turn destructive). Off, maxLength is the usual hard cap.
+      maxLength: showCount ? undefined : props.maxLength,
       returnKeyType: props.returnKeyType,
       textContentType: props.textContentType,
       onSubmitEditing: props.onSubmitEditing,
@@ -182,6 +216,18 @@ export function createTextarea(skin: TextareaSkin) {
     ];
     const disabledDim = disabled ? { opacity: 0.5 } : null;
 
+    // The live count line, owned by the component. End-aligned, muted, turning
+    // destructive once the count passes the soft cap; "N / max" when a maxLength
+    // gives a cap, a bare "N" otherwise. aria-live announces edits to a screen
+    // reader as the value changes.
+    const countNode = showCount ? (
+      <View style={COUNT_ROW}>
+        <Text style={skin.count(tokens, over)} accessibilityLiveRegion="polite" aria-live="polite">
+          {softLimit != null ? `${count} / ${softLimit}` : `${count}`}
+        </Text>
+      </View>
+    ) : null;
+
     // Android M3 floating label: the field reserves top space for the floated
     // label, the animated label overlays the top text line, and the placeholder is
     // gated to focus (at rest the label itself is the placeholder). The wrapper
@@ -211,6 +257,7 @@ export function createTextarea(skin: TextareaSkin) {
             inset={ANDROID_TEXTAREA_INSET}
             multiline
           />
+          {countNode}
         </View>
       );
     }
@@ -230,6 +277,19 @@ export function createTextarea(skin: TextareaSkin) {
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
           <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+          {countNode}
+        </View>
+      );
+    }
+
+    // No label but a count line: wrap the field so the count sits under it. The
+    // wrapper carries width/style and the disabled dim (so the count dims with
+    // the field); the field fills it via its skin's width:100%.
+    if (countNode) {
+      return (
+        <View style={[disabledDim, widthCap, style]}>
+          <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+          {countNode}
         </View>
       );
     }

@@ -22,8 +22,10 @@ import { fieldWidths } from "./tokens.js";
 
 /** The width axis common to the input-like controls. Pick at most one. */
 export interface FieldWidthProps {
-  /** Fill the container instead of the standard width (default 320px). Wins over narrow/wide. */
+  /** Fill the container instead of the standard width (default 320px). Wins over fit/narrow/wide. */
   block?: boolean;
+  /** Hug the content: the field shrinks to its own value/label instead of a fixed width, for a toolbar cluster. */
+  fit?: boolean;
   /** Compact field: 240px instead of the standard 320px, for toolbars and short values. */
   narrow?: boolean;
   /** Roomy field: 480px instead of the standard 320px, for long values and multiline entry. */
@@ -32,12 +34,16 @@ export interface FieldWidthProps {
 
 /**
  * Resolve the width axis to the style a field's outermost element appends
- * after its skin styles: `{ width, maxWidth:"100%" }`, or `null` for `block`,
- * where the skin's fill-the-container `width:"100%"` applies. Precedence when
- * several are passed: block > narrow > wide > default. (Named use* for API
- * stability; it currently needs no hook state.)
+ * after its skin styles: `{ width, maxWidth:"100%" }`, `{ width:"auto", maxWidth:"100%" }`
+ * for `fit` (the field hugs its content instead of a fixed width, overriding the
+ * skin's `width:"100%"`), or `null` for `block`, where the skin's fill-the-container
+ * `width:"100%"` applies. Precedence when several are passed:
+ * block > fit > narrow > wide > default. (Named use* for API stability; it currently
+ * needs no hook state.)
  */
 export function useFieldWidth(p: FieldWidthProps): ViewStyle | null {
-  const std = p.block ? null : p.narrow ? fieldWidths.narrow : p.wide ? fieldWidths.wide : fieldWidths.base;
-  return std != null ? { width: std, maxWidth: "100%" } : null;
+  if (p.block) return null;
+  if (p.fit) return { width: "auto", maxWidth: "100%" };
+  const std = p.narrow ? fieldWidths.narrow : p.wide ? fieldWidths.wide : fieldWidths.base;
+  return { width: std, maxWidth: "100%" };
 }

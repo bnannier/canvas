@@ -121,6 +121,12 @@ Type scale classes for headings, body text, and helper styles.
 <Typography small destructive>Payment failed</Typography>
 ```
 
+### Decoration - underline
+
+```tsx
+<Typography body primary underline>View invoices</Typography>
+```
+
 ## Do & Don't
 
 ### display
@@ -304,7 +310,7 @@ Type scale classes for headings, body text, and helper styles.
 ```tsx
 <Typography body style={{ maxWidth: 340 }}>
   Payment due May 31. 
-  <Typography body primary style={{ textDecorationLine: "underline" }}>View invoices</Typography>
+  <Typography body primary underline>View invoices</Typography>
 </Typography>
 ```
 

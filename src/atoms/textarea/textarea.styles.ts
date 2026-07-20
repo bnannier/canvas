@@ -38,6 +38,15 @@ export interface TextareaFieldState {
 // across platforms), so the shell composes them around the skin.
 export interface TextareaSkin extends FloatingLabelStyles<Size> {
   field: (tokens: ColorTokens, state: TextareaFieldState) => TextStyle;
+  /**
+   * The live character-count line the component renders under the field when
+   * `showCount` is set (end-aligned, "N / max"). Muted at rest, `destructive`
+   * once the count passes the soft cap so the overage reads as an error. The
+   * BRAND survives (destructive is the token, never a platform red); only the
+   * type conventions (SF caption tracking on iOS, M3 body-small tracking on
+   * Android) change per OS.
+   */
+  count: (tokens: ColorTokens, over: boolean) => TextStyle;
 }
 
 // --- shared label type scale (mirrors the M3 Input, keyed to Textarea sizes) ---
@@ -93,6 +102,9 @@ export const webSkin: TextareaSkin = {
   // medium weight per size, matching the Field/Form composers and the Input).
   floatingLabel: false,
   labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "500", color: t.foreground }),
+  // The count line: the established Canvas caption (12/16), muted, turning
+  // destructive once the count passes the soft cap.
+  count: (t, over) => ({ fontSize: 12, lineHeight: 16, color: over ? t.destructive : t["muted-foreground"] }),
 };
 
 // ---------- iOS (HIG): .roundedBorder filled multiline field ----------
@@ -118,6 +130,9 @@ export const iosSkin: TextareaSkin = {
   // tracking (-0.15) and a semibold weight, mirroring the single-line Input.
   floatingLabel: false,
   labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "600", letterSpacing: -0.15, color: t.foreground }),
+  // The count line: an SF Pro caption (12/16, -0.08 tracking), the secondary
+  // gray, turning destructive once the count passes the soft cap.
+  count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: -0.08, color: over ? t.destructive : t["muted-foreground"] }),
 };
 
 // ---------- Android (Material 3 filled): subtle fill + active indicator ------
@@ -155,4 +170,8 @@ export const androidSkin: TextareaSkin = {
   labelRest: (_t, size) => labelRestType(size),
   labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
   labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
+  // The count line: M3 supporting text (body-small 12/16, 0.4 tracking), the
+  // on-surface-variant gray, turning destructive (M3 error) once the count
+  // passes the soft cap.
+  count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: over ? t.destructive : t["muted-foreground"] }),
 };

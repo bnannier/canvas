@@ -1,4 +1,4 @@
-import { ActivityIndicator, Animated } from "react-native";
+import { ActivityIndicator, Animated, type TextStyle } from "react-native";
 import Svg, { Circle, Line } from "react-native-svg";
 import { type ColorTokens } from "../../style/index.js";
 import { type SpinnerSkin } from "./spinner.shared.js";
@@ -25,6 +25,20 @@ export const TONE_TOKEN: Record<Tone, keyof ColorTokens> = {
   muted: "muted-foreground",
   foreground: "foreground",
 };
+
+// The component-owned label + description type. The label is the kit's canonical
+// small (14) muted type; the description sits one step below (12), also muted.
+// Shared across platforms (brand type, not a platform face) so the pairing reads
+// identically on iOS, Android, and web; every skin points at these functions.
+const LABEL_TYPE: TextStyle = { fontSize: 14, lineHeight: 20 }; // text-sm
+const DESCRIPTION_TYPE: TextStyle = { fontSize: 12, lineHeight: 16 }; // text-xs
+
+function label(tokens: ColorTokens): TextStyle {
+  return { color: tokens["muted-foreground"], ...LABEL_TYPE };
+}
+function description(tokens: ColorTokens): TextStyle {
+  return { color: tokens["muted-foreground"], ...DESCRIPTION_TYPE };
+}
 
 // react-native-svg's Circle/Line aren't Animated components. Each spinning skin
 // wraps a static Svg in an Animated.View whose transform interpolates the shared
@@ -82,6 +96,8 @@ export const iosSkin: SpinnerSkin = {
       </Animated.View>
     );
   },
+  label,
+  description,
 };
 
 // Android (M3): one ~270deg arc of a ring, rounded cap, brand color, sweeping
@@ -112,6 +128,8 @@ export const androidSkin: SpinnerSkin = {
       </Animated.View>
     );
   },
+  label,
+  description,
 };
 
 // Web: the current Canvas look, a React Native ActivityIndicator driven by the
@@ -123,4 +141,6 @@ export const webSkin: SpinnerSkin = {
   // value, so the shell must NOT drive a perpetual Animated loop for it.
   spins: false,
   render: ({ size, color }) => <ActivityIndicator size={size} color={color} />,
+  label,
+  description,
 };

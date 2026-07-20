@@ -1,4 +1,4 @@
-import { alpha, type ColorTokens } from "../../style/index.js";
+import { alpha, type ColorTokens, type TextStyle } from "../../style/index.js";
 import { type ProgressSkin, type Size } from "./progress.shared.js";
 
 // Co-located Progress skins, one per platform, all driven by the brand tokens (passed in
@@ -38,6 +38,22 @@ const ANDROID_RADIUS: Record<Size, number> = { small: 1.5, base: 2, large: 4 };
 const WEB_HEIGHT: Record<Size, number> = { small: 6, base: 8, large: 12 };
 const WEB_RADIUS: Record<Size, number> = { small: 3, base: 4, large: 6 };
 
+// Header type shared across every platform (the label is brand type, not a platform face,
+// matching Checkbox/Radio/Switch). The canonical scale: the title line is 14/20 medium
+// foreground; the description sits one step below at 12/16 muted; the trailing percent
+// readout tracks the title line (14/20) in the muted tone with tabular figures so the
+// digits do not jitter as the value ticks. Every skin points at these, so all three
+// platforms share the header type while keeping their own bar shape.
+function label(t: ColorTokens): TextStyle {
+  return { fontWeight: "500", flexShrink: 1, color: t.foreground, fontSize: 14, lineHeight: 20 };
+}
+function description(t: ColorTokens): TextStyle {
+  return { color: t["muted-foreground"], fontSize: 12, lineHeight: 16 };
+}
+function valueReadout(t: ColorTokens): TextStyle {
+  return { color: t["muted-foreground"], fontSize: 14, lineHeight: 20, fontVariant: ["tabular-nums"] };
+}
+
 export const iosSkin: ProgressSkin = {
   height: IOS_HEIGHT,
   radius: IOS_RADIUS,
@@ -47,6 +63,9 @@ export const iosSkin: ProgressSkin = {
   // dark) lands on both effective grays while staying on the theme's neutral ramp.
   trackColor: (t: ColorTokens) => alpha(t["muted-foreground"], 0.25),
   fillColor: (t: ColorTokens) => t.primary,
+  label,
+  description,
+  valueReadout,
   indeterminateWidth: 0.3,
 };
 
@@ -57,6 +76,9 @@ export const androidSkin: ProgressSkin = {
   // semantic surface in light and dark. Active indicator + stop indicator = primary.
   trackColor: (t: ColorTokens) => t.secondary,
   fillColor: (t: ColorTokens) => t.primary,
+  label,
+  description,
+  valueReadout,
   indeterminateWidth: 0.35,
   // M3 measurements (m3.material.io/components/progress-indicators/specs): a 4dp gap
   // between the active indicator's trailing edge and the inactive track, and the 4x4dp
@@ -71,5 +93,8 @@ export const webSkin: ProgressSkin = {
   // shadcn: bg-primary/20 track, bg-primary fill.
   trackColor: (t: ColorTokens) => alpha(t.primary, 0.2),
   fillColor: (t: ColorTokens) => t.primary,
+  label,
+  description,
+  valueReadout,
   indeterminateWidth: 0.3,
 };

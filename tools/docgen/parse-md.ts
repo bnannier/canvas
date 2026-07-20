@@ -154,8 +154,8 @@ export const BANNED_STYLE_PROPS: string[] = [
   "padding", "paddingTop", "paddingBottom", "paddingLeft", "paddingRight",
   "paddingHorizontal", "paddingVertical", "paddingStart", "paddingEnd",
   "position", "top", "left", "right", "bottom", "zIndex",
-  // typography — belongs to Typography's role / tone / weight
-  "fontSize", "lineHeight", "fontWeight", "color", "letterSpacing", "textTransform", "fontFamily",
+  // typography — belongs to Typography's role / tone / weight / underline
+  "fontSize", "lineHeight", "fontWeight", "color", "letterSpacing", "textTransform", "fontFamily", "textDecorationLine",
   // surface — belongs to the relevant component (Card, Chip, Emblem, Divider, …)
   "backgroundColor", "borderWidth", "borderColor", "borderRadius",
   "borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth",

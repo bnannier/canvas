@@ -37,7 +37,7 @@ Small floating helper text on hover or focus.
 ### Trigger - text
 
 ```tsx
-<Tooltip label="Open settings" trigger="hover this text" open top />
+<Tooltip textTrigger label="Open settings" trigger="hover this text" open top />
 ```
 
 ### Reveal - on hover
@@ -71,7 +71,11 @@ Small floating helper text on hover or focus.
 **Don't** — A top tooltip on a trigger near the top edge clips above the viewport and goes unread.
 
 ```tsx
-<Tooltip trigger="Save" top open label="Saves your changes" />
+<View style={{ overflow: "hidden", alignItems: "flex-start" }}>
+  <View style={{ marginTop: -16 }}>
+    <Tooltip trigger="Save" top open label="Saves your changes" />
+  </View>
+</View>
 ```
 
 ### right
@@ -118,5 +122,9 @@ Small floating helper text on hover or focus.
 **Don't** — A left tooltip on a trigger at the left edge is clipped by the container's left boundary.
 
 ```tsx
-<Tooltip iconTrigger left open label="Need help?" />
+<View style={{ overflow: "hidden", alignItems: "flex-start" }}>
+  <View style={{ marginLeft: -44 }}>
+    <Tooltip iconTrigger left open label="Need help?" />
+  </View>
+</View>
 ```

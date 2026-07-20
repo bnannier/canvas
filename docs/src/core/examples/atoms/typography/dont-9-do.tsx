@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Typography body style={{ maxWidth: 340 }}>
   Payment due May 31. 
-  <Typography body primary style={{ textDecorationLine: "underline" }}>View invoices</Typography>
+  <Typography body primary underline>View invoices</Typography>
 </Typography>
   );
 }

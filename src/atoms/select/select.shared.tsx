@@ -41,6 +41,14 @@ export interface SelectProps extends FieldWidthProps {
    */
   label?: string;
   /**
+   * Places the `label` as a LEADING cluster INSIDE the trigger row (a toolbar-style
+   * labeled select) instead of the persistent above/floating placement. Takes effect
+   * only alongside `label`. The inline label still names the trigger (accessibilityLabel
+   * / aria-labelledby) and shares its tap target, since it lives inside the trigger
+   * Pressable. Pairs with `fit` for a content-hugging toolbar cluster.
+   */
+  inline?: boolean;
+  /**
    * Marks the field as required: appends a destructive "*" to the label (hidden
    * from the accessible name) and sets aria-required on the trigger. Takes effect
    * only alongside `label`.
@@ -130,8 +138,12 @@ export function createSelect(skin: SelectSkin) {
     // select's focus equivalent) OR a value being selected; the trigger's resting
     // placeholder text is hidden while the floating label is the placeholder.
     const hasLabel = label != null && label !== "";
-    const floating = hasLabel && skin.floatingLabel;
-    const above = hasLabel && !floating;
+    // `inline` routes the label into the trigger row as a leading cluster; it
+    // overrides both the above (iOS/web) and floating (Android) placements, so a
+    // toolbar-style labeled select owns its label instead of a hand-composed row.
+    const inline = hasLabel && !!props.inline;
+    const floating = hasLabel && !inline && skin.floatingLabel;
+    const above = hasLabel && !inline && !floating;
     const triggerHeight = asNum((skin.trigger(tokens, size, open) as { height?: unknown }).height, 56);
     // Floating label owns the resting placeholder: show nothing until the menu opens
     // (matching the M3 Input); a selected value always shows.
@@ -170,6 +182,9 @@ export function createSelect(skin: SelectSkin) {
           // announces the field's name, not just the selected value/placeholder.
           accessibilityLabel={hasLabel ? label : undefined}
           aria-label={hasLabel ? label : undefined}
+          // The inline label lives inside this Pressable, so link it by nativeID
+          // (RNW forwards aria-labelledby to the DOM) as the trigger's name too.
+          aria-labelledby={inline ? labelId : undefined}
         >
           <View
             style={[
@@ -183,6 +198,11 @@ export function createSelect(skin: SelectSkin) {
               floating ? [{ alignSelf: "stretch" as const }, skin.labelReserve!(size)] : null,
             ]}
           >
+            {inline ? (
+              <Text nativeID={labelId} style={skin.inlineLabel(tokens, size)}>
+                <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+              </Text>
+            ) : null}
             {icon ? <Icon globe muted size={14} /> : null}
             <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
           </View>

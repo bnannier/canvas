@@ -38,13 +38,10 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 
 ### Range
 
-**Do** — Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance.
+**Do** — Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.
 
 ```tsx
-<Column snug>
-  <Typography small medium>Volume</Typography>
-  <Slider defaultValue={65} min={0} max={100} />
-</Column>
+<Slider defaultValue={65} min={0} max={100}>Volume</Slider>
 ```
 
 **Don't** — Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.
@@ -57,13 +54,10 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 
 ### Bounds
 
-**Do** — Pair the slider with its current value so the number is explicit, not just inferred from the thumb position.
+**Do** — Pair the slider with its current value so the number is explicit, not just inferred from the thumb position. `showValue` renders the live readout above the track.
 
 ```tsx
-<Row alignCenter relaxed>
-  <Slider narrow defaultValue={48} min={0} max={100} />
-  <Typography small muted>48</Typography>
-</Row>
+<Slider showValue narrow defaultValue={48} min={0} max={100} />
 ```
 
 **Don't** — A slider with no readout and no label leaves users guessing what the value is and what it controls.

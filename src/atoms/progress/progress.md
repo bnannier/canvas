@@ -18,13 +18,7 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 ```tsx
 <Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>
   {(value) => (
-    <Column snug>
-      <Row flush between>
-        <Typography small>Uploading…</Typography>
-        <Typography small muted>{Math.round(value * 100)}%</Typography>
-      </Row>
-      <Progress value={value} />
-    </Column>
+    <Progress showValue value={value}>Uploading…</Progress>
   )}
 </Ticker>
 ```
@@ -57,16 +51,10 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 
 ### Determinate
 
-**Do** — Use a determinate bar when you know the share of work done, and pair it with a percent or count so the number and the bar agree.
+**Do** — Use a determinate bar when you know the share of work done, and pass `showValue` so the control renders the percent on the label line; the number and the bar always agree.
 
 ```tsx
-<Column snug>
-  <Row flush between>
-    <Typography small>Uploading…</Typography>
-    <Typography small muted>72%</Typography>
-  </Row>
-  <Progress value={0.72} />
-</Column>
+<Progress showValue value={0.72}>Uploading…</Progress>
 ```
 
 **Don't** — Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.
@@ -80,13 +68,10 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 
 ### Indeterminate
 
-**Do** — Reach for `indeterminate` only when the duration is genuinely unknown. On the web and Android a short bar sweeps the track; on iOS the control renders the kit Spinner, the platform's unknown-duration idiom (iOS has no linear indeterminate bar).
+**Do** — Reach for `indeterminate` only when the duration is genuinely unknown. Pass the label as children; on the web and Android a short bar sweeps the track; on iOS the control renders the kit Spinner, the platform's unknown-duration idiom (iOS has no linear indeterminate bar).
 
 ```tsx
-<Column snug>
-  <Typography small muted>Connecting…</Typography>
-  <Progress indeterminate />
-</Column>
+<Progress indeterminate>Connecting…</Progress>
 ```
 
 **Don't** — Don't fake indeterminate progress when you do have a measurable value; hiding a known value behind a sweep (or a spinner on iOS) hides information you could show.
@@ -100,13 +85,10 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 
 ### Context
 
-**Do** — Give the bar a label; it already renders at the standard field width, and `narrow`, `wide`, or `block` adjust its measure when the layout calls for it.
+**Do** — Give the bar a label through its own `children`; it already renders at the standard field width, and `narrow`, `wide`, or `block` adjust its measure when the layout calls for it.
 
 ```tsx
-<Column snug>
-  <Typography small>Importing contacts</Typography>
-  <Progress value={0.35} />
-</Column>
+<Progress value={0.35}>Importing contacts</Progress>
 ```
 
 **Don't** — Don't hand-roll a bar from raw views; the kit's `Progress` already adapts its thickness, ends, and track anatomy per platform and stays themed.

@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Checkbox, Typography, Row } = scope;
+  const { Checkbox } = scope;
   return (
-<Row snug alignCenter>
-  <Checkbox disabled>Export to CSV</Checkbox>
-  <Typography tiny muted>(Pro plan)</Typography>
-</Row>
+<Checkbox disabled description="Available on the Pro plan">Export to CSV</Checkbox>
   );
 }

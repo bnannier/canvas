@@ -27,10 +27,7 @@ Animated loading spinner in three sizes.
 **Do** — Pair longer waits with a short label so the spinner has context.
 
 ```tsx
-<Row alignCenter snug>
-  <Spinner small />
-  <Typography small muted>Loading…</Typography>
-</Row>
+<Spinner small>Loading…</Spinner>
 ```
 
 **Don't** — A bare spinner with no label leaves users guessing what is happening and for how long.
@@ -61,10 +58,7 @@ Animated loading spinner in three sizes.
 
 ```tsx
 <Card padded>
-  <Column alignCenter snug>
-    <Spinner />
-    <Typography small muted>Loading…</Typography>
-  </Column>
+  <Spinner stacked>Loading…</Spinner>
 </Card>
 ```
 
@@ -82,10 +76,7 @@ Animated loading spinner in three sizes.
 
 ```tsx
 <Card style={{ height: 160 }}>
-  <Column fill center alignCenter cozy>
-    <Spinner large />
-    <Typography small muted>Loading dashboard…</Typography>
-  </Column>
+  <Spinner large stacked>Loading dashboard…</Spinner>
 </Card>
 ```
 

@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Select, Typography, Row } = scope;
+  const { Select } = scope;
   return (
-<Row alignCenter snug>
-  <Typography tiny muted>Rows</Typography>
-  <Select small defaultValue="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
-</Row>
+<Select small fit inline label="Rows" defaultValue="10" options={["10", "25", "50"]} />
   );
 }

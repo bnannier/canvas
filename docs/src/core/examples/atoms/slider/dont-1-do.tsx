@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Slider, Typography, Row } = scope;
+  const { Slider } = scope;
   return (
-<Row alignCenter relaxed>
-  <Slider narrow defaultValue={48} min={0} max={100} />
-  <Typography small muted>48</Typography>
-</Row>
+<Slider showValue narrow defaultValue={48} min={0} max={100} />
   );
 }

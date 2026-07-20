@@ -3,14 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Textarea, Typography, Row, Column } = scope;
+  const { Textarea } = scope;
   return (
-<Column snug>
-  <Typography small medium>Bio</Typography>
-  <Textarea rows={3} wide invalid value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
-  <Row end>
-    <Typography tiny destructive>123 / 120</Typography>
-  </Row>
-</Column>
+<Textarea label="Bio" showCount maxLength={120} rows={3} wide value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
   );
 }

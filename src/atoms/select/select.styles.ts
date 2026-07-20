@@ -50,6 +50,11 @@ export interface SelectSkin extends FloatingLabelStyles<Size> {
    *  false`). On Android the label FLOATS inside the trigger instead (see
    *  FloatingLabelStyles: `floatingLabel`, `labelRest`/`labelFloated`/`labelReserve`). */
   label: (t: ColorTokens, size: Size) => TextStyle;
+  /** The INLINE label type: a muted small label rendered as a leading cluster
+   *  INSIDE the trigger row (before the value) when `inline` is set alongside
+   *  `label`, for a toolbar-style labeled select. Per-OS type; not the persistent
+   *  above/floating placement. */
+  inlineLabel: (t: ColorTokens, size: Size) => TextStyle;
   /** The trigger surface: shape, fill, border/underline; `open` lights the active state. */
   trigger: (t: ColorTokens, size: Size, open: boolean) => ViewStyle;
   /** The leading cluster inside the trigger (optional icon + value/placeholder). */
@@ -126,6 +131,9 @@ const WEB_TRIGGER_BOX: Record<Size, number> = { small: 32, default: 36, large: 4
 export const webSkin: SelectSkin = {
   text: textType,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
+  // Inline (toolbar) label: a muted medium-weight small label; no marginBottom
+  // since it sits beside the value in the trigger row, not above it.
+  inlineLabel: (t, size) => ({ fontWeight: "500", color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   trigger: (t, size) => ({
     ...TRIGGER_ROW,
     borderRadius: 6,
@@ -193,6 +201,9 @@ const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: SelectSkin = {
   text: (size) => IOS_TEXT[size],
   label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
+  // Inline (toolbar) label: iOS uses a regular-weight secondary label beside the
+  // value (the iOS bar/toolbar caption read), tinted `muted-foreground`.
+  inlineLabel: (t, size) => ({ fontWeight: "400", color: t["muted-foreground"], ...IOS_TEXT[size] }),
   // A plain pop-up button: hairline-outlined row over `background`, NOT a filled
   // capsule, so the value + primary chevron read as the iOS 26 pop-up control.
   trigger: (t, size) => ({
@@ -272,6 +283,9 @@ const ANDROID_LABEL: Record<Size, TextStyle> = {
 export const androidSkin: SelectSkin = {
   text: (size) => ANDROID_TEXT[size],
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...ANDROID_LABEL[size] }),
+  // Inline (toolbar) label: the M3 label-medium scale (a notch below the field
+  // type), tinted on-surface-variant (`muted-foreground`), beside the value.
+  inlineLabel: (t, size) => ({ fontWeight: "500", color: t["muted-foreground"], ...ANDROID_LABEL[size] }),
   trigger: (t, size, open) => ({
     ...TRIGGER_ROW,
     borderTopStartRadius: ANDROID_TOP_RADIUS,

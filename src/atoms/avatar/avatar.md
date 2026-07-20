@@ -53,13 +53,7 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 ### Variant - identity
 
 ```tsx
-<Row relaxed alignCenter>
-  <Avatar src="/rachel-chen.jpg" name="RC" />
-  <Column>
-    <Typography lead semibold>Rachel Chen</Typography>
-    <Typography small muted>rachel.chen@example.com</Typography>
-  </Column>
-</Row>
+<MediaObject center src="/rachel-chen.jpg" title="Rachel Chen" description="rachel.chen@example.com" />
 ```
 
 ### Variant - navigable
@@ -94,13 +88,7 @@ A navigable identity row: pass `onPress` and the whole row (avatar, name, and su
 
 ```tsx
 <Column snug>
-  <Row cozy alignCenter>
-    <Avatar src="/ada-lovelace.jpg" name="AL" />
-    <Column>
-      <Typography small semibold>Ada Lovelace</Typography>
-      <Typography tiny muted>admin@example.com</Typography>
-    </Column>
-  </Row>
+  <MediaObject compact center src="/ada-lovelace.jpg" title="Ada Lovelace" description="admin@example.com" />
   <Divider />
 </Column>
 ```
@@ -176,13 +164,7 @@ A navigable identity row: pass `onPress` and the whole row (avatar, name, and su
 **Do** — Name primary; email muted and secondary.
 
 ```tsx
-<Row relaxed alignCenter>
-  <Avatar src="/rachel-chen.jpg" name="RC" />
-  <Column>
-    <Typography lead semibold>Rachel Chen</Typography>
-    <Typography small muted>rachel.chen@example.com</Typography>
-  </Column>
-</Row>
+<MediaObject center src="/rachel-chen.jpg" title="Rachel Chen" description="rachel.chen@example.com" />
 ```
 
 **Don't** — Equal weight on the name and email flattens the hierarchy.
@@ -202,13 +184,7 @@ A navigable identity row: pass `onPress` and the whole row (avatar, name, and su
 **Do** — Keep one consistent circular avatar shape across contexts.
 
 ```tsx
-<Row cozy alignCenter>
-  <Avatar src="/ada-lovelace.jpg" name="AL" />
-  <Column>
-    <Typography small semibold>Ada Lovelace</Typography>
-    <Typography tiny muted>admin@example.com</Typography>
-  </Column>
-</Row>
+<MediaObject compact center src="/ada-lovelace.jpg" title="Ada Lovelace" description="admin@example.com" />
 ```
 
 **Don't** — Squaring the avatar here clashes with the circular avatars everywhere else.

@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Input, Typography, Column } = scope;
+  const { Input } = scope;
   return (
-<Column snug>
-  <Typography small medium>Storage</Typography>
-  <Input value="1024" suffix="GB" />
-</Column>
+<Input label="Storage" value="1024" suffix="GB" />
   );
 }

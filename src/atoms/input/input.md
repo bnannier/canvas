@@ -79,10 +79,7 @@ The Input component is a React Native text field with semantic boolean props (`e
 **Do** — Park the unit in a suffix addon so the value stays purely numeric.
 
 ```tsx
-<Column snug>
-  <Typography small medium>Storage</Typography>
-  <Input value="1024" suffix="GB" />
-</Column>
+<Input label="Storage" value="1024" suffix="GB" />
 ```
 
 **Don't** — A plain text field lets users type the unit into the value, breaking parsing and validation.

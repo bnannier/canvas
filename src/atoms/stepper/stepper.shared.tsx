@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useId, useState, type ReactNode } from "react";
 import {
   TextInput,
   type AccessibilityActionEvent,
@@ -14,6 +14,7 @@ import {
   useTheme,
   useControllableState,
   FOCUS_RESET,
+  LabelContent,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -58,8 +59,23 @@ export interface StepperProps {
   max?: number;
   /** Increment/decrement amount for the ± buttons. Default 1. */
   step?: number;
-  /** Accessible name for the editable field. Default "Number". */
+  /**
+   * The control's persistent, component-owned label. When set it renders as a
+   * VISIBLE title ABOVE the ± control (mirroring Input's above-field placement,
+   * per-OS type from the skin) and becomes the group's programmatic name (wired via
+   * accessibilityLabel + aria-labelledby). When omitted, the control keeps the
+   * invisible "Number" accessible-name fallback and renders no visible label, so a
+   * bare `<Stepper />` looks exactly as before.
+   */
   label?: string;
+  /** Optional muted secondary line rendered under the label (parity with Input). Takes effect only alongside `label`. */
+  description?: ReactNode;
+  /**
+   * Marks the control required: appends a destructive "*" to the label (hidden from
+   * the accessible name) and sets aria-required on the group/field. Takes effect only
+   * alongside `label`.
+   */
+  required?: boolean;
   // Size (pick one; default is the medium control). Precedence: large > small.
   small?: boolean;
   large?: boolean;
@@ -100,6 +116,17 @@ export interface StepperSkin {
   hitSlop: ((size: Size) => number) | null;
   /** Layout order: the iOS HIG puts the value field to the LEFT of the [ − | + ] pill. */
   fieldOnLeft: boolean;
+  /**
+   * The persistent label rendered ABOVE the control (the canonical field-label
+   * type, matching Input's label scale): iOS the SF field-label (semibold 600,
+   * -0.15 tracking), web the 500-weight title, Android the M3 label (medium, M3
+   * tracking). The floating M3 in-container label Input uses does not apply — a ±
+   * button row has no filled field box to float a label into — so Android keeps the
+   * component-owned title above, at the M3 label type.
+   */
+  labelAbove: (t: ColorTokens, size: Size) => TextStyle;
+  /** The muted secondary description line under the label (per-OS supporting-text type). */
+  description: (t: ColorTokens, size: Size) => TextStyle;
 }
 
 // Map a glyph color token to the Icon atom's boolean color prop. A disabled (at-bound)
@@ -129,12 +156,26 @@ export function createStepper(skin: StepperSkin) {
       min = 0,
       max = Number.MAX_SAFE_INTEGER,
       step = 1,
-      label = "Number",
+      label,
+      description,
+      required,
       disabled,
       style,
     } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
+
+    // Collision-free ids so the group can name itself from the visible label and be
+    // described by the description (unconditional hooks: the ids are cheap and always
+    // available). The label (when present) is the group's programmatic name on BOTH
+    // channels — accessibilityLabel (native) and aria-labelledby -> the label Text's
+    // nativeID (web, which RNW forwards). With no label, both are undefined and the
+    // editable field keeps the invisible "Number" fallback below.
+    const labelId = useId();
+    const descId = useId();
+    const accessibleName = label ?? "Number";
+    const ariaLabelledby = label != null ? labelId : undefined;
+    const ariaDescribedby = description != null ? descId : undefined;
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
     // <Stepper /> steps out of the box (the standard library contract).
@@ -171,8 +212,8 @@ export function createStepper(skin: StepperSkin) {
     };
 
     // Keyboard / Switch Control / VoiceOver / TalkBack "adjust value" gesture for the
-    // container's `adjustable` role: route the assistive-tech increment/decrement to
-    // the same step helpers (which already guard atMin/atMax). Without this the role
+    // container's `adjustable` role: route the assistive-tech increment/decrement to the
+    // same step helpers (which already guard atMin/atMax). Without this the role
     // would over-promise an adjust affordance that does nothing.
     const onAccessibilityAction = (event: AccessibilityActionEvent) => {
       if (disabled) return;
@@ -264,8 +305,12 @@ export function createStepper(skin: StepperSkin) {
         inputMode="numeric"
         keyboardType="number-pad"
         selectionColor={tokens.primary}
-        accessibilityLabel={label}
-        aria-label={label}
+        accessibilityLabel={accessibleName}
+        aria-label={accessibleName}
+        aria-labelledby={ariaLabelledby}
+        // Required is surfaced programmatically (aria-required), matching Input;
+        // omitted entirely when optional so no aria-required="false" is emitted.
+        aria-required={required || undefined}
         style={[skin.field(tokens, size, !!disabled), FOCUS_RESET]}
       />
     );
@@ -275,7 +320,7 @@ export function createStepper(skin: StepperSkin) {
 
     // The [ − | + ] pill is one piece; the field sits beside it (LEFT on iOS per HIG,
     // RIGHT-of-minus / inline on the others). The dividers sit between adjacent slots.
-    return (
+    const control = (
       <View
         testID={props.testID}
         // Cross-platform ARIA value props: RNW DROPS accessibilityValue, so the
@@ -286,6 +331,14 @@ export function createStepper(skin: StepperSkin) {
         aria-valuenow={current}
         aria-valuemin={min}
         aria-valuemax={max}
+        // The visible label (when present) names the whole group and the description
+        // describes it. Both are undefined without a label, so nothing changes for a
+        // bare <Stepper /> (the group stays unnamed, as before).
+        accessibilityLabel={label}
+        aria-labelledby={ariaLabelledby}
+        aria-describedby={ariaDescribedby}
+        // Programmatic required on the group too (aria-required), omitted when optional.
+        aria-required={required || undefined}
         accessibilityState={{ disabled: !!disabled }}
         // RNW drops accessibilityState, so alias the disabled flag for web SR (matching
         // the ± buttons) — otherwise the group's adjustable element omits disabled.
@@ -299,9 +352,14 @@ export function createStepper(skin: StepperSkin) {
             flexDirection: "row",
             alignItems: "center",
             alignSelf: "flex-start",
-            opacity: disabled ? 0.5 : 1,
+            // With a label the outer wrapper carries the disabled dim (so the label
+            // dims with the control, matching Input); bare, the group dims itself.
+            opacity: label == null && disabled ? 0.5 : 1,
           },
-          style,
+          // The style escape hatch rides the outer wrapper when a label is present
+          // (as in Input); on the bare control it stays here so the bare output is
+          // byte-identical.
+          label != null ? null : style,
         ]}
       >
         {skin.fieldOnLeft ? (
@@ -322,6 +380,26 @@ export function createStepper(skin: StepperSkin) {
             {PlusButton}
           </View>
         )}
+      </View>
+    );
+
+    // No label: return the bare control, byte-identical to the pre-label output.
+    if (label == null) return control;
+
+    // With a label: a component-owned title (and optional muted description) ABOVE
+    // the control, mirroring Input's above-field placement. The wrapper owns the
+    // style escape hatch and the disabled dim so the label dims with the control.
+    return (
+      <View style={[{ alignSelf: "flex-start", gap: 6 }, disabled ? { opacity: 0.5 } : null, style]}>
+        <Text nativeID={labelId} style={skin.labelAbove(tokens, size)}>
+          <LabelContent label={label} required={required} starColor={tokens.destructive} />
+        </Text>
+        {description != null ? (
+          <Text nativeID={descId} style={skin.description(tokens, size)}>
+            {description}
+          </Text>
+        ) : null}
+        {control}
       </View>
     );
   });

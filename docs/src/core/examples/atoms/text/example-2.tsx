@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { tokens, View, Text } = scope;
   return (
 <View style={{ width: 220 }}>
-  <Text numberOfLines={1} style={{ fontSize: 14, color: tokens.foreground }}>
+  <Text numberOfLines={1} style={{ color: tokens.foreground }}>
     This single line is clipped with an ellipsis when it overflows its container.
   </Text>
 </View>
