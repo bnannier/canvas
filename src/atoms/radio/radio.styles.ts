@@ -37,10 +37,12 @@ const LABEL_TYPE: Record<Size, TextStyle> = {
 };
 
 // The label beside the control. Medium weight; dimmed to muted when disabled. Shared
-// across every platform.
+// across every platform. `flexShrink` lets a long label-only radio wrap within the
+// row instead of forcing it wider (matches Checkbox).
 function label(tokens: ColorTokens, size: Size, disabled: boolean): TextStyle {
   return {
     fontWeight: "500",
+    flexShrink: 1,
     color: disabled ? tokens["muted-foreground"] : tokens.foreground,
     ...LABEL_TYPE[size],
   };
