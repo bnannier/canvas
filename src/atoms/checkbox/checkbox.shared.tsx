@@ -76,10 +76,11 @@ export interface CheckboxSkin {
 // The row: box + optional label, top-aligned so a multi-line label hangs from the box.
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
 
-// Stacks the title over its description beside the box. The 8px gap matches the
-// kit's default column spacing (the arrangement callers used to hand-compose), so
-// the built-in layout reproduces the established look. `flexShrink` lets a long
-// description wrap within the row instead of forcing the row wider. Mirrors Radio.
+// Stacks the title over its description beside the box. The 8px gap mirrors
+// Radio's TEXT_COLUMN (the kit's title+description precedent) and the kit's
+// default snug column spacing, so every such control stacks its text the same
+// way. `flexShrink` lets a long description wrap within the row instead of
+// forcing the row wider.
 const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
 
 // The glyph sits on its own absolutely-positioned layer that fills the box and
