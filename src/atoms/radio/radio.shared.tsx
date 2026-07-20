@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
@@ -41,6 +41,15 @@ export interface RadioProps {
    * never hand-composes a Row + Column + two Typography nodes per option.
    */
   description?: ReactNode;
+  /**
+   * Render the whole control as a selectable option CARD: the ring plus the title and
+   * description sit inside Card chrome (bordered, padded), and the ENTIRE card is the
+   * tap target. When this radio is the chosen option, the card takes Card's own
+   * `selected` treatment (a primary border and a soft primary tint), so the whole tile
+   * reads as chosen, not just the dot. Pairs with `description` for a plan/tier picker,
+   * and is still group-wired through `value` inside a `<RadioGroup>`.
+   */
+  card?: boolean;
   // Size (pick one; default is the 16px control).
   small?: boolean;
   large?: boolean;
@@ -70,6 +79,12 @@ export interface RadioSkin {
   label: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
   /** The muted secondary description line, rendered under the label when present. */
   description: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
+  /**
+   * The `card` mode chrome: the whole control wrapped as a selectable Card surface
+   * (bordered + padded, per-OS radius/curve), derived from the kit Card skin. When
+   * `checked`, it applies Card's own `selected` treatment (primary border + soft tint).
+   */
+  card: (tokens: ColorTokens, checked: boolean) => ViewStyle;
   /** Opacity applied to the row when disabled. */
   disabledOpacity: number;
   /** iOS/web dim the row on press; Android uses a ripple instead (null). */
@@ -91,7 +106,7 @@ const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
 /** Build a Radio component from a platform skin. */
 export function createRadio(skin: RadioSkin) {
   return function Radio(props: RadioProps) {
-    const { checked, selected, onChange, children, description, style } = props;
+    const { checked, selected, onChange, children, description, card, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
     // Whether the control carries any text at all (title and/or description).
@@ -111,7 +126,16 @@ export function createRadio(skin: RadioSkin) {
       onChange?.(true, event);
     };
 
-    const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+    // Card mode: the whole control renders inside selectable Card chrome and the entire
+    // card is the tap target. The chrome (border + tint) tracks isChecked, so choosing
+    // an option lights its whole tile the way `<Card selected>` does. The chrome rides
+    // the Pressable itself; only the outer layout `style` moves to the RippleClip wrapper.
+    const cardChrome = card ? skin.card(tokens, isChecked) : null;
+
+    // Ripple (Android): a card uses a bounded surface ripple over the whole tile (clipped
+    // to the rounded corners by the RippleClip parent); a plain radio uses the skin's
+    // borderless ring ripple. iOS/web ignore android_ripple and keep the pressedOpacity dim.
+    const ripple = card ? surfaceRipple(tokens) : skin.ripple ? skin.ripple(tokens) : undefined;
 
     // Roving-focus wiring from the group (web arrow-key nav): the group makes only
     // the selected radio a tab stop and the arrows move + select. `ref` passes
@@ -122,25 +146,30 @@ export function createRadio(skin: RadioSkin) {
       ? { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: roving.onKeyDown }
       : {};
 
-    return (
+    const control = (
       <Pressable
         ref={roving?.ref}
         {...(rovingProps as object)}
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
-        // Icon-only (no text): grow the small ring's tap target toward ~44pt.
-        // With a label the whole row is already a generous target, so leave it.
-        hitSlop={!hasText ? 8 : undefined}
+        // Icon-only (no text): grow the small ring's tap target toward ~44pt. With a
+        // label — or a card, whose whole padded tile is the target — the row is already
+        // a generous target, so leave it.
+        hitSlop={!hasText && !card ? 8 : undefined}
         accessibilityRole="radio"
         accessibilityState={{ checked: isChecked, disabled: !!disabled }}
         aria-checked={isChecked}
         android_ripple={ripple}
         style={({ pressed }) => [
           ROW,
+          // Card mode: the pressable IS the card surface (border, radius, fill, padding).
+          cardChrome,
           disabled ? { opacity: skin.disabledOpacity } : null,
           skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-          style,
+          // In card mode the outer layout `style` rides the RippleClip wrapper (the
+          // outermost node), so the clip and the caller's layout stay in lockstep.
+          card ? null : style,
         ]}
       >
         <View style={skin.ring(tokens, size, isChecked, hasText)}>
@@ -157,6 +186,17 @@ export function createRadio(skin: RadioSkin) {
           )
         ) : null}
       </Pressable>
+    );
+
+    // A card wraps the pressable in RippleClip so its bounded Android ripple is clipped to
+    // the card's rounded corners (on iOS/web RippleClip is a transparent layout passthrough
+    // that still owns the outer `style`). A plain radio returns the pressable unchanged.
+    return card ? (
+      <RippleClip shape={cornerRadii(cardChrome)} style={style}>
+        {control}
+      </RippleClip>
+    ) : (
+      control
     );
   };
 }

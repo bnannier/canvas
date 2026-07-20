@@ -1,7 +1,6 @@
 import { type ComponentType, type ReactNode } from "react";
-import { type ImageStyle } from "react-native";
 import { StyleSheet } from "react-native";
-import { View, Pressable, Image, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -42,6 +41,23 @@ export type AvatarComponent = ComponentType<AvatarProps>;
 // description to one line each (the action pattern, so a long email never wraps
 // and pushes the trailing action out of alignment).
 
+/**
+ * Compact density overrides for a menu-header-sized identity row: a tighter row gap, a
+ * smaller leading icon box, and the title/description type stepped down one size. The
+ * leading avatar shrinks via Avatar's own `small` size (28px), so it carries no field
+ * here. Applied on top of the base skin values only when the `compact` prop is set.
+ */
+export interface MediaObjectDensity {
+  /** Tighter row gap between the leading media, content column, and trailing slot. */
+  containerBase: ViewStyle;
+  /** Smaller leading icon box: size + corner radius (the tinted fill comes from shared). */
+  iconBox: ViewStyle;
+  /** Compact title type: size / line-height / weight / tracking (the color comes from shared). */
+  title: TextStyle;
+  /** Compact description type: size / line-height / tracking (the color comes from shared). */
+  description: TextStyle;
+}
+
 export interface MediaObjectSkin {
   /** Row gap between the leading media, content column, and trailing slot. */
   containerBase: ViewStyle;
@@ -54,10 +70,6 @@ export interface MediaObjectSkin {
    *  "transparent" while keeping the border WIDTH so content metrics stay identical
    *  across platforms. Omit to default to the hairline tokens.border. */
   borderedBorderColor?: (tokens: ColorTokens) => string;
-  /** Leading photo wrapper shape: size + corner radius (the muted fill comes from shared). */
-  photoBox: ViewStyle;
-  /** The photo itself: matching corner radius. */
-  photoImage: ImageStyle;
   /** Leading icon box shape: size + corner radius (the tinted fill comes from shared). */
   iconBox: ViewStyle;
   /** The glyph inside the icon box: type size/weight/tracking (the primary color comes from shared). */
@@ -83,6 +95,9 @@ export interface MediaObjectSkin {
    * already tall enough from its padding, so this only backstops the bare row.
    */
   minTarget: number;
+  /** Compact-density overrides (row gap, icon box, title/description type) for the
+   *  `compact` menu-header row; applied on top of the base values when `compact` is set. */
+  compact: MediaObjectDensity;
 }
 
 export interface MediaObjectProps {
@@ -114,6 +129,11 @@ export interface MediaObjectProps {
   leading?: boolean;
   // Surface.
   bordered?: boolean;
+  // Density.
+  /** Menu-header density: a smaller leading avatar (28px) and title/description type
+   *  stepped down one size, for a compact identity row (e.g. a menu or dropdown header).
+   *  Backward-compatible; without it the row keeps its default 40px avatar and type. */
+  compact?: boolean;
   // Layout.
   truncate?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -166,29 +186,34 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
     const { tokens } = useTheme();
     const align = alignOf(props);
     const direction = directionOf(props);
+    // Compact (menu-header) density: a tighter row gap, a smaller leading avatar/icon,
+    // and title/description type stepped down one size. Null when off, so the base skin
+    // stands unchanged.
+    const isCompact = !!props.compact;
+    const density = isCompact ? skin.compact : null;
 
     // The row's visual box WITHOUT outer layout. On a bordered row the rounded surface
     // (and its elevation) live in `skin.borderedSurface`.
     const surface: StyleProp<ViewStyle> = [
       skin.containerBase,
+      density?.containerBase,
       { flexDirection: DIRECTION_ROW[direction], alignItems: ALIGN_ITEMS[align] },
       props.bordered ? [skin.borderedSurface, borderedColors(tokens, skin)] : null,
     ];
 
-    // Leading media: photo > initials avatar > icon box. Only one renders. The
-    // muted/tint fills read the tokens; the box shape comes from the skin.
+    // Leading media: photo > initials avatar > icon box. Only one renders. A photo
+    // routes through the platform Avatar (not a raw Image), so a broken/missing image
+    // falls back to initials (from `avatar`, else the title) exactly like an initials
+    // row; the Avatar owns the 40px circle (28px `small` under compact). The icon tint
+    // reads the tokens; the box shape comes from the skin.
     let media: ReactNode = null;
     if (src) {
-      media = (
-        <View style={[skin.photoBox, { backgroundColor: tokens.muted }]}>
-          <Image style={[skin.photoImage, { width: "100%", height: "100%" }]} source={typeof src === "number" ? src : { uri: src }} accessibilityLabel={title} resizeMode="cover" />
-        </View>
-      );
+      media = <Avatar small={isCompact} src={src} name={avatar ?? title} accessibilityLabel={title} />;
     } else if (avatar) {
-      media = <Avatar name={avatar}>{avatar}</Avatar>;
+      media = <Avatar small={isCompact} name={avatar}>{avatar}</Avatar>;
     } else if (icon != null) {
       media = (
-        <View style={[skin.iconBox, { backgroundColor: alpha(tokens.primary, 0.15) }]}>
+        <View style={[skin.iconBox, density?.iconBox, { backgroundColor: alpha(tokens.primary, 0.15) }]}>
           {typeof icon === "string" ? <Text style={[skin.iconGlyph, { color: tokens.primary }]}>{icon}</Text> : icon}
         </View>
       );
@@ -201,12 +226,12 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
         {media}
         <View style={skin.content}>
           {title != null ? (
-            <Text style={[skin.title, { color: tokens.foreground }]} numberOfLines={truncate ? 1 : undefined}>
+            <Text style={[skin.title, density?.title, { color: tokens.foreground }]} numberOfLines={truncate ? 1 : undefined}>
               {title}
             </Text>
           ) : null}
           {description != null ? (
-            <Text style={[skin.description, { color: tokens["muted-foreground"] }]} numberOfLines={truncate ? 1 : undefined}>
+            <Text style={[skin.description, density?.description, { color: tokens["muted-foreground"] }]} numberOfLines={truncate ? 1 : undefined}>
               {description}
             </Text>
           ) : null}

@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, type ColorTokens, type FieldWidthProps, type ViewStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, type ColorTokens, type FieldWidthProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill colors follow
 // light/dark. The shared structure (the rounded track + filled bar, the determinate vs.
 // indeterminate logic, the value clamp, the accessibility contract, the standard field
-// width axis, and the sliding-bar animation) lives here once; a platform file supplies
-// only its measured shape (a ProgressSkin) plus any per-OS parts and calls
-// createProgress. Styles are plain RN objects, which work on iOS, Android, and web alike.
+// width axis, the component-owned label/description/value header, and the sliding-bar
+// animation) lives here once; a platform file supplies only its measured shape (a
+// ProgressSkin) plus any per-OS parts and calls createProgress. Styles are plain RN
+// objects, which work on iOS, Android, and web alike.
 //
 // Progress is OUTPUT-ONLY: it reports task completion, so there is no onChange and the
 // control is never interactive (no Pressable, no press feedback).
@@ -31,6 +32,21 @@ export interface ProgressProps extends FieldWidthProps {
   value?: number;
   /** Indeterminate mode: ignore `value` and animate a sliding bar (a spinner on iOS). */
   indeterminate?: boolean;
+  /**
+   * Optional title line rendered ABOVE the bar. Supplying it (with or without a
+   * `description`/`showValue`) builds the stacked header inside the control, so the
+   * caller never hand-composes a Row/Column + Typography around the bar. This is the
+   * "components own their label anatomy" contract, mirroring Checkbox/Radio/Switch's
+   * `description` slot.
+   */
+  children?: ReactNode;
+  /** Optional muted secondary line rendered under the title. */
+  description?: ReactNode;
+  /**
+   * Render the percent (derived from `value`) as a right-aligned readout on the title
+   * line. Indeterminate has no measurable value, so this renders nothing then.
+   */
+  showValue?: boolean;
   // Size axis (track thickness; pick one, default is the medium track).
   small?: boolean;
   large?: boolean;
@@ -59,10 +75,22 @@ function clampValue(value: number | undefined): number {
   return value;
 }
 
+// Header layout owned by the SHELL (the component owns the column, the gaps, and the
+// stacking; the skin owns only the text type). ROOT_STACK stacks the header over the
+// track; HEADER_COLUMN stacks the title row over the description; TITLE_ROW lays the
+// title beside its trailing percent; VALUE_READOUT_LAYOUT pins that percent to the right
+// edge (marginLeft:auto) with a min gap so a long title never touches it. These are the
+// control's own anatomy, not a call-site restyle.
+const ROOT_STACK: ViewStyle = { gap: 8 };
+const HEADER_COLUMN: ViewStyle = { gap: 2 };
+const TITLE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center" };
+const VALUE_READOUT_LAYOUT: TextStyle = { marginLeft: "auto", paddingLeft: 8 };
+
 // What a platform skin owns: the track height + radius per size, the track (inactive)
-// fill, the active fill, the fraction of the track width the sliding indeterminate
-// bar occupies, and the optional M3 segmented anatomy (active/track gap + stop
-// indicator). Everything else (structure, value logic, animation, a11y) is the shell.
+// fill, the active fill, the header text type (label/description/value readout), the
+// fraction of the track width the sliding indeterminate bar occupies, and the optional
+// M3 segmented anatomy (active/track gap + stop indicator). Everything else (structure,
+// value logic, animation, a11y) is the shell.
 export interface ProgressSkin {
   /** Track thickness (px) per size. */
   height: Record<Size, number>;
@@ -72,6 +100,12 @@ export interface ProgressSkin {
   trackColor: (tokens: ColorTokens) => string;
   /** Active (filled) bar color. */
   fillColor: (tokens: ColorTokens) => string;
+  /** The title line rendered above the track (canonical 14/20 medium, foreground). */
+  label: (tokens: ColorTokens) => TextStyle;
+  /** The muted secondary line under the title (canonical 12/16, muted-foreground). */
+  description: (tokens: ColorTokens) => TextStyle;
+  /** The trailing percent readout on the title line (14/20 muted-foreground, tabular). */
+  valueReadout: (tokens: ColorTokens) => TextStyle;
   /** Width of the sliding indeterminate bar as a fraction (0..1) of the track. */
   indeterminateWidth: number;
   /**
@@ -106,7 +140,7 @@ export interface ProgressParts {
 /** Build a Progress component from a platform skin (plus optional per-OS parts). */
 export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
   return function Progress(props: ProgressProps) {
-    const { value, indeterminate, accessibilityLabel, testID, style } = props;
+    const { value, indeterminate, children, description, accessibilityLabel, testID, style } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
     // Standard field width axis: appended after the skin's width:"100%" so the bar
@@ -206,10 +240,49 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     // label); the wrapper stays presentational and only carries the width axis so the
     // control keeps its slot in a form column.
     const IndeterminateSpinner = parts.IndeterminateSpinner;
+
+    // Component-owned label anatomy (mirrors Checkbox/Radio/Switch's `description`): a
+    // stacked header, the title row with an optional right-aligned percent readout, and a
+    // muted description under it, rendered ABOVE the track inside Progress's own root node.
+    // `showValue` has no percent to show while indeterminate, so it is dropped then. A bare
+    // <Progress value={...} /> passes none of these, so `hasHeader` is false and every
+    // render path below stays byte-identical to the header-less original.
+    const showPercent = !!props.showValue && !indeterminate;
+    const hasHeader = children != null || description != null || showPercent;
+    // Derive the accessible name from a string title when no explicit label is given, so a
+    // labelled bar announces its title without a redundant accessibilityLabel.
+    const accessibilityName = accessibilityLabel ?? (typeof children === "string" ? children : undefined);
+    const header = hasHeader ? (
+      <View style={HEADER_COLUMN}>
+        {children != null || showPercent ? (
+          <View style={TITLE_ROW}>
+            {children != null ? <Text style={skin.label(tokens)}>{children}</Text> : null}
+            {showPercent ? (
+              <Text style={[skin.valueReadout(tokens), VALUE_READOUT_LAYOUT]}>{`${Math.round(fraction * 100)}%`}</Text>
+            ) : null}
+          </View>
+        ) : null}
+        {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
+      </View>
+    ) : null;
+
     if (indeterminate && IndeterminateSpinner) {
+      const spinner = (
+        <IndeterminateSpinner small={props.small} large={props.large} accessibilityLabel={accessibilityName} />
+      );
+      // Bare, the spinner stays centered in the field slot (byte-identical to the
+      // original). With a header it sits left-aligned under the stacked title.
+      if (!hasHeader) {
+        return (
+          <View testID={testID} style={[{ alignItems: "center" }, widthStyle, style]}>
+            {spinner}
+          </View>
+        );
+      }
       return (
-        <View testID={testID} style={[{ alignItems: "center" }, widthStyle, style]}>
-          <IndeterminateSpinner small={props.small} large={props.large} accessibilityLabel={accessibilityLabel} />
+        <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>
+          {header}
+          <View style={{ alignItems: "flex-start" }}>{spinner}</View>
         </View>
       );
     }
@@ -234,10 +307,10 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         )
       : null;
 
-    return (
+    const track = (
       <View
         accessibilityRole="progressbar"
-        accessibilityLabel={accessibilityLabel}
+        accessibilityLabel={accessibilityName}
         accessibilityValue={
           indeterminate ? { min: 0, max: 100 } : { min: 0, max: 100, now: Math.round(fraction * 100) }
         }
@@ -246,7 +319,10 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={indeterminate ? undefined : Math.round(fraction * 100)}
-        testID={testID}
+        // With a header the outer root node owns the width axis, the outer style
+        // composition, and the testID; the track keeps only the progressbar role and its
+        // own shape. Header-less, they stay on the track so the render is byte-identical.
+        testID={hasHeader ? undefined : testID}
         onLayout={onLayout}
         style={[
           // overflow:hidden clips the sliding indeterminate bar AND the translated
@@ -255,8 +331,8 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
           // own track segment, so the container stays transparent there.
           { width: "100%", height, borderRadius: radius, overflow: "hidden" as const },
           segmented ? null : { backgroundColor: trackColor },
-          widthStyle,
-          style,
+          hasHeader ? null : widthStyle,
+          hasHeader ? null : style,
         ]}
       >
         {indeterminate ? (
@@ -376,6 +452,17 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
             }}
           />
         )}
+      </View>
+    );
+
+    // Header-less: the track IS the root node (byte-identical to the original render).
+    // With a header: an outer column stacks the header over the track and carries the
+    // width axis, the outer style composition, and the testID.
+    if (!hasHeader) return track;
+    return (
+      <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>
+        {header}
+        {track}
       </View>
     );
   };

@@ -77,7 +77,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 
 ## Do & Don't
 
-**Do** — Mark the placeholder disabled and selected so it prompts without being a valid choice.
+**Do** — Use the placeholder prop for the prompt so it can never be submitted as a value.
 
 ```tsx
 <Column style={{ minHeight: 220 }}>
@@ -112,10 +112,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 **Do** — Keep the small select inline with a short label so it stays compact inside toolbars and table footers.
 
 ```tsx
-<Row alignCenter snug>
-  <Typography tiny muted>Rows</Typography>
-  <Select small defaultValue="10" options={["10", "25", "50"]} style={{ width: "auto" }} />
-</Row>
+<Select small fit inline label="Rows" defaultValue="10" options={["10", "25", "50"]} />
 ```
 
 **Don't** — A stacked block label towers over the small control and breaks the dense row it belongs in.

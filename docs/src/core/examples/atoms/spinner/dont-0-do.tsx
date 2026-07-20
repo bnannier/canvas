@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Spinner, Typography, Row } = scope;
+  const { Spinner } = scope;
   return (
-<Row alignCenter snug>
-  <Spinner small />
-  <Typography small muted>Loading…</Typography>
-</Row>
+<Spinner small>Loading…</Spinner>
   );
 }

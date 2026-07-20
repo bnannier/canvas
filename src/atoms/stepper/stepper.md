@@ -48,10 +48,7 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 **Do** — Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.
 
 ```tsx
-<Column snug>
-  <Typography small medium>Quantity</Typography>
-  <Stepper defaultValue={1} min={1} max={9} onChange={() => {}} />
-</Column>
+<Stepper label="Quantity" defaultValue={1} min={1} max={9} onChange={() => {}} />
 ```
 
 **Don't** — Leaving the range unbounded lets the user push the count below zero or past what the form can accept.

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useTheme, useControllableState, type ColorTokens, type ViewStyle } from "../../style/index.js";
+import { Pressable, View, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so colors follow light/dark.
@@ -35,8 +35,8 @@ export interface SwitchProps {
    * Without it, a label-less switch announces only "switch, on/off".
    */
   accessibilityLabel?: string;
-  /** Extra style on the row, applied last. */
-  style?: ViewStyle;
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  style?: StyleProp<ViewStyle>;
 }
 
 export type Size = "small" | "base" | "large";

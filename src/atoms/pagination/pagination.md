@@ -26,10 +26,10 @@ Page-of-N navigation for tables and lists.
 
 ### compact
 
-**Do** — Pair the buttons with a "Showing X–Y of N" range so position and total are always visible.
+**Do** — Pass `itemCount` so the buttons carry a "Showing X-Y of N" range and position and total are always visible.
 
 ```tsx
-<Pagination compact defaultPage={2} total={12} />
+<Pagination compact defaultPage={2} total={12} itemCount={118} />
 ```
 
 **Don't** — Bare Previous/Next with no range label leaves the user unable to tell where they are or how much is left.

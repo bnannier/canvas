@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Button, Typography, Column } = scope;
+  const { Stateful, Button, Icon, Typography, Column } = scope;
   return (
 <Stateful initial={0}>
   {(added, setAdded) => (
     <Column snug alignCenter>
-      <Button primary icon onPress={() => setAdded(added + 1)}>+</Button>
+      <Button primary icon accessibilityLabel="Add item" iconLeft={<Icon plus primaryForeground size={16} />} onPress={() => setAdded(added + 1)} />
       <Typography muted>{added === 0 ? "Nothing added yet" : `Added ${added} ${added === 1 ? "item" : "items"}`}</Typography>
     </Column>
   )}

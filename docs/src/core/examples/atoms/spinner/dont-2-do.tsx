@@ -3,13 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Spinner, Typography, Column } = scope;
+  const { Card, Spinner } = scope;
   return (
 <Card padded>
-  <Column alignCenter snug>
-    <Spinner />
-    <Typography small muted>Loading…</Typography>
-  </Column>
+  <Spinner stacked>Loading…</Spinner>
 </Card>
   );
 }

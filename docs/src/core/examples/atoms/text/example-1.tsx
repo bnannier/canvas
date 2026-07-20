@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View, Text } = scope;
+  const { Typography, Column } = scope;
   return (
-<View style={{ gap: 6 }}>
-  <Text style={{ fontSize: 22, fontWeight: "700", color: tokens.foreground }}>Heading</Text>
-  <Text style={{ fontSize: 14, color: tokens.foreground }}>Body text</Text>
-  <Text style={{ fontSize: 12, color: alpha(tokens.foreground, 0.6) }}>Muted caption</Text>
-</View>
+<Column tight>
+  <Typography h3>Heading</Typography>
+  <Typography body>Body text</Typography>
+  <Typography tiny muted>Muted caption</Typography>
+</Column>
   );
 }

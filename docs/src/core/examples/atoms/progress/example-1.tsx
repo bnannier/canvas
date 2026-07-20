@@ -3,17 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Ticker, Progress, Typography, Row, Column } = scope;
+  const { Ticker, Progress } = scope;
   return (
 <Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>
   {(value) => (
-    <Column snug>
-      <Row flush between>
-        <Typography small>Uploading…</Typography>
-        <Typography small muted>{Math.round(value * 100)}%</Typography>
-      </Row>
-      <Progress value={value} />
-    </Column>
+    <Progress showValue value={value}>Uploading…</Progress>
   )}
 </Ticker>
   );

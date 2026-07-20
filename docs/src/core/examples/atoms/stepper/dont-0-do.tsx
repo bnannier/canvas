@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stepper, Typography, Column } = scope;
+  const { Stepper } = scope;
   return (
-<Column snug>
-  <Typography small medium>Quantity</Typography>
-  <Stepper defaultValue={1} min={1} max={9} onChange={() => {}} />
-</Column>
+<Stepper label="Quantity" defaultValue={1} min={1} max={9} onChange={() => {}} />
   );
 }

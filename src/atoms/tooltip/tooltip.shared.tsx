@@ -6,6 +6,8 @@ import {
   wrapper,
   bubbleGap,
   iconTrigger,
+  textTrigger,
+  textTriggerLabel,
   type Placement,
   type TooltipSkin,
 } from "./tooltip.styles.js";
@@ -27,11 +29,18 @@ import {
 export interface TooltipProps {
   // The tip text shown in the bubble.
   label?: string;
-  // The element the tip describes; rendered as an <Button outline small>.
+  // The element the tip describes. By default rendered as a text
+  // <Button outline small>; set `iconTrigger` for a ghost icon button or
+  // `textTrigger` to hang the tip off an inline pressable word.
   trigger?: string;
   // Render the trigger as a ghost icon button (a settings glyph) instead of the
   // text Button. When set, `trigger` (the label string) is ignored.
   iconTrigger?: boolean;
+  // Render the `trigger` string as a pressable inline word (an underlined
+  // hover-text affordance) rather than the default text Button, so the tip can
+  // hang off a run of body copy. Orthogonal to placement (top/left/right/bottom).
+  // Ignored when `iconTrigger` is set, which takes precedence.
+  textTrigger?: boolean;
   // Controlled visibility. Omit for uncontrolled (tap the trigger to toggle).
   open?: boolean;
   // Fired when the bubble is shown/hidden.
@@ -68,7 +77,7 @@ const BUBBLE_FIRST: Record<Placement, boolean> = {
 /** Build a Tooltip component from a platform skin. */
 export function createTooltip(skin: TooltipSkin) {
   return function Tooltip(props: TooltipProps) {
-    const { label, trigger, iconTrigger: isIconTrigger, onOpenChange, testID, style } = props;
+    const { label, trigger, iconTrigger: isIconTrigger, textTrigger: isTextTrigger, onOpenChange, testID, style } = props;
     const placement = placementOf(props);
     const { tokens } = useTheme();
     // Uncontrolled by default: tapping the trigger toggles the bubble (a touch
@@ -116,6 +125,25 @@ export function createTooltip(skin: TooltipSkin) {
         aria-expanded={open}
       >
         <Icon settings size={16} />
+      </Pressable>
+    ) : isTextTrigger ? (
+      // Text trigger: the `trigger` string as a pressable inline word (a
+      // hover-text affordance) rather than a Button. Mirrors the icon trigger's
+      // wiring: a Pressable toggles the bubble, dims on press (iOS/web) or
+      // ripples (Android), carries the same hitSlop, and exposes its disclosure
+      // state (accessibilityState covers native; the aria-expanded alias is
+      // required because react-native-web does not forward accessibilityState).
+      // The word itself is the accessible name, so no explicit accessibilityLabel.
+      <Pressable
+        android_ripple={controlRipple(tokens)}
+        style={({ pressed }) => [textTrigger, pressDim(pressed)]}
+        onPress={() => setOpen(!open)}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        aria-expanded={open}
+      >
+        <Text style={textTriggerLabel(tokens)}>{trigger}</Text>
       </Pressable>
     ) : (
       // `expanded` maps to aria-expanded inside Button so the text trigger also

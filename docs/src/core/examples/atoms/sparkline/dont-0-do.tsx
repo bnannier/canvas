@@ -3,17 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Row, Column, Sparkline } = scope;
+  const { Stats } = scope;
   return (
-<Card padded style={{ maxWidth: 220 }}>
-  <Column tight>
-    <Typography caption>Requests</Typography>
-    <Row between baseline>
-      <Typography h3 semibold>24.5k</Typography>
-      <Typography tiny success>+8.2%</Typography>
-    </Row>
-    <Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} />
-  </Column>
-</Card>
+<Stats style={{ maxWidth: 220 }} items={[{ label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }]} />
   );
 }

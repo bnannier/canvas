@@ -45,9 +45,6 @@ export const webSkin: MediaObjectSkin = {
   containerBase: { gap: 12 },
   // bordered: rounded-lg border bg-card p-4.
   borderedSurface: { borderRadius: 8, borderWidth: 1, padding: 16 },
-  // Leading photo: shrink-0 w-10 h-10 overflow-hidden rounded-full bg-muted.
-  photoBox: { flexShrink: 0, width: 40, height: 40, overflow: "hidden", borderRadius: 9999 },
-  photoImage: { borderRadius: 9999 },
   // Leading icon box: shrink-0 items-center justify-center w-9 h-9 rounded-md bg-primary/15.
   iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 6 },
   // Glyph: text-base font-semibold text-primary.
@@ -68,6 +65,14 @@ export const webSkin: MediaObjectSkin = {
   // Web keeps its content-height rows; the tappable target is a mouse pointer, so no
   // minimum tap height is applied (0 = no change to the established web layout).
   minTarget: 0,
+  // Compact (menu-header) density: tighter gap-2 row, a 28px `small` leading avatar,
+  // and the type stepped down one step (title text-[13]/semibold, description text-[11]).
+  compact: {
+    containerBase: { gap: 8 },
+    iconBox: { width: 28, height: 28, borderRadius: 6 },
+    title: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
+    description: { fontSize: 11, lineHeight: 14 },
+  },
 };
 
 // ── iOS (SF / HIG conventions; flat inset-group surface, tightened SF tracking) ──────
@@ -78,8 +83,6 @@ export const iosSkin: MediaObjectSkin = {
   // curve, flat (no shadow; HIG groups carry a hairline). borderCurve is an iOS-only
   // RN style prop (device-only visual; a no-op elsewhere and in the web docs preview).
   borderedSurface: { borderRadius: 10, borderCurve: "continuous", borderWidth: 1, padding: 16 },
-  photoBox: { flexShrink: 0, width: 40, height: 40, overflow: "hidden", borderRadius: 9999 },
-  photoImage: { borderRadius: 9999 },
   iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, borderCurve: "continuous" },
   // SF Pro Text tracking at 16pt = -0.31 (Apple tracking table).
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.31 },
@@ -94,6 +97,14 @@ export const iosSkin: MediaObjectSkin = {
   pressedOpacity: 0.8,
   // HIG minimum tappable area 44x44pt (bare row backstop).
   minTarget: 44,
+  // Compact (menu-header) density: tighter gap 8, a 28px `small` leading avatar, and SF
+  // type stepped down one step. SF Pro Text tracking: 13pt = -0.08, 11pt = +0.06.
+  compact: {
+    containerBase: { gap: 8 },
+    iconBox: { width: 28, height: 28, borderRadius: 7, borderCurve: "continuous" },
+    title: { fontSize: 13, lineHeight: 18, fontWeight: "600", letterSpacing: -0.08 },
+    description: { fontSize: 11, lineHeight: 14, letterSpacing: 0.06 },
+  },
 };
 
 // ── Android (Material 3 list-item conventions; more rounding, M3 tracking, elevation) ─
@@ -108,8 +119,6 @@ export const androidSkin: MediaObjectSkin = {
   borderedSurface: { borderRadius: 12, borderWidth: 1, padding: 16, ...shadow("sm") },
   // Elevation separates the M3 elevated card, so the outline is transparent.
   borderedBorderColor: () => "transparent",
-  photoBox: { flexShrink: 0, width: 40, height: 40, overflow: "hidden", borderRadius: 9999 },
-  photoImage: { borderRadius: 9999 },
   // M3 medium container radius on the leading icon box.
   iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 12 },
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600" },
@@ -125,4 +134,12 @@ export const androidSkin: MediaObjectSkin = {
   pressedOpacity: 0.9,
   // M3 minimum touch target 48x48dp (bare row backstop).
   minTarget: 48,
+  // Compact (menu-header) density: tighter gap 12, a 28px `small` leading avatar, and M3
+  // type stepped down (title 13/500/+0.1, description M3 label-small 11/16/+0.5).
+  compact: {
+    containerBase: { gap: 12 },
+    iconBox: { width: 28, height: 28, borderRadius: 8 },
+    title: { fontSize: 13, lineHeight: 18, fontWeight: "500", letterSpacing: 0.1 },
+    description: { fontSize: 11, lineHeight: 16, letterSpacing: 0.5 },
+  },
 };

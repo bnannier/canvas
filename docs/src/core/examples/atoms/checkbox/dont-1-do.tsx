@@ -3,18 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Checkbox, Select, Row, Column } = scope;
+  const { Checkbox, Select, Column } = scope;
   return (
 <Column snug>
   <Checkbox indeterminate>Select all</Checkbox>
-  <Row flush>
-    <View style={{ width: 24 }} />
-    <Column snug>
-      <Checkbox defaultChecked>Read</Checkbox>
-      <Checkbox>Write</Checkbox>
-      <Checkbox>Delete</Checkbox>
-    </Column>
-  </Row>
+  <Column snug indent>
+    <Checkbox defaultChecked>Read</Checkbox>
+    <Checkbox>Write</Checkbox>
+    <Checkbox>Delete</Checkbox>
+  </Column>
 </Column>
   );
 }

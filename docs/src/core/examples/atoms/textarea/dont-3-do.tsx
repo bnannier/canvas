@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Textarea, Typography, Column } = scope;
+  const { Textarea } = scope;
   return (
-<Column snug>
-  <Typography small medium>Description</Typography>
-  <Textarea rows={3} wide disabled value="Read-only content the user must not change." />
-</Column>
+<Textarea label="Description" rows={3} wide disabled value="Read-only content the user must not change." />
   );
 }

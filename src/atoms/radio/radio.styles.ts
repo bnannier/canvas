@@ -1,6 +1,13 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { type ColorTokens, alpha } from "../../style/index.js";
 import { type RadioSkin, type Size } from "./radio.shared.js";
+import {
+  type CardSkin,
+  cardBase,
+  webSkin as webCardSkin,
+  iosSkin as iosCardSkin,
+  androidSkin as androidCardSkin,
+} from "../../molecules/card/card.styles.js";
 
 // Co-located Radio skins, one per platform, all driven by the brand tokens (passed
 // in from useTheme so they follow light/dark and the glass surface). The BRAND
@@ -83,6 +90,29 @@ function dotBase(box: number): ViewStyle {
   return { borderRadius: 9999, width: box, height: box };
 }
 
+// ---------- `card` mode chrome (derived from the kit Card skin) ----------
+// A card-style radio wraps the WHOLE control in a selectable Card surface, so the
+// option reads as a tappable tile rather than a bare ring + label. Instead of
+// hand-rolling a border/tint (which would drift from Card), it reuses the matching
+// platform Card skin: the OUTLINED (bordered) surface plus Card's per-OS radius/curve
+// and padded inset, and — when the radio is checked — Card's OWN `selected` treatment
+// (primary border + soft primary tint, the exact same recolor `<Card selected>`
+// applies). So a card-style radio and a selected Card stay in lockstep on every OS.
+function cardChrome(card: CardSkin, tokens: ColorTokens, checked: boolean): ViewStyle {
+  return {
+    ...cardBase, // borderWidth: 1 (the shared Card hairline)
+    borderRadius: card.radius, // 8 web / 12 iOS / 12 Android
+    ...(card.curve ? { borderCurve: card.curve } : null), // iOS continuous corner curve
+    ...card.surface(tokens, "flat"), // the M3 OUTLINED / Light bordered surface: tokens.border on tokens.card
+    ...card.padded, // per-OS padded inset (24 web/iOS, 16 Android)
+    ...(checked
+      ? // Card's own `selected` recolor: primary border + soft primary tint. The border
+        // WIDTH is unchanged, so selecting never shifts content. Identical to Card.
+        { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) }
+      : null),
+  };
+}
+
 // ---------- Web: the established Canvas look ----------
 export const webSkin: RadioSkin = {
   ring: (t, size, checked, nudge) => ({
@@ -93,6 +123,7 @@ export const webSkin: RadioSkin = {
   dot: (t, size) => ({ ...dotBase(WEB_DOT[size]), backgroundColor: t.primary }),
   label,
   description,
+  card: (t, checked) => cardChrome(webCardSkin, t, checked),
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
@@ -108,6 +139,7 @@ export const iosSkin: RadioSkin = {
   dot: (t, size) => ({ ...dotBase(IOS_DOT[size]), backgroundColor: t.primary }),
   label,
   description,
+  card: (t, checked) => cardChrome(iosCardSkin, t, checked),
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,
   ripple: null,
@@ -123,6 +155,7 @@ export const androidSkin: RadioSkin = {
   dot: (t, size) => ({ ...dotBase(ANDROID_DOT[size]), backgroundColor: t.primary }),
   label,
   description,
+  card: (t, checked) => cardChrome(androidCardSkin, t, checked),
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: t.primary, borderless: true, radius: 20 }), // 40dp state layer

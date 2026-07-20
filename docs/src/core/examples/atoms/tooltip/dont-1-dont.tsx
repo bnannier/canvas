@@ -3,8 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Tooltip } = scope;
+  const { View, Tooltip } = scope;
   return (
-<Tooltip trigger="Save" top open label="Saves your changes" />
+<View style={{ overflow: "hidden", alignItems: "flex-start" }}>
+  <View style={{ marginTop: -16 }}>
+    <Tooltip trigger="Save" top open label="Saves your changes" />
+  </View>
+</View>
   );
 }

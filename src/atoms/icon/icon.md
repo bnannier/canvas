@@ -1,6 +1,6 @@
 # Icon
 
-Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so the same icon adapts to any context: set the color on the parent.
+Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to the theme foreground token and tracks light and dark automatically; pick other hues with the semantic color booleans (`primary`, `destructive`, `success`, `warning`, `muted`).
 
 ## Usage
 
@@ -60,7 +60,7 @@ Lucide-style outline. 1.75 stroke width, rounded caps. Inherits currentColor, so
 
 ### foreground
 
-**Do** — Leave stroke as currentColor and set text-foreground on the parent so it follows light and dark.
+**Do** — Leave the stroke at its default: it paints the theme foreground and follows light and dark on its own, no color prop needed.
 
 ```tsx
 <Icon mail size={28} />

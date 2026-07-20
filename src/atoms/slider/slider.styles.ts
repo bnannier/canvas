@@ -1,5 +1,5 @@
-import { type ViewStyle } from "react-native";
-import { alpha, customShadow } from "../../style/index.js";
+import { type ViewStyle, type TextStyle } from "react-native";
+import { alpha, customShadow, type ColorTokens } from "../../style/index.js";
 import { type SliderSkin, type Size } from "./slider.shared.js";
 
 // Co-located Slider skins, one per platform, all driven by the brand tokens (passed
@@ -33,6 +33,33 @@ const THUMB_BASE: ViewStyle = { position: "absolute", borderRadius: 999 };
 
 // iOS soft knob shadow (the iOS 27 kit floats the knob just off the rail).
 const IOS_THUMB_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.18, elevation: 3 });
+
+// ----- Header type: the title / description / value readout the Slider owns above
+// the track. This is BRAND type, not a platform face, so the scale is the same on
+// every OS and mirrors the Checkbox/Radio label + description precedent: the label is
+// text-sm (14/20) medium foreground, the description one step below (12/16) muted, and
+// the value readout matches the label size but reads muted with tabular figures so the
+// digits do not jitter as the thumb drags. Each skin exposes the same three functions.
+const LABEL_TYPE: Record<Size, TextStyle> = {
+  small: { fontSize: 12, lineHeight: 16 }, // text-xs
+  base: { fontSize: 14, lineHeight: 20 }, // text-sm
+  large: { fontSize: 16, lineHeight: 24 }, // text-base
+};
+const DESCRIPTION_TYPE: Record<Size, TextStyle> = {
+  small: { fontSize: 11, lineHeight: 15 },
+  base: { fontSize: 12, lineHeight: 16 },
+  large: { fontSize: 14, lineHeight: 20 },
+};
+
+function label(tokens: ColorTokens, size: Size): TextStyle {
+  return { fontWeight: "500", flexShrink: 1, color: tokens.foreground, ...LABEL_TYPE[size] };
+}
+function description(tokens: ColorTokens, size: Size): TextStyle {
+  return { color: tokens["muted-foreground"], ...DESCRIPTION_TYPE[size] };
+}
+function value(tokens: ColorTokens, size: Size): TextStyle {
+  return { fontWeight: "500", color: tokens["muted-foreground"], fontVariant: ["tabular-nums"], ...LABEL_TYPE[size] };
+}
 
 // ----- iOS (iOS 27 kit): 6pt rail (radius 3), 37x24pt capsule knob -----
 // Rail: the kit's Track/Fill are 6pt tall with 3pt radius and Apple smooth
@@ -89,6 +116,9 @@ export const iosSkin: SliderSkin = {
   // Stepped sliders: small gray tick dots along the rail (the kit's Ticks layer
   // sits UNDER the Fill, so the filled side covers its dots).
   tick: (t) => ({ backgroundColor: t["muted-foreground"] }),
+  label,
+  description,
+  value,
 };
 
 // ----- Android (M3 Expressive): thick split track, 4x44dp bar handle -----
@@ -145,6 +175,9 @@ export const androidSkin: SliderSkin = {
   tick: (t, _size, _disabled, onActive) => ({
     backgroundColor: onActive ? t["primary-foreground"] : t["muted-foreground"],
   }),
+  label,
+  description,
+  value,
 };
 
 // ----- Web: the established Canvas look (shadcn-matched) -----
@@ -181,4 +214,7 @@ export const webSkin: SliderSkin = {
       ...(pressed && !disabled ? { borderColor: alpha(t.primary, 0.5), borderWidth: 4 } : null),
     };
   },
+  label,
+  description,
+  value,
 };

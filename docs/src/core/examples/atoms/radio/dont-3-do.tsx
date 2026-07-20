@@ -3,27 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Radio, Typography, Row, Column } = scope;
+  const { Radio, RadioGroup } = scope;
   return (
-<Row snug>
-  <Column fill>
-    <Card padded selected>
-      <Column snug>
-        <Radio checked />
-        <Typography small semibold>Pro</Typography>
-        <Typography tiny muted>For growing teams.</Typography>
-      </Column>
-    </Card>
-  </Column>
-  <Column fill>
-    <Card padded>
-      <Column snug>
-        <Radio />
-        <Typography small semibold>Enterprise</Typography>
-        <Typography tiny muted>Advanced security.</Typography>
-      </Column>
-    </Card>
-  </Column>
-</Row>
+<RadioGroup row defaultValue="pro">
+  <Radio card value="pro" description="For growing teams.">Pro</Radio>
+  <Radio card value="enterprise" description="Advanced security.">Enterprise</Radio>
+</RadioGroup>
   );
 }

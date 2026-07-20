@@ -25,13 +25,7 @@ Multi-line input, with character count, with toolbar. Pass `label` (and `require
 ### Character counter
 
 ```tsx
-<Column tight>
-  <Typography small medium>Description</Typography>
-  <Textarea rows={4} wide placeholder="A few words about this project…" />
-  <Row end>
-    <Typography tiny muted>0 / 280</Typography>
-  </Row>
-</Column>
+<Textarea label="Description" showCount maxLength={280} rows={4} wide placeholder="A few words about this project…" />
 ```
 
 ### Formatting toolbar
@@ -63,10 +57,7 @@ Multi-line input, with character count, with toolbar. Pass `label` (and `require
 **Do** — Set `rows` for a sensible starting height so users can see their text; the field grows with the content from there.
 
 ```tsx
-<Column snug>
-  <Typography small medium>Description</Typography>
-  <Textarea rows={3} wide value="This is a longer description that runs past one line and stays readable." />
-</Column>
+<Textarea label="Description" rows={3} wide value="This is a longer description that runs past one line and stays readable." />
 ```
 
 **Don't** — A locked, single-line textarea hides long content with no way to expand.
@@ -80,16 +71,10 @@ Multi-line input, with character count, with toolbar. Pass `label` (and `require
 
 ### Character counter
 
-**Do** — Show the live count against the cap and turn it destructive past the limit so the overage is precise.
+**Do** — Show the live count against the cap and turn it destructive past the limit so the overage is precise. `showCount` treats `maxLength` as a soft cap and flips the count (and the field) destructive automatically once you run over.
 
 ```tsx
-<Column snug>
-  <Typography small medium>Bio</Typography>
-  <Textarea rows={3} wide invalid value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
-  <Row end>
-    <Typography tiny destructive>123 / 120</Typography>
-  </Row>
-</Column>
+<Textarea label="Bio" showCount maxLength={120} rows={3} wide value="I have been building things on the web for fifteen years and counting, across teams large and small, shipping product end to end." />
 ```
 
 **Don't** — A vague "over limit" message gives no number, so users cannot tell how much to trim.
@@ -138,10 +123,7 @@ Multi-line input, with character count, with toolbar. Pass `label` (and `require
 **Do** — Use the disabled attribute so the field blocks editing and focus, matching its dimmed look.
 
 ```tsx
-<Column snug>
-  <Typography small medium>Description</Typography>
-  <Textarea rows={3} wide disabled value="Read-only content the user must not change." />
-</Column>
+<Textarea label="Description" rows={3} wide disabled value="Read-only content the user must not change." />
 ```
 
 **Don't** — Dimming a textarea while leaving it editable looks disabled but still accepts input.

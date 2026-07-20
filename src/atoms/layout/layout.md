@@ -62,12 +62,8 @@ distribution (`center`, `between`, …), cross-axis alignment (`alignCenter`,
 ### Padded surround
 
 ```tsx
-<Row alignCenter relaxed pad>
-  <Avatar name="RC" />
-  <Column tight>
-    <Typography h5>Rachel Chen</Typography>
-    <Typography small>rachel.chen@example.com</Typography>
-  </Column>
+<Row relaxed pad>
+  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
 </Row>
 ```
 

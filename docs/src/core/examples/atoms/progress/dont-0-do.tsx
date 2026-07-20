@@ -3,14 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Progress, Typography, Row, Column } = scope;
+  const { Progress } = scope;
   return (
-<Column snug>
-  <Row flush between>
-    <Typography small>Uploading…</Typography>
-    <Typography small muted>72%</Typography>
-  </Row>
-  <Progress value={0.72} />
-</Column>
+<Progress showValue value={0.72}>Uploading…</Progress>
   );
 }

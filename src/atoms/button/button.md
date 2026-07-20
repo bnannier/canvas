@@ -118,7 +118,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 <Stateful initial={0}>
   {(added, setAdded) => (
     <Column snug alignCenter>
-      <Button primary icon onPress={() => setAdded(added + 1)}>+</Button>
+      <Button primary icon accessibilityLabel="Add item" iconLeft={<Icon plus primaryForeground size={16} />} onPress={() => setAdded(added + 1)} />
       <Typography muted>{added === 0 ? "Nothing added yet" : `Added ${added} ${added === 1 ? "item" : "items"}`}</Typography>
     </Column>
   )}
@@ -146,7 +146,7 @@ A disabled button ignores presses: `onPress` is wired exactly as above, but it n
 <Stateful initial={0}>
   {(saves, setSaves) => (
     <Column snug alignCenter>
-      <Button primary onPress={() => setSaves(saves + 1)}>+  Save changes</Button>
+      <Button primary iconLeft={<Icon plus primaryForeground size={16} />} onPress={() => setSaves(saves + 1)}>Save changes</Button>
       <Typography muted>{saves === 0 ? "Not saved yet" : `Saved ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
     </Column>
   )}

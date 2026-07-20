@@ -59,6 +59,12 @@ export interface FlexProps {
   wrap?: boolean; // flexWrap: "wrap"
   fill?: boolean; // flex: 1
   grow?: boolean; // flexGrow: 1
+  /**
+   * Indent the whole stack by one control gutter (24: a control box plus the row
+   * gap), so a nested option group lines up under its parent control's label
+   * instead of its box. For nesting checkboxes/radios under a "select all" parent.
+   */
+  indent?: boolean; // paddingLeft: 24
 
   // Padding scale (pick one; omit for none).
   padTight?: boolean; // 8
@@ -146,6 +152,7 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     if (wrap) layout.flexWrap = "wrap";
     if (fill) layout.flex = 1;
     if (grow) layout.flexGrow = 1;
+    if (props.indent) layout.paddingLeft = 24; // one control gutter: box (16) + row gap (8)
     const pad = padOf(props);
     if (pad) layout.padding = skin.pad[pad];
     return <View style={[layout, style]} testID={testID}>{children}</View>;

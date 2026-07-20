@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Progress, Typography, Column } = scope;
+  const { Progress } = scope;
   return (
-<Column snug>
-  <Typography small muted>Connecting…</Typography>
-  <Progress indeterminate />
-</Column>
+<Progress indeterminate>Connecting…</Progress>
   );
 }

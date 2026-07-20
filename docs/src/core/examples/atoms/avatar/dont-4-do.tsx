@@ -3,14 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Typography, Row, Column } = scope;
+  const { MediaObject } = scope;
   return (
-<Row cozy alignCenter>
-  <Avatar src="/ada-lovelace.jpg" name="AL" />
-  <Column>
-    <Typography small semibold>Ada Lovelace</Typography>
-    <Typography tiny muted>admin@example.com</Typography>
-  </Column>
-</Row>
+<MediaObject compact center src="/ada-lovelace.jpg" title="Ada Lovelace" description="admin@example.com" />
   );
 }

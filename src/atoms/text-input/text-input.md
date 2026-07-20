@@ -6,8 +6,7 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 
 ```tsx
 <TextInput
-  value="Ada Lovelace"
-  onChangeText={() => {}}
+  defaultValue="Ada Lovelace"
   placeholder="Your name"
   style={{ width: 240, height: 40, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background }}
 />
@@ -29,8 +28,7 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 
 ```tsx
 <TextInput
-  value={"Multi-line text\nwraps and grows as you type."}
-  onChangeText={() => {}}
+  defaultValue={"Multi-line text\nwraps and grows as you type."}
   multiline
   style={{ width: 240, height: 84, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.input, color: tokens.foreground, backgroundColor: tokens.background, textAlignVertical: "top" }}
 />

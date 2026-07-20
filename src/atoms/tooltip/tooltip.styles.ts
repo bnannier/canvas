@@ -64,6 +64,31 @@ export const iconTrigger: ViewStyle = {
   borderRadius: 6,
 };
 
+// The text trigger: the `trigger` string rendered as a pressable inline word (a
+// hover-text affordance) rather than a Button. A little padding gives it a
+// comfortable tap target and rounds the press/ripple state layer. Press feedback
+// (opacity dim on iOS/web, ripple on Android) is applied by the component's
+// Pressable, matching the icon trigger; this is a shared Canvas affordance (no
+// native tooltip-trigger control exists), so it is not per-platform skinned.
+export const textTrigger: ViewStyle = {
+  alignSelf: "flex-start",
+  paddingHorizontal: 2,
+  paddingVertical: 2,
+  borderRadius: 4,
+};
+
+// The text-trigger label: the brand `foreground` ink at body size (14/20 medium)
+// with a dotted underline so the word reads as an interactive tip affordance,
+// not plain copy. Painted from tokens so it follows light/dark.
+export const textTriggerLabel = (t: ColorTokens): TextStyle => ({
+  fontSize: 14,
+  lineHeight: 20,
+  fontWeight: "500",
+  color: t.foreground,
+  textDecorationLine: "underline",
+  textDecorationStyle: "dotted",
+});
+
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 // A small dark pill on the `foreground` token (so it inverts against the page),
 // 6 radius, 8x4 padding, a soft `md` lift; the label is 12/16 medium painted in

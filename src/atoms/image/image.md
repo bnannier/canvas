@@ -1,6 +1,6 @@
 # Image
 
-Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and control fitting with `resizeMode` (cover, contain, stretch, center). Remote images load over the network; bundle local assets with `require`.
+Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and control fitting with `resizeMode` (cover, contain, stretch, center). Remote images load over the network; bundle local assets with `require`. For a circular identity photo with an initials fallback, reach for `<Avatar src="…" name="…" />` rather than rounding a raw Image.
 
 ## Usage
 
@@ -23,11 +23,12 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 />
 ```
 
-### Rounded (avatar)
+### resizeMode - cover
 
 ```tsx
 <Image
   source={{ uri: "/ada-lovelace.jpg" }}
-  style={{ width: 80, height: 80, borderRadius: 40 }}
+  resizeMode="cover"
+  style={{ width: 240, height: 96, borderRadius: 12 }}
 />
 ```

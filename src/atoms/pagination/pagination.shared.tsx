@@ -46,6 +46,12 @@ export interface PaginationProps {
   total?: number;
   /** Fired with the next 1-based page when a control or number is pressed. */
   onChange?: (page: number) => void;
+  /**
+   * Total number of items across all pages. When set, the compact and with-size
+   * indicator reads "Showing X-Y of N" (the item range on the current page)
+   * instead of "Page X of N", computed from the current page and the page size.
+   */
+  itemCount?: number;
 
   // Variant (pick one; default is the full numbered row).
   /** Collapse to Prev/Next plus a "Page X of N" label, no number buttons. */
@@ -180,6 +186,13 @@ export function createPagination(skin: PaginationSkin) {
     const atStart = current <= 1;
     const atEnd = current >= total;
 
+    // The compact/with-size indicator: an item range ("Showing X-Y of N") when
+    // itemCount is supplied, otherwise the page count ("Page X of N").
+    const indicatorLabel =
+      props.itemCount != null
+        ? `Showing ${props.itemCount === 0 ? 0 : (current - 1) * pageSize + 1}-${Math.min(current * pageSize, props.itemCount)} of ${props.itemCount}`
+        : `Page ${current} of ${total}`;
+
     const go = (next: number) => {
       if (disabled) return;
       const clamped = Math.min(Math.max(1, next), total);
@@ -216,7 +229,7 @@ export function createPagination(skin: PaginationSkin) {
         <View testID={testID} style={[s.compactRow, style]}>
           {prev}
           <Text style={[skin.mutedLabel(tokens), s.labelSize[size]]}>
-            {`Page ${current} of ${total}`}
+            {indicatorLabel}
           </Text>
           {next}
         </View>
@@ -234,6 +247,9 @@ export function createPagination(skin: PaginationSkin) {
         if (nextSize !== undefined && nextSize !== pageSize) {
           setPageSize(nextSize);
           props.onPageSizeChange?.(nextSize);
+          // Changing the page size reflows the rows, so the current page can fall
+          // out of range; reset to page 1 (matches the with-size Do guidance).
+          go(1);
         }
       };
       return (

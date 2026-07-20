@@ -70,6 +70,19 @@ export const webSkin: StepperSkin = {
   ripple: null,
   hitSlop: null,
   fieldOnLeft: false,
+  // The established Canvas above-field title (the Field/Form label look): 14/20
+  // medium (500) at base, matching Input's web label scale.
+  labelAbove: (t, size) => ({
+    fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
+    lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
+    fontWeight: "500",
+    color: t.foreground,
+  }),
+  description: (t, size) => ({
+    fontSize: size === "large" ? 14 : 12,
+    lineHeight: size === "large" ? 20 : 16,
+    color: t["muted-foreground"],
+  }),
 };
 
 // ============================ iOS (HIG / iOS 27 kit Stepper) ============================
@@ -140,6 +153,23 @@ export const iosSkin: StepperSkin = {
   ripple: null,
   hitSlop: null, // Apple's own UIStepper is a 32pt-tall control; no HIG finding here
   fieldOnLeft: true,
+  // The iOS field-label above the control: SF Pro Text tracking (letterSpacing
+  // -0.15 at 14pt, Apple's SF tracking table) and semibold (600), the iOS
+  // field-label convention (identical to Input's iOS label).
+  labelAbove: (t, size) => ({
+    fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
+    lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
+    fontWeight: "600",
+    letterSpacing: -0.15,
+    color: t.foreground,
+  }),
+  // Secondary/footnote line under the label: iOS footnote 13pt with SF tracking.
+  description: (t, size) => ({
+    fontSize: size === "large" ? 14 : 13,
+    lineHeight: size === "large" ? 20 : 18,
+    letterSpacing: -0.08,
+    color: t["muted-foreground"],
+  }),
 };
 
 // ============================ Android (Material 3 quantity control) ============================
@@ -192,4 +222,22 @@ export const androidSkin: StepperSkin = {
   // already): the standard M3 icon-button pattern of a 40dp container in a 48dp target.
   hitSlop: (size) => Math.max(0, (48 - M3_BTN[size]) / 2),
   fieldOnLeft: false,
+  // M3 has no stepper, so its custom quantity control carries a component-owned
+  // title ABOVE (a ± button row has no filled field box to float an in-container
+  // M3 label into). The M3 label type: medium (500) with M3 label tracking (0.1),
+  // on-surface; sizes match Input's label scale.
+  labelAbove: (t, size) => ({
+    fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
+    lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+    color: t.foreground,
+  }),
+  // M3 supporting text: body-small (12sp) with body-small tracking (0.4), on-surface-variant.
+  description: (t, size) => ({
+    fontSize: size === "large" ? 14 : 12,
+    lineHeight: size === "large" ? 20 : 16,
+    letterSpacing: 0.4,
+    color: t["muted-foreground"],
+  }),
 };

@@ -189,3 +189,15 @@ export function leadingStyle(roleType: TextStyle, leading: Leading): TextStyle |
   const lineHeight = Math.min(current, Math.round(fontSize * (leading === "tight" ? TIGHT_RATIO : 1)));
   return lineHeight === current ? null : { lineHeight };
 }
+
+// Decoration axis: an orthogonal text-decoration layer over the role. A single value
+// today (underline), so there is no precedence to resolve. It marks an inline text
+// link so a link reads as a link without the banned raw `textDecorationLine` style
+// shim; when the prop is absent the text carries no decoration. Underline is a Shared
+// treatment like the type scale: iOS, Material 3, and the web all underline an inline
+// link the same way, so there is nothing to diverge per OS.
+export type Decoration = "underline";
+
+export function decorationStyle(decoration: Decoration): TextStyle {
+  return { textDecorationLine: decoration };
+}
