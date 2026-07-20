@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stepper, Row } = scope;
+  const { Stepper } = scope;
   return (
-<Row alignCenter relaxed>
-  <Stepper small defaultValue={2} min={0} max={10} onChange={() => {}} />
-  <Stepper defaultValue={2} min={0} max={10} onChange={() => {}} />
-  <Stepper large defaultValue={2} min={0} max={10} onChange={() => {}} />
-</Row>
+<Stepper label="Quantity" defaultValue={1} min={1} max={9} />
   );
 }

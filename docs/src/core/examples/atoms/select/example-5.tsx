@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Select } = scope;
   return (
 <Select
-  disabled
   label="Country"
+  icon
   defaultValue="United States"
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"

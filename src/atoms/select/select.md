@@ -15,6 +15,12 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 
 ## Variants
 
+### Inline label
+
+```tsx
+<Select fit inline label="Rows" defaultValue="10" options={["10", "25", "50"]} />
+```
+
 ### Required field
 
 ```tsx

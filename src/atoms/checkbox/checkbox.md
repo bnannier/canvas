@@ -12,6 +12,19 @@ Multi-select option, single yes/no, grouped lists.
 
 ## Variants
 
+### Nested group
+
+```tsx
+<Column snug>
+  <Checkbox indeterminate>Select all</Checkbox>
+  <Column snug indent>
+    <Checkbox defaultChecked>Read</Checkbox>
+    <Checkbox>Write</Checkbox>
+    <Checkbox>Delete</Checkbox>
+  </Column>
+</Column>
+```
+
 ### State - unchecked
 
 ```tsx

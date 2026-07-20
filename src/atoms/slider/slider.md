@@ -10,6 +10,12 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 
 ## Variants
 
+### With label
+
+```tsx
+<Slider showValue defaultValue={65} min={0} max={100}>Volume</Slider>
+```
+
 ### Size - sm
 
 ```tsx

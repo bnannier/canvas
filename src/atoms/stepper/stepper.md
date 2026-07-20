@@ -10,6 +10,12 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 
 ## Variants
 
+### With label
+
+```tsx
+<Stepper label="Quantity" defaultValue={1} min={1} max={9} />
+```
+
 ### Sizes
 
 ```tsx
