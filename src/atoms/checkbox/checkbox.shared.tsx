@@ -11,7 +11,16 @@ import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens
 // from the brand tokens — no platform default color ever leaks in.
 
 export interface CheckboxProps {
+  /** Label text (the option's title) shown beside the box. */
   children?: ReactNode;
+  /**
+   * Optional muted secondary line rendered under the label, for the common
+   * title-plus-description option (a notification setting, a consent row).
+   * Supplying it builds the stacked title/description layout inside the control,
+   * so the caller never hand-composes a Row + Column + two Typography nodes and
+   * the whole row stays tappable.
+   */
+  description?: ReactNode;
   /** Controlled checked state; omit for uncontrolled use. */
   checked?: boolean;
   /** Initial state for uncontrolled use (a bare <Checkbox /> is interactive). */
@@ -48,12 +57,14 @@ function sizeOf(p: CheckboxProps): Size {
 // The only thing a platform skin owns: the box, glyph, and label styles for a given
 // state and size, plus the press/disabled feedback. Everything else is the shell.
 export interface CheckboxSkin {
-  /** The square box. `filled` = checked or indeterminate. */
-  box: (tokens: ColorTokens, filled: boolean, size: Size) => ViewStyle;
+  /** The square box. `filled` = checked or indeterminate. `nudge` aligns the box to a label's first line. */
+  box: (tokens: ColorTokens, filled: boolean, size: Size, nudge: boolean) => ViewStyle;
   /** The check / dash glyph inside a filled box. */
   glyph: (tokens: ColorTokens, size: Size) => TextStyle;
   /** The label text to the right of the box. */
   label: (tokens: ColorTokens, size: Size) => TextStyle;
+  /** The muted secondary description line, rendered under the label when present. */
+  description: (tokens: ColorTokens, size: Size) => TextStyle;
   /** Opacity applied to the row when disabled. */
   disabledOpacity: number;
   /** iOS/web dim the row on press; Android uses a ripple instead (null). */
@@ -64,6 +75,12 @@ export interface CheckboxSkin {
 
 // The row: box + optional label, top-aligned so a multi-line label hangs from the box.
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
+
+// Stacks the title over its description beside the box. The 8px gap matches the
+// kit's default column spacing (the arrangement callers used to hand-compose), so
+// the built-in layout reproduces the established look. `flexShrink` lets a long
+// description wrap within the row instead of forcing the row wider. Mirrors Radio.
+const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
 
 // The glyph sits on its own absolutely-positioned layer that fills the box and
 // centers the check/dash with flexbox. This is deliberate: on native Android
@@ -89,9 +106,11 @@ const GLYPH_LAYER: ViewStyle = {
 /** Build a Checkbox component from a platform skin. */
 export function createCheckbox(skin: CheckboxSkin) {
   return function Checkbox(props: CheckboxProps) {
-    const { children, indeterminate, onChange, onValueChange, disabled, style } = props;
+    const { children, description, indeterminate, onChange, onValueChange, disabled, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
+    // Whether the control carries any text at all (title and/or description).
+    const hasText = children != null || description != null;
 
     // Controlled when `checked` is provided, self-managed otherwise, so a bare
     // <Checkbox /> toggles out of the box (the standard library contract).
@@ -119,9 +138,9 @@ export function createCheckbox(skin: CheckboxSkin) {
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
-        // Icon-only (no label): grow the small box's tap target toward ~44pt.
+        // Icon-only (no text): grow the small box's tap target toward ~44pt.
         // With a label the whole row is already a generous target, so leave it.
-        hitSlop={children == null ? 8 : undefined}
+        hitSlop={!hasText ? 8 : undefined}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: indeterminate ? "mixed" : checked, disabled: !!disabled }}
         aria-checked={indeterminate ? "mixed" : checked}
@@ -133,14 +152,23 @@ export function createCheckbox(skin: CheckboxSkin) {
           style,
         ]}
       >
-        <View style={skin.box(tokens, filled, size)}>
+        <View style={skin.box(tokens, filled, size, hasText)}>
           {filled ? (
             <View style={GLYPH_LAYER}>
               <Text style={skin.glyph(tokens, size)}>{glyph}</Text>
             </View>
           ) : null}
         </View>
-        {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
+        {hasText ? (
+          description != null ? (
+            <View style={TEXT_COLUMN}>
+              {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
+              <Text style={skin.description(tokens, size)}>{description}</Text>
+            </View>
+          ) : (
+            <Text style={skin.label(tokens, size)}>{children}</Text>
+          )
+        ) : null}
       </Pressable>
     );
   };

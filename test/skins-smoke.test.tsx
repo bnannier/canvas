@@ -64,7 +64,7 @@ const CASES: SkinCase[] = [
   { name: "BreadcrumbItem", dir: "atoms/breadcrumb", file: "breadcrumb", props: { current: true }, children: "Home" },
   { name: "ButtonGroup", dir: "atoms/button-group", file: "button-group", props: { items: ["Day", "Week", "Month"], active: 0 } },
   { name: "Button", dir: "atoms/button", file: "button", children: "Save" },
-  { name: "Checkbox", dir: "atoms/checkbox", file: "checkbox", props: { checked: false }, children: "Accept" },
+  { name: "Checkbox", dir: "atoms/checkbox", file: "checkbox", props: { checked: false, description: "Secondary line" }, children: "Accept" },
   { name: "Chip", dir: "atoms/chip", file: "chip", children: "Filter" },
   { name: "Autocomplete", dir: "atoms/autocomplete", file: "autocomplete", props: { options: ["Apple", "Banana"], open: true, label: "Fruit", required: true } },
   { name: "Divider", dir: "atoms/divider", file: "divider" },
