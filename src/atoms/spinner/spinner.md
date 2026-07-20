@@ -10,6 +10,18 @@ Animated loading spinner in three sizes.
 
 ## Variants
 
+### With label
+
+```tsx
+<Spinner>Loading…</Spinner>
+```
+
+### Stacked
+
+```tsx
+<Spinner stacked>Working…</Spinner>
+```
+
 ### Size - sm
 
 ```tsx

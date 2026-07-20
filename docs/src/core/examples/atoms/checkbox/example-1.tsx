@@ -3,10 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Checkbox } = scope;
+  const { Checkbox, Select, Column } = scope;
   return (
-<Checkbox description="Get notified when activity happens on your account.">
-  Email notifications
-</Checkbox>
+<Column snug>
+  <Checkbox indeterminate>Select all</Checkbox>
+  <Column snug indent>
+    <Checkbox defaultChecked>Read</Checkbox>
+    <Checkbox>Write</Checkbox>
+    <Checkbox>Delete</Checkbox>
+  </Column>
+</Column>
   );
 }

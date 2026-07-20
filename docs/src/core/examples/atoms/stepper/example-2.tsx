@@ -6,8 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Stepper, Row } = scope;
   return (
 <Row alignCenter relaxed>
-  <Stepper defaultValue={0} min={0} max={5} onChange={() => {}} />
-  <Stepper defaultValue={5} min={0} max={5} onChange={() => {}} />
+  <Stepper small defaultValue={2} min={0} max={10} onChange={() => {}} />
+  <Stepper defaultValue={2} min={0} max={10} onChange={() => {}} />
+  <Stepper large defaultValue={2} min={0} max={10} onChange={() => {}} />
 </Row>
   );
 }

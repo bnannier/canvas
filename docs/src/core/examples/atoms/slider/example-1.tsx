@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Slider } = scope;
   return (
-<Slider small defaultValue={40} />
+<Slider showValue defaultValue={65} min={0} max={100}>Volume</Slider>
   );
 }

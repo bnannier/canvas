@@ -115,6 +115,7 @@ import e_atoms_button_group_dont_2_dont from "./examples/atoms/button-group/dont
 import e_atoms_checkbox_example_0 from "./examples/atoms/checkbox/example-0";
 import e_atoms_checkbox_example_1 from "./examples/atoms/checkbox/example-1";
 import e_atoms_checkbox_example_2 from "./examples/atoms/checkbox/example-2";
+import e_atoms_checkbox_example_3 from "./examples/atoms/checkbox/example-3";
 import e_atoms_checkbox_dont_0_do from "./examples/atoms/checkbox/dont-0-do";
 import e_atoms_checkbox_dont_0_dont from "./examples/atoms/checkbox/dont-0-dont";
 import e_atoms_checkbox_dont_1_do from "./examples/atoms/checkbox/dont-1-do";
@@ -246,6 +247,7 @@ import e_atoms_listbox_dont_2_dont from "./examples/atoms/listbox/dont-2-dont";
 import e_atoms_pagination_example_0 from "./examples/atoms/pagination/example-0";
 import e_atoms_pagination_example_1 from "./examples/atoms/pagination/example-1";
 import e_atoms_pagination_example_2 from "./examples/atoms/pagination/example-2";
+import e_atoms_pagination_example_3 from "./examples/atoms/pagination/example-3";
 import e_atoms_pagination_dont_0_do from "./examples/atoms/pagination/dont-0-do";
 import e_atoms_pagination_dont_0_dont from "./examples/atoms/pagination/dont-0-dont";
 import e_atoms_pagination_dont_1_do from "./examples/atoms/pagination/dont-1-do";
@@ -298,6 +300,7 @@ import e_atoms_select_example_2 from "./examples/atoms/select/example-2";
 import e_atoms_select_example_3 from "./examples/atoms/select/example-3";
 import e_atoms_select_example_4 from "./examples/atoms/select/example-4";
 import e_atoms_select_example_5 from "./examples/atoms/select/example-5";
+import e_atoms_select_example_6 from "./examples/atoms/select/example-6";
 import e_atoms_select_dont_0_do from "./examples/atoms/select/dont-0-do";
 import e_atoms_select_dont_0_dont from "./examples/atoms/select/dont-0-dont";
 import e_atoms_select_dont_1_do from "./examples/atoms/select/dont-1-do";
@@ -331,6 +334,7 @@ import e_atoms_slider_example_1 from "./examples/atoms/slider/example-1";
 import e_atoms_slider_example_2 from "./examples/atoms/slider/example-2";
 import e_atoms_slider_example_3 from "./examples/atoms/slider/example-3";
 import e_atoms_slider_example_4 from "./examples/atoms/slider/example-4";
+import e_atoms_slider_example_5 from "./examples/atoms/slider/example-5";
 import e_atoms_slider_dont_0_do from "./examples/atoms/slider/dont-0-do";
 import e_atoms_slider_dont_0_dont from "./examples/atoms/slider/dont-0-dont";
 import e_atoms_slider_dont_1_do from "./examples/atoms/slider/dont-1-do";
@@ -346,6 +350,8 @@ import e_atoms_sparkline_dont_0_dont from "./examples/atoms/sparkline/dont-0-don
 import e_atoms_spinner_example_0 from "./examples/atoms/spinner/example-0";
 import e_atoms_spinner_example_1 from "./examples/atoms/spinner/example-1";
 import e_atoms_spinner_example_2 from "./examples/atoms/spinner/example-2";
+import e_atoms_spinner_example_3 from "./examples/atoms/spinner/example-3";
+import e_atoms_spinner_example_4 from "./examples/atoms/spinner/example-4";
 import e_atoms_spinner_dont_0_do from "./examples/atoms/spinner/dont-0-do";
 import e_atoms_spinner_dont_0_dont from "./examples/atoms/spinner/dont-0-dont";
 import e_atoms_spinner_dont_1_do from "./examples/atoms/spinner/dont-1-do";
@@ -359,6 +365,7 @@ import e_atoms_stepper_example_1 from "./examples/atoms/stepper/example-1";
 import e_atoms_stepper_example_2 from "./examples/atoms/stepper/example-2";
 import e_atoms_stepper_example_3 from "./examples/atoms/stepper/example-3";
 import e_atoms_stepper_example_4 from "./examples/atoms/stepper/example-4";
+import e_atoms_stepper_example_5 from "./examples/atoms/stepper/example-5";
 import e_atoms_stepper_dont_0_do from "./examples/atoms/stepper/dont-0-do";
 import e_atoms_stepper_dont_0_dont from "./examples/atoms/stepper/dont-0-dont";
 import e_atoms_stepper_dont_1_do from "./examples/atoms/stepper/dont-1-do";
@@ -931,8 +938,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Checkbox defaultChecked description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_0 },
-      { label: "State - unchecked", code: "<Checkbox description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_1 },
-      { label: "State - disabled", code: "<Checkbox disabled description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_2 },
+      { label: "Nested group", code: "<Column snug>\n  <Checkbox indeterminate>Select all</Checkbox>\n  <Column snug indent>\n    <Checkbox defaultChecked>Read</Checkbox>\n    <Checkbox>Write</Checkbox>\n    <Checkbox>Delete</Checkbox>\n  </Column>\n</Column>", render: e_atoms_checkbox_example_1 },
+      { label: "State - unchecked", code: "<Checkbox description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_2 },
+      { label: "State - disabled", code: "<Checkbox disabled description=\"Get notified when activity happens on your account.\">\n  Email notifications\n</Checkbox>", render: e_atoms_checkbox_example_3 },
     ],
     donts: [
       { title: "Unchecked", do: { caption: "Leave opt-in consent unchecked so agreeing is a deliberate act the user takes.", code: "<Checkbox>Email me product news, offers, and survey invitations.</Checkbox>", render: e_atoms_checkbox_dont_0_do }, dont: { caption: "A consent box that starts checked opts users in by default; under GDPR pre-ticked consent is not consent.", code: "<Checkbox defaultChecked>Email me product news, offers, and survey invitations.</Checkbox>", render: e_atoms_checkbox_dont_0_dont } },
@@ -1126,8 +1134,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Pagination defaultPage={2} total={12} compact defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_0 },
-      { label: "Variant - numbered", code: "<Pagination defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_1 },
-      { label: "Variant - with-size", code: "<Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_2 },
+      { label: "With item range", code: "<Pagination compact defaultPage={2} total={12} itemCount={118} />", render: e_atoms_pagination_example_1 },
+      { label: "Variant - numbered", code: "<Pagination defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_2 },
+      { label: "Variant - with-size", code: "<Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />", render: e_atoms_pagination_example_3 },
     ],
     donts: [
       { title: "compact", do: { caption: "Pass `itemCount` so the buttons carry a \"Showing X-Y of N\" range and position and total are always visible.", code: "<Pagination compact defaultPage={2} total={12} itemCount={118} />", render: e_atoms_pagination_dont_0_do }, dont: { caption: "Bare Previous/Next with no range label leaves the user unable to tell where they are or how much is left.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"flex-end\", gap: 4 }}>\n  <Pressable style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole=\"button\" accessibilityLabel=\"Previous page\">\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>‹</Text>\n  </Pressable>\n  <Pressable style={{ flexDirection: \"row\", alignItems: \"center\", justifyContent: \"center\", height: 36, minWidth: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background }} accessibilityRole=\"button\" accessibilityLabel=\"Next page\">\n    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>›</Text>\n  </Pressable>\n</View>", render: e_atoms_pagination_dont_0_dont } },
@@ -1219,11 +1228,12 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Select\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_0 },
-      { label: "Required field", code: "<Select\n  label=\"Country\"\n  required\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_1 },
-      { label: "Size - sm", code: "<Select\n  small\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_2 },
-      { label: "Size - lg", code: "<Select\n  large\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_3 },
-      { label: "With leading icon", code: "<Select\n  label=\"Country\"\n  icon\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_4 },
-      { label: "Disabled", code: "<Select\n  disabled\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_5 },
+      { label: "Inline label", code: "<Select fit inline label=\"Rows\" defaultValue=\"10\" options={[\"10\", \"25\", \"50\"]} />", render: e_atoms_select_example_1 },
+      { label: "Required field", code: "<Select\n  label=\"Country\"\n  required\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_2 },
+      { label: "Size - sm", code: "<Select\n  small\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_3 },
+      { label: "Size - lg", code: "<Select\n  large\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_4 },
+      { label: "With leading icon", code: "<Select\n  label=\"Country\"\n  icon\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_5 },
+      { label: "Disabled", code: "<Select\n  disabled\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_6 },
     ],
     donts: [
       { do: { caption: "Use the placeholder prop for the prompt so it can never be submitted as a value.", code: "<Column style={{ minHeight: 220 }}>\n  <Select defaultOpen label=\"Country\" placeholder=\"Choose a country…\" options={[\"United States\", \"Canada\", \"Mexico\"]} />\n</Column>", render: e_atoms_select_dont_0_do }, dont: { caption: "A placeholder as a normal option can be submitted as a real value.", code: "<View style={{ minHeight: 260 }}>\n  <Select defaultOpen label=\"Country\" defaultValue=\"Choose a country…\" options={[\"Choose a country…\", \"United States\", \"Canada\", \"Mexico\"]} style={{ maxWidth: 280 }} />\n</View>", render: e_atoms_select_dont_0_dont } },
@@ -1258,10 +1268,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Slider defaultValue={60} min={0} max={100} />", render: e_atoms_slider_example_0 },
-      { label: "Size - sm", code: "<Slider small defaultValue={40} />", render: e_atoms_slider_example_1 },
-      { label: "Size - lg", code: "<Slider large defaultValue={75} />", render: e_atoms_slider_example_2 },
-      { label: "Stepped", code: "<Slider defaultValue={6} min={0} max={10} step={2} />", render: e_atoms_slider_example_3 },
-      { label: "Disabled", code: "<Slider disabled defaultValue={30} />", render: e_atoms_slider_example_4 },
+      { label: "With label", code: "<Slider showValue defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_example_1 },
+      { label: "Size - sm", code: "<Slider small defaultValue={40} />", render: e_atoms_slider_example_2 },
+      { label: "Size - lg", code: "<Slider large defaultValue={75} />", render: e_atoms_slider_example_3 },
+      { label: "Stepped", code: "<Slider defaultValue={6} min={0} max={10} step={2} />", render: e_atoms_slider_example_4 },
+      { label: "Disabled", code: "<Slider disabled defaultValue={30} />", render: e_atoms_slider_example_5 },
     ],
     donts: [
       { title: "Range", do: { caption: "Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.", code: "<Slider defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_dont_0_do }, dont: { caption: "Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.", code: "<View style={{ width: 64 }}>\n  <Slider defaultValue={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_dont } },
@@ -1287,8 +1298,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Spinner />", render: e_atoms_spinner_example_0 },
-      { label: "Size - sm", code: "<Spinner small />", render: e_atoms_spinner_example_1 },
-      { label: "Size - lg", code: "<Spinner large />", render: e_atoms_spinner_example_2 },
+      { label: "With label", code: "<Spinner>Loading…</Spinner>", render: e_atoms_spinner_example_1 },
+      { label: "Stacked", code: "<Spinner stacked>Working…</Spinner>", render: e_atoms_spinner_example_2 },
+      { label: "Size - sm", code: "<Spinner small />", render: e_atoms_spinner_example_3 },
+      { label: "Size - lg", code: "<Spinner large />", render: e_atoms_spinner_example_4 },
     ],
     donts: [
       { do: { caption: "Pair longer waits with a short label so the spinner has context.", code: "<Spinner small>Loading…</Spinner>", render: e_atoms_spinner_dont_0_do }, dont: { caption: "A bare spinner with no label leaves users guessing what is happening and for how long.", code: "<Spinner />", render: e_atoms_spinner_dont_0_dont } },
@@ -1302,10 +1315,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Stepper defaultValue={3} min={0} max={10} onChange={() => {}} />", render: e_atoms_stepper_example_0 },
-      { label: "Sizes", code: "<Row alignCenter relaxed>\n  <Stepper small defaultValue={2} min={0} max={10} onChange={() => {}} />\n  <Stepper defaultValue={2} min={0} max={10} onChange={() => {}} />\n  <Stepper large defaultValue={2} min={0} max={10} onChange={() => {}} />\n</Row>", render: e_atoms_stepper_example_1 },
-      { label: "With min / max", code: "<Row alignCenter relaxed>\n  <Stepper defaultValue={0} min={0} max={5} onChange={() => {}} />\n  <Stepper defaultValue={5} min={0} max={5} onChange={() => {}} />\n</Row>", render: e_atoms_stepper_example_2 },
-      { label: "Stepped", code: "<Stepper defaultValue={20} min={0} max={100} step={10} onChange={() => {}} />", render: e_atoms_stepper_example_3 },
-      { label: "Disabled", code: "<Stepper disabled defaultValue={4} min={0} max={10} onChange={() => {}} />", render: e_atoms_stepper_example_4 },
+      { label: "With label", code: "<Stepper label=\"Quantity\" defaultValue={1} min={1} max={9} />", render: e_atoms_stepper_example_1 },
+      { label: "Sizes", code: "<Row alignCenter relaxed>\n  <Stepper small defaultValue={2} min={0} max={10} onChange={() => {}} />\n  <Stepper defaultValue={2} min={0} max={10} onChange={() => {}} />\n  <Stepper large defaultValue={2} min={0} max={10} onChange={() => {}} />\n</Row>", render: e_atoms_stepper_example_2 },
+      { label: "With min / max", code: "<Row alignCenter relaxed>\n  <Stepper defaultValue={0} min={0} max={5} onChange={() => {}} />\n  <Stepper defaultValue={5} min={0} max={5} onChange={() => {}} />\n</Row>", render: e_atoms_stepper_example_3 },
+      { label: "Stepped", code: "<Stepper defaultValue={20} min={0} max={100} step={10} onChange={() => {}} />", render: e_atoms_stepper_example_4 },
+      { label: "Disabled", code: "<Stepper disabled defaultValue={4} min={0} max={10} onChange={() => {}} />", render: e_atoms_stepper_example_5 },
     ],
     donts: [
       { title: "Bounds", do: { caption: "Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.", code: "<Stepper label=\"Quantity\" defaultValue={1} min={1} max={9} onChange={() => {}} />", render: e_atoms_stepper_dont_0_do }, dont: { caption: "Leaving the range unbounded lets the user push the count below zero or past what the form can accept.", code: "<Stepper defaultValue={1} onChange={() => {}} />", render: e_atoms_stepper_dont_0_dont } },

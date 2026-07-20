@@ -10,6 +10,12 @@ Page-of-N navigation for tables and lists.
 
 ## Variants
 
+### With item range
+
+```tsx
+<Pagination compact defaultPage={2} total={12} itemCount={118} />
+```
+
 ### Variant - numbered
 
 ```tsx
