@@ -5,13 +5,9 @@ Multi-select option, single yes/no, grouped lists.
 ## Usage
 
 ```tsx
-<Row snug alignStart>
-  <Checkbox defaultChecked />
-  <Column tight>
-    <Typography small medium>Email notifications</Typography>
-    <Typography tiny muted>Get notified when activity happens on your account.</Typography>
-  </Column>
-</Row>
+<Checkbox defaultChecked description="Get notified when activity happens on your account.">
+  Email notifications
+</Checkbox>
 ```
 
 ## Variants
@@ -19,25 +15,17 @@ Multi-select option, single yes/no, grouped lists.
 ### State - unchecked
 
 ```tsx
-<Row snug alignStart>
-  <Checkbox />
-  <Column tight>
-    <Typography small medium>Email notifications</Typography>
-    <Typography tiny muted>Get notified when activity happens on your account.</Typography>
-  </Column>
-</Row>
+<Checkbox description="Get notified when activity happens on your account.">
+  Email notifications
+</Checkbox>
 ```
 
 ### State - disabled
 
 ```tsx
-<Row snug alignStart>
-  <Checkbox disabled />
-  <Column tight>
-    <Typography small medium>Email notifications</Typography>
-    <Typography tiny muted>Get notified when activity happens on your account.</Typography>
-  </Column>
-</Row>
+<Checkbox disabled description="Get notified when activity happens on your account.">
+  Email notifications
+</Checkbox>
 ```
 
 ## Do & Don't
@@ -132,12 +120,11 @@ Multi-select option, single yes/no, grouped lists.
 
 ### With description
 
-**Do** — Pass the label and description as Checkbox children so the whole row toggles.
+**Do** — Pass a `description` and the control stacks the title over its secondary line for you, box aligned to the first text line and the whole row tappable.
 
 ```tsx
-<Checkbox defaultChecked>
-  <Typography small medium>Email notifications</Typography>
-  <Typography tiny muted>Get notified when activity happens on your account.</Typography>
+<Checkbox defaultChecked description="Get notified when activity happens on your account.">
+  Email notifications
 </Checkbox>
 ```
 

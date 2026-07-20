@@ -46,12 +46,7 @@ function SignupLive() {
               <Progress block value={strength} accessibilityLabel="Password strength" />
               <Typography tiny>Use 8 or more characters with a number and a symbol.</Typography>
             </Column>
-            <Row snug alignStart>
-              <Checkbox />
-              <Column tight fill>
-                <Typography small>I agree to the Terms of Service and the Privacy Policy.</Typography>
-              </Column>
-            </Row>
+            <Checkbox>I agree to the Terms of Service and the Privacy Policy.</Checkbox>
             <Button block primary onPress={createAccount}>Create account</Button>
             <Divider>or continue with</Divider>
             <Row snug>

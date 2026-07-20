@@ -27,6 +27,18 @@ describe("Checkbox", () => {
     fireEvent.click(screen.getByText("Disabled"));
     expect(called).toBe(false);
   });
+
+  it("stacks a description under the label and keeps the whole row tappable", () => {
+    let next: boolean | null = null;
+    ui(
+      <Checkbox checked={false} onChange={(v) => { next = v; }} description="Get notified when activity happens.">
+        Email notifications
+      </Checkbox>,
+    );
+    expect(screen.getByText("Email notifications")).toBeTruthy();
+    fireEvent.click(screen.getByText("Get notified when activity happens."));
+    expect(next).toBe(true);
+  });
 });
 
 describe("Switch", () => {
