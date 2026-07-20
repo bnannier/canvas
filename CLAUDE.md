@@ -185,6 +185,47 @@ This is the STYLING escape-hatch ban. It is separate from, and additional to,
 the ban on web-only DOM/CSS platform escape hatches in the
 "React-Native-everywhere principle" above.
 
+## Components own their label anatomy
+
+A component is the parent node of everything it labels. When a control carries
+text, the text goes through the control's own API, never beside it: the title is
+`children`, the muted secondary line is the `description` prop (a ReactNode).
+The component owns the label typography, the stacked title/description column,
+the alignment of its indicator to the first text line, and the whole-row tap
+target. Checkbox, Radio, and Switch all follow this contract; it is the standard
+for any future control that pairs an indicator with text (an option row, a
+selectable card, a chip with a sublabel).
+
+Do this:
+
+```jsx
+<Checkbox defaultChecked description="Get notified when activity happens.">
+  Email notifications
+</Checkbox>
+```
+
+Not this:
+
+```jsx
+<Row snug alignStart>
+  <Checkbox defaultChecked />
+  <Column tight>
+    <Typography small medium>Email notifications</Typography>
+    <Typography tiny muted>Get notified when activity happens.</Typography>
+  </Column>
+</Row>
+```
+
+The hand-composed form is a bug wherever it appears (app code, docs examples,
+templates), except inside an intentional Don't fence: it splits the tap target
+(only the box toggles), drifts from the control's canonical type scale, and
+hides a missing kit capability. If a control lacks the text slot the design
+needs (a description, an inline hint, a trailing detail), add the capability to
+the kit component backward-compatibly, following the `description` precedent,
+then use it. This extends "Dogfood the kit" and "No styling escape hatches":
+those ban rebuilding a component's look; this bans rebuilding a component's
+anatomy around it.
+
 ## Preview links on every completed piece of work
 
 Whenever a piece of work is complete, end the report with a "Preview" block of three
