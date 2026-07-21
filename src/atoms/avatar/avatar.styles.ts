@@ -3,7 +3,7 @@ import { controlRipple, type ColorTokens } from "../../style/index.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
 
 // Per-OS Avatar skins. Avatar is a "Light" treatment: identical structure, box
-// sizes, muted fallback surface, circle radius, and ring outline (those live in
+// sizes, per-name fallback colour, circle radius, and ring outline (those live in
 // avatar.shared.tsx); only the rounded-square corner radius, the initials type,
 // and the press feedback shift per OS.
 //
