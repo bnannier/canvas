@@ -1,16 +1,22 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { StyleSheet } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
 import { View, useTheme, alpha, palette, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type SparklineSkin } from "./sparkline.styles.js";
 
-// Shared Sparkline shell. A compact trend strip: a row of thin bars whose heights
-// track a series of values, so no call site hand-composes a row of
-// `flexGrow` + `height` + `backgroundColor` Views to draw an inline trend (the
-// recurring stat-card / dashboard sparkline). Pass `values`; the component sizes
-// each bar against the series max and paints the tone.
+// Shared Sparkline shell. A compact trend strip that plots a series of values,
+// so no call site hand-composes a row of `flexGrow` + `height` +
+// `backgroundColor` Views to draw an inline trend (the recurring stat-card /
+// dashboard sparkline). Pass `values`; the component sizes each mark against
+// the series and paints the tone.
 //
-// Sparkline is a "Shared" platform treatment: a token-colored bar strip is
+// The look follows the standard sparkline anatomy: the series renders in a
+// soft de-emphasis wash of the tone while the latest period carries the full
+// accent (the last bar, or the line's end marker), bars round at the data end
+// and stay square at the baseline, and the line variant grounds itself with a
+// gradient area wash that fades toward the baseline.
+//
+// Sparkline is a "Shared" platform treatment: a token-colored trend strip is
 // identical on iOS, Android, and the web, so the three skins carry the same
 // bar radius / gap / heights.
 
@@ -20,7 +26,7 @@ export type Size = "compact" | "default" | "tall";
 export interface SparklineProps {
   /** The series to plot; each value becomes one bar, sized against the max. */
   values: number[];
-  // Tone (pick one; default `primary`). Colors the bars.
+  // Tone (pick one; default `primary`). Colors the marks.
   primary?: boolean;
   success?: boolean;
   destructive?: boolean;
@@ -28,8 +34,7 @@ export interface SparklineProps {
   // Height (pick one; default medium).
   compact?: boolean;
   tall?: boolean;
-  // Shape: a continuous 2px trend line (the watchlist-row idiom) instead of
-  // the default bar strip.
+  /** A continuous 2px trend line with an area wash and end marker, instead of the bar strip. */
   line?: boolean;
   /** Accessible summary (e.g. "requests, last 11 days"). */
   accessibilityLabel?: string;
@@ -65,17 +70,17 @@ function fallbackLabel(values: number[]): string {
   return `Sparkline: ${finite.length} points, from ${fmt(min)} to ${fmt(max)}, latest ${fmt(latest)}`;
 }
 
-// A soft wash of the tone color (matches the established sparkline look).
-function barColor(tokens: ColorTokens, tone: Tone): string {
+// The solid tone color; washes derive from it via `alpha`.
+function toneColor(tokens: ColorTokens, tone: Tone): string {
   switch (tone) {
     case "primary":
-      return alpha(tokens.primary, 0.7);
+      return tokens.primary;
     case "success":
-      return alpha(palette["green-500"], 0.7);
+      return palette["green-500"];
     case "destructive":
-      return alpha(tokens.destructive, 0.7);
+      return tokens.destructive;
     case "muted":
-      return alpha(tokens["muted-foreground"], 0.5);
+      return tokens["muted-foreground"];
   }
 }
 
@@ -86,7 +91,11 @@ export function createSparkline(skin: SparklineSkin) {
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const plot = skin.height[sizeOf(props)];
-    const fill = barColor(tokens, tone);
+    const base = toneColor(tokens, tone);
+    // The series sits in a de-emphasis wash; the latest period carries the
+    // accent. Muted stays muted: even its accent is a wash, just a denser one.
+    const rest = alpha(base, tone === "muted" ? 0.25 : 0.35);
+    const accent = tone === "muted" ? alpha(base, 0.75) : base;
     // Always carry an accessible name: the caller's, else a summary of the data.
     const label = accessibilityLabel ?? fallbackLabel(values);
 
@@ -107,19 +116,42 @@ export function createSparkline(skin: SparklineSkin) {
     const root: ViewStyle = { flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot };
     if (!sized) root.width = skin.defaultWidth;
 
-    // The line variant plots one continuous 2px polyline through the values;
-    // it needs a measured pixel width (the bar strip flexes instead).
+    // The accent marks the latest real period: the last FINITE value, so a
+    // trailing missing bucket never wears the accent (which would contradict
+    // the accessible name's "latest").
+    let accentIndex = -1;
+    for (let i = values.length - 1; i >= 0; i--) {
+      if (Number.isFinite(values[i])) {
+        accentIndex = i;
+        break;
+      }
+    }
+
+    // The line variant plots one continuous 2px trend line over a gradient
+    // area wash, with an accent dot marking the latest point; it needs a
+    // measured pixel width (the bar strip flexes instead). SVG gradient ids
+    // resolve document-wide on the web, so each instance mints its own.
     const [lineWidth, setLineWidth] = useState(0);
+    const gradientId = `canvas-sparkline-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
     if (props.line) {
-      const pad = 1.5; // half the stroke, so the line never clips at the edges
+      const dotR = 3;
+      const pad = dotR + 1; // room for the end marker and half the stroke, so nothing clips
       const min = Math.min(...(finite.length ? finite : [0]));
-      const span = Math.max(1e-9, max - min);
+      const lineMax = Math.max(...(finite.length ? finite : [0]));
+      const span = lineMax - min;
       const points = values.map((v, i) => {
-        const value = Number.isFinite(v) ? v : 0;
+        const value = Number.isFinite(v) ? v : min;
         const x = values.length > 1 ? (i / (values.length - 1)) * (lineWidth - pad * 2) + pad : lineWidth / 2;
-        const y = plot - pad - ((value - min) / span) * (plot - pad * 2);
-        return `${Math.round(x * 100) / 100},${Math.round(y * 100) / 100}`;
+        // A flat (or single-value) series sits mid-strip instead of hugging an edge.
+        const y = span > 0 ? plot - pad - ((value - min) / span) * (plot - pad * 2) : plot / 2;
+        return { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 };
       });
+      const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+      // The wash: the line's silhouette closed down to the strip's bottom edge.
+      // Guarded so an empty series renders the named empty strip, never throws.
+      const areaPath =
+        points.length > 0 ? `${linePath} L${points[points.length - 1].x},${plot} L${points[0].x},${plot} Z` : "";
+      const marker = accentIndex >= 0 ? points[accentIndex] : null;
       return (
         <View
           role="img"
@@ -131,17 +163,15 @@ export function createSparkline(skin: SparklineSkin) {
         >
           {lineWidth > 0 && values.length > 0 ? (
             <Svg width={lineWidth} height={plot}>
-              <Path
-                d={`M${points[0]} ${points
-                  .slice(1)
-                  .map((p) => `L${p}`)
-                  .join(" ")}`}
-                stroke={fill}
-                strokeWidth={2}
-                fill="none"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              />
+              <Defs>
+                <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor={base} stopOpacity={0.28} />
+                  <Stop offset="1" stopColor={base} stopOpacity={0.02} />
+                </LinearGradient>
+              </Defs>
+              {values.length > 1 ? <Path d={areaPath} fill={`url(#${gradientId})`} /> : null}
+              <Path d={linePath} stroke={accent} strokeWidth={2} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+              {marker ? <Circle cx={marker.x} cy={marker.y} r={dotR} fill={accent} /> : null}
             </Svg>
           ) : null}
         </View>
@@ -162,7 +192,16 @@ export function createSparkline(skin: SparklineSkin) {
           return (
             <View
               key={i}
-              style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: skin.barRadius, backgroundColor: fill, height: h }}
+              style={{
+                flexGrow: 1,
+                flexShrink: 1,
+                flexBasis: "0%",
+                // Rounded at the data end, square at the baseline.
+                borderTopLeftRadius: skin.barRadius,
+                borderTopRightRadius: skin.barRadius,
+                backgroundColor: i === accentIndex ? accent : rest,
+                height: h,
+              }}
             />
           );
         })}
