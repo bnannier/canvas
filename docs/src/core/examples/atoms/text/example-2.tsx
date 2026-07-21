@@ -3,12 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text } = scope;
+  const { tokens, Text } = scope;
   return (
-<View style={{ width: 220 }}>
-  <Text numberOfLines={1} style={{ color: tokens.foreground }}>
-    This single line is clipped with an ellipsis when it overflows its container.
-  </Text>
-</View>
+<Text style={{ color: tokens.foreground }}>
+  A run of text can carry an <Text style={{ fontWeight: "700" }}>inline emphasis</Text> that inherits everything else from its parent Text.
+</Text>
   );
 }

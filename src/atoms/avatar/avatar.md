@@ -38,59 +38,26 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 </Dropdown>
 ```
 
-### Variant - topbar with email
+### Photo
 
 ```tsx
-<Dropdown items={[
-    { label: "Your profile", icon: "user" },
-    { label: "Settings", icon: "settings" },
-    { label: "Sign out", icon: "logOut", separatorBefore: true }
-  ]}>
-  <Chip outline icon={<Avatar small src="/marcus-allen.jpg" name="MA" />} trailing={<Icon chevronDown muted size={12} />}>admin@example.com</Chip>
-</Dropdown>
+<Avatar src="/rachel-chen.jpg" name="RC" />
 ```
 
-### Variant - identity
+### Sizes
 
 ```tsx
-<MediaObject center src="/rachel-chen.jpg" title="Rachel Chen" description="rachel.chen@example.com" />
+<Row relaxed alignCenter>
+  <Avatar small src="/ada-lovelace.jpg" name="AL" />
+  <Avatar src="/marcus-allen.jpg" name="MA" />
+  <Avatar large src="/rachel-chen.jpg" name="RC" />
+</Row>
 ```
 
-### Variant - navigable
-
-A navigable identity row: pass `onPress` and the whole row (avatar, name, and subtitle) becomes one accessible button, so the tap target is the full area, not just the avatar. It uses `MediaObject`, the kit's tappable media row, so you never hand-roll a Pressable. `onPress` is the navigation hook throughout Canvas (`onPress={() => router.push("/team/rachel")}`); here it swaps to the detail card.
+### Rounded
 
 ```tsx
-<Stateful initial={false}>
-  {(open, setOpen) =>
-    open ? (
-      <Card raised padded>
-        <Column relaxed>
-          <Row relaxed alignCenter>
-            <Avatar large src="/rachel-chen.jpg" name="RC" />
-            <Column>
-              <Typography lead semibold>Rachel Chen</Typography>
-              <Typography small muted>Staff Engineer, Platform</Typography>
-            </Column>
-          </Row>
-          <Typography small muted>rachel.chen@example.com</Typography>
-          <Button small outline onPress={() => setOpen(false)}>Back</Button>
-        </Column>
-      </Card>
-    ) : (
-      <MediaObject center src="/rachel-chen.jpg" title="Rachel Chen" description="Open profile" onPress={() => setOpen(true)} />
-    )
-  }
-</Stateful>
-```
-
-### Variant - menu
-
-```tsx
-<Column snug>
-  <MediaObject compact center src="/ada-lovelace.jpg" title="Ada Lovelace" description="admin@example.com" />
-  <Divider />
-</Column>
+<Avatar rounded src="/liang-bao.jpg" name="LB" />
 ```
 
 ### Ring outline
