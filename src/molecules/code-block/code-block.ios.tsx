@@ -5,4 +5,5 @@ import { iosSkin } from "./code-block.styles.js";
 // CodeBlock is a "Shared" treatment (no native iOS code-display control), so the iOS
 // skin is identical to the web look.
 export const CodeBlock = createCodeBlock(iosSkin);
-export type { CodeBlockProps } from "./code-block.shared.js";
+export type { CodeBlockProps, CodeBlockTab } from "./code-block.shared.js";
+export { tokenize, syntaxColor, type CodeToken, type TokenKind } from "./tokenize.js";

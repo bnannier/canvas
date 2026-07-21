@@ -5,4 +5,5 @@ import { androidSkin } from "./code-block.styles.js";
 // preview. CodeBlock is a "Shared" treatment (no native M3 code-display component),
 // so the Android skin is identical to the web look.
 export const CodeBlock = createCodeBlock(androidSkin);
-export type { CodeBlockProps } from "./code-block.shared.js";
+export type { CodeBlockProps, CodeBlockTab } from "./code-block.shared.js";
+export { tokenize, syntaxColor, type CodeToken, type TokenKind } from "./tokenize.js";
