@@ -343,6 +343,10 @@ const RELATIVE: ViewStyle = { position: "relative" };
 // Fill the remaining row width. Longhands on purpose: RNW compiles `flex: 1`
 // shorthand to a 0% basis that collapses inside some containers.
 const FLEX_FILL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
+// Horizontal-scroll content: grow to at least the viewport width, but NEVER
+// shrink/zero-base — that would clamp the content to the scroller's width and
+// soft-wrap long lines instead of letting them extend and scroll (seen on iOS).
+const GROW: ViewStyle = { flexGrow: 1 };
 // The floating copy chip's anchor (measured so code rows reserve an end inset).
 const FLOATING_CHIP: ViewStyle = { position: "absolute", top: 8, end: 8, zIndex: 10 };
 // The header's trailing cluster (badge + copy chip).
@@ -601,7 +605,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     if (variant === "terminal" && term) {
       const label = language ?? filename ?? "bash";
       const rows = (
-        <View style={[FLEX_FILL, skin.terminalBody(compact)]}>
+        <View style={[GROW, skin.terminalBody(compact)]}>
           {term.rows.map((row, i) => (
             <View key={i} style={[skin.rowPad(compact, false), rowMin]}>
               {row.kind === "cmd" ? (
@@ -645,7 +649,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
           {wrap ? (
             rows
           ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={FLEX_FILL}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={GROW}>
               {rows}
             </ScrollView>
           )}
@@ -678,7 +682,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     const rowsCol = (
       <View
         style={[
-          FLEX_FILL,
+          GROW,
           skin.bodyPad(compact),
           copyInset > 0 ? { paddingEnd: copyInset } : null,
         ]}
@@ -751,7 +755,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={FLEX_FILL}
-                contentContainerStyle={FLEX_FILL}
+                contentContainerStyle={GROW}
               >
                 {rowsCol}
               </ScrollView>
