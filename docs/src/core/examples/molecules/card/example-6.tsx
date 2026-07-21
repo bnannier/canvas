@@ -8,18 +8,22 @@ export default function Example(scope: ExampleScope) {
 <Stateful initial="pro">
   {(plan, setPlan) => (
     <Row cozy style={{ width: 400, maxWidth: "100%" }}>
-      <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
-        <Column tight>
-          <Typography lead semibold>Starter</Typography>
-          <Typography small muted>3 projects, 1 seat</Typography>
-        </Column>
-      </Card>
-      <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
-        <Column tight>
-          <Typography lead semibold>Pro</Typography>
-          <Typography small muted>Unlimited, 10 seats</Typography>
-        </Column>
-      </Card>
+      <Column fill>
+        <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
+          <Column tight>
+            <Typography lead semibold>Starter</Typography>
+            <Typography small muted>3 projects, 1 seat</Typography>
+          </Column>
+        </Card>
+      </Column>
+      <Column fill>
+        <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
+          <Column tight>
+            <Typography lead semibold>Pro</Typography>
+            <Typography small muted>Unlimited, 10 seats</Typography>
+          </Column>
+        </Card>
+      </Column>
     </Row>
   )}
 </Stateful>
