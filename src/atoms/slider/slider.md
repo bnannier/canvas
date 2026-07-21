@@ -16,13 +16,13 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 <Slider showValue defaultValue={65} min={0} max={100}>Volume</Slider>
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <Slider small defaultValue={40} />
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <Slider large defaultValue={75} />

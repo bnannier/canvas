@@ -14,13 +14,13 @@ Single-pick selection: stacked, inline, card-style.
 
 ## Variants
 
-### Variant - inline
+### Inline
 
 ```tsx
 <Radio checked small>Pro, for growing teams that need more control.</Radio>
 ```
 
-### Variant - card
+### Card
 
 ```tsx
 <RadioGroup row defaultValue="pro">

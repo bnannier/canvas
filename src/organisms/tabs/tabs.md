@@ -19,13 +19,13 @@ Underline, pill, vertical, with badges.
 
 ## Variants
 
-### Variant - pill
+### Pill
 
 ```tsx
 <Tabs pills tabs={["All", "Active", "Archived", "Deleted"]} defaultActive={0} />
 ```
 
-### Variant - vertical
+### Vertical
 
 ```tsx
 <Tabs

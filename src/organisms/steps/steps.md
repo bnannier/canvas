@@ -21,7 +21,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 
 ## Variants
 
-### Type - Vertical
+### Vertical
 
 ```tsx
 <Steps
@@ -39,7 +39,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 />
 ```
 
-### Type - Progress bar
+### Progress bar
 
 ```tsx
 <Steps

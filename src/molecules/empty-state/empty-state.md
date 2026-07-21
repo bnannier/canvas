@@ -16,7 +16,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 
 ## Variants
 
-### Variant - users
+### Users
 
 ```tsx
 <EmptyState
@@ -28,7 +28,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 />
 ```
 
-### Variant - files
+### Files
 
 ```tsx
 <EmptyState
@@ -40,7 +40,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 />
 ```
 
-### Variant - activity
+### Activity
 
 ```tsx
 <EmptyState
@@ -52,7 +52,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 />
 ```
 
-### Variant - notifications
+### Notifications
 
 ```tsx
 <EmptyState
@@ -64,7 +64,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 />
 ```
 
-### Variant - errors
+### Errors
 
 ```tsx
 <EmptyState
@@ -77,7 +77,7 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 />
 ```
 
-### Variant - all-clear
+### All clear
 
 ```tsx
 <EmptyState

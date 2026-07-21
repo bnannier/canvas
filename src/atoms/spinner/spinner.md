@@ -22,13 +22,13 @@ Animated loading spinner in three sizes.
 <Spinner stacked>Working…</Spinner>
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <Spinner small />
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <Spinner large />

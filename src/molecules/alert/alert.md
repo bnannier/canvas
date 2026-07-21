@@ -17,7 +17,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 
 ## Variants
 
-### Variant - success
+### Success
 
 ```tsx
 <Alert
@@ -30,7 +30,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 />
 ```
 
-### Variant - warning
+### Warning
 
 ```tsx
 <Alert
@@ -43,7 +43,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 />
 ```
 
-### Variant - destructive
+### Error
 
 ```tsx
 <Alert

@@ -33,7 +33,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 />
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <Select
@@ -45,7 +45,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 />
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <Select

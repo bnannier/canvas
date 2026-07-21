@@ -33,7 +33,7 @@ Group related form controls under a legend. Each field pairs a label, control, o
 />
 ```
 
-### Content - checkboxes
+### Checkboxes
 
 ```tsx
 <Fieldset
@@ -76,7 +76,7 @@ Group related form controls under a legend. Each field pairs a label, control, o
 />
 ```
 
-### Columns - 2
+### Two column
 
 ```tsx
 <Fieldset

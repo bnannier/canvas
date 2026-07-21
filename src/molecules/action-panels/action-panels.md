@@ -15,7 +15,7 @@ Section card with headline, body text, and a primary action. Used to surface a s
 
 ## Variants
 
-### Variant - side-by-side
+### Inline
 
 ```tsx
 <ActionPanel
@@ -27,7 +27,7 @@ Section card with headline, body text, and a primary action. Used to surface a s
 />
 ```
 
-### Variant - toggle
+### Toggle
 
 ```tsx
 <ActionPanel

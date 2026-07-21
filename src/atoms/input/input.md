@@ -10,49 +10,49 @@ The Input component is a React Native text field with semantic boolean props (`e
 
 ## Variants
 
-### Floating label
+### Label
 
 ```tsx
 <Input label="Email" placeholder="rachel.chen@example.com" />
 ```
 
-### Floating label - required
+### Required
 
 ```tsx
 <Input label="Full name" required placeholder="Rachel Chen" />
 ```
 
-### Addon - prefix
+### Prefix
 
 ```tsx
 <Input prefix="https://" placeholder="canvas.dev" />
 ```
 
-### Addon - action
+### Action
 
 ```tsx
 <Input suffix="Copy" action value="cnv_3f9a21b8e7" />
 ```
 
-### Addon - icon
+### Icon
 
 ```tsx
 <Input leadingIcon icon="search" placeholder="Search" />
 ```
 
-### State - error
+### Error
 
 ```tsx
 <Input error placeholder="rachel.chen@example.com" />
 ```
 
-### State - disabled
+### Disabled
 
 ```tsx
 <Input disabled placeholder="rachel.chen@example.com" />
 ```
 
-### State - readonly
+### Read only
 
 ```tsx
 <Input readOnly placeholder="rachel.chen@example.com" />

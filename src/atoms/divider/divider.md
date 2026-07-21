@@ -16,7 +16,7 @@ A divider spans the width of its parent, so give it a bounded container.
 
 ## Variants
 
-### Orientation - vertical
+### Vertical
 
 ```tsx
 <Row alignCenter cozy>
@@ -26,13 +26,13 @@ A divider spans the width of its parent, so give it a bounded container.
 </Row>
 ```
 
-### Variant - label
+### Label
 
 ```tsx
 <Divider>Or continue with</Divider>
 ```
 
-### Variant - action
+### Action
 
 ```tsx
 <Column cozy style={{ width: 320 }}>

@@ -16,7 +16,7 @@ Vertical action menu items and navigation links.
 
 ## Variants
 
-### Kind - links
+### Links
 
 ```tsx
 <RowMenu

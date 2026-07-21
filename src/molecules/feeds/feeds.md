@@ -17,7 +17,7 @@ Vertical activity streams with icons and timestamps. Used for audit logs, change
 
 ## Variants
 
-### Variant - avatar
+### Avatar
 
 ```tsx
 <Feed

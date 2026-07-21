@@ -17,7 +17,7 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 
 ## Variants
 
-### Size - xs
+### Extra small
 
 ```tsx
 <Dialog
@@ -31,7 +31,7 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 />
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <Dialog
@@ -45,7 +45,7 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 />
 ```
 
-### Size - md
+### Medium
 
 ```tsx
 <Dialog
@@ -59,7 +59,7 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 />
 ```
 
-### Size - xl
+### Large
 
 ```tsx
 <Dialog
@@ -73,7 +73,7 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 />
 ```
 
-### Size - 2xl
+### Wide
 
 ```tsx
 <Dialog

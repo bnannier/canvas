@@ -10,7 +10,7 @@ Segmented controls, split buttons, attached groups.
 
 ## Variants
 
-### Variant - attached
+### Stepper
 
 ```tsx
 <ButtonGroup
@@ -29,7 +29,7 @@ Segmented controls, split buttons, attached groups.
 />
 ```
 
-### Variant - split
+### Split
 
 ```tsx
 <ButtonGroup
@@ -40,13 +40,13 @@ Segmented controls, split buttons, attached groups.
 />
 ```
 
-### Size - default
+### Default
 
 ```tsx
 <ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} />
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} large />

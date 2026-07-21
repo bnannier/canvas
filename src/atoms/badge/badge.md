@@ -12,13 +12,13 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 
 ## Variants
 
-### Type - status
+### Status
 
 ```tsx
 <Badge status success>admin</Badge>
 ```
 
-### Type - identity
+### Identity
 
 ```tsx
 <Row wrap alignCenter snug>
@@ -29,7 +29,7 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 </Row>
 ```
 
-### Type - grants
+### Grants
 
 ```tsx
 <Row wrap tight>
@@ -39,19 +39,19 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 </Row>
 ```
 
-### Badge variant - default
+### Default
 
 ```tsx
 <Badge default>admin</Badge>
 ```
 
-### Badge variant - outline
+### Outline
 
 ```tsx
 <Badge outline>admin</Badge>
 ```
 
-### Badge variant - destructive
+### Destructive
 
 ```tsx
 <Badge destructive>admin</Badge>

@@ -13,7 +13,7 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 
 ## Variants
 
-### resizeMode - contain
+### Contain
 
 ```tsx
 <Image
@@ -23,7 +23,7 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 />
 ```
 
-### resizeMode - cover
+### Cover
 
 ```tsx
 <Image

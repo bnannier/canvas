@@ -18,7 +18,7 @@ Stacked, two-column, with sidebar description.
 
 ## Variants
 
-### Layout - two-column
+### Two-column
 
 ```tsx
 <Form
@@ -34,7 +34,7 @@ Stacked, two-column, with sidebar description.
 />
 ```
 
-### Layout - sidebar
+### Sidebar
 
 ```tsx
 <Form

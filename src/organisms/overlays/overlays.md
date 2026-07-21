@@ -15,7 +15,7 @@ Floating surfaces: drawers, sheets, and modals.
 
 ## Variants
 
-### Surface - modal
+### Modal
 
 ```tsx
 <Overlay
@@ -26,7 +26,7 @@ Floating surfaces: drawers, sheets, and modals.
 />
 ```
 
-### Surface - sheet
+### Sheet
 
 ```tsx
 <Overlay

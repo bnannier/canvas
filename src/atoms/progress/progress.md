@@ -35,13 +35,13 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 <Progress indeterminate />
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <Progress small value={0.6} />
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <Progress large value={0.6} />

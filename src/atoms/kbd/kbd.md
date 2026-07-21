@@ -10,25 +10,25 @@ Keyboard shortcut indicator badge.
 
 ## Variants
 
-### Mode - single
+### Single
 
 ```tsx
 <Kbd>Esc</Kbd>
 ```
 
-### Mode - combo
+### Combo
 
 ```tsx
 <Kbd keys="⌘ ⇧ P" />
 ```
 
-### Mode - sequence
+### Sequence
 
 ```tsx
 <Kbd keys="⌘K ⌘S" sequence />
 ```
 
-### Mode - in a sentence
+### In a sentence
 
 ```tsx
 <Row wrap alignCenter tight>

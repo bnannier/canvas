@@ -19,7 +19,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 
 ## Variants
 
-### Type - section
+### Section
 
 ```tsx
 <Card
@@ -29,7 +29,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 />
 ```
 
-### Type - generic
+### Generic
 
 ```tsx
 <Card
