@@ -15,7 +15,7 @@ import {
 // `primary`, never a platform default), and only the native SHAPE, sizing, border
 // weight, and press feedback change per OS:
 //   iOS (HIG): no native radio; the de-facto ring + filled center dot — a ~20pt
-//     circle, a 1.5px border when empty, brand ring + ~40% inner dot when selected,
+//     circle, a 1.5px border when empty, brand ring + ~45% inner dot when selected,
 //     instant; press = opacity dim (~0.8).
 //   Android (Material 3): a 20dp outer ring (2dp border), brand ring + ~10dp solid
 //     inner dot when selected; press = android_ripple over a 40dp state layer;
@@ -30,10 +30,13 @@ const IOS_RING: Record<Size, number> = { small: 20, default: 22, large: 24 };
 const ANDROID_RING: Record<Size, number> = { small: 18, default: 20, large: 22 };
 
 // Inner dot diameter per size, per platform family. Web keeps ~half the ring; iOS
-// runs ~40% of the ring; Android uses the M3 ~10dp dot at the default size.
+// runs ~45% of the ring; Android uses the M3 ~50% dot (~10dp at the default size).
+// EVERY dot is even because every ring above is even: an odd dot cannot land on the
+// pixel grid when centered in an even ring, so it renders a half-pixel down-right with
+// soft edges (worse the higher the pixel density). Keep new dot sizes even to match.
 const WEB_DOT: Record<Size, number> = { small: 6, default: 8, large: 10 };
-const IOS_DOT: Record<Size, number> = { small: 8, default: 9, large: 10 };
-const ANDROID_DOT: Record<Size, number> = { small: 9, default: 10, large: 11 };
+const IOS_DOT: Record<Size, number> = { small: 8, default: 10, large: 10 };
+const ANDROID_DOT: Record<Size, number> = { small: 10, default: 10, large: 12 };
 
 // Label type per size (shared across platforms; the label is brand type, not a
 // platform face). Matches the original Canvas label scale.
