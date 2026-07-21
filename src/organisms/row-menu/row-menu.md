@@ -55,6 +55,19 @@ Vertical action menu items and navigation links.
 />
 ```
 
+### Disabled item
+
+Mark an item `disabled` when its action is unavailable in the current context; the row dims,
+does not fire `onSelect`, keeps the menu open, and is announced as disabled.
+
+```tsx
+<RowMenu open items={[
+    { label: "Edit", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Clear column", icon: "trash", destructive: true, disabled: true, separatorBefore: true }
+  ]} />
+```
+
 ## Do & Don't
 
 ### When to use

@@ -12,6 +12,7 @@ import { Chip } from "../src/atoms/chip/chip.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
+import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 
 // react-native-web forwards NEITHER accessibilityState NOR accessibilityValue to
 // the DOM (verified empirically). The kit therefore carries the cross-platform
@@ -107,5 +108,27 @@ describe("listbox a11y (options announce as a selectable list, operably)", () =>
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(2);
     expect(opts[0].getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("RowMenu: a disabled item forwards aria-disabled and does not fire onSelect", () => {
+    const picked: string[] = [];
+    // No OverlayProvider, so the open menu renders its inline fallback card with the rows.
+    const { container } = ui(
+      <RowMenu
+        open
+        items={[{ label: "Edit" }, { label: "Clear column", disabled: true }]}
+        onSelect={(item) => picked.push(item.label)}
+      />,
+    );
+    const rows = Array.from(container.querySelectorAll('[role="menuitem"]'));
+    expect(rows.length).toBe(2);
+    // Only the disabled row carries the aria-disabled alias.
+    expect(rows[0].getAttribute("aria-disabled")).toBeNull();
+    expect(rows[1].getAttribute("aria-disabled")).toBe("true");
+    // Clicking the disabled row is inert; clicking the enabled row fires onSelect.
+    fireEvent.click(rows[1]);
+    expect(picked).toEqual([]);
+    fireEvent.click(rows[0]);
+    expect(picked).toEqual(["Edit"]);
   });
 });
