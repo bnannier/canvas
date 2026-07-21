@@ -490,7 +490,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "description-lists",
     name: "DescriptionList",
-    description: "Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views.",
+    description: "Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views. Rows flagged <code>update</code> carry a working in-place editor: Update opens it, Enter or Save commits the new value (firing <code>onUpdate</code>), Escape or Cancel dismisses it.",
     category: "Molecules",
     stageAlign: "start",
   },

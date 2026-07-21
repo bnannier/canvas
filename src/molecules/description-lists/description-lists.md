@@ -1,6 +1,6 @@
 # DescriptionList
 
-Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views.
+Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views. Rows flagged `update` carry a working in-place editor: Update opens it, Enter or Save commits the new value and fires `onUpdate`, Escape or Cancel dismisses it.
 
 ## Usage
 
@@ -84,7 +84,7 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 
 ### Inline-edit
 
-**Do** — Give every editable row a trailing Update affordance so the inline editor is discoverable.
+**Do** — Give every editable row a trailing Update affordance so the inline editor is discoverable; pressing it opens the editor in place, and Enter or Save commits.
 
 ```tsx
 <DescriptionList twoColumn style={{ maxWidth: 420 }} items={[

@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, MONO_FONT } from "../../style/index.js";
+import { type ColorTokens, shadow, MONO_FONT, FOCUS_RESET } from "../../style/index.js";
 import { type DescriptionListSkin } from "./description-lists.shared.js";
 
 // Co-located DescriptionList skins and shared style fragments. Layout-only
@@ -116,6 +116,43 @@ export const twoColumnValueCell: ViewStyle = {
   justifyContent: "space-between",
   gap: 16,
 };
+
+// --- inline edit -------------------------------------------------------------
+
+// The editing cluster: the draft input growing to fill the cell with the
+// Save / Cancel links trailing. minWidth 0 lets the input shrink inside a
+// tight cell instead of pushing the links out of the card.
+export const editRow: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 12,
+  flexGrow: 1,
+  flexShrink: 1,
+  minWidth: 0,
+};
+
+// The inline layout's value cell has no width of its own; while editing it
+// takes the row's free space so the draft input has room to type into.
+export const editCellGrow: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
+
+// The draft input: rendered in the row's own value type but lifted to the full
+// foreground color (typing reads primary even where the resting value is the
+// secondary gray, as on iOS), over a hairline ring-colored underline that marks
+// the active field. No inner padding, so the row height holds still while a row
+// flips between reading and editing.
+export function editInput(tokens: ColorTokens): TextStyle {
+  return {
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 80,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    color: tokens.foreground,
+    borderBottomWidth: 1,
+    borderColor: tokens.ring,
+    ...FOCUS_RESET,
+  };
+}
 
 // --- header band ------------------------------------------------------------
 

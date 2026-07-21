@@ -1,5 +1,5 @@
-import { type ComponentType } from "react";
-import { View, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { type ComponentType, useState } from "react";
+import { View, Text, TextInput, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
@@ -37,7 +37,15 @@ import { type Layout } from "./description-lists.styles.js";
 // `badge` renders the value as a secondary metadata Badge; `status` renders it
 // as a success status Badge with a leading dot (live state); `mono` sets a
 // monospace face for tokens/IDs; `update` appends a trailing "Update" link
-// button so an editable row is discoverable (the inline-edit affordance).
+// button that opens a working in-place editor (the inline-edit affordance):
+// the value swaps for a draft TextInput with trailing Save / Cancel links.
+// Enter or Save commits the draft (the row shows the new value and `onUpdate`
+// fires with the item index and next value); Escape or Cancel dismisses it.
+// One row edits at a time. The edited values follow the kit's controlled +
+// uncontrolled contract at list granularity: `items` IS the controlled prop.
+// A consumer that ignores onUpdate gets the uncontrolled behavior (the list
+// keeps the committed value itself); a consumer that answers onUpdate by
+// passing new items wins over the internal copy (see the `edits` state).
 //
 // Layout, rows, and surface are orthogonal axes and combine freely.
 //
@@ -82,6 +90,8 @@ export interface DescriptionListProps {
   divided?: boolean;
   // Surface: wrap the list in a card surface.
   card?: boolean;
+  /** Fires when a row's inline editor commits (Enter or Save): the item index and the new value. */
+  onUpdate?: (index: number, value: string) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -158,21 +168,34 @@ export function createDescriptionList(
 ) {
   // Render a value cell: a badge family, a monospace token, or plain text. The
   // value type (foreground full-weight on web/Android, secondary gray 17pt on
-  // iOS; stacked keeps a full-weight foreground value) is resolved by the caller.
-  function Value({ item, align, valueStyle }: { item: DescriptionListItem; align?: boolean; valueStyle: TextStyle }) {
-    if (item.status) return <Badge status success>{item.value}</Badge>;
-    if (item.badge) return <Badge secondary>{item.value}</Badge>;
+  // iOS; stacked keeps a full-weight foreground value) is resolved by the caller,
+  // as is the shown string (the item value, or the row's committed inline edit).
+  function Value({ item, value, align, valueStyle }: { item: DescriptionListItem; value: string; align?: boolean; valueStyle: TextStyle }) {
+    if (item.status) return <Badge status success>{value}</Badge>;
+    if (item.badge) return <Badge secondary>{value}</Badge>;
     if (item.mono) {
-      return <Text style={[valueStyle, s.valueMono]}>{item.value}</Text>;
+      return <Text style={[valueStyle, s.valueMono]}>{value}</Text>;
     }
-    return <Text style={[valueStyle, align ? s.valueAlignRight : null]}>{item.value}</Text>;
+    return <Text style={[valueStyle, align ? s.valueAlignRight : null]}>{value}</Text>;
   }
 
   return function DescriptionList(props: DescriptionListProps) {
-    const { items, title, subtitle, divided, card, testID, style } = props;
+    const { items, title, subtitle, divided, card, onUpdate, testID, style } = props;
     const { tokens } = useTheme();
     const layout = layoutOf(props);
     const hasHeader = card && !!title;
+
+    // Inline-edit state. `editing` is the single row currently in edit mode and
+    // `draft` its in-progress text. `edits` holds each row's committed value for
+    // the uncontrolled path, remembering the item.value it replaced: while the
+    // consumer keeps passing that same base the edit shows, and the moment they
+    // pass a different value (the controlled response to onUpdate) the prop wins
+    // and the stale edit goes inert. This is the kit's controlled + uncontrolled
+    // contract at list granularity: `items` is the controlled prop, and
+    // onUpdate (like useControllableState's callback) fires in both modes.
+    const [editing, setEditing] = useState<number | null>(null);
+    const [draft, setDraft] = useState("");
+    const [edits, setEdits] = useState<Record<number, { base: string; value: string }>>({});
 
     const container: StyleProp<ViewStyle> = [
       card ? s.cardSurface(tokens, skin) : null,
@@ -196,6 +219,17 @@ export function createDescriptionList(
         divided ? s.rowDividedPad(skin) : null,
         divided && !last ? s.rowDivider(tokens) : null,
       ];
+      // The shown value: the consumer's item.value, unless this row committed an
+      // inline edit over that exact base (the uncontrolled path, see `edits`).
+      const edit = edits[index];
+      const shown = edit && edit.base === item.value ? edit.value : item.value;
+      const isEditing = editing === index;
+      const commit = () => {
+        setEdits((prev) => ({ ...prev, [index]: { base: item.value, value: draft } }));
+        setEditing(null);
+        onUpdate?.(index, draft);
+      };
+      const cancel = () => setEditing(null);
       return (
         <View key={`${item.term}-${index}`} style={row}>
           <Text
@@ -206,13 +240,46 @@ export function createDescriptionList(
           >
             {item.term}
           </Text>
-          <View style={layout === "twoColumn" ? s.twoColumnValueCell : null}>
-            <Value item={item} align={layout === "inline"} valueStyle={valueStyle} />
-            {item.update ? (
-              <Button link small accessibilityLabel={`Update ${item.term}`}>
-                Update
-              </Button>
-            ) : null}
+          <View style={layout === "twoColumn" ? s.twoColumnValueCell : isEditing && layout === "inline" ? s.editCellGrow : null}>
+            {isEditing ? (
+              // The in-place editor: the draft in the row's own value type over a
+              // ring-colored underline, with Save / Cancel links trailing. Enter
+              // commits, Escape (web) cancels; native relies on the links.
+              <View style={s.editRow}>
+                <TextInput
+                  value={draft}
+                  onChangeText={setDraft}
+                  autoFocus
+                  selectTextOnFocus
+                  returnKeyType="done"
+                  onSubmitEditing={commit}
+                  onKeyPress={(e) => { if (e.nativeEvent.key === "Escape") cancel(); }}
+                  accessibilityLabel={`${item.term} value`}
+                  aria-label={`${item.term} value`}
+                  style={[valueStyle, s.editInput(tokens)]}
+                />
+                <Button link small onPress={commit} accessibilityLabel={`Save ${item.term}`}>
+                  Save
+                </Button>
+                <Button link small onPress={cancel} accessibilityLabel={`Cancel updating ${item.term}`}>
+                  Cancel
+                </Button>
+              </View>
+            ) : (
+              <>
+                <Value item={item} value={shown} align={layout === "inline"} valueStyle={valueStyle} />
+                {item.update ? (
+                  <Button
+                    link
+                    small
+                    onPress={() => { setDraft(shown); setEditing(index); }}
+                    accessibilityLabel={`Update ${item.term}`}
+                  >
+                    Update
+                  </Button>
+                ) : null}
+              </>
+            )}
           </View>
         </View>
       );
