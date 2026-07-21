@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import {
   Row,
   Column,
@@ -22,6 +22,10 @@ import {
   Select,
   Input,
   Textarea,
+  DragDropProvider,
+  DropZone,
+  Draggable,
+  DragHandle,
   useResponsive,
   useToast,
   type RowMenuItem,
@@ -32,16 +36,22 @@ import type { TemplateDoc } from "../types";
 
 // A full working kanban board built entirely from live Canvas components. Every
 // board capability is wired from the kit, no hand-rolled controls:
-//   - cards move between columns from a per-card RowMenu OR from inside the
-//     task-detail Dialog; the detail Dialog also has an in-place Edit mode
-//     (title / detail / tag / priority / assignee / due) and a comment thread;
+//   - cards DRAG between columns (and reorder within one), position-aware, via the
+//     kit DragDrop capability: each column is a DropZone, each card a Draggable
+//     with a DragHandle grip; the same move is also available from a per-card
+//     RowMenu ("Move to …", the keyboard/screen-reader fallback) and from inside
+//     the task-detail Dialog. Dragging is enabled only when the board is unfiltered
+//     (so the visible cards are the whole column in order); the detail Dialog also
+//     has an in-place Edit mode (title / detail / tag / priority / assignee / due)
+//     and a comment thread;
 //   - "Add task" and "Add column" open small create Dialogs; columns rename and
-//     clear from a per-column header RowMenu (clear confirms via AlertDialog),
-//     and sort by priority or tag;
+//     clear from a per-column header RowMenu (clear confirms via AlertDialog, and
+//     is disabled on an empty column), and sort by priority or tag;
 //   - a toolbar filters by tag (selectable Chips), assignee (Select), and title
 //     (search Input), all ANDed; the Stats strip and per-column Badges stay live;
-//   - the In progress column carries a WIP limit (Progress meter): over-limit
-//     moves and adds still land but switch the toast to a warning;
+//   - the In progress column carries a WIP limit (Progress meter) that turns amber
+//     at the limit and red (the Progress `warning`/`danger` tones) over it;
+//     over-limit moves and adds still land but switch the toast to a warning;
 //   - every move and delete toast carries an Undo that restores a whole-board
 //     snapshot (never a re-insert, so undo can't duplicate a task), and a Feed
 //     below the board logs the last few actions.
@@ -155,16 +165,23 @@ type Overlay =
 // the title and the detail/meta block are their own Pressables that open the
 // detail dialog, and the ⋯ menu sits beside the title. Wrapping the whole card in
 // Card's onPress would nest the menu button inside the card button (invalid, and
-// a press-target conflict), so the card itself is a plain container.
-function TaskCard({ task, columnName, menuItems, onOpen, onMenuSelect }: { task: Task; columnName: string; menuItems: RowMenuItem[]; onOpen: () => void; onMenuSelect: (item: RowMenuItem, index: number) => void }) {
+// a press-target conflict), so the card itself is a plain container. When
+// `draggable`, a DragHandle grip leads the title row: it is the drag activator
+// (the whole card is wrapped in a Draggable by the column), and it is also the
+// keyboard/screen-reader drag control. Dragging is the PRIMARY move affordance;
+// the RowMenu "Move to" items remain the accessible fallback.
+function TaskCard({ task, columnName, menuItems, onOpen, onMenuSelect, draggable }: { task: Task; columnName: string; menuItems: RowMenuItem[]; onOpen: () => void; onMenuSelect: (item: RowMenuItem, index: number) => void; draggable?: boolean }) {
   const overdue = isOverdue(task, columnName);
   return (
     <Card compact>
       <Column tight>
         <Row between alignCenter>
-          <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Open ${task.title}`} style={{ flexShrink: 1 }}>
-            <Typography small medium>{task.title}</Typography>
-          </Pressable>
+          <Row snug alignCenter style={{ flexShrink: 1 }}>
+            {draggable ? <DragHandle label={`Reorder ${task.title}`} /> : null}
+            <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Open ${task.title}`} style={{ flexShrink: 1 }}>
+              <Typography small medium>{task.title}</Typography>
+            </Pressable>
+          </Row>
           <RowMenu items={menuItems} onSelect={onMenuSelect} triggerLabel={`Actions for ${task.title}`} />
         </Row>
         <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Open ${task.title} details`}>
@@ -351,22 +368,18 @@ function ColumnNameDialog({ title, initial, confirmLabel, onSubmit, onClose }: {
   );
 }
 
-const COLUMN_MENU: RowMenuItem[] = [
-  { label: "Sort by priority", icon: "listOrdered" },
-  { label: "Sort by tag", icon: "filter" },
-  { label: "Rename column", icon: "pencil", separatorBefore: true },
-  { label: "Clear column", icon: "trash", destructive: true },
-];
-
-function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, onClearFilters, onOpen, onMove, onDeleteRequest, onAddRequest, onColumnMenu }: {
+function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, dndEnabled, onClearFilters, onOpen, onMove, onDeleteRequest, onAddRequest, onColumnMenu }: {
   column: BoardColumn;
   columns: BoardColumn[];
   tagFilter: Tag | null;
   assigneeFilter: string | null;
   query: string;
+  // Drag is enabled only when the board is unfiltered, so the rendered cards match the full
+  // column order and a drop index maps straight onto column.tasks.
+  dndEnabled: boolean;
   onClearFilters: () => void;
   onOpen: (taskId: string) => void;
-  onMove: (taskId: string, targetId: string) => void;
+  onMove: (taskId: string, targetId: string, index?: number) => void;
   onDeleteRequest: (taskId: string) => void;
   onAddRequest: (columnId: string) => void;
   onColumnMenu: (columnId: string, index: number) => void;
@@ -380,7 +393,17 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, on
     ...otherColumns.map((c) => ({ label: `Move to ${c.name}`, icon: "arrowRight" as const })),
     { label: "Delete", icon: "trash" as const, destructive: true, separatorBefore: true },
   ];
+  // "Clear column" is disabled (not omitted) on an already-empty column, so the affordance
+  // stays visible but inert instead of short-circuiting to a toast.
+  const columnMenu: RowMenuItem[] = [
+    { label: "Sort by priority", icon: "listOrdered" },
+    { label: "Sort by tag", icon: "filter" },
+    { label: "Rename column", icon: "pencil", separatorBefore: true },
+    { label: "Clear column", icon: "trash", destructive: true, disabled: column.tasks.length === 0 },
+  ];
   const filtersActive = !!tagFilter || !!assigneeFilter || !!q;
+  const over = !!column.wipLimit && column.tasks.length > column.wipLimit;
+  const atLimit = !!column.wipLimit && column.tasks.length === column.wipLimit;
   return (
     <Column snug style={{ width: 260 }}>
       <Row between alignCenter>
@@ -388,35 +411,48 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, on
           <Typography small semibold style={{ flexShrink: 1 }}>{column.name}</Typography>
           <Badge secondary>{visible.length}</Badge>
         </Row>
-        <RowMenu items={COLUMN_MENU} onSelect={(_item, index) => onColumnMenu(column.id, index)} triggerLabel={`Actions for ${column.name}`} />
+        <RowMenu items={columnMenu} onSelect={(_item, index) => onColumnMenu(column.id, index)} triggerLabel={`Actions for ${column.name}`} />
       </Row>
       {column.wipLimit ? (
         <Column tight>
-          <Progress small block value={Math.min(column.tasks.length / column.wipLimit, 1)} accessibilityLabel="Work-in-progress limit" />
+          <Progress small block warning={atLimit} danger={over} value={Math.min(column.tasks.length / column.wipLimit, 1)} accessibilityLabel="Work-in-progress limit" />
           <Typography tiny>{`${column.tasks.length} of ${column.wipLimit} WIP`}</Typography>
         </Column>
       ) : null}
-      {visible.map((task) => (
-        <TaskCard
-          key={task.id}
-          task={task}
-          columnName={column.name}
-          menuItems={cardMenu}
-          onOpen={() => onOpen(task.id)}
-          onMenuSelect={(_item, index) => {
-            const target = otherColumns[index];
-            if (target) onMove(task.id, target.id);
-            else onDeleteRequest(task.id);
-          }}
-        />
-      ))}
-      {visible.length === 0 ? (
-        column.tasks.length > 0 && filtersActive ? (
-          <EmptyState bordered compact icon={<Icon search />} title="No matching tasks" description="No cards here match the filters." actionLabel="Clear filters" onAction={onClearFilters} />
-        ) : (
-          <EmptyState bordered compact icon={<Icon inbox />} title="No tasks" description="Add one or move a card here." />
-        )
-      ) : null}
+      <DropZone id={column.id} label={column.name} disabled={!dndEnabled} onDrop={(e) => onMove(e.id, e.to, e.index)} style={{ minHeight: 24 }}>
+        <Column snug>
+          {visible.map((task) => {
+            const card = (
+              <TaskCard
+                task={task}
+                columnName={column.name}
+                menuItems={cardMenu}
+                draggable={dndEnabled}
+                onOpen={() => onOpen(task.id)}
+                onMenuSelect={(_item, index) => {
+                  const target = otherColumns[index];
+                  if (target) onMove(task.id, target.id);
+                  else onDeleteRequest(task.id);
+                }}
+              />
+            );
+            return dndEnabled ? (
+              <Draggable key={task.id} id={task.id} data={task} label={task.title}>
+                {card}
+              </Draggable>
+            ) : (
+              <Fragment key={task.id}>{card}</Fragment>
+            );
+          })}
+          {visible.length === 0 ? (
+            column.tasks.length > 0 && filtersActive ? (
+              <EmptyState bordered compact icon={<Icon search />} title="No matching tasks" description="No cards here match the filters." actionLabel="Clear filters" onAction={onClearFilters} />
+            ) : (
+              <EmptyState bordered compact icon={<Icon inbox />} title="No tasks" description="Add one or move a card here." />
+            )
+          ) : null}
+        </Column>
+      </DropZone>
       <Button ghost small iconLeft={<Icon plus size={16} />} onPress={() => onAddRequest(column.id)}>Add task</Button>
     </Column>
   );
@@ -458,19 +494,40 @@ function BoardLive() {
     setQuery("");
   };
 
-  const moveTask = (id: string, targetId: string) => {
+  // Move a task to a column, optionally at a specific insertion index (drag-and-drop passes
+  // the drop position; the "Move to" menu omits it and appends). When the source and target
+  // are the same column an index reorders the card in place. The whole-board snapshot still
+  // powers a single Undo.
+  const moveTask = (id: string, targetId: string, index?: number) => {
     const found = findTask(columns, id);
     const targetIndex = columns.findIndex((c) => c.id === targetId);
     const targetColumn = columns[targetIndex];
     if (!found || !targetColumn) return;
+    const sourceId = columns[found.columnIndex]?.id;
+    const sameColumn = sourceId === targetId;
+    // A same-column drop onto the card's own position is a no-op (nothing to undo/announce).
+    if (sameColumn && index != null) {
+      const current = found.task ? targetColumn.tasks.findIndex((t) => t.id === id) : -1;
+      if (current === index || current === index - 1) return;
+    }
     const snapshot = columns;
+    const insertAt = (tasks: Task[]) => {
+      const at = index == null ? tasks.length : Math.max(0, Math.min(index, tasks.length));
+      return [...tasks.slice(0, at), found.task, ...tasks.slice(at)];
+    };
     const next = columns.map((c) => {
-      if (c.id === columns[found.columnIndex]?.id) return { ...c, tasks: c.tasks.filter((t) => t.id !== id) };
-      if (c.id === targetId) return { ...c, tasks: [...c.tasks, found.task] };
+      if (sameColumn && c.id === targetId) return { ...c, tasks: insertAt(c.tasks.filter((t) => t.id !== id)) };
+      if (c.id === sourceId) return { ...c, tasks: c.tasks.filter((t) => t.id !== id) };
+      if (c.id === targetId) return { ...c, tasks: insertAt(c.tasks) };
       return c;
     });
     setColumns(next);
     const newCount = (next[targetIndex]?.tasks ?? []).length;
+    if (sameColumn) {
+      log("reordered", `"${found.task.title}" in ${targetColumn.name}`);
+      toast({ message: `Reordered ${targetColumn.name}`, description: `"${found.task.title}" moved position.`, action: undoAction(snapshot) });
+      return;
+    }
     log("moved", `"${found.task.title}" to ${targetColumn.name}`);
     if (targetColumn.wipLimit && newCount > targetColumn.wipLimit) {
       toast({ warning: true, message: "WIP limit exceeded", description: `${targetColumn.name} now holds ${newCount} of ${targetColumn.wipLimit}.`, action: undoAction(snapshot) });
@@ -478,6 +535,7 @@ function BoardLive() {
       toast({ message: `Moved to ${targetColumn.name}`, description: `"${found.task.title}" changed status.`, action: undoAction(snapshot) });
     }
   };
+
 
   const deleteTask = (id: string) => {
     const found = findTask(columns, id);
@@ -556,21 +614,13 @@ function BoardLive() {
     toast({ message: "Column cleared", description: `${col.name} is now empty.`, action: undoAction(snapshot) });
   };
 
-  const requestClearColumn = (colId: string) => {
-    const col = columns.find((c) => c.id === colId);
-    if (!col) return;
-    if (col.tasks.length === 0) {
-      toast({ message: "Nothing to clear", description: `${col.name} is already empty.` });
-      return;
-    }
-    setOverlay({ kind: "confirmClear", columnId: colId });
-  };
-
+  // "Clear column" is disabled on an empty column (a RowMenuItem `disabled`), so this only
+  // ever runs with cards present; it opens the confirm dialog directly.
   const onColumnMenu = (colId: string, index: number) => {
     if (index === 0) sortColumn(colId, "priority");
     else if (index === 1) sortColumn(colId, "tag");
     else if (index === 2) setOverlay({ kind: "renameColumn", columnId: colId });
-    else requestClearColumn(colId);
+    else setOverlay({ kind: "confirmClear", columnId: colId });
   };
 
   const resetBoard = () => {
@@ -586,6 +636,12 @@ function BoardLive() {
   };
 
   const requestDelete = (id: string, fromDetail: boolean) => setOverlay({ kind: "confirmDelete", taskId: id, fromDetail });
+
+  // Drag is the primary move affordance, but only when the board is unfiltered: then the
+  // rendered cards are the whole column in order, so a drop index maps straight onto
+  // column.tasks. Under an active filter the cards are a subset and dragging is disabled,
+  // leaving the RowMenu "Move to" items (the accessible fallback) as the move path.
+  const dndEnabled = !(tagFilter || assigneeFilter || query.trim());
 
   const total = columns.reduce((n, c) => n + c.tasks.length, 0);
   const wipColumn = columns.find((c) => c.wipLimit);
@@ -684,29 +740,35 @@ function BoardLive() {
         />
       ) : null}
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <Row relaxed alignStart>
-          {columns.map((column) => (
-            <BoardColumnView
-              key={column.id}
-              column={column}
-              columns={columns}
-              tagFilter={tagFilter}
-              assigneeFilter={assigneeFilter}
-              query={query}
-              onClearFilters={clearFilters}
-              onOpen={(id) => setOverlay({ kind: "detail", taskId: id })}
-              onMove={moveTask}
-              onDeleteRequest={(id) => requestDelete(id, false)}
-              onAddRequest={(colId) => setOverlay({ kind: "add", columnId: colId })}
-              onColumnMenu={onColumnMenu}
-            />
-          ))}
-          <Column snug style={{ width: 260 }}>
-            <Button outline block iconLeft={<Icon plus size={16} />} onPress={() => setOverlay({ kind: "addColumn" })}>Add column</Button>
-          </Column>
-        </Row>
-      </ScrollView>
+      {/* The board is one DragDropProvider: it hosts the floating drag ghost above the
+          panning ScrollView (so the ghost is never clipped) and coordinates the columns as
+          drop zones. */}
+      <DragDropProvider>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <Row relaxed alignStart>
+            {columns.map((column) => (
+              <BoardColumnView
+                key={column.id}
+                column={column}
+                columns={columns}
+                tagFilter={tagFilter}
+                assigneeFilter={assigneeFilter}
+                query={query}
+                dndEnabled={dndEnabled}
+                onClearFilters={clearFilters}
+                onOpen={(id) => setOverlay({ kind: "detail", taskId: id })}
+                onMove={moveTask}
+                onDeleteRequest={(id) => requestDelete(id, false)}
+                onAddRequest={(colId) => setOverlay({ kind: "add", columnId: colId })}
+                onColumnMenu={onColumnMenu}
+              />
+            ))}
+            <Column snug style={{ width: 260 }}>
+              <Button outline block iconLeft={<Icon plus size={16} />} onPress={() => setOverlay({ kind: "addColumn" })}>Add column</Button>
+            </Column>
+          </Row>
+        </ScrollView>
+      </DragDropProvider>
 
       <Column tight>
         <Typography small semibold>Recent activity</Typography>
@@ -720,12 +782,12 @@ export const KANBAN_TEMPLATE: TemplateDoc = {
   slug: "kanban",
   name: "Kanban",
   description:
-    "A working status board: task cards move between columns from a menu or a detail dialog, with editing, comments, priorities, tag and assignee filters, WIP limits, undo, and an activity log. Built from live Canvas components.",
+    "A working status board: drag task cards between columns (or reorder within one), with a per-card menu and detail dialog as accessible fallbacks, plus editing, comments, priorities, tag and assignee filters, WIP limits with warning/danger meters, undo, and an activity log. Built from live Canvas components.",
   sections: [
     {
       title: "Board",
       anatomy:
-        "A Stats strip (live totals) over a filter toolbar (selectable tag Chips, an assignee Select, a search Input, Reset). Below, a horizontal ScrollView of fixed-width columns: each heads with its visible-count Badge and a RowMenu (sort, rename, clear), the WIP column adds a Progress meter, cards stack with their own action menu, and empty columns show an EmptyState. Pressing a card opens a detail Dialog (Field rows, a comment thread, an Edit mode, move and delete actions); Add task and Add column open small Dialogs; deletes and clears confirm through an AlertDialog; moves and deletes offer Undo from a toast. A Feed logs recent activity. On phones the board pans instead of squeezing.",
+        "A Stats strip (live totals) over a filter toolbar (selectable tag Chips, an assignee Select, a search Input, Reset). Below, one DragDropProvider wraps a horizontal ScrollView of fixed-width columns: each column is a DropZone headed by its visible-count Badge and a RowMenu (sort, rename, clear, the last disabled when empty), the WIP column adds a Progress meter that goes amber at the limit and red over it, and cards are Draggables with a DragHandle grip plus their own action menu. Dragging a card lifts a floating ghost and drops it at a position within or across columns; the grip is keyboard- and screen-reader-operable, and the RowMenu 'Move to' items are the always-on fallback (drag is disabled while a filter is active). Pressing a card opens a detail Dialog (Field rows, a comment thread, an Edit mode, move and delete actions); Add task and Add column open small Dialogs; deletes and clears confirm through an AlertDialog; moves, reorders, and deletes offer Undo from a toast. A Feed logs recent activity. On phones the board pans instead of squeezing.",
       render: () => <BoardLive />,
     },
   ],
