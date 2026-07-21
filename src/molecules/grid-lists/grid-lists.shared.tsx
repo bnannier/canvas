@@ -84,6 +84,8 @@ export type ButtonComponent = ComponentType<ButtonProps>;
 export interface GridListAction {
   /** Button label (e.g. "Message"). */
   label: string;
+  /** Called when the action button is pressed. */
+  onPress?: () => void;
   /** Render as an outline button (the default look is solid). */
   outline?: boolean;
   /** Render as a ghost button. */
@@ -226,7 +228,7 @@ export function createGridList(
           {item.actions != null && item.actions.length > 0 ? (
             <View style={s.actions}>
               {item.actions.map((action, i) => (
-                <Button key={`${action.label}-${i}`} small outline={action.outline} ghost={action.ghost}>
+                <Button key={`${action.label}-${i}`} small outline={action.outline} ghost={action.ghost} onPress={action.onPress}>
                   {action.label}
                 </Button>
               ))}
