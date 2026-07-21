@@ -189,10 +189,13 @@ interface Split {
 export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const outer: Record<string, unknown> = {};
-  // flex:1 makes the clip box fill the outer box (whose size the OUTER_KEYS set),
-  // so the material covers the whole surface even when the surface is sized by flex
-  // (e.g. a full-height sidebar) rather than by its content.
-  const clip: Record<string, unknown> = { overflow: "hidden", flex: 1 };
+  // grow+shrink with an AUTO basis makes the clip box fill the outer box whenever
+  // the outer is sized (explicit height, flex, minHeight bar, absolute-pinned
+  // drawer), and fall back to wrapping its children when it is not. flexBasis must
+  // NOT be 0 (the `flex: 1` shorthand): Yoga has no min-content floor, so a basis-0
+  // clip contributes nothing to an auto-sized outer and a content-sized surface
+  // (a dialog card, a menu, an action sheet) collapses to its padding on native.
+  const clip: Record<string, unknown> = { overflow: "hidden", flexGrow: 1, flexShrink: 1, flexBasis: "auto" };
   for (const [key, value] of Object.entries(flat)) {
     if (value == null) continue;
     if (key === "backgroundColor" || BORDER_KEYS.has(key)) continue; // the material supplies the fill + edge

@@ -22,7 +22,17 @@ describe("splitSurfaceStyle", () => {
     expect(outer.height).toBe(50);
     expect(outer.margin).toBe(8);
     expect(clip.overflow).toBe("hidden");
-    expect(clip.flex).toBe(1);
+    expect(clip.flexGrow).toBe(1);
+    expect(clip.flexShrink).toBe(1);
+  });
+
+  it("gives the clip an AUTO flex basis so a content-sized surface wraps its children", () => {
+    // A basis-0 clip (the `flex: 1` shorthand) collapses a content-sized surface
+    // to its padding under Yoga, which has no min-content floor: the ActionSheet
+    // cards, dialog cards, and menus all size from their children.
+    const { clip } = splitSurfaceStyle({ borderRadius: 34, padding: 14 });
+    expect(clip.flexBasis).toBe("auto");
+    expect(clip.flex).toBeUndefined();
   });
 
   it("duplicates the radius onto both boxes so the drop shadow is rounded too", () => {
