@@ -114,6 +114,12 @@ const TRIGGER_ROW: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "space-between",
+  // A minimum gutter between the value cluster and the trailing chevron. In a
+  // fixed-width field `space-between` pushes them to opposite edges and the free
+  // space far exceeds this, so it has no visible effect; when `fit` collapses the
+  // trigger to its content width there is no free space to distribute, and this
+  // keeps the chevron from jamming against the value (the toolbar `inline`+`fit` case).
+  gap: 8,
 };
 
 // The inline-fallback anchor: with no OverlayProvider mounted the option list
