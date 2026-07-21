@@ -3,12 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { CodeBlock, Typography, Column } = scope;
+  const { CodeBlock } = scope;
   return (
-<Column snug style={{ maxWidth: 360 }}>
-  <Typography body>Run the setup command:</Typography>
-  <CodeBlock code={`npm install @nannier/canvas
-npm run build`} />
-</Column>
+<CodeBlock diff copy language="ts" code={`-const theme = "light";
++const theme = getTheme();
+ setTheme(theme);`} />
   );
 }
