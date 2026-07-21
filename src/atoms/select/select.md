@@ -87,7 +87,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 
 ```tsx
 <Column style={{ minHeight: 220 }}>
-  <Select defaultOpen label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} />
+  <Select open label="Country" placeholder="Choose a country…" options={["United States", "Canada", "Mexico"]} />
 </Column>
 ```
 
@@ -95,7 +95,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 
 ```tsx
 <View style={{ minHeight: 260 }}>
-  <Select defaultOpen label="Country" defaultValue="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
+  <Select open label="Country" defaultValue="Choose a country…" options={["Choose a country…", "United States", "Canada", "Mexico"]} style={{ maxWidth: 280 }} />
 </View>
 ```
 

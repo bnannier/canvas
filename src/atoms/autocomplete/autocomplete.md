@@ -86,13 +86,13 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — A plain select for short, fixed lists; reserve the autocomplete for long, searchable ones.
 
 ```tsx
-<Select label="Size" options={["Small", "Medium", "Large"]} defaultOpen placeholder="Select a size" />
+<Select label="Size" options={["Small", "Medium", "Large"]} open placeholder="Select a size" />
 ```
 
 **Don't** — Type or click: a search field for three fixed options is overhead with nothing to filter.
 
 ```tsx
-<Autocomplete label="Size" options={["Small", "Medium", "Large"]} defaultOpen placeholder="Search…" />
+<Autocomplete label="Size" options={["Small", "Medium", "Large"]} open placeholder="Search…" />
 ```
 
 ### Filtering
@@ -107,7 +107,7 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
     "Tom Cook",
     "Tanya Fox",
     "Hellen Schmidt"
-  ]} defaultQuery="co" defaultOpen />
+  ]} defaultQuery="co" open />
 ```
 
 **Don't** — Try typing: a search box that ignores input is just a dropdown wearing a costume.
@@ -153,7 +153,7 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — Click an option: it fills the input and stays marked as selected.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"]} defaultValue="Devon Webb" defaultOpen />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"]} defaultValue="Devon Webb" open />
 ```
 
 **Don't** — Click an option: it flashes but the field stays empty, so you can't tell what you picked.
@@ -191,13 +191,13 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — A persistent label keeps the field named after a selection has filled the input.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" defaultOpen />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" open />
 ```
 
 **Don't** — Once a value replaces the placeholder, an unlabeled field has nothing left to name it.
 
 ```tsx
-<Autocomplete options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" defaultOpen />
+<Autocomplete options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" open />
 ```
 
 ### With helper text
@@ -205,13 +205,13 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — A short placeholder plus persistent helper text keeps the rule visible while you type.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultOpen placeholder="Search a person…" helperText="Deactivated users are hidden from the list." />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Search a person…" helperText="Deactivated users are hidden from the list." />
 ```
 
 **Don't** — Type a letter: guidance crammed into the placeholder vanishes the moment you start.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultOpen placeholder="Pick an active teammate; deactivated users are hidden" />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Pick an active teammate; deactivated users are hidden" />
 ```
 
 ### Disabled
