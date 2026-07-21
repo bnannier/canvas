@@ -176,6 +176,11 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Skeleton",
     description: "Placeholders for loading content.",
     category: "Atoms",
+    // Placeholders stand in for real content, which fills its container and reads
+    // from the leading edge, so the stage fills its width and pins the example left
+    // rather than floating it centered: the card scaffold spans the full width, and
+    // the composite list/table shapes expand to their own caps instead of collapsing.
+    stageAlign: "start",
   },
 
   {

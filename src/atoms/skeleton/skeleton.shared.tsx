@@ -111,9 +111,12 @@ function buttonSize(p: { small?: boolean; large?: boolean }): { height: number; 
 const lineBase: ViewStyle = { height: 14, width: "100%" };
 
 // The card surface (sans radius, which the skin supplies): bordered card fill,
-// capped width, padded. `border border-border bg-card max-w-[320px] p-4`.
+// padded, and full-width. Like the real Card it carries no width cap, so the
+// placeholder fills its parent (default column stretch) and the swap to a loaded
+// Card is seamless. `border border-border bg-card p-4`. Size it via the `style`
+// prop (a fixed width, a flex, or a percentage) when a narrower card is wanted.
 function cardSurface(tokens: ColorTokens): ViewStyle {
-  return { borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, maxWidth: 320, padding: 16 };
+  return { borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 16 };
 }
 
 // The card's identity row (avatar + two lines). `flex-row items-center gap-3 mb-4`.
