@@ -40,7 +40,7 @@ Segmented controls, split buttons, attached groups.
 />
 ```
 
-### Default
+### Medium
 
 ```tsx
 <ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} />

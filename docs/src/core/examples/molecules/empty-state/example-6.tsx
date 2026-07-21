@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, EmptyState, Icon } = scope;
+  const { Card, DataTable, EmptyState, Icon, Column } = scope;
   return (
-<EmptyState
-  icon={<Icon circleCheck />}
-  title="All clear"
-  description="No locked accounts or pending reviews."
-  actionLabel="View history"
-  success
-  bordered
-/>
+<Card flat flush style={{ overflow: "hidden" }}>
+  <DataTable columns={["Name", "Email", "Role", "Status"]} rows={[]} />
+  <Column alignCenter padLoose>
+    <EmptyState bordered icon={<Icon search />} title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
+  </Column>
+</Card>
   );
 }

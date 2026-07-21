@@ -29,17 +29,7 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 </Row>
 ```
 
-### Grants
-
-```tsx
-<Row wrap tight>
-  <Badge secondary mono>authorization_code</Badge>
-  <Badge secondary mono>refresh_token</Badge>
-  <Badge secondary mono>client_credentials</Badge>
-</Row>
-```
-
-### Default
+### Solid
 
 ```tsx
 <Badge default>admin</Badge>
