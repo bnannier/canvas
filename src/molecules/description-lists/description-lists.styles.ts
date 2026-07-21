@@ -76,10 +76,11 @@ export const valueAlignRight: TextStyle = { textAlign: "right" };
 // Monospace value face, for tokens, scopes, identifiers.
 export const valueMono: TextStyle = { fontFamily: MONO_FONT };
 
-// A copyable value row: the value beside its ghost Copy button. The value must
-// yield to the button in a tight row (RN Text defaults to flexShrink 0, which
-// would push the button out of the card).
-export const copyRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
+// A copyable value row: the value beside its ghost Copy button. The row itself
+// must yield inside a tight value cell (flexShrink defaults to 0, which would
+// push the button past the card edge), and the value text inside it yields to
+// the button, ellipsizing instead of overflowing.
+export const copyRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 1 };
 export const copyValueText: TextStyle = { flexShrink: 1 };
 
 // --- rows -------------------------------------------------------------------

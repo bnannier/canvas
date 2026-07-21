@@ -107,7 +107,7 @@ function DetailSidebarLive() {
           </Row>
           <Divider />
           <DescriptionList
-            twoColumn
+            inline
             onCopy={(value) => toast({ success: true, message: "Copied to clipboard", description: value })}
             items={[
               { term: "Order ID", value: "ORD-2847", mono: true, copyValue: "ORD-2847" },
