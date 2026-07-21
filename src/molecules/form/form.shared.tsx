@@ -1,410 +1,222 @@
-import { type ComponentType, type ReactNode, createContext, useCallback, useContext, useId, useMemo, useState } from "react";
-import { type DimensionValue } from "react-native";
-import { View, Text, useTheme, useResponsive, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { Children, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
+import { type Role } from "react-native";
+import { View, Text, useTheme, useResponsive, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
-import { Checkbox as WebCheckbox } from "../../atoms/checkbox/checkbox.js";
-import { Input as WebInput } from "../../atoms/input/input.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
-import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
-import { type InputProps } from "../../atoms/input/input.shared.js";
 import * as s from "./form.styles.js";
 
-// Shared Form shell. The structure (the stacked / two-column / sidebar / sectioned
-// layouts, their desktop-first responsive collapse, the data-shape types, and the
-// layout precedence) lives here once; a platform file supplies only its skin (the
-// label/helper TYPE, the vertical rhythm, the divider spacing) and calls createForm.
+// Shared Form shell. Form is a COMPOSITION surface: the caller stitches the field
+// atoms (Input, Select, Checkbox, a FormSection, any node) as children and keeps
+// ownership of their state through each atom's own controlled/uncontrolled props.
+// Form contributes only what the group needs as a whole:
+//   - the vertical rhythm between rows (and the optional two-column flow that
+//     collapses to one column on phones, desktop-first),
+//   - the actions row: a primary submit + an outline cancel composed from the kit
+//     Button, rendered when a label is given,
+//   - form semantics for assistive tech, and Enter-to-submit on the web.
+// It deliberately owns NO field state and collects no values: `onSubmit` is a
+// plain callback, and the caller reads its own state (this keeps every atom
+// decoupled from Form and its API identical inside or outside one).
 //
-// Form is a "Light" platform treatment. Neither iOS nor Android ships a native form
-// control (PLATFORM-REFERENCES.md): SwiftUI Form renders as a grouped inset list,
-// and Material 3 composes forms from text fields, selection controls, and buttons.
-// So the per-OS touches are conventions only (SF type/rhythm on iOS, M3 type
-// tracking on Android), and the WEB look is kept verbatim.
-//
-// Form COMPOSES the already-skinned Button, Checkbox, and Input atoms. It does NOT
-// re-skin them: those atoms carry their own per-OS fidelity (shape, press feedback,
-// focus). To make the WEB docs 3-up preview show the platform-correct atom in each
-// row, the platform-correct atoms are passed in by each thin wrapper (the iOS
-// wrapper passes the `.ios` atoms, etc.), exactly as alert-dialog passes its Input.
-// On a real device Metro resolves the right atom by extension regardless, so the
-// web-base default is correct there too.
+// Form is a "Light" platform treatment. Neither iOS nor Android ships a native
+// form control (PLATFORM-REFERENCES.md): SwiftUI Form renders as a grouped inset
+// list, and Material 3 composes forms from text fields, selection controls, and
+// buttons. So the per-OS touches are conventions only (SF type/rhythm on iOS, M3
+// type tracking on Android), and the WEB look is kept verbatim.
 
-// The atoms the Form composes, typed as their atom components so the public atom
-// APIs are preserved across every build path.
+// The submit/cancel Button the Form composes, typed as the atom component so the
+// public atom API is preserved across every build path. Each platform's thin
+// wrapper passes its platform-correct Button (the iOS wrapper passes `.ios`,
+// etc.) so the WEB docs 3-up preview shows the right control per row; on a real
+// device Metro resolves the right extension regardless.
 export type ButtonComponent = ComponentType<ButtonProps>;
-export type CheckboxComponent = ComponentType<CheckboxProps>;
-export type InputComponent = ComponentType<InputProps>;
 
-/** A single labeled field in a form. */
-export interface FormField {
-  /** Visible label above (or beside) the input. */
-  label: string;
-  /**
-   * Key this field's typed value is collected under in the record passed to
-   * `onSubmit`. Defaults to the visible `label` when omitted.
-   */
-  name?: string;
-  /** Placeholder shown while the field is empty. */
-  placeholder?: string;
-  /** Pre-filled value the field starts with (the user can then edit it). */
-  value?: string;
-  /** Optional helper text rendered below the input. */
-  helper?: string;
+// RN's Role union omits "form" (it is a valid ARIA role), so cast it once. RNW
+// forwards it to the DOM; native ignores an unknown role.
+const FORM = "form" as Role;
+
+// The per-OS-varying style pieces the Form's own surface contributes. Everything
+// else (the layouts, the responsive collapse, the composed Button) is shared.
+export interface FormSkin {
+  /** A section's heading type (size / line-height / weight / tracking). */
+  sectionTitle: (t: ColorTokens) => TextStyle;
+  /** The muted supporting line under a section heading. */
+  sectionDescription: (t: ColorTokens) => TextStyle;
+  /** The right-aligned actions row. */
+  actions: ViewStyle;
+  /** The form's stacked rhythm (gap between rows). */
+  stack: ViewStyle;
+  /** A section's internal rhythm (header block to rows, row to row). */
+  sectionStack: ViewStyle;
 }
 
-/** A checkbox row in a form section's checkbox group. */
-export interface FormCheckbox {
-  /** Visible label beside the box. */
-  label: string;
-  /**
-   * Key this checkbox's state is collected under in the record passed to
-   * `onSubmit`. Defaults to the visible `label` when omitted.
-   */
-  name?: string;
-  /** Whether the box starts ticked. */
-  checked?: boolean;
-}
-
-/**
- * A titled section of a sectioned (sidebar) form: a heading + description in the
- * left column spanning a group of fields, or a checkbox group, on the right.
- */
-export interface FormSection {
-  /** Section heading (left column). */
-  title: string;
+export interface FormSectionProps {
+  /** Section heading naming this group of controls. */
+  title?: string;
   /** Muted supporting line under the heading. */
-  description?: string;
-  /** Input fields stacked in the right column. */
-  fields?: FormField[];
-  /** Checkbox group in the right column (mutually exclusive with fields). */
-  checkboxes?: FormCheckbox[];
+  description?: ReactNode;
+  /** The section's stitched controls. */
+  children?: ReactNode;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface FormProps {
   /**
-   * The labeled fields to render, in order. Optional: a sectioned sidebar form
-   * supplies its inputs per section (see `sections`) and omits `fields`.
+   * The form rows, stitched by the caller: Input, Select, Checkbox, a
+   * FormSection, any node. Each control keeps its own state (controlled or
+   * uncontrolled); Form never intercepts it.
    */
-  fields?: FormField[];
-  /** Label for the primary submit button (defaults to "Submit"). */
-  submitLabel?: string;
-  /** When set, renders an outline cancel button before the submit button. */
-  cancelLabel?: string;
-  // Layout (pick one; first match wins). Default is the stacked layout.
-  /** Stacked: each label sits directly above its full-width input. */
-  stacked?: boolean;
-  /** Two-column: fields flow into a two-up grid that collapses on phones. */
-  twoColumn?: boolean;
-  /** Sidebar: label and helper sit in a left column, input on the right. */
-  sidebar?: boolean;
+  children?: ReactNode;
   /**
-   * Sectioned sidebar layout: each section's heading + description sit in the
-   * left column and span a group of fields (or a checkbox group) on the right,
-   * separated by hairline dividers. Takes effect with the sidebar layout and
-   * replaces the per-field rows. The actions row renders after the last section.
+   * Two-column: rows flow into a two-up grid that collapses to a single column
+   * on small screens (desktop-first). Omit for the stacked default.
    */
-  sections?: FormSection[];
+  twoColumn?: boolean;
+  /** Label for the primary submit button. Passing it (or `cancelLabel`) renders the actions row. */
+  submitLabel?: string;
+  /** Renders an outline cancel button before the submit button. */
+  cancelLabel?: string;
+  /**
+   * Fired when the submit button is pressed, and on the web when Enter is
+   * pressed inside one of the form's single-line text fields. Form owns no field
+   * state, so the caller reads its own values (no payload).
+   */
+  onSubmit?: () => void;
+  /** Fired when the cancel button is pressed. */
+  onCancel?: () => void;
+  /** Disables the actions row and Enter-to-submit. */
+  disabled?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
-  style?: ViewStyle;
-  /**
-   * Called when the submit button is pressed, with the collected field values
-   * keyed by each field/checkbox `name` (falling back to its `label`). Text
-   * fields yield their current string; checkboxes yield their boolean state.
-   */
-  onSubmit?: (values: Record<string, string | boolean>) => void;
-  onCancel?: () => void;
-}
-
-// Form owns the entered values so its composed inputs are editable (a controlled
-// Input with no change handler is frozen on react-native-web) and so `onSubmit`
-// can hand them back. The field/checkbox rows read and write through this context
-// rather than threading value + handler props down every layout branch.
-interface FormValueApi {
-  get: (key: string) => string | boolean | undefined;
-  setText: (key: string, value: string) => void;
-  setBool: (key: string, value: boolean) => void;
-}
-const FormValues = createContext<FormValueApi | null>(null);
-
-// The stable key a field/checkbox is stored under: its explicit `name`, else its
-// visible label.
-function fieldKey(f: { name?: string; label: string }): string {
-  return f.name ?? f.label;
-}
-
-// Initial values record, walked once from the props: text fields seed from their
-// `value`, checkboxes from their `checked`.
-function seedValues(props: FormProps): Record<string, string | boolean> {
-  const out: Record<string, string | boolean> = {};
-  for (const f of props.fields ?? []) out[fieldKey(f)] = f.value ?? "";
-  for (const sec of props.sections ?? []) {
-    for (const f of sec.fields ?? []) out[fieldKey(f)] = f.value ?? "";
-    for (const c of sec.checkboxes ?? []) out[fieldKey(c)] = c.checked ?? false;
-  }
-  return out;
-}
-
-// The per-OS-varying style pieces the Form's own surface contributes. Everything
-// else (the layouts, the responsive collapse, the composed atoms) is shared.
-export interface FormSkin {
-  /** Field/heading label type (size / line-height / weight / tracking). */
-  label: (t: ColorTokens) => TextStyle;
-  /** Helper text below a field (type + muted color + top inset). */
-  helper: (t: ColorTokens) => TextStyle;
-  /** Section description under a sidebar heading. */
-  sectionDescription: (t: ColorTokens) => TextStyle;
-  /** The hairline under every section except the last. */
-  sectionDivider: (t: ColorTokens) => ViewStyle;
-  /** Field-label inset above its input. */
-  labelSpacing: TextStyle;
-  /** Section/sidebar heading weight bump. */
-  headingWeight: TextStyle;
-  /** The right-aligned actions row. */
-  actions: ViewStyle;
-  /** Outer stack gap for the stacked / two-column layouts. */
-  stackGap4: ViewStyle;
-  /** Outer stack gap for the sidebar / sectioned layouts. */
-  stackGap6: ViewStyle;
-  /** Min-height + vertical centering for each checkbox row in a section so its
-   *  effective tap target reaches the platform minimum (>=44pt iOS / >=48dp
-   *  Android). Empty on web so the established web layout is unchanged. */
-  checkboxRow: ViewStyle;
-}
-
-type Layout = "stacked" | "twoColumn" | "sidebar";
-
-// Layout precedence when more than one is passed: first match wins.
-function layoutOf(p: FormProps): Layout {
-  if (p.stacked) return "stacked";
-  if (p.twoColumn) return "twoColumn";
-  if (p.sidebar) return "sidebar";
-  return "stacked";
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
- * Build a Form component from a platform skin.
- *
- * `Button` / `Checkbox` / `Input` are the platform-correct atoms the Form
- * composes. Each platform's thin `.tsx`/`.ios`/`.android` file passes the atoms it
- * already resolves for that platform, so every composed control matches the form's
- * platform on every build path (notably the WEB docs 3-up preview). Defaults to the
- * web-base atoms when omitted, which is also correct on a real device (Metro
- * resolves the right extension there regardless).
+ * Build a FormSection component from a platform skin: a titled, described group
+ * of stitched controls inside a Form (the composition successor to a fieldset
+ * legend).
  */
-export function createForm(
-  skin: FormSkin,
-  Button: ButtonComponent = WebButton,
-  Checkbox: CheckboxComponent = WebCheckbox,
-  Input: InputComponent = WebInput,
-) {
-  function Helper({ text, id }: { text?: string; id?: string }) {
+export function createFormSection(skin: FormSkin) {
+  return function FormSection({ title, description, children, testID, style }: FormSectionProps) {
     const { tokens } = useTheme();
-    if (!text) return null;
-    return <Text nativeID={id} style={skin.helper(tokens)}>{text}</Text>;
-  }
-
-  // A label sitting above its input (stacked and two-column layouts). The label is
-  // delegated to the Input, which places it per platform (above on iOS/web, the M3
-  // floating label on Android) and owns its accessible-name wiring; the helper text
-  // stays here and is linked as the field's description (aria-describedby), so a
-  // screen reader announces the field with its name and hint.
-  function StackedField({ field }: { field: FormField }) {
-    const base = useId();
-    const helperId = field.helper ? `${base}-helper` : undefined;
-    const values = useContext(FormValues);
-    const key = fieldKey(field);
-    const value = (values?.get(key) as string | undefined) ?? field.value ?? "";
+    // Programmatic grouping: a screen reader hears the title as the group's name
+    // and the controls as members of it. Both the RN accessibilityLabel and the
+    // aria-label alias are set because RNW forwards neither on its own.
+    const nameProps =
+      title != null
+        ? ({ role: "group" as const, accessibilityLabel: title, "aria-label": title } as const)
+        : {};
     return (
-      <View>
-        <Input
-          label={field.label}
-          placeholder={field.placeholder}
-          value={value}
-          onChangeText={(t) => values?.setText(key, t)}
-          block
-          aria-describedby={helperId}
-        />
-        <Helper text={field.helper} id={helperId} />
+      <View testID={testID} {...nameProps} style={[skin.sectionStack, style]}>
+        {title != null || description != null ? (
+          <View>
+            {title != null ? <Text style={skin.sectionTitle(tokens)}>{title}</Text> : null}
+            {description != null ? <Text style={skin.sectionDescription(tokens)}>{description}</Text> : null}
+          </View>
+        ) : null}
+        {children}
       </View>
     );
-  }
+  };
+}
 
-  // One titled section of a sectioned sidebar form: heading + description on the
-  // left, a group of inputs or a checkbox group on the right. Desktop-first:
-  // side-by-side on wide viewports, collapsing to stacked on small screens. The
-  // hairline divider sits on every section except the last.
-  function Section({ section, last }: { section: FormSection; last: boolean }) {
-    const { tokens } = useTheme();
-    const values = useContext(FormValues);
-    const row = useResponsive<ViewStyle>({
-      base: { flexDirection: "row", gap: 32 },
-      sm: { flexDirection: "column", gap: 12 },
-    });
-    const leftWidth = useResponsive<DimensionValue>({ base: 200, sm: "100%" });
-    const rightFull = useResponsive<ViewStyle>({ base: {}, sm: { width: "100%" } });
-    return (
-      <View style={[{ alignItems: "flex-start" }, row, last ? null : skin.sectionDivider(tokens)]}>
-        <View style={{ width: leftWidth }}>
-          <Text style={[skin.label(tokens), skin.headingWeight]}>{section.title}</Text>
-          {section.description ? <Text style={skin.sectionDescription(tokens)}>{section.description}</Text> : null}
-        </View>
-        <View style={[s.flex1, { gap: 12 }, rightFull]}>
-          {section.checkboxes
-            ? section.checkboxes.map((c, i) => {
-                const key = fieldKey(c);
-                return (
-                  <Checkbox
-                    key={i}
-                    checked={Boolean(values?.get(key) ?? c.checked)}
-                    onChange={(next) => values?.setBool(key, next)}
-                    style={skin.checkboxRow}
-                  >
-                    {c.label}
-                  </Checkbox>
-                );
-              })
-            : (section.fields ?? []).map((field, i) => (
-                <StackedField key={i} field={field} />
-              ))}
-        </View>
-      </View>
-    );
-  }
+/** Build a Form component from a platform skin (plus the platform-correct Button its actions row composes; defaults to the web base when omitted). */
+export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) {
+  return function Form(props: FormProps) {
+    const { children, twoColumn, submitLabel, cancelLabel, onSubmit, onCancel, disabled, testID, style } = props;
 
-  // A label/helper column on the left with the input on the right. Desktop-first:
-  // side-by-side on wide viewports, collapsing to stacked on small screens.
-  function SidebarField({ field }: { field: FormField }) {
-    const { tokens } = useTheme();
-    const base = useId();
-    const labelId = `${base}-label`;
-    const helperId = field.helper ? `${base}-helper` : undefined;
-    const values = useContext(FormValues);
-    const key = fieldKey(field);
-    const value = (values?.get(key) as string | undefined) ?? field.value ?? "";
-    const row = useResponsive<ViewStyle>({
-      base: { flexDirection: "row", gap: 32 },
-      sm: { flexDirection: "column", gap: 6 },
-    });
-    const leftWidth = useResponsive<DimensionValue>({ base: "33.3333%", sm: "100%" });
-    const rightFull = useResponsive<ViewStyle>({ base: {}, sm: { width: "100%" } });
-    return (
-      <View style={[{ alignItems: "flex-start" }, row]}>
-        <View style={{ width: leftWidth }}>
-          <Text nativeID={labelId} style={[skin.label(tokens), skin.headingWeight]}>{field.label}</Text>
-          <Helper text={field.helper} id={helperId} />
-        </View>
-        <View style={[s.flex1, rightFull]}>
-          <Input
-            placeholder={field.placeholder}
-            value={value}
-            onChangeText={(t) => values?.setText(key, t)}
-            block
-            accessibilityLabel={field.label}
-            aria-labelledby={labelId}
-            aria-describedby={helperId}
-          />
-        </View>
-      </View>
-    );
-  }
-
-  // The two-column body: fields flow into a wrapping row that collapses to a
-  // single column on small screens; each item is flex-1 (flex-auto when stacked).
-  function TwoColumnBody({ fields }: { fields: FormField[] }) {
+    // The two-column flow: rows wrap into a two-up grid on wide viewports and
+    // collapse to a single full-width column on small screens (desktop-first).
     const direction = useResponsive<"row" | "column">({ base: "row", sm: "column" });
     const itemBasis = useResponsive<ViewStyle>({ base: s.flex1, sm: s.flexAuto });
-    return (
-      <View style={{ flexDirection: direction, flexWrap: "wrap", gap: 16 }}>
-        {fields.map((field, i) => (
-          <View key={i} style={[itemBasis, { minWidth: 200 }]}>
-            <StackedField field={field} />
+
+    const rows = twoColumn ? (
+      <View style={{ flexDirection: direction, flexWrap: "wrap", gap: s.twoColumnGap }}>
+        {Children.toArray(children).map((child, i) => (
+          <View key={i} style={[itemBasis, s.twoColumnItem]}>
+            {child}
           </View>
         ))}
       </View>
+    ) : (
+      children
     );
-  }
 
-  function Actions({
-    submitLabel,
-    cancelLabel,
-    onSubmit,
-    onCancel,
-  }: {
-    submitLabel: string;
-    cancelLabel?: string;
-    onSubmit?: () => void;
-    onCancel?: () => void;
-  }): ReactNode {
+    const actions =
+      submitLabel != null || cancelLabel != null ? (
+        <View style={skin.actions}>
+          {cancelLabel != null ? (
+            <Button outline disabled={disabled} onPress={onCancel}>
+              {cancelLabel}
+            </Button>
+          ) : null}
+          {submitLabel != null ? (
+            <Button primary disabled={disabled} onPress={onSubmit}>
+              {submitLabel}
+            </Button>
+          ) : null}
+        </View>
+      ) : null;
+
+    // Enter-to-submit on the web. RNW's TextInput STOPS the propagation of its
+    // keydown events (verified empirically: neither a container onKeyDown nor a
+    // document bubble listener ever hears them), so the only place the key can be
+    // caught is the document CAPTURE phase, which runs document -> target before
+    // that stop. The listener is scoped to THIS form by matching the target's
+    // nearest <form> ancestor against the form's own id VALUE (a role="form" View
+    // renders as a real <form> on the web; node-identity checks like contains()
+    // fail under happy-dom's proxied HTMLFormElement, while attribute comparison
+    // holds everywhere), and to single-line text fields by the DOM `input` tag: a
+    // multiline field keeps Enter for newlines (`textarea`) and a button keeps
+    // Enter for its own activation. Natively there is no `document`, so both
+    // effects are no-ops there and each field's return key drives its own
+    // onSubmitEditing. Like useEscapeKey, this is additive web-only EVENT
+    // handling, not a web-only rendering branch, so it stays inside the kit's
+    // cross-platform rules.
+    const formId = useId();
+    const rootRef = useRef<ElementRef<typeof View> | null>(null);
+    const submitRef = useRef(onSubmit);
+    submitRef.current = onSubmit;
+    const disabledRef = useRef(!!disabled);
+    disabledRef.current = !!disabled;
+    const enterActive = onSubmit != null;
+
+    // Defuse the browser's IMPLICIT form submission: a real <form> with a lone
+    // text field navigates on Enter unless the submit default is prevented (the
+    // kit's submit button is a role="button" View, not a native submit control).
+    useEffect(() => {
+      if (typeof document === "undefined") return;
+      const root = rootRef.current as unknown as HTMLElement | null;
+      if (!root || typeof root.addEventListener !== "function") return;
+      const prevent = (event: Event) => event.preventDefault();
+      root.addEventListener("submit", prevent);
+      return () => root.removeEventListener("submit", prevent);
+    }, []);
+
+    useEffect(() => {
+      if (!enterActive || typeof document === "undefined") return;
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key !== "Enter" || disabledRef.current) return;
+        const target = event.target as HTMLElement | null;
+        if (!target || target.tagName !== "INPUT") return;
+        const scope = (target as { closest?: (selector: string) => HTMLElement | null }).closest?.("form");
+        if (!scope || scope.getAttribute("id") !== formId) return;
+        event.preventDefault();
+        submitRef.current?.();
+      };
+      document.addEventListener("keydown", onKeyDown, true);
+      return () => document.removeEventListener("keydown", onKeyDown, true);
+    }, [enterActive, formId]);
+
     return (
-      <View style={skin.actions}>
-        {cancelLabel ? (
-          <Button outline onPress={onCancel}>
-            {cancelLabel}
-          </Button>
-        ) : null}
-        <Button primary onPress={onSubmit}>
-          {submitLabel}
-        </Button>
+      <View ref={rootRef} nativeID={formId} testID={testID} role={FORM} style={[skin.stack, style]}>
+        {rows}
+        {actions}
       </View>
     );
-  }
-
-  return function Form(props: FormProps) {
-    const { fields, submitLabel = "Submit", cancelLabel, testID, style, onSubmit, onCancel } = props;
-    const layout = layoutOf(props);
-
-    const [values, setValues] = useState<Record<string, string | boolean>>(() => seedValues(props));
-    const api = useMemo<FormValueApi>(
-      () => ({
-        get: (k) => values[k],
-        setText: (k, v) => setValues((prev) => ({ ...prev, [k]: v })),
-        setBool: (k, v) => setValues((prev) => ({ ...prev, [k]: v })),
-      }),
-      [values],
-    );
-    const submit = useCallback(() => onSubmit?.(values), [onSubmit, values]);
-
-    let body: ReactNode;
-    if (layout === "twoColumn") {
-      body = (
-        <View testID={testID} style={[skin.stackGap4, style]}>
-          <TwoColumnBody fields={fields ?? []} />
-          <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
-        </View>
-      );
-    } else if (layout === "sidebar") {
-      // Sectioned sidebar: section headings span a group of fields / a checkbox
-      // group. Falls back to the per-field sidebar when no sections are given.
-      const sections = props.sections;
-      body =
-        sections && sections.length > 0 ? (
-          <View testID={testID} style={[skin.stackGap6, style]}>
-            {sections.map((section, i) => (
-              <Section key={i} section={section} last={i === sections.length - 1} />
-            ))}
-            <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
-          </View>
-        ) : (
-          <View testID={testID} style={[skin.stackGap6, style]}>
-            {(fields ?? []).map((field, i) => (
-              <SidebarField key={i} field={field} />
-            ))}
-            <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
-          </View>
-        );
-    } else {
-      // stacked (default): one field per row, full width, label above input.
-      body = (
-        <View testID={testID} style={[skin.stackGap4, style]}>
-          {(fields ?? []).map((field, i) => (
-            <StackedField key={i} field={field} />
-          ))}
-          <Actions submitLabel={submitLabel} cancelLabel={cancelLabel} onSubmit={submit} onCancel={onCancel} />
-        </View>
-      );
-    }
-
-    return <FormValues.Provider value={api}>{body}</FormValues.Provider>;
   };
 }

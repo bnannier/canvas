@@ -3,22 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form } = scope;
+  const { Checkbox, Form, FormSection, Input } = scope;
   return (
-<Form
-  sidebar
-  sections={[
-    { title: "Personal info", description: "This information will be displayed on your public profile.", fields: [
-      { label: "Full name", value: "Rachel Chen" },
-      { label: "Email", value: "rachel@example.com" }
-    ] },
-    { title: "Notifications", description: "Choose how you'd like to be notified.", checkboxes: [
-      { label: "Email notifications", checked: true },
-      { label: "SMS alerts" }
-    ] }
-  ]}
-  submitLabel="Save"
-  style={{ width: 720, maxWidth: "100%" }}
-/>
+<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
+  <FormSection title="Personal info" description="This information will be displayed on your public profile.">
+    <Input block label="Full name" defaultValue="Rachel Chen" />
+    <Input block label="Email" defaultValue="rachel@example.com" />
+  </FormSection>
+  <FormSection title="Notifications" description="Choose how you'd like to be notified.">
+    <Checkbox defaultChecked>Email notifications</Checkbox>
+    <Checkbox>SMS alerts</Checkbox>
+  </FormSection>
+</Form>
   );
 }

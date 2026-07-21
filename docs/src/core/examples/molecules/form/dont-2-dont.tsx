@@ -3,15 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Form } = scope;
+  const { tokens, View, Text, Card, Input } = scope;
   return (
-<Form sidebar submitLabel="Save" style={{ width: 720, maxWidth: "100%" }} sections={[
-    { title: "Personal info", fields: [
-      { label: "Full name", value: "Rachel Chen" }
-    ] },
-    { title: "Billing", fields: [
-      { label: "Card number", value: "•••• 4242" }
-    ] }
-  ]} />
+<View style={{ width: 560, maxWidth: "100%", gap: 16 }}>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Personal info</Text>
+  <Input block label="Full name" defaultValue="Rachel Chen" />
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Billing</Text>
+  <Input block label="Card number" defaultValue="•••• 4242" />
+</View>
   );
 }

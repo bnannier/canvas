@@ -34,6 +34,12 @@ export interface CheckboxProps {
   onChange?: (next: boolean) => void;
   /** Alias of onChange, for parity with RN's value-style callbacks. */
   onValueChange?: (next: boolean) => void;
+  /**
+   * Accessible name for a LABEL-LESS checkbox (one with no `children`, e.g. a
+   * row selector in a table). With a visible label the label itself is the name;
+   * without one this is what a screen reader announces.
+   */
+  accessibilityLabel?: string;
   /** E2E hook forwarded to the pressable row. */
   testID?: string;
   // Size (pick one; default is the base box).
@@ -145,6 +151,9 @@ export function createCheckbox(skin: CheckboxSkin) {
         accessibilityRole="checkbox"
         accessibilityState={{ checked: indeterminate ? "mixed" : checked, disabled: !!disabled }}
         aria-checked={indeterminate ? "mixed" : checked}
+        // Dual alias (RNW forwards aria-label, native reads accessibilityLabel).
+        accessibilityLabel={props.accessibilityLabel}
+        aria-label={props.accessibilityLabel}
         android_ripple={ripple}
         style={({ pressed }) => [
           ROW,

@@ -36,7 +36,7 @@ import { type ColorTokens, alpha, surfaceRipple } from "../../style/index.js";
 //     outline-variant hairlines; stripe = surface-variant (muted) @ 20%; press
 //     = an android_ripple carrying the M3 on-surface state layer (surfaceRipple).
 
-export type Density = "compact" | "regular";
+export type Density = "compact" | "regular" | "comfortable";
 
 // The contract a platform skin fulfills. The shell owns the structure (header
 // band + flex-row grid, the selection column, the striped/pressable rows); the
@@ -51,8 +51,20 @@ export interface DataTableSkin {
   headerRow: (t: ColorTokens) => ViewStyle;
   /** Header vertical padding per density (horizontal padding lives on the cell). */
   headerPad: Record<Density, ViewStyle>;
-  /** A header column label (equal-width, the platform's label type). */
+  /**
+   * A header column label — TYPE ONLY (size/weight/case/tracking/color). The
+   * shell owns the header cell BOX (the equal-width flex share, the horizontal
+   * padding, the label+sort-icon row), so the label can sit beside a sort
+   * indicator without each skin re-declaring the layout.
+   */
   headerCell: (t: ColorTokens) => TextStyle;
+  /** Size (px) of the sort-direction indicator icon beside a sortable header label. */
+  sortIconSize: number;
+  /**
+   * Muted caption type: the footer's "N selected" count and the built-in
+   * `emptyMessage` text.
+   */
+  captionText: (t: ColorTokens) => TextStyle;
   /** The leading checkbox column (narrow, fixed width). */
   selectCol: ViewStyle;
   /** The selection cell in a data row (the narrow column plus row padding). */
@@ -124,15 +136,11 @@ export const webSkin: DataTableSkin = {
   headerPad: {
     compact: { paddingVertical: 6 },
     regular: { paddingVertical: 8 },
+    comfortable: { paddingVertical: 10 },
   },
+  // Type only; the shell's header cell box carries the flex share and the px-16
+  // horizontal padding (shadcn th px-2 class) so headings sit over their columns.
   headerCell: (t) => ({
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "0%",
-    // Per-cell horizontal padding (shadcn th px-2 class) so column labels never
-    // touch; the header edge inset now comes from the cells, matching the data
-    // cells' padding, so headings sit directly over their columns.
-    paddingHorizontal: 16,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
@@ -140,6 +148,8 @@ export const webSkin: DataTableSkin = {
     letterSpacing: 0.4,
     color: t["muted-foreground"],
   }),
+  sortIconSize: 14,
+  captionText: (t) => ({ fontSize: 13, lineHeight: 18, color: t["muted-foreground"] }),
   selectCol: SELECT_COL,
   selectCell: { ...SELECT_COL },
   dataRow: (t) => ({
@@ -153,6 +163,7 @@ export const webSkin: DataTableSkin = {
   cellPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 8 },
     regular: { paddingHorizontal: 16, paddingVertical: 12 },
+    comfortable: { paddingHorizontal: 16, paddingVertical: 16 },
   },
   dataCell: DATA_CELL,
   cellText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
@@ -175,12 +186,9 @@ export const iosSkin: DataTableSkin = {
   headerPad: {
     compact: { paddingVertical: 6 },
     regular: { paddingVertical: 8 },
+    comfortable: { paddingVertical: 10 },
   },
   headerCell: (t) => ({
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "0%",
-    paddingHorizontal: 16,
     fontSize: 13,
     lineHeight: 18,
     // Title-style secondary label (SwiftUI Table column heading): regular weight,
@@ -189,6 +197,8 @@ export const iosSkin: DataTableSkin = {
     letterSpacing: -0.08,
     color: t["muted-foreground"],
   }),
+  sortIconSize: 14,
+  captionText: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
   selectCol: SELECT_COL,
   selectCell: { ...SELECT_COL },
   dataRow: () => ({
@@ -204,6 +214,8 @@ export const iosSkin: DataTableSkin = {
     compact: { paddingHorizontal: 16, paddingVertical: 8 },
     // 22pt line + 2x15 = 52pt, the iOS one-line list/table row rhythm.
     regular: { paddingHorizontal: 16, paddingVertical: 15 },
+    // 22pt line + 2x19 = 60pt, the roomier two-line-ish rhythm.
+    comfortable: { paddingHorizontal: 16, paddingVertical: 19 },
   },
   dataCell: DATA_CELL,
   cellText: (t) => ({ fontSize: 17, lineHeight: 22, letterSpacing: -0.43, color: t.foreground }),
@@ -229,18 +241,19 @@ export const androidSkin: DataTableSkin = {
   headerPad: {
     compact: { paddingVertical: 8 },
     regular: { paddingVertical: 10 },
+    comfortable: { paddingVertical: 12 },
   },
   headerCell: (t) => ({
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "0%",
-    paddingHorizontal: 16,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
     letterSpacing: 0.5,
     color: t["muted-foreground"],
   }),
+  // M3 data tables pair the header label with a 16dp sorting arrow.
+  sortIconSize: 16,
+  // M3 body-small caption.
+  captionText: (t) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
   selectCol: SELECT_COL,
   selectCell: { ...SELECT_COL },
   dataRow: (t) => ({
@@ -250,11 +263,13 @@ export const androidSkin: DataTableSkin = {
     borderColor: t.border,
   }),
   stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.2) }),
-  // Android tints the row via the ripple, not a fill; this is unused there.
+  // Press feedback comes from the ripple on Android; this fill is the SELECTED
+  // row tint (the M3 primary state layer at 12%).
   pressTint: (t) => ({ backgroundColor: alpha(t.primary, 0.12) }),
   cellPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 10 },
     regular: { paddingHorizontal: 16, paddingVertical: 14 },
+    comfortable: { paddingHorizontal: 16, paddingVertical: 18 },
   },
   dataCell: DATA_CELL,
   // M3 body-large: 16/24/400 with +0.5 tracking.

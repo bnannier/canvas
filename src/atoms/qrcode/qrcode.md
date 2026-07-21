@@ -5,7 +5,7 @@ Encodes a string as a scannable QR code. Built on react-native-svg, so it render
 ## Usage
 
 ```tsx
-<QRCode value="https://canvas.olympusoss.com" />
+<QRCode value="https://bnannier.github.io/canvas" />
 ```
 
 ## Variants
@@ -13,19 +13,19 @@ Encodes a string as a scannable QR code. Built on react-native-svg, so it render
 ### Small
 
 ```tsx
-<QRCode value="https://canvas.olympusoss.com" small />
+<QRCode value="https://bnannier.github.io/canvas" small />
 ```
 
 ### Medium
 
 ```tsx
-<QRCode value="https://canvas.olympusoss.com" />
+<QRCode value="https://bnannier.github.io/canvas" />
 ```
 
 ### Large
 
 ```tsx
-<QRCode value="https://canvas.olympusoss.com" large />
+<QRCode value="https://bnannier.github.io/canvas" large />
 ```
 
 ## Do & Don't
@@ -35,11 +35,11 @@ Encodes a string as a scannable QR code. Built on react-native-svg, so it render
 **Do** — Leave the fixed dark-on-white card in place so the code stays high-contrast for any camera.
 
 ```tsx
-<QRCode value="https://canvas.olympusoss.com" />
+<QRCode value="https://bnannier.github.io/canvas" />
 ```
 
 **Don't** — Shrinking a data-dense value to the small size drops the modules below a reliably scannable density.
 
 ```tsx
-<QRCode value="https://canvas.olympusoss.com/get/the/app?ref=docs&utm=homepage&v=2" small />
+<QRCode value="https://bnannier.github.io/canvas/get/the/app?ref=docs&utm=homepage&v=2" small />
 ```

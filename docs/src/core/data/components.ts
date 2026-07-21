@@ -276,7 +276,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "form",
     name: "Form",
-    description: "Stacked, two-column, with sidebar description.",
+    description: "Stitch your own field atoms inside it; Form adds the stacked or two-column rhythm, titled sections, and the submit/cancel actions row.",
     category: "Molecules",
     stageAlign: "start",
   },

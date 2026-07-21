@@ -1100,7 +1100,7 @@
 - 9fe5d3b: Route the open Popover's floating card through AnchoredOverlay so it portals over the page anchored below the trigger instead of rendering as an inline absolute panel, fixing the card being clipped and not painting inside a bounded stage.
 - ffe9f1d: Point the package metadata at the current repository. `homepage`, `repository`, and
   `bugs` now reference `bnannier/canvas` and `bnannier.github.io/canvas` (the repo was
-  transferred from the `OlympusOSS` org, and GitHub Pages URLs do not redirect).
+  transferred from a previous org, and GitHub Pages URLs do not redirect).
   Internal: the duplicated `clamp` helper is now shared from `src/style/math.ts`.
 - 9fe5d3b: Fix RowMenu clipping its open menu inside scroll/stage containers by routing the panel through AnchoredOverlay so it portals over the page instead of rendering as an inline absolute card.
 - 3dd3cb1: `Select`'s open option list now renders through `AnchoredOverlay`, so it portals above the page and is no longer clipped by an overflow-hidden ancestor (or the docs preview scroller), while selection, controlled and uncontrolled open state, Escape dismissal, and the listbox/option roles stay unchanged.

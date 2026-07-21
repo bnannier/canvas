@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { QRCode } = scope;
   return (
-<QRCode value="https://canvas.olympusoss.com/get/the/app?ref=docs&utm=homepage&v=2" small />
+<QRCode value="https://bnannier.github.io/canvas/get/the/app?ref=docs&utm=homepage&v=2" small />
   );
 }

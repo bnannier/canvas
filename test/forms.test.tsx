@@ -6,8 +6,9 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
+import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Field } from "../src/molecules/field/field.tsx";
-import { Form } from "../src/molecules/form/form.tsx";
+import { Form, FormSection } from "../src/molecules/form/form.tsx";
 import { Fieldset } from "../src/molecules/fieldset/fieldset.tsx";
 
 afterEach(cleanup);
@@ -97,67 +98,101 @@ describe("accessible names on composed fields", () => {
     expect(screen.getByLabelText("Email")).toBe(screen.getByPlaceholderText("ada@acme.dev"));
   });
 
-  it("Form (stacked) names each input by its label", () => {
-    ui(<Form stacked fields={[{ label: "Full name", placeholder: "Ada" }, { label: "Email", placeholder: "ada@acme.dev" }]} />);
+  it("Form renders stitched children, each input named by its own label", () => {
+    ui(
+      <Form>
+        <Input block label="Full name" placeholder="Ada" />
+        <Input block label="Email" placeholder="ada@acme.dev" />
+      </Form>,
+    );
     expect(screen.getByLabelText("Full name")).toBe(screen.getByPlaceholderText("Ada"));
     expect(screen.getByLabelText("Email")).toBe(screen.getByPlaceholderText("ada@acme.dev"));
-  });
-
-  it("Form (sidebar) names each input by its label", () => {
-    ui(<Form sidebar fields={[{ label: "City", placeholder: "Austin" }]} />);
-    expect(screen.getByLabelText("City")).toBe(screen.getByPlaceholderText("Austin"));
-  });
-
-  it("Form keeps a pre-filled field editable and reports collected values on submit", () => {
-    let submitted: Record<string, string | boolean> | null = null;
-    ui(
-      <Form
-        stacked
-        submitLabel="Save"
-        fields={[
-          { label: "Full name", value: "Ada" },
-          { name: "email", label: "Email", placeholder: "ada@acme.dev" },
-        ]}
-        onSubmit={(v) => { submitted = v; }}
-      />,
-    );
-    // A pre-filled controlled input must still accept edits (the RNW frozen-input regression).
-    const name = screen.getByLabelText("Full name") as HTMLInputElement;
-    expect(name.value).toBe("Ada");
-    fireEvent.change(name, { target: { value: "Ada Lovelace" } });
-    expect(name.value).toBe("Ada Lovelace");
-    const email = screen.getByPlaceholderText("ada@acme.dev") as HTMLInputElement;
-    fireEvent.change(email, { target: { value: "ada@acme.dev" } });
-    fireEvent.click(screen.getByText("Save"));
-    // Keyed by `name` when given, else the label.
-    expect(submitted).toEqual({ "Full name": "Ada Lovelace", email: "ada@acme.dev" });
-  });
-
-  it("Form (sectioned) collects checkbox state on submit", () => {
-    let submitted: Record<string, string | boolean> | null = null;
-    ui(
-      <Form
-        sidebar
-        submitLabel="Save"
-        sections={[
-          {
-            title: "Notifications",
-            checkboxes: [
-              { name: "news", label: "Newsletter", checked: true },
-              { label: "SMS" },
-            ],
-          },
-        ]}
-        onSubmit={(v) => { submitted = v; }}
-      />,
-    );
-    fireEvent.click(screen.getByText("SMS"));
-    fireEvent.click(screen.getByText("Save"));
-    expect(submitted).toEqual({ news: true, SMS: true });
   });
 
   it("Fieldset names each item's control by its label", () => {
     ui(<Fieldset legend="Address" items={[{ label: "Street", placeholder: "123 Market St" }]} />);
     expect(screen.getByLabelText("Street")).toBe(screen.getByPlaceholderText("123 Market St"));
+  });
+});
+
+// Form is a composition surface: the caller stitches the field atoms and keeps
+// their state; Form owns the rhythm, the actions row, form semantics, and
+// Enter-to-submit on the web. These tests pin that contract.
+describe("Form (composition)", () => {
+  it("exposes the form role and renders no actions row until a label is given", () => {
+    const { container } = ui(
+      <Form onSubmit={() => {}}>
+        <Input block label="Email" />
+      </Form>,
+    );
+    expect(container.querySelector('[role="form"]')).not.toBeNull();
+    expect(container.querySelectorAll('[role="button"]').length).toBe(0);
+  });
+
+  it("fires onSubmit and onCancel from the actions row buttons", () => {
+    let submitted = 0;
+    let cancelled = 0;
+    ui(
+      <Form submitLabel="Save" cancelLabel="Cancel" onSubmit={() => { submitted += 1; }} onCancel={() => { cancelled += 1; }}>
+        <Input block label="Email" />
+      </Form>,
+    );
+    fireEvent.click(screen.getByText("Save"));
+    fireEvent.click(screen.getByText("Cancel"));
+    expect(submitted).toBe(1);
+    expect(cancelled).toBe(1);
+  });
+
+  it("disabled gates the submit button", () => {
+    let submitted = 0;
+    ui(
+      <Form submitLabel="Save" disabled onSubmit={() => { submitted += 1; }}>
+        <Input block label="Email" />
+      </Form>,
+    );
+    fireEvent.click(screen.getByText("Save"));
+    expect(submitted).toBe(0);
+  });
+
+  it("submits on Enter in a single-line field, but never from a multiline one", () => {
+    let submitted = 0;
+    ui(
+      <Form submitLabel="Save" onSubmit={() => { submitted += 1; }}>
+        <Input block label="Email" placeholder="you@acme.dev" />
+        <Textarea label="Bio" placeholder="About you" />
+      </Form>,
+    );
+    fireEvent.keyDown(screen.getByPlaceholderText("you@acme.dev"), { key: "Enter" });
+    expect(submitted).toBe(1);
+    // A textarea keeps Enter for newlines.
+    fireEvent.keyDown(screen.getByPlaceholderText("About you"), { key: "Enter" });
+    expect(submitted).toBe(1);
+  });
+
+  it("FormSection renders its header and names the group for assistive tech", () => {
+    const { container } = ui(
+      <Form>
+        <FormSection title="Notifications" description="Choose how you'd like to be notified.">
+          <Checkbox defaultChecked>Email notifications</Checkbox>
+        </FormSection>
+      </Form>,
+    );
+    expect(screen.getByText("Notifications")).toBeTruthy();
+    expect(screen.getByText("Choose how you'd like to be notified.")).toBeTruthy();
+    const group = container.querySelector('[role="group"]') as HTMLElement;
+    expect(group.getAttribute("aria-label")).toBe("Notifications");
+  });
+
+  it("twoColumn lays the stitched children out without losing any", () => {
+    ui(
+      <Form twoColumn submitLabel="Create">
+        <Input block label="First name" placeholder="Ada" />
+        <Input block label="Last name" placeholder="King" />
+        <Input block label="Email" placeholder="ada@example.com" />
+      </Form>,
+    );
+    expect(screen.getByPlaceholderText("Ada")).toBeTruthy();
+    expect(screen.getByPlaceholderText("King")).toBeTruthy();
+    expect(screen.getByPlaceholderText("ada@example.com")).toBeTruthy();
   });
 });

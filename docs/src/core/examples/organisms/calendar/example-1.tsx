@@ -3,51 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Calendar, Card, CardContent, CardHeader, CardSeparator, Typography, Row, Column } = scope;
+  const { Calendar } = scope;
   return (
-<Stateful initial={{
-  day: 24,
-  events: [
-    { day: 8, title: "Design review", start: 11.5, end: 13, time: "11:30 AM" },
-    { day: 14, title: "1:1 with manager", start: 14, end: 15, time: "2:00 PM" },
-    { day: 23, title: "Release cut", start: 16, end: 17, time: "4:00 PM" },
-    { day: 24, title: "Sprint planning", start: 9, end: 10.5, time: "9:00 AM" },
-    { day: 24, title: "Team lunch", start: 12.5, end: 13.5, time: "12:30 PM" }
-  ]
-}}>
-  {(state, set) => (
-    <Row loose wrap alignStart>
-      <Calendar
-        month="May 2026"
-        today={23}
-        selected={state.day}
-        onSelect={(day) => set({ ...state, day })}
-        daysInMonth={31}
-        startWeekday={4}
-        events={state.events}
-      />
-      <Card grow flush style={{ minWidth: 240 }}>
-        <CardHeader>
-          <Typography small semibold>{`May ${state.day}`}</Typography>
-        </CardHeader>
-        <CardSeparator />
-        <CardContent>
-          {state.events.filter((e) => e.day === state.day).length === 0 ? (
-            <Typography small muted>No events this day.</Typography>
-          ) : (
-            <Column tight>
-              {state.events.filter((e) => e.day === state.day).map((e) => (
-                <Row key={e.title} between alignCenter>
-                  <Typography small medium>{e.title}</Typography>
-                  <Typography small muted>{e.time}</Typography>
-                </Row>
-              ))}
-            </Column>
-          )}
-        </CardContent>
-      </Card>
-    </Row>
-  )}
-</Stateful>
+<Calendar
+  dayPeek
+  month="May 2026"
+  today={23}
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+  events={[
+    { day: 8, title: "Design review", start: 11.5, end: 13 },
+    { day: 14, title: "1:1 with manager", start: 14, end: 15 },
+    { day: 23, title: "Release cut", start: 16, end: 17 },
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 }
+  ]}
+/>
   );
 }

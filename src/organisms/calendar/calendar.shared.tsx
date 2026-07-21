@@ -1,5 +1,6 @@
-import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useEffect, useRef, useState } from "react";
+import { type GestureResponderEvent, type View as RNView } from "react-native";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 
 // Shared Calendar shell. The structure (header with prev/next chevrons + view
@@ -70,6 +71,9 @@ export interface CalendarProps {
   week?: boolean;
   /** Single-day hour timeline; chevrons page by day. */
   day?: boolean;
+
+  /** Month view: pressing a day that has events also opens that day's hour timeline in an anchored overlay (a tooltip-style day peek), dismissed by an outside tap or Escape. */
+  dayPeek?: boolean;
 
   /** First hour shown on the week/day timeline (0-24; default 8, extended to fit events). */
   startHour?: number;
@@ -171,6 +175,11 @@ export function createCalendar(skin: CalendarSkin) {
     // calendar highlights the pressed day (and pages its week/day) instead of
     // ignoring the tap.
     const [selected, setSelected] = useControllableState<number | undefined>(props.selected, props.defaultSelected);
+    // The day whose timeline the anchored peek overlay is showing (dayPeek only).
+    const [peekDay, setPeekDay] = useState<number | null>(null);
+    // Every day cell registers its node so the peek can anchor to the pressed one.
+    const cellRefs = useRef(new Map<number, RNView>());
+    const peekAnchorRef = useRef<RNView | null>(null);
     const { tokens } = useTheme();
     const density = densityOf(props);
     const view = viewOf(props);
@@ -181,6 +190,11 @@ export function createCalendar(skin: CalendarSkin) {
 
     const eventsOn = (dayNum: number) => events.filter((e) => e.day === dayNum);
     const weekdayOf = (dayNum: number) => (lead + dayNum - 1) % 7;
+
+    // The peek belongs to one month's grid: close it when the month swaps out
+    // from under it, and let Escape dismiss it like any overlay.
+    useEffect(() => setPeekDay(null), [month]);
+    useEscapeKey(peekDay != null, () => setPeekDay(null));
     // The day the week/day views revolve around.
     const anchor = Math.min(Math.max(selected ?? today ?? 1, 1), daysInMonth);
     // Day-of-month the anchor's week starts on; ≤ 0 in a leading-blank first week.
@@ -268,6 +282,10 @@ export function createCalendar(skin: CalendarSkin) {
       return (
         <RippleClip key={dayNum} shape={cornerRadii(skin.dayCellBase)}>
           <Pressable
+            ref={(node) => {
+              if (node) cellRefs.current.set(dayNum, node);
+              else cellRefs.current.delete(dayNum);
+            }}
             style={({ pressed }) => [
               skin.dayCellBase,
               m.cell,
@@ -275,7 +293,17 @@ export function createCalendar(skin: CalendarSkin) {
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
             android_ripple={ripple}
-            onPress={() => pick(dayNum)}
+            onPress={() => {
+              pick(dayNum);
+              if (props.dayPeek && view === "month") {
+                if (count > 0) {
+                  peekAnchorRef.current = cellRefs.current.get(dayNum) ?? null;
+                  setPeekDay(dayNum);
+                } else {
+                  setPeekDay(null);
+                }
+              }
+            }}
             accessibilityRole="button"
             accessibilityLabel={`${dayNum}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}${
               count > 0 ? `, ${count} event${count === 1 ? "" : "s"}` : ""
@@ -292,17 +320,18 @@ export function createCalendar(skin: CalendarSkin) {
 
     // The absolutely-positioned timed blocks for one day, laid over the hour
     // slots inside an inset layer (insets beat absolute-in-padding differences
-    // between Yoga and the web).
-    const eventLayer = (dayNum: number, showTime: boolean) => {
+    // between Yoga and the web). `rs`/`re` bound the visible hours (the views use
+    // the shared range; the day peek passes a tighter slice).
+    const eventLayer = (dayNum: number, showTime: boolean, rs = rangeStart, re = rangeEnd) => {
       const blocks = layoutLanes(timed.filter((e) => e.day === dayNum));
       if (blocks.length === 0) return null;
       return (
         <View style={{ position: "absolute", top: 0, bottom: 0, left: 2, right: 2 }}>
           {blocks.map(({ event, lane, lanes }, i) => {
             const [start, end] = spanOf(event);
-            const top = (Math.max(start, rangeStart) - rangeStart) * tm.hourHeight;
-            const bottom = (Math.min(end, rangeEnd) - rangeStart) * tm.hourHeight;
-            if (bottom <= 0 || top >= (rangeEnd - rangeStart) * tm.hourHeight) return null;
+            const top = (Math.max(start, rs) - rs) * tm.hourHeight;
+            const bottom = (Math.min(end, re) - rs) * tm.hourHeight;
+            if (bottom <= 0 || top >= (re - rs) * tm.hourHeight) return null;
             const label = `${event.title ?? "Event"}, ${formatHour(start)} to ${formatHour(end)}`;
             const position: ViewStyle = {
               position: "absolute",
@@ -355,9 +384,9 @@ export function createCalendar(skin: CalendarSkin) {
     };
 
     // The left hour rail: one row per hour, its label hugging the slot line.
-    const hourAxis = (
+    const axisFor = (hrs: number[]) => (
       <View style={{ width: tm.axisWidth }}>
-        {hours.map((h) => (
+        {hrs.map((h) => (
           <View key={h} style={{ height: tm.hourHeight, alignItems: "flex-end", paddingRight: 6 }}>
             <Text style={skin.hourLabel(tokens)}>{formatHour(h)}</Text>
           </View>
@@ -366,9 +395,11 @@ export function createCalendar(skin: CalendarSkin) {
     );
 
     // The stacked hour slots that draw the horizontal grid lines.
-    const slotLines = hours.map((h) => (
-      <View key={h} style={[{ height: tm.hourHeight }, skin.slotLine(tokens)]} />
-    ));
+    const slotsFor = (hrs: number[]) =>
+      hrs.map((h) => <View key={h} style={[{ height: tm.hourHeight }, skin.slotLine(tokens)]} />);
+
+    const hourAxis = axisFor(hours);
+    const slotLines = slotsFor(hours);
 
     if (view === "day") {
       const label = `${WEEKDAYS_FULL[weekdayOf(anchor)]}, ${monthName} ${anchor}`;
@@ -421,6 +452,50 @@ export function createCalendar(skin: CalendarSkin) {
       );
     }
 
+    // The anchored day peek: the pressed day's timeline in a floating overlay
+    // card. Untimed events list as title rows; timed events render the same
+    // hour-slice timeline the day view draws, bounded to the day's events.
+    const dayPeekOverlay = () => {
+      if (peekDay == null) return null;
+      const dayEvents = eventsOn(peekDay);
+      const timedDay = dayEvents.filter((e) => e.start != null);
+      const untimed = dayEvents.filter((e) => e.start == null);
+      // Bound the slice to this day's events (min two hours so a lone half-hour
+      // event still reads as a timeline).
+      const rs = timedDay.length ? Math.max(0, Math.floor(Math.min(...timedDay.map((e) => spanOf(e)[0])))) : 0;
+      const re = timedDay.length ? Math.min(24, Math.max(Math.ceil(Math.max(...timedDay.map((e) => spanOf(e)[1]))), rs + 2)) : 0;
+      const peekHours = Array.from({ length: re - rs }, (_, i) => rs + i);
+      return (
+        <AnchoredOverlay
+          key={peekDay}
+          open
+          onDismiss={() => setPeekDay(null)}
+          triggerRef={peekAnchorRef}
+          gap={6}
+          cardWidth={tm.peekWidth}
+          centered
+          cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
+          inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
+        >
+          <Text style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
+          {untimed.map((e, i) => (
+            <View key={`untimed-${i}`} style={{ marginTop: 6 }}>
+              <Text numberOfLines={1} style={skin.eventTitle(tokens)}>{e.title ?? "Event"}</Text>
+            </View>
+          ))}
+          {timedDay.length > 0 ? (
+            <View style={{ flexDirection: "row", marginTop: 8 }}>
+              {axisFor(peekHours)}
+              <View style={{ flex: 1 }}>
+                {slotsFor(peekHours)}
+                {eventLayer(peekDay, true, rs, re)}
+              </View>
+            </View>
+          ) : null}
+        </AnchoredOverlay>
+      );
+    };
+
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (
       <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), style]}>
@@ -442,6 +517,8 @@ export function createCalendar(skin: CalendarSkin) {
           ))}
           {days.map((dayNum) => dayCell(dayNum))}
         </View>
+
+        {dayPeekOverlay()}
       </View>
     );
   };

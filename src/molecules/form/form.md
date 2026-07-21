@@ -1,19 +1,23 @@
 # Form
 
-Stacked, two-column, with sidebar description.
+Stitch your own fields; Form adds the rhythm, the sections, the actions row, and submit.
 
 ## Usage
 
+Form is a composition surface: you stitch the field atoms as children and keep their state; Form supplies the vertical rhythm, the actions row, and `onSubmit`, which fires from the submit button or from Enter in a single-line field on the web. (`Stateful` is a docs-only helper that holds the example's state — in your app that state is your own.)
+
 ```tsx
-<Form
-  stacked
-  fields={[
-    { label: "Email", placeholder: "you@example.com" },
-    { label: "Password" }
-  ]}
-  submitLabel="Sign in"
-  style={{ width: 360, maxWidth: "100%" }}
-/>
+<Stateful initial={0}>
+  {(saves, setSaves) => (
+    <Column snug>
+      <Form submitLabel="Sign in" onSubmit={() => setSaves(saves + 1)} style={{ width: 360, maxWidth: "100%" }}>
+        <Input block label="Email" placeholder="you@example.com" />
+        <Input block label="Password" />
+      </Form>
+      <Typography muted>{saves === 0 ? "Not submitted yet" : `Submitted ${saves} ${saves === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Variants
@@ -21,37 +25,26 @@ Stacked, two-column, with sidebar description.
 ### Two-column
 
 ```tsx
-<Form
-  twoColumn
-  fields={[
-    { label: "First name", placeholder: "Ada" },
-    { label: "Last name", placeholder: "King" },
-    { label: "Email", placeholder: "ada@example.com" }
-  ]}
-  submitLabel="Create"
-  cancelLabel="Cancel"
-  style={{ width: 560, maxWidth: "100%" }}
-/>
+<Form twoColumn submitLabel="Create" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
+  <Input block label="First name" placeholder="Ada" />
+  <Input block label="Last name" placeholder="King" />
+  <Input block label="Email" placeholder="ada@example.com" />
+</Form>
 ```
 
-### Sidebar
+### Sections
 
 ```tsx
-<Form
-  sidebar
-  sections={[
-    { title: "Personal info", description: "This information will be displayed on your public profile.", fields: [
-      { label: "Full name", value: "Rachel Chen" },
-      { label: "Email", value: "rachel@example.com" }
-    ] },
-    { title: "Notifications", description: "Choose how you'd like to be notified.", checkboxes: [
-      { label: "Email notifications", checked: true },
-      { label: "SMS alerts" }
-    ] }
-  ]}
-  submitLabel="Save"
-  style={{ width: 720, maxWidth: "100%" }}
-/>
+<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
+  <FormSection title="Personal info" description="This information will be displayed on your public profile.">
+    <Input block label="Full name" defaultValue="Rachel Chen" />
+    <Input block label="Email" defaultValue="rachel@example.com" />
+  </FormSection>
+  <FormSection title="Notifications" description="Choose how you'd like to be notified.">
+    <Checkbox defaultChecked>Email notifications</Checkbox>
+    <Checkbox>SMS alerts</Checkbox>
+  </FormSection>
+</Form>
 ```
 
 ## Do & Don't
@@ -61,74 +54,72 @@ Stacked, two-column, with sidebar description.
 **Do** — Keep short forms one field per row so each label sits directly above its input and the eye flows straight down.
 
 ```tsx
-<Form stacked submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }} fields={[
-    { label: "Email", placeholder: "you@example.com" },
-    { label: "Password" }
-  ]} />
+<Form submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }}>
+  <Input block label="Email" placeholder="you@example.com" />
+  <Input block label="Password" />
+</Form>
 ```
 
 **Don't** — Pairing an email and password side by side cramps a sign-in form and breaks the natural top-to-bottom reading order.
 
 ```tsx
-<Form twoColumn submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }} fields={[
-    { label: "Email", placeholder: "you@example.com" },
-    { label: "Password" }
-  ]} />
+<Form twoColumn submitLabel="Sign in" style={{ width: 360, maxWidth: "100%" }}>
+  <Input block label="Email" placeholder="you@example.com" />
+  <Input block label="Password" />
+</Form>
 ```
 
 ### Two-column
 
-**Do** — Pair fields of similar width (city / ZIP) in a row and give a full-width field like the street its own line.
+**Do** — Compose mixed rows inside the stacked form: give a full-width field like the street its own line and pair the similar-width city and ZIP in a Row.
 
 ```tsx
-<Column cozy style={{ width: 560, maxWidth: "100%" }}>
-  <Field block label="Street address" placeholder="123 Market St" />
+<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
+  <Input block label="Street address" placeholder="123 Market St" />
   <Row cozy>
     <Column fill>
-      <Field block label="City" placeholder="San Francisco" />
+      <Input block label="City" placeholder="San Francisco" />
     </Column>
     <Column fill>
-      <Field block label="ZIP" placeholder="94103" />
+      <Input block label="ZIP" placeholder="94103" />
     </Column>
   </Row>
-</Column>
+</Form>
 ```
 
 **Don't** — Putting a wide field next to a tiny one in the same two-column row leaves the short input awkwardly oversized.
 
 ```tsx
-<Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }} fields={[
-    { label: "Street address", placeholder: "123 Market St" },
-    { label: "ZIP", placeholder: "94103" }
-  ]} />
+<Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
+  <Input block label="Street address" placeholder="123 Market St" />
+  <Input block label="ZIP" placeholder="94103" />
+</Form>
 ```
 
-### Sidebar
+### Sections
 
-**Do** — Pair each sidebar heading with a line of helper text so the left column explains what the section's fields are for.
+**Do** — Group related fields in a `FormSection` so each cluster carries its heading, its supporting line, and group semantics a screen reader announces.
 
 ```tsx
-<Form sidebar submitLabel="Save" style={{ width: 720, maxWidth: "100%" }} sections={[
-    { title: "Personal info", description: "Displayed on your public profile.", fields: [
-      { label: "Full name", value: "Rachel Chen" }
-    ] },
-    { title: "Billing", description: "Used for invoices and receipts.", fields: [
-      { label: "Card number", value: "•••• 4242" }
-    ] }
-  ]} />
+<Form submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
+  <FormSection title="Personal info" description="Displayed on your public profile.">
+    <Input block label="Full name" defaultValue="Rachel Chen" />
+  </FormSection>
+  <FormSection title="Billing" description="Used for invoices and receipts.">
+    <Input block label="Card number" defaultValue="•••• 4242" />
+  </FormSection>
+</Form>
 ```
 
-**Don't** — A bare section heading with no helper text wastes the sidebar column and gives the user no context for the group.
+**Don't** — Hand-rolled headings spliced between fields carry no grouping semantics, so assistive tech never hears which section a field belongs to.
 
 ```tsx
-<Form sidebar submitLabel="Save" style={{ width: 720, maxWidth: "100%" }} sections={[
-    { title: "Personal info", fields: [
-      { label: "Full name", value: "Rachel Chen" }
-    ] },
-    { title: "Billing", fields: [
-      { label: "Card number", value: "•••• 4242" }
-    ] }
-  ]} />
+<View style={{ width: 560, maxWidth: "100%", gap: 16 }}>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Personal info</Text>
+  <Input block label="Full name" defaultValue="Rachel Chen" />
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Billing</Text>
+  <Input block label="Card number" defaultValue="•••• 4242" />
+</View>
 ```
 
 ### Inline form

@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form } = scope;
+  const { Form, Input } = scope;
   return (
-<Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }} fields={[
-    { label: "Street address", placeholder: "123 Market St" },
-    { label: "ZIP", placeholder: "94103" }
-  ]} />
+<Form twoColumn submitLabel="Save" style={{ width: 560, maxWidth: "100%" }}>
+  <Input block label="Street address" placeholder="123 Market St" />
+  <Input block label="ZIP" placeholder="94103" />
+</Form>
   );
 }

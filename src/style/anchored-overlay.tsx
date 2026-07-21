@@ -51,6 +51,16 @@ export interface AnchoredOverlayProps {
    * never close.
    */
   dismissable?: boolean;
+  /**
+   * The card's known width, when the caller fixes it. Enables horizontal
+   * placement logic: the card is clamped inside the outlet's bounds (8px
+   * inset), so a card anchored to a trigger near the outlet's right edge slides
+   * left instead of overflowing. Omit for the legacy left-edge anchoring.
+   */
+  cardWidth?: number;
+  /** With `cardWidth`: center the card on the trigger (tooltip-style) instead
+   *  of aligning to its left edge. Still clamped inside the outlet. */
+  centered?: boolean;
 }
 
 export function AnchoredOverlay({
@@ -62,6 +72,8 @@ export function AnchoredOverlay({
   cardStyle,
   inlineStyle,
   dismissable = true,
+  cardWidth,
+  centered = false,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
 
@@ -85,6 +97,8 @@ export function AnchoredOverlay({
       gap={gap}
       cardStyle={cardStyle}
       dismissable={dismissable}
+      cardWidth={cardWidth}
+      centered={centered}
     >
       {children}
     </HostedAnchoredOverlay>
@@ -99,6 +113,8 @@ interface HostedProps {
   gap: number;
   cardStyle?: StyleProp<ViewStyle>;
   dismissable: boolean;
+  cardWidth?: number;
+  centered?: boolean;
   children: ReactNode;
 }
 
@@ -109,8 +125,23 @@ interface Rect {
   height: number;
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, children }: HostedProps) {
+// Horizontal inset kept between a width-aware card and the outlet's edges.
+const CLAMP_INSET = 8;
+
+// The card's x: legacy left-edge anchoring without a known width; with one,
+// optionally centered on the trigger, then clamped inside the outlet.
+function placeX(rect: Rect, cardWidth: number | undefined, centered: boolean, outletWidth: number | null): number {
+  if (cardWidth == null) return rect.x;
+  let x = centered ? rect.x + rect.width / 2 - cardWidth / 2 : rect.x;
+  if (outletWidth != null && outletWidth > 0) x = Math.min(x, outletWidth - cardWidth - CLAMP_INSET);
+  return Math.max(CLAMP_INSET, x);
+}
+
+function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, children }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
+  // The outlet's width, captured alongside the trigger measure; only needed for
+  // width-aware (clamped) placement.
+  const [outletWidth, setOutletWidth] = useState<number | null>(null);
   // Re-measure on viewport changes (rotation / resize). Width/height feed the
   // effect deps; the values themselves aren't read.
   const { width, height } = useWindowDimensions();
@@ -140,10 +171,11 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
         // the trigger's box relative to the outlet — correct for a screen-level
         // host and a stage-scoped one alike, with scroll offsets cancelling out.
         trigger.measureInWindow((tx, ty, tw, th) => {
-          host.measureOutlet((ox, oy) => {
+          host.measureOutlet((ox, oy, ow) => {
             if (cancelled || (tw === 0 && th === 0)) return;
             landed = true;
             setRect({ x: tx - ox, y: ty - oy, width: tw, height: th });
+            setOutletWidth(ow);
           });
         });
       }
@@ -172,7 +204,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}
       {rect ? (
-        <Entrance anchor style={{ position: "absolute", left: rect.x, top: rect.y + rect.height + gap }}>
+        <Entrance anchor style={{ position: "absolute", left: placeX(rect, cardWidth, centered ?? false, outletWidth), top: rect.y + rect.height + gap }}>
           <GlassSurface style={cardStyle}>{children}</GlassSurface>
         </Entrance>
       ) : null}

@@ -3,18 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form } = scope;
+  const { Form, Input } = scope;
   return (
-<Form
-  twoColumn
-  fields={[
-    { label: "First name", placeholder: "Ada" },
-    { label: "Last name", placeholder: "King" },
-    { label: "Email", placeholder: "ada@example.com" }
-  ]}
-  submitLabel="Create"
-  cancelLabel="Cancel"
-  style={{ width: 560, maxWidth: "100%" }}
-/>
+<Form twoColumn submitLabel="Create" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
+  <Input block label="First name" placeholder="Ada" />
+  <Input block label="Last name" placeholder="King" />
+  <Input block label="Email" placeholder="ada@example.com" />
+</Form>
   );
 }
