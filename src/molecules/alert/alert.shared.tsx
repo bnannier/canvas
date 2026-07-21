@@ -4,6 +4,7 @@ import {
   Pressable,
   Text,
   useTheme,
+  useControllableState,
   controlRipple,
   pressDim,
   palette,
@@ -74,9 +75,14 @@ export interface AlertProps {
   success?: boolean;
   warning?: boolean;
   error?: boolean;
-  /** Shows a trailing dismiss control. */
+  /** Shows a trailing dismiss control. Pressing it hides the banner out of the box
+   *  (uncontrolled); pass `dismissed` to own that state instead. */
   dismissible?: boolean;
-  /** Fired when the dismiss control is pressed. */
+  /** Controlled dismissal: `true` hides the banner. Omit to let the Alert manage it. */
+  dismissed?: boolean;
+  /** Uncontrolled seed: start hidden. Rarely useful; defaults to false. */
+  defaultDismissed?: boolean;
+  /** Fired when the dismiss control is pressed (both modes). */
   onDismiss?: () => void;
   children?: ReactNode;
   /** E2E hook forwarded to the root element. */
@@ -151,6 +157,15 @@ export function createAlert(skin: AlertSkin) {
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
 
+    // Dismissal obeys the kit's controlled + uncontrolled contract: pressing the
+    // trailing "×" hides the banner out of the box, a controlled `dismissed` prop
+    // hands that state to the parent, and `onDismiss` fires in both modes.
+    const [dismissed, setDismissed] = useControllableState<boolean>(
+      props.dismissed,
+      props.defaultDismissed ?? false,
+      () => onDismiss?.(),
+    );
+
     // Auto-tint a leading `<Icon />` element to the tone's icon color, so a bare
     // `<Icon info />` matches the banner hue without the caller threading a color
     // (the same idiom Chip uses for its leading icon). An Icon that sets its own
@@ -168,6 +183,8 @@ export function createAlert(skin: AlertSkin) {
     // carries the web announcement. An error tone is urgent enough to interrupt
     // ("assertive"); the rest stay "polite".
     const live = tone === "error" ? "assertive" : "polite";
+
+    if (dismissed) return null;
 
     return (
       <View
@@ -196,7 +213,7 @@ export function createAlert(skin: AlertSkin) {
         </View>
         {dismissible ? (
           <Pressable
-            onPress={onDismiss}
+            onPress={() => setDismissed(true)}
             accessibilityRole="button"
             accessibilityLabel="Dismiss"
             hitSlop={skin.dismissHitSlop ?? undefined}

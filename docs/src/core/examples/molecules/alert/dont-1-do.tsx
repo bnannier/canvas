@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Button } = scope;
+  const { Alert } = scope;
   return (
 <Alert
   success
   icon="✓"
   title="Saved"
   description="Your changes have been saved successfully."
-  actions={<Button ghost small>Dismiss</Button>}
+  dismissible
 />
   );
 }

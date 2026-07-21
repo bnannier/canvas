@@ -4,15 +4,24 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 
 ## Usage
 
+Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onDismiss` reports it, and a controlled `dismissed` prop hands that state to the parent instead. Action buttons are real Buttons: wire each one's `onPress`, and the line underneath reports the result. (`Stateful` is a docs-only helper that holds the example's state; in your app that state is your own.)
+
 ```tsx
-<Alert
-  info
-  icon={<Icon info size={16} />}
-  title="Heads up"
-  description="Maintenance window scheduled for Sunday 2:00 UTC."
-  dismissible
-  actions={<Button link small>Learn more</Button>}
-/>
+<Stateful initial={0}>
+  {(opens, setOpens) => (
+    <Column snug>
+      <Alert
+        info
+        icon={<Icon info size={16} />}
+        title="Heads up"
+        description="Maintenance window scheduled for Sunday 2:00 UTC."
+        dismissible
+        actions={<Button link small onPress={() => setOpens(opens + 1)}>Learn more</Button>}
+      />
+      <Typography muted>{opens === 0 ? "Maintenance notes not opened yet" : `Opened the maintenance notes ${opens} ${opens === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Variants
@@ -20,40 +29,61 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
 ### Success
 
 ```tsx
-<Alert
-  success
-  icon="✓"
-  title="All set"
-  description="Your changes have been saved successfully."
-  dismissible
-  actions={<Button ghost small>View changes</Button>}
-/>
+<Stateful initial={0}>
+  {(views, setViews) => (
+    <Column snug>
+      <Alert
+        success
+        icon="✓"
+        title="All set"
+        description="Your changes have been saved successfully."
+        dismissible
+        actions={<Button ghost small onPress={() => setViews(views + 1)}>View changes</Button>}
+      />
+      <Typography muted>{views === 0 ? "Changes not viewed yet" : `Viewed ${views} ${views === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ### Warning
 
 ```tsx
-<Alert
-  warning
-  icon={<Icon alertTriangle size={16} />}
-  title="Action required"
-  description="Your trial expires in 3 days."
-  dismissible
-  actions={<Button primary small>Upgrade plan</Button>}
-/>
+<Stateful initial={0}>
+  {(starts, setStarts) => (
+    <Column snug>
+      <Alert
+        warning
+        icon={<Icon alertTriangle size={16} />}
+        title="Action required"
+        description="Your trial expires in 3 days."
+        dismissible
+        actions={<Button primary small onPress={() => setStarts(starts + 1)}>Upgrade plan</Button>}
+      />
+      <Typography muted>{starts === 0 ? "Upgrade flow not opened yet" : `Opened the upgrade flow ${starts} ${starts === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ### Error
 
 ```tsx
-<Alert
-  error
-  icon="✕"
-  title="Something went wrong"
-  description="Could not save your changes. Please try again."
-  dismissible
-  actions={<Button primary small>Retry</Button>}
-/>
+<Stateful initial={0}>
+  {(retries, setRetries) => (
+    <Column snug>
+      <Alert
+        error
+        icon="✕"
+        title="Something went wrong"
+        description="Could not save your changes. Please try again."
+        dismissible
+        actions={<Button primary small onPress={() => setRetries(retries + 1)}>Retry</Button>}
+      />
+      <Typography muted>{retries === 0 ? "Not retried yet" : `Retried ${retries} ${retries === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Do & Don't
@@ -82,7 +112,7 @@ Inline notification banners: info, success, warning, and error, plus a full-widt
   icon="✓"
   title="Saved"
   description="Your changes have been saved successfully."
-  actions={<Button ghost small>Dismiss</Button>}
+  dismissible
 />
 ```
 
