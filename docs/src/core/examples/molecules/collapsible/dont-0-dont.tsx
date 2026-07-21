@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Text, Collapsible } = scope;
+  const { View, Collapsible } = scope;
   return (
 <View>
-  <Collapsible title="Billing"><Text>Manage your plan.</Text></Collapsible>
-  <Collapsible title="Team"><Text>Invite teammates.</Text></Collapsible>
-  <Collapsible title="Security"><Text>Two-factor authentication.</Text></Collapsible>
+  <Collapsible title="Billing">Manage your plan.</Collapsible>
+  <Collapsible title="Team">Invite teammates.</Collapsible>
+  <Collapsible title="Security">Two-factor authentication.</Collapsible>
 </View>
   );
 }

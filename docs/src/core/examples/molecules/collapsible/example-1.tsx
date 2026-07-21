@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Collapsible } = scope;
+  const { Collapsible } = scope;
   return (
 <Collapsible title="What is Canvas?" defaultOpen>
-  <Text>A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web.</Text>
+  A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web.
 </Collapsible>
   );
 }
