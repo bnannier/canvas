@@ -116,7 +116,9 @@ const STACK_MAX_WIDTH = 640;
 export const webSkin: ActionSheetSkin = {
   scrimOpacity: 0.4,
   cancelLayout: "separateCard",
-  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingTop: 8, gap: 8 },
+  // paddingBottom keeps the Cancel card off the viewport edge (the safe-area inset
+  // is 0 on web); Android stays flush per M3, so the padding lives in these skins.
+  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingVertical: 8, gap: 8 },
   actionsCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
   cancelCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg") }),
   handle: null,
@@ -164,7 +166,9 @@ const IOS_ROW_FILL = 0.1; // translucent neutral fill on the capsules (iOS syste
 export const iosSkin: ActionSheetSkin = {
   scrimOpacity: 0.4,
   cancelLayout: "separateCard",
-  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingTop: 8, gap: 8 },
+  // paddingBottom floats the sheet off the bottom edge, composing with the
+  // safe-area inset above the home indicator (the iOS 26/27 detached-sheet gap).
+  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingVertical: 8, gap: 8 },
   rowsContent: { gap: 10 },
   actionsCard: (t) => ({ borderRadius: IOS_RADIUS, borderCurve: "continuous", padding: 14, backgroundColor: t.popover, ...shadow("lg") }),
   // A separate standalone Cancel capsule, inset 14 so it lines up with the action
