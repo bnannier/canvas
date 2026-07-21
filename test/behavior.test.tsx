@@ -89,6 +89,18 @@ describe("Autocomplete", () => {
     expect(screen.getByDisplayValue("Devon Webb")).toBeDefined();
   });
 
+  it("clears the selection when the field is erased, so the value does not snap back (uncontrolled)", () => {
+    const { container } = ui(
+      <Autocomplete open defaultValue="Devon Webb" options={["Devon Webb", "Tom Cook"]} onSelect={() => {}} />,
+    );
+    const input = container.querySelector("input") as HTMLInputElement;
+    // At rest the field shows the committed selection via the display fallback.
+    expect(input.value).toBe("Devon Webb");
+    // Erasing to empty must leave the field empty, not snap the value back in.
+    fireEvent.change(input, { target: { value: "" } });
+    expect(input.value).toBe("");
+  });
+
   it("sets a displayName for DevTools/stack traces", () => {
     expect((Autocomplete as { displayName?: string }).displayName).toBe("Autocomplete");
   });
