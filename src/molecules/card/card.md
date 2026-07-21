@@ -1,6 +1,6 @@
 # Card
 
-Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. The data-driven string form (`title` / `description` / `body` / `footer`, no children) renders self-padding sections, so it needs no `padded`. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
+Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. The data-driven string form (`title` / `description` / `body` / `footer`, no children) renders self-padding sections, so it needs no `padded`. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
 
 ## Usage
 
@@ -43,18 +43,20 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Media
 
 ```tsx
-<Card style={{ width: 320, maxWidth: "100%" }}>
-  <Column cozy>
-    <Image source={{ uri: "/kira-tanaka.jpg" }} width="100%" height={180} radius="md" alt="Portrait of Kira Tanaka" />
-    <Column tight>
-      <Typography h5 semibold>Kira Tanaka</Typography>
-      <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+<Card flush style={{ width: 320, maxWidth: "100%" }}>
+  <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait of Kira Tanaka" />
+  <CardContent>
+    <Column cozy>
+      <Column tight>
+        <Typography h5 semibold>Kira Tanaka</Typography>
+        <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+      </Column>
+      <Row snug>
+        <Button primary small>Follow</Button>
+        <Button outline small>Message</Button>
+      </Row>
     </Column>
-    <Row snug>
-      <Button primary small>Follow</Button>
-      <Button outline small>Message</Button>
-    </Row>
-  </Column>
+  </CardContent>
 </Card>
 ```
 
@@ -82,7 +84,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
   </CardHeader>
   <CardSeparator />
   <CardContent>
-    <Field label="Workspace name" placeholder="Acme Inc." block />
+    <Input label="Workspace name" placeholder="Acme Inc." block />
   </CardContent>
   <CardSeparator />
   <CardFooter>

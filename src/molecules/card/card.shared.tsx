@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { Image } from "../../atoms/image/image.shared.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 
@@ -236,4 +237,49 @@ export function CardFooter({ children, style }: CardSectionProps) {
 export function CardSeparator({ style }: { style?: StyleProp<ViewStyle> }) {
   const { tokens } = useTheme();
   return <View style={[s.separator(tokens), style]} />;
+}
+
+export interface CardMediaProps {
+  /** The cover image: a URI string (or a docs sample path), or a bundled `require(...)` asset. */
+  src?: string | number;
+  /** Height of the media band in px (the image covers it edge to edge). */
+  height?: number;
+  /** Accessible name / alt text announced for the image. */
+  alt?: string;
+  /** Alias for `alt` (native naming). */
+  accessibilityLabel?: string;
+  /** E2E hook forwarded to the image. */
+  testID?: string;
+}
+
+// Media: the full-bleed cover slot at the TOP of a card. Unlike the other anatomy
+// subcomponents this one is skin-parameterized, because its top corners must nest
+// inside the card's per-OS rounded corner (outer radius minus the 1px border) while
+// the bottom edge stays square where the content continues. Compose it with `flush`
+// (the card's padding off), then let CardHeader/CardContent pad the text below:
+//
+//   <Card flush>
+//     <CardMedia src="/kira-tanaka.jpg" height={180} alt="…" />
+//     <CardContent>…</CardContent>
+//   </Card>
+export function createCardMedia(skin: CardSkin) {
+  // The nested top radius: the card's corner minus the border it sits inside.
+  const radius = Math.max(0, skin.radius - 1);
+  const shape = {
+    borderTopLeftRadius: radius,
+    borderTopRightRadius: radius,
+    ...(skin.curve ? { borderCurve: skin.curve } : null),
+  };
+  return function CardMedia({ src, height = 180, alt, accessibilityLabel, testID }: CardMediaProps) {
+    return (
+      <Image
+        source={typeof src === "number" ? src : src ? { uri: src } : undefined}
+        width="100%"
+        height={height}
+        style={shape}
+        alt={alt ?? accessibilityLabel}
+        testID={testID}
+      />
+    );
+  };
 }
