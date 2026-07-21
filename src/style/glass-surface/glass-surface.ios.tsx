@@ -17,7 +17,7 @@ import {
   GLASS_INTENSITY,
   SHEER_INTENSITY,
   SHEER_FILL_OPACITY,
-  MATERIAL_FILL,
+  materialFill,
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -77,8 +77,8 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
         testID={testID}
         material={
           <>
-            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
-            <GlassView glassEffectStyle="regular" isInteractive={interactive} colorScheme={dark ? "dark" : "light"} style={MATERIAL_FILL} />
+            <View style={[materialFill(style), { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
+            <GlassView glassEffectStyle="regular" isInteractive={interactive} colorScheme={dark ? "dark" : "light"} style={materialFill(style)} />
           </>
         }
       >
@@ -98,8 +98,8 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
         testID={testID}
         material={
           <>
-            <View style={[MATERIAL_FILL, { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
-            <BlurView intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={MATERIAL_FILL} />
+            <View style={[materialFill(style), { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
+            <BlurView intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY} tint={dark ? "dark" : "light"} style={materialFill(style)} />
             {/* Specular edge (below the content): a lit rim that supplies the surface's
                 edge now that skin borders are stripped under glass. iOS 26's native
                 GlassView above is never decorated. */}

@@ -305,3 +305,14 @@ function radiusOf(style: StyleProp<ViewStyle>): ViewStyle {
 export function specularRim(style: StyleProp<ViewStyle>, dark: boolean): ViewStyle {
   return { ...MATERIAL_FILL, ...radiusOf(style), boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
 }
+
+// The absolute-fill style for the fill / blur / glass material layers, carrying the
+// skin's corner radii like specularRim does. The radii are load-bearing on web: a
+// browser clips a backdrop-filter's result to the FILTERED ELEMENT's own border-box,
+// not the ancestor's rounded overflow clip, so a radius-0 blur layer paints a square
+// halo outside a rounded surface (glaring on a circle, e.g. the Avatar glass
+// fallback). On native the parent clip already shapes these layers; the radii just
+// keep the material's own shape (and iOS 26's Liquid Glass corner) in agreement.
+export function materialFill(style: StyleProp<ViewStyle>): ViewStyle {
+  return { ...MATERIAL_FILL, ...radiusOf(style) };
+}
