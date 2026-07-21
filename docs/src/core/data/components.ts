@@ -131,6 +131,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Divider",
     description: "Horizontal, vertical, with label, with action.",
     category: "Atoms",
+    stageAlign: "start",
   },
 
   {
@@ -213,6 +214,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Alert",
     description: "Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -227,6 +229,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Fieldset",
     description: "Group related form controls under a legend. Each field pairs a label, control, optional help text, and an inline error, so a set of inputs reads as one labeled unit.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -234,6 +237,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Listbox",
     description: "A custom (non-native) select: single or multi-select, optional avatars or icons per option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.",
     category: "Atoms",
+    stageAlign: "start",
   },
 
   {
@@ -241,6 +245,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Card",
     description: "Three families. <code>StatCard</code> = a single metric, big number + delta. <code>SectionCard</code> = a labeled content surface with optional header and divider. Generic <code>card</code> = bring your own structure. Density: pass <code>compact</code> or <code>comfortable</code> to tighten or relax the card's own padding and the gap between flat children (<code>compact</code> takes precedence, and a density prop pads the surface on its own).",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -248,6 +253,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "CodeBlock",
     description: "Preformatted code block with monospace font and padding.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -255,6 +261,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "EmptyState",
     description: "Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -262,6 +269,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Field",
     description: "Read-only key/value pairs. Used in detail views, modal previews, and audit screens. Optional mono mode for IDs, tokens, dates.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -269,6 +277,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Form",
     description: "Stacked, two-column, with sidebar description.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -276,6 +285,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "FilterPanel",
     description: "Sidebar filter rail: grouped checkbox options with count badges and a Clear header.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -283,6 +293,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Calendar",
     description: "Date picker, event list. Production: wrap react-day-picker.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -290,6 +301,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Command",
     description: "Cmd+K search: navigation, actions, recent items.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -297,6 +309,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "DataTable",
     description: "Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrollable table &rarr; footer. Density tweaks affect padding live.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -330,6 +343,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Sidebar",
     description: "Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this page is a thin adapter over this very Sidebar component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -337,6 +351,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Steps",
     description: "Multi-step progress indicators: horizontal, vertical, with progress.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -344,6 +359,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "TabBar",
     description: "Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (iOS HIG tab bar / Material 3 navigation bar), rendered through the glass functional layer.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -351,6 +367,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Tabs",
     description: "Underline, pill, vertical, with badges.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -379,6 +396,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Progress",
     description: "Determinate and indeterminate progress bars.",
     category: "Atoms",
+    stageAlign: "start",
   },
 
   {
@@ -386,6 +404,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Slider",
     description: "A draggable value/range input with keyboard and screen-reader support.",
     category: "Atoms",
+    stageAlign: "start",
   },
 
   {
@@ -393,6 +412,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Accordion",
     description: "A vertically stacked set of collapsible disclosure panels.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -421,6 +441,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Collapsible",
     description: "A single disclosure: a header that toggles one collapsible content panel.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -428,6 +449,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Carousel",
     description: "A horizontally paged slide viewer with snap paging, dot indicators, and optional arrows.",
     category: "Organisms",
+    stageAlign: "start",
   },
 
   {
@@ -462,6 +484,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "ActionPanel",
     description: "Section card with headline, body text, and a primary action. Used to surface a single decision or call-to-action.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -469,6 +492,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "DescriptionList",
     description: "Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -476,6 +500,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Feed",
     description: "Vertical activity streams with icons and timestamps. Used for audit logs, change history, and notification lists.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -483,6 +508,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "GridList",
     description: "Tiled card grids for people directories, item collections, and image galleries.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -490,6 +516,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "MediaObject",
     description: "Image or icon paired with text content. The fundamental building block for list items, notifications, and comment layouts.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -497,6 +524,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "StackedList",
     description: "Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   {
@@ -504,6 +532,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Stats",
     description: "Single value, grouped row, with sparkline, with comparison. Used for dashboards and overview pages.",
     category: "Molecules",
+    stageAlign: "start",
   },
 
   // Charts: the data-viz tier. One component per chart type, all sharing the
@@ -514,60 +543,70 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Chart",
     description: "Single- or multi-series bar chart: vertical columns or horizontal rows, grouped clusters via labels + series, press or scrub a category to inspect it.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "line-chart",
     name: "LineChart",
     description: "Categorical-x series lines with monotone curves, dot markers, and the trading price idiom: a dashed baseline with gain/loss auto-toning and a gradient fade.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "area-chart",
     name: "AreaChart",
     description: "Series fills: overlapping translucent areas, or running-sum bands with stacked. Shares the line chart's curve, density, and inspect axes.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "pie-chart",
     name: "PieChart",
     description: "Proportional arc slices with a percent legend; donut centers the total, and pressing a slice dims the rest and swaps the center readout.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "scatter-plot",
     name: "ScatterPlot",
     description: "Numeric x/y point clouds with nice ticks and gridlines on both axes; pressing near a point rings it and flags its coordinates.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "candlestick-chart",
     name: "CandlestickChart",
     description: "OHLC candles colored by direction, an optional docked volume pane, and moving-average overlays. Scrub to read Open/High/Low/Close and volume.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "depth-chart",
     name: "DepthChart",
     description: "The order-book view: cumulative bid and ask step areas mirrored around the spread on a numeric price axis.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "stacked-bar",
     name: "StackedBar",
     description: "One proportional bar split into colored segments with a legend carrying each share.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "gauge",
     name: "Gauge",
     description: "A radial dial: muted track, tone-colored fill arc, and the value centered inside.",
     category: "Charts",
+    stageAlign: "start",
   },
   {
     slug: "heatmap",
     name: "Heatmap",
     description: "Density cells whose fill encodes each value. A `calendar` layout gives a GitHub-style contribution graph with weekday and month labels and inspect-on-hover.",
     category: "Charts",
+    stageAlign: "start",
   },
 
   {
@@ -575,6 +614,7 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Navbar",
     description: "Topbars with navigation links, search, and action buttons. Used as the primary app-level navigation.",
     category: "Organisms",
+    stageAlign: "start",
   },
 ];
 
