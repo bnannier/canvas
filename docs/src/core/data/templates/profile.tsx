@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, Avatar, Divider, Stats, Tabs, Field, Switch, DataTable, Icon, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, Avatar, Divider, Stats, Tabs, DescriptionList, Switch, DataTable, Icon, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Single-record detail page built from real Canvas components: the canonical
@@ -82,13 +82,14 @@ function FacetsLive() {
         <Card>
           <Column cozy>
             <Typography h4>Traits</Typography>
-            <Field
-              rows={[
-                { label: "Email", value: "rachel.chen@example.com" },
-                { label: "Name", value: "Rachel Chen" },
-                { label: "Department", value: "Engineering" },
-                { label: "Location", value: "San Francisco, CA" },
-                { label: "Timezone", value: "America/Los_Angeles" },
+            <DescriptionList
+              twoColumn
+              items={[
+                { term: "Email", value: "rachel.chen@example.com" },
+                { term: "Name", value: "Rachel Chen" },
+                { term: "Department", value: "Engineering" },
+                { term: "Location", value: "San Francisco, CA" },
+                { term: "Timezone", value: "America/Los_Angeles" },
               ]}
             />
           </Column>
@@ -98,12 +99,13 @@ function FacetsLive() {
         <Card>
           <Column cozy>
             <Typography h4>Metadata</Typography>
-            <Field
-              rows={[
-                { label: "Identity ID", value: "id_8f3a2b1c", mono: true },
-                { label: "Schema", value: "person_v2", mono: true },
-                { label: "Created", value: "Jan 15, 2024" },
-                { label: "Updated", value: "May 24, 2026" },
+            <DescriptionList
+              twoColumn
+              items={[
+                { term: "Identity ID", value: "id_8f3a2b1c", mono: true },
+                { term: "Schema", value: "person_v2", mono: true },
+                { term: "Created", value: "Jan 15, 2024" },
+                { term: "Updated", value: "May 24, 2026" },
               ]}
             />
           </Column>
@@ -232,7 +234,7 @@ export const PROFILE_TEMPLATE: TemplateDoc = {
     {
       title: "Record facets",
       description: "Tabs hold the record's facets so users scroll rather than navigate. The wider left column carries primary content; the narrower right column carries metadata and secondary panes.",
-      anatomy: "Underline Tabs switch the panes in place: Overview is a 2/3 + 1/3 grid of read-only Field rows, Security is the 2FA Switch plus credential actions, and Sessions is a DataTable with per-row revoke.",
+      anatomy: "Underline Tabs switch the panes in place: Overview is a 2/3 + 1/3 grid of read-only DescriptionList rows, Security is the 2FA Switch plus credential actions, and Sessions is a DataTable with per-row revoke.",
       render: () => <FacetsLive />,
     },
     {

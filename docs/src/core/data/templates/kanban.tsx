@@ -13,7 +13,7 @@ import {
   Icon,
   Stats,
   Progress,
-  Field,
+  DescriptionList,
   EmptyState,
   Feed,
   RowMenu,
@@ -278,14 +278,15 @@ function TaskDetailDialog({ columns, taskId, onMove, onEdit, onComment, onDelete
               </Column>
               <Button outline small iconLeft={<Icon pencil size={16} />} onPress={startEdit}>Edit</Button>
             </Row>
-            <Field
-              rows={[
-                { label: "Status", badge: columnName },
-                { label: "Tag", badge: task.tag },
-                { label: "Priority", badge: task.priority },
-                { label: "Assignee", avatars: [{ name: task.who }] },
-                { label: "Due", value: isOverdue(task, columnName) ? `${task.due} (overdue)` : task.due },
-                { label: "Task ID", value: task.id, mono: true },
+            <DescriptionList
+              twoColumn
+              items={[
+                { term: "Status", value: columnName, badge: true },
+                { term: "Tag", value: task.tag, badge: true },
+                { term: "Priority", value: task.priority, badge: true },
+                { term: "Assignee", value: task.who, avatars: [{ name: task.who }] },
+                { term: "Due", value: isOverdue(task, columnName) ? `${task.due} (overdue)` : task.due },
+                { term: "Task ID", value: task.id, mono: true },
               ]}
             />
             <Column tight>
@@ -787,7 +788,7 @@ export const KANBAN_TEMPLATE: TemplateDoc = {
     {
       title: "Board",
       anatomy:
-        "A Stats strip (live totals) over a filter toolbar (selectable tag Chips, an assignee Select, a search Input, Reset). Below, one DragDropProvider wraps a horizontal ScrollView of fixed-width columns: each column is a DropZone headed by its visible-count Badge and a RowMenu (sort, rename, clear, the last disabled when empty), the WIP column adds a Progress meter that goes amber at the limit and red over it, and cards are Draggables with a DragHandle grip plus their own action menu. Dragging a card lifts a floating ghost and drops it at a position within or across columns; the grip is keyboard- and screen-reader-operable, and the RowMenu 'Move to' items are the always-on fallback (drag is disabled while a filter is active). Pressing a card opens a detail Dialog (Field rows, a comment thread, an Edit mode, move and delete actions); Add task and Add column open small Dialogs; deletes and clears confirm through an AlertDialog; moves, reorders, and deletes offer Undo from a toast. A Feed logs recent activity. On phones the board pans instead of squeezing.",
+        "A Stats strip (live totals) over a filter toolbar (selectable tag Chips, an assignee Select, a search Input, Reset). Below, one DragDropProvider wraps a horizontal ScrollView of fixed-width columns: each column is a DropZone headed by its visible-count Badge and a RowMenu (sort, rename, clear, the last disabled when empty), the WIP column adds a Progress meter that goes amber at the limit and red over it, and cards are Draggables with a DragHandle grip plus their own action menu. Dragging a card lifts a floating ghost and drops it at a position within or across columns; the grip is keyboard- and screen-reader-operable, and the RowMenu 'Move to' items are the always-on fallback (drag is disabled while a filter is active). Pressing a card opens a detail Dialog (DescriptionList rows, a comment thread, an Edit mode, move and delete actions); Add task and Add column open small Dialogs; deletes and clears confirm through an AlertDialog; moves, reorders, and deletes offer Undo from a toast. A Feed logs recent activity. On phones the board pans instead of squeezing.",
       render: () => <BoardLive />,
     },
   ],

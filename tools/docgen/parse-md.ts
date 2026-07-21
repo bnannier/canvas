@@ -212,7 +212,7 @@ export function bannedStyleViolations(code: string): string[] {
 // fences. Explicit `width` stays allowed (deliberate side-by-side comparisons),
 // as do width bounds on wrapper Views/Cards (page-layout composition). The
 // `// docgen-allow-style` line opt-out applies here too.
-const FIELD_WIDTH_TAGS = ["Input", "Textarea", "Select", "Autocomplete", "Field", "Listbox"] as const;
+const FIELD_WIDTH_TAGS = ["Input", "Textarea", "Select", "Autocomplete", "Listbox"] as const;
 const FIELD_WIDTH_BANNED = ["maxWidth", "minWidth"] as const;
 
 /**
@@ -237,9 +237,6 @@ export function fieldWidthShimViolations(code: string): string[] {
       else if (ch === ">" && depth === 0) { tagEnd = i; break; }
     }
     const tagSrc = code.slice(m.index, tagEnd);
-    // Field's read-only display mode (a rows= label/value table) is NOT a field
-    // and stays uncapped by the axis, so a width bound on it is composition.
-    if (m[1] === "Field" && /[\s{]rows\s*=/.test(tagSrc)) continue;
     const styleAt = tagSrc.indexOf("style={");
     if (styleAt === -1) continue;
 

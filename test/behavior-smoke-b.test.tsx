@@ -109,6 +109,31 @@ describe("DescriptionList", () => {
     expect(root!.children.length).toBe(items.length);
   });
 
+  it("copyValue appends a named Copy button that hands the string to onCopy", () => {
+    let copied = "";
+    ui(
+      <DescriptionList
+        onCopy={(v) => { copied = v; }}
+        items={[{ term: "Order ID", value: "ORD-2847", mono: true, copyValue: "ORD-2847" }]}
+      />,
+    );
+    expect(screen.getByText("ORD-2847")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Copy Order ID" }));
+    expect(copied).toBe("ORD-2847");
+  });
+
+  it("avatars renders a named AvatarGroup with the overflow folded into its +N chip", () => {
+    ui(
+      <DescriptionList
+        items={[{ term: "Members", value: "5 members", avatars: [{ name: "Rachel Chen" }, { name: "Alan Turing" }], overflow: 3 }]}
+      />,
+    );
+    // The group is named with the member names and the overflow count.
+    expect(screen.getByLabelText("Rachel Chen, Alan Turing and 3 more")).toBeTruthy();
+    // AvatarGroup folds `overflow` into its "+N" chip.
+    expect(screen.getByText("+3")).toBeTruthy();
+  });
+
   it("the update affordance renders a named Update button, and card adds a header title", () => {
     ui(<DescriptionList card title="Account" items={items} />);
     // The per-item `update` flag appends a labelled inline-edit button.

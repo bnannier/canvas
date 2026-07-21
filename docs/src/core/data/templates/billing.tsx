@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Progress, Field, Divider, Emblem, Icon, AlertDialog, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, DataTable, Progress, DescriptionList, Divider, Emblem, Icon, AlertDialog, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Billing settings built from real Canvas components: current plan + usage
@@ -41,11 +41,12 @@ function PlanUsageLive() {
             <Badge status success>Active</Badge>
           </Row>
           <Divider />
-          <Field
-            rows={[
-              { label: "Renews", value: "Aug 17, 2026" },
-              { label: "Seats", value: "8 of 10" },
-              { label: "Billing email", value: "ap@acme.com" },
+          <DescriptionList
+            twoColumn
+            items={[
+              { term: "Renews", value: "Aug 17, 2026" },
+              { term: "Seats", value: "8 of 10" },
+              { term: "Billing email", value: "ap@acme.com" },
             ]}
           />
           <Row snug>
@@ -146,7 +147,7 @@ export const BILLING_TEMPLATE: TemplateDoc = {
   sections: [
     {
       title: "Plan and usage",
-      anatomy: "Two Cards side by side (stacking on phones): the current plan with its renewal Field rows and actions (cancelling confirms through an AlertDialog), and per-resource usage meters (Progress). ",
+      anatomy: "Two Cards side by side (stacking on phones): the current plan with its renewal DescriptionList rows and actions (cancelling confirms through an AlertDialog), and per-resource usage meters (Progress). ",
       render: () => <PlanUsageLive />,
     },
     {

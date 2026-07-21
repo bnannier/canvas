@@ -37,7 +37,6 @@ export const GLYPH_RASTERS: Record<string, number> = {
   footprints: require("../../assets/images/menu-glyphs/footprints.png"),
   gauge: require("../../assets/images/menu-glyphs/gauge.png"),
   globe: require("../../assets/images/menu-glyphs/globe.png"),
-  group: require("../../assets/images/menu-glyphs/group.png"),
   home: require("../../assets/images/menu-glyphs/home.png"),
   image: require("../../assets/images/menu-glyphs/image.png"),
   inbox: require("../../assets/images/menu-glyphs/inbox.png"),

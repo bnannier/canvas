@@ -21,7 +21,7 @@ describe.skipIf(!hasDist)("dist artifact", () => {
     for (const name of [
       "View", "Text", "Pressable",
       "Button", "Badge", "Avatar", "AvatarGroup", "Chip", "Emblem", "Row", "Column", "Sparkline",
-      "Card", "Field", "Stats",
+      "Card", "DescriptionList", "Form", "FormSection", "Stats",
       "Chart", "StackedBar", "Gauge", "Heatmap", "LineChart", "AreaChart", "PieChart", "ScatterPlot", "CandlestickChart", "DepthChart", "DataTable", "Dialog", "Toast",
       "ThemeProvider", "GlassSurface", "QRCode",
     ]) {

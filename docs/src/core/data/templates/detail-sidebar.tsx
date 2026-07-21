@@ -1,4 +1,4 @@
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, Field, Divider, Avatar, Icon, useResponsive, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useResponsive, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Order detail built from real Canvas components: breadcrumb + header with the
@@ -106,13 +106,13 @@ function DetailSidebarLive() {
             </Column>
           </Row>
           <Divider />
-          <Field
-            block
+          <DescriptionList
+            twoColumn
             onCopy={(value) => toast({ success: true, message: "Copied to clipboard", description: value })}
-            rows={[
-              { label: "Order ID", value: "ORD-2847", mono: true, copyValue: "ORD-2847" },
-              { label: "Payment ID", value: "pay_9f3k82aq", mono: true, copyValue: "pay_9f3k82aq" },
-              { label: "Customer ID", value: "cus_8c3177fe", mono: true, copyValue: "cus_8c3177fe" },
+            items={[
+              { term: "Order ID", value: "ORD-2847", mono: true, copyValue: "ORD-2847" },
+              { term: "Payment ID", value: "pay_9f3k82aq", mono: true, copyValue: "pay_9f3k82aq" },
+              { term: "Customer ID", value: "cus_8c3177fe", mono: true, copyValue: "cus_8c3177fe" },
             ]}
           />
         </Column>
@@ -188,7 +188,7 @@ export const DETAIL_SIDEBAR_TEMPLATE: TemplateDoc = {
   sections: [
     {
       title: "Order detail",
-      anatomy: "Breadcrumb + header Row (title, status Badge, toast-backed actions) over a 2fr/1fr split: items DataTable and shipment Feed in the main Column; customer identity, copyable ID Field rows, shipping address, and totals Cards in the sidebar. Columns stack below sm.",
+      anatomy: "Breadcrumb + header Row (title, status Badge, toast-backed actions) over a 2fr/1fr split: items DataTable and shipment Feed in the main Column; customer identity, copyable ID DescriptionList rows, shipping address, and totals Cards in the sidebar. Columns stack below sm.",
       render: () => <DetailSidebarLive />,
     },
   ],
