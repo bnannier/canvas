@@ -28,11 +28,13 @@ import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 //   removes the inset for edge-to-edge content (a table, a nav bar) or when you
 //   compose CardHeader/CardContent, which carry their own padding. `padded` is
 //   the explicit form of the default. The data-driven string-prop path renders
-//   self-padding sections, so a childless card stays bare on its own.
+//   self-padding sections, so the surface itself NEVER pads there: `padded` and
+//   the density booleans are inert for the inset in that path (adding it would
+//   double-pad the sections).
 // - Density (pick one): `compact` > `comfortable`. Sets the card's own content
 //   padding and the gap between flat children, tight (compact) or roomy
 //   (comfortable). A density prop pads the surface on its own, so it needs no
-//   `padded`, and it wins over `padded` when both are set.
+//   `padded`, and it wins over `padded` and `flush` when both are set.
 //
 // For the docs playground, which maps plain state to props (no JSX children),
 // Card also accepts simple string props (title, description, body, footer):
@@ -51,10 +53,10 @@ export interface CardProps {
   // Elevation (pick one; default is a soft resting shadow).
   raised?: boolean;
   flat?: boolean;
-  // Padding (orthogonal booleans). A card with raw children is padded by default;
-  // `flush` removes the inset for edge-to-edge content or when you compose the
-  // self-padding CardHeader/CardContent. `padded` is the explicit form of the
-  // default (kept for clarity and back-compat).
+  // Padding (orthogonal booleans). A card with raw children is padded by default,
+  // and the data-driven string path (no children) pads through its self-padding
+  // sections instead, so neither prop moves the surface inset there.
+  // `flush` strips the raw-children inset (edge-to-edge content, or composing the self-padding CardHeader/CardContent); `padded` is the explicit form of the padded-by-default.
   padded?: boolean;
   flush?: boolean;
   /** When set, the whole card becomes pressable (a card that behaves as a control). */
@@ -92,7 +94,7 @@ function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, description, body, footer, padded, flush, onPress, selected, grow, testID, style } = props;
+    const { children, title, description, body, footer, flush, onPress, selected, grow, testID, style } = props;
     const { tokens } = useTheme();
     const elev = elevationOf(props);
     const dens = densityOf(props);
@@ -109,12 +111,14 @@ export function createCard(skin: CardSkin) {
       // treatment hairline; Android paints it transparent on the non-outlined
       // (M3 elevated) variants and shows it only on `flat` (M3 outlined).
       skin.surface(tokens, elev),
-      // Density pads + gaps on its own and wins over everything. Otherwise a card
-      // with raw children pads by default (the common case); `flush` opts out
-      // (edge-to-edge content, or composing self-padding CardHeader/CardContent),
-      // and the data-driven string path (no children) stays bare since its own
-      // sections carry the padding. `padded` is the explicit form of the default.
-      dens !== "default" ? skin.density[dens] : flush ? null : padded || children != null ? skin.padded : null,
+      // The surface inset belongs to the raw-children path only: the data-driven
+      // string path (no children) renders self-padding sections, so any surface
+      // padding there would stack on the sections' own insets (double-padding).
+      // With children: density pads + gaps on its own and wins over everything,
+      // `flush` opts out (edge-to-edge content, or composing the self-padding
+      // CardHeader/CardContent), and otherwise the card pads by default
+      // (`padded` is the explicit form of that default).
+      children != null ? (dens !== "default" ? skin.density[dens] : flush ? null : skin.padded) : null,
       // Selected: recolor the border to primary and wash the surface with a soft
       // primary tint (the border width is unchanged, so content never shifts; on
       // Android's elevated default the resting hairline is transparent, so this

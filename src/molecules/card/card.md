@@ -1,6 +1,6 @@
 # Card
 
-Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
+Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. The data-driven string form (`title` / `description` / `body` / `footer`, no children) renders self-padding sections, so it needs no `padded`. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
 
 ## Usage
 
@@ -32,12 +32,12 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ### Generic
 
 ```tsx
-<Card
-  padded
-  onPress={() => {}}
-  title="Anything goes here"
-  body="The card surface gives you the border, radius, and shadow. You bring the content."
-/>
+<Card style={{ maxWidth: 360 }}>
+  <Column tight>
+    <Typography lead semibold>Anything goes here</Typography>
+    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
+  </Column>
+</Card>
 ```
 
 ## Do & Don't

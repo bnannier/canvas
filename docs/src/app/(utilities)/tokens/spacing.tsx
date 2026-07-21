@@ -99,29 +99,69 @@ const zIndexExamples: DocExample[] = [
 
 // Card carries a real density axis (compact / default / comfortable), so it shows
 // the spacing change on an actual component.
+// The inner text column is identical in all three; only the card's own density
+// changes, so the surface inset (16 / 24 / 32) is the whole visual difference.
+// Density retunes the surface inset on the raw-children path only (the string
+// form's sections pad themselves), hence the composed children here.
 const densityExamples: DocExample[] = [
   {
     label: "compact",
-    code: `<Card compact title="Storage" description="84% of 512 GB used." />`,
+    code: `<Card compact style={{ width: 260 }}>
+  <Column tight>
+    <Typography lead semibold>Storage</Typography>
+    <Typography small muted>84% of 512 GB used.</Typography>
+  </Column>
+</Card>`,
     render: (scope) => {
-      const { Card } = scope;
-      return <Card compact title="Storage" description="84% of 512 GB used." />;
+      const { Card, Column, Typography } = scope;
+      return (
+        <Card compact style={{ width: 260 }}>
+          <Column tight>
+            <Typography lead semibold>Storage</Typography>
+            <Typography small muted>84% of 512 GB used.</Typography>
+          </Column>
+        </Card>
+      );
     },
   },
   {
     label: "regular",
-    code: `<Card padded title="Storage" description="84% of 512 GB used." />`,
+    code: `<Card style={{ width: 260 }}>
+  <Column tight>
+    <Typography lead semibold>Storage</Typography>
+    <Typography small muted>84% of 512 GB used.</Typography>
+  </Column>
+</Card>`,
     render: (scope) => {
-      const { Card } = scope;
-      return <Card padded title="Storage" description="84% of 512 GB used." />;
+      const { Card, Column, Typography } = scope;
+      return (
+        <Card style={{ width: 260 }}>
+          <Column tight>
+            <Typography lead semibold>Storage</Typography>
+            <Typography small muted>84% of 512 GB used.</Typography>
+          </Column>
+        </Card>
+      );
     },
   },
   {
     label: "comfortable",
-    code: `<Card comfortable title="Storage" description="84% of 512 GB used." />`,
+    code: `<Card comfortable style={{ width: 260 }}>
+  <Column tight>
+    <Typography lead semibold>Storage</Typography>
+    <Typography small muted>84% of 512 GB used.</Typography>
+  </Column>
+</Card>`,
     render: (scope) => {
-      const { Card } = scope;
-      return <Card comfortable title="Storage" description="84% of 512 GB used." />;
+      const { Card, Column, Typography } = scope;
+      return (
+        <Card comfortable style={{ width: 260 }}>
+          <Column tight>
+            <Typography lead semibold>Storage</Typography>
+            <Typography small muted>84% of 512 GB used.</Typography>
+          </Column>
+        </Card>
+      );
     },
   },
 ];
