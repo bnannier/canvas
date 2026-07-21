@@ -40,6 +40,103 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 </Card>
 ```
 
+### Media
+
+```tsx
+<Card style={{ width: 320, maxWidth: "100%" }}>
+  <Column cozy>
+    <Image source={{ uri: "/kira-tanaka.jpg" }} width="100%" height={180} radius="md" alt="Portrait of Kira Tanaka" />
+    <Column tight>
+      <Typography h5 semibold>Kira Tanaka</Typography>
+      <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+    </Column>
+    <Row snug>
+      <Button primary small>Follow</Button>
+      <Button outline small>Message</Button>
+    </Row>
+  </Column>
+</Card>
+```
+
+### Horizontal
+
+```tsx
+<Card style={{ width: 400, maxWidth: "100%" }}>
+  <MediaObject
+    src="/rachel-chen.jpg"
+    title="Rachel Chen"
+    description="Platform engineering, San Francisco"
+    action={<Button outline small>View</Button>}
+    center
+  />
+</Card>
+```
+
+### Actions
+
+```tsx
+<Card flush style={{ width: 360, maxWidth: "100%" }}>
+  <CardHeader>
+    <CardTitle>Workspace settings</CardTitle>
+    <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
+  </CardHeader>
+  <CardSeparator />
+  <CardContent>
+    <Field label="Workspace name" placeholder="Acme Inc." block />
+  </CardContent>
+  <CardSeparator />
+  <CardFooter>
+    <Button ghost small>Cancel</Button>
+    <Button primary small>Save changes</Button>
+  </CardFooter>
+</Card>
+```
+
+### Selectable
+
+```tsx
+<Stateful initial="pro">
+  {(plan, setPlan) => (
+    <Row cozy style={{ width: 400, maxWidth: "100%" }}>
+      <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
+        <Column tight>
+          <Typography lead semibold>Starter</Typography>
+          <Typography small muted>3 projects, 1 seat</Typography>
+        </Column>
+      </Card>
+      <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
+        <Column tight>
+          <Typography lead semibold>Pro</Typography>
+          <Typography small muted>Unlimited, 10 seats</Typography>
+        </Column>
+      </Card>
+    </Row>
+  )}
+</Stateful>
+```
+
+### Flat
+
+```tsx
+<Card flat style={{ maxWidth: 360 }}>
+  <Column tight>
+    <Typography lead semibold>Outlined and quiet</Typography>
+    <Typography small muted>Flat drops the shadow so the card sits flush with the page. On Android this is the Material outlined card.</Typography>
+  </Column>
+</Card>
+```
+
+### Raised
+
+```tsx
+<Card raised style={{ maxWidth: 360 }}>
+  <Column tight>
+    <Typography lead semibold>Lifted above the page</Typography>
+    <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
+  </Column>
+</Card>
+```
+
 ## Do & Don't
 
 ### stat
