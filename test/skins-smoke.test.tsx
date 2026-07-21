@@ -131,6 +131,27 @@ const CASES: SkinCase[] = [
   { name: "Command", dir: "organisms/command", file: "command", props: { open: true, placeholder: "Search…", active: 0, groups: [{ heading: "Actions", items: [{ label: "New file" }, { label: "Open" }] }] } },
   { name: "DataTable", dir: "organisms/data-table", file: "data-table", props: { columns: ["Name", "Role"], rows: [["Ada", "Eng"], ["Bob", "PM"]] } },
   { name: "Dialog", dir: "organisms/dialog", file: "dialog", props: { open: true, onOpenChange: noop, title: "Edit profile", description: "Update your details.", confirmLabel: "Save", cancelLabel: "Cancel" } },
+  // DragDropProvider renders a full mini-board so all four skin-consuming members (provider,
+  // zone, draggable, handle) mount together with real context on each platform.
+  {
+    name: "DragDropProvider",
+    dir: "organisms/drag-drop",
+    file: "drag-drop",
+    children: (mod) =>
+      createElement(
+        mod.DropZone as never,
+        { id: "z", label: "Zone" },
+        createElement(
+          mod.Draggable as never,
+          { id: "d", data: { n: 1 } },
+          createElement(mod.DragHandle as never, { label: "Reorder item" }),
+          txt("Card"),
+        ),
+      ),
+  },
+  { name: "DropZone", dir: "organisms/drag-drop", file: "drag-drop", props: { id: "z", label: "Zone" }, children: txt("Zone body") },
+  { name: "Draggable", dir: "organisms/drag-drop", file: "drag-drop", props: { id: "d", data: {} }, children: txt("Card") },
+  { name: "DragHandle", dir: "organisms/drag-drop", file: "drag-drop", props: { label: "Reorder" } },
   { name: "Drawer", dir: "organisms/drawer", file: "drawer", props: { open: true, onOpenChange: noop, left: true }, children: txt("Drawer panel content") },
   { name: "FilterPanel", dir: "organisms/filter-panel", file: "filter-panel", props: { groups: [{ title: "Status", options: [{ label: "Active", checked: true }, { label: "Archived" }] }] } },
   { name: "Navbar", dir: "organisms/navbars", file: "navbars", props: { brand: "Acme", links: ["Home", "Docs", "Pricing"], active: 0, actionLabel: "Sign in" } },

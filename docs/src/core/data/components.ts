@@ -297,6 +297,12 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Organisms",
   },
   {
+    slug: "drag-drop",
+    name: "Drag & drop",
+    description: "A reusable drag-and-drop context: wrap a surface in a DragDropProvider, mark droppable regions with DropZone, and make items draggable with Draggable plus a DragHandle grip. Cards lift into a floating ghost and reorder within or across zones, position-aware. Built from PanResponder and Animated so it runs on iOS, Android, and the web with no platform forks, and it is fully keyboard- and screen-reader-operable (Space to grab, arrows to move, Space to drop, Escape to cancel).",
+    category: "Organisms",
+  },
+  {
     slug: "drawer",
     name: "Drawer",
     description: "A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal so it floats over the whole app on iOS, Android, and the web. For a small contextual menu, reach for Dropdown or RowMenu instead.",

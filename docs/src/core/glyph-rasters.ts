@@ -57,6 +57,7 @@ export const GLYPH_RASTERS: Record<string, number> = {
   moon: require("../../assets/images/menu-glyphs/moon.png"),
   moreHorizontal: require("../../assets/images/menu-glyphs/moreHorizontal.png"),
   mousePointerClick: require("../../assets/images/menu-glyphs/mousePointerClick.png"),
+  move: require("../../assets/images/menu-glyphs/move.png"),
   moveVertical: require("../../assets/images/menu-glyphs/moveVertical.png"),
   navigation: require("../../assets/images/menu-glyphs/navigation.png"),
   palette: require("../../assets/images/menu-glyphs/palette.png"),

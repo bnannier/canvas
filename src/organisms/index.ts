@@ -5,6 +5,7 @@ export * from "./carousel/carousel.js";
 export * from "./command/command.js";
 export * from "./data-table/data-table.js";
 export * from "./dialog/dialog.js";
+export * from "./drag-drop/drag-drop.js";
 export * from "./drawer/drawer.js";
 export * from "./filter-panel/filter-panel.js";
 export * from "./navbars/navbars.js";

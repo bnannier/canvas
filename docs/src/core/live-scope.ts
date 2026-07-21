@@ -33,6 +33,10 @@ import {
   DataTable,
   DescriptionList,
   Dialog,
+  Draggable,
+  DragDropProvider,
+  DragHandle,
+  DropZone,
   Drawer,
   Divider,
   Dropdown,
@@ -99,7 +103,7 @@ import {
 import { alpha, shadow, palette } from "../../../src/style/index.js";
 // Docs-only live-example state helper (not a Canvas export); lets a fence drive a
 // component's controlled `value` from an external control. See ./live-state.tsx.
-import { Stateful, Ticker } from "./live-state.js";
+import { Stateful, Ticker, applyDrop } from "./live-state.js";
 
 // The canonical list of names a component `.md` example fence may reference as a JSX
 // tag, mapped to the real Canvas components. The docgen (tools/docgen) parses these
@@ -117,6 +121,7 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   palette,
   Stateful,
   Ticker,
+  applyDrop,
   View,
   Text,
   Pressable,
@@ -151,6 +156,10 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   DataTable,
   DescriptionList,
   Dialog,
+  Draggable,
+  DragDropProvider,
+  DragHandle,
+  DropZone,
   Drawer,
   Divider,
   Dropdown,

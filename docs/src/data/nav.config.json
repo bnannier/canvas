@@ -415,6 +415,11 @@
             "icon": "app-window"
           },
           {
+            "slug": "drag-drop",
+            "label": "Drag & drop",
+            "icon": "move"
+          },
+          {
             "slug": "drawer",
             "label": "Drawer",
             "icon": "panel-right"

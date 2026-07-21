@@ -32,10 +32,19 @@ type TickerHelper = <T>(props: {
   children: (value: T) => ReactNode;
 }) => ReactNode;
 
+// The docs-only DragDrop reducer (./live-state.tsx): applies a DropEvent to a flat list of
+// `{ id, zone, … }` cards so a drag example's onDrop stays a single expression. Keep in sync
+// with the `applyDrop` function in ./live-state.tsx.
+type ApplyDropHelper = <T extends { id: string; zone: string }>(
+  cards: T[],
+  e: { id: string; to: string; index: number },
+) => T[];
+
 export type ExampleScope = typeof import("@nannier/canvas") & {
   tokens: ColorTokens;
   Stateful: StatefulHelper;
   Ticker: TickerHelper;
+  applyDrop: ApplyDropHelper;
 };
 
 // A generated example module's default export.
