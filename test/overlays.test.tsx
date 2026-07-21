@@ -271,6 +271,39 @@ describe("Tooltip", () => {
     expect(screen.queryByText("Extra context")).toBeNull();
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
+
+  it("shows the tip while the trigger is hovered and hides on hover out", () => {
+    const { container } = ui(<Tooltip trigger="Info" label="Extra context" />);
+    const trigger = container.querySelector('[aria-expanded]')!;
+    expect(screen.queryByText("Extra context")).toBeNull();
+
+    // react-native-web listens for pointerenter when PointerEvent exists and
+    // mouseenter otherwise; fire both so the test holds under either DOM.
+    fireEvent.pointerEnter(trigger);
+    fireEvent.mouseEnter(trigger);
+    expect(screen.getByText("Extra context")).toBeDefined();
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+    fireEvent.pointerLeave(trigger);
+    fireEvent.mouseLeave(trigger);
+    expect(screen.queryByText("Extra context")).toBeNull();
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("shows the tip on focus and hides on blur, for every trigger flavor", () => {
+    for (const props of [{}, { iconTrigger: true }, { textTrigger: true }] as const) {
+      const { container, unmount } = ui(<Tooltip trigger="Info" label="Extra context" {...props} />);
+      const trigger = container.querySelector('[aria-expanded]')!;
+      expect(screen.queryByText("Extra context")).toBeNull();
+
+      fireEvent.focus(trigger);
+      expect(screen.getByText("Extra context")).toBeDefined();
+
+      fireEvent.blur(trigger);
+      expect(screen.queryByText("Extra context")).toBeNull();
+      unmount();
+    }
+  });
 });
 
 describe("RowMenu", () => {

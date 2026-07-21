@@ -1,5 +1,13 @@
 import { useState, type ReactNode } from "react";
-import { ActivityIndicator, type GestureResponderEvent, type Insets, type LayoutChangeEvent } from "react-native";
+import {
+  ActivityIndicator,
+  type GestureResponderEvent,
+  type Insets,
+  type LayoutChangeEvent,
+  type MouseEvent,
+  type NativeSyntheticEvent,
+  type TargetedEvent,
+} from "react-native";
 import { Pressable, RippleClip, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
@@ -23,6 +31,18 @@ export interface ButtonProps {
   /** Accessibility label, required for an icon-only button (no text to read). */
   accessibilityLabel?: string;
   onPress?: (event: GestureResponderEvent) => void;
+  /**
+   * Called when a pointer starts hovering the button. Fires on pointer devices
+   * only (web via react-native-web, pointer-equipped iPads/desktops natively);
+   * touch never triggers it. For hover-driven disclosure such as Tooltip.
+   */
+  onHoverIn?: (event: MouseEvent) => void;
+  /** Called when the pointer stops hovering the button (see `onHoverIn`). */
+  onHoverOut?: (event: MouseEvent) => void;
+  /** Called when the button gains focus (keyboard tab, or click on web). */
+  onFocus?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
+  /** Called when the button loses focus. */
+  onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
   // Intent (pick one; default is the primary action).
   primary?: boolean;
   secondary?: boolean;
@@ -89,7 +109,7 @@ export function minTargetSlop(minTarget: number, width: number, height: number):
 /** Build a Button component from a platform skin. */
 export function createButton(skin: ButtonSkin) {
   return function Button(props: ButtonProps) {
-    const { children, iconLeft, iconRight, accessibilityLabel, onPress, loading, disabled, block, icon, testID, style } = props;
+    const { children, iconLeft, iconRight, accessibilityLabel, onPress, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
     const { tokens } = useTheme();
     const intent = intentOf(props);
     const size = sizeOf(props);
@@ -126,6 +146,10 @@ export function createButton(skin: ButtonSkin) {
       <RippleClip shape={clipShape} style={[block ? { width: "100%" } : null, style]}>
         <Pressable
           onPress={onPress}
+          onHoverIn={onHoverIn}
+          onHoverOut={onHoverOut}
+          onFocus={onFocus}
+          onBlur={onBlur}
           disabled={disabled || loading}
           testID={testID}
           onLayout={onTargetLayout}
