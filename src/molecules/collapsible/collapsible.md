@@ -6,7 +6,7 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
 
 ```tsx
 <Collapsible title="Shipping details">
-  <Text>Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.</Text>
+  Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.
 </Collapsible>
 ```
 
@@ -16,7 +16,7 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
 
 ```tsx
 <Collapsible title="What is Canvas?" defaultOpen>
-  <Text>A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web.</Text>
+  A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web.
 </Collapsible>
 ```
 
@@ -24,7 +24,7 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
 
 ```tsx
 <Collapsible title="Advanced settings (coming soon)" disabled>
-  <Text>Not available yet.</Text>
+  Not available yet.
 </Collapsible>
 ```
 
@@ -35,7 +35,7 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
   trigger={<Typography medium>Order #1024, 3 items</Typography>}
   defaultOpen
 >
-  <Text>Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.</Text>
+  Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.
 </Collapsible>
 ```
 
@@ -45,7 +45,7 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
 
 ```tsx
 <Collapsible title="Returns policy">
-  <Text>30-day returns, no questions asked. Refunds post within 5 business days.</Text>
+  30-day returns, no questions asked. Refunds post within 5 business days.
 </Collapsible>
 ```
 
@@ -53,8 +53,8 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
 
 ```tsx
 <View>
-  <Collapsible title="Billing"><Text>Manage your plan.</Text></Collapsible>
-  <Collapsible title="Team"><Text>Invite teammates.</Text></Collapsible>
-  <Collapsible title="Security"><Text>Two-factor authentication.</Text></Collapsible>
+  <Collapsible title="Billing">Manage your plan.</Collapsible>
+  <Collapsible title="Team">Invite teammates.</Collapsible>
+  <Collapsible title="Security">Two-factor authentication.</Collapsible>
 </View>
 ```

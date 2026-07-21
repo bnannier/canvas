@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Collapsible } = scope;
+  const { Collapsible } = scope;
   return (
 <Collapsible title="Advanced settings (coming soon)" disabled>
-  <Text>Not available yet.</Text>
+  Not available yet.
 </Collapsible>
   );
 }

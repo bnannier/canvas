@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Collapsible } = scope;
+  const { Collapsible } = scope;
   return (
 <Collapsible title="Returns policy">
-  <Text>30-day returns, no questions asked. Refunds post within 5 business days.</Text>
+  30-day returns, no questions asked. Refunds post within 5 business days.
 </Collapsible>
   );
 }

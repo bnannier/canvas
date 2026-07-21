@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Text, Collapsible } = scope;
+  const { Collapsible } = scope;
   return (
 <Collapsible title="Shipping details">
-  <Text>Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.</Text>
+  Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.
 </Collapsible>
   );
 }
