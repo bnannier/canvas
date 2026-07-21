@@ -60,3 +60,23 @@ export function Ticker<T>({
   const value = reduced ? values[Math.min(restIndex, values.length - 1)] : values[index];
   return <>{children(value)}</>;
 }
+
+// Docs-only reducer for the DragDrop examples (not a Canvas export): apply a DropEvent to a
+// flat list of `{ id, zone, … }` cards, returning a new list where the dropped card's `zone`
+// becomes the target and it sits at `index` within that zone. Cards render by filtering on
+// `zone`, so only per-zone order matters; this preserves every zone's order and moves the one
+// card. Keeps a fence's onDrop a single clean expression. Keep in sync with the
+// `ApplyDropHelper` alias in ./scope.ts.
+export function applyDrop<T extends { id: string; zone: string }>(
+  cards: T[],
+  e: { id: string; to: string; index: number },
+): T[] {
+  const moved = cards.find((c) => c.id === e.id);
+  if (!moved) return cards;
+  const without = cards.filter((c) => c.id !== e.id);
+  const updated = { ...moved, zone: e.to };
+  const target = without.filter((c) => c.zone === e.to);
+  const others = without.filter((c) => c.zone !== e.to);
+  target.splice(Math.max(0, Math.min(e.index, target.length)), 0, updated);
+  return [...others, ...target];
+}
