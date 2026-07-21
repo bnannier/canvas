@@ -17,7 +17,7 @@ Topbars with a brand, navigation links, and an action button. Used as the primar
 
 ## Variants
 
-### Layout - search
+### Borderless
 
 ```tsx
 <Navbar
@@ -26,14 +26,14 @@ Topbars with a brand, navigation links, and an action button. Used as the primar
   defaultActive={0}
   actionLabel="New"
   avatar="RC"
-  bordered
 />
 ```
 
-### Layout - mobile
+### Floating
 
 ```tsx
 <Navbar
+  floating
   brand="Canvas"
   links={["Dashboard", "Users", "Settings"]}
   defaultActive={0}

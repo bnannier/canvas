@@ -513,10 +513,6 @@ import e_molecules_alert_dialog_dont_5_dont from "./examples/molecules/alert-dia
 import e_molecules_card_example_0 from "./examples/molecules/card/example-0";
 import e_molecules_card_example_1 from "./examples/molecules/card/example-1";
 import e_molecules_card_example_2 from "./examples/molecules/card/example-2";
-import e_molecules_card_example_3 from "./examples/molecules/card/example-3";
-import e_molecules_card_example_4 from "./examples/molecules/card/example-4";
-import e_molecules_card_example_5 from "./examples/molecules/card/example-5";
-import e_molecules_card_example_6 from "./examples/molecules/card/example-6";
 import e_molecules_card_dont_0_do from "./examples/molecules/card/dont-0-do";
 import e_molecules_card_dont_0_dont from "./examples/molecules/card/dont-0-dont";
 import e_molecules_card_dont_1_do from "./examples/molecules/card/dont-1-do";
@@ -721,6 +717,7 @@ import e_organisms_drawer_dont_0_dont from "./examples/organisms/drawer/dont-0-d
 import e_organisms_filter_panel_example_0 from "./examples/organisms/filter-panel/example-0";
 import e_organisms_navbars_example_0 from "./examples/organisms/navbars/example-0";
 import e_organisms_navbars_example_1 from "./examples/organisms/navbars/example-1";
+import e_organisms_navbars_example_2 from "./examples/organisms/navbars/example-2";
 import e_organisms_navbars_dont_0_do from "./examples/organisms/navbars/dont-0-do";
 import e_organisms_navbars_dont_0_dont from "./examples/organisms/navbars/dont-0-dont";
 import e_organisms_navbars_dont_1_do from "./examples/organisms/navbars/dont-1-do";
@@ -1524,10 +1521,6 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Default", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem primary label=\"U\" />\n  </Row>\n</Card>", render: e_molecules_card_example_0 },
       { label: "Type - section", code: "<Card\n  onPress={() => {}}\n  title=\"Recent activity\"\n  body=\"A labeled content surface. Drop fields, a list, or any module of content here.\"\n/>", render: e_molecules_card_example_1 },
       { label: "Type - generic", code: "<Card\n  padded\n  onPress={() => {}}\n  title=\"Anything goes here\"\n  body=\"The card surface gives you the border, radius, and shadow. You bring the content.\"\n/>", render: e_molecules_card_example_2 },
-      { label: "Icon tone - success", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem success label=\"S\" />\n  </Row>\n</Card>", render: e_molecules_card_example_3 },
-      { label: "Icon tone - primary", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem primary label=\"O\" />\n  </Row>\n</Card>", render: e_molecules_card_example_4 },
-      { label: "Icon tone - destructive", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem destructive label=\"!\" />\n  </Row>\n</Card>", render: e_molecules_card_example_5 },
-      { label: "Icon tone - muted", code: "<Card padded style={{ width: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem muted label=\"T\" />\n  </Row>\n</Card>", render: e_molecules_card_example_6 },
     ],
     donts: [
       { title: "stat", do: { caption: "One big number, a short label, a small delta. The metric is scannable in a glance.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <Row between alignStart>\n    <Column tight>\n      <Typography caption medium>Active identities</Typography>\n      <Typography h3 bold>12,348</Typography>\n      <Typography tiny muted>+142 today</Typography>\n    </Column>\n    <Emblem primary label=\"U\" />\n  </Row>\n</Card>", render: e_molecules_card_dont_0_do }, dont: { caption: "Prose where the number should be: the eye has nothing big to land on, so the card stops being a stat.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: \"500\", textTransform: \"uppercase\", letterSpacing: 0.4, color: tokens[\"muted-foreground\"] }}>This month</Text>\n  <Text style={{ marginTop: 4, fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens[\"card-foreground\"] }}>We onboarded 12,348 active identities, up 142 today, with churn holding steady.</Text>\n</Card>", render: e_molecules_card_dont_0_dont } },
@@ -1839,7 +1832,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "organisms",
     examples: [
       { label: "Default", code: "<Navbar\n  brand=\"Canvas\"\n  links={[\"Dashboard\", \"Users\", \"Settings\"]}\n  defaultActive={0}\n  actionLabel=\"New\"\n  avatar=\"RC\"\n  bordered\n/>", render: e_organisms_navbars_example_0 },
-      { label: "Layout - mobile", code: "<Navbar\n  brand=\"Canvas\"\n  links={[\"Dashboard\", \"Users\", \"Settings\"]}\n  defaultActive={0}\n  actionLabel=\"New\"\n  avatar=\"RC\"\n/>", render: e_organisms_navbars_example_1 },
+      { label: "Borderless", code: "<Navbar\n  brand=\"Canvas\"\n  links={[\"Dashboard\", \"Users\", \"Settings\"]}\n  defaultActive={0}\n  actionLabel=\"New\"\n  avatar=\"RC\"\n/>", render: e_organisms_navbars_example_1 },
+      { label: "Floating", code: "<Navbar\n  floating\n  brand=\"Canvas\"\n  links={[\"Dashboard\", \"Users\", \"Settings\"]}\n  defaultActive={0}\n  actionLabel=\"New\"\n  avatar=\"RC\"\n/>", render: e_organisms_navbars_example_2 },
     ],
     donts: [
       { title: "Standard topbar", do: { caption: "Keep a few primary links inline and fold the rest behind a More menu.", code: "<Navbar bordered brand=\"Canvas\" defaultActive={0} links={[\"Dashboard\", \"Users\", \"Settings\"]} actionLabel=\"New\" avatar=\"RC\" />", render: e_organisms_navbars_dont_0_do }, dont: { caption: "Cramming every destination into the bar wraps the row and buries the primary links.", code: "<Navbar bordered brand=\"Canvas\" defaultActive={0} links={[\n    \"Dashboard\",\n    \"Users\",\n    \"Settings\",\n    \"Billing\",\n    \"Reports\",\n    \"Integrations\",\n    \"Audit\",\n    \"Webhooks\"\n  ]} avatar=\"RC\" />", render: e_organisms_navbars_dont_0_dont } },

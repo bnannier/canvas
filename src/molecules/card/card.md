@@ -40,66 +40,6 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 />
 ```
 
-### Icon tone - success
-
-```tsx
-<Card padded style={{ width: 280 }}>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem success label="S" />
-  </Row>
-</Card>
-```
-
-### Icon tone - primary
-
-```tsx
-<Card padded style={{ width: 280 }}>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem primary label="O" />
-  </Row>
-</Card>
-```
-
-### Icon tone - destructive
-
-```tsx
-<Card padded style={{ width: 280 }}>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem destructive label="!" />
-  </Row>
-</Card>
-```
-
-### Icon tone - muted
-
-```tsx
-<Card padded style={{ width: 280 }}>
-  <Row between alignStart>
-    <Column tight>
-      <Typography caption medium>Active identities</Typography>
-      <Typography h3 bold>12,348</Typography>
-      <Typography tiny muted>+142 today</Typography>
-    </Column>
-    <Emblem muted label="T" />
-  </Row>
-</Card>
-```
-
 ## Do & Don't
 
 ### stat
