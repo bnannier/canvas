@@ -115,8 +115,8 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
       <Typography small muted>Update how your name and email appear to teammates.</Typography>
     </Column>
     <Column relaxed>
-      <Field block label="Name" value="Ada Lovelace" />
-      <Field block label="Email" value="ada@example.com" />
+      <Input block label="Name" defaultValue="Ada Lovelace" />
+      <Input block label="Email" defaultValue="ada@example.com" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
@@ -155,8 +155,8 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
   <Column relaxed>
     <Typography lead semibold>Create project</Typography>
     <Column relaxed>
-      <Field block label="Name" placeholder="Acme website" />
-      <Field block label="Key" placeholder="ACME" />
+      <Input block label="Name" placeholder="Acme website" />
+      <Input block label="Key" placeholder="ACME" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
@@ -250,7 +250,7 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 <Dialog open small>
   <Column relaxed>
     <Typography lead semibold>Rename</Typography>
-    <Field block label="Name" value="Untitled" />
+    <Input block label="Name" defaultValue="Untitled" />
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
       <Button primary small>Save</Button>

@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Fieldset, Radio, RadioGroup } = scope;
+  const { Radio, RadioGroup } = scope;
   return (
-<Fieldset legend="Plan">
-  <RadioGroup defaultValue="pro">
-    <Radio value="hobby">Hobby</Radio>
-    <Radio value="pro">Pro</Radio>
-    <Radio value="enterprise">Enterprise</Radio>
-  </RadioGroup>
-</Fieldset>
+<RadioGroup label="Plan" defaultValue="pro">
+  <Radio value="hobby">Hobby</Radio>
+  <Radio value="pro">Pro</Radio>
+  <Radio value="enterprise">Enterprise</Radio>
+</RadioGroup>
   );
 }

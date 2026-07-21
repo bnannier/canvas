@@ -134,7 +134,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 ```tsx
 <Row alignEnd cozy style={{ maxWidth: 420 }}>
   <Column fill>
-    <Field label="City" value="Austin" />
+    <Input label="City" defaultValue="Austin" />
   </Column>
   <Column fill>
     <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />

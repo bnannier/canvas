@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input label="Storage" value="1024" suffix="GB" />
+<Input label="Storage" defaultValue="1024" suffix="GB" />
   );
 }
