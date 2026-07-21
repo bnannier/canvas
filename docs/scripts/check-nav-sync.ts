@@ -6,7 +6,7 @@
 // a plain data module (imported), while the pattern/template data files now compose
 // real kit components (they import @nannier/canvas), so their slugs are read straight
 // from the source text instead of importing the module graph.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import navConfig from "../src/data/nav.config.json";
@@ -15,10 +15,22 @@ import { COMPONENTS } from "../src/core/data/components";
 const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "core", "data");
 // Each pattern/template doc entry carries one top-level `slug: "..."`; sections have
 // none, and the `getX(slug: string)` params have no quote, so this matches only entries.
-function dataSlugs(file: string): string[] {
-  return [...readFileSync(join(DATA_DIR, file), "utf8").matchAll(/slug:\s*"([^"]+)"/g)].map((m) => m[1]);
+function slugsIn(text: string): string[] {
+  return [...text.matchAll(/slug:\s*"([^"]+)"/g)].map((m) => m[1]);
 }
-const templateSlugs = dataSlugs("templates.tsx");
+function dataSlugs(file: string): string[] {
+  return slugsIn(readFileSync(join(DATA_DIR, file), "utf8"));
+}
+// Templates are one live-component module per doc under templates/ (templates.tsx is
+// now just a thin registry that imports them and carries no slug literals), so read
+// each module's slug from source text — same RN-free approach as the single-file data.
+function templateDirSlugs(): string[] {
+  const dir = join(DATA_DIR, "templates");
+  return readdirSync(dir)
+    .filter((f) => f.endsWith(".tsx"))
+    .flatMap((f) => slugsIn(readFileSync(join(dir, f), "utf8")));
+}
+const templateSlugs = templateDirSlugs();
 const patternSlugs = dataSlugs("patterns.tsx");
 
 interface SidebarGroup {
