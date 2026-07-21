@@ -4,40 +4,58 @@ Tiled card grids for people directories, item collections, and image galleries.
 
 ## Usage
 
+Each tile action carries its own `onPress`, so every button on a card fires your handler; here each press reports which action ran, and the line underneath shows it. (`Stateful` is a docs-only helper that holds the example's state; in your app that state is your own.)
+
 ```tsx
-<GridList
-  items={[
-    { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "/rachel-chen.jpg", actions: [
-      { label: "Message", outline: true },
-      { label: "View", ghost: true }
-    ] },
-    { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "/ada-lovelace.jpg", actions: [
-      { label: "Message", outline: true },
-      { label: "View", ghost: true }
-    ] },
-    { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", actions: [
-      { label: "Message", outline: true },
-      { label: "View", ghost: true }
-    ] }
-  ]}
-  cols2
-/>
+<Stateful initial="">
+  {(status, setStatus) => (
+    <Column snug>
+      <GridList
+        items={[
+          { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "/rachel-chen.jpg", actions: [
+            { label: "Message", outline: true, onPress: () => setStatus("Messaged Rachel Chen") },
+            { label: "View", ghost: true, onPress: () => setStatus("Viewed Rachel Chen") }
+          ] },
+          { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "/ada-lovelace.jpg", actions: [
+            { label: "Message", outline: true, onPress: () => setStatus("Messaged Ada Lovelace") },
+            { label: "View", ghost: true, onPress: () => setStatus("Viewed Ada Lovelace") }
+          ] },
+          { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", actions: [
+            { label: "Message", outline: true, onPress: () => setStatus("Messaged Kevin Turner") },
+            { label: "View", ghost: true, onPress: () => setStatus("Viewed Kevin Turner") }
+          ] }
+        ]}
+        cols2
+      />
+      <Typography muted>{status === "" ? "Press an action on a card" : status}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Variants
 
 ### Tappable
 
+`onPressItem` makes every tile a button and reports the pressed index; tap any card below.
+
 ```tsx
-<GridList
-  onPressItem={() => {}}
-  items={[
-    { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC", badge: "Active" },
-    { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL", badge: "Active" },
-    { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", badge: "Away" }
-  ]}
-  cols3
-/>
+<Stateful initial="">
+  {(opened, setOpened) => (
+    <Column snug>
+      <GridList
+        onPressItem={(index) => setOpened(["Rachel Chen", "Ada Lovelace", "Kevin Turner"][index])}
+        items={[
+          { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC", badge: "Active" },
+          { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL", badge: "Active" },
+          { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", badge: "Away" }
+        ]}
+        cols3
+      />
+      <Typography muted>{opened === "" ? "Tap a card to open a profile" : `Opened ${opened}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ### Gallery

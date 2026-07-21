@@ -3,16 +3,23 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { GridList } = scope;
+  const { Stateful, GridList, Typography, Column } = scope;
   return (
-<GridList
-  onPressItem={() => {}}
-  items={[
-    { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC", badge: "Active" },
-    { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL", badge: "Active" },
-    { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", badge: "Away" }
-  ]}
-  cols3
-/>
+<Stateful initial="">
+  {(opened, setOpened) => (
+    <Column snug>
+      <GridList
+        onPressItem={(index) => setOpened(["Rachel Chen", "Ada Lovelace", "Kevin Turner"][index])}
+        items={[
+          { title: "Rachel Chen", subtitle: "Engineering Lead", avatar: "RC", badge: "Active" },
+          { title: "Ada Lovelace", subtitle: "Staff Engineer", avatar: "AL", badge: "Active" },
+          { title: "Kevin Turner", subtitle: "Product Designer", avatar: "KT", badge: "Away" }
+        ]}
+        cols3
+      />
+      <Typography muted>{opened === "" ? "Tap a card to open a profile" : `Opened ${opened}`}</Typography>
+    </Column>
+  )}
+</Stateful>
   );
 }

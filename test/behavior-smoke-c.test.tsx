@@ -64,6 +64,23 @@ describe("GridList", () => {
     expect(pressed).toBe(2);
   });
 
+  it("a tile action's onPress fires from the rendered button", () => {
+    let pressed = "";
+    const withActions = [{
+      title: "Alpha",
+      subtitle: "Design",
+      actions: [
+        { label: "Message", outline: true, onPress: () => { pressed = "message"; } },
+        { label: "View", ghost: true, onPress: () => { pressed = "view"; } },
+      ],
+    }];
+    ui(<GridList items={withActions} />);
+    fireEvent.click(screen.getByText("Message"));
+    expect(pressed).toBe("message");
+    fireEvent.click(screen.getByText("View"));
+    expect(pressed).toBe("view");
+  });
+
   it("the people tile shows the badge that the gallery variant drops", () => {
     // People (default) tile renders title, subtitle, AND the status badge.
     const people = ui(<GridList items={[items[0]]} />);
