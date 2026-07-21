@@ -12,6 +12,6 @@ export default function Example(scope: ExampleScope) {
     "Tom Cook",
     "Tanya Fox",
     "Hellen Schmidt"
-  ]} defaultQuery="co" defaultOpen />
+  ]} defaultQuery="co" open />
   );
 }

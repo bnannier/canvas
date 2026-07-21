@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Autocomplete } = scope;
   return (
-<Autocomplete label="Size" options={["Small", "Medium", "Large"]} defaultOpen placeholder="Search…" />
+<Autocomplete label="Size" options={["Small", "Medium", "Large"]} open placeholder="Search…" />
   );
 }
