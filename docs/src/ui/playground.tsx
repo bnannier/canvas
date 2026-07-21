@@ -60,9 +60,12 @@ export function FitStage({ children, align = "center" }: { children: ReactNode; 
   );
 }
 
-// One platform row in the stage: the centered live render, with a 96px platform-label column
-// only when more than one platform is shown (the web 3-up). On a device there is a single
-// preview and you ARE the platform, so the label is dropped and the render spans the full width.
+// One platform row in the stage: the centered live render, tagged with a small platform
+// watermark in the cell's top-left corner (only on the web 3-up, where three platforms stack
+// and need telling apart). The tag floats over the render and is non-interactive, so it never
+// intercepts a press, and it costs no layout width: dropping the old 96px label column hands
+// that space back to the preview. On a device there is a single preview and you ARE the
+// platform, so the tag is dropped and the render spans the full width.
 function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAlign }: {
   label: string;
   scope: ExampleScope;
@@ -74,24 +77,24 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
 }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", alignItems: "stretch", borderTopWidth: first ? 0 : 1, borderColor: tokens.border }}>
-      {showLabel ? (
-        <View style={{ width: 96, justifyContent: "center", paddingVertical: 12, paddingHorizontal: 14, borderRightWidth: 1, borderColor: tokens.border }}>
-          <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"] }}>
-            {label}
-          </Text>
-        </View>
-      ) : null}
+    <View style={{ borderTopWidth: first ? 0 : 1, borderColor: tokens.border }}>
       {/* The live render cell. The overlay host is ONE per stage (see Playground),
           not per cell: a per-cell host traps its outlet inside the cell's stacking
           context, so an open menu on an upper row is clipped by the cell and painted
           under lower rows. A single stage-level outlet floats overlays above every
           row instead. */}
-      <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 24, minHeight: 84 }}>
+      <View style={{ minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 24, minHeight: 84 }}>
         <ExampleErrorBoundary key={resetKey}>
           <FitStage align={stageAlign}>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
       </View>
+      {showLabel ? (
+        <View pointerEvents="none" style={{ position: "absolute", top: 8, left: 12 }}>
+          <Text style={{ fontFamily: geist("600"), fontSize: 10, letterSpacing: 0.6, textTransform: "uppercase", color: tokens["muted-foreground"], opacity: 0.55 }}>
+            {label}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
