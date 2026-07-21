@@ -3,10 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Text } = scope;
+  const { Typography, Column } = scope;
   return (
-<Text style={{ color: tokens.foreground }}>
-  A run of text can carry an <Text style={{ fontWeight: "700" }}>inline emphasis</Text> that inherits everything else from its parent Text.
-</Text>
+<Column tight>
+  <Typography h3>Heading</Typography>
+  <Typography body>Body text</Typography>
+  <Typography tiny muted>Muted caption</Typography>
+</Column>
   );
 }

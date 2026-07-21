@@ -12,16 +12,6 @@ Renders text. In React Native every string must live inside a Text element, so y
 
 ## Variants
 
-### Recommended - Typography
-
-```tsx
-<Column tight>
-  <Typography h3>Heading</Typography>
-  <Typography body>Body text</Typography>
-  <Typography tiny muted>Muted caption</Typography>
-</Column>
-```
-
 ### Truncation
 
 ```tsx
@@ -38,4 +28,28 @@ Renders text. In React Native every string must live inside a Text element, so y
 <Text style={{ color: tokens.foreground }}>
   A run of text can carry an <Text style={{ fontWeight: "700" }}>inline emphasis</Text> that inherits everything else from its parent Text.
 </Text>
+```
+
+## Do & Don't
+
+### Styled type
+
+**Do** — Reach for `Typography` for any styled type: it owns the kit's roles, sizes, and tones.
+
+```tsx
+<Column tight>
+  <Typography h3>Heading</Typography>
+  <Typography body>Body text</Typography>
+  <Typography tiny muted>Muted caption</Typography>
+</Column>
+```
+
+**Don't** — Hand-styling the raw Text primitive with literal font sizes and weights reinvents the type scale and drifts from the tokens.
+
+```tsx
+<View style={{ gap: 4 }}>
+  <Text style={{ fontSize: 20, lineHeight: 28, fontWeight: "600", color: tokens.foreground }}>Heading</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Body text</Text>
+  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Muted caption</Text>
+</View>
 ```

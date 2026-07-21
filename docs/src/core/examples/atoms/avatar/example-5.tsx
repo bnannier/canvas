@@ -3,28 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Avatar, Button, Card, MediaObject, Typography, Row, Column } = scope;
+  const { Avatar } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) =>
-    open ? (
-      <Card raised padded>
-        <Column relaxed>
-          <Row relaxed alignCenter>
-            <Avatar large src="/rachel-chen.jpg" name="RC" />
-            <Column>
-              <Typography lead semibold>Rachel Chen</Typography>
-              <Typography small muted>Staff Engineer, Platform</Typography>
-            </Column>
-          </Row>
-          <Typography small muted>rachel.chen@example.com</Typography>
-          <Button small outline onPress={() => setOpen(false)}>Back</Button>
-        </Column>
-      </Card>
-    ) : (
-      <MediaObject center src="/rachel-chen.jpg" title="Rachel Chen" description="Open profile" onPress={() => setOpen(true)} />
-    )
-  }
-</Stateful>
+<Avatar rounded src="/liang-bao.jpg" name="LB" />
   );
 }

@@ -23,7 +23,6 @@ import e_atoms_avatar_example_3 from "./examples/atoms/avatar/example-3";
 import e_atoms_avatar_example_4 from "./examples/atoms/avatar/example-4";
 import e_atoms_avatar_example_5 from "./examples/atoms/avatar/example-5";
 import e_atoms_avatar_example_6 from "./examples/atoms/avatar/example-6";
-import e_atoms_avatar_example_7 from "./examples/atoms/avatar/example-7";
 import e_atoms_avatar_dont_0_do from "./examples/atoms/avatar/dont-0-do";
 import e_atoms_avatar_dont_0_dont from "./examples/atoms/avatar/dont-0-dont";
 import e_atoms_avatar_dont_1_do from "./examples/atoms/avatar/dont-1-do";
@@ -383,7 +382,8 @@ import e_atoms_switch_dont_2_dont from "./examples/atoms/switch/dont-2-dont";
 import e_atoms_text_example_0 from "./examples/atoms/text/example-0";
 import e_atoms_text_example_1 from "./examples/atoms/text/example-1";
 import e_atoms_text_example_2 from "./examples/atoms/text/example-2";
-import e_atoms_text_example_3 from "./examples/atoms/text/example-3";
+import e_atoms_text_dont_0_do from "./examples/atoms/text/dont-0-do";
+import e_atoms_text_dont_0_dont from "./examples/atoms/text/dont-0-dont";
 import e_atoms_text_input_example_0 from "./examples/atoms/text-input/example-0";
 import e_atoms_text_input_example_1 from "./examples/atoms/text-input/example-1";
 import e_atoms_text_input_example_2 from "./examples/atoms/text-input/example-2";
@@ -833,11 +833,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Default", code: "<Avatar name=\"AO\" />", render: e_atoms_avatar_example_0 },
       { label: "Variant - stacked", code: "<AvatarGroup small max={4}>\n  <Avatar src=\"/rachel-chen.jpg\" name=\"RC\" />\n  <Avatar src=\"/liang-bao.jpg\" name=\"LB\" />\n  <Avatar src=\"/marcus-allen.jpg\" name=\"MA\" />\n  <Avatar src=\"/kira-tanaka.jpg\" name=\"KT\" />\n  <Avatar src=\"/ada-lovelace.jpg\" name=\"AL\" />\n  <Avatar src=\"/grace-hopper.jpg\" name=\"GH\" />\n  <Avatar src=\"/noor-park.jpg\" name=\"NP\" />\n</AvatarGroup>", render: e_atoms_avatar_example_1 },
       { label: "Variant - topbar", code: "<Dropdown items={[\n    { label: \"Your profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Sign out\", icon: \"logOut\", separatorBefore: true }\n  ]}>\n  <Avatar small name=\"MA\" />\n</Dropdown>", render: e_atoms_avatar_example_2 },
-      { label: "Variant - topbar with email", code: "<Dropdown items={[\n    { label: \"Your profile\", icon: \"user\" },\n    { label: \"Settings\", icon: \"settings\" },\n    { label: \"Sign out\", icon: \"logOut\", separatorBefore: true }\n  ]}>\n  <Chip outline icon={<Avatar small src=\"/marcus-allen.jpg\" name=\"MA\" />} trailing={<Icon chevronDown muted size={12} />}>admin@example.com</Chip>\n</Dropdown>", render: e_atoms_avatar_example_3 },
-      { label: "Variant - identity", code: "<MediaObject center src=\"/rachel-chen.jpg\" title=\"Rachel Chen\" description=\"rachel.chen@example.com\" />", render: e_atoms_avatar_example_4 },
-      { label: "Variant - navigable", code: "<Stateful initial={false}>\n  {(open, setOpen) =>\n    open ? (\n      <Card raised padded>\n        <Column relaxed>\n          <Row relaxed alignCenter>\n            <Avatar large src=\"/rachel-chen.jpg\" name=\"RC\" />\n            <Column>\n              <Typography lead semibold>Rachel Chen</Typography>\n              <Typography small muted>Staff Engineer, Platform</Typography>\n            </Column>\n          </Row>\n          <Typography small muted>rachel.chen@example.com</Typography>\n          <Button small outline onPress={() => setOpen(false)}>Back</Button>\n        </Column>\n      </Card>\n    ) : (\n      <MediaObject center src=\"/rachel-chen.jpg\" title=\"Rachel Chen\" description=\"Open profile\" onPress={() => setOpen(true)} />\n    )\n  }\n</Stateful>", render: e_atoms_avatar_example_5 },
-      { label: "Variant - menu", code: "<Column snug>\n  <MediaObject compact center src=\"/ada-lovelace.jpg\" title=\"Ada Lovelace\" description=\"admin@example.com\" />\n  <Divider />\n</Column>", render: e_atoms_avatar_example_6 },
-      { label: "Ring outline", code: "<Avatar ring name=\"AO\" />", render: e_atoms_avatar_example_7 },
+      { label: "Photo", code: "<Avatar src=\"/rachel-chen.jpg\" name=\"RC\" />", render: e_atoms_avatar_example_3 },
+      { label: "Sizes", code: "<Row relaxed alignCenter>\n  <Avatar small src=\"/ada-lovelace.jpg\" name=\"AL\" />\n  <Avatar src=\"/marcus-allen.jpg\" name=\"MA\" />\n  <Avatar large src=\"/rachel-chen.jpg\" name=\"RC\" />\n</Row>", render: e_atoms_avatar_example_4 },
+      { label: "Rounded", code: "<Avatar rounded src=\"/liang-bao.jpg\" name=\"LB\" />", render: e_atoms_avatar_example_5 },
+      { label: "Ring outline", code: "<Avatar ring name=\"AO\" />", render: e_atoms_avatar_example_6 },
     ],
     donts: [
       { title: "Single", do: { caption: "One or two initials, sized about 40% of the diameter.", code: "<Avatar name=\"AO\" />", render: e_atoms_avatar_dont_0_do }, dont: { caption: "Cramming in a full set of initials shrinks the type and crowds the circle.", code: "<View style={{ flexShrink: 0, alignItems: \"center\", justifyContent: \"center\", overflow: \"hidden\", backgroundColor: tokens.muted, width: 40, height: 40, borderRadius: 9999 }}>\n  <Text style={{ fontWeight: \"500\", color: tokens[\"muted-foreground\"], fontSize: 12 }}>ABCD</Text>\n</View>", render: e_atoms_avatar_dont_0_dont } },
@@ -1346,12 +1345,11 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<Text numberOfLines={1} style={{ color: tokens.foreground }}>\n  The quick brown fox jumps over the lazy dog.\n</Text>", render: e_atoms_text_example_0 },
-      { label: "Recommended - Typography", code: "<Column tight>\n  <Typography h3>Heading</Typography>\n  <Typography body>Body text</Typography>\n  <Typography tiny muted>Muted caption</Typography>\n</Column>", render: e_atoms_text_example_1 },
-      { label: "Truncation", code: "<View style={{ width: 220 }}>\n  <Text numberOfLines={1} style={{ color: tokens.foreground }}>\n    This single line is clipped with an ellipsis when it overflows its container.\n  </Text>\n</View>", render: e_atoms_text_example_2 },
-      { label: "Nested runs", code: "<Text style={{ color: tokens.foreground }}>\n  A run of text can carry an <Text style={{ fontWeight: \"700\" }}>inline emphasis</Text> that inherits everything else from its parent Text.\n</Text>", render: e_atoms_text_example_3 },
+      { label: "Truncation", code: "<View style={{ width: 220 }}>\n  <Text numberOfLines={1} style={{ color: tokens.foreground }}>\n    This single line is clipped with an ellipsis when it overflows its container.\n  </Text>\n</View>", render: e_atoms_text_example_1 },
+      { label: "Nested runs", code: "<Text style={{ color: tokens.foreground }}>\n  A run of text can carry an <Text style={{ fontWeight: \"700\" }}>inline emphasis</Text> that inherits everything else from its parent Text.\n</Text>", render: e_atoms_text_example_2 },
     ],
     donts: [
-
+      { title: "Styled type", do: { caption: "Reach for `Typography` for any styled type: it owns the kit's roles, sizes, and tones.", code: "<Column tight>\n  <Typography h3>Heading</Typography>\n  <Typography body>Body text</Typography>\n  <Typography tiny muted>Muted caption</Typography>\n</Column>", render: e_atoms_text_dont_0_do }, dont: { caption: "Hand-styling the raw Text primitive with literal font sizes and weights reinvents the type scale and drifts from the tokens.", code: "<View style={{ gap: 4 }}>\n  <Text style={{ fontSize: 20, lineHeight: 28, fontWeight: \"600\", color: tokens.foreground }}>Heading</Text>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Body text</Text>\n  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens[\"muted-foreground\"] }}>Muted caption</Text>\n</View>", render: e_atoms_text_dont_0_dont } },
     ],
   },
   "text-input": {

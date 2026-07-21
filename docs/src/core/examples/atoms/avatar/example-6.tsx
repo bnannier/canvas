@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Divider, MediaObject, Column } = scope;
+  const { Avatar } = scope;
   return (
-<Column snug>
-  <MediaObject compact center src="/ada-lovelace.jpg" title="Ada Lovelace" description="admin@example.com" />
-  <Divider />
-</Column>
+<Avatar ring name="AO" />
   );
 }

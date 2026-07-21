@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography, Column } = scope;
+  const { tokens, View, Text } = scope;
   return (
-<Column tight>
-  <Typography h3>Heading</Typography>
-  <Typography body>Body text</Typography>
-  <Typography tiny muted>Muted caption</Typography>
-</Column>
+<View style={{ width: 220 }}>
+  <Text numberOfLines={1} style={{ color: tokens.foreground }}>
+    This single line is clipped with an ellipsis when it overflows its container.
+  </Text>
+</View>
   );
 }
