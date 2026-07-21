@@ -5,7 +5,7 @@ import { type Size } from "./sparkline.shared.js";
 // reference the same bar radius / gap / heights as webSkin.
 
 export interface SparklineSkin {
-  /** Corner radius of each bar, in px. */
+  /** Corner radius of each bar's data end (the top; the baseline stays square), in px. */
   barRadius: number;
   /** Gap between bars, in px. */
   gap: number;
@@ -21,7 +21,7 @@ export interface SparklineSkin {
 }
 
 export const webSkin: SparklineSkin = {
-  barRadius: 2,
+  barRadius: 4,
   gap: 2,
   height: { compact: 16, default: 24, tall: 32 },
   defaultWidth: 120,

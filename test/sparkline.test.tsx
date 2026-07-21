@@ -27,4 +27,35 @@ describe("Sparkline accessible name", () => {
     const label = container.querySelector('[role="img"]')?.getAttribute("aria-label") ?? "";
     expect(label).toContain("3 points");
   });
+
+  it("an empty series renders the named empty strip in both variants (never throws)", () => {
+    for (const line of [false, true]) {
+      const { container, unmount } = ui(<Sparkline line={line} values={[]} />);
+      expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toBe("Sparkline: no data");
+      unmount();
+    }
+  });
+
+  it("a flat series still renders the line variant", () => {
+    const { container } = ui(<Sparkline line values={[5, 5, 5]} />);
+    expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("latest 5");
+  });
+});
+
+describe("Sparkline accent", () => {
+  const barsOf = (container: HTMLElement) => Array.from(container.querySelector('[role="img"]')?.children ?? []) as HTMLElement[];
+
+  it("the last bar wears the accent; the rest share the wash", () => {
+    const { container } = ui(<Sparkline values={[4, 8, 6]} />);
+    const [a, b, c] = barsOf(container);
+    expect(a.style.backgroundColor).toBe(b.style.backgroundColor);
+    expect(c.style.backgroundColor).not.toBe(a.style.backgroundColor);
+  });
+
+  it("a trailing non-finite bucket never wears the accent (the last finite bar does)", () => {
+    const { container } = ui(<Sparkline values={[4, 8, Number.NaN]} />);
+    const [a, b, c] = barsOf(container);
+    expect(b.style.backgroundColor).not.toBe(a.style.backgroundColor);
+    expect(c.style.backgroundColor).toBe(a.style.backgroundColor);
+  });
 });
