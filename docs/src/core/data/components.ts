@@ -308,7 +308,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "data-table",
     name: "DataTable",
-    description: "Every table is the same composition: bordered wrap &rarr; toolbar &rarr; scrollable table &rarr; footer. Density tweaks affect padding live.",
+    description: "Sortable, selectable, paginated data table with the loading and empty states built in. Columns are labels or descriptors (alignment, fixed widths, sort). Density tweaks affect padding live.",
     category: "Organisms",
     stageAlign: "start",
   },

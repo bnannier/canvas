@@ -3,13 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, DataTable, Typography, Column } = scope;
+  const { DataTable } = scope;
   return (
-<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
-  <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
-  <Column alignCenter padLoose>
-    <Typography small muted>No results found.</Typography>
-  </Column>
-</Card>
+<DataTable bordered columns={["Name", "Email", "Status"]} rows={[]} emptyMessage="No results found." style={{ width: 520, maxWidth: "100%" }} />
   );
 }
