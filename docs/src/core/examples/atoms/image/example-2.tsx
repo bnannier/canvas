@@ -8,7 +8,9 @@ export default function Example(scope: ExampleScope) {
 <Image
   source={{ uri: "/ada-lovelace.jpg" }}
   cover
-  style={{ width: 240, height: 96, borderRadius: 12 }}
+  width={240}
+  height={96}
+  radius="xl"
 />
   );
 }

@@ -6,6 +6,7 @@ import {
   type ImageStyle,
   type StyleProp,
 } from "react-native";
+import { radius as radiusScale } from "../../style/index.js";
 
 // Shared Image shell. Canvas wraps React Native's Image so the fit mode is chosen with a
 // boolean prop (the kit's variant convention, like Badge/Chip) instead of RN's
@@ -15,7 +16,12 @@ import {
 // Image carries no per-OS skin — fitting is platform-neutral — so there is one shell that
 // re-exports unchanged on every platform (the BadgeGroup pattern): no ios / android forks.
 
-export interface ImageProps extends Omit<RNImageProps, "resizeMode"> {
+// Corner radius steps: the named keys of the kit's radius token scale (src/style/tokens.ts).
+export type ImageRadius = "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full";
+
+// Omit RN's `resizeMode` (replaced by the fit booleans) and its legacy top-level
+// `width` / `height` (number-only), which we re-declare below as full style dimensions.
+export interface ImageProps extends Omit<RNImageProps, "resizeMode" | "width" | "height"> {
   /** The image to display: a remote `{ uri }`, or a bundled asset from `require(...)`. */
   source?: ImageSourcePropType;
   // Fit (pick one; default `cover`). Chooses how the image is sized to fill its box.
@@ -32,7 +38,13 @@ export interface ImageProps extends Omit<RNImageProps, "resizeMode"> {
   repeat?: boolean;
   /** Fit: show at intrinsic size with no scaling (pick one). */
   none?: boolean;
-  /** Size, radius, and aspect. Sizing lives here; the fit props only choose how it fills. */
+  /** Width of the image box (px, or a percent string like `"100%"`). Images have no intrinsic layout size. */
+  width?: ImageStyle["width"];
+  /** Height of the image box (px, or a percent string). */
+  height?: ImageStyle["height"];
+  /** Corner radius from the kit's radius scale (pick one): none, sm, md, lg, xl, 2xl, 3xl, full. */
+  radius?: ImageRadius;
+  /** Composition only (aspectRatio, layout within a parent). Size comes from `width` / `height`, rounding from `radius`. */
   style?: StyleProp<ImageStyle>;
   /** Accessible name / alt text announced for the image. */
   accessibilityLabel?: string;
@@ -55,8 +67,13 @@ function fitOf(p: ImageProps): ImageResizeMode {
 }
 
 export function Image(props: ImageProps) {
-  // Strip the boolean fit props so they never leak to the native / DOM node; everything
-  // else forwards untouched, with the chosen fit translated to RN's resizeMode.
-  const { contain, cover, stretch, center, repeat, none, ...rest } = props;
-  return <RNImage {...rest} resizeMode={fitOf(props)} />;
+  // Strip the atom's own props (fit booleans, dimensions, radius) so they never leak to the
+  // native / DOM node. `box` carries the size and rounding into the RN Image style; `style`
+  // merges after it as a composition-only override. Everything else forwards untouched.
+  const { contain, cover, stretch, center, repeat, none, width, height, radius, style, ...rest } = props;
+  const box: ImageStyle = {};
+  if (width !== undefined) box.width = width;
+  if (height !== undefined) box.height = height;
+  if (radius !== undefined) box.borderRadius = radiusScale[radius];
+  return <RNImage {...rest} style={[box, style]} resizeMode={fitOf(props)} />;
 }

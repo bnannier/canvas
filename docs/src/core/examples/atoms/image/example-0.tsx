@@ -7,7 +7,9 @@ export default function Example(scope: ExampleScope) {
   return (
 <Image
   source={{ uri: "/kira-tanaka.jpg" }}
-  style={{ width: 120, height: 120, borderRadius: 12 }}
+  width={120}
+  height={120}
+  radius="xl"
 />
   );
 }

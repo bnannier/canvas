@@ -1043,9 +1043,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "image",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<Image\n  source={{ uri: \"/kira-tanaka.jpg\" }}\n  style={{ width: 120, height: 120, borderRadius: 12 }}\n/>", render: e_atoms_image_example_0 },
-      { label: "Contain", code: "<Image\n  source={{ uri: \"/liang-bao.jpg\" }}\n  contain\n  style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}\n/>", render: e_atoms_image_example_1 },
-      { label: "Cover", code: "<Image\n  source={{ uri: \"/ada-lovelace.jpg\" }}\n  cover\n  style={{ width: 240, height: 96, borderRadius: 12 }}\n/>", render: e_atoms_image_example_2 },
+      { label: "Default", code: "<Image\n  source={{ uri: \"/kira-tanaka.jpg\" }}\n  width={120}\n  height={120}\n  radius=\"xl\"\n/>", render: e_atoms_image_example_0 },
+      { label: "Contain", code: "<Image\n  source={{ uri: \"/liang-bao.jpg\" }}\n  contain\n  width={160}\n  height={120}\n  radius=\"xl\"\n  style={{ backgroundColor: tokens.muted }}\n/>", render: e_atoms_image_example_1 },
+      { label: "Cover", code: "<Image\n  source={{ uri: \"/ada-lovelace.jpg\" }}\n  cover\n  width={240}\n  height={96}\n  radius=\"xl\"\n/>", render: e_atoms_image_example_2 },
     ],
     donts: [
 

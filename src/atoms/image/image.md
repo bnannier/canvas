@@ -7,7 +7,9 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then 
 ```tsx
 <Image
   source={{ uri: "/kira-tanaka.jpg" }}
-  style={{ width: 120, height: 120, borderRadius: 12 }}
+  width={120}
+  height={120}
+  radius="xl"
 />
 ```
 
@@ -19,7 +21,10 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then 
 <Image
   source={{ uri: "/liang-bao.jpg" }}
   contain
-  style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
+  width={160}
+  height={120}
+  radius="xl"
+  style={{ backgroundColor: tokens.muted }}
 />
 ```
 
@@ -29,6 +34,8 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then 
 <Image
   source={{ uri: "/ada-lovelace.jpg" }}
   cover
-  style={{ width: 240, height: 96, borderRadius: 12 }}
+  width={240}
+  height={96}
+  radius="xl"
 />
 ```
