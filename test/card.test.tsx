@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Card } from "../src/molecules/card/card.tsx";
+import { Card, CardMedia, CardContent } from "../src/molecules/card/card.tsx";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -54,5 +54,28 @@ describe("Card surface padding", () => {
       <Card padded onPress={() => {}} title="Title" body="Body" testID="c" />,
     );
     expect(getByTestId("c").style.padding).toBe("");
+  });
+});
+
+describe("CardMedia", () => {
+  it("spans the card edge to edge with nested top corners and a flat bottom", () => {
+    const { getByTestId } = ui(
+      <Card flush testID="c">
+        <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait" testID="m" />
+        <CardContent>
+          <Text>Below the fold</Text>
+        </CardContent>
+      </Card>,
+    );
+    const media = getByTestId("m");
+    // Full bleed: the image fills the card's width and the given band height.
+    expect(media.style.width).toBe("100%");
+    expect(media.style.height).toBe("180px");
+    // The top corners nest inside the web card's 8px corner + 1px border...
+    expect(media.style.borderTopLeftRadius).toBe("7px");
+    expect(media.style.borderTopRightRadius).toBe("7px");
+    // ...and the bottom edge stays flat where the content continues.
+    expect(media.style.borderBottomLeftRadius).toBe("");
+    expect(media.style.borderBottomRightRadius).toBe("");
   });
 });

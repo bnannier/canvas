@@ -71,8 +71,8 @@ import { ActionPanel as ActionPanelIOS } from "../../../src/molecules/action-pan
 import { ActionPanel as ActionPanelAndroid } from "../../../src/molecules/action-panels/action-panels.android.js";
 import { Alert as AlertIOS } from "../../../src/molecules/alert/alert.ios.js";
 import { Alert as AlertAndroid } from "../../../src/molecules/alert/alert.android.js";
-import { Card as CardIOS } from "../../../src/molecules/card/card.ios.js";
-import { Card as CardAndroid } from "../../../src/molecules/card/card.android.js";
+import { Card as CardIOS, CardMedia as CardMediaIOS } from "../../../src/molecules/card/card.ios.js";
+import { Card as CardAndroid, CardMedia as CardMediaAndroid } from "../../../src/molecules/card/card.android.js";
 import { DescriptionList as DescriptionListIOS } from "../../../src/molecules/description-lists/description-lists.ios.js";
 import { DescriptionList as DescriptionListAndroid } from "../../../src/molecules/description-lists/description-lists.android.js";
 import { EmptyState as EmptyStateIOS } from "../../../src/molecules/empty-state/empty-state.ios.js";
@@ -126,7 +126,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
     Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
-    ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, DescriptionList: DescriptionListIOS,
+    ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
     EmptyState: EmptyStateIOS, Feed: FeedIOS, Field: FieldIOS, Fieldset: FieldsetIOS, Form: FormIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
@@ -142,7 +142,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
     Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
-    ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, DescriptionList: DescriptionListAndroid,
+    ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,
     EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Field: FieldAndroid, Fieldset: FieldsetAndroid, Form: FormAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
