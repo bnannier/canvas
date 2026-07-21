@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Dialog, Field, Typography, Row, Column } = scope;
+  const { Button, Dialog, Input, Typography, Row, Column } = scope;
   return (
 <Dialog open large>
   <Column relaxed>
@@ -12,8 +12,8 @@ export default function Example(scope: ExampleScope) {
       <Typography small muted>Update how your name and email appear to teammates.</Typography>
     </Column>
     <Column relaxed>
-      <Field block label="Name" value="Ada Lovelace" />
-      <Field block label="Email" value="ada@example.com" />
+      <Input block label="Name" defaultValue="Ada Lovelace" />
+      <Input block label="Email" defaultValue="ada@example.com" />
     </Column>
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>

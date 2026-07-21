@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSeparator, CardTitle, Field } = scope;
+  const { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSeparator, CardTitle, Input } = scope;
   return (
 <Card flush style={{ width: 360, maxWidth: "100%" }}>
   <CardHeader>
@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
   </CardHeader>
   <CardSeparator />
   <CardContent>
-    <Field label="Workspace name" placeholder="Acme Inc." block />
+    <Input label="Workspace name" placeholder="Acme Inc." block />
   </CardContent>
   <CardSeparator />
   <CardFooter>

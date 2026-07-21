@@ -29,13 +29,13 @@ Floating panel with a title, supporting text, rich content such as form fields, 
 
 ```tsx
 <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), alignSelf: "flex-start", minWidth: 260 }}>
-  <Field label="Name" placeholder="Ada Lovelace" style={{ marginBottom: 8 }} />
-  <Field label="Email" placeholder="ada@canvas.dev" style={{ marginBottom: 8 }} />
+  <Input label="Name" placeholder="Ada Lovelace" style={{ marginBottom: 8 }} />
+  <Input label="Email" placeholder="ada@canvas.dev" style={{ marginBottom: 8 }} />
   <View style={{ marginBottom: 8 }}>
     <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>Role</Text>
     <Select defaultValue="Engineer" options={["Engineer", "Designer", "Manager"]} />
   </View>
-  <Field label="Team" placeholder="Identity Platform" style={{ marginBottom: 8 }} />
+  <Input label="Team" placeholder="Identity Platform" style={{ marginBottom: 8 }} />
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
     <Button outline small>Cancel</Button>
     <Button primary small>Save</Button>
@@ -75,10 +75,10 @@ Floating panel with a title, supporting text, rich content such as form fields, 
 ```tsx
 <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("md"), maxHeight: 120, minWidth: 260, overflow: "hidden" }}>
   <ScrollView style={{ maxHeight: 88 }}>
-    <Field label="Street" placeholder="100 Market St" style={{ marginBottom: 8 }} />
-    <Field label="City" placeholder="San Francisco" style={{ marginBottom: 8 }} />
-    <Field label="Region" placeholder="California" style={{ marginBottom: 8 }} />
-    <Field label="Postal code" placeholder="94105" style={{ marginBottom: 8 }} />
+    <Input label="Street" placeholder="100 Market St" style={{ marginBottom: 8 }} />
+    <Input label="City" placeholder="San Francisco" style={{ marginBottom: 8 }} />
+    <Input label="Region" placeholder="California" style={{ marginBottom: 8 }} />
+    <Input label="Postal code" placeholder="94105" style={{ marginBottom: 8 }} />
   </ScrollView>
 </View>
 ```

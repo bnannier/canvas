@@ -209,6 +209,22 @@ describe("RadioGroup", () => {
     expect(picked).toBe("enterprise");
     expect(container.querySelectorAll('[aria-checked="true"]').length).toBe(1);
   });
+
+  it("renders its label as the group heading and names the radiogroup with it", () => {
+    const { container } = ui(
+      <RadioGroup label="Plan" description="Pick the tier that fits." defaultValue="pro">
+        <Radio value="hobby">Hobby</Radio>
+        <Radio value="pro">Pro</Radio>
+      </RadioGroup>,
+    );
+    // The visible heading and supporting line render above the options.
+    expect(screen.getByText("Plan")).toBeTruthy();
+    expect(screen.getByText("Pick the tier that fits.")).toBeTruthy();
+    // The radiogroup node itself takes the label as its accessible name (the
+    // aria-label alias is what RNW forwards to the DOM).
+    const group = container.querySelector('[role="radiogroup"]') as HTMLElement;
+    expect(group.getAttribute("aria-label")).toBe("Plan");
+  });
 });
 
 describe("ButtonGroup", () => {

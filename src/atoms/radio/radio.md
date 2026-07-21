@@ -32,16 +32,14 @@ Single-pick selection: stacked, inline, card-style.
 
 ## Do & Don't
 
-**Do** — Pre-select a sensible default so the common path needs no clicks.
+**Do** — Pre-select a sensible default so the common path needs no clicks, and name the set with the group's own `label`.
 
 ```tsx
-<Fieldset legend="Plan">
-  <RadioGroup defaultValue="pro">
-    <Radio value="hobby">Hobby</Radio>
-    <Radio value="pro">Pro</Radio>
-    <Radio value="enterprise">Enterprise</Radio>
-  </RadioGroup>
-</Fieldset>
+<RadioGroup label="Plan" defaultValue="pro">
+  <Radio value="hobby">Hobby</Radio>
+  <Radio value="pro">Pro</Radio>
+  <Radio value="enterprise">Enterprise</Radio>
+</RadioGroup>
 ```
 
 **Don't** — Leaving a radio group with nothing selected forces an extra decision and can submit empty.

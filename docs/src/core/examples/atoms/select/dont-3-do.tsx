@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Select, Row, Column } = scope;
+  const { Input, Select, Row, Column } = scope;
   return (
 <Row alignEnd cozy style={{ maxWidth: 420 }}>
   <Column fill>
-    <Field label="City" value="Austin" />
+    <Input label="City" defaultValue="Austin" />
   </Column>
   <Column fill>
     <Select label="State" defaultValue="Texas" options={["Texas", "Oregon"]} />

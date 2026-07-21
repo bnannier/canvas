@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field } = scope;
+  const { Input } = scope;
   return (
-<Field label="Storage" value="1024 GB" style={{ maxWidth: 320 }} />
+<Input label="Storage" defaultValue="1024 GB" style={{ maxWidth: 320 }} />
   );
 }

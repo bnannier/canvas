@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Dialog, Field, Typography, Row, Column } = scope;
+  const { Button, Dialog, Input, Typography, Row, Column } = scope;
   return (
 <Dialog open small>
   <Column relaxed>
     <Typography lead semibold>Rename</Typography>
-    <Field block label="Name" value="Untitled" />
+    <Input block label="Name" defaultValue="Untitled" />
     <Row end snug alignCenter>
       <Button outline small>Cancel</Button>
       <Button primary small>Save</Button>
