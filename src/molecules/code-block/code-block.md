@@ -1,29 +1,48 @@
 # CodeBlock
 
-Preformatted code block with monospace font and padding.
+Syntax-highlighted code display with clipboard copy, horizontal scrolling, line
+emphasis, diff rendering, collapsible folding, and tabbed alternatives. The
+variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
+first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`,
+`collapsible`, and `attached` stack orthogonally. `language` drives the in-kit
+highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else renders
+monochrome), and long lines scroll horizontally instead of truncating.
 
 ## Usage
 
 ```tsx
 <CodeBlock
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
   filename="theme.ts"
   language="ts"
+  copy
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
 />
 ```
 
 ## Variants
 
+### Syntax highlighting
+
+```tsx
+<CodeBlock
+  language="tsx"
+  code={`export function Hello({ name }: { name: string }) {
+  // Greet the current user
+  return <Badge primary>Hi {name}</Badge>;
+}`}
+/>
+```
+
 ### Terminal
 
 ```tsx
 <CodeBlock
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
-  filename="theme.ts"
-  language="ts"
   terminal
+  copy
+  code={`$ npm install @nannier/canvas
+added 42 packages in 3s
+$ npm run dev`}
 />
 ```
 
@@ -31,35 +50,101 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 
 ```tsx
 <CodeBlock
+  numbered
+  language="ts"
   code={`const theme = getTheme();
 setTheme(theme === "dark" ? "light" : "dark");`}
-  filename="theme.ts"
-  language="ts"
+/>
+```
+
+### Highlight lines
+
+```tsx
+<CodeBlock
   numbered
+  language="tsx"
+  highlightLines={["4-5"]}
+  code={`import { Button } from "@nannier/canvas";
+
+export function Cta() {
+  const label = getLabel();
+  return <Button primary large>{label}</Button>;
+}`}
+/>
+```
+
+### Diff
+
+```tsx
+<CodeBlock
+  diff
+  copy
+  language="ts"
+  code={`-const theme = "light";
++const theme = getTheme();
+ setTheme(theme);`}
+/>
+```
+
+### Collapsible
+
+```tsx
+<CodeBlock
+  collapsible
+  collapsedLines={4}
+  language="ts"
+  code={`export const tokens = {
+  primary: "#6366f1",
+  radius: 8,
+  border: "#e4e4e7",
+  muted: "#f4f4f5",
+  foreground: "#18181b",
+  background: "#ffffff",
+};`}
+/>
+```
+
+### Tabs
+
+```tsx
+<CodeBlock
+  terminal
+  copy
+  tabs={[
+    { label: "npm", code: "npm install @nannier/canvas" },
+    { label: "yarn", code: "yarn add @nannier/canvas" },
+    { label: "bun", code: "bun add @nannier/canvas" },
+  ]}
+/>
+```
+
+### Excerpt
+
+```tsx
+<CodeBlock
+  numbered
+  startLine={128}
+  language="ts"
+  code={`function resolveTokens(scheme: Scheme) {
+  return scheme === "dark" ? darkTokens : lightTokens;
+}`}
 />
 ```
 
 ### Inline
 
 ```tsx
-<CodeBlock
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
-  filename="theme.ts"
-  language="ts"
-  inline
-/>
+<CodeBlock inline language="bash" code="npm install" />
 ```
 
 ### Copy button
 
 ```tsx
 <CodeBlock
+  copy
+  language="ts"
   code={`const theme = getTheme();
 setTheme(theme === "dark" ? "light" : "dark");`}
-  filename="theme.ts"
-  language="ts"
-  copy
 />
 ```
 
@@ -67,11 +152,24 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 
 ```tsx
 <CodeBlock
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
-  filename="theme.ts"
-  language="ts"
   wrap
+  language="ts"
+  code={`const message = "This is a very long line that would normally scroll horizontally, but wrap lets it soft-wrap onto the next line instead.";`}
+/>
+```
+
+### Compact
+
+```tsx
+<CodeBlock
+  compact
+  filename="canvas.config.json"
+  language="json"
+  code={`{
+  "theme": "system",
+  "surface": "glass",
+  "primary": "#6366f1"
+}`}
 />
 ```
 
@@ -132,6 +230,47 @@ setTheme(theme);`} />
     <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground, fontFamily: "monospace" }}>setTheme(theme);</Text>
   </View>
 </View>
+```
+
+### Diff
+
+**Do** — Use diff mode: markers stay out of the selection and the copy chip yields the post-change code.
+
+```tsx
+<CodeBlock diff copy language="ts" code={`-const theme = "light";
++const theme = getTheme();
+ setTheme(theme);`} />
+```
+
+**Don't** — Hand-colored +/- rows leave the markers selectable, so a copied block pastes broken code.
+
+```tsx
+<View style={{ width: "100%", alignSelf: "flex-start", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.5), padding: 16 }}>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: palette["red-700"], fontFamily: "monospace" }}>-const theme = "light";</Text>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: palette["green-700"], fontFamily: "monospace" }}>+const theme = getTheme();</Text>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground, fontFamily: "monospace" }}>setTheme(theme);</Text>
+</View>
+```
+
+### Tabs
+
+**Do** — One tabbed block keeps the package-manager alternatives in one place; the reader picks once.
+
+```tsx
+<CodeBlock terminal tabs={[
+  { label: "npm", code: "npm install @nannier/canvas" },
+  { label: "bun", code: "bun add @nannier/canvas" },
+]} />
+```
+
+**Don't** — Stacked one-per-manager blocks repeat the same install three times and triple the page height.
+
+```tsx
+<Column snug>
+  <CodeBlock terminal code="npm install @nannier/canvas" />
+  <CodeBlock terminal code="yarn add @nannier/canvas" />
+  <CodeBlock terminal code="bun add @nannier/canvas" />
+</Column>
 ```
 
 ### Inline

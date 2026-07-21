@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { CodeBlock } = scope;
+  const { Badge, CodeBlock } = scope;
   return (
 <CodeBlock
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
-  filename="theme.ts"
-  language="ts"
-  terminal
+  language="tsx"
+  code={`export function Hello({ name }: { name: string }) {
+  // Greet the current user
+  return <Badge primary>Hi {name}</Badge>;
+}`}
 />
   );
 }

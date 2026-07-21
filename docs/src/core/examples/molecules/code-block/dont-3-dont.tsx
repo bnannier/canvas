@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text } = scope;
+  const { tokens, alpha, palette, View, Text } = scope;
   return (
-<View style={{ maxWidth: 360, flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
-  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}>Run </Text>
-  <View style={{ alignSelf: "flex-start", borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.muted, paddingHorizontal: 6, paddingVertical: 2 }}>
-    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @nannier/canvas && npm run build && npm run preview</Text>
-  </View>
-  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}> to start.</Text>
+<View style={{ width: "100%", alignSelf: "flex-start", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.5), padding: 16 }}>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: palette["red-700"], fontFamily: "monospace" }}>-const theme = "light";</Text>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: palette["green-700"], fontFamily: "monospace" }}>+const theme = getTheme();</Text>
+  <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground, fontFamily: "monospace" }}>setTheme(theme);</Text>
 </View>
   );
 }
