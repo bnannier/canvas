@@ -13,31 +13,31 @@ Placeholders for loading content.
 
 ## Variants
 
-### Shape - avatar
+### Avatar
 
 ```tsx
 <Skeleton avatar animate />
 ```
 
-### Shape - button
+### Button
 
 ```tsx
 <Skeleton button animate />
 ```
 
-### Shape - card
+### Card
 
 ```tsx
 <Skeleton card animate />
 ```
 
-### Shape - list
+### List
 
 ```tsx
 <Skeleton list animate />
 ```
 
-### Shape - table
+### Table
 
 ```tsx
 <Skeleton table animate />

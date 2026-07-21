@@ -18,7 +18,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 
 ## Variants
 
-### Value mode - mono
+### Mono
 
 ```tsx
 <Field
@@ -31,7 +31,7 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 />
 ```
 
-### Value mode - composed
+### Composed
 
 ```tsx
 <Field

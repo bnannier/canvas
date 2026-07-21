@@ -10,19 +10,19 @@ Encodes a string as a scannable QR code. Built on react-native-svg, so it render
 
 ## Variants
 
-### Size - small
+### Small
 
 ```tsx
 <QRCode value="https://canvas.olympusoss.com" small />
 ```
 
-### Size - medium
+### Medium
 
 ```tsx
 <QRCode value="https://canvas.olympusoss.com" />
 ```
 
-### Size - large
+### Large
 
 ```tsx
 <QRCode value="https://canvas.olympusoss.com" large />

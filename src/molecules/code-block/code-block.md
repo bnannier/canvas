@@ -15,7 +15,7 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 
 ## Variants
 
-### Variant - terminal
+### Terminal
 
 ```tsx
 <CodeBlock
@@ -27,7 +27,7 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 />
 ```
 
-### Variant - numbered
+### Numbered
 
 ```tsx
 <CodeBlock
@@ -39,7 +39,7 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 />
 ```
 
-### Variant - inline
+### Inline
 
 ```tsx
 <CodeBlock

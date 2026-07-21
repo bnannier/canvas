@@ -16,7 +16,7 @@ Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred back
 
 ## Variants
 
-### Size - xs
+### Narrow
 
 ```tsx
 <AlertDialog
@@ -29,7 +29,7 @@ Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred back
 />
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <AlertDialog
@@ -42,7 +42,7 @@ Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred back
 />
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <AlertDialog

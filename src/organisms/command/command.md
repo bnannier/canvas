@@ -25,7 +25,7 @@ Cmd+K search: navigation, actions, recent items.
 
 ## Variants
 
-### Mode - inline
+### Inline
 
 ```tsx
 <Command

@@ -26,7 +26,7 @@ Image or icon paired with text content. The fundamental building block for list 
 </Column>
 ```
 
-### Variant - icon
+### Icon
 
 ```tsx
 <Column cozy style={{ maxWidth: 560 }}>
@@ -35,7 +35,7 @@ Image or icon paired with text content. The fundamental building block for list 
 </Column>
 ```
 
-### Variant - action
+### Action
 
 ```tsx
 <Column flush style={{ maxWidth: 480 }}>

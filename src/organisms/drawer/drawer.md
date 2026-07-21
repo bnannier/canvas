@@ -17,7 +17,7 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 
 ## Variants
 
-### Edge - left
+### Left
 
 ```tsx
 <Drawer trigger="Left drawer" left width={240}>
@@ -29,7 +29,7 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 </Drawer>
 ```
 
-### Edge - right
+### Right
 
 ```tsx
 <Drawer trigger="Right drawer" right width={240}>
@@ -41,7 +41,7 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 </Drawer>
 ```
 
-### Edge - bottom sheet
+### Bottom sheet
 
 ```tsx
 <Drawer trigger="Bottom sheet" bottom>
@@ -54,7 +54,7 @@ A full-screen panel that slides in from an edge: a navigation drawer, a mobile m
 </Drawer>
 ```
 
-### Edge - top sheet
+### Top sheet
 
 ```tsx
 <Drawer trigger="Top sheet" top>

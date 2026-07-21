@@ -16,7 +16,7 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 
 ## Variants
 
-### Variant - clickable
+### Clickable
 
 ```tsx
 <StackedList
@@ -29,7 +29,7 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 />
 ```
 
-### Variant - card
+### Card
 
 ```tsx
 <StackedList

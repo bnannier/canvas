@@ -10,37 +10,37 @@ Small floating helper text on hover or focus.
 
 ## Variants
 
-### Side - right
+### Right
 
 ```tsx
 <Tooltip label="Open settings" iconTrigger trigger="Hover me" open right />
 ```
 
-### Side - bottom
+### Bottom
 
 ```tsx
 <Tooltip label="Open settings" iconTrigger trigger="Hover me" open bottom />
 ```
 
-### Side - left
+### Left
 
 ```tsx
 <Tooltip label="Open settings" iconTrigger trigger="Hover me" open left />
 ```
 
-### Trigger - button
+### Button
 
 ```tsx
 <Tooltip label="Open settings" trigger="Hover me" open top />
 ```
 
-### Trigger - text
+### Text
 
 ```tsx
 <Tooltip textTrigger label="Open settings" trigger="hover this text" open top />
 ```
 
-### Reveal - on hover
+### On hover
 
 ```tsx
 <Tooltip label="Open settings" iconTrigger trigger="Hover me" top />

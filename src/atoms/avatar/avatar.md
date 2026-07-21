@@ -10,7 +10,7 @@ A photo when the account has one, falling back to one or two initials on the mut
 
 ## Variants
 
-### Variant - stacked
+### Stacked
 
 ```tsx
 <AvatarGroup small max={4}>
@@ -24,7 +24,7 @@ A photo when the account has one, falling back to one or two initials on the mut
 </AvatarGroup>
 ```
 
-### Variant - topbar
+### Topbar
 
 A lone avatar as the account trigger: on iOS the circle is interactive Liquid Glass, so it reads as a control and tapping it opens the account menu, no email or chevron needed.
 

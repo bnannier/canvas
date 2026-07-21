@@ -40,7 +40,7 @@ Tiled card grids for people directories, item collections, and image galleries.
 />
 ```
 
-### Variant - gallery
+### Gallery
 
 ```tsx
 <GridList

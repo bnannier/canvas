@@ -13,7 +13,7 @@ The layout primitive: a flex container that runs identically on iOS, Android, an
 
 ## Variants
 
-### Direction - column
+### Column
 
 ```tsx
 <View style={{ gap: 8, width: 220 }}>

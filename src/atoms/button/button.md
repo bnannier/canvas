@@ -21,7 +21,7 @@ A button's whole job is to fire `onPress`. Wire it to your own handler and every
 
 The variant only changes how a button looks; every one of them fires `onPress` the same way. Press any of them below.
 
-### Variant - outline
+### Outline
 
 ```tsx
 <Stateful initial={0}>
@@ -34,7 +34,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 </Stateful>
 ```
 
-### Variant - secondary
+### Secondary
 
 ```tsx
 <Stateful initial={0}>
@@ -47,7 +47,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 </Stateful>
 ```
 
-### Variant - ghost
+### Ghost
 
 ```tsx
 <Stateful initial={0}>
@@ -60,7 +60,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 </Stateful>
 ```
 
-### Variant - destructive
+### Destructive
 
 ```tsx
 <Stateful initial={0}>
@@ -73,7 +73,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 </Stateful>
 ```
 
-### Variant - link
+### Link
 
 ```tsx
 <Stateful initial={0}>
@@ -86,7 +86,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 </Stateful>
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <Stateful initial={0}>
@@ -99,7 +99,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 </Stateful>
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <Stateful initial={0}>
@@ -112,7 +112,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 </Stateful>
 ```
 
-### Size - icon
+### Icon only
 
 ```tsx
 <Stateful initial={0}>

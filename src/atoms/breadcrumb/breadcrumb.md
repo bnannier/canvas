@@ -13,7 +13,7 @@ Hierarchical navigation showing where you are.
 
 ## Variants
 
-### Separator - slash
+### Slash
 
 ```tsx
 <Breadcrumb
@@ -22,13 +22,13 @@ Hierarchical navigation showing where you are.
 />
 ```
 
-### Separator - dot
+### Dot
 
 ```tsx
 <Breadcrumb items={["Projects", "Identity Platform", "Settings", "Profile"]} dot />
 ```
 
-### Leading home icon
+### Home icon
 
 ```tsx
 <Breadcrumb

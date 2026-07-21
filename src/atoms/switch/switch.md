@@ -10,7 +10,7 @@ On / off switch, isolated or grouped in a settings list.
 
 ## Variants
 
-### State - off
+### Off
 
 ```tsx
 <Switch>Available to chat</Switch>

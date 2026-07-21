@@ -10,13 +10,13 @@ Multi-line input, with character count, with toolbar. Pass `label` (and `require
 
 ## Variants
 
-### Floating label
+### With label
 
 ```tsx
 <Textarea label="Description" rows={4} placeholder="A few words about this project…" />
 ```
 
-### Floating label - required
+### Required
 
 ```tsx
 <Textarea label="Bio" required rows={4} placeholder="Tell us about yourself…" />

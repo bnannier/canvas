@@ -10,25 +10,25 @@ Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to th
 
 ## Variants
 
-### View - set
+### Set
 
 ```tsx
 <Icon set />
 ```
 
-### Color - primary
+### Primary
 
 ```tsx
 <Icon shield size={24} primary />
 ```
 
-### Color - destructive
+### Destructive
 
 ```tsx
 <Icon shield size={24} destructive />
 ```
 
-### Color - muted
+### Muted
 
 ```tsx
 <Icon shield size={24} muted />

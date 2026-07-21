@@ -27,7 +27,7 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 />
 ```
 
-### Variant - group
+### Group
 
 ```tsx
 <Stats
@@ -39,7 +39,7 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 />
 ```
 
-### Variant - plain
+### Plain
 
 ```tsx
 <Stats
@@ -54,7 +54,7 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 />
 ```
 
-### Variant - sparkline
+### Sparkline
 
 ```tsx
 <Stats

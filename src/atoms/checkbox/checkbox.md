@@ -25,7 +25,7 @@ Multi-select option, single yes/no, grouped lists.
 </Column>
 ```
 
-### State - unchecked
+### Unchecked
 
 ```tsx
 <Checkbox description="Get notified when activity happens on your account.">
@@ -33,7 +33,7 @@ Multi-select option, single yes/no, grouped lists.
 </Checkbox>
 ```
 
-### State - disabled
+### Disabled
 
 ```tsx
 <Checkbox disabled description="Get notified when activity happens on your account.">

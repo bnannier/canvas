@@ -29,7 +29,7 @@ Wire `onPress` to your own handler; here it counts each tap. The background also
 
 ## Variants
 
-### Feedback - opacity
+### Opacity
 
 The style function dims the whole surface to 50% opacity while pressed; `onPress` flips the label so each tap leaves a lasting result too.
 

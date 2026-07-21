@@ -16,13 +16,13 @@ Page-of-N navigation for tables and lists.
 <Pagination compact defaultPage={2} total={12} itemCount={118} />
 ```
 
-### Variant - numbered
+### Numbered
 
 ```tsx
 <Pagination defaultPage={2} total={12} defaultPageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
-### Variant - with-size
+### With size
 
 ```tsx
 <Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />

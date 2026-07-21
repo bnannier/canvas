@@ -16,7 +16,7 @@ Date picker, event list. Production: wrap react-day-picker.
 
 ## Variants
 
-### Variant - events
+### Events
 
 ```tsx
 <Row loose wrap alignStart>

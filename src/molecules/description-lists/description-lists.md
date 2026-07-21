@@ -22,7 +22,7 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 
 ## Variants
 
-### Layout - inline-edit
+### Inline-edit
 
 ```tsx
 <DescriptionList
@@ -38,7 +38,7 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 />
 ```
 
-### Layout - stacked
+### Stacked
 
 ```tsx
 <DescriptionList

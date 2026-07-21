@@ -19,7 +19,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 
 ## Variants
 
-### Mode - multi
+### Multi
 
 ```tsx
 <Listbox
@@ -35,7 +35,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 />
 ```
 
-### Size - sm
+### Small
 
 ```tsx
 <Listbox
@@ -51,7 +51,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 />
 ```
 
-### Size - lg
+### Large
 
 ```tsx
 <Listbox
@@ -67,7 +67,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 />
 ```
 
-### Width - narrow
+### Narrow
 
 ```tsx
 <Listbox
@@ -83,7 +83,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 />
 ```
 
-### Width - wide
+### Wide
 
 ```tsx
 <Listbox

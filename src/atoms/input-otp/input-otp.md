@@ -10,7 +10,7 @@ A segmented one-time-code field: `length` cells display the typed digits while o
 
 ## Variants
 
-### Length - six vs four digits
+### Length
 
 ```tsx
 <Column relaxed>

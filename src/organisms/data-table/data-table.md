@@ -19,7 +19,7 @@ A bordered table rendered from column and row data; compose a toolbar above and 
 
 ## Variants
 
-### Variant - bulk
+### Selectable
 
 ```tsx
 <DataTable
@@ -35,7 +35,7 @@ A bordered table rendered from column and row data; compose a toolbar above and 
 />
 ```
 
-### Density - compact
+### Compact
 
 ```tsx
 <DataTable

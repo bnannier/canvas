@@ -10,91 +10,91 @@ Type scale classes for headings, body text, and helper styles.
 
 ## Variants
 
-### Style - display
+### Display
 
 ```tsx
 <Typography display>The quick brown fox</Typography>
 ```
 
-### Style - h2
+### H2
 
 ```tsx
 <Typography h2>The quick brown fox</Typography>
 ```
 
-### Style - h3
+### H3
 
 ```tsx
 <Typography h3>The quick brown fox</Typography>
 ```
 
-### Style - h4
+### H4
 
 ```tsx
 <Typography h4>The quick brown fox</Typography>
 ```
 
-### Style - h5
+### H5
 
 ```tsx
 <Typography h5>The quick brown fox</Typography>
 ```
 
-### Style - body
+### Body
 
 ```tsx
 <Typography body>The quick brown fox</Typography>
 ```
 
-### Style - small
+### Small
 
 ```tsx
 <Typography small>The quick brown fox</Typography>
 ```
 
-### Style - tiny
+### Tiny
 
 ```tsx
 <Typography tiny>The quick brown fox</Typography>
 ```
 
-### Style - muted
+### Muted
 
 ```tsx
 <Typography muted>The quick brown fox</Typography>
 ```
 
-### Style - caption
+### Caption
 
 ```tsx
 <Typography caption>The quick brown fox</Typography>
 ```
 
-### Style - code
+### Code
 
 ```tsx
 <Typography code>The quick brown fox</Typography>
 ```
 
-### Style - mono
+### Mono
 
 ```tsx
 <Typography mono>The quick brown fox</Typography>
 ```
 
-### Style - lead
+### Lead
 
 ```tsx
 <Typography lead>The quick brown fox</Typography>
 ```
 
-### Weight - semibold
+### Semibold
 
 ```tsx
 <Typography lead semibold>Rachel Chen</Typography>
 ```
 
-### Leading - tightLeading
+### Tight leading
 
 ```tsx
 <Column flush>
@@ -103,25 +103,25 @@ Type scale classes for headings, body text, and helper styles.
 </Column>
 ```
 
-### Tone - primary
+### Primary
 
 ```tsx
 <Typography body primary>View invoices</Typography>
 ```
 
-### Tone - success
+### Success
 
 ```tsx
 <Typography small success>+12.4% this week</Typography>
 ```
 
-### Tone - destructive
+### Destructive
 
 ```tsx
 <Typography small destructive>Payment failed</Typography>
 ```
 
-### Decoration - underline
+### Underline
 
 ```tsx
 <Typography body primary underline>View invoices</Typography>
