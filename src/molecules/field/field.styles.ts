@@ -65,6 +65,19 @@ export interface FieldSkin {
 // The value column grows to fill the row beside the fixed label column.
 export const valueFill: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
+// `alignEnd`: the value column packs its content (text, badges, the copy row,
+// an avatar stack) to the trailing edge instead of resting beside the label.
+export const valueEnd: ViewStyle = { alignItems: "flex-end" };
+
+// Wrapped value text keeps its lines on the trailing edge in an end-aligned row
+// (the flex-end box alone would leave inner lines ragged-left).
+export const valueTextEnd: TextStyle = { textAlign: "right" };
+
+// Badge values pin themselves to the leading edge (the atom's own
+// alignSelf:"flex-start" shrink-wrap beats the wrapper's alignItems), so an
+// end-aligned row repositions the badge within the value column explicitly.
+export const badgeEnd: ViewStyle = { alignSelf: "flex-end" };
+
 // Display-mode label column override for phone widths (sm and below): the
 // desktop 180px column would starve the value into hard wraps there.
 export const labelNarrow: TextStyle = { width: 120 };

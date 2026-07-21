@@ -590,6 +590,7 @@ import e_molecules_feeds_dont_1_dont from "./examples/molecules/feeds/dont-1-don
 import e_molecules_field_example_0 from "./examples/molecules/field/example-0";
 import e_molecules_field_example_1 from "./examples/molecules/field/example-1";
 import e_molecules_field_example_2 from "./examples/molecules/field/example-2";
+import e_molecules_field_example_3 from "./examples/molecules/field/example-3";
 import e_molecules_field_dont_0_do from "./examples/molecules/field/dont-0-do";
 import e_molecules_field_dont_0_dont from "./examples/molecules/field/dont-0-dont";
 import e_molecules_field_dont_1_do from "./examples/molecules/field/dont-1-do";
@@ -1641,6 +1642,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Default", code: "<Field\n  rows={[\n    { label: \"User ID\", value: \"usr_abc123\", mono: true },\n    { label: \"Name\", value: \"Rachel Chen\" },\n    { label: \"Role\", value: \"Admin\" },\n    { label: \"Status\", status: \"Active\" }\n  ]}\n  style={{ maxWidth: 400 }}\n/>", render: e_molecules_field_example_0 },
       { label: "Mono", code: "<Field\n  rows={[\n    { label: \"Client ID\", value: \"clt_8f2a9b4c7e1d\", mono: true },\n    { label: \"Created\", value: \"2026-05-24T14:32:00Z\", mono: true },\n    { label: \"Fingerprint\", value: \"sha256:xK9v...\", mono: true }\n  ]}\n  style={{ maxWidth: 400 }}\n/>", render: e_molecules_field_example_1 },
       { label: "Composed", code: "<Field\n  rows={[\n    { label: \"Status\", status: \"Active\" },\n    { label: \"Plan\", badge: \"Pro\" },\n    { label: \"Token\", value: \"sk_live_a8f2...c9e1\", mono: true, copyValue: \"sk_live_a8f2c9e1\" },\n    { label: \"Members\", avatars: [\n      { src: \"/rachel-chen.jpg\", name: \"RC\" },\n      { name: \"AJ\" }\n    ], overflow: 3 }\n  ]}\n  style={{ maxWidth: 400 }}\n/>", render: e_molecules_field_example_2 },
+      { label: "End aligned", code: "<Field\n  alignEnd\n  rows={[\n    { label: \"Subtotal\", value: \"$1,240.00\" },\n    { label: \"Tax\", value: \"$99.20\" },\n    { label: \"Total\", value: \"$1,339.20\", mono: true },\n    { label: \"Status\", status: \"Paid\" }\n  ]}\n  style={{ maxWidth: 400 }}\n/>", render: e_molecules_field_example_3 },
     ],
     donts: [
       { title: "Basic", do: { caption: "Use the fixed 180px label column so every value aligns to one baseline.", code: "<Field style={{ maxWidth: 400 }} rows={[\n    { label: \"Name\", value: \"Rachel Chen\" },\n    { label: \"Role\", value: \"Admin\" }\n  ]} />", render: e_molecules_field_dont_0_do }, dont: { caption: "Inline label-colon-value with no shared column makes values ragged and impossible to scan down a list.", code: "<View style={{ maxWidth: 400, flexDirection: \"column\", gap: 4 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20 }}>\n    <Text style={{ fontWeight: \"600\" }}>Name:</Text>\n     Rachel Chen\n  </Text>\n  <Text style={{ fontSize: 14, lineHeight: 20 }}>\n    <Text style={{ fontWeight: \"600\" }}>Role:</Text>\n     Admin\n  </Text>\n</View>", render: e_molecules_field_dont_0_dont } },

@@ -108,6 +108,13 @@ export interface FieldProps extends FieldWidthProps {
    */
   onCopy?: (value: string) => void;
   // Boolean axes (orthogonal, stack freely).
+  /**
+   * End-align the display-row values: each value packs to the row's trailing
+   * edge (receipt / iOS-Settings style) instead of resting beside the label
+   * column. Values rest at the leading edge by default. Display mode only; the
+   * control-mode stack is unaffected.
+   */
+  alignEnd?: boolean;
   /** Marks the field as required: appends a destructive "*" to the label. */
   required?: boolean;
   /** Disables the control and dims the whole field. */
@@ -144,7 +151,7 @@ export function createField(
   // Render a row's value slot from its data descriptor. Precedence: an avatar
   // stack, then a copyable value, then a status badge, then a metadata badge,
   // then plain (optionally monospace) text.
-  function FieldValue(row: FieldRow, onCopy?: (value: string) => void) {
+  function FieldValue(row: FieldRow, onCopy?: (value: string) => void, alignEnd?: boolean) {
     const { tokens } = useTheme();
 
     if (row.avatars && row.avatars.length > 0) {
@@ -169,7 +176,7 @@ export function createField(
       const copyValue = row.copyValue;
       return (
         <View style={s.copyRow}>
-          <Text style={[skin.fieldValue(tokens), row.mono ? skin.monoStyle : null, s.copyValueText]} numberOfLines={1}>
+          <Text style={[skin.fieldValue(tokens), row.mono ? skin.monoStyle : null, s.copyValueText, alignEnd ? s.valueTextEnd : null]} numberOfLines={1}>
             {row.value ?? copyValue}
           </Text>
           <Button
@@ -185,16 +192,16 @@ export function createField(
     }
     if (row.status != null) {
       return (
-        <Badge status success>
+        <Badge status success style={alignEnd ? s.badgeEnd : undefined}>
           {row.status}
         </Badge>
       );
     }
     if (row.badge != null) {
-      return <Badge secondary>{row.badge}</Badge>;
+      return <Badge secondary style={alignEnd ? s.badgeEnd : undefined}>{row.badge}</Badge>;
     }
     return (
-      <Text style={[skin.fieldValue(tokens), row.mono ? skin.monoStyle : null]}>
+      <Text style={[skin.fieldValue(tokens), row.mono ? skin.monoStyle : null, alignEnd ? s.valueTextEnd : null]}>
         {row.value}
       </Text>
     );
@@ -210,6 +217,7 @@ export function createField(
       value,
       onChangeText,
       onCopy,
+      alignEnd,
       required,
       disabled,
       invalid,
@@ -266,12 +274,12 @@ export function createField(
                   {row.label}
                 </Text>
                 <View
-                  style={s.valueFill}
+                  style={[s.valueFill, alignEnd ? s.valueEnd : null]}
                   {...(interactive
                     ? {}
                     : { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const })}
                 >
-                  {FieldValue(row, onCopy)}
+                  {FieldValue(row, onCopy, alignEnd)}
                 </View>
               </View>
             );
