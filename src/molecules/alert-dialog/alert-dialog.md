@@ -74,6 +74,35 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 />
 ```
 
+### Controlled
+
+Drive the open state from outside the dialog: omit `trigger`, own `open` yourself,
+and pass `onOpenChange` so every way the dialog closes (confirm, cancel, or Escape
+on the web) reports back and keeps your state in sync. The readout below is wired
+to that same state, so it flips the moment `onOpenChange` fires. (`Stateful` is a
+docs-only state holder; in an app you would hold `open` with `useState`.)
+
+```tsx
+<Stateful initial={false}>
+  {(open, setOpen) => (
+    <Column relaxed>
+      <Row snug alignCenter>
+        <Button small outline onPress={() => setOpen(true)}>Delete identity…</Button>
+        <Typography muted>{open ? "Dialog is open" : "Dialog is closed"}</Typography>
+      </Row>
+      <AlertDialog
+        open={open}
+        onOpenChange={setOpen}
+        destructive
+        title="Delete this identity?"
+        description="This permanently removes the identity and revokes any active sessions. This action cannot be undone."
+        confirmLabel="Delete"
+      />
+    </Column>
+  )}
+</Stateful>
+```
+
 ## Do & Don't
 
 ### Reserve the dialog for blocking decisions
