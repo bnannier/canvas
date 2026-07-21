@@ -3,15 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Alert, Button } = scope;
+  const { Stateful, View, Alert, Button, Typography, Column } = scope;
   return (
-<Alert
-  success
-  icon="✓"
-  title="All set"
-  description="Your changes have been saved successfully."
-  dismissible
-  actions={<Button ghost small>View changes</Button>}
-/>
+<Stateful initial={0}>
+  {(views, setViews) => (
+    <Column snug>
+      <Alert
+        success
+        icon="✓"
+        title="All set"
+        description="Your changes have been saved successfully."
+        dismissible
+        actions={<Button ghost small onPress={() => setViews(views + 1)}>View changes</Button>}
+      />
+      <Typography muted>{views === 0 ? "Changes not viewed yet" : `Viewed ${views} ${views === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
   );
 }

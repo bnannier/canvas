@@ -64,6 +64,29 @@ describe("Alert", () => {
     expect(dismissed).toBe(1);
   });
 
+  // The controlled + uncontrolled contract (useControllableState): a bare
+  // dismissible Alert hides itself when the "×" is pressed; a controlled
+  // `dismissed` prop hands that state to the parent instead.
+  it("self-dismisses out of the box when the dismiss control is pressed", () => {
+    const { container } = ui(<Alert info title="Transient" dismissible />);
+    fireEvent.click(container.querySelector('[aria-label="Dismiss"]') as Element);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it("defers to a controlled `dismissed` prop and still reports the press", () => {
+    let dismissed = 0;
+    const { container } = ui(
+      <Alert info title="Parent-owned" dismissible dismissed={false} onDismiss={() => { dismissed += 1; }} />,
+    );
+    fireEvent.click(container.querySelector('[aria-label="Dismiss"]') as Element);
+    // The parent owns the state, so the banner stays until it flips the prop.
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    expect(dismissed).toBe(1);
+
+    const hidden = ui(<Alert info title="Gone" dismissible dismissed />);
+    expect(hidden.container.querySelector('[role="alert"]')).toBeNull();
+  });
+
   it("renders whatever is passed to the actions slot", () => {
     ui(
       <Alert error title="Payment failed" actions={<Button primary small>Retry</Button>} />,

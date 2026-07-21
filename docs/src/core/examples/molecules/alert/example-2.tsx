@@ -3,15 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Button, Icon } = scope;
+  const { Stateful, Alert, Button, Icon, Typography, Column } = scope;
   return (
-<Alert
-  warning
-  icon={<Icon alertTriangle size={16} />}
-  title="Action required"
-  description="Your trial expires in 3 days."
-  dismissible
-  actions={<Button primary small>Upgrade plan</Button>}
-/>
+<Stateful initial={0}>
+  {(starts, setStarts) => (
+    <Column snug>
+      <Alert
+        warning
+        icon={<Icon alertTriangle size={16} />}
+        title="Action required"
+        description="Your trial expires in 3 days."
+        dismissible
+        actions={<Button primary small onPress={() => setStarts(starts + 1)}>Upgrade plan</Button>}
+      />
+      <Typography muted>{starts === 0 ? "Upgrade flow not opened yet" : `Opened the upgrade flow ${starts} ${starts === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
   );
 }

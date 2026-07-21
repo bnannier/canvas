@@ -4,13 +4,26 @@ Section card with headline, body text, and a primary action. Used to surface a s
 
 ## Usage
 
+The panel's single action fires `onAction`; wire it to your own handler and every
+press runs it. Here each press commits the delete, and the line underneath reports
+the result. (`Stateful` is a docs-only helper that holds the example's state; in
+your app that state is your own.)
+
 ```tsx
-<ActionPanel
-  title="Delete this project"
-  description="Once you delete a project, there is no going back. Please be certain."
-  actionLabel="Delete project"
-  destructive
-/>
+<Stateful initial={0}>
+  {(deletes, setDeletes) => (
+    <Column snug>
+      <ActionPanel
+        title="Delete this project"
+        description="Once you delete a project, there is no going back. Please be certain."
+        actionLabel="Delete project"
+        destructive
+        onAction={() => setDeletes(deletes + 1)}
+      />
+      <Typography muted>{deletes === 0 ? "Nothing deleted yet" : `Delete fired ${deletes} ${deletes === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Variants
@@ -18,13 +31,21 @@ Section card with headline, body text, and a primary action. Used to surface a s
 ### Inline
 
 ```tsx
-<ActionPanel
-  title="Discard unsaved changes?"
-  description="You have unsaved edits in this form. Leaving now will lose all progress."
-  actionLabel="Discard"
-  destructive
-  inline
-/>
+<Stateful initial={0}>
+  {(discards, setDiscards) => (
+    <Column snug>
+      <ActionPanel
+        title="Discard unsaved changes?"
+        description="You have unsaved edits in this form. Leaving now will lose all progress."
+        actionLabel="Discard"
+        destructive
+        inline
+        onAction={() => setDiscards(discards + 1)}
+      />
+      <Typography muted>{discards === 0 ? "No edits discarded yet" : `Discarded ${discards} ${discards === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ### Toggle
