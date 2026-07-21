@@ -1,13 +1,14 @@
 # Command
 
-Cmd+K search: navigation, actions, recent items.
+Cmd+K search: navigation, actions, recent items. The search row is a real
+input: typing filters the grouped rows to the matching labels, and a query
+that matches nothing shows a muted "No results" row.
 
 ## Usage
 
 ```tsx
 <Command
   defaultActive={0}
-  placeholder="Type a command..."
   trigger
   groups={[
     { heading: "Actions", items: [
@@ -30,7 +31,6 @@ Cmd+K search: navigation, actions, recent items.
 ```tsx
 <Command
   defaultActive={0}
-  placeholder="Type a command..."
   groups={[
     { heading: "Actions", items: [
       { label: "New File", icon: "file", shortcut: "Ctrl+N" },
@@ -50,9 +50,31 @@ Cmd+K search: navigation, actions, recent items.
 ```tsx
 <Command
   defaultActive={0}
-  placeholder="Type a command..."
   trigger
   footer
+  groups={[
+    { heading: "Actions", items: [
+      { label: "New File", icon: "file", shortcut: "Ctrl+N" },
+      { label: "Open File", icon: "folder", shortcut: "Ctrl+O" },
+      { label: "Save", icon: "save", shortcut: "Ctrl+S" }
+    ] },
+    { heading: "Navigation", items: [
+      { label: "Go to Dashboard", icon: "arrowRight" },
+      { label: "Go to Settings", icon: "arrowRight" }
+    ] }
+  ]}
+/>
+```
+
+### Filtering
+
+Typing narrows the rows; `defaultQuery` seeds the filter (here only the file
+actions match), and groups left with no match drop out.
+
+```tsx
+<Command
+  defaultActive={0}
+  defaultQuery="file"
   groups={[
     { heading: "Actions", items: [
       { label: "New File", icon: "file", shortcut: "Ctrl+N" },
@@ -91,7 +113,7 @@ Cmd+K search: navigation, actions, recent items.
 **Do** — Group commands under labels with separators and highlight the first match so results stay scannable.
 
 ```tsx
-<Command open placeholder="Type a command..." defaultActive={0} groups={[
+<Command open defaultActive={0} groups={[
     { heading: "Actions", items: [
       { label: "New File", icon: "file", shortcut: "Ctrl+N" },
       { label: "Save", icon: "save", shortcut: "Ctrl+S" }
@@ -106,7 +128,7 @@ Cmd+K search: navigation, actions, recent items.
 **Don't** — Dumping every command into one flat list with no labels makes the palette hard to scan.
 
 ```tsx
-<Command open placeholder="Type a command..." defaultActive={-1} groups={[
+<Command open defaultActive={-1} groups={[
     { items: [
       { label: "New File", icon: "file", shortcut: "Ctrl+N" },
       { label: "Save", icon: "save", shortcut: "Ctrl+S" },

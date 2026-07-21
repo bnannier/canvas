@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <Command
   defaultActive={0}
-  placeholder="Type a command..."
   trigger
   footer
   groups={[

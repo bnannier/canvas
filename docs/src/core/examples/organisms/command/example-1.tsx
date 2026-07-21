@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <Command
   defaultActive={0}
-  placeholder="Type a command..."
   groups={[
     { heading: "Actions", items: [
       { label: "New File", icon: "file", shortcut: "Ctrl+N" },
