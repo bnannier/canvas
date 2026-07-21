@@ -8,7 +8,10 @@ export default function Example(scope: ExampleScope) {
 <Image
   source={{ uri: "/liang-bao.jpg" }}
   contain
-  style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
+  width={160}
+  height={120}
+  radius="xl"
+  style={{ backgroundColor: tokens.muted }}
 />
   );
 }
