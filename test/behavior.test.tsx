@@ -160,6 +160,39 @@ describe("Calendar", () => {
     expect(screen.getByText("Sunday, May 25")).toBeTruthy();
   });
 
+  it("dayPeek opens the pressed day's timeline in a peek card and skips event-less days", () => {
+    const { container } = ui(
+      <Calendar
+        dayPeek
+        month="May 2026"
+        daysInMonth={31}
+        startWeekday={4}
+        events={[
+          { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+          { day: 14, title: "1:1 with manager", start: 14 },
+          { day: 8, title: "Offsite" },
+        ]}
+      />,
+    );
+    // Closed until a day with events is pressed.
+    expect(screen.queryByText("Saturday, May 24")).toBeNull();
+    fireEvent.click(container.querySelector('[aria-label="24, 1 event"]') as Element);
+    expect(screen.getByText("Saturday, May 24")).toBeTruthy();
+    expect(screen.getByText("Sprint planning")).toBeTruthy();
+    expect(screen.getByText("9 AM – 10:30 AM")).toBeTruthy();
+    // Pressing another event day moves the peek there.
+    fireEvent.click(container.querySelector('[aria-label="14, 1 event"]') as Element);
+    expect(screen.queryByText("Saturday, May 24")).toBeNull();
+    expect(screen.getByText("Wednesday, May 14")).toBeTruthy();
+    // An untimed event lists as a title row (no timeline needed).
+    fireEvent.click(container.querySelector('[aria-label="8, 1 event"]') as Element);
+    expect(screen.getByText("Offsite")).toBeTruthy();
+    // An event-less day closes the peek instead of showing an empty card.
+    fireEvent.click(screen.getByText("16"));
+    expect(screen.queryByText(/May 16/)).toBeNull();
+    expect(screen.queryByText("Offsite")).toBeNull();
+  });
+
   it("fires onEventPress with the pressed event block", () => {
     let pressed = "";
     ui(

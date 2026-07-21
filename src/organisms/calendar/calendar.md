@@ -20,53 +20,24 @@ A bare calendar is uncontrolled: pressing a day selects it, and in the week/day 
 
 ### Events
 
-Each event carries the `day` it falls on, plus an optional `title` and `start`/`end` hours. The month grid marks event days with a dot and reads the count to assistive tech; the panel stays in sync by holding the selected day. (`Stateful` is a docs-only helper that holds the example's state; in your app that state is your own.)
+Each event carries the `day` it falls on, plus an optional `title` and `start`/`end` hours. The month grid marks event days with a dot and reads the count to assistive tech. With `dayPeek`, pressing a marked day opens that day's hour timeline in an anchored overlay (the same timeline the day view renders), dismissed by a tap anywhere else or Escape. Press May 24 below.
 
 ```tsx
-<Stateful initial={{
-  day: 24,
-  events: [
-    { day: 8, title: "Design review", start: 11.5, end: 13, time: "11:30 AM" },
-    { day: 14, title: "1:1 with manager", start: 14, end: 15, time: "2:00 PM" },
-    { day: 23, title: "Release cut", start: 16, end: 17, time: "4:00 PM" },
-    { day: 24, title: "Sprint planning", start: 9, end: 10.5, time: "9:00 AM" },
-    { day: 24, title: "Team lunch", start: 12.5, end: 13.5, time: "12:30 PM" }
-  ]
-}}>
-  {(state, set) => (
-    <Row loose wrap alignStart>
-      <Calendar
-        month="May 2026"
-        today={23}
-        selected={state.day}
-        onSelect={(day) => set({ ...state, day })}
-        daysInMonth={31}
-        startWeekday={4}
-        events={state.events}
-      />
-      <Card grow flush style={{ minWidth: 240 }}>
-        <CardHeader>
-          <Typography small semibold>{`May ${state.day}`}</Typography>
-        </CardHeader>
-        <CardSeparator />
-        <CardContent>
-          {state.events.filter((e) => e.day === state.day).length === 0 ? (
-            <Typography small muted>No events this day.</Typography>
-          ) : (
-            <Column tight>
-              {state.events.filter((e) => e.day === state.day).map((e) => (
-                <Row key={e.title} between alignCenter>
-                  <Typography small medium>{e.title}</Typography>
-                  <Typography small muted>{e.time}</Typography>
-                </Row>
-              ))}
-            </Column>
-          )}
-        </CardContent>
-      </Card>
-    </Row>
-  )}
-</Stateful>
+<Calendar
+  dayPeek
+  month="May 2026"
+  today={23}
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+  events={[
+    { day: 8, title: "Design review", start: 11.5, end: 13 },
+    { day: 14, title: "1:1 with manager", start: 14, end: 15 },
+    { day: 23, title: "Release cut", start: 16, end: 17 },
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 }
+  ]}
+/>
 ```
 
 ### Week

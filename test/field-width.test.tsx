@@ -256,10 +256,12 @@ describe("field width axis: composition (inner controls are block)", () => {
     expect(at(container, "d").style.maxWidth).toBe("");
   });
 
-  it("Form and Fieldset inner Inputs fill their column (no per-input standard)", () => {
+  it("Form-stitched and Fieldset inner Inputs fill their column (block, no per-input standard)", () => {
     const { container } = ui(
       <>
-        <Form fields={[{ label: "Email", placeholder: "you@example.com" }]} />
+        <Form>
+          <Input block label="Email" placeholder="you@example.com" />
+        </Form>
         <Fieldset legend="Profile" items={[{ label: "Name" }]} />
       </>,
     );

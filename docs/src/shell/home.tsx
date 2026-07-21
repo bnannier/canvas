@@ -441,7 +441,7 @@ export function Home() {
             </View>
           </View>
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8, paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
-            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Olympus · @nannier/canvas {version}</Text>
+            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Canvas · @nannier/canvas {version}</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
           </View>
         </Wrap>

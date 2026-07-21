@@ -13,6 +13,7 @@ import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
+import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 
 // react-native-web forwards NEITHER accessibilityState NOR accessibilityValue to
 // the DOM (verified empirically). The kit therefore carries the cross-platform
@@ -35,6 +36,21 @@ describe("web a11y state (aria aliases for RNW-dropped accessibilityState)", () 
   it("Switch forwards aria-checked", () => {
     const { container } = ui(<Switch checked />);
     expect(attr(container, '[role="switch"]', "aria-checked")).toBe("true");
+  });
+
+  it("DataTable forwards aria-sort on sortable headers and mixed on a partial select-all", () => {
+    const { container } = ui(
+      <DataTable
+        sortable
+        selectable
+        defaultSort={{ column: "Name" }}
+        defaultSelectedKeys={[0]}
+        columns={["Name", "Role"]}
+        rows={[["Ada", "Eng"], ["Bob", "PM"]]}
+      />,
+    );
+    expect(attr(container, '[role="columnheader"][aria-sort]', "aria-sort")).toBe("ascending");
+    expect(attr(container, '[aria-label="Select all rows"]', "aria-checked")).toBe("mixed");
   });
 
   it("TabBar marks exactly the active tab aria-selected", () => {

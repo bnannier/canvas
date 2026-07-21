@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, FOCUS_RESET } from "../../style/index.js";
 
 // Co-located Calendar skins, one per platform. The shell resolves the density
 // metrics (compact vs default cell sizing), the leading-blank padding, and the
@@ -51,6 +51,8 @@ export interface TimelineMetrics {
   weekWidth: number;
   /** The day-view container width (capped at 100% of the parent). */
   dayWidth: number;
+  /** The day-peek overlay card width. */
+  peekWidth: number;
 }
 
 // The per-day visual state the shell resolves and hands the skin.
@@ -129,6 +131,13 @@ export interface CalendarSkin {
   eventTitle: (t: ColorTokens) => TextStyle;
   /** The event time line inside a block. */
   eventTime: (t: ColorTokens) => TextStyle;
+
+  // --- day-peek overlay (the anchored day-timeline card the month view opens) ---
+  /** The floating peek card: shape, border, shadow, padding (an overlay surface,
+   *  so it paints the `popover` token and frosts under glass via GlassSurface). */
+  peekCard: (t: ColorTokens) => ViewStyle;
+  /** The peek's day title line. */
+  peekTitle: (t: ColorTokens) => TextStyle;
 }
 
 // --- shared weekday strings ------------------------------------------------
@@ -219,8 +228,8 @@ export const webSkin: CalendarSkin = {
     st.selected || st.today ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary },
 
   timeline: {
-    compact: { hourHeight: 40, axisWidth: 40, weekWidth: 448, dayWidth: 320 },
-    default: { hourHeight: 48, axisWidth: 44, weekWidth: 544, dayWidth: 360 },
+    compact: { hourHeight: 40, axisWidth: 40, weekWidth: 448, dayWidth: 320, peekWidth: 272 },
+    default: { hourHeight: 48, axisWidth: 44, weekWidth: 544, dayWidth: 360, peekWidth: 300 },
   },
   hourLabel: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
@@ -236,6 +245,18 @@ export const webSkin: CalendarSkin = {
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.primary }),
   eventTime: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
+
+  // Mirrors the web Popover card (radius 8, hairline border, lg shadow) with the
+  // tighter padding a timeline slice wants.
+  peekCard: (t) => ({
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: t.border,
+    backgroundColor: t.popover,
+    padding: 12,
+    ...shadow("lg"),
+  }),
+  peekTitle: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t["popover-foreground"] }),
 };
 
 // =============================================================================
@@ -323,8 +344,8 @@ export const iosSkin: CalendarSkin = {
 
   // Slightly taller hour rows in the iOS calendar's airier spirit.
   timeline: {
-    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 330 },
-    default: { hourHeight: 50, axisWidth: 48, weekWidth: 560, dayWidth: 368 },
+    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 330, peekWidth: 288 },
+    default: { hourHeight: 50, axisWidth: 48, weekWidth: 560, dayWidth: 368, peekWidth: 320 },
   },
   hourLabel: (t) => ({ fontSize: 11, lineHeight: 13, fontWeight: "500", color: t["muted-foreground"] }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
@@ -341,6 +362,16 @@ export const iosSkin: CalendarSkin = {
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: t.primary }),
   eventTime: (t) => ({ fontSize: 11, lineHeight: 14, color: t["muted-foreground"] }),
+
+  // The iOS popover DNA (borderless rounded card, lg shadow), tightened for a
+  // timeline slice.
+  peekCard: (t) => ({
+    borderRadius: 20,
+    backgroundColor: t.popover,
+    padding: 12,
+    ...shadow("lg"),
+  }),
+  peekTitle: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", color: t["popover-foreground"] }),
 };
 
 // =============================================================================
@@ -428,8 +459,8 @@ export const androidSkin: CalendarSkin = {
 
   // M3 schedule rows lean taller for the 48dp-ish touch rhythm.
   timeline: {
-    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 320 },
-    default: { hourHeight: 52, axisWidth: 48, weekWidth: 560, dayWidth: 360 },
+    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 320, peekWidth: 272 },
+    default: { hourHeight: 52, axisWidth: 48, weekWidth: 560, dayWidth: 360, peekWidth: 304 },
   },
   hourLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
@@ -445,4 +476,14 @@ export const androidSkin: CalendarSkin = {
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.primary }),
   eventTime: (t) => ({ fontSize: 11, lineHeight: 16, color: t["muted-foreground"] }),
+
+  // The M3 menu-surface treatment (medium radius + md shadow), tightened for a
+  // timeline slice.
+  peekCard: (t) => ({
+    borderRadius: 12,
+    backgroundColor: t.popover,
+    padding: 12,
+    ...shadow("md"),
+  }),
+  peekTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
 };
