@@ -28,6 +28,14 @@ Keyboard shortcut indicator badge.
 <Kbd keys="⌘K ⌘S" sequence />
 ```
 
+### In a button
+
+```tsx
+<Button outline iconLeft={<Icon search muted size={13} />} iconRight={<Kbd keys="⌘ K" />}>
+  Search…
+</Button>
+```
+
 ### In a sentence
 
 ```tsx

@@ -212,6 +212,7 @@ import e_atoms_kbd_example_1 from "./examples/atoms/kbd/example-1";
 import e_atoms_kbd_example_2 from "./examples/atoms/kbd/example-2";
 import e_atoms_kbd_example_3 from "./examples/atoms/kbd/example-3";
 import e_atoms_kbd_example_4 from "./examples/atoms/kbd/example-4";
+import e_atoms_kbd_example_5 from "./examples/atoms/kbd/example-5";
 import e_atoms_kbd_dont_0_do from "./examples/atoms/kbd/dont-0-do";
 import e_atoms_kbd_dont_0_dont from "./examples/atoms/kbd/dont-0-dont";
 import e_atoms_kbd_dont_1_do from "./examples/atoms/kbd/dont-1-do";
@@ -1086,7 +1087,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Single", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_example_1 },
       { label: "Combo", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_example_2 },
       { label: "Sequence", code: "<Kbd keys=\"⌘K ⌘S\" sequence />", render: e_atoms_kbd_example_3 },
-      { label: "In a sentence", code: "<Row wrap alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_4 },
+      { label: "In a button", code: "<Button outline iconLeft={<Icon search muted size={13} />} iconRight={<Kbd keys=\"⌘ K\" />}>\n  Search…\n</Button>", render: e_atoms_kbd_example_4 },
+      { label: "In a sentence", code: "<Row wrap alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_5 },
     ],
     donts: [
       { title: "Single", do: { caption: "Use `children` for one real key; give each cap exactly one key.", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_dont_0_do }, dont: { caption: "Packing a whole shortcut into one key cap reads as a single keystroke that does not exist.", code: "<Kbd>⌘K</Kbd>", render: e_atoms_kbd_dont_0_dont } },
