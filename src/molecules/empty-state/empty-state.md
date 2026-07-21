@@ -77,31 +77,6 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 />
 ```
 
-### All clear
-
-```tsx
-<EmptyState
-  icon={<Icon circleCheck />}
-  title="All clear"
-  description="No locked accounts or pending reviews."
-  actionLabel="View history"
-  success
-  bordered
-/>
-```
-
-### Single action
-
-```tsx
-<EmptyState
-  icon={<Icon search />}
-  title="No results found"
-  description="Try adjusting your search filters."
-  actionLabel="Create identity"
-  bordered
-/>
-```
-
 ### Inside a table
 
 ```tsx

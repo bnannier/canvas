@@ -40,7 +40,6 @@ import e_atoms_badge_example_3 from "./examples/atoms/badge/example-3";
 import e_atoms_badge_example_4 from "./examples/atoms/badge/example-4";
 import e_atoms_badge_example_5 from "./examples/atoms/badge/example-5";
 import e_atoms_badge_example_6 from "./examples/atoms/badge/example-6";
-import e_atoms_badge_example_7 from "./examples/atoms/badge/example-7";
 import e_atoms_badge_dont_0_do from "./examples/atoms/badge/dont-0-do";
 import e_atoms_badge_dont_0_dont from "./examples/atoms/badge/dont-0-dont";
 import e_atoms_badge_dont_1_do from "./examples/atoms/badge/dont-1-do";
@@ -555,8 +554,6 @@ import e_molecules_empty_state_example_3 from "./examples/molecules/empty-state/
 import e_molecules_empty_state_example_4 from "./examples/molecules/empty-state/example-4";
 import e_molecules_empty_state_example_5 from "./examples/molecules/empty-state/example-5";
 import e_molecules_empty_state_example_6 from "./examples/molecules/empty-state/example-6";
-import e_molecules_empty_state_example_7 from "./examples/molecules/empty-state/example-7";
-import e_molecules_empty_state_example_8 from "./examples/molecules/empty-state/example-8";
 import e_molecules_empty_state_dont_0_do from "./examples/molecules/empty-state/dont-0-do";
 import e_molecules_empty_state_dont_0_dont from "./examples/molecules/empty-state/dont-0-dont";
 import e_molecules_empty_state_dont_1_do from "./examples/molecules/empty-state/dont-1-do";
@@ -850,11 +847,10 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Default", code: "<Badge secondary>admin</Badge>", render: e_atoms_badge_example_0 },
       { label: "Status", code: "<Badge status success>admin</Badge>", render: e_atoms_badge_example_1 },
       { label: "Identity", code: "<Row wrap alignCenter snug>\n  <Typography lead semibold>Rachel Chen</Typography>\n  <Badge status success>active</Badge>\n  <Badge status info>Verified</Badge>\n  <Badge secondary>employee</Badge>\n</Row>", render: e_atoms_badge_example_2 },
-      { label: "Grants", code: "<Row wrap tight>\n  <Badge secondary mono>authorization_code</Badge>\n  <Badge secondary mono>refresh_token</Badge>\n  <Badge secondary mono>client_credentials</Badge>\n</Row>", render: e_atoms_badge_example_3 },
-      { label: "Default", code: "<Badge default>admin</Badge>", render: e_atoms_badge_example_4 },
-      { label: "Outline", code: "<Badge outline>admin</Badge>", render: e_atoms_badge_example_5 },
-      { label: "Destructive", code: "<Badge destructive>admin</Badge>", render: e_atoms_badge_example_6 },
-      { label: "Mono (token / event names)", code: "<Badge secondary mono>admin</Badge>", render: e_atoms_badge_example_7 },
+      { label: "Solid", code: "<Badge default>admin</Badge>", render: e_atoms_badge_example_3 },
+      { label: "Outline", code: "<Badge outline>admin</Badge>", render: e_atoms_badge_example_4 },
+      { label: "Destructive", code: "<Badge destructive>admin</Badge>", render: e_atoms_badge_example_5 },
+      { label: "Mono (token / event names)", code: "<Badge secondary mono>admin</Badge>", render: e_atoms_badge_example_6 },
     ],
     donts: [
       { title: "Metadata badge", do: { caption: "Neutral tags for metadata; reserve color and the status-badge dot for live state.", code: "<Row wrap alignCenter snug>\n  <Badge secondary>employee</Badge>\n  <Badge secondary>engineering</Badge>\n  <Badge secondary>remote</Badge>\n  <Badge status success>active</Badge>\n</Row>", render: e_atoms_badge_dont_0_do }, dont: { caption: "Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.", code: "<View style={{ flexDirection: \"row\", flexWrap: \"wrap\", alignItems: \"center\", gap: 6 }}>\n  <Badge default>employee</Badge>\n  <Badge destructive>engineering</Badge>\n  <Badge default>remote</Badge>\n  <Badge destructive>active</Badge>\n</View>", render: e_atoms_badge_dont_0_dont } },
@@ -919,7 +915,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Default", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} small />", render: e_atoms_button_group_example_0 },
       { label: "Stepper", code: "<ButtonGroup\n  stepper\n  items={[\n    \"May 21\",\n    \"May 22\",\n    \"May 23\",\n    \"Today\",\n    \"May 25\",\n    \"May 26\",\n    \"May 27\"\n  ]}\n  active={3}\n  small\n/>", render: e_atoms_button_group_example_1 },
       { label: "Split", code: "<ButtonGroup\n  split\n  items={[\"Save\"]}\n  menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]}\n  small\n/>", render: e_atoms_button_group_example_2 },
-      { label: "Default", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_3 },
+      { label: "Medium", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_3 },
       { label: "Large", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} large />", render: e_atoms_button_group_example_4 },
       { label: "Disabled", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} disabled small />", render: e_atoms_button_group_example_5 },
     ],
@@ -1583,9 +1579,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Activity", code: "<EmptyState\n  icon={<Icon chartLine />}\n  title=\"No activity\"\n  description=\"Events will appear as they happen.\"\n  actionLabel=\"Refresh\"\n  bordered\n/>", render: e_molecules_empty_state_example_3 },
       { label: "Notifications", code: "<EmptyState\n  icon={<Icon bell />}\n  title=\"All caught up\"\n  description=\"No new notifications.\"\n  actionLabel=\"View archive\"\n  bordered\n/>", render: e_molecules_empty_state_example_4 },
       { label: "Errors", code: "<EmptyState\n  icon={<Icon circleCheck />}\n  title=\"No errors\"\n  description=\"Everything is running smoothly.\"\n  actionLabel=\"View logs\"\n  success\n  bordered\n/>", render: e_molecules_empty_state_example_5 },
-      { label: "All clear", code: "<EmptyState\n  icon={<Icon circleCheck />}\n  title=\"All clear\"\n  description=\"No locked accounts or pending reviews.\"\n  actionLabel=\"View history\"\n  success\n  bordered\n/>", render: e_molecules_empty_state_example_6 },
-      { label: "Single action", code: "<EmptyState\n  icon={<Icon search />}\n  title=\"No results found\"\n  description=\"Try adjusting your search filters.\"\n  actionLabel=\"Create identity\"\n  bordered\n/>", render: e_molecules_empty_state_example_7 },
-      { label: "Inside a table", code: "<Card flat flush style={{ overflow: \"hidden\" }}>\n  <DataTable columns={[\"Name\", \"Email\", \"Role\", \"Status\"]} rows={[]} />\n  <Column alignCenter padLoose>\n    <EmptyState bordered icon={<Icon search />} title=\"No results found\" description=\"Try adjusting your search filters.\" actionLabel=\"Clear filters\" />\n  </Column>\n</Card>", render: e_molecules_empty_state_example_8 },
+      { label: "Inside a table", code: "<Card flat flush style={{ overflow: \"hidden\" }}>\n  <DataTable columns={[\"Name\", \"Email\", \"Role\", \"Status\"]} rows={[]} />\n  <Column alignCenter padLoose>\n    <EmptyState bordered icon={<Icon search />} title=\"No results found\" description=\"Try adjusting your search filters.\" actionLabel=\"Clear filters\" />\n  </Column>\n</Card>", render: e_molecules_empty_state_example_6 },
     ],
     donts: [
       { title: "search", do: { caption: "State the result neutrally and point at the lever the user can pull (filters, query).", code: "<EmptyState bordered icon={<Icon search />} title=\"No results found\" description=\"Try adjusting your search filters.\" />", render: e_molecules_empty_state_dont_0_do }, dont: { caption: "Blaming the searcher for an empty result set makes a normal outcome feel like a mistake.", code: "<EmptyState bordered icon={<Icon search />} title=\"Nothing matched\" description=\"You searched for the wrong thing. Check your spelling and try again.\" />", render: e_molecules_empty_state_dont_0_dont } },
