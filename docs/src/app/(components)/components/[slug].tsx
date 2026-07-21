@@ -35,7 +35,7 @@ export default function ComponentScreen() {
         <Lead>{stripHtml(comp.description)}</Lead>
       </View>
       {entry && entry.examples.length > 0 ? (
-        <Playground examples={entry.examples} />
+        <Playground examples={entry.examples} stageAlign={comp.stageAlign} />
       ) : (
         <View style={{ borderRadius: 10, borderWidth: 1, borderColor: tokens.border, padding: 16 }}>
           <Text style={{ fontSize: 13, color: tokens["muted-foreground"] }}>

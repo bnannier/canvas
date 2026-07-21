@@ -96,6 +96,9 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "Breadcrumb",
     description: "Hierarchical navigation showing where you are.",
     category: "Atoms",
+    // A breadcrumb is a full-width nav trail read from the leading edge, so its
+    // preview fills the row and aligns left rather than floating in the center.
+    stageAlign: "start",
   },
 
   {

@@ -10,6 +10,13 @@ export interface ComponentDoc {
   // page reads /components/row-column while loading from src/atoms/layout/).
   // Defaults to slug when omitted.
   dir?: string;
+  // How the live preview positions the example within each platform row.
+  // `center` (the default) shrink-wraps the example and centers it, which is
+  // right for naturally-sized atoms (Button, Badge, Avatar). `start` makes the
+  // example fill the row width and align to the leading edge, which is right for
+  // block-level, leading-aligned components (Breadcrumb is a full-width nav trail
+  // that reads from the left and should never preview centered).
+  stageAlign?: "center" | "start";
 }
 
 export type Category =

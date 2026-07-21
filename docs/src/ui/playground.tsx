@@ -41,14 +41,21 @@ function ErrorNote({ message }: { message: string }) {
 // example actually wrap. The component is untouched: it renders within the width it is given and
 // never learns the stage exists. Recomputed on resize via the outer onLayout. No horizontal
 // scroller, so the Carousel's horizontal FlatList is never nested in a same-orientation scroller.
-export function FitStage({ children }: { children: ReactNode }) {
+// `align` (default "center") keeps the shrink-to-fit-and-center behavior above.
+// "start" instead fills the stage width and pins the example to the leading edge:
+// the outer row stretches its child and the inner wrapper takes the full width
+// (no `maxWidth` cap), so a block-level, leading-aligned component (Breadcrumb)
+// spans the row and reads from the left instead of floating in the center. The
+// component is still untouched — it renders within the width it is given.
+export function FitStage({ children, align = "center" }: { children: ReactNode; align?: "center" | "start" }) {
   const [avail, setAvail] = useState(0);
+  const fill = align === "start";
   return (
     <View
-      style={{ width: "100%", alignItems: "center", justifyContent: "center" }}
+      style={{ width: "100%", alignItems: fill ? "stretch" : "center", justifyContent: "center" }}
       onLayout={(e) => { const l = e.nativeEvent.layout; if (!l) return; const w = Math.round(l.width); setAvail((a) => (a !== w ? w : a)); }}
     >
-      <View style={{ maxWidth: avail || "100%" }}>{children}</View>
+      <View style={fill ? { width: "100%" } : { maxWidth: avail || "100%" }}>{children}</View>
     </View>
   );
 }
@@ -56,13 +63,14 @@ export function FitStage({ children }: { children: ReactNode }) {
 // One platform row in the stage: the centered live render, with a 96px platform-label column
 // only when more than one platform is shown (the web 3-up). On a device there is a single
 // preview and you ARE the platform, so the label is dropped and the render spans the full width.
-function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
+function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAlign }: {
   label: string;
   scope: ExampleScope;
   render: (s: ExampleScope) => ReactNode;
   resetKey: string;
   first: boolean;
   showLabel: boolean;
+  stageAlign?: "center" | "start";
 }) {
   const { tokens } = useTheme();
   return (
@@ -81,7 +89,7 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
           row instead. */}
       <View style={{ flex: 1, minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 24, minHeight: 84 }}>
         <ExampleErrorBoundary key={resetKey}>
-          <FitStage>{render(scope)}</FitStage>
+          <FitStage align={stageAlign}>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
       </View>
     </View>
@@ -90,7 +98,7 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel }: {
 
 // The component playground: the stacked iOS/Android/Web stage (one device row on
 // native) + flush source, with the example rail to the right on wide viewports.
-export function Playground({ examples }: { examples: DocExample[] }) {
+export function Playground({ examples, stageAlign }: { examples: DocExample[]; stageAlign?: "center" | "start" }) {
   const { tokens } = useTheme();
   const { width } = useWindowDimensions();
   const wide = width >= 1024;
@@ -135,7 +143,7 @@ export function Playground({ examples }: { examples: DocExample[] }) {
           }}
         >
           {previews.map((p, i) => (
-            <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} />
+            <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
           ))}
         </DocsSurface>
         <CodeBlock code={ex.code} flush />
