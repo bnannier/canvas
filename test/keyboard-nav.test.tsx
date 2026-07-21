@@ -131,7 +131,8 @@ describe("Command palette keyboard navigation", () => {
     let picked = -1;
     const groups = [{ heading: "Actions", items: [{ label: "New" }, { label: "Open" }, { label: "Save" }] }];
     const { container } = ui(<Command groups={groups} footer onSelect={(_it, i) => { picked = i; }} />);
-    const search = container.querySelector('[role="search"]') as HTMLElement;
+    // The focusable driver is the search row's real text input.
+    const search = container.querySelector('[role="search"] input') as HTMLElement;
     const options = () => [...container.querySelectorAll('[role="option"]')];
     const activeIdx = () => options().findIndex((o) => o.getAttribute("aria-selected") === "true");
     expect(activeIdx()).toBe(0);

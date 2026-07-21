@@ -42,7 +42,8 @@ export interface CommandSkin {
   /** The leading magnifier glyph size (px), rendered through the kit `Icon`
    *  atom (`search`, tinted muted-foreground) — never a color emoji. */
   searchGlyphSize: number;
-  /** The muted placeholder text in the search row. */
+  /** The search input's type metrics, in the muted placeholder color (the
+   *  shell repaints typed text with `foreground`). */
   searchPlaceholder: (t: ColorTokens) => TextStyle;
   /** The card's per-OS shape override (radius, and `borderCurve` on iOS): merged
    *  over the shared `card()` base so iOS gets a rounder, continuous corner. */
@@ -151,6 +152,19 @@ export function triggerLabel(tokens: ColorTokens): TextStyle {
 
 // Pushes the trailing kbd cap to the right edge of the trigger. (ml-auto.)
 export const triggerKbd: ViewStyle = { marginStart: "auto" };
+
+// ---------- empty state (shared across platforms) ----------
+// The muted "No results" row shown when the query matches nothing.
+export const emptyRow: ViewStyle = {
+  alignItems: "center",
+  paddingHorizontal: 12,
+  paddingVertical: 24,
+};
+
+// The empty row's supporting text. (text-sm text-muted-foreground.)
+export function emptyText(tokens: ColorTokens): TextStyle {
+  return { fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] };
+}
 
 // ---------- footer hint bar (shared across platforms) ----------
 // The footer hint bar below the list. (flex-row items-center gap-3 border-t
