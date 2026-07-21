@@ -58,7 +58,9 @@ const CONFIG = navConfigJson as unknown as NavConfig;
 export function getActiveSlug(pathname: string): string {
   if (pathname === "/") return "";
   const m = pathname.match(/^\/components\/(.+)$/);
-  if (m) return m[1];
+  // A component page can carry a trailing /<variant> segment (a deep-linked Playground
+  // example); the active nav target is the component itself, so drop anything after it.
+  if (m) return m[1].split("/")[0];
   const tpl = pathname.match(/^\/templates\/(.+)$/);
   if (tpl) return "tpl-" + tpl[1];
   const pat = pathname.match(/^\/patterns\/(.+)$/);

@@ -98,11 +98,21 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
 
 // The component playground: the stacked iOS/Android/Web stage (one device row on
 // native) + flush source, with the example rail to the right on wide viewports.
-export function Playground({ examples, stageAlign }: { examples: DocExample[]; stageAlign?: "center" | "start" }) {
+// Selection is optionally controlled: pass `selected` + `onSelect` to drive the active
+// example from the URL variant (see ComponentReference); omit them and the rail manages
+// its own state.
+export function Playground({ examples, stageAlign, selected: selectedProp, onSelect: onSelectProp }: {
+  examples: DocExample[];
+  stageAlign?: "center" | "start";
+  selected?: number;
+  onSelect?: (index: number) => void;
+}) {
   const { tokens } = useTheme();
   const { width } = useWindowDimensions();
   const wide = width >= 1024;
-  const [selected, setSelected] = useState(0);
+  const [selectedState, setSelectedState] = useState(0);
+  const selected = selectedProp ?? selectedState;
+  const setSelected = onSelectProp ?? setSelectedState;
   const ex = examples[selected] ?? examples[0];
   if (!ex) return null;
 
