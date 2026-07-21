@@ -732,6 +732,7 @@ import e_organisms_row_menu_example_0 from "./examples/organisms/row-menu/exampl
 import e_organisms_row_menu_example_1 from "./examples/organisms/row-menu/example-1";
 import e_organisms_row_menu_example_2 from "./examples/organisms/row-menu/example-2";
 import e_organisms_row_menu_example_3 from "./examples/organisms/row-menu/example-3";
+import e_organisms_row_menu_example_4 from "./examples/organisms/row-menu/example-4";
 import e_organisms_row_menu_dont_0_do from "./examples/organisms/row-menu/dont-0-do";
 import e_organisms_row_menu_dont_0_dont from "./examples/organisms/row-menu/dont-0-dont";
 import e_organisms_row_menu_dont_1_do from "./examples/organisms/row-menu/dont-1-do";
@@ -1859,6 +1860,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Links", code: "<RowMenu\n  links\n  items={[\n    { label: \"Profile\" },\n    { label: \"Billing\" },\n    { label: \"Members\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_organisms_row_menu_example_1 },
       { label: "Section label", code: "<RowMenu\n  sectionLabel=\"Actions\"\n  items={[\n    { label: \"Edit\" },\n    { label: \"Duplicate\" },\n    { label: \"Delete\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_organisms_row_menu_example_2 },
       { label: "Leading icons", code: "<RowMenu\n  items={[\n    { label: \"Edit\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Delete\", icon: \"trash\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_organisms_row_menu_example_3 },
+      { label: "Disabled item", code: "<RowMenu open items={[\n    { label: \"Edit\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Clear column\", icon: \"trash\", destructive: true, disabled: true, separatorBefore: true }\n  ]} />", render: e_organisms_row_menu_example_4 },
     ],
     donts: [
       { title: "When to use", do: { caption: "Collapse per-row actions behind a ··· trigger; keep Delete separated and danger-colored.", code: "<RowMenu open sectionLabel=\"Actions\" items={[\n    { label: \"Edit\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Delete\", icon: \"trash\", destructive: true, separatorBefore: true }\n  ]} />", render: e_organisms_row_menu_dont_0_do }, dont: { caption: "Splaying every row action inline multiplies visual noise across every table row.", code: "<View style={{ flexDirection: \"row\", flexWrap: \"wrap\", gap: 8 }}>\n  <Button ghost small>Edit</Button>\n  <Button ghost small>Duplicate</Button>\n  <Button destructive small>Delete</Button>\n</View>", render: e_organisms_row_menu_dont_0_dont } },

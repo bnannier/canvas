@@ -34,6 +34,10 @@ export interface RowMenuItem {
   destructive?: boolean;
   /** Draw a hairline separator above this row to start a new group. */
   separatorBefore?: boolean;
+  /** Dim the row and make it inert: it does not fire `onSelect`, does not close the menu, and
+   *  is announced as disabled (for an action that is unavailable in the current context, e.g.
+   *  "Clear column" on an already-empty column). */
+  disabled?: boolean;
 }
 
 // The contract a platform skin fulfills. The shell owns the structure (anchor +

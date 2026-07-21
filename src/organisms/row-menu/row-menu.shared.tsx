@@ -129,17 +129,28 @@ export function createRowMenu(skin: RowMenuSkin) {
             <View key={`${item.label}-${index}`}>
               {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
               <Pressable
+                disabled={item.disabled}
                 style={({ pressed }) => [
                   skin.itemRow,
-                  // Web/iOS tint the row on press here; Android uses the ripple instead.
+                  // Web/iOS tint the row on press here; Android uses the ripple instead. A
+                  // disabled row never enters the pressed state, so no tint applies.
                   skin.ripple == null && pressed ? skin.itemPressed(tokens) : null,
+                  // A disabled row dims to read as unavailable (the kit's disabled-opacity
+                  // convention, matching Slider/Button); the icon and label dim with it.
+                  item.disabled ? { opacity: 0.5 } : null,
                 ]}
                 onPress={() => {
                   onSelect?.(item, index);
                   setOpen(false);
                 }}
-                android_ripple={ripple}
+                // Suppress the Android ripple on a disabled row (no press feedback for an
+                // inert control).
+                android_ripple={item.disabled ? undefined : ripple}
                 accessibilityRole={links ? "link" : "menuitem"}
+                // Announce the disabled state. RNW forwards neither `disabled` nor
+                // accessibilityState to the DOM, so pair the RN state with an aria alias.
+                accessibilityState={item.disabled ? { disabled: true } : undefined}
+                aria-disabled={item.disabled || undefined}
               >
                 {item.icon ? (
                   <Icon {...{ [item.icon]: true }} destructive={item.destructive} size={skin.iconSize} decorative />
