@@ -84,7 +84,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "avatar",
     name: "Avatar",
-    description: "A photo when the account has one, falling back to one or two initials on the muted token surface (real Liquid Glass on iOS 26+ under glass surface mode). Sizes scale font proportionally (40% of diameter).",
+    description: "A photo when the account has one, falling back to one or two initials in white on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. A pressable avatar (onPress) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter).",
     category: "Atoms",
   },
 

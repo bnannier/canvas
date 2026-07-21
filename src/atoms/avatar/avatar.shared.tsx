@@ -9,16 +9,18 @@ import { Image } from "../image/image.js";
 export type AvatarSurface = ComponentType<{ style?: StyleProp<ViewStyle>; testID?: string; children?: ReactNode }>;
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
-// back to one or two initials on a muted surface), the boolean-prop axes, the
-// initials reduction, accessibility, and the optional Pressable trigger all live
-// here once; a platform file supplies only its skin (rounded-square radius,
-// initials type per size, and press feedback) and calls createAvatar.
+// back to one or two initials in white on a deterministic per-name colour), the
+// boolean-prop axes, the initials reduction, accessibility, and the optional
+// Pressable trigger all live here once; a platform file supplies only its skin
+// (rounded-square radius, initials type per size, and press feedback) and calls
+// createAvatar.
 //
 // It is a circle by default (the consistent shape across topbars, identity rows,
 // and menus), optionally a rounded square.
 //
-// Avatar is a "Light" platform treatment: one structure and one set of (muted)
-// colors, with per-OS touches limited to the rounded-square corner radius, the
+// Avatar is a "Light" platform treatment: one structure and one shared colour
+// model (a per-name fill from the chart palette, neutral muted for the glass
+// trigger), with per-OS touches limited to the rounded-square corner radius, the
 // initials type, and the press feedback (Android ripple vs. iOS/web opacity dim).
 // iOS and Android have no native avatar control (the iOS 27 kit and Material 3
 // both lack one; iOS composes one from an image view or the person.crop.circle SF
@@ -32,7 +34,7 @@ export type Shape = "circle" | "rounded";
 // The only things a platform skin owns: the rounded-square corner radius, the
 // initials type (size / line-height / weight / tracking) per size, the press
 // feedback for the optional trigger, and the platform's minimum touch target.
-// The circle radius (9999), the box sizes, the muted fallback surface, and the
+// The circle radius (9999), the box sizes, the per-name fallback colour, and the
 // ring outline are platform-neutral and live below.
 //
 // Android sets `ripple` (an android_ripple config) and leaves `pressedOpacity`
@@ -128,13 +130,28 @@ function radiusFor(skin: AvatarSkin, shape: Shape): number {
   return shape === "rounded" ? skin.roundedRadius : CIRCLE_RADIUS;
 }
 
-function containerStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size, shape: Shape, ring: boolean): ViewStyle {
+// The categorical fill palette for the initials fallback: the design system's
+// chart tokens, a curated set built to keep N things distinct in both light and
+// dark. White initials read on all eight. Photos and the neutral glass trigger
+// never use it.
+const PALETTE_KEYS = ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "chart-6", "chart-7", "chart-8"] as const;
+
+// Map an identity string (the name, else the initials) to a palette index. A
+// stable, deterministic hash (no RNG), so one person always resolves to the same
+// colour across sessions, platforms, and re-renders.
+function paletteIndexFor(identity: string): number {
+  let h = 0;
+  for (let i = 0; i < identity.length; i++) h = (h * 31 + identity.charCodeAt(i)) | 0;
+  return Math.abs(h) % PALETTE_KEYS.length;
+}
+
+function containerStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size, shape: Shape, ring: boolean, background: string): ViewStyle {
   return {
     flexShrink: 0,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    backgroundColor: tokens.muted,
+    backgroundColor: background,
     width: BOX[size],
     height: BOX[size],
     borderRadius: radiusFor(skin, shape),
@@ -150,8 +167,8 @@ function imageStyle(skin: AvatarSkin, shape: Shape): ImageStyle {
   return { width: "100%", height: "100%", borderRadius: radiusFor(skin, shape) };
 }
 
-function labelStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size): TextStyle {
-  return { color: tokens["muted-foreground"], ...skin.labelType[size] };
+function labelStyle(skin: AvatarSkin, size: Size, foreground: string): TextStyle {
+  return { color: foreground, ...skin.labelType[size] };
 }
 
 /**
@@ -175,7 +192,28 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
     // The accessible name: an explicit label, else the full name, else string children.
     const label = accessibilityLabel ?? name ?? (typeof children === "string" ? children : undefined);
 
-    const container: StyleProp<ViewStyle> = [containerStyle(tokens, skin, size, shape, !!ring), style];
+    // The initials glyph, resolved once. Explicit `initials` win verbatim; otherwise
+    // reduce the name / string children. The colour identity keys off the full name
+    // when present (so one person maps to one colour), else the initials or children.
+    const source = name ?? (typeof children === "string" ? children : "");
+    const glyph = showPhoto ? "" : initials ?? (source ? initialsFrom(source) : "");
+    const identity = name ?? initials ?? (typeof children === "string" ? children : "");
+
+    // Glass applies ONLY to the initials fallback of a pressable trigger (the topbar
+    // account button), and ONLY when a platform supplied a glass surface (iOS). There
+    // the interactive Liquid Glass reads as "tappable control", so it stays neutral and
+    // the per-name colour is not applied. Content avatars (stacks, identity rows) and
+    // every web/Android avatar take the solid coloured path below.
+    const useGlass = !showPhoto && GlassFallback != null && onPress != null;
+
+    // The initials fallback carries a deterministic per-name colour with white initials,
+    // so people stay distinct in stacks and lists. A photo (the image covers the box),
+    // an empty avatar, and the neutral glass trigger keep the muted surface instead.
+    const colored = glyph !== "" && !useGlass;
+    const background = colored ? tokens[PALETTE_KEYS[paletteIndexFor(identity)]] : tokens.muted;
+    const foreground = colored ? tokens["primary-foreground"] : tokens["muted-foreground"];
+
+    const container: StyleProp<ViewStyle> = [containerStyle(tokens, skin, size, shape, !!ring, background), style];
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
     // M3) when the avatar is pressable: e.g. the 28px `small` topbar trigger gets
@@ -197,17 +235,8 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
         />
       );
     } else {
-      // Explicit `initials` win verbatim; otherwise reduce the name / string children.
-      const source = name ?? (typeof children === "string" ? children : "");
-      const glyph = initials ?? (source ? initialsFrom(source) : "");
-      inner = glyph ? <Text style={labelStyle(tokens, skin, size)}>{glyph}</Text> : null;
+      inner = glyph ? <Text style={labelStyle(skin, size, foreground)}>{glyph}</Text> : null;
     }
-
-    // Glass applies ONLY to the initials fallback, and ONLY when a platform supplied a
-    // glass surface (iOS). A photo avatar, web, and Android all take the original plain
-    // path below: the container (size, shape, muted fill, ring) sits directly on the
-    // View/Pressable, exactly as before, so those platforms are untouched by glass.
-    const useGlass = !showPhoto && GlassFallback != null;
 
     if (!useGlass) {
       if (onPress) {
