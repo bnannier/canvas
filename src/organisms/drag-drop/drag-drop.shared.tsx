@@ -245,11 +245,10 @@ export function createDragDrop(skin: DragDropSkin) {
     // Renderable snapshot: a ref + listener set, emitted on meaningful change only.
     const snap = useRef<Snapshot>(EMPTY_SNAPSHOT);
     const listeners = useRef(new Set<() => void>());
-    const emit = () => listeners.current.forEach((l) => l());
-    const setSnap = (next: Snapshot) => {
+    const setSnap = useCallback((next: Snapshot) => {
       snap.current = next;
-      emit();
-    };
+      listeners.current.forEach((l) => l());
+    }, []);
     const subscribe = useCallback((l: () => void) => {
       listeners.current.add(l);
       return () => {
@@ -502,7 +501,7 @@ export function createDragDrop(skin: DragDropSkin) {
         subscribe,
         getSnapshot,
       };
-    }, [pan, subscribe, getSnapshot]);
+    }, [pan, subscribe, getSnapshot, setSnap]);
 
     return (
       <DragDropContext.Provider value={api}>
@@ -564,9 +563,11 @@ export function createDragDrop(skin: DragDropSkin) {
     const indicatorStyle: ViewStyle = horizontal
       ? { top: INDICATOR_INSET, bottom: INDICATOR_INSET, left: s.insertionOffset - INDICATOR_THICKNESS / 2, width: INDICATOR_THICKNESS }
       : { left: INDICATOR_INSET, right: INDICATOR_INSET, top: s.insertionOffset - INDICATOR_THICKNESS / 2, height: INDICATOR_THICKNESS };
+    // Stable context value so subscribed Draggables don't re-render on every provider render.
+    const zoneCtx = useMemo(() => ({ zoneId: id, horizontal }), [id, horizontal]);
 
     return (
-      <DropZoneContext.Provider value={{ zoneId: id, horizontal }}>
+      <DropZoneContext.Provider value={zoneCtx}>
         <View ref={ref} testID={testID} collapsable={false} style={style}>
           {children}
           {isOver ? (
@@ -601,9 +602,11 @@ export function createDragDrop(skin: DragDropSkin) {
       api?.getSnapshot ?? getEmpty,
     );
     const dragging = s.active && s.dragId === id && !s.keyboard;
+    // Stable context value so DragHandle consumers don't re-render on every provider render.
+    const draggableCtx = useMemo(() => ({ id, cardRef, disabled }), [id, disabled]);
 
     return (
-      <DraggableContext.Provider value={{ id, cardRef, disabled }}>
+      <DraggableContext.Provider value={draggableCtx}>
         <View ref={cardRef} testID={testID} collapsable={false} style={[dragging ? { opacity: SOURCE_OPACITY } : null, style]}>
           {children}
         </View>
