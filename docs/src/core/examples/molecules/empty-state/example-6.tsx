@@ -3,13 +3,26 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, DataTable, EmptyState, Icon, Column } = scope;
+  const { Stateful, Card, DataTable, EmptyState, Icon, Column } = scope;
   return (
-<Card flat flush style={{ overflow: "hidden" }}>
-  <DataTable columns={["Name", "Email", "Role", "Status"]} rows={[]} />
-  <Column alignCenter padLoose>
-    <EmptyState bordered icon={<Icon search />} title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
-  </Column>
-</Card>
+<Stateful initial={true}>
+  {(filtered, setFiltered) => (
+    <Card flat flush style={{ overflow: "hidden" }}>
+      <DataTable
+        columns={["Name", "Email", "Role", "Status"]}
+        rows={filtered ? [] : [
+          ["Alice Johnson", "alice@example.com", "Admin", "Active"],
+          ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
+          ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+        ]}
+      />
+      {filtered ? (
+        <Column alignCenter padLoose>
+          <EmptyState bordered icon={<Icon search />} title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" onAction={() => setFiltered(false)} />
+        </Column>
+      ) : null}
+    </Card>
+  )}
+</Stateful>
   );
 }

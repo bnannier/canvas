@@ -79,13 +79,31 @@ Centered, calm, never blame the user. Always tell them what could be here, and i
 
 ### Inside a table
 
+The empty state's action resolves the emptiness it describes: pressing "Clear filters"
+drops the filter, so the rows return and the empty state leaves with it. (`Stateful` is a
+docs-only helper standing in for your own state; in an app you would hold the filter with
+`useState` and clear it in `onAction`.)
+
 ```tsx
-<Card flat flush style={{ overflow: "hidden" }}>
-  <DataTable columns={["Name", "Email", "Role", "Status"]} rows={[]} />
-  <Column alignCenter padLoose>
-    <EmptyState bordered icon={<Icon search />} title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" />
-  </Column>
-</Card>
+<Stateful initial={true}>
+  {(filtered, setFiltered) => (
+    <Card flat flush style={{ overflow: "hidden" }}>
+      <DataTable
+        columns={["Name", "Email", "Role", "Status"]}
+        rows={filtered ? [] : [
+          ["Alice Johnson", "alice@example.com", "Admin", "Active"],
+          ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
+          ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+        ]}
+      />
+      {filtered ? (
+        <Column alignCenter padLoose>
+          <EmptyState bordered icon={<Icon search />} title="No results found" description="Try adjusting your search filters." actionLabel="Clear filters" onAction={() => setFiltered(false)} />
+        </Column>
+      ) : null}
+    </Card>
+  )}
+</Stateful>
 ```
 
 ## Do & Don't
