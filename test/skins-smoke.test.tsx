@@ -116,7 +116,10 @@ const CASES: SkinCase[] = [
 
   // ---- organisms ----
   { name: "ActionSheet", dir: "organisms/action-sheet", file: "action-sheet", props: { open: true, onOpenChange: noop, title: "Options", actions: [{ label: "Delete", destructive: true, onPress: noop }, { label: "Share", onPress: noop }] } },
-  { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { month: "June 2026", selected: 10, today: 12, daysInMonth: 30, startWeekday: 1 } },
+  { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { month: "June 2026", selected: 10, today: 12, daysInMonth: 30, startWeekday: 1, events: [{ day: 10, title: "Standup", start: 9 }, { day: 12 }] } },
+  // Week + day views mount the timeline half of every skin (hour axis, slot lines, event blocks).
+  { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { week: true, month: "June 2026", selected: 10, today: 12, daysInMonth: 30, startWeekday: 1, events: [{ day: 10, title: "Standup", start: 9 }, { day: 11, title: "Review", start: 9.5, end: 11 }] } },
+  { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { day: true, month: "June 2026", selected: 10, daysInMonth: 30, startWeekday: 1, events: [{ day: 10, title: "Standup", start: 9 }, { day: 10, title: "Overlap", start: 9.5, end: 11 }] } },
   { name: "Carousel", dir: "organisms/carousel", file: "carousel", props: { index: 0, onIndexChange: noop, items: [{ key: "a", content: "A" }, { key: "b", content: "B" }, { key: "c", content: "C" }] } },
   { name: "Chart", dir: "charts/chart", file: "chart", props: { title: "Signups", data: [{ label: "Mon", value: 3 }, { label: "Tue", value: 5 }, { label: "Wed", value: 2 }] } },
   { name: "StackedBar", dir: "charts/stacked-bar", file: "stacked-bar", props: { label: "Traffic sources", segments: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
