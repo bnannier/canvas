@@ -268,6 +268,8 @@ import e_atoms_progress_example_2 from "./examples/atoms/progress/example-2";
 import e_atoms_progress_example_3 from "./examples/atoms/progress/example-3";
 import e_atoms_progress_example_4 from "./examples/atoms/progress/example-4";
 import e_atoms_progress_example_5 from "./examples/atoms/progress/example-5";
+import e_atoms_progress_example_6 from "./examples/atoms/progress/example-6";
+import e_atoms_progress_example_7 from "./examples/atoms/progress/example-7";
 import e_atoms_progress_dont_0_do from "./examples/atoms/progress/dont-0-do";
 import e_atoms_progress_dont_0_dont from "./examples/atoms/progress/dont-0-dont";
 import e_atoms_progress_dont_1_do from "./examples/atoms/progress/dont-1-do";
@@ -1170,6 +1172,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Indeterminate", code: "<Progress indeterminate />", render: e_atoms_progress_example_3 },
       { label: "Small", code: "<Progress small value={0.6} />", render: e_atoms_progress_example_4 },
       { label: "Large", code: "<Progress large value={0.6} />", render: e_atoms_progress_example_5 },
+      { label: "Warning", code: "<Progress warning showValue value={0.85}>Storage used</Progress>", render: e_atoms_progress_example_6 },
+      { label: "Danger", code: "<Progress danger showValue value={1}>Over the WIP limit</Progress>", render: e_atoms_progress_example_7 },
     ],
     donts: [
       { title: "Determinate", do: { caption: "Use a determinate bar when you know the share of work done, and pass `showValue` so the control renders the percent on the label line; the number and the bar always agree.", code: "<Progress showValue value={0.72}>Uploading…</Progress>", render: e_atoms_progress_dont_0_do }, dont: { caption: "Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.", code: "<View style={{ gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>\n  <Progress value={0.5} />\n</View>", render: e_atoms_progress_dont_0_dont } },
