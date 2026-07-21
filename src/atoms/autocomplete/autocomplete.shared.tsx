@@ -253,6 +253,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             value={fieldValue}
             onChangeText={(text) => {
               setQuery(text);
+              // Erasing the field to empty clears the committed selection, so the
+              // value cannot snap back into the field through the display fallback
+              // above. An uncontrolled value clears; a controlled `value` stays the
+              // parent's to own.
+              if (text === "" && hasValue) setValue(undefined);
               if (!open) setOpen(true); // typing re-opens a closed list
             }}
             onFocus={() => {
