@@ -6,6 +6,7 @@ import { ThemeProvider } from "../src/style/index.ts";
 // independent of unrelated in-flight barrel work.
 import { Progress } from "../src/atoms/progress/progress.tsx"; // web skin (continuous)
 import { Progress as ProgressAndroid } from "../src/atoms/progress/progress.android.tsx"; // M3 segmented
+import { toneOf, toneFill } from "../src/atoms/progress/progress.shared.tsx";
 
 afterEach(cleanup);
 
@@ -104,6 +105,40 @@ describe("Progress M3 segmented (Android)", async () => {
     const xs = ([...bar.querySelectorAll("div")] as HTMLElement[]).map(translateXpx).filter((n) => !Number.isNaN(n));
     // inactive track translateX = 0*320 + 0 (gap suppressed at 0) = 0 -> spans full width
     expect(xs).toContain(0);
+  });
+});
+
+describe("Progress tone axis", async () => {
+  it("resolves the tone with danger > warning > default precedence", () => {
+    expect(toneOf({})).toBe("default");
+    expect(toneOf({ warning: true })).toBe("warning");
+    expect(toneOf({ danger: true })).toBe("danger");
+    // Both passed: the more urgent tone wins.
+    expect(toneOf({ warning: true, danger: true })).toBe("danger");
+  });
+
+  it("maps each tone to the Badge palette (amber/red), lighter in dark", () => {
+    expect(toneFill("warning", false)).toBe("#f59e0b"); // amber-500
+    expect(toneFill("warning", true)).toBe("#fbbf24"); // amber-400
+    expect(toneFill("danger", false)).toBe("#ef4444"); // red-500
+    expect(toneFill("danger", true)).toBe("#f87171"); // red-400
+  });
+
+  it("recolors the rendered fill so warning, danger, and default all differ", async () => {
+    // The pre-measurement static fill carries the fillColor as an inline backgroundColor.
+    const fillBg = (root: Element) => {
+      const bar = root.querySelector('[role="progressbar"]')!;
+      return (bar.querySelector("div") as HTMLElement).style.backgroundColor;
+    };
+    const base = await wrap(<Progress value={0.85} />);
+    const warn = await wrap(<Progress warning value={0.85} />);
+    const danger = await wrap(<Progress danger value={0.85} />);
+    const baseBg = fillBg(base.container);
+    const warnBg = fillBg(warn.container);
+    const dangerBg = fillBg(danger.container);
+    expect(warnBg).not.toBe(baseBg);
+    expect(dangerBg).not.toBe(baseBg);
+    expect(warnBg).not.toBe(dangerBg);
   });
 });
 

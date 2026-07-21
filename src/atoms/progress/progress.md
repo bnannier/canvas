@@ -47,6 +47,24 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 <Progress large value={0.6} />
 ```
 
+### Warning
+
+The tone axis recolors the fill when a metric crosses a soft threshold. Pass `warning` for an
+amber bar; the track stays neutral.
+
+```tsx
+<Progress warning showValue value={0.85}>Storage used</Progress>
+```
+
+### Danger
+
+Pass `danger` for a red bar when a hard limit is exceeded, e.g. a work-in-progress cap. Reinforce
+the state with copy, since the tone carries no new accessible value on its own.
+
+```tsx
+<Progress danger showValue value={1}>Over the WIP limit</Progress>
+```
+
 ## Do & Don't
 
 ### Determinate

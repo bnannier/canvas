@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, type ColorTokens, type FieldWidthProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useTheme, useFieldWidth, useReducedMotion, supportsNativeDriver, palette, type ColorTokens, type FieldWidthProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so the track/fill colors follow
@@ -47,6 +47,9 @@ export interface ProgressProps extends FieldWidthProps {
    * line. Indeterminate has no measurable value, so this renders nothing then.
    */
   showValue?: boolean;
+  // Tone axis (the active fill color; pick one, default is the brand primary). `warning` tints the bar amber, `danger` red, for a metric over a soft threshold or a hard limit (a WIP meter over its cap); the track stays neutral. Pair with copy: the tone adds no accessible value.
+  warning?: boolean;
+  danger?: boolean;
   // Size axis (track thickness; pick one, default is the medium track).
   small?: boolean;
   large?: boolean;
@@ -59,12 +62,32 @@ export interface ProgressProps extends FieldWidthProps {
 }
 
 export type Size = "small" | "base" | "large";
+export type Tone = "default" | "warning" | "danger";
 
 // Size precedence within the axis: large > small > default (first match wins).
 function sizeOf(p: ProgressProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";
+}
+
+// Tone precedence within the axis: danger > warning > default (first match wins), so the
+// more urgent state wins when both are (accidentally) passed. Exported for tests.
+export function toneOf(p: ProgressProps): Tone {
+  if (p.danger) return "danger";
+  if (p.warning) return "warning";
+  return "default";
+}
+
+// The tone fill draws from the same Tailwind palette vocabulary the Badge status pills use
+// (amber for warning, red for danger), so the whole kit speaks one semantic-color language.
+// A saturated 500 in light, one step lighter (400) in dark so the bar keeps contrast against
+// the darker track. `default` keeps the skin's brand `primary` fill (computed by the caller).
+// Exported for tests (not re-exported from the package barrel).
+const TONE_HUE: Record<Exclude<Tone, "default">, string> = { warning: "amber", danger: "red" };
+export function toneFill(tone: Exclude<Tone, "default">, dark: boolean): string {
+  const hue = TONE_HUE[tone];
+  return dark ? palette[`${hue}-400`] : palette[`${hue}-500`];
 }
 
 // Clamp the value to a 0..1 fraction (the public contract). NaN/undefined collapse to 0.
@@ -141,8 +164,9 @@ export interface ProgressParts {
 export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
   return function Progress(props: ProgressProps) {
     const { value, indeterminate, children, description, accessibilityLabel, testID, style } = props;
-    const { tokens } = useTheme();
+    const { tokens, dark } = useTheme();
     const size = sizeOf(props);
+    const tone = toneOf(props);
     // Standard field width axis: appended after the skin's width:"100%" so the bar
     // renders AT 320 (240 narrow / 480 wide); `block` resolves to null and the skin's
     // fill-the-container width applies.
@@ -151,7 +175,11 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const height = skin.height[size];
     const radius = skin.radius[size];
     const trackColor = skin.trackColor(tokens);
-    const fillColor = skin.fillColor(tokens);
+    // The active fill: the skin's brand `primary` by default, or the semantic tone color
+    // (amber/red) when `warning`/`danger` is set. Every fill render path below reads this one
+    // value, so the tone flows through the continuous, segmented, indeterminate, and stop-dot
+    // anatomies alike.
+    const fillColor = tone === "default" ? skin.fillColor(tokens) : toneFill(tone, dark);
     const fraction = clampValue(value);
 
     // Measured track width, needed to slide the indeterminate bar in absolute px (a
