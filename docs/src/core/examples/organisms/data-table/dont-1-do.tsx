@@ -3,16 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Typography, Row } = scope;
+  const { Button, Card, DataTable, Divider, Typography, Row } = scope;
   return (
-<Card flat padded style={{ maxWidth: 520 }}>
-  <Row snug alignCenter between>
-    <Typography tiny muted>3 selected</Typography>
+<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
+  <Row snug alignCenter between pad>
+    <Typography tiny muted>2 selected</Typography>
     <Row snug alignCenter>
       <Button outline small>Bulk edit</Button>
       <Button destructive small>Delete</Button>
     </Row>
   </Row>
+  <Divider />
+  <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
+    ["Alice Johnson", "alice@example.com"],
+    ["Bob Smith", "bob@example.com"],
+    ["Rachel Chen", "rachel@example.com"]
+  ]} />
 </Card>
   );
 }

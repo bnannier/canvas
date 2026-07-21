@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, DataTable, Divider, Input, Typography, Row } = scope;
+  const { Button, Card, DataTable, Divider, Input, Row } = scope;
   return (
 <Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
   <Row snug alignCenter between pad>
@@ -11,19 +11,13 @@ export default function Example(scope: ExampleScope) {
     <Button outline small>Export</Button>
   </Row>
   <Divider />
-  <DataTable columns={["Name", "Email"]} rows={[
+  <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
     ["Alice Johnson", "alice@example.com"],
     ["Bob Smith", "bob@example.com"],
-    ["Rachel Chen", "rachel@example.com"]
+    ["Rachel Chen", "rachel@example.com"],
+    ["Dan Wright", "dan@example.com"],
+    ["Eve Park", "eve@example.com"]
   ]} />
-  <Divider />
-  <Row alignCenter between pad>
-    <Typography small muted>Showing 1–3 of 142</Typography>
-    <Row tight>
-      <Button outline small disabled>«</Button>
-      <Button outline small>»</Button>
-    </Row>
-  </Row>
 </Card>
   );
 }

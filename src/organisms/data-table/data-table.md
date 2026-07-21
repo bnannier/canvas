@@ -1,6 +1,6 @@
 # DataTable
 
-A bordered table rendered from column and row data; compose a toolbar above and a footer below when the screen needs them. Density tweaks affect padding live.
+A data table rendered from column and row data, with sorting, row selection, pagination, and the loading and empty states built in. Columns are plain header labels or descriptors (`{ label, numeric, width, sortable, ... }`) for per-column alignment, fixed widths, and sorting; compose a toolbar above when the screen needs one. Density tweaks affect padding live.
 
 ## Usage
 
@@ -13,13 +13,83 @@ A bordered table rendered from column and row data; compose a toolbar above and 
     ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
   ]}
   bordered
-  onRowPress={() => {}}
+  sortable
 />
 ```
 
 ## Variants
 
+### Sortable
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Rachel Chen", "rachel@example.com", "Admin"],
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Dan Wright", "dan@example.com", "Viewer"],
+    ["Bob Smith", "bob@example.com", "Editor"]
+  ]}
+  bordered
+  sortable
+  defaultSort={{ column: "Name" }}
+/>
+```
+
 ### Selectable
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin"],
+    ["Bob Smith", "bob@example.com", "Editor"],
+    ["Rachel Chen", "rachel@example.com", "Admin"]
+  ]}
+  bordered
+  selectable
+  defaultSelectedKeys={[1]}
+/>
+```
+
+### Paginated
+
+```tsx
+<DataTable
+  columns={["Employee", "Team"]}
+  rows={Array.from({ length: 23 }, (_, i) => [
+    `Employee ${i + 1}`,
+    ["Design", "Platform", "Growth"][i % 3]
+  ])}
+  bordered
+  selectable
+  paginated
+  pageSize={5}
+/>
+```
+
+### Numeric and custom columns
+
+```tsx
+<DataTable
+  columns={[
+    "Invoice",
+    { label: "Status", centered: true, width: 120, sortable: false },
+    { label: "Amount", numeric: true, sortValue: (cell) => Number(String(cell).replace(/[^0-9.]/g, "")) }
+  ]}
+  rows={[
+    ["INV-0041", <Badge success>Paid</Badge>, "$1,250.00"],
+    ["INV-0042", <Badge warning>Due</Badge>, "$450.00"],
+    ["INV-0043", <Badge neutral>Draft</Badge>, "$8,120.00"],
+    ["INV-0044", <Badge success>Paid</Badge>, "$96.00"]
+  ]}
+  bordered
+  sortable
+  defaultSort={{ column: "Amount", descending: true }}
+/>
+```
+
+### Striped
 
 ```tsx
 <DataTable
@@ -27,11 +97,11 @@ A bordered table rendered from column and row data; compose a toolbar above and 
   rows={[
     ["Alice Johnson", "alice@example.com", "Admin", "Active"],
     ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
-    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+    ["Rachel Chen", "rachel@example.com", "Admin", "Active"],
+    ["Dan Wright", "dan@example.com", "Viewer", "Active"]
   ]}
   bordered
-  selectable
-  onRowPress={() => {}}
+  striped
 />
 ```
 
@@ -47,7 +117,43 @@ A bordered table rendered from column and row data; compose a toolbar above and 
   ]}
   bordered
   compact
-  onRowPress={() => {}}
+/>
+```
+
+### Comfortable
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Role", "Status"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
+    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
+    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+  ]}
+  bordered
+  comfortable
+/>
+```
+
+### Loading
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Status"]}
+  rows={[]}
+  bordered
+  loading
+/>
+```
+
+### Empty
+
+```tsx
+<DataTable
+  columns={["Name", "Email", "Status"]}
+  rows={[]}
+  bordered
+  emptyMessage="No results found."
 />
 ```
 
@@ -55,7 +161,7 @@ A bordered table rendered from column and row data; compose a toolbar above and 
 
 ### default
 
-**Do** — Keep the count + pagination footer so the search result is always anchored to the total.
+**Do** — Use the built-in paginated footer so the search result is always anchored to the total.
 
 ```tsx
 <Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
@@ -64,19 +170,13 @@ A bordered table rendered from column and row data; compose a toolbar above and 
     <Button outline small>Export</Button>
   </Row>
   <Divider />
-  <DataTable columns={["Name", "Email"]} rows={[
+  <DataTable paginated pageSize={3} columns={["Name", "Email"]} rows={[
     ["Alice Johnson", "alice@example.com"],
     ["Bob Smith", "bob@example.com"],
-    ["Rachel Chen", "rachel@example.com"]
+    ["Rachel Chen", "rachel@example.com"],
+    ["Dan Wright", "dan@example.com"],
+    ["Eve Park", "eve@example.com"]
   ]} />
-  <Divider />
-  <Row alignCenter between pad>
-    <Typography small muted>Showing 1–3 of 142</Typography>
-    <Row tight>
-      <Button outline small disabled>«</Button>
-      <Button outline small>»</Button>
-    </Row>
-  </Row>
 </Card>
 ```
 
@@ -99,17 +199,23 @@ A bordered table rendered from column and row data; compose a toolbar above and 
 
 ### bulk
 
-**Do** — Lead with the non-destructive bulk action and keep Delete visually distinct on the right.
+**Do** — Pair the selection with a bulk bar that leads with the non-destructive action and keeps Delete visually distinct.
 
 ```tsx
-<Card flat padded style={{ maxWidth: 520 }}>
-  <Row snug alignCenter between>
-    <Typography tiny muted>3 selected</Typography>
+<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
+  <Row snug alignCenter between pad>
+    <Typography tiny muted>2 selected</Typography>
     <Row snug alignCenter>
       <Button outline small>Bulk edit</Button>
       <Button destructive small>Delete</Button>
     </Row>
   </Row>
+  <Divider />
+  <DataTable selectable defaultSelectedKeys={[0, 2]} columns={["Name", "Email"]} rows={[
+    ["Alice Johnson", "alice@example.com"],
+    ["Bob Smith", "bob@example.com"],
+    ["Rachel Chen", "rachel@example.com"]
+  ]} />
 </Card>
 ```
 
@@ -150,15 +256,10 @@ A bordered table rendered from column and row data; compose a toolbar above and 
 
 ### empty
 
-**Do** — Keep the header and span a single centered message row so the structure stays intact.
+**Do** — Keep the header and let the built-in emptyMessage span a centered row so the structure stays intact.
 
 ```tsx
-<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
-  <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
-  <Column alignCenter padLoose>
-    <Typography small muted>No results found.</Typography>
-  </Column>
-</Card>
+<DataTable bordered columns={["Name", "Email", "Status"]} rows={[]} emptyMessage="No results found." style={{ width: 520, maxWidth: "100%" }} />
 ```
 
 **Don't** — Hiding the body entirely on no results collapses the table and looks broken.
@@ -169,15 +270,10 @@ A bordered table rendered from column and row data; compose a toolbar above and 
 
 ### loading
 
-**Do** — Show a spinner in a centered spanning row so the load reads as active and in place.
+**Do** — Use the built-in loading skeletons so the load reads as the table taking shape in place.
 
 ```tsx
-<Card flat flush style={{ overflow: "hidden", maxWidth: 520 }}>
-  <DataTable columns={["Name", "Email", "Status"]} rows={[]} />
-  <Column alignCenter padLoose>
-    <Spinner small />
-  </Column>
-</Card>
+<DataTable bordered loading columns={["Name", "Email", "Status"]} rows={[]} style={{ width: 520, maxWidth: "100%" }} />
 ```
 
 **Don't** — A bare "Loading…" string gives no sense of progress and reads like static content.
