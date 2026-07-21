@@ -1,11 +1,11 @@
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
-import { View, Text, useTheme, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, useTheme, palette, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js";
 
 // Shared Icon shell. The whole glyph set, the boolean-prop axes (name + color),
-// the semantic color logic, the SVG presentation, and the `set` gallery structure
-// live here once; a platform file supplies only its skin (the gallery layout
-// pieces) and calls createIcon.
+// the semantic color logic, and the SVG presentation live here once. Icon is a
+// "Shared" platform treatment (an outline glyph is platform-neutral), so the iOS,
+// Android, and web entry points re-export this one component unchanged.
 //
 // Icon: a Lucide-style outline glyph rendered with react-native-svg, so it draws
 // crisply on native and web and inherits color the same way everywhere. Stroke is
@@ -22,7 +22,6 @@ import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js"
 //   <Icon shield />              the shield glyph, foreground, 24px
 //   <Icon search primary />      the search glyph, primary color
 //   <Icon trash destructive />   the trash glyph, destructive color
-//   <Icon set />                 the whole gallery, each glyph labeled by name
 //
 // Axes (pass at most one per axis; first match wins):
 //   - Name:  one boolean per glyph (activity, bell, search, shield, …). Default shield.
@@ -30,17 +29,7 @@ import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js"
 //     (primaryForeground is the contrast color for a glyph on a primary surface.)
 //     `color` sets an explicit paint for hues the booleans do not name (kit-internal,
 //     e.g. a Chip tinting its remove glyph); the semantic booleans take precedence.
-// Dimensions/layout (orthogonal): `size` (px, single glyph) and `set` (gallery).
-
-export interface IconSkin {
-  /** The `set` gallery grid (full width, glyphs flowing left-to-right and wrapping). */
-  setGrid: ViewStyle;
-  /** One gallery cell: a fixed-width column centering the glyph over its label. */
-  setCell: ViewStyle;
-  /** The gallery cell label type (size / weight / tracking). */
-  setLabel: TextStyle;
-}
-
+// Dimensions (orthogonal): `size` (px).
 
 /**
  * Kit-internal Icon paint channel, kept OFF the published prop surface (hidden from
@@ -74,8 +63,6 @@ export interface IconProps extends IconGlyphProps, IconInternalProps {
   muted?: boolean;
   // Single-glyph size in px (default 24).
   size?: number;
-  // Render the whole gallery instead of a single glyph.
-  set?: boolean;
   /**
    * Accessible name for a MEANINGFUL standalone icon (one that conveys
    * information not repeated in adjacent text, e.g. an icon-only button's glyph).
@@ -176,64 +163,49 @@ function Glyph({
   );
 }
 
-export function createIcon(skin: IconSkin) {
-  return function Icon(props: IconProps) {
-    const { tokens, dark } = useTheme();
+export function Icon(props: IconProps) {
+  const { tokens, dark } = useTheme();
 
-    if (props.set) {
-      return (
-        <View testID={props.testID} style={[skin.setGrid, props.style]}>
-          {NAMES.map(({ key, label }) => (
-            <View key={key} style={[skin.setCell, { width: 80 }]}>
-              <Glyph shapes={ICONS[key]} size={20} stroke={tokens.foreground} />
-              <Text style={[skin.setLabel, { color: tokens["muted-foreground"], fontSize: 10 }]}>{label}</Text>
-            </View>
-          ))}
-        </View>
-      );
-    }
+  const wrapped = props.decorative || props.accessibilityLabel != null;
+  const glyph = (
+    <Glyph
+      shapes={ICONS[nameOf(props)]}
+      size={props.size ?? 24}
+      stroke={strokeOf(props, tokens, dark)}
+      // When a wrapper View is the root it carries the testID instead.
+      testID={wrapped ? undefined : props.testID}
+      style={wrapped ? undefined : props.style}
+    />
+  );
 
-    const wrapped = props.decorative || props.accessibilityLabel != null;
-    const glyph = (
-      <Glyph
-        shapes={ICONS[nameOf(props)]}
-        size={props.size ?? 24}
-        stroke={strokeOf(props, tokens, dark)}
-        // When a wrapper View is the root it carries the testID instead.
-        testID={wrapped ? undefined : props.testID}
-        style={wrapped ? undefined : props.style}
-      />
+  // A decorative glyph is hidden from assistive tech (the adjacent text carries
+  // the meaning); a labeled glyph is announced as an image with its name. The
+  // aria-* aliases cover web (react-native-web drops the RN-only a11y props).
+  if (props.decorative) {
+    return (
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        aria-hidden
+        testID={props.testID}
+        style={props.style}
+      >
+        {glyph}
+      </View>
     );
-
-    // A decorative glyph is hidden from assistive tech (the adjacent text carries
-    // the meaning); a labeled glyph is announced as an image with its name. The
-    // aria-* aliases cover web (react-native-web drops the RN-only a11y props).
-    if (props.decorative) {
-      return (
-        <View
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          aria-hidden
-          testID={props.testID}
-          style={props.style}
-        >
-          {glyph}
-        </View>
-      );
-    }
-    if (props.accessibilityLabel != null) {
-      return (
-        <View
-          accessibilityRole="image"
-          accessibilityLabel={props.accessibilityLabel}
-          aria-label={props.accessibilityLabel}
-          testID={props.testID}
-          style={props.style}
-        >
-          {glyph}
-        </View>
-      );
-    }
-    return glyph;
-  };
+  }
+  if (props.accessibilityLabel != null) {
+    return (
+      <View
+        accessibilityRole="image"
+        accessibilityLabel={props.accessibilityLabel}
+        aria-label={props.accessibilityLabel}
+        testID={props.testID}
+        style={props.style}
+      >
+        {glyph}
+      </View>
+    );
+  }
+  return glyph;
 }

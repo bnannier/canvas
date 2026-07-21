@@ -36,11 +36,9 @@ export type Size = "small" | "base" | "large";
 export interface InputOTPProps {
   /** Number of segment cells (and the max code length). Default 6. */
   length?: number;
-  /** Current code (controlled). Only the typed digits, e.g. "123". Omit and use
-   *  `defaultValue` (or neither) for uncontrolled use; a bare <InputOTP /> is typeable. */
+  /** Current code (controlled). Only the typed digits, e.g. "123". Omit for
+   *  uncontrolled use; a bare <InputOTP /> is typeable out of the box. */
   value?: string;
-  /** Initial code for uncontrolled use (a bare <InputOTP /> accepts input out of the box). */
-  defaultValue?: string;
   /** Called with the new code (digits only, sliced to `length`) on each change (both modes). */
   onChangeText?: (code: string) => void;
   /** Fired once when the code reaches `length` digits. */
@@ -132,7 +130,7 @@ export function createInputOTP(skin: InputOTPSkin) {
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
     // <InputOTP /> accepts typing/paste/autofill out of the box.
-    const [value, setValue] = useControllableState<string>(props.value, props.defaultValue ?? "", onChangeText);
+    const [value, setValue] = useControllableState<string>(props.value, "", onChangeText);
 
     // Fire onComplete exactly once per "reaches full length" transition: track the
     // last completed code so re-renders with the same full value don't re-fire.

@@ -25,7 +25,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "image",
     name: "Image",
-    description: "Displays a local or remote image with a source and resizeMode (cover, contain, stretch, center).",
+    description: "Displays a local or remote image with a source and a boolean fit prop (cover, contain, stretch, center, repeat, none).",
     category: "Atoms",
   },
   {
@@ -39,6 +39,10 @@ export const COMPONENTS: ComponentDoc[] = [
     name: "ScrollView",
     description: "A scrollable container for content larger than its bounds; vertical by default, horizontal optional.",
     category: "Atoms",
+    // A ScrollView fills its parent by default, so its preview fills the stage width
+    // and aligns left. This also gives the width:"100%" examples a definite full-stage
+    // width to resolve against (center mode shrink-wraps and would collapse them to 0).
+    stageAlign: "start",
   },
 
   {

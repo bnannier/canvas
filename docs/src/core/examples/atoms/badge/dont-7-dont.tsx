@@ -3,12 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Badge } = scope;
+  const { tokens, View, Badge } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-  <Badge destructive>marketing</Badge>
-  <Badge destructive>finance</Badge>
-  <Badge destructive>legal</Badge>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6, borderRadius: 6, backgroundColor: tokens.primary, padding: 12 }}>
+  <Badge outline>draft</Badge>
+  <Badge outline>internal</Badge>
 </View>
   );
 }

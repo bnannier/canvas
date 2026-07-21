@@ -1,6 +1,6 @@
 # Image
 
-Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and control fitting with `resizeMode` (cover, contain, stretch, center). Remote images load over the network; bundle local assets with `require`. For a circular identity photo with an initials fallback, reach for `<Avatar src="…" name="…" />` rather than rounding a raw Image.
+Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then choose how it fills its box with a fit prop: `cover` (the default) fills the box and crops the overflow, while `contain` fits the whole image inside and letterboxes the spare space. `stretch`, `center`, `repeat`, and `none` cover the rarer fits. Remote images load over the network; bundle local assets with `require`. For a circular identity photo with an initials fallback, reach for `<Avatar src="…" name="…" />` rather than rounding a bare Image.
 
 ## Usage
 
@@ -18,7 +18,7 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 ```tsx
 <Image
   source={{ uri: "/liang-bao.jpg" }}
-  resizeMode="contain"
+  contain
   style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
 />
 ```
@@ -28,7 +28,7 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, and c
 ```tsx
 <Image
   source={{ uri: "/ada-lovelace.jpg" }}
-  resizeMode="cover"
+  cover
   style={{ width: 240, height: 96, borderRadius: 12 }}
 />
 ```

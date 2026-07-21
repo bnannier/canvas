@@ -167,3 +167,57 @@ export function createBadge(skin: BadgeSkin) {
     );
   };
 }
+
+// BadgeGroup: the wrapping row that lays out a series of badges, so no call site
+// hand-writes `<Row wrap alignCenter snug>` (or a raw flex View) to sit badges
+// beside a name or each other. It owns the flex direction, the wrap, the
+// cross-axis centering, and the inter-badge gap; the caller passes only Badges.
+// The sibling of AvatarGroup (avatar.shared), scoped to badges.
+//
+// Layout-only, so it carries no per-OS skin and no colors: the badges it holds
+// own their own platform treatment. Gap draws from the kit's spacing scale
+// (a subset of Row's), defaulting to `snug`.
+
+export type BadgeGap = "tight" | "snug" | "cozy";
+
+// Inter-badge gap per axis value, from the shared spacing scale (matches Row's
+// tight/snug/cozy). Owned here once instead of a magic `gap` at every call site.
+const BADGE_GAP: Record<BadgeGap, number> = { tight: 4, snug: 8, cozy: 12 };
+
+export interface BadgeGroupProps {
+  /** The Badge elements to lay out in a wrapping row. */
+  children?: ReactNode;
+  // Inter-badge gap (pick one; default `snug`). Precedence: cozy > snug > tight.
+  tight?: boolean;
+  snug?: boolean;
+  cozy?: boolean;
+  /** Accessible name for the whole group (e.g. "Rachel Chen's roles"). */
+  accessibilityLabel?: string;
+  /** E2E hook forwarded to the root element. */
+  testID?: string;
+  /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
+  style?: StyleProp<ViewStyle>;
+}
+
+// Gap precedence when more than one is passed: first match wins, largest-first
+// (mirrors Row's gapOf ordering). Default `snug` when none is set.
+function badgeGapOf(p: BadgeGroupProps): BadgeGap {
+  if (p.cozy) return "cozy";
+  if (p.snug) return "snug";
+  if (p.tight) return "tight";
+  return "snug";
+}
+
+export function BadgeGroup(props: BadgeGroupProps) {
+  const { children, accessibilityLabel, testID, style } = props;
+  return (
+    <View
+      style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: BADGE_GAP[badgeGapOf(props)] }, style]}
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
+      aria-label={accessibilityLabel}
+    >
+      {children}
+    </View>
+  );
+}

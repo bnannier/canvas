@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
   description="Choose a name your team will recognize."
   actionLabel="Rename"
 >
-  <Input value="Identity Platform" />
+  <Input defaultValue="Identity Platform" />
 </Popover>
   );
 }

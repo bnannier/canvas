@@ -4,6 +4,8 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 
 If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `destructive` > `secondary` > `outline` for metadata (`secondary` when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed).
 
+Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (`tight` / `snug` / `cozy`, default `snug`) and centers its badges, so a call site never hand-rolls a flex row around them.
+
 ## Usage
 
 ```tsx
@@ -18,14 +20,26 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 <Badge status success>admin</Badge>
 ```
 
+### Group
+
+```tsx
+<BadgeGroup>
+  <Badge secondary>employee</Badge>
+  <Badge secondary>engineering</Badge>
+  <Badge status success>active</Badge>
+</BadgeGroup>
+```
+
 ### Identity
 
 ```tsx
 <Row wrap alignCenter snug>
   <Typography lead semibold>Rachel Chen</Typography>
-  <Badge status success>active</Badge>
-  <Badge status info>Verified</Badge>
-  <Badge secondary>employee</Badge>
+  <BadgeGroup>
+    <Badge status success>active</Badge>
+    <Badge status info>Verified</Badge>
+    <Badge secondary>employee</Badge>
+  </BadgeGroup>
 </Row>
 ```
 
@@ -55,17 +69,39 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 
 ## Do & Don't
 
+### Grouping
+
+**Do** — Reach for `BadgeGroup` to lay out a series of badges; it owns the wrap, the gap, and the vertical centering.
+
+```tsx
+<BadgeGroup>
+  <Badge secondary>employee</Badge>
+  <Badge secondary>engineering</Badge>
+  <Badge secondary>remote</Badge>
+</BadgeGroup>
+```
+
+**Don't** — Hand-rolling a flex row for a badge series re-invents the gap and wrap and drifts from the kit's spacing scale.
+
+```tsx
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+  <Badge secondary>employee</Badge>
+  <Badge secondary>engineering</Badge>
+  <Badge secondary>remote</Badge>
+</View>
+```
+
 ### Metadata badge
 
 **Do** — Neutral tags for metadata; reserve color and the status-badge dot for live state.
 
 ```tsx
-<Row wrap alignCenter snug>
+<BadgeGroup>
   <Badge secondary>employee</Badge>
   <Badge secondary>engineering</Badge>
   <Badge secondary>remote</Badge>
   <Badge status success>active</Badge>
-</Row>
+</BadgeGroup>
 ```
 
 **Don't** — Borrowing status colors for plain metadata reads as severity that isn't there; a red tag looks like an error.
@@ -100,8 +136,10 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 ```tsx
 <Row wrap alignCenter snug>
   <Typography lead semibold>Rachel Chen</Typography>
-  <Badge status success>active</Badge>
-  <Badge secondary>employee</Badge>
+  <BadgeGroup>
+    <Badge status success>active</Badge>
+    <Badge secondary>employee</Badge>
+  </BadgeGroup>
 </Row>
 ```
 
@@ -124,11 +162,11 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 **Do** — Use the mono variant for tokens, scopes, and event names.
 
 ```tsx
-<Row wrap tight>
+<BadgeGroup tight>
   <Badge secondary mono>authorization_code</Badge>
   <Badge secondary mono>refresh_token</Badge>
   <Badge secondary mono>client_credentials</Badge>
-</Row>
+</BadgeGroup>
 ```
 
 **Don't** — Proportional type makes identifiers hard to scan and compare.
@@ -146,11 +184,11 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 **Do** — Reserve the default fill for the single tag you want noticed first; keep the rest secondary.
 
 ```tsx
-<Row wrap alignCenter snug>
+<BadgeGroup>
   <Badge default>admin</Badge>
   <Badge secondary>engineering</Badge>
   <Badge secondary>remote</Badge>
-</Row>
+</BadgeGroup>
 ```
 
 **Don't** — The solid primary fill is the loudest badge; using it for every tag makes the whole row shout and nothing leads.
@@ -169,11 +207,11 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 **Do** — Keep secondary for static metadata (role, team) and switch to the status-badge for anything live.
 
 ```tsx
-<Row wrap alignCenter snug>
+<BadgeGroup>
   <Badge secondary>employee</Badge>
   <Badge secondary>engineering</Badge>
   <Badge status success>active</Badge>
-</Row>
+</BadgeGroup>
 ```
 
 **Don't** — A muted gray pill reads as static metadata, so live state shown as a secondary badge looks inert and goes unnoticed.
@@ -192,10 +230,10 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 
 ```tsx
 <Card padded>
-  <Row wrap alignCenter snug>
+  <BadgeGroup>
     <Badge outline>draft</Badge>
     <Badge outline>internal</Badge>
-  </Row>
+  </BadgeGroup>
 </Card>
 ```
 
@@ -213,11 +251,11 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 **Do** — Reserve destructive for genuinely destructive or error semantics like revoked or banned.
 
 ```tsx
-<Row wrap alignCenter snug>
+<BadgeGroup>
   <Badge destructive>Revoked</Badge>
   <Badge destructive>Banned</Badge>
   <Badge secondary>marketing</Badge>
-</Row>
+</BadgeGroup>
 ```
 
 **Don't** — Solid red signals error or danger, so using it to color-code neutral categories raises a false alarm.

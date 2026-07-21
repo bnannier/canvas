@@ -11,6 +11,7 @@ export * from "./divider/divider.js";
 export * from "./dropdown/dropdown.js";
 export * from "./emblem/emblem.js";
 export * from "./icon/icon.js";
+export * from "./image/image.js";
 export * from "./input/input.js";
 export * from "./input-otp/input-otp.js";
 export * from "./kbd/kbd.js";

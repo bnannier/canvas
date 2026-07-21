@@ -23,8 +23,10 @@ shortcut: name it as such and get explicit authorization before using one.
 
 A claude prime global directive. Every UI element used anywhere in this repo, the
 docs app included, must be a Canvas component (or one of the kit's primitives:
-`View`, `Text`, `Pressable`, `Image`, `TextInput`, `ScrollView`), never a hand-rolled
-look-alike. The rule, in order:
+`View`, `Text`, `Pressable`, `TextInput`, `ScrollView`), never a hand-rolled
+look-alike. (`Image` graduated from a primitive to a Canvas atom that wraps RN's
+Image with boolean fit props, so it now counts as a Canvas component.) The rule,
+in order:
 
 - Need a control the kit already exports? Import and use it.
 - The kit has no such component? CREATE IT IN THE KIT (`src/atoms` | `molecules` |

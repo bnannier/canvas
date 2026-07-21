@@ -1,5 +1,6 @@
 import { Children, cloneElement, isValidElement, useState, type ComponentType, type ReactElement, type ReactNode } from "react";
-import { View, Image, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle } from "../../style/index.js";
+import { Image } from "../image/image.js";
 
 // A platform-supplied surface for the initials fallback. iOS passes a GlassSurface
 // wrapper (real Liquid Glass) via createAvatar; web and Android pass nothing, so the
@@ -187,12 +188,12 @@ export function createAvatar(skin: AvatarSkin, GlassFallback?: AvatarSurface) {
     if (showPhoto) {
       inner = (
         <Image
+          cover
           style={imageStyle(skin, shape)}
           source={typeof photo === "number" ? photo : { uri: photo }}
           onError={() => setFailedPhoto(photo)}
           accessibilityLabel={label}
           aria-label={label}
-          resizeMode="cover"
         />
       );
     } else {

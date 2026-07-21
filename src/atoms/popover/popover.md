@@ -11,7 +11,7 @@ Floating panel with a title, supporting text, rich content such as form fields, 
   description="Choose a name your team will recognize."
   actionLabel="Rename"
 >
-  <Input value="Identity Platform" />
+  <Input defaultValue="Identity Platform" />
 </Popover>
 ```
 
@@ -21,7 +21,7 @@ Floating panel with a title, supporting text, rich content such as form fields, 
 
 ```tsx
 <Popover inline title="Rename this project?" actionLabel="Rename">
-  <Input value="Identity Platform" />
+  <Input defaultValue="Identity Platform" />
 </Popover>
 ```
 

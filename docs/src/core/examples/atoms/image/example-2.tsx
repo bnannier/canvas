@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Image
   source={{ uri: "/ada-lovelace.jpg" }}
-  resizeMode="cover"
+  cover
   style={{ width: 240, height: 96, borderRadius: 12 }}
 />
   );

@@ -15,7 +15,6 @@ const PRIproprietaryIVES = [
   { name: "View", wraps: "View", to: "/components/view", styles: "The box: layout, background, border, radius. A flex container by default." },
   { name: "Text", wraps: "Text", to: "/components/text", styles: "The text run: color, fontSize, fontWeight, textAlign." },
   { name: "Pressable", wraps: "Pressable", to: "/components/pressable", styles: "A pressable surface; its style accepts ({ pressed }) => ... for press feedback." },
-  { name: "Image", wraps: "Image", to: "/components/image", styles: "Size, radius, aspect. source / resizeMode pass through." },
   { name: "TextInput", wraps: "TextInput", to: "/components/text-input", styles: "The raw field text and box. A low-level primitive (see below)." },
   { name: "ScrollView", wraps: "ScrollView", to: "/components/scroll-view", styles: "style is the scroll frame; contentContainerStyle is the content." },
 ];
@@ -51,14 +50,6 @@ function List({ rows }) {
     </ScrollView>
   );
 }`;
-
-const IMAGE_CODE = `import { Image, View } from "@nannier/canvas";
-
-// style carries size + radius; source / resizeMode are normal RN ImageProps.
-// RN clips a photo to the circle via an overflow-hidden parent.
-<View style={{ width: 48, height: 48, overflow: "hidden", borderRadius: 9999 }}>
-  <Image style={{ width: "100%", height: "100%" }} source={{ uri: photo }} resizeMode="cover" />
-</View>`;
 
 const TEXT_INPUT_CODE = `import { TextInput, useTheme } from "@nannier/canvas";
 
@@ -146,7 +137,7 @@ export default function RnPrimitivesScreen() {
         <Section title="Two layers, one rule">
           <P muted>
             Canvas ships semantic-prop components (Button, Input, Card) on top of React Native's own primitives (View,
-            Text, Pressable, Image, TextInput, ScrollView). Components carry flat boolean style props and style
+            Text, Pressable, TextInput, ScrollView). Components carry flat boolean style props and style
             themselves; the primitives are the raw react-native components, which you style with a plain RN{" "}
             <InlineCode>style</InlineCode> object. The boolean-prop philosophy applies to components, not these low-level
             primitives.
@@ -164,9 +155,9 @@ export default function RnPrimitivesScreen() {
 
         <Section title="The primitives">
           <P muted>
-            Canvas re-exports the six primitives you compose with most: <InlineCode>View</InlineCode>,{" "}
-            <InlineCode>Text</InlineCode>, <InlineCode>Pressable</InlineCode>, <InlineCode>Image</InlineCode>,{" "}
-            <InlineCode>TextInput</InlineCode>, <InlineCode>ScrollView</InlineCode>. They are react-native's own
+            Canvas re-exports the five primitives you compose with most: <InlineCode>View</InlineCode>,{" "}
+            <InlineCode>Text</InlineCode>, <InlineCode>Pressable</InlineCode>, <InlineCode>TextInput</InlineCode>,{" "}
+            <InlineCode>ScrollView</InlineCode>. They are react-native's own
             components, re-exported for a single import alongside the components and helpers; importing them from{" "}
             <InlineCode>react-native</InlineCode> is equivalent. Each name below links to its full reference page.
           </P>
@@ -200,19 +191,6 @@ export default function RnPrimitivesScreen() {
 
         <Rule />
 
-        <Section title="Image">
-          <P muted>
-            <InlineCode>Image</InlineCode> is RN's Image, so <InlineCode>source</InlineCode>,{" "}
-            <InlineCode>resizeMode</InlineCode>, and <InlineCode>accessibilityLabel</InlineCode> are its own props;{" "}
-            <InlineCode>style</InlineCode> carries size, radius, and aspect. To clip a photo to a circle, wrap it in an
-            overflow-hidden parent (the Avatar pattern); <InlineCode>resizeMode="cover"</InlineCode> maps to{" "}
-            <InlineCode>object-fit: cover</InlineCode> on react-native-web.
-          </P>
-          <CodeBlock code={IMAGE_CODE} />
-        </Section>
-
-        <Rule />
-
         <Section title="TextInput vs Input / Textarea">
           <P muted>
             <InlineCode>TextInput</InlineCode> is the low-level, style-it-yourself field. It does not include a focus
@@ -230,7 +208,7 @@ export default function RnPrimitivesScreen() {
         <Section title="What Canvas does not wrap">
           <P muted>
             <InlineCode>react-native</InlineCode> and <InlineCode>react-native-svg</InlineCode> are peer dependencies,
-            not bundled. Beyond the six primitives above, Canvas does not re-export raw react-native (that would
+            not bundled. Beyond the five primitives above, Canvas does not re-export raw react-native (that would
             duplicate the peer surface and risk version skew). Import these directly from{" "}
             <InlineCode>react-native</InlineCode>:
           </P>

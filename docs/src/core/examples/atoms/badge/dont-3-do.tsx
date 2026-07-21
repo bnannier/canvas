@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge, Row } = scope;
+  const { Badge, Typography, Row, BadgeGroup } = scope;
   return (
-<Row wrap tight>
-  <Badge secondary mono>authorization_code</Badge>
-  <Badge secondary mono>refresh_token</Badge>
-  <Badge secondary mono>client_credentials</Badge>
+<Row wrap alignCenter snug>
+  <Typography lead semibold>Rachel Chen</Typography>
+  <BadgeGroup>
+    <Badge status success>active</Badge>
+    <Badge secondary>employee</Badge>
+  </BadgeGroup>
 </Row>
   );
 }

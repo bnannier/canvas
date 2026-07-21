@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { InputOTP, Column } = scope;
   return (
 <Column relaxed>
-  <InputOTP small defaultValue="123" />
-  <InputOTP defaultValue="123" />
-  <InputOTP large defaultValue="123" />
+  <InputOTP small value="123" />
+  <InputOTP value="123" />
+  <InputOTP large value="123" />
 </Column>
   );
 }
