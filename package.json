@@ -80,6 +80,7 @@
     "react-native-qrcode-svg": ">=6",
     "react-native-safe-area-context": ">=4",
     "expo-blur": "*",
+    "expo-clipboard": "*",
     "expo-glass-effect": "*"
   },
   "peerDependenciesMeta": {
@@ -90,6 +91,9 @@
       "optional": true
     },
     "expo-blur": {
+      "optional": true
+    },
+    "expo-clipboard": {
       "optional": true
     },
     "expo-glass-effect": {

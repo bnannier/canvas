@@ -1,10 +1,31 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import {
+  View,
+  Pressable,
+  Text,
+  ScrollView,
+  useTheme,
+  useControllableState,
+  surfaceRipple,
+  pressDim,
+  RippleClip,
+  cornerRadii,
+  splitElevation,
+  devWarn,
+  type ColorTokens,
+  type StyleProp,
+  type ViewStyle,
+  type TextStyle,
+} from "../../style/index.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { MONO, type Variant } from "./code-block.styles.js";
+import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 
 // Shared CodeBlock shell. The structure (the muted code surface and its terminal /
-// numbered / inline variants, the optional copy affordance), the boolean-prop axes,
-// the variant precedence, and the line-splitting logic live here once; a platform
+// numbered / inline variants, the header/tab strip, the copy affordance, the
+// highlight/diff/collapse row machinery), the boolean-prop axes, the variant
+// precedence, and the tokenize/line-splitting logic live here once; a platform
 // file supplies only its skin (shape, padding, type) and calls createCodeBlock.
 //
 // CodeBlock is a "Shared" platform treatment: neither iOS nor Android ships a code
@@ -19,18 +40,25 @@ import { MONO, type Variant } from "./code-block.styles.js";
 //
 // - Variant (pick one; default is the plain block):
 //     `terminal` > `numbered` > `inline` > plain.
-//   - plain: the muted code surface, padded, monospace.
-//   - terminal: a dark window with a chrome bar (traffic-light dots + a "bash"
-//     label) over a dark body, for shell transcripts. A leading "$ " prompt is
-//     rendered for command lines.
-//   - numbered: the plain surface with a left gutter of right-aligned line
-//     numbers, one per line.
+//   - plain: the muted code surface, padded, monospace, syntax-highlighted.
+//   - terminal: a dark window with a chrome bar (traffic-light dots + a label)
+//     over a dark body, for shell transcripts. Lines starting with the prompt
+//     marker ("$ " by default) render as commands; when any line carries the
+//     marker, the remaining lines render as dimmed output.
+//   - numbered: the plain surface with a pinned left gutter of right-aligned
+//     line numbers (offset by `startLine`), one per line.
 //   - inline: a short, single token rendered as an inline pill (rounded bg-muted
 //     chip), for code mentioned mid-sentence.
-// - `copy` (orthogonal): show a copy affordance pinned to the top-right corner.
-//   Ignored by the inline variant, which is too small to carry one.
-// - `wrap` (orthogonal): let long lines wrap instead of overflowing. Ignored by
-//   the inline variant.
+// - Density (pick one; default is the comfortable ramp): `compact` tightens the
+//   type ramp (13/20) and padding for dense contexts such as docs panes.
+// - Orthogonal booleans that stack: `copy` (clipboard chip), `wrap` (soft-wrap
+//   long lines instead of scrolling), `diff` (+/- line tinting), `collapsible`
+//   (fold long blocks behind an expander), `attached` (square the top edge to
+//   sit flush under an adjoining bar). The inline variant ignores all of them.
+//
+// Long lines scroll horizontally by default (never truncate); `wrap` trades the
+// scroller for soft-wrapping. Syntax highlighting is driven by `language` via the
+// in-kit tokenizer (see ./tokenize) — unknown languages render monochrome.
 //
 // RN has no font-mono utility, so the monospace face is requested via an inline
 // `style={MONO}` on each code Text (the same approach Badge's `mono` uses).
@@ -40,54 +68,92 @@ import { MONO, type Variant } from "./code-block.styles.js";
 // them onto the structure. For the "Shared" treatment all three platform skins point
 // at the same object, so these are the single source of truth for the one look.
 export interface CodeBlockSkin {
-  /** Shared code type (size / line-height) used by plain, numbered, and gutter text. */
+  /** Shared code type (size / line-height) used by code, gutter, and terminal text. */
   codeType: TextStyle;
+  /** The tightened compact ramp. */
+  codeTypeCompact: TextStyle;
   /** Code foreground color (token-driven so it follows light/dark). */
   codeText: (t: ColorTokens) => TextStyle;
   /** The muted, bordered, rounded code surface (plain + numbered base). */
   surface: (t: ColorTokens) => ViewStyle;
-  /** Padding for the plain surface. */
-  surfacePad: ViewStyle;
-  /** Header strip carrying the filename/language label (plain + numbered). */
+  /** Squares the top edge for `attached` blocks (flush under an adjoining bar). */
+  attachedTop: ViewStyle;
+  /** Vertical padding of the rows column, per density. */
+  bodyPad: (compact: boolean) => ViewStyle;
+  /** One code row: direction + horizontal insets, per density and gutter presence. */
+  rowPad: (compact: boolean, gutter: boolean) => ViewStyle;
+  /** Header strip carrying the filename/language label or the tab strip. */
   headerBar: (t: ColorTokens) => ViewStyle;
+  /** Header adjustments when it hosts the tab strip. */
+  headerBarWithTabs: ViewStyle;
   /** Header label type (the file/language name). */
   headerLabel: (t: ColorTokens) => TextStyle;
+  /** The trailing language badge (shown when both filename and language are set). */
+  headerBadge: (t: ColorTokens) => TextStyle;
   /** Squares off the surface's top corners when a header bar sits above it. */
   surfaceUnderHeader: ViewStyle;
-  /** The inline pill (short mid-sentence token). */
-  inlineBox: (t: ColorTokens) => ViewStyle;
-  /** Inline label type (its own smaller size). */
-  inlineType: TextStyle;
+  /** The tab row hosted by the header bar / terminal chrome. */
+  tabStrip: ViewStyle;
+  /** One tab (underline when active; `dark` styles the terminal incarnation). */
+  tabItem: (t: ColorTokens, active: boolean, dark: boolean) => ViewStyle;
+  /** One tab's label type. */
+  tabLabel: (t: ColorTokens, active: boolean, dark: boolean) => TextStyle;
+  /** The soft primary wash behind a `highlightLines` row. */
+  highlightRow: (t: ColorTokens, dark: boolean) => ViewStyle;
+  /** The green/red wash behind an added/removed diff row. */
+  diffRow: (kind: "add" | "del", dark: boolean) => ViewStyle;
+  /** The +/- marker glyph type (non-selectable). */
+  diffMarker: (kind: "add" | "del" | "ctx", t: ColorTokens, dark: boolean) => TextStyle;
+  /** The pinned line-number column, per density. */
+  gutterCol: (compact: boolean) => ViewStyle;
+  /** One gutter row (right-aligned number), per density. */
+  gutterRow: (compact: boolean) => ViewStyle;
+  /** Dimmed line-number color. */
+  gutterText: (t: ColorTokens) => TextStyle;
+  /** The expander bar under a collapsed block. */
+  expanderBar: (t: ColorTokens) => ViewStyle;
+  /** The expander label type. */
+  expanderLabel: (t: ColorTokens) => TextStyle;
   /** Terminal outer window: shape, border, shadow/elevation, clipping. */
   terminalOuter: (t: ColorTokens) => ViewStyle;
-  /** Terminal chrome bar (dots + label). */
+  /** Terminal chrome bar (dots + label / tabs / copy chip). */
   terminalChrome: ViewStyle;
+  /** Chrome adjustments when it hosts the tab strip. */
+  terminalChromeWithTabs: ViewStyle;
   /** A single traffic-light dot, keyed by hue. */
   trafficDot: (hue: "red" | "amber" | "green") => ViewStyle;
   /** Terminal chrome label type. */
   terminalLabel: TextStyle;
-  /** Terminal body container. */
-  terminalBody: ViewStyle;
-  /** A single terminal command row. */
-  terminalRow: ViewStyle;
-  /** The non-selectable "$ " prompt. */
+  /** Terminal body container (dark fill + vertical padding), per density. */
+  terminalBody: (compact: boolean) => ViewStyle;
+  /** The non-selectable prompt glyph. */
   terminalPrompt: TextStyle;
   /** The command line text. */
   terminalLine: TextStyle;
-  /** The numbered surface (flex row + padding, on top of `surface`). */
-  numberedSurface: ViewStyle;
-  /** The right-aligned line-number gutter. */
-  numberedGutter: ViewStyle;
-  /** Dimmed line-number color. */
-  gutterText: (t: ColorTokens) => TextStyle;
-  /** The numbered code column. */
-  numberedCodeCol: ViewStyle;
-  /** The copy chip shape/fill (the `dark` flag picks the terminal vs surface chip). */
-  copyButton: (t: ColorTokens, dark: boolean) => ViewStyle;
+  /** A dimmed transcript output line. */
+  terminalOutput: TextStyle;
+  /** The inline pill (short mid-sentence token). */
+  inlineBox: (t: ColorTokens) => ViewStyle;
+  /** Inline label type (its own smaller size). */
+  inlineType: TextStyle;
+  /** The copy chip shape/fill (`dark` picks the terminal chip; `floating` adds its shadow). */
+  copyButton: (t: ColorTokens, dark: boolean, floating: boolean) => ViewStyle;
   /** The copy chip label. */
   copyText: (t: ColorTokens, dark: boolean) => TextStyle;
-  /** Press dim opacity for the copy chip (iOS/web feedback). */
+  /** Press dim opacity for pressable chrome (iOS/web feedback). */
   copyPressedOpacity: number;
+}
+
+/** One snippet in a `tabs` group: a labeled code alternative (npm / yarn / bun…). */
+export interface CodeBlockTab {
+  /** The tab's visible label. */
+  label: string;
+  /** The code this tab shows. */
+  code: string;
+  /** Per-tab grammar; falls back to the block-level `language`. */
+  language?: string;
+  /** Per-tab filename; falls back to the block-level `filename`. */
+  filename?: string;
 }
 
 export interface CodeBlockProps {
@@ -96,13 +162,14 @@ export interface CodeBlockProps {
   /**
    * Optional filename label shown in a header bar above the surface. Honored by
    * the plain and numbered variants (and the terminal chrome label); the inline
-   * pill has no header. When both are set, `filename` wins the header label and
-   * `language` the terminal label.
+   * pill has no header. When both are set, `filename` takes the header label and
+   * `language` renders as a trailing badge.
    */
   filename?: string;
   /**
-   * Optional language label shown in the header bar / terminal chrome. See
-   * `filename` for which variant renders it.
+   * The snippet's language. Drives syntax highlighting (ts/tsx/js/jsx, json,
+   * bash/sh, css, html, python — anything else renders monochrome) and the
+   * header/terminal label when no `filename` is given.
    */
   language?: string;
 
@@ -111,11 +178,65 @@ export interface CodeBlockProps {
   numbered?: boolean;
   inline?: boolean;
 
-  // Orthogonal modifiers.
-  copy?: boolean;
-  wrap?: boolean;
+  // Density (pick one; default is the comfortable ramp).
+  compact?: boolean;
 
-  /** Called when the copy affordance is pressed (text is passed back). */
+  // Orthogonal modifiers.
+  /** Show a copy affordance (header-hosted when a header/chrome exists, else pinned top-right). */
+  copy?: boolean;
+  /** Soft-wrap long lines instead of scrolling them horizontally. */
+  wrap?: boolean;
+  /**
+   * Render the code as a unified diff: the first column of every line is the
+   * marker ("+" added, "-" removed, anything else context). Added/removed rows
+   * tint green/red, markers stay out of the selection, and the copy chip yields
+   * the post-change code (context + added lines, markers stripped).
+   */
+  diff?: boolean;
+  /** Square the top edge (no top radius/border) to sit flush under an adjoining bar. */
+  attached?: boolean;
+
+  /**
+   * Emphasize lines: entries are 1-based line numbers or "start-end" ranges
+   * (e.g. `[2, "5-7"]`). Numbers refer to the displayed numbering, so they
+   * respect `startLine`. Plain and numbered variants only.
+   */
+  highlightLines?: ReadonlyArray<number | string>;
+  /** First displayed line number for the numbered variant (default 1). */
+  startLine?: number;
+
+  /** Fold long blocks behind a "Show all" expander (plain + numbered variants). */
+  collapsible?: boolean;
+  /** How many lines a collapsed block shows (default 8). */
+  collapsedLines?: number;
+  /** Controlled expanded state for `collapsible`. */
+  expanded?: boolean;
+  /** Uncontrolled initial expanded state (default false). */
+  defaultExpanded?: boolean;
+  /** Called when the expander toggles (fires in both modes). */
+  onExpandedChange?: (expanded: boolean) => void;
+
+  /**
+   * Labeled code alternatives rendered as a tab strip in the header (or the
+   * terminal chrome) — the classic npm/yarn/bun switcher. Each tab supplies its
+   * own code and optional language/filename.
+   */
+  tabs?: ReadonlyArray<CodeBlockTab>;
+  /** Controlled active tab index. */
+  active?: number;
+  /** Uncontrolled initial tab index (default 0). */
+  defaultActive?: number;
+  /** Called with the next tab index when a tab is selected (fires in both modes). */
+  onTabChange?: (index: number) => void;
+
+  /** The terminal prompt marker (default "$"). Lines starting with it render as commands. */
+  prompt?: string;
+
+  /**
+   * Called when the copy affordance is pressed, with the copied text. The chip
+   * also writes the clipboard itself (navigator.clipboard on web, the optional
+   * expo-clipboard peer on native), so this is for side effects, not plumbing.
+   */
   onCopy?: (code: string, event: GestureResponderEvent) => void;
 
   /** E2E hook forwarded to the root element. */
@@ -135,151 +256,538 @@ function variantOf(p: CodeBlockProps): Variant {
 
 const DEFAULT_CODE = 'const theme = getTheme();\nsetTheme(theme === "dark" ? "light" : "dark");';
 
+// --- clipboard backends ------------------------------------------------------
+
+// expo-clipboard is an OPTIONAL peer: consumers who never render a copy chip (or
+// only target the web, where navigator.clipboard covers it) skip the install.
+// Guarded literal require, mirroring qrcode.shared.tsx.
+declare const require: ((id: string) => unknown) | undefined;
+interface ExpoClipboardModule {
+  setStringAsync?: (text: string) => Promise<unknown>;
+}
+let ExpoClipboard: ExpoClipboardModule | undefined;
+try {
+  if (typeof require === "function") {
+    ExpoClipboard = require("expo-clipboard") as ExpoClipboardModule;
+  }
+} catch {
+  ExpoClipboard = undefined;
+}
+
+// Write `text` to the platform clipboard; returns whether a backend handled it.
+function writeClipboard(text: string): boolean {
+  if (ExpoClipboard?.setStringAsync) {
+    void ExpoClipboard.setStringAsync(text);
+    return true;
+  }
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(text);
+    return true;
+  }
+  return false;
+}
+
+// --- pure helpers ------------------------------------------------------------
+
+interface DiffLine {
+  kind: "add" | "del" | "ctx";
+  text: string;
+}
+
+// Unified-diff column parse: the FIRST character of each line is the marker
+// ("+", "-", or a space for context; a line with no marker column is context
+// verbatim), and the rest of the line is the content.
+function parseDiffLine(line: string): DiffLine {
+  const c = line[0];
+  if (c === "+") return { kind: "add", text: line.slice(1) };
+  if (c === "-") return { kind: "del", text: line.slice(1) };
+  if (c === " ") return { kind: "ctx", text: line.slice(1) };
+  return { kind: "ctx", text: line };
+}
+
+const DIFF_GLYPH: Record<DiffLine["kind"], string> = { add: "+", del: "-", ctx: " " };
+
+// Expand a highlightLines spec into the set of displayed line numbers.
+function parseHighlightLines(spec: ReadonlyArray<number | string> | undefined): Set<number> {
+  const out = new Set<number>();
+  if (!spec) return out;
+  for (const entry of spec) {
+    if (typeof entry === "number") {
+      out.add(entry);
+      continue;
+    }
+    const range = /^(\d+)\s*-\s*(\d+)$/.exec(entry.trim());
+    if (range) {
+      const a = Number(range[1]);
+      const b = Number(range[2]);
+      for (let n = Math.min(a, b); n <= Math.max(a, b); n++) out.add(n);
+      continue;
+    }
+    const single = /^(\d+)$/.exec(entry.trim());
+    if (single) {
+      out.add(Number(single[1]));
+      continue;
+    }
+    devWarn(
+      true,
+      `[canvas] <CodeBlock />: unrecognized highlightLines entry "${entry}" (use a line number or a "start-end" range); it is ignored.`,
+    );
+  }
+  return out;
+}
+
+// --- local layout fragments --------------------------------------------------
+
 // relative wrapper for the absolutely-positioned copy chip.
 const RELATIVE: ViewStyle = { position: "relative" };
+// Fill the remaining row width. Longhands on purpose: RNW compiles `flex: 1`
+// shorthand to a 0% basis that collapses inside some containers.
+const FLEX_FILL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
+// The floating copy chip's anchor (measured so code rows reserve an end inset).
+const FLOATING_CHIP: ViewStyle = { position: "absolute", top: 8, end: 8, zIndex: 10 };
+// The header's trailing cluster (badge + copy chip).
+const HEADER_END: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, marginStart: "auto" };
+// The chrome/tab strip wrapper next to the traffic dots.
+const CHROME_TABS: ViewStyle = { marginStart: 8, flexDirection: "row", flexShrink: 1 };
+const ROW: ViewStyle = { flexDirection: "row" };
+const WRAP_TEXT: TextStyle = { flexShrink: 1 };
 
 export function createCodeBlock(skin: CodeBlockSkin) {
-  // A small, neutral chip pinned to the top-right corner for the copy affordance.
-  function CopyButton({
-    text,
-    onCopy,
+  // One tokenized code line as nested spans. Kind "text" spans inherit the base
+  // color (so the terminal's fixed-dark body keeps its own foreground), and every
+  // other kind gets its theme-aware syntax color.
+  function LineSpans({
+    spans,
+    base,
     dark,
   }: {
-    text: string;
-    onCopy?: (code: string, event: GestureResponderEvent) => void;
-    dark?: boolean;
+    spans: CodeToken[];
+    base: StyleProp<TextStyle>;
+    dark: boolean;
   }) {
     const { tokens } = useTheme();
-    const isDark = !!dark;
-    // The bounded ripple is clipped to the rounded chip by the RippleClip parent (Android only; a
-    // same-node overflow:"hidden" cannot clip it — see src/style/ripple-clip). The chip is absolutely
-    // positioned, so its placement moves to the wrapper (a wrapper around an absolute child would
-    // collapse to zero size and clip the ripple away). Its Android `elevation` also moves to the
-    // wrapper (whose own shadow is unclipped by its child-overflow); the light chip's iOS `shadow*`
-    // stays on the inner Pressable, so iOS is unchanged.
-    const { position, top, end, zIndex, alignSelf, elevation, ...box } = StyleSheet.flatten(
-      skin.copyButton(tokens, isDark),
+    return (
+      <Text selectable style={base}>
+        {spans.map((s, i) =>
+          s.kind === "text" ? (
+            s.text
+          ) : (
+            <Text key={i} style={{ color: syntaxColor(s.kind, tokens, dark) }}>
+              {s.text}
+            </Text>
+          ),
+        )}
+      </Text>
+    );
+  }
+
+  // The copy chip. Positioning belongs to the caller (header slot or the
+  // measured floating wrapper); the chip itself is just the bordered pill.
+  function CopyChip({
+    dark,
+    floating,
+    copied,
+    onPress,
+  }: {
+    dark: boolean;
+    floating: boolean;
+    copied: boolean;
+    onPress: (event: GestureResponderEvent) => void;
+  }) {
+    const { tokens } = useTheme();
+    // The bounded ripple is clipped to the rounded chip by the RippleClip parent
+    // (Android only; a same-node overflow:"hidden" cannot clip it — see
+    // src/style/ripple-clip). The chip's Android `elevation` moves to the wrapper
+    // (whose own shadow is unclipped by its child-overflow); iOS `shadow*` stays
+    // on the inner Pressable.
+    const { elevation, ...box } = StyleSheet.flatten(
+      skin.copyButton(tokens, dark, floating),
     ) as ViewStyle & { elevation?: number };
     const { parent: elevParent } = splitElevation({ elevation });
     return (
-      <RippleClip shape={cornerRadii(box)} style={[{ position, top, end, zIndex, alignSelf }, elevParent]}>
+      <RippleClip shape={cornerRadii(box)} style={elevParent}>
         <Pressable
           android_ripple={surfaceRipple(tokens)}
           style={({ pressed }) => [box, pressDim(pressed, skin.copyPressedOpacity)]}
-          onPress={(e) => onCopy?.(text, e)}
+          onPress={onPress}
           accessibilityRole="button"
-          accessibilityLabel="Copy code"
+          accessibilityLabel={copied ? "Copied" : "Copy code"}
         >
-          <Text style={skin.copyText(tokens, isDark)}>Copy</Text>
+          {copied ? (
+            <Icon check size={12} decorative {...(dark ? { primaryForeground: true } : { success: true })} />
+          ) : (
+            <Icon copy size={12} decorative {...(dark ? { primaryForeground: true } : { muted: true })} />
+          )}
+          <Text style={skin.copyText(tokens, dark)}>{copied ? "Copied" : "Copy"}</Text>
         </Pressable>
       </RippleClip>
     );
   }
 
-  // The header strip above plain/numbered surfaces, carrying the filename/language
-  // label. Rendered only when a label is present.
-  function Header({ label }: { label: string }) {
+  // The tab strip hosted by the header bar or the terminal chrome.
+  function TabStrip({
+    tabs,
+    active,
+    onSelect,
+    dark,
+  }: {
+    tabs: ReadonlyArray<CodeBlockTab>;
+    active: number;
+    onSelect: (index: number) => void;
+    dark: boolean;
+  }) {
     const { tokens } = useTheme();
     return (
-      <View style={skin.headerBar(tokens)}>
-        <Text style={[skin.headerLabel(tokens), MONO]} numberOfLines={1}>
-          {label}
-        </Text>
+      <View style={skin.tabStrip} accessibilityRole="tablist">
+        {tabs.map((tab, i) => {
+          const isActive = i === active;
+          return (
+            <Pressable
+              key={`${tab.label}-${i}`}
+              onPress={() => onSelect(i)}
+              accessibilityRole="tab"
+              // Dual alias: RNW forwards neither accessibilityState nor its
+              // aria mapping, so both are set (see test/a11y-state.test.tsx).
+              accessibilityState={{ selected: isActive }}
+              aria-selected={isActive}
+              style={({ pressed }) => [
+                skin.tabItem(tokens, isActive, dark),
+                pressDim(pressed, skin.copyPressedOpacity),
+              ]}
+            >
+              <Text style={[skin.tabLabel(tokens, isActive, dark), MONO]} numberOfLines={1}>
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     );
   }
 
   return function CodeBlock(props: CodeBlockProps) {
-    const { code = DEFAULT_CODE, filename, language, copy, wrap, onCopy, testID, style } = props;
+    const {
+      copy,
+      wrap,
+      diff,
+      onCopy,
+      testID,
+      style,
+      highlightLines,
+      startLine = 1,
+      prompt = "$",
+      collapsible,
+      collapsedLines = 8,
+      compact = false,
+      attached = false,
+    } = props;
     const variant = variantOf(props);
-    const { tokens } = useTheme();
-    const lines = code.split("\n");
-    // The header label for the plain/numbered variants: prefer the filename, fall
-    // back to the language. Absent both, no header bar is rendered.
-    const headerLabel = filename ?? language;
+    const { tokens, dark } = useTheme();
+
+    // Tabs: the active tab supplies code/language/filename, falling back to the
+    // block-level props. Raw props go into the hook (controlled iff provided).
+    const tabList = props.tabs && props.tabs.length > 0 ? props.tabs : undefined;
+    const [activeRaw, setActive] = useControllableState<number>(
+      props.active,
+      props.defaultActive ?? 0,
+      props.onTabChange,
+    );
+    const active = tabList ? Math.min(Math.max(activeRaw, 0), tabList.length - 1) : 0;
+    const tab = tabList?.[active];
+
+    const code = (tab?.code ?? props.code ?? DEFAULT_CODE).replace(/\r\n/g, "\n");
+    const language = tab?.language ?? props.language;
+    const filename = tab?.filename ?? props.filename;
+
+    const [expanded, setExpanded] = useControllableState<boolean>(
+      props.expanded,
+      props.defaultExpanded ?? false,
+      props.onExpandedChange,
+    );
+
+    // Copied feedback: flips the chip for a beat after a successful copy.
+    const [copied, setCopied] = useState(false);
+    const copiedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    useEffect(
+      () => () => {
+        if (copiedTimer.current) clearTimeout(copiedTimer.current);
+      },
+      [],
+    );
+
+    // The floating chip's measured width, reserved as an end inset so long first
+    // lines never render (or scroll) underneath it.
+    const [copyInset, setCopyInset] = useState(0);
+
+    // Tokenized body for the plain/numbered variants (diff strips markers first
+    // so highlighting sees clean code).
+    const parsed = useMemo(() => {
+      const rawLines = code.split("\n");
+      const diffLines = diff ? rawLines.map(parseDiffLine) : undefined;
+      const contentLines = diffLines ? diffLines.map((d) => d.text) : rawLines;
+      const tokenLines = tokenize(contentLines.join("\n"), language);
+      return { diffLines, contentLines, tokenLines };
+    }, [code, language, diff]);
+
+    // Terminal rows: transcript mode (any line carrying the prompt marker) marks
+    // the rest as dimmed output; otherwise every line is a command.
+    const term = useMemo(() => {
+      if (variant !== "terminal") return undefined;
+      const rawLines = code.split("\n");
+      const marker = `${prompt} `;
+      const transcript = rawLines.some((l) => l.startsWith(marker));
+      const rows = rawLines.map((line) => {
+        if (transcript && !line.startsWith(marker)) {
+          return { kind: "out" as const, text: line, spans: [] as CodeToken[] };
+        }
+        const text = transcript ? line.slice(marker.length) : line;
+        return { kind: "cmd" as const, text, spans: tokenize(text, language ?? "bash")[0] ?? [] };
+      });
+      return { transcript, rows };
+    }, [variant, code, prompt, language]);
+
+    // What the copy chip yields: the runnable result, never chrome. A transcript
+    // copies its commands (prompts stripped); a diff copies the post-change code
+    // (context + added lines, markers stripped); everything else copies verbatim.
+    const copyPayload = useMemo(() => {
+      if (term?.transcript) {
+        return term.rows.filter((r) => r.kind === "cmd").map((r) => r.text).join("\n");
+      }
+      if (parsed.diffLines) {
+        return parsed.diffLines.filter((d) => d.kind !== "del").map((d) => d.text).join("\n");
+      }
+      return code;
+    }, [term, parsed, code]);
+
+    function handleCopy(event: GestureResponderEvent) {
+      onCopy?.(copyPayload, event);
+      const wrote = writeClipboard(copyPayload);
+      devWarn(
+        !wrote && !onCopy,
+        "[canvas] <CodeBlock />: no clipboard backend is available (install the optional expo-clipboard peer for native copy) and no onCopy handler is set; the copy chip does nothing.",
+      );
+      if (wrote || onCopy) {
+        setCopied(true);
+        if (copiedTimer.current) clearTimeout(copiedTimer.current);
+        copiedTimer.current = setTimeout(() => setCopied(false), 1600);
+      }
+    }
+
+    const highlights = useMemo(() => parseHighlightLines(highlightLines), [highlightLines]);
+
+    const type = compact ? skin.codeTypeCompact : skin.codeType;
+    // Empty lines render an empty Text; the row keeps its height via minHeight.
+    const rowMin: ViewStyle = { minHeight: type.lineHeight };
 
     // Inline: a short token rendered as an inline pill. No header, copy, or wrap.
     if (variant === "inline") {
+      const inlineSpans = parsed.tokenLines.flatMap((line, i) =>
+        i > 0 ? [{ text: "\n", kind: "text" as const }, ...line] : line,
+      );
       return (
         <View testID={testID} style={[skin.inlineBox(tokens), style]}>
-          <Text style={[skin.codeText(tokens), MONO, skin.inlineType]}>{code}</Text>
+          <LineSpans
+            spans={inlineSpans}
+            base={[skin.codeText(tokens), MONO, skin.inlineType]}
+            dark={dark}
+          />
         </View>
       );
     }
 
-    // Terminal: a dark window with a chrome bar over a dark body.
-    if (variant === "terminal") {
+    // Terminal: a dark window with a chrome bar over a dark body. The chrome
+    // hosts the label (or the tab strip) and the copy chip; command lines get a
+    // non-selectable prompt, transcript output lines render dimmed.
+    if (variant === "terminal" && term) {
       const label = language ?? filename ?? "bash";
+      const rows = (
+        <View style={[FLEX_FILL, skin.terminalBody(compact)]}>
+          {term.rows.map((row, i) => (
+            <View key={i} style={[skin.rowPad(compact, false), rowMin]}>
+              {row.kind === "cmd" ? (
+                <>
+                  <Text style={[type, MONO, skin.terminalPrompt]}>{`${prompt} `}</Text>
+                  <LineSpans
+                    spans={row.spans}
+                    base={[type, MONO, skin.terminalLine, wrap ? WRAP_TEXT : null]}
+                    dark
+                  />
+                </>
+              ) : (
+                <Text selectable style={[type, MONO, skin.terminalOutput, wrap ? WRAP_TEXT : null]}>
+                  {row.text}
+                </Text>
+              )}
+            </View>
+          ))}
+        </View>
+      );
       return (
-        <View testID={testID} style={[skin.terminalOuter(tokens), style]}>
-          {/* Chrome bar: three traffic-light dots and a faint label. */}
-          <View style={skin.terminalChrome}>
+        <View testID={testID} style={[skin.terminalOuter(tokens), attached ? skin.attachedTop : null, style]}>
+          {/* Chrome bar: three traffic-light dots, the label or tab strip, the copy chip. */}
+          <View style={[skin.terminalChrome, tabList ? skin.terminalChromeWithTabs : null]}>
             <View style={skin.trafficDot("red")} />
             <View style={skin.trafficDot("amber")} />
             <View style={skin.trafficDot("green")} />
-            <Text style={[skin.terminalLabel, MONO]}>{label}</Text>
-          </View>
-          {/* Body: each line gets a non-selectable "$ " prompt. */}
-          <View style={skin.terminalBody}>
-            {lines.map((line, i) => (
-              <View key={i} style={skin.terminalRow}>
-                <Text style={[skin.terminalPrompt, MONO]}>{"$ "}</Text>
-                <Text style={[skin.terminalLine, MONO]} numberOfLines={wrap ? undefined : 1}>
-                  {line}
-                </Text>
+            {tabList ? (
+              <View style={CHROME_TABS}>
+                <TabStrip tabs={tabList} active={active} onSelect={setActive} dark />
               </View>
-            ))}
+            ) : (
+              <Text style={[skin.terminalLabel, MONO]}>{label}</Text>
+            )}
+            {copy ? (
+              <View style={HEADER_END}>
+                <CopyChip dark floating={false} copied={copied} onPress={handleCopy} />
+              </View>
+            ) : null}
           </View>
-          {copy ? <CopyButton text={code} onCopy={onCopy} dark /> : null}
+          {wrap ? (
+            rows
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={FLEX_FILL}>
+              {rows}
+            </ScrollView>
+          )}
         </View>
       );
     }
 
-    // Numbered: the plain surface with a right-aligned line-number gutter.
-    if (variant === "numbered") {
-      return (
-        <View testID={testID} style={[RELATIVE, style]}>
-          {headerLabel ? <Header label={headerLabel} /> : null}
-          <View style={[skin.surface(tokens), headerLabel ? skin.surfaceUnderHeader : null, skin.numberedSurface]}>
-            {/* Gutter: right-aligned, dimmed line numbers. */}
-            <View style={skin.numberedGutter}>
-              {lines.map((_, i) => (
-                <Text key={i} style={[skin.codeType, skin.gutterText(tokens), MONO]}>
-                  {String(i + 1)}
-                </Text>
-              ))}
-            </View>
-            {/* Code column: one Text per line so the gutter stays aligned. */}
-            <View style={skin.numberedCodeCol}>
-              {lines.map((line, i) => (
-                <Text
-                  key={i}
-                  style={[skin.codeType, skin.codeText(tokens), MONO]}
-                  numberOfLines={wrap ? undefined : 1}
-                >
-                  {line}
-                </Text>
-              ))}
-            </View>
-          </View>
-          {copy ? <CopyButton text={code} onCopy={onCopy} /> : null}
-        </View>
-      );
-    }
+    // Plain / numbered: the muted surface. Numbered pins a line-number gutter
+    // outside the horizontal scroller so digits never scroll; rows carry the
+    // full-bleed highlight/diff tints.
+    const gutter = variant === "numbered";
+    const { diffLines, contentLines, tokenLines } = parsed;
+    const total = contentLines.length;
+    const folds = !!collapsible && total > collapsedLines;
+    const visibleCount = folds && !expanded ? collapsedLines : total;
 
-    // Plain (default): the muted code surface, padded, monospace.
+    // The header exists when there is a tab strip or a filename/language label.
+    const headerLeft = filename ?? language;
+    const hasHeader = !!(tabList || headerLeft);
+    // The chip floats over the code only when no header can host it.
+    const floatingCopy = !!copy && !hasHeader;
+
+    const rowTint = (i: number): ViewStyle | null => {
+      if (highlights.has(startLine + i)) return skin.highlightRow(tokens, dark);
+      const kind = diffLines?.[i]?.kind;
+      if (kind === "add" || kind === "del") return skin.diffRow(kind, dark);
+      return null;
+    };
+
+    const rowsCol = (
+      <View
+        style={[
+          FLEX_FILL,
+          skin.bodyPad(compact),
+          copyInset > 0 ? { paddingEnd: copyInset } : null,
+        ]}
+      >
+        {tokenLines.slice(0, visibleCount).map((spans, i) => (
+          <View key={i} style={[skin.rowPad(compact, gutter), rowMin, rowTint(i)]}>
+            {diffLines ? (
+              <Text style={[type, MONO, skin.diffMarker(diffLines[i].kind, tokens, dark)]}>
+                {`${DIFF_GLYPH[diffLines[i].kind]} `}
+              </Text>
+            ) : null}
+            <LineSpans
+              spans={spans}
+              base={[type, skin.codeText(tokens), MONO, wrap ? WRAP_TEXT : null]}
+              dark={dark}
+            />
+          </View>
+        ))}
+      </View>
+    );
+
     return (
       <View testID={testID} style={[RELATIVE, style]}>
-        {headerLabel ? <Header label={headerLabel} /> : null}
-        <View style={[skin.surface(tokens), headerLabel ? skin.surfaceUnderHeader : null, skin.surfacePad]}>
-          <Text
-            style={[skin.codeType, skin.codeText(tokens), MONO]}
-            numberOfLines={wrap ? undefined : lines.length}
+        {hasHeader ? (
+          <View
+            style={[
+              skin.headerBar(tokens),
+              tabList ? skin.headerBarWithTabs : null,
+              attached ? skin.attachedTop : null,
+            ]}
           >
-            {code}
-          </Text>
+            {tabList ? (
+              <TabStrip tabs={tabList} active={active} onSelect={setActive} dark={false} />
+            ) : (
+              <Text style={[skin.headerLabel(tokens), MONO]} numberOfLines={1}>
+                {headerLeft}
+              </Text>
+            )}
+            <View style={HEADER_END}>
+              {!tabList && filename && language ? (
+                <Text style={[skin.headerBadge(tokens), MONO]}>{language}</Text>
+              ) : null}
+              {copy ? <CopyChip dark={false} floating={false} copied={copied} onPress={handleCopy} /> : null}
+            </View>
+          </View>
+        ) : null}
+        <View
+          style={[
+            skin.surface(tokens),
+            hasHeader ? skin.surfaceUnderHeader : null,
+            !hasHeader && attached ? skin.attachedTop : null,
+          ]}
+        >
+          <View style={ROW}>
+            {gutter ? (
+              <View style={[skin.gutterCol(compact), skin.bodyPad(compact)]}>
+                {Array.from({ length: visibleCount }, (_, i) => (
+                  <View key={i} style={[skin.gutterRow(compact), rowMin, rowTint(i)]}>
+                    <Text style={[type, skin.gutterText(tokens), MONO]}>
+                      {String(startLine + i)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+            {wrap ? (
+              <View style={FLEX_FILL}>{rowsCol}</View>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={FLEX_FILL}
+                contentContainerStyle={FLEX_FILL}
+              >
+                {rowsCol}
+              </ScrollView>
+            )}
+          </View>
+          {folds ? (
+            <RippleClip shape={{ borderBottomStartRadius: 7, borderBottomEndRadius: 7 }}>
+              <Pressable
+                android_ripple={surfaceRipple(tokens)}
+                onPress={() => setExpanded(!expanded)}
+                accessibilityRole="button"
+                // Dual alias: RNW drops accessibilityState (see test/a11y-state.test.tsx).
+                accessibilityState={{ expanded }}
+                aria-expanded={expanded}
+                style={({ pressed }) => [skin.expanderBar(tokens), pressDim(pressed, skin.copyPressedOpacity)]}
+              >
+                <Icon {...(expanded ? { chevronUp: true } : { chevronDown: true })} muted decorative size={14} />
+                <Text style={skin.expanderLabel(tokens)}>
+                  {expanded ? "Show less" : `Show all ${total} lines`}
+                </Text>
+              </Pressable>
+            </RippleClip>
+          ) : null}
         </View>
-        {copy ? <CopyButton text={code} onCopy={onCopy} /> : null}
+        {floatingCopy ? (
+          <View
+            style={FLOATING_CHIP}
+            onLayout={(e) => {
+              const width = e.nativeEvent.layout?.width ?? 0;
+              // 16 = the chip's end offset (8) plus a small clearance gap.
+              setCopyInset((prev) => Math.max(prev, Math.ceil(width) + 16));
+            }}
+          >
+            <CopyChip dark={false} floating copied={copied} onPress={handleCopy} />
+          </View>
+        ) : null}
       </View>
     );
   };

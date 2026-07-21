@@ -78,10 +78,11 @@ describe("CodeBlock", () => {
   });
 
   it("terminal variant renders the language chrome label and each command row", () => {
-    ui(<CodeBlock terminal language="zsh" code={"npm install\nnpm test"} />);
+    const { container } = ui(<CodeBlock terminal language="zsh" code={"npm install\nnpm test"} />);
     expect(screen.getByText("zsh")).toBeTruthy();
-    expect(screen.getByText("npm install")).toBeTruthy();
-    expect(screen.getByText("npm test")).toBeTruthy();
+    // Commands are tokenized into highlighted spans, so match on text content.
+    expect(container.textContent).toContain("npm install");
+    expect(container.textContent).toContain("npm test");
   });
 });
 
@@ -114,6 +115,48 @@ describe("DescriptionList", () => {
     expect(screen.getByRole("button", { name: "Update Plan" })).toBeTruthy();
     // `card` + `title` renders the header band title.
     expect(screen.getByText("Account")).toBeTruthy();
+  });
+
+  it("Update opens the in-place editor; committing shows the new value and fires onUpdate", () => {
+    let got: [number, string] | null = null;
+    ui(<DescriptionList items={items} onUpdate={(i, v) => { got = [i, v]; }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Update Plan" }));
+    // The editor seeds from the current value.
+    const input = screen.getByLabelText("Plan value") as HTMLInputElement;
+    expect(input.value).toBe("Pro");
+    fireEvent.change(input, { target: { value: "Enterprise" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Plan" }));
+    // Uncontrolled commit: the row shows the new value, the editor closes, the
+    // affordance returns for another round, and the callback reported it.
+    expect(got).toEqual([2, "Enterprise"]);
+    expect(screen.getByText("Enterprise")).toBeTruthy();
+    expect(screen.queryByLabelText("Plan value")).toBeNull();
+    expect(screen.getByRole("button", { name: "Update Plan" })).toBeTruthy();
+  });
+
+  it("Cancel dismisses the editor without changing the value or firing onUpdate", () => {
+    let fired = false;
+    ui(<DescriptionList items={items} onUpdate={() => { fired = true; }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Update Plan" }));
+    fireEvent.change(screen.getByLabelText("Plan value"), { target: { value: "Scrapped" } });
+    fireEvent.click(screen.getByRole("button", { name: "Cancel updating Plan" }));
+    expect(fired).toBe(false);
+    expect(screen.getByText("Pro")).toBeTruthy();
+    expect(screen.queryByText("Scrapped")).toBeNull();
+  });
+
+  it("a consumer-supplied new item value (the controlled response) wins over the internal edit", () => {
+    const { rerender } = ui(<DescriptionList items={items} />);
+    fireEvent.click(screen.getByRole("button", { name: "Update Plan" }));
+    fireEvent.change(screen.getByLabelText("Plan value"), { target: { value: "Team" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Plan" }));
+    expect(screen.getByText("Team")).toBeTruthy();
+    // The consumer answers onUpdate by passing new items: the prop value wins
+    // and the internal (uncontrolled) edit goes inert.
+    const next = [...items.slice(0, 2), { term: "Plan", value: "Business", update: true }];
+    rerender(<ThemeProvider><DescriptionList items={next} /></ThemeProvider>);
+    expect(screen.getByText("Business")).toBeTruthy();
+    expect(screen.queryByText("Team")).toBeNull();
   });
 });
 
