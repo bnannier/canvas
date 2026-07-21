@@ -34,7 +34,7 @@ const PHOTOS: Record<string, unknown> = {
 //   - Avatar takes `string | number` and does `source={typeof photo === "number" ? photo
 //     : {uri: photo}}` — the web asset OBJECT would become `{uri: {…}}`, rendering no
 //     image while the truthy `src` suppresses the initials, leaving a blank circle;
-//   - GridList/Feed/Field type their photo as `string` and GridList sniffs it
+//   - GridList/Feed type their photo as `string` and GridList sniffs it
 //     (`value.startsWith("http") || "/" || "data:"`) to tell a photo from initials — a
 //     numeric module id there throws `undefined is not a function`.
 // Both a Metro dev URL (`http://…`) and an exported asset path (`/canvas/assets/…`)
@@ -73,7 +73,7 @@ export function resolvePhoto(src: unknown): unknown {
 
 // How deep to walk a prop's plain data looking for sample photo paths. They are not
 // always a top-level prop: Avatar/MediaObject take `src` directly, but GridList and Feed
-// carry `items[].avatar`, and Field nests them furthest at `rows[].avatars[].src`. A
+// carry `items[].avatar`, and DescriptionList nests them furthest at `items[].avatars[].src`. A
 // name-and-depth-blind walk means a new example cannot silently miss the resolution
 // (which is exactly how the subpath bug went unnoticed).
 const MAX_DEPTH = 6;
@@ -107,7 +107,7 @@ function resolveDeep(value: unknown, depth: number): unknown {
   return next ?? value;
 }
 
-// Wrap an image-bearing component (Image, Avatar, MediaObject, GridList, Feed, Field) so
+// Wrap an image-bearing component (Image, Avatar, MediaObject, GridList, Feed, DescriptionList) so
 // any sample photo path in its props resolves to the bundled asset before the real
 // component renders. Keeps the example code clean and copy-pasteable (`src="/rachel-chen.jpg"`)
 // while making the photos load on iOS, Android, and a subpath-hosted web export.
@@ -128,7 +128,7 @@ export function withResolvedPhotos<P>(Component: ComponentType<P>): ComponentTyp
 }
 
 /** The scope keys whose components can carry a sample photo (see withResolvedPhotos). */
-export const PHOTO_COMPONENTS = ["Image", "Avatar", "MediaObject", "CardMedia", "GridList", "Feed", "Field"] as const;
+export const PHOTO_COMPONENTS = ["Image", "Avatar", "MediaObject", "CardMedia", "GridList", "Feed", "DescriptionList"] as const;
 
 /** Wrap every photo-bearing component in a built example scope, in place. */
 export function applyResolvedPhotos(scope: Record<string, unknown>): void {

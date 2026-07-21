@@ -342,16 +342,6 @@
             "icon": "activity"
           },
           {
-            "slug": "field",
-            "label": "Field",
-            "icon": "file-text"
-          },
-          {
-            "slug": "fieldset",
-            "label": "Fieldset",
-            "icon": "group"
-          },
-          {
             "slug": "form",
             "label": "Form",
             "icon": "file-input"

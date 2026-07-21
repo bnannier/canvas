@@ -79,10 +79,6 @@ import { EmptyState as EmptyStateIOS } from "../../../src/molecules/empty-state/
 import { EmptyState as EmptyStateAndroid } from "../../../src/molecules/empty-state/empty-state.android.js";
 import { Feed as FeedIOS } from "../../../src/molecules/feeds/feeds.ios.js";
 import { Feed as FeedAndroid } from "../../../src/molecules/feeds/feeds.android.js";
-import { Field as FieldIOS } from "../../../src/molecules/field/field.ios.js";
-import { Field as FieldAndroid } from "../../../src/molecules/field/field.android.js";
-import { Fieldset as FieldsetIOS } from "../../../src/molecules/fieldset/fieldset.ios.js";
-import { Fieldset as FieldsetAndroid } from "../../../src/molecules/fieldset/fieldset.android.js";
 import { Form as FormIOS, FormSection as FormSectionIOS } from "../../../src/molecules/form/form.ios.js";
 import { Form as FormAndroid, FormSection as FormSectionAndroid } from "../../../src/molecules/form/form.android.js";
 import { GridList as GridListIOS } from "../../../src/molecules/grid-lists/grid-lists.ios.js";
@@ -127,7 +123,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
     ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
-    EmptyState: EmptyStateIOS, Feed: FeedIOS, Field: FieldIOS, Fieldset: FieldsetIOS, Form: FormIOS, FormSection: FormSectionIOS,
+    EmptyState: EmptyStateIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
@@ -143,7 +139,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
     ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,
-    EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Field: FieldAndroid, Fieldset: FieldsetAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
+    EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,

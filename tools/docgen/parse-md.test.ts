@@ -414,15 +414,6 @@ describe("fieldWidthShimViolations", () => {
     expect(fieldWidthShimViolations(`<InputOTP style={{ maxWidth: 320 }} />`)).toEqual([]);
   });
 
-  it("allows a width bound on Field's display mode (rows= is a table, not a field)", () => {
-    const code = `<Field rows={[{ label: "Plan", value: "Pro" }]} style={{ maxWidth: 400 }} />`;
-    expect(fieldWidthShimViolations(code)).toEqual([]);
-    // Control mode (no rows=) is still flagged.
-    expect(fieldWidthShimViolations(`<Field label="Name" style={{ maxWidth: 400 }} />`)).toEqual([
-      "maxWidth on <Field>",
-    ]);
-  });
-
   it("respects the // docgen-allow-style opt-out on the style's line", () => {
     const code = `<Input style={{ maxWidth: 320 }} /> {/* docgen-allow-style */}`;
     expect(fieldWidthShimViolations(code)).toEqual([]);

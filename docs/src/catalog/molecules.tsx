@@ -233,19 +233,6 @@ function FeedsPreview() {
   );
 }
 
-// ── Field Display ────────────────────────────────────────────────────────────
-function FieldDisplayPreview() {
-  const { tokens } = useTheme();
-  return (
-    <View style={{ width: "100%", maxWidth: 220 }}>
-      <View style={{ padding: 8 }}>
-        <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>ID</Text>
-        <Text style={{ fontFamily: geistMono("400"), fontSize: 11, color: tokens.foreground }}>01HZ8X4M...</Text>
-      </View>
-    </View>
-  );
-}
-
 // ── Form Layouts ─────────────────────────────────────────────────────────────
 function FormLayoutsPreview() {
   const { tokens } = useTheme();
@@ -401,7 +388,6 @@ export const MOLECULES_TILES: CatTile[] = [
   { title: "DescriptionList", href: "/components/description-lists", Preview: DescriptionListsPreview },
   { title: "EmptyState", href: "/components/empty-state", Preview: EmptyStatesPreview },
   { title: "Feed", href: "/components/feeds", Preview: FeedsPreview },
-  { title: "Field", href: "/components/field", Preview: FieldDisplayPreview },
   { title: "Form", href: "/components/form", Preview: FormLayoutsPreview },
   { title: "GridList", href: "/components/grid-lists", Preview: GridListsPreview },
   { title: "MediaObject", href: "/components/media-objects", Preview: MediaObjectsPreview },

@@ -12,9 +12,7 @@ import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Slider } from "../src/atoms/slider/slider.tsx";
 import { Progress } from "../src/atoms/progress/progress.tsx";
-import { Field } from "../src/molecules/field/field.tsx";
 import { Form } from "../src/molecules/form/form.tsx";
-import { Fieldset } from "../src/molecules/fieldset/fieldset.tsx";
 
 // The standard field width axis (src/style/field-width.ts): a bare input-like
 // control RENDERS AT fieldWidths.base at every viewport (narrow/wide pick the
@@ -243,30 +241,14 @@ describe("field width axis: viewport independence", () => {
 });
 
 describe("field width axis: composition (inner controls are block)", () => {
-  it("Field carries the standard width on its control stack; the inner Input fills it", () => {
-    const { container } = ui(<Field testID="f" label="Name" placeholder="Ada" />);
-    expect(at(container, "f").style.width).toBe(`${fieldWidths.base}px`);
-    expect(at(container, "f").style.maxWidth).toBe("100%");
-    expect((container.querySelector("input") as HTMLElement).style.width).toBe("100%");
-  });
-
-  it("Field display mode (read-only rows) stays unsized", () => {
-    const { container } = ui(<Field testID="d" rows={[{ label: "Plan", value: "Pro" }]} />);
-    expect(at(container, "d").style.width).toBe("");
-    expect(at(container, "d").style.maxWidth).toBe("");
-  });
-
-  it("Form-stitched and Fieldset inner Inputs fill their column (block, no per-input standard)", () => {
+  it("Form-stitched block Inputs fill their column (no per-input standard)", () => {
     const { container } = ui(
-      <>
-        <Form>
-          <Input block label="Email" placeholder="you@example.com" />
-        </Form>
-        <Fieldset legend="Profile" items={[{ label: "Name" }]} />
-      </>,
+      <Form>
+        <Input block label="Email" placeholder="you@example.com" />
+      </Form>,
     );
     const inputs = Array.from(container.querySelectorAll("input")) as HTMLElement[];
-    expect(inputs.length).toBe(2);
+    expect(inputs.length).toBe(1);
     for (const el of inputs) expect(el.style.width).toBe("100%");
   });
 });

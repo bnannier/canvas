@@ -1,7 +1,9 @@
 import { type ComponentType, useState } from "react";
 import { View, Text, TextInput, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
+import { type AvatarProps, type AvatarGroupProps } from "../../atoms/avatar/avatar.shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./description-lists.styles.js";
@@ -36,7 +38,11 @@ import { type Layout } from "./description-lists.styles.js";
 // Per-item value affordances (all optional, render the value richly):
 // `badge` renders the value as a secondary metadata Badge; `status` renders it
 // as a success status Badge with a leading dot (live state); `mono` sets a
-// monospace face for tokens/IDs; `update` appends a trailing "Update" link
+// monospace face for tokens/IDs; `avatars` renders the value as an overlapping
+// AvatarGroup (with `overflow` collapsing the remainder into its "+N" chip);
+// `copyValue` appends a ghost "Copy" button that hands the string to the
+// list-level `onCopy` (the kit ships no clipboard dependency; the consumer
+// performs the write); `update` appends a trailing "Update" link
 // button that opens a working in-place editor (the inline-edit affordance):
 // the value swaps for a draft TextInput with trailing Save / Cancel links.
 // Enter or Save commits the draft (the row shows the new value and `onUpdate`
@@ -64,6 +70,12 @@ import { type Layout } from "./description-lists.styles.js";
 // Badge and Button are threaded per-OS (the field.ios.tsx pattern) so the docs
 // web 3-up shows the native atom inside each platform row, not the web atom.
 
+/** One avatar in an `avatars` value row: a photo (`src`) or initials (`name`). */
+export interface DescriptionListAvatar {
+  src?: string;
+  name?: string;
+}
+
 export interface DescriptionListItem {
   term: string;
   value: string;
@@ -73,6 +85,16 @@ export interface DescriptionListItem {
   status?: boolean;
   // Monospace value face, for tokens, scopes, identifiers.
   mono?: boolean;
+  /**
+   * Append a ghost "Copy" button after the value. Pressing it invokes the
+   * list's `onCopy` callback with this string (the kit ships no clipboard
+   * dependency; the consumer performs the write).
+   */
+  copyValue?: string;
+  /** Render the value as an overlapping avatar stack (composed AvatarGroup). */
+  avatars?: DescriptionListAvatar[];
+  /** Extra members beyond `avatars`, collapsed into the stack's "+N" chip. */
+  overflow?: number;
   // Append a trailing "Update" link affordance, marking the row editable.
   update?: boolean;
 }
@@ -92,6 +114,8 @@ export interface DescriptionListProps {
   card?: boolean;
   /** Fires when a row's inline editor commits (Enter or Save): the item index and the new value. */
   onUpdate?: (index: number, value: string) => void;
+  /** Fires with a row's `copyValue` when its "Copy" button is pressed. */
+  onCopy?: (value: string) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -100,6 +124,8 @@ export interface DescriptionListProps {
 
 // The composed-atom component types, so each platform can pass its own resolved
 // atoms (web base by default) without widening to `any`.
+export type AvatarComponent = ComponentType<AvatarProps>;
+export type AvatarGroupComponent = ComponentType<AvatarGroupProps>;
 export type BadgeComponent = ComponentType<BadgeProps>;
 export type ButtonComponent = ComponentType<ButtonProps>;
 
@@ -165,12 +191,45 @@ export function createDescriptionList(
   skin: DescriptionListSkin,
   Badge: BadgeComponent = WebBadge,
   Button: ButtonComponent = WebButton,
+  Avatar: AvatarComponent = WebAvatar,
+  AvatarGroup: AvatarGroupComponent = WebAvatarGroup,
 ) {
-  // Render a value cell: a badge family, a monospace token, or plain text. The
-  // value type (foreground full-weight on web/Android, secondary gray 17pt on
-  // iOS; stacked keeps a full-weight foreground value) is resolved by the caller,
-  // as is the shown string (the item value, or the row's committed inline edit).
-  function Value({ item, value, align, valueStyle }: { item: DescriptionListItem; value: string; align?: boolean; valueStyle: TextStyle }) {
+  // Render a value cell: an avatar stack, a copyable value, a badge family, a
+  // monospace token, or plain text (precedence in that order). The value type
+  // (foreground full-weight on web/Android, secondary gray 17pt on iOS; stacked
+  // keeps a full-weight foreground value) is resolved by the caller, as is the
+  // shown string (the item value, or the row's committed inline edit).
+  function Value({ item, value, align, valueStyle, onCopy }: { item: DescriptionListItem; value: string; align?: boolean; valueStyle: TextStyle; onCopy?: (value: string) => void }) {
+    if (item.avatars && item.avatars.length > 0) {
+      // The overlap, separator ring, and "+N" overflow chip are AvatarGroup's own
+      // anatomy; `total` folds the `overflow` remainder into that chip. The group
+      // is named so a screen reader hears the members, not disconnected initials.
+      const names = item.avatars.map((a) => a.name).filter(Boolean) as string[];
+      const more = typeof item.overflow === "number" && item.overflow > 0 ? ` and ${item.overflow} more` : "";
+      const groupName = names.length > 0 ? `${names.join(", ")}${more}` : `${item.avatars.length} members${more}`;
+      return (
+        <AvatarGroup small snug total={item.avatars.length + Math.max(0, item.overflow ?? 0)} accessibilityLabel={groupName}>
+          {item.avatars.map((a, i) => (
+            <Avatar key={i} small src={a.src} name={a.name}>
+              {a.name}
+            </Avatar>
+          ))}
+        </AvatarGroup>
+      );
+    }
+    if (item.copyValue != null) {
+      const copyValue = item.copyValue;
+      return (
+        <View style={s.copyRow}>
+          <Text style={[valueStyle, item.mono ? s.valueMono : null, s.copyValueText]} numberOfLines={1}>
+            {value || copyValue}
+          </Text>
+          <Button ghost small accessibilityLabel={`Copy ${item.term}`} onPress={() => onCopy?.(copyValue)}>
+            Copy
+          </Button>
+        </View>
+      );
+    }
     if (item.status) return <Badge status success>{value}</Badge>;
     if (item.badge) return <Badge secondary>{value}</Badge>;
     if (item.mono) {
@@ -180,7 +239,7 @@ export function createDescriptionList(
   }
 
   return function DescriptionList(props: DescriptionListProps) {
-    const { items, title, subtitle, divided, card, onUpdate, testID, style } = props;
+    const { items, title, subtitle, divided, card, onUpdate, onCopy, testID, style } = props;
     const { tokens } = useTheme();
     const layout = layoutOf(props);
     const hasHeader = card && !!title;
@@ -267,7 +326,7 @@ export function createDescriptionList(
               </View>
             ) : (
               <>
-                <Value item={item} value={shown} align={layout === "inline"} valueStyle={valueStyle} />
+                <Value item={item} value={shown} align={layout === "inline"} valueStyle={valueStyle} onCopy={onCopy} />
                 {item.update ? (
                   <Button
                     link

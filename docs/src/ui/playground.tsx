@@ -1,11 +1,18 @@
-import { Component, type ReactNode, useState } from "react";
+import { Component, type ReactNode, useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Tabs, OverlayProvider, useTheme } from "@nannier/canvas";
+import { ScrollView, View, Text, Tabs, Input, OverlayProvider, useTheme } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
+import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
 import { DocsSurface } from "./surface";
 import { geist } from "./fonts";
+
+// Docs-only: example helpers whose fence renders a searchable catalog. When the selected
+// example's code uses one, the Playground draws a SINGLE search field above the 3-up stage and
+// publishes its text through IconSearchContext, so that one control filters every platform column
+// at once (see IconGallery) instead of a separate box per column. The value is the placeholder.
+const SEARCHABLE_EXAMPLES: Record<string, string> = { IconGallery: "Search icons" };
 
 export class ExampleErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null as string | null };
@@ -116,6 +123,11 @@ export function Playground({ examples, stageAlign, selected: selectedProp, onSel
   const [selectedState, setSelectedState] = useState(0);
   const selected = selectedProp ?? selectedState;
   const setSelected = onSelectProp ?? setSelectedState;
+  // One search field above the stage for catalog examples (see SEARCHABLE_EXAMPLES): its query
+  // flows to every platform column through IconSearchContext, so a single control filters all
+  // three previews. Reset when the selected example changes so a stale query never carries over.
+  const [query, setQuery] = useState("");
+  useEffect(() => { setQuery(""); }, [selected]);
   const ex = examples[selected] ?? examples[0];
   if (!ex) return null;
 
@@ -123,6 +135,8 @@ export function Playground({ examples, stageAlign, selected: selectedProp, onSel
   // The web build returns the iOS/Android/Web 3-up (labels help tell them apart); the native
   // build returns a single device preview, where the platform label is redundant.
   const showLabels = previews.length > 1;
+  // The single-search placeholder for this example, if its fence renders a searchable catalog.
+  const searchPlaceholder = Object.entries(SEARCHABLE_EXAMPLES).find(([tag]) => ex.code.includes(tag))?.[1];
 
   const stage = (
     // ONE overlay host per stage (not per cell). A portaled overlay (an open
@@ -133,6 +147,7 @@ export function Playground({ examples, stageAlign, selected: selectedProp, onSel
     // outlet. Because overlays no longer render inside the stage card, the card can
     // keep its clean `overflow: "hidden"` rounded corners.
     <OverlayProvider style={{ flex: 1, minWidth: 0 }}>
+      <IconSearchContext.Provider value={query}>
       <View
         // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
         // react-native-web draws for a scrollable demo (a ScrollView/list/table) inside a
@@ -141,6 +156,24 @@ export function Playground({ examples, stageAlign, selected: selectedProp, onSel
         {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
         style={{ flex: 1, minWidth: 0 }}
       >
+        {/* A single search field above the stage for catalog examples (SEARCHABLE_EXAMPLES): its
+            query flows to every platform column via IconSearchContext, so one control filters all
+            three previews at once. Absent for every other example. */}
+        {searchPlaceholder ? (
+          <View style={{ marginBottom: 12 }}>
+            <Input
+              block
+              leadingIcon
+              icon="search"
+              placeholder={searchPlaceholder}
+              accessibilityLabel={searchPlaceholder}
+              value={query}
+              onChangeText={setQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+        ) : null}
         {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
             (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
             clear hole. The cells below inherit it. */}
@@ -161,6 +194,7 @@ export function Playground({ examples, stageAlign, selected: selectedProp, onSel
         </DocsSurface>
         <CodeBlock code={ex.code} flush />
       </View>
+      </IconSearchContext.Provider>
     </OverlayProvider>
   );
 

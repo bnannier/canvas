@@ -9,8 +9,6 @@ export * from "./collapsible/collapsible.js";
 export * from "./description-lists/description-lists.js";
 export * from "./empty-state/empty-state.js";
 export * from "./feeds/feeds.js";
-export * from "./field/field.js";
-export * from "./fieldset/fieldset.js";
 export * from "./form/form.js";
 export * from "./grid-lists/grid-lists.js";
 export * from "./media-objects/media-objects.js";

@@ -7,9 +7,7 @@ import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
-import { Field } from "../src/molecules/field/field.tsx";
 import { Form, FormSection } from "../src/molecules/form/form.tsx";
-import { Fieldset } from "../src/molecules/fieldset/fieldset.tsx";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -93,11 +91,6 @@ describe("Input", () => {
 // web, not just a sibling Text (WCAG 4.1.2). getByLabelText only resolves when the
 // accessible name is wired through to the DOM input, so it guards every layout.
 describe("accessible names on composed fields", () => {
-  it("Field names its control by the visible label", () => {
-    ui(<Field label="Email" placeholder="ada@acme.dev" />);
-    expect(screen.getByLabelText("Email")).toBe(screen.getByPlaceholderText("ada@acme.dev"));
-  });
-
   it("Form renders stitched children, each input named by its own label", () => {
     ui(
       <Form>
@@ -109,10 +102,6 @@ describe("accessible names on composed fields", () => {
     expect(screen.getByLabelText("Email")).toBe(screen.getByPlaceholderText("ada@acme.dev"));
   });
 
-  it("Fieldset names each item's control by its label", () => {
-    ui(<Fieldset legend="Address" items={[{ label: "Street", placeholder: "123 Market St" }]} />);
-    expect(screen.getByLabelText("Street")).toBe(screen.getByPlaceholderText("123 Market St"));
-  });
 });
 
 // Form is a composition surface: the caller stitches the field atoms and keeps

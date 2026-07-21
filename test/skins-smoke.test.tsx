@@ -106,8 +106,6 @@ const CASES: SkinCase[] = [
   { name: "DescriptionList", dir: "molecules/description-lists", file: "description-lists", props: { items: [{ term: "Name", value: "Ada" }, { term: "Role", value: "Engineer" }] } },
   { name: "EmptyState", dir: "molecules/empty-state", file: "empty-state", props: { icon: "∅", title: "No results", description: "Try a different search.", actionLabel: "Reset" } },
   { name: "Feed", dir: "molecules/feeds", file: "feeds", props: { items: [{ actor: "Rachel Chen", action: "approved the request", time: "2 hours ago" }] } },
-  { name: "Field", dir: "molecules/field", file: "field", props: { label: "Email", placeholder: "you@acme.dev", helper: "We never share it." } },
-  { name: "Fieldset", dir: "molecules/fieldset", file: "fieldset", props: { legend: "Address", items: [{ label: "Street", placeholder: "123 Market St" }] } },
   { name: "Form", dir: "molecules/form", file: "form", props: { submitLabel: "Save", cancelLabel: "Cancel", children: "Stitched fields" } },
   { name: "FormSection", dir: "molecules/form", file: "form", props: { title: "Personal info", description: "Displayed on your profile.", children: "Stitched fields" } },
   { name: "GridList", dir: "molecules/grid-lists", file: "grid-lists", props: { items: [{ title: "Design", subtitle: "12 files" }, { title: "Research", subtitle: "3 files" }] } },

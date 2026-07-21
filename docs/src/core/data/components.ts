@@ -151,7 +151,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "input",
     name: "Input",
-    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Every field renders at the standard width by default (<code>narrow</code> and <code>wide</code> pick the other modes, <code>block</code> fills the container). Select and the search field share its look, and Field and Form compose a label, the control, and helper text.",
+    description: "The Input component is a React Native text field with semantic boolean props (<code>error</code>, <code>small</code>, <code>large</code>, <code>disabled</code>), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Every field renders at the standard width by default (<code>narrow</code> and <code>wide</code> pick the other modes, <code>block</code> fills the container). Select and the search field share its look, and Form stitches labeled inputs into a full form.",
     category: "Atoms",
   },
 
@@ -225,14 +225,6 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
-    slug: "fieldset",
-    name: "Fieldset",
-    description: "Group related form controls under a legend. Each field pairs a label, control, optional help text, and an inline error, so a set of inputs reads as one labeled unit.",
-    category: "Molecules",
-    stageAlign: "start",
-  },
-
-  {
     slug: "listbox",
     name: "Listbox",
     description: "A custom (non-native) select: single or multi-select, optional avatars or icons per option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.",
@@ -261,14 +253,6 @@ export const COMPONENTS: ComponentDoc[] = [
     slug: "empty-state",
     name: "EmptyState",
     description: "Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.",
-    category: "Molecules",
-    stageAlign: "start",
-  },
-
-  {
-    slug: "field",
-    name: "Field",
-    description: "Read-only key/value pairs. Used in detail views, modal previews, and audit screens. Optional mono mode for IDs, tokens, dates.",
     category: "Molecules",
     stageAlign: "start",
   },

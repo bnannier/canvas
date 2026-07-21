@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { View, Text, Input, Icon, useTheme, type IconProps } from "@nannier/canvas";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { View, Text, Icon, useTheme, type IconProps } from "@nannier/canvas";
 import { useReducedMotion } from "../../../src/style/index.js";
 // The kit's glyph table, read straight from source like the style helpers above (the
 // public Icon renders one glyph at a time and does not expose the catalog). Used only by
@@ -93,48 +93,42 @@ function glyphByName(name: string): IconProps {
   return { [name]: true } as unknown as IconProps;
 }
 
-// Docs-only Icon catalog (not a Canvas component, not shipped): the searchable gallery of
-// every kit glyph, rendered as the Icon page's "Gallery" example. The kit Icon draws a single
-// glyph; browsing the whole set is a docs concern, so the catalog lives here rather than as an
-// Icon prop. A kit Input drives a live, case-insensitive filter over the glyph names, and the
-// matches flow into a wrapping grid of labeled glyphs. Like Stateful/Ticker it owns its state
-// in its own fiber (a fence is a plain function and cannot call hooks). The grid is docs-only
-// infrastructure, so it composes raw Views (as the Playground harness does), not kit layout
-// props. Keep its type in sync with the `IconGalleryHelper` alias in ./scope.ts.
+// The live search query for the Icon catalog. The Playground owns the ONE search field above
+// the 3-up stage and publishes its text here; every platform column's IconGallery reads it, so a
+// single control filters all three previews at once. Defaults to "" (unfiltered) when an
+// IconGallery is rendered outside the Playground.
+export const IconSearchContext = createContext("");
+
+// Docs-only Icon catalog grid (not a Canvas component, not shipped): the wrapping, labeled grid
+// of every kit glyph, filtered by the shared search query from IconSearchContext. Rendered as
+// the Icon page's "Gallery" example — once per platform column, so all three columns filter
+// together from the single search field the Playground draws above the stage. The kit Icon draws
+// a single glyph; browsing the whole set is a docs concern, so the catalog lives here rather than
+// as an Icon prop. Grid layout is docs-only infrastructure, so it composes raw Views (as the
+// Playground harness does), not kit layout props. Keep its type in sync with the
+// `IconGalleryHelper` alias in ./scope.ts.
 export function IconGallery(): ReactNode {
   const { tokens } = useTheme();
-  const [query, setQuery] = useState("");
+  const query = useContext(IconSearchContext);
   const q = query.trim().toLowerCase();
   const matches = q
     ? NAMES.filter(({ key, label }) => key.toLowerCase().includes(q) || label.toLowerCase().includes(q))
     : NAMES;
+  if (matches.length === 0) {
+    return (
+      <Text style={{ fontSize: 13, color: tokens["muted-foreground"], paddingVertical: 8 }}>
+        No icons match "{query}".
+      </Text>
+    );
+  }
   return (
-    <View style={{ width: "100%", gap: 16 }}>
-      <Input
-        block
-        leadingIcon
-        icon="search"
-        placeholder="Search icons"
-        accessibilityLabel="Search icons"
-        value={query}
-        onChangeText={setQuery}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      {matches.length === 0 ? (
-        <Text style={{ fontSize: 13, color: tokens["muted-foreground"], paddingVertical: 8 }}>
-          No icons match "{query}".
-        </Text>
-      ) : (
-        <View style={{ width: "100%", flexDirection: "row", flexWrap: "wrap" }}>
-          {matches.map(({ key, label }) => (
-            <View key={key} style={{ width: 80, alignItems: "center", gap: 6, borderRadius: 8, paddingHorizontal: 4, paddingVertical: 10 }}>
-              <Icon {...glyphByName(key)} size={20} />
-              <Text style={{ fontSize: 10, color: tokens["muted-foreground"] }}>{label}</Text>
-            </View>
-          ))}
+    <View style={{ width: "100%", flexDirection: "row", flexWrap: "wrap" }}>
+      {matches.map(({ key, label }) => (
+        <View key={key} style={{ width: 80, alignItems: "center", gap: 6, borderRadius: 8, paddingHorizontal: 4, paddingVertical: 10 }}>
+          <Icon {...glyphByName(key)} size={20} />
+          <Text style={{ fontSize: 10, color: tokens["muted-foreground"] }}>{label}</Text>
         </View>
-      )}
+      ))}
     </View>
   );
 }

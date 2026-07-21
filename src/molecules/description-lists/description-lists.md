@@ -52,6 +52,32 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 />
 ```
 
+### Rich values
+
+A row's value can compose real atoms: `status`/`badge` render Badges, `avatars` renders an overlapping AvatarGroup (`overflow` folds the rest into its "+N" chip), and `copyValue` appends a ghost Copy button that hands the string to `onCopy` (the line below reports the press; wire your clipboard there).
+
+```tsx
+<Stateful initial="">
+  {(copied, setCopied) => (
+    <Column snug>
+      <DescriptionList
+        twoColumn
+        divided
+        onCopy={(value) => setCopied(value)}
+        style={{ maxWidth: 420 }}
+        items={[
+          { term: "Status", value: "Active", status: true },
+          { term: "Plan", value: "Pro", badge: true },
+          { term: "Members", value: "8 members", avatars: [{ name: "Rachel Chen" }, { name: "Alan Turing" }, { name: "Grace Hopper" }], overflow: 5 },
+          { term: "Client ID", value: "clnt_01H2X8K9", mono: true, copyValue: "clnt_01H2X8K9" }
+        ]}
+      />
+      <Typography muted>{copied === "" ? "Press Copy to grab the ID" : `Copied ${copied}`}</Typography>
+    </Column>
+  )}
+</Stateful>
+```
+
 ## Do & Don't
 
 ### Two-column
