@@ -48,6 +48,21 @@ Read-only key/value pairs. Used in detail views, modal previews, and audit scree
 />
 ```
 
+### End aligned
+
+```tsx
+<Field
+  alignEnd
+  rows={[
+    { label: "Subtotal", value: "$1,240.00" },
+    { label: "Tax", value: "$99.20" },
+    { label: "Total", value: "$1,339.20", mono: true },
+    { label: "Status", status: "Paid" }
+  ]}
+  style={{ maxWidth: 400 }}
+/>
+```
+
 ## Do & Don't
 
 ### Basic
