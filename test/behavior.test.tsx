@@ -115,6 +115,64 @@ describe("Calendar", () => {
     fireEvent.click(screen.getByText("15"));
     expect(picked).toBe(15);
   });
+
+  it("marks days with events and counts them in the accessible name", () => {
+    const { container } = ui(
+      <Calendar selected={10} events={[{ day: 15 }, { day: 15, title: "Review", start: 11 }, { day: 20 }]} />,
+    );
+    expect(container.querySelector('[aria-label="15, 2 events"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="20, 1 event"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="16"]')).not.toBeNull();
+  });
+
+  it("week view shows the selected day's week and pages by week within the month", () => {
+    let crossed = false;
+    const { container } = ui(
+      <Calendar week defaultSelected={10} daysInMonth={30} startWeekday={1} onPrev={() => { crossed = true; }} />,
+    );
+    // startWeekday=1 → day 10 falls in the week of days 7..13.
+    expect(screen.getByText("7")).toBeTruthy();
+    expect(screen.getByText("13")).toBeTruthy();
+    expect(screen.queryByText("14")).toBeNull();
+    const prev = container.querySelector('[aria-label="Previous week"]') as Element;
+    fireEvent.click(prev); // pages to the partial first week, selecting its first in-month day
+    expect(container.querySelector('[aria-selected="true"]')?.textContent).toBe("1");
+    fireEvent.click(prev); // already the first week → hands the press to onPrev
+    expect(crossed).toBe(true);
+  });
+
+  it("day view renders the timed events with their hours and pages by day", () => {
+    const { container } = ui(
+      <Calendar
+        day
+        month="May 2026"
+        defaultSelected={24}
+        daysInMonth={31}
+        startWeekday={4}
+        events={[{ day: 24, title: "Sprint planning", start: 9 }, { day: 24, title: "Design review", start: 11.5, end: 13 }]}
+      />,
+    );
+    expect(screen.getByText("Sprint planning")).toBeTruthy();
+    expect(screen.getByText("11:30 AM – 1 PM")).toBeTruthy();
+    // startWeekday 4 puts the 1st on Thursday → the 24th lands on Saturday.
+    expect(screen.getByText("Saturday, May 24")).toBeTruthy();
+    fireEvent.click(container.querySelector('[aria-label="Next day"]') as Element);
+    expect(screen.getByText("Sunday, May 25")).toBeTruthy();
+  });
+
+  it("fires onEventPress with the pressed event block", () => {
+    let pressed = "";
+    ui(
+      <Calendar
+        day
+        defaultSelected={10}
+        events={[{ day: 10, title: "Standup", start: 9, end: 9.5 }]}
+        onEventPress={(e) => { pressed = e.title ?? ""; }}
+      />,
+    );
+    fireEvent.click(screen.getByText("Standup"));
+    expect(pressed).toBe("Standup");
+  });
 });
 
 describe("Radio", () => {

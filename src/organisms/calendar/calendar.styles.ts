@@ -39,6 +39,20 @@ export interface CellMetrics {
   label: TextStyle;
 }
 
+// Per-density sizes for the week/day timeline views. The week and day containers
+// carry a fixed desktop-first width plus maxWidth:100%; the day columns flex, so
+// the same layout scales down to a phone without a separate breakpoint.
+export interface TimelineMetrics {
+  /** One hour row, in px; event-block geometry multiplies against this. */
+  hourHeight: number;
+  /** The left hour-axis rail width. */
+  axisWidth: number;
+  /** The week-view container width (capped at 100% of the parent). */
+  weekWidth: number;
+  /** The day-view container width (capped at 100% of the parent). */
+  dayWidth: number;
+}
+
 // The per-day visual state the shell resolves and hands the skin.
 export interface DayState {
   /** The day equals `selected` (the primary highlight). */
@@ -91,6 +105,30 @@ export interface CalendarSkin {
   dayCellState: (t: ColorTokens, state: DayState) => ViewStyle;
   /** The day-label color/weight per state. */
   dayLabel: (t: ColorTokens, state: DayState) => TextStyle;
+
+  // --- event mark (month grid + week strip) ---
+  /** The event dot box: size + absolute seat near the cell's bottom edge. */
+  eventDot: ViewStyle;
+  /** The dot fill per day state (inverts to `primary-foreground` on the selected fill). */
+  eventDotColor: (t: ColorTokens, state: DayState) => ViewStyle;
+
+  // --- week/day timeline ---
+  /** Per-density timeline sizes. */
+  timeline: Record<Density, TimelineMetrics>;
+  /** An hour label on the left axis rail. */
+  hourLabel: (t: ColorTokens) => TextStyle;
+  /** The hairline drawn across the top of each hour slot. */
+  slotLine: (t: ColorTokens) => ViewStyle;
+  /** The vertical hairline between week-view day columns. */
+  colDivider: (t: ColorTokens) => ViewStyle;
+  /** A timed event block: radius, padding, and the leading accent bar (layout-only). */
+  eventBlock: ViewStyle;
+  /** The event-block fill + accent color, tinted from `primary`. */
+  eventBlockSurface: (t: ColorTokens) => ViewStyle;
+  /** The event title line inside a block. */
+  eventTitle: (t: ColorTokens) => TextStyle;
+  /** The event time line inside a block. */
+  eventTime: (t: ColorTokens) => TextStyle;
 }
 
 // --- shared weekday strings ------------------------------------------------
@@ -173,6 +211,31 @@ export const webSkin: CalendarSkin = {
     st.selected || st.today
       ? { fontWeight: "500", color: t["primary-foreground"] }
       : { color: t.foreground },
+
+  // A 4px dot seated just above the cell's bottom edge marks a day with events.
+  eventDot: { position: "absolute", bottom: 4, width: 4, height: 4, borderRadius: 9999 },
+  // On the filled (selected/today) cell the dot inverts to stay visible on `primary`.
+  eventDotColor: (t, st) =>
+    st.selected || st.today ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary },
+
+  timeline: {
+    compact: { hourHeight: 40, axisWidth: 40, weekWidth: 448, dayWidth: 320 },
+    default: { hourHeight: 48, axisWidth: 44, weekWidth: 544, dayWidth: 360 },
+  },
+  hourLabel: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
+  slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
+  colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
+  eventBlock: {
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    overflow: "hidden",
+    ...FOCUS_RESET,
+  },
+  eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
+  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.primary }),
+  eventTime: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
 };
 
 // =============================================================================
@@ -250,6 +313,34 @@ export const iosSkin: CalendarSkin = {
     if (st.today) return { fontWeight: "600", color: t.primary };
     return { color: t.foreground };
   },
+
+  // HIG month grids mark event days with a small dot under the number (~5pt).
+  eventDot: { position: "absolute", bottom: 3, width: 5, height: 5, borderRadius: 9999 },
+  // Inverts on the selected `primary` fill; rides the brand indigo otherwise
+  // (including on today's unfilled cell, whose label is already `primary`).
+  eventDotColor: (t, st) =>
+    st.selected ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary },
+
+  // Slightly taller hour rows in the iOS calendar's airier spirit.
+  timeline: {
+    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 330 },
+    default: { hourHeight: 50, axisWidth: 48, weekWidth: 560, dayWidth: 368 },
+  },
+  hourLabel: (t) => ({ fontSize: 11, lineHeight: 13, fontWeight: "500", color: t["muted-foreground"] }),
+  slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
+  colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
+  // iOS event blocks: tinted rounded rectangle with a leading accent bar.
+  eventBlock: {
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    overflow: "hidden",
+    ...FOCUS_RESET,
+  },
+  eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
+  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: t.primary }),
+  eventTime: (t) => ({ fontSize: 11, lineHeight: 14, color: t["muted-foreground"] }),
 };
 
 // =============================================================================
@@ -328,4 +419,30 @@ export const androidSkin: CalendarSkin = {
     if (st.today) return { fontWeight: "500", color: t.primary };
     return { color: t.foreground };
   },
+
+  // M3 date pickers mark event days with a 4dp dot under the number.
+  eventDot: { position: "absolute", bottom: 4, width: 4, height: 4, borderRadius: 9999 },
+  // Inverts on the selected `primary` fill; `primary` otherwise (incl. inside today's ring).
+  eventDotColor: (t, st) =>
+    st.selected ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary },
+
+  // M3 schedule rows lean taller for the 48dp-ish touch rhythm.
+  timeline: {
+    compact: { hourHeight: 44, axisWidth: 44, weekWidth: 460, dayWidth: 320 },
+    default: { hourHeight: 52, axisWidth: 48, weekWidth: 560, dayWidth: 360 },
+  },
+  hourLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
+  slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
+  colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
+  // M3 event chips: larger radius, tonal `primary` container with an accent bar.
+  eventBlock: {
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    overflow: "hidden",
+  },
+  eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
+  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.primary }),
+  eventTime: (t) => ({ fontSize: 11, lineHeight: 16, color: t["muted-foreground"] }),
 };
