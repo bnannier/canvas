@@ -3,15 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Calendar, Card } = scope;
+  const { tokens, View, Text } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
-  <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
-  <Card flush style={{ minWidth: 240, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-    <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Pick a date to see events.</Text>
+<View style={{ width: "auto", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12 }}>
+  <View style={{ flexDirection: "row", gap: 2 }}>
+    <View style={{ height: 40, width: 36, alignItems: "center", borderRadius: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>8</Text>
+      <Text numberOfLines={1} style={{ fontSize: 7, maxWidth: 34, color: tokens["muted-foreground"] }}>Design review</Text>
     </View>
-  </Card>
+    <View style={{ height: 40, width: 36, alignItems: "center", borderRadius: 6 }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>9</Text>
+    </View>
+    <View style={{ height: 40, width: 36, alignItems: "center", borderRadius: 6, backgroundColor: tokens.primary }}>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["primary-foreground"] }}>10</Text>
+      <Text numberOfLines={1} style={{ fontSize: 7, maxWidth: 34, color: tokens["primary-foreground"] }}>Sprint planning meeting</Text>
+    </View>
+  </View>
 </View>
   );
 }

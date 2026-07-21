@@ -292,7 +292,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "calendar",
     name: "Calendar",
-    description: "Date picker, event list. Production: wrap react-day-picker.",
+    description: "Month grid, week timeline, and day timeline with events: dots mark event days, timed events render as blocks on the hour timelines.",
     category: "Organisms",
     stageAlign: "start",
   },
