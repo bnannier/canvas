@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Image
   source={{ uri: "/liang-bao.jpg" }}
-  resizeMode="contain"
+  contain
   style={{ width: 160, height: 120, borderRadius: 12, backgroundColor: tokens.muted }}
 />
   );

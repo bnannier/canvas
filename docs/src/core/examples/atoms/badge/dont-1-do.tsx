@@ -3,8 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge } = scope;
+  const { Badge, BadgeGroup } = scope;
   return (
-<Badge status error>Failed</Badge>
+<BadgeGroup>
+  <Badge secondary>employee</Badge>
+  <Badge secondary>engineering</Badge>
+  <Badge secondary>remote</Badge>
+  <Badge status success>active</Badge>
+</BadgeGroup>
   );
 }

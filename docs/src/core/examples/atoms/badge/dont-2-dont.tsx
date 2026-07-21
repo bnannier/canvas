@@ -3,16 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Badge } = scope;
+  const { Badge } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-  <Text style={{ fontSize: 15, fontWeight: "600", color: tokens.foreground }}>Rachel Chen</Text>
-  <Badge status success>active</Badge>
-  <Badge status info>Verified</Badge>
-  <Badge secondary>employee</Badge>
-  <Badge secondary>engineering</Badge>
-  <Badge secondary>remote</Badge>
-  <Badge secondary>admin</Badge>
-</View>
+<Badge status error />
   );
 }

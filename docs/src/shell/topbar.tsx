@@ -1,11 +1,15 @@
-import { Platform, useWindowDimensions } from "react-native";
+import { Linking, Platform, useWindowDimensions } from "react-native";
 import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@nannier/canvas";
 import { usePathname } from "expo-router";
 import { getComponent } from "../core/data/components";
 import { getTemplate } from "../core/data/templates";
 import { getPattern } from "../core/data/patterns";
 import { useDocsTheme } from "../theme/docs-theme";
+import { Github } from "../brand/brand-logos";
 import { geist } from "../ui/fonts";
+
+// The public repository the GitHub button in the bar links back to (mirrors the home page's link).
+const REPO_URL = "https://github.com/bnannier/canvas";
 
 // The topbar overlays the scrolling content (so its glass frost refracts what
 // scrolls behind it). Content scrollers add this as a top inset so their first row
@@ -133,6 +137,15 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
       ) : null}
 
       <View style={{ flex: 1 }} />
+
+      <Button
+        ghost
+        icon
+        small
+        accessibilityLabel="View Canvas on GitHub"
+        iconLeft={<Github size={16} color={tokens.foreground} />}
+        onPress={() => Linking.openURL(REPO_URL)}
+      />
 
       {showFrostToggle ? (
         <ButtonGroup

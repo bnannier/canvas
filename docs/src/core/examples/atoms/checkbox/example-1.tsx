@@ -3,15 +3,38 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Checkbox, Select, Column } = scope;
+  const { Stateful, Checkbox, Select, Column } = scope;
   return (
-<Column snug>
-  <Checkbox indeterminate>Select all</Checkbox>
-  <Column snug indent>
-    <Checkbox defaultChecked>Read</Checkbox>
-    <Checkbox>Write</Checkbox>
-    <Checkbox>Delete</Checkbox>
-  </Column>
-</Column>
+<Stateful initial={["Read"]}>
+  {(selected, setSelected) => {
+    const perms = ["Read", "Write", "Delete"];
+    const all = perms.every((p) => selected.includes(p));
+    const some = selected.length > 0 && !all;
+    return (
+      <Column snug>
+        <Checkbox
+          checked={all}
+          indeterminate={some}
+          onChange={(next) => setSelected(next ? perms : [])}
+        >
+          Select all
+        </Checkbox>
+        <Column snug indent>
+          {perms.map((p) => (
+            <Checkbox
+              key={p}
+              checked={selected.includes(p)}
+              onChange={(next) =>
+                setSelected(next ? [...selected, p] : selected.filter((x) => x !== p))
+              }
+            >
+              {p}
+            </Checkbox>
+          ))}
+        </Column>
+      </Column>
+    );
+  }}
+</Stateful>
   );
 }

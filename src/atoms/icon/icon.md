@@ -10,10 +10,10 @@ Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to th
 
 ## Variants
 
-### Set
+### Gallery
 
 ```tsx
-<Icon set />
+<IconGallery />
 ```
 
 ### Primary

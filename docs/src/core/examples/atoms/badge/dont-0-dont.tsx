@@ -5,11 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { View, Badge } = scope;
   return (
-<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-  <Badge default>employee</Badge>
-  <Badge destructive>engineering</Badge>
-  <Badge default>remote</Badge>
-  <Badge destructive>active</Badge>
+<View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+  <Badge secondary>employee</Badge>
+  <Badge secondary>engineering</Badge>
+  <Badge secondary>remote</Badge>
 </View>
   );
 }

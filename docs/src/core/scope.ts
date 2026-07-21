@@ -40,11 +40,17 @@ type ApplyDropHelper = <T extends { id: string; zone: string }>(
   e: { id: string; to: string; index: number },
 ) => T[];
 
+// The docs-only Icon catalog (./live-state.tsx): a searchable gallery of every kit glyph,
+// used as the Icon page's "Gallery" example. Typed structurally so this type module needs no
+// value import; keep it in sync with the `IconGallery` component in ./live-state.tsx.
+type IconGalleryHelper = () => ReactNode;
+
 export type ExampleScope = typeof import("@nannier/canvas") & {
   tokens: ColorTokens;
   Stateful: StatefulHelper;
   Ticker: TickerHelper;
   applyDrop: ApplyDropHelper;
+  IconGallery: IconGalleryHelper;
 };
 
 // A generated example module's default export.

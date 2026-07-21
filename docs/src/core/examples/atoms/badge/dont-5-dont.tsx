@@ -6,9 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { View, Badge } = scope;
   return (
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-  <Badge secondary>active</Badge>
-  <Badge secondary>pending</Badge>
-  <Badge secondary>failed</Badge>
+  <Badge default>employee</Badge>
+  <Badge default>engineering</Badge>
+  <Badge default>remote</Badge>
+  <Badge default>admin</Badge>
 </View>
   );
 }
