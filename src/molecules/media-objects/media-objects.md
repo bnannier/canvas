@@ -19,11 +19,21 @@ Image or icon paired with text content. The fundamental building block for list 
 
 ### Tappable
 
+Passing `onPress` makes the whole row a single tap target; wire it to your own
+handler and every tap runs it. Here the line underneath reports which row was
+tapped. (`Stateful` is a docs-only helper that holds the example's state; in
+your app that state is your own.)
+
 ```tsx
-<Column snug style={{ maxWidth: 480 }}>
-  <MediaObject onPress={() => {}} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
-  <MediaObject onPress={() => {}} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
-</Column>
+<Stateful initial="">
+  {(opened, setOpened) => (
+    <Column snug style={{ maxWidth: 480 }}>
+      <MediaObject onPress={() => setOpened("Rachel Chen")} bordered center avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="admin" truncate />
+      <MediaObject onPress={() => setOpened("Ada Lovelace")} bordered center avatar="AL" title="Ada Lovelace" description="Staff Engineer" meta="2h ago" truncate />
+      <Typography muted>{opened === "" ? "No profile opened yet" : `Opened ${opened}'s profile`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ### Icon
@@ -37,10 +47,18 @@ Image or icon paired with text content. The fundamental building block for list 
 
 ### Action
 
+The trailing `action` slot takes any control; the button's `onPress` is yours to
+wire, and the line underneath reports each press.
+
 ```tsx
-<Column flush style={{ maxWidth: 480 }}>
-  <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
-</Column>
+<Stateful initial={0}>
+  {(invites, setInvites) => (
+    <Column snug style={{ maxWidth: 480 }}>
+      <MediaObject bordered center truncate src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small onPress={() => setInvites(invites + 1)}>Invite</Button>} />
+      <Typography muted>{invites === 0 ? "No invite sent yet" : `Invite sent ${invites} ${invites === 1 ? "time" : "times"}`}</Typography>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Do & Don't
