@@ -14,8 +14,8 @@ import {
 
 // Shared Tooltip shell. The structure (the trigger plus the open bubble placed
 // next to it via flex order), the public boolean-prop API, the placement
-// precedence, the controlled/uncontrolled open state, the toggle handler, and
-// accessibility all live here once. A platform file supplies only its skin (the
+// precedence, the controlled/uncontrolled open state, the hover/focus/tap
+// disclosure handlers, and accessibility all live here once. A platform file supplies only its skin (the
 // bubble surface shape/fill and the label type) and calls createTooltip.
 //
 // Tooltip: a small dark bubble of helper text shown beside a trigger on hover
@@ -41,7 +41,11 @@ export interface TooltipProps {
   // hang off a run of body copy. Orthogonal to placement (top/left/right/bottom).
   // Ignored when `iconTrigger` is set, which takes precedence.
   textTrigger?: boolean;
-  // Controlled visibility. Omit for uncontrolled (tap the trigger to toggle).
+  /**
+   * Controlled visibility. Omit for uncontrolled: the tip shows while the
+   * trigger is hovered or focused, and a tap toggles it (the touch analogue
+   * of hover).
+   */
   open?: boolean;
   // Fired when the bubble is shown/hidden.
   onOpenChange?: (open: boolean) => void;
@@ -80,13 +84,23 @@ export function createTooltip(skin: TooltipSkin) {
     const { label, trigger, iconTrigger: isIconTrigger, textTrigger: isTextTrigger, onOpenChange, testID, style } = props;
     const placement = placementOf(props);
     const { tokens } = useTheme();
-    // Uncontrolled by default: tapping the trigger toggles the bubble (a touch
+    // Uncontrolled by default: hovering or focusing the trigger shows the
+    // bubble, leaving/blurring hides it, and tapping toggles it (the touch
     // analogue of hover); a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
     const open = props.open ?? internalOpen;
     const setOpen = (next: boolean) => {
       if (props.open === undefined) setInternalOpen(next);
       onOpenChange?.(next);
+    };
+    // Hover/focus disclosure shared by every trigger flavor. react-native-web
+    // (and RN's pointer events natively) never fire hover for touch pointers,
+    // so on touch devices only the press toggle runs and these are inert.
+    const disclosure = {
+      onHoverIn: () => setOpen(true),
+      onHoverOut: () => setOpen(false),
+      onFocus: () => setOpen(true),
+      onBlur: () => setOpen(false),
     };
 
     // The open bubble is a polite live region so the tip text is announced when
@@ -113,6 +127,7 @@ export function createTooltip(skin: TooltipSkin) {
         android_ripple={controlRipple(tokens)}
         style={({ pressed }) => [iconTrigger, pressDim(pressed)]}
         onPress={() => setOpen(!open)}
+        {...disclosure}
         hitSlop={8}
         accessibilityRole="button"
         // Fall back to a sensible name so the icon button is never announced as a
@@ -138,6 +153,7 @@ export function createTooltip(skin: TooltipSkin) {
         android_ripple={controlRipple(tokens)}
         style={({ pressed }) => [textTrigger, pressDim(pressed)]}
         onPress={() => setOpen(!open)}
+        {...disclosure}
         hitSlop={8}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
@@ -148,7 +164,7 @@ export function createTooltip(skin: TooltipSkin) {
     ) : (
       // `expanded` maps to aria-expanded inside Button so the text trigger also
       // exposes its open/closed disclosure state.
-      <Button outline small expanded={open} onPress={() => setOpen(!open)}>
+      <Button outline small expanded={open} onPress={() => setOpen(!open)} {...disclosure}>
         {trigger}
       </Button>
     );
