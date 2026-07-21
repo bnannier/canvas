@@ -251,7 +251,8 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "code-block",
     name: "CodeBlock",
-    description: "Preformatted code block with monospace font and padding.",
+    description:
+      "Syntax-highlighted code display with clipboard copy, line emphasis, diffs, collapsible folding, and tabbed alternatives.",
     category: "Molecules",
     stageAlign: "start",
   },
