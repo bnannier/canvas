@@ -8,7 +8,6 @@ export default function Example(scope: ExampleScope) {
 <Calendar
   range
   month="May 2026"
-  today={23}
   daysInMonth={31}
   startWeekday={4}
   defaultRangeStart={14}
