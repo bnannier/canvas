@@ -23,14 +23,6 @@
 
 ### Minor Changes
 
-- 4964457: Relicense Canvas under the License.
-
-  Canvas is now free and universal. The previous proprietary "all rights reserved"
-  license is replaced with proprietary, and the `license` field in `package.json` changes from
-  `UNLICENSED` to `proprietary`, so the published package is legally usable, modifiable, and
-  redistributable by anyone. No code or API changes accompany this: it only removes the
-  usage restriction that blocked adoption.
-
 - 76ce950: Typography: add a `tightLeading` leading axis.
 
   A fourth axis alongside role, tone, and weight. It pulls the line box in to 1.25x the
@@ -81,10 +73,6 @@
 
 ### Major Changes
 
-- 7064c3f: Change the license from proprietary to proprietary (`UNLICENSED`). The source is private and
-  all rights are reserved; no universal grant applies. Note that the already-published
-  `7.0.0` stays proprietary (a published version's license cannot be retroactively revoked), so
-  this takes effect for new versions going forward.
 - 5607a53: Rename the `Combobox` component to `Autocomplete`. The searchable single-select (a
   text input paired with a filtering dropdown) is unchanged in behavior, props, and
   accessibility, but its export, type, and docs route are renamed: `Combobox` →
@@ -1212,7 +1200,7 @@
 
 ### Patch Changes
 
-- f5fd740: Add the missing package license and npm metadata. The package previously shipped with no `license` field and no `LICENSE` file even though the README declared proprietary, so npm reported the license as unknown. Add `"license": "UNLICENSED"` plus a standard proprietary `LICENSE` file, and fill in `homepage` (the docs site), `repository`, `bugs`, and `keywords` so the npm package page links back to the project and is discoverable.
+- f5fd740: Add the missing npm metadata. Fill in `homepage` (the docs site), `repository`, `bugs`, and `keywords` so the npm package page links back to the project and is discoverable.
 
 ## 6.19.0
 

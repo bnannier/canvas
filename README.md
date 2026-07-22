@@ -4,7 +4,7 @@
 
 ![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/bnannier/canvas/main/.github/assets/hero.gif)
 
-[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [![license: proprietary](https://img.shields.io/badge/license-proprietary-blue.svg)](./LICENSE) [Documentation](https://bnannier.github.io/canvas/)
+[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://bnannier.github.io/canvas/)
 
 **Try it live:** the [component catalog](https://bnannier.github.io/canvas/components) renders all 81 components (atoms, molecules, organisms, and a full chart family) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
@@ -137,4 +137,7 @@ public issues for security problems.
 
 ## License
 
-[proprietary](./LICENSE) © 2026 Bobby Nannier. All rights reserved.
+None. Canvas is purpose-built for my own projects and carries no license, so all rights
+are reserved. It is not offered for outside use, modification, or redistribution.
+
+© 2026 Bobby Nannier.

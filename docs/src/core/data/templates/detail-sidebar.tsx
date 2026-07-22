@@ -7,7 +7,7 @@ import type { TemplateDoc } from "../types";
 // with copyable record IDs. 2fr/1fr on desktop, stacking below sm.
 
 const ITEMS = [
-  { product: "Canvas Pro License", qty: "2", price: "$198.00" },
+  { product: "Canvas Pro Plan", qty: "2", price: "$198.00" },
   { product: "Priority Support (1yr)", qty: "1", price: "$49.00" },
   { product: "Custom Theme Pack", qty: "1", price: "$29.00" },
 ];
