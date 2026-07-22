@@ -42,7 +42,7 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 
 ### Week
 
-`week` renders the selected day's week: a strip of seven selectable day cells over an hour timeline, with each timed event as a block in its day column. Overlapping events split their column into side-by-side lanes. The chevrons page a week at a time.
+`week` renders the selected day's week: a strip of seven selectable day cells over an hour timeline, with each timed event as a block in its day column. The timeline spans the full day; the scroller opens on the 8 AM to 5 PM window and scrolls to the rest, and the 12h/24h control flips the hour labels (12-hour by default). Overlapping events split their column into side-by-side lanes, hovering a block floats its details, and the chevrons page a week at a time.
 
 ```tsx
 <Calendar
@@ -66,7 +66,7 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 
 ### Day
 
-`day` renders a single day's hour timeline with each block carrying its title and time span. The visible range defaults to 8 AM through 6 PM and stretches to fit the events; `startHour`/`endHour` set it explicitly. The chevrons page a day at a time, so pressing next here reveals the following day's schedule.
+`day` renders a single day's hour timeline with each block carrying its title and time span. The timeline covers the whole day (narrow it with `startHour`/`endHour`); the scroller opens on 8 AM to 5 PM and scrolls to the remaining hours, and the 12h/24h control flips the labels. Hovering a block floats a detail card with the event's `description`. The chevrons page a day at a time, so pressing next here reveals the following day's schedule.
 
 ```tsx
 <Calendar
@@ -77,11 +77,27 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
   daysInMonth={31}
   startWeekday={4}
   events={[
-    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
-    { day: 24, title: "Design review", start: 11.5, end: 13 },
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5, description: "Backlog grooming and capacity check for the next sprint." },
+    { day: 24, title: "Design review", start: 11.5, end: 13, description: "Walkthrough of the checkout flow explorations." },
     { day: 24, title: "Team lunch", start: 12.5, end: 13.5 },
     { day: 25, title: "1:1 with manager", start: 14, end: 15 }
   ]}
+/>
+```
+
+### Range
+
+`range` turns the month grid into a check-in/check-out picker for booking flows: the first press sets the start day, a later press sets the end, and a tinted band spans the days between; pressing an earlier day restarts the pick. Control it with `rangeStart`/`rangeEnd` and `onRangeChange`, or seed it with the `default` pair.
+
+```tsx
+<Calendar
+  range
+  month="May 2026"
+  today={23}
+  daysInMonth={31}
+  startWeekday={4}
+  defaultRangeStart={14}
+  defaultRangeEnd={20}
 />
 ```
 

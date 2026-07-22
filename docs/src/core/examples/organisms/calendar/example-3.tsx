@@ -13,8 +13,8 @@ export default function Example(scope: ExampleScope) {
   daysInMonth={31}
   startWeekday={4}
   events={[
-    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
-    { day: 24, title: "Design review", start: 11.5, end: 13 },
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5, description: "Backlog grooming and capacity check for the next sprint." },
+    { day: 24, title: "Design review", start: 11.5, end: 13, description: "Walkthrough of the checkout flow explorations." },
     { day: 24, title: "Team lunch", start: 12.5, end: 13.5 },
     { day: 25, title: "1:1 with manager", start: 14, end: 15 }
   ]}

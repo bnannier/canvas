@@ -136,7 +136,7 @@ describe("Calendar", () => {
     expect(screen.queryByText("14")).toBeNull();
     const prev = container.querySelector('[aria-label="Previous week"]') as Element;
     fireEvent.click(prev); // pages to the partial first week, selecting its first in-month day
-    expect(container.querySelector('[aria-selected="true"]')?.textContent).toBe("1");
+    expect(container.querySelector('[aria-label="1, selected"]')).not.toBeNull();
     fireEvent.click(prev); // already the first week → hands the press to onPrev
     expect(crossed).toBe(true);
   });
@@ -210,6 +210,74 @@ describe("Calendar", () => {
       .toEqual({ left: 8, top: 100 + 36 + gap });
     // Legacy shape without a known width is untouched: left-aligned below.
     expect(placeOverlay(leftCell, { gap, outletWidth: 800 })).toEqual({ left: 20, top: 100 + 36 + gap });
+  });
+
+  it("day timeline spans the full day, 12-hour labels by default, and the toggle flips to 24-hour", () => {
+    ui(
+      <Calendar
+        day
+        month="May 2026"
+        defaultSelected={24}
+        daysInMonth={31}
+        startWeekday={4}
+        events={[{ day: 24, title: "Standup", start: 9, end: 9.5 }]}
+      />,
+    );
+    // Full-day axis: hours outside the old 8–18 window exist (scrolled to, but rendered).
+    expect(screen.getByText("12 AM")).toBeTruthy();
+    expect(screen.getByText("11 PM")).toBeTruthy();
+    expect(screen.getByText("9 AM – 9:30 AM")).toBeTruthy();
+    // The built-in toggle flips every label to 24-hour form.
+    fireEvent.click(screen.getByText("24h"));
+    expect(screen.getByText("23:00")).toBeTruthy();
+    expect(screen.getByText("09:00 – 09:30")).toBeTruthy();
+    fireEvent.click(screen.getByText("12h"));
+    expect(screen.getByText("11 PM")).toBeTruthy();
+  });
+
+  it("hovering an event block floats its detail card with the description", () => {
+    const { container } = ui(
+      <Calendar
+        day
+        month="May 2026"
+        defaultSelected={24}
+        daysInMonth={31}
+        startWeekday={4}
+        events={[{ day: 24, title: "Design review", start: 11.5, end: 13, description: "Figma walkthrough of the checkout flow." }]}
+      />,
+    );
+    expect(screen.queryByText("Figma walkthrough of the checkout flow.")).toBeNull();
+    const block = container.querySelector('[aria-label="Design review, 11:30 AM to 1 PM"]') as Element;
+    // react-native-web binds hover to pointer events when PointerEvent exists.
+    fireEvent.pointerEnter(block);
+    expect(screen.getByText("Figma walkthrough of the checkout flow.")).toBeTruthy();
+    expect(screen.getByText("Saturday, May 24 · 11:30 AM – 1 PM")).toBeTruthy();
+    fireEvent.pointerLeave(block);
+    expect(screen.queryByText("Figma walkthrough of the checkout flow.")).toBeNull();
+  });
+
+  it("range mode picks start then end, restarts on an earlier press, and bands the days between", () => {
+    const picks: [number | undefined, number | undefined][] = [];
+    const { container } = ui(
+      <Calendar
+        range
+        month="May 2026"
+        daysInMonth={31}
+        startWeekday={4}
+        onRangeChange={(s, e) => picks.push([s, e])}
+      />,
+    );
+    fireEvent.click(screen.getByText("14"));
+    expect(picks.at(-1)).toEqual([14, undefined]);
+    expect(container.querySelector('[aria-label="14, selected, start of range"]')).not.toBeNull();
+    fireEvent.click(screen.getByText("20"));
+    expect(picks.at(-1)).toEqual([14, 20]);
+    expect(container.querySelector('[aria-label="20, selected, end of range"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="17, in range"]')).not.toBeNull();
+    // A press before the start restarts the pick.
+    fireEvent.click(screen.getByText("5"));
+    expect(picks.at(-1)).toEqual([5, undefined]);
+    expect(container.querySelector('[aria-label="17, in range"]')).toBeNull();
   });
 
   it("fires onEventPress with the pressed event block", () => {
