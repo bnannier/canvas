@@ -1,7 +1,7 @@
 import * as Canvas from "@nannier/canvas";
 import type { ColorTokens } from "@nannier/canvas";
 import { Platform } from "react-native";
-import { Stateful, Ticker, IconGallery } from "./live-state";
+import { Stateful, Ticker, applyDrop, IconGallery } from "./live-state";
 import { applyResolvedPhotos } from "./photos";
 import type { ExampleScope, PreviewScope } from "./scope";
 
@@ -20,6 +20,7 @@ export function buildScopes(tokens: ColorTokens): PreviewScope[] {
   scope.tokens = tokens;
   scope.Stateful = Stateful;
   scope.Ticker = Ticker;
+  scope.applyDrop = applyDrop;
   scope.IconGallery = IconGallery;
   return [
     {
