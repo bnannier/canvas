@@ -5,21 +5,23 @@ import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { COMPONENT_DOCS } from "../core/registry";
 import { LOOKS_SHOTS, LOOKS_ASPECT } from "./looks-shots";
+import { DeviceFrame } from "./device-frames";
 import { geist, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 
-// The landing page's comparison hero: full-mobile screenshots of each atom's docs
-// page captured on the real iPhone simulator, Pixel emulator, and phone-width web,
-// rotating alphabetically through every atom with a captured set. Baked images (not
-// live renders) so each pane is the platform's true full-screen mobile view — app
-// chrome, tabs, and all; the code chip and the "Open <Atom>" CTA follow the atom on
-// stage. Regenerate the shots with the capture pipeline in looks-shots.ts.
+// The landing page's comparison hero: full device-screen captures of each atom's docs
+// page, taken on the iPhone 17 Pro simulator, the Android emulator retargeted to that
+// same screen, and phone-width web, rotating alphabetically through every atom with a
+// captured set. Baked images (not live renders) so each pane is the platform's true
+// full-screen view, status bar and tab bar included; the drawn DeviceFrame supplies the
+// bezel and camera cutout around it. The code chip and the "Open <Atom>" CTA follow the
+// atom on stage. Regenerate the shots with `bun scripts/capture-looks.ts`.
 const INTERVAL_MS = 4000;
 
 const PLATFORMS = [
-  { key: "ios", label: "iOS" },
-  { key: "android", label: "Android" },
-  { key: "web", label: "Web" },
+  { key: "ios", label: "iOS", device: "iPhone 17 Pro" },
+  { key: "android", label: "Android", device: "Pixel 10 Pro" },
+  { key: "web", label: "Web", device: "Chrome" },
 ] as const;
 
 const ATOMS = COMPONENTS.filter((c) => c.category === "Atoms" && LOOKS_SHOTS[c.slug])
@@ -90,17 +92,20 @@ export function ThreeLooksRotator() {
       <Animated.View style={{ opacity: fade, flexDirection: columns ? "row" : "column", gap: 16, width: "100%", maxWidth: 1040, alignSelf: "center" }}>
         {PLATFORMS.map((p) => (
           <View key={p.key} style={{ flex: columns ? 1 : undefined, width: columns ? undefined : "100%", minWidth: 0 }}>
-            <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"], textAlign: "center", marginBottom: 8 }}>
+            <Text style={{ fontFamily: geist("600"), fontSize: 11, letterSpacing: 0.55, textTransform: "uppercase", color: tokens["muted-foreground"], textAlign: "center" }}>
               {p.label}
             </Text>
-            <View style={{ width: "100%", aspectRatio: LOOKS_ASPECT, borderRadius: 18, borderWidth: 1, borderColor: tokens.border, overflow: "hidden", backgroundColor: tokens.card }}>
+            <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"], textAlign: "center", marginBottom: 8, opacity: 0.7 }}>
+              {p.device}
+            </Text>
+            <DeviceFrame variant={p.key} aspect={LOOKS_ASPECT} label={p.device}>
               <Image
                 cover
                 source={shots[p.key]}
                 accessibilityLabel={`The ${atom.name} docs page as it renders on ${p.label}`}
-                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+                style={{ width: "100%", height: "100%" }}
               />
-            </View>
+            </DeviceFrame>
           </View>
         ))}
       </Animated.View>

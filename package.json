@@ -58,6 +58,7 @@
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
     "screenshots": "bun scripts/capture-screenshots.ts",
+    "looks": "bun scripts/capture-looks.ts",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
