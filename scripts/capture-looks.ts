@@ -175,6 +175,18 @@ async function main() {
   // Last accepted frame per surface, used to prove each deep link actually routed.
   const lastPrint: Partial<Record<Surface, Buffer>> = {};
 
+  // Seed that reference with whatever is on screen BEFORE the first deep link. The first
+  // atom otherwise has nothing to compare against, so a link that never routed (leaving
+  // the app on the landing screen it cold-started to) passes unchecked. That is exactly
+  // how autocomplete-android ended up being a picture of the home page.
+  for (const s of surfaces) {
+    if (s === "web") continue; // a fresh Playwright page always navigates
+    const seed = join(RAW, `__seed-${s}.png`);
+    if (s === "ios") sh("xcrun", ["simctl", "io", "booted", "screenshot", seed]);
+    if (s === "android") await writeFile(seed, adb("exec-out", "screencap", "-p"));
+    lastPrint[s] = await fingerprint(seed);
+  }
+
   try {
     for (const [i, slug] of ATOMS.entries()) {
       for (const s of surfaces) {
