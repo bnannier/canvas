@@ -18,6 +18,10 @@ import { alpha } from "../ui/color";
 // atom on stage. Regenerate the shots with `bun scripts/capture-looks.ts`.
 const INTERVAL_MS = 4000;
 
+// Width of the atom name + counter block between the chevrons. Fixed so the arrows stay
+// put while cycling; sized past the longest atom name at the 17px semibold face.
+const LABEL_W = 200;
+
 const PLATFORMS = [
   { key: "ios", label: "iOS", device: "iPhone 17 Pro" },
   { key: "android", label: "Android", device: "Pixel 10 Pro" },
@@ -85,8 +89,18 @@ export function ThreeLooksRotator() {
       {/* Which atom is on stage, with manual controls. */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 14 }}>
         <Button ghost small iconLeft={<Icon chevronLeft size={15} />} accessibilityLabel="Previous atom" onPress={() => step(-1)} />
-        <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8 }}>
-          <Text style={{ fontFamily: geist("600"), fontSize: 17, letterSpacing: -0.17, color: tokens.foreground }}>{atom.name}</Text>
+        {/* Fixed width, not intrinsic: the name and the counter both change length as the
+            carousel advances, and letting this block size to its content slides the
+            chevrons out from under the cursor mid-cycle. LABEL_W clears the longest atom
+            name ("Row & Column") with room to spare, and the name truncates rather than
+            widening if a longer one is ever added. */}
+        <View style={{ width: LABEL_W, flexDirection: "row", alignItems: "baseline", justifyContent: "center", gap: 8 }}>
+          <Text
+            numberOfLines={1}
+            style={{ fontFamily: geist("600"), fontSize: 17, letterSpacing: -0.17, color: tokens.foreground, flexShrink: 1 }}
+          >
+            {atom.name}
+          </Text>
           <Text style={{ fontFamily: geistMono("400"), fontSize: 12, color: tokens["muted-foreground"] }}>
             {(index % ATOMS.length) + 1}/{ATOMS.length}
           </Text>
