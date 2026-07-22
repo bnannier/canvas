@@ -61,6 +61,14 @@ export interface AnchoredOverlayProps {
   /** With `cardWidth`: center the card on the trigger (tooltip-style) instead
    *  of aligning to its left edge. Still clamped inside the outlet. */
   centered?: boolean;
+  /**
+   * With `cardWidth`: prefer placing the card BESIDE the trigger, top-aligned —
+   * to its right when the outlet has room there, else to its left, and only
+   * when neither side fits, below it (the `centered` treatment). For popovers
+   * anchored to small cells (a calendar day peek) where below-the-trigger would
+   * cover the grid.
+   */
+  preferSide?: boolean;
 }
 
 export function AnchoredOverlay({
@@ -74,6 +82,7 @@ export function AnchoredOverlay({
   dismissable = true,
   cardWidth,
   centered = false,
+  preferSide = false,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
 
@@ -99,6 +108,7 @@ export function AnchoredOverlay({
       dismissable={dismissable}
       cardWidth={cardWidth}
       centered={centered}
+      preferSide={preferSide}
     >
       {children}
     </HostedAnchoredOverlay>
@@ -115,6 +125,7 @@ interface HostedProps {
   dismissable: boolean;
   cardWidth?: number;
   centered?: boolean;
+  preferSide?: boolean;
   children: ReactNode;
 }
 
@@ -128,16 +139,36 @@ interface Rect {
 // Horizontal inset kept between a width-aware card and the outlet's edges.
 const CLAMP_INSET = 8;
 
-// The card's x: legacy left-edge anchoring without a known width; with one,
-// optionally centered on the trigger, then clamped inside the outlet.
-function placeX(rect: Rect, cardWidth: number | undefined, centered: boolean, outletWidth: number | null): number {
-  if (cardWidth == null) return rect.x;
-  let x = centered ? rect.x + rect.width / 2 - cardWidth / 2 : rect.x;
+/**
+ * The card's outlet-relative position (pure, so the branch logic is testable).
+ *
+ * Without a known `cardWidth`: the legacy anchoring, left-aligned below the
+ * trigger. With one: the below placement can center on the trigger and is
+ * clamped inside the outlet; `preferSide` instead tries beside the trigger,
+ * top-aligned — right first, left when the right lacks room, and below (the
+ * centered treatment) when neither side fits.
+ */
+export function placeOverlay(
+  rect: Rect,
+  opts: { cardWidth?: number; centered?: boolean; preferSide?: boolean; gap: number; outletWidth: number | null },
+): { left: number; top: number } {
+  const { cardWidth, centered, preferSide, gap, outletWidth } = opts;
+  const below = { left: rect.x, top: rect.y + rect.height + gap };
+  if (cardWidth == null) return below;
+
+  if (preferSide && outletWidth != null && outletWidth > 0) {
+    const right = rect.x + rect.width + gap;
+    if (right + cardWidth + CLAMP_INSET <= outletWidth) return { left: right, top: rect.y };
+    const left = rect.x - gap - cardWidth;
+    if (left >= CLAMP_INSET) return { left, top: rect.y };
+  }
+
+  let x = centered || preferSide ? rect.x + rect.width / 2 - cardWidth / 2 : rect.x;
   if (outletWidth != null && outletWidth > 0) x = Math.min(x, outletWidth - cardWidth - CLAMP_INSET);
-  return Math.max(CLAMP_INSET, x);
+  return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, children }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, children }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
@@ -204,7 +235,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}
       {rect ? (
-        <Entrance anchor style={{ position: "absolute", left: placeX(rect, cardWidth, centered ?? false, outletWidth), top: rect.y + rect.height + gap }}>
+        <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth, centered, preferSide, gap, outletWidth }) }}>
           <GlassSurface style={cardStyle}>{children}</GlassSurface>
         </Entrance>
       ) : null}

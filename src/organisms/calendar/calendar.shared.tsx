@@ -72,7 +72,7 @@ export interface CalendarProps {
   /** Single-day hour timeline; chevrons page by day. */
   day?: boolean;
 
-  /** Month view: pressing a day that has events also opens that day's hour timeline in an anchored overlay (a tooltip-style day peek), dismissed by an outside tap or Escape. */
+  /** Month view: pressing a day that has events also opens that day's hour timeline in an anchored overlay (a tooltip-style day peek) beside the cell — to its right, to its left when the right lacks room, and below it when neither side fits — dismissed by an outside tap or Escape. */
   dayPeek?: boolean;
 
   /** First hour shown on the week/day timeline (0-24; default 8, extended to fit events). */
@@ -473,7 +473,7 @@ export function createCalendar(skin: CalendarSkin) {
           triggerRef={peekAnchorRef}
           gap={6}
           cardWidth={tm.peekWidth}
-          centered
+          preferSide
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
