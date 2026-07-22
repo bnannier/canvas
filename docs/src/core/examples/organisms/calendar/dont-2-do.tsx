@@ -3,29 +3,20 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Calendar, Card, CardContent, CardHeader, CardSeparator, Typography, Row } = scope;
+  const { Calendar } = scope;
   return (
-<Row loose wrap alignStart>
-  <Calendar
-    month="May 2026"
-    today={23}
-    defaultSelected={24}
-    daysInMonth={31}
-    startWeekday={4}
-    events={[{ day: 24, title: "Sprint planning", start: 9 }]}
-  />
-  <Card grow flush style={{ minWidth: 240 }}>
-    <CardHeader>
-      <Typography small semibold>May 24</Typography>
-    </CardHeader>
-    <CardSeparator />
-    <CardContent>
-      <Row between alignCenter>
-        <Typography small medium>Sprint planning</Typography>
-        <Typography small muted>9:00 AM</Typography>
-      </Row>
-    </CardContent>
-  </Card>
-</Row>
+<Calendar
+  dayPeek
+  month="May 2026"
+  today={23}
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+  events={[
+    { day: 14, title: "1:1 with manager", start: 14, end: 15 },
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 }
+  ]}
+/>
   );
 }

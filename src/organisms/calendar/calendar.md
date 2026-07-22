@@ -141,7 +141,7 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} />
 ```
 
-**Don't**: Painting several days with the primary selected style makes a single-date picker look like a multi-select.
+**Don't**: Painting several days with the primary selected style fakes a multi-select; when you mean a span of days, use `range` instead.
 
 ```tsx
 <View style={{ width: "auto", borderRadius: 8, borderWidth: 1, borderColor: tokens.border, padding: 12 }}>
@@ -194,36 +194,27 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 </View>
 ```
 
-### With event list
+### Day details
 
-**Do**: Keep the panel header and rows in sync with the selected day, and let the grid's dots point at the days worth visiting.
+**Do**: `dayPeek` reveals a pressed day's schedule in place, anchored beside the cell, so detail arrives on demand and the grid stays the single source of truth.
 
 ```tsx
-<Row loose wrap alignStart>
-  <Calendar
-    month="May 2026"
-    today={23}
-    defaultSelected={24}
-    daysInMonth={31}
-    startWeekday={4}
-    events={[{ day: 24, title: "Sprint planning", start: 9 }]}
-  />
-  <Card grow flush style={{ minWidth: 240 }}>
-    <CardHeader>
-      <Typography small semibold>May 24</Typography>
-    </CardHeader>
-    <CardSeparator />
-    <CardContent>
-      <Row between alignCenter>
-        <Typography small medium>Sprint planning</Typography>
-        <Typography small muted>9:00 AM</Typography>
-      </Row>
-    </CardContent>
-  </Card>
-</Row>
+<Calendar
+  dayPeek
+  month="May 2026"
+  today={23}
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+  events={[
+    { day: 14, title: "1:1 with manager", start: 14, end: 15 },
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+    { day: 24, title: "Team lunch", start: 12.5, end: 13.5 }
+  ]}
+/>
 ```
 
-**Don't**: Selecting May 24 but leaving the panel on a placeholder breaks the link between the grid and its day.
+**Don't**: Selecting May 24 but leaving a detached panel on a placeholder breaks the link between the grid and its day.
 
 ```tsx
 <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: 24 }}>
@@ -234,4 +225,71 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
     </View>
   </Card>
 </View>
+```
+
+### Hour bounds
+
+**Do**: Keep the full-day timeline and let the scroller do the work: it opens on the 8 AM to 5 PM window, and every event stays reachable.
+
+```tsx
+<Calendar
+  day
+  month="May 2026"
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+  events={[
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+    { day: 24, title: "Evening review", start: 18.5, end: 19.5 }
+  ]}
+/>
+```
+
+**Don't**: Narrowing `startHour`/`endHour` below the real schedule silently clips events out of view; the 6:30 PM review never renders here.
+
+```tsx
+<Calendar
+  day
+  month="May 2026"
+  defaultSelected={24}
+  daysInMonth={31}
+  startWeekday={4}
+  startHour={9}
+  endHour={12}
+  events={[
+    { day: 24, title: "Sprint planning", start: 9, end: 10.5 },
+    { day: 24, title: "Evening review", start: 18.5, end: 19.5 }
+  ]}
+/>
+```
+
+### Booking a stay
+
+**Do**: One `range` calendar carries the whole check-in/check-out pick: the endpoints fill, the nights between band together, and an earlier press restarts.
+
+```tsx
+<Calendar
+  range
+  month="May 2026"
+  today={23}
+  daysInMonth={31}
+  startWeekday={4}
+  defaultRangeStart={14}
+  defaultRangeEnd={20}
+/>
+```
+
+**Don't**: Splitting the stay across two single-date calendars doubles the interaction cost and never shows the span at a glance.
+
+```tsx
+<Row loose wrap alignStart>
+  <Column tight>
+    <Typography small muted>Check-in</Typography>
+    <Calendar month="May 2026" defaultSelected={14} daysInMonth={31} startWeekday={4} />
+  </Column>
+  <Column tight>
+    <Typography small muted>Check-out</Typography>
+    <Calendar month="May 2026" defaultSelected={20} daysInMonth={31} startWeekday={4} />
+  </Column>
+</Row>
 ```
