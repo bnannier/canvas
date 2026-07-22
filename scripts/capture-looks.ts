@@ -116,6 +116,22 @@ async function encode(raw: string, out: string) {
   await sharp(raw).resize(OUT_W, OUT_H, { fit: "fill" }).webp({ quality: 82 }).toFile(out);
 }
 
+// A deep link that has not routed yet leaves the PREVIOUS atom's page on screen, which
+// is painted and full-size, so the blank guard sails right past it. Compare each grab
+// with the last accepted one on the same surface: a real navigation changes the title
+// and body enough to move this well past the threshold, a stale frame barely moves.
+async function fingerprint(file: string) {
+  return await sharp(file).grayscale().resize(64, 139, { fit: "fill" }).raw().toBuffer();
+}
+
+function meanAbsDiff(a: Buffer, b: Buffer) {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += Math.abs(a[i] - b[i]);
+  return sum / a.length;
+}
+
+const STALE_MAD = 4;
+
 async function writeMap() {
   const rows = ATOMS.map((slug) => {
     const req = (p: Surface) => `require("../../assets/images/looks/${slug}-${p}.webp")`;
@@ -156,6 +172,9 @@ async function main() {
   }
   if (surfaces.includes("android")) await androidSetup();
 
+  // Last accepted frame per surface, used to prove each deep link actually routed.
+  const lastPrint: Partial<Record<Surface, Buffer>> = {};
+
   try {
     for (const [i, slug] of ATOMS.entries()) {
       for (const s of surfaces) {
@@ -164,16 +183,28 @@ async function main() {
         // implausibly small grab means "still loading", not "captured". Retry rather
         // than banking a blank splash screen.
         let bytes = 0;
-        for (let attempt = 1; attempt <= 3; attempt++) {
+        let print: Buffer | undefined;
+        for (let attempt = 1; attempt <= 4; attempt++) {
           if (s === "ios") await captureIos(slug, raw);
           if (s === "android") await captureAndroid(slug, raw);
           if (s === "web" && page) await captureWeb(page, slug, raw);
+
           bytes = (await stat(raw)).size;
-          if (bytes >= BLANK_BYTES) break;
-          console.warn(`    ${slug}-${s}: ${bytes}B looks blank, retry ${attempt}/3`);
-          await sleep(4000);
+          if (bytes < BLANK_BYTES) {
+            console.warn(`    ${slug}-${s}: ${bytes}B looks blank, retry ${attempt}/4`);
+            await sleep(4000);
+            continue;
+          }
+
+          print = await fingerprint(raw);
+          const prev = lastPrint[s];
+          const diff = prev ? meanAbsDiff(print, prev) : Infinity;
+          if (diff >= STALE_MAD) break;
+          console.warn(`    ${slug}-${s}: still showing the previous page (diff ${diff.toFixed(2)}), retry ${attempt}/4`);
+          await sleep(3500);
         }
         if (bytes < BLANK_BYTES) throw new Error(`${slug}-${s} never painted (${bytes}B)`);
+        if (print) lastPrint[s] = print;
         await encode(raw, join(OUT, `${slug}-${s}.webp`));
       }
       console.log(`  [${i + 1}/${ATOMS.length}] ${slug}`);
