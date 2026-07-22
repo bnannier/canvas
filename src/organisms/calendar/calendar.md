@@ -93,6 +93,7 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 <Calendar
   range
   month="May 2026"
+  today={23}
   daysInMonth={31}
   startWeekday={4}
   defaultRangeStart={14}
@@ -270,6 +271,7 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 <Calendar
   range
   month="May 2026"
+  today={23}
   daysInMonth={31}
   startWeekday={4}
   defaultRangeStart={14}
