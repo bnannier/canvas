@@ -220,13 +220,20 @@ export const webSkin: CalendarSkin = {
 
   // `items-center justify-center rounded-full`.
   dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999 },
-  // Any highlighted (today/selected) day fills `bg-primary`.
-  dayCellState: (t, st) => (st.selected || st.today ? { backgroundColor: t.primary } : {}),
-  // Highlighted -> `font-medium text-primary-foreground`, otherwise `text-foreground`.
-  dayLabel: (t, st) =>
-    st.selected || st.today
-      ? { fontWeight: "500", color: t["primary-foreground"] }
-      : { color: t.foreground },
+  // ONLY the selected day fills `bg-primary`; today (unselected) is a soft
+  // primary tint. Filling both made an unselected today indistinguishable from a
+  // selection — two adjacent filled circles read as a two-day range.
+  dayCellState: (t, st) => {
+    if (st.selected) return { backgroundColor: t.primary };
+    if (st.today) return { backgroundColor: alpha(t.primary, 0.12) };
+    return {};
+  },
+  // Selected -> `text-primary-foreground`; today (unselected) -> `primary` text.
+  dayLabel: (t, st) => {
+    if (st.selected) return { fontWeight: "500", color: t["primary-foreground"] };
+    if (st.today) return { fontWeight: "500", color: t.primary };
+    return { color: t.foreground };
+  },
 
   // A 4px dot seated just above the cell's bottom edge marks a day with events.
   eventDot: { position: "absolute", bottom: 4, width: 4, height: 4, borderRadius: 9999 },
