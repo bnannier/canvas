@@ -1,20 +1,24 @@
-import { useEffect, useRef, useState } from "react";
-import { type GestureResponderEvent, type View as RNView } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 
 // Shared Calendar shell. The structure (header with prev/next chevrons + view
 // label, the month grid, and the week/day timelines), the density and view
-// precedence, the leading-blank padding, the event model, the accessibility, and
-// the press handlers live here once; a platform file supplies only its skin (the
-// native container/header/cell shape, weekday-label style, selected/today day
-// treatment, event dot/block treatment, and press feedback) and calls
+// precedence, the leading-blank padding, the event model, the range-selection
+// state machine, the hour format, the accessibility, and the press handlers live
+// here once; a platform file supplies only its skin (the native
+// container/header/cell shape, weekday-label style, selected/today day
+// treatment, event dot/block/band treatment, and press feedback) and calls
 // createCalendar.
 //
 // Views (one axis, month is the default):
 //   month — a header, a weekday label row, and a 6x7 grid of day cells. Today and
 //     the selected day are highlighted; leading blanks pad the first row to the
-//     correct weekday; a day with events carries a dot under its number.
+//     correct weekday; a day with events carries a dot under its number. With
+//     `range`, day presses pick a start/end pair instead of a single day, with a
+//     tinted band across the days between (a travel-site check-in/check-out).
 //   week — a strip of the seven day cells around the selected day, over an
 //     hour-axis time grid; timed events render as positioned blocks in their day
 //     column. Chevrons page a week at a time within the month.
@@ -23,6 +27,11 @@ import { type CalendarSkin, type DayState, type Density } from "./calendar.style
 // In week/day views the chevrons move the selection (so a bare calendar pages out
 // of the box) and fire onPrev/onNext only when the step would leave the month —
 // the month itself is a prop, so crossing it is the consumer's move.
+//
+// The week/day timelines span the full day (0–24 by default) inside a vertical
+// scroller whose initial window shows 8 AM–5 PM; the built-in 12h/24h segmented
+// toggle flips the hour labels (12-hour by default). On pointer platforms,
+// hovering an event block floats a detail card (title, day + span, description).
 //
 // There is no CSS grid, so the month grid is a `flex-row flex-wrap` of fixed-width
 // cells. Seven cells per row times the cell width gives the grid a fixed width,
@@ -40,6 +49,8 @@ export interface CalendarEvent {
   start?: number;
   /** End hour, 0-24; defaults to one hour after `start`. */
   end?: number;
+  /** Longer detail shown in the day peek's hover card when a pointer hovers the event block. */
+  description?: string;
 }
 
 export interface CalendarProps {
@@ -75,10 +86,32 @@ export interface CalendarProps {
   /** Month view: pressing a day that has events also opens that day's hour timeline in an anchored overlay (a tooltip-style day peek) beside the cell — to its right, to its left when the right lacks room, and below it when neither side fits — dismissed by an outside tap or Escape. */
   dayPeek?: boolean;
 
-  /** First hour shown on the week/day timeline (0-24; default 8, extended to fit events). */
+  // Range selection (month view): a travel-site check-in/check-out picker.
+  /** Month view: two-tap range selection — the first press sets the start day, the second (later) press the end; a press before the start restarts. Days between carry a tinted band. */
+  range?: boolean;
+  /** The range's start day (CONTROLLED with `rangeEnd`). Omit both for uncontrolled use. */
+  rangeStart?: number;
+  /** The range's end day (CONTROLLED with `rangeStart`). */
+  rangeEnd?: number;
+  /** Initial range start for uncontrolled use. */
+  defaultRangeStart?: number;
+  /** Initial range end for uncontrolled use. */
+  defaultRangeEnd?: number;
+  /** Fired as the range is picked: with (start, undefined) after the first press, (start, end) after the second. */
+  onRangeChange?: (start?: number, end?: number) => void;
+
+  /** First hour of the week/day timeline (0-24; default 0, the full day). */
   startHour?: number;
-  /** Last hour shown on the week/day timeline (0-24; default 18, extended to fit events). */
+  /** Last hour of the week/day timeline (0-24; default 24). The scroller initially windows 8 AM–5 PM and scrolls to the rest. */
   endHour?: number;
+
+  // Hour format (12-hour by default; the timeline's built-in segmented toggle flips it).
+  /** Timeline labels in 24-hour format (CONTROLLED). Omit to let the built-in 12h/24h toggle manage it. */
+  hour24?: boolean;
+  /** Initial hour format for uncontrolled use (default false = 12-hour AM/PM). */
+  defaultHour24?: boolean;
+  /** Fired when the hour format changes (true = 24-hour). */
+  onHour24Change?: (hour24: boolean) => void;
 
   // Density (pick one; default is the comfortable cell).
   /** Tighter cells and smaller type, for dense surfaces. */
@@ -105,11 +138,16 @@ function viewOf(p: CalendarProps): "month" | "week" | "day" {
 
 const WEEKDAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-// "9 AM" / "9:30 AM" from a 0-24 fractional hour.
-function formatHour(h: number): string {
+// The initial scroll window over a full-day timeline: 8 AM through 5 PM.
+const WINDOW_START_HOUR = 8;
+const WINDOW_HOURS = 9;
+
+// "9 AM" / "9:30 AM" (12-hour, the default), or "09:00" / "09:30" (24-hour).
+function formatHour(h: number, hour24 = false): string {
   const clamped = Math.max(0, Math.min(24, h));
   const whole = Math.floor(clamped);
   const minutes = Math.round((clamped - whole) * 60);
+  if (hour24) return `${String(whole).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   const suffix = whole % 24 >= 12 ? "PM" : "AM";
   const twelve = ((whole + 11) % 12) + 1;
   return minutes > 0 ? `${twelve}:${String(minutes).padStart(2, "0")} ${suffix}` : `${twelve} ${suffix}`;
@@ -175,11 +213,28 @@ export function createCalendar(skin: CalendarSkin) {
     // calendar highlights the pressed day (and pages its week/day) instead of
     // ignoring the tap.
     const [selected, setSelected] = useControllableState<number | undefined>(props.selected, props.defaultSelected);
+    // The check-in/check-out pair for `range` mode (undefined end = mid-pick).
+    const [range, setRange] = useControllableState<{ start?: number; end?: number }>(
+      props.rangeStart !== undefined || props.rangeEnd !== undefined
+        ? { start: props.rangeStart, end: props.rangeEnd }
+        : undefined,
+      { start: props.defaultRangeStart, end: props.defaultRangeEnd },
+    );
+    // Hour-label format, flipped by the timeline's built-in 12h/24h toggle.
+    const [hour24, setHour24] = useControllableState<boolean>(props.hour24, props.defaultHour24 ?? false, props.onHour24Change);
     // The day whose timeline the anchored peek overlay is showing (dayPeek only).
     const [peekDay, setPeekDay] = useState<number | null>(null);
-    // Every day cell registers its node so the peek can anchor to the pressed one.
+    // The timeline block a pointer is hovering (its detail card key).
+    const [hoverKey, setHoverKey] = useState<string | null>(null);
+    // Every day cell / event block registers its node so an overlay can anchor to it.
     const cellRefs = useRef(new Map<number, RNView>());
+    const blockRefs = useRef(new Map<string, RNView>());
     const peekAnchorRef = useRef<RNView | null>(null);
+    const hoverAnchorRef = useRef<RNView | null>(null);
+    const hoverEventRef = useRef<CalendarEvent | null>(null);
+    const scrollRef = useRef<RNScrollView | null>(null);
+    // Which view's scroller has been positioned on its initial window.
+    const scrollInitFor = useRef<string | null>(null);
     const { tokens } = useTheme();
     const density = densityOf(props);
     const view = viewOf(props);
@@ -195,6 +250,7 @@ export function createCalendar(skin: CalendarSkin) {
     // from under it, and let Escape dismiss it like any overlay.
     useEffect(() => setPeekDay(null), [month]);
     useEscapeKey(peekDay != null, () => setPeekDay(null));
+
     // The day the week/day views revolve around.
     const anchor = Math.min(Math.max(selected ?? today ?? 1, 1), daysInMonth);
     // Day-of-month the anchor's week starts on; ≤ 0 in a leading-blank first week.
@@ -203,6 +259,18 @@ export function createCalendar(skin: CalendarSkin) {
     const pick = (dayNum: number) => {
       setSelected(dayNum);
       onSelect?.(dayNum);
+    };
+
+    // Range mode: first press sets the start, a later-or-equal press sets the
+    // end, an earlier press restarts the pick.
+    const pickRange = (dayNum: number) => {
+      const cur = range ?? {};
+      const next =
+        cur.start == null || cur.end != null || dayNum < cur.start
+          ? { start: dayNum, end: undefined }
+          : { start: cur.start, end: dayNum };
+      setRange(next);
+      props.onRangeChange?.(next.start, next.end);
     };
 
     // Week/day chevrons page the selection within the month and only hand the
@@ -224,17 +292,10 @@ export function createCalendar(skin: CalendarSkin) {
       else pick(Math.min(Math.max(nextStart, 1), daysInMonth));
     };
 
-    // Visible hour range: explicit props win; otherwise 8–18 stretched to fit
-    // every timed event, so a bare timeline never clips a block.
-    const timed = events.filter((e) => e.start != null);
-    const rangeStart = Math.floor(
-      props.startHour ?? Math.min(8, ...timed.map((e) => spanOf(e)[0])),
-    );
-    const rangeEnd = Math.max(
-      Math.ceil(props.endHour ?? Math.max(18, ...timed.map((e) => spanOf(e)[1]))),
-      rangeStart + 1,
-    );
-    const hours = Array.from({ length: rangeEnd - rangeStart }, (_, i) => rangeStart + i);
+    // Visible hour range: the full day unless the consumer narrows it.
+    const hoursFrom = Math.max(0, Math.floor(props.startHour ?? 0));
+    const hoursTo = Math.min(24, Math.max(Math.ceil(props.endHour ?? 24), hoursFrom + 1));
+    const hours = Array.from({ length: hoursTo - hoursFrom }, (_, i) => hoursFrom + i);
 
     const chevronUnit = view === "month" ? "month" : view;
     const monthName = month.split(" ")[0];
@@ -271,59 +332,109 @@ export function createCalendar(skin: CalendarSkin) {
       </View>
     );
 
-    // One selectable day cell (month grid + week strip): number, state fill, and
-    // the event dot. The bounded ripple is clipped by the RippleClip parent (a
-    // node can never clip its own ripple on Android).
+    // The 12h/24h format toggle, right-aligned under the timeline header.
+    const formatToggle = (
+      <View style={{ alignItems: "flex-end", marginBottom: 4 }}>
+        <ButtonGroup
+          segmented
+          small
+          items={["12h", "24h"]}
+          active={hour24 ? 1 : 0}
+          onSelect={(i) => setHour24(i === 1)}
+        />
+      </View>
+    );
+
+    // Range-mode band + endpoint resolution for one day.
+    const rangeOf = (dayNum: number) => {
+      const start = range?.start;
+      const end = range?.end;
+      return {
+        isStart: start === dayNum,
+        isEnd: end === dayNum,
+        between: start != null && end != null && dayNum > start && dayNum < end,
+        spans: start != null && end != null && end > start,
+      };
+    };
+
+    // One selectable day cell (month grid + week strip): number, state fill, the
+    // event dot, and in range mode the tinted band behind the endpoints and the
+    // days between. The band renders OUTSIDE the RippleClip (whose Android
+    // overflow clip would round it to the cell circle). The bounded ripple is
+    // clipped by the RippleClip parent (a node can never clip its own ripple on
+    // Android).
     const dayCell = (dayNum: number) => {
-      const isSelected = selected != null && dayNum === selected;
+      const r = props.range ? rangeOf(dayNum) : null;
+      const isSelected = r ? r.isStart || r.isEnd : selected != null && dayNum === selected;
       const isToday = today != null && dayNum === today;
       const state: DayState = { selected: isSelected, today: isToday };
       const count = eventsOn(dayNum).length;
-      return (
-        <RippleClip key={dayNum} shape={cornerRadii(skin.dayCellBase)}>
-          <Pressable
-            ref={(node) => {
-              if (node) cellRefs.current.set(dayNum, node);
-              else cellRefs.current.delete(dayNum);
-            }}
-            style={({ pressed }) => [
-              skin.dayCellBase,
-              m.cell,
-              skin.dayCellState(tokens, state),
-              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+      const rangeNote = r?.isStart ? ", start of range" : r?.isEnd ? ", end of range" : r?.between ? ", in range" : "";
+      const band =
+        r && r.spans && (r.isStart || r.isEnd || r.between) ? (
+          <View
+            style={[
+              skin.rangeBand(tokens),
+              r.between ? { left: 0, right: 0 } : r.isStart ? { left: "50%", right: 0 } : { left: 0, right: "50%" },
             ]}
-            android_ripple={ripple}
-            onPress={() => {
-              pick(dayNum);
-              if (props.dayPeek && view === "month") {
-                if (count > 0) {
-                  peekAnchorRef.current = cellRefs.current.get(dayNum) ?? null;
-                  setPeekDay(dayNum);
+          />
+        ) : null;
+      return (
+        <View key={dayNum} style={{ position: "relative" }}>
+          {band}
+          <RippleClip shape={cornerRadii(skin.dayCellBase)}>
+            <Pressable
+              ref={(node) => {
+                if (node) cellRefs.current.set(dayNum, node);
+                else cellRefs.current.delete(dayNum);
+              }}
+              style={({ pressed }) => [
+                skin.dayCellBase,
+                m.cell,
+                skin.dayCellState(tokens, state),
+                skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+              ]}
+              android_ripple={ripple}
+              onPress={() => {
+                if (props.range && view === "month") {
+                  pickRange(dayNum);
+                  onSelect?.(dayNum);
                 } else {
-                  setPeekDay(null);
+                  pick(dayNum);
                 }
-              }
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={`${dayNum}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}${
-              count > 0 ? `, ${count} event${count === 1 ? "" : "s"}` : ""
-            }`}
-            accessibilityState={{ selected: isSelected }}
-            aria-selected={isSelected}
-          >
-            <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
-            {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
-          </Pressable>
-        </RippleClip>
+                if (props.dayPeek && view === "month") {
+                  if (count > 0) {
+                    peekAnchorRef.current = cellRefs.current.get(dayNum) ?? null;
+                    setPeekDay(dayNum);
+                  } else {
+                    setPeekDay(null);
+                  }
+                }
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`${dayNum}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}${rangeNote}${
+                count > 0 ? `, ${count} event${count === 1 ? "" : "s"}` : ""
+              }`}
+              accessibilityState={{ selected: isSelected }}
+              aria-selected={isSelected}
+            >
+              <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
+              {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
+            </Pressable>
+          </RippleClip>
+        </View>
       );
     };
 
     // The absolutely-positioned timed blocks for one day, laid over the hour
     // slots inside an inset layer (insets beat absolute-in-padding differences
     // between Yoga and the web). `rs`/`re` bound the visible hours (the views use
-    // the shared range; the day peek passes a tighter slice).
-    const eventLayer = (dayNum: number, showTime: boolean, rs = rangeStart, re = rangeEnd) => {
-      const blocks = layoutLanes(timed.filter((e) => e.day === dayNum));
+    // the shared range; the day peek passes a tighter slice). Hovering a block on
+    // a pointer platform floats its detail card; `hoverable: false` (the peek's
+    // own slice) leaves hover off so the peek never opens a card over itself.
+    const eventLayer = (dayNum: number, showTime: boolean, rs = hoursFrom, re = hoursTo, hoverable = true) => {
+      const timedDay = events.filter((e) => e.start != null && e.day === dayNum);
+      const blocks = layoutLanes(timedDay);
       if (blocks.length === 0) return null;
       return (
         <View style={{ position: "absolute", top: 0, bottom: 0, left: 2, right: 2 }}>
@@ -332,7 +443,8 @@ export function createCalendar(skin: CalendarSkin) {
             const top = (Math.max(start, rs) - rs) * tm.hourHeight;
             const bottom = (Math.min(end, re) - rs) * tm.hourHeight;
             if (bottom <= 0 || top >= (re - rs) * tm.hourHeight) return null;
-            const label = `${event.title ?? "Event"}, ${formatHour(start)} to ${formatHour(end)}`;
+            const key = `${dayNum}-${i}`;
+            const label = `${event.title ?? "Event"}, ${formatHour(start, hour24)} to ${formatHour(end, hour24)}`;
             const position: ViewStyle = {
               position: "absolute",
               top,
@@ -340,42 +452,48 @@ export function createCalendar(skin: CalendarSkin) {
               left: `${(lane / lanes) * 100}%`,
               width: `${100 / lanes}%`,
             };
+            const hoverProps = hoverable
+              ? {
+                  onHoverIn: () => {
+                    hoverAnchorRef.current = blockRefs.current.get(key) ?? null;
+                    hoverEventRef.current = event;
+                    setHoverKey(key);
+                  },
+                  onHoverOut: () => setHoverKey((cur) => (cur === key ? null : cur)),
+                }
+              : {};
             const body = (
               <>
                 {event.title != null ? (
                   <Text numberOfLines={1} style={skin.eventTitle(tokens)}>{event.title}</Text>
                 ) : null}
                 {showTime ? (
-                  <Text numberOfLines={1} style={skin.eventTime(tokens)}>{`${formatHour(start)} – ${formatHour(end)}`}</Text>
+                  <Text numberOfLines={1} style={skin.eventTime(tokens)}>{`${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}</Text>
                 ) : null}
               </>
             );
             return (
-              <RippleClip key={`${event.day}-${i}`} shape={cornerRadii(skin.eventBlock)} style={position}>
-                {onEventPress ? (
-                  <Pressable
-                    style={({ pressed }) => [
-                      skin.eventBlock,
-                      skin.eventBlockSurface(tokens),
-                      { flex: 1 },
-                      skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                    ]}
-                    android_ripple={ripple ? { color: ripple.color, borderless: false } : undefined}
-                    onPress={() => onEventPress(event)}
-                    accessibilityRole="button"
-                    accessibilityLabel={label}
-                  >
-                    {body}
-                  </Pressable>
-                ) : (
-                  <View
-                    style={[skin.eventBlock, skin.eventBlockSurface(tokens), { flex: 1 }]}
-                    accessible
-                    accessibilityLabel={label}
-                  >
-                    {body}
-                  </View>
-                )}
+              <RippleClip key={key} shape={cornerRadii(skin.eventBlock)} style={position}>
+                <Pressable
+                  ref={(node) => {
+                    if (node) blockRefs.current.set(key, node);
+                    else blockRefs.current.delete(key);
+                  }}
+                  style={({ pressed }) => [
+                    skin.eventBlock,
+                    skin.eventBlockSurface(tokens),
+                    { flex: 1 },
+                    onEventPress && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                  ]}
+                  android_ripple={onEventPress && ripple ? { color: ripple.color, borderless: false } : undefined}
+                  onPress={onEventPress ? () => onEventPress(event) : undefined}
+                  {...hoverProps}
+                  accessibilityRole={onEventPress ? "button" : undefined}
+                  accessible
+                  accessibilityLabel={label}
+                >
+                  {body}
+                </Pressable>
               </RippleClip>
             );
           })}
@@ -388,7 +506,7 @@ export function createCalendar(skin: CalendarSkin) {
       <View style={{ width: tm.axisWidth }}>
         {hrs.map((h) => (
           <View key={h} style={{ height: tm.hourHeight, alignItems: "flex-end", paddingRight: 6 }}>
-            <Text style={skin.hourLabel(tokens)}>{formatHour(h)}</Text>
+            <Text style={skin.hourLabel(tokens)}>{formatHour(h, hour24)}</Text>
           </View>
         ))}
       </View>
@@ -401,56 +519,55 @@ export function createCalendar(skin: CalendarSkin) {
     const hourAxis = axisFor(hours);
     const slotLines = slotsFor(hours);
 
-    if (view === "day") {
-      const label = `${WEEKDAYS_FULL[weekdayOf(anchor)]}, ${monthName} ${anchor}`;
-      return (
-        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), { width: tm.dayWidth, maxWidth: "100%" }, style]}>
-          {header(label)}
-          <View style={{ flexDirection: "row" }}>
-            {hourAxis}
-            <View style={{ flex: 1 }}>
-              {slotLines}
-              {eventLayer(anchor, true)}
-            </View>
-          </View>
-        </View>
-      );
-    }
+    // The full-day timeline scrolls inside a fixed window (8 AM–5 PM initially);
+    // a narrowed range shorter than the window just renders in full.
+    const totalHeight = (hoursTo - hoursFrom) * tm.hourHeight;
+    const windowHeight = Math.min(WINDOW_HOURS, hoursTo - hoursFrom) * tm.hourHeight;
+    const initialScrollY = Math.max(0, Math.min((WINDOW_START_HOUR - hoursFrom) * tm.hourHeight, totalHeight - windowHeight));
+    const timeScroller = (content: ReactNode) => (
+      <ScrollView
+        ref={scrollRef}
+        style={{ height: windowHeight }}
+        nestedScrollEnabled
+        onLayout={() => {
+          if (scrollInitFor.current === view) return;
+          scrollInitFor.current = view;
+          scrollRef.current?.scrollTo({ y: initialScrollY, animated: false });
+        }}
+      >
+        {content}
+      </ScrollView>
+    );
 
-    if (view === "week") {
-      const weekDays = Array.from({ length: 7 }, (_, i) => weekStart + i);
+    // The floating detail card for the hovered timeline block (pointer platforms;
+    // no backdrop, so the page stays interactive and hover-out hides it).
+    const hoverCard = () => {
+      if (hoverKey == null || hoverEventRef.current == null) return null;
+      const e = hoverEventRef.current;
+      const [start, end] = spanOf(e);
       return (
-        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), { width: tm.weekWidth, maxWidth: "100%" }, style]}>
-          {header(month)}
-          {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
-          <View style={{ flexDirection: "row" }}>
-            <View style={{ width: tm.axisWidth }} />
-            {weekDays.map((dayNum, i) => (
-              <View key={`strip-${i}`} style={{ flex: 1, alignItems: "center" }}>
-                {/* The strip starts at the week's first weekday, so column i is weekday i. */}
-                <View style={skin.headCell}>
-                  <Text style={skin.weekdayLabel(tokens)}>{skin.weekdays[i]}</Text>
-                </View>
-                {dayNum >= 1 && dayNum <= daysInMonth ? (
-                  dayCell(dayNum)
-                ) : (
-                  <View style={[skin.headCell, m.cell]} />
-                )}
-              </View>
-            ))}
-          </View>
-          <View style={{ flexDirection: "row", marginTop: 4 }}>
-            {hourAxis}
-            {weekDays.map((dayNum, i) => (
-              <View key={`col-${i}`} style={[{ flex: 1 }, skin.colDivider(tokens)]}>
-                {slotLines}
-                {dayNum >= 1 && dayNum <= daysInMonth ? eventLayer(dayNum, false) : null}
-              </View>
-            ))}
-          </View>
-        </View>
+        <AnchoredOverlay
+          key={hoverKey}
+          open
+          onDismiss={() => setHoverKey(null)}
+          triggerRef={hoverAnchorRef}
+          gap={6}
+          cardWidth={tm.peekWidth}
+          preferSide
+          dismissable={false}
+          cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
+          inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
+        >
+          <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
+          <Text style={[skin.eventTime(tokens), { marginTop: 2 }]}>
+            {`${WEEKDAYS_FULL[weekdayOf(e.day)]}, ${monthName} ${e.day} · ${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}
+          </Text>
+          {e.description != null ? (
+            <Text style={[skin.peekBody(tokens), { marginTop: 6 }]}>{e.description}</Text>
+          ) : null}
+        </AnchoredOverlay>
       );
-    }
+    };
 
     // The anchored day peek: the pressed day's timeline in a floating overlay
     // card. Untimed events list as title rows; timed events render the same
@@ -488,13 +605,74 @@ export function createCalendar(skin: CalendarSkin) {
               {axisFor(peekHours)}
               <View style={{ flex: 1 }}>
                 {slotsFor(peekHours)}
-                {eventLayer(peekDay, true, rs, re)}
+                {eventLayer(peekDay, true, rs, re, false)}
               </View>
             </View>
           ) : null}
         </AnchoredOverlay>
       );
     };
+
+    if (view === "day") {
+      const label = `${WEEKDAYS_FULL[weekdayOf(anchor)]}, ${monthName} ${anchor}`;
+      return (
+        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), { width: tm.dayWidth, maxWidth: "100%" }, style]}>
+          {header(label)}
+          {formatToggle}
+          {timeScroller(
+            <View style={{ flexDirection: "row" }}>
+              {hourAxis}
+              <View style={{ flex: 1 }}>
+                {slotLines}
+                {eventLayer(anchor, true)}
+              </View>
+            </View>,
+          )}
+          {hoverCard()}
+        </View>
+      );
+    }
+
+    if (view === "week") {
+      const weekDays = Array.from({ length: 7 }, (_, i) => weekStart + i);
+      return (
+        <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), { width: tm.weekWidth, maxWidth: "100%" }, style]}>
+          {header(month)}
+          {formatToggle}
+          {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
+          <View style={{ flexDirection: "row" }}>
+            <View style={{ width: tm.axisWidth }} />
+            {weekDays.map((dayNum, i) => (
+              <View key={`strip-${i}`} style={{ flex: 1, alignItems: "center" }}>
+                {/* The strip starts at the week's first weekday, so column i is weekday i. */}
+                <View style={skin.headCell}>
+                  <Text style={skin.weekdayLabel(tokens)}>{skin.weekdays[i]}</Text>
+                </View>
+                {dayNum >= 1 && dayNum <= daysInMonth ? (
+                  dayCell(dayNum)
+                ) : (
+                  <View style={[skin.headCell, m.cell]} />
+                )}
+              </View>
+            ))}
+          </View>
+          <View style={{ marginTop: 4 }}>
+            {timeScroller(
+              <View style={{ flexDirection: "row" }}>
+                {hourAxis}
+                {weekDays.map((dayNum, i) => (
+                  <View key={`col-${i}`} style={[{ flex: 1 }, skin.colDivider(tokens)]}>
+                    {slotLines}
+                    {dayNum >= 1 && dayNum <= daysInMonth ? eventLayer(dayNum, false) : null}
+                  </View>
+                ))}
+              </View>,
+            )}
+          </View>
+          {hoverCard()}
+        </View>
+      );
+    }
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (

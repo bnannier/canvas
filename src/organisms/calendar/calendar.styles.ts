@@ -132,12 +132,19 @@ export interface CalendarSkin {
   /** The event time line inside a block. */
   eventTime: (t: ColorTokens) => TextStyle;
 
-  // --- day-peek overlay (the anchored day-timeline card the month view opens) ---
-  /** The floating peek card: shape, border, shadow, padding (an overlay surface,
-   *  so it paints the `popover` token and frosts under glass via GlassSurface). */
+  // --- day-peek + hover overlays (anchored floating cards) ---
+  /** The floating peek/hover card: shape, border, shadow, padding (an overlay
+   *  surface, so it paints the `popover` token and frosts under glass via GlassSurface). */
   peekCard: (t: ColorTokens) => ViewStyle;
-  /** The peek's day title line. */
+  /** The peek's day title / the hover card's event title line. */
   peekTitle: (t: ColorTokens) => TextStyle;
+  /** The hover card's description body. */
+  peekBody: (t: ColorTokens) => TextStyle;
+
+  // --- range selection (month view) ---
+  /** The tinted band behind range endpoints and the days between (the shell sets
+   *  the left/right half per position; this carries the fill + vertical insets). */
+  rangeBand: (t: ColorTokens) => ViewStyle;
 }
 
 // --- shared weekday strings ------------------------------------------------
@@ -257,6 +264,10 @@ export const webSkin: CalendarSkin = {
     ...shadow("lg"),
   }),
   peekTitle: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t["popover-foreground"] }),
+  peekBody: (t) => ({ fontSize: 12, lineHeight: 16, color: t["popover-foreground"] }),
+
+  // A soft primary wash between the range endpoints, inset from the cell edges.
+  rangeBand: (t) => ({ position: "absolute", top: 4, bottom: 4, backgroundColor: alpha(t.primary, 0.15) }),
 };
 
 // =============================================================================
@@ -372,6 +383,10 @@ export const iosSkin: CalendarSkin = {
     ...shadow("lg"),
   }),
   peekTitle: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", color: t["popover-foreground"] }),
+  peekBody: (t) => ({ fontSize: 13, lineHeight: 18, color: t["popover-foreground"] }),
+
+  // A soft primary wash between the range endpoints (HIG range selection).
+  rangeBand: (t) => ({ position: "absolute", top: 4, bottom: 4, backgroundColor: alpha(t.primary, 0.15) }),
 };
 
 // =============================================================================
@@ -486,4 +501,8 @@ export const androidSkin: CalendarSkin = {
     ...shadow("md"),
   }),
   peekTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
+  peekBody: (t) => ({ fontSize: 12, lineHeight: 16, color: t["popover-foreground"] }),
+
+  // M3 range selection: the tonal container band spans the full cell height.
+  rangeBand: (t) => ({ position: "absolute", top: 0, bottom: 0, backgroundColor: alpha(t.primary, 0.15) }),
 };
