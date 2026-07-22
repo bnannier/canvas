@@ -20,7 +20,7 @@ A bare calendar is uncontrolled: pressing a day selects it, and in the week/day 
 
 ### Events
 
-Each event carries the `day` it falls on, plus an optional `title` and `start`/`end` hours. The month grid marks event days with a dot and reads the count to assistive tech. With `dayPeek`, pressing a marked day opens that day's hour timeline in an anchored overlay (the same timeline the day view renders), dismissed by a tap anywhere else or Escape. Press May 24 below.
+Each event carries the `day` it falls on, plus an optional `title` and `start`/`end` hours. The month grid marks event days with a dot and reads the count to assistive tech. With `dayPeek`, pressing a marked day opens that day's hour timeline (the same timeline the day view renders) beside the cell: to its right, to its left when the right lacks room, and below it when neither side fits. A tap anywhere else or Escape dismisses it. Press May 24 below.
 
 ```tsx
 <Calendar
