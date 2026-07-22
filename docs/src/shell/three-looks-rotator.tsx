@@ -49,18 +49,23 @@ export function ThreeLooksRotator() {
   const reducedMotion = useReducedMotion();
   const router = useRouter();
   const [index, setIndex] = useState(0);
+  // Set the moment the reader drives the rotator themselves. Auto-advance never comes
+  // back: having the stage jump out from under someone who just took manual control is
+  // the whole problem being fixed here.
+  const [manual, setManual] = useState(false);
   const columns = width > 760;
 
   const atom = ATOMS[index % ATOMS.length];
   const shots = LOOKS_SHOTS[atom.slug];
   const code = atom.entry?.examples[0]?.code;
 
-  // Auto-advance unless the user prefers reduced motion; the arrows always work.
+  // Auto-advance until the reader takes over with the chevrons, or prefers reduced
+  // motion. The arrows always work, whether or not the carousel is still cycling.
   useEffect(() => {
-    if (reducedMotion) return;
+    if (reducedMotion || manual) return;
     const id = setInterval(() => setIndex((i) => (i + 1) % ATOMS.length), INTERVAL_MS);
     return () => clearInterval(id);
-  }, [reducedMotion]);
+  }, [reducedMotion, manual]);
 
   // A one-shot fade-in per swap (not a loop, so the web Animated driver is safe).
   const fade = useRef(new Animated.Value(1)).current;
@@ -70,7 +75,10 @@ export function ThreeLooksRotator() {
     Animated.timing(fade, { toValue: 1, duration: 240, useNativeDriver: Platform.OS !== "web" }).start();
   }, [index, reducedMotion, fade]);
 
-  const step = (delta: number) => setIndex((i) => (i + delta + ATOMS.length) % ATOMS.length);
+  const step = (delta: number) => {
+    setManual(true);
+    setIndex((i) => (i + delta + ATOMS.length) % ATOMS.length);
+  };
 
   return (
     <View style={{ gap: 20 }}>
