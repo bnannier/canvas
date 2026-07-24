@@ -50,6 +50,11 @@
       "href": "/browser-support",
       "icon": "globe"
     },
+    "privacy": {
+      "label": "Privacy",
+      "href": "/privacy",
+      "icon": "shield"
+    },
     "boilerplate": {
       "label": "Overview",
       "href": "/boilerplate",
@@ -84,7 +89,8 @@
           "integration",
           "theming",
           "rn",
-          "browser"
+          "browser",
+          "privacy"
         ]
       },
       {
@@ -679,7 +685,8 @@
             "theming",
             "rn",
             "browser",
-            "boilerplate"
+            "boilerplate",
+            "privacy"
           ]
         }
       },
