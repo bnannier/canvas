@@ -1,7 +1,7 @@
 import * as Canvas from "@nannier/canvas";
 import type { ColorTokens } from "@nannier/canvas";
 import { Platform } from "react-native";
-import { Stateful, Ticker, applyDrop, IconGallery, WithToast } from "./live-state";
+import { Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen } from "./live-state";
 import { applyResolvedPhotos } from "./photos";
 import type { ExampleScope, PreviewScope } from "./scope";
 
@@ -23,6 +23,7 @@ export function buildScopes(tokens: ColorTokens): PreviewScope[] {
   scope.applyDrop = applyDrop;
   scope.IconGallery = IconGallery;
   scope.WithToast = WithToast;
+  scope.AppScreen = AppScreen;
   return [
     {
       label: platform === "android" ? "Android" : "iOS",
