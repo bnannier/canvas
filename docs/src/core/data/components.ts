@@ -319,9 +319,10 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "sidebar",
     name: "Sidebar",
-    description: "Sidebar + Topbar + breadcrumbs + page header. The sidebar on the left of this page is a thin adapter over this very Sidebar component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.",
+    description: "App navigation rail with collapsible sections and single active highlighting. Add `responsive` and it becomes a start-edge drill-down Liquid Glass menu on a phone. The sidebar on the left of this page is a thin adapter over this very component.",
     category: "Organisms",
     stageAlign: "start",
+    singlePreview: true,
   },
 
   {

@@ -17,6 +17,11 @@ export interface ComponentDoc {
   // block-level, leading-aligned components (Breadcrumb is a full-width nav trail
   // that reads from the left and should never preview centered).
   stageAlign?: "center" | "start";
+  // Render ONE live preview instead of the stacked iOS/Android/Web 3-up. Right for a
+  // component that IS full app chrome and reads as a single product surface rather than a
+  // per-OS specimen to compare (Sidebar, whose example is a whole responsive app shell).
+  // No-op on native, where the stage is already a single device preview.
+  singlePreview?: boolean;
 }
 
 export type Category =

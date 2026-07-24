@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { View, Text, Icon, OverlayProvider, useTheme, type IconProps, type ToastHandle } from "@nannier/canvas";
-import { useReducedMotion } from "../../../src/style/index.js";
+import { View, Text, Icon, OverlayProvider, useTheme, Row, Column, Button, Typography, Card, Avatar, Skeleton, type IconProps, type ToastHandle } from "@nannier/canvas";
+import { useReducedMotion, useResponsive } from "../../../src/style/index.js";
 // The kit's glyph table, read straight from source like the style helpers above (the
 // public Icon renders one glyph at a time and does not expose the catalog). Used only by
 // the docs-only IconGallery below.
@@ -91,6 +91,107 @@ export function AppScreen({ children }: { children: ReactNode }): ReactNode {
       }}
     >
       {children}
+    </OverlayProvider>
+  );
+}
+
+// Docs-only live-example frame: a compact, RESPONSIVE app shell that showcases a Sidebar the
+// way a real app mounts it — the nav rail beside a content pane on desktop, and a hamburger
+// that opens the drill-down Liquid Glass menu on a narrow (phone) viewport, exactly like the
+// docs' own left nav. The example fence supplies the real `<Sidebar responsive .../>` through
+// the render-prop child; AppShell owns the surrounding chrome (the framed window, the top bar
+// with its width-appropriate control, and a placeholder page) so the fence stays focused on
+// the Sidebar API. Like AppScreen it hosts its OWN OverlayProvider, so the drawer the Sidebar
+// portals at narrow widths stays contained to this frame instead of taking over the docs page.
+// The width test mirrors the Sidebar's own drawer breakpoint (`lg` = 1024). Styling is free
+// here because this is the live-example frame, not a fence. Keep its type in sync with the
+// `AppShellHelper` alias in ./scope.ts.
+export function AppShell({
+  children,
+}: {
+  children: (state: {
+    open: boolean;
+    setOpen: (next: boolean) => void;
+    active: string;
+    select: (item: { label: string }) => void;
+  }) => ReactNode;
+}): ReactNode {
+  const { tokens } = useTheme();
+  const narrow = useResponsive({ base: false, lg: true });
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState("Dashboard");
+  // A leaf selection updates the mock page title and (on narrow) dismisses the drawer, the
+  // same wiring a real app hangs off the Sidebar's onSelect.
+  const select = (item: { label: string }) => {
+    setActive(item.label);
+    setOpen(false);
+  };
+  const sidebar = children({ open, setOpen, active, select });
+
+  // The mock page beside (or under) the rail: a top bar + a couple of placeholder cards, so the
+  // sidebar reads as app chrome instead of a lone rail floating in the stage.
+  const page = (
+    <Column fill style={{ backgroundColor: tokens.muted, minWidth: 0 }}>
+      <Row
+        alignCenter
+        snug
+        style={{ height: 52, paddingHorizontal: 16, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}
+      >
+        {narrow ? (
+          <Button ghost icon small accessibilityLabel="Open menu" iconLeft={<Icon menu size={18} />} onPress={() => setOpen(true)} />
+        ) : null}
+        <Typography body semibold>
+          {active}
+        </Typography>
+        <View style={{ flex: 1 }} />
+        <Avatar small name="Rachel Chen" />
+      </Row>
+      <Column pad relaxed style={{ flex: 1 }}>
+        <Typography h4>Good morning, Rachel</Typography>
+        <Row wrap relaxed>
+          <Card raised grow title="$48,250" description="Revenue this week" />
+          <Card raised grow title="1,204" description="Active users today" />
+        </Row>
+        <Card raised grow>
+          <Column snug>
+            <Typography body semibold>Recent activity</Typography>
+            <Skeleton list />
+          </Column>
+        </Card>
+      </Column>
+    </Column>
+  );
+
+  return (
+    <OverlayProvider
+      style={{
+        width: "100%",
+        height: 480,
+        maxWidth: "100%",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: tokens.border,
+        overflow: "hidden",
+        backgroundColor: tokens.background,
+      }}
+    >
+      {narrow ? (
+        // Narrow: the rail collapses to a hamburger; the Sidebar renders the drill-down drawer
+        // as an overlay portaled into this frame (position in the tree is irrelevant).
+        <>
+          {page}
+          {sidebar}
+        </>
+      ) : (
+        // Desktop: the rail sits flush against the content pane (the Sidebar draws its own right
+        // hairline in shell mode), filling the frame height. The Sidebar's shell column is
+        // `flex: 1`, so it must sit in a plain flex-less View that takes the column's own 240/56
+        // width (the same wrapper the docs shell uses); otherwise it would grow to half the frame.
+        <Row fill flush>
+          <View>{sidebar}</View>
+          {page}
+        </Row>
+      )}
     </OverlayProvider>
   );
 }

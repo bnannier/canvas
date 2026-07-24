@@ -59,7 +59,7 @@ export function ComponentReference() {
         <Lead>{stripHtml(comp.description)}</Lead>
       </View>
       {examples.length > 0 ? (
-        <Playground examples={examples} stageAlign={comp.stageAlign} selected={selected} onSelect={onSelect} />
+        <Playground examples={examples} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} selected={selected} onSelect={onSelect} />
       ) : (
         <View style={{ borderRadius: 10, borderWidth: 1, borderColor: tokens.border, padding: 16 }}>
           <Text style={{ fontSize: 13, color: tokens["muted-foreground"] }}>

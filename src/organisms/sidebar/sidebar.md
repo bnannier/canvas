@@ -6,64 +6,52 @@ Add `responsive` to make it adapt across breakpoints: it stays the accordion rai
 
 ## Usage
 
-```tsx
-<Sidebar
-  defaultActive="Dashboard"
-  onSelect={() => {}}
-  sections={[
-    { title: "Main", items: [
-      { label: "Dashboard", icon: "layoutGrid" },
-      { label: "Users", icon: "users", badge: "12" },
-      { label: "Settings", icon: "settings" }
-    ] },
-    { title: "Reports", items: [
-      { label: "Analytics", icon: "barChart2" }
-    ] }
-  ]}
-/>
-```
-
-## Variants
-
-### App navigation shell
+The one `Sidebar` below is the whole story: on desktop it is the collapsible accordion rail (tap the header chevron to shrink it to icons); narrow the window to a phone and the same component becomes a start-edge drill-down **Liquid Glass menu** opened by the top bar's hamburger, exactly like this page's own left nav. `AppShell` is the docs' live app frame (the top bar and placeholder page); the `Sidebar` wiring is the part you copy.
 
 ```tsx
-<Sidebar
-  collapsible
-  defaultActive="Dashboard"
-  style={{ height: 420 }}
-  header={(collapsed) =>
-    collapsed ? (
-      <Icon layoutGrid primary size={20} />
-    ) : (
-      <Row snug alignCenter>
-        <Icon layoutGrid primary size={20} />
-        <Typography semibold>Acme</Typography>
-      </Row>
-    )
-  }
-  footer={(collapsed) =>
-    collapsed ? (
-      <Button ghost icon small accessibilityLabel="Settings" iconLeft={<Icon settings size={16} />} />
-    ) : (
-      <Button ghost block small iconLeft={<Icon settings size={16} />}>Settings</Button>
-    )
-  }
-  sections={[
-    { items: [
-      { label: "Dashboard", icon: "layoutGrid" },
-      { label: "Inbox", icon: "inbox", badge: "3" }
-    ] },
-    { title: "Reports", icon: "barChart2", collapsible: true, items: [
-      { label: "Analytics", icon: "barChart2" },
-      { label: "Traffic", icon: "activity" }
-    ] },
-    { title: "Team", icon: "users", collapsible: true, items: [
-      { label: "Members", icon: "users" },
-      { label: "Roles", icon: "shield" }
-    ] }
-  ]}
-/>
+<AppShell>
+  {({ open, setOpen, select }) => (
+    <Sidebar
+      responsive
+      collapsible
+      defaultActive="Dashboard"
+      open={open}
+      onOpenChange={setOpen}
+      onSelect={select}
+      header={(collapsed) =>
+        collapsed ? (
+          <Icon layoutGrid primary size={22} />
+        ) : (
+          <Row snug alignCenter>
+            <Icon layoutGrid primary size={22} />
+            <Typography body semibold>Acme</Typography>
+          </Row>
+        )
+      }
+      footer={(collapsed) =>
+        collapsed ? (
+          <Button ghost icon small accessibilityLabel="Settings" iconLeft={<Icon settings size={16} />} />
+        ) : (
+          <Button ghost block small iconLeft={<Icon settings size={16} />}>Settings</Button>
+        )
+      }
+      sections={[
+        { items: [
+          { label: "Dashboard", icon: "layoutGrid" },
+          { label: "Inbox", icon: "inbox", badge: "3" }
+        ] },
+        { title: "Reports", icon: "barChart2", collapsible: true, items: [
+          { label: "Analytics", icon: "barChart2" },
+          { label: "Traffic", icon: "activity" }
+        ] },
+        { title: "Team", icon: "users", collapsible: true, items: [
+          { label: "Members", icon: "users" },
+          { label: "Roles", icon: "shield" }
+        ] }
+      ]}
+    />
+  )}
+</AppShell>
 ```
 
 ## Do & Don't
