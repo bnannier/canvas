@@ -22,7 +22,10 @@ truth for both stores' data declarations.
 | App Store Connect app record | Created, Apple ID `6794454098`, bundle `com.nannier.canvas` |
 | ASC listing metadata | Done: name, subtitle, description, keywords, support + marketing URLs, categories |
 | ASC App Privacy | Data Not Collected, privacy URL set; **awaiting the owner's Publish attestation** |
-| iOS production build | Blocked on the above |
+| iOS distribution certificate | **Created** (serial `3D467E74...`, expires 24 Jul 2027), stored on EAS |
+| iOS provisioning profile | **Created** (`DU4S5M5QTB`), active |
+| iOS production build | **BUILT**, v1.0.0 build 5, SDK 57, build `061a142b` |
+| iOS upload to App Store Connect | Needs an App Store Connect API key, `eas submit` run interactively once |
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
