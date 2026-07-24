@@ -24,8 +24,8 @@ truth for both stores' data declarations.
 | ASC App Privacy | Data Not Collected, privacy URL set; **awaiting the owner's Publish attestation** |
 | iOS production build | Blocked on the above |
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
-| iPad 13" screenshots | Done, 4 in `store/screenshots/ipad` |
-| Android phone screenshots | Done, 5 in `store/screenshots/android` |
+| iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
+| Android phone screenshots | Done, 10 in `store/screenshots/android` |
 
 The two blocked rows are the only things standing between here and a submission, and
 both need the account owner: they cost money, require identity verification, and can
