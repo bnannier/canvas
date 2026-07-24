@@ -137,6 +137,35 @@ jobs:
         working-directory: docs
         run: npx expo export -p web
 
+      # wrangler's Pages upload SKIPS every path containing a `node_modules` segment, and
+      # Expo emits bundled package assets to dist/assets/node_modules/<pkg>/... mirroring
+      # their source path. The Geist font files land exactly there, so they were silently
+      # dropped from the upload: 421 files built, 366 uploaded. The app then waits forever
+      # on useFonts and renders nothing, and because _redirects answers every unknown path
+      # with index.html at status 200, the missing fonts surfaced as neither a 404 nor a
+      # console error. A blank page with no diagnostics at all.
+      #
+      # Renaming that one path segment (and every reference to it) is enough to make the
+      # assets uploadable. The checks below fail the build rather than let a fontless,
+      # blank site deploy again.
+      - name: Un-hide bundled package assets from wrangler
+        working-directory: docs
+        run: |
+          if [ -d dist/assets/node_modules ]; then
+            mv dist/assets/node_modules dist/assets/vendor
+            find dist -type f \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.json' \) \
+              -exec sed -i 's|assets/node_modules|assets/vendor|g' {} +
+            echo "moved dist/assets/node_modules -> dist/assets/vendor and rewrote references"
+          else
+            echo "no dist/assets/node_modules present; nothing to move"
+          fi
+          if find dist -type d -name node_modules | grep -q .; then
+            echo "::error::a node_modules path remains under dist; wrangler would skip it"; exit 1
+          fi
+          if grep -rq "assets/node_modules" dist 2>/dev/null; then
+            echo "::error::stale assets/node_modules references remain; fonts would 404"; exit 1
+          fi
+
       # Fails loudly rather than shipping a site whose deep routes 404: _redirects is what
       # makes this host better than Pages, and it only works if it reached the artifact.
       - name: Verify SPA rewrite and privacy page are in the artifact
