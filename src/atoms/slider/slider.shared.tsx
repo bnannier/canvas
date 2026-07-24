@@ -1,11 +1,12 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
+  Animated,
   PanResponder,
   type LayoutChangeEvent,
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, Text, useTheme, useControllableState, useFieldWidth, isRTL, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, GlassSurface, useTheme, useControllableState, useFieldWidth, useReducedMotion, supportsNativeDriver, isRTL, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -109,6 +110,23 @@ export interface SliderSkin {
   /** The draggable thumb (its left/top offset is set by the shell). */
   thumb: (tokens: ColorTokens, size: Size, disabled: boolean, pressed: boolean) => ViewStyle;
   /**
+   * Render the thumb as a real Liquid Glass control (the iOS 26 slider handle
+   * "transforms into liquid glass during interaction", WWDC25). When set, the shell
+   * routes the thumb through the shared `GlassSurface` primitive: on iOS 26+ (theme
+   * `surface === "glass"`, the platform default there) it becomes an Apple Liquid
+   * Glass knob that refracts the track, and it springs up on press (Apple's
+   * scale/bounce); under solid surface, Reduce Transparency, or Increase Contrast it
+   * degrades to the opaque `thumb` fill above, unchanged. Omitted skins render the
+   * plain `thumb` View exactly as before.
+   */
+  glassThumb?: boolean;
+  /**
+   * The bright translucent under-fill for the glass knob (passed to `GlassSurface`'s
+   * `tint`), so the handle reads as a light glass puck on both schemes instead of a
+   * popover-tinted blob. Only consulted when `glassThumb` is set.
+   */
+  glassTint?: (tokens: ColorTokens) => string;
+  /**
    * Stop/tick dot fill for stepped sliders (and the M3 end stop). The shell sizes
    * and positions the dot; `onActive` says the dot sits on the active (filled)
    * side, for the M3 on-primary vs on-secondary-container roles. Omit to render
@@ -140,6 +158,11 @@ function snap(raw: number, min: number, max: number, step: number): number {
 // kit Ticks layer are for coarse, discrete scales).
 const MAX_TICK_INTERVALS = 20;
 
+// How far the Liquid Glass handle springs up on press (Apple's scale/bounce as the
+// iOS 26 slider "transforms into liquid glass during interaction"). Only applied on
+// the glass-thumb path under real glass with motion allowed.
+const GLASS_THUMB_PRESS_SCALE = 1.12;
+
 // The stacked header the Slider owns above its track: a title row (the label with an
 // optional trailing live-value readout) over a muted description line. `OUTER` is the
 // column that wraps the header and the interactive rail; its snug 8px gap reproduces
@@ -165,7 +188,8 @@ function formatValue(v: number, step: number): string {
 export function createSlider(skin: SliderSkin) {
   return function Slider(props: SliderProps) {
     const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style, children, description, showValue } = props;
-    const { tokens } = useTheme();
+    const { tokens, surface } = useTheme();
+    const reducedMotion = useReducedMotion();
     const size = sizeOf(props);
     // Whether the component-owned header (title / description / value readout) renders
     // at all. A bare <Slider /> passes none of these and renders exactly as before —
@@ -216,6 +240,28 @@ export function createSlider(skin: SliderSkin) {
     // Web keyboard focus: paint the thumb's focus ring (the same ring the drag
     // shows) while the slider holds focus. Stays false on native touch usage.
     const [focused, setFocused] = useState(false);
+
+    // Liquid Glass handle (iOS): the knob springs up on press. Apple's iOS 26 slider
+    // "transforms into liquid glass during interaction" with a scale/bounce; we drive
+    // that scale ourselves because the thumb is pointerEvents:"none" (the parent
+    // PanResponder owns the gesture, so the GlassView never receives the touch). Only
+    // under REAL glass (surface === "glass", the iOS 26 default) and with motion
+    // allowed; otherwise the knob stays at rest scale, matching today's static thumb.
+    const glassThumb = !!skin.glassThumb;
+    const thumbScale = useRef(new Animated.Value(1)).current;
+    const springThumb = glassThumb && surface === "glass" && !reducedMotion;
+    useEffect(() => {
+      if (!springThumb) {
+        thumbScale.setValue(1);
+        return;
+      }
+      Animated.spring(thumbScale, {
+        toValue: pressed ? GLASS_THUMB_PRESS_SCALE : 1,
+        useNativeDriver: supportsNativeDriver,
+        friction: 7,
+        tension: 180,
+      }).start();
+    }, [pressed, springThumb, thumbScale]);
 
     const onLayout = (e: LayoutChangeEvent) => {
       const _l = e.nativeEvent.layout; if (!_l) return; const w = _l.width;
@@ -465,15 +511,45 @@ export function createSlider(skin: SliderSkin) {
           </View>
         )}
         {/* The thumb. The parent View's PanResponder owns the whole gesture (tapping the
-            track to jump AND dragging the thumb), so the thumb is a plain View that only
-            PAINTS the value position and the per-OS press feedback (the web focus ring;
-            iOS keeps the knob opaque, Android's M3 Expressive handle has no state layer),
-            driven by `pressed` from the PanResponder OR web keyboard `focused`. It carries
-            pointerEvents="none" so it never competes with the parent for the touch
-            responder, keeping the drag/jump on one code path. */}
-        <View
-          style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop, pointerEvents: "none" }]}
-        />
+            track to jump AND dragging the thumb), so the thumb only PAINTS the value
+            position and the per-OS press feedback (the web focus ring; iOS keeps the knob
+            opaque, Android's M3 Expressive handle has no state layer), driven by `pressed`
+            from the PanResponder OR web keyboard `focused`. It carries pointerEvents="none"
+            so it never competes with the parent for the touch responder, keeping the
+            drag/jump on one code path. */}
+        {glassThumb ? (
+          // iOS 26 Liquid Glass handle. An Animated wrapper owns the position + the press
+          // spring (Apple's scale/bounce on interaction); GlassSurface paints the real
+          // Liquid Glass material on iOS 26+ (refracting the track behind the knob) and
+          // degrades to the opaque `thumb` fill under solid surface / Reduce Transparency /
+          // Increase Contrast. The wrapper sizes the surface; the skin's own position is
+          // dropped so it fills the wrapper rather than double-offsetting.
+          <Animated.View
+            style={{
+              position: "absolute",
+              left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft,
+              top: thumbTop,
+              width: thumbW,
+              height: thumbH,
+              transform: [{ scale: thumbScale }],
+              pointerEvents: "none",
+            }}
+          >
+            <GlassSurface
+              interactive
+              pointerEvents="none"
+              tint={skin.glassTint?.(tokens)}
+              style={[
+                skin.thumb(tokens, size, !!disabled, pressed || focused),
+                { position: "relative", width: "100%", height: "100%" },
+              ]}
+            />
+          </Animated.View>
+        ) : (
+          <View
+            style={[skin.thumb(tokens, size, !!disabled, pressed || focused), { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop, pointerEvents: "none" }]}
+          />
+        )}
       </View>
     );
 
