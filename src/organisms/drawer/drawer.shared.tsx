@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { Animated, BackHandler, I18nManager, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
-import { GlassModalBlurTarget, Pressable, View, useTheme, useReducedMotion, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Animated, BackHandler, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
+import { GlassModalBlurTarget, Pressable, View, isRTL, useTheme, useReducedMotion, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaView } from "../../style/safe-area.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -147,7 +147,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // Side panels land on the logical start (left) / end (right) edge via flexbox, which mirrors
     // under RTL — so the horizontal slide origin follows the PHYSICAL side the panel ends up on.
     // The top sheet drops down from above (translateY = -panelHeight -> 0).
-    const physicalRight = (edge === "right") !== I18nManager.isRTL;
+    const physicalRight = (edge === "right") !== isRTL();
     const fromOffset = isVertical ? -(panelH || 600) : physicalRight ? width : -width;
     const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [fromOffset, 0] });
     // The scrim dim resolves per color scheme (iOS dims lighter in light, darker in dark).

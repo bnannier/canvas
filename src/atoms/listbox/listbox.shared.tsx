@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { I18nManager, type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, useRovingFocus, type FieldWidthProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { type Role } from "react-native";
+import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, useRovingFocus, isRTL, type FieldWidthProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
@@ -178,7 +178,7 @@ export function createListbox(skin: ListboxSkin) {
         if (mode === "single") press(i);
       },
       orientation: "vertical",
-      rtl: I18nManager.isRTL,
+      rtl: isRTL(),
     });
 
     const container: StyleProp<ViewStyle> = [

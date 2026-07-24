@@ -156,8 +156,11 @@ describe("Command palette keyboard navigation", () => {
 
 describe("Slider RTL keyboard direction", () => {
   it("reverses the horizontal arrows in a right-to-left locale, keeping Home/End/vertical logical", () => {
-    const orig = I18nManager.isRTL;
-    (I18nManager as { isRTL: boolean }).isRTL = true;
+    // Force RTL through the SAME accessor the kit reads (isRTL() ->
+    // I18nManager.getConstants().isRTL). React Native Web has no direct
+    // `I18nManager.isRTL` property, so stubbing that would be a no-op here.
+    const origGetConstants = I18nManager.getConstants;
+    I18nManager.getConstants = () => ({ ...origGetConstants.call(I18nManager), isRTL: true });
     try {
       let val = 50;
       const { container } = ui(<Slider value={50} min={0} max={100} onChange={(v) => { val = v; }} accessibilityLabel="Vol" />);
@@ -175,7 +178,7 @@ describe("Slider RTL keyboard direction", () => {
       fireEvent.keyDown(slider, { key: "End" });
       expect(val).toBe(100);
     } finally {
-      (I18nManager as { isRTL: boolean }).isRTL = orig;
+      I18nManager.getConstants = origGetConstants;
     }
   });
 });

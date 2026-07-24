@@ -1,10 +1,11 @@
 import { type ReactNode } from "react";
-import { I18nManager, type GestureResponderEvent } from "react-native";
+import { type GestureResponderEvent } from "react-native";
 import {
   View,
   Pressable,
   Text,
   useTheme,
+  isRTL,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -122,7 +123,7 @@ function separatorOf(p: BreadcrumbProps): Separator {
 // from Unicode bidi mirroring, so RTL needs the mirrored U+2039 picked explicitly
 // or the divider would keep pointing against the reading direction.
 const SEPARATOR_GLYPH: Record<Separator, string> = {
-  chevron: I18nManager.isRTL ? "‹" : "›",
+  chevron: isRTL() ? "‹" : "›",
   slash: "/",
   dot: "·",
 };
