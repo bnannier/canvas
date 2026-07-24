@@ -18,7 +18,10 @@ truth for both stores' data declarations.
 | Android production `.aab` | **Built and ready**, v1.0.0 versionCode 3, SDK 57, from commit `d5daa866` |
 | Android upload keystore | Generated and held by EAS |
 | Google Play Developer account | **BLOCKED, none exists** |
-| Apple Developer Program membership | **BLOCKED, EAS reports no distribution certificate** |
+| Apple Developer Program membership | Active, team `ZR2R53SL57` |
+| App Store Connect app record | Created, Apple ID `6794454098`, bundle `com.nannier.canvas` |
+| ASC listing metadata | Done: name, subtitle, description, keywords, support + marketing URLs, categories |
+| ASC App Privacy | Data Not Collected, privacy URL set; **awaiting the owner's Publish attestation** |
 | iOS production build | Blocked on the above |
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 4 in `store/screenshots/ipad` |
@@ -38,7 +41,10 @@ only be completed interactively.
   Connect can confirm availability at the moment you reserve it.
 - **Bundle id / package**: `com.nannier.canvas` on both platforms. This becomes
   permanent for that listing the moment anything ships, so change it now or never.
-- **Version**: `1.0.0`, from `docs/app.json`. EAS holds the build numbers remotely
+- **Apple IDs**: App Store Connect Apple ID `6794454098`, Team ID `ZR2R53SL57`. Set
+`ascAppId` to the former in `eas.json` before running `eas submit -p ios`.
+
+**Version**: `1.0.0`, from `docs/app.json`. EAS holds the build numbers remotely
   (`appVersionSource: "remote"`, `autoIncrement` on the production profile).
 
 ## Listing copy
