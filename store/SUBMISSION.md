@@ -15,14 +15,14 @@ truth for both stores' data declarations.
 | 1024 marketing icon without alpha | Done (`docs/assets/images/icon.png`) |
 | Export compliance key | Done (`ios.infoPlist.ITSAppUsesNonExemptEncryption: false`) |
 | Public privacy policy URL | Done, `https://bnannier.github.io/canvas/privacy` |
-| Android production `.aab` | Built on EAS from SDK 57 |
+| Android production `.aab` | **Built and ready**, v1.0.0 versionCode 3, SDK 57, from commit `d5daa866` |
 | Android upload keystore | Generated and held by EAS |
 | Google Play Developer account | **BLOCKED, none exists** |
 | Apple Developer Program membership | **BLOCKED, EAS reports no distribution certificate** |
 | iOS production build | Blocked on the above |
 | iPhone 6.9" screenshots | Done, 5 in `store/screenshots/ios` |
 | iPad 13" screenshots | Done, 4 in `store/screenshots/ipad` |
-| Android phone screenshots | Not captured (emulator was not running) |
+| Android phone screenshots | Done, 5 in `store/screenshots/android` |
 
 The two blocked rows are the only things standing between here and a submission, and
 both need the account owner: they cost money, require identity verification, and can
@@ -170,9 +170,14 @@ to submit; retake them from a production build if you want the version pill and 
 development-only affordances to match exactly what ships.
 
 **Google Play**
-- 512x512 app icon, 32 bit PNG.
-- Feature graphic, 1024x500, no transparency.
-- At least 2 phone screenshots, 1080x1920 or similar 16:9.
+- 512x512 app icon, `store/assets/play-icon-512.png`.
+- Feature graphic 1024x500, `store/assets/play-feature-graphic-1024x500.png`.
+- Phone screenshots: five 1080x1920 in `store/screenshots/android`. Two Play rules bite
+  here and both are already handled. Play caps the aspect at 2:1, and the emulator's
+  native 1080x2400 is 2.22:1, so each capture is scaled to fit 9:16 and padded on the
+  brand's near black rather than cropped, which would have cut off the tab bar. Play also
+  rejects PNGs carrying an alpha channel, which `adb screencap` always writes, so each one
+  is flattened. Regenerate with the same two steps if you retake them.
 
 ## Runbook
 
@@ -192,8 +197,11 @@ development-only affordances to match exactly what ships.
 4. **Google: create the app record** for `com.nannier.canvas` and complete the store
    listing, content rating, data safety, and target audience sections.
 5. **Google: upload the first bundle by hand.** The Play API cannot create the very first
-   release, so download the `.aab` from the EAS build page and upload it to the Internal
-   testing track manually.
+   release, so download the `.aab` and upload it to the Internal testing track manually.
+   The current artifact (v1.0.0, versionCode 3, SDK 57) is on its EAS build page:
+   `https://expo.dev/accounts/bnannier/projects/canvas-docs/builds/2776e075-232f-4919-ab8c-f92ea919132a`
+   Rebuild with `cd docs && npx eas-cli build --platform android --profile production`
+   if the app changes before you upload; versionCode auto-increments.
 6. **Google: automate afterwards.** Create a Google Cloud service account, grant it
    "Release to testing tracks" in Play Console, then attach the JSON key to EAS so
    `npx eas-cli submit --platform android --profile production` works. The submit profile
