@@ -32,14 +32,18 @@ describe("Slider Liquid Glass handle", () => {
     expect(webSkin.glassThumb).toBeUndefined();
   });
 
-  it("tints the glass knob a bright translucent white (not the popover default)", () => {
-    // The under-fill is a light glass, scheme-independent, so the knob reads as a bright
-    // puck rather than a popover-tinted blob. It must differ from the popover token.
+  it("tints the glass knob bright white (not the popover default) on both schemes", () => {
+    // The under-fill is an opaque bright white, scheme-independent, so the knob reads as a
+    // bright puck rather than a popover-tinted blob (and, verified on the iOS 26 sim, so
+    // GlassView's adaptive darkening does not pull a translucent knob to dim gray). It must
+    // differ from the popover token.
     const light = iosSkin.glassTint?.(lightColors);
     const dark = iosSkin.glassTint?.(darkColors);
-    expect(light).toBe("rgba(255, 255, 255, 0.55)");
-    expect(dark).toBe("rgba(255, 255, 255, 0.55)");
-    expect(light).not.toBe(lightColors.popover);
+    expect(light).toBe("#ffffff");
+    expect(dark).toBe("#ffffff");
+    // The case that matters: on DARK the popover token is near-black, which would make the
+    // knob a dim dark blob; the bright white tint overrides it so the knob stays bright.
+    // (On light, popover happens to be white too, so no inequality is asserted there.)
     expect(dark).not.toBe(darkColors.popover);
   });
 

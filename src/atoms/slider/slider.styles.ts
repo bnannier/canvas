@@ -122,9 +122,17 @@ export const iosSkin: SliderSkin = {
   // route the knob through GlassSurface so on iOS 26+ (glass is the platform default)
   // it becomes an Apple Liquid Glass puck that refracts the rail and springs on press.
   glassThumb: true,
-  // A bright translucent white under-fill so the knob reads as a light glass puck on
-  // both light and dark schemes (the popover default would tint it gray/near-black).
-  glassTint: () => alpha("#ffffff", 0.55),
+  // An OPAQUE white under-fill so the knob reads as a BRIGHT puck, matching the real
+  // iOS handle (a bright white knob whose glass is the lit edge + interactive refraction,
+  // not a see-through frost). This is deliberately not translucent: verified on the iOS
+  // 26.3 sim, the GlassView "regular" material adaptively darkens ANY translucent backing
+  // toward the content behind it, so a translucent white knob renders as a dim gray
+  // lozenge over a dark UI (reads as inactive). A solid white backing keeps it bright on
+  // every renderer (iOS GlassView, web/Android frost), while the GlassView still supplies
+  // the real Liquid Glass edge-lensing, specular, and `isInteractive` response on top —
+  // the glass becomes prominent during the drag (the shell's scale/bounce), exactly as
+  // iOS 26 "transforms controls into liquid glass during interaction".
+  glassTint: () => "#ffffff",
   // Stepped sliders: small gray tick dots along the rail (the kit's Ticks layer
   // sits UNDER the Fill, so the filled side covers its dots).
   tick: (t) => ({ backgroundColor: t["muted-foreground"] }),

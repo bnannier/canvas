@@ -6,7 +6,7 @@ import {
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, Text, GlassSurface, useTheme, useControllableState, useFieldWidth, useReducedMotion, supportsNativeDriver, isRTL, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, GlassSurface, useTheme, useControllableState, useFieldWidth, useReducedMotion, isRTL, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -247,6 +247,14 @@ export function createSlider(skin: SliderSkin) {
     // PanResponder owns the gesture, so the GlassView never receives the touch). Only
     // under REAL glass (surface === "glass", the iOS 26 default) and with motion
     // allowed; otherwise the knob stays at rest scale, matching today's static thumb.
+    //
+    // Crucially the grow is applied as ANIMATED WIDTH/HEIGHT (a layout resize), NOT a
+    // `transform: scale`. A scale transform on the GlassView's ancestor degrades Apple's
+    // Liquid Glass material to an opaque gray and it stays gray after the gesture
+    // (verified on the iOS 26.3 sim: the knob dropped from ~rgb250 to ~rgb114 after a
+    // scaled drag) — UIKit visual effects break under transforms. Resizing via layout
+    // keeps the material intact, so `useNativeDriver` MUST be false (layout props are
+    // not native-driver-animatable).
     const glassThumb = !!skin.glassThumb;
     const thumbScale = useRef(new Animated.Value(1)).current;
     const springThumb = glassThumb && surface === "glass" && !reducedMotion;
@@ -257,7 +265,7 @@ export function createSlider(skin: SliderSkin) {
       }
       Animated.spring(thumbScale, {
         toValue: pressed ? GLASS_THUMB_PRESS_SCALE : 1,
-        useNativeDriver: supportsNativeDriver,
+        useNativeDriver: false,
         friction: 7,
         tension: 180,
       }).start();
@@ -523,15 +531,18 @@ export function createSlider(skin: SliderSkin) {
           // Liquid Glass material on iOS 26+ (refracting the track behind the knob) and
           // degrades to the opaque `thumb` fill under solid surface / Reduce Transparency /
           // Increase Contrast. The wrapper sizes the surface; the skin's own position is
-          // dropped so it fills the wrapper rather than double-offsetting.
+          // dropped so it fills the wrapper rather than double-offsetting. The press grow is
+          // an ANIMATED WIDTH/HEIGHT resize (not a transform, which would break the glass —
+          // see the spring effect); the negative margins keep the grow centered on the knob.
           <Animated.View
             style={{
               position: "absolute",
               left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft,
               top: thumbTop,
-              width: thumbW,
-              height: thumbH,
-              transform: [{ scale: thumbScale }],
+              width: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [thumbW, thumbW * GLASS_THUMB_PRESS_SCALE] }),
+              height: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [thumbH, thumbH * GLASS_THUMB_PRESS_SCALE] }),
+              marginLeft: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [0, (-thumbW * (GLASS_THUMB_PRESS_SCALE - 1)) / 2] }),
+              marginTop: thumbScale.interpolate({ inputRange: [1, GLASS_THUMB_PRESS_SCALE], outputRange: [0, (-thumbH * (GLASS_THUMB_PRESS_SCALE - 1)) / 2] }),
               pointerEvents: "none",
             }}
           >
