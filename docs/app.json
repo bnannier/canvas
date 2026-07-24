@@ -9,7 +9,10 @@
     "icon": "./assets/images/icon.png",
     "ios": {
       "bundleIdentifier": "com.nannier.canvas",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.nannier.canvas",
