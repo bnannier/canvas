@@ -4,7 +4,7 @@ name: Deploy — canvas
 # target is:
 #
 #   AUTOMATIC on every push to main
-#     - the web docs (GitHub Pages today, Cloudflare Pages once CLOUDFLARE_ENABLED is on)
+#     - the web docs, published to Cloudflare Pages at canvas.nannier.com
 #     - npm, which is a no-op unless a changeset bumped the version
 #
 #   MANUAL, via the "Run workflow" button
@@ -50,7 +50,7 @@ on:
   workflow_dispatch:
     inputs:
       pages:
-        description: "Deploy web docs to GitHub Pages"
+        description: "Deploy web docs to Cloudflare Pages (canvas.nannier.com)"
         type: boolean
         default: true
       npm:
@@ -82,95 +82,20 @@ concurrency:
 # No workflow-level grant: each job scopes exactly the permissions it uses.
 
 jobs:
-  # ---------------------------------------------------------------- GitHub Pages
-  # Single-job build + deploy (the shape of GitHub's own pages/static.yml starter):
-  # build, upload the Pages artifact, and deploy from one runner.
-  pages:
-    # Automatic on a push to main; on a manual run it obeys the checkbox.
-    if: ${{ github.event_name == 'push' || inputs.pages }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      # Root deps first: docs consumes the source-only kit as a live symlink
-      # (docs postinstall), so the root tree must exist before the docs install.
-      - name: Install root deps
-        run: bun install --frozen-lockfile
-
-      # Regenerates the docs core and fails on ANY drift under docs/src/core, so a
-      # stale committed core can never be deployed.
-      - name: Check generated docs core is up to date
-        run: bun run docs:gen:check
-
-      - name: Check menu-glyph rasters are up to date
-        run: bun run raster:gen:check
-
-      - name: Install docs deps
-        working-directory: docs
-        run: bun install --frozen-lockfile
-
-      - name: Typecheck docs
-        working-directory: docs
-        run: bunx tsc --noEmit
-
-      - name: Check nav config is in sync
-        working-directory: docs
-        run: bun run check:nav
-
-      - name: Export web build
-        working-directory: docs
-        run: npx expo export -p web
-        env:
-          # Served under /canvas/ on Pages; app.config.js reads this into
-          # experiments.baseUrl.
-          EXPO_BASE_URL: /canvas
-
-      - name: SPA fallback + .nojekyll
-        working-directory: docs
-        run: |
-          # Pages serves 404.html for unknown paths; a copy of index.html lets the
-          # SPA boot and client-route deep links (e.g. /canvas/components/button).
-          # .nojekyll keeps Jekyll from ignoring the _expo/ dir.
-          cp dist/index.html dist/404.html
-          touch dist/.nojekyll
-
-      - uses: actions/configure-pages@v6
-        with:
-          # Auto-enables Pages (Source: GitHub Actions) if it is off, instead of
-          # failing with "Get Pages site failed".
-          enablement: true
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/dist
-
-      - uses: actions/deploy-pages@v4
-        id: deployment
-
   # --------------------------------------------------------- Cloudflare Pages (web)
-  # Cloudflare Pages, serving canvas.nannier.com. This exists alongside the github-pages
-  # job during the migration and is gated on the CLOUDFLARE_ENABLED variable, so it stays
-  # dormant until the Cloudflare project, token and DNS are in place; once this is proven
-  # the `pages` job above can be deleted.
+  # Publishes the web docs to canvas.nannier.com. This replaced a GitHub Pages deploy,
+  # for two reasons worth remembering before anyone moves it back:
+  #   - the site is served from the ROOT of its own subdomain rather than a /canvas
+  #     subpath, which was a repeated source of asset-path bugs, so there is no
+  #     EXPO_BASE_URL here;
+  #   - docs/public/_redirects performs a real SPA rewrite, so deep routes answer 200.
+  #     Pages has no rewrites, so serving an SPA there means copying index.html to
+  #     404.html and every deep route answering with a 404 STATUS while rendering fine.
+  #     Both app stores fetch the privacy policy URL they are given, which is what turned
+  #     that from cosmetic into a submission risk.
   #
-  # Two differences from the github-pages build, and they are the reasons for moving:
-  #   - no EXPO_BASE_URL, because the site is served from the ROOT of its own subdomain
-  #     rather than a /canvas subpath, which is a documented source of asset-path bugs;
-  #   - no index.html -> 404.html copy, because docs/public/_redirects performs a real
-  #     SPA rewrite, so deep routes answer 200 instead of the 404 status Pages is stuck
-  #     with. Both app stores fetch the privacy policy URL, which is what made that matter.
+  # Gated on CLOUDFLARE_ENABLED so the job self-disables if the credentials are ever
+  # removed, rather than failing every push.
   cloudflare:
     if: ${{ (github.event_name == 'push' || inputs.pages) && vars.CLOUDFLARE_ENABLED == 'true' }}
     runs-on: ubuntu-latest
