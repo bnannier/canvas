@@ -37,6 +37,7 @@ const STATIC_TITLES: Record<string, { title: string; subtitle?: string }> = {
   "/integration": { title: "Integration", subtitle: "Guides" },
   "/browser-support": { title: "Browser Support", subtitle: "Guides" },
   "/rn-primitives": { title: "React Native", subtitle: "Guides" },
+  "/privacy": { title: "Privacy Policy", subtitle: "Guides" },
   "/boilerplate": { title: "Boilerplate", subtitle: "Overview" },
 };
 
