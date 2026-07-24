@@ -49,8 +49,11 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, sheer }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, sheer, tint }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
+  // The under-fill behind the frost: the caller's `tint` for a bright glass control
+  // (the Slider knob), else the `popover` token that keeps panels legible.
+  const underFill = tint ?? tokens.popover;
   // The Android blur target (see GlassBlurTargetContext in the shared file):
   // non-null only where blurring it is native-sibling-safe — inside an
   // OverlayProvider's outlet or an RN Modal bridged by GlassModalBlurTarget.
@@ -89,7 +92,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, sheer }: 
   // through the remaining translucency.
   const material = (
     <>
-      <View style={[materialFill(style), { backgroundColor: tokens.popover, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
+      <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
       <BlurView
         intensity={sheer ? SHEER_INTENSITY : GLASS_INTENSITY}
         tint={dark ? "dark" : "light"}

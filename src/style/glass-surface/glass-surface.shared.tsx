@@ -42,6 +42,16 @@ export interface GlassSurfaceProps {
    * enough to occlude the content they open over. Defaults to false (the full frost).
    */
   sheer?: boolean;
+  /**
+   * Override the translucent UNDER-FILL painted behind the material (the fill that keeps
+   * a bare glass panel legible). Defaults to the `popover` token, which suits panels
+   * (menus, dialogs, bars). Pass a brighter value for a small glass CONTROL that must
+   * read as a bright puck rather than a popover-tinted blob — the Slider's Liquid Glass
+   * handle passes a translucent white here so the knob looks like glass on both schemes.
+   * Ignored on the solid + module-absent fallbacks (PlainSurface keeps the skin's own
+   * opaque fill).
+   */
+  tint?: string;
 }
 
 // The Android blur-target plumbing for expo-blur 57+, whose new Android API blurs an
