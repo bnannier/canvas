@@ -9,7 +9,6 @@ export * from "./drag-drop/drag-drop.js";
 export * from "./drawer/drawer.js";
 export * from "./filter-panel/filter-panel.js";
 export * from "./navbars/navbars.js";
-export * from "./overlays/overlays.js";
 export * from "./row-menu/row-menu.js";
 export * from "./sidebar/sidebar.js";
 export * from "./steps/steps.js";
