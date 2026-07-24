@@ -121,19 +121,21 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
       return () => sub.remove();
     }, [open, setOpen]);
 
-    // left/right/top edges SLIDE via a manual translateX/translateY + scrim fade: RN Modal's
-    // animationType can only slide vertically UPWARD ("slide" rises from the bottom), so those
-    // edges would otherwise just fade in. Keep the Modal mounted through the exit so the slide-out
-    // is visible, then unmount. The BOTTOM sheet keeps RN Modal's native slide.
-    const isManual = edge !== "bottom";
-    const isVertical = edge === "top";
+    // EVERY edge SLIDES by hand (translateX/translateY) behind a SEPARATE, stationary
+    // dim layer that fades in. RN Modal's animationType can only slide vertically upward
+    // AND it transforms the whole modal (the scrim dim included), so relying on it would
+    // (a) leave left/right/top edges to merely fade, and (b) drag the backdrop up with a
+    // bottom sheet. Driving the slide ourselves keeps the dim a fixed full-screen scrim
+    // that takes over the surface while only the panel travels, identical on every edge.
+    // The Modal stays mounted through the exit so the slide-out is visible, then unmounts.
+    const isVertical = edge === "top" || edge === "bottom";
     const reduced = useReducedMotion();
     const [mounted, setMounted] = useState(open);
-    // The top sheet slides on Y, so it needs the panel's measured height for its off-screen origin.
+    // Both sheets slide on Y, so they need the panel's measured height for the off-screen
+    // origin: the top starts above (-height), the bottom below (+height).
     const [panelH, setPanelH] = useState(0);
     const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
-      if (!isManual) return;
       if (open) {
         setMounted(true);
         Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
@@ -142,13 +144,20 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           if (finished) setMounted(false);
         });
       }
-    }, [open, mounted, isManual, progress, reduced]);
+    }, [open, mounted, progress, reduced]);
 
     // Side panels land on the logical start (left) / end (right) edge via flexbox, which mirrors
-    // under RTL — so the horizontal slide origin follows the PHYSICAL side the panel ends up on.
-    // The top sheet drops down from above (translateY = -panelHeight -> 0).
+    // under RTL, so the horizontal slide origin follows the PHYSICAL side the panel ends up on.
+    // The top sheet drops down from above (translateY = -panelHeight -> 0); the bottom sheet
+    // rises from below (translateY = +panelHeight -> 0).
     const physicalRight = (edge === "right") !== isRTL();
-    const fromOffset = isVertical ? -(panelH || 600) : physicalRight ? width : -width;
+    const fromOffset = isVertical
+      ? edge === "bottom"
+        ? panelH || 600
+        : -(panelH || 600)
+      : physicalRight
+        ? width
+        : -width;
     const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [fromOffset, 0] });
     // The scrim dim resolves per color scheme (iOS dims lighter in light, darker in dark).
     const scrimAlpha = skin.scrimOpacity(scheme);
@@ -173,7 +182,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     ) : null;
 
     // A no-op press inside the panel keeps taps from falling through to the scrim; it is a pure
-    // event-capture wrapper, hidden from assistive tech. onLayout measures the top sheet's height
+    // event-capture wrapper, hidden from assistive tech. onLayout measures a sheet's height
     // for its slide. SafeAreaView pads the panel content clear of the device insets on iOS (a
     // bottom sheet clears the home indicator, a side drawer the notch/status bar); the opaque
     // `card` fill still reaches the screen edge, and insets resolve to 0 elsewhere.
@@ -204,9 +213,9 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           </Button>
         ) : null}
         <Modal
-          visible={isManual ? mounted : open}
+          visible={mounted}
           transparent
-          animationType={isManual ? "none" : "slide"}
+          animationType="none"
           onRequestClose={() => setOpen(false)}
           testID={testID}
           // Tell assistive tech the content behind this full-screen overlay is
@@ -222,22 +231,15 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
               visible while typing. "padding" shrinks the overlay by the keyboard height on iOS;
               off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-            {isManual ? (
-              // The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
-              // layout; the panel rides in on translateX/translateY. The dim is a dismiss
-              // affordance, not a control, so it is unannounced (back/escape/trigger dismiss).
-              <View style={{ flex: 1 }}>
-                <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
-                <Pressable accessible={false} style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
-                  <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
-                </Pressable>
-              </View>
-            ) : (
-              // Bottom: RN Modal's native slide + the static scrim dim.
-              <Pressable accessible={false} style={s.scrim(edge, scrimAlpha)} onPress={() => setOpen(false)}>
-                {panel}
+            {/* The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
+                layout; the panel rides in on translateX/translateY. The dim is a dismiss
+                affordance, not a control, so it is unannounced (back/escape/trigger dismiss). */}
+            <View style={{ flex: 1 }}>
+              <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
+              <Pressable accessible={false} style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
+                <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
               </Pressable>
-            )}
+            </View>
           </KeyboardAvoidingView>
           </GlassModalBlurTarget>
         </Modal>
