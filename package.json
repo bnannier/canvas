@@ -66,6 +66,7 @@
     "icons:gen": "bun tools/icongen/generate.ts",
     "favicon:gen": "bun tools/favicongen/generate.ts",
     "appicon:gen": "bun tools/appicongen/generate.ts",
+    "privacy:gen": "bun tools/privacygen/generate.ts",
     "og:gen": "bun tools/oggen/generate.ts",
     "raster:gen": "bun tools/rastergen/generate.ts",
     "raster:gen:check": "bun tools/rastergen/generate.ts --check",
