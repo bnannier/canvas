@@ -159,7 +159,6 @@ const CASES: SkinCase[] = [
   { name: "Drawer", dir: "organisms/drawer", file: "drawer", props: { open: true, onOpenChange: noop, left: true }, children: txt("Drawer panel content") },
   { name: "FilterPanel", dir: "organisms/filter-panel", file: "filter-panel", props: { groups: [{ title: "Status", options: [{ label: "Active", checked: true }, { label: "Archived" }] }] } },
   { name: "Navbar", dir: "organisms/navbars", file: "navbars", props: { brand: "Acme", links: ["Home", "Docs", "Pricing"], active: 0, actionLabel: "Sign in" } },
-  { name: "Overlay", dir: "organisms/overlays", file: "overlays", props: { open: true, onOpenChange: noop, title: "Details", description: "More info here.", drawer: true } },
   { name: "RowMenu", dir: "organisms/row-menu", file: "row-menu", props: { open: true, items: [{ label: "Edit" }, { label: "Delete", destructive: true }] } },
   { name: "Sidebar", dir: "organisms/sidebar", file: "sidebar", props: { items: [{ label: "Dashboard", icon: "■" }, { label: "Settings", badge: "3" }], active: 0 } },
   { name: "Steps", dir: "organisms/steps", file: "steps", props: { current: 1, steps: [{ label: "Cart" }, { label: "Shipping" }, { label: "Payment" }] } },

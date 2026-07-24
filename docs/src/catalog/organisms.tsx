@@ -240,34 +240,6 @@ function DialogPreview() {
   );
 }
 
-function OverlaysPreview() {
-  const { tokens } = useTheme();
-  return (
-    <View style={{ width: 200, maxWidth: "100%", height: 64 }}>
-      <View style={{ height: "100%", borderRadius: 6, backgroundColor: alpha(tokens.muted, 0.4) }} />
-      <View
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          backgroundColor: tokens.card,
-          borderWidth: 1,
-          borderColor: tokens.border,
-          borderRadius: 6,
-          padding: 4,
-        }}
-      >
-        <View style={{ paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4 }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }}>Edit</Text>
-        </View>
-        <View style={{ paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4 }}>
-          <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }}>Copy</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
 function StepsPreview() {
   const { tokens } = useTheme();
   const steps = [true, true, false, false];
@@ -342,7 +314,6 @@ export const ORGANISMS_TILES: CatTile[] = [
   { title: "Navbar", href: "/components/navbars", Preview: NavbarsPreview },
   { title: "Sidebar", href: "/components/sidebar", Preview: SidebarPreview },
   { title: "Dialog", href: "/components/dialog", Preview: DialogPreview },
-  { title: "Overlay", href: "/components/overlays", Preview: OverlaysPreview },
   { title: "Steps", href: "/components/steps", Preview: StepsPreview },
   { title: "Tabs", href: "/components/tabs", Preview: TabsPreview },
 ];

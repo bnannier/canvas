@@ -430,11 +430,6 @@
             "icon": "navigation"
           },
           {
-            "slug": "overlays",
-            "label": "Overlay",
-            "icon": "panel-right"
-          },
-          {
             "slug": "row-menu",
             "label": "RowMenu",
             "icon": "more-horizontal"

@@ -35,8 +35,6 @@ import { Dialog as DialogIOS } from "../../../src/organisms/dialog/dialog.ios.js
 import { Dialog as DialogAndroid } from "../../../src/organisms/dialog/dialog.android.js";
 import { AlertDialog as AlertDialogIOS } from "../../../src/molecules/alert-dialog/alert-dialog.ios.js";
 import { AlertDialog as AlertDialogAndroid } from "../../../src/molecules/alert-dialog/alert-dialog.android.js";
-import { Overlay as OverlayIOS } from "../../../src/organisms/overlays/overlays.ios.js";
-import { Overlay as OverlayAndroid } from "../../../src/organisms/overlays/overlays.android.js";
 import { Spinner as SpinnerIOS } from "../../../src/atoms/spinner/spinner.ios.js";
 import { Spinner as SpinnerAndroid } from "../../../src/atoms/spinner/spinner.android.js";
 import { TabBar as TabBarIOS } from "../../../src/organisms/tab-bar/tab-bar.ios.js";
@@ -117,7 +115,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Radio: RadioIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
-    RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS, Overlay: OverlayIOS,
+    RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS,
     Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
     Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
@@ -133,7 +131,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
-    RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid, Overlay: OverlayAndroid,
+    RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid,
     Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
     Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
