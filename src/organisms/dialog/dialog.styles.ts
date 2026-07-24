@@ -99,19 +99,31 @@ export interface DialogSkin {
 
 // --- outer shell (identical across platforms) -------------------------------
 
-// The outermost wrapper shrinks to its content so the inline trigger sits flush.
-export const root: ViewStyle = { alignSelf: "flex-start" };
+// The outermost wrapper fills its container's width so the modal panel can cap to
+// the width actually available (see cardWidth): a narrow container (a phone screen,
+// the docs preview cell) then shrinks the panel to fit instead of letting its fixed
+// per-size width overflow the screen. `minWidth: 0` lets it shrink below the panel's
+// content width when it is a flex item in a row. The trigger button is wrapped in
+// `triggerWrap` so it keeps its natural width rather than stretching to this full width.
+export const root: ViewStyle = { width: "100%", minWidth: 0 };
+
+// Keeps the optional trigger button at its natural (content) width and leading-aligned,
+// so the full-width `root` above does not stretch it across the container.
+export const triggerWrap: ViewStyle = { alignSelf: "flex-start" };
 
 // Inset between the trigger button and the backdrop when a trigger is rendered.
 export const backdropTriggerGap: ViewStyle = { marginTop: 12 };
 
 // The contained backdrop sizing (centered, with presence in the docs preview via
 // an explicit minHeight). The per-platform fill/radius come from the skin.
+// `minWidth: 0` lets the backdrop shrink below the card's content width so a narrow
+// container caps the panel (the card's maxWidth:"100%") instead of overflowing.
 export const backdropLayout: ViewStyle = {
   alignItems: "center",
   justifyContent: "center",
   padding: 32,
   minHeight: 220,
+  minWidth: 0,
 };
 
 // The card layout box (width up to its per-size cap). Shape/fill/shadow come

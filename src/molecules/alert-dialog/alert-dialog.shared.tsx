@@ -250,9 +250,11 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
     return (
       <View testID={testID} style={s.root}>
         {trigger != null ? (
-          <Button outline small onPress={() => setOpen(true)}>
-            {trigger}
-          </Button>
+          <View style={s.triggerWrap}>
+            <Button outline small onPress={() => setOpen(true)}>
+              {trigger}
+            </Button>
+          </View>
         ) : null}
         {open ? (
           <View
@@ -269,7 +271,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             aria-modal={true}
             aria-labelledby={title != null ? titleId : undefined}
             aria-describedby={description != null ? descriptionId : undefined}
-            style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200 }]}
+            style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200, minWidth: 0 }]}
           >
             <Entrance style={[s.cardBase, s.panelWidth[width], style]}>
             <GlassSurface style={[s.cardBase, skin.card(tokens)]}>
