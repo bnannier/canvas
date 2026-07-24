@@ -29,7 +29,10 @@
   },
   "submit": {
     "production": {
-      "ios": {},
+      "ios": {
+        "ascAppId": "6794454098",
+        "appleTeamId": "ZR2R53SLS7"
+      },
       "android": {
         "track": "internal",
         "releaseStatus": "draft"
