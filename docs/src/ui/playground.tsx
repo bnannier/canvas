@@ -111,9 +111,10 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
 // Selection is optionally controlled: pass `selected` + `onSelect` to drive the active
 // example from the URL variant (see ComponentReference); omit them and the rail manages
 // its own state.
-export function Playground({ examples, stageAlign, selected: selectedProp, onSelect: onSelectProp }: {
+export function Playground({ examples, stageAlign, singlePreview, selected: selectedProp, onSelect: onSelectProp }: {
   examples: DocExample[];
   stageAlign?: "center" | "start";
+  singlePreview?: boolean;
   selected?: number;
   onSelect?: (index: number) => void;
 }) {
@@ -131,7 +132,11 @@ export function Playground({ examples, stageAlign, selected: selectedProp, onSel
   const ex = examples[selected] ?? examples[0];
   if (!ex) return null;
 
-  const previews = buildScopes(tokens);
+  const allPreviews = buildScopes(tokens);
+  // `singlePreview` components (full app chrome, e.g. Sidebar) show ONE preview instead of the
+  // stacked iOS/Android/Web 3-up: keep the last column (the web skin on web) and drop the rest.
+  // On native the build already returns a single device preview, so this is a no-op there.
+  const previews = singlePreview && allPreviews.length > 1 ? [allPreviews[allPreviews.length - 1]] : allPreviews;
   // The web build returns the iOS/Android/Web 3-up (labels help tell them apart); the native
   // build returns a single device preview, where the platform label is redundant.
   const showLabels = previews.length > 1;

@@ -59,6 +59,19 @@ type WithToastHelper = (props: {
 // stage's code block. Keep in sync with the `AppScreen` component in ./live-state.tsx.
 type AppScreenHelper = (props: { children: ReactNode }) => ReactNode;
 
+// The docs-only responsive "app shell" frame (./live-state.tsx): mounts a Sidebar the way a
+// real app does — rail + content on desktop, hamburger-opened drill-down drawer on narrow —
+// so the Sidebar example reads as app chrome instead of a lone rail. Keep in sync with the
+// `AppShell` component in ./live-state.tsx.
+type AppShellHelper = (props: {
+  children: (state: {
+    open: boolean;
+    setOpen: (next: boolean) => void;
+    active: string;
+    select: (item: { label: string }) => void;
+  }) => ReactNode;
+}) => ReactNode;
+
 export type ExampleScope = typeof import("@nannier/canvas") & {
   tokens: ColorTokens;
   Stateful: StatefulHelper;
@@ -67,6 +80,7 @@ export type ExampleScope = typeof import("@nannier/canvas") & {
   IconGallery: IconGalleryHelper;
   WithToast: WithToastHelper;
   AppScreen: AppScreenHelper;
+  AppShell: AppShellHelper;
 };
 
 // A generated example module's default export.
