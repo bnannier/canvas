@@ -153,9 +153,10 @@ Requirements as of this writing. Regenerate rather than upscale; both stores rej
 stretched images.
 
 **Apple**
-- 1024x1024 marketing icon, no alpha channel. Comes from `docs/assets/images/icon.png`,
-  which is now RGB. Note this icon is a blue chevron mark and does not match the rainbow
-  "C" used throughout the docs and README; consider aligning them before launch.
+- 1024x1024 marketing icon, no alpha channel. Generated from the Canvas C mark by
+  `bun run appicon:gen`, which also writes the Android layers and the Play artwork. Never
+  hand-edit these files; change the mark geometry and regenerate, so the icons cannot
+  drift from the brand.
 - iPhone 6.9 inch screenshots. Five are in `store/screenshots/ios` at 1320x2868,
   captured on the iPhone 17 Pro Max simulator.
 - iPad 13 inch screenshots, required because `ios.supportsTablet` is `true`. Four are
@@ -204,6 +205,7 @@ development-only affordances to match exactly what ships.
 ## Open decisions
 
 - **Store listing name**: `Canvas UI Kit` versus plain `Canvas`.
-- **App icon**: the current blue chevron does not match the rainbow "C" brand.
-- **iPad support**: keep `supportsTablet: true` and produce iPad screenshots, or drop it.
 - **Public contact email** for the Play listing.
+
+Settled: the app icon is now the Canvas C mark on the brand's near black, generated
+from the shared geometry; `supportsTablet` stays `true` and the iPad screenshots exist.
