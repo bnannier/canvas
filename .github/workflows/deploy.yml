@@ -156,6 +156,75 @@ jobs:
   # Publish is idempotent: it only publishes versions missing from npm, so a publish
   # that failed once converges on the next run without a fresh changeset. Avoids the
   # PR-creation path entirely (no "Actions can create PRs" repo setting needed).
+  # Cloudflare Pages, serving canvas.nannier.com. This exists alongside the github-pages
+  # job during the migration and is gated on the CLOUDFLARE_ENABLED variable, so it stays
+  # dormant until the Cloudflare project, token and DNS are in place; once this is proven
+  # the `pages` job above can be deleted.
+  #
+  # Two differences from the github-pages build, and they are the reasons for moving:
+  #   - no EXPO_BASE_URL, because the site is served from the ROOT of its own subdomain
+  #     rather than a /canvas subpath, which is a documented source of asset-path bugs;
+  #   - no index.html -> 404.html copy, because docs/public/_redirects performs a real
+  #     SPA rewrite, so deep routes answer 200 instead of the 404 status Pages is stuck
+  #     with. Both app stores fetch the privacy policy URL, which is what made that matter.
+  cloudflare:
+    if: ${{ (github.event_name == 'push' || inputs.pages) && vars.CLOUDFLARE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Root deps first: docs consumes the source-only kit as a live symlink
+      # (docs postinstall), so the root tree must exist before the docs install.
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      - name: Check generated docs core is up to date
+        run: bun run docs:gen:check
+
+      - name: Check menu-glyph rasters are up to date
+        run: bun run raster:gen:check
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck docs
+        working-directory: docs
+        run: bunx tsc --noEmit
+
+      - name: Check nav config is in sync
+        working-directory: docs
+        run: bun run check:nav
+
+      # No EXPO_BASE_URL: served from the root of canvas.nannier.com.
+      - name: Export web build
+        working-directory: docs
+        run: npx expo export -p web
+
+      # Fails loudly rather than shipping a site whose deep routes 404: _redirects is what
+      # makes this host better than Pages, and it only works if it reached the artifact.
+      - name: Verify SPA rewrite and privacy page are in the artifact
+        working-directory: docs
+        run: |
+          test -f dist/_redirects || { echo "::error::dist/_redirects missing; SPA routes would 404"; exit 1; }
+          test -f dist/privacy/index.html || { echo "::error::dist/privacy/index.html missing; the store privacy URL would break"; exit 1; }
+          echo "_redirects and privacy/index.html present"
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: docs
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT || 'canvas' }} --branch=main
+
   npm:
     # Automatic on a push to main; on a manual run it obeys the checkbox. `changeset
     # publish` is a no-op when the local version already exists on the registry, so a
