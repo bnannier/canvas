@@ -1,9 +1,18 @@
 name: Deploy — canvas
 
-# THE manual deploy button, and the only deploy surface in this repo. Click
-# "Run workflow" to ship any or all targets in parallel: GitHub Pages (web docs),
-# npm (the kit), and EAS native builds of the docs app (iOS/Android). Nothing here
-# runs on push: deploys are manual-only by design (ci.yml validates every push).
+# The deploy surface for this repo, split by how expensive and how reversible each
+# target is:
+#
+#   AUTOMATIC on every push to main
+#     - the web docs (GitHub Pages today, Cloudflare Pages once CLOUDFLARE_ENABLED is on)
+#     - npm, which is a no-op unless a changeset bumped the version
+#
+#   MANUAL, via the "Run workflow" button
+#     - the EAS native builds, which cost build minutes and, on the production profile,
+#       push binaries at Apple and Google
+#
+# Each target is its own job, so they show as separate boxes and one cannot fail another.
+# Every job writes clickable links for its result into the run summary.
 #
 # The `profile` input picks the EAS build profile: `production` auto-submits to
 # TestFlight / Google Play internal (the only profile with a submit config in
@@ -150,12 +159,7 @@ jobs:
       - uses: actions/deploy-pages@v4
         id: deployment
 
-  # ------------------------------------------------------------------------ npm
-  # Changesets release. If there are pending changesets, consume them (version bump
-  # + CHANGELOG) and commit directly to main; then ALWAYS run `changeset publish`.
-  # Publish is idempotent: it only publishes versions missing from npm, so a publish
-  # that failed once converges on the next run without a fresh changeset. Avoids the
-  # PR-creation path entirely (no "Actions can create PRs" repo setting needed).
+  # --------------------------------------------------------- Cloudflare Pages (web)
   # Cloudflare Pages, serving canvas.nannier.com. This exists alongside the github-pages
   # job during the migration and is gated on the CLOUDFLARE_ENABLED variable, so it stays
   # dormant until the Cloudflare project, token and DNS are in place; once this is proven
@@ -218,6 +222,7 @@ jobs:
           echo "_redirects and privacy/index.html present"
 
       - name: Publish to Cloudflare Pages
+        id: cf
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -225,6 +230,23 @@ jobs:
           workingDirectory: docs
           command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT || 'canvas' }} --branch=main
 
+      - name: Summarise the deploy
+        if: always()
+        run: |
+          {
+            echo "### Web docs (Cloudflare Pages)"
+            echo ""
+            echo "- [canvas.nannier.com](https://canvas.nannier.com/)"
+            echo "- [Privacy policy](https://canvas.nannier.com/privacy/) (the URL filed with both app stores)"
+            [ -n "${{ steps.cf.outputs.deployment-url }}" ] && echo "- [This exact deployment](${{ steps.cf.outputs.deployment-url }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------------------------ npm
+  # Changesets release. If there are pending changesets, consume them (version bump
+  # + CHANGELOG) and commit directly to main; then ALWAYS run `changeset publish`.
+  # Publish is idempotent: it only publishes versions missing from npm, so a publish
+  # that failed once converges on the next run without a fresh changeset. Avoids the
+  # PR-creation path entirely (no "Actions can create PRs" repo setting needed).
   npm:
     # Automatic on a push to main; on a manual run it obeys the checkbox. `changeset
     # publish` is a no-op when the local version already exists on the registry, so a
@@ -307,11 +329,28 @@ jobs:
       - name: Push release tags
         run: git push --tags
 
+      # Clickable result in the run summary. Reads the version AFTER `changeset version`
+      # ran, so it names what actually went out, and reports plainly when a run published
+      # nothing (the common case: a push with no pending changesets).
+      - name: Summarise the release
+        if: always()
+        run: |
+          version=$(node -p "require('./package.json').version")
+          {
+            echo "### npm"
+            if [ "${{ steps.has_changesets.outputs.count }}" = "0" ]; then
+              echo "No pending changesets, so nothing was published. Current version is \`$version\`."
+            else
+              echo "Published **@nannier/canvas@$version**"
+              echo ""
+              echo "- [View on npm](https://www.npmjs.com/package/@nannier/canvas/v/$version)"
+              echo "- [Release tag](https://github.com/${{ github.repository }}/releases/tag/v$version)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # -------------------------------------------------------- EAS native (iOS/Android)
-  # ONE job for both platforms: the setup (installs + docgen) is identical, and with
-  # --no-wait the eas command only QUEUES the remote build, so the runner exits in
-  # seconds instead of idling while EAS compiles. Green here means "queued on EAS";
-  # build + store-submission results live on expo.dev (links land in the run summary).
+  # Green here means "queued on EAS"; build + store-submission results live on expo.dev
+  # (links land in the run summary).
   # iOS and Android are SEPARATE jobs, not one "native" job driven by --platform all, so
   # each renders as its own box and, more importantly, so one platform cannot fail the
   # other. They were combined until a run proved the hazard: both builds queued fine, then
@@ -378,10 +417,21 @@ jobs:
           fi
           builds=$(eas build "${args[@]}")
           echo "$builds"
+          asc_id=$(node -p "require('./eas.json').submit.production.ios.ascAppId" 2>/dev/null || echo "")
           {
-            echo "### EAS build queued ($EAS_PLATFORM, profile: $EAS_PROFILE, submit: $EAS_SUBMIT)"
-            echo "$builds" | jq -r '.[] | "- \(.platform): \(.buildDetailsPageUrl // ("https://expo.dev/builds/" + .id))"' \
-              || echo "- Track progress at https://expo.dev"
+            echo "### iOS build queued"
+            echo ""
+            echo "$builds" | jq -r '.[] | "- **Build \(.appBuildVersion // "?") (v\(.appVersion // "?"))**: [watch it build on EAS](\(.buildDetailsPageUrl // ("https://expo.dev/builds/" + .id)))"' \
+              || echo "- [Track progress on EAS](https://expo.dev)"
+            echo ""
+            if [ "$EAS_SUBMIT" = "true" ]; then
+              echo "Auto-submit is ON. When the build finishes, EAS uploads it to App Store Connect (a few more minutes for Apple to process it):"
+              echo ""
+              [ -n "$asc_id" ] && echo "- [TestFlight builds](https://appstoreconnect.apple.com/apps/$asc_id/testflight/ios)"
+              [ -n "$asc_id" ] && echo "- [App Store listing (attach the build, then submit for review)](https://appstoreconnect.apple.com/apps/$asc_id/distribution/ios/version/inflight)"
+            else
+              echo "Auto-submit is OFF (profile \`$EAS_PROFILE\`), so the build stays on EAS for manual download."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
   android:
@@ -438,7 +488,18 @@ jobs:
           builds=$(eas build "${args[@]}")
           echo "$builds"
           {
-            echo "### EAS build queued ($EAS_PLATFORM, profile: $EAS_PROFILE, submit: $EAS_SUBMIT)"
-            echo "$builds" | jq -r '.[] | "- \(.platform): \(.buildDetailsPageUrl // ("https://expo.dev/builds/" + .id))"' \
-              || echo "- Track progress at https://expo.dev"
+            echo "### Android build queued"
+            echo ""
+            echo "$builds" | jq -r '.[] | "- **Build \(.appBuildVersion // "?") (v\(.appVersion // "?"))**: [watch it build on EAS](\(.buildDetailsPageUrl // ("https://expo.dev/builds/" + .id)))"' \
+              || echo "- [Track progress on EAS](https://expo.dev)"
+            echo ""
+            if [ "$EAS_SUBMIT" = "true" ]; then
+              echo "Auto-submit is ON. When the build finishes, EAS uploads it to the Play internal track as a draft:"
+              echo ""
+              echo "- [Play Console](https://play.google.com/console)"
+            else
+              echo "Auto-submit is OFF. Download the \`.aab\` from the EAS link above and upload it by hand."
+              echo "Play cannot create a first release through the API, so the first upload is manual regardless."
+              echo "Set the repo variable \`PLAY_SUBMIT_ENABLED\` to \`true\` once a Google service account key is attached to EAS."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
