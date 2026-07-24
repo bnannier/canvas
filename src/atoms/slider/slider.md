@@ -8,7 +8,7 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 <Slider defaultValue={60} min={0} max={100} />
 ```
 
-On iOS 26 the handle renders as real Apple Liquid Glass, refracting the rail behind it and springing up as you drag (the OS "transforms controls into liquid glass during interaction"). This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own native look.
+On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that springs up as you drag, with the material's edge-lensing and specular showing on a physical device (the OS "transforms controls into liquid glass during interaction"). This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own native look.
 
 ## Variants
 
