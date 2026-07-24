@@ -22,6 +22,22 @@ name: Deploy — canvas
 #      variables -> Actions -> Variables). It gates the native job at the job level
 #      because `secrets` cannot be read in a job-level `if`.
 on:
+  # The web docs and the npm package publish THEMSELVES on every push to main: both are
+  # cheap, reversible-ish, and gated by their own tooling (Pages just replaces the site;
+  # `changeset publish` is a no-op unless the local version is absent from the registry,
+  # which only happens after a `changeset version` bump). The native store builds stay
+  # MANUAL below, because they cost EAS build minutes and, on the production profile,
+  # push binaries at Apple and Google.
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'styles/**'
+      - 'docs/**'
+      - 'tools/**'
+      - 'package.json'
+      - 'bun.lock'
+      - '.changeset/**'
   workflow_dispatch:
     inputs:
       pages:
@@ -29,9 +45,11 @@ on:
         type: boolean
         default: true
       npm:
+        # Defaults to FALSE unlike the others: this publishes a real, public, immutable
+        # release, so it must be opted into deliberately rather than left ticked.
         description: "Publish @nannier/canvas to npm"
         type: boolean
-        default: true
+        default: false
       ios:
         description: "EAS-build the iOS docs app"
         type: boolean
@@ -59,7 +77,8 @@ jobs:
   # Single-job build + deploy (the shape of GitHub's own pages/static.yml starter):
   # build, upload the Pages artifact, and deploy from one runner.
   pages:
-    if: ${{ inputs.pages }}
+    # Automatic on a push to main; on a manual run it obeys the checkbox.
+    if: ${{ github.event_name == 'push' || inputs.pages }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -138,7 +157,11 @@ jobs:
   # that failed once converges on the next run without a fresh changeset. Avoids the
   # PR-creation path entirely (no "Actions can create PRs" repo setting needed).
   npm:
-    if: ${{ inputs.npm }}
+    # Automatic on a push to main; on a manual run it obeys the checkbox. `changeset
+    # publish` is a no-op when the local version already exists on the registry, so a
+    # push with no version bump publishes nothing. The version-bump commit carries
+    # [skip ci], which is what stops it from retriggering this workflow forever.
+    if: ${{ github.event_name == 'push' || inputs.npm }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -220,17 +243,25 @@ jobs:
   # --no-wait the eas command only QUEUES the remote build, so the runner exits in
   # seconds instead of idling while EAS compiles. Green here means "queued on EAS";
   # build + store-submission results live on expo.dev (links land in the run summary).
-  native:
-    if: ${{ (inputs.ios || inputs.android) && vars.EAS_ENABLED == 'true' }}
+  # iOS and Android are SEPARATE jobs, not one "native" job driven by --platform all, so
+  # each renders as its own box and, more importantly, so one platform cannot fail the
+  # other. They were combined until a run proved the hazard: both builds queued fine, then
+  # the Android submission aborted the whole job ("Google Service Account Keys cannot be
+  # set up in --non-interactive mode"), marking a perfectly good iOS build red. The setup
+  # steps are duplicated between the two rather than hidden in a composite action; the
+  # repetition is a handful of lines and keeps each job readable on its own.
+  ios:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.ios && vars.EAS_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      # ios+android -> all; otherwise just the selected platform.
-      EAS_PLATFORM: ${{ inputs.ios && inputs.android && 'all' || inputs.ios && 'ios' || 'android' }}
+      EAS_PLATFORM: ios
       EAS_PROFILE: ${{ inputs.profile }}
+      # iOS submission works: the App Store Connect API key is stored on EAS.
+      EAS_SUBMIT: ${{ inputs.profile == 'production' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -269,13 +300,76 @@ jobs:
         working-directory: docs
         run: |
           args=(--platform "$EAS_PLATFORM" --profile "$EAS_PROFILE" --non-interactive --no-wait --json)
-          if [ "$EAS_PROFILE" = "production" ]; then
+          # --auto-submit is opt-in per platform (EAS_SUBMIT) rather than keyed off the
+          # profile alone, because a platform can be buildable while its store account
+          # is not yet set up. Submitting without those credentials fails the build
+          # command outright, taking a successful build down with it.
+          if [ "$EAS_SUBMIT" = "true" ]; then
             args+=(--auto-submit)
           fi
           builds=$(eas build "${args[@]}")
           echo "$builds"
           {
-            echo "### EAS builds queued (profile: $EAS_PROFILE)"
+            echo "### EAS build queued ($EAS_PLATFORM, profile: $EAS_PROFILE, submit: $EAS_SUBMIT)"
+            echo "$builds" | jq -r '.[] | "- \(.platform): \(.buildDetailsPageUrl // ("https://expo.dev/builds/" + .id))"' \
+              || echo "- Track progress at https://expo.dev"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  android:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.android && vars.EAS_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_PLATFORM: android
+      EAS_PROFILE: ${{ inputs.profile }}
+      # Android submission additionally needs a Google service account key on EAS, which
+      # cannot exist until the Play Developer account does. Until then this stays false so
+      # the build still runs and produces an .aab to upload by hand; set the repo variable
+      # PLAY_SUBMIT_ENABLED to 'true' once the service account is attached.
+      EAS_SUBMIT: ${{ inputs.profile == 'production' && vars.PLAY_SUBMIT_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # The native app consumes the source-only kit + the generated docs core through
+      # symlinks (docs postinstall), so root deps + docgen must precede the EAS build.
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate docs core
+        run: bun run docs:gen
+
+      # The native app bundles the menu-glyph PNGs, so bake them fresh against the current
+      # kit glyphs (same rationale as regenerating docs core above).
+      - name: Regenerate menu-glyph rasters
+        run: bun run raster:gen
+
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      - name: EAS build (queued remotely; runner exits immediately)
+        working-directory: docs
+        run: |
+          args=(--platform "$EAS_PLATFORM" --profile "$EAS_PROFILE" --non-interactive --no-wait --json)
+          if [ "$EAS_SUBMIT" = "true" ]; then
+            args+=(--auto-submit)
+          fi
+          builds=$(eas build "${args[@]}")
+          echo "$builds"
+          {
+            echo "### EAS build queued ($EAS_PLATFORM, profile: $EAS_PROFILE, submit: $EAS_SUBMIT)"
             echo "$builds" | jq -r '.[] | "- \(.platform): \(.buildDetailsPageUrl // ("https://expo.dev/builds/" + .id))"' \
               || echo "- Track progress at https://expo.dev"
           } >> "$GITHUB_STEP_SUMMARY"
