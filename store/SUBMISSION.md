@@ -14,7 +14,7 @@ truth for both stores' data declarations.
 | Bundle / package id `com.nannier.canvas` | Set in `docs/app.json`, free on the App Store |
 | 1024 marketing icon without alpha | Done (`docs/assets/images/icon.png`) |
 | Export compliance key | Done (`ios.infoPlist.ITSAppUsesNonExemptEncryption: false`) |
-| Public privacy policy URL | Done, `https://bnannier.github.io/canvas/privacy/` |
+| Public privacy policy URL | **LIVE and verified HTTP 200**, `https://bnannier.github.io/canvas/privacy/` |
 | Android production `.aab` | **Built and ready**, v1.0.0 versionCode 3, SDK 57, from commit `d5daa866` |
 | Android upload keystore | Generated and held by EAS |
 | Google Play Developer account | **BLOCKED, none exists** |
