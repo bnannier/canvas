@@ -20,7 +20,9 @@ truth for both stores' data declarations.
 | Google Play Developer account | **BLOCKED, none exists** |
 | Apple Developer Program membership | **BLOCKED, EAS reports no distribution certificate** |
 | iOS production build | Blocked on the above |
-| Screenshots | See "Assets" below |
+| iPhone 6.9" screenshots | Done, 5 in `store/screenshots/ios` |
+| iPad 13" screenshots | Done, 4 in `store/screenshots/ipad` |
+| Android phone screenshots | Not captured (emulator was not running) |
 
 The two blocked rows are the only things standing between here and a submission, and
 both need the account owner: they cost money, require identity verification, and can
@@ -154,10 +156,17 @@ stretched images.
 - 1024x1024 marketing icon, no alpha channel. Comes from `docs/assets/images/icon.png`,
   which is now RGB. Note this icon is a blue chevron mark and does not match the rainbow
   "C" used throughout the docs and README; consider aligning them before launch.
-- iPhone 6.9 inch screenshots, 1290x2796 portrait, at least 3.
-- iPad 13 inch screenshots, 2064x2752 portrait, required because
-  `ios.supportsTablet` is `true`. Setting it to `false` removes this requirement but
-  also drops iPad support, which undercuts the kit's responsive story.
+- iPhone 6.9 inch screenshots. Five are in `store/screenshots/ios` at 1320x2868,
+  captured on the iPhone 17 Pro Max simulator.
+- iPad 13 inch screenshots, required because `ios.supportsTablet` is `true`. Four are
+  in `store/screenshots/ipad` at 2064x2752, captured on the iPad Pro 13-inch simulator.
+  Setting `supportsTablet` to `false` would remove this requirement but also drop iPad
+  support, which undercuts the kit's responsive story.
+
+Both screenshot sets come from a debug simulator build served by Metro, so they are
+pixel-accurate for layout but were not taken from a release binary. They are good enough
+to submit; retake them from a production build if you want the version pill and any
+development-only affordances to match exactly what ships.
 
 **Google Play**
 - 512x512 app icon, 32 bit PNG.
