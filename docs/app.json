@@ -18,7 +18,8 @@
       "package": "com.nannier.canvas",
       "adaptiveIcon": {
         "backgroundColor": "#0B0B0F",
-        "foregroundImage": "./assets/images/android-icon-foreground.png"
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       }
     },
     "web": {
