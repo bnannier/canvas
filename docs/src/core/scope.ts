@@ -54,6 +54,11 @@ type WithToastHelper = (props: {
   children: (handle: ToastHandle) => ReactNode;
 }) => ReactNode;
 
+// The docs-only "app screen" frame (./live-state.tsx): a bounded region that hosts its own
+// OverlayProvider so an imperative toast floats within view instead of at the bottom of the
+// stage's code block. Keep in sync with the `AppScreen` component in ./live-state.tsx.
+type AppScreenHelper = (props: { children: ReactNode }) => ReactNode;
+
 export type ExampleScope = typeof import("@nannier/canvas") & {
   tokens: ColorTokens;
   Stateful: StatefulHelper;
@@ -61,6 +66,7 @@ export type ExampleScope = typeof import("@nannier/canvas") & {
   applyDrop: ApplyDropHelper;
   IconGallery: IconGalleryHelper;
   WithToast: WithToastHelper;
+  AppScreen: AppScreenHelper;
 };
 
 // A generated example module's default export.

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { View, Text, Icon, useTheme, type IconProps, type ToastHandle } from "@nannier/canvas";
+import { View, Text, Icon, OverlayProvider, useTheme, type IconProps, type ToastHandle } from "@nannier/canvas";
 import { useReducedMotion } from "../../../src/style/index.js";
 // The kit's glyph table, read straight from source like the style helpers above (the
 // public Icon renders one glyph at a time and does not expose the catalog). Used only by
@@ -62,6 +62,37 @@ export function WithToast({
   children: (handle: ToastHandle) => ReactNode;
 }): ReactNode {
   return <>{children(hook())}</>;
+}
+
+// Docs-only "app screen" for the imperative Toast example (not a Canvas export). A live toast
+// is bottom-anchored to the nearest OverlayProvider outlet; the docs Playground mounts ONE
+// stage-level outlet that spans the preview rows AND the code block, so a toast fired from the
+// example lands at the bottom of the (tall) code block, mostly below the fold. AppScreen is a
+// bounded region that hosts its OWN OverlayProvider, so the toast re-anchors to this screen and
+// floats within view — and because each 3-up column renders its own AppScreen, each platform's
+// toast stays contained to its column instead of stacking at the bottom of the whole stage. It
+// stands in for "your app root" (which likewise mounts an OverlayProvider). A fixed width avoids
+// the FitStage %-width collapse; styling is free here because this is the live-example frame, not
+// a fence. Keep its type in sync with the `AppScreenHelper` alias in ./scope.ts.
+export function AppScreen({ children }: { children: ReactNode }): ReactNode {
+  const { tokens } = useTheme();
+  return (
+    <OverlayProvider
+      style={{
+        width: 420,
+        maxWidth: "100%",
+        minHeight: 220,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: tokens.border,
+        overflow: "hidden",
+      }}
+    >
+      {children}
+    </OverlayProvider>
+  );
 }
 
 // Docs-only live-example ticker (not a Canvas export): steps a value through `values` on

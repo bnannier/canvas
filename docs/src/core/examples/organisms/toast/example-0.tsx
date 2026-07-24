@@ -3,26 +3,28 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { WithToast, Button, ToastProvider, useToast } = scope;
+  const { WithToast, AppScreen, Button, ToastProvider, useToast } = scope;
   return (
-<ToastProvider>
-  <WithToast hook={useToast}>
-    {({ toast }) => (
-      <Button
-        primary
-        onPress={() =>
-          toast({
-            success: true,
-            message: "Profile updated",
-            description: "Your changes are now live.",
-            action: { label: "Undo", onPress: () => {} },
-          })
-        }
-      >
-        Show toast
-      </Button>
-    )}
-  </WithToast>
-</ToastProvider>
+<AppScreen>
+  <ToastProvider>
+    <WithToast hook={useToast}>
+      {({ toast }) => (
+        <Button
+          primary
+          onPress={() =>
+            toast({
+              success: true,
+              message: "Profile updated",
+              description: "Your changes are now live.",
+              action: { label: "Undo", onPress: () => {} },
+            })
+          }
+        >
+          Show toast
+        </Button>
+      )}
+    </WithToast>
+  </ToastProvider>
+</AppScreen>
   );
 }

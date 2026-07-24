@@ -4,28 +4,30 @@ A transient notification capsule. Render a `<Toast>` directly, or drive them imp
 
 ## Usage
 
-Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one.
+Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)
 
 ```tsx
-<ToastProvider>
-  <WithToast hook={useToast}>
-    {({ toast }) => (
-      <Button
-        primary
-        onPress={() =>
-          toast({
-            success: true,
-            message: "Profile updated",
-            description: "Your changes are now live.",
-            action: { label: "Undo", onPress: () => {} },
-          })
-        }
-      >
-        Show toast
-      </Button>
-    )}
-  </WithToast>
-</ToastProvider>
+<AppScreen>
+  <ToastProvider>
+    <WithToast hook={useToast}>
+      {({ toast }) => (
+        <Button
+          primary
+          onPress={() =>
+            toast({
+              success: true,
+              message: "Profile updated",
+              description: "Your changes are now live.",
+              action: { label: "Undo", onPress: () => {} },
+            })
+          }
+        >
+          Show toast
+        </Button>
+      )}
+    </WithToast>
+  </ToastProvider>
+</AppScreen>
 ```
 
 ## Variants
