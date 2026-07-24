@@ -7,10 +7,13 @@ import { type SliderSkin, type Size } from "./slider.shared.js";
 // the filled range is always the indigo `primary`, never a platform default (no iOS
 // system blue, no M3 default). Only the native SHAPE changes per OS:
 //   iOS (iOS 27 kit, Sliders symbol group): a 6pt rail with 3pt radius and Apple
-//     smooth (continuous) corners, and a 37x24pt WHITE CAPSULE knob (borderCurve
-//     continuous, soft drop shadow, hairline border), brand fill. The knob stays
-//     fully OPAQUE through a press: the on-device drag feedback is the capsule
-//     stretch, never an opacity dim. Stepped sliders show small gray tick dots
+//     smooth (continuous) corners, and a 37x24pt capsule knob (borderCurve
+//     continuous, soft drop shadow), brand fill on the rail. On iOS 26+ the knob
+//     "transforms into liquid glass during interaction" (WWDC25): it renders through
+//     GlassSurface (`glassThumb`), so it is a real Apple Liquid Glass puck refracting
+//     the rail, and it SPRINGS UP on press (the shell's scale/bounce) rather than
+//     dimming. Under solid surface / Reduce Transparency / Increase Contrast it
+//     degrades to the opaque WHITE CAPSULE. Stepped sliders show small gray tick dots
 //     along the rail (the kit's Ticks layer), under the fill.
 //   Android (M3 Expressive sliders, m3.material.io/components/sliders/specs): the
 //     THICK-track redesign. XS (default): a 16dp track with 8dp shape split into an
@@ -110,9 +113,18 @@ export const iosSkin: SliderSkin = {
       borderWidth: 0.5,
       borderColor: alpha("#000000", 0.04),
       ...IOS_THUMB_SHADOW,
-      // No pressed treatment: the iOS knob stays fully opaque through a drag.
+      // No pressed OPACITY treatment: the iOS knob stays opaque through a drag. Under
+      // glass the handle scales up on press instead (see glassThumb below); this white
+      // fill is what the knob degrades back to under solid surface / Reduce Transparency.
     };
   },
+  // iOS 26 slider handles "transform into liquid glass during interaction" (WWDC25):
+  // route the knob through GlassSurface so on iOS 26+ (glass is the platform default)
+  // it becomes an Apple Liquid Glass puck that refracts the rail and springs on press.
+  glassThumb: true,
+  // A bright translucent white under-fill so the knob reads as a light glass puck on
+  // both light and dark schemes (the popover default would tint it gray/near-black).
+  glassTint: () => alpha("#ffffff", 0.55),
   // Stepped sliders: small gray tick dots along the rail (the kit's Ticks layer
   // sits UNDER the Fill, so the filled side covers its dots).
   tick: (t) => ({ backgroundColor: t["muted-foreground"] }),
