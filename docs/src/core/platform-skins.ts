@@ -103,8 +103,8 @@ import { Collapsible as CollapsibleIOS } from "../../../src/molecules/collapsibl
 import { Collapsible as CollapsibleAndroid } from "../../../src/molecules/collapsible/collapsible.android.js";
 import { Carousel as CarouselIOS } from "../../../src/organisms/carousel/carousel.ios.js";
 import { Carousel as CarouselAndroid } from "../../../src/organisms/carousel/carousel.android.js";
-import { Toast as ToastIOS } from "../../../src/organisms/toast/toast.ios.js";
-import { Toast as ToastAndroid } from "../../../src/organisms/toast/toast.android.js";
+import { Toast as ToastIOS, ToastProvider as ToastProviderIOS, useToast as useToastIOS } from "../../../src/organisms/toast/toast.ios.js";
+import { Toast as ToastAndroid, ToastProvider as ToastProviderAndroid, useToast as useToastAndroid } from "../../../src/organisms/toast/toast.android.js";
 import { Chip as ChipIOS } from "../../../src/atoms/chip/chip.ios.js";
 import { Chip as ChipAndroid } from "../../../src/atoms/chip/chip.android.js";
 import { Emblem as EmblemIOS } from "../../../src/atoms/emblem/emblem.ios.js";
@@ -125,7 +125,8 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
-    Carousel: CarouselIOS, Toast: ToastIOS, Chip: ChipIOS, Emblem: EmblemIOS,
+    Carousel: CarouselIOS, Toast: ToastIOS, ToastProvider: ToastProviderIOS, useToast: useToastIOS,
+    Chip: ChipIOS, Emblem: EmblemIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
@@ -141,6 +142,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
-    Carousel: CarouselAndroid, Toast: ToastAndroid, Chip: ChipAndroid, Emblem: EmblemAndroid,
+    Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,
+    Chip: ChipAndroid, Emblem: EmblemAndroid,
   },
 };

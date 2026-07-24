@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Toast } = scope;
   return (
-<Toast info message="A new version is available" onDismiss={() => {}} />
+<Toast message="Message archived" action={{ label: "Undo", onPress: () => {} }} />
   );
 }

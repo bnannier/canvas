@@ -3,8 +3,26 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Toast } = scope;
+  const { WithToast, Button, ToastProvider, useToast } = scope;
   return (
-<Toast message="Your changes were saved." action={{ label: "Undo", onPress: () => {} }} />
+<ToastProvider>
+  <WithToast hook={useToast}>
+    {({ toast }) => (
+      <Button
+        primary
+        onPress={() =>
+          toast({
+            success: true,
+            message: "Profile updated",
+            description: "Your changes are now live.",
+            action: { label: "Undo", onPress: () => {} },
+          })
+        }
+      >
+        Show toast
+      </Button>
+    )}
+  </WithToast>
+</ToastProvider>
   );
 }

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ColorTokens } from "@nannier/canvas";
+import type { ColorTokens, ToastHandle } from "@nannier/canvas";
 
 // The scope an example fence renders against: every Canvas export (components,
 // primitives, the alpha/shadow/palette style helpers) plus the live, theme-aware
@@ -45,12 +45,22 @@ type ApplyDropHelper = <T extends { id: string; zone: string }>(
 // value import; keep it in sync with the `IconGallery` component in ./live-state.tsx.
 type IconGalleryHelper = () => ReactNode;
 
+// The docs-only imperative-Toast bridge (./live-state.tsx): rendered inside a <ToastProvider>,
+// it calls the platform useToast hook it is handed and passes the live handle to its children,
+// so a fence can wire a real Button to toast(...). Keep in sync with the `WithToast` component
+// in ./live-state.tsx.
+type WithToastHelper = (props: {
+  hook: () => ToastHandle;
+  children: (handle: ToastHandle) => ReactNode;
+}) => ReactNode;
+
 export type ExampleScope = typeof import("@nannier/canvas") & {
   tokens: ColorTokens;
   Stateful: StatefulHelper;
   Ticker: TickerHelper;
   applyDrop: ApplyDropHelper;
   IconGallery: IconGalleryHelper;
+  WithToast: WithToastHelper;
 };
 
 // A generated example module's default export.
