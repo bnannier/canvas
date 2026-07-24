@@ -144,7 +144,7 @@ function ChromeBar({ height }: { height: number }) {
           numberOfLines={1}
           style={{ fontFamily: geist("400"), fontSize: Math.max(5, height * 0.34), color: tokens["muted-foreground"] }}
         >
-          bnannier.github.io/canvas
+          canvas.nannier.com
         </Text>
       </View>
       {/* The overflow dots. */}
