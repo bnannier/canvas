@@ -1,12 +1,11 @@
 import { useRef, useState, type ReactNode } from "react";
 import {
-  I18nManager,
   PanResponder,
   type LayoutChangeEvent,
   type GestureResponderEvent,
   type AccessibilityActionEvent,
 } from "react-native";
-import { View, Text, useTheme, useControllableState, useFieldWidth, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useTheme, useControllableState, useFieldWidth, isRTL, FOCUS_RESET, type ColorTokens, type FieldWidthProps, type ViewProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -180,8 +179,8 @@ export function createSlider(skin: SliderSkin) {
     const accessibleName = accessibilityLabel ?? (typeof children === "string" ? children : undefined);
     // In a right-to-left locale the whole control mirrors: min sits on the RIGHT and
     // the fill/thumb grow leftward, the physical tap maps flipped, and the horizontal
-    // arrows reverse (the drawer's I18nManager.isRTL physical-computation pattern).
-    const rtl = I18nManager.isRTL;
+    // arrows reverse (the drawer's isRTL() physical-computation pattern).
+    const rtl = isRTL();
     // The standard field width axis (block/narrow/wide), appended after the base
     // width:"100%" so a bare slider renders AT 320px (shrinking via maxWidth:"100%")
     // instead of collapsing in content-sized contexts; `block` restores width:"100%".

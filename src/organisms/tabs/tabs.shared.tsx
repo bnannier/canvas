@@ -1,5 +1,4 @@
-import { I18nManager } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -294,7 +293,7 @@ export function createTabs(skin: TabsSkin) {
       active,
       onActivate: disabled ? () => {} : setActive,
       orientation: variant === "vertical" ? "vertical" : "horizontal",
-      rtl: I18nManager.isRTL,
+      rtl: isRTL(),
     });
 
     if (variant === "vertical") {
