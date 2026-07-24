@@ -1,5 +1,5 @@
 import { Platform, useWindowDimensions } from "react-native";
-import { Sidebar as KitSidebar, Row, Column, Typography, type IconName, type SidebarSection } from "@nannier/canvas";
+import { Sidebar as KitSidebar, Pressable, Row, Column, Typography, type IconName, type SidebarSection } from "@nannier/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
 import { ThemeToggles } from "./theme-toggles";
@@ -81,9 +81,18 @@ export function Sidebar({
         if (item.href) router.push(item.href as never);
         onNavigate?.();
       }}
-      header={(isCollapsed) =>
-        isCollapsed ? (
-          <CanvasMark size={26} />
+      header={(isCollapsed) => {
+        // The brand lockup is a link home, the convention for a site logo. Wraps both the
+        // collapsed mark and the expanded lockup so the whole logo area is the target, and
+        // closes the drawer after (onNavigate) exactly as picking a nav item does.
+        const goHome = () => {
+          router.push("/");
+          onNavigate?.();
+        };
+        return isCollapsed ? (
+          <Pressable onPress={goHome} accessibilityRole="link" accessibilityLabel="Canvas, go to home">
+            <CanvasMark size={26} />
+          </Pressable>
         ) : (
           // The mark is sized to the text lockup beside it: the two-line text block is 33px
           // (`body` 14 + `tiny` 12, both `tightLeading` to 1.25x -> 18 + 15), and the 32 mark
@@ -96,19 +105,21 @@ export function Sidebar({
           // and adding `muted` would win the role axis and size the tagline at the wordmark's own
           // size. `flush` adds nothing between the lines (a gap prop can only add), leaving the
           // roles' own optical gap.
-          <Row snug alignCenter>
-            <CanvasMark size={32} />
-            <Column flush>
-              <Typography body semibold tightLeading>
-                Canvas
-              </Typography>
-              <Typography tiny tightLeading>
-                design system
-              </Typography>
-            </Column>
-          </Row>
-        )
-      }
+          <Pressable onPress={goHome} accessibilityRole="link" accessibilityLabel="Canvas, go to home">
+            <Row snug alignCenter>
+              <CanvasMark size={32} />
+              <Column flush>
+                <Typography body semibold tightLeading>
+                  Canvas
+                </Typography>
+                <Typography tiny tightLeading>
+                  design system
+                </Typography>
+              </Column>
+            </Row>
+          </Pressable>
+        );
+      }}
       footer={
         // Only the mobile-web drawer carries a footer: the appearance toggles (their old
         // bottom-sheet-footer home). Native puts appearance in the header bar; the desktop
