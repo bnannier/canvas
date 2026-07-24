@@ -20,7 +20,7 @@ truth for both stores' data declarations.
 | Google Play Developer account | **BLOCKED, none exists** |
 | Apple Developer Program membership | **BLOCKED, EAS reports no distribution certificate** |
 | iOS production build | Blocked on the above |
-| iPhone 6.9" screenshots | Done, 5 in `store/screenshots/ios` |
+| iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 4 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 5 in `store/screenshots/android` |
 
