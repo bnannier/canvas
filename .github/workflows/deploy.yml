@@ -269,7 +269,35 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
+      # A MAJOR bump is never allowed to happen automatically. An automatic push should
+      # only ever move the minor or patch digit; a breaking release is a deliberate act
+      # that deserves a human pressing the button, not a side effect of merging. This is
+      # not hypothetical: a major changeset once rode a push straight to a published
+      # 2.0.0. When a major is pending, the automatic path stops here and the run reports
+      # what to do; a manual run (workflow_dispatch) still performs it.
+      - name: Block automatic major releases
+        id: major_guard
+        run: |
+          major=$(grep -lE "^['\"]?@nannier/canvas['\"]?:[[:space:]]*major" .changeset/*.md 2>/dev/null | wc -l | tr -d ' ')
+          echo "major=$major" >> "$GITHUB_OUTPUT"
+          if [ "$major" != "0" ] && [ "${{ github.event_name }}" = "push" ]; then
+            echo "blocked=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "### npm release held back"
+              echo ""
+              echo "$major pending changeset(s) request a **major** version bump, and automatic"
+              echo "publishing is limited to minor and patch releases."
+              echo ""
+              echo "Run the Deploy workflow manually with the npm box ticked to publish it,"
+              echo "or downgrade the changeset to \`minor\` if a breaking release was not intended."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice::Major bump pending; skipping the automatic release."
+          else
+            echo "blocked=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check for pending changesets
+        if: steps.major_guard.outputs.blocked != 'true'
         id: has_changesets
         run: |
           # count .md files in .changeset/ that aren't README.md
@@ -278,7 +306,7 @@ jobs:
           echo "Found $count pending changeset(s)."
 
       - name: Configure git
-        if: steps.has_changesets.outputs.count != '0'
+        if: steps.major_guard.outputs.blocked != 'true' && steps.has_changesets.outputs.count != '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -286,7 +314,7 @@ jobs:
       # The [skip ci] matters: ci.yml's paths filter includes package.json and
       # .changeset/**, so without it the version commit would burn a CI run.
       - name: Version packages
-        if: steps.has_changesets.outputs.count != '0'
+        if: steps.major_guard.outputs.blocked != 'true' && steps.has_changesets.outputs.count != '0'
         run: |
           bun run version-packages
           git add .
@@ -312,6 +340,7 @@ jobs:
           fi
 
       - name: Authenticate npm (npmjs.org)
+        if: steps.major_guard.outputs.blocked != 'true'
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
           echo "@nannier:registry=https://registry.npmjs.org" >> .npmrc
@@ -320,6 +349,7 @@ jobs:
       # idempotent, so this also retries any version already on main but missing
       # from npm.
       - name: Publish to npmjs.org
+        if: steps.major_guard.outputs.blocked != 'true'
         run: bun run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -327,6 +357,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Push release tags
+        if: steps.major_guard.outputs.blocked != 'true'
         run: git push --tags
 
       # Clickable result in the run summary. Reads the version AFTER `changeset version`
