@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { View, Text, Icon, useTheme, type IconProps } from "@nannier/canvas";
+import { View, Text, Icon, useTheme, type IconProps, type ToastHandle } from "@nannier/canvas";
 import { useReducedMotion } from "../../../src/style/index.js";
 // The kit's glyph table, read straight from source like the style helpers above (the
 // public Icon renders one glyph at a time and does not expose the catalog). Used only by
@@ -35,6 +35,33 @@ export function Stateful<T>({
 }): ReactNode {
   const [value, setValue] = useState<T>(initial);
   return <>{children(value, setValue)}</>;
+}
+
+// Docs-only live-example bridge for the imperative Toast API (not a Canvas export). Toast's
+// primary usage is imperative — mount a <ToastProvider> and call the toast handle from the
+// useToast hook — but an example fence is a single JSX expression invoked as a plain function,
+// so it cannot call a hook itself (the same reason Stateful exists). WithToast is rendered
+// INSIDE a <ToastProvider> and calls the hook it is handed, then passes the live handle to its
+// children, letting a fence wire a real Button to toast(...):
+//
+//   <ToastProvider>
+//     <WithToast hook={useToast}>
+//       {({ toast }) => <Button onPress={() => toast({ message: "Saved" })}>Show toast</Button>}
+//     </WithToast>
+//   </ToastProvider>
+//
+// The hook is passed in (not imported here) so each 3-up column calls its OWN platform's
+// useToast, which shares a React context with that column's ToastProvider; importing one web
+// useToast here would read the wrong (null) context under the iOS/Android providers and throw.
+// Keep its type in sync with the `WithToastHelper` alias in ./scope.ts.
+export function WithToast({
+  hook,
+  children,
+}: {
+  hook: () => ToastHandle;
+  children: (handle: ToastHandle) => ReactNode;
+}): ReactNode {
+  return <>{children(hook())}</>;
 }
 
 // Docs-only live-example ticker (not a Canvas export): steps a value through `values` on

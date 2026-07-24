@@ -792,6 +792,7 @@ import e_organisms_toast_example_2 from "./examples/organisms/toast/example-2";
 import e_organisms_toast_example_3 from "./examples/organisms/toast/example-3";
 import e_organisms_toast_example_4 from "./examples/organisms/toast/example-4";
 import e_organisms_toast_example_5 from "./examples/organisms/toast/example-5";
+import e_organisms_toast_example_6 from "./examples/organisms/toast/example-6";
 import e_organisms_toast_dont_0_do from "./examples/organisms/toast/dont-0-do";
 import e_organisms_toast_dont_0_dont from "./examples/organisms/toast/dont-0-dont";
 import e_charts_area_chart_example_0 from "./examples/charts/area-chart/example-0";
@@ -1947,12 +1948,13 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "toast",
     category: "organisms",
     examples: [
-      { label: "Default", code: "<Toast message=\"Your changes were saved.\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_0 },
-      { label: "Success", code: "<Toast success message=\"Profile updated\" description=\"Your changes are now live.\" action={{ label: \"View\", onPress: () => {} }} />", render: e_organisms_toast_example_1 },
-      { label: "Error", code: "<Toast error message=\"Upload failed\" description=\"Check your connection and try again.\" action={{ label: \"Retry\", onPress: () => {} }} />", render: e_organisms_toast_example_2 },
-      { label: "Warning", code: "<Toast warning message=\"Storage almost full\" description=\"Free up space to keep syncing.\" action={{ label: \"Manage\", onPress: () => {} }} />", render: e_organisms_toast_example_3 },
-      { label: "With an action", code: "<Toast message=\"Message archived\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_4 },
-      { label: "Dismissible, informational", code: "<Toast info message=\"A new version is available\" onDismiss={() => {}} />", render: e_organisms_toast_example_5 },
+      { label: "Default", code: "<ToastProvider>\n  <WithToast hook={useToast}>\n    {({ toast }) => (\n      <Button\n        primary\n        onPress={() =>\n          toast({\n            success: true,\n            message: \"Profile updated\",\n            description: \"Your changes are now live.\",\n            action: { label: \"Undo\", onPress: () => {} },\n          })\n        }\n      >\n        Show toast\n      </Button>\n    )}\n  </WithToast>\n</ToastProvider>", render: e_organisms_toast_example_0 },
+      { label: "Rendered directly", code: "<Toast message=\"Your changes were saved.\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_1 },
+      { label: "Success", code: "<Toast success message=\"Profile updated\" description=\"Your changes are now live.\" action={{ label: \"View\", onPress: () => {} }} />", render: e_organisms_toast_example_2 },
+      { label: "Error", code: "<Toast error message=\"Upload failed\" description=\"Check your connection and try again.\" action={{ label: \"Retry\", onPress: () => {} }} />", render: e_organisms_toast_example_3 },
+      { label: "Warning", code: "<Toast warning message=\"Storage almost full\" description=\"Free up space to keep syncing.\" action={{ label: \"Manage\", onPress: () => {} }} />", render: e_organisms_toast_example_4 },
+      { label: "With an action", code: "<Toast message=\"Message archived\" action={{ label: \"Undo\", onPress: () => {} }} />", render: e_organisms_toast_example_5 },
+      { label: "Dismissible, informational", code: "<Toast info message=\"A new version is available\" onDismiss={() => {}} />", render: e_organisms_toast_example_6 },
     ],
     donts: [
       { do: { caption: "Keep a toast to one short, plain message (with an optional one-line description), and pair an error or success intent with the matching message.", code: "<Toast success message=\"Copied to clipboard\" />", render: e_organisms_toast_dont_0_do }, dont: { caption: "Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.", code: "<Toast\n  message=\"We were unable to complete your request because the server returned an unexpected error and the operation was rolled back\"\n/>", render: e_organisms_toast_dont_0_dont } },

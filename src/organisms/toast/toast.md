@@ -4,11 +4,37 @@ A transient notification capsule. Render a `<Toast>` directly, or drive them imp
 
 ## Usage
 
+Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one.
+
 ```tsx
-<Toast message="Your changes were saved." action={{ label: "Undo", onPress: () => {} }} />
+<ToastProvider>
+  <WithToast hook={useToast}>
+    {({ toast }) => (
+      <Button
+        primary
+        onPress={() =>
+          toast({
+            success: true,
+            message: "Profile updated",
+            description: "Your changes are now live.",
+            action: { label: "Undo", onPress: () => {} },
+          })
+        }
+      >
+        Show toast
+      </Button>
+    )}
+  </WithToast>
+</ToastProvider>
 ```
 
 ## Variants
+
+### Rendered directly
+
+```tsx
+<Toast message="Your changes were saved." action={{ label: "Undo", onPress: () => {} }} />
+```
 
 ### Success
 

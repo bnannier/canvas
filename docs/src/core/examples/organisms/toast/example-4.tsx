@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Toast } = scope;
   return (
-<Toast message="Message archived" action={{ label: "Undo", onPress: () => {} }} />
+<Toast warning message="Storage almost full" description="Free up space to keep syncing." action={{ label: "Manage", onPress: () => {} }} />
   );
 }

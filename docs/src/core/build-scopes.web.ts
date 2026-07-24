@@ -1,7 +1,7 @@
 import * as Canvas from "@nannier/canvas";
 import type { ColorTokens } from "@nannier/canvas";
 import { PLATFORM_SKINS } from "./platform-skins";
-import { Stateful, Ticker, applyDrop, IconGallery } from "./live-state";
+import { Stateful, Ticker, applyDrop, IconGallery, WithToast } from "./live-state";
 import { applyResolvedPhotos } from "./photos";
 import type { ExampleScope, PreviewScope } from "./scope";
 
@@ -28,6 +28,7 @@ function columnScope(skins: Record<string, unknown>, tokens: ColorTokens): Examp
   scope.Ticker = Ticker;
   scope.applyDrop = applyDrop;
   scope.IconGallery = IconGallery;
+  scope.WithToast = WithToast;
   return scope as unknown as ExampleScope;
 }
 
