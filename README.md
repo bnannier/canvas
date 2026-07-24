@@ -4,9 +4,9 @@
 
 ![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/bnannier/canvas/main/.github/assets/hero.gif)
 
-[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://bnannier.github.io/canvas/)
+[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
 
-**Try it live:** the [component catalog](https://bnannier.github.io/canvas/components) renders all 81 components (atoms, molecules, organisms, and a full chart family) in the browser, with dark mode, the glass surface, and density switchable site-wide.
+**Try it live:** the [component catalog](https://canvas.nannier.com/components) renders all 81 components (atoms, molecules, organisms, and a full chart family) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
 Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; elsewhere it falls back to a genuine frost or a solid surface.
 
@@ -111,7 +111,7 @@ const brand = { primary: "#7c3aed" };
 
 ## Documentation and components
 
-Full docs, live examples, and the complete prop reference live at **<https://bnannier.github.io/canvas/>**.
+Full docs, live examples, and the complete prop reference live at **<https://canvas.nannier.com/>**.
 
 The kit exports 60+ components across atoms, molecules, and organisms, all from `@nannier/canvas`:
 

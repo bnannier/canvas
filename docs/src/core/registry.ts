@@ -1209,12 +1209,12 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "qrcode",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<QRCode value=\"https://bnannier.github.io/canvas\" />", render: e_atoms_qrcode_example_0 },
-      { label: "Small", code: "<QRCode value=\"https://bnannier.github.io/canvas\" small />", render: e_atoms_qrcode_example_1 },
-      { label: "Large", code: "<QRCode value=\"https://bnannier.github.io/canvas\" large />", render: e_atoms_qrcode_example_2 },
+      { label: "Default", code: "<QRCode value=\"https://canvas.nannier.com\" />", render: e_atoms_qrcode_example_0 },
+      { label: "Small", code: "<QRCode value=\"https://canvas.nannier.com\" small />", render: e_atoms_qrcode_example_1 },
+      { label: "Large", code: "<QRCode value=\"https://canvas.nannier.com\" large />", render: e_atoms_qrcode_example_2 },
     ],
     donts: [
-      { title: "Keep it scannable", do: { caption: "Leave the fixed dark-on-white card in place so the code stays high-contrast for any camera.", code: "<QRCode value=\"https://bnannier.github.io/canvas\" />", render: e_atoms_qrcode_dont_0_do }, dont: { caption: "Shrinking a data-dense value to the small size drops the modules below a reliably scannable density.", code: "<QRCode value=\"https://bnannier.github.io/canvas/get/the/app?ref=docs&utm=homepage&v=2\" small />", render: e_atoms_qrcode_dont_0_dont } },
+      { title: "Keep it scannable", do: { caption: "Leave the fixed dark-on-white card in place so the code stays high-contrast for any camera.", code: "<QRCode value=\"https://canvas.nannier.com\" />", render: e_atoms_qrcode_dont_0_do }, dont: { caption: "Shrinking a data-dense value to the small size drops the modules below a reliably scannable density.", code: "<QRCode value=\"https://canvas.nannier.com/get/the/app?ref=docs&utm=homepage&v=2\" small />", render: e_atoms_qrcode_dont_0_dont } },
     ],
   },
   "radio": {
