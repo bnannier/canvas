@@ -222,9 +222,11 @@ export function createDialog(skin: DialogSkin) {
     return (
       <View testID={testID} style={s.root}>
         {trigger != null ? (
-          <Button outline small onPress={() => setOpen(true)}>
-            {trigger}
-          </Button>
+          <View style={s.triggerWrap}>
+            <Button outline small onPress={() => setOpen(true)}>
+              {trigger}
+            </Button>
+          </View>
         ) : null}
         {open ? (
           <View

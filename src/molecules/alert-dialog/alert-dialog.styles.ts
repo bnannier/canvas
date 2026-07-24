@@ -115,8 +115,17 @@ export interface AlertDialogSkin {
 
 // --- shared layout fragments (identical across platforms) -------------------
 
-// The outer wrapper aligns the dialog (and its optional trigger) to the start.
-export const root: ViewStyle = { alignSelf: "flex-start" };
+// The outer wrapper fills its container's width so the modal panel can cap to the
+// width actually available (see panelWidth): a narrow container (a phone screen, the
+// docs preview cell) then shrinks the panel to fit instead of letting its fixed
+// per-size width overflow the screen. `minWidth: 0` lets it shrink below the panel's
+// content width when it is a flex item in a row. The trigger is wrapped in
+// `triggerWrap` so it keeps its natural width rather than stretching to this width.
+export const root: ViewStyle = { width: "100%", minWidth: 0 };
+
+// Keeps the optional trigger button at its natural (content) width and leading-aligned,
+// so the full-width `root` above does not stretch it across the container.
+export const triggerWrap: ViewStyle = { alignSelf: "flex-start" };
 
 // Gap between the trigger button and the modal when the trigger renders above it.
 export const triggerGap: ViewStyle = { marginTop: 12 };
