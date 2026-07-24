@@ -35,8 +35,14 @@ export function useDialogFocus(
     if (panel == null) return;
 
     // Remember what had focus (the trigger), then pull focus into the panel.
+    // `preventScroll`: moving focus into the panel must NOT scroll the panel's
+    // nearest scrollable ancestor into view. A modal overlays the page (it is
+    // portaled/fixed and already visible), and a `<Dialog open>` rendered inline
+    // in a docs demo sits mid-page; without this flag the browser yanks the
+    // surrounding ScrollView to the panel on every open. Every programmatic focus
+    // move below passes it for the same reason.
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    panel.focus();
+    panel.focus({ preventScroll: true });
 
     // Trap: keep Tab / Shift+Tab inside the panel, wrapping last->first and
     // first->last so focus never leaves the modal while it is open.
@@ -50,7 +56,7 @@ export function useDialogFocus(
       if (focusables.length === 0) {
         // Nothing to land on: keep focus pinned to the panel itself.
         event.preventDefault();
-        panel.focus();
+        panel.focus({ preventScroll: true });
         return;
       }
       const first = focusables[0];
@@ -60,12 +66,12 @@ export function useDialogFocus(
         // Backward off the first control (or the panel container) wraps to last.
         if (active === first || active === panel || !panel.contains(active)) {
           event.preventDefault();
-          last.focus();
+          last.focus({ preventScroll: true });
         }
       } else if (active === last) {
         // Forward off the last control wraps to first.
         event.preventDefault();
-        first.focus();
+        first.focus({ preventScroll: true });
       }
     };
     panel.addEventListener("keydown", onKeyDown);
@@ -73,7 +79,9 @@ export function useDialogFocus(
     return () => {
       panel.removeEventListener("keydown", onKeyDown);
       // Return focus to the trigger (or wherever it was) as the dialog closes.
-      previouslyFocused?.focus?.();
+      // `preventScroll` so the restore never yanks the page: the trigger is
+      // normally already in view when a user dismisses the dialog.
+      previouslyFocused?.focus?.({ preventScroll: true });
     };
   }, [open]);
 
@@ -94,9 +102,9 @@ export function usePopoverFocus(open: boolean) {
     const panel = panelRef.current as unknown as HTMLElement | null;
     if (panel == null) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    panel.focus();
+    panel.focus({ preventScroll: true });
     return () => {
-      previouslyFocused?.focus?.();
+      previouslyFocused?.focus?.({ preventScroll: true });
     };
   }, [open]);
 
