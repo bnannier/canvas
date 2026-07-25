@@ -76,6 +76,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      # One flat config at the repo root covers every hand-written source tree, the docs
+      # app included, so this single run is the real lint gate. The docs workspace runs
+      # its own script further down for a different reason (see there).
       - name: Lint
         run: bun run lint
 
@@ -114,6 +117,15 @@ jobs:
       - name: Install docs deps
         working-directory: docs
         run: bun install --frozen-lockfile
+
+      # The root Lint step above already lints docs/src. This runs the docs workspace's
+      # OWN script, which is the only thing that catches it breaking: `expo lint` hands
+      # ESLint the docs/src path, and ESLint 9 exits 2 when every path it is handed is
+      # ignored. That is exactly how this script sat broken and unnoticed, since nothing
+      # in CI ever invoked it.
+      - name: Lint docs workspace script
+        working-directory: docs
+        run: bun run lint
 
       # The single nav source of truth (nav.config.json) must stay 1:1 with the
       # generated docs core data.

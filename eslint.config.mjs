@@ -18,17 +18,40 @@ const OPTIONAL_PEERS = [
   "react-native-safe-area-context",
 ];
 
+// Every hand-written TypeScript tree in the repo, kit AND docs app. The docs app used
+// to be ignored wholesale ("docs/**"), which did two bad things at once: it left the
+// docs sources completely unlinted (the root `eslint .` is the only lint CI runs), and
+// it made `cd docs && bun run lint` a hard failure, since the docs workspace has no
+// config of its own, so ESLint resolves THIS file and then found every path it was
+// handed already ignored (ESLint 9 exits 2 on that). Docs source is React Native code
+// with the same hooks hazards as the kit, so it gets the same rules.
+const SOURCES = [
+  "src/**/*.{ts,tsx}",
+  "tools/**/*.ts",
+  "scripts/**/*.ts",
+  "test/**/*.{ts,tsx}",
+  "docs/src/**/*.{ts,tsx}",
+  "docs/scripts/**/*.ts",
+];
+
 export default tseslint.config(
   {
     ignores: [
       "dist/**",
-      "node_modules/**",
-      "docs/**", // the docs app is its own project; the kit lint focuses on the package
+      "**/node_modules/**",
       "**/*.d.ts",
+      // The docs app's build output and its generated native projects, never its source.
+      "docs/dist/**",
+      "docs/.expo/**",
+      "docs/android/**",
+      "docs/ios/**",
+      // Local Claude Code session state. It is gitignored, and it holds nested git
+      // worktrees whose checkouts would otherwise be linted as if they were this one.
+      ".claude/**",
     ],
   },
   {
-    files: ["src/**/*.{ts,tsx}", "tools/**/*.ts", "scripts/**/*.ts", "test/**/*.{ts,tsx}"],
+    files: SOURCES,
     plugins: { "react-hooks": reactHooks, react, "@typescript-eslint": tseslint.plugin },
     languageOptions: {
       parser: tseslint.parser,
