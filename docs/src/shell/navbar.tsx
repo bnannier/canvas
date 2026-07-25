@@ -119,7 +119,12 @@ function WebNav() {
         <WebScrollbarTheme />
         {glass ? <Cosmos /> : null}
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flex: 1 }}>
+          {/* The page content is the main landmark, so a screen-reader user can skip the
+              nav shell and jump straight to it. `role` is the universal spelling: React
+              Native accepts "main" and React Native Web renders a real <main> element,
+              so this needs no web-only branch. It labels the wrapper that already
+              existed rather than adding a node, keeping the flex layout identical. */}
+          <View role="main" style={{ flex: 1 }}>
             <Slot />
           </View>
           <View style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
@@ -174,7 +179,8 @@ function WebNav() {
           <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flex: 1 }}>
+          {/* The desktop counterpart of the mobile main landmark above. */}
+          <View role="main" style={{ flex: 1 }}>
             <Slot />
           </View>
           <View style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
