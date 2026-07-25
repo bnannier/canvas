@@ -49,7 +49,7 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, sheer, tint }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, role, sheer, tint }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
   // The under-fill behind the frost: the caller's `tint` for a bright glass control
   // (the Slider knob), else the `popover` token that keeps panels legible.
@@ -64,7 +64,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, sheer, ti
 
   if (surface !== "glass") {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role}>
         {children}
       </PlainSurface>
     );
@@ -74,13 +74,13 @@ export function GlassSurface({ style, children, pointerEvents, testID, sheer, ti
   // opaque, before the frost material below AND before the no-module fallback, so an
   // opaque + bordered surface is guaranteed even when expo-blur is not installed
   // (Apple AX1/AX2).
-  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID });
+  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role });
   if (degraded) return degraded;
 
   // Glass mode but expo-blur is absent: the translucent `popover` fill fallback.
   if (!BlurView) {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role}>
         {children}
       </PlainSurface>
     );
@@ -105,7 +105,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, sheer, ti
   );
 
   return (
-    <GlassBox style={style} material={material} pointerEvents={pointerEvents} testID={testID}>
+    <GlassBox style={style} material={material} pointerEvents={pointerEvents} testID={testID} role={role}>
       {children}
     </GlassBox>
   );

@@ -43,7 +43,7 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, interactive = false, sheer, tint }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, role, interactive = false, sheer, tint }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
   // The under-fill behind the material: the caller's `tint` for a bright glass
   // control (the Slider knob), else the `popover` token that keeps panels legible.
@@ -51,7 +51,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
 
   if (surface !== "glass") {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role}>
         {children}
       </PlainSurface>
     );
@@ -61,7 +61,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
   // material below, including the native GlassView: the wrapper's adaptation under
   // Increase Contrast is unverifiable, so the kit guarantees the opaque + bordered
   // result itself.
-  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID });
+  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role });
   if (degraded) return degraded;
 
   // iOS 26+: the genuine system Liquid Glass material. The translucent `popover` fill
@@ -78,6 +78,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
         style={style}
         pointerEvents={pointerEvents}
         testID={testID}
+        role={role}
         material={
           <>
             <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
@@ -99,6 +100,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
         style={style}
         pointerEvents={pointerEvents}
         testID={testID}
+        role={role}
         material={
           <>
             <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
@@ -116,7 +118,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, interacti
   }
 
   return (
-    <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID}>
+    <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role}>
       {children}
     </PlainSurface>
   );

@@ -68,7 +68,10 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
   // GlassSurface paints the glass material in glass mode (native Liquid Glass on
   // iOS, expo-blur frost on web/Android) and the solid background otherwise.
   return (
+    // The topbar is the site header, so it is the banner landmark: it holds the brand
+    // row, search and the theme controls, which otherwise sit outside any landmark.
     <GlassSurface
+      role="banner"
       style={{
         flexDirection: "row",
         alignItems: "center",
