@@ -166,7 +166,17 @@ the binary rather than what package.json declares. 73 packages ship: 68 MIT, 2
 `MIT AND OFL-1.1` (Geist and Geist Mono), 1 BSD-2-Clause, 1 BSD-3-Clause, plus Canvas
 itself. Nothing copyleft, nothing with a field-of-use restriction.
 
-Two obligations follow from that and are worth not losing:
+Canvas's own licensing is deliberately split. The **published npm package is MIT**, with
+the licence text generated into the tarball at pack time by `tools/licensegen`; the
+**source repository is all rights reserved**, so that file is gitignored rather than
+committed, because a `LICENSE` at the repository root is how GitHub decides a repository's
+licence. Two consequences to keep in mind: MIT on the package cannot be walked back for
+versions already published, and a public repository means the source is readable whatever
+the licence says — closing it properly means making the repository private. The docs site
+no longer ships JavaScript source maps for the same reason: they embedded 363 of the kit's
+own source files in full.
+
+Two obligations follow from the dependency audit and are worth not losing:
 
 - **The Geist fonts are OFL-1.1**, which requires the licence text to travel with the
   font. The package carries it as `LICENSE_FONT`, but no licence file currently reaches

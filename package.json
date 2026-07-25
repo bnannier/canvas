@@ -2,7 +2,7 @@
   "name": "@nannier/canvas",
   "version": "2.1.0",
   "description": "Universal React Native UI kit: one component API renders natively on iOS, Android, and web.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "homepage": "https://canvas.nannier.com/",
   "repository": {
     "type": "git",
@@ -53,7 +53,7 @@
     "lint": "eslint .",
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "verify-package": "bun scripts/verify-package.ts",
-    "prepublishOnly": "bun run build && bun run verify-package",
+    "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
     "test": "bun test",
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "check-size": "bun scripts/check-size.ts",
@@ -69,6 +69,7 @@
     "privacy:gen": "bun tools/privacygen/generate.ts",
     "og:gen": "bun tools/oggen/generate.ts",
     "avatars:gen": "node tools/avatargen/generate.mjs",
+    "license:gen": "node tools/licensegen/generate.mjs",
     "raster:gen": "bun tools/rastergen/generate.ts",
     "raster:gen:check": "bun tools/rastergen/generate.ts --check",
     "docs:gen:check": "bun tools/docgen/generate.ts --check"
