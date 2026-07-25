@@ -24,8 +24,11 @@ truth for both stores' data declarations.
 | ASC App Privacy | Data Not Collected, privacy URL set; **awaiting the owner's Publish attestation** |
 | iOS distribution certificate | **Created** (serial `3D467E74...`, expires 24 Jul 2027), stored on EAS |
 | iOS provisioning profile | **Created** (`DU4S5M5QTB`), active |
-| iOS production build | **BUILT**, v1.0.0 build 5, SDK 57, build `061a142b` |
-| iOS upload to App Store Connect | Needs an App Store Connect API key, `eas submit` run interactively once |
+| iOS production build | **BUILT** on EAS, build `93fa9f28`, queued 24 Jul 23:04 from CI |
+| iOS upload to App Store Connect | **DONE, and now automatic.** No longer needs an interactive run: EAS holds the App Store Connect API key in its credentials service, so the CI job builds and submits unattended. Verified end to end, the build reached TestFlight. |
+| Build attached to the App Store version | **Owner action.** A processed build never appears on the in-flight version page by itself; attach it with the `+` beside Build. |
+| Age rating questionnaire | **Owner action.** Every answer is None/No, which yields 4+. |
+| Screenshots uploaded to ASC | **Owner action.** Files are ready in `store/screenshots`; nothing generates them into ASC. |
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
