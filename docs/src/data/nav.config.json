@@ -55,6 +55,11 @@
       "href": "/privacy",
       "icon": "shield"
     },
+    "licenses": {
+      "label": "Licenses",
+      "href": "/licenses",
+      "icon": "scale"
+    },
     "boilerplate": {
       "label": "Overview",
       "href": "/boilerplate",
@@ -90,7 +95,8 @@
           "theming",
           "rn",
           "browser",
-          "privacy"
+          "privacy",
+          "licenses"
         ]
       },
       {
@@ -686,7 +692,8 @@
             "rn",
             "browser",
             "boilerplate",
-            "privacy"
+            "privacy",
+            "licenses"
           ]
         }
       },

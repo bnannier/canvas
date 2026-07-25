@@ -120,6 +120,9 @@ jobs:
       - name: Check menu-glyph rasters are up to date
         run: bun run raster:gen:check
 
+      - name: Check third-party licence notices are up to date
+        run: bun run notices:gen:check
+
       - name: Install docs deps
         working-directory: docs
         run: bun install --frozen-lockfile

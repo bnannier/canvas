@@ -104,6 +104,14 @@ jobs:
       - name: Check menu-glyph rasters are up to date
         run: bun run raster:gen:check
 
+      # The /licenses screen carries obligations, not decoration: MIT requires its notice
+      # to ship with the software and OFL-1.1 requires the same for the bundled Geist
+      # typefaces. This fails if a dependency changed without re-running `notices:gen`,
+      # so the notices cannot silently fall out of step with what the app ships. It reads
+      # tools/noticegen/shipped.json and never runs an export, so it stays CI-fast.
+      - name: Check third-party licence notices are up to date
+        run: bun run notices:gen:check
+
       - name: Validate theme tokens
         run: bun run validate-tokens
 
