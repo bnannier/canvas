@@ -342,6 +342,19 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = ${JSON.stringify(texts, null, 2)}
 
 const rendered = header + body;
 
+// Fail loudly rather than quietly emitting a smaller file. 47 of the 88 shipped packages
+// live ONLY in docs/node_modules, so running before `bun install` in docs/ resolves half
+// the set and the output differs wildly. Without this the symptom is a baffling "stale"
+// from --check, which is exactly how this first failed in CI.
+if (missing.length) {
+  console.error(
+    `notices:gen: ${missing.length} of ${shipped.packages.length} shipped packages could not be resolved.\n` +
+      `Run \`bun install\` in BOTH the workspace root and docs/ first (most of the set is only in docs/node_modules).\n` +
+      `Unresolved: ${missing.slice(0, 12).join(", ")}${missing.length > 12 ? `, +${missing.length - 12} more` : ""}`,
+  );
+  process.exit(1);
+}
+
 const check = process.argv.includes("--check");
 const existing = existsSync(OUT) ? readFileSync(OUT, "utf8") : null;
 

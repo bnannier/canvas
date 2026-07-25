@@ -104,14 +104,6 @@ jobs:
       - name: Check menu-glyph rasters are up to date
         run: bun run raster:gen:check
 
-      # The /licenses screen carries obligations, not decoration: MIT requires its notice
-      # to ship with the software and OFL-1.1 requires the same for the bundled Geist
-      # typefaces. This fails if a dependency changed without re-running `notices:gen`,
-      # so the notices cannot silently fall out of step with what the app ships. It reads
-      # tools/noticegen/shipped.json and never runs an export, so it stays CI-fast.
-      - name: Check third-party licence notices are up to date
-        run: bun run notices:gen:check
-
       - name: Validate theme tokens
         run: bun run validate-tokens
 
@@ -125,6 +117,19 @@ jobs:
       - name: Install docs deps
         working-directory: docs
         run: bun install --frozen-lockfile
+
+      # The /licenses screen carries obligations, not decoration: MIT requires its notice
+      # to ship with the software and OFL-1.1 requires the same for the bundled Geist
+      # typefaces. This fails if a dependency changed without re-running `notices:gen`,
+      # so the notices cannot fall silently out of step with what the app ships. It reads
+      # tools/noticegen/shipped.json and never runs an export, so it stays CI-fast.
+      #
+      # MUST run after the docs install: the generator reads each package's LICENSE from
+      # docs/node_modules first and the workspace root second. With docs deps absent it
+      # resolves a different set and reports a false "stale", which is exactly how it
+      # failed the first time it ran here.
+      - name: Check third-party licence notices are up to date
+        run: bun run notices:gen:check
 
       # The root Lint step above already lints docs/src. This runs the docs workspace's
       # OWN script, which is the only thing that catches it breaking: `expo lint` hands

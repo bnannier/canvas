@@ -120,12 +120,15 @@ jobs:
       - name: Check menu-glyph rasters are up to date
         run: bun run raster:gen:check
 
-      - name: Check third-party licence notices are up to date
-        run: bun run notices:gen:check
-
       - name: Install docs deps
         working-directory: docs
         run: bun install --frozen-lockfile
+
+      # Must run after the docs install: the generator reads each package's LICENSE from
+      # docs/node_modules first, so without it the set resolves differently and the check
+      # reports a false "stale".
+      - name: Check third-party licence notices are up to date
+        run: bun run notices:gen:check
 
       - name: Typecheck docs
         working-directory: docs
