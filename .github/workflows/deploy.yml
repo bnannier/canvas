@@ -133,9 +133,16 @@ jobs:
         run: bun run check:nav
 
       # No EXPO_BASE_URL: served from the root of canvas.nannier.com.
+      # build:web is `expo export -p web` plus scripts/preload-fonts.mjs, which adds
+      # <link rel="preload"> for the eight Geist faces. The root layout holds the tree
+      # back until they load, and they could not start downloading until the bundle had
+      # been fetched and executed, so they sat at the tail of the critical chain. Measured
+      # over three runs per arm, preloading them cut First Contentful Paint from ~972ms to
+      # ~211ms and Speed Index from ~2156 to ~380, with CLS unchanged at 0.006. The step
+      # is defined in package.json so a local export matches what CI ships.
       - name: Export web build
         working-directory: docs
-        run: npx expo export -p web
+        run: bun run build:web
 
       # wrangler's Pages upload SKIPS every path containing a `node_modules` segment, and
       # Expo emits bundled package assets to dist/assets/node_modules/<pkg>/... mirroring
@@ -173,6 +180,22 @@ jobs:
         run: |
           test -f dist/_redirects || { echo "::error::dist/_redirects missing; SPA routes would 404"; exit 1; }
           test -f dist/privacy/index.html || { echo "::error::dist/privacy/index.html missing; the store privacy URL would break"; exit 1; }
+          test -f dist/_headers || { echo "::error::dist/_headers missing; the site would deploy with no CSP, HSTS or asset caching"; exit 1; }
+
+      # A preload pointing at a path that does not exist is worse than no preload: the
+      # browser spends a high-priority connection on a 404 and then fetches the real font
+      # anyway. These hrefs are written before the vendor rename above rewrites them, so
+      # this also proves that rewrite reached index.html.
+      - name: Verify font preloads resolve
+        working-directory: docs
+        run: |
+          n=$(grep -c 'rel="preload" as="font"' dist/index.html || true)
+          test "$n" = "8" || { echo "::error::expected 8 font preloads in dist/index.html, found $n"; exit 1; }
+          grep -o 'rel="preload" as="font"[^>]*href="[^"]*"' dist/index.html \
+            | sed 's/.*href="//;s/"//' | while read -r h; do
+              test -f "dist${h}" || { echo "::error::preloaded font not in artifact: ${h}"; exit 1; }
+            done
+          echo "all 8 preloaded fonts resolve to files in the artifact"
           echo "_redirects and privacy/index.html present"
 
       - name: Publish to Cloudflare Pages
