@@ -46,9 +46,19 @@ function codePreview(code: string) {
   return lines.length > 1 && clipped === first ? `${first} …` : clipped;
 }
 
+// LOOKS_AVAILABLE is the real gate (home.tsx checks it before rendering this); the
+// repeat here is the safety net for any other call site, since the body below indexes
+// ATOMS unconditionally. It sits in this hook-free shell rather than inside the body:
+// an early return above a hook call makes every hook after it conditional, which is a
+// rules-of-hooks violation and would break as soon as the shot map went from empty to
+// populated (or back) within one bundle.
 export function ThreeLooksRotator() {
+  if (!LOOKS_AVAILABLE) return null; // shot map not generated for this platform
+  return <Rotator />;
+}
+
+function Rotator() {
   const { tokens } = useTheme();
-  if (ATOMS.length === 0) return null; // shot map not generated yet
   const { width } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
   const router = useRouter();

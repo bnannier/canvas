@@ -2,7 +2,6 @@
 // docs page on the iPhone 17 Pro simulator, the Android emulator retargeted to the same
 // screen, and phone-width web; encoded 480x1044 webp). Every surface shares the
 // iPhone 17 Pro aspect so the three hero panes are identical. Do not edit by hand.
-/* eslint-disable @typescript-eslint/no-require-imports */
 export const LOOKS_SHOTS: Record<string, { ios: number; android: number; web: number }> = {
   "autocomplete": { ios: require("../../assets/images/looks/autocomplete-ios.webp"), android: require("../../assets/images/looks/autocomplete-android.webp"), web: require("../../assets/images/looks/autocomplete-web.webp") },
   "avatar": { ios: require("../../assets/images/looks/avatar-ios.webp"), android: require("../../assets/images/looks/avatar-android.webp"), web: require("../../assets/images/looks/avatar-web.webp") },

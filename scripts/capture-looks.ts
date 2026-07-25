@@ -143,7 +143,6 @@ async function writeMap() {
 // docs page on the iPhone 17 Pro simulator, the Android emulator retargeted to the same
 // screen, and phone-width web; encoded ${OUT_W}x${OUT_H} webp). Every surface shares the
 // iPhone 17 Pro aspect so the three hero panes are identical. Do not edit by hand.
-/* eslint-disable @typescript-eslint/no-require-imports */
 export const LOOKS_SHOTS: Record<string, { ios: number; android: number; web: number }> = {
 ${rows}
 };
