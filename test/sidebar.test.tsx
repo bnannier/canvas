@@ -12,26 +12,38 @@ const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 
 const SECTIONS = [{ id: "a", title: "Group A", items: [{ id: "one", label: "One" }, { id: "two", label: "Two" }] }];
 
+// A sidebar row is navigation, so the active row states itself with
+// `aria-current="page"`. It must NOT use `aria-selected`: ARIA permits that only on
+// roles that carry a selected state, never on `button`, so a browser discards it and
+// the row reads as though nothing is active. Asserting the absence matters as much as
+// the presence, because the invalid spelling is silent everywhere except an audit.
+const activeRows = (container: HTMLElement) => container.querySelectorAll('[aria-current="page"]');
+
 describe("Sidebar active matching", () => {
   it("matches active by item id (string)", () => {
     const { container } = ui(<Sidebar sections={SECTIONS} active="two" />);
-    const selected = container.querySelectorAll('[aria-selected="true"]');
+    const selected = activeRows(container);
     expect(selected.length).toBe(1);
     expect(selected[0].textContent).toContain("Two");
   });
 
   it("still matches active by label (back-compat)", () => {
     const { container } = ui(<Sidebar sections={SECTIONS} active="One" />);
-    const selected = container.querySelectorAll('[aria-selected="true"]');
+    const selected = activeRows(container);
     expect(selected.length).toBe(1);
     expect(selected[0].textContent).toContain("One");
   });
 
   it("matches the empty-string home slug id", () => {
     const { container } = ui(<Sidebar items={[{ id: "", label: "Home" }, { id: "x", label: "Other" }]} active="" />);
-    const selected = container.querySelectorAll('[aria-selected="true"]');
+    const selected = activeRows(container);
     expect(selected.length).toBe(1);
     expect(selected[0].textContent).toContain("Home");
+  });
+
+  it("never marks a row with aria-selected, which is invalid on a button", () => {
+    const { container } = ui(<Sidebar sections={SECTIONS} active="two" />);
+    expect(container.querySelectorAll("[aria-selected]").length).toBe(0);
   });
 });
 

@@ -114,7 +114,9 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
             onPress={(event) => select(item, index, event)}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
-            aria-selected={active}
+            // See sidebar.shared: `aria-selected` is invalid on `button`, so a
+            // navigation row states the current page with `aria-current` instead.
+            aria-current={active ? "page" : undefined}
           >
             {item.icon != null ? <Icon {...{ [item.icon]: true }} {...skin.iconTint(active)} size={skin.iconSize} decorative /> : null}
             <Text style={skin.label(tokens, active, density)} numberOfLines={1}>

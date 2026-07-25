@@ -489,7 +489,12 @@ export function createSidebar(skin: SidebarSkin) {
             onPress={(event) => select(item, index, event)}
             accessibilityRole="button"
             accessibilityState={{ selected: activeRow }}
-            aria-selected={activeRow}
+            // NOT `aria-selected`: ARIA allows that only on roles carrying a selected
+            // state (option, tab, row and friends), never on `button`, so it is dropped
+            // as invalid and the row reads as unselected. A sidebar row is navigation,
+            // so the web spelling is `aria-current="page"`, matching Navbars, Breadcrumb
+            // and Pagination. The native `selected` state above is valid and stays.
+            aria-current={activeRow ? "page" : undefined}
             // Collapsed rail hides the label; keep the accessible name (+ badge count).
             accessibilityLabel={collapsed ? rowA11yLabel(item) : undefined}
           >
