@@ -17,7 +17,7 @@ an effect working on web alone. When React Native lacks a primitive the design n
 cross-platform: build it from `react-native-svg` (sectors, masks, `FeGaussianBlur`,
 `FeColorMatrix`), the `boxShadow`/`filter` style props, or math, so the same code
 produces the same result natively and on the web. A web-only DOM/CSS trick is a
-shortcut: name it as such and get explicit authorization before using one.
+shortcut (see the global no-shortcuts directive): get explicit authorization first.
 
 ## Dogfood the kit: every UI element is a Canvas component
 
@@ -135,12 +135,12 @@ and prefer not to pass conflicting props at the call site.
 
 ### Resolution
 
-Each boolean maps to a curated internal set of Tailwind utility classes (the
-component's implementation). Canvas reads the active booleans, applies the axis
-and precedence rules above, and produces the final utility set. Components consume
-these props internally; they do not forward unknown style props to the underlying
-host element, and consumers never assemble utility soup or pass raw style overrides
-to restyle a component.
+Each boolean maps to a curated internal set of React Native style objects: the
+per-platform skin functions in the component's `*.styles.ts` files, built from the
+design tokens. Canvas reads the active booleans, applies the axis and precedence
+rules above, and produces the final style. Components consume these props
+internally; they do not forward unknown style props to the underlying host
+element, and consumers never pass raw style overrides to restyle a component.
 
 Every visual variation a component supports must be exposed as a boolean prop on
 one of these axes.
@@ -174,14 +174,14 @@ it, never to shim at the call site:
 - Missing an arrangement? Use or extend a layout primitive (a `Row`/`Column` with
   a `tight`/`snug`/`relaxed`/`loose` gap and boolean alignment, an avatar group
   with overlap), never a hand-rolled `flexDirection` + `gap` + `margin` `View`.
-- Missing a composite (chip, identity row, avatar group, icon tile)? Build it in
-  the kit (`src/atoms|molecules|organisms`), export it, add a changeset, use it.
+- Missing a composite (chip, identity row, avatar group, icon tile)? Add it to
+  the kit per "Dogfood the kit" above, then use it.
 
-This extends the "Resolution" rule ("consumers never assemble utility soup or
-pass raw style overrides to restyle a component") to ALL styling and layout, and
-it binds the kit's own `.md` examples: an example that hand-shims is a bug. No
-component may expose a `style` prop documented as an "escape hatch"; where one
-exists today (e.g. `Avatar`'s overlap margin), the real capability replaces it.
+This extends the "Resolution" rule ("consumers never pass raw style overrides
+to restyle a component") to ALL styling and layout, and it binds the kit's own
+`.md` examples: an example that hand-shims is a bug. No component may expose a
+`style` prop documented as an "escape hatch"; where one existed (`Avatar`'s
+overlap margin), the real capability replaced it (`AvatarGroup` owns overlap).
 
 This is the STYLING escape-hatch ban. It is separate from, and additional to,
 the ban on web-only DOM/CSS platform escape hatches in the
@@ -222,9 +222,10 @@ The hand-composed form is a bug wherever it appears (app code, docs examples,
 templates), except inside an intentional Don't fence: it splits the tap target
 (only the box toggles), drifts from the control's canonical type scale, and
 hides a missing kit capability. If a control lacks the text slot the design
-needs (a description, an inline hint, a trailing detail), add the capability to
-the kit component backward-compatibly, following the `description` precedent,
-then use it. This extends "Dogfood the kit" and "No styling escape hatches":
+needs (a description, an inline hint, a trailing detail), add it to the kit
+component per "Dogfood the kit" (backward-compatibly, following the
+`description` precedent), then use it. This extends "Dogfood the kit" and "No
+styling escape hatches":
 those ban rebuilding a component's look; this bans rebuilding a component's
 anatomy around it.
 
