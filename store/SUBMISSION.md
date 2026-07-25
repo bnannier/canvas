@@ -21,21 +21,35 @@ truth for both stores' data declarations.
 | Apple Developer Program membership | Active, team `ZR2R53SLS7` |
 | App Store Connect app record | Created, Apple ID `6794454098`, bundle `com.nannier.canvas` |
 | ASC listing metadata | Done: name, subtitle, description, keywords, support + marketing URLs, categories |
-| ASC App Privacy | Data Not Collected, privacy URL set; **awaiting the owner's Publish attestation** |
+| ASC App Privacy | Done, Data Not Collected, privacy URL set and published |
 | iOS distribution certificate | **Created** (serial `3D467E74...`, expires 24 Jul 2027), stored on EAS |
 | iOS provisioning profile | **Created** (`DU4S5M5QTB`), active |
 | iOS production build | **BUILT** on EAS, build `93fa9f28`, queued 24 Jul 23:04 from CI |
 | iOS upload to App Store Connect | **DONE, and now automatic.** No longer needs an interactive run: EAS holds the App Store Connect API key in its credentials service, so the CI job builds and submits unattended. Verified end to end, the build reached TestFlight. |
-| Build attached to the App Store version | **Owner action.** A processed build never appears on the in-flight version page by itself; attach it with the `+` beside Build. |
-| Age rating questionnaire | **Owner action.** Every answer is None/No, which yields 4+. |
-| Screenshots uploaded to ASC | **Owner action.** Files are ready in `store/screenshots`; nothing generates them into ASC. |
+| Build attached to the App Store version | Done, build 7 (1.0.0). A processed build never appears on the in-flight version page by itself; attach it with the `+` beside Build. |
+| Age rating questionnaire | Done, every answer None/No, which yields 4+ across 172 countries. |
+| Screenshots uploaded to ASC | Done, 10 iPhone 6.9". Nothing generates them into ASC, they are uploaded by hand from `store/screenshots`. |
+| Content rights declaration | Done, "this app has the necessary rights to its third-party content" (see the audit below). |
+| App Review contact | Done, Bobby Nannier, `bobby@nannier.com`, `+14166693676`. |
+| Copyright | Done, `2026 Robert Nannier`. Required to submit, and easy to miss because the field sits well above the Save button. |
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
+| **iOS submission** | **SUBMITTED 25 Jul 2026, "Waiting for Review".** Set to release automatically once approved. |
 
-The two blocked rows are the only things standing between here and a submission, and
-both need the account owner: they cost money, require identity verification, and can
-only be completed interactively.
+Google Play is now the only blocked row. It needs the account owner: it costs money,
+requires identity verification, and can only be completed interactively.
+
+Two things cost a submission attempt each, so they are worth knowing before the next
+release:
+
+- The **App Review phone number must carry a `+` country code**. A bare `4166693676`
+  is rejected, and the field shows the generic "This field is required" in red while
+  the actual reason ("please ensure your phone number is formatted correctly,
+  including a `+` in front of the country code") is only in the page's error list.
+- **Copyright is required and starts empty.** Apple wants the rights holder preceded
+  by the year, no URL, hence `2026 Robert Nannier`, matching the holder that
+  `tools/licensegen/generate.mjs` writes into the published package's LICENSE.
 
 ## App identity
 
