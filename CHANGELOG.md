@@ -1,5 +1,12 @@
 # @nannier/canvas
 
+## 2.2.1
+
+### Patch Changes
+
+- 0bfb91f: Fix the stale package-entry comment that still listed Image among the raw
+  primitives; Image graduated to a Canvas atom. No runtime change.
+
 ## 2.2.0
 
 ### Minor Changes
