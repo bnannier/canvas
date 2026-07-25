@@ -50,6 +50,25 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 
+  # Refuse every powerful browser feature this site does not use, so a script that got in
+  # anyway still could not reach a camera, a microphone, location, or a USB/serial device.
+  # clipboard-write is the one capability deliberately kept, scoped to same-origin: the
+  # docs' copy-code buttons go through expo-clipboard, which uses navigator.clipboard.
+  # fullscreen is simply absent, which leaves it at its same-origin default.
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=(), clipboard-write=(self)
+
+  # Stop other origins pulling these bytes into their own pages. The site is one origin and
+  # loads nothing from anywhere else, so nothing legitimate is lost. Social previews are
+  # unaffected: crawlers fetch og.png server-side, where CORP is not enforced.
+  Cross-Origin-Resource-Policy: same-origin
+
+  # Cloudflare Pages sends `Access-Control-Allow-Origin: *` by default, which invites any
+  # origin to read these responses. Nothing here needs it: every request is same-origin, and
+  # same-origin requests skip the CORS check entirely, including the crossorigin font
+  # preloads above (confirmed by serving the whole site locally with no such header and
+  # watching all eight faces still load).
+  ! Access-Control-Allow-Origin
+
 # Every file under these two prefixes carries a 32-character content hash in its name
 # (verified: 405 of 405), so its URL changes whenever its bytes do and it can never go
 # stale. Cloudflare's default of `max-age=0, must-revalidate` was making every repeat
