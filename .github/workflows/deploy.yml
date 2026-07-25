@@ -198,6 +198,18 @@ jobs:
           echo "all 8 preloaded fonts resolve to files in the artifact"
           echo "_redirects and privacy/index.html present"
 
+      # Every Pages deployment keeps a permanent, individually addressable URL of the form
+      # <hash>.canvas-wna.pages.dev, and those are PUBLIC by default. That is not merely
+      # untidy: a deployment goes on serving whatever it contained forever, so anything
+      # published by mistake stays published even after the next deploy removes it. It bit
+      # us exactly once — four deployments kept serving JavaScript source maps carrying
+      # 363 of the kit's own source files after the maps had been removed from the build.
+      #
+      # The project's Settings now has "Preview access" restricted by a Cloudflare Access
+      # policy, so every <hash> URL answers 302 to a login. canvas.nannier.com and the
+      # apex canvas-wna.pages.dev stay public, which is the intent: serve the latest, not
+      # every release. If you ever need a specific old deployment, sign in through Access
+      # rather than turning the policy off.
       - name: Publish to Cloudflare Pages
         id: cf
         uses: cloudflare/wrangler-action@v3
