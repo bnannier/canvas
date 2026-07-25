@@ -599,8 +599,12 @@ export function createSidebar(skin: SidebarSkin) {
     // Legacy (no slots): sections directly in the column, content-sized, exactly as
     // before — every existing consumer/example is byte-identical.
     if (!shell) {
+      // A sidebar of nav rows IS the page's navigation, so the shell declares the
+      // landmark. Without it every row lives outside any landmark and screen-reader
+      // users get no way to jump to (or skip) the nav. Additive and backward
+      // compatible: consumers using Sidebar for non-nav content can ignore it.
       return (
-        <GlassSurface testID={testID} style={column}>
+        <GlassSurface testID={testID} role="navigation" style={column}>
           {sectionsEl}
         </GlassSurface>
       );
@@ -615,7 +619,7 @@ export function createSidebar(skin: SidebarSkin) {
       onToggleCollapse?.();
     };
     return (
-      <GlassSurface testID={testID} style={column}>
+      <GlassSurface testID={testID} role="navigation" style={column}>
         {header != null ? (
           collapsed ? (
             <Pressable

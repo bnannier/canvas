@@ -204,7 +204,11 @@ export function Home() {
                 </Text>
               </View>
 
-              <Text style={{ fontFamily: geist("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
+              {/* The page's one level-one heading. Spelled as a heading role rather than
+                  a Typography h1 because the size here is fluid (h1Size tracks the
+                  viewport) where the role's type scale is fixed; the semantics are what
+                  matter, and React Native Web turns this pair into a real <h1>. */}
+              <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("600"), fontSize: h1Size, letterSpacing: h1Size * -0.032, lineHeight: h1Size * 1.04, color: tokens.foreground }}>
                 One codebase. <Text style={{ color: tokens.primary }}>Every platform.</Text> One component API.
               </Text>
 

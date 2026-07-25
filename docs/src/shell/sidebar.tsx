@@ -105,12 +105,16 @@ export function Sidebar({
           // and adding `muted` would win the role axis and size the tagline at the wordmark's own
           // size. `flush` adds nothing between the lines (a gap prop can only add), leaving the
           // roles' own optical gap.
-          // The accessible name has to START with the visible text, "Canvas design system".
-          // WCAG 2.5.3 (Label in Name) requires a control's visible label to be contained in
-          // its accessible name: a voice-control user says what they can read, so "click
-          // Canvas design system" has to match. The collapsed variant above shows no text, so
-          // it carries no such constraint and keeps the shorter name.
-          <Pressable onPress={goHome} accessibilityRole="link" accessibilityLabel="Canvas design system, go to home">
+          // No accessibilityLabel here on purpose, so the accessible name is computed from
+          // the content and is therefore exactly the visible text: "Canvas design system".
+          // That satisfies WCAG 2.5.3 (Label in Name) by construction. An explicit label
+          // cannot: this lockup is two stacked lines, and axe joins their text with no
+          // separator, so it compares the name against "Canvasdesign system" (verified by
+          // running the rule against the deployed page) which no readable label contains.
+          // The role already announces it as a link, and a logo returning home is the
+          // convention, so the dropped "go to home" wording costs nothing. The collapsed
+          // variant above still needs its label, having no visible text to name it.
+          <Pressable onPress={goHome} accessibilityRole="link">
             <Row snug alignCenter>
               <CanvasMark size={32} />
               <Column flush>

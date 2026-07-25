@@ -26,6 +26,16 @@ export interface GlassSurfaceProps {
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
+   * Landmark role for the root element, e.g. `"navigation"` for a sidebar shell or
+   * `"banner"` for a top bar. Glass surfaces ARE the app's bar and sidebar shells, so
+   * without this the chrome is an unlabelled stack of divs and every control inside it
+   * fails axe's `region` rule for living outside a landmark. Spelled with RN's universal
+   * `role` prop, which React Native Web turns into the matching HTML element and native
+   * maps onto its own traits, so it needs no per-platform branch. Omit for decorative
+   * surfaces such as popovers and menus, which already carry their own role.
+   */
+  role?: ViewProps["role"];
+  /**
    * Render the material as an INTERACTIVE control surface: on iOS 26 the native
    * Liquid Glass responds to touch with its fluid press animation (Apple's
    * `isInteractive`). Use for glass that is itself a tappable control (e.g. an
@@ -223,11 +233,12 @@ export function GlassBox({
   children,
   pointerEvents,
   testID,
+  role,
   material,
 }: GlassSurfaceProps & { material: ReactNode }) {
   const { outer, clip } = splitSurfaceStyle(style);
   return (
-    <View style={[outer, pointerEvents ? { pointerEvents } : null]} testID={testID}>
+    <View style={[outer, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role}>
       <View style={clip}>
         {material}
         {children}
@@ -238,9 +249,9 @@ export function GlassBox({
 
 // The no-glass / no-module fallback: one plain View identical to the pre-portal
 // surface (keeps the solid or translucent popover fill from `style`).
-export function PlainSurface({ style, children, pointerEvents, testID }: GlassSurfaceProps) {
+export function PlainSurface({ style, children, pointerEvents, testID, role }: GlassSurfaceProps) {
   return (
-    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID}>
+    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role}>
       {children}
     </View>
   );
