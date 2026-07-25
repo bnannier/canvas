@@ -1,0 +1,62 @@
+# Response headers for the Cloudflare Pages deployment of the Canvas docs.
+#
+# Cloudflare applies every rule whose path matches, so the `/*` block below is the
+# baseline for the whole site and the narrower blocks add caching on top of it.
+# Anything in docs/public is copied verbatim into the export, so this file ships as
+# part of `expo export -p web` with no build step of its own.
+
+/*
+  # A strict Content-Security-Policy. `script-src 'self'` with no 'unsafe-inline' and
+  # no 'unsafe-eval' is possible because the Expo web export emits ZERO inline scripts
+  # (one external bundle, verified against the built index.html) and because the two
+  # eval() sites in that bundle are unreachable in a browser: one is a Node fallback
+  # guarded by `typeof window`, the other is Metro's split-bundle loader, which never
+  # runs in a single-bundle SPA export.
+  #
+  # `style-src` DOES need 'unsafe-inline'. React Native Web writes dynamic styles as
+  # inline style attributes (a heading arrives as style="font-family: Geist_600SemiBold;
+  # font-size: 54px"), so removing it would strip the site's typography and colour. This
+  # is the accepted trade: CSP's XSS protection lives in script-src, which stays strict.
+  #
+  # `connect-src` names registry.npmjs.org because the version badge fetches the current
+  # published version at runtime. It is the only cross-origin request the app makes; the
+  # other external hosts in the bundle are link targets, not fetches.
+  #
+  # `require-trusted-types-for 'script'` is enabled deliberately, not optimistically. The
+  # bundle contains 5 innerHTML assignments and 14 dangerouslySetInnerHTML sites, any of
+  # which would throw under Trusted Types, so it was verified before shipping: all 81
+  # routes (12 nav pages + 69 component pages) were loaded with this exact policy applied
+  # and reported zero violations and zero console errors. Re-run that sweep before
+  # adding a dependency that touches the DOM directly.
+  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://registry.npmjs.org; frame-ancestors 'none'; form-action 'self'; require-trusted-types-for 'script'; upgrade-insecure-requests
+
+  # One year, covering this host and anything below it. `includeSubDomains` is scoped to
+  # *.canvas.nannier.com and cannot affect nannier.com or its siblings, and no such
+  # subdomain exists today, so it costs nothing. The `preload` token only declares
+  # eligibility: actually preloading requires a separate submission at hstspreload.org,
+  # which is the site owner's call because it is slow to reverse.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Sever the opener relationship for anything this site opens or is opened by. The docs
+  # link out to GitHub and npm with target=_blank, so this also removes reverse-tabnabbing.
+  # Note this is COOP alone: COEP is deliberately absent, since require-corp would block
+  # the registry.npmjs.org fetch above, which serves no CORP header.
+  Cross-Origin-Opener-Policy: same-origin
+
+  # Clickjacking is already refused by `frame-ancestors 'none'` in the CSP; this repeats it
+  # in the older header for user agents that predate frame-ancestors support.
+  X-Frame-Options: DENY
+
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Every file under these two prefixes carries a 32-character content hash in its name
+# (verified: 405 of 405), so its URL changes whenever its bytes do and it can never go
+# stale. Cloudflare's default of `max-age=0, must-revalidate` was making every repeat
+# visitor pay a revalidation round-trip for the 736 KiB bundle and all eight font files
+# even when nothing had changed. `immutable` also stops a reload from revalidating them.
+/_expo/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
