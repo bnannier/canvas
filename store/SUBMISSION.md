@@ -159,6 +159,30 @@ reference app:
 > modes across the whole app, and search filters the full catalog. The app requires no
 > account and works without a network connection apart from an optional version check.
 
+## Third-party content and rights
+
+Audited from the shipped bundle's source map, so this reflects what is actually inside
+the binary rather than what package.json declares. 73 packages ship: 68 MIT, 2
+`MIT AND OFL-1.1` (Geist and Geist Mono), 1 BSD-2-Clause, 1 BSD-3-Clause, plus Canvas
+itself. Nothing copyleft, nothing with a field-of-use restriction.
+
+Two obligations follow from that and are worth not losing:
+
+- **The Geist fonts are OFL-1.1**, which requires the licence text to travel with the
+  font. The package carries it as `LICENSE_FONT`, but no licence file currently reaches
+  the built artifact and the app has no acknowledgements screen. Still open.
+- **The sample avatars are generated, not photographed.** `docs/public/*.jpg` were
+  previously seven 128x128 photographs of identifiable real people with no recorded
+  source, which meant shipping two unverifiable rights at once: copyright in the image
+  and the subject's likeness. They are now flat-vector cartoon characters drawn by
+  `bun run avatars:gen` (`tools/avatargen`) — original geometry, no traced source, no
+  model. Regenerate rather than replacing by hand, and do not reintroduce photographs of
+  real people without recording a licence here.
+
+Apple's Content Rights question should therefore be answered **yes, with the necessary
+rights**: the app does bundle third-party content (the fonts and Lucide's icons), and
+both are permissively licensed.
+
 ## Assets
 
 Requirements as of this writing. Regenerate rather than upscale; both stores reject
