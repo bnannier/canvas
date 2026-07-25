@@ -42,7 +42,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:web": "expo export -p web --source-maps external && node scripts/preload-fonts.mjs dist && node scripts/inline-css.mjs dist",
+    "build:web": "expo export -p web && node scripts/preload-fonts.mjs dist && node scripts/inline-css.mjs dist",
     "lint": "expo lint",
     "check:nav": "bun scripts/check-nav-sync.ts"
   }
