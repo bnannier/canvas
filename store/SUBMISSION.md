@@ -17,7 +17,8 @@ truth for both stores' data declarations.
 | Public privacy policy URL | **LIVE and verified HTTP 200**, `https://canvas.nannier.com/privacy/` |
 | Android production `.aab` | **Built and ready**, v1.0.0 versionCode 3, SDK 57, from commit `d5daa866` |
 | Android upload keystore | Generated and held by EAS |
-| Google Play Developer account | **BLOCKED, none exists** |
+| Google Play Developer account | **EXISTS** (checked 26 Jul 2026): "Bobby Nannier", personal, ID `7346390607155774694`. |
+| Play identity verification | **PENDING with Google.** Documents uploaded, "may take a few days". Everything else is gated behind it: phone verification, package-name registration, publishing. |
 | Apple Developer Program membership | Active, team `ZR2R53SLS7` |
 | App Store Connect app record | Created, Apple ID `6794454098`, bundle `com.nannier.canvas` |
 | ASC listing metadata | Done: name, subtitle, description, keywords, support + marketing URLs, categories |
@@ -60,8 +61,20 @@ Two rules to keep:
   "Demo form" so they cannot read as this app's own login either. Do not rebrand them
   back to Canvas.
 
-Google Play is now the only blocked row. It needs the account owner: it costs money,
-requires identity verification, and can only be completed interactively.
+Google Play is now the only blocked row, and as of 26 Jul 2026 it is waiting on GOOGLE,
+not on us: the account exists and the identity documents are uploaded, but Google has not
+approved them yet. Nothing can move until it does, because phone verification, package-name
+registration and publishing are all gated behind that one check.
+
+Two developer-account details need the owner's attention when the console next opens
+(both are account settings):
+
+- **Website is the stale `https://bnannier.github.io/canvas/`.** It still answers 200 but
+  serves an older bundle, and `/licenses` 404s there while it is live on
+  `https://canvas.nannier.com/`. Point it at the Cloudflare site so it matches the App
+  Store listing.
+- The **developer email shown publicly on Play** is `bobby@nannier.com`, a personal
+  inbox. See the contact-email note above.
 
 Two things cost a submission attempt each, so they are worth knowing before the next
 release:
