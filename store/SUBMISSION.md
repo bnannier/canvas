@@ -28,14 +28,14 @@ truth for both stores' data declarations.
 | iOS upload to App Store Connect | **DONE, and now automatic.** No longer needs an interactive run: EAS holds the App Store Connect API key in its credentials service, so the CI job builds and submits unattended. Verified end to end, the build reached TestFlight. |
 | Build attached to the App Store version | Done, build 7 (1.0.0). A processed build never appears on the in-flight version page by itself; attach it with the `+` beside Build. |
 | Age rating questionnaire | Done, every answer None/No, which yields 4+ across 172 countries. |
-| Screenshots uploaded to ASC | Done, 10 iPhone 6.9". Nothing generates them into ASC, they are uploaded by hand from `store/screenshots`. **Never include a sign-in screen** (see below). |
+| Screenshots uploaded to ASC | **9 of 10 on iPhone 6.9" and iPad 13".** The sign-in shot was deleted (see below); the DataTable replacement in `store/screenshots` still needs uploading by hand. 9 is valid, Apple's minimum is 1. Nothing generates these into ASC. **Never include a sign-in screen.** |
 | Content rights declaration | Done, "this app has the necessary rights to its third-party content" (see the audit below). |
 | App Review contact | Done, Bobby Nannier, `bobby@nannier.com`, `+14166693676`. |
 | Copyright | Done, `2026 Robert Nannier`. Required to submit, and easy to miss because the field sits well above the Save button. |
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
-| **iOS submission** | **REJECTED on the first attempt (build 7), 2.1.0 App Completeness.** Cause and fix below; resubmitted with the same build after replacing the sign-in screenshot and rewriting the review notes. |
+| **iOS submission** | **RESUBMITTED 25 Jul 2026, "Waiting for Review"** (build 7 again). First attempt was rejected under 2.1.0 App Completeness; cause and fix below. Still set to release automatically on approval. |
 
 ### The 2.1.0 rejection, and why the screenshot was the real cause
 
