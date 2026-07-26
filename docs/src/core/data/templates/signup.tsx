@@ -35,9 +35,13 @@ function SignupLive() {
         <Card>
           <Column cozy>
             <Column tight alignCenter>
-              <Emblem primary label="C" />
-              <Typography h3>Create your account</Typography>
-              <Typography small>Start your 14-day free trial. No card required.</Typography>
+              {/* Branded to the fictional demo company, never to Canvas itself. See the
+                  note in signin.tsx: an unbranded account form inside an app named
+                  Canvas reads as the app's own signup, which is what App Review
+                  objected to. */}
+              <Emblem primary label="A" />
+              <Typography h3>Create your Acme Corp account</Typography>
+              <Typography small>Demo form. Enter anything to see the result.</Typography>
             </Column>
             <Input label="Full name" placeholder="Rachel Chen" value={name} onChangeText={setName} block />
             <Input label="Work email" placeholder="you@company.com" value={email} onChangeText={setEmail} block />

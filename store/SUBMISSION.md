@@ -35,7 +35,7 @@ truth for both stores' data declarations.
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
-| **iOS submission** | **SUBMITTED 25 Jul 2026, "Waiting for Review".** Set to release automatically once approved. |
+| **iOS submission** | **REJECTED on the first attempt (build 7).** The reviewer read the Sign-in TEMPLATE as a real login wall. Fixed in code (demo auth forms rebranded to Acme Corp and labelled "Demo form") plus rewritten review notes; needs a new build and resubmission. |
 
 Google Play is now the only blocked row. It needs the account owner: it costs money,
 requires identity verification, and can only be completed interactively.
@@ -158,20 +158,38 @@ Apple's definition, because nothing is stored or linked to a user:
 
 ## Notes for App Review
 
-Paste this into the App Review notes field. It pre-empts a Guideline 4.2 (minimum
-functionality) question, which is the most likely rejection reason for a developer
-reference app:
+Paste this into the App Review notes field. The FIRST submission was rejected because the
+reviewer took the Sign-in template for a real login wall, so the note now leads with that
+and only then covers Guideline 4.2 (minimum functionality), which was the risk originally
+anticipated here:
 
 > Canvas is the official reference app for the open-source Canvas React Native UI kit
-> (https://github.com/bnannier/canvas). It is not a marketing page or a web wrapper: the
-> entire app is built from the native component library it documents, and every example
-> is a live, interactive native view rather than a screenshot or an embedded web page.
+> (https://github.com/bnannier/canvas). It is a component catalog: every screen is a
+> live, interactive native view built from the library it documents, not a screenshot,
+> a marketing page, or an embedded web page.
 >
-> Reviewers can exercise the interactivity directly: open any component (for example
-> Button, Slider, Calendar, or Data Table) and interact with the live example at the top
-> of the page. The theme toggle in the header switches light, dark, and glass surface
-> modes across the whole app, and search filters the full catalog. The app requires no
-> account and works without a network connection apart from an optional version check.
+> THERE IS NO LOGIN AND NO ACCOUNT. The app has no authentication of any kind, no user
+> data, and no backend. Every screen is reachable immediately on launch, with no
+> credentials, which is why "Sign-in required" is unchecked.
+>
+> The previous submission was rejected over a sign-in screen. That screen is a
+> DEMONSTRATION of UI components, not a way into the app. It lives at
+> Components > Templates > Sign-in (and Sign-up): example layouts showing how the kit's
+> Input, Button, Checkbox and Card components compose into a typical authentication
+> screen, which is one of the most common things people build with a UI kit. The forms
+> are inert. Submitting shows a toast and does nothing else: no request is made, no
+> session is created, and no part of the app becomes newly available.
+>
+> That was our mistake to leave ambiguous, and it is fixed in this build. The demo forms
+> are now branded to a fictional company ("Sign in to Acme Corp", with an Acme logo) and
+> carry the subtitle "Demo form", so they read as sample content rather than as this
+> app's own sign-in even when the page heading is scrolled off on a phone.
+>
+> To confirm no gate exists, launch the app and go straight to any component (Button,
+> Slider, Calendar, Data Table) and interact with the live example at the top of its
+> page. The theme toggle in the header switches light, dark, and glass surface modes
+> across the whole app, and search filters the full catalog. The app requires no network
+> connection apart from an optional version check.
 
 ## Third-party content and rights
 
