@@ -28,14 +28,37 @@ truth for both stores' data declarations.
 | iOS upload to App Store Connect | **DONE, and now automatic.** No longer needs an interactive run: EAS holds the App Store Connect API key in its credentials service, so the CI job builds and submits unattended. Verified end to end, the build reached TestFlight. |
 | Build attached to the App Store version | Done, build 7 (1.0.0). A processed build never appears on the in-flight version page by itself; attach it with the `+` beside Build. |
 | Age rating questionnaire | Done, every answer None/No, which yields 4+ across 172 countries. |
-| Screenshots uploaded to ASC | Done, 10 iPhone 6.9". Nothing generates them into ASC, they are uploaded by hand from `store/screenshots`. |
+| Screenshots uploaded to ASC | Done, 10 iPhone 6.9". Nothing generates them into ASC, they are uploaded by hand from `store/screenshots`. **Never include a sign-in screen** (see below). |
 | Content rights declaration | Done, "this app has the necessary rights to its third-party content" (see the audit below). |
 | App Review contact | Done, Bobby Nannier, `bobby@nannier.com`, `+14166693676`. |
 | Copyright | Done, `2026 Robert Nannier`. Required to submit, and easy to miss because the field sits well above the Save button. |
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
-| **iOS submission** | **REJECTED on the first attempt (build 7).** The reviewer read the Sign-in TEMPLATE as a real login wall. Fixed in code (demo auth forms rebranded to Acme Corp and labelled "Demo form") plus rewritten review notes; needs a new build and resubmission. |
+| **iOS submission** | **REJECTED on the first attempt (build 7), 2.1.0 App Completeness.** Cause and fix below; resubmitted with the same build after replacing the sign-in screenshot and rewriting the review notes. |
+
+### The 2.1.0 rejection, and why the screenshot was the real cause
+
+The message was AUTOMATED, not a human reviewer: "An automated analysis of the submission
+indicates the app may include a login but was submitted without a demo account." Apple's
+own remedy for an app with no login is to reply to the Resolution Center message
+confirming that and to add the same information to App Review Information. **No new build
+is required**, which is why the resubmission reused build 7.
+
+What almost certainly tripped it: **App Store screenshot 10 was the Sign-in template**, a
+full-screen card reading "Sign in to Canvas" with email, password, Remember me, Forgot
+password and a Sign in button. An automated pre-review pass reads the screenshots, and
+that one is indistinguishable from a real login wall for an app named Canvas. All three
+platforms carried the same shot; every one is now a DataTable screen instead, which reads
+unmistakably as developer documentation (live sortable table, variant tabs, source code).
+
+Two rules to keep:
+
+- **Never ship a sign-in screen as a store screenshot.** It reads as an auth gate to the
+  automated scan no matter what the app actually does.
+- The in-app demo auth screens are branded to the fictional **Acme Corp** and subtitled
+  "Demo form" so they cannot read as this app's own login either. Do not rebrand them
+  back to Canvas.
 
 Google Play is now the only blocked row. It needs the account owner: it costs money,
 requires identity verification, and can only be completed interactively.
@@ -158,34 +181,36 @@ Apple's definition, because nothing is stored or linked to a user:
 
 ## Notes for App Review
 
-Paste this into the App Review notes field. The FIRST submission was rejected because the
-reviewer took the Sign-in template for a real login wall, so the note now leads with that
-and only then covers Guideline 4.2 (minimum functionality), which was the risk originally
-anticipated here:
+Paste this into the App Review notes field.
+
+The first submission was rejected under **2.1.0 Performance: App Completeness** by an
+AUTOMATED analysis, not a human reviewer: "the app may include a login but was submitted
+without a demo account". Apple's own instruction for an app with no login is to reply to
+the Resolution Center message confirming that AND put the same information in the App
+Review Information section. No new build is required for that, so this text must stay
+true of whatever binary is attached: do NOT let it claim changes that are only on `main`.
 
 > Canvas is the official reference app for the open-source Canvas React Native UI kit
 > (https://github.com/bnannier/canvas). It is a component catalog: every screen is a
 > live, interactive native view built from the library it documents, not a screenshot,
 > a marketing page, or an embedded web page.
 >
-> THERE IS NO LOGIN AND NO ACCOUNT. The app has no authentication of any kind, no user
-> data, and no backend. Every screen is reachable immediately on launch, with no
-> credentials, which is why "Sign-in required" is unchecked.
+> THIS APP DOES NOT INCLUDE A LOGIN. Confirming that in response to the automated
+> message: there is no authentication of any kind, no account system, no user data, and
+> no backend. Nothing in the app is gated. Every screen is reachable immediately on
+> launch, which is why "Sign-in required" is unchecked and no demo account is supplied.
 >
-> The previous submission was rejected over a sign-in screen. That screen is a
-> DEMONSTRATION of UI components, not a way into the app. It lives at
-> Components > Templates > Sign-in (and Sign-up): example layouts showing how the kit's
-> Input, Button, Checkbox and Card components compose into a typical authentication
-> screen, which is one of the most common things people build with a UI kit. The forms
-> are inert. Submitting shows a toast and does nothing else: no request is made, no
-> session is created, and no part of the app becomes newly available.
+> The automated analysis most likely matched the sample authentication screens at
+> Components > Templates > Sign-in and Components > Templates > Sign-up. Those are
+> DEMONSTRATIONS of UI components, not a way into the app: example layouts showing how
+> the kit's Input, Button, Checkbox and Card components compose into a typical sign-in
+> screen, which is one of the most common things developers build with a UI kit. The
+> forms are inert. Submitting one shows a toast and does nothing else: no network
+> request is made, no session is created, and no part of the app becomes newly
+> available. The password fields are ordinary text inputs with the secureTextEntry prop
+> set, present to document that prop.
 >
-> That was our mistake to leave ambiguous, and it is fixed in this build. The demo forms
-> are now branded to a fictional company ("Sign in to Acme Corp", with an Acme logo) and
-> carry the subtitle "Demo form", so they read as sample content rather than as this
-> app's own sign-in even when the page heading is scrolled off on a phone.
->
-> To confirm no gate exists, launch the app and go straight to any component (Button,
+> To confirm nothing is gated, launch the app and go straight to any component (Button,
 > Slider, Calendar, Data Table) and interact with the live example at the top of its
 > page. The theme toggle in the header switches light, dark, and glass surface modes
 > across the whole app, and search filters the full catalog. The app requires no network
