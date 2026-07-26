@@ -47,9 +47,18 @@ function CenteredCardLive() {
         <Card>
           <Column cozy>
             <Column tight alignCenter>
-              <Emblem primary label="C" />
-              <Typography h3>Sign in to Canvas</Typography>
-              <Typography small>Enter your credentials to continue</Typography>
+              {/*
+                Branded to the docs' fictional demo company, NOT to Canvas itself.
+                Naming the host app here is what got the first App Store submission
+                rejected: on a phone the page heading scrolls away, leaving a reviewer
+                looking at "Sign in to Canvas" above an email/password form inside an
+                app called Canvas. That is indistinguishable from a real login wall,
+                and the listing declares that no sign-in is required. Keep every auth
+                mockup pointed at Acme Corp so it can never read as this app's own gate.
+              */}
+              <Emblem primary label="A" />
+              <Typography h3>Sign in to Acme Corp</Typography>
+              <Typography small>Demo form. Enter anything to see the result.</Typography>
             </Column>
             <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} block />
             <Input
@@ -141,8 +150,8 @@ function SplitScreenLive() {
     <Card grow>
       <Column cozy>
         <Column tight>
-          <Typography h3>Sign in</Typography>
-          <Typography small>Enter your credentials below</Typography>
+          <Typography h3>Sign in to Acme Corp</Typography>
+          <Typography small>Demo form. Enter anything to see the result.</Typography>
         </Column>
         <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} block />
         <Input
@@ -218,8 +227,8 @@ function MagicLinkLive() {
                 <Emblem primary circle>
                   <Icon mail />
                 </Emblem>
-                <Typography h3>Sign in with email</Typography>
-                <Typography small>We'll send you a magic link. No password required.</Typography>
+                <Typography h3>Sign in to Acme Corp</Typography>
+                <Typography small>Demo form. No email is actually sent.</Typography>
               </Column>
               <Input label="Email address" placeholder="you@example.com" value={email} onChangeText={setEmail} block />
               <Button block primary onPress={send}>
