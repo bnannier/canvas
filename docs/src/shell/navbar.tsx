@@ -8,7 +8,7 @@ import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
-import { Cosmos } from "../brand/cosmos";
+import { CanvasUniverse } from "../brand/canvas-universe";
 import { WebScrollbarTheme, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
@@ -115,9 +115,9 @@ function WebNav() {
     const atRoot = MOBILE_SECTIONS.some((s) => s.href === pathname);
     const goBack = () => (router.canGoBack() ? router.back() : router.push(sectionRoot as never));
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
         <WebScrollbarTheme />
-        {glass ? <Cosmos /> : null}
+        {glass ? <CanvasUniverse /> : null}
         <View style={{ flex: 1, minWidth: 0 }}>
           {/* The page content is the main landmark, so a screen-reader user can skip the
               nav shell and jump straight to it. `role` is the universal spelling: React
@@ -167,11 +167,14 @@ function WebNav() {
     );
   }
 
-  // Desktop web: the fixed 240px sidebar rail + glass topbar.
+  // Desktop web: the fixed 240px sidebar rail + glass topbar. The shell is
+  // transparent in glass so the root BackdropHost's surface shows through: the
+  // backdrop paints its own opaque floor and the shell floats over it. Solid mode
+  // claims no backdrop, so it keeps painting the background token itself.
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
-      {glass ? <Cosmos /> : null}
+      {glass ? <CanvasUniverse /> : null}
       <View style={{ flex: 1, flexDirection: "row" }}>
         {/* The kit Sidebar's column owns the 240/56 width and the flush right hairline now;
             this wrapper is just the column context so the sidebar's shell fills the row height. */}

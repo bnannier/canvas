@@ -1,6 +1,6 @@
 import { Component, type ReactNode, useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Tabs, Input, OverlayProvider, useTheme } from "@nannier/canvas";
+import { ScrollView, View, Text, Tabs, Input, BackdropHost, OverlayProvider, useTheme } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
@@ -62,7 +62,13 @@ export function FitStage({ children, align = "center" }: { children: ReactNode; 
       style={{ width: "100%", alignItems: fill ? "stretch" : "center", justifyContent: "center" }}
       onLayout={(e) => { const l = e.nativeEvent.layout; if (!l) return; const w = Math.round(l.width); setAvail((a) => (a !== w ? w : a)); }}
     >
-      <View style={fill ? { width: "100%" } : { maxWidth: avail || "100%" }}>{children}</View>
+      {/* A local BackdropHost so an example that mounts a <Backdrop> paints inside its
+          own stage. A Backdrop claims the NEAREST host, so without this an example
+          would publish to the app-root host and take over the whole page's backdrop.
+          Costs nothing for every other example: a host with no claimant renders nothing. */}
+      <View style={fill ? { width: "100%" } : { maxWidth: avail || "100%" }}>
+        <BackdropHost>{children}</BackdropHost>
+      </View>
     </View>
   );
 }

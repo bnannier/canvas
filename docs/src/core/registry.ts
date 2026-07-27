@@ -658,6 +658,18 @@ import e_organisms_action_sheet_dont_0_do from "./examples/organisms/action-shee
 import e_organisms_action_sheet_dont_0_dont from "./examples/organisms/action-sheet/dont-0-dont";
 import e_organisms_action_sheet_dont_1_do from "./examples/organisms/action-sheet/dont-1-do";
 import e_organisms_action_sheet_dont_1_dont from "./examples/organisms/action-sheet/dont-1-dont";
+import e_organisms_backdrop_example_0 from "./examples/organisms/backdrop/example-0";
+import e_organisms_backdrop_example_1 from "./examples/organisms/backdrop/example-1";
+import e_organisms_backdrop_example_2 from "./examples/organisms/backdrop/example-2";
+import e_organisms_backdrop_example_3 from "./examples/organisms/backdrop/example-3";
+import e_organisms_backdrop_example_4 from "./examples/organisms/backdrop/example-4";
+import e_organisms_backdrop_example_5 from "./examples/organisms/backdrop/example-5";
+import e_organisms_backdrop_example_6 from "./examples/organisms/backdrop/example-6";
+import e_organisms_backdrop_example_7 from "./examples/organisms/backdrop/example-7";
+import e_organisms_backdrop_example_8 from "./examples/organisms/backdrop/example-8";
+import e_organisms_backdrop_example_9 from "./examples/organisms/backdrop/example-9";
+import e_organisms_backdrop_dont_0_do from "./examples/organisms/backdrop/dont-0-do";
+import e_organisms_backdrop_dont_0_dont from "./examples/organisms/backdrop/dont-0-dont";
 import e_organisms_calendar_example_0 from "./examples/organisms/calendar/example-0";
 import e_organisms_calendar_example_1 from "./examples/organisms/calendar/example-1";
 import e_organisms_calendar_example_2 from "./examples/organisms/calendar/example-2";
@@ -1735,6 +1747,25 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     donts: [
       { title: "Right tool for the job", do: { caption: "Use an Action Sheet for a short list of choices triggered by a user action, with the dangerous option marked destructive.", code: "<ActionSheet\n  trigger=\"Add photo\"\n  title=\"Photo\"\n  actions={[\n    { label: \"Take Photo\", onPress: () => {} },\n    { label: \"Choose from Library\", onPress: () => {} },\n    { label: \"Remove Photo\", destructive: true, onPress: () => {} },\n  ]}\n/>", render: e_organisms_action_sheet_dont_0_do }, dont: { caption: "Use an Action Sheet for a single yes/no confirmation; an Alert Dialog is the focused tool for that.", code: "<ActionSheet\n  trigger=\"Confirm\"\n  title=\"Are you sure?\"\n  actions={[{ label: \"OK\", onPress: () => {} }]}\n/>", render: e_organisms_action_sheet_dont_0_dont } },
       { title: "Name the action, not a generic verb", do: { caption: "Label each row with the action it performs (Take Photo, Delete File, Move).", code: "<ActionSheet\n  trigger=\"File options\"\n  actions={[\n    { label: \"Delete File\", destructive: true, onPress: () => {} },\n    { label: \"Move to Folder\", onPress: () => {} },\n  ]}\n/>", render: e_organisms_action_sheet_dont_1_do }, dont: { caption: "Generic labels force the user to re-read the title to know what each row does.", code: "<ActionSheet\n  trigger=\"Delete file…\"\n  title=\"Delete file?\"\n  actions={[\n    { label: \"Yes\", destructive: true, onPress: () => {} },\n    { label: \"No\", onPress: () => {} },\n  ]}\n/>", render: e_organisms_action_sheet_dont_1_dont } },
+    ],
+  },
+  "backdrop": {
+    dir: "backdrop",
+    category: "organisms",
+    examples: [
+      { label: "Default", code: "<View style={{ height: 220 }}>\n  <Backdrop>\n    <Backdrop.Particles\n      field={Array.from({ length: 90 }, (_, i) => ({\n        x: ((i * 37) % 101) / 101,\n        y: ((i * 61) % 97) / 97,\n        r: 0.6 + ((i * 13) % 7) / 4,\n        a: 0.3 + ((i * 7) % 10) / 14,\n      }))}\n      depth={0}\n      twinkle\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_0 },
+      { label: "Travelling layers", code: "<View style={{ height: 220 }}>\n  <Backdrop energetic>\n    {[0, 0.25, 0.5, 0.75].map((phase) => (\n      <Backdrop.Particles\n        key={phase}\n        field={Array.from({ length: 40 }, (_, i) => ({\n          x: 0.5 + Math.cos(i * 2.4) * (0.05 + ((i * 11) % 40) / 100),\n          y: 0.5 + Math.sin(i * 2.4) * (0.05 + ((i * 11) % 40) / 100),\n          r: 0.8 + ((i * 7) % 5) / 3,\n          a: 0.4 + ((i * 3) % 10) / 16,\n        }))}\n        depth={1}\n        phase={phase}\n        sprite=\"halo\"\n        bloom\n      />\n    ))}\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_1 },
+      { label: "Gradient clouds", code: "<View style={{ height: 220 }}>\n  <Backdrop calm>\n    <Backdrop.Gradient\n      blobs={[\n        { color: \"#6366f1\", cx: 0.35, cy: 0.35, r: 0.5, o: 0.35, end: 0.62 },\n        { color: \"#ec4899\", cx: 0.7, cy: 0.6, r: 0.44, o: 0.28, end: 0.6 },\n      ]}\n      depth={0.2}\n      size={420}\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_2 },
+      { label: "Calm", code: "<View style={{ height: 220 }}>\n  <Backdrop calm>\n    <Backdrop.Particles\n      field={Array.from({ length: 70 }, (_, i) => ({ x: ((i * 29) % 97) / 97, y: ((i * 53) % 89) / 89, r: 0.7 + ((i * 5) % 6) / 4, a: 0.35 + ((i * 9) % 10) / 15 }))}\n      depth={0}\n      twinkle\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_3 },
+      { label: "Energetic", code: "<View style={{ height: 220 }}>\n  <Backdrop energetic>\n    <Backdrop.Particles\n      field={Array.from({ length: 70 }, (_, i) => ({ x: ((i * 29) % 97) / 97, y: ((i * 53) % 89) / 89, r: 0.7 + ((i * 5) % 6) / 4, a: 0.35 + ((i * 9) % 10) / 15 }))}\n      depth={1}\n      sprite=\"streak\"\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_4 },
+      { label: "Sparse", code: "<View style={{ height: 220 }}>\n  <Backdrop sparse>\n    <Backdrop.Particles\n      field={Array.from({ length: 120 }, (_, i) => ({ x: ((i * 31) % 101) / 101, y: ((i * 47) % 91) / 91, r: 0.6 + ((i * 7) % 6) / 4, a: 0.3 + ((i * 11) % 10) / 14 }))}\n      depth={0}\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_5 },
+      { label: "Dense", code: "<View style={{ height: 220 }}>\n  <Backdrop dense>\n    <Backdrop.Particles\n      field={Array.from({ length: 120 }, (_, i) => ({ x: ((i * 31) % 101) / 101, y: ((i * 47) % 91) / 91, r: 0.6 + ((i * 7) % 6) / 4, a: 0.3 + ((i * 11) % 10) / 14 }))}\n      depth={0}\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_6 },
+      { label: "Subtle", code: "<View style={{ height: 220 }}>\n  <Backdrop subtle>\n    <Backdrop.Particles\n      field={Array.from({ length: 90 }, (_, i) => ({ x: ((i * 37) % 101) / 101, y: ((i * 61) % 97) / 97, r: 0.8 + ((i * 13) % 7) / 4, a: 0.4 + ((i * 7) % 10) / 14 }))}\n      depth={0}\n      sprite=\"halo\"\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_7 },
+      { label: "Vivid", code: "<View style={{ height: 220 }}>\n  <Backdrop vivid>\n    <Backdrop.Particles\n      field={Array.from({ length: 90 }, (_, i) => ({ x: ((i * 37) % 101) / 101, y: ((i * 61) % 97) / 97, r: 0.8 + ((i * 13) % 7) / 4, a: 0.4 + ((i * 7) % 10) / 14 }))}\n      depth={0}\n      sprite=\"halo\"\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_8 },
+      { label: "Still", code: "<View style={{ height: 220 }}>\n  <Backdrop still>\n    <Backdrop.Particles\n      field={Array.from({ length: 90 }, (_, i) => ({ x: ((i * 37) % 101) / 101, y: ((i * 61) % 97) / 97, r: 0.8 + ((i * 13) % 7) / 4, a: 0.4 + ((i * 7) % 10) / 14 }))}\n      depth={0}\n      sprite=\"spark\"\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_example_9 },
+    ],
+    donts: [
+      { do: { caption: "Reach for `subtle` behind anything people have to read. A backdrop sits under body text, and the prominence axis is what keeps it from competing with it.", code: "<View style={{ height: 220 }}>\n  <Backdrop subtle calm>\n    <Backdrop.Particles\n      field={Array.from({ length: 80 }, (_, i) => ({ x: ((i * 41) % 97) / 97, y: ((i * 23) % 89) / 89, r: 0.7 + ((i * 5) % 5) / 4, a: 0.3 + ((i * 7) % 10) / 15 }))}\n      depth={0}\n      twinkle\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_dont_0_do }, dont: { caption: "Run a vivid, energetic backdrop under long-form content. The motion pulls the eye off the words, and the extra brightness cuts text contrast.", code: "<View style={{ height: 220 }}>\n  <Backdrop vivid energetic dense>\n    <Backdrop.Particles\n      field={Array.from({ length: 80 }, (_, i) => ({ x: ((i * 41) % 97) / 97, y: ((i * 23) % 89) / 89, r: 1.6 + ((i * 5) % 5) / 2, a: 0.8 + ((i * 7) % 10) / 50 }))}\n      depth={1}\n      sprite=\"spark\"\n    />\n  </Backdrop>\n</View>", render: e_organisms_backdrop_dont_0_dont } },
     ],
   },
   "calendar": {

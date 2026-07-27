@@ -7,7 +7,7 @@ import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@nannier/c
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
 import { geist } from "../../ui/fonts";
-import { Cosmos } from "../../brand/cosmos";
+import { CanvasUniverse } from "../../brand/canvas-universe";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
 // nav bar hosts the system search field (a real UISearchController on iOS 26 / Material search on
@@ -124,7 +124,7 @@ function NativeSearch() {
           screen is focused), phase-continuous with every other screen's sky, so the
           clear Liquid Glass bubble has real color and motion to refract the moment you
           enter search. It clears when you leave. */}
-      {glass && active ? <Cosmos /> : null}
+      {glass && active ? <CanvasUniverse /> : null}
       {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (

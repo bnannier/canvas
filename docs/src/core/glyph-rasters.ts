@@ -70,6 +70,7 @@ export const GLYPH_RASTERS: Record<string, number> = {
   settings: require("../../assets/images/menu-glyphs/settings.png"),
   shield: require("../../assets/images/menu-glyphs/shield.png"),
   smartphone: require("../../assets/images/menu-glyphs/smartphone.png"),
+  sparkles: require("../../assets/images/menu-glyphs/sparkles.png"),
   square: require("../../assets/images/menu-glyphs/square.png"),
   table: require("../../assets/images/menu-glyphs/table.png"),
   tag: require("../../assets/images/menu-glyphs/tag.png"),

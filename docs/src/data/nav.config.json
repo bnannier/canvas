@@ -392,6 +392,11 @@
             "icon": "more-horizontal"
           },
           {
+            "slug": "backdrop",
+            "label": "Backdrop",
+            "icon": "sparkles"
+          },
+          {
             "slug": "calendar",
             "label": "Calendar",
             "icon": "calendar"
