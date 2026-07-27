@@ -6,6 +6,17 @@ Layers paint back to front in declaration order. `depth` is the parallax rate: `
 
 Mount a single `<BackdropHost>` at your app root and the surface is shared by every `<Backdrop>` beneath it, which keeps one drawing surface alive across navigation instead of one per screen. Without a host a `<Backdrop>` simply renders in place.
 
+**If you are not installing `@shopify/react-native-skia`, add one line to your Metro config.** It is an optional peer used by a future GPU renderer, and Backdrop draws perfectly without it. But Metro resolves `require("...")` at build time and ignores the guarded try/catch around it, so an absent optional peer is a hard bundling failure rather than a graceful runtime fallback. Stub it to an empty module in `metro.config.js`:
+
+```js
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === "@shopify/react-native-skia") return { type: "empty" };
+  return context.resolveRequest(context, moduleName, platform);
+};
+```
+
+Consumers who do install Skia need no entry, because normal resolution succeeds.
+
 ## Usage
 
 ```tsx
