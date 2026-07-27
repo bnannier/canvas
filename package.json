@@ -89,9 +89,13 @@
     "react-native-safe-area-context": ">=4",
     "expo-blur": "*",
     "expo-clipboard": "*",
-    "expo-glass-effect": "*"
+    "expo-glass-effect": "*",
+    "@shopify/react-native-skia": ">=2"
   },
   "peerDependenciesMeta": {
+    "@shopify/react-native-skia": {
+      "optional": true
+    },
     "react-native-qrcode-svg": {
       "optional": true
     },

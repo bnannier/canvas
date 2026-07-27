@@ -79,6 +79,7 @@ if (broken === 0) ok(`${specCount} relative specifiers all resolve`);
 // require() calls and type-only imports (erased by tsc) are fine — only ES import
 // statements referencing these bare specifiers are flagged.
 const OPTIONAL_PEERS = [
+  "@shopify/react-native-skia",
   "expo-blur",
   "expo-glass-effect",
   "react-native-qrcode-svg",

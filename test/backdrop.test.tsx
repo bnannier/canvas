@@ -5,6 +5,7 @@ import { render, cleanup, waitFor, act } from "@testing-library/react";
 import { AccessibilityInfo, type Animated } from "react-native";
 import { Backdrop, BackdropHost } from "../src/organisms/backdrop/backdrop.tsx";
 import { backdropClock, resetBackdropClocks } from "../src/organisms/backdrop/backdrop-clock.ts";
+import { useGpuBackdrop, refreshBackdropRenderer } from "../src/organisms/backdrop/skia-runtime.ts";
 import { readLayers } from "../src/organisms/backdrop/backdrop-layers.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 
@@ -125,6 +126,37 @@ describe("Backdrop accessibility", () => {
     const { container } = render(wrap(<Scene />));
     await waitFor(() => expect(surface(container)).not.toBeNull());
     expect(surface(container)?.getAttribute("aria-hidden")).toBe("true");
+  });
+});
+
+describe("GPU renderer capability", () => {
+  // test/setup.ts stubs @shopify/react-native-skia as an empty module, which is the
+  // realistic hard case: the peer resolves but no drawing backend is live. That is
+  // what a web consumer sees before CanvasKit loads, and the engine must render its
+  // SVG baseline throughout rather than a blank screen.
+  function Probe() {
+    return <>{String(useGpuBackdrop())}</>;
+  }
+
+  it("reports no GPU backend when the peer resolves but cannot allocate", () => {
+    const { container } = render(wrap(<Probe />));
+    expect(container.textContent).toBe("false");
+  });
+
+  it("still paints the scene with no GPU backend", async () => {
+    const { container } = render(wrap(<Scene />));
+    await waitFor(() => expect(surface(container)).not.toBeNull());
+  });
+
+  it("survives a refresh when nothing has changed", () => {
+    // Apps call this after loading a backend; calling it when the answer is the
+    // same must be a no-op rather than a re-render storm.
+    expect(() => {
+      refreshBackdropRenderer();
+      refreshBackdropRenderer();
+    }).not.toThrow();
+    const { container } = render(wrap(<Probe />));
+    expect(container.textContent).toBe("false");
   });
 });
 

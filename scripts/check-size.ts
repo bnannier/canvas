@@ -26,6 +26,7 @@ const JS_EXTERNALS = [
   "react-native-safe-area-context",
   "expo-blur",
   "expo-glass-effect",
+  "@shopify/react-native-skia",
 ];
 
 interface FileSize {
