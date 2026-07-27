@@ -59,3 +59,28 @@ describe("Dialog presentation", () => {
 		expect(container.querySelector('[role="dialog"]')).toBeTruthy();
 	});
 });
+
+// Children replace the built-in title, so a dialog built from children has no
+// element for aria-labelledby to reference. Without a name a destructive
+// confirm renders an alertdialog that assistive tech cannot announce.
+describe("Dialog accessible name with children", () => {
+	it("names a children-based dialog from accessibilityLabel", () => {
+		const { container } = ui(
+			<Dialog open accessibilityLabel="Delete identity">
+				<Text>body</Text>
+			</Dialog>,
+		);
+		const panel = container.querySelector('[role="dialog"]') as HTMLElement;
+		expect(panel.getAttribute("aria-label")).toBe("Delete identity");
+	});
+
+	it("names a destructive children-based alertdialog", () => {
+		const { container } = ui(
+			<Dialog open destructive accessibilityLabel="Delete credential">
+				<Text>body</Text>
+			</Dialog>,
+		);
+		const panel = container.querySelector('[role="alertdialog"]') as HTMLElement;
+		expect(panel.getAttribute("aria-label")).toBe("Delete credential");
+	});
+});
