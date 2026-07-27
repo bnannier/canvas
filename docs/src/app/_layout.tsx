@@ -1,5 +1,5 @@
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { OverlayProvider, ToastProvider } from "@nannier/canvas";
+import { BackdropHost, OverlayProvider, ToastProvider } from "@nannier/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
 import { Navbar } from "../shell/navbar";
@@ -32,11 +32,13 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <DocsThemeProvider>
         {fontsLoaded ? (
-          <OverlayProvider>
-            <ToastProvider>
-              <Navbar />
-            </ToastProvider>
-          </OverlayProvider>
+          <BackdropHost>
+            <OverlayProvider>
+              <ToastProvider>
+                <Navbar />
+              </ToastProvider>
+            </OverlayProvider>
+          </BackdropHost>
         ) : null}
       </DocsThemeProvider>
     </SafeAreaProvider>

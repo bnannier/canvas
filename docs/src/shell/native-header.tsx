@@ -8,7 +8,7 @@ import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
 import { Sidebar } from "./sidebar";
 import { ThemeToggles } from "./theme-toggles";
-import { Cosmos } from "../brand/cosmos";
+import { CanvasUniverse } from "../brand/canvas-universe";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android overflow sheet) can sit as a sibling of the content. On web
@@ -28,14 +28,15 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
   );
 }
 
-// The per-screen native cosmos, glass-gated like the web mount. It renders even on
-// unfocused screens: the singleton clock keeps every mounted sky phase-identical, and
-// the composition is the same on every screen, so the flight a navigation or
-// back-swipe reveals is pixel-continuous with the one you left.
+// The per-screen native scene claim, glass-gated like the web mount. This no longer
+// mounts a surface of its own: it publishes the scene to the root BackdropHost, which
+// owns the single renderer for the whole app. Stacked screens therefore share one
+// surface instead of one each, and the flight a navigation or back-swipe reveals is
+// continuous because the renderer was never unmounted.
 function ScreenCosmos() {
   const { surface } = useTheme();
   if (surface !== "glass") return null;
-  return <Cosmos />;
+  return <CanvasUniverse />;
 }
 
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,

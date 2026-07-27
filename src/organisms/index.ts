@@ -1,5 +1,6 @@
 // Organisms: the React Native UI kit components at the organisms atomic level.
 export * from "./action-sheet/action-sheet.js";
+export * from "./backdrop/backdrop.js";
 export * from "./calendar/calendar.js";
 export * from "./carousel/carousel.js";
 export * from "./command/command.js";
