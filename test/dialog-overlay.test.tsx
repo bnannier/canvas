@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
+import { AlertDialog } from "../src/molecules/alert-dialog/alert-dialog.tsx";
 import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -82,5 +83,26 @@ describe("Dialog accessible name with children", () => {
 		);
 		const panel = container.querySelector('[role="alertdialog"]') as HTMLElement;
 		expect(panel.getAttribute("aria-label")).toBe("Delete credential");
+	});
+});
+
+// The confirm dialog has the same in-flow default as Dialog, and it is the one
+// that guards bulk destructive actions, so it needs the same presentation.
+describe("AlertDialog presentation", () => {
+	it("keeps the contained default in normal flow", () => {
+		const { container } = ui(<AlertDialog open title="Delete?" description="Cannot be undone." />);
+		const panel = container.querySelector('[role="alertdialog"], [role="dialog"]') as HTMLElement;
+		expect(panel).toBeTruthy();
+		expect(panel.style.position).not.toBe("absolute");
+	});
+
+	it("fills its host when presented as an overlay", () => {
+		const { container } = ui(
+			<OverlayProvider>
+				<AlertDialog open overlay destructive title="Delete?" description="Cannot be undone." />
+			</OverlayProvider>,
+		);
+		const panel = container.querySelector('[role="alertdialog"], [role="dialog"]') as HTMLElement;
+		expect(panel.style.position).toBe("absolute");
 	});
 });
