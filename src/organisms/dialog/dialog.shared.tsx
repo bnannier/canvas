@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, Portal, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -61,6 +61,21 @@ export interface DialogProps {
   onCancel?: () => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
+  /**
+   * Presents the dialog OVER the page instead of inline where it is mounted.
+   *
+   * The default is a contained overlay: a scrim with its own height, sitting in
+   * normal flow, which is what the docs catalogue needs to show a dialog inside
+   * an example stage. An application confirming a destructive action needs the
+   * opposite, and the inline form is actively wrong there: it appends a scrim
+   * wherever the component happens to sit, leaves the page behind scrollable and
+   * clickable, and still claims `aria-modal`.
+   *
+   * With `overlay`, the dialog teleports into the nearest `OverlayProvider` and
+   * fills it, so `aria-modal` becomes true rather than aspirational. Mount an
+   * `OverlayProvider` at the app root for this to cover the screen.
+   */
+  overlay?: boolean;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
@@ -73,6 +88,13 @@ function sizeOf(p: DialogProps): Size {
   if (p.large) return "large";
   if (p.wide) return "wide";
   return "default";
+}
+
+// Teleports its children into the nearest OverlayProvider when presenting as an
+// overlay, and renders them in place otherwise. Keeps the contained default
+// byte-for-byte unchanged rather than routing it through the portal layer.
+function Present({ overlay, children }: { overlay: boolean; children: ReactNode }) {
+  return overlay ? <Portal>{children}</Portal> : <>{children}</>;
 }
 
 /** Build a Dialog component from a platform skin. */
@@ -117,6 +139,7 @@ export function createDialog(skin: DialogSkin) {
     };
 
     const size = sizeOf(props);
+    const overlay = props.overlay === true;
 
     const confirm = () => {
       onConfirm?.();
@@ -229,6 +252,7 @@ export function createDialog(skin: DialogSkin) {
           </View>
         ) : null}
         {open ? (
+          <Present overlay={overlay}>
           <View
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role` ("dialog", or "alertdialog" for a destructive confirm) +
@@ -244,7 +268,11 @@ export function createDialog(skin: DialogSkin) {
             aria-modal={true}
             aria-labelledby={children == null && title != null ? titleId : undefined}
             aria-describedby={children == null && description != null ? descriptionId : undefined}
-            style={[trigger != null ? s.backdropTriggerGap : null, s.backdropLayout, skin.backdrop(tokens)]}
+            style={[
+              trigger != null && !overlay ? s.backdropTriggerGap : null,
+              overlay ? s.backdropOverlay : s.backdropLayout,
+              skin.backdrop(tokens),
+            ]}
           >
             <Entrance style={[s.cardSizing, s.cardWidth(size), style]}>
             <GlassSurface style={[s.cardLayout, skin.card(tokens)]}>
@@ -288,6 +316,7 @@ export function createDialog(skin: DialogSkin) {
             </GlassSurface>
             </Entrance>
           </View>
+          </Present>
         ) : null}
       </View>
     );

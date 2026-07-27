@@ -118,6 +118,21 @@ export const backdropTriggerGap: ViewStyle = { marginTop: 12 };
 // an explicit minHeight). The per-platform fill/radius come from the skin.
 // `minWidth: 0` lets the backdrop shrink below the card's content width so a narrow
 // container caps the panel (the card's maxWidth:"100%") instead of overflowing.
+// The overlay presentation: fills the nearest OverlayProvider rather than
+// taking part in page flow, so the scrim genuinely covers the page behind it and
+// `aria-modal` is a true statement. No minHeight here, the layer supplies it.
+export const backdropOverlay: ViewStyle = {
+  position: "absolute",
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 32,
+  minWidth: 0,
+};
+
 export const backdropLayout: ViewStyle = {
   alignItems: "center",
   justifyContent: "center",

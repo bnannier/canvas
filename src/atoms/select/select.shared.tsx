@@ -26,13 +26,30 @@ import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./se
 // absolutely below the trigger (the kit's pre-portal behavior). AnchoredOverlay
 // supplies its own GlassSurface material, so the listbox is passed to it directly.
 
+/**
+ * An option whose stored value differs from the text shown for it, for lists
+ * keyed by id (a project id, a region slug, a workspace name). Passing bare
+ * strings stays supported and means the value and the label are the same.
+ */
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
 export interface SelectProps extends FieldWidthProps {
-  /** Controlled selected option label; omit for uncontrolled use. Empty shows the placeholder. */
+  /**
+   * Controlled selection; omit for uncontrolled use. Empty shows the placeholder.
+   * With plain string options this is the option itself; with `SelectOption`
+   * objects it is the option's `value`, and the trigger shows its `label`.
+   */
   value?: string;
   /** Initial selection for uncontrolled use (a bare <Select options /> picks on its own). */
   defaultValue?: string;
-  /** The list of selectable option labels. */
-  options?: string[];
+  /**
+   * The selectable options: bare strings, or `{ value, label }` objects when the
+   * stored value differs from the text shown for it.
+   */
+  options?: Array<string | SelectOption>;
   /**
    * The field's persistent label. Its placement is platform-adaptive: iOS and web
    * render it ABOVE the trigger; Android renders the Material 3 in-container
@@ -66,7 +83,7 @@ export interface SelectProps extends FieldWidthProps {
   onOpenChange?: (open: boolean) => void;
   /** Dims the control and blocks interaction. */
   disabled?: boolean;
-  /** Called with the chosen option label when a row is pressed (both modes). */
+  /** Called with the chosen option's value when a row is pressed (both modes). */
   onSelect?: (option: string) => void;
   /** E2E hook forwarded to the trigger pressable. */
   testID?: string;
@@ -102,6 +119,10 @@ export function createSelect(skin: SelectSkin) {
       style,
     } = props;
     const size = sizeOf(props);
+    // One shape internally: a bare string is an option whose value is its label.
+    const items: SelectOption[] = options.map((o) =>
+      typeof o === "string" ? { value: o, label: o } : o,
+    );
     const { tokens } = useTheme();
     const widthCap = useFieldWidth(props);
     // One collision-free id for the label so the floated label carries a nativeID.
@@ -147,7 +168,8 @@ export function createSelect(skin: SelectSkin) {
     const triggerHeight = asNum((skin.trigger(tokens, size, open) as { height?: unknown }).height, 56);
     // Floating label owns the resting placeholder: show nothing until the menu opens
     // (matching the M3 Input); a selected value always shows.
-    const displayText = hasValue ? value : floating && !open ? "" : placeholder;
+    const selectedLabel = items.find((o) => o.value === value)?.label ?? value;
+    const displayText = hasValue ? selectedLabel : floating && !open ? "" : placeholder;
 
     return (
       <View style={[root, open ? rootLifted : null, widthCap, style]}>
@@ -240,11 +262,11 @@ export function createSelect(skin: SelectSkin) {
                 their bounded Android ripples to the panel's corners. See src/style/ripple-clip. */}
             <RippleClip shape={cornerRadii(skin.panel(tokens))}>
             <View role={LISTBOX}>
-            {options.map((option, i) => {
-              const selected = option === value;
+            {items.map((option, i) => {
+              const selected = option.value === value;
               return (
                 <Pressable
-                  key={option}
+                  key={option.value}
                   style={({ pressed }) => [
                     skin.optionRow(tokens, selected),
                     // iOS draws a hairline group separator between rows (not above the
@@ -253,7 +275,7 @@ export function createSelect(skin: SelectSkin) {
                     // Web/iOS tint the row on press here; Android uses the ripple instead.
                     skin.ripple == null && pressed ? skin.optionPressed(tokens) : null,
                   ]}
-                  onPress={() => { setValue(option); setOpen(false); }}
+                  onPress={() => { setValue(option.value); setOpen(false); }}
                   android_ripple={ripple}
                   role="option"
                   aria-selected={selected}
@@ -264,7 +286,7 @@ export function createSelect(skin: SelectSkin) {
                     </Text>
                   ) : null}
                   <Text style={[skin.optionText(tokens, size), { flexShrink: 1 }]}>
-                    {option}
+                    {option.label}
                   </Text>
                   {skin.selectedSide === "trailing" ? (
                     <Text style={skin.indicator(tokens, size)}>
