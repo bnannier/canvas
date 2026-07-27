@@ -79,3 +79,28 @@ describe("CardMedia", () => {
     expect(media.style.borderBottomRightRadius).toBe("");
   });
 });
+
+describe("Card header slots", () => {
+	it("renders an icon before the title", () => {
+		const { getByText } = ui(<Card title="Identity" icon={<Text>ICON</Text>} />);
+		expect(getByText("ICON")).toBeTruthy();
+		expect(getByText("Identity")).toBeTruthy();
+	});
+
+	it("renders trailing header actions", () => {
+		const { getByText } = ui(<Card title="Identity" actions={<Text>ACTION</Text>} />);
+		expect(getByText("ACTION")).toBeTruthy();
+	});
+
+	// A card given only an icon or only actions still needs the header row, or the
+	// slot would render nothing at all.
+	it("renders a header for an icon alone", () => {
+		const { getByText } = ui(<Card icon={<Text>ICON</Text>} />);
+		expect(getByText("ICON")).toBeTruthy();
+	});
+
+	it("renders a header for actions alone", () => {
+		const { getByText } = ui(<Card actions={<Text>ACTION</Text>} />);
+		expect(getByText("ACTION")).toBeTruthy();
+	});
+});

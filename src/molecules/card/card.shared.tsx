@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
@@ -44,10 +44,29 @@ import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 
 export type { CardSkin } from "./card.styles.js";
 
+// The header's internal layout: icon and title on one side, actions opposite.
+// Pure composition, identical on every platform, so it stays out of the skins.
+const headerStyles = StyleSheet.create({
+  row: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
+  main: { flexDirection: "row", alignItems: "center", gap: 8, flex: 1 },
+  text: { flex: 1 },
+});
+
 export interface CardProps {
   children?: ReactNode;
   // Simple content props for the children-less / data-driven case.
   title?: string;
+  /**
+   * A glyph rendered before the title, for a section panel that names itself
+   * with an icon. Takes effect on the data-driven path (a card given `title`
+   * rather than raw children).
+   */
+  icon?: ReactNode;
+  /**
+   * Trailing header content, typically a button. Sits opposite the title so the
+   * header reads as one row: name on the left, action on the right.
+   */
+  actions?: ReactNode;
   description?: string;
   body?: string;
   footer?: string;
@@ -95,7 +114,7 @@ function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, description, body, footer, flush, onPress, selected, grow, testID, style } = props;
+    const { children, title, icon, actions, description, body, footer, flush, onPress, selected, grow, testID, style } = props;
     const { tokens } = useTheme();
     const elev = elevationOf(props);
     const dens = densityOf(props);
@@ -139,13 +158,21 @@ export function createCard(skin: CardSkin) {
       // Empty strings count as "no content" in this data-driven path, so a
       // cleared field never renders an empty header, body, footer, or a stray
       // separator. Guard on truthiness rather than null for these display strings.
-      const hasHeader = Boolean(title) || Boolean(description);
+      const hasHeader = Boolean(title) || Boolean(description) || Boolean(icon) || Boolean(actions);
       inner = (
         <>
           {hasHeader ? (
             <CardHeader>
-              {title ? <CardTitle>{title}</CardTitle> : null}
-              {description ? <CardDescription>{description}</CardDescription> : null}
+              <View style={headerStyles.row}>
+                <View style={headerStyles.main}>
+                  {icon}
+                  <View style={headerStyles.text}>
+                    {title ? <CardTitle>{title}</CardTitle> : null}
+                    {description ? <CardDescription>{description}</CardDescription> : null}
+                  </View>
+                </View>
+                {actions}
+              </View>
             </CardHeader>
           ) : null}
           {hasHeader && body ? <CardSeparator /> : null}
