@@ -76,6 +76,14 @@ export interface DialogProps {
    * `OverlayProvider` at the app root for this to cover the screen.
    */
   overlay?: boolean;
+  /**
+   * The dialog's accessible name, for the case where `children` supply the panel
+   * body. Children REPLACE the built-in title/description, so there is no
+   * element left for `aria-labelledby` to point at, and the dialog would
+   * otherwise be announced with no name at all. That is merely poor for a
+   * `dialog` and invalid for the `alertdialog` a destructive confirm renders.
+   */
+  accessibilityLabel?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
@@ -140,6 +148,7 @@ export function createDialog(skin: DialogSkin) {
 
     const size = sizeOf(props);
     const overlay = props.overlay === true;
+    const accessibilityLabel = props.accessibilityLabel;
 
     const confirm = () => {
       onConfirm?.();
@@ -266,6 +275,7 @@ export function createDialog(skin: DialogSkin) {
             role={destructive ? "alertdialog" : "dialog"}
             accessibilityViewIsModal={true}
             aria-modal={true}
+            aria-label={accessibilityLabel}
             aria-labelledby={children == null && title != null ? titleId : undefined}
             aria-describedby={children == null && description != null ? descriptionId : undefined}
             style={[
