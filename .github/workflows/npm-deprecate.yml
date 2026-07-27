@@ -1,0 +1,101 @@
+# Deprecate (or un-deprecate) published versions of @nannier/canvas on npm.
+#
+# WHY THIS EXISTS. `npm deprecate` is a write to the public registry, so it needs a
+# credential with publish rights to the @nannier scope. The repo's standing rule is that
+# registry operations go through CI rather than a local publish, and in practice the local
+# token drifts: the one in ~/.npmrc dated from May and returned 401 on /-/whoami, while the
+# NPM_TOKEN secret used by the deploy workflow was still valid. Routing deprecation through
+# CI uses the credential that is known-good and keeps tokens off developer machines.
+#
+# It is MANUAL ONLY (workflow_dispatch). Nothing here runs on push. A deprecation is
+# visible to every consumer on install, so it should be a deliberate button press.
+#
+# Deprecation does NOT unpublish. The versions stay installable; npm just prints the
+# message when one is resolved. It is fully reversible: re-run with an empty message to
+# clear it (that is npm's documented way to un-deprecate).
+#
+# The first use was the 7.x/8.x line. Canvas published 7.0.0 through 8.1.1 in July 2026,
+# then restarted numbering at 1.0.0, so 8.1.1 is still the highest SEMVER even though
+# `latest` points at the 2.x line. Ordinary installs are fine (npm prefers the `latest`
+# tag whenever it satisfies the range), but anyone on a `^7`/`^8` caret is stranded on the
+# old line and will never be offered 2.x. The deprecation message is what tells them.
+
+name: npm deprecate — canvas
+
+on:
+  workflow_dispatch:
+    inputs:
+      range:
+        description: 'Version range to act on, e.g. ">=7.0.0" or "8.1.1"'
+        type: string
+        required: true
+      message:
+        description: "Deprecation message. LEAVE EMPTY to UN-deprecate the range."
+        type: string
+        required: false
+        default: "Obsolete numbering. Use @nannier/canvas@latest (2.x)."
+
+# Never let two registry writes overlap.
+concurrency:
+  group: npm-deprecate
+  cancel-in-progress: false
+
+jobs:
+  deprecate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Authenticate npm (npmjs.org)
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          echo "@nannier:registry=https://registry.npmjs.org" >> ~/.npmrc
+
+      # Fail early with a clear reason. npm reports an unauthorized WRITE as a 404
+      # ("not in this registry"), which reads as if the package is missing and sends you
+      # looking in the wrong place. This turns that into an explicit auth error.
+      - name: Verify the token can authenticate
+        run: |
+          if ! who=$(npm whoami 2>&1); then
+            echo "::error::NPM_TOKEN is not valid (npm whoami failed). A deprecate would surface this as a misleading 404."
+            echo "$who"
+            exit 1
+          fi
+          echo "authenticated as: $who"
+
+      - name: Show what will change
+        run: |
+          echo "range  : ${{ inputs.range }}"
+          if [ -z "${{ inputs.message }}" ]; then
+            echo "action : UN-DEPRECATE (empty message clears the flag)"
+          else
+            echo "action : DEPRECATE"
+            echo "message: ${{ inputs.message }}"
+          fi
+          echo "--- current state ---"
+          npm view "@nannier/canvas" versions --json
+
+      - name: Apply
+        run: npm deprecate "@nannier/canvas@${{ inputs.range }}" "${{ inputs.message }}"
+
+      # Read the registry back rather than trusting the command's exit code, and write the
+      # result into the run summary so the outcome is visible without opening the log.
+      - name: Verify against the registry
+        run: |
+          sleep 5
+          curl -s "https://registry.npmjs.org/@nannier/canvas" > /tmp/pkg.json
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d = json.load(open("/tmp/pkg.json"))
+          print("## @nannier/canvas deprecation state\n")
+          print("| version | published | deprecated |")
+          print("|---|---|---|")
+          key = lambda v: tuple(int(x) for x in v.split(".")[:3])
+          for v in sorted(d["versions"], key=key):
+              dep = d["versions"][v].get("deprecated")
+              when = d.get("time", {}).get(v, "")[:10]
+              print(f"| `{v}` | {when} | {('**' + dep + '**') if dep else '—'} |")
+          print(f"\n`latest` → **{d['dist-tags']['latest']}**")
+          PY
+          cat "$GITHUB_STEP_SUMMARY"
