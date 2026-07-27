@@ -1,6 +1,6 @@
-import { useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Entrance, GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useEscapeKey, useTheme } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -63,6 +63,17 @@ export interface AlertDialogProps {
   // Action handlers.
   onConfirm?: () => void;
   onCancel?: () => void;
+  /**
+   * Presents the confirm OVER the page instead of inline where it is mounted.
+   *
+   * The default is a contained overlay, which the docs catalogue needs to show
+   * one inside an example stage. An application asking to confirm a destructive
+   * action needs the opposite: inline, the scrim appears wherever the component
+   * happens to sit, the page behind stays scrollable and clickable, and the
+   * dialog still claims `aria-modal`. Teleports into the nearest
+   * `OverlayProvider`; with none in the tree it renders in place.
+   */
+  overlay?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -90,6 +101,13 @@ function widthOf(p: AlertDialogProps): Width {
  * device Metro resolves the right Input by extension regardless, so the default
  * (the web base) is correct there too. Defaults to the web base when omitted.
  */
+// Teleports its children into the nearest OverlayProvider when presenting as an
+// overlay, and renders them in place otherwise, so the contained default is
+// unchanged.
+function Present({ overlay, children }: { overlay: boolean; children: ReactNode }) {
+  return overlay ? <Portal>{children}</Portal> : <>{children}</>;
+}
+
 export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent = WebInput) {
   return function AlertDialog(props: AlertDialogProps) {
     const {
@@ -108,6 +126,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
       testID,
       style,
     } = props;
+    const overlay = props.overlay === true;
 
     const { tokens } = useTheme();
 
@@ -257,6 +276,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
           </View>
         ) : null}
         {open ? (
+          <Present overlay={overlay}>
           <View
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role="alertdialog"` + `aria-modal` make web screen readers treat
@@ -271,7 +291,11 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             aria-modal={true}
             aria-labelledby={title != null ? titleId : undefined}
             aria-describedby={description != null ? descriptionId : undefined}
-            style={[skin.backdrop, trigger != null ? s.triggerGap : null, { minHeight: 200, minWidth: 0 }]}
+            style={[
+              skin.backdrop,
+              trigger != null && !overlay ? s.triggerGap : null,
+              overlay ? s.backdropOverlay : { minHeight: 200, minWidth: 0 },
+            ]}
           >
             <Entrance style={[s.cardBase, s.panelWidth[width], style]}>
             <GlassSurface style={[s.cardBase, skin.card(tokens)]}>
@@ -321,6 +345,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             </GlassSurface>
             </Entrance>
           </View>
+          </Present>
         ) : null}
       </View>
     );

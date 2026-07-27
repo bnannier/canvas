@@ -121,6 +121,18 @@ export interface AlertDialogSkin {
 // per-size width overflow the screen. `minWidth: 0` lets it shrink below the panel's
 // content width when it is a flex item in a row. The trigger is wrapped in
 // `triggerWrap` so it keeps its natural width rather than stretching to this width.
+// The overlay presentation: fills the nearest OverlayProvider rather than taking
+// part in page flow, so the scrim covers the page behind it and `aria-modal` is
+// a true statement.
+export const backdropOverlay: ViewStyle = {
+  position: "absolute",
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  minWidth: 0,
+};
+
 export const root: ViewStyle = { width: "100%", minWidth: 0 };
 
 // Keeps the optional trigger button at its natural (content) width and leading-aligned,
