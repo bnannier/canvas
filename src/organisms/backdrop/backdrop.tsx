@@ -9,3 +9,6 @@ export type { Particle, ParticleSprite, GradientBlob, ParticlesProps, GradientPr
 // Exposed so a scene can drive its own bespoke art from the same timeline the
 // engine runs on, which is what keeps a custom layer in phase with the rest.
 export { backdropClock, type BackdropClock, type Energy } from "./backdrop-clock.js";
+// An app that loads an optional GPU backend calls refreshBackdropRenderer() once it
+// is ready; useGpuBackdrop() reports whether one is live.
+export { useGpuBackdrop, refreshBackdropRenderer } from "./skia-runtime.js";

@@ -8,3 +8,4 @@ export type { BackdropProps } from "./backdrop.shared.js";
 export { BackdropHost, type BackdropHostProps } from "./backdrop-host.js";
 export type { Particle, ParticleSprite, GradientBlob, ParticlesProps, GradientProps, ShaderProps, CustomProps } from "./backdrop-layers.js";
 export { backdropClock, type BackdropClock, type Energy } from "./backdrop-clock.js";
+export { useGpuBackdrop, refreshBackdropRenderer } from "./skia-runtime.js";
