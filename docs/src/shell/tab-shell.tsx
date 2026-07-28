@@ -20,6 +20,12 @@ import { useTheme } from "@nannier/canvas";
 // would fall back to its system-default (light) background — making the app look light in
 // dark mode and frosting the Liquid Glass bars over white. Tied to tokens.background, the
 // backdrop follows the OS light/dark scheme, and the bars frost over the right color.
+//
+// It stays OPAQUE on purpose. The backdrop is hosted inside ScreenFrame on native (see
+// native-header.tsx), so its surface paints within the screen, above this fill. Making
+// this transparent instead — to let a root-level host show through — does not work: the
+// native tab controller and stack navigator each paint their own background underneath,
+// so the screen just falls back to system light.
 export function TabShell({ section: _section }: { section: "home" | "components" | "utilities" | "search" }) {
   const { tokens } = useTheme();
   if (Platform.OS === "web") return <Slot />;
