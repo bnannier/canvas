@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Icon, QRCode, useTheme } from "@nannier/canvas";
+import { View, Text, Pressable, Button, ScrollView, Icon, useTheme } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -22,9 +22,6 @@ const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
 // The hosted EAS Update preview link that opens these docs in Expo Go. Set this to the
 // `exp://u.expo.dev/...` preview URL printed by `eas update`; while empty, the whole
 // "Get the app" section is hidden (there is nothing to scan until the update is published).
-const APP_INSTALL_URL = "";
-const EXPO_GO_IOS = "https://apps.apple.com/app/expo-go/id982107779";
-const EXPO_GO_ANDROID = "https://play.google.com/store/apps/details?id=host.exp.exponent";
 
 const INSTALL_BASH = "bun add @nannier/canvas";
 const INSTALL_TSX = [
@@ -288,36 +285,21 @@ export function Home() {
         </Wrap>
       ) : null}
 
-      {/* ── Get the app ── (hidden until the EAS Update preview URL is set; there is
-           nothing to scan before the hosted update is published). */}
-      {APP_INSTALL_URL ? (
-        <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
-          <SectionHead
-            eyebrow="On your phone"
-            title="Get the app."
-            desc="These docs are a real React Native app. Install Expo Go, then scan to run Canvas natively on iOS and Android, hosted and live, with no build or install."
-            titleSize={sectionTitle}
-          />
-          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 40 : 24, alignItems: wide ? "center" : "stretch" }}>
-            <QRCode value={APP_INSTALL_URL} large style={{ borderWidth: 1, borderColor: tokens.border }} />
-            <View style={{ flex: wide ? 1 : undefined, gap: 16, minWidth: 0 }}>
-              <View style={{ gap: 10 }}>
-                <Step n="1">Install Expo Go from the App Store or Google Play.</Step>
-                <Step n="2">Scan the code with your Camera (iOS) or the Expo Go scanner (Android).</Step>
-                <Step n="3">Canvas opens in Expo Go: the same app, running natively.</Step>
-              </View>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
-                <Button outline large onPress={() => Linking.openURL(EXPO_GO_IOS)}>App Store</Button>
-                <Button outline large onPress={() => Linking.openURL(EXPO_GO_ANDROID)}>Google Play</Button>
-              </View>
-              <Pressable onPress={() => Linking.openURL(APP_INSTALL_URL)} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Text style={{ fontFamily: geist("500"), fontSize: 14.5, color: tokens.primary }}>Open in Expo Go</Text>
-                <Icon arrowRight primary size={15} />
-              </Pressable>
-            </View>
-          </View>
-        </Wrap>
-      ) : null}
+      {/* ── "Get the app" REMOVED (2026-07-27) ────────────────────────────────────
+           This block rendered a QR code plus "Install Expo Go from the App Store or
+           Google Play" with an outline button linking to play.google.com.
+
+           It never shipped: APP_INSTALL_URL was "" so the whole thing was gated off,
+           and it was NOT part of the build App Review saw. It is deleted rather than
+           left dormant because the moment anyone set that constant the iOS app would
+           link straight to a competing app store and instruct users to run the
+           software through a third-party client. That is a live App Store violation
+           sitting one assignment away, and it flatly contradicts the position we are
+           putting to App Review: that the app names other platforms as technical fact
+           and never sends anyone off iOS to obtain the software.
+
+           If a hosted preview is ever wanted, put it on the DOCS SITE, not in the app.
+      */}
 
       {/* ── Principles ── */}
       <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
@@ -472,17 +454,6 @@ export function Home() {
 }
 
 // A numbered step row for the "Get the app" instructions.
-function Step({ n, children }: { n: string; children: ReactNode }) {
-  const { tokens } = useTheme();
-  return (
-    <View style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
-      <View style={{ width: 22, height: 22, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26), alignItems: "center", justifyContent: "center", marginTop: 1 }}>
-        <Text style={{ fontFamily: geist("600"), fontSize: 11, color: tokens.primary }}>{n}</Text>
-      </View>
-      <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 14.5, lineHeight: 22, color: tokens["muted-foreground"] }}>{children}</Text>
-    </View>
-  );
-}
 
 // A simple equal-width grid: chunk children into rows of `cols` and lay each row out
 // with flex:1 cells (RN has no CSS grid; this keeps the cards even).
