@@ -36,7 +36,48 @@ truth for both stores' data declarations.
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
-| **iOS submission** | **RESUBMITTED 25 Jul 2026, "Waiting for Review"** (build 7 again). First attempt was rejected under 2.1.0 App Completeness; cause and fix below. Still set to release automatically on approval. |
+| **iOS submission** | **RESUBMITTED 27 Jul 2026, "Waiting for Review"** (build 7, third attempt). Rejected twice: 2.1.0 App Completeness, then 2.3.10 Accurate Metadata + 4.0 Design. We are APPEALING 2.3.10 rather than complying; see below. Still set to release automatically on approval. |
+
+### The 2.3.10 / Guideline 4 rejection, and why we are appealing
+
+Second rejection (27 Jul, reviewed on **iPad Air 11-inch**) cited two things:
+
+- **2.3.10 Accurate Metadata**: "Revise the app's description to remove Android
+  references." Note Apple's wording is "the app OR metadata" and the app is the worse
+  half: the home screen names Android in six places and `hero-orbit.tsx` renders an
+  Android logo.
+- **Guideline 4 Design**: "the app does not integrate with iOS features other than web
+  views, push notifications, or sharing", plus a note that iPad users expect apps to
+  work properly on iPad.
+
+**The owner decided NOT to drop Android.** Cross-platform support is what the library
+IS, and removing it would make the documentation factually incomplete for its audience.
+Apple's own message invites a reply "if the app's functionality and how it interacts
+with third-party platforms has been misunderstood", so we took that route.
+
+The appeal (posted 27 Jul) argues two things:
+
+1. On 2.3.10, the references are a technical specification for a developer audience, not
+   promotion. The app contains no link to another app store, no instruction to obtain
+   this app anywhere but the App Store, no purchase outside Apple, and no way to acquire
+   the software on another platform. We asked Apple to confirm if they still disagree,
+   and committed to removing everything if so.
+2. On Guideline 4, the cited sentence is factually wrong about this app. It has **no web
+   view, no push notifications and no share sheet**. It uses native UITabBar via
+   expo-router native tabs with SF Symbols, `sidebarAdaptable` (the iOS 26 tab bar that
+   becomes an iPad sidebar), `minimizeBehavior` onScrollDown, Apple's Liquid Glass via
+   UIGlassEffect on iOS 26+, and a native pull-down UIMenu. We asked which iPad screen
+   failed.
+
+Two supporting changes shipped with the appeal so it is true of every line in the binary:
+the platform comparison is now desktop-web only (`d2cbd2b6`), and the dormant Expo Go
+block that could have linked to play.google.com is deleted (`b5abed89`). That block was
+gated off and never shipped, but "no link to another app store" has to be unconditional.
+
+**If this appeal fails**, the fallback is to comply fully: strip Android from the six
+home-screen strings, `PLATFORMS` in `home.tsx`, the orbit logo, and the App Store
+description. Guideline 4 would still need real work: Core Spotlight indexing, App
+Intents, share sheet, and a proper iPad sidebar/detail layout.
 
 ### The 2.1.0 rejection, and why the screenshot was the real cause
 
