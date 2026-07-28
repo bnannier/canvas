@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Pressable, Icon, useTheme } from "@nannier/canvas";
+import { View, Pressable, Icon, BackdropHost, useTheme } from "@nannier/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
@@ -21,8 +21,19 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
   if (Platform.OS === "web") return <>{children}</>;
   return (
     <View style={{ flex: 1 }}>
-      <ScreenCosmos />
-      {children}
+      {/* The backdrop is hosted HERE on native, not at the app root, and that is a
+          deliberate difference from the web shell rather than an oversight. A
+          Backdrop paints into its nearest host, and on native a root-level host
+          sits behind the tab controller and the stack navigator, both of which
+          paint their own opaque background: the sky renders correctly and is
+          simply never visible. Hosting inside the screen puts the surface above
+          that chrome, which is where it has to be. Every screen therefore has its
+          own surface, as it did before the host model existed, and the shared
+          clock still keeps them all in phase across navigation. */}
+      <BackdropHost>
+        <ScreenCosmos />
+        {children}
+      </BackdropHost>
       <NativeHeader />
     </View>
   );
