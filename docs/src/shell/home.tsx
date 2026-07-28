@@ -158,6 +158,21 @@ export function Home() {
 
   const wide = width > 920;
   const levelStack = width <= 760;
+
+  // The "Three native looks" comparison is DESKTOP WEB ONLY, and deliberately so.
+  //
+  // The native bundles already skip it: their looks-shots map is empty, so
+  // LOOKS_AVAILABLE is false on iOS and Android. That left mobile web, where the
+  // rotator drops below its 760px column threshold and stacks the three panes into a
+  // tall run of full device screenshots, one of them an Android handset.
+  //
+  // App Review rejected build 7 under Guideline 2.3.10 for exactly that framing:
+  // "the app or metadata includes information about third-party platforms". A phone
+  // browser is the surface most likely to be mistaken for the app, so the section is
+  // gated on real desktop width rather than merely on the shots existing. Its own
+  // threshold, not `wide`, so a future tweak to `wide` cannot silently re-expose it.
+  const DESKTOP_LOOKS_MIN_WIDTH = 920;
+  const showThreeLooks = LOOKS_AVAILABLE && width >= DESKTOP_LOOKS_MIN_WIDTH;
   const h1Size = Math.round(Math.min(58, Math.max(36, width * 0.05)));
   const sectionTitle = Math.round(Math.min(36, Math.max(26, width * 0.034)));
   const ctaTitle = Math.round(Math.min(42, Math.max(28, width * 0.04)));
@@ -258,9 +273,10 @@ export function Home() {
       {/* ── Three native looks ── the comparison hero: full-mobile screenshots of
            each atom's page on the iPhone simulator, the Pixel emulator, and phone
            web, rotating alphabetically with the CTA following the atom on stage.
-           Web-only (LOOKS_AVAILABLE gates on the platform-split shot map): on a
-           device you ARE the platform, and the native bundles skip the images. */}
-      {LOOKS_AVAILABLE ? (
+           Desktop web only (see showThreeLooks above): on a device you ARE the
+           platform, the native bundles skip the images, and mobile web is gated out
+           because the stacked panes read as cross-platform promotion. */}
+      {showThreeLooks ? (
         <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
           <SectionHead
             eyebrow="Platform-adaptive"
