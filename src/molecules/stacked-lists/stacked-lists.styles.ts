@@ -95,6 +95,10 @@ export function menuDot(tokens: ColorTokens): ViewStyle {
   return { height: 4, width: 4, borderRadius: 9999, backgroundColor: tokens.foreground };
 }
 
+// flex-row items-center: the per-item `trailing` slot wrapper, so an inline
+// editor (a Chip, a small Select) centers against the row like the badge/meta.
+export const trailingSlot: ViewStyle = { flexDirection: "row", alignItems: "center" };
+
 // --- row / menu base fragments reused across skins --------------------------
 
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "center" };

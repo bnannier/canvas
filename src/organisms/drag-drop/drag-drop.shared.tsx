@@ -660,6 +660,12 @@ export function createDragDrop(skin: DragDropSkin) {
           setPressed(false);
           apiRef.current?.endPointerDrag();
         },
+        // Refuse to hand the gesture off once a drag is underway: without this a
+        // surrounding ScrollView (a horizontal board of columns, a scrollable page)
+        // steals the responder on native as soon as the finger travels, cancelling
+        // the drag mid-flight. Composers additionally freeze their own scroll via
+        // useDragActive; this is the gesture-level guarantee.
+        onPanResponderTerminationRequest: () => false,
       }),
     ).current;
 
@@ -755,3 +761,22 @@ export function createDragDrop(skin: DragDropSkin) {
 // (useSyncExternalStore needs stable subscribe/getSnapshot references).
 const noopSubscribe = () => () => {};
 const getEmpty = () => EMPTY_SNAPSHOT;
+
+/**
+ * KIT-INTERNAL: true while a pointer drag is in flight under the nearest DragDropProvider
+ * (keyboard drags do not count: nothing follows the finger, so nothing needs freezing).
+ * Composers that put DropZones inside a ScrollView (Board's horizontal lanes) read this to
+ * freeze scrolling for the duration of the drag: the measured zone rects are captured at grab
+ * time, so a scroll mid-drag would divorce the hit-testing from what is on screen. The context
+ * is module-scoped, so this works with every platform's createDragDrop family. Deliberately NOT
+ * re-exported from the platform entry files: it is not part of the public API.
+ */
+export function useDragActive(): boolean {
+  const api = useContext(DragDropContext);
+  const s = useSyncExternalStore(
+    api?.subscribe ?? noopSubscribe,
+    api?.getSnapshot ?? getEmpty,
+    api?.getSnapshot ?? getEmpty,
+  );
+  return s.active && !s.keyboard;
+}

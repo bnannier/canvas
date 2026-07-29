@@ -397,6 +397,11 @@
             "icon": "sparkles"
           },
           {
+            "slug": "board",
+            "label": "Board",
+            "icon": "columns-2"
+          },
+          {
             "slug": "calendar",
             "label": "Calendar",
             "icon": "calendar"

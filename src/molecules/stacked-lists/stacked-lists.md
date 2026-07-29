@@ -1,6 +1,6 @@
 # StackedList
 
-Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.
+Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews. Rows can carry a per-item `trailing` slot for an inline control, and `reorderable` adds a leading drag grip per row (keyboard- and screen-reader-operable) that reports each drop through `onReorder` while the order stays controlled by your `items` array.
 
 ## Usage
 
@@ -53,6 +53,43 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
   title="Team members"
   addAction="Add"
   rowMenu
+/>
+```
+
+### Reorderable
+
+Each row gains a leading grip: drag it, or focus it and press Space to grab, the arrow keys to move, Space to drop, Escape to cancel. The order stays controlled: a drop only reports the move (`fromIndex`/`toIndex` plus the new `afterId`/`beforeId` neighbors), and the consumer applies it to its own array.
+
+```tsx
+<Stateful initial={[
+  { id: "rachel", name: "Rachel Chen", detail: "rachel.chen@example.com" },
+  { id: "ada", name: "Ada Lovelace", detail: "ada@example.com" },
+  { id: "kevin", name: "Kevin Turner", detail: "kevin@example.com" },
+]}>
+  {(people, setPeople) => (
+    <StackedList
+      reorderable
+      items={people}
+      onReorder={({ fromIndex, toIndex }) => {
+        const next = [...people];
+        next.splice(toIndex, 0, ...next.splice(fromIndex, 1));
+        setPeople(next);
+      }}
+    />
+  )}
+</Stateful>
+```
+
+### Inline trailing control
+
+A per-item `trailing` slot renders right-aligned before the badge/meta cluster, for an inline editor or affordance. In the `clickable` variant a row carrying the slot moves its press target to the content region, so the control never nests inside the row pressable.
+
+```tsx
+<StackedList
+  items={[
+    { name: "Rachel Chen", detail: "rachel.chen@example.com", trailing: <Chip selectable defaultSelected>Owner</Chip> },
+    { name: "Ada Lovelace", detail: "ada@example.com", trailing: <Chip selectable>Owner</Chip>, meta: "editor" },
+  ]}
 />
 ```
 
@@ -125,4 +162,40 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
     </View>
   </View>
 </View>
+```
+
+### Reorderable rows
+
+**Do** — Give every reorderable row a stable `id` and apply the reported move to your own array: identity is what keeps focus, press state, and the drag announcements attached to the right row.
+
+```tsx
+<Stateful initial={[
+  { id: "rachel", name: "Rachel Chen", detail: "rachel.chen@example.com" },
+  { id: "ada", name: "Ada Lovelace", detail: "ada@example.com" },
+]}>
+  {(people, setPeople) => (
+    <StackedList
+      reorderable
+      items={people}
+      onReorder={({ fromIndex, toIndex }) => {
+        const next = [...people];
+        next.splice(toIndex, 0, ...next.splice(fromIndex, 1));
+        setPeople(next);
+      }}
+    />
+  )}
+</Stateful>
+```
+
+**Don't** — Don't reorder id-less rows: with the array index as the only key, every drop re-keys the rows under assistive tech and remounts their avatars, and the reported `afterId`/`beforeId` degrade to transient indices no backend can rank by.
+
+```tsx
+<StackedList
+  reorderable
+  items={[
+    { name: "Rachel Chen", detail: "rachel.chen@example.com" },
+    { name: "Ada Lovelace", detail: "ada@example.com" },
+  ]}
+  onReorder={() => {}}
+/>
 ```
