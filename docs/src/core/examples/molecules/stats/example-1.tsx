@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   items={[
     { label: "Active identities", value: "12,348", delta: "+142 today", icon: <Icon users muted size={16} />, chart1: true },
     { label: "Active sessions", value: "489", delta: "+12%", chart2: true },
-    { label: "OAuth2 clients", value: "12", chart4: true },
+    { label: "OAuth2 clients", value: "12", delta: "8 M2M / 4 user", steady: true, chart4: true },
     { label: "Locked accounts", value: "3", delta: "-2", down: true, icon: <Icon lock muted size={16} /> },
   ]}
 />
