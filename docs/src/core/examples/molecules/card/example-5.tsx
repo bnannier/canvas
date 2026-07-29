@@ -3,22 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSeparator, CardTitle, Input } = scope;
+  const { View, Button, Card, MediaObject } = scope;
   return (
-<Card flush style={{ width: 360, maxWidth: "100%" }}>
-  <CardHeader>
-    <CardTitle>Workspace settings</CardTitle>
-    <CardDescription>Rename the workspace. The URL updates everywhere.</CardDescription>
-  </CardHeader>
-  <CardSeparator />
-  <CardContent>
-    <Input label="Workspace name" placeholder="Acme Inc." block />
-  </CardContent>
-  <CardSeparator />
-  <CardFooter>
-    <Button ghost small>Cancel</Button>
-    <Button primary small>Save changes</Button>
-  </CardFooter>
+<Card style={{ width: 400, maxWidth: "100%" }}>
+  <MediaObject
+    src="/rachel-chen.jpg"
+    title="Rachel Chen"
+    description="Platform engineering, San Francisco"
+    action={<Button outline small>View</Button>}
+    center
+  />
 </Card>
   );
 }

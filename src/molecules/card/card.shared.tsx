@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useTheme, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
@@ -119,6 +119,31 @@ export function createCard(skin: CardSkin) {
     const elev = elevationOf(props);
     const dens = densityOf(props);
 
+    // Empty strings count as "no content", so a cleared field never renders an empty
+    // header, footer, or a stray separator: guard on truthiness rather than null for
+    // these display strings.
+    const hasHeader = Boolean(title) || Boolean(description) || Boolean(icon) || Boolean(actions);
+    // A card is SECTIONED when it renders one of the self-padding sections, whether its
+    // body is raw children or the data-driven `body` string. That is what moves the
+    // inset off the surface and onto the sections.
+    const hasSections = hasHeader || Boolean(footer);
+    // `{cond && <X/>}` collapses to `false`, not null, so a card whose body renders
+    // nothing must not hang a divider over an empty content section: the body wrapper
+    // and the divider above it key off a RENDERABLE child, mirroring the string path's
+    // `hasHeader && body` guard.
+    const hasBody = children != null && children !== false;
+    // The surface inset belongs to the PLAIN children card alone. Deliberately the
+    // looser `!= null` test, so `<Card>{false}</Card>` keeps today's inset and a plain
+    // card's computed style stays byte-identical.
+    const padsSurface = children != null && !hasSections;
+    // `padded` and the density booleans move the SURFACE inset, which a sectioned card
+    // never takes (its sections pad themselves). Silently ignoring a passed prop is the
+    // same class of bug as the dropped header this path fixes, so name it in DEV.
+    devWarn(
+      hasSections && children != null && (Boolean(props.padded) || dens !== "default"),
+      "[canvas] <Card title>: `padded` / `compact` / `comfortable` set the card's own surface inset, which a card with a header or footer never takes (its sections pad themselves); drop the density prop, or drop the section props for a plain padded card.",
+    );
+
     // Shape: per-OS radius; iOS adds Apple's continuous (superellipse) corner curve
     // (an iOS-only RN style prop, omitted entirely on the other skins).
     const shape: ViewStyle = { borderRadius: skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) };
@@ -131,14 +156,14 @@ export function createCard(skin: CardSkin) {
       // treatment hairline; Android paints it transparent on the non-outlined
       // (M3 elevated) variants and shows it only on `flat` (M3 outlined).
       skin.surface(tokens, elev),
-      // The surface inset belongs to the raw-children path only: the data-driven
-      // string path (no children) renders self-padding sections, so any surface
-      // padding there would stack on the sections' own insets (double-padding).
-      // With children: density pads + gaps on its own and wins over everything,
-      // `flush` opts out (edge-to-edge content, or composing the self-padding
-      // CardHeader/CardContent), and otherwise the card pads by default
+      // The surface inset belongs to the PLAIN card alone: a sectioned card (one
+      // carrying a header or footer, whatever its body) renders self-padding
+      // sections, so a surface inset there would stack on the sections' own
+      // (double-padding). On a plain card: density pads + gaps on its own and wins
+      // over everything, `flush` opts out (edge-to-edge content, or composing the
+      // self-padding CardHeader/CardContent), and otherwise the card pads by default
       // (`padded` is the explicit form of that default).
-      children != null ? (dens !== "default" ? skin.density[dens] : flush ? null : skin.padded) : null,
+      padsSurface ? (dens !== "default" ? skin.density[dens] : flush ? null : skin.padded) : null,
       // Selected: recolor the border to primary and wash the surface with a soft
       // primary tint (the border width is unchanged, so content never shifts; on
       // Android's elevated default the resting hairline is transparent, so this
@@ -149,46 +174,63 @@ export function createCard(skin: CardSkin) {
     // RippleClip wrapper on a pressable card).
     const outer: StyleProp<ViewStyle> = [grow ? { flexGrow: 1 } : null, style];
 
-    // Children win: when composed, render exactly what the caller passed.
-    // Otherwise build a representative structure from the simple string props.
+    // The header and footer are the same nodes on both paths, so they are built once
+    // here rather than inside the string-body branch. That is the whole fix: a card
+    // given children used to short-circuit to `inner = children`, silently dropping
+    // title / icon / actions / description / footer. A section panel needs a titled
+    // header AND arbitrary children (a table, a form), which the string `body` cannot
+    // express.
+    const headerNode = hasHeader ? (
+      <CardHeader>
+        <View style={headerStyles.row}>
+          <View style={headerStyles.main}>
+            {icon}
+            <View style={headerStyles.text}>
+              {title ? <CardTitle>{title}</CardTitle> : null}
+              {description ? <CardDescription>{description}</CardDescription> : null}
+            </View>
+          </View>
+          {actions}
+        </View>
+      </CardHeader>
+    ) : null;
+
+    const footerNode = footer ? (
+      <>
+        <CardSeparator />
+        <CardFooter>
+          <Text style={s.footerText(tokens)}>{footer}</Text>
+        </CardFooter>
+      </>
+    ) : null;
+
     let inner: ReactNode;
     if (children != null) {
-      inner = children;
+      // A plain card still renders exactly what the caller passed, byte for byte.
+      // A sectioned card wraps those children in the same anatomy the string path
+      // uses, so `flush` keeps meaning "run the body edge to edge" rather than
+      // silently doing nothing.
+      inner = hasSections ? (
+        <>
+          {headerNode}
+          {hasHeader && hasBody ? <CardSeparator /> : null}
+          {hasBody ? flush ? children : <CardContent>{children}</CardContent> : null}
+          {footerNode}
+        </>
+      ) : (
+        children
+      );
     } else {
-      // Empty strings count as "no content" in this data-driven path, so a
-      // cleared field never renders an empty header, body, footer, or a stray
-      // separator. Guard on truthiness rather than null for these display strings.
-      const hasHeader = Boolean(title) || Boolean(description) || Boolean(icon) || Boolean(actions);
       inner = (
         <>
-          {hasHeader ? (
-            <CardHeader>
-              <View style={headerStyles.row}>
-                <View style={headerStyles.main}>
-                  {icon}
-                  <View style={headerStyles.text}>
-                    {title ? <CardTitle>{title}</CardTitle> : null}
-                    {description ? <CardDescription>{description}</CardDescription> : null}
-                  </View>
-                </View>
-                {actions}
-              </View>
-            </CardHeader>
-          ) : null}
+          {headerNode}
           {hasHeader && body ? <CardSeparator /> : null}
           {body ? (
             <CardContent>
               <Text style={s.bodyText(tokens)}>{body}</Text>
             </CardContent>
           ) : null}
-          {footer ? (
-            <>
-              <CardSeparator />
-              <CardFooter>
-                <Text style={s.footerText(tokens)}>{footer}</Text>
-              </CardFooter>
-            </>
-          ) : null}
+          {footerNode}
         </>
       );
     }
