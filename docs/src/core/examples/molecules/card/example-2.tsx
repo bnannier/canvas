@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { shadow, Card, Typography, Column } = scope;
+  const { Button, Card, DescriptionList } = scope;
   return (
-<Card style={{ maxWidth: 360 }}>
-  <Column tight>
-    <Typography lead semibold>Anything goes here</Typography>
-    <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
-  </Column>
+<Card title="Identity" description="Core attributes" actions={<Button ghost small>Edit</Button>}>
+  <DescriptionList
+    items={[
+      { term: "ID", value: "6f1c2a", mono: true },
+      { term: "State", value: "Active", status: true },
+    ]}
+  />
 </Card>
   );
 }

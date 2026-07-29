@@ -104,3 +104,97 @@ describe("Card header slots", () => {
 		expect(getByText("ACTION")).toBeTruthy();
 	});
 });
+
+// The fix: a card given children used to short-circuit to `inner = children`, so
+// title / icon / actions / description / footer were silently dropped. That is what
+// forced consuming apps to hand-roll a "SectionCard" out of Card + CardHeader +
+// CardTitle, which is the duplication these tests exist to prevent recurring.
+describe("Card sections beside children", () => {
+  it("renders the header above raw children", () => {
+    const { getByText } = ui(
+      <Card title="Identity">
+        <Text>a table</Text>
+      </Card>,
+    );
+    expect(getByText("Identity")).toBeTruthy();
+    expect(getByText("a table")).toBeTruthy();
+  });
+
+  it("renders every header slot beside children", () => {
+    const { getByText, getByTestId } = ui(
+      <Card title="Health" description="All services" icon={<Text testID="icon">i</Text>} actions={<Text testID="act">a</Text>}>
+        <Text>body</Text>
+      </Card>,
+    );
+    expect(getByText("Health")).toBeTruthy();
+    expect(getByText("All services")).toBeTruthy();
+    expect(getByTestId("icon")).toBeTruthy();
+    expect(getByTestId("act")).toBeTruthy();
+    expect(getByText("body")).toBeTruthy();
+  });
+
+  it("renders the footer below raw children", () => {
+    const { getByText } = ui(
+      <Card title="T" footer="the footer">
+        <Text>body</Text>
+      </Card>,
+    );
+    expect(getByText("the footer")).toBeTruthy();
+    expect(getByText("body")).toBeTruthy();
+  });
+
+  // The padding contract: a sectioned card's inset lives on its sections, so the
+  // surface must not also pad or the two stack.
+  it("moves the inset off the surface when sectioned", () => {
+    const { getByTestId } = ui(
+      <Card title="T" testID="c">
+        <Text>body</Text>
+      </Card>,
+    );
+    expect(getByTestId("c").style.padding).toBe("");
+  });
+
+  it("leaves a PLAIN card's surface inset exactly as it was", () => {
+    const { getByTestId } = ui(
+      <Card testID="c">
+        <Text>body</Text>
+      </Card>,
+    );
+    expect(getByTestId("c").style.padding).toBe(PADDED);
+  });
+
+  // `{cond && <X/>}` collapses to `false`, not null. A body that renders nothing must
+  // not hang a separator over an empty content section.
+  it("treats a false body as no body", () => {
+    const { getByText } = ui(<Card title="T">{false}</Card>);
+    expect(getByText("T")).toBeTruthy();
+  });
+
+  it("still renders children alone when no section props are passed", () => {
+    const { getByText, queryByText } = ui(
+      <Card>
+        <Text>just me</Text>
+      </Card>,
+    );
+    expect(getByText("just me")).toBeTruthy();
+    expect(queryByText("undefined")).toBeNull();
+  });
+
+  // The data-driven string path must be untouched.
+  it("keeps the string-body path working", () => {
+    const { getByText } = ui(<Card title="T" body="the body" footer="the footer" />);
+    expect(getByText("T")).toBeTruthy();
+    expect(getByText("the body")).toBeTruthy();
+    expect(getByText("the footer")).toBeTruthy();
+  });
+
+  it("children win over a string body when both are passed", () => {
+    const { getByText, queryByText } = ui(
+      <Card title="T" body="ignored">
+        <Text>the children</Text>
+      </Card>,
+    );
+    expect(getByText("the children")).toBeTruthy();
+    expect(queryByText("ignored")).toBeNull();
+  });
+});

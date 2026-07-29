@@ -1,6 +1,6 @@
 # Card
 
-Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. The data-driven string form (`title` / `description` / `body` / `footer`, no children) renders self-padding sections, so it needs no `padded`. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
+Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. The section props (`title` / `description` / `icon` / `actions` / `footer`) render self-padding sections, so a sectioned card needs no `padded`. They compose with a string `body` OR with raw children, so a panel can carry a titled header above a table or a form; children win when both are passed. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
 
 ## Usage
 
@@ -27,6 +27,19 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
   title="Recent activity"
   body="A labeled content surface. Drop fields, a list, or any module of content here."
 />
+```
+
+### Section with children
+
+```tsx
+<Card title="Identity" description="Core attributes" actions={<Button ghost small>Edit</Button>}>
+  <DescriptionList
+    items={[
+      { term: "ID", value: "6f1c2a", mono: true },
+      { term: "State", value: "Active", status: true },
+    ]}
+  />
+</Card>
 ```
 
 ### Generic

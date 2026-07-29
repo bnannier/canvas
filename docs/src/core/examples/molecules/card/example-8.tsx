@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { shadow, Card, Typography, Column } = scope;
   return (
-<Card raised style={{ maxWidth: 360 }}>
+<Card flat style={{ maxWidth: 360 }}>
   <Column tight>
-    <Typography lead semibold>Lifted above the page</Typography>
-    <Typography small muted>Raised deepens the shadow for the moments a card needs emphasis: a drag preview, a featured module.</Typography>
+    <Typography lead semibold>Outlined and quiet</Typography>
+    <Typography small muted>Flat drops the shadow so the card sits flush with the page. On Android this is the Material outlined card.</Typography>
   </Column>
 </Card>
   );

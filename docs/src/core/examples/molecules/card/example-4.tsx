@@ -3,16 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Button, Card, MediaObject } = scope;
+  const { Button, Card, CardContent, CardMedia, Typography, Row, Column } = scope;
   return (
-<Card style={{ width: 400, maxWidth: "100%" }}>
-  <MediaObject
-    src="/rachel-chen.jpg"
-    title="Rachel Chen"
-    description="Platform engineering, San Francisco"
-    action={<Button outline small>View</Button>}
-    center
-  />
+<Card flush style={{ width: 320, maxWidth: "100%" }}>
+  <CardMedia src="/kira-tanaka.jpg" height={180} alt="Portrait of Kira Tanaka" />
+  <CardContent>
+    <Column cozy>
+      <Column tight>
+        <Typography h5 semibold>Kira Tanaka</Typography>
+        <Typography small muted>Design engineer. Ships the pixels and the pipeline that delivers them.</Typography>
+      </Column>
+      <Row snug>
+        <Button primary small>Follow</Button>
+        <Button outline small>Message</Button>
+      </Row>
+    </Column>
+  </CardContent>
 </Card>
   );
 }
