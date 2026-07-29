@@ -9,10 +9,29 @@ import { useSyncExternalStore } from "react";
 //
 // Two rules this file exists to enforce.
 //
-// 1. The require is GUARDED, never a static import. `scripts/verify-package.ts`
-//    fails the build on a static import of an optional peer, because a consumer
-//    without the package installed would otherwise get an unresolved module. Same
-//    shape as src/style/glass-surface/glass-surface.tsx.
+// 1. The require is GUARDED, never a static import, AND it sits directly inside the
+//    try block with nothing between the two. Both halves are load-bearing.
+//
+//    The static-import half: `scripts/verify-package.ts` fails the build on a static
+//    import of an optional peer, because a consumer without the package installed
+//    would otherwise get an unresolved module.
+//
+//    The placement half: Metro decides whether a dependency is optional in
+//    `isOptionalDependency` (metro/src/ModuleGraph/worker/collectDependencies.js).
+//    It walks up from the require call and, at the FIRST enclosing block statement,
+//    returns whether that block belongs to a TryStatement. It does not keep
+//    climbing. So wrapping the call in `if (typeof require === "function")`
+//    interposes the IF's own block, the answer comes back false, and Metro registers
+//    a REQUIRED edge: a consumer who skipped the optional peer then fails to bundle
+//    with "Unable to resolve module". Verified against metro 0.84.4 by running the
+//    collector on both shapes; the guarded form reports optional=undefined and the
+//    hoisted form reports optional=true. Expo enables this via
+//    `allowOptionalDependencies: true` in @expo/metro-config.
+//
+//    A `typeof` guard would buy nothing anyway: where `require` is undefined the
+//    ReferenceError lands in the same catch.
+//
+//    Same shape as src/style/glass-surface/glass-surface.tsx.
 //
 // 2. The probe asks a CAPABILITY question, never a platform question. "Can this
 //    runtime construct a Skia object right now?" is false on a web runtime before
@@ -32,13 +51,13 @@ interface SkiaModule {
   Skia?: { Paint?: () => unknown };
 }
 
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 
 let skia: SkiaModule | undefined;
 try {
-  if (typeof require === "function") {
-    skia = require("@shopify/react-native-skia") as SkiaModule;
-  }
+  // Directly in the try block. See rule 1 above: an intervening `if` makes Metro
+  // treat this as a required dependency and breaks every consumer without the peer.
+  skia = require("@shopify/react-native-skia") as SkiaModule;
 } catch {
   skia = undefined;
 }

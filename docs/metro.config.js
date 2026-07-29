@@ -16,10 +16,6 @@ const repoRoot = path.resolve(projectRoot, "..");
 
 const config = getDefaultConfig(projectRoot);
 
-// Optional peers of @nannier/canvas that this app deliberately does not install.
-// See the resolveRequest note below for why an explicit stub is required.
-const ABSENT_OPTIONAL_PEERS = new Set(["@shopify/react-native-skia"]);
-
 config.watchFolders = [repoRoot];
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
 config.resolver.disableHierarchicalLookup = true;
@@ -37,23 +33,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       filePath: path.join(projectRoot, "node_modules", "@nannier", "canvas", "src", "index.ts"),
     };
   }
-  // Optional peers that are NOT installed here must resolve to an empty module.
-  //
-  // Metro resolves `require("literal")` statically and does not honour the
-  // surrounding try/catch, so the kit's guarded require of an optional peer is a
-  // HARD bundling failure when the package is absent — the try/catch only ever
-  // protects against a runtime throw, never a build-time resolution. Verified: a
-  // fresh `expo export -p web` fails with "Unable to resolve module
-  // @shopify/react-native-skia from src/organisms/backdrop/skia-runtime.ts".
-  //
-  // The kit degrades correctly at runtime once the module resolves to something,
-  // so an empty stub is all that is needed: Backdrop's probe finds no drawing
-  // backend and renders its SVG baseline, which is the documented behaviour for a
-  // consumer who skips the peer. Any consumer who does install Skia needs no entry
-  // here, because normal resolution then succeeds.
-  if (ABSENT_OPTIONAL_PEERS.has(moduleName)) {
-    return { type: "empty" };
-  }
+  // No stub is needed for the kit's optional peers, and adding one back would hide a
+  // real regression. The kit loads them through a require sitting DIRECTLY inside a
+  // try block, which is the shape Metro's isOptionalDependency recognises, so an
+  // absent peer resolves to nothing and the runtime catch takes over. This app
+  // deliberately installs no Skia, so a successful `expo export` here is the proof
+  // that the optional-peer mechanism still works.
   if (moduleName.endsWith(".js") && (moduleName.startsWith("./") || moduleName.startsWith("../"))) {
     try {
       return context.resolveRequest(context, moduleName, platform);

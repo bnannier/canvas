@@ -261,15 +261,15 @@ const DEFAULT_CODE = 'const theme = getTheme();\nsetTheme(theme === "dark" ? "li
 // expo-clipboard is an OPTIONAL peer: consumers who never render a copy chip (or
 // only target the web, where navigator.clipboard covers it) skip the install.
 // Guarded literal require, mirroring qrcode.shared.tsx.
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 interface ExpoClipboardModule {
   setStringAsync?: (text: string) => Promise<unknown>;
 }
 let ExpoClipboard: ExpoClipboardModule | undefined;
 try {
-  if (typeof require === "function") {
-    ExpoClipboard = require("expo-clipboard") as ExpoClipboardModule;
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  ExpoClipboard = require("expo-clipboard") as ExpoClipboardModule;
 } catch {
   ExpoClipboard = undefined;
 }

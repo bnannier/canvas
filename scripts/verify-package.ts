@@ -99,6 +99,40 @@ for (const file of jsFiles) {
 }
 if (peerViolations === 0) ok(`no static imports of optional peers (${OPTIONAL_PEERS.length} checked)`);
 
+// 2c. Each optional-peer require must sit DIRECTLY inside a try block.
+//
+// Not style. Metro's isOptionalDependency
+// (metro/src/ModuleGraph/worker/collectDependencies.js) walks up from the require
+// call and, at the FIRST enclosing block statement, returns whether that block
+// belongs to a TryStatement. It does not keep climbing. So any statement that
+// introduces a block between the try and the require, classically
+// `if (typeof require === "function")`, makes Metro register a REQUIRED edge, and
+// every consumer who skipped the peer fails to bundle with "Unable to resolve
+// module". Check 2b above cannot catch it: the require is still a require.
+//
+// Verified against metro 0.84.4 by running the collector on both shapes: the
+// guarded form reports optional=undefined, the hoisted form optional=true.
+const OPTIONAL_REQUIRE_RE = new RegExp(`require\\(["'](${OPTIONAL_PEERS.join("|")})["']\\)`, "g");
+let placementViolations = 0;
+let requireSites = 0;
+for (const file of jsFiles) {
+  const src = stripComments(fs.readFileSync(file, "utf8"));
+  for (const m of src.matchAll(OPTIONAL_REQUIRE_RE)) {
+    requireSites++;
+    // Walk back to the nearest `{`; the token sequence before it must be `try`.
+    const before = src.slice(0, m.index);
+    const brace = before.lastIndexOf("{");
+    if (brace === -1 || !/\btry\s*$/.test(before.slice(0, brace))) {
+      placementViolations++;
+      fail(
+        `${path.relative(REPO, file)} → require("${m[1]}") is not directly inside a try block. ` +
+          `Metro will treat it as a REQUIRED dependency and break consumers without the peer.`,
+      );
+    }
+  }
+}
+if (placementViolations === 0) ok(`optional-peer requires sit directly in a try block (${requireSites} checked)`);
+
 // 3. Platform forks preserved
 const iosForks = jsFiles.filter((f) => f.endsWith(".ios.js")).length;
 const androidForks = jsFiles.filter((f) => f.endsWith(".android.js")).length;

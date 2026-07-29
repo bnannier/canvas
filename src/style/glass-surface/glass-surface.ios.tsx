@@ -25,20 +25,20 @@ import {
 // each is loaded with a guarded literal require (bundlers that have it installed
 // include it; missing packages degrade to the translucent fallback) instead of a
 // static import (which fails module resolution for everyone who skipped it).
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 let GlassView: typeof ExpoGlassTypes.GlassView | undefined;
 let BlurView: typeof ExpoBlurTypes.BlurView | undefined;
 try {
-  if (typeof require === "function") {
-    GlassView = (require("expo-glass-effect") as { GlassView?: typeof ExpoGlassTypes.GlassView }).GlassView;
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  GlassView = (require("expo-glass-effect") as { GlassView?: typeof ExpoGlassTypes.GlassView }).GlassView;
 } catch {
   GlassView = undefined;
 }
 try {
-  if (typeof require === "function") {
-    BlurView = (require("expo-blur") as { BlurView?: typeof ExpoBlurTypes.BlurView }).BlurView;
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  BlurView = (require("expo-blur") as { BlurView?: typeof ExpoBlurTypes.BlurView }).BlurView;
 } catch {
   BlurView = undefined;
 }
