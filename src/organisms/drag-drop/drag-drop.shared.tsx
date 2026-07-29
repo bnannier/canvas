@@ -258,6 +258,11 @@ export function createDragDrop(skin: DragDropSkin) {
     const getSnapshot = useCallback(() => snap.current, []);
 
     const api = useMemo<DragDropApi>(() => {
+      // Pointer-drag session bookkeeping. Arming a pointer drag is ASYNC (measureAll spans
+      // a few macrotasks), so a grip tapped and released before the measure lands would
+      // otherwise arm a drag no pointer owns and leave the board stuck mid-"drag". `seq`
+      // invalidates a measure superseded by a newer grab; `held` goes false on release.
+      const pointerSession = { seq: 0, held: false };
       const registerZone: DragDropApi["registerZone"] = (id, entry) => {
         zones.current.set(id, entry);
         if (!zoneOrder.current.includes(id)) zoneOrder.current.push(id);
@@ -355,9 +360,16 @@ export function createDragDrop(skin: DragDropSkin) {
       const startPointerDrag: DragDropApi["startPointerDrag"] = ({ dragId, cardRef, handleRef, grantLocation }) => {
         const d = draggables.current.get(dragId);
         if (!d) return;
+        const session = ++pointerSession.seq;
+        pointerSession.held = true;
         void (async () => {
           const measured = await measureAll();
           const handle = await measureRect(handleRef);
+          // The grip may have been released (a tap, an instant flick) or re-grabbed while the
+          // measure was in flight; arming now would strand an active drag no pointer owns
+          // (endPointerDrag already ran against a null active and no-opped). Only the latest,
+          // still-held session may arm.
+          if (session !== pointerSession.seq || !pointerSession.held) return;
           if (!measured || !handle) return;
           const { provider, m } = measured;
           const sourceZoneId = d.zoneId;
@@ -412,6 +424,8 @@ export function createDragDrop(skin: DragDropSkin) {
       };
 
       const endPointerDrag: DragDropApi["endPointerDrag"] = () => {
+        // Mark the pointer released FIRST so a measure still in flight never arms afterwards.
+        pointerSession.held = false;
         const a = active.current;
         if (!a || a.keyboard) return;
         finish(a, true);
