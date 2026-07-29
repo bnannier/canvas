@@ -39,6 +39,11 @@ export interface StatItem {
   delta?: string;
   /** Color the delta red (a decline) instead of the default green (a rise). */
   down?: boolean;
+  /** Render the delta MUTED rather than as a rise or a decline, for a line that
+   *  qualifies the value instead of reporting a change ("last 30 days",
+   *  "3 M2M / 1 user"). Green would read as good news that is not being claimed.
+   *  Takes precedence over `down`. */
+  steady?: boolean;
   /** Optional trend series; when set (and non-empty), the metric renders a
    *  Sparkline strip below the value that plots these points. Omit for no trend. */
   spark?: number[];
@@ -156,7 +161,7 @@ export function createStats(skin: StatsSkin) {
         )}
         <Text style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>
         {item.delta != null && item.delta !== "" ? (
-          <Text style={[skin.deltaBase, deltaTone(dark, !!item.down)]}>{item.delta}</Text>
+          <Text style={[skin.deltaBase, item.steady ? { color: tokens["muted-foreground"] } : deltaTone(dark, !!item.down)]}>{item.delta}</Text>
         ) : null}
         {item.spark != null && item.spark.length > 0 ? (
           <Sparkline values={item.spark} accessibilityLabel={`${item.label} trend`} style={sparkStrip} />

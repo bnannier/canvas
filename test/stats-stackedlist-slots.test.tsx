@@ -46,6 +46,20 @@ describe("Stats per-metric slots", () => {
     expect(both).toBe(first);
   });
 
+  it("renders a steady delta muted rather than as a rise", () => {
+    const steady = ui(<Stats items={[{ label: "A", value: "1", delta: "last 30 days", steady: true }]} />).getByText("last 30 days").style.color;
+    cleanup();
+    const rise = ui(<Stats items={[{ label: "A", value: "1", delta: "last 30 days" }]} />).getByText("last 30 days").style.color;
+    expect(steady).not.toBe(rise);
+  });
+
+  it("steady takes precedence over down", () => {
+    const steady = ui(<Stats items={[{ label: "A", value: "1", delta: "x", steady: true, down: true }]} />).getByText("x").style.color;
+    cleanup();
+    const onlySteady = ui(<Stats items={[{ label: "A", value: "1", delta: "x", steady: true }]} />).getByText("x").style.color;
+    expect(steady).toBe(onlySteady);
+  });
+
   it("leaves the delta's rise/decline tone alone when accented", () => {
     const accented = ui(<Stats items={[{ label: "A", value: "1", delta: "-5%", down: true, chart2: true }]} />).getByText("-5%").style.color;
     cleanup();
