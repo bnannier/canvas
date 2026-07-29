@@ -3,14 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stats } = scope;
+  const { Icon, Stats } = scope;
   return (
 <Stats
-  onPressItem={() => {}}
   items={[
-    { label: "Active users", value: "71,897", delta: "+12.3%" },
-    { label: "Revenue", value: "$48.2k", delta: "+8.1%" },
-    { label: "Churn", value: "1.2%", delta: "-0.4%", down: true }
+    { label: "Active identities", value: "12,348", delta: "+142 today", icon: <Icon users muted size={16} />, chart1: true },
+    { label: "Active sessions", value: "489", delta: "+12%", chart2: true },
+    { label: "OAuth2 clients", value: "12", chart4: true },
+    { label: "Locked accounts", value: "3", delta: "-2", down: true, icon: <Icon lock muted size={16} /> },
   ]}
 />
   );

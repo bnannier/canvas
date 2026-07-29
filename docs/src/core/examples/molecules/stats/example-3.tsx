@@ -6,13 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { Stats } = scope;
   return (
 <Stats
-  plain
-  title="Key metrics"
   items={[
-    { label: "Revenue", value: "$48.2k" },
-    { label: "Orders", value: "842" },
-    { label: "Avg. value", value: "$57.24" },
-    { label: "Conversion", value: "3.6%" }
+    { label: "Total users", value: "12,847", delta: "+12.5%" },
+    { label: "Active sessions", value: "1,024", delta: "+3.2%" },
+    { label: "Error rate", value: "0.12%", delta: "+0.03%", down: true },
+    { label: "Avg. session", value: "4m 32s", delta: "+0.8%" }
   ]}
 />
   );

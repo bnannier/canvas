@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Sparkline } from "../../atoms/sparkline/sparkline.js";
-import { deltaTone, item as itemLayout, row, sparkStrip, type Surface } from "./stats.styles.js";
+import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, sparkStrip, type Surface } from "./stats.styles.js";
 
 // Shared Stats shell. The structure (a wrapping row/grid of metric stacks, each a
 // small label, a large headline value, and an optional delta), the boolean-prop
@@ -42,6 +42,26 @@ export interface StatItem {
   /** Optional trend series; when set (and non-empty), the metric renders a
    *  Sparkline strip below the value that plots these points. Omit for no trend. */
   spark?: number[];
+  /** A glyph shown opposite the label, naming what the metric counts. */
+  icon?: ReactNode;
+  /** A control in the metric's header, opposite the label (a period selector, a
+   *  filter). Sits beside `icon` when both are given. */
+  actions?: ReactNode;
+  /** Accent for the headline value, drawn from the categorical chart ramp so a
+   *  dashboard's tiles are tellable apart at a glance.
+   *
+   *  Mutually exclusive; first match wins in the order listed. Omit for the
+   *  default foreground, which is what every existing call site gets. The slots
+   *  are the same eight the charts use, so a metric and the series it summarises
+   *  can carry one identity. */
+  chart1?: boolean;
+  chart2?: boolean;
+  chart3?: boolean;
+  chart4?: boolean;
+  chart5?: boolean;
+  chart6?: boolean;
+  chart7?: boolean;
+  chart8?: boolean;
 }
 
 export interface StatsProps {
@@ -91,6 +111,20 @@ function surfaceOf(p: StatsProps): Surface {
   return "card";
 }
 
+// Accent precedence, first match wins. Returns the chart token name, or null for
+// the default foreground so an untoned metric's style is unchanged.
+function accentOf(item: StatItem): string | null {
+  if (item.chart1) return "chart-1";
+  if (item.chart2) return "chart-2";
+  if (item.chart3) return "chart-3";
+  if (item.chart4) return "chart-4";
+  if (item.chart5) return "chart-5";
+  if (item.chart6) return "chart-6";
+  if (item.chart7) return "chart-7";
+  if (item.chart8) return "chart-8";
+  return null;
+}
+
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
   function StatItemView({ item, surface, onPress }: { item: StatItem; surface: Surface; onPress?: () => void }): ReactNode {
@@ -99,10 +133,28 @@ export function createStats(skin: StatsSkin) {
     // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
     const cardShape = surface === "card" ? skin.cardSurface(tokens) : null;
     const container = [cardShape, itemLayout[surface]];
+    // The accent recolors ONLY the headline value, never the label or the delta:
+    // the delta keeps its own rise/decline semantics, which an accent must not
+    // overwrite.
+    const accent = accentOf(item);
+    const accentStyle = accent ? { color: tokens[accent as keyof typeof tokens] } : null;
+    // The header row exists only when the metric has an icon or a control, so a
+    // plain metric's tree is unchanged.
+    const hasHeader = item.icon != null || item.actions != null;
     const inner = (
       <>
-        <Text style={skin.labelText(tokens)}>{item.label}</Text>
-        <Text style={skin.valueText(tokens)}>{item.value}</Text>
+        {hasHeader ? (
+          <View style={headerRow}>
+            <Text style={skin.labelText(tokens)}>{item.label}</Text>
+            <View style={headerTrailing}>
+              {item.icon}
+              {item.actions}
+            </View>
+          </View>
+        ) : (
+          <Text style={skin.labelText(tokens)}>{item.label}</Text>
+        )}
+        <Text style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>
         {item.delta != null && item.delta !== "" ? (
           <Text style={[skin.deltaBase, deltaTone(dark, !!item.down)]}>{item.delta}</Text>
         ) : null}

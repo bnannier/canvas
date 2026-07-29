@@ -16,6 +16,18 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 
 ## Variants
 
+### Status tones
+
+```tsx
+<StackedList
+  items={[
+    { name: "Kratos", detail: "Identity", badge: "Healthy", success: true },
+    { name: "Hydra", detail: "OAuth2", badge: "Degraded", warning: true },
+    { name: "Postgres", detail: "Database", badge: "Down", error: true },
+  ]}
+/>
+```
+
 ### Clickable
 
 ```tsx

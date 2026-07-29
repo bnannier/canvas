@@ -61,6 +61,18 @@ export interface StackedListItem {
   meta?: string;
   /** Trailing badge label; rendered as a <Badge> instead of plain meta text. */
   badge?: string;
+  /** Status tone for the trailing `badge`, drawn as the kit's status pill.
+   *
+   *  These are the item's only tonal surface, so they are named for the meaning
+   *  rather than prefixed: a row reads `{ name: "Kratos", badge: "Healthy",
+   *  success: true }`. Mutually exclusive; first match wins in the order listed
+   *  here. Without one the badge keeps its neutral `secondary` look, which is
+   *  what every existing call site gets. Ignored when `badge` is unset. */
+  success?: boolean;
+  error?: boolean;
+  warning?: boolean;
+  info?: boolean;
+  neutral?: boolean;
   /** Photo URL for the avatar; falls back to initials when absent. */
   avatar?: string;
   /** Initials shown when there is no photo; derived from `name` when omitted. */
@@ -174,8 +186,21 @@ export function createStackedList(
       </View>
     );
 
+    // A toned row renders the status pill, so a health list can say healthy /
+    // degraded / down in colour rather than three identical grey badges. Untoned
+    // rows keep the original `secondary` badge, so every existing call site is
+    // unchanged.
+    const badgeToneOf = (item: StackedListItem): Partial<BadgeProps> => {
+      if (item.success) return { status: true, success: true };
+      if (item.error) return { status: true, error: true };
+      if (item.warning) return { status: true, warning: true };
+      if (item.info) return { status: true, info: true };
+      if (item.neutral) return { status: true, neutral: true };
+      return { secondary: true };
+    };
+
     const renderTrailing = (item: StackedListItem) => {
-      if (item.badge != null) return <Badge secondary>{item.badge}</Badge>;
+      if (item.badge != null) return <Badge {...badgeToneOf(item)}>{item.badge}</Badge>;
       if (item.meta != null) return <Text style={skin.metaLabel(tokens)}>{item.meta}</Text>;
       return null;
     };
