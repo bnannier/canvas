@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { Animated, BackHandler, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
-import { GlassModalBlurTarget, Pressable, View, isRTL, useTheme, useReducedMotion, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
+import { GlassModalBlurTarget, Pressable, View, isRTL, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaView } from "../../style/safe-area.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -106,20 +106,12 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
       [openProp, onOpenChange],
     );
 
-    // Hardware back closes the open drawer. BackHandler fires on Android only
-    // (the Modal's own onRequestClose also covers the system back/escape); the
-    // subscription is a documented no-op on iOS and web, so no Platform branch is
-    // needed. The handler returns true while open to consume the event (prevent
-    // the app from navigating back / exiting), and false when closed so the
-    // default back behavior runs.
-    useEffect(() => {
-      if (!open) return;
-      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-        setOpen(false);
-        return true;
-      });
-      return () => sub.remove();
-    }, [open, setOpen]);
+    // Hardware back closes the open drawer (the Modal's own onRequestClose also
+    // covers the system back/escape). The hook subscribes only while open, so the
+    // event is consumed while the drawer is up and default back behavior runs
+    // once it is closed; it also skips web, where the BackHandler shim would
+    // console.error on every call.
+    useHardwareBack(open, () => setOpen(false));
 
     // EVERY edge SLIDES by hand (translateX/translateY) behind a SEPARATE, stationary
     // dim layer that fades in. RN Modal's animationType can only slide vertically upward

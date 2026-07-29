@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, Fragment } from "react";
-import { BackHandler, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
+import { useCallback, useState, Fragment } from "react";
+import { KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { SafeAreaView } from "../../style/safe-area.js";
 import {
   View,
@@ -10,6 +10,7 @@ import {
   RippleClip,
   cornerRadii,
   useTheme,
+  useHardwareBack,
   GlassModalBlurTarget,
   type StyleProp,
   type ViewStyle,
@@ -118,19 +119,12 @@ export function createActionSheet(skin: ActionSheetSkin) {
       close();
     };
 
-    // Hardware back closes the open sheet. BackHandler fires on Android only (the
-    // Modal's own onRequestClose also covers the system back/escape); the
-    // subscription is a documented no-op on iOS and web, so no Platform branch is
-    // needed. The handler returns true while open to consume the event, false when
-    // closed so the default back behavior runs.
-    useEffect(() => {
-      if (!open) return;
-      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-        setOpen(false);
-        return true;
-      });
-      return () => sub.remove();
-    }, [open, setOpen]);
+    // Hardware back closes the open sheet (the Modal's own onRequestClose also
+    // covers the system back/escape). The hook subscribes only while open, so the
+    // event is consumed while the sheet is up and default back behavior runs once
+    // it is closed; it also skips web, where the BackHandler shim would
+    // console.error on every call.
+    useHardwareBack(open, close);
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const hasHeader = title != null || message != null;

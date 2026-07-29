@@ -22,6 +22,7 @@ export * from "./ripple.js";
 export * from "./ripple-clip.js";
 export * from "./use-controllable-state.js";
 export * from "./use-escape-key.js";
+export * from "./use-hardware-back.js";
 export * from "./use-dialog-focus.js";
 export * from "./use-roving-focus.js";
 export * from "./motion.js";

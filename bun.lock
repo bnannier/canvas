@@ -31,6 +31,7 @@
         "typescript-eslint": "^8.64.0",
       },
       "peerDependencies": {
+        "@shopify/react-native-skia": ">=2",
         "expo-blur": "*",
         "expo-clipboard": "*",
         "expo-glass-effect": "*",
@@ -41,6 +42,7 @@
         "react-native-svg": ">=14",
       },
       "optionalPeers": [
+        "@shopify/react-native-skia",
         "expo-blur",
         "expo-clipboard",
         "expo-glass-effect",

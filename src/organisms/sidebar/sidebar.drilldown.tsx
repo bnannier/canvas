@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, BackHandler, type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useReducedMotion, supportsNativeDriver } from "../../style/index.js";
+import { Animated, type GestureResponderEvent } from "react-native";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver } from "../../style/index.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type Density } from "./sidebar.styles.js";
@@ -72,23 +72,18 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
       animateIn(-1);
     };
 
-    // Android hardware back pops one level, or closes at the root; wired only while open.
-    useEffect(() => {
-      if (!open) return;
-      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-        setDrilled((d) => {
-          if (d != null) {
-            animateIn(-1);
-            return null;
-          }
-          onRequestClose();
-          return d;
-        });
-        return true;
+    // Android hardware back pops one level, or closes at the root; wired only while
+    // open, and never on web (the BackHandler shim there console.errors per call).
+    useHardwareBack(open, () => {
+      setDrilled((d) => {
+        if (d != null) {
+          animateIn(-1);
+          return null;
+        }
+        onRequestClose();
+        return d;
       });
-      return () => sub.remove();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
+    });
 
     const select = (item: SidebarItem, index: number, event: GestureResponderEvent) => {
       onSelect(item, index, event);
