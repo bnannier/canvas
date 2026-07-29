@@ -27,12 +27,12 @@ import { type GlassBlurTargetHostProps } from "./glass-surface.shared.js";
 // installed still include it) instead of a static import (which fails module
 // resolution for everyone who skipped the optional peer). Undefined when absent
 // or in a pure-ESM runtime with no `require` — then the passthrough below.
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 let BlurTargetView: typeof ExpoBlurTypes.BlurTargetView | undefined;
 try {
-  if (typeof require === "function") {
-    BlurTargetView = (require("expo-blur") as { BlurTargetView?: typeof ExpoBlurTypes.BlurTargetView }).BlurTargetView;
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  BlurTargetView = (require("expo-blur") as { BlurTargetView?: typeof ExpoBlurTypes.BlurTargetView }).BlurTargetView;
 } catch {
   BlurTargetView = undefined;
 }

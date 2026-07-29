@@ -6,13 +6,13 @@ import { View, type StyleProp, type ViewStyle } from "../../style/index.js";
 // render a QRCode skip the install AND the bundle weight; consumers who use it
 // install the peer. When absent, QRCode renders its labeled frame empty and
 // warns once in dev.
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 let RNQRCode: typeof RNQRCodeType | undefined;
 try {
-  if (typeof require === "function") {
-    const mod = require("react-native-qrcode-svg") as { default?: typeof RNQRCodeType } | typeof RNQRCodeType;
-    RNQRCode = (mod as { default?: typeof RNQRCodeType }).default ?? (mod as typeof RNQRCodeType);
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  const mod = require("react-native-qrcode-svg") as { default?: typeof RNQRCodeType } | typeof RNQRCodeType;
+  RNQRCode = (mod as { default?: typeof RNQRCodeType }).default ?? (mod as typeof RNQRCodeType);
 } catch {
   RNQRCode = undefined;
 }

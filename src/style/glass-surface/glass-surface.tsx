@@ -33,18 +33,18 @@ import {
 // BlurTargetView doubles as the API-generation detector: expo-blur 57+ exports it
 // and wants `blurMethod` + `blurTarget`; older expo-blur takes the legacy
 // `experimentalBlurMethod` (see frostMethodProps).
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 let BlurView: typeof ExpoBlurTypes.BlurView | undefined;
 let supportsBlurTarget = false;
 try {
-  if (typeof require === "function") {
-    const mod = require("expo-blur") as {
-      BlurView?: typeof ExpoBlurTypes.BlurView;
-      BlurTargetView?: typeof ExpoBlurTypes.BlurTargetView;
-    };
-    BlurView = mod.BlurView;
-    supportsBlurTarget = mod.BlurTargetView !== undefined;
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  const mod = require("expo-blur") as {
+    BlurView?: typeof ExpoBlurTypes.BlurView;
+    BlurTargetView?: typeof ExpoBlurTypes.BlurTargetView;
+  };
+  BlurView = mod.BlurView;
+  supportsBlurTarget = mod.BlurTargetView !== undefined;
 } catch {
   BlurView = undefined;
 }

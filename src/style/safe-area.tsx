@@ -10,17 +10,17 @@ import { View, type ViewProps } from "react-native";
 // This keeps the kit installable and buildable for consumers who skip the peer, and
 // removes the core-`SafeAreaView` deprecation warning. See glass-surface for the same
 // guarded literal-require pattern.
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 
 type SafeAreaEdges = readonly ("top" | "right" | "bottom" | "left")[];
 export type SafeAreaViewComponent = ComponentType<ViewProps & { edges?: SafeAreaEdges }>;
 
 let SafeAreaView: SafeAreaViewComponent = View;
 try {
-  if (typeof require === "function") {
-    const mod = require("react-native-safe-area-context") as { SafeAreaView?: SafeAreaViewComponent };
-    if (mod?.SafeAreaView) SafeAreaView = mod.SafeAreaView;
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  const mod = require("react-native-safe-area-context") as { SafeAreaView?: SafeAreaViewComponent };
+  if (mod?.SafeAreaView) SafeAreaView = mod.SafeAreaView;
 } catch {
   SafeAreaView = View;
 }

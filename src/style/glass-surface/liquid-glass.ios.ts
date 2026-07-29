@@ -13,12 +13,12 @@
 
 // expo-glass-effect is an OPTIONAL peer: consumers without it must still build,
 // so it is loaded with a guarded literal require instead of a static import.
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 let ExpoGlass: { GlassView?: unknown; isLiquidGlassAvailable?: () => boolean } | undefined;
 try {
-  if (typeof require === "function") {
-    ExpoGlass = require("expo-glass-effect") as typeof ExpoGlass;
-  }
+  // Directly in the try block: an intervening `if` makes Metro treat this as
+  // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
+  ExpoGlass = require("expo-glass-effect") as typeof ExpoGlass;
 } catch {
   ExpoGlass = undefined;
 }
