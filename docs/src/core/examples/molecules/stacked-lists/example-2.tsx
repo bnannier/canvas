@@ -7,13 +7,11 @@ export default function Example(scope: ExampleScope) {
   return (
 <StackedList
   items={[
-    { name: "Rachel Chen", detail: "Engineering Lead" },
-    { name: "Ada Lovelace", detail: "Staff Engineer" }
+    { name: "Rachel Chen", detail: "rachel.chen@example.com", meta: "2h ago" },
+    { name: "Ada Lovelace", detail: "ada@example.com", meta: "5h ago" },
+    { name: "Kevin Turner", detail: "kevin@example.com", meta: "1d ago" }
   ]}
-  card
-  title="Team members"
-  addAction="Add"
-  rowMenu
+  clickable
 />
   );
 }

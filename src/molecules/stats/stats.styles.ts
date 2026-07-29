@@ -54,6 +54,16 @@ export const item: Record<Surface, ViewStyle> = {
 // than a fixed 120px). A layout contract shared by every skin, like `row`/`item`.
 export const sparkStrip: ViewStyle = { marginTop: 12, width: "100%" };
 
+// The metric's header row, rendered only when the item carries an icon or a
+// control: the label on the left, the glyph and control opposite it. A metric with
+// neither keeps its bare label Text, so its tree is unchanged. A layout contract,
+// identical on every platform.
+export const headerRow: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 };
+
+// The trailing cluster inside that row, so an icon and a control sit together
+// rather than pushing each other apart.
+export const headerTrailing: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
+
 // Delta tone: a rise reads green (text-green-600 dark:text-green-400), a decline
 // reads red (text-red-600 dark:text-red-400). Semantic color, shared.
 export function deltaTone(dark: boolean, down: boolean): TextStyle {
