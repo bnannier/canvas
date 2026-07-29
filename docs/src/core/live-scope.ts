@@ -15,6 +15,7 @@ import {
   Backdrop,
   BackdropHost,
   Badge,
+  Board,
   Breadcrumb,
   Button,
   ButtonGroup,
@@ -97,6 +98,7 @@ import {
   ScatterPlot,
   CandlestickChart,
   DepthChart,
+  applyBoardMove,
 } from "@nannier/canvas";
 
 // Style helpers an example fence can reference when it styles a raw View/Text.
@@ -126,6 +128,7 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   Stateful,
   Ticker,
   applyDrop,
+  applyBoardMove,
   IconGallery,
   WithToast,
   AppScreen,
@@ -146,6 +149,7 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   Backdrop,
   BackdropHost,
   Badge,
+  Board,
   Breadcrumb,
   Button,
   ButtonGroup,

@@ -17,6 +17,8 @@ import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
+import { Board } from "../src/organisms/board/board.tsx";
+import { StackedList } from "../src/molecules/stacked-lists/stacked-lists.tsx";
 
 // A console-error gate: React DOM (which react-native-web renders through) logs a
 // DOM-nesting violation whenever one interactive element ends up inside another —
@@ -128,6 +130,26 @@ describe("no DOM-nesting console violations at render", () => {
         <Pagination page={2} total={5} onChange={() => {}} />
         <ButtonGroup items={["Day", "Week", "Month"]} active={0} onSelect={() => {}} />
         <Listbox items={[{ label: "One", selected: true }, { label: "Two" }]} onSelect={() => {}} />
+        {/* Board stacks a pressable card body beside a drag grip and a kebab menu; the
+            press target must be a SIBLING of those buttons, never their ancestor. */}
+        <Board
+          columns={[{ id: "todo", label: "To do" }, { id: "doing", label: "Doing" }]}
+          items={[{ id: "a", columnId: "todo", title: "Task A", badge: "3", menu: [{ label: "Archive" }] }]}
+          onPressItem={() => {}}
+        />
+        {/* A reorderable, clickable StackedList with a trailing control moves the row's
+            press target to the content region so grip/trailing/menu stay siblings. */}
+        <StackedList
+          reorderable
+          clickable
+          rowMenu
+          items={[
+            { id: "ada", name: "Ada Lovelace", detail: "ada@acme.dev", trailing: <Text>Owner</Text> },
+            { id: "alan", name: "Alan Turing", detail: "alan@acme.dev" },
+          ]}
+          onPressItem={() => {}}
+          onReorder={() => {}}
+        />
       </>,
     );
     expect(violations).toEqual([]);

@@ -111,10 +111,38 @@ const CASES: SkinCase[] = [
   { name: "GridList", dir: "molecules/grid-lists", file: "grid-lists", props: { items: [{ title: "Design", subtitle: "12 files" }, { title: "Research", subtitle: "3 files" }] } },
   { name: "MediaObject", dir: "molecules/media-objects", file: "media-objects", props: { title: "Rachel Chen", description: "Product designer", avatar: "RC" } },
   { name: "StackedList", dir: "molecules/stacked-lists", file: "stacked-lists", props: { items: [{ name: "Ada Lovelace", detail: "ada@acme.dev" }, { name: "Alan Turing", detail: "alan@acme.dev" }] } },
+  // Reorderable + trailing mount the per-OS drag grips and the trailing-slot branch.
+  {
+    name: "StackedList",
+    dir: "molecules/stacked-lists",
+    file: "stacked-lists",
+    props: {
+      reorderable: true,
+      items: [
+        { id: "ada", name: "Ada Lovelace", detail: "ada@acme.dev", trailing: txt("Owner") },
+        { id: "alan", name: "Alan Turing", detail: "alan@acme.dev" },
+      ],
+    },
+  },
   { name: "Stats", dir: "molecules/stats", file: "stats", props: { items: [{ label: "Total users", value: "12,847", delta: "+12.5%" }, { label: "Revenue", value: "$48.2k" }] } },
 
   // ---- organisms ----
   { name: "ActionSheet", dir: "organisms/action-sheet", file: "action-sheet", props: { open: true, onOpenChange: noop, title: "Options", actions: [{ label: "Delete", destructive: true, onPress: noop }, { label: "Share", onPress: noop }] } },
+  // Board mounts the full kanban anatomy per platform: lanes, column header badges, a
+  // pressable card body, the drag grip, a kebab menu, an item badge, and an empty column.
+  {
+    name: "Board",
+    dir: "organisms/board",
+    file: "board",
+    props: {
+      columns: [{ id: "todo", label: "To do" }, { id: "doing", label: "Doing", badge: "WIP" }],
+      items: [
+        { id: "a", columnId: "todo", title: "Task A", description: "Two-line description copy.", badge: "3", chips: txt("frontend"), menu: [{ label: "Archive" }] },
+        { id: "b", columnId: "todo", title: "Task B" },
+      ],
+      onPressItem: noop,
+    },
+  },
   { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { month: "June 2026", selected: 10, today: 12, daysInMonth: 30, startWeekday: 1, events: [{ day: 10, title: "Standup", start: 9 }, { day: 12 }] } },
   // Week + day views mount the timeline half of every skin (hour axis, slot lines, event blocks).
   { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { week: true, month: "June 2026", selected: 10, today: 12, daysInMonth: 30, startWeekday: 1, events: [{ day: 10, title: "Standup", start: 9 }, { day: 11, title: "Review", start: 9.5, end: 11 }] } },

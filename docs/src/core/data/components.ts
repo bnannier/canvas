@@ -274,6 +274,14 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "board",
+    name: "Board",
+    description: "A data-driven kanban board: columns scroll horizontally, each column is a drop zone, and every card carries a drag grip, an optional badge, a chips slot, and a kebab menu. Built on the kit's own drag-and-drop, so a move works by pointer or keyboard on iOS, Android, and the web, and each drop reports a BoardMove (index plus afterId/beforeId neighbors) while the items array stays controlled by the consumer.",
+    category: "Organisms",
+    stageAlign: "start",
+  },
+
+  {
     slug: "calendar",
     name: "Calendar",
     description: "Month grid, week timeline, and day timeline with events: dots mark event days, timed events render as blocks on the hour timelines.",

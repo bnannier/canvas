@@ -8,6 +8,20 @@ import { Icon } from "../../atoms/icon/icon.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
+import {
+  DragDropProvider as WebDragDropProvider,
+  DropZone as WebDropZone,
+  Draggable as WebDraggable,
+  DragHandle as WebDragHandle,
+} from "../../organisms/drag-drop/drag-drop.js";
+import {
+  type DropEvent,
+  type DragDropProviderProps,
+  type DropZoneProps,
+  type DraggableProps,
+  type DragHandleProps,
+} from "../../organisms/drag-drop/drag-drop.shared.js";
+import { listMoveFor, type StackedListMove } from "./stacked-lists.reorder.js";
 import * as s from "./stacked-lists.styles.js";
 import { type StackedListSkin } from "./stacked-lists.styles.js";
 
@@ -77,6 +91,14 @@ export interface StackedListItem {
   avatar?: string;
   /** Initials shown when there is no photo; derived from `name` when omitted. */
   initials?: string;
+  /**
+   * Right-aligned slot rendered before the badge/meta cluster, for an inline
+   * per-row editor or affordance (a Chip, a small Select, an action button).
+   * Interactive content is fine in every variant: a `clickable` row carrying
+   * this slot moves its press target to the content region (avatar + text), so
+   * a control here never nests inside the row pressable.
+   */
+  trailing?: ReactNode;
 }
 
 export interface StackedListProps {
@@ -107,9 +129,21 @@ export interface StackedListProps {
    * Render the rows through a windowed `FlatList` instead of mounting every row up
    * front, for large lists. Give the list a bounded height (via `style`, e.g.
    * `{ maxHeight: 400 }`) so it can scroll; without one it warns and renders eagerly
-   * anyway. Default (omitted) mounts all rows, unchanged.
+   * anyway. Default (omitted) mounts all rows, unchanged. Ignored (with a dev
+   * warning) when `reorderable` is set: windowing unmounts off-screen rows, which
+   * would leave them undraggable and unmeasurable mid-drag.
    */
   virtualized?: boolean;
+  /**
+   * Make the rows reorderable: each row gains a leading drag grip (keyboard- and
+   * screen-reader-operable: Space grabs, the arrow keys move, Space drops, Escape
+   * cancels) and the list becomes one drop zone. The order stays CONTROLLED by the
+   * consumer's `items` array: a drop only reports the move through `onReorder`,
+   * never reorders internally.
+   */
+  reorderable?: boolean;
+  /** Fired on drop with the computed move (row id, from/to index, new neighbors). */
+  onReorder?: (move: StackedListMove) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -131,6 +165,24 @@ export type AvatarComponent = ComponentType<AvatarProps>;
 export type BadgeComponent = ComponentType<BadgeProps>;
 export type ButtonComponent = ComponentType<ButtonProps>;
 
+// The DnD family the `reorderable` rows compose, so each platform passes its own
+// skinned builds (web base by default), mirroring the atom params above.
+export interface StackedListDnd {
+  DragDropProvider: ComponentType<DragDropProviderProps>;
+  DropZone: ComponentType<DropZoneProps>;
+  Draggable: ComponentType<DraggableProps<{ index: number }>>;
+  DragHandle: ComponentType<DragHandleProps>;
+}
+
+const WEB_DND: StackedListDnd = {
+  DragDropProvider: WebDragDropProvider,
+  DropZone: WebDropZone,
+  Draggable: WebDraggable,
+  DragHandle: WebDragHandle,
+};
+
+export type { StackedListMove };
+
 // createStackedList threads the platform skin AND the platform-styled composed
 // atoms. The atom params default to the web base atoms so the web entry (and any
 // barrel import) composes web-styled rows; the .ios/.android entry files pass the
@@ -143,9 +195,11 @@ export function createStackedList(
   Avatar: AvatarComponent = WebAvatar,
   Badge: BadgeComponent = WebBadge,
   Button: ButtonComponent = WebButton,
+  dnd: StackedListDnd = WEB_DND,
 ) {
+  const { DragDropProvider, DropZone, Draggable, DragHandle } = dnd;
   return function StackedList(props: StackedListProps) {
-    const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, testID, style } = props;
+    const { items = [], title, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, reorderable, onReorder, testID, style } = props;
     const variant = variantOf(props);
     const { tokens } = useTheme();
 
@@ -255,6 +309,19 @@ export function createStackedList(
       <Avatar src={item.avatar} name={item.name} initials={item.initials} />
     );
 
+    // The content-region press target used when a clickable row must host OTHER
+    // interactive controls beside it (a drag grip, a `trailing` editor): it fills
+    // the row between the grip and the trailing cluster with the row's own gap.
+    const rowFill: ViewStyle = {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "stretch",
+      gap: skin.rowBase.gap,
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: "0%",
+    };
+
     // One row, keyless so it can be used both by the eager `.map` (which supplies
     // the key) and by FlatList's renderItem (which keys via keyExtractor).
     const renderRow = (item: StackedListItem, index: number) => {
@@ -263,7 +330,38 @@ export function createStackedList(
       // avatar (marginStart-style), and on the row itself that margin would
       // shift the entire row's content, not just the separator.
       const divider = ruled && index < lastIndex ? <View pointerEvents="none" style={skin.rowDivider(tokens)} /> : null;
+      const grip = reorderable ? <DragHandle label={`Reorder ${item.name}`} /> : null;
+      const trailingSlot = item.trailing != null ? <View style={s.trailingSlot}>{item.trailing}</View> : null;
       if (variant === "clickable") {
+        // A clickable row that also hosts a grip or a `trailing` control cannot stay
+        // one whole-row pressable: react-native-web renders button-roled Pressables
+        // as real <button> elements, and a button inside a button is invalid DOM and
+        // an ambiguous, doubly-focusable control. Those rows move the press target
+        // to the content region (avatar + text) and render the grip, trailing slot,
+        // badge/meta, menu, and chevron as SIBLINGS. A plain clickable row (no new
+        // props) keeps the original whole-row pressable, byte-identical.
+        if (reorderable || trailingSlot != null) {
+          return (
+            <View style={skin.rowBase}>
+              {grip}
+              <Pressable
+                style={({ pressed }) => [rowFill, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
+                android_ripple={ripple}
+                onPress={(event) => onPressItem?.(index, event)}
+                accessibilityRole="button"
+                accessibilityLabel={item.name}
+              >
+                {renderAvatar(item)}
+                {renderColumn(item)}
+              </Pressable>
+              {trailingSlot}
+              {renderTrailing(item)}
+              {rowMenu ? renderMenu(index) : null}
+              {renderChevron()}
+              {divider}
+            </View>
+          );
+        }
         return (
           <Pressable
             style={({ pressed }) => [skin.rowBase, pressed ? skin.pressedSurface(tokens) : null, pressFeedback(pressed)]}
@@ -282,8 +380,10 @@ export function createStackedList(
       }
       return (
         <View style={skin.rowBase}>
+          {grip}
           {renderAvatar(item)}
           {renderColumn(item)}
+          {trailingSlot}
           {renderTrailing(item)}
           {rowMenu ? renderMenu(index) : null}
           {divider}
@@ -305,25 +405,57 @@ export function createStackedList(
 
     // A windowed list needs a bounded height to scroll (and to actually window). Warn
     // once if `virtualized` is set without one; a FlatList with no height falls back
-    // to rendering every row anyway, so the flag would be a silent no-op.
+    // to rendering every row anyway, so the flag would be a silent no-op. Reorderable
+    // lists always render eagerly: windowing unmounts off-screen rows, which would
+    // leave them unregistered with the drag layer (undraggable, unmeasurable mid-drag).
     const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
     const bounded = flat.height != null || flat.maxHeight != null || flat.flex != null || flat.flexBasis != null;
     devWarn(
-      !!virtualized && !bounded,
+      !!virtualized && !!reorderable,
+      "[canvas] <StackedList reorderable virtualized>: windowing unmounts off-screen rows, which would leave them undraggable; rendering eagerly.",
+    );
+    devWarn(
+      !!virtualized && !reorderable && !bounded,
       "[canvas] <StackedList virtualized>: give the list a bounded height (e.g. style={{ maxHeight: 400 }}) so it can window and scroll; rendering eagerly for now.",
     );
 
-    const body =
-      virtualized && bounded ? (
-        <FlatList
-          data={items}
-          renderItem={({ item, index }) => renderRow(item, index)}
-          keyExtractor={keyOf}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index)}</Fragment>)
-      );
+    // A drop reports the move; the order stays controlled by the consumer's `items`
+    // array (listMoveFor is pure and unit-tested; the drop index excludes the dragged
+    // row, the DnD layer's convention, so it IS the row's final index).
+    const handleReorder = (e: DropEvent) => {
+      const fromIndex = (e.data as { index?: number } | null)?.index ?? -1;
+      const move = listMoveFor(items.map((item, i) => item.id ?? i), fromIndex, e.index);
+      if (move) onReorder?.(move);
+    };
+
+    const rows = items.map((item, index) => (
+      <Fragment key={keyOf(item, index)}>
+        {reorderable ? (
+          <Draggable id={keyOf(item, index)} data={{ index }} label={item.name}>
+            {renderRow(item, index)}
+          </Draggable>
+        ) : (
+          renderRow(item, index)
+        )}
+      </Fragment>
+    ));
+
+    const body = reorderable ? (
+      <DragDropProvider>
+        <DropZone id="rows" label={typeof title === "string" ? title : "List"} onDrop={handleReorder}>
+          {rows}
+        </DropZone>
+      </DragDropProvider>
+    ) : virtualized && bounded ? (
+      <FlatList
+        data={items}
+        renderItem={({ item, index }) => renderRow(item, index)}
+        keyExtractor={keyOf}
+        showsVerticalScrollIndicator={false}
+      />
+    ) : (
+      rows
+    );
 
     return (
       <View testID={testID} style={[s.outer, framed ? skin.cardSurface(tokens) : null, style]}>
