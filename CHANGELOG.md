@@ -1,5 +1,11 @@
 # @nannier/canvas
 
+## 2.9.1
+
+### Patch Changes
+
+- 9f00da3: Stop BackHandler console.error noise on web: Drawer, ActionSheet, and the Sidebar drill-down now wire Android hardware-back through a shared useHardwareBack hook that subscribes only while the overlay is open and never on web, where react-native-web's BackHandler shim logs "BackHandler is not supported on web" on every addEventListener call. Native behavior is unchanged.
+
 ## 2.9.0
 
 ### Minor Changes
