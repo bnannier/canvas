@@ -170,6 +170,13 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "reveal",
+    name: "Reveal",
+    description: "Scroll-triggered entrance for content, with structural stagger.",
+    category: "Atoms",
+  },
+
+  {
     slug: "select",
     name: "Select",
     description: "Native select restyled to match Canvas inputs.",

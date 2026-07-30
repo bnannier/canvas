@@ -256,6 +256,11 @@
             "icon": "circle-dot"
           },
           {
+            "slug": "reveal",
+            "label": "Reveal",
+            "icon": "sparkles"
+          },
+          {
             "slug": "select",
             "label": "Select",
             "icon": "list"
