@@ -84,6 +84,7 @@ const CASES: SkinCase[] = [
   { name: "Progress", dir: "atoms/progress", file: "progress", props: { value: 0.6 } },
   { name: "QRCode", dir: "atoms/qrcode", file: "qrcode", props: { value: "https://example.com" } },
   { name: "Radio", dir: "atoms/radio", file: "radio", props: { checked: false }, children: "Option" },
+  { name: "Reveal", dir: "atoms/reveal", file: "reveal", children: txt("Revealed content") },
   { name: "Select", dir: "atoms/select", file: "select", props: { options: ["A", "B", "C"], value: "A", open: true, label: "Letter", required: true } },
   { name: "Skeleton", dir: "atoms/skeleton", file: "skeleton" },
   { name: "Slider", dir: "atoms/slider", file: "slider", props: { value: 40, min: 0, max: 100 } },
