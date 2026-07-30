@@ -296,7 +296,16 @@ jobs:
         id: has_changesets
         run: |
           # count .md files in .changeset/ that aren't README.md
-          count=$(find .changeset -maxdepth 1 -name "*.md" ! -name "README.md" 2>/dev/null | wc -l | tr -d ' ')
+          # Mirror changesets' OWN filter, which is
+          #   !file.startsWith('.') && file.endsWith('.md') && !/^README\.md$/i.test(file)
+          # Without the dotfile and case-insensitive README exclusions this counts files
+          # changesets ignores, so a repo whose only pending entry is a scratch
+          # .changeset/.draft.md takes the version-and-tag path with nothing to release:
+          # a no-op re-tag of the current version, hidden by the `|| echo already exists`
+          # further down. Over-counting is the safe direction (a wasted no-op) and
+          # under-counting would skip a real release, so this only ever removes entries
+          # changesets itself refuses to read.
+          count=$(find .changeset -maxdepth 1 -name "*.md" ! -iname "README.md" ! -name ".*" 2>/dev/null | wc -l | tr -d ' ')
           echo "count=$count" >> "$GITHUB_OUTPUT"
           echo "Found $count pending changeset(s)."
 
