@@ -1,25 +1,33 @@
-import { existsSync, lstatSync, readdirSync, realpathSync, watch } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { copyFile, cp, mkdir, rm } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 
 /**
  * Mirrors the kit's build output into every locally linked consumer.
  *
- * Consumers register themselves by carrying a git-ignored `.canvas` symlink
- * that resolves to this checkout (their postinstall creates it) next to a
- * REAL `node_modules/@nannier/canvas` directory. The copy is what makes live
- * reload work under Next 16 Turbopack: it refuses to resolve a node_modules
- * symlink whose realpath is outside the consumer's repo, and the historical
- * `turbopack.root` workaround breaks server actions, so consumers overlay a
- * real directory and this watcher keeps it fresh while you edit the kit.
+ * Consumers register themselves by carrying a git-ignored `.canvas` OVERLAY
+ * DIRECTORY (their postinstall builds it) whose `.origin` file names this
+ * checkout. The overlay is a real in-repo directory rather than a symlink to
+ * this checkout because of Next 16 Turbopack: it refuses to resolve
+ * node_modules symlinks that leave the consumer's repo, it does not watch
+ * node_modules content at all, and the historical `turbopack.root`
+ * workaround breaks server actions. Consumers alias the kit to `.canvas/` so
+ * its files carry a project-path identity Turbopack watches, and this
+ * watcher keeps the overlay fresh while you edit the kit.
+ *
+ * Change detection is a 1s mtime/size scan of dist/ and styles/, NOT
+ * fs.watch: recursive fs.watch under Bun on macOS did not deliver events for
+ * nested files (only top-level ones), which silently broke syncing for
+ * everything below dist/'s first level. The scan is a few hundred stats per
+ * tick; latency and cost are negligible next to the tsc watch itself.
  *
  * Run through `bun run dev`, which pairs this with the tsc watch that
  * rebuilds `dist/`.
  */
 
 const ROOT = join(import.meta.dir, "..");
-const WATCH_DIRS = ["dist", "styles"];
-const DEBOUNCE_MS = 150;
+const SYNC_DIRS = ["dist", "styles"];
+const SCAN_INTERVAL_MS = 1000;
 
 interface Consumer {
 	name: string;
@@ -42,78 +50,93 @@ function candidateDirs(): string[] {
 function findConsumers(): Consumer[] {
 	const consumers: Consumer[] = [];
 	for (const dir of candidateDirs()) {
-		const marker = join(dir, ".canvas");
+		const overlay = join(dir, ".canvas");
 		try {
-			if (!lstatSync(marker).isSymbolicLink()) continue;
-			if (realpathSync(marker) !== realpathSync(ROOT)) continue;
-			const target = join(dir, "node_modules", "@nannier", "canvas");
-			// The overlay must be a real directory; a symlink here means the
-			// consumer is in a state this watcher should not write through.
-			if (!existsSync(target) || lstatSync(target).isSymbolicLink()) continue;
-			consumers.push({ name: dir.split("/").pop() ?? dir, target });
+			if (!lstatSync(overlay).isDirectory()) continue;
+			// `.origin` names the checkout the overlay was built from; only sync
+			// overlays that came from THIS checkout.
+			const origin = readFileSync(join(overlay, ".origin"), "utf8").trim();
+			if (realpathSync(origin) !== realpathSync(ROOT)) continue;
+			consumers.push({ name: dir.split("/").pop() ?? dir, target: overlay });
 		} catch {
-			// No marker (or it dangles): not a consumer right now.
+			// No overlay (or no readable .origin): not a consumer right now.
 		}
 	}
 	return consumers;
 }
 
+/** rel path -> `${mtimeMs}:${size}` for every file under dist/ and styles/. */
+function scan(): Map<string, string> {
+	const state = new Map<string, string>();
+	const walk = (rel: string): void => {
+		const abs = join(ROOT, rel);
+		for (const entry of readdirSync(abs, { withFileTypes: true })) {
+			const childRel = join(rel, entry.name);
+			if (entry.isDirectory()) {
+				walk(childRel);
+			} else if (entry.isFile()) {
+				const s = statSync(join(ROOT, childRel));
+				state.set(childRel, `${s.mtimeMs}:${s.size}`);
+			}
+		}
+	};
+	for (const dir of SYNC_DIRS) {
+		if (existsSync(join(ROOT, dir))) walk(dir);
+	}
+	return state;
+}
+
 /** Copy dist/ and styles/ wholesale into a consumer's overlay. */
 async function fullSync(consumer: Consumer): Promise<void> {
-	for (const dir of WATCH_DIRS) {
+	for (const dir of SYNC_DIRS) {
 		const src = join(ROOT, dir);
 		if (!existsSync(src)) continue;
 		await cp(src, join(consumer.target, dir), { recursive: true });
 	}
 }
 
-const pending = new Set<string>();
-let timer: ReturnType<typeof setTimeout> | undefined;
-
-async function flush(): Promise<void> {
-	const changed = [...pending];
-	pending.clear();
+async function syncChanges(changed: string[], deleted: string[]): Promise<void> {
 	const consumers = findConsumers();
 	if (consumers.length === 0) return;
 	for (const consumer of consumers) {
 		for (const rel of changed) {
-			const src = join(ROOT, rel);
-			const dst = join(consumer.target, rel);
-			if (existsSync(src)) {
+			try {
+				const dst = join(consumer.target, rel);
 				await mkdir(dirname(dst), { recursive: true });
-				await copyFile(src, dst);
-			} else {
-				await rm(dst, { force: true, recursive: true });
+				await copyFile(join(ROOT, rel), dst);
+			} catch (err) {
+				console.error(`[canvas-sync] failed to sync ${rel} -> ${consumer.name}: ${err}`);
 			}
 		}
+		for (const rel of deleted) {
+			await rm(join(consumer.target, rel), { force: true, recursive: true });
+		}
 	}
-	const names = consumers.map((c) => c.name).join(", ");
-	console.log(`[canvas-sync] ${changed.length} file(s) -> ${names}`);
-}
-
-function schedule(rel: string): void {
-	pending.add(rel);
-	clearTimeout(timer);
-	timer = setTimeout(() => void flush(), DEBOUNCE_MS);
-}
-
-async function watchDir(dir: string): Promise<void> {
-	const abs = join(ROOT, dir);
-	// dist/ may not exist yet on a fresh checkout; wait for the tsc watch to
-	// produce it rather than crashing.
-	while (!existsSync(abs)) await new Promise((r) => setTimeout(r, 2000));
-	watch(abs, { recursive: true }, (_event, filename) => {
-		// A null filename means the platform could not attribute the event;
-		// resync the whole directory on the next flush.
-		schedule(filename ? join(dir, filename.toString()) : dir);
-	});
+	const what = [changed.length && `${changed.length} changed`, deleted.length && `${deleted.length} deleted`]
+		.filter(Boolean)
+		.join(", ");
+	console.log(`[canvas-sync] ${what} -> ${consumers.map((c) => c.name).join(", ")}`);
 }
 
 const startup = findConsumers();
 if (startup.length === 0) {
-	console.log("[canvas-sync] no linked consumers found yet; watching anyway");
+	console.log("[canvas-sync] no linked consumers found yet; scanning anyway");
 } else {
 	for (const consumer of startup) await fullSync(consumer);
 	console.log(`[canvas-sync] initial sync -> ${startup.map((c) => c.name).join(", ")}`);
 }
-for (const dir of WATCH_DIRS) void watchDir(dir);
+
+let previous = scan();
+setInterval(async () => {
+	const current = scan();
+	const changed: string[] = [];
+	const deleted: string[] = [];
+	for (const [rel, sig] of current) {
+		if (previous.get(rel) !== sig) changed.push(rel);
+	}
+	for (const rel of previous.keys()) {
+		if (!current.has(rel)) deleted.push(rel);
+	}
+	previous = current;
+	if (changed.length || deleted.length) await syncChanges(changed, deleted);
+}, SCAN_INTERVAL_MS);
