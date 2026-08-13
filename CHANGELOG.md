@@ -1,5 +1,11 @@
 # @nannier/canvas
 
+## 2.11.1
+
+### Patch Changes
+
+- 3be32c9: Add a root `dev` script (tsc watch on tsconfig.build.json) so locally linked consumers get live rebuilds of `dist/` while editing the kit.
+
 ## 2.11.0
 
 ### Minor Changes
