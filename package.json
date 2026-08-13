@@ -52,6 +52,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "verify-package": "bun scripts/verify-package.ts",
     "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
     "test": "bun test",
