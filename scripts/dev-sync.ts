@@ -5,15 +5,15 @@ import { dirname, join, resolve } from "node:path";
 /**
  * Mirrors the kit's build output into every locally linked consumer.
  *
- * Consumers register themselves by carrying a git-ignored `.canvas` OVERLAY
- * DIRECTORY (their postinstall builds it) whose `.origin` file names this
- * checkout. The overlay is a real in-repo directory rather than a symlink to
- * this checkout because of Next 16 Turbopack: it refuses to resolve
- * node_modules symlinks that leave the consumer's repo, it does not watch
- * node_modules content at all, and the historical `turbopack.root`
- * workaround breaks server actions. Consumers alias the kit to `.canvas/` so
- * its files carry a project-path identity Turbopack watches, and this
- * watcher keeps the overlay fresh while you edit the kit.
+ * Consumers register themselves by overlaying `node_modules/@nannier/canvas`
+ * with a copy of this checkout's build output, stamped with an `.origin` file
+ * naming the checkout (their postinstall does this). The overlay is a real
+ * directory rather than a symlink because Next 16 Turbopack refuses to
+ * resolve node_modules symlinks that leave the consumer's repo (and the
+ * `turbopack.root` workaround breaks server actions). Real directories in
+ * node_modules ARE live-watched by Turbopack, Metro, and (with two
+ * conditional webpack overrides in DarkFactory) webpack, so this watcher
+ * copying into the overlay is all live reload needs.
  *
  * Change detection is a 1s mtime/size scan of dist/ and styles/, NOT
  * fs.watch: recursive fs.watch under Bun on macOS did not deliver events for
@@ -50,11 +50,12 @@ function candidateDirs(): string[] {
 function findConsumers(): Consumer[] {
 	const consumers: Consumer[] = [];
 	for (const dir of candidateDirs()) {
-		const overlay = join(dir, ".canvas");
+		const overlay = join(dir, "node_modules", "@nannier", "canvas");
 		try {
-			if (!lstatSync(overlay).isDirectory()) continue;
+			if (lstatSync(overlay).isSymbolicLink()) continue;
 			// `.origin` names the checkout the overlay was built from; only sync
-			// overlays that came from THIS checkout.
+			// overlays that came from THIS checkout (a registry install has no
+			// .origin and is never written to).
 			const origin = readFileSync(join(overlay, ".origin"), "utf8").trim();
 			if (realpathSync(origin) !== realpathSync(ROOT)) continue;
 			consumers.push({ name: dir.split("/").pop() ?? dir, target: overlay });
