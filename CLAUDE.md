@@ -262,3 +262,17 @@ docs dev app installed. If the opener cannot reach a device it returns the exact
 If the completed work does not map to a docs route (pure tooling, CI, build, or an
 internal refactor with no screen), say so in place of the block rather than inventing
 a link. When several routes are affected, list a block per route.
+
+## Local consumer linking: symlink in dev, npmjs package in prod
+
+Consuming repos (orbit, anode, site, catalyst, DarkFactory) link this checkout
+into their `node_modules/@nannier/canvas` through a git-ignored `.canvas`
+symlink created by their guarded `postinstall` scripts. Two rules follow:
+
+- When editing canvas alongside a consumer, keep `bun run dev` (tsc watch)
+  running here so `dist/` stays fresh; consumers resolve the built output in
+  `dist/`, not `src/`.
+- The symlink is a local-dev mechanism only. Consumers pin the published npmjs
+  version in their package.json, and CI/prod installs that real package because
+  no sibling checkout exists there. Never commit a symlink into a consumer and
+  never switch a consumer's dependency to `link:`/`file:`.
