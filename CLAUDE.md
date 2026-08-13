@@ -263,16 +263,21 @@ If the completed work does not map to a docs route (pure tooling, CI, build, or 
 internal refactor with no screen), say so in place of the block rather than inventing
 a link. When several routes are affected, list a block per route.
 
-## Local consumer linking: symlink in dev, npmjs package in prod
+## Local consumer linking: synced copy in dev, npmjs package in prod
 
-Consuming repos (orbit, anode, site, catalyst, DarkFactory) link this checkout
-into their `node_modules/@nannier/canvas` through a git-ignored `.canvas`
-symlink created by their guarded `postinstall` scripts. Two rules follow:
+Consuming repos (orbit, anode, site, catalyst, DarkFactory) overlay their
+`node_modules/@nannier/canvas` with a REAL-directory copy of this checkout's
+package.json, `dist/`, and `styles/` (their guarded `postinstall` does the
+copy) and mark the link with a git-ignored `.canvas` symlink at their repo
+root. A symlink inside node_modules is not an option: Next 16 Turbopack
+refuses to resolve one whose realpath is outside the consumer's repo, and the
+`turbopack.root` override that used to allow it breaks server actions.
 
-- When editing canvas alongside a consumer, keep `bun run dev` (tsc watch)
-  running here so `dist/` stays fresh; consumers resolve the built output in
-  `dist/`, not `src/`.
-- The symlink is a local-dev mechanism only. Consumers pin the published npmjs
-  version in their package.json, and CI/prod installs that real package because
-  no sibling checkout exists there. Never commit a symlink into a consumer and
-  never switch a consumer's dependency to `link:`/`file:`.
+- When editing canvas alongside a consumer, keep `bun run dev` running here.
+  It pairs the tsc watch (rebuilds `dist/`) with `scripts/dev-sync.ts`, which
+  mirrors dist/ and styles/ into every consumer whose `.canvas` marker points
+  at this checkout. Consumers resolve built output, not `src/`.
+- The overlay is a local-dev mechanism only. Consumers pin the published
+  npmjs version in their package.json, and CI/prod installs that real package
+  because no sibling checkout exists there. Never commit a `.canvas` marker
+  and never switch a consumer's dependency to `link:`/`file:`.
