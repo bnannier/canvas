@@ -265,7 +265,7 @@ a link. When several routes are affected, list a block per route.
 
 ## Local consumer linking: node_modules overlay in dev, npmjs package in prod
 
-Consuming repos (orbit, anode, site, catalyst, DarkFactory) overlay their
+Consuming repos (dashboard, auth, site, deploy, DarkFactory) overlay their
 `node_modules/@nannier/canvas` with a REAL-directory copy of this checkout's
 package.json, `dist/`, and `styles/`, stamped with an `.origin` file naming
 this checkout (their guarded `postinstall` does the copy). A symlink is not
