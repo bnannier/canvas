@@ -3,7 +3,7 @@
 // colors. This is the one piece of shared state the raw-RN components depend on;
 // everything else they style with plain RN objects built from these tokens.
 
-import { type ReactNode, createContext, useContext, useMemo } from "react";
+import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
 import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
@@ -66,6 +66,20 @@ export interface ThemeProviderProps {
   /** Force a color scheme. Omit to follow the OS appearance. */
   scheme?: ColorScheme;
   /**
+   * The scheme the SERVER rendered, for SSR/SSG apps (Next.js and the like)
+   * whose client scheme can differ from it (a stored preference, the OS).
+   * Canvas resolves colors in JS and serializes them into the server HTML as
+   * literal inline styles, so when the hydration render disagrees with that
+   * HTML, React logs a mismatch and keeps the server's colors on any element
+   * that never re-renders again: components stay stuck in the server's scheme.
+   * With `ssrScheme` set, the provider renders it on the server AND for the
+   * hydration render (matching the server HTML exactly), then applies `scheme`
+   * right after mount; that switch re-renders every consumer, which writes the
+   * real colors to the DOM. Pass the same value the server resolves (e.g. the
+   * next-themes `defaultTheme`). Omit in client-only apps and on native.
+   */
+  ssrScheme?: ColorScheme;
+  /**
    * Surface treatment. "glass" makes every functional-layer fill (popover, bars)
    * translucent; "solid" is opaque. This is the theming-level glass switch, no
    * per-component glass prop. Omit to use the platform default: glass on iOS 26+
@@ -93,7 +107,7 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
-export function ThemeProvider({ scheme, surface, tokens, children }: ThemeProviderProps) {
+export function ThemeProvider({ scheme, ssrScheme, surface, tokens, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
@@ -101,7 +115,17 @@ export function ThemeProvider({ scheme, surface, tokens, children }: ThemeProvid
   // native liquidGlassAvailable() flips) and the token merge below re-runs.
   const reducedTransparency = useReducedTransparency();
   const increasedContrast = useIncreasedContrast();
-  const active: ColorScheme = scheme ?? (system === "dark" ? "dark" : "light");
+  // Until the post-mount effect runs, honor `ssrScheme` so the server output is
+  // deterministic and the hydration render reproduces it exactly (see the prop
+  // doc). When the prop is absent this stays on the single-pass path: no state
+  // flip, no extra render.
+  const [hydrated, setHydrated] = useState(ssrScheme == null);
+  useEffect(() => {
+    if (!hydrated) setHydrated(true);
+  }, [hydrated]);
+  const active: ColorScheme = hydrated
+    ? (scheme ?? (system === "dark" ? "dark" : "light"))
+    : (ssrScheme as ColorScheme);
   const resolved: Surface = surface ?? defaultSurface();
   const value = useMemo<ThemeValue>(() => {
     // Merge order: scheme base, then brand overrides, then the glass material
