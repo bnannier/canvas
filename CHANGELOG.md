@@ -1,5 +1,17 @@
 # @nannier/canvas
 
+## 2.12.0
+
+### Minor Changes
+
+- 9e4cbc2: Card owns its rhythm: a padded surface now also spaces its flat children (padding implies gap), so a stack of Typography lines inside a Card needs no layout wrapper. The gap follows the platform density table: 16 on web and iOS, 12 on Android at the default density (the compact and comfortable steps already carried their own). `CardContent` picks up the same 16px flat-child rhythm. `flush` opts out of both the inset and the gap, sectioned cards are untouched (their sections pad themselves), and a single-child card renders pixel-identical since gap is inert with one child.
+
+  Minor justification: new user-visible layout capability on the public Card API; padded cards and CardContent now space flat children without a Row or Column wrapper.
+
+- 9e4cbc2: Collapsible and Accordion gain `card` and `description`, both backward compatible. `description` renders a muted secondary line under the title in the default trigger anatomy (on Accordion it lives per item, on `AccordionItem`); title truncation is unchanged. `card` wraps the disclosure (or the whole group) in an outlined card surface: an 8px-radius hairline card with 20px insets on web, the Material 3 outlined-card equivalent with 16dp insets on Android, and a documented no-op on iOS, where the default skin already renders the inset-grouped card.
+
+  Minor justification: two new public props on Collapsible and Accordion (card surface variant and per-title description line), a user-visible API capability addition.
+
 ## 2.11.3
 
 ### Patch Changes
