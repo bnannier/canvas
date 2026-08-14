@@ -110,6 +110,13 @@ export default function ThemingScreen() {
             is a per-component choice, not a provider prop: pass a density boolean to the components that support it (for example
             {" <Card compact> or <Card comfortable>"}). The data-density hook below is the web equivalent.
           </Callout>
+          <Callout label="Server rendering (SSR/SSG)">
+            When the app server-renders (Next.js and the like) and the client scheme can differ from the server default (a stored
+            preference, the OS), also pass <InlineCode>ssrScheme</InlineCode> with the scheme the server resolves. The provider
+            repeats it for the hydration render so the HTML matches, then applies <InlineCode>scheme</InlineCode> after mount.
+            Without it React keeps the server&apos;s inline colors on elements that never re-render, leaving components stuck in
+            the server&apos;s scheme.
+          </Callout>
         </Section>
 
         <Rule />
