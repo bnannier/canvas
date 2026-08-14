@@ -3,13 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Collapsible, Typography } = scope;
+  const { Collapsible } = scope;
   return (
-<Collapsible
-  trigger={<Typography medium>Order #1024, 3 items</Typography>}
-  defaultOpen
->
-  Wireless mouse, USB-C cable, laptop stand. Estimated total $84.00.
+<Collapsible card title="Shipping details" defaultOpen>
+  Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.
 </Collapsible>
   );
 }

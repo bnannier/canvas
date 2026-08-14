@@ -13,8 +13,9 @@ import { type ColorTokens, shadow, customShadow } from "../../style/index.js";
 // CardSeparator) are STATIC shared members, so their insets and type are shared
 // (one value across platforms); only the main surface is skin-parameterized.
 //
-// - Web keeps the CURRENT look EXACTLY: 8px radius, 1px border, shadow-sm resting,
-//   the established Catalyst/shadcn card insets and the `padded`/density values.
+// - Web keeps the established look: 8px radius, 1px border, shadow-sm resting,
+//   the established Catalyst/shadcn card insets and density values; the default
+//   density also carries the card's own flat-child gap (padding implies rhythm).
 // - iOS follows HIG conventions: iOS has no card control, so the structure is kept
 //   and only iOS touches are applied: a larger 12pt radius with Apple's continuous
 //   (superellipse) corner curve, and the shared Light-treatment 1px border. Native
@@ -38,9 +39,15 @@ export interface CardSkin {
   surface: (tokens: ColorTokens, e: Elevation) => ViewStyle;
   /** Elevation -> shadow mapping (resting/raised/flat differ per OS). */
   elevation: (e: Elevation) => ViewStyle;
-  /** The card's own content padding + flat-child gap, per density. */
+  /** The card's own content padding + flat-child gap, per density. The `default`
+   *  row is the standard padded surface every plain card takes (what the `padded`
+   *  prop makes explicit), so the surface owns the rhythm between flat children;
+   *  `flush` opts out of the whole row. */
   density: Record<Density, ViewStyle>;
-  /** The standard inset applied by `padded` when no density is set. */
+  /** The standard inset WITHOUT the flat-child gap. The Card shell no longer
+   *  reads this (the default density row superseded it); it remains the gap-free
+   *  inset that derived chrome spreads into its own row (Radio's `card` mode,
+   *  which owns its internal ring-to-label gap). */
   padded: ViewStyle;
 }
 
@@ -53,7 +60,10 @@ const lightSurface = (tokens: ColorTokens): ViewStyle => ({ borderColor: tokens.
 const WEB_DENSITY: Record<Density, ViewStyle> = {
   compact: { padding: 16, gap: 12 },
   comfortable: { padding: 32, gap: 24 },
-  default: {},
+  // The default density IS the standard padded surface: the established 24px
+  // inset plus the card's own rhythm between flat children (`padded` is the
+  // explicit form of this default; `flush` opts out of the whole row).
+  default: { padding: 24, gap: 16 },
 };
 
 export const webSkin: CardSkin = {
@@ -86,7 +96,9 @@ export const iosSkin: CardSkin = {
 const M3_DENSITY: Record<Density, ViewStyle> = {
   compact: { padding: 12, gap: 8 },
   comfortable: { padding: 24, gap: 20 },
-  default: {},
+  // The default density IS the standard padded surface: M3's 16dp content
+  // padding plus the tighter M3 rhythm between flat children.
+  default: { padding: 16, gap: 12 },
 };
 
 export const androidSkin: CardSkin = {
@@ -113,7 +125,7 @@ export const androidSkin: CardSkin = {
         ? shadow("none")
         : shadow("sm"),
   density: M3_DENSITY,
-  // M3 cards use 16dp content padding.
+  // M3 cards use 16dp content padding (gap-free; see the CardSkin.padded doc).
   padded: { padding: 16 },
 };
 
@@ -132,7 +144,9 @@ export const title = (tokens: ColorTokens): TextStyle => ({ fontSize: 20, lineHe
 
 export const description = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] });
 
-export const content: ViewStyle = { paddingHorizontal: 20, paddingVertical: 20 };
+// The body section pads itself AND spaces its flat children, mirroring the plain
+// padded surface's rhythm (gap is inert with a single child).
+export const content: ViewStyle = { paddingHorizontal: 20, paddingVertical: 20, gap: 16 };
 
 export const footer: ViewStyle = {
   flexDirection: "row",

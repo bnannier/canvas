@@ -25,10 +25,12 @@ import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 // - Interaction: pass `onPress` to make the whole card pressable; it gains the
 //   pressed affordance (Android ripple, iOS/web pressed dim) and the button role.
 // - Padding: a card with raw children pads its surface by DEFAULT (the common
-//   case, so a bare `<Card>content</Card>` reads right without ceremony). `flush`
-//   removes the inset for edge-to-edge content (a table, a nav bar) or when you
-//   compose CardHeader/CardContent, which carry their own padding. `padded` is
-//   the explicit form of the default. The data-driven string-prop path renders
+//   case, so a bare `<Card>content</Card>` reads right without ceremony), and the
+//   padded surface also SPACES its flat children (padding implies gap: the card
+//   owns the rhythm, so a stack of Typography lines needs no layout wrapper).
+//   `flush` removes both the inset and the gap for edge-to-edge content (a table,
+//   a nav bar) or when you compose CardHeader/CardContent, which carry their own
+//   padding. `padded` is the explicit form of the default. The data-driven string-prop path renders
 //   self-padding sections, so the surface itself NEVER pads there: `padded` and
 //   the density booleans are inert for the inset in that path (adding it would
 //   double-pad the sections).
@@ -133,8 +135,10 @@ export function createCard(skin: CardSkin) {
     // `hasHeader && body` guard.
     const hasBody = children != null && children !== false;
     // The surface inset belongs to the PLAIN children card alone. Deliberately the
-    // looser `!= null` test, so `<Card>{false}</Card>` keeps today's inset and a plain
-    // card's computed style stays byte-identical.
+    // looser `!= null` test, so `<Card>{false}</Card>` keeps the standard inset. A
+    // plain SINGLE-child card's rendered box is pixel-identical to what it always
+    // was (the density gap is inert with one child); a card with several flat
+    // children now also gains that gap, the surface's own rhythm.
     const padsSurface = children != null && !hasSections;
     // `padded` and the density booleans move the SURFACE inset, which a sectioned card
     // never takes (its sections pad themselves). Silently ignoring a passed prop is the
@@ -159,11 +163,13 @@ export function createCard(skin: CardSkin) {
       // The surface inset belongs to the PLAIN card alone: a sectioned card (one
       // carrying a header or footer, whatever its body) renders self-padding
       // sections, so a surface inset there would stack on the sections' own
-      // (double-padding). On a plain card: density pads + gaps on its own and wins
-      // over everything, `flush` opts out (edge-to-edge content, or composing the
-      // self-padding CardHeader/CardContent), and otherwise the card pads by default
-      // (`padded` is the explicit form of that default).
-      padsSurface ? (dens !== "default" ? skin.density[dens] : flush ? null : skin.padded) : null,
+      // (double-padding). On a plain card the density table is the single source:
+      // its default row is the standard padding + flat-child gap (`padded` is the
+      // explicit form of that default), a density boolean retunes both and wins
+      // over everything, and `flush` opts the default out entirely (neither
+      // padding nor gap: edge-to-edge content, or composing the self-padding
+      // CardHeader/CardContent).
+      padsSurface ? (dens === "default" && flush ? null : skin.density[dens]) : null,
       // Selected: recolor the border to primary and wash the surface with a soft
       // primary tint (the border width is unchanged, so content never shifts; on
       // Android's elevated default the resting hairline is transparent, so this
@@ -291,7 +297,8 @@ export function CardDescription({ children, style }: CardTextProps) {
   return <Text style={[s.description(tokens), style]}>{children}</Text>;
 }
 
-// Content: the card body region. Carries the standard surface padding.
+// Content: the card body region. Carries the standard surface padding and the
+// card's flat-child rhythm (its children space themselves, no wrapper needed).
 export function CardContent({ children, style }: CardSectionProps) {
   return <View style={[s.content, style]}>{children}</View>;
 }

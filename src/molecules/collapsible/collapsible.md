@@ -1,6 +1,6 @@
 # Collapsible
 
-A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel. Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
+A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel. Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). A `description` adds a muted secondary line under the title; `card` wraps the disclosure in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
 
 ## Usage
 
@@ -25,6 +25,30 @@ A single disclosure: one header (its `title`, or a custom `trigger`, plus a chev
 ```tsx
 <Collapsible title="Advanced settings (coming soon)" disabled>
   Not available yet.
+</Collapsible>
+```
+
+### Card surface
+
+`card` gives the disclosure an outlined card container with inset header and content
+on web and Android. On iOS the default Collapsible already renders as the
+inset-grouped card, so `card` changes nothing there (a documented no-op).
+
+```tsx
+<Collapsible card title="Shipping details" defaultOpen>
+  Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.
+</Collapsible>
+```
+
+### With descriptions
+
+```tsx
+<Collapsible
+  title="Notifications"
+  description="Email, push, and digest frequency."
+  defaultOpen
+>
+  Choose which events reach your inbox and which stay in the app.
 </Collapsible>
 ```
 

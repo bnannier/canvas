@@ -8,21 +8,40 @@ import { Card, CardMedia, CardContent } from "../src/molecules/card/card.tsx";
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 
-// The web skin's surface insets (see card.styles.ts): the `padded` default and the
-// density steps. The tests pin the padding CONTRACT, not the exact pixel values, but
-// reading them from one place keeps the two in sync if the skin ever moves.
+// The web skin's surface insets (see card.styles.ts): the default density (the
+// standard padded surface plus the card's flat-child gap) and the density steps.
+// The tests pin the padding CONTRACT, not the exact pixel values, but reading them
+// from one place keeps the two in sync if the skin ever moves.
 const PADDED = "24px";
+const GAP = "16px";
 const COMPACT = "16px";
 
 describe("Card surface padding", () => {
-  it("pads raw children by default", () => {
-    const { getByTestId } = ui(<Card testID="c"><Text>content</Text></Card>);
-    expect(getByTestId("c").style.padding).toBe(PADDED);
+  it("pads raw children by default and spaces them (the surface owns the rhythm)", () => {
+    const { getByTestId } = ui(
+      <Card testID="c">
+        <Text>one</Text>
+        <Text>two</Text>
+        <Text>three</Text>
+      </Card>,
+    );
+    const el = getByTestId("c");
+    expect(el.style.padding).toBe(PADDED);
+    expect(el.style.gap).toBe(GAP);
   });
 
-  it("`flush` removes the inset for edge-to-edge children", () => {
+  it("`padded` (the explicit form of the default) pads and gaps the same", () => {
+    const { getByTestId } = ui(<Card padded testID="c"><Text>content</Text></Card>);
+    const el = getByTestId("c");
+    expect(el.style.padding).toBe(PADDED);
+    expect(el.style.gap).toBe(GAP);
+  });
+
+  it("`flush` removes the inset AND the gap for edge-to-edge children", () => {
     const { getByTestId } = ui(<Card flush testID="c"><Text>content</Text></Card>);
-    expect(getByTestId("c").style.padding).toBe("");
+    const el = getByTestId("c");
+    expect(el.style.padding).toBe("");
+    expect(el.style.gap).toBe("");
   });
 
   it("a density boolean retunes the inset and gap on the children path", () => {
@@ -54,6 +73,18 @@ describe("Card surface padding", () => {
       <Card padded onPress={() => {}} title="Title" body="Body" testID="c" />,
     );
     expect(getByTestId("c").style.padding).toBe("");
+  });
+});
+
+describe("CardContent", () => {
+  it("spaces its flat children with the standard card rhythm", () => {
+    const { getByText } = ui(
+      <CardContent>
+        <Text>inside</Text>
+      </CardContent>,
+    );
+    // The Text renders as a leaf div; its parent is CardContent's own View.
+    expect((getByText("inside").parentElement as HTMLElement).style.gap).toBe(GAP);
   });
 });
 
@@ -144,14 +175,16 @@ describe("Card sections beside children", () => {
   });
 
   // The padding contract: a sectioned card's inset lives on its sections, so the
-  // surface must not also pad or the two stack.
+  // surface must not also pad (or gap) or the two stack.
   it("moves the inset off the surface when sectioned", () => {
     const { getByTestId } = ui(
       <Card title="T" testID="c">
         <Text>body</Text>
       </Card>,
     );
-    expect(getByTestId("c").style.padding).toBe("");
+    const el = getByTestId("c");
+    expect(el.style.padding).toBe("");
+    expect(el.style.gap).toBe("");
   });
 
   it("leaves a PLAIN card's surface inset exactly as it was", () => {

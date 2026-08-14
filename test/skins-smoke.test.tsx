@@ -97,13 +97,17 @@ const CASES: SkinCase[] = [
   { name: "Typography", dir: "atoms/typography", file: "typography", props: { h1: true }, children: "Heading" },
 
   // ---- molecules ----
-  { name: "Accordion", dir: "molecules/accordion", file: "accordion", props: { items: [{ key: "a", title: "Section A", content: "Body A" }] } },
+  // `card` + a per-item `description` + `defaultValue` exercise the card-surface
+  // and stacked-label skin fields with an open panel on both native skins.
+  { name: "Accordion", dir: "molecules/accordion", file: "accordion", props: { card: true, items: [{ key: "a", title: "Section A", description: "Secondary line", content: "Body A" }], defaultValue: "a" } },
   { name: "ActionPanel", dir: "molecules/action-panels", file: "action-panels", props: { title: "Delete project", description: "This cannot be undone.", actionLabel: "Delete", destructive: true } },
   { name: "AlertDialog", dir: "molecules/alert-dialog", file: "alert-dialog", props: { open: true, title: "Are you sure?", description: "This deletes the record.", confirmLabel: "Delete", cancelLabel: "Cancel" } },
   { name: "Alert", dir: "molecules/alert", file: "alert", props: { title: "Heads up", description: "Your trial ends soon.", info: true } },
   { name: "Card", dir: "molecules/card", file: "card", props: { title: "Card", description: "Subtitle", body: "Body copy", footer: "Footer" } },
   { name: "CodeBlock", dir: "molecules/code-block", file: "code-block", props: { code: "const x = 1;\nconsole.log(x);", language: "ts" } },
-  { name: "Collapsible", dir: "molecules/collapsible", file: "collapsible", props: { title: "More", defaultOpen: true }, children: "Panel body" },
+  // `card` + `description` exercise the card-surface and stacked-label skin
+  // fields with an open panel on both native skins.
+  { name: "Collapsible", dir: "molecules/collapsible", file: "collapsible", props: { title: "More", description: "Secondary line", card: true, defaultOpen: true }, children: "Panel body" },
   { name: "DescriptionList", dir: "molecules/description-lists", file: "description-lists", props: { items: [{ term: "Name", value: "Ada" }, { term: "Role", value: "Engineer" }] } },
   { name: "EmptyState", dir: "molecules/empty-state", file: "empty-state", props: { icon: "∅", title: "No results", description: "Try a different search.", actionLabel: "Reset" } },
   { name: "Feed", dir: "molecules/feeds", file: "feeds", props: { items: [{ actor: "Rachel Chen", action: "approved the request", time: "2 hours ago" }] } },
