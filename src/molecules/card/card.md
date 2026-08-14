@@ -1,6 +1,6 @@
 # Card
 
-Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, so a bare `<Card>` reads right on its own; pass `flush` for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. The section props (`title` / `description` / `icon` / `actions` / `footer`) render self-padding sections, so a sectioned card needs no `padded`. They compose with a string `body` OR with raw children, so a panel can carry a titled header above a table or a form; children win when both are passed. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
+Three families. `StatCard` = a single metric, big number + delta. `SectionCard` = a labeled content surface with optional header and divider. Generic `card` = bring your own structure. A card with content is padded by default, and a padded surface also spaces its flat children (the card owns the vertical rhythm, so a stack of Typography lines needs no layout wrapper); pass `flush` to opt out of both, the inset and the spacing, for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`. The section props (`title` / `description` / `icon` / `actions` / `footer`) render self-padding sections, so a sectioned card needs no `padded`. They compose with a string `body` OR with raw children, so a panel can carry a titled header above a table or a form; children win when both are passed. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below. Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own).
 
 ## Usage
 
@@ -50,6 +50,16 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
     <Typography lead semibold>Anything goes here</Typography>
     <Typography small muted>The card surface gives you the border, radius, and shadow. You bring the content.</Typography>
   </Column>
+</Card>
+```
+
+### Flat children
+
+```tsx
+<Card style={{ maxWidth: 360 }}>
+  <Typography lead semibold>The surface owns the rhythm</Typography>
+  <Typography small muted>A padded card spaces its flat children by itself: each line lands a steady step below the last.</Typography>
+  <Typography small muted>Three flat Typography children, no layout wrapper between them.</Typography>
 </Card>
 ```
 

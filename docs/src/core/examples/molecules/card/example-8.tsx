@@ -3,13 +3,29 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { shadow, Card, Typography, Column } = scope;
+  const { Stateful, Card, Typography, Row, Column } = scope;
   return (
-<Card flat style={{ maxWidth: 360 }}>
-  <Column tight>
-    <Typography lead semibold>Outlined and quiet</Typography>
-    <Typography small muted>Flat drops the shadow so the card sits flush with the page. On Android this is the Material outlined card.</Typography>
-  </Column>
-</Card>
+<Stateful initial="pro">
+  {(plan, setPlan) => (
+    <Row cozy style={{ width: 400, maxWidth: "100%" }}>
+      <Column fill>
+        <Card grow selected={plan === "starter"} onPress={() => setPlan("starter")}>
+          <Column tight>
+            <Typography lead semibold>Starter</Typography>
+            <Typography small muted>3 projects, 1 seat</Typography>
+          </Column>
+        </Card>
+      </Column>
+      <Column fill>
+        <Card grow selected={plan === "pro"} onPress={() => setPlan("pro")}>
+          <Column tight>
+            <Typography lead semibold>Pro</Typography>
+            <Typography small muted>Unlimited, 10 seats</Typography>
+          </Column>
+        </Card>
+      </Column>
+    </Row>
+  )}
+</Stateful>
   );
 }

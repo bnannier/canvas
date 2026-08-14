@@ -1,6 +1,6 @@
 # Accordion
 
-A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel. Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`).
+A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel. Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`). An item's `description` adds a muted secondary line under its title; `card` wraps the whole group in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there).
 
 ## Usage
 
@@ -28,6 +28,37 @@ A vertically stacked group of disclosure rows: each `items` entry is a header (i
     { key: "security", title: "Security", content: "Two-factor authentication and active sessions." }
   ]}
   defaultValue={["billing", "security"]}
+/>
+```
+
+### Card surface
+
+`card` gives the group an outlined card container with inset headers and content on
+web and Android. On iOS the default Accordion already renders as the inset-grouped
+card, so `card` changes nothing there (a documented no-op).
+
+```tsx
+<Accordion
+  card
+  items={[
+    { key: "ship", title: "Shipping", content: "Free 2-day shipping on orders over $50." },
+    { key: "return", title: "Returns", content: "30-day returns, no questions asked." },
+    { key: "warranty", title: "Warranty", content: "Two years, parts and labor." }
+  ]}
+  defaultValue="ship"
+/>
+```
+
+### With descriptions
+
+```tsx
+<Accordion
+  items={[
+    { key: "billing", title: "Billing", description: "Plan, payment method, invoices.", content: "Manage your plan, payment method, and invoices." },
+    { key: "team", title: "Team", description: "Members and roles.", content: "Invite teammates and set their roles." },
+    { key: "security", title: "Security", description: "2FA and sessions.", content: "Two-factor authentication and active sessions." }
+  ]}
+  defaultValue="billing"
 />
 ```
 

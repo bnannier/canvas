@@ -1,4 +1,5 @@
-import { FOCUS_RESET, surfaceRipple } from "../../style/index.js";
+import { FOCUS_RESET, surfaceRipple, type ColorTokens } from "../../style/index.js";
+import { type ViewStyle } from "react-native";
 import { type AccordionSkin } from "./accordion.shared.js";
 
 // Co-located Accordion skins, one per platform. The shell resolves the open state
@@ -52,6 +53,16 @@ export const webSkin: AccordionSkin = {
   container() {
     return {};
   },
+  // The `card` variant: an outlined card surface (the web Card's 8px radius and
+  // hairline border on the `card` fill) wrapping the whole group; overflow hidden
+  // clips the header ink and the full-bleed dividers to the rounded corner.
+  cardContainer(t) {
+    return { borderRadius: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
+  },
+  // Card mode insets the flush web headers/content to the card's edge (the web
+  // Card section inset, 20px).
+  cardHeaderInset: { paddingHorizontal: 20 },
+  cardContentInset: { paddingHorizontal: 20 },
   // A full-bleed 1px hairline between rows (shadcn `border-b`); dropped after the
   // last row (the shell renders it only when `!last`).
   separator(t) {
@@ -71,6 +82,11 @@ export const webSkin: AccordionSkin = {
   title(t) {
     return { flexShrink: 1, fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground };
   },
+  // The muted secondary line, one step below the 14px title (the kit's
+  // title+description ramp, matching Checkbox/Radio at the base size).
+  description(t) {
+    return { fontSize: 12, lineHeight: 16, color: t["muted-foreground"] };
+  },
   // The content panel: pads the bottom (`pb-4`), text-sm / muted-foreground.
   content() {
     return { paddingBottom: 16 };
@@ -84,6 +100,21 @@ export const webSkin: AccordionSkin = {
 // iOS (HIG inset-grouped disclosure / SwiftUI DisclosureGroup).
 // =============================================================================
 
+// The iOS inset-grouped card: rounded 12px with the iOS superellipse (continuous)
+// corner curve, a hairline border, a flat (no-shadow) grouped surface filled with
+// the content `card` token (solid). `borderCurve` is an RN iOS-only prop (no-op
+// elsewhere). Shared by `container` (the default look) AND `cardContainer`: the
+// default iOS Accordion already IS the card surface, so `card` is a documented
+// no-op on iOS.
+const insetGroupedCard = (t: ColorTokens): ViewStyle => ({
+  borderRadius: 12,
+  borderCurve: "continuous",
+  borderWidth: 1,
+  borderColor: t.border,
+  backgroundColor: t.card,
+  overflow: "hidden",
+});
+
 export const iosSkin: AccordionSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
@@ -95,20 +126,13 @@ export const iosSkin: AccordionSkin = {
   chevronGlyph: "chevronRight",
   chevronSpinTo: 90,
 
-  // Inset-grouped card: rounded 12px with the iOS superellipse (continuous) corner
-  // curve, a hairline border, a flat (no-shadow) grouped surface filled with the
-  // content `card` token (solid). `borderCurve` is an RN iOS-only prop (no-op
-  // elsewhere).
-  container(t) {
-    return {
-      borderRadius: 12,
-      borderCurve: "continuous",
-      borderWidth: 1,
-      borderColor: t.border,
-      backgroundColor: t.card,
-      overflow: "hidden",
-    };
-  },
+  // The default iOS look IS the inset-grouped card (see insetGroupedCard above).
+  container: insetGroupedCard,
+  // `card` is a documented no-op on iOS: it aliases the same container styles,
+  // and the idempotent insets below match the header/content's own 16px.
+  cardContainer: insetGroupedCard,
+  cardHeaderInset: { paddingHorizontal: 16 },
+  cardContentInset: { paddingHorizontal: 16 },
   // Hairline row separators between grouped rows (the shell renders it only when
   // `!last`). Inset to the 16pt text leading edge and running to the trailing edge,
   // matching the real iOS grouped-list separator; the rounded container clips it.
@@ -129,6 +153,11 @@ export const iosSkin: AccordionSkin = {
   // ~17pt SF body title with SF Pro Text tracking (17pt = -0.43).
   title(t) {
     return { flexShrink: 1, fontSize: 17, lineHeight: 22, fontWeight: "400", letterSpacing: -0.43, color: t.foreground };
+  },
+  // SF footnote (13pt, tracking -0.08) in the secondary gray: the iOS subtitle
+  // cell's muted second line.
+  description(t) {
+    return { fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] };
   },
   // Roomier grouped content inset; leading aligns with the title (16px).
   content() {
@@ -162,6 +191,17 @@ export const androidSkin: AccordionSkin = {
   container() {
     return {};
   },
+  // The `card` variant: the M3 OUTLINED card equivalent (medium shape 12dp,
+  // 1dp outline on the `card` fill, elevation 0); overflow hidden clips the
+  // header ripples and full-bleed dividers to the rounded corner.
+  cardContainer(t) {
+    return { borderRadius: 12, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
+  },
+  // M3 card content inset is 16dp, which the headers/content below already carry;
+  // the card-mode insets are idempotent per-key overrides, kept explicit so the
+  // contract reads the same on every skin.
+  cardHeaderInset: { paddingHorizontal: 16 },
+  cardContentInset: { paddingHorizontal: 16 },
   // M3 full-bleed divider between rows (1dp); the shell renders it only when
   // `!last`.
   separator(t) {
@@ -182,6 +222,11 @@ export const androidSkin: AccordionSkin = {
   // M3 title-medium: 16sp / 24 line / 500 weight / +0.15 tracking, on-surface.
   title(t) {
     return { flexShrink: 1, fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t.foreground };
+  },
+  // M3 two-line list item supporting text: body-medium (14sp / 20 / +0.25) in
+  // on-surface-variant (muted).
+  description(t) {
+    return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t["muted-foreground"] };
   },
   // M3 supporting-text content inset, aligned to the title.
   content() {

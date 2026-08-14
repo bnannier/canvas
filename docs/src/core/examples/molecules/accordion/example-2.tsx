@@ -6,12 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Accordion } = scope;
   return (
 <Accordion
+  card
   items={[
-    { key: "general", title: "General", content: "Workspace name, language, and time zone." },
-    { key: "advanced", title: "Advanced (coming soon)", content: "Not available yet.", disabled: true },
-    { key: "danger", title: "Danger zone", content: "Delete this workspace permanently." }
+    { key: "ship", title: "Shipping", content: "Free 2-day shipping on orders over $50." },
+    { key: "return", title: "Returns", content: "30-day returns, no questions asked." },
+    { key: "warranty", title: "Warranty", content: "Two years, parts and labor." }
   ]}
-  defaultValue="general"
+  defaultValue="ship"
 />
   );
 }

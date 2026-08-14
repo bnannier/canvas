@@ -3,25 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Accordion, Button, Row, Column } = scope;
+  const { Accordion } = scope;
   return (
-<Stateful initial="step-1">
-  {(step, setStep) => (
-    <Column relaxed>
-      <Row snug alignCenter>
-        <Button small outline disabled={step === "step-1"} onPress={() => setStep(step === "step-3" ? "step-2" : "step-1")}>Previous</Button>
-        <Button small primary disabled={step === "step-3"} onPress={() => setStep(step === "step-1" ? "step-2" : "step-3")}>Next step</Button>
-      </Row>
-      <Accordion
-        value={step}
-        items={[
-          { key: "step-1", title: "Step 1: Connect", content: "Link your data source." },
-          { key: "step-2", title: "Step 2: Map", content: "Map the incoming fields." },
-          { key: "step-3", title: "Step 3: Review", content: "Confirm and import." }
-        ]}
-      />
-    </Column>
-  )}
-</Stateful>
+<Accordion
+  items={[
+    { key: "billing", title: "Billing", description: "Plan, payment method, invoices.", content: "Manage your plan, payment method, and invoices." },
+    { key: "team", title: "Team", description: "Members and roles.", content: "Invite teammates and set their roles." },
+    { key: "security", title: "Security", description: "2FA and sessions.", content: "Two-factor authentication and active sessions." }
+  ]}
+  defaultValue="billing"
+/>
   );
 }

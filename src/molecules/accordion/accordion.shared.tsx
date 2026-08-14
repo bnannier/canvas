@@ -74,6 +74,16 @@ export interface AccordionSkin {
 
   /** The optional outer container shape (iOS inset-grouped card; flat on web/Android). */
   container: (t: ColorTokens) => ViewStyle;
+  /** The `card` variant's surface: an outlined card container wrapping the whole
+   *  group on web/Android. On iOS this ALIASES `container` (the default skin
+   *  already IS the inset-grouped card), so `card` is a documented no-op there. */
+  cardContainer: (t: ColorTokens) => ViewStyle;
+  /** The extra header inset applied in `card` mode. Idempotent where the header
+   *  already carries the same horizontal inset (iOS/Android): style-array merge
+   *  overrides per key, it never sums. */
+  cardHeaderInset: ViewStyle;
+  /** The extra content inset applied in `card` mode (idempotent, as above). */
+  cardContentInset: ViewStyle;
   /** The inter-row divider line, rendered by the shell only between rows (never after
    *  the last one): a full-bleed hairline on web/Android, inset to the text leading
    *  edge on iOS (the grouped-list separator). */
@@ -82,6 +92,9 @@ export interface AccordionSkin {
   header: (t: ColorTokens) => ViewStyle;
   /** The header title type. */
   title: (t: ColorTokens) => TextStyle;
+  /** The muted secondary description line under a row's title (the skin's type
+   *  ramp, one step below the title). */
+  description: (t: ColorTokens) => TextStyle;
   /** The content panel insets. */
   content: (t: ColorTokens) => ViewStyle;
   /** The default content text type (when an item's content is a plain string). */
@@ -93,6 +106,8 @@ export interface AccordionItem {
   key: string;
   /** The header label. */
   title: string;
+  /** The muted secondary line under this row's title. */
+  description?: string;
   /** The collapsible panel body. A string renders in the skin's content type; a
    *  ReactNode renders as-is. */
   content: ReactNode;
@@ -114,6 +129,12 @@ export interface AccordionProps {
   onValueChange?: (value: string | string[]) => void;
   /** Allow more than one panel open at once (default: single-open). */
   multiple?: boolean;
+  /**
+   * Card surface: wraps the group in an outlined card container with inset
+   * headers and content (web/Android). On iOS the default Accordion already
+   * renders as the inset-grouped card, so `card` is a no-op there.
+   */
+  card?: boolean;
   /** Disable the whole group (every row stops toggling and dims). */
   disabled?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -157,12 +178,14 @@ export function createAccordion(skin: AccordionSkin) {
     open,
     groupDisabled,
     last,
+    card,
     onToggle,
   }: {
     item: AccordionItem;
     open: boolean;
     groupDisabled?: boolean;
     last: boolean;
+    card?: boolean;
     onToggle: () => void;
   }) {
     const { tokens } = useTheme();
@@ -185,6 +208,9 @@ export function createAccordion(skin: AccordionSkin) {
 
     const headerStyle: StyleProp<ViewStyle> = [
       skin.header(tokens),
+      // Card mode insets the header to the card's own edge inset (a per-key
+      // override on top of the base header, never a sum).
+      card ? skin.cardHeaderInset : null,
       skin.focusOutlineReset,
       disabled ? DISABLED_DIM : null,
     ];
@@ -208,16 +234,28 @@ export function createAccordion(skin: AccordionSkin) {
             skin.pressedOpacity != null && pressed && !disabled ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
-          <Text style={skin.title(tokens)} numberOfLines={2}>
-            {item.title}
-          </Text>
+          {item.description ? (
+            // Title over its muted secondary line. The column shrinks (not the
+            // texts individually) so the chevron stays trailing and the title's
+            // numberOfLines truncation keeps working inside it.
+            <View style={LABEL_COLUMN}>
+              <Text style={skin.title(tokens)} numberOfLines={2}>
+                {item.title}
+              </Text>
+              <Text style={skin.description(tokens)}>{item.description}</Text>
+            </View>
+          ) : (
+            <Text style={skin.title(tokens)} numberOfLines={2}>
+              {item.title}
+            </Text>
+          )}
           <Animated.View style={{ transform: [{ rotate }] }}>
             {/* Skin picks the disclosure glyph: chevronRight (iOS) or chevronDown (web/M3). */}
             <Icon {...{ [skin.chevronGlyph]: true }} muted size={skin.chevronSize} />
           </Animated.View>
         </Pressable>
         {open ? (
-          <View style={skin.content(tokens)}>
+          <View style={[skin.content(tokens), card ? skin.cardContentInset : null]}>
             {typeof item.content === "string" ? (
               <Text style={skin.contentText(tokens)}>{item.content}</Text>
             ) : (
@@ -233,7 +271,7 @@ export function createAccordion(skin: AccordionSkin) {
   }
 
   return function Accordion(props: AccordionProps) {
-    const { items = DEFAULT_ITEMS, value, defaultValue, onValueChange, multiple = false, disabled, testID, style } = props;
+    const { items = DEFAULT_ITEMS, value, defaultValue, onValueChange, multiple = false, disabled, card, testID, style } = props;
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
 
@@ -261,7 +299,7 @@ export function createAccordion(skin: AccordionSkin) {
     );
 
     return (
-      <View testID={testID} style={[FULL_WIDTH, skin.container(tokens), style]}>
+      <View testID={testID} style={[FULL_WIDTH, skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]}>
         {items.map((item, i) => (
           <Row
             key={item.key}
@@ -269,6 +307,7 @@ export function createAccordion(skin: AccordionSkin) {
             open={open.has(item.key)}
             groupDisabled={disabled}
             last={i === items.length - 1}
+            card={card}
             onToggle={() => toggle(item.key)}
           />
         ))}
@@ -279,6 +318,11 @@ export function createAccordion(skin: AccordionSkin) {
 
 // opacity-50: the dimmed disabled look applied per header.
 const DISABLED_DIM: ViewStyle = { opacity: 0.5 };
+
+// The title/description stack in a row's header: a tight list-row column (the
+// line heights carry the rhythm, per the iOS subtitle cell and the M3 two-line
+// list item) that shrinks as one unit so the chevron never clips.
+const LABEL_COLUMN: ViewStyle = { flexShrink: 1, gap: 2 };
 
 // The accordion is a block disclosure group: it fills its parent's content box by
 // default (so it spans the full width minus the parent's padding), rather than

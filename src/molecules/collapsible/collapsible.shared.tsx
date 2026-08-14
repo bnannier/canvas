@@ -75,10 +75,23 @@ export interface CollapsibleSkin {
 
   /** The outer container shape (iOS inset-grouped card; flat on web/Android). */
   container: (t: ColorTokens) => ViewStyle;
+  /** The `card` variant's surface: an outlined card container wrapping the whole
+   *  disclosure on web/Android. On iOS this ALIASES `container` (the default skin
+   *  already IS the inset-grouped card), so `card` is a documented no-op there. */
+  cardContainer: (t: ColorTokens) => ViewStyle;
+  /** The extra header inset applied in `card` mode. Idempotent where the header
+   *  already carries the same horizontal inset (iOS/Android): style-array merge
+   *  overrides per key, it never sums. */
+  cardHeaderInset: ViewStyle;
+  /** The extra content inset applied in `card` mode (idempotent, as above). */
+  cardContentInset: ViewStyle;
   /** The header trigger row layout/insets. */
   header: (t: ColorTokens) => ViewStyle;
   /** The header title type (used for the default `title` text). */
   title: (t: ColorTokens) => TextStyle;
+  /** The muted secondary description line under the title (the skin's type ramp,
+   *  one step below the title). */
+  description: (t: ColorTokens) => TextStyle;
   /** The content panel insets. */
   content: (t: ColorTokens) => ViewStyle;
   /** The default content text type (when the children is a plain string). */
@@ -89,10 +102,21 @@ export interface CollapsibleProps {
   /** The default trigger label text. */
   title?: string;
   /**
+   * The muted secondary line under the title in the default trigger anatomy
+   * (ignored when a custom `trigger` is given, which owns its own anatomy).
+   */
+  description?: string;
+  /**
    * A custom trigger node; if provided, it renders as the pressable's content
    * instead of the `title` text (the chevron still renders alongside).
    */
   trigger?: ReactNode;
+  /**
+   * Card surface: wraps the disclosure in an outlined card container with inset
+   * header and content (web/Android). On iOS the default Collapsible already
+   * renders as the inset-grouped card, so `card` is a no-op there.
+   */
+  card?: boolean;
   /** The collapsible content. A string renders in the skin's content type; a
    *  ReactNode renders as-is. */
   children: ReactNode;
@@ -117,7 +141,7 @@ enableAndroidLayoutAnimations();
 /** Build a Collapsible component from a platform skin. */
 export function createCollapsible(skin: CollapsibleSkin) {
   return function Collapsible(props: CollapsibleProps) {
-    const { title, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, testID, style } = props;
+    const { title, description, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, card, testID, style } = props;
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
 
@@ -151,6 +175,9 @@ export function createCollapsible(skin: CollapsibleSkin) {
 
     const headerStyle: StyleProp<ViewStyle> = [
       skin.header(tokens),
+      // Card mode insets the header to the card's own edge inset (a per-key
+      // override on top of the base header, never a sum).
+      card ? skin.cardHeaderInset : null,
       skin.focusOutlineReset,
       disabled ? { opacity: skin.disabledOpacity } : null,
     ];
@@ -159,7 +186,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
     const a11yLabel = title ?? "Toggle section";
 
     return (
-      <View testID={testID} style={[skin.container(tokens), style]}>
+      <View testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]}>
         <Pressable
           onPress={disabled ? undefined : toggle}
           disabled={disabled}
@@ -179,6 +206,16 @@ export function createCollapsible(skin: CollapsibleSkin) {
         >
           {trigger !== undefined ? (
             <View style={TRIGGER_SLOT}>{trigger}</View>
+          ) : description ? (
+            // Title over its muted secondary line. The column shrinks (not the
+            // texts individually) so the chevron stays trailing and the title's
+            // numberOfLines truncation keeps working inside it.
+            <View style={LABEL_COLUMN}>
+              <Text style={skin.title(tokens)} numberOfLines={2}>
+                {title}
+              </Text>
+              <Text style={skin.description(tokens)}>{description}</Text>
+            </View>
           ) : (
             <Text style={skin.title(tokens)} numberOfLines={2}>
               {title}
@@ -190,7 +227,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
           </Animated.View>
         </Pressable>
         {open ? (
-          <View style={skin.content(tokens)}>
+          <View style={[skin.content(tokens), card ? skin.cardContentInset : null]}>
             {typeof children === "string" ? (
               <Text style={skin.contentText(tokens)}>{children}</Text>
             ) : (
@@ -206,3 +243,8 @@ export function createCollapsible(skin: CollapsibleSkin) {
 // The custom-trigger slot fills the leading space so the chevron stays trailing,
 // mirroring the title's flexShrink behavior.
 const TRIGGER_SLOT: ViewStyle = { flexShrink: 1, flexGrow: 1 };
+
+// The title/description stack in the default trigger anatomy: a tight list-row
+// column (the line heights carry the rhythm, per the iOS subtitle cell and the
+// M3 two-line list item) that shrinks as one unit so the chevron never clips.
+const LABEL_COLUMN: ViewStyle = { flexShrink: 1, gap: 2 };
