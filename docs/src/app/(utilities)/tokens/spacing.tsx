@@ -174,7 +174,7 @@ export default function SpacingScreen() {
         <View style={{ gap: 12 }}>
           <TokenH1>Spacing & Shape</TokenH1>
           <TokenLede>
-            The 4px grid governs all of Canvas. Every padding, margin, gap, width, and height is a multiple of 4. Radii follow a fixed four-tier scale (sm, md, lg, xl) plus full for pills; components reference rounded-sm/md/lg/xl, which map to the radius tokens. Shadows are a fixed elevation preset (none, sm, the default, md, lg, xl), shipped by the shadow() helper rather than Tailwind.
+            The 4px grid governs all of Canvas. Every padding, margin, gap, width, and height is a multiple of 4. Radii follow a fixed scale (sm, the 4px default, md, lg, xl, and larger steps) plus full for pills; components read those radius tokens directly. Shadows are a fixed elevation preset (none, sm, the default, md, lg, xl), shipped by the shadow() helper.
           </TokenLede>
         </View>
 

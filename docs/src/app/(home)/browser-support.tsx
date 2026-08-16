@@ -19,16 +19,16 @@ const PEERS = [
 ];
 
 const WEB_BASELINE = [
-  ["Chrome / Edge", "111+", "Tailwind v4 token layer (canvas.css)"],
-  ["Safari", "16.4+", "Tailwind v4 token layer (canvas.css)"],
-  ["Firefox", "128+", "Tailwind v4 token layer (canvas.css)"],
+  ["Chrome / Edge", "111+", "CSS token layer (canvas.css)"],
+  ["Safari", "16.4+", "CSS token layer (canvas.css)"],
+  ["Firefox", "113+", "CSS token layer (canvas.css)"],
 ];
 
 const NOTES = [
   {
     title: "Why these versions",
     description:
-      "The floor is set by the modern CSS that Tailwind v4 (and so canvas.css) builds on: the @property at-rule, color-mix(), oklch() colors, and cascade layers. The versions above are where each engine shipped that feature set; Firefox lags to 128 because @property landed there last (mid 2024). The color primitives themselves, oklch() and color-mix(), have been Baseline \"widely available\" across Chrome, Edge, Safari, and Firefox since May 2023. Older browsers are served by Tailwind v3.4 instead.",
+      "The floor is set by exactly two CSS features the token layer uses: oklch() colors and color-mix(). Both have been Baseline \"widely available\" across Chrome, Edge, Safari, and Firefox since May 2023, and the versions above are where each engine shipped them. Nothing else in canvas.css is modern: it is plain custom properties, one @media (prefers-reduced-motion) block, and a handful of rules. There is no build step, no @property, and no cascade layers, which is what used to push the Firefox floor to 128.",
   },
   {
     title: "Native uses no CSS",
@@ -38,7 +38,7 @@ const NOTES = [
   {
     title: "The web floor comes from the stylesheet, not the components",
     description:
-      "Canvas components resolve to inline styles through react-native-web and run in much older browsers. It is the single shipped stylesheet, canvas.css (a Tailwind v4 token layer), that sets the modern-browser baseline above. If you must support older browsers, supply the design tokens as plain CSS custom properties yourself; canvas.css is the only stylesheet Canvas ships.",
+      "Canvas components resolve to inline styles through react-native-web and run in much older browsers. It is the shipped stylesheet, canvas.css and the token files it imports, that sets the modern-browser baseline above. If you must support older browsers, restate the same custom properties in a colour space your target supports; the token layer is plain CSS you can copy.",
   },
   {
     title: "Accessibility and motion",
@@ -91,8 +91,8 @@ export default function BrowserSupportScreen() {
 
         <Section title="Web Browser Baseline">
           <P muted>
-            On the web, the modern-browser floor is set by the <InlineCode>canvas.css</InlineCode> token layer, which is
-            Tailwind v4. Tailwind v4 targets these versions:
+            On the web, the modern-browser floor is set by the <InlineCode>canvas.css</InlineCode> token layer, which
+            needs only oklch() and color-mix():
           </P>
           <DocsSurface bordered>
             <DataTable columns={["Browser", "Minimum Version", "Reason"]} rows={WEB_BASELINE} />

@@ -33,9 +33,11 @@ const undefined_ = [...referenced].filter((t) => !defined.has(t)).sort();
 
 let failed = false;
 
+// The token layer IS the published web API, so most tokens are referenced by
+// consumers rather than by this CSS: a per-token orphan list would be ~900
+// lines of noise. Only the count is reported, and it never fails the build.
 if (orphaned.length) {
-  console.log(`\nOrphaned tokens (defined but never referenced): ${orphaned.length}`);
-  for (const t of orphaned) console.log(`  --${t}`);
+  console.log(`\nTokens defined for consumers (not referenced within the CSS itself): ${orphaned.length}`);
 }
 
 if (undefined_.length) {
@@ -44,12 +46,25 @@ if (undefined_.length) {
   failed = true;
 }
 
-// Cross-check the CSS utility layer against the JS token source of truth
+// Every token file must be reachable from the entry point, or its tokens ship
+// dead: the manifest is the only thing linking them, and a new file is easy to
+// add and forget.
+const entry = await readFile(join(STYLES_DIR, "canvas.css"), "utf-8");
+const imported = new Set([...entry.matchAll(/@import\s+"\.\/tokens\/([\w-]+\.css)"/g)].map((m) => m[1]));
+const onDisk = (await readdir(join(STYLES_DIR, "tokens"))).filter((f) => f.endsWith(".css"));
+const unimported = onDisk.filter((f) => !imported.has(f)).sort();
+if (unimported.length) {
+  console.log(`\nToken files never imported by styles/canvas.css: ${unimported.length}`);
+  for (const f of unimported) console.log(`  tokens/${f}`);
+  failed = true;
+}
+
+// Cross-check the CSS token layer against the JS token source of truth
 // (src/style/tokens.ts): every JS color token must have a matching `--<name>` in
-// canvas.css, or web consumers cannot get its `bg-*`/`text-*` utility. This is the
-// guard the audit found missing (success/warning existed in JS but not the CSS).
-// The `--color-*` Tailwind theme aliases are excluded (they map onto the values).
-const cssValueTokens = new Set([...defined].filter((t) => !t.startsWith("color-")));
+// the CSS, or a web consumer cannot reach a color the native components have.
+// This is the guard the audit found missing (success/warning existed in JS but
+// not the CSS).
+const cssValueTokens = new Set(defined);
 const missingInCss = Object.keys(lightColors).filter((k) => !cssValueTokens.has(k)).sort();
 if (missingInCss.length) {
   console.log(`\nColor tokens in src/style/tokens.ts but MISSING from styles/canvas.css: ${missingInCss.length}`);

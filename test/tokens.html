@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas token layer</title>
+  <!-- The shipped stylesheet, linked exactly as a consumer links it: plain CSS,
+       no build step. This page is the visual check for that hand-off. -->
+  <link rel="stylesheet" href="../styles/canvas.css">
+  <style>
+    /* Page scaffolding only. Everything that carries a Canvas value below reads
+       it from a token, so a regression in the stylesheet shows up here. */
+    body { margin: 0; padding: 24px; }
+    h1 { font-size: var(--text-xl); line-height: var(--leading-xl); font-weight: var(--weight-semibold); margin: 0 0 4px; }
+    h2 { font-size: var(--text-sm); line-height: var(--leading-sm); font-weight: var(--weight-medium);
+         color: var(--muted-foreground); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+         margin: 24px 0 8px; }
+    .row { display: flex; flex-wrap: wrap; gap: var(--gap-snug); align-items: center; }
+    .swatch { width: 76px; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--border);
+              display: flex; align-items: flex-end; padding: 4px; font-size: var(--text-2xs); }
+    .card { background: var(--card); color: var(--card-foreground); border: 1px solid var(--border);
+            border-radius: var(--radius-card); box-shadow: var(--shadow-sm); padding: var(--space-4); }
+    .skins { display: flex; gap: var(--gap-relaxed); flex-wrap: wrap; }
+    .skin { flex: 1 1 260px; }
+    .plat { font-size: var(--text-2xs); letter-spacing: var(--tracking-wider); text-transform: uppercase;
+            color: var(--muted-foreground); margin-bottom: 8px; }
+    /* The three platform skins, drawn only from --p-* tokens. */
+    .btn { display: inline-flex; align-items: center; justify-content: center;
+           border-radius: var(--p-btn-radius); padding: var(--p-btn-pad-y) var(--p-btn-pad-x);
+           gap: var(--p-btn-gap); background: var(--primary); color: var(--primary-foreground);
+           font-family: var(--font-sans); font-size: var(--p-btn-font); font-weight: var(--p-btn-weight);
+           letter-spacing: var(--p-btn-tracking); border: none; }
+    .field { border-radius: var(--p-field-radius); padding: var(--p-field-pad-y) var(--p-field-pad-x);
+             background: var(--p-field-fill); border: 1px solid var(--p-field-border);
+             color: var(--muted-foreground); font-size: var(--p-field-font); font-family: var(--font-sans); }
+  </style>
+</head>
+<body>
+  <h1>Canvas token layer</h1>
+  <div style="color: var(--muted-foreground); font-size: var(--text-sm)">
+    styles/canvas.css, linked raw. Scheme rides on <code>.dark</code>; skins ride on <code>data-platform</code>.
+  </div>
+
+  <h2>Semantic surfaces</h2>
+  <div class="row">
+    <div class="swatch" style="background: var(--background); color: var(--foreground)">background</div>
+    <div class="swatch" style="background: var(--card); color: var(--card-foreground)">card</div>
+    <div class="swatch" style="background: var(--muted); color: var(--muted-foreground)">muted</div>
+    <div class="swatch" style="background: var(--primary); color: var(--primary-foreground)">primary</div>
+    <div class="swatch" style="background: var(--destructive); color: var(--destructive-foreground)">destructive</div>
+    <div class="swatch" style="background: var(--success); color: var(--success-foreground)">success</div>
+    <div class="swatch" style="background: var(--warning); color: var(--warning-foreground)">warning</div>
+  </div>
+
+  <h2>Chart series</h2>
+  <div class="row">
+    <div class="swatch" style="background: var(--chart-1)"></div>
+    <div class="swatch" style="background: var(--chart-2)"></div>
+    <div class="swatch" style="background: var(--chart-3)"></div>
+    <div class="swatch" style="background: var(--chart-4)"></div>
+    <div class="swatch" style="background: var(--chart-5)"></div>
+    <div class="swatch" style="background: var(--chart-6)"></div>
+    <div class="swatch" style="background: var(--chart-7)"></div>
+    <div class="swatch" style="background: var(--chart-8)"></div>
+  </div>
+
+  <h2>Platform skins (--p-* tokens)</h2>
+  <div class="skins">
+    <div class="skin">
+      <div class="plat">web</div>
+      <div class="card">
+        <div class="row"><button class="btn">Save changes</button></div>
+        <div class="row" style="margin-top: 12px"><div class="field">you@example.com</div></div>
+      </div>
+    </div>
+    <div class="skin" data-platform="ios">
+      <div class="plat">ios</div>
+      <div class="card">
+        <div class="row"><button class="btn">Save changes</button></div>
+        <div class="row" style="margin-top: 12px"><div class="field">you@example.com</div></div>
+      </div>
+    </div>
+    <div class="skin" data-platform="android">
+      <div class="plat">android</div>
+      <div class="card">
+        <div class="row"><button class="btn">Save changes</button></div>
+        <div class="row" style="margin-top: 12px"><div class="field">you@example.com</div></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Radius scale</h2>
+  <div class="row">
+    <div class="swatch" style="border-radius: var(--radius-sm); background: var(--muted)">sm</div>
+    <div class="swatch" style="border-radius: var(--radius); background: var(--muted)">base</div>
+    <div class="swatch" style="border-radius: var(--radius-md); background: var(--muted)">md</div>
+    <div class="swatch" style="border-radius: var(--radius-lg); background: var(--muted)">lg</div>
+    <div class="swatch" style="border-radius: var(--radius-xl); background: var(--muted)">xl</div>
+    <div class="swatch" style="border-radius: var(--radius-full); background: var(--muted)">full</div>
+  </div>
+
+  <h2>Elevation</h2>
+  <div class="row">
+    <div class="card" style="box-shadow: var(--shadow-sm)">sm</div>
+    <div class="card" style="box-shadow: var(--shadow-md)">md</div>
+    <div class="card" style="box-shadow: var(--shadow-lg)">lg</div>
+    <div class="card" style="box-shadow: var(--shadow-xl)">xl</div>
+  </div>
+</body>
+</html>

@@ -16,7 +16,7 @@ import { chromium, type Page } from "@playwright/test";
 // ---------------------------------------------------------------------------
 
 const ROOT = join(import.meta.dir, "..");
-const TEST_PAGE = "test/app-shell.html";
+const TEST_PAGE = "test/tokens.html";
 const SCREENSHOT_DIR = join(ROOT, "test", "screenshots");
 
 // ---------------------------------------------------------------------------
@@ -78,50 +78,21 @@ interface ThemeMode {
   apply: (page: Page) => Promise<void>;
 }
 
+// The two axes the stylesheet actually implements: the scheme (`.dark` on the
+// root) and the platform skin (`data-platform` on a subtree, which the page
+// renders side by side, so it needs no mode of its own). Earlier modes toggled
+// `data-surface` / `data-density`, which no rule in the stylesheet ever read.
 const MODES: ThemeMode[] = [
   {
     name: "light",
     apply: async (page) => {
-      // Reset to light defaults.
-      await page.evaluate(() => {
-        const html = document.documentElement;
-        html.classList.remove("dark");
-        delete html.dataset.surface;
-        html.dataset.density = "";
-      });
+      await page.evaluate(() => document.documentElement.classList.remove("dark"));
     },
   },
   {
     name: "dark",
     apply: async (page) => {
-      await page.evaluate(() => {
-        const html = document.documentElement;
-        html.classList.add("dark");
-        delete html.dataset.surface;
-        html.dataset.density = "";
-      });
-    },
-  },
-  {
-    name: "dark-glass",
-    apply: async (page) => {
-      await page.evaluate(() => {
-        const html = document.documentElement;
-        html.classList.add("dark");
-        html.dataset.surface = "glass";
-        html.dataset.density = "";
-      });
-    },
-  },
-  {
-    name: "light-compact",
-    apply: async (page) => {
-      await page.evaluate(() => {
-        const html = document.documentElement;
-        html.classList.remove("dark");
-        delete html.dataset.surface;
-        html.dataset.density = "compact";
-      });
+      await page.evaluate(() => document.documentElement.classList.add("dark"));
     },
   },
 ];
@@ -216,7 +187,7 @@ async function main() {
   const results: { name: string; status: string }[] = [];
 
   for (const mode of MODES) {
-    const filename = `app-shell-${mode.name}.png`;
+    const filename = `tokens-${mode.name}.png`;
     const filepath = join(SCREENSHOT_DIR, filename);
 
     await mode.apply(page);
@@ -248,7 +219,7 @@ async function main() {
       results.push({ name: mode.name, status: match ? "pass" : `DIFF: ${message}` });
       if (!match) {
         // Save the current capture alongside the baseline for inspection.
-        const diffPath = join(SCREENSHOT_DIR, `app-shell-${mode.name}.current.png`);
+        const diffPath = join(SCREENSHOT_DIR, `tokens-${mode.name}.current.png`);
         await Bun.write(diffPath, screenshot);
       }
     }

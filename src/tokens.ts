@@ -5,10 +5,18 @@ export function token(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
 }
 
+/**
+ * A token as a complete CSS colour, optionally translucent.
+ *
+ * The name is historical: tokens used to be bare HSL triplets that a caller had
+ * to wrap. They are now complete colours (oklch for the scheme pairs, hex for
+ * the fixed brand and chart constants), so wrapping them in `hsl()` would emit
+ * `hsl(oklch(...))`, which is invalid in every browser. The value passes
+ * through untouched, and alpha is applied the same way the token layer does it.
+ */
 export function hsl(name: string, alpha?: number): string {
   const raw = token(name);
-  if (alpha !== undefined) {
-    return `hsl(${raw} / ${alpha})`;
-  }
-  return `hsl(${raw})`;
+  if (!raw) return "";
+  if (alpha === undefined) return raw;
+  return `color-mix(in oklab, ${raw} ${Math.round(alpha * 100)}%, transparent)`;
 }

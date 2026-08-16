@@ -228,7 +228,7 @@ export default function ColorsScreen() {
         <TokenSection
           title="Accent options"
           description="The default --primary is Indigo. Point --primary and --ring at any of these six curated hues to re-skin the whole system; they sit at similar perceived weight (chroma and lightness held roughly constant)."
-          anatomy="Accents only override --primary and --ring. All foreground pairings are recalculated downstream via Tailwind's color-mix() opacity utilities, so you don't restate them per accent."
+          anatomy="Accents only override --primary and --ring. All foreground pairings are recalculated downstream with color-mix() against those two, so you don't restate them per accent."
         >
           <Grid cols={c5}>
             {ACCENT_OPTIONS.map((a) => (
