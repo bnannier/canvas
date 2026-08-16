@@ -25,10 +25,9 @@ export function App() {
 
 const VITE_CONFIG = `import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   // react-native-web reads these globals.
   define: { __DEV__: "true", global: "globalThis" },
   resolve: {
@@ -47,8 +46,9 @@ export default defineConfig({
 
 const WEB_ENTRY = `import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@nannier/canvas";
-// The CSS token layer: custom properties + the .dark / [data-surface] / [data-density]
-// hooks. Needed only for the DOM theme helpers and any custom CSS you write with var().
+// The CSS token layer: plain custom properties, no build step. Carries the
+// .dark scheme hook and the [data-platform] skin hook, for the DOM theme
+// helpers and any custom CSS you write with var().
 import "@nannier/canvas/styles/canvas.css";
 import { App } from "./app";
 import { useHtmlScheme } from "./use-html-scheme";
@@ -134,7 +134,7 @@ const EXPORTS = [
   {
     path: "@nannier/canvas/styles/canvas.css",
     content:
-      "Tailwind v4 token layer: the CSS custom properties plus the .dark / [data-surface] / [data-density] theme hooks. Web only.",
+      "The CSS token layer: plain custom properties, plus the .dark scheme hook and the [data-platform] skin hook. Web only, no build step.",
   },
 ];
 
@@ -201,8 +201,8 @@ export default function IntegrationScreen() {
             The component code above does not change on the web; this is build configuration only. In the browser Canvas
             runs through react-native-web, so alias <InlineCode>react-native</InlineCode> to{" "}
             <InlineCode>react-native-web</InlineCode> in your bundler. Here is a Vite config (Metro and webpack take the
-            same alias). The <InlineCode>@tailwindcss/vite</InlineCode> plugin processes{" "}
-            <InlineCode>canvas.css</InlineCode> (next section).
+            same alias). <InlineCode>canvas.css</InlineCode> needs no plugin: it is plain CSS that any bundler resolves
+            (next section).
           </P>
           <CodeBlock code={VITE_CONFIG} />
         </Section>

@@ -25,7 +25,7 @@
     "liquid-glass",
     "material-design",
     "accessibility",
-    "tailwind",
+    "design-tokens",
     "expo"
   ],
   "main": "./dist/index.js",

@@ -19,6 +19,28 @@ cross-platform: build it from `react-native-svg` (sectors, masks, `FeGaussianBlu
 produces the same result natively and on the web. A web-only DOM/CSS trick is a
 shortcut (see the global no-shortcuts directive): get explicit authorization first.
 
+## Native approach on iOS and Android
+
+On iOS and Android, Canvas renders through the platform's own native machinery, never
+through a web emulation of it. The per-OS skin files (`<name>.ios.tsx`,
+`<name>.android.tsx`) and the native modules they route through are the real
+implementation: Apple's Liquid Glass via `expo-glass-effect` on iOS 26+, a real
+frosted blur via `expo-blur`, native `BackHandler` / hardware-back behavior, native
+scroll and press feedback, real HIG and Material 3 metrics from the skins.
+
+The CSS layer in `styles/` is the WEB hand-off only. Its custom properties, including
+the `--p-*` platform-skin tokens switched by `data-platform`, exist so a web surface
+(and the design-system mirror) can render the three looks in a browser. A native build
+must never take its look from that CSS, and an iOS or Android behavior must never be
+approximated in CSS when the platform exposes the real thing.
+
+So when a design calls for a platform behavior, reach for the native API first and let
+the web fall back, rather than implementing the web trick everywhere and calling it
+cross-platform. This sharpens, and does not contradict, the React-Native-everywhere
+principle above: one component API and one codebase, with each platform's own material
+underneath. Why: an emulated iOS or Android surface is a look-alike, and the kit's
+whole claim is that it is the real thing on each OS.
+
 ## Dogfood the kit: every UI element is a Canvas component
 
 A claude prime global directive. Every UI element used anywhere in this repo, the
