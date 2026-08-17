@@ -124,11 +124,13 @@ const MEASURE: Record<"narrow" | "base" | "wide" | "block", ViewStyle> = {
 };
 
 // Measure precedence when more than one is passed: first match wins
-// (narrow > wide > block; omit all for the default 480 cap).
+// (block > wide > narrow; omit all for the default 480 cap). Block leads
+// because "fill the container" is the most specific instruction of the three:
+// a caller that asks for it has a layout that owns the width already.
 function measureOf(p: AlertProps): ViewStyle {
-  if (p.narrow) return MEASURE.narrow;
-  if (p.wide) return MEASURE.wide;
   if (p.block) return MEASURE.block;
+  if (p.wide) return MEASURE.wide;
+  if (p.narrow) return MEASURE.narrow;
   return MEASURE.base;
 }
 
