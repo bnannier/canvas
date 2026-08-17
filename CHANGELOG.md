@@ -1,5 +1,22 @@
 # @nannier/canvas
 
+## 2.19.0
+
+### Minor Changes
+
+- 9823224: ButtonGroup gains a `block` boolean, an orthogonal layout modifier matching the hand-off's ButtonGroup axis: the group stretches to the container width and the segments share the space equally (`flex: 1` gives each a zero flex-basis, so labels of different lengths still split evenly). It applies to the segmented and spaced kinds; the split and stepper kinds are fixed-width chrome (a chevron trigger, prev/next arrow cells), so they ignore it with a dev-only warning.
+
+  Minor justification: new public API (the `block` prop on ButtonGroup), not a fix to existing behavior.
+
+- 9823224: Emblem gains a `warning` tone boolean on the existing tone axis (primary / destructive / success / warning / muted): the amber caution emblem from the hand-off. It follows the same recipe as the other tones, a 12 percent wash of the `warning` token behind the square and the solid token on the glyph or monogram, and slots into the fixed tone precedence after `success`.
+
+  Minor justification: new public API (the `warning` prop on Emblem), not a fix to existing behavior.
+
+- 9823224: Gauge: new `warning` tone boolean on the tone axis. `<Gauge warning />` fills the arc with the kit's shared warning amber (the same statusHues hue a warning badge or alert reads), for dials like a budget-used gauge. Minor because it adds a new public prop, a user-visible tone capability; the existing tones and the default primary fill are unchanged. Tone precedence within the axis is success > warning > destructive (first match wins).
+- 9823224: Tabs items accept a per-item `disabled` flag: an item may now be `{ label, badge?, disabled? }`, and a disabled trigger renders through the skin's dimmed disabled treatment, is not pressable, sits out of the tab order, is skipped by the roving arrow-key navigation (Home/End redirect to the nearest enabled tab), and announces itself via `accessibilityState.disabled` plus the `aria-disabled` alias.
+
+  Minor justification: new user-visible capability on the public Tabs API (individually disabled tab triggers on the existing `tabs` items array).
+
 ## 2.18.1
 
 ### Patch Changes
