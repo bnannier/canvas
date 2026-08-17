@@ -10,11 +10,11 @@
 // expo-glass-effect is NOT imported here, so web and Android bundles never pull
 // the iOS-only Liquid Glass native module. iOS resolves glass-surface.ios.tsx.
 
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import type * as ExpoBlurTypes from "expo-blur";
-import { View, type ViewStyle } from "react-native";
+import { View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import { useTheme } from "../theme.js";
-import { useGlassLens, GLASS_LENS_FILTER } from "./glass-lens.js";
+import { useGlassLens, useSizedGlassLens } from "./glass-lens.js";
 import {
   GlassBox,
   PlainSurface,
@@ -53,13 +53,27 @@ try {
   BlurView = undefined;
 }
 
-// The lens layer's style: the SVG filter as the layer's backdrop-filter.
-// `backdropFilter` is not in RN's ViewStyle typing, but react-native-web passes
-// it through to CSS untouched — the same mechanism expo-blur's web BlurView
-// uses for the frost. Unprefixed only: the gate guarantees Chromium, which
-// honors the unprefixed property, and the -webkit- alias would only ever paint
-// on a WebKit engine the gate exists to exclude.
-const LENS_BACKDROP = { backdropFilter: GLASS_LENS_FILTER } as unknown as ViewStyle;
+// The lens layer: measures itself (the material fill spans the surface, so its
+// layout IS the surface size), acquires the sized lens def for that size, and
+// applies it as the layer's backdrop-filter. Until the def exists (the first
+// frame, before layout) it renders the lens's blur + saturate grade, so the
+// swap to the sized def only adds the rim bend. `backdropFilter` is not in
+// RN's ViewStyle typing, but react-native-web passes it through to CSS
+// untouched — the same mechanism expo-blur's web BlurView uses for the frost.
+// Unprefixed only: the gate guarantees Chromium, which honors the unprefixed
+// property, and the -webkit- alias would only ever paint on a WebKit engine
+// the gate exists to exclude.
+function GlassLensLayer({ style }: { style: StyleProp<ViewStyle> }) {
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const filter = useSizedGlassLens(size.w, size.h);
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    const w = Math.round(width);
+    const h = Math.round(height);
+    if (w > 0 && h > 0) setSize((prev) => (prev.w === w && prev.h === h ? prev : { w, h }));
+  };
+  return <View onLayout={onLayout} style={[style, { backdropFilter: filter, pointerEvents: "none" } as unknown as ViewStyle]} />;
+}
 
 export function GlassSurface({ style, children, pointerEvents, testID, role, sheer, tint }: GlassSurfaceProps) {
   const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
@@ -93,18 +107,18 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
   const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role });
   if (degraded) return degraded;
 
-  // Chromium web: the real Liquid Glass LENS. The SVG displacement filter is the
-  // whole material — it bends the backdrop at the rim and carries its own blur +
-  // saturation — so it replaces the frost's BlurView (and needs no expo-blur at
-  // all). The popover under-fill stays beneath it and the specular rim above it,
-  // exactly as the iOS 26 native path keeps its under-fill beneath the GlassView:
-  // the fill guarantees a legible panel, the rim supplies the lit edge the filter
-  // itself does not draw.
+  // Chromium web: the real Liquid Glass LENS. The sized SVG displacement filter
+  // is the whole material — it bends the backdrop at the rim and carries its own
+  // blur + saturation — so it replaces the frost's BlurView (and needs no
+  // expo-blur at all). The popover under-fill stays beneath it and the specular
+  // rim above it, exactly as the iOS 26 native path keeps its under-fill beneath
+  // the GlassView: the fill guarantees a legible panel, the rim supplies the lit
+  // edge the filter itself does not draw.
   if (lens) {
     const material = (
       <>
         <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
-        <View style={[materialFill(style), LENS_BACKDROP, { pointerEvents: "none" }]} />
+        <GlassLensLayer style={materialFill(style)} />
         <View style={[specularRim(style, dark), { pointerEvents: "none" }]} />
       </>
     );
