@@ -15,9 +15,10 @@
  * by Pages with a genuine 200.
  *
  * Every claim below must stay verifiable from the source: no analytics SDK, no account
- * system, no persistence at all (the theme choice is in-memory session state), and
- * exactly two outbound hosts. These words are also the source of truth for the App
- * Privacy and Data Safety answers recorded in store/SUBMISSION.md.
+ * system, no persistence of user data (the theme choice is in-memory session state; the
+ * only disk write is expo-updates caching the app's own bundle), and exactly two
+ * outbound hosts. These words are also the source of truth for the App Privacy and
+ * Data Safety answers recorded in store/SUBMISSION.md.
  */
 
 export const PRIVACY_ISSUES_URL = "https://github.com/bnannier/canvas/issues";
@@ -87,7 +88,7 @@ export const PRIVACY_SECTIONS: PrivacyItem[] = [
   {
     title: "Data stored on your device",
     description:
-      "None. Your light or dark theme choice is held in memory for the current session only and resets the next time the app or site opens; nothing is written to disk. The app stores no preferences, files, cookies, local storage entries, or identifiers on any platform.",
+      "None about you. Your light or dark theme choice is held in memory for the current session only and resets the next time the app or site opens. The app stores no preferences, cookies, local storage entries, or identifiers on any platform; the only thing it writes to disk is its own code, when an over-the-air update downloads a new app bundle.",
   },
   {
     title: "Children",
