@@ -33,7 +33,7 @@ import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js"
 
 /**
  * Kit-internal Icon paint channel, kept OFF the published prop surface (hidden from
- * the generated prop table via Oproprietary_MEMBER_INTERFACES in tools/docgen/extract-props).
+ * the generated prop table via OMIT_MEMBER_INTERFACES in tools/docgen/extract-props).
  * This is the raw-string escape hatch the "No styling escape hatches" directive bans
  * from the public API; it exists only so kit composites can tint a glyph to match a
  * computed color they already own (e.g. a `Chip` tinting its remove "×" to its label

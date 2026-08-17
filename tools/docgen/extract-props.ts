@@ -55,7 +55,7 @@ const MIXIN_PROP_TYPES = new Set(["TextEntryProps"]);
 // raw-string paint channel (`color`), deliberately kept off the published surface
 // (it is the escape hatch the "No styling escape hatches" directive bans publicly;
 // consumers use the semantic color booleans).
-const Oproprietary_MEMBER_INTERFACES = new Set(["IconGlyphProps", "IconInternalProps"]);
+const OMIT_MEMBER_INTERFACES = new Set(["IconGlyphProps", "IconInternalProps"]);
 
 // A very long resolved type (e.g. react-native's `autoComplete` 50-value union)
 // would bloat both props.ts and the rendered cell; cap it so the table stays
@@ -138,7 +138,7 @@ function buildProps(checker: ts.TypeChecker, type: ts.Type, node: ts.Declaration
     // 400+ generated glyph-name booleans from IconGlyphProps).
     const decl = (sym.getDeclarations() ?? [])[0];
     const parent = decl?.parent;
-    if (parent && ts.isInterfaceDeclaration(parent) && Oproprietary_MEMBER_INTERFACES.has(parent.name.text)) continue;
+    if (parent && ts.isInterfaceDeclaration(parent) && OMIT_MEMBER_INTERFACES.has(parent.name.text)) continue;
     const { desc, source } = describe(checker, sym);
     let description: string;
     if (source === "jsdoc") {

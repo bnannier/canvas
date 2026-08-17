@@ -16,10 +16,12 @@ import {
 // Every face is loaded as a FontResource rather than a bare module id so it can carry
 // `display: swap`. Without it the browser default is `auto`, which hides text until the
 // face arrives; `swap` paints the fallback immediately and repaints once Geist is ready.
-// That only matters because the root layout no longer waits for these to resolve before
-// rendering, so text is on screen while they are still in flight. The option is web-only
-// (it becomes the font-display descriptor on the generated @font-face rule); native
-// already behaves like swap, and the extra wrapper is inert there.
+// The root layout currently gates the app on fontsLoaded (docs/src/app/_layout.tsx), so
+// in the normal path nothing renders before the faces resolve; swap is the safety net
+// for a face that arrives late or fails, and it keeps text visible if that gate is ever
+// dropped. The option is web-only (it becomes the font-display descriptor on the
+// generated @font-face rule); native already behaves like swap, and the extra wrapper
+// is inert there.
 const swap = (uri: number) => ({ uri, display: FontDisplay.SWAP });
 
 // Load the Geist faces the docs use, cross-platform (iOS / Android / web). Custom

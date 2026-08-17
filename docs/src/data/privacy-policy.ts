@@ -15,16 +15,16 @@
  * by Pages with a genuine 200.
  *
  * Every claim below must stay verifiable from the source: no analytics SDK, no account
- * system, no persistence beyond a web-only theme preference, and exactly two outbound
- * hosts. These words are also the source of truth for the App Privacy and Data Safety
- * answers recorded in store/SUBMISSION.md.
+ * system, no persistence at all (the theme choice is in-memory session state), and
+ * exactly two outbound hosts. These words are also the source of truth for the App
+ * Privacy and Data Safety answers recorded in store/SUBMISSION.md.
  */
 
 export const PRIVACY_ISSUES_URL = "https://github.com/bnannier/canvas/issues";
 
 // Stated rather than computed, so the policy does not silently claim to have changed on
 // every rebuild.
-export const PRIVACY_EFFECTIVE = "24 July 2026";
+export const PRIVACY_EFFECTIVE = "17 August 2026";
 
 export const PRIVACY_TITLE = "Privacy Policy";
 
@@ -67,7 +67,7 @@ export const PRIVACY_NETWORK_COLUMNS = ["Host", "Why it is contacted", "What it 
 export const PRIVACY_NETWORK_ROWS: string[][] = [
   [
     "registry.npmjs.org",
-    "Reads the latest published version of @nannier/canvas for the version pill in the header.",
+    "Reads the latest published version of @nannier/canvas for the version pill on the Home screen.",
     "Standard web request metadata (IP address, user agent). No app data is sent.",
   ],
   [
@@ -87,7 +87,7 @@ export const PRIVACY_SECTIONS: PrivacyItem[] = [
   {
     title: "Data stored on your device",
     description:
-      "On the web, your light or dark theme choice is saved in your browser's local storage so the site opens the way you left it. That value never leaves your device and is not readable by anyone else. The iOS and Android apps store no preferences at all, and the app writes no other files, cookies, or identifiers.",
+      "None. Your light or dark theme choice is held in memory for the current session only and resets the next time the app or site opens; nothing is written to disk. The app stores no preferences, files, cookies, local storage entries, or identifiers on any platform.",
   },
   {
     title: "Children",

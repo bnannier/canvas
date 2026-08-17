@@ -15,7 +15,7 @@ const PLATFORMS = [
 const PEERS = [
   ["react", ">=18", "The React runtime Canvas builds on."],
   ["react-native", ">=0.74", "Native iOS / Android host, and the module aliased to react-native-web on the web."],
-  ["react-native-svg", ">=13", "Vector icons and the chart primitives."],
+  ["react-native-svg", ">=14", "Vector icons and the chart primitives."],
 ];
 
 const WEB_BASELINE = [
@@ -28,7 +28,7 @@ const NOTES = [
   {
     title: "Why these versions",
     description:
-      "The floor is set by exactly two CSS features the token layer uses: oklch() colors and color-mix(). Both have been Baseline \"widely available\" across Chrome, Edge, Safari, and Firefox since May 2023, and the versions above are where each engine shipped them. Nothing else in canvas.css is modern: it is plain custom properties, one @media (prefers-reduced-motion) block, and a handful of rules. There is no build step, no @property, and no cascade layers, which is what used to push the Firefox floor to 128.",
+      "The floor is set by exactly two CSS features the token layer uses: oklch() colors and color-mix(). Both have been Baseline across Chrome, Edge, Safari, and Firefox since May 2023, and the versions above are where each engine shipped them. Nothing else in canvas.css is modern: it is plain custom properties, one @media (prefers-reduced-motion) block, and a handful of rules. There is no build step, no @property, and no cascade layers, which is what used to push the Firefox floor to 128.",
   },
   {
     title: "Native uses no CSS",
@@ -43,7 +43,7 @@ const NOTES = [
   {
     title: "Accessibility and motion",
     description:
-      "Reduced-motion and other accessibility preferences are handled at the platform layer (React Native on native, react-native-web in the browser), not through bundled CSS pattern files.",
+      "Components handle reduced motion at the platform layer: they read the OS preference through AccessibilityInfo (React Native on native, react-native-web in the browser) and drop non-essential animation. The token layer's one contribution is the @media (prefers-reduced-motion) block that zeroes the --duration-* variables, so custom CSS written against the motion tokens quiets down with the same preference.",
   },
 ];
 

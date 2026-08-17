@@ -11,7 +11,7 @@ import { geist } from "../../ui/fonts";
 
 // One row per re-exported primitive: the name (links to its reference page), the
 // react-native component it IS, and what its style object controls.
-const PRIproprietaryIVES = [
+const PRIMITIVES = [
   { name: "View", wraps: "View", to: "/components/view", styles: "The box: layout, background, border, radius. A flex container by default." },
   { name: "Text", wraps: "Text", to: "/components/text", styles: "The text run: color, fontSize, fontWeight, textAlign." },
   { name: "Pressable", wraps: "Pressable", to: "/components/pressable", styles: "A pressable surface; its style accepts ({ pressed }) => ... for press feedback." },
@@ -104,7 +104,7 @@ function PrimitivesTable() {
     <DocsSurface bordered>
       <DataTable
         columns={["Primitive", "Is (react-native)", "style controls"]}
-        rows={PRIproprietaryIVES.map((p) => [
+        rows={PRIMITIVES.map((p) => [
           <Text
             key="name"
             onPress={() => router.push(p.to as never)}
@@ -159,7 +159,9 @@ export default function RnPrimitivesScreen() {
             <InlineCode>Text</InlineCode>, <InlineCode>Pressable</InlineCode>, <InlineCode>TextInput</InlineCode>,{" "}
             <InlineCode>ScrollView</InlineCode>. They are react-native's own
             components, re-exported for a single import alongside the components and helpers; importing them from{" "}
-            <InlineCode>react-native</InlineCode> is equivalent. Each name below links to its full reference page.
+            <InlineCode>react-native</InlineCode> is equivalent. (<InlineCode>Image</InlineCode> is not among them: it is a Canvas
+            atom that wraps RN's Image with boolean fit props, so it lives with the components.) Each name below links to its full
+            reference page.
           </P>
           <PrimitivesTable />
         </Section>
@@ -232,8 +234,9 @@ export default function RnPrimitivesScreen() {
           <P muted>
             For any RN component Canvas does not ship, build the style object from tokens yourself and pass it as{" "}
             <InlineCode>style</InlineCode>. New visual variation belongs on a component's boolean props, not on new
-            primitives; a component also takes a <InlineCode>style</InlineCode> prop, applied last, for layout
-            composition (a margin, a width) without restyling it.
+            primitives; where a component takes a <InlineCode>style</InlineCode> prop it is outer layout composition only
+            (a width, a flex within a parent), never a restyle or re-spacing hook. Arrangement belongs to the{" "}
+            <InlineCode>Row</InlineCode> / <InlineCode>Column</InlineCode> layout atoms.
           </P>
           <CodeBlock code={ESCAPE_CODE} />
         </Section>
