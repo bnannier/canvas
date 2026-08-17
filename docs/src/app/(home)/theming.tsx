@@ -14,10 +14,10 @@ import { useDocsTheme } from "../../theme/docs-theme";
 const NATIVE_PROVIDER = `import { ThemeProvider } from "@nannier/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
-// pass scheme to force one, and the glass boolean for the glass material.
+// pass the dark / light boolean to force a scheme, and glass for the material.
 export function App() {
   return (
-    <ThemeProvider scheme="dark" glass>
+    <ThemeProvider dark glass>
       <Screens />
     </ThemeProvider>
   );
@@ -77,7 +77,7 @@ setDensity("regular");   // persists it, and removes the attribute
 // No shipped CSS reads data-density. Store the app-wide preference here, then
 // map it to component booleans (compact / comfortable) in your own code.`;
 const COMBINING = `// One provider carries scheme and surface; density rides each component.
-<ThemeProvider scheme="dark" glass>
+<ThemeProvider dark glass>
   <Card compact>...</Card>
 </ThemeProvider>`;
 const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@nannier/canvas";
@@ -110,8 +110,10 @@ export default function ThemingScreen() {
         <Section title="Native (ThemeProvider)">
           <P>
             On iOS and Android, wrap the app once in <InlineCode>ThemeProvider</InlineCode>. It follows the OS appearance by
-            default; pass <InlineCode>scheme</InlineCode> (<InlineCode>"light"</InlineCode> or <InlineCode>"dark"</InlineCode>) to
-            force one, and the <InlineCode>glass</InlineCode> boolean for the glass material. Like every Canvas axis it is a flat boolean: <InlineCode>glass</InlineCode> or <InlineCode>solid</InlineCode>, omit both for the platform default. No CSS and no <InlineCode>{"<html>"}</InlineCode>{" "}
+            default; force a scheme with the <InlineCode>dark</InlineCode> / <InlineCode>light</InlineCode> boolean, and the
+            material with <InlineCode>glass</InlineCode> / <InlineCode>solid</InlineCode>. Both axes are flat booleans like every
+            Canvas axis: pass at most one per axis, omit both for the default (the OS appearance, the platform material). No CSS
+            and no <InlineCode>{"<html>"}</InlineCode>{" "}
             attributes are involved on native.
           </P>
           <CodeBlock code={NATIVE_PROVIDER} />
@@ -125,7 +127,7 @@ export default function ThemingScreen() {
           <Callout label="Server rendering (SSR/SSG)">
             When the app server-renders (Next.js and the like) and the client scheme can differ from the server default (a stored
             preference, the OS), also pass <InlineCode>ssrScheme</InlineCode> with the scheme the server resolves. The provider
-            repeats it for the hydration render so the HTML matches, then applies <InlineCode>scheme</InlineCode> after mount.
+            repeats it for the hydration render so the HTML matches, then applies the requested scheme after mount.
             Without it React keeps the server&apos;s inline colors on elements that never re-render, leaving components stuck in
             the server&apos;s scheme.
           </Callout>
@@ -138,8 +140,9 @@ export default function ThemingScreen() {
             Light mode is the default. On the web, dark mode is the <InlineCode>dark</InlineCode> class on <InlineCode>{"<html>"}</InlineCode>,
             the one attribute the shipped CSS reads for theming; the helpers toggle it and the token layer flips every color token for
             anything styled with the CSS variables. Mirror the class into <InlineCode>ThemeProvider</InlineCode>&apos;s{" "}
-            <InlineCode>scheme</InlineCode> so the components follow (the Integration page shows the hook). (On native, pass{" "}
-            <InlineCode>scheme</InlineCode> to <InlineCode>ThemeProvider</InlineCode> instead.)
+            <InlineCode>scheme</InlineCode> so the components follow (the Integration page shows the hook; the value form exists
+            exactly for a held value like that). (On native, pass the{" "}
+            <InlineCode>dark</InlineCode> / <InlineCode>light</InlineCode> boolean to <InlineCode>ThemeProvider</InlineCode> instead.)
           </P>
           <CodeBlock code={DARK_TOGGLE} />
           <View style={{ flexDirection: "row" }}>

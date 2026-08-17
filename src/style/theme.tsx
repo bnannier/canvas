@@ -65,7 +65,19 @@ const FALLBACK: ThemeValue = {
 };
 
 export interface ThemeProviderProps {
-  /** Force a color scheme. Omit to follow the OS appearance. */
+  // Scheme axis (pick one; omit both to follow the OS appearance). The color
+  // scheme spelled like every other Canvas axis: the prop name is the value.
+  // `dark` wins when both are passed.
+  /** Force the dark color scheme. */
+  dark?: boolean;
+  /** Force the light color scheme. */
+  light?: boolean;
+  /**
+   * Legacy value form of the scheme axis ("light" | "dark"), kept for
+   * back-compat and for config-driven code that already holds a `ColorScheme`
+   * value (a stored preference, an <html> hook). The boolean axis above wins
+   * when both are passed.
+   */
   scheme?: ColorScheme;
   /**
    * The scheme the SERVER rendered, for SSR/SSG apps (Next.js and the like)
@@ -75,8 +87,9 @@ export interface ThemeProviderProps {
    * HTML, React logs a mismatch and keeps the server's colors on any element
    * that never re-renders again: components stay stuck in the server's scheme.
    * With `ssrScheme` set, the provider renders it on the server AND for the
-   * hydration render (matching the server HTML exactly), then applies `scheme`
-   * right after mount; that switch re-renders every consumer, which writes the
+   * hydration render (matching the server HTML exactly), then applies the
+   * requested scheme (the boolean axis or the legacy `scheme` prop) right
+   * after mount; that switch re-renders every consumer, which writes the
    * real colors to the DOM. Pass the same value the server resolves (e.g. the
    * next-themes `defaultTheme`). Omit in client-only apps and on native.
    */
@@ -116,7 +129,7 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
-export function ThemeProvider({ scheme, ssrScheme, glass, solid, surface, tokens, children }: ThemeProviderProps) {
+export function ThemeProvider({ dark, light, scheme, ssrScheme, glass, solid, surface, tokens, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
@@ -132,8 +145,10 @@ export function ThemeProvider({ scheme, ssrScheme, glass, solid, surface, tokens
   useEffect(() => {
     if (!hydrated) setHydrated(true);
   }, [hydrated]);
+  // Axis first-match (dark over light), then the legacy value form, then the OS
+  // appearance. Mirrors the surface axis below: the prop name is the value.
   const active: ColorScheme = hydrated
-    ? (scheme ?? (system === "dark" ? "dark" : "light"))
+    ? (dark ? "dark" : light ? "light" : (scheme ?? (system === "dark" ? "dark" : "light")))
     : (ssrScheme as ColorScheme);
   // Axis first-match (glass over solid), then the legacy value form, then the
   // platform default. Mirrors every component axis: the prop name is the value.
