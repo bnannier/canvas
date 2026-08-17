@@ -72,6 +72,20 @@ Floating menus triggered by a button: actions, options, navigation.
 />
 ```
 
+### Custom trigger
+
+```tsx
+<Dropdown
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings" },
+    { label: "Log out", icon: "logOut", separatorBefore: true }
+  ]}
+>
+  <Avatar name="Rachel Chen" />
+</Dropdown>
+```
+
 ## Do & Don't
 
 ### Trigger

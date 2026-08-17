@@ -52,6 +52,23 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 />
 ```
 
+### Inline
+
+```tsx
+<DescriptionList
+  card
+  inline
+  divided
+  title="Subscription"
+  items={[
+    { term: "Status", value: "Active", status: true },
+    { term: "Seats", value: "12 of 20" },
+    { term: "Renews", value: "Mar 1, 2026" }
+  ]}
+  style={{ maxWidth: 360 }}
+/>
+```
+
 ### Rich values
 
 A row's value can compose real atoms: `status`/`badge` render Badges, `avatars` renders an overlapping AvatarGroup (`overflow` folds the rest into its "+N" chip), and `copyValue` appends a ghost Copy button that hands the string to `onCopy` (the line below reports the press; wire your clipboard there).

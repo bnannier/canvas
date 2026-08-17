@@ -46,6 +46,18 @@ $ npm run dev`}
 />
 ```
 
+### Terminal label
+
+```tsx
+<CodeBlock
+  terminal
+  copy
+  filename="deploy.sh"
+  code={`$ ./deploy.sh --stage production
+Build complete in 12s`}
+/>
+```
+
 ### Numbered
 
 ```tsx

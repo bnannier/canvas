@@ -6,9 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { Badge, BadgeGroup } = scope;
   return (
 <BadgeGroup>
-  <Badge secondary>employee</Badge>
-  <Badge secondary>engineering</Badge>
   <Badge status success>active</Badge>
+  <Badge status warning>degraded</Badge>
+  <Badge status error>failed</Badge>
+  <Badge status info>syncing</Badge>
+  <Badge status neutral>archived</Badge>
 </BadgeGroup>
   );
 }

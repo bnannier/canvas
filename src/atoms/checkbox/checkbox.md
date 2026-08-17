@@ -70,6 +70,16 @@ controlled wiring; in an app that state lives in your own component.)
 </Checkbox>
 ```
 
+### Sizes
+
+```tsx
+<Column snug>
+  <Checkbox small defaultChecked>Small</Checkbox>
+  <Checkbox defaultChecked>Default</Checkbox>
+  <Checkbox large defaultChecked>Large</Checkbox>
+</Column>
+```
+
 ## Do & Don't
 
 ### Unchecked

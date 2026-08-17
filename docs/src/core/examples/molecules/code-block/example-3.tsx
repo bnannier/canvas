@@ -6,10 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  numbered
-  language="ts"
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
+  terminal
+  copy
+  filename="deploy.sh"
+  code={`$ ./deploy.sh --stage production
+Build complete in 12s`}
 />
   );
 }

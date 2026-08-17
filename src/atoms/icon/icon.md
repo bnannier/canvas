@@ -28,6 +28,18 @@ Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to th
 <Icon shield size={24} destructive />
 ```
 
+### Success
+
+```tsx
+<Icon circleCheck size={24} success />
+```
+
+### Warning
+
+```tsx
+<Icon alertTriangle size={24} warning />
+```
+
 ### Muted
 
 ```tsx

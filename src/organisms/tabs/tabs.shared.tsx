@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
@@ -29,7 +30,10 @@ import { type Variant } from "./tabs.styles.js";
 //     that hug their labels at the leading edge.
 //
 // Each tab may carry an optional count badge (the `{ label, badge }` item
-// shape), rendered as a small secondary pill after the label.
+// shape), rendered as a small secondary pill after the label. An item may also
+// be individually disabled (`{ label, disabled: true }`): its trigger renders
+// through the skin's dimmed disabled treatment, is not pressable, sits out of
+// the tab order, and the roving arrow keys skip over it.
 //
 // The active underline is drawn as an explicit indicator View under the trigger
 // rather than as a bottom border in markup (mirroring how ButtonGroup hand-rolls
@@ -76,8 +80,10 @@ export interface TabsSkin {
   countBadgeLabel: (t: ColorTokens, muted: boolean) => TextStyle;
 }
 
-/** A tab is either a bare label or a label paired with a count badge. */
-export type TabItem = string | { label: string; badge?: string };
+/** A tab is either a bare label or a label paired with a count badge and/or an
+ *  individual disabled flag (a disabled trigger dims, ignores presses, and is
+ *  skipped by keyboard navigation). */
+export type TabItem = string | { label: string; badge?: string; disabled?: boolean };
 
 export interface TabsProps {
   /** Triggers, left to right. Strings, or `{ label, badge }` for a count. */
@@ -124,6 +130,10 @@ function badgeOf(item: TabItem): string | undefined {
   return typeof item === "string" ? undefined : item.badge;
 }
 
+function disabledOf(item: TabItem): boolean {
+  return typeof item === "string" ? false : !!item.disabled;
+}
+
 // vertical: flex-col items-stretch gap-1; width w-full (block) or w-[180px].
 function verticalRail(block: boolean): ViewStyle {
   return {
@@ -167,9 +177,12 @@ export function createTabs(skin: TabsSkin) {
     // pair goes through a cast (RN's Pressable types omit onKeyDown), the same idiom
     // the Slider uses for its own keyboard handler.
     const itemRef = itemProps?.ref;
+    // A trigger without roving wiring is a disabled one (per-item or whole-group):
+    // pin it OUT of the tab order (focusable=false, tabIndex=-1) so keyboard focus
+    // can only ever land on an operable tab.
     const rovingProps = itemProps
       ? { focusable: itemProps.focusable, tabIndex: itemProps.tabIndex, onKeyDown: itemProps.onKeyDown }
-      : {};
+      : { focusable: false, tabIndex: -1 };
 
     if (variant === "vertical") {
       // Vertical rail: a full-width, left-aligned row; the active item is filled
@@ -285,16 +298,57 @@ export function createTabs(skin: TabsSkin) {
     // <Tabs /> switches tabs out of the box (the standard library contract).
     const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0, onSelect);
 
+    // Per-item disabled flags (the `{ label, disabled }` item shape).
+    const itemDisabled = tabs.map((item) => disabledOf(item));
+    const count = tabs.length;
+
+    // Own node refs beside the hook's: when an arrow lands on a disabled trigger
+    // the activation is redirected below, and the hook only knows how to focus
+    // the index the key targeted, so the redirect moves DOM focus itself.
+    const itemNodes = useRef<Array<{ focus?: () => void } | null>>([]);
+
+    // Activation with disabled-skipping: when a key lands on a disabled trigger,
+    // keep walking in the direction of travel (wrapping, like the hook) until an
+    // enabled trigger takes the activation; with every tab disabled the key is a
+    // no-op. Direction: a distance-1 hop is an arrow (its sign wins even at the
+    // ends); otherwise Home (index 0) walks forward and End walks backward.
+    const activateSkippingDisabled = (index: number) => {
+      const delta = (index - active + count) % count;
+      const dir: 1 | -1 = delta === 1 ? 1 : delta === count - 1 ? -1 : index === 0 ? 1 : -1;
+      for (let step = 0; step < count; step++) {
+        const i = (((index + dir * step) % count) + count) % count;
+        if (itemDisabled[i]) continue;
+        setActive(i);
+        if (i !== index) itemNodes.current[i]?.focus?.();
+        return;
+      }
+    };
+
     // Roving-focus keyboard navigation (the WAI-ARIA tablist pattern): the row is one
     // tab stop and the arrows move + activate. Horizontal for the underline/pills
     // rows, vertical for the rail; RTL flips the horizontal arrows on the web.
     const { getItemProps } = useRovingFocus({
-      count: tabs.length,
+      count,
       active,
-      onActivate: disabled ? () => {} : setActive,
+      onActivate: disabled ? () => {} : activateSkippingDisabled,
       orientation: variant === "vertical" ? "vertical" : "horizontal",
       rtl: isRTL(),
     });
+
+    // Roving wiring per trigger: none for a disabled one (the Trigger then pins
+    // itself out of the tab order); enabled ones get the hook's props with the
+    // ref teed into itemNodes so the redirect above can focus them.
+    const rovingFor = (i: number): RovingItemProps | undefined => {
+      if (disabled || itemDisabled[i]) return undefined;
+      const base = getItemProps(i);
+      return {
+        ...base,
+        ref: (node) => {
+          base.ref(node);
+          itemNodes.current[i] = node;
+        },
+      };
+    };
 
     if (variant === "vertical") {
       // A left-aligned column rail of stacked triggers; width hugs its content
@@ -309,9 +363,9 @@ export function createTabs(skin: TabsSkin) {
               selected={i === active}
               variant="vertical"
               block={props.block}
-              disabled={disabled}
+              disabled={disabled || itemDisabled[i]}
               onPress={() => setActive(i)}
-              itemProps={disabled ? undefined : getItemProps(i)}
+              itemProps={rovingFor(i)}
             />
           ))}
         </View>
@@ -329,9 +383,9 @@ export function createTabs(skin: TabsSkin) {
               selected={i === active}
               variant="pills"
               block={props.block}
-              disabled={disabled}
+              disabled={disabled || itemDisabled[i]}
               onPress={() => setActive(i)}
-              itemProps={disabled ? undefined : getItemProps(i)}
+              itemProps={rovingFor(i)}
             />
           ))}
         </View>
@@ -350,9 +404,9 @@ export function createTabs(skin: TabsSkin) {
             selected={i === active}
             variant="underline"
             block={props.block}
-            disabled={disabled}
+            disabled={disabled || itemDisabled[i]}
             onPress={() => setActive(i)}
-              itemProps={disabled ? undefined : getItemProps(i)}
+            itemProps={rovingFor(i)}
           />
         ))}
       </View>

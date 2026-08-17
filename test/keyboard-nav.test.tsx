@@ -40,6 +40,40 @@ describe("Tabs roving keyboard navigation", () => {
     fireEvent.keyDown(tabs()[0], { key: "End" });
     expect(selected()).toBe(2);
   });
+
+  it("skips a per-item disabled tab and keeps it out of the tab order", () => {
+    const { container } = ui(
+      <Tabs tabs={["One", { label: "Two", disabled: true }, "Three"]} defaultActive={0} />,
+    );
+    const tabs = () => [...container.querySelectorAll('[role="tab"]')];
+    const selected = () => tabs().findIndex((t) => t.getAttribute("aria-selected") === "true");
+    expect(selected()).toBe(0);
+    // The disabled trigger is never a tab stop.
+    expect(tabs()[1].getAttribute("tabindex")).toBe("-1");
+    // ArrowRight hops over the disabled middle tab.
+    fireEvent.keyDown(tabs()[0], { key: "ArrowRight" });
+    expect(selected()).toBe(2);
+    // ArrowLeft hops over it on the way back.
+    fireEvent.keyDown(tabs()[2], { key: "ArrowLeft" });
+    expect(selected()).toBe(0);
+  });
+
+  it("redirects Home/End off a disabled end tab to the nearest enabled one", () => {
+    const { container } = ui(
+      <Tabs
+        tabs={[{ label: "One", disabled: true }, "Two", "Three", { label: "Four", disabled: true }]}
+        defaultActive={1}
+      />,
+    );
+    const tabs = () => [...container.querySelectorAll('[role="tab"]')];
+    const selected = () => tabs().findIndex((t) => t.getAttribute("aria-selected") === "true");
+    // End targets the disabled last tab and walks back to the nearest enabled.
+    fireEvent.keyDown(tabs()[1], { key: "End" });
+    expect(selected()).toBe(2);
+    // Home targets the disabled first tab and walks forward to the nearest enabled.
+    fireEvent.keyDown(tabs()[2], { key: "Home" });
+    expect(selected()).toBe(1);
+  });
 });
 
 describe("RadioGroup roving keyboard navigation", () => {

@@ -20,6 +20,18 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
 <Badge status success>admin</Badge>
 ```
 
+### Status tones
+
+```tsx
+<BadgeGroup>
+  <Badge status success>active</Badge>
+  <Badge status warning>degraded</Badge>
+  <Badge status error>failed</Badge>
+  <Badge status info>syncing</Badge>
+  <Badge status neutral>archived</Badge>
+</BadgeGroup>
+```
+
 ### Group
 
 ```tsx

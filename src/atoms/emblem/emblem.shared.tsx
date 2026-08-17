@@ -13,7 +13,7 @@ import { type EmblemSkin } from "./emblem.styles.js";
 // with per-OS touches limited to the corner radius (Material rounds more), the iOS
 // continuous corner curve (the app-icon tile idiom), and the monogram label type.
 
-export type Tone = "primary" | "destructive" | "success" | "muted";
+export type Tone = "primary" | "destructive" | "success" | "warning" | "muted";
 export type EmblemSize = "small" | "default" | "large";
 
 export interface EmblemProps {
@@ -25,6 +25,7 @@ export interface EmblemProps {
   primary?: boolean;
   destructive?: boolean;
   success?: boolean;
+  warning?: boolean;
   muted?: boolean;
   // Size (pick one; default medium).
   small?: boolean;
@@ -42,6 +43,7 @@ function toneOf(p: EmblemProps): Tone {
   if (p.primary) return "primary";
   if (p.destructive) return "destructive";
   if (p.success) return "success";
+  if (p.warning) return "warning";
   return "muted";
 }
 
@@ -61,6 +63,8 @@ function tintBg(tokens: ColorTokens, tone: Tone): string {
       return alpha(tokens.destructive, 0.12);
     case "success":
       return alpha(tokens.success, 0.12);
+    case "warning":
+      return alpha(tokens.warning, 0.12);
     case "muted":
       return tokens.muted;
   }
@@ -71,6 +75,7 @@ const ICON_TINT: Record<Tone, Record<string, boolean>> = {
   primary: { primary: true },
   destructive: { destructive: true },
   success: { success: true },
+  warning: { warning: true },
   muted: { muted: true },
 };
 
@@ -83,6 +88,8 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
       return tokens.destructive;
     case "success":
       return tokens.success;
+    case "warning":
+      return tokens.warning;
     case "muted":
       return tokens["muted-foreground"];
   }

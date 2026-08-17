@@ -89,6 +89,65 @@ A data table rendered from column and row data, with sorting, row selection, pag
 />
 ```
 
+### Sparkline trend column
+
+```tsx
+<DataTable
+  columns={[
+    "Page",
+    { label: "7D", centered: true, width: 120, sortValue: (_cell, _row, i) => [96, 41, 78][i] },
+    { label: "Visits", numeric: true, sortValue: (cell) => Number(String(cell).replace(/[^0-9.]/g, "")) }
+  ]}
+  rows={[
+    ["/pricing", <Sparkline values={[52, 60, 55, 71, 68, 84, 96]} />, "12,480"],
+    ["/docs", <Sparkline values={[88, 74, 70, 66, 58, 49, 41]} destructive />, "8,102"],
+    ["/blog", <Sparkline values={[34, 42, 39, 51, 60, 66, 78]} success />, "5,914"]
+  ]}
+  bordered
+  sortable
+/>
+```
+
+### Avatar identity cells
+
+```tsx
+<DataTable
+  columns={[
+    { label: "Member", sortValue: (_cell, _row, i) => ["Alice Johnson", "Bob Smith", "Rachel Chen"][i] },
+    "Role",
+    { label: "Status", centered: true, width: 120 }
+  ]}
+  rows={[
+    [
+      <Row snug alignCenter>
+        <Avatar small name="Alice Johnson" />
+        <Typography small medium>Alice Johnson</Typography>
+      </Row>,
+      "Admin",
+      <Badge success>Active</Badge>
+    ],
+    [
+      <Row snug alignCenter>
+        <Avatar small name="Bob Smith" />
+        <Typography small medium>Bob Smith</Typography>
+      </Row>,
+      "Editor",
+      <Badge neutral>Invited</Badge>
+    ],
+    [
+      <Row snug alignCenter>
+        <Avatar small name="Rachel Chen" />
+        <Typography small medium>Rachel Chen</Typography>
+      </Row>,
+      "Admin",
+      <Badge success>Active</Badge>
+    ]
+  ]}
+  bordered
+  sortable
+/>
+```
+
 ### Striped
 
 ```tsx

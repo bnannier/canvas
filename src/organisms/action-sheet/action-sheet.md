@@ -70,6 +70,32 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 />
 ```
 
+### Controlled
+
+```tsx
+<Stateful initial={false}>
+  {(open, setOpen) => (
+    <Stateful initial="">
+      {(picked, setPicked) => (
+        <Column snug alignStart>
+          <Button outline onPress={() => setOpen(true)}>Share…</Button>
+          <ActionSheet
+            open={open}
+            onOpenChange={setOpen}
+            title="Share this document"
+            actions={[
+              { label: "Copy Link", onPress: () => setPicked("Copy Link") },
+              { label: "Send by Email", onPress: () => setPicked("Send by Email") },
+            ]}
+          />
+          <Typography muted>{picked === "" ? "Nothing picked yet" : `Picked ${picked}`}</Typography>
+        </Column>
+      )}
+    </Stateful>
+  )}
+</Stateful>
+```
+
 ## Do & Don't
 
 ### Right tool for the job

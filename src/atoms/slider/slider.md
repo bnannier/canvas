@@ -18,6 +18,12 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 <Slider showValue defaultValue={65} min={0} max={100}>Volume</Slider>
 ```
 
+### With description
+
+```tsx
+<Slider defaultValue={40} min={0} max={100} description="Applies to alert sounds.">Volume</Slider>
+```
+
 ### Small
 
 ```tsx

@@ -30,28 +30,65 @@
   /* Only M3 draws a darker active indicator; web/iOS keep the bottom edge the same hairline. */
   --p-field-underline-color:var(--input);
   --p-label-weight:500;--p-label-tracking:0px;
+  /* Floating label (style/floating-label.tsx, shared by Input/Autocomplete/Select/Textarea):
+     the label-above vs in-container-float switch. Web and iOS render the static label ABOVE
+     the field, so the float layer is display:none and no top padding is reserved. The floated
+     type (body-small 12/16, +0.4 tracking) is the kit's shared labelFloated value, identical
+     across the four field families. --p-label-float-placeholder is the native placeholder's
+     opacity while a resting in-container label owns the placeholder slot (1 = the label never
+     rests in the container here, so the placeholder stays). */
+  --p-label-above-display:block /* @kind other */;--p-label-float-display:none /* @kind other */;
+  --p-label-float-reserve:0px;--p-label-float-font:12px;--p-label-float-lh:16px;--p-label-float-tracking:0.4px;
+  --p-label-float-placeholder:1 /* @kind other */;
   /* Choice controls */
   --p-check-size:16px;--p-check-radius:3px;--p-check-border:1px;
   --p-switch-w:36px;--p-switch-h:20px;--p-switch-thumb-w:16px;--p-switch-thumb-h:16px;--p-switch-thumb-fill:var(--background);
+  /* Switch off state (switch.styles.ts: the on-track is always the brand primary; off is the platform's resting anatomy) */
+  --p-switch-off-track:var(--input);--p-switch-off-ring:none;--p-switch-thumb-inset:2px;
+  --p-switch-thumb-off-w:16px;--p-switch-thumb-off-h:16px;--p-switch-thumb-off-fill:var(--background);--p-switch-thumb-off-x:2px;
+  --p-switch-thumb-shadow:none;
   /* Pills and tiles */
   --p-badge-radius:6px;--p-badge-font:12px;--p-badge-weight:500;--p-badge-tracking:0px;
   --p-chip-radius:9999px;--p-chip-pad-x:8px;--p-chip-pad-y:1px;--p-chip-font:12px;--p-chip-gap:4px;
+  /* Chip glyphs (chip.styles.ts: 12px web/iOS remove glyph; the M3 selected checkmark shows on Android only) */
+  --p-chip-remove:12px;--p-chip-check-display:none /* @kind other */;--p-chip-check-size:18px;
   --p-avatar-square-radius:6px;
   /* Banners and overlays */
   --p-alert-radius:8px;--p-alert-tracking:0px;
   --p-overlay-radius:8px;--p-sheet-radius:12px;
+  /* Popover (popover.styles.tsx webSkin: 8px card, full 1px border, lg shadow, no beak) */
+  --p-popover-radius:8px;--p-popover-border:1px;--p-popover-shadow:0px 10px 15px rgba(0,0,0,0.1);--p-popover-beak-display:none /* @kind other */;
+  /* Spinner (spinner.styles.tsx webSkin: the ActivityIndicator arc ring; iOS swaps in the spoke ring) */
+  --p-spinner-arc-display:inline-block /* @kind other */;--p-spinner-spokes-display:none /* @kind other */;
   /* Tabs — underline rule, 2px brand indicator */
   --p-tab-track-bg:transparent;--p-tab-track-radius:0px;--p-tab-track-pad:0px;--p-tab-rule:1px;
   --p-tab-item-radius:0px;--p-tab-item-pad-x:16px;--p-tab-item-pad-y:10px;
   --p-tab-selected-bg:transparent;--p-tab-selected-shadow:none;
   --p-tab-indicator-h:2px;--p-tab-font:14px;--p-tab-lh:20px;
   --p-tab-label-selected:var(--foreground);
+  /* Tabs pills + vertical (tabs.styles.ts webSkin: muted radius-8 track with a raised white thumb; accent-filled rail) */
+  --p-tab-pill-track-radius:8px;--p-tab-pill-track-pad:4px;--p-tab-pill-gap:4px;
+  --p-tab-pill-radius:6px;--p-tab-pill-pad-x:12px;--p-tab-pill-pad-y:6px;
+  --p-tab-pill-selected-bg:var(--background);--p-tab-pill-selected-shadow:0px 1px 2px rgba(0,0,0,0.05);
+  --p-tab-pill-label:var(--muted-foreground);--p-tab-pill-selected-weight:500;
+  --p-tab-v-radius:6px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:8px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
+  --p-tab-v-weight:500;--p-tab-v-selected-weight:500;
+  --p-tab-v-selected-fill:var(--accent);--p-tab-v-selected-label:var(--accent-foreground);--p-tab-v-label:var(--muted-foreground);
   /* Sidebar (sidebar.styles.ts webSkin) */
   --p-side-w:240px;--p-side-w-collapsed:56px;--p-side-fill:var(--background) /* @kind other */;
   --p-side-header-h:56px;--p-side-header-pad:14px;--p-side-body-pad:8px;--p-side-body-gap:16px;
   --p-side-row-radius:6px;--p-side-row-pad-x:12px;--p-side-row-pad-y:8px;--p-side-row-gap:12px;
   --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:16px;
   --p-side-title:12px;--p-side-title-lh:16px;--p-side-title-weight:500;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:0.8px;
+  /* Sidebar sections + collapse chrome (sidebar.styles.ts webSkin: group gap 4, 12/4 title inset,
+     11px Radix right caret spinning 0 to 90deg, 4px active dot, 14px chevron-left toggle).
+     One disclosure glyph (chevron-right) rotated per platform: web/iOS rest at 0deg (the right
+     caret) opening to 90deg; Android rest at 90deg (the M3 expand_more, pointing down) opening
+     to 270deg, the same 180deg spin. */
+  --p-side-group-gap:4px;--p-side-title-pad-x:12px;--p-side-title-pad-y:4px;
+  --p-side-sechdr-gap:4px;--p-side-sechdr-pad-y:6px;--p-side-chevron:11px;--p-side-dot:4px;
+  --p-side-chevron-rest:0deg /* @kind other */;--p-side-chevron-open:90deg /* @kind other */;
+  --p-side-toggle:14px;--p-side-toggle-pad:4px;--p-side-toggle-radius:6px;
   /* Navbar (navbars.styles.ts webSkin) */
   --p-nav-h:56px;--p-nav-pad-x:16px;--p-nav-fill:var(--background) /* @kind other */;--p-nav-rule:1px;
   --p-nav-brand:16px;--p-nav-brand-lh:24px;--p-nav-brand-weight:600;
@@ -70,8 +107,8 @@
   /* Stats — flat inset surface, 18pt inset, SF tracking */
   --p-stat-radius:12px;--p-stat-pad:18px;--p-stat-shadow:none;--p-stat-gap:12px;
   --p-stat-label-tracking:-0.15px;--p-stat-value-lh:30px;--p-stat-value-tracking:-0.5px;
-  /* Breadcrumb — SF tracking at 14pt, semibold current page */
-  --p-crumb-tracking:-0.15px;--p-crumb-sep-tracking:-0.15px;--p-crumb-current-weight:600;
+  /* Breadcrumb (breadcrumb.styles.ts webSkin: no tracking, font-medium current page) */
+  --p-crumb-tracking:0px;--p-crumb-sep-tracking:0px;--p-crumb-current-weight:500;
   /* EmptyState — 12pt continuous card, SF tracking */
   --p-empty-radius:12px;--p-empty-title-tracking:-0.31px;--p-empty-desc-tracking:-0.15px;
   --p-min-target:44px;
@@ -121,6 +158,7 @@
   --p-toast-msg:14px;--p-toast-msg-lh:20px;--p-toast-msg-weight:500;--p-toast-msg-tracking:0px;
   --p-toast-desc:13px;--p-toast-desc-lh:18px;--p-toast-desc-color:var(--muted-foreground);--p-toast-desc-tracking:0px;
   --p-toast-gap:12px;--p-toast-pad-x:16px;
+  --p-toast-glyph:flex;--p-toast-glyph-size:18px;
   /* EmptyState (empty-state.styles.ts webSkin) */
   --p-empty-pad-x:24px;--p-empty-pad-y:32px;
   --p-empty-title:16px;--p-empty-title-lh:24px;--p-empty-title-weight:600;
@@ -178,7 +216,7 @@
   --p-dialog-title:16px;--p-dialog-title-lh:24px;--p-dialog-title-weight:600;
   --p-dialog-body:14px;--p-dialog-body-lh:20px;--p-dialog-body-gap:8px;--p-dialog-footer-gap:8px;--p-dialog-footer-top:24px;
   --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:8px 16px;--p-alert-btn-radius:6px;
-  --p-alert-btn-font:14px;--p-alert-btn-lh:20px;--p-alert-btn-weight:500;
+  --p-alert-btn-font:14px;--p-alert-btn-lh:20px;--p-alert-btn-weight:500;--p-alert-btn-tracking:0px;
   --p-alert-cancel-border:1px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--foreground);
   --p-alert-confirm-fill:var(--primary);--p-alert-confirm-label:var(--primary-foreground);
   --p-alert-confirm-destructive-fill:var(--destructive);--p-alert-confirm-destructive-label:var(--destructive-foreground);
@@ -218,8 +256,9 @@
   --p-acc-desc:12px;--p-acc-desc-lh:16px;--p-acc-desc-tracking:0px;
   --p-acc-chevron:16px;--p-acc-chevron-glyph:"chevron-down" /* @kind other */;--p-acc-chevron-spin:180deg /* @kind other */;
   --p-acc-content:14px;--p-acc-content-lh:22px;--p-acc-content-tracking:0px;--p-acc-content-pad-top:0px;--p-acc-content-pad-bottom:16px;
-  /* Steps (steps.styles.ts webSkin) */
+  /* Steps (steps.styles.ts webSkin; the progress layout's 6px muted track and 500-weight caption) */
   --p-steps-current-fill:transparent;--p-steps-connector-radius:0px;--p-steps-desc:12px;--p-steps-desc-lh:16px;
+  --p-steps-track-h:6px;--p-steps-caption-weight:500;
   /* Pagination (pagination.styles.ts webSkin) */
   --p-page-h-small:32px;--p-page-h-default:36px;--p-page-h-large:40px;
   --p-page-pad-small:8px;--p-page-pad-default:10px;--p-page-pad-large:12px;
@@ -292,6 +331,14 @@
   --p-board-card-radius:6px;
   --p-board-card-title-font:14px;--p-board-card-title-lh:20px;--p-board-card-title-weight:500;
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
+
+  /* DragHandle (drag-drop.styles.ts webSkin: compact 28px grip, 16px gripVertical glyph) */
+  --p-drag-handle-size:28px;--p-drag-handle-radius:6px;--p-drag-handle-icon:16px;
+
+  /* Swatch (swatch.styles.ts webSkin) */
+  --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
+  --p-swatch-radius-small:6px;--p-swatch-radius-default:8px;--p-swatch-radius-large:10px;
+  --p-swatch-name-tracking:0px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
 }
 
 /* iOS 26 / HIG: capsules, semibold SF-scale labels, flat grouped surfaces,
@@ -310,18 +357,35 @@
   --p-label-weight:600;--p-label-tracking:-0.15px;
   --p-check-size:20px;--p-check-radius:5px;--p-check-border:1px;
   --p-switch-w:46px;--p-switch-h:28px;--p-switch-thumb-w:28px;--p-switch-thumb-h:24px;--p-switch-thumb-fill:#ffffff;
+  /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
+  --p-switch-off-track:#c7c7cc;--p-switch-thumb-off-w:28px;--p-switch-thumb-off-h:24px;--p-switch-thumb-off-fill:#ffffff;
+  --p-switch-thumb-shadow:0px 1px 2px rgba(0,0,0,0.2);
   --p-badge-weight:600;
   --p-avatar-square-radius:10px;
   --p-alert-radius:10px;--p-alert-tracking:-0.15px;
+  /* Breadcrumb (breadcrumb.styles.ts iosSkin: SF tracking at 14pt, semibold current page) */
+  --p-crumb-tracking:-0.15px;--p-crumb-sep-tracking:-0.15px;--p-crumb-current-weight:600;
   --p-overlay-radius:12px;--p-sheet-radius:12px;
+  /* Popover (iOS 27, Liquid Glass): a largely rounded ~26pt borderless card with the anchor beak */
+  --p-popover-radius:26px;--p-popover-border:0px;--p-popover-beak-display:block /* @kind other */;
+  /* Spinner (iOS): the UIActivityIndicatorView ring of fading spokes */
+  --p-spinner-arc-display:none /* @kind other */;--p-spinner-spokes-display:inline-block /* @kind other */;
   --p-tab-track-bg:var(--muted);--p-tab-track-radius:9999px;--p-tab-track-pad:3px;--p-tab-rule:0px;
   --p-tab-item-radius:9999px;--p-tab-item-pad-x:14px;--p-tab-item-pad-y:7px;
   --p-tab-selected-bg:var(--background);--p-tab-selected-shadow:0px 1px 2px rgba(0,0,0,0.18);
   --p-tab-indicator-h:0px;--p-tab-font:13px;--p-tab-lh:18px;
+  /* Tabs pills + vertical (iOS 27): capsule segmented track with the raised thumb; 8pt 15pt rail */
+  --p-tab-pill-track-radius:9999px;--p-tab-pill-track-pad:3px;--p-tab-pill-gap:0px;
+  --p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;
+  --p-tab-pill-selected-shadow:0px 1px 2px rgba(0,0,0,0.18);--p-tab-pill-label:var(--foreground);--p-tab-pill-selected-weight:600;
+  --p-tab-v-radius:8px;--p-tab-v-pad-y:9px;--p-tab-v-font:15px;--p-tab-v-weight:400;--p-tab-v-selected-weight:600;--p-tab-v-label:var(--foreground);
   /* Sidebar — iOS 27: capsule rows, primary-tinted icons, sentence-case headers */
   --p-side-row-radius:9999px;--p-side-row-gap:10px;--p-side-label:15px;--p-side-label-lh:20px;--p-side-icon:17px;
   --p-side-title:13px;--p-side-title-lh:18px;--p-side-title-weight:600;--p-side-title-transform:none /* @kind other */;--p-side-title-tracking:0px;
   --p-side-active-label:var(--accent-foreground);--p-side-label-color:var(--foreground);--p-side-icon-color:var(--primary);--p-side-icon-active:var(--primary);
+  /* Sidebar sections + collapse chrome (iOS): tight 2pt groups, capsule header at 12/4, 13pt HIG caret, 6pt dot */
+  --p-side-group-gap:2px;--p-side-sechdr-gap:6px;--p-side-sechdr-pad-y:4px;
+  --p-side-chevron:13px;--p-side-dot:6px;--p-side-toggle:15px;
   --p-nav-link-fill:color-mix(in oklab, var(--secondary) 90%, transparent);--p-nav-link-label:var(--primary);
   --p-nav-link-active-fill:var(--primary);--p-nav-link-active-label:var(--primary-foreground);
   /* Navbar — iOS 26: slim 44pt bar, 17pt SF title, circular tinted bar buttons */
@@ -397,7 +461,7 @@
   --p-acc-chevron:15px;--p-acc-chevron-glyph:"chevron-right" /* @kind other */;--p-acc-chevron-spin:90deg /* @kind other */;
   --p-acc-content:15px;--p-acc-content-lh:21px;--p-acc-content-tracking:-0.24px;--p-acc-content-pad-top:2px;--p-acc-content-pad-bottom:14px;
   /* Steps — iOS: rounded connector caps, larger progress caption */
-  --p-steps-connector-radius:9999px;--p-steps-desc:13px;--p-steps-desc-lh:18px;
+  --p-steps-connector-radius:9999px;--p-steps-desc:13px;--p-steps-desc-lh:18px;--p-steps-caption-weight:600;
   /* Pagination — HIG page controls: 8pt pills, hollow rest, filled current */
   --p-page-radius:8px;--p-page-border:0px;--p-page-weight:600;--p-page-rest-fill:transparent;
   /* ActionSheet — iOS 27: one 34pt continuous container of detached capsules */
@@ -484,6 +548,7 @@
   --p-list-header-pad-x:16px;--p-list-header-title:15px;--p-list-header-title-lh:20px;--p-list-header-title-tracking:-0.24px;
   /* Toast — HIG floating banner: 16pt continuous capsule, 15pt semibold message */
   --p-toast-radius:16px;--p-toast-msg:15px;--p-toast-msg-lh:20px;--p-toast-msg-weight:600;--p-toast-msg-tracking:-0.24px;--p-toast-desc-tracking:-0.08px;
+  --p-toast-glyph-size:19px;
 
   /* Board (board.styles.ts iosSkin: 26pt continuous muted wells, SF type) */
   --p-board-lane-gap:16px;--p-board-lane-gap-compact:12px;
@@ -494,6 +559,14 @@
   --p-board-card-radius:8px;
   --p-board-card-title-font:15px;--p-board-card-title-lh:20px;--p-board-card-title-weight:600;
   --p-board-card-desc-font:13px;--p-board-card-desc-lh:18px;
+
+  /* DragHandle (drag-drop.styles.ts iosSkin: 32pt grip, visually compact inside the 44pt row target; 18px glyph) */
+  --p-drag-handle-size:32px;--p-drag-handle-radius:8px;--p-drag-handle-icon:18px;
+
+  /* Swatch (swatch.styles.ts iosSkin: continuous-curve noted, not faked; HIG name tracking) */
+  --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
+  --p-swatch-radius-small:6px;--p-swatch-radius-default:8px;--p-swatch-radius-large:10px;
+  --p-swatch-name-tracking:-0.08px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
 }
 
 /* Material 3: stadium buttons, elevated cards with no visible outline, filled
@@ -513,20 +586,47 @@
   --p-field-fill:var(--muted);--p-field-pad-x:16px;--p-field-font:16px;--p-field-lh:24px;
   --p-field-border-width:0px;--p-field-underline:1px;--p-field-underline-color:var(--muted-foreground);
   --p-label-weight:500;--p-label-tracking:0.25px;
+  /* Floating label (input/select/autocomplete/textarea androidSkin: floatingLabel true,
+     labelReserve paddingTop 24): Android floats the M3 in-container label. It rests inside
+     the filled box where the placeholder sits (the native placeholder yields, opacity 0)
+     and floats up to body-small above the value once the field is open, focused, or
+     filled; the field reserves 24px of top padding so the value clears the floated label. */
+  --p-label-above-display:none /* @kind other */;--p-label-float-display:block /* @kind other */;
+  --p-label-float-reserve:24px;--p-label-float-placeholder:0 /* @kind other */;
   --p-check-size:18px;--p-check-radius:2px;--p-check-border:2px;
   --p-switch-w:52px;--p-switch-h:32px;--p-switch-thumb-w:24px;--p-switch-thumb-h:24px;--p-switch-thumb-fill:#ffffff;
+  /* Switch (switch.styles.ts androidSkin, M3 unselected anatomy): a 2dp outlined muted track with a small centered 16dp muted-foreground dot handle, no fill */
+  --p-switch-off-track:var(--muted);--p-switch-off-ring:inset 0 0 0 2px var(--border);--p-switch-thumb-inset:4px;
+  --p-switch-thumb-off-fill:var(--muted-foreground);--p-switch-thumb-off-x:6px;
   --p-badge-radius:8px;--p-badge-font:11px;--p-badge-tracking:0.5px;
   --p-chip-radius:8px;--p-chip-pad-x:16px;--p-chip-pad-y:6px;--p-chip-font:14px;--p-chip-gap:8px;
+  /* Chip (M3): 18dp remove glyph; the selected filter chip leads with an 18dp check and drops its
+     outline (the border-color token resolves only here; web/iOS fall back to the tone border). */
+  --p-chip-remove:18px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-selected-border-color:transparent;
   --p-avatar-square-radius:12px;
   --p-alert-radius:12px;--p-alert-tracking:0.25px;
   --p-overlay-radius:12px;--p-sheet-radius:12px;
+  /* Popover (M3, no native popover): a 12dp borderless card on md elevation, no beak */
+  --p-popover-radius:12px;--p-popover-border:0px;--p-popover-shadow:0px 4px 6px rgba(0,0,0,0.1);
   --p-tab-item-pad-y:12px;--p-tab-indicator-h:3px;--p-tab-label-selected:var(--primary);
+  /* Tabs pills + vertical (M3): capsule tonal primary-12% fills with brand labels, flat (no thumb shadow) */
+  --p-tab-pill-track-radius:9999px;--p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;
+  --p-tab-pill-selected-bg:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-pill-selected-shadow:none;
+  --p-tab-v-radius:9999px;--p-tab-v-pad-x:14px;--p-tab-v-pad-y:9px;
+  --p-tab-v-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-v-selected-label:var(--primary);
   /* Sidebar — M3 navigation drawer: tonal pills, 72dp rail */
   --p-side-w-collapsed:72px;
   --p-side-row-radius:9999px;--p-side-row-pad-x:16px;--p-side-row-pad-y:16px;--p-side-row-gap:12px;
   --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:18px;--p-side-body-pad:12px;
   --p-side-title:14px;--p-side-title-lh:20px;--p-side-title-weight:500;--p-side-title-transform:none /* @kind other */;--p-side-title-tracking:0px;
   --p-side-active-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-side-active-label:var(--primary);--p-side-label-color:var(--foreground);--p-side-icon-active:var(--primary);
+  /* Sidebar (M3): inactive glyphs keep the default foreground tint (androidSkin.iconTint), the M3
+     drawer 16/6 section-title inset, 2dp groups, 18dp expand_more (rest 90deg, open 270deg), 6dp dot */
+  --p-side-icon-color:var(--foreground);--p-side-group-gap:2px;
+  --p-side-title-pad-x:16px;--p-side-title-pad-y:6px;--p-side-sechdr-gap:6px;
+  --p-side-chevron:18px;--p-side-dot:6px;
+  --p-side-chevron-rest:90deg /* @kind other */;--p-side-chevron-open:270deg /* @kind other */;
+  --p-side-toggle:18px;--p-side-toggle-pad:8px;--p-side-toggle-radius:9999px;
   --p-nav-link-active-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-nav-link-active-label:var(--primary);
   /* Navbar — M3 small top app bar: 64dp, 22sp leading title, no hairline */
   --p-nav-h:64px;--p-nav-rule:0px;--p-nav-brand:22px;--p-nav-brand-lh:28px;--p-nav-brand-weight:500;
@@ -597,7 +697,7 @@
   --p-acc-chevron:24px;
   --p-acc-content:14px;--p-acc-content-lh:20px;--p-acc-content-tracking:0.25px;--p-acc-content-pad-bottom:16px;
   /* Steps — M3: flat connector caps, a 12% tonal backing on the current step */
-  --p-steps-current-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-steps-connector-radius:0px;
+  --p-steps-current-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-steps-connector-radius:0px;--p-steps-track-h:4px;
   /* Pagination — M3: flat cells, a 12% tonal active fill with a brand label */
   --p-page-radius:8px;--p-page-border:0px;--p-page-rest-fill:transparent;
   --p-page-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-page-selected-label:var(--primary);
@@ -620,7 +720,7 @@
   --p-dialog-scrim:rgba(0,0,0,0.32);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:0px 10px 15px rgba(0,0,0,0.1);
   --p-dialog-title:22px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
   --p-dialog-body-gap:12px;--p-dialog-footer-top:24px;
-  --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:20px;
+  --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:20px;--p-alert-btn-tracking:0.1px;
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--primary);
   --p-alert-confirm-fill:transparent;--p-alert-confirm-label:var(--primary);
   --p-alert-confirm-destructive-fill:transparent;--p-alert-confirm-destructive-label:var(--destructive);
@@ -700,10 +800,12 @@
   --p-list-name:16px;--p-list-name-lh:24px;--p-list-name-weight:400;--p-list-name-tracking:0.5px;
   --p-list-sub:14px;--p-list-sub-lh:20px;--p-list-sub-tracking:0.25px;
   --p-list-header-pad-x:16px;--p-list-header-title:16px;--p-list-header-title-lh:24px;--p-list-header-title-weight:500;--p-list-header-title-tracking:0.15px;
-  /* Toast — M3 snackbar: 4dp bar on the INVERSE surface, 14sp regular body */
+  /* Toast — M3 snackbar: 4dp bar on the INVERSE surface, 14sp regular body; the M3
+     snackbar anatomy has no leading icon slot, so the auto intent glyph hides */
   --p-toast-radius:4px;--p-toast-fill:var(--foreground);--p-toast-label:var(--background);
   --p-toast-msg:14px;--p-toast-msg-lh:20px;--p-toast-msg-weight:400;--p-toast-msg-tracking:0px;
   --p-toast-desc-color:color-mix(in oklab, var(--background) 70%, transparent);--p-toast-gap:8px;
+  --p-toast-glyph:none;
   /* EmptyState — M3 medium shape, title-medium */
   --p-empty-radius:12px;--p-empty-title-weight:500;--p-empty-title-tracking:0.15px;--p-empty-desc-tracking:0.25px;
   --p-min-target:48px;
@@ -717,8 +819,17 @@
   --p-board-card-radius:8px;
   --p-board-card-title-font:14px;--p-board-card-title-lh:20px;--p-board-card-title-weight:500;
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
+
+  /* DragHandle (drag-drop.styles.ts androidSkin: 40dp circular grip, the M3 min touch target; 20px glyph) */
+  --p-drag-handle-size:40px;--p-drag-handle-radius:20px;--p-drag-handle-icon:20px;
+
+  /* Swatch (swatch.styles.ts androidSkin: M3 container ladder + label tracking) */
+  --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
+  --p-swatch-radius-small:8px;--p-swatch-radius-default:12px;--p-swatch-radius-large:16px;
+  --p-swatch-name-tracking:0.1px;--p-swatch-mono-tracking:0.1px;--p-swatch-value-weight:500;
 }
 
-/* The iOS drawer scrim is the one skin value that resolves PER SCHEME upstream
-   (scrimOpacity(scheme)): 0.2 in light, 0.48 in dark. */
-.dark [data-platform="ios"],[data-platform="ios"].dark{--p-drawer-scrim:rgba(0,0,0,0.48)}
+/* iOS skin values that resolve PER SCHEME upstream: the drawer scrim
+   (scrimOpacity(scheme): 0.2 light, 0.48 dark) and the switch off-track
+   (switch.styles.ts IOS_OFF_TRACK, systemGray3: #c7c7cc light, #48484a dark). */
+.dark [data-platform="ios"],[data-platform="ios"].dark{--p-drawer-scrim:rgba(0,0,0,0.48);--p-switch-off-track:#48484a}

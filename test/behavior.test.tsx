@@ -1,8 +1,9 @@
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { createRef, type ReactNode } from "react";
 import type { TextInput } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
 import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
@@ -355,6 +356,54 @@ describe("ButtonGroup", () => {
     expect(selected.filter((s) => s === "true").length).toBe(1);
     fireEvent.click(screen.getByText("Month"));
     expect(idx).toBe(2);
+  });
+
+  it("block stretches the segmented group and flexes segments to equal shares", () => {
+    const { container } = ui(<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} block />);
+    const list = container.querySelector('[role="tablist"]') as HTMLElement;
+    expect(list.style.width).toBe("100%");
+    const tabs = Array.from(container.querySelectorAll('[role="tab"]')) as HTMLElement[];
+    expect(tabs.length).toBe(3);
+    for (const tab of tabs) expect(tab.style.flexGrow).toBe("1");
+  });
+
+  it("stays self-sized without block", () => {
+    const { container } = ui(<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} />);
+    const list = container.querySelector('[role="tablist"]') as HTMLElement;
+    expect(list.style.width).toBe("");
+    const tab = container.querySelector('[role="tab"]') as HTMLElement;
+    expect(tab.style.flexGrow).toBe("");
+  });
+
+  it("block flexes spaced peers through their outermost RippleClip wrapper", () => {
+    const { container } = ui(<ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />);
+    const buttons = Array.from(container.querySelectorAll('[role="button"]')) as HTMLElement[];
+    expect(buttons.length).toBe(3);
+    for (const b of buttons) {
+      // The equal-share flex rides the RippleClip wrapper (the outermost node);
+      // a flex on the Pressable inside that column wrapper would flex it
+      // vertically instead of sharing the row.
+      expect((b.parentElement as HTMLElement).style.flexGrow).toBe("1");
+      expect(b.style.flexGrow).toBe("");
+    }
+    const row = buttons[0].parentElement?.parentElement as HTMLElement;
+    expect(row.style.width).toBe("100%");
+  });
+
+  it("split and stepper ignore block with a dev-only warning", () => {
+    // The dedup cache is process-wide; clear it so a run order that fired these
+    // messages earlier cannot swallow the assertions.
+    resetDevWarnings();
+    const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      ui(<ButtonGroup stepper items={["Yesterday", "Today", "Tomorrow"]} block />);
+      ui(<ButtonGroup split items={["Save"]} menu={["Save a copy"]} block />);
+      const warnings = warnSpy.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("<ButtonGroup />"));
+      expect(warnings.some((m) => m.includes("stepper"))).toBe(true);
+      expect(warnings.some((m) => m.includes("split"))).toBe(true);
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });
 

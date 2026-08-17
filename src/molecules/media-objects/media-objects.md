@@ -61,6 +61,24 @@ wire, and the line underneath reports each press.
 </Stateful>
 ```
 
+### Compact
+
+```tsx
+<Column cozy style={{ maxWidth: 320 }}>
+  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
+  <MediaObject compact avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
+</Column>
+```
+
+### Bare row with meta
+
+```tsx
+<Column snug style={{ maxWidth: 480 }}>
+  <MediaObject center truncate avatar="RC" title="Rachel Chen" description="Commented on the deploy pipeline." meta="1h" />
+  <MediaObject center truncate avatar="AL" title="Ada Lovelace" description="Pushed 3 commits to main." meta="2h" />
+</Column>
+```
+
 ## Do & Don't
 
 ### Avatar

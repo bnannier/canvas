@@ -9,4 +9,10 @@
   --zinc-100:#f4f4f5;--zinc-300:#d4d4d8;--zinc-600:#52525b;--zinc-700:#3f3f46;--zinc-200:#e4e4e7;--zinc-400:#a1a1aa;--zinc-500:#71717a;--zinc-800:#27272a;--zinc-900:#18181b;--zinc-950:#09090b;
   --emerald-400:#34d399;--green-400:#4ade80;--red-400:#f87171;
   --indigo-500:#6366f1;--indigo-600:#4f46e5;
+  /* CodeBlock syntax ramps (tokenize.ts syntaxColor: light 700/600, dark 400) plus the
+     Alert light-mode 600 icon step (alert.shared.tsx iconColor). Values from src/style/tokens.ts. */
+  --violet-400:#a78bfa;--violet-700:#6d28d9;--sky-400:#38bdf8;--sky-700:#0369a1;
+  --cyan-400:#22d3ee;--cyan-700:#0e7490;--rose-400:#fb7185;--rose-700:#be123c;
+  --amber-400:#fbbf24;--amber-600:#d97706;--blue-400:#60a5fa;
+  --blue-600:#2563eb;--green-600:#16a34a;--red-600:#dc2626;
 }

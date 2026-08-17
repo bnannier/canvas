@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Spinner } = scope;
   return (
-<Spinner stacked>Working…</Spinner>
+<Spinner description="About 20 seconds">Deploying…</Spinner>
   );
 }

@@ -28,6 +28,25 @@ Page-of-N navigation for tables and lists.
 <Pagination defaultPage={2} total={12} withSize defaultPageSize={10} pageSizes={[10, 25, 50]} />
 ```
 
+### Sizes
+
+```tsx
+<Column relaxed>
+  <Pagination small defaultPage={2} total={12} />
+  <Pagination defaultPage={2} total={12} />
+  <Pagination large defaultPage={2} total={12} />
+</Column>
+```
+
+### First and last page
+
+```tsx
+<Column relaxed>
+  <Pagination defaultPage={1} total={3} />
+  <Pagination defaultPage={3} total={3} />
+</Column>
+```
+
 ## Do & Don't
 
 ### compact

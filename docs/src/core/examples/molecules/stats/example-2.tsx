@@ -3,14 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stats } = scope;
+  const { Icon, Stats, Emblem } = scope;
   return (
 <Stats
-  onPressItem={() => {}}
   items={[
-    { label: "Active users", value: "71,897", delta: "+12.3%" },
-    { label: "Revenue", value: "$48.2k", delta: "+8.1%" },
-    { label: "Churn", value: "1.2%", delta: "-0.4%", down: true }
+    { label: "Active users", value: "71,897", delta: "+12.3%", icon: <Emblem small><Icon users /></Emblem> },
+    { label: "Uptime", value: "99.98%", delta: "last 30 days", steady: true, icon: <Emblem small success><Icon check /></Emblem> },
   ]}
 />
   );

@@ -70,6 +70,26 @@ describe("web a11y state (aria aliases for RNW-dropped accessibilityState)", () 
     expect(sel.filter((s) => s === "true").length).toBe(1);
   });
 
+  it("Tabs marks a per-item disabled trigger aria-disabled and unpressable", () => {
+    let picked = -1;
+    const { container } = ui(
+      <Tabs
+        tabs={["One", { label: "Two", disabled: true }, "Three"]}
+        active={0}
+        onSelect={(i) => { picked = i; }}
+      />,
+    );
+    const triggers = container.querySelectorAll('[role="tab"]');
+    expect(triggers[1].getAttribute("aria-disabled")).toBe("true");
+    expect(triggers[0].getAttribute("aria-disabled")).toBeNull();
+    // A press on the disabled trigger never fires the selection callback.
+    fireEvent.click(triggers[1]);
+    expect(picked).toBe(-1);
+    // Its enabled siblings stay operable.
+    fireEvent.click(triggers[2]);
+    expect(picked).toBe(2);
+  });
+
   it("Dropdown trigger exposes aria-expanded (collapsed by default)", () => {
     const { container } = ui(<Dropdown label="Menu" items={[{ label: "One" }, { label: "Two" }]} />);
     expect(attr(container, "[aria-expanded]", "aria-expanded")).toBe("false");
