@@ -158,7 +158,7 @@ function ramp(tone: StatusTone): string {
 }
 
 export default function ColorsScreen() {
-  const { tokens, dark } = useTheme();
+  const { tokens } = useTheme();
   const { width } = useWindowDimensions();
   const wide = width >= 760;
 
@@ -274,12 +274,27 @@ export default function ColorsScreen() {
                 and every colour still comes from a token (primary-foreground is the
                 kit's "text on a saturated fill"), never a literal. */}
             <GradientFill colors={[brandColors["orb-indigo"], brandColors["orb-cyan"]]} height={236}>
+              {/* A dark scrim over the orb wash: the material has to bend something,
+                  and it reads on a deep backdrop the way the design system's own
+                  glass sheet shows it. */}
+              <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: alpha(palette["zinc-950"], 0.55) }} />
+              {/* Stand-in content, run the full height so it passes BEHIND the bar.
+                  A glass bar with nothing behind it renders flat, which is the one
+                  thing this card must not demonstrate. */}
               <View style={{ position: "absolute", left: 22, right: 22, top: 18, gap: 7 }}>
-                {[100, 72, 88, 54, 92, 66].map((w, i) => (
+                {[100, 72, 88, 54, 96, 66, 100, 78, 90, 58, 94, 70].map((w, i) => (
                   <View key={i} style={{ height: 9, width: `${w}%`, borderRadius: 5, backgroundColor: alpha(tokens["primary-foreground"], 0.34) }} />
                 ))}
               </View>
-              <GlassSurface style={{ position: "absolute", left: 16, right: 16, bottom: 14, height: 56, borderRadius: 9999, backgroundColor: glassByScheme[dark ? "dark" : "light"].popover, flexDirection: "row", alignItems: "center", justifyContent: "space-around" }}>
+              {/* No backgroundColor here on purpose: GlassSurface paints its own
+                  under-fill (the popover token) behind the frost and the specular
+                  rim. Passing a fill stacks an opaque layer over the material and
+                  flattens it, which is exactly what this card exists to show. */}
+              {/* `sheer`: the see-through frost for content that floats over a live
+                  backdrop. The default frost is tuned for functional overlays, which
+                  must occlude what they open over; a showcase bar must do the
+                  opposite and let the content read through the material. */}
+              <GlassSurface sheer style={{ position: "absolute", left: 16, right: 16, bottom: 14, height: 56, borderRadius: 9999, flexDirection: "row", alignItems: "center", justifyContent: "space-around" }}>
                 {/* The bar is filled with the popover token, so its labels take the
                     paired popover-foreground: the pair flips together with the scheme,
                     which is the rule this page teaches two sections down. */}
