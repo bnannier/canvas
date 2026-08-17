@@ -3,40 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, shadow, View, Text } = scope;
+  const { Select } = scope;
   return (
-<View style={{ position: "relative", width: "100%", maxWidth: 280 }}>
-  <Text style={{ marginBottom: 6, fontWeight: "500", color: tokens.foreground, fontSize: 14, lineHeight: 20 }}>Assigned to</Text>
-  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>co</Text>
-    <Text style={{ color: tokens["muted-foreground"], fontSize: 14, lineHeight: 20 }}>▾</Text>
-  </View>
-  <View style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, marginTop: 4, maxHeight: 240, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4, ...shadow("lg") }}>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Wade Cooper</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Arlene Mccoy</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Devon Webb</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tom Cook</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tanya Fox</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Hellen Schmidt</Text>
-    </View>
-  </View>
-</View>
+<Select label="Assigned to" options={[
+    "Wade Cooper",
+    "Arlene Mccoy",
+    "Devon Webb",
+    "Tom Cook",
+    "Tanya Fox",
+    "Hellen Schmidt"
+  ]} placeholder="Search a person…" />
   );
 }

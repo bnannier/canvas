@@ -59,6 +59,7 @@ function MaintenanceLive() {
   const { toast } = useToast();
   return (
     <Alert
+      block
       warning
       icon={<Icon alertTriangle size={16} />}
       title="Scheduled maintenance"

@@ -1,6 +1,6 @@
-import { Fragment, type ComponentType, type ReactNode, useMemo, useState } from "react";
+import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, devWarn, breakpoints, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -166,6 +166,40 @@ export interface DataTableProps {
   /** When set, each data row is pressable, reporting the row data and its index in `rows`. */
   onRowPress?: (row: ReactNode[], index: number) => void;
   /**
+   * Row editing: passing this adds a trailing actions column with a pencil
+   * button per row. Pressing the pencil opens the row's edit mode (its string
+   * cells become fields with a trailing Save/Cancel pair) and fires this with
+   * the row's original index in `rows`. Save reports the edited cells through
+   * `onRowCommit`; Cancel (or Escape in a field) closes without committing.
+   */
+  onRowEdit?: (rowIndex: number) => void;
+  /**
+   * Row deletion: passing this adds a delete (bin) button to the trailing
+   * actions column. Delete is second-press confirm: the first press ARMS it
+   * (the bin turns destructive and its accessible name says confirm), a second
+   * press within the confirm window fires this with the row's original index,
+   * and pressing anywhere else in the table (or the window lapsing) disarms.
+   */
+  onRowDelete?: (rowIndex: number) => void;
+  /**
+   * Let string cells be edited in place: pressing one swaps it to a field.
+   * Enter or blur commits through `onCellCommit`; Escape restores the cell.
+   * Custom ReactNode cells (badges, links) are not editable.
+   */
+  inlineEdit?: boolean;
+  /**
+   * Fired when an `inlineEdit` cell commits (Enter or blur) with a changed
+   * value: the row's original index in `rows`, the column index, and the next
+   * text. Data stays yours: re-render with updated `rows` to keep the edit.
+   */
+  onCellCommit?: (rowIndex: number, colIndex: number, next: string) => void;
+  /**
+   * Fired when a pencil-opened row edit is saved: the row's original index in
+   * `rows` and the full cells array with the edited strings in place (custom
+   * ReactNode cells pass through unchanged).
+   */
+  onRowCommit?: (rowIndex: number, cells: ReactNode[]) => void;
+  /**
    * Render the data rows through a windowed `FlatList` instead of mounting every
    * row up front, for large tables. The header row stays fixed above it. Give the
    * table a bounded height (via `style`, e.g. `{ maxHeight: 400 }`) so the body can
@@ -235,6 +269,43 @@ function widthStyle(col: NormalColumn): ViewStyle | null {
   return col.width != null ? { width: col.width, flexGrow: 0, flexShrink: 0, flexBasis: "auto" } : null;
 }
 
+// The trailing row-actions cell (and its header spacer): a fixed trailing
+// column holding the icon buttons, right-aligned. The width comes from the
+// skin (two platform touch targets plus this padding).
+const ACTIONS_CELL: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  gap: 4,
+  paddingHorizontal: 12,
+  flexGrow: 0,
+  flexShrink: 0,
+  flexBasis: "auto",
+};
+
+// When the actions column is present the pressable row area wraps only the
+// data cells, and the actions cell sits BESIDE it as a sibling: an action
+// button must never nest inside a button-roled row (invalid DOM on web), and
+// this way a press on the pencil/bin can never double as a row press.
+const ROW_PRESS_AREA: ViewStyle = {
+  flexGrow: 1,
+  flexShrink: 1,
+  flexBasis: "0%",
+  flexDirection: "row",
+  alignItems: "center",
+};
+
+// How long an armed delete waits for its confirming second press.
+const DELETE_CONFIRM_MS = 4000;
+
+// An open inline cell editor: the row/column (original `rows` indices) and the
+// in-progress text.
+interface CellEdit {
+  row: number;
+  col: number;
+  value: string;
+}
+
 // Skeleton line widths cycle so placeholder rows read organic, not gridded.
 const SKELETON_WIDTHS = ["70%", "50%", "80%", "60%"] as const;
 
@@ -257,7 +328,7 @@ export interface DataTableParts {
 export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   const { Checkbox, Pagination, Skeleton } = parts;
   return function DataTable(props: DataTableProps) {
-    const { columns, rows, striped, bordered, selectable, onRowPress, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
+    const { columns, rows, striped, bordered, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
     const density = densityOf(props);
     const { tokens } = useTheme();
 
@@ -278,8 +349,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // the header+body pan together inside a horizontal scroller, each column
     // keeping a readable minimum (the Material phone data-table treatment).
     const pans = !collapsed && !skin.collapsesToPrimaryColumn && cols.length > 1 && measuredWidth > 0 && measuredWidth < breakpoints.sm;
+    const hasActions = !!(onRowEdit || onRowDelete);
     const panMinWidth =
-      cols.reduce((w, col) => w + (col.width ?? MIN_COLUMN_WIDTH), 0) + (selectable ? SELECT_COLUMN_WIDTH : 0);
+      cols.reduce((w, col) => w + (col.width ?? MIN_COLUMN_WIDTH), 0) +
+      (selectable ? SELECT_COLUMN_WIDTH : 0) +
+      (hasActions ? skin.actionsColWidth : 0);
 
     // ---- sorting -----------------------------------------------------------
     // Self-managed by default (header press cycles asc -> desc -> off);
@@ -297,6 +371,9 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     );
 
     const cycleSort = (col: NormalColumn) => {
+      // Any table press that is not the armed bin disarms a pending delete
+      // (see the row-interactions section below; this closure is call-time safe).
+      disarmDelete();
       const active = activeCol?.key === col.key;
       if (!active) setSortState({ column: col.key });
       else if (!sortState?.descending) setSortState({ column: col.key, descending: true });
@@ -348,9 +425,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const someSelected = rows.some((row, i) => selectedSet.has(keyOf(row, i)));
 
     const toggleAll = () => {
+      disarmDelete();
       setSelected(allSelected ? [] : rows.map((row, i) => rawKey(row, i)));
     };
     const toggleRow = (row: ReactNode[], i: number) => {
+      disarmDelete();
       const key = rawKey(row, i);
       const has = selectedSet.has(String(key));
       setSelected(has ? selected.filter((k) => String(k) !== String(key)) : [...selected, key]);
@@ -369,6 +448,83 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const pageIndices = paginated ? viewIndices.slice((current - 1) * pageSize, current * pageSize) : viewIndices;
     // Original row index -> rendered position, for stable striping under sort/paging.
     const viewPos = new Map(pageIndices.map((idx, pos) => [idx, pos]));
+
+    // ---- row interactions (edit / delete / inline cell editing) ------------
+    // All three are keyed by ORIGINAL `rows` indices, like everything else in
+    // the view pipeline, so they stay stable under sorting and paging.
+    // `editingRow` is the pencil-opened row; `draft` its in-progress string
+    // cells by column index. `cellEdit` is the single open inline cell editor;
+    // its ref twin is nulled synchronously on commit/cancel so the blur that
+    // follows an Enter or Escape cannot double-commit. `armedRow` is the
+    // delete awaiting its confirming second press.
+    const [editingRow, setEditingRow] = useState<number | null>(null);
+    const [draft, setDraft] = useState<Record<number, string>>({});
+    const [cellEdit, setCellEditState] = useState<CellEdit | null>(null);
+    const cellEditRef = useRef<CellEdit | null>(null);
+    const setCellEdit = (next: CellEdit | null) => {
+      cellEditRef.current = next;
+      setCellEditState(next);
+    };
+    const [armedRow, setArmedRow] = useState<number | null>(null);
+
+    // An armed delete disarms on its own when the confirm window lapses.
+    useEffect(() => {
+      if (armedRow == null) return;
+      const id = setTimeout(() => setArmedRow(null), DELETE_CONFIRM_MS);
+      return () => clearTimeout(id);
+    }, [armedRow]);
+    const disarmDelete = () => setArmedRow(null);
+
+    devWarn(
+      !!inlineEdit && !props.onCellCommit,
+      "[canvas] <DataTable inlineEdit> without onCellCommit: cell edits close without being reported; pass onCellCommit(rowIndex, colIndex, next).",
+    );
+    devWarn(
+      !!onRowEdit && !props.onRowCommit,
+      "[canvas] <DataTable onRowEdit> without onRowCommit: Save closes the row editor without reporting the edited cells; pass onRowCommit(rowIndex, cells).",
+    );
+
+    const startRowEdit = (row: ReactNode[], r: number) => {
+      disarmDelete();
+      setCellEdit(null);
+      const seed: Record<number, string> = {};
+      row.forEach((cell, c) => {
+        if (typeof cell === "string") seed[c] = cell;
+      });
+      setDraft(seed);
+      setEditingRow(r);
+      onRowEdit?.(r);
+    };
+    const cancelRowEdit = () => {
+      setEditingRow(null);
+      setDraft({});
+    };
+    const commitRow = (row: ReactNode[], r: number) => {
+      const cells = row.map((cell, c) => (typeof cell === "string" ? (draft[c] ?? cell) : cell));
+      cancelRowEdit();
+      props.onRowCommit?.(r, cells);
+    };
+    const openCellEdit = (r: number, c: number, value: string) => {
+      disarmDelete();
+      setCellEdit({ row: r, col: c, value });
+    };
+    const cancelCellEdit = () => setCellEdit(null);
+    // Commit-on-blur reads the ref, not the render's state: after Enter or
+    // Escape already closed the editor the unmount blur finds it null and
+    // stays a no-op.
+    const commitCell = (row: ReactNode[], r: number, c: number) => {
+      const live = cellEditRef.current;
+      setCellEdit(null);
+      if (!live || live.row !== r || live.col !== c) return;
+      if (live.value !== row[c]) props.onCellCommit?.(r, c, live.value);
+    };
+
+    // The row's first cell text, folded into the action buttons' and editors'
+    // accessible names so "Edit"/"Delete" announce WHICH row they act on.
+    const rowNameOf = (row: ReactNode[], r: number): string => {
+      const first = row[0];
+      return typeof first === "string" || typeof first === "number" ? String(first) : `row ${r + 1}`;
+    };
 
     const wrap: StyleProp<ViewStyle> = [
       skin.wrap,
@@ -400,6 +556,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
               <Skeleton text small animate style={{ width: SKELETON_WIDTHS[(r + c) % SKELETON_WIDTHS.length] }} />
             </View>
           ))}
+          {hasActions ? <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="cell" /> : null}
           {skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null}
         </View>
       ))
@@ -408,7 +565,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         data={pageIndices}
         renderItem={({ item }) => renderDataRow(rows[item]!, item)}
         keyExtractor={(item) => keyOf(rows[item]!, item)}
-        extraData={[selected, sortState, density, striped]}
+        extraData={[selected, sortState, density, striped, editingRow, draft, cellEdit, armedRow]}
         showsVerticalScrollIndicator={false}
       />
     ) : (
@@ -431,6 +588,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             </View>
           ) : null}
           {visibleColumns.map((col) => renderHeaderCell(col))}
+          {hasActions ? (
+            // The unlabeled spacer over the trailing actions column keeps the
+            // header labels aligned with their data columns.
+            <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="columnheader" />
+          ) : null}
         </View>
         {body}
         {!loading && rows.length === 0 && emptyMessage != null ? (
@@ -475,7 +637,10 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
               withSize={sizes != null ? true : undefined}
               page={current}
               total={pageCount}
-              onChange={setPage}
+              onChange={(p) => {
+                disarmDelete();
+                setPage(p);
+              }}
               itemCount={rows.length}
               pageSize={pageSize}
               pageSizes={sizes}
@@ -556,70 +721,107 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     function renderDataRow(row: ReactNode[], r: number) {
       const rowId = keyOf(row, r);
       const isSelected = selectable && selectedSet.has(rowId);
-      const cells = (
-        <>
-          {selectable ? (
-            <View style={[skin.selectCell, skin.cellPad[density]]} role="cell">
-              {/* The row selector: its own Pressable, so a tap on the box toggles
-                  selection while a tap elsewhere on the row still reaches the
-                  row's press behavior (the responder system grants the innermost
-                  pressable the touch). */}
-              <Checkbox
-                small
-                checked={!!isSelected}
-                onChange={() => toggleRow(row, r)}
-                accessibilityLabel={rowLabel(row) || `Select row ${r + 1}`}
-              />
-            </View>
-          ) : null}
-          {visibleColumns.map((col) => {
-            const c = cols.indexOf(col);
-            const cell = cellOf(row, c);
-            return (
-              <View
-                key={`c-${rowId}-${c}`}
-                style={[
-                  skin.dataCell,
-                  skin.cellPad[density],
-                  widthStyle(col),
-                  col.numeric ? { alignItems: "flex-end" } : col.centered ? { alignItems: "center" } : null,
-                ]}
-                role="cell"
-              >
-                {typeof cell === "string" || typeof cell === "number" ? (
-                  <Text
-                    style={[
-                      skin.cellText(tokens),
-                      col.numeric ? { textAlign: "right" } : col.centered ? { textAlign: "center" } : null,
-                    ]}
-                  >
-                    {cell}
-                  </Text>
-                ) : (
-                  cell
-                )}
-              </View>
-            );
-          })}
-          {/* An inset row separator (iOS), absolutely positioned so it does not
-              affect the flex layout; web/Android use the dataRow's full-bleed
-              borderBottom instead (skin.separator is null there). */}
-          {skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null}
-        </>
-      );
+      const rowEditing = editingRow === r;
+      // While ANY editor is open in this row it must not render as a pressable
+      // row: a text input may not nest inside a button-roled node on web, and
+      // a stray row press under the field would fight the editor.
+      const editingHere = rowEditing || (cellEdit != null && cellEdit.row === r);
+      const selectCell = selectable ? (
+        <View style={[skin.selectCell, skin.cellPad[density]]} role="cell">
+          {/* The row selector: its own Pressable, so a tap on the box toggles
+              selection while a tap elsewhere on the row still reaches the
+              row's press behavior (the responder system grants the innermost
+              pressable the touch). */}
+          <Checkbox
+            small
+            checked={!!isSelected}
+            onChange={() => toggleRow(row, r)}
+            accessibilityLabel={rowLabel(row) || `Select row ${r + 1}`}
+          />
+        </View>
+      ) : null;
+      const dataCells = visibleColumns.map((col) => renderBodyCell(row, r, rowId, col));
+      // An inset row separator (iOS), absolutely positioned so it does not
+      // affect the flex layout; web/Android use the dataRow's full-bleed
+      // borderBottom instead (skin.separator is null there).
+      const separator = skin.separator ? <View style={[skin.separator(tokens), { pointerEvents: "none" }]} /> : null;
       // The striped tint sits on odd VIEW positions (the rendered order) so the
       // banding survives sorting and paging; a selected row's stronger tint (the
       // skin's press fill: M3's primary state layer on Android, the system fill
-      // on iOS, accent on web) wins over it.
+      // on iOS, accent on web) wins over it, and the edit wash marks the row
+      // whose pencil editor is open.
       const stripe = striped && (viewPos.get(r) ?? 0) % 2 === 1 ? skin.stripeTint(tokens) : null;
       const selectedTint = isSelected ? skin.pressTint(tokens) : null;
+      const editWash = rowEditing ? skin.editTint(tokens) : null;
       // Row press: an explicit action when given; otherwise a selectable row
       // toggles itself (the checkbox alone carries the a11y semantics there, so
       // the convenience Pressable stays out of the accessibility tree).
-      const press = onRowPress ?? (selectable ? toggleRow : undefined);
-      return press ? (
+      const press = editingHere ? undefined : (onRowPress ?? (selectable ? toggleRow : undefined));
+      const pressRow = press
+        ? () => {
+            disarmDelete();
+            press(row, r);
+          }
+        : undefined;
+
+      if (hasActions) {
+        // With a trailing actions column the row shell is a plain View: the
+        // data cells sit in a flex-1 press area and the actions cell rides
+        // BESIDE it as a sibling, so the pencil/bin buttons never nest inside
+        // a button-roled row (invalid DOM on web) and an action press can
+        // never double as a row press.
+        const area = pressRow ? (
+          <Pressable
+            onPress={pressRow}
+            android_ripple={ripple}
+            role={onRowPress ? "button" : undefined}
+            accessible={onRowPress ? undefined : false}
+            focusable={onRowPress ? undefined : false}
+            accessibilityLabel={onRowPress ? rowLabel(row) : undefined}
+            style={({ pressed }) => [
+              ROW_PRESS_AREA,
+              // Android ripples; iOS/web tint the pressed area fill.
+              skin.ripple == null && pressed ? skin.pressTint(tokens) : null,
+            ]}
+          >
+            {selectCell}
+            {dataCells}
+          </Pressable>
+        ) : (
+          <View style={ROW_PRESS_AREA}>
+            {selectCell}
+            {dataCells}
+          </View>
+        );
+        return (
+          <View
+            role="row"
+            style={[
+              skin.dataRow(tokens),
+              // Hold the platform minimum tap target (iOS 44pt / M3 48dp).
+              skin.pressableMinHeight != null && pressRow ? { minHeight: skin.pressableMinHeight } : null,
+              stripe,
+              selectedTint,
+              editWash,
+            ]}
+          >
+            {area}
+            {renderActionsCell(row, r)}
+            {separator}
+          </View>
+        );
+      }
+
+      const cells = (
+        <>
+          {selectCell}
+          {dataCells}
+          {separator}
+        </>
+      );
+      return pressRow ? (
         <Pressable
-          onPress={() => press(row, r)}
+          onPress={pressRow}
           android_ripple={ripple}
           role={onRowPress ? "button" : undefined}
           accessible={onRowPress ? undefined : false}
@@ -642,9 +844,169 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {cells}
         </Pressable>
       ) : (
-        <View style={[skin.dataRow(tokens), stripe, selectedTint]} role="row">
+        <View style={[skin.dataRow(tokens), stripe, selectedTint, editWash]} role="row">
           {cells}
         </View>
+      );
+    }
+
+    // One data cell: the plain text/node; a press-to-edit target when
+    // `inlineEdit` can open it; or the open editor field (a press-opened cell,
+    // or every string cell while the row is in pencil-opened edit mode).
+    function renderBodyCell(row: ReactNode[], r: number, rowId: string, col: NormalColumn) {
+      const c = cols.indexOf(col);
+      const cell = cellOf(row, c);
+      const rowEditing = editingRow === r;
+      const cellOpen =
+        typeof cell === "string" &&
+        (rowEditing || (cellEdit != null && cellEdit.row === r && cellEdit.col === c));
+      const alignCell: ViewStyle | null = col.numeric
+        ? { alignItems: "flex-end" }
+        : col.centered
+          ? { alignItems: "center" }
+          : null;
+      const alignText = col.numeric
+        ? ({ textAlign: "right" } as const)
+        : col.centered
+          ? ({ textAlign: "center" } as const)
+          : null;
+
+      let content: ReactNode;
+      if (cellOpen) {
+        const name = rowNameOf(row, r);
+        // In row mode the FIRST visible string cell takes focus on open; a
+        // press-opened cell editor always does (the a11y contract's
+        // focus-moves-into-the-editor rule).
+        const focusCol = rowEditing
+          ? visibleColumns.map((vc) => cols.indexOf(vc)).find((i) => typeof row[i] === "string")
+          : c;
+        content = (
+          <TextInput
+            value={rowEditing ? (draft[c] ?? "") : cellEdit!.value}
+            onChangeText={(next) =>
+              rowEditing ? setDraft((d) => ({ ...d, [c]: next })) : setCellEdit({ row: r, col: c, value: next })
+            }
+            autoFocus={focusCol === c}
+            onSubmitEditing={() => (rowEditing ? commitRow(row, r) : commitCell(row, r, c))}
+            onKeyPress={(e) => {
+              // Escape restores the cell (web; native cancels via the Cancel
+              // button in row mode, or by committing the unchanged value).
+              if (e.nativeEvent.key === "Escape") (rowEditing ? cancelRowEdit : cancelCellEdit)();
+            }}
+            onBlur={() => {
+              // Inline cell editing commits on blur; row mode waits for
+              // Save/Cancel so tabbing between its fields does not commit.
+              if (!rowEditing) commitCell(row, r, c);
+            }}
+            accessibilityLabel={`Edit ${col.label} for ${name}`}
+            aria-label={`Edit ${col.label} for ${name}`}
+            style={[skin.editInput(tokens), alignText]}
+          />
+        );
+      } else {
+        const text =
+          typeof cell === "string" || typeof cell === "number" ? (
+            <Text style={[skin.cellText(tokens), alignText]}>{cell}</Text>
+          ) : (
+            cell
+          );
+        // An inline-editable (string) cell is a press target opening its
+        // editor. It stays out of the accessibility tree while the row itself
+        // is a button (`onRowPress`): nested buttons are invalid on web, and
+        // there the row press is the primary semantic (pencil row editing
+        // carries the accessible editing path).
+        content =
+          inlineEdit && typeof cell === "string" && !rowEditing ? (
+            <Pressable
+              onPress={() => openCellEdit(r, c, cell)}
+              {...(onRowPress
+                ? { accessible: false, focusable: false }
+                : {
+                    role: "button" as const,
+                    accessibilityLabel: `Edit ${col.label} for ${rowNameOf(row, r)}`,
+                    "aria-label": `Edit ${col.label} for ${rowNameOf(row, r)}`,
+                  })}
+            >
+              {text}
+            </Pressable>
+          ) : (
+            text
+          );
+      }
+
+      return (
+        <View
+          key={`c-${rowId}-${c}`}
+          style={[skin.dataCell, skin.cellPad[density], widthStyle(col), alignCell]}
+          role="cell"
+        >
+          {content}
+        </View>
+      );
+    }
+
+    // The trailing actions cell: pencil/bin normally, Save/Cancel while the
+    // row is in pencil-opened edit mode. Delete is second-press confirm: the
+    // first press ARMS it (destructive bin, a "Confirm delete" name), the
+    // second within the window fires onRowDelete, and any other table press
+    // (or the window lapsing) disarms.
+    function renderActionsCell(row: ReactNode[], r: number) {
+      const name = rowNameOf(row, r);
+      const armed = armedRow === r;
+      const iconSize = skin.actionIconSize;
+      return (
+        <View style={[ACTIONS_CELL, { width: skin.actionsColWidth }]} role="cell">
+          {editingRow === r ? (
+            <>
+              {actionButton(`Save ${name}`, () => commitRow(row, r), <Icon check success size={iconSize} decorative />)}
+              {actionButton(`Cancel editing ${name}`, cancelRowEdit, <Icon x muted size={iconSize} decorative />)}
+            </>
+          ) : (
+            <>
+              {onRowEdit
+                ? actionButton(`Edit ${name}`, () => startRowEdit(row, r), <Icon pencil muted size={iconSize} decorative />)
+                : null}
+              {onRowDelete
+                ? actionButton(
+                    armed ? `Confirm delete ${name}` : `Delete ${name}`,
+                    () => {
+                      if (armed) {
+                        setArmedRow(null);
+                        onRowDelete(r);
+                      } else {
+                        setCellEdit(null);
+                        setArmedRow(r);
+                      }
+                    },
+                    armed ? (
+                      <Icon trash2 destructive size={iconSize} decorative />
+                    ) : (
+                      <Icon trash2 muted size={iconSize} decorative />
+                    ),
+                  )
+                : null}
+            </>
+          )}
+        </View>
+      );
+    }
+
+    // One icon action button at the skin's touch-target size. Android ripples
+    // (controlRipple radiates from the touch point, the icon-button idiom);
+    // iOS/web dim the glyph on press. The glyph is decorative: the button's
+    // accessible name carries the action AND the row it acts on.
+    function actionButton(label: string, onPress: () => void, glyph: ReactNode) {
+      return (
+        <Pressable
+          onPress={onPress}
+          android_ripple={skin.ripple ? controlRipple(tokens) : undefined}
+          role="button"
+          accessibilityLabel={label}
+          aria-label={label}
+          style={({ pressed }) => [skin.actionButton, skin.ripple == null && pressed ? { opacity: 0.6 } : null]}
+        >
+          {glyph}
+        </Pressable>
       );
     }
   };

@@ -3,18 +3,23 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable } = scope;
+  const { Stateful, DataTable } = scope;
   return (
-<DataTable
-  columns={["Employee", "Team"]}
-  rows={Array.from({ length: 23 }, (_, i) => [
-    `Employee ${i + 1}`,
-    ["Design", "Platform", "Growth"][i % 3]
-  ])}
-  bordered
-  selectable
-  paginated
-  pageSize={5}
-/>
+<Stateful initial={[
+  ["Alice Johnson", "alice@example.com", "Admin"],
+  ["Bob Smith", "bob@example.com", "Editor"],
+  ["Rachel Chen", "rachel@example.com", "Viewer"]
+]}>
+  {(rows, setRows) => (
+    <DataTable
+      columns={["Name", "Email", "Role"]}
+      rows={rows}
+      bordered
+      onRowEdit={() => {}}
+      onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
+      onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
+    />
+  )}
+</Stateful>
   );
 }

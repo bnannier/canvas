@@ -79,6 +79,13 @@ export interface AlertProps {
   /** Shows a trailing dismiss control. Pressing it hides the banner out of the box
    *  (uncontrolled); pass `dismissed` to own that state instead. */
   dismissible?: boolean;
+  // Width measure (pick at most one; omit for the default 480px cap).
+  /** Cap the banner at 320px, the measure of a standard (base-width) form field. */
+  narrow?: boolean;
+  /** Cap the banner at 640px, for roomy content regions. */
+  wide?: boolean;
+  /** Fill the container with no cap: the full-width announcement bar. */
+  block?: boolean;
   /** Controlled dismissal: `true` hides the banner. Omit to let the Alert manage it. */
   dismissed?: boolean;
   /** Uncontrolled seed: start hidden. Rarely useful; defaults to false. */
@@ -98,6 +105,31 @@ export interface AlertProps {
   actions?: ReactNode;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
+}
+
+// The width measure axis (per the hand-off mirror): one measure, shared
+// conceptually with the field width ladder (src/style/tokens.ts fieldWidths) so
+// a banner over a form lines up with it: the alert's narrow 320 sits flush on a
+// base-width field, and its default 480 spans a wide one. Every width is a MAX,
+// never a floor: the banner rides width:"100%" under the cap and still shrinks
+// to its container, so it fits a phone column, a dialog, or a full-bleed page
+// region without a media query, and a column of alerts is the same measure top
+// to bottom. A reading measure is platform-neutral (it is not a platform
+// shape), so the values live here in the shared shell, not the per-OS skins.
+const MEASURE: Record<"narrow" | "base" | "wide" | "block", ViewStyle> = {
+  narrow: { width: "100%", maxWidth: 320 },
+  base: { width: "100%", maxWidth: 480 },
+  wide: { width: "100%", maxWidth: 640 },
+  block: { width: "100%" },
+};
+
+// Measure precedence when more than one is passed: first match wins
+// (narrow > wide > block; omit all for the default 480 cap).
+function measureOf(p: AlertProps): ViewStyle {
+  if (p.narrow) return MEASURE.narrow;
+  if (p.wide) return MEASURE.wide;
+  if (p.block) return MEASURE.block;
+  return MEASURE.base;
 }
 
 // Tone precedence when more than one is passed: first match wins.
@@ -189,7 +221,7 @@ export function createAlert(skin: AlertSkin) {
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}
-        style={[skin.container, containerColor(tokens, dark, tone), style]}
+        style={[skin.container, containerColor(tokens, dark, tone), measureOf(props), style]}
       >
         {icon != null ? (
           tintedIcon != null ? (

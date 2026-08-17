@@ -10,10 +10,11 @@ export default function Example(scope: ExampleScope) {
   rows={[
     ["Alice Johnson", "alice@example.com", "Admin", "Active"],
     ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
-    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+    ["Rachel Chen", "rachel@example.com", "Admin", "Active"],
+    ["Dan Wright", "dan@example.com", "Viewer", "Active"]
   ]}
   bordered
-  comfortable
+  striped
 />
   );
 }

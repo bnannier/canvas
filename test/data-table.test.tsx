@@ -245,6 +245,251 @@ describe("DataTable pagination", () => {
   });
 });
 
+describe("DataTable row actions", () => {
+  it("renders a pencil and bin per row with the first cell folded into their names", () => {
+    const { container } = ui(
+      <DataTable columns={COLUMNS} rows={ROWS} onRowEdit={() => {}} onRowDelete={() => {}} />,
+    );
+    expect(screen.getByLabelText("Edit Bob")).toBeDefined();
+    expect(screen.getByLabelText("Delete Bob")).toBeDefined();
+    expect(screen.getByLabelText("Edit Ada")).toBeDefined();
+    // The trailing actions column adds an (unlabeled) header spacer.
+    expect(container.querySelectorAll('[role="columnheader"]').length).toBe(COLUMNS.length + 1);
+  });
+
+  it("arms delete on the first press and fires onRowDelete only on the confirming second press", () => {
+    let deleted = -1;
+    ui(<DataTable columns={COLUMNS} rows={ROWS} onRowDelete={(i) => (deleted = i)} />);
+    fireEvent.click(screen.getByLabelText("Delete Ada"));
+    // Armed: the accessible name says confirm, nothing fired yet.
+    expect(deleted).toBe(-1);
+    expect(screen.getByLabelText("Confirm delete Ada")).toBeDefined();
+    fireEvent.click(screen.getByLabelText("Confirm delete Ada"));
+    expect(deleted).toBe(1); // Ada's original index in `rows`
+    expect(screen.queryByLabelText("Confirm delete Ada")).toBeNull(); // disarmed again
+  });
+
+  it("disarms when anything else in the table is pressed", () => {
+    let deleted = -1;
+    ui(
+      <DataTable
+        sortable
+        columns={COLUMNS}
+        rows={ROWS}
+        onRowEdit={() => {}}
+        onRowDelete={(i) => (deleted = i)}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText("Delete Bob"));
+    expect(screen.getByLabelText("Confirm delete Bob")).toBeDefined();
+    fireEvent.click(screen.getByText("Name")); // a sort press disarms
+    expect(screen.queryByLabelText("Confirm delete Bob")).toBeNull();
+    expect(screen.getByLabelText("Delete Bob")).toBeDefined();
+    // Arming another row's bin moves the armed state there.
+    fireEvent.click(screen.getByLabelText("Delete Cat"));
+    fireEvent.click(screen.getByLabelText("Delete Bob"));
+    expect(screen.queryByLabelText("Confirm delete Cat")).toBeNull();
+    expect(screen.getByLabelText("Confirm delete Bob")).toBeDefined();
+    expect(deleted).toBe(-1);
+  });
+
+  it("reports the ORIGINAL row index for a delete under an active sort", () => {
+    let deleted = -1;
+    ui(
+      <DataTable
+        sortable
+        defaultSort={{ column: "Name" }}
+        columns={COLUMNS}
+        rows={ROWS}
+        onRowDelete={(i) => (deleted = i)}
+      />,
+    );
+    // Ascending puts Ada first, but Ada is rows[1].
+    fireEvent.click(screen.getByLabelText("Delete Ada"));
+    fireEvent.click(screen.getByLabelText("Confirm delete Ada"));
+    expect(deleted).toBe(1);
+  });
+
+  it("pencil opens row edit mode: fields with focus, Save commits the edited cells", () => {
+    let edited = -1;
+    let committed: [number, ReactNode[]] | null = null;
+    ui(
+      <DataTable
+        columns={COLUMNS}
+        rows={ROWS}
+        onRowEdit={(i) => (edited = i)}
+        onRowCommit={(i, cells) => (committed = [i, cells])}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText("Edit Ada"));
+    expect(edited).toBe(1);
+    const field = screen.getByDisplayValue("Ada") as HTMLInputElement;
+    // The a11y contract: the (first) editing field takes focus on open.
+    expect(document.activeElement).toBe(field);
+    expect(field.getAttribute("aria-label")).toBe("Edit Name for Ada");
+    fireEvent.change(field, { target: { value: "Ada L." } });
+    fireEvent.click(screen.getByLabelText("Save Ada"));
+    expect(committed).toEqual([1, ["Ada L.", "Eng"]]);
+    // The editor closed; the pencil is back.
+    expect(screen.queryByDisplayValue("Ada L.")).toBeNull();
+    expect(screen.getByLabelText("Edit Ada")).toBeDefined();
+  });
+
+  it("Cancel and Escape close row edit mode without committing", () => {
+    let committed = false;
+    ui(<DataTable columns={COLUMNS} rows={ROWS} onRowEdit={() => {}} onRowCommit={() => (committed = true)} />);
+    fireEvent.click(screen.getByLabelText("Edit Bob"));
+    fireEvent.change(screen.getByDisplayValue("Bob"), { target: { value: "Robert" } });
+    fireEvent.click(screen.getByLabelText("Cancel editing Bob"));
+    expect(committed).toBe(false);
+    expect(screen.getByText("Bob")).toBeDefined(); // restored
+    // Escape in a field cancels too.
+    fireEvent.click(screen.getByLabelText("Edit Bob"));
+    fireEvent.keyDown(screen.getByDisplayValue("Bob"), { key: "Escape" });
+    expect(committed).toBe(false);
+    expect(screen.queryByDisplayValue("Bob")).toBeNull();
+    expect(screen.getByText("Bob")).toBeDefined();
+  });
+
+  it("keeps action buttons SIBLINGS of a button-roled pressable row, isolated from onRowPress", () => {
+    let pressed = -1;
+    const { container } = ui(
+      <DataTable
+        columns={COLUMNS}
+        rows={ROWS}
+        onRowPress={(_row, i) => (pressed = i)}
+        onRowEdit={() => {}}
+        onRowDelete={() => {}}
+      />,
+    );
+    // No button may nest inside another button (invalid DOM; the console gate's
+    // structural assert): the actions cell rides beside the row press area.
+    const buttons = Array.from(container.querySelectorAll('[role="button"]'));
+    expect(buttons.length).toBeGreaterThan(0);
+    expect(buttons.some((b) => b.parentElement?.closest('[role="button"]') != null)).toBe(false);
+    // An action press never doubles as a row press; a cell press still rows.
+    fireEvent.click(screen.getByLabelText("Delete Bob"));
+    expect(pressed).toBe(-1);
+    fireEvent.click(screen.getByText("Ada"));
+    expect(pressed).toBe(1);
+  });
+
+  it("passes custom ReactNode cells through a row commit unchanged", () => {
+    let cells: ReactNode[] = [];
+    const badge = <Badge key="b">Ops</Badge>;
+    ui(
+      <DataTable
+        columns={COLUMNS}
+        rows={[["Cat", badge]]}
+        onRowEdit={() => {}}
+        onRowCommit={(_i, next) => (cells = next)}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText("Edit Cat"));
+    fireEvent.change(screen.getByDisplayValue("Cat"), { target: { value: "Cathy" } });
+    fireEvent.click(screen.getByLabelText("Save Cat"));
+    expect(cells[0]).toBe("Cathy");
+    expect(cells[1]).toBe(badge); // the ReactNode cell is not editable and passes through
+  });
+});
+
+describe("DataTable inline editing", () => {
+  it("pressing a string cell opens a focused field; Enter commits the changed value", () => {
+    let commit: [number, number, string] | null = null;
+    ui(
+      <DataTable
+        inlineEdit
+        columns={COLUMNS}
+        rows={ROWS}
+        onCellCommit={(r, c, next) => (commit = [r, c, next])}
+      />,
+    );
+    fireEvent.click(screen.getByText("Eng"));
+    const field = screen.getByDisplayValue("Eng") as HTMLInputElement;
+    expect(document.activeElement).toBe(field);
+    fireEvent.change(field, { target: { value: "Design" } });
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(commit).toEqual([1, 1, "Design"]); // Ada's row, Role column
+    expect(screen.queryByDisplayValue("Design")).toBeNull(); // editor closed
+  });
+
+  it("blur commits a changed value, and an unchanged value commits nothing", () => {
+    let commits: Array<[number, number, string]> = [];
+    ui(
+      <DataTable
+        inlineEdit
+        columns={COLUMNS}
+        rows={ROWS}
+        onCellCommit={(r, c, next) => commits.push([r, c, next])}
+      />,
+    );
+    fireEvent.click(screen.getByText("Cat"));
+    fireEvent.change(screen.getByDisplayValue("Cat"), { target: { value: "Catherine" } });
+    fireEvent.blur(screen.getByDisplayValue("Catherine"));
+    expect(commits).toEqual([[2, 0, "Catherine"]]);
+    // Open again and blur without changing: no commit fires.
+    fireEvent.click(screen.getByText("Cat"));
+    fireEvent.blur(screen.getByDisplayValue("Cat"));
+    expect(commits.length).toBe(1);
+  });
+
+  it("Escape restores the cell without committing (and the following blur stays inert)", () => {
+    let fired = false;
+    ui(<DataTable inlineEdit columns={COLUMNS} rows={ROWS} onCellCommit={() => (fired = true)} />);
+    fireEvent.click(screen.getByText("PM"));
+    const field = screen.getByDisplayValue("PM");
+    fireEvent.change(field, { target: { value: "CTO" } });
+    fireEvent.keyDown(field, { key: "Escape" });
+    fireEvent.blur(field);
+    expect(fired).toBe(false);
+    expect(screen.queryByDisplayValue("CTO")).toBeNull();
+    expect(screen.getByText("PM")).toBeDefined();
+  });
+
+  it("names the editable cells as buttons when the row itself is not pressable", () => {
+    ui(<DataTable inlineEdit columns={COLUMNS} rows={ROWS} onCellCommit={() => {}} />);
+    expect(screen.getByRole("button", { name: "Edit Role for Ada" })).toBeDefined();
+  });
+
+  it("does not open editors for custom ReactNode cells", () => {
+    const { container } = ui(
+      <DataTable
+        inlineEdit
+        columns={COLUMNS}
+        rows={[["Bob", <Badge key="b">PM</Badge>]]}
+        onCellCommit={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByText("PM")); // the Badge text, not an editable string cell
+    expect(container.querySelector("input")).toBeNull();
+  });
+});
+
+describe("DataTable row-interaction per-OS skins", () => {
+  // Every other case renders the web build; this smoke-mounts the iOS and
+  // Android builds with the new row-interaction surface so a skin referencing
+  // a missing token cannot ship untested (the skins-smoke convention).
+  for (const platform of ["ios", "android"] as const) {
+    it(`renders actions and an open inline editor with the ${platform} skin`, async () => {
+      const mod = (await import(`../src/organisms/data-table/data-table.${platform}.tsx`)) as {
+        DataTable: typeof DataTable;
+      };
+      const Table = mod.DataTable;
+      expect(Table).toBeDefined();
+      const { container } = ui(
+        <Table inlineEdit columns={COLUMNS} rows={ROWS} onRowEdit={() => {}} onRowDelete={() => {}} onCellCommit={() => {}} />,
+      );
+      expect(screen.getAllByLabelText("Edit Bob").length).toBeGreaterThan(0);
+      // Open an editor so the skin's editInput/editTint styles render too.
+      // (iOS collapses to the primary column below the compact width only when
+      // measured; unmeasured test layout keeps all columns.)
+      fireEvent.click(screen.getByText("Eng"));
+      expect(container.querySelector("input")).not.toBeNull();
+      cleanup();
+    });
+  }
+});
+
 describe("DataTable loading and empty states", () => {
   it("renders skeleton placeholder rows instead of data while loading", () => {
     const { container } = ui(<DataTable loading columns={COLUMNS} rows={ROWS} />);

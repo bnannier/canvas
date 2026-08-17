@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Select } = scope;
   return (
-<Select label="Size" options={["Small", "Medium", "Large"]} open placeholder="Select a size" />
+<Select label="Size" options={["Small", "Medium", "Large"]} placeholder="Select a size" />
   );
 }

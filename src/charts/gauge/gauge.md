@@ -1,6 +1,6 @@
 # Gauge
 
-A radial dial: a muted track with a tone-colored fill arc for a 0-100 value, and the number plus an optional label centered inside.
+A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value arc) for a 0-100 value, the percent readout in the open center of the semicircle, and an optional label below the graphic.
 
 ## Usage
 
@@ -38,7 +38,7 @@ A radial dial: a muted track with a tone-colored fill arc for a 0-100 value, and
 
 ### Gauge
 
-**Do** — Put a muted track behind the fill and the numeric value plus label in the center.
+**Do** — Put a muted track behind the value arc, the percent readout in the semicircle's open center, and the label below the graphic.
 
 ```tsx
 <Card padded style={{ maxWidth: 200 }}>

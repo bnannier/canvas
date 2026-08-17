@@ -136,7 +136,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 **Do** — For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.
 
 ```tsx
-<Select narrow open defaultValue="Yes" options={["Yes", "No"]} />
+<Select narrow defaultValue="Yes" options={["Yes", "No"]} />
 ```
 
 **Don't** — A custom listbox for two short options is heavier than it needs to be and worse on mobile.
