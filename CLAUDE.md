@@ -140,10 +140,13 @@ SOLID, so content surfaces (cards, lists, tables, calendars, charts) do NOT go g
 
 Those functional-layer surfaces render through the shared `GlassSurface` primitive
 (`src/style/glass-surface`), which paints the active material per platform: Apple's
-real native Liquid Glass via `expo-glass-effect` on iOS 26+, a genuine frosted blur
-via `expo-blur` on web/Android (and iOS < 26), and the translucent `popover` fill as
-a fallback when those optional peer dependencies are not installed. So glass mode IS
-real iOS Liquid Glass on iOS and a real frost elsewhere, not a per-component effect.
+real native Liquid Glass via `expo-glass-effect` on iOS 26+, a real LENS on Chromium
+web (an SVG displacement filter applied as the material's backdrop-filter, refraction
+concentrated at the rim; `glass-lens.ts`, no module needed), a genuine frosted blur
+via `expo-blur` on non-Chromium web, Android, and iOS < 26, and the translucent
+`popover` fill as a fallback when no material is available. So glass mode IS real iOS
+Liquid Glass on iOS, a real lens on Chromium web, and a real frost elsewhere, not a
+per-component effect.
 Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-filter,
 specular edges) onto individual components: route any new functional-layer surface
 through `GlassSurface` (pass it the skin's shape style; it strips the fill and

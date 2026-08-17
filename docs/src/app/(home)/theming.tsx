@@ -13,7 +13,7 @@ import { useDocsTheme } from "../../theme/docs-theme";
 const NATIVE_PROVIDER = `import { ThemeProvider } from "@nannier/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
-// pass scheme to force one, and the glass boolean for the frosted surfaces.
+// pass scheme to force one, and the glass boolean for the glass material.
 export function App() {
   return (
     <ThemeProvider scheme="dark" glass>
@@ -100,7 +100,7 @@ export default function ThemingScreen() {
           <P>
             On iOS and Android, wrap the app once in <InlineCode>ThemeProvider</InlineCode>. It follows the OS appearance by
             default; pass <InlineCode>scheme</InlineCode> (<InlineCode>"light"</InlineCode> or <InlineCode>"dark"</InlineCode>) to
-            force one, and the <InlineCode>glass</InlineCode> boolean for the frosted surfaces. Like every Canvas axis it is a flat boolean: <InlineCode>glass</InlineCode> or <InlineCode>solid</InlineCode>, omit both for the platform default. No CSS and no <InlineCode>{"<html>"}</InlineCode>{" "}
+            force one, and the <InlineCode>glass</InlineCode> boolean for the glass material. Like every Canvas axis it is a flat boolean: <InlineCode>glass</InlineCode> or <InlineCode>solid</InlineCode>, omit both for the platform default. No CSS and no <InlineCode>{"<html>"}</InlineCode>{" "}
             attributes are involved on native.
           </P>
           <CodeBlock code={NATIVE_PROVIDER} />
@@ -152,8 +152,10 @@ export default function ThemingScreen() {
             sheets) plus navbars and sidebars read as glass, while content surfaces (cards, lists, tables) stay solid ("don't use glass
             in the content layer"). It is a theming-level switch (the ThemeProvider swaps the popover surface token), not a per-component
             prop. Those functional-layer surfaces render through Canvas's GlassSurface primitive, which paints the real material per
-            platform: Apple's native Liquid Glass on iOS 26+ (via expo-glass-effect), a genuine frosted blur on web and Android (via
-            expo-blur), and a translucent fallback when those optional modules are not installed. It defaults to the platform:{" "}
+            platform: Apple's native Liquid Glass on iOS 26+ (via expo-glass-effect), a real lens on Chromium browsers (an SVG
+            displacement filter that refracts the backdrop at the rim, where the glass bends most; the centre stays optically flat), a
+            genuine frosted blur on non-Chromium web and Android (via expo-blur), and a translucent fallback when no material is
+            available. It defaults to the platform:{" "}
             glass on iOS 26+ (matching the OS) and solid everywhere else, when you pass neither boolean. Force it with <InlineCode>glass</InlineCode> /{" "}
             <InlineCode>solid</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on native, or <InlineCode>data-surface="glass"</InlineCode> on{" "}
             <InlineCode>{"<html>"}</InlineCode> on the web.
@@ -170,7 +172,7 @@ export default function ThemingScreen() {
           </View>
           <H3>What changes</H3>
           <View style={{ gap: 4 }}>
-            <Bullet>Functional-layer surfaces (overlays, navbars, sidebars) render the glass material via GlassSurface: native Liquid Glass on iOS 26+, a frosted blur on web and Android; content cards, lists, and tables stay solid</Bullet>
+            <Bullet>Functional-layer surfaces (overlays, navbars, sidebars) render the glass material via GlassSurface: native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; content cards, lists, and tables stay solid</Bullet>
             <Bullet>Border colors shift to white-alpha edges</Bullet>
             <Bullet>On the web, the body background becomes a multi-color aurora gradient that the frosted surfaces refract</Bullet>
           </View>

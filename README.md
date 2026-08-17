@@ -8,7 +8,7 @@
 
 **Try it live:** the [component catalog](https://canvas.nannier.com/components) renders all 81 components (atoms, molecules, organisms, and a full chart family) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
-Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; elsewhere it falls back to a genuine frost or a solid surface.
+Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; on Chromium browsers it renders as a real lens (an SVG displacement filter that refracts the backdrop at the rim); elsewhere it falls back to a genuine frost or a solid surface.
 
 ## Install
 
@@ -30,7 +30,7 @@ These are only needed if you use the feature they back. Install them lazily; ski
 | --- | --- | --- |
 | `react-native-qrcode-svg` | you render the `QRCode` component | `QRCode` is unavailable |
 | `expo-glass-effect` | you want real iOS 26 Liquid Glass | glass falls back to a translucent fill |
-| `expo-blur` | you want a real frosted blur for glass mode on web, Android, and iOS < 26 | glass falls back to a translucent fill |
+| `expo-blur` | you want a real frosted blur for glass mode on non-Chromium web, Android, and iOS < 26 (Chromium web renders the SVG lens with no module) | glass falls back to a translucent fill (the Chromium lens keeps working) |
 
 ```bash
 # add any subset you actually use
@@ -98,7 +98,7 @@ Canvas targets all three platforms from one install. The only thing that changes
 `ThemeProvider` reads the OS color scheme by default and exposes the resolved tokens to every Canvas component through the `useTheme` hook. Three optional props control it:
 
 - `scheme` (`"light" | "dark"`): force a color scheme. Omit to follow the OS appearance.
-- `surface` (`"solid" | "glass"`): the functional-layer material. Omit for the platform default (Liquid Glass on iOS 26+, solid everywhere else); pass `"glass"` to force frost, `"solid"` to force flat.
+- `surface` (`"solid" | "glass"`): the functional-layer material. Omit for the platform default (Liquid Glass on iOS 26+, solid everywhere else); pass `"glass"` to force the glass material, `"solid"` to force flat.
 - `tokens`: brand token overrides merged over the active scheme, so you can rebrand without forking the token files. Pass a flat `Partial<ColorTokens>` to apply to both schemes, or `{ light, dark }` to override each separately. Use a stable reference (a module constant or memoized object).
 
 ```jsx
