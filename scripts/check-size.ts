@@ -10,6 +10,29 @@ const STYLES_DIR = join(ROOT, "styles");
 const CORE_MAX_TOTAL_GZIP = 30_720;
 const CORE_MAX_FILE_GZIP = 2_048;
 
+// Per-file exceptions to the 2KB rule above. That rule was written when `styles/` held
+// ~25 per-component stylesheets (button.css, dialog.css, and so on), where 2KB is a
+// generous ceiling for one component's rules. That layer is gone: since "Ship design
+// tokens as plain CSS", `styles/` is nine per-concern token files, and they are not
+// interchangeable in size. Listing the one structural outlier here keeps the 2KB guard
+// live on the other eight (colors.css sits at ~2.0KB, so it still bites) instead of
+// raising the global constant, which would blind the check for all nine at once.
+const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
+  // platforms.css is the whole --p-* web hand-off in one file: three complete skin
+  // tables (web / iOS 26 / Material 3, ~1,950 declarations) plus the prose naming each
+  // group's upstream `*.styles.ts`. Splitting it per platform was considered and
+  // rejected. The three tables share so much vocabulary that separate shards gzip to
+  // ~18.1KB against ~15.9KB together, so the split costs bytes; no shard lands near 2KB
+  // anyway (the smallest is ~5.6KB); canvas.css imports all three regardless ("Link this
+  // one file"); `styles/*` is a public export path, so moving the file breaks anyone
+  // importing it directly; and the docs and the design mirror flip `data-platform` at
+  // runtime, so they need all three loaded at once. Measured at 15,915B gzip, so 20KB
+  // leaves roughly the same 1.3x headroom the JS budget carries: enough for more skin
+  // tokens, tight enough to catch a doubling. It also trips before the 30KB total does,
+  // so a regression names the file rather than the whole layer.
+  "styles/tokens/platforms.css": 20_480,
+};
+
 // The shipped JavaScript budget: the whole kit, bundled with react / react-native /
 // react-native-svg and the optional peers externalized (what a consumer's bundler
 // resolves from the outside), minified and gzipped. Measured at ~104KB gzip; the
@@ -50,7 +73,9 @@ function report(
   files: FileSize[],
   maxTotal: number,
   maxFile: number,
+  overrides: Record<string, number> = {},
 ): boolean {
+  const budgetFor = (path: string) => overrides[path] ?? maxFile;
   const totalRaw = files.reduce((s, f) => s + f.raw, 0);
   const totalGzip = files.reduce((s, f) => s + f.gzip, 0);
 
@@ -59,16 +84,19 @@ function report(
   console.log(`${"File".padEnd(50)} ${"Raw".padStart(8)} ${"Gzip".padStart(8)}`);
   console.log("-".repeat(68));
 
-  const oversized: string[] = [];
+  const oversized: FileSize[] = [];
   for (const f of files) {
-    const flag = f.gzip > maxFile ? " !" : "";
+    const flag = f.gzip > budgetFor(f.path) ? " !" : "";
     console.log(`${f.path.padEnd(50)} ${(f.raw + "B").padStart(8)} ${(f.gzip + "B").padStart(8)}${flag}`);
-    if (f.gzip > maxFile) oversized.push(f.path);
+    if (f.gzip > budgetFor(f.path)) oversized.push(f);
   }
 
   console.log("-".repeat(68));
   console.log(`${"Total".padEnd(50)} ${(totalRaw + "B").padStart(8)} ${(totalGzip + "B").padStart(8)}`);
   console.log(`Budget: ${maxTotal}B gzip total, ${maxFile}B gzip per file`);
+  for (const [path, budget] of Object.entries(overrides)) {
+    console.log(`  except ${path}: ${budget}B gzip (justified in check-size.ts)`);
+  }
 
   let failed = false;
   if (totalGzip > maxTotal) {
@@ -76,8 +104,19 @@ function report(
     failed = true;
   }
   if (oversized.length) {
-    console.log(`\n${oversized.length} ${label} file(s) exceed the per-file budget:`);
-    for (const f of oversized) console.log(`  ${f}`);
+    console.log(`\n${oversized.length} ${label} file(s) exceed their per-file budget:`);
+    for (const f of oversized) console.log(`  ${f.path} (${f.gzip}B > ${budgetFor(f.path)}B)`);
+    failed = true;
+  }
+
+  // An override whose file was renamed or deleted is dead config: the file itself would
+  // fall back to the default and fail loudly, but the stale entry would sit here reading
+  // as a live exemption. Catch it here rather than at the next person to read the table.
+  const known = new Set(files.map((f) => f.path));
+  const stale = Object.keys(overrides).filter((path) => !known.has(path));
+  if (stale.length) {
+    console.log(`\n${stale.length} per-file budget override(s) name a file that no longer exists:`);
+    for (const path of stale) console.log(`  ${path}`);
     failed = true;
   }
   return failed;
@@ -97,7 +136,7 @@ for (const file of files) {
 
 sizes.sort((a, b) => b.gzip - a.gzip);
 
-const cssFailed = report("Core CSS", sizes, CORE_MAX_TOTAL_GZIP, CORE_MAX_FILE_GZIP);
+const cssFailed = report("Core CSS", sizes, CORE_MAX_TOTAL_GZIP, CORE_MAX_FILE_GZIP, CORE_FILE_GZIP_OVERRIDES);
 
 // ---- Shipped JavaScript budget --------------------------------------------------
 // Bundle the built kit the way a consumer's bundler would (externals resolved from
