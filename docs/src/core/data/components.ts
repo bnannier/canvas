@@ -203,6 +203,18 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "swatch",
+    name: "Swatch",
+    description: "A color sample: a filled rounded block with the token's name and mono value beneath it, the anatomy a design-system color sheet repeats. Swatch owns the label column, so a sheet never sets a bare block beside a hand-built text column. A hairline edge keeps a white or near-black sample visible on the surface behind it. Sizes, circle, inline (label beside the block), and block (a full-width ramp bar).",
+    category: "Atoms",
+    // A color sheet reads from the leading edge, and the `block` variant is a
+    // full-width ramp bar, so the stage fills its width and pins the example left
+    // instead of shrink-wrapping it centered (which would collapse `block` to the
+    // width of its own label).
+    stageAlign: "start",
+  },
+
+  {
     slug: "switch",
     name: "Switch",
     description: "On / off switch, isolated or grouped in a settings list.",

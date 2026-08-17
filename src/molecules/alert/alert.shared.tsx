@@ -8,6 +8,7 @@ import {
   controlRipple,
   pressDim,
   palette,
+  statusHues,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -108,19 +109,15 @@ function toneOf(p: AlertProps): Tone {
   return "neutral";
 }
 
-// The palette hue per toned alert (neutral rides the semantic tokens).
-const TONE_HUE: Record<Exclude<Tone, "neutral">, string> = {
-  info: "blue",
-  success: "green",
-  warning: "amber",
-  error: "red",
-};
+// The palette hue per toned alert comes from the style layer's shared statusHues
+// map (src/style/status-hue), the same one Badge's status pill reads, so the two
+// never drift. Neutral rides the semantic tokens instead of a palette hue.
 
 // Container border + fill. Light: 200 border / 50 surface; dark: 800 / 950.
 // Neutral: semantic card surface with the border token.
 function containerColor(tokens: ColorTokens, dark: boolean, tone: Tone): ViewStyle {
   if (tone === "neutral") return { borderColor: tokens.border, backgroundColor: tokens.card };
-  const hue = TONE_HUE[tone];
+  const hue = statusHues[tone];
   return dark
     ? { borderColor: palette[`${hue}-800`], backgroundColor: palette[`${hue}-950`] }
     : { borderColor: palette[`${hue}-200`], backgroundColor: palette[`${hue}-50`] };
@@ -129,21 +126,21 @@ function containerColor(tokens: ColorTokens, dark: boolean, tone: Tone): ViewSty
 // Icon color. Light: 600; dark: 400. Neutral: muted-foreground.
 function iconColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   if (tone === "neutral") return { color: tokens["muted-foreground"] };
-  const hue = TONE_HUE[tone];
+  const hue = statusHues[tone];
   return { color: dark ? palette[`${hue}-400`] : palette[`${hue}-600`] };
 }
 
 // Title color. Light: 800; dark: 200. Neutral: foreground.
 function titleColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   if (tone === "neutral") return { color: tokens.foreground };
-  const hue = TONE_HUE[tone];
+  const hue = statusHues[tone];
   return { color: dark ? palette[`${hue}-200`] : palette[`${hue}-800`] };
 }
 
 // Body color. Light: 700; dark: 300. Neutral: muted-foreground.
 function bodyColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   if (tone === "neutral") return { color: tokens["muted-foreground"] };
-  const hue = TONE_HUE[tone];
+  const hue = statusHues[tone];
   return { color: dark ? palette[`${hue}-300`] : palette[`${hue}-700`] };
 }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { lightColors, darkColors, colorsByScheme, glassByScheme } from "../src/style/tokens.ts";
+import { lightColors, darkColors, colorsByScheme, glassByScheme, brandColors, palette } from "../src/style/tokens.ts";
+import { statusHues } from "../src/style/status-hue.ts";
 
 const REQUIRED = [
   "background",
@@ -56,6 +57,39 @@ describe("color tokens", () => {
       // Status colors are reserved for state, never reused as series identity.
       for (const status of [colors.destructive, colors.success, colors.warning]) {
         expect(series).not.toContain(status);
+      }
+    }
+  });
+});
+
+describe("brandColors", () => {
+  it("defines the three orb constants as lowercase hexes", () => {
+    for (const key of ["orb-indigo", "orb-violet", "orb-cyan"] as const) {
+      expect(brandColors[key]).toMatch(/^#[0-9a-f]{6}$/);
+    }
+  });
+
+  it("does not flip with the scheme, so it stays out of the light/dark token sets", () => {
+    // A brand mark is one mark: it must not be reachable as a scheme-aware token.
+    for (const key of Object.keys(brandColors)) {
+      expect(lightColors).not.toHaveProperty(key);
+      expect(darkColors).not.toHaveProperty(key);
+    }
+  });
+});
+
+describe("statusHues", () => {
+  it("maps each semantic status tone to a palette hue family", () => {
+    expect(statusHues).toEqual({ success: "green", warning: "amber", error: "red", info: "blue" });
+  });
+
+  it("names hues that exist at every step Alert and Badge reach for", () => {
+    // Alert: 50/200 + 600/700/800 in light, 950/800 + 200/300/400 in dark.
+    // Badge: the same pill surfaces, a 700/400 label, and a saturated 500 dot.
+    const steps = [50, 200, 300, 400, 500, 600, 700, 800, 950];
+    for (const hue of Object.values(statusHues)) {
+      for (const step of steps) {
+        expect(palette[`${hue}-${step}`]).toMatch(/^#[0-9a-f]{6}$/);
       }
     }
   });

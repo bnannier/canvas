@@ -90,6 +90,8 @@ const CASES: SkinCase[] = [
   { name: "Slider", dir: "atoms/slider", file: "slider", props: { value: 40, min: 0, max: 100 } },
   { name: "Sparkline", dir: "atoms/sparkline", file: "sparkline", props: { values: [1, 3, 2, 5, 4, 6] } },
   { name: "Spinner", dir: "atoms/spinner", file: "spinner" },
+  // `value` + `detail` render both mono label lines alongside the block.
+  { name: "Swatch", dir: "atoms/swatch", file: "swatch", props: { color: "#4f46e5", value: "--primary", detail: "oklch(0.511 0.262 276.966)" }, children: "primary" },
   { name: "Switch", dir: "atoms/switch", file: "switch", props: { checked: true }, children: "Wi-Fi" },
   { name: "Textarea", dir: "atoms/textarea", file: "textarea", props: { placeholder: "Notes", label: "Notes", required: true, rows: 3 } },
   // `open` renders the tip bubble body.

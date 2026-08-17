@@ -149,6 +149,26 @@ export const glassByScheme: Record<ColorScheme, Partial<ColorTokens>> = {
   },
 };
 
+/**
+ * Fixed brand constants. Unlike the semantic tokens these do NOT flip with the
+ * scheme: the sign-in orbs and the avatar gradient are brand marks, and a mark
+ * that changed hue between light and dark would stop being one mark. Keys are the
+ * CSS custom-property names verbatim (`orb-indigo` is `--orb-indigo` in
+ * styles/tokens/colors.css); scripts/validate-tokens.ts fails the build if a key
+ * here has no matching `--name` in the shipped CSS.
+ */
+export interface BrandColors {
+  "orb-indigo": string;
+  "orb-violet": string;
+  "orb-cyan": string;
+}
+
+export const brandColors: BrandColors = {
+  "orb-indigo": "#6366f1",
+  "orb-violet": "#8b5cf6",
+  "orb-cyan": "#06b6d4",
+};
+
 /** Fixed, scheme-independent base colors. */
 export const baseColors: Record<string, string> = {
   white: "#ffffff",
