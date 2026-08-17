@@ -114,26 +114,28 @@ const DYNAMIC = `<Button primary>Save</Button>
 // deliberately non-compiling fences: the Don'ts show props the kit does not have,
 // which is exactly why they are Don'ts, so they render as code rather than as a
 // live preview.
+// Each pair keeps ONE subject on both sides, so the Do is the correction of the
+// exact mistake the Don't shows, never an answer to a different question.
 const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note: string } }[] = [
   {
-    bad: { code: `<View style={{ backgroundColor: "#6366f1" }}>`, note: "A hard-coded hex bypasses the theme. Won't follow accent changes; looks wrong in dark mode." },
-    good: { code: `<Button primary>Save</Button>`, note: "The semantic prop is token-routed through useTheme(). Theme and accent changes are free." },
+    bad: { code: `<Button style={{ backgroundColor: "#6366f1" }}>\n  Save\n</Button>`, note: "A hard-coded fill painted over the component. It bypasses the theme: an accent change won't reach it, and it looks wrong in dark mode." },
+    good: { code: `<Button primary>Save</Button>`, note: "The same button, styled by its semantic prop. The prop resolves through the active scheme's tokens, so theme and accent changes are free." },
   },
   {
-    bad: { code: `<Button variant="primary" size="lg">`, note: "String-valued enum props are rejected. variant, size, and tone are not part of the API." },
+    bad: { code: `<Button variant="primary" size="lg">`, note: "String-valued enum props are rejected on components: variant, size, and tone are not part of the API." },
     good: { code: `<Button primary large>`, note: "Flat boolean props, at most one per axis. The prop name is the value." },
   },
   {
-    bad: { code: `backgroundColor: tokens.primary,\ncolor: tokens.foreground`, note: "A mismatched pair: foreground on a primary fill is not contrast-guaranteed." },
-    good: { code: `backgroundColor: tokens.primary,\ncolor: tokens["primary-foreground"]`, note: "Pair every fill with its foreground token; contrast holds in light and dark." },
+    bad: { code: `backgroundColor: tokens.primary,\ncolor: tokens.foreground`, note: "In a skin's style object, foreground is the body-text color, not the partner of a primary fill: this pairing is not contrast-guaranteed." },
+    good: { code: `backgroundColor: tokens.primary,\ncolor: tokens["primary-foreground"]`, note: "Every fill token has a -foreground partner. Pair them and contrast holds in both schemes." },
   },
   {
-    bad: { code: `import { darkColors } from "@nannier/canvas"\nconst bg = darkColors.primary`, note: "Frozen to one scheme. Ignores the active theme and the surface mode." },
+    bad: { code: `import { darkColors } from "@nannier/canvas"\nconst bg = darkColors.primary`, note: "Frozen to one scheme: this value never updates when the theme flips." },
     good: { code: `const { tokens } = useTheme()\nconst bg = tokens.primary`, note: "Reads the active scheme and re-renders when the theme changes." },
   },
   {
     bad: { code: `<Popover glass>`, note: "Glass is not a per-component prop, and you never hand-paint a blur onto one component." },
-    good: { code: `<ThemeProvider surface="glass">`, note: "Glass is a theming-level surface mode; the whole functional layer turns to glass together." },
+    good: { code: `<ThemeProvider surface="glass">`, note: "Glass is a surface mode set once on the provider, so the whole functional layer turns together. surface is provider configuration, not a component styling axis, which is why it takes a value while components keep boolean props." },
   },
 ];
 
@@ -386,8 +388,8 @@ export default function ColorsScreen() {
           <View style={{ gap: 16 }}>
             {DO_DONT.map((pair, i) => (
               <View key={i} style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
-                <DoDontCard dont caption={pair.bad.note} code={pair.bad.code} />
-                <DoDontCard do caption={pair.good.note} code={pair.good.code} />
+                <DoDontCard dont caption={pair.bad.note} code={pair.bad.code} style={wide ? { flex: 1 } : null} />
+                <DoDontCard do caption={pair.good.note} code={pair.good.code} style={wide ? { flex: 1 } : null} />
               </View>
             ))}
           </View>

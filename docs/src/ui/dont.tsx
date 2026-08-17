@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Icon, alpha, palette, useTheme } from "@nannier/canvas";
+import { View, Text, Icon, alpha, palette, useTheme, type StyleProp, type ViewStyle } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair } from "../core/scope";
 import { CodeBlock } from "./code-block";
@@ -23,12 +23,16 @@ export interface DoDontCardProps {
   // exist as text only).
   code?: string;
   children?: ReactNode;
+  // Layout composition only (the row parent passes flex:1 for equal columns).
+  // The card must NOT own it: flex:1 inside a phone-width COLUMN parent is
+  // flexBasis 0 against an auto height, which clips the tallest card's caption.
+  style?: StyleProp<ViewStyle>;
 }
 
 // One side of a Do/Don't pair: the red Don't card or the green Do card, carrying a body
 // (live preview or code) above its caption.
 export function DoDontCard(props: DoDontCardProps) {
-  const { caption, code, children } = props;
+  const { caption, code, children, style } = props;
   const { tokens, dark } = useTheme();
   // `dont` alone decides the treatment. `do` is accepted so a call site can NAME the
   // side it means (`<DoDontCard do>` reads better in a pair than a bare tag), but it
@@ -47,7 +51,7 @@ export function DoDontCard(props: DoDontCardProps) {
   return (
     // Solid card in solid mode, frost in glass mode (DocsSurface), with the do/don't
     // red/green wash laid over it as an overlay so the card never reads as a clear hole.
-    <DocsSurface style={{ flex: 1, borderRadius: 12, borderWidth: 1, borderColor: border, padding: 20, gap: 8 }}>
+    <DocsSurface style={[{ borderRadius: 12, borderWidth: 1, borderColor: border, padding: 20, gap: 8 }, style]}>
       <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: bg, pointerEvents: "none" }} />
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
         {isDont ? <Icon circleX destructive size={14} /> : <Icon circleCheck success size={14} />}
@@ -63,7 +67,7 @@ export function DoDontCard(props: DoDontCardProps) {
           <ExampleErrorBoundary>{children}</ExampleErrorBoundary>
         </View>
       )}
-      {code === undefined ? null : <CodeBlock code={code} />}
+      {code === undefined ? null : <CodeBlock code={code} wrap />}
       <Text style={{ fontFamily: geist("400"), fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] }}>{caption}</Text>
     </DocsSurface>
   );
@@ -87,8 +91,8 @@ export function Donts({ donts }: { donts: DocDontPair[] }) {
             <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground }}>{d.title}</Text>
           ) : null}
           <View style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
-            <DoDontCard dont caption={d.dont.caption}>{d.dont.render(scope)}</DoDontCard>
-            <DoDontCard do caption={d.do.caption}>{d.do.render(scope)}</DoDontCard>
+            <DoDontCard dont caption={d.dont.caption} style={wide ? { flex: 1 } : null}>{d.dont.render(scope)}</DoDontCard>
+            <DoDontCard do caption={d.do.caption} style={wide ? { flex: 1 } : null}>{d.do.render(scope)}</DoDontCard>
           </View>
         </View>
       ))}
