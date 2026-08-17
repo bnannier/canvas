@@ -114,17 +114,17 @@ const PATTERNS: PatternDoc[] = [
   {
     slug: "density",
     name: "Density",
-    description: "Three-level density system (compact, regular, comfy) controlled via the data-density attribute. Scales padding and font sizes globally.",
+    description: "Density is a per-component axis of semantic boolean props: compact tightens a component's spacing, comfortable relaxes it, and omitting both gives the regular default. There is no app-wide density switch.",
     sections: [
       {
         title: "How it works",
-        description: "Set data-density on <html> (or any container) to switch between compact, regular (default), and comfy spacing. Canvas components read density-aware custom properties.",
+        description: "Pass compact for tight spacing, comfortable for generous spacing, or neither for the regular default. Each component resolves its own padding and gaps from the prop; no document attribute or stylesheet changes density globally.",
         render: () => (
           <Row relaxed wrap>
             {[
-              { label: "Compact", code: 'data-density="compact"', blurb: "Tight spacing for dense data views (tables, admin panels)" },
+              { label: "Compact", code: "compact", blurb: "Tight spacing for dense data views (tables, admin panels)" },
               { label: "Regular", code: "default", blurb: "Balanced spacing for most interfaces", selected: true },
-              { label: "Comfy", code: 'data-density="comfy"', blurb: "Generous spacing for reading-heavy or touch-friendly layouts" },
+              { label: "Comfortable", code: "comfortable", blurb: "Generous spacing for reading-heavy or touch-friendly layouts" },
             ].map((d) => (
               <Card key={d.label} grow selected={d.selected}>
                 <Column alignCenter tight>
@@ -145,11 +145,11 @@ const PATTERNS: PatternDoc[] = [
             {[
               { label: "Compact", density: "compact" as const, size: "small" as const },
               { label: "Regular (default)", density: "regular" as const, size: undefined },
-              { label: "Comfy", density: "comfy" as const, size: "large" as const },
+              { label: "Comfortable", density: "comfortable" as const, size: "large" as const },
             ].map((d) => (
               <Column key={d.label} tight>
                 <Typography tiny semibold muted>{d.label}</Typography>
-                <Card compact={d.density === "compact"} comfortable={d.density === "comfy"}>
+                <Card compact={d.density === "compact"} comfortable={d.density === "comfortable"}>
                   <Row alignCenter between>
                     <Row alignCenter snug>
                       <Input
@@ -176,13 +176,20 @@ const PATTERNS: PatternDoc[] = [
       },
       {
         title: "Extending",
-        anatomy: "Use the compact and comfy density selectors in your own components to shrink or grow padding the same way the built-ins do.",
+        anatomy: "Give your own components the same axis: accept compact and comfortable booleans and resolve the spacing from them, the way the built-ins do. To remember a user's choice on the web, setDensity persists it and getDensity reads it back; the app then applies it by passing the matching booleans down, because no stylesheet reads the stored preference.",
         render: () => (
           <CodeBlock
-            language="css"
-            code={`html[data-density="compact"] .my-row { padding: 0.5rem 0.75rem; }
-.my-row                              { padding: 0.75rem 1rem; }
-html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }`}
+            language="tsx"
+            code={`// The density axis is resolved inside the component, from its booleans.
+function MyRow({ compact, comfortable, children }: MyRowProps) {
+  const paddingVertical = compact ? 8 : comfortable ? 16 : 12;
+  return <View style={{ paddingVertical }}>{children}</View>;
+}
+
+// Persisting a preference: setDensity stores it; the APP applies it via props.
+setDensity("compact");
+const density = getDensity(); // "compact" | "regular" | "comfy"
+<MyRow compact={density === "compact"} comfortable={density === "comfy"}>...</MyRow>;`}
           />
         ),
       },
@@ -285,69 +292,66 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }`}
   {
     slug: "glass",
     name: "Glass Surface",
-    description: "Backdrop-filter glassmorphism on the functional layer (controls, navigation, overlays) — not content cards. Controlled via data-surface=\"glass\" on the document root.",
+    description: "A translucent material for the functional layer (navigation, bars, overlays), never content cards. A theming-level surface mode: <ThemeProvider glass> forces it on, <ThemeProvider solid> forces flat, and omitting both gives the platform default (glass on iOS 26+, solid elsewhere).",
     sections: [
       {
         title: "What 'glass' means in Canvas",
-        description: "Glass follows Apple's Liquid Glass model: it is a material for the FUNCTIONAL layer — navigation and overlays that float above content — not the content layer. The single Surface: solid / glass toggle swaps the popover token translucent, so overlays (popovers, menus, dropdowns, selects, dialogs, sheets, drawers, command) and the bars/sidebar go glass, while content surfaces (cards, lists, tables, calendars, charts) stay solid. The page background switches to a 3-radial-gradient aurora and each functional surface gets a backdrop-filter blur with a light edge highlight.",
-        anatomy: "Toggle with the Solid / Glass switch in the topbar (top right), or set the data-surface attribute to glass on the html element manually.",
-        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Only token values and a few backdrop-filter overrides switch on, keyed off the document's surface attribute. Real iOS Liquid Glass is the OS's automatic system material; this is Canvas's own cross-platform glassmorphism for the functional layer.</p></div>`,
+        description: "Glass follows Apple's Liquid Glass model: it is a material for the FUNCTIONAL layer, the navigation and overlays that float above content, never the content layer. The surface mode swaps the popover token translucent, so overlays (popovers, menus, dropdowns, selects, dialogs, sheets, drawers, command) and the bar/sidebar shells go glass, while content surfaces (cards, lists, tables, calendars, charts) stay solid. Those functional surfaces render through the shared GlassSurface primitive, which paints the platform's real material.",
+        anatomy: "Toggle with the Solid / Frost switch in the topbar, or pass the boolean to the provider: <ThemeProvider glass> forces glass, <ThemeProvider solid> forces flat, and omitting both picks the platform default (glass on iOS 26+ via liquidGlassAvailable(), solid elsewhere).",
+        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Glass mode swaps one token (popover) translucent and routes the functional-layer surfaces through the GlassSurface primitive, which paints the platform's own material: real Apple Liquid Glass via expo-glass-effect on iOS 26+, a genuine frosted blur via expo-blur on the web and Android, and the translucent popover fill when neither optional peer is installed.</p></div>`,
       },
       {
         title: "The four ingredients",
-        description: "Glass surfaces combine four CSS effects to create the frosted-pane look.",
+        description: "GlassSurface layers four ingredients to create the frosted-pane look.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F4A8;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Backdrop blur</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">backdrop-filter: blur(12px)</code>
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Blur material</div>
+    <code style="font-size:11px;color:var(--muted-foreground)">expo-glass-effect / expo-blur</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F3A8;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Tinted background</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">background: oklch(... / 0.62)</code>
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Translucent tint</div>
+    <code style="font-size:11px;color:var(--muted-foreground)">popover: rgba(255,255,255,0.72)</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x2728;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Subtle border</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">border: 1px solid rgba(...)</code>
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">The skin's shape</div>
+    <code style="font-size:11px;color:var(--muted-foreground)">radius + border, fill stripped</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F30C;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Aurora background</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">3-radial-gradient body bg</code>
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">A live backdrop</div>
+    <code style="font-size:11px;color:var(--muted-foreground)">content behind feeds the blur</code>
   </div>
 </div>`,
       },
       {
         title: "Surface inventory",
-        description: "How glass values map to each UI role.",
+        description: "Which surfaces take the material. Only the functional layer changes; the content layer never does.",
         html: `<div style="font-size:13px">
-  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Surface</div>
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Blur</div>
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Opacity</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Sidebar</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">16px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.65</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Card / Section card</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">12px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.55</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Topbar</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">12px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.60</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Dialog / Drawer</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">20px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">0.70</div>
-    <div style="padding:8px 12px">Tooltip / Popover</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">8px</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">0.80</div>
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Layer</div>
+    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">In glass mode</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Topbar / Sidebar</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass, via GlassSurface</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Dialog / Sheet / Drawer</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass, via GlassSurface</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Popover / Menu / Select / Command</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass, via GlassSurface</div>
+    <div style="padding:8px 12px">Card / List / Table / Chart</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">Content</div>
+    <div style="padding:8px 12px;color:var(--muted-foreground)">Stays solid</div>
   </div>
 </div>`,
       },
       {
         title: "Live comparison",
-        description: "The same content rendered in solid mode vs glass mode. The Solid / Glass toggle in the topbar swaps both at once.",
+        description: "An illustrative pair: the same panel drawn opaque and with a frosted material over a colorful backdrop. In the kit only functional-layer surfaces ever take the material (a real stat card stays solid); the Solid / Frost toggle in the topbar switches the whole docs shell at once.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:12px;padding:20px;background:radial-gradient(120% 120% at 0% 0%, hsl(262 83% 58% / 0.25), transparent 50%), radial-gradient(120% 120% at 100% 100%, hsl(190 90% 50% / 0.2), transparent 50%), var(--background)">
   <div>
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:8px">Solid</div>
@@ -383,26 +387,16 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }`}
       },
       {
         title: "Implementation",
-        description: "Glass keys off the document's data-surface attribute. Rather than restyle each surface, it overrides the surface tokens (--card, --popover) with translucent oklch values, then applies a backdrop-filter blur so the aurora backdrop shows through. Because <html> carries both .dark and data-surface=\"glass\" at once, light-only values are scoped with :not(.dark) so they never leak into dark mode. Light mode also needs a colored backdrop: pure-white frost over a white page reads as a solid card, so light glass strengthens the aurora (plus a faint floor tint) and adds soft edge definition to content surfaces so the frosted panes separate from what is behind them.",
-        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">/* base alphas (also feed dark) */
-[data-surface="glass"] {
-  --card: oklch(1 0 0 / 0.62);
-  --popover: oklch(1 0 0 / 0.74);
-}
-.dark[data-surface="glass"] {
-  --card: oklch(0.24 0.006 285.885 / 0.5);
-  --popover: oklch(0.25 0.006 285.885 / 0.62);
-}
-/* light only: more translucent, faint cool tint */
-[data-surface="glass"]:not(.dark) {
-  --card: oklch(0.99 0.01 286 / 0.52);
-  --popover: oklch(0.99 0.01 286 / 0.66);
-}
-/* frost every surface */
-[data-surface="glass"] :where(.card, .topbar, .sidebar, .bg-card) {
-  backdrop-filter: blur(16px) saturate(1.6);
-  -webkit-backdrop-filter: blur(16px) saturate(1.6);
-}</div>`,
+        description: "The ThemeProvider resolves the surface: pass the glass or solid boolean (glass wins if both are set), or omit both for the platform default, reported by liquidGlassAvailable(). When glass is active the provider overlays exactly one token, popover, with a translucent fill, and every functional-layer surface renders through the shared GlassSurface primitive, which paints the real material per platform. When the OS asks for Reduce Transparency or Increase Contrast, GlassSurface renders the opaque path instead. On the web, setSurface(\"glass\") persists the choice and stamps data-surface on the root element as a broadcast hook; no shipped CSS reads that attribute, so the app reads it back with getSurface() and syncs it into its ThemeProvider, the way the docs shell does.",
+        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">// The surface axis is boolean, like every other Canvas axis.
+&lt;ThemeProvider glass&gt;...&lt;/ThemeProvider&gt;  // force the translucent functional layer
+&lt;ThemeProvider solid&gt;...&lt;/ThemeProvider&gt;  // force flat
+&lt;ThemeProvider&gt;...&lt;/ThemeProvider&gt;  // default: glass on iOS 26+, solid elsewhere
+
+// Web persistence: store the choice, then sync it into the provider.
+setSurface("glass"); // persists + stamps data-surface (no CSS reads it)
+const surface = getSurface();
+&lt;ThemeProvider glass={surface === "glass"} solid={surface === "solid"}&gt;</div>`,
       },
     ],
   },
@@ -499,32 +493,32 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }`}
     sections: [
       {
         title: "Breakpoints",
-        description: "Canvas is desktop-first. Unprefixed utilities are the desktop base; a breakpoint prefix (sm, md, lg, xl, 2xl) applies at that width and below.",
+        description: "Canvas is desktop-first. The base value is the desktop case; a breakpoint entry (sm, md, lg, xl, 2xl) applies at that width and below. Components resolve the active value with the useResponsive hook.",
         html: `<div style="font-size:13px">
-  <div style="display:grid;grid-template-columns:80px 110px 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Name</div>
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Applies at</div>
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Typical use</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">base</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">default</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Unprefixed desktop base; the widest layouts, where the side table-of-contents shows</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">The desktop base; the widest layouts, where the side table-of-contents shows</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">2xl</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 1536px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 1536px</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Large monitors</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">xl</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 1280px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 1280px</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Desktops</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">lg</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 1024px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 1024px</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Small laptops; the sidebar collapses to a drawer at lg and below</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">md</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&le; 768px</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 768px</div>
     <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Tablets</div>
     <div style="padding:8px 12px;font-weight:500">sm</div>
-    <div style="padding:8px 12px;font-family:var(--font-mono);font-size:12px">&le; 640px</div>
+    <div style="padding:8px 12px;font-family:var(--font-mono);font-size:12px">&#8804; 640px</div>
     <div style="padding:8px 12px;color:var(--muted-foreground)">Phones</div>
   </div>
-  <p style="margin:12px 0 0;font-size:12.5px;color:var(--muted-foreground);line-height:1.6">A prefix is active when the viewport is at its width or narrower, so several match at once on a small screen. The smallest matching prefix wins: at 700px wide, <code style="font-family:var(--font-mono);font-size:11.5px">md:</code> applies (sm at 640px does not match yet), and <code style="font-family:var(--font-mono);font-size:11.5px">sm:</code> takes over at 640px and below.</p>
+  <p style="margin:12px 0 0;font-size:12.5px;color:var(--muted-foreground);line-height:1.6">A breakpoint is active when the viewport is at its width or narrower, so several match at once on a small screen. The smallest matching breakpoint wins: at 700px wide, md applies (sm at 640px does not match yet), and sm takes over at 640px and below.</p>
 </div>`,
       },
       {
@@ -553,7 +547,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }`}
       },
       {
         title: "Grid templates",
-        description: "Four reusable responsive grid templates that adapt across breakpoints.",
+        description: "Three reusable responsive grid templates that adapt across breakpoints.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <div>
     <div style="font-size:12px;font-weight:600;margin-bottom:6px">Stats grid (auto-fit 220px)</div>
@@ -589,7 +583,7 @@ html[data-density="comfy"]   .my-row { padding: 1rem 1.25rem; }`}
   <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Tables: horizontal scroll</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Tables get a min-width and live inside a scroll container that overflows horizontally. Easier to scroll than to pack columns into a phone screen.</div></div>
   <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Drawer: viewport cap</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The slide-over width is wrapped in min(width, 100vw) so an open drawer can never exceed the phone's width.</div></div>
   <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Page header: wrap actions</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The actions row uses flex-wrap. On small screens, a row of buttons wraps to a second line rather than overflowing.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Density layers on top</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The compact and comfy utilities layer on top of responsive ones, so compact mode shrinks padding everywhere regardless of viewport.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Density is orthogonal</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The compact and comfortable booleans are per-component and independent of the viewport, so a dense surface keeps its tight padding at every width.</div></div>
   <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Mobile is real, not an afterthought</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Every page was checked at 375px and 768px. No desktop-only surfaces.</div></div>
 </div>`,
       },

@@ -212,7 +212,7 @@ that purpose rather than a personal inbox.
 
 Both answers are "nothing is collected". This is verifiable in the source: there is no
 analytics, attribution, advertising, or crash reporting SDK, no account system, and no
-persistence beyond a web-only theme preference in `localStorage`.
+persistence at all (the in-app theme choice is session-only state in memory).
 
 ### Apple App Privacy
 
@@ -221,7 +221,7 @@ Select **Data Not Collected**.
 The app makes exactly two outbound requests, neither of which is data collection under
 Apple's definition, because nothing is stored or linked to a user:
 
-- `registry.npmjs.org`, to read the latest published version for the header pill.
+- `registry.npmjs.org`, to read the latest published version for the Home screen's version pill.
 - `u.expo.dev`, to check for over-the-air updates.
 
 ### Google Play Data Safety

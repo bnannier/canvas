@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { View, Text, ButtonGroup, useTheme } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
@@ -9,7 +8,9 @@ import { Callout } from "../../ui/tokens-kit";
 import { geist } from "../../ui/fonts";
 import { useDocsTheme } from "../../theme/docs-theme";
 
-// Snippets ported verbatim (fence-stripped) from the previous web docs' theming snippets.
+// The page's teaching snippets. The helper ones mirror src/theme.ts behavior
+// exactly: the data-* attributes persist and broadcast a choice, no shipped CSS
+// reads them, and only the .dark class restyles anything on its own.
 const NATIVE_PROVIDER = `import { ThemeProvider } from "@nannier/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
@@ -43,36 +44,47 @@ const SYSTEM_PREF = `import { setTheme } from "@nannier/canvas";
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
 setTheme(mq.matches ? "dark" : "light");
 mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
-const GLASS = `<html data-surface="glass">
-<html class="dark" data-surface="glass">`;
+const GLASS = `import { ThemeProvider, getSurface } from "@nannier/canvas";
+
+// Web: the same provider and the same booleans. getSurface() reads the choice
+// setSurface() persisted (see the helpers below), so it survives a reload.
+export function App() {
+  const surface = getSurface(); // "solid" | "glass"
+  return (
+    <ThemeProvider glass={surface === "glass"} solid={surface === "solid"}>
+      <Screens />
+    </ThemeProvider>
+  );
+}`;
 const JS_SURFACE = `import { getSurface, setSurface } from "@nannier/canvas";
 
-getSurface();            // "solid" | "glass"
-setSurface("glass");     // sets data-surface="glass"
-setSurface("solid");     // removes the attribute`;
-const DENSITY = `<!-- Regular (default, no attribute needed) -->
-<html>
+getSurface();            // "solid" | "glass", the persisted choice
+setSurface("glass");     // persists it, and sets data-surface="glass" on <html>
+setSurface("solid");     // persists it, and removes the attribute
 
-<!-- Compact -->
-<html data-density="compact">
-
-<!-- Comfy -->
-<html data-density="comfy">`;
+// No shipped CSS reads data-surface. The attribute is a broadcast hook for your
+// own code: read the choice back and pass it to ThemeProvider, as above.`;
+const DENSITY = `// Density is per component, on every platform; omit both for the default.
+<Card compact>...</Card>
+<Card comfortable>...</Card>
+<DataTable compact columns={columns} rows={rows} />`;
 const JS_DENSITY = `import { getDensity, setDensity } from "@nannier/canvas";
 
-getDensity();            // "compact" | "regular" | "comfy"
-setDensity("compact");   // sets data-density="compact"
-setDensity("regular");   // removes the attribute`;
-const COMBINING = `<!-- Web: the three axes are independent HTML hooks -->
-<html class="dark" data-surface="glass" data-density="compact">`;
+getDensity();            // "compact" | "regular" | "comfy", the persisted preference
+setDensity("compact");   // persists it, and sets data-density="compact" on <html>
+setDensity("regular");   // persists it, and removes the attribute
+
+// No shipped CSS reads data-density. Store the app-wide preference here, then
+// map it to component booleans (compact / comfortable) in your own code.`;
+const COMBINING = `// One provider carries scheme and surface; density rides each component.
+<ThemeProvider scheme="dark" glass>
+  <Card compact>...</Card>
+</ThemeProvider>`;
 const JS_COMBINE = `import { setTheme, setSurface, setDensity } from "@nannier/canvas";
 
-setTheme("dark");
-setSurface("glass");
-setDensity("compact");`;
-
-// Density levels in display order; the ButtonGroup index maps straight to this tuple.
-const DENSITIES = ["compact", "regular", "comfy"] as const;
+setTheme("dark");       // flips .dark on <html>: the CSS token layer re-themes
+setSurface("glass");    // persists; sync it into <ThemeProvider glass>
+setDensity("compact");  // persists; map it to component booleans`;
 
 function Bullet({ children }: { children: React.ReactNode }) {
   const { tokens } = useTheme();
@@ -86,14 +98,13 @@ function Bullet({ children }: { children: React.ReactNode }) {
 
 export default function ThemingScreen() {
   const { scheme, surface, setScheme, setSurface } = useDocsTheme();
-  const [density, setDensity] = useState<"compact" | "regular" | "comfy">("regular");
 
   return (
     <Page>
       <View style={{ gap: 28 }}>
         <PageHeader
           title="Theming"
-          description="Three theming axes (light/dark, glass surface, density) on one model: ThemeProvider on native, the matching <html> hooks and helpers on the web."
+          description="Three theming axes (light/dark, glass surface, density) on one model: ThemeProvider carries scheme and glass on every platform; on the web, the .dark class drives the CSS token layer and small helpers persist the rest."
         />
 
         <Section title="Native (ThemeProvider)">
@@ -106,9 +117,10 @@ export default function ThemingScreen() {
           <CodeBlock code={NATIVE_PROVIDER} />
           <P>Read the active theme anywhere under the provider with <InlineCode>useTheme()</InlineCode>.</P>
           <CodeBlock code={USE_THEME} />
-          <Callout label="Density on native">
+          <Callout label="Density">
             is a per-component choice, not a provider prop: pass a density boolean to the components that support it (for example
-            {" <Card compact> or <Card comfortable>"}). The data-density hook below is the web equivalent.
+            {" <Card compact> or <Card comfortable>"}). That holds on the web too; the setDensity helper below only persists a
+            preference.
           </Callout>
           <Callout label="Server rendering (SSR/SSG)">
             When the app server-renders (Next.js and the like) and the client scheme can differ from the server default (a stored
@@ -123,8 +135,10 @@ export default function ThemingScreen() {
 
         <Section title="Light / Dark Mode">
           <P>
-            Light mode is the default. On the web, dark mode is the <InlineCode>dark</InlineCode> class on <InlineCode>{"<html>"}</InlineCode>;
-            the helpers toggle it and the token layer flips every color token, so components never change. (On native, pass{" "}
+            Light mode is the default. On the web, dark mode is the <InlineCode>dark</InlineCode> class on <InlineCode>{"<html>"}</InlineCode>,
+            the one attribute the shipped CSS reads for theming; the helpers toggle it and the token layer flips every color token for
+            anything styled with the CSS variables. Mirror the class into <InlineCode>ThemeProvider</InlineCode>&apos;s{" "}
+            <InlineCode>scheme</InlineCode> so the components follow (the Integration page shows the hook). (On native, pass{" "}
             <InlineCode>scheme</InlineCode> to <InlineCode>ThemeProvider</InlineCode> instead.)
           </P>
           <CodeBlock code={DARK_TOGGLE} />
@@ -157,8 +171,8 @@ export default function ThemingScreen() {
             genuine frosted blur on non-Chromium web and Android (via expo-blur), and a translucent fallback when no material is
             available. It defaults to the platform:{" "}
             glass on iOS 26+ (matching the OS) and solid everywhere else, when you pass neither boolean. Force it with <InlineCode>glass</InlineCode> /{" "}
-            <InlineCode>solid</InlineCode> on <InlineCode>ThemeProvider</InlineCode> on native, or <InlineCode>data-surface="glass"</InlineCode> on{" "}
-            <InlineCode>{"<html>"}</InlineCode> on the web.
+            <InlineCode>solid</InlineCode> on <InlineCode>ThemeProvider</InlineCode>; that holds on the web too, where components read
+            the surface from the provider, not from CSS.
           </P>
           <CodeBlock code={GLASS} />
           <View style={{ flexDirection: "row" }}>
@@ -173,10 +187,12 @@ export default function ThemingScreen() {
           <H3>What changes</H3>
           <View style={{ gap: 4 }}>
             <Bullet>Functional-layer surfaces (overlays, navbars, sidebars) render the glass material via GlassSurface: native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; content cards, lists, and tables stay solid</Bullet>
-            <Bullet>Border colors shift to white-alpha edges</Bullet>
-            <Bullet>On the web, the body background becomes a multi-color aurora gradient that the frosted surfaces refract</Bullet>
+            <Bullet>The popover token turns translucent, the one token the glass switch overrides; the card token stays solid, so content surfaces never frost</Bullet>
+            <Bullet>Glass surfaces drop their skin border and the material paints its own white-alpha specular rim</Bullet>
+            <Bullet>The page background does not change by itself; these docs mount the kit's Backdrop scene behind the shell in glass mode so the frost has something to refract, an app-level choice</Bullet>
           </View>
           <H3>Web helpers</H3>
+          <P muted>The helpers persist the choice; they restyle nothing by themselves. The provider, fed as above, is what re-themes the components.</P>
           <CodeBlock code={JS_SURFACE} />
         </Section>
 
@@ -184,22 +200,18 @@ export default function ThemingScreen() {
 
         <Section title="Density">
           <P>
-            Density controls spacing in content areas and data tables. Three levels: compact, regular (default), and comfy. On the web
-            it is the <InlineCode>data-density</InlineCode> attribute, which your content CSS and the <InlineCode>data-density</InlineCode>-aware
-            components key off; on native, components expose per-component density props (for example {"<Card compact>"}).
+            Density controls spacing in content areas and data tables, and it is a per-component choice on every platform: pass the{" "}
+            <InlineCode>compact</InlineCode> or <InlineCode>comfortable</InlineCode> boolean to the components that support it (for
+            example <InlineCode>Card</InlineCode> and <InlineCode>DataTable</InlineCode>). There is no app-wide density switch: no
+            shipped CSS reads a density attribute, on the web or anywhere else.
           </P>
           <CodeBlock code={DENSITY} />
-          <View style={{ flexDirection: "row" }}>
-            <ButtonGroup
-              segmented
-              small
-              items={["Compact", "Regular", "Comfy"]}
-              active={DENSITIES.indexOf(density)}
-              onSelect={(i) => setDensity(DENSITIES[i])}
-            />
-          </View>
-          <P muted>The buttons set <InlineCode>data-density</InlineCode> on this page on the web; on native, density is a per-component prop.</P>
           <H3>Web helpers</H3>
+          <P muted>
+            The helpers persist an app-wide preference (compact, regular, comfy) and set <InlineCode>data-density</InlineCode> on{" "}
+            <InlineCode>{"<html>"}</InlineCode>, which nothing in the shipped CSS reads. Read the stored value back and map it to
+            component booleans yourself.
+          </P>
           <CodeBlock code={JS_DENSITY} />
         </Section>
 
@@ -207,8 +219,10 @@ export default function ThemingScreen() {
 
         <Section title="Combining Axes">
           <P>
-            All three axes are independent and composable. On the web they are three separate <InlineCode>{"<html>"}</InlineCode> hooks;
-            on native, scheme and surface are <InlineCode>ThemeProvider</InlineCode> props and density is per component.
+            All three axes are independent and composable. Scheme and surface are <InlineCode>ThemeProvider</InlineCode> props on
+            every platform, with the web's <InlineCode>dark</InlineCode> class driving the CSS token layer alongside; density is per
+            component. The web helpers persist all three choices, but only <InlineCode>setTheme</InlineCode> restyles anything by
+            itself.
           </P>
           <CodeBlock code={COMBINING} />
           <CodeBlock code={JS_COMBINE} />

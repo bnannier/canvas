@@ -9,7 +9,8 @@ import { TokenH1, TokenLede, TokenSection, Surface, Grid } from "../../../ui/tok
 // role on the Typography atom (src/atoms/typography/typography.tsx), whose
 // `roleType` maps display..tiny to absolute, token-backed sizes, so the preview
 // reflects the real package values rather than the docs site's own chrome. Note
-// headings carry a flat -0.4px tracking (RN letterSpacing), not per-size em.
+// headings down to h4 carry a flat -0.4px tracking (RN letterSpacing), not
+// per-size em; h5 runs untracked.
 const SCALE = [
   { name: "Display", role: "display", spec: "48 / 48 · bold", fontSize: 48, lineHeight: 48, weight: "700" as const, tracking: -0.4, use: "Hero titles. One per screen, at most." },
   { name: "H1", role: "h1", spec: "36 / 40 · bold", fontSize: 36, lineHeight: 40, weight: "700" as const, tracking: -0.4, use: "Top-level page titles." },
@@ -17,6 +18,7 @@ const SCALE = [
   { name: "H3", role: "h3", spec: "24 / 32 · semibold", fontSize: 24, lineHeight: 32, weight: "600" as const, tracking: -0.4, use: "Subsections; in-app page titles." },
   { name: "H4", role: "h4", spec: "20 / 28 · semibold", fontSize: 20, lineHeight: 28, weight: "600" as const, tracking: -0.4, use: "Card titles, dialog headings." },
   { name: "H5", role: "h5", spec: "18 / 28 · semibold", fontSize: 18, lineHeight: 28, weight: "600" as const, tracking: 0, use: "Subgroup headers, form section labels." },
+  { name: "Lead", role: "lead", spec: "16 / 24 · regular", fontSize: 16, lineHeight: 24, weight: "400" as const, tracking: 0, use: "Lead paragraphs, identity names." },
   { name: "Body", role: "body", spec: "14 / 28 · regular", fontSize: 14, lineHeight: 28, weight: "400" as const, tracking: 0, use: "Default reading text." },
   { name: "Small", role: "small", spec: "14 / 20 · muted", fontSize: 14, lineHeight: 20, weight: "400" as const, tracking: 0, muted: true, use: "Secondary text, helpers." },
   { name: "Tiny", role: "tiny", spec: "12 / 16 · muted", fontSize: 12, lineHeight: 16, weight: "400" as const, tracking: 0, muted: true, use: "Metadata, timestamps, labels." },
@@ -74,7 +76,7 @@ function FontCard({ varName, sample, sampleFamily, sampleTracking, caption, spec
         {specimen}
       </Text>
       <Text style={{ marginTop: 12, fontSize: 12, lineHeight: 16.8, fontFamily: geist("400"), color: tokens["muted-foreground"] }}>
-        Self-hosted variable font · weight 100-900.
+        Self-hosted by the consumer · weight axis 100-900.
       </Text>
     </Surface>
   );
@@ -198,7 +200,7 @@ export default function TypographyScreen() {
 
         <TokenSection
           title="Font families"
-          description="Two families, both self-hosted variable fonts. Upright only (no italics); one woff2 per family carries the full 100-900 weight range, so the network footprint stays honest."
+          description="Two families, self-hosted by the consumer: the package ships no font files, and the --font-sans / --font-mono stacks fall back to system faces until Geist loads. Upstream, each family is an upright-only variable font spanning weights 100-900; React Native does not auto-map fontWeight for custom fonts, so the kit selects a face per weight, while the web can lean on the weight axis."
         >
           <Grid cols={c2}>
             {[
@@ -217,7 +219,7 @@ export default function TypographyScreen() {
                 sample="Geist Mono"
                 sampleFamily={geistMono("600")}
                 sampleTracking={-0.4}
-                caption={'"Geist Mono", ui-monospace, monospace'}
+                caption={'"Geist Mono", ui-monospace, "SF Mono", ...'}
                 specimen={'const id = "01HZ73K..." // copy-friendly digits'}
                 specimenMono
               />,
@@ -252,7 +254,7 @@ export default function TypographyScreen() {
           </Surface>
         </TokenSection>
 
-        <TokenSection title="Weights" description="Variable axis; every integer 100-900 is available but we use four.">
+        <TokenSection title="Weights" description="Geist's weight axis spans 100-900, but the kit standardizes on four; on native each weight loads as its own face, since RN does not auto-map fontWeight for custom fonts.">
           <Surface padding={0} style={{ overflow: "hidden" }}>
             {WEIGHTS.map((row, i) => <WeightRow key={row.w} row={row} i={i} />)}
           </Surface>

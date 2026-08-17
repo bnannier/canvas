@@ -70,7 +70,7 @@ const PEOPLE = ["RC", "AL", "KT", "SM"];
 const PRIORITIES = ["high", "medium", "low"] as const;
 type Priority = (typeof PRIORITIES)[number];
 const PRIORITY_RANK: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
-const WIP_LIproprietary = 4;
+const WIP_LIMIT = 4;
 
 // Ordered demo calendar; "today" sits between Jul 22 and Jul 24, so a due date
 // before index TODAY_INDEX is overdue (unless the task is already Done).
@@ -104,7 +104,7 @@ const SEED_COLUMNS: BoardColumn[] = [
   {
     id: "c-2",
     name: "In progress",
-    wipLimit: WIP_LIproprietary,
+    wipLimit: WIP_LIMIT,
     tasks: [
       { id: "t-4", title: "SSO rollout", detail: "Okta pilot group is live; SAML certs next.", tag: "security", priority: "high", who: "RC", due: "Jul 24", comments: [] },
       { id: "t-5", title: "Invoice PDF redesign", detail: "Header lockup approved, totals table left.", tag: "billing", priority: "medium", who: "SM", due: "Jul 26", comments: [] },
@@ -662,7 +662,7 @@ function BoardLive() {
         plain
         items={[
           { label: "Tasks", value: String(total) },
-          { label: "In progress", value: `${wip}/${WIP_LIproprietary}` },
+          { label: "In progress", value: `${wip}/${WIP_LIMIT}` },
           { label: "Done", value: `${donePct}%` },
         ]}
       />

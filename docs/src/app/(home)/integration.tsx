@@ -8,7 +8,7 @@ import { PageNav } from "../../ui/page-nav";
 const INSTALL = `npm install @nannier/canvas react react-native react-native-svg`;
 
 const OPTIONAL_INSTALL = `# add only the ones whose feature you use
-npm install react-native-qrcode-svg react-native-safe-area-context expo-blur expo-glass-effect`;
+npm install react-native-qrcode-svg react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard`;
 
 const QUICK_START = `import { ThemeProvider, Button } from "@nannier/canvas";
 
@@ -87,21 +87,22 @@ export function useHtmlScheme(): "light" | "dark" {
 
 const THEME_API = `import { setTheme, toggleTheme, setSurface, setDensity } from "@nannier/canvas";
 
-setTheme("dark");       // toggles <html class="dark"> and persists to localStorage
+setTheme("dark");       // toggles <html class="dark"> (the class the CSS reads) and persists
 toggleTheme();          // flips light <-> dark, returns the next theme
-setSurface("glass");    // <html data-surface="glass">  (solid is the default)
-setDensity("compact");  // <html data-density="compact"> (regular is the default)`;
+setSurface("glass");    // persists, stamps <html data-surface="glass">  (solid is the default)
+setDensity("compact");  // persists, stamps <html data-density="compact"> (regular is the default)`;
 
-const TOKEN = `import { token } from "@nannier/canvas";
+const TOKEN = `import { token, hsl } from "@nannier/canvas";
 
 // Web only: reads a CSS custom property off <html>, so it reflects the live theme.
 // Requires canvas.css to be loaded; on native, theme values come from ThemeProvider.
 token("primary");     // "oklch(0.511 0.262 276.966)"
-token("radius-md");   // "0.375rem"
+token("radius-md");   // "6px"
 
-// Color tokens are oklch, so the legacy hsl() helper does not apply to them.
-// For an alpha variant, compose in CSS:
-//   color-mix(in oklch, var(--primary) 50%, transparent)`;
+// Color tokens are complete oklch colors. The hsl() helper (the name is
+// historical) passes them through untouched; give it an alpha for a
+// translucent variant, mixed the same way the token layer does it:
+hsl("primary", 0.5);  // "color-mix(in oklab, oklch(0.511 0.262 276.966) 50%, transparent)"`;
 
 const BUILDING = `import { View, Text, useTheme } from "@nannier/canvas";
 
@@ -129,7 +130,7 @@ const EXPORTS = [
   {
     path: "@nannier/canvas",
     content:
-      "Components, the style foundation (ThemeProvider, useTheme, useResponsive, shadow, alpha, and the View / Text / Pressable / Image / TextInput / ScrollView primitives), and the token / theme utilities. Ships as TypeScript source.",
+      "Components, the style foundation (ThemeProvider, useTheme, useResponsive, shadow, alpha, and the View / Text / Pressable / TextInput / ScrollView primitives), and the token / theme utilities. Ships as compiled JavaScript with TypeScript declarations.",
   },
   {
     path: "@nannier/canvas/styles/canvas.css",
@@ -163,20 +164,30 @@ export default function IntegrationScreen() {
             These back specific features. Skip any you don't use; Canvas still works and degrades gracefully.
           </P>
           <P muted>
-            <InlineCode>react-native-qrcode-svg</InlineCode> — renders the <InlineCode>QRCode</InlineCode> component;
+            <InlineCode>react-native-qrcode-svg</InlineCode>: renders the <InlineCode>QRCode</InlineCode> component;
             without it, <InlineCode>QRCode</InlineCode> shows an empty labeled frame.
           </P>
           <P muted>
-            <InlineCode>expo-glass-effect</InlineCode> — real iOS 26 Liquid Glass for overlays and bars; without it, glass
+            <InlineCode>expo-glass-effect</InlineCode>: real iOS 26 Liquid Glass for overlays and bars; without it, glass
             mode falls back to a translucent fill.
           </P>
           <P muted>
-            <InlineCode>expo-blur</InlineCode> — a real frosted blur for glass mode on web, Android, and iOS &lt; 26;
+            <InlineCode>expo-blur</InlineCode>: a real frosted blur for glass mode on web, Android, and iOS &lt; 26;
             without it, glass mode falls back to a translucent fill.
           </P>
           <P muted>
-            <InlineCode>react-native-safe-area-context</InlineCode> — safe-area insets for the overlays that use them
+            <InlineCode>react-native-safe-area-context</InlineCode>: safe-area insets for the overlays that use them
             (Drawer, sheets); without it, they fall back to fixed insets.
+          </P>
+          <P muted>
+            <InlineCode>expo-clipboard</InlineCode>: backs the <InlineCode>CodeBlock</InlineCode> copy chip on native;
+            the web covers copy with <InlineCode>navigator.clipboard</InlineCode> either way.
+          </P>
+          <P muted>
+            <InlineCode>@shopify/react-native-skia</InlineCode>: a GPU backend a future <InlineCode>Backdrop</InlineCode>{" "}
+            renderer can upgrade to; <InlineCode>Backdrop</InlineCode> draws fully through{" "}
+            <InlineCode>react-native-svg</InlineCode> without it (Metro apps that skip it stub the module with one line,
+            see the Backdrop docs).
           </P>
           <CodeBlock code={OPTIONAL_INSTALL} />
         </Section>
@@ -222,7 +233,12 @@ export default function IntegrationScreen() {
           <CodeBlock code={SCHEME_HOOK} />
           <H3>Theme, surface, density helpers</H3>
           <P muted>
-            These set (and persist) the <InlineCode>&lt;html&gt;</InlineCode> attributes the token layer keys off. They
+            <InlineCode>setTheme</InlineCode> and <InlineCode>toggleTheme</InlineCode> toggle the{" "}
+            <InlineCode>.dark</InlineCode> class, the one hook the token layer reads, so they restyle the page by
+            themselves. <InlineCode>setSurface</InlineCode> and <InlineCode>setDensity</InlineCode> persist a preference
+            and stamp a <InlineCode>data-*</InlineCode> attribute that no shipped CSS reads: read the choice back
+            (<InlineCode>getSurface</InlineCode>, <InlineCode>getDensity</InlineCode>) and sync it into your{" "}
+            <InlineCode>ThemeProvider</InlineCode> and component props, the way the hook above syncs the scheme. All four
             are web-only (they touch <InlineCode>document</InlineCode> and <InlineCode>localStorage</InlineCode>).
           </P>
           <CodeBlock code={THEME_API} />
@@ -245,8 +261,8 @@ export default function IntegrationScreen() {
         <Section title="Building on Canvas">
           <P>
             Compose Canvas components directly, or build your own on the React Native primitives (<InlineCode>View</InlineCode>,{" "}
-            <InlineCode>Text</InlineCode>, <InlineCode>Pressable</InlineCode>, <InlineCode>Image</InlineCode>,{" "}
-            <InlineCode>TextInput</InlineCode>, <InlineCode>ScrollView</InlineCode>). Follow the Canvas convention: one
+            <InlineCode>Text</InlineCode>, <InlineCode>Pressable</InlineCode>, <InlineCode>TextInput</InlineCode>,{" "}
+            <InlineCode>ScrollView</InlineCode>; <InlineCode>Image</InlineCode> is a Canvas atom, not a primitive). Follow the Canvas convention: one
             flat boolean prop per style choice, not string-enum <InlineCode>variant</InlineCode>/<InlineCode>size</InlineCode>{" "}
             props.
           </P>
