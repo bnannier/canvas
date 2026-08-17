@@ -1,5 +1,5 @@
 import { Linking } from "react-native";
-import { View, Button, DataTable, Icon } from "@nannier/canvas";
+import { Column, Row, Button, DataTable, Icon } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, Rule } from "../../ui/prose";
@@ -26,7 +26,7 @@ import {
 export default function PrivacyScreen() {
   return (
     <Page>
-      <View style={{ gap: 28 }}>
+      <Column loose>
         <PageHeader title={PRIVACY_TITLE} description={PRIVACY_INTRO} />
 
         <Section title="Summary">
@@ -36,16 +36,16 @@ export default function PrivacyScreen() {
         <Rule />
 
         <Section title="What Canvas does not do">
-          <View style={{ gap: 16 }}>
+          <Column relaxed>
             {PRIVACY_NOT_DONE.map((n) => (
               <Surface key={n.title} padding={16}>
-                <View style={{ gap: 4 }}>
+                <Column tight>
                   <H3>{n.title}</H3>
                   <P muted>{n.description}</P>
-                </View>
+                </Column>
               </Surface>
             ))}
-          </View>
+          </Column>
         </Section>
 
         <Rule />
@@ -59,22 +59,22 @@ export default function PrivacyScreen() {
         </Section>
 
         {PRIVACY_SECTIONS.map((s) => (
-          <View key={s.title} style={{ gap: 28 }}>
+          <Column key={s.title} loose>
             <Rule />
             <Section title={s.title}>
               <P muted>{s.description}</P>
             </Section>
-          </View>
+          </Column>
         ))}
 
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+        <Row cozy wrap>
           <Button outline iconRight={<Icon arrowRight size={15} />} onPress={() => Linking.openURL(PRIVACY_ISSUES_URL)}>
             Open an issue
           </Button>
-        </View>
+        </Row>
 
         <PageNav />
-      </View>
+      </Column>
     </Page>
   );
 }
