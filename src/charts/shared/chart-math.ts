@@ -168,6 +168,15 @@ export function monotonePath(points: Pt[]): string {
 }
 
 /**
+ * Closed polygon path ("M x,y L x,y ... Z") through `points` in order. The
+ * radar polygons and funnel trapezoids are drawn with this.
+ */
+export function polygonPath(points: Pt[]): string {
+  if (points.length === 0) return "";
+  return points.map((p, i) => `${i === 0 ? "M" : "L"}${fmt(p.x)},${fmt(p.y)}`).join(" ") + " Z";
+}
+
+/**
  * Close a line down to a horizontal baseline (a single-series area fill).
  * `curved` picks the monotone curve for the top edge.
  */
@@ -215,6 +224,95 @@ export function stackSeries(series: number[][]): Array<Array<[number, number]>> 
   });
 }
 
+// --- distributions ----------------------------------------------------------------
+
+/**
+ * Uniform histogram bins over `values` with nice edges (the 1/2/5 tick grid,
+ * expanded to cover the data). `binCount` overrides the default Sturges' rule
+ * (ceil(log2 n) + 1). Non-finite values are dropped; empty input yields empty
+ * arrays. `counts[i]` covers `[edges[i], edges[i + 1])`, with the last bin
+ * closed so the data max is counted.
+ */
+export function binValues(values: number[], binCount?: number): { edges: number[]; counts: number[] } {
+  const clean = values.filter((v) => Number.isFinite(v));
+  if (clean.length === 0) return { edges: [], counts: [] };
+  const count = binCount != null && binCount > 0 ? Math.floor(binCount) : Math.ceil(Math.log2(clean.length)) + 1;
+  const { ticks: edges } = niceTicks(Math.min(...clean), Math.max(...clean), count);
+  const step = edges[1] - edges[0];
+  const counts = new Array<number>(edges.length - 1).fill(0);
+  for (const v of clean) {
+    const idx = Math.min(counts.length - 1, Math.max(0, Math.floor((v - edges[0]) / step)));
+    counts[idx]++;
+  }
+  return { edges, counts };
+}
+
+/**
+ * Tukey five-number summary of `values`: quartiles by linear interpolation,
+ * whiskers at the most extreme data inside the 1.5 IQR fences, everything
+ * beyond listed in `outliers` (ascending). Non-finite values are dropped;
+ * empty input yields an all-zero summary.
+ */
+export function boxStats(values: number[]): { min: number; q1: number; median: number; q3: number; max: number; outliers: number[] } {
+  const clean = values.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+  if (clean.length === 0) return { min: 0, q1: 0, median: 0, q3: 0, max: 0, outliers: [] };
+  const quantile = (p: number): number => {
+    const idx = (clean.length - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    return clean[lo] + (clean[hi] - clean[lo]) * (idx - lo);
+  };
+  const q1 = quantile(0.25);
+  const median = quantile(0.5);
+  const q3 = quantile(0.75);
+  const iqr = q3 - q1;
+  const loFence = q1 - 1.5 * iqr;
+  const hiFence = q3 + 1.5 * iqr;
+  // A datum between the quartile index positions always survives the fences,
+  // so the whisker ends are never undefined.
+  const inliers = clean.filter((v) => v >= loFence && v <= hiFence);
+  const outliers = clean.filter((v) => v < loFence || v > hiFence);
+  return { min: inliers[0], q1, median, q3, max: inliers[inliers.length - 1], outliers };
+}
+
+// --- waterfall --------------------------------------------------------------------
+
+export interface WaterfallBar {
+  /** The running total where this bar starts (its value edge nearer zero history). */
+  start: number;
+  /** The running total where this bar ends. */
+  end: number;
+  /** Rise (positive step), fall (negative step), or total (a snapshot from 0). */
+  kind: "rise" | "fall" | "total";
+}
+
+/**
+ * Bar spans for a running-total bridge. Each step floats from the running
+ * total to the total plus its signed `value`; a `total` step instead draws an
+ * absolute bar from 0 to the running total (start, subtotal, end markers) and
+ * leaves the total unchanged. Non-finite values are treated as 0. `min`/`max`
+ * span every bar edge and 0, ready for a y extent.
+ */
+export function waterfallLayout(steps: Array<{ value: number; total?: boolean }>): { bars: WaterfallBar[]; min: number; max: number } {
+  let run = 0;
+  let min = 0;
+  let max = 0;
+  const bars = steps.map((step): WaterfallBar => {
+    if (step.total) {
+      min = Math.min(min, run);
+      max = Math.max(max, run);
+      return { start: 0, end: run, kind: "total" };
+    }
+    const v = Number.isFinite(step.value) ? step.value : 0;
+    const start = run;
+    run += v;
+    min = Math.min(min, run);
+    max = Math.max(max, run);
+    return { start, end: run, kind: v < 0 ? "fall" : "rise" };
+  });
+  return { bars, min, max };
+}
+
 // --- pie ------------------------------------------------------------------------
 
 export interface Slice {
@@ -242,8 +340,12 @@ export function pieLayout(values: number[]): Slice[] {
   });
 }
 
-// 0 rad points up; clockwise. Standard screen coordinates (y grows downward).
-function polar(cx: number, cy: number, r: number, angle: number): Pt {
+/**
+ * The point at radius `r` and `angle` around `(cx, cy)`: 0 rad points up
+ * (12 o'clock), increasing clockwise, in standard screen coordinates (y grows
+ * downward). The polar workhorse for arcs, radial bars, and radar spokes.
+ */
+export function polarPoint(cx: number, cy: number, r: number, angle: number): Pt {
   return { x: cx + r * Math.sin(angle), y: cy - r * Math.cos(angle) };
 }
 
@@ -262,17 +364,135 @@ export function arcPath(cx: number, cy: number, rOuter: number, rInner: number, 
     return arcPath(cx, cy, rOuter, rInner, startAngle, mid) + " " + arcPath(cx, cy, rOuter, rInner, mid, startAngle + 2 * Math.PI);
   }
   const large = sweep > Math.PI ? 1 : 0;
-  const o0 = polar(cx, cy, rOuter, startAngle);
-  const o1 = polar(cx, cy, rOuter, endAngle);
+  const o0 = polarPoint(cx, cy, rOuter, startAngle);
+  const o1 = polarPoint(cx, cy, rOuter, endAngle);
   if (rInner <= 0) {
     return `M${fmt(cx)},${fmt(cy)} L${fmt(o0.x)},${fmt(o0.y)} A${fmt(rOuter)},${fmt(rOuter)} 0 ${large} 1 ${fmt(o1.x)},${fmt(o1.y)} Z`;
   }
-  const i0 = polar(cx, cy, rInner, startAngle);
-  const i1 = polar(cx, cy, rInner, endAngle);
+  const i0 = polarPoint(cx, cy, rInner, startAngle);
+  const i1 = polarPoint(cx, cy, rInner, endAngle);
   return (
     `M${fmt(o0.x)},${fmt(o0.y)} A${fmt(rOuter)},${fmt(rOuter)} 0 ${large} 1 ${fmt(o1.x)},${fmt(o1.y)} ` +
     `L${fmt(i1.x)},${fmt(i1.y)} A${fmt(rInner)},${fmt(rInner)} 0 ${large} 0 ${fmt(i0.x)},${fmt(i0.y)} Z`
   );
+}
+
+// --- layout charts ----------------------------------------------------------------
+
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Squarified treemap (Bruls, Huizing, van Wijk): tile the `(x, y, w, h)` box
+ * with one rectangle per value, areas proportional to the values, aspect
+ * ratios kept near 1. `rects[i]` always belongs to `values[i]` (the layout
+ * sorts internally but places results back by input index). Non-positive and
+ * non-finite values get a zero-area rect at the box origin.
+ */
+export function squarify(values: number[], x: number, y: number, w: number, h: number): Rect[] {
+  const clean = values.map((v) => (Number.isFinite(v) && v > 0 ? v : 0));
+  const out: Rect[] = clean.map(() => ({ x, y, w: 0, h: 0 }));
+  const total = clean.reduce((a, b) => a + b, 0);
+  if (total <= 0 || w <= 0 || h <= 0) return out;
+
+  // Work in area units; descending order gives the algorithm its guarantee.
+  const scale = (w * h) / total;
+  const items = clean
+    .map((v, i) => ({ a: v * scale, i }))
+    .filter((it) => it.a > 0)
+    .sort((p, q) => q.a - p.a);
+
+  let cx = x;
+  let cy = y;
+  let cw = w;
+  let ch = h;
+
+  // Worst aspect ratio in a row of summed area `s` laid along `side`.
+  const worst = (row: Array<{ a: number }>, s: number, side: number): number => {
+    let maxA = -Infinity;
+    let minA = Infinity;
+    for (const r of row) {
+      if (r.a > maxA) maxA = r.a;
+      if (r.a < minA) minA = r.a;
+    }
+    const s2 = s * s;
+    const side2 = side * side;
+    return Math.max((side2 * maxA) / s2, s2 / (side2 * minA));
+  };
+
+  // Lay `row` along the shorter side of the remaining box, then shrink it.
+  const placeRow = (row: Array<{ a: number; i: number }>, s: number): void => {
+    if (cw < ch) {
+      const stripH = s / cw;
+      let px = cx;
+      for (const it of row) {
+        const iw = it.a / stripH;
+        out[it.i] = { x: px, y: cy, w: iw, h: stripH };
+        px += iw;
+      }
+      cy += stripH;
+      ch -= stripH;
+    } else {
+      const stripW = s / ch;
+      let py = cy;
+      for (const it of row) {
+        const ih = it.a / stripW;
+        out[it.i] = { x: cx, y: py, w: stripW, h: ih };
+        py += ih;
+      }
+      cx += stripW;
+      cw -= stripW;
+    }
+  };
+
+  let row: Array<{ a: number; i: number }> = [];
+  let rowSum = 0;
+  for (const it of items) {
+    const side = Math.min(cw, ch);
+    if (row.length === 0 || worst(row, rowSum, side) >= worst([...row, it], rowSum + it.a, side)) {
+      row.push(it);
+      rowSum += it.a;
+    } else {
+      placeRow(row, rowSum);
+      row = [it];
+      rowSum = it.a;
+    }
+  }
+  if (row.length > 0) placeRow(row, rowSum);
+  return out;
+}
+
+/**
+ * Centered trapezoid outlines for a funnel in a `w` x `h` box: one stage per
+ * value, top width proportional to the stage's value, tapering to the NEXT
+ * stage's width; the last stage is rectangular. Each stage is 4 points
+ * clockwise from the top-left, ready for `polygonPath`. `gap` is the vertical
+ * space between stages. Non-positive values yield zero-width stages.
+ */
+export function funnelLayout(values: number[], w: number, h: number, gap = 2): Pt[][] {
+  const clean = values.map((v) => (Number.isFinite(v) && v > 0 ? v : 0));
+  const n = clean.length;
+  if (n === 0 || w <= 0 || h <= 0) return [];
+  const peak = Math.max(...clean);
+  const half = (v: number): number => (peak > 0 ? (v / peak) * w : 0) / 2;
+  const stageH = Math.max(0, (h - gap * (n - 1)) / n);
+  const mid = w / 2;
+  return clean.map((v, i) => {
+    const top = half(v);
+    const bottom = half(i < n - 1 ? clean[i + 1] : v);
+    const y0 = i * (stageH + gap);
+    const y1 = y0 + stageH;
+    return [
+      { x: mid - top, y: y0 },
+      { x: mid + top, y: y0 },
+      { x: mid + bottom, y: y1 },
+      { x: mid - bottom, y: y1 },
+    ];
+  });
 }
 
 // --- order-book depth ---------------------------------------------------------------

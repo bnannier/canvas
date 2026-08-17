@@ -39,7 +39,7 @@ export function createLineChart(skin: ChartSkin) {
     // Gain/loss auto tone: single series vs the baseline, by its last value.
     const lastValue = props.series.length === 1 ? finite(props.series[0].values[props.labels.length - 1]) : undefined;
     const autoTone = baseline != null && lastValue != null ? (lastValue >= baseline ? "success" : "destructive") : undefined;
-    const ctx = useSeriesChart("line", props, false, {
+    const ctx = useSeriesChart("LineChart", props, false, {
       extraExtent: baseline != null ? [baseline] : undefined,
       autoTone,
       // A baseline marks the price idiom: the domain hugs the data instead of

@@ -1,6 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import {
   arcPath,
+  binValues,
+  boxStats,
   cumulativeDepth,
   stepAreaPath,
   areaBandPath,
@@ -8,13 +10,18 @@ import {
   bandScale,
   estimateTextWidth,
   formatCompact,
+  funnelLayout,
   seriesAccessibleName,
   linePath,
   linearScale,
   monotonePath,
   niceTicks,
   pieLayout,
+  polarPoint,
+  polygonPath,
+  squarify,
   stackSeries,
+  waterfallLayout,
 } from "../src/charts/shared/chart-math.ts";
 
 describe("linearScale", () => {
@@ -307,6 +314,198 @@ describe("formatCompact", () => {
     expect(formatCompact(-1500)).toBe("-1.5k");
     expect(formatCompact(0.25)).toBe("0.25");
     expect(formatCompact(NaN)).toBe("");
+  });
+});
+
+describe("polarPoint", () => {
+  it("puts 0 rad at 12 o'clock and sweeps clockwise", () => {
+    const top = polarPoint(50, 50, 40, 0);
+    expect(top.x).toBeCloseTo(50);
+    expect(top.y).toBeCloseTo(10);
+    const right = polarPoint(50, 50, 40, Math.PI / 2);
+    expect(right.x).toBeCloseTo(90);
+    expect(right.y).toBeCloseTo(50);
+    const bottom = polarPoint(50, 50, 40, Math.PI);
+    expect(bottom.x).toBeCloseTo(50);
+    expect(bottom.y).toBeCloseTo(90);
+  });
+
+  it("round-trips a full turn back to the start", () => {
+    const a = polarPoint(10, 20, 5, 1.2);
+    const b = polarPoint(10, 20, 5, 1.2 + 2 * Math.PI);
+    expect(b.x).toBeCloseTo(a.x);
+    expect(b.y).toBeCloseTo(a.y);
+  });
+});
+
+describe("polygonPath", () => {
+  it("closes the ring through every point", () => {
+    const d = polygonPath([
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 5, y: 8 },
+    ]);
+    expect(d).toBe("M0,0 L10,0 L5,8 Z");
+  });
+
+  it("renders nothing for no points", () => {
+    expect(polygonPath([])).toBe("");
+  });
+});
+
+describe("binValues", () => {
+  it("bins samples into uniform nice-edged buckets covering the data", () => {
+    const { edges, counts } = binValues([1, 2, 2, 3, 8, 9], 4);
+    expect(edges[0]).toBeLessThanOrEqual(1);
+    expect(edges[edges.length - 1]).toBeGreaterThanOrEqual(9);
+    expect(counts.length).toBe(edges.length - 1);
+    expect(counts.reduce((a, b) => a + b, 0)).toBe(6);
+    // Uniform edges.
+    const step = edges[1] - edges[0];
+    for (let i = 2; i < edges.length; i++) expect(edges[i] - edges[i - 1]).toBeCloseTo(step);
+  });
+
+  it("counts the data max in the last bin (closed top edge)", () => {
+    const { edges, counts } = binValues([0, 10], 5);
+    expect(edges[edges.length - 1]).toBeGreaterThanOrEqual(10);
+    expect(counts[counts.length - 1]).toBeGreaterThanOrEqual(1);
+  });
+
+  it("defaults the bin count to Sturges' rule", () => {
+    const { counts } = binValues(Array.from({ length: 64 }, (_, i) => i));
+    // ceil(log2 64) + 1 = 7 requested; the nice grid lands near that.
+    expect(counts.length).toBeGreaterThanOrEqual(5);
+    expect(counts.length).toBeLessThanOrEqual(10);
+  });
+
+  it("survives flat and dirty input", () => {
+    const flat = binValues([5, 5, 5]);
+    expect(flat.counts.reduce((a, b) => a + b, 0)).toBe(3);
+    expect(binValues([NaN, Infinity])).toEqual({ edges: [], counts: [] });
+    expect(binValues([])).toEqual({ edges: [], counts: [] });
+  });
+});
+
+describe("boxStats", () => {
+  it("computes the five-number summary with interpolated quartiles", () => {
+    // Hand-computed: sorted [1,2,3,4,5]; q1=2, median=3, q3=4, no outliers.
+    const s = boxStats([3, 1, 5, 2, 4]);
+    expect(s.q1).toBe(2);
+    expect(s.median).toBe(3);
+    expect(s.q3).toBe(4);
+    expect(s.min).toBe(1);
+    expect(s.max).toBe(5);
+    expect(s.outliers).toEqual([]);
+  });
+
+  it("pushes points beyond the 1.5 IQR fences into outliers and pulls whiskers in", () => {
+    // Sorted [0,0,0,100]: q1=0, q3=25, iqr=25, high fence 62.5.
+    const s = boxStats([0, 100, 0, 0]);
+    expect(s.outliers).toEqual([100]);
+    expect(s.max).toBe(0); // whisker stops at the last inlier
+  });
+
+  it("handles single values and empty input", () => {
+    const one = boxStats([7]);
+    expect(one).toEqual({ min: 7, q1: 7, median: 7, q3: 7, max: 7, outliers: [] });
+    expect(boxStats([NaN])).toEqual({ min: 0, q1: 0, median: 0, q3: 0, max: 0, outliers: [] });
+  });
+});
+
+describe("waterfallLayout", () => {
+  it("floats each step from the running total and snapshots totals from 0", () => {
+    const { bars, min, max } = waterfallLayout([
+      { value: 100 },
+      { value: 30 },
+      { value: -12 },
+      { value: 0, total: true },
+    ]);
+    expect(bars[0]).toEqual({ start: 0, end: 100, kind: "rise" });
+    expect(bars[1]).toEqual({ start: 100, end: 130, kind: "rise" });
+    expect(bars[2]).toEqual({ start: 130, end: 118, kind: "fall" });
+    expect(bars[3]).toEqual({ start: 0, end: 118, kind: "total" });
+    expect(min).toBe(0);
+    expect(max).toBe(130);
+  });
+
+  it("tracks a negative running total in the extent", () => {
+    const { bars, min } = waterfallLayout([{ value: -40 }, { value: 15 }]);
+    expect(bars[0].kind).toBe("fall");
+    expect(min).toBe(-40);
+  });
+
+  it("treats non-finite steps as zero", () => {
+    const { bars } = waterfallLayout([{ value: NaN }]);
+    expect(bars[0]).toEqual({ start: 0, end: 0, kind: "rise" });
+  });
+});
+
+describe("squarify", () => {
+  const area = (r: { w: number; h: number }) => r.w * r.h;
+
+  it("lays out the classic Bruls fixture with near-square tiles", () => {
+    // The paper's example: [6,6,4,3,2,2,1] in a 6x4 box (total 24 = box area).
+    const rects = squarify([6, 6, 4, 3, 2, 2, 1], 0, 0, 6, 4);
+    // Area conservation, per rect and in total.
+    rects.forEach((r, i) => expect(area(r)).toBeCloseTo([6, 6, 4, 3, 2, 2, 1][i]));
+    expect(rects.reduce((a, r) => a + area(r), 0)).toBeCloseTo(24);
+    // The two 6s form the first column strip: width 3, stacked heights 2 + 2.
+    expect(rects[0].w).toBeCloseTo(3);
+    expect(rects[0].h).toBeCloseTo(2);
+    expect(rects[1].w).toBeCloseTo(3);
+    // Every aspect ratio stays comfortably below the slice-and-dice worst case.
+    for (const r of rects) {
+      const aspect = Math.max(r.w / r.h, r.h / r.w);
+      expect(aspect).toBeLessThanOrEqual(3.01);
+    }
+  });
+
+  it("keeps rect i attached to value i despite internal sorting", () => {
+    const values = [1, 6, 2];
+    const rects = squarify(values, 0, 0, 9, 1);
+    rects.forEach((r, i) => expect(area(r)).toBeCloseTo(values[i]));
+  });
+
+  it("tiles stay inside the box", () => {
+    const rects = squarify([5, 3, 2, 1, 1], 10, 20, 100, 60);
+    for (const r of rects) {
+      expect(r.x).toBeGreaterThanOrEqual(10 - 1e-6);
+      expect(r.y).toBeGreaterThanOrEqual(20 - 1e-6);
+      expect(r.x + r.w).toBeLessThanOrEqual(110 + 1e-6);
+      expect(r.y + r.h).toBeLessThanOrEqual(80 + 1e-6);
+    }
+  });
+
+  it("zero, negative, and non-finite values get zero-area rects at their index", () => {
+    const rects = squarify([4, 0, -2, NaN], 0, 0, 10, 10);
+    expect(area(rects[0])).toBeCloseTo(100);
+    for (const i of [1, 2, 3]) expect(area(rects[i])).toBe(0);
+    expect(rects.length).toBe(4);
+  });
+});
+
+describe("funnelLayout", () => {
+  it("tapers each stage to the next stage's width, centered", () => {
+    const stages = funnelLayout([100, 50, 25], 200, 130, 2);
+    expect(stages.length).toBe(3);
+    // Stage heights: (130 - 2*2) / 3 = 42.
+    expect(stages[0][3].y - stages[0][0].y).toBeCloseTo(42);
+    // First stage: full width on top, tapering to half.
+    expect(stages[0][1].x - stages[0][0].x).toBeCloseTo(200);
+    expect(stages[0][2].x - stages[0][3].x).toBeCloseTo(100);
+    // Second stage's top matches the first stage's bottom width.
+    expect(stages[1][1].x - stages[1][0].x).toBeCloseTo(100);
+    // Last stage is rectangular.
+    expect(stages[2][1].x - stages[2][0].x).toBeCloseTo(stages[2][2].x - stages[2][3].x);
+    // Symmetry about the middle.
+    for (const st of stages) expect((st[0].x + st[1].x) / 2).toBeCloseTo(100);
+  });
+
+  it("handles empty and all-zero input", () => {
+    expect(funnelLayout([], 100, 100)).toEqual([]);
+    const zero = funnelLayout([0, 0], 100, 100);
+    expect(zero.length).toBe(2);
+    for (const st of zero) expect(st[1].x - st[0].x).toBe(0);
   });
 });
 
