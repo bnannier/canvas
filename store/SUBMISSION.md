@@ -292,10 +292,11 @@ own source files in full.
 Two obligations follow from the dependency audit and are worth not losing:
 
 - **The Geist fonts are OFL-1.1**, which requires the licence text to travel with the
-  font. RESOLVED: the app now has an Open Source Licenses screen at `/licenses`
-  (`docs/src/app/(home)/licenses.tsx`) reproducing every licence in full, with each
-  licence's copyright notices above it. It also satisfies MIT's notice clause, which the
-  other 85 packages carry.
+  font (the Material Symbols typeface that ships via expo-symbols carries the same
+  obligation under Apache-2.0). RESOLVED: the app now has an Open Source Licenses screen
+  at `/licenses` (`docs/src/app/(home)/licenses.tsx`) reproducing every licence in full,
+  with each licence's copyright notices above it. It also satisfies MIT's notice clause,
+  which most of the other packages carry.
 
   The content is generated, not hand-maintained, in two steps. `bun run notices:scan`
   works out what the app actually ships and records it in `tools/noticegen/shipped.json`;
@@ -306,11 +307,15 @@ Two obligations follow from the dependency audit and are worth not losing:
   shipped set by walking the dependency closure: `expo` declares its own CLI as a regular
   dependency, so the closure returns 531 packages and attributes lightningcss (MPL-2.0)
   and node-forge (BSD-3-Clause OR GPL-2.0), neither of which is in the app. The scan
-  instead unions what survives into the JS bundle (read from a source-mapped export,
-  written to a temp directory and discarded) with what autolinks native code, giving 88.
-  Second, when splitting a licence file into "copyright notice" and "body", only scan the
-  HEADER: licence bodies are full of lines that begin with the word copyright, and
-  matching those both invents fake notices and deletes real clauses out of the OFL.
+  instead unions four measured signals: what survives into the web, iOS and Android JS
+  bundles (read from source-mapped exports, written to a temp directory and discarded),
+  what Expo autolinks (an expo-module.config.json), what classic react-native-config
+  autolinking links (podspec/gradle modules such as gesture-handler and reanimated, plus
+  react-native itself), and the lucide-static icon data the generators bake in. That
+  gives 119; scanning only the web bundle silently missed everything that ships natively
+  alone. Second, when splitting a licence file into "copyright notice" and "body", only
+  scan the HEADER: licence bodies are full of lines that begin with the word copyright,
+  and matching those both invents fake notices and deletes real clauses out of the OFL.
 - **The sample avatars are generated, not photographed.** `docs/public/*.jpg` were
   previously seven 128x128 photographs of identifiable real people with no recorded
   source, which meant shipping two unverifiable rights at once: copyright in the image
