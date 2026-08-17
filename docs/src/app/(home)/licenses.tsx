@@ -27,6 +27,7 @@ import {
 // lines of every package sharing that text before the text itself.
 
 const FONTS_URL = "https://github.com/vercel/geist-font";
+const SYMBOLS_URL = "https://github.com/google/material-design-icons";
 
 /** A licence body arrives as one string; blank lines are its paragraph breaks. */
 function paragraphs(body: string): string[] {
@@ -103,7 +104,7 @@ export default function LicensesScreen() {
         <Section title="Fonts">
           <Surface padding={16}>
             <Column tight>
-              <H3>SIL Open Font License 1.1</H3>
+              <H3>Typeface licences</H3>
               <P muted>{THIRD_PARTY_FONTS}</P>
             </Column>
           </Surface>
@@ -115,6 +116,14 @@ export default function LicensesScreen() {
               onPress={() => Linking.openURL(FONTS_URL)}
             >
               Geist on GitHub
+            </Button>
+            <Button
+              outline
+              small
+              iconRight={<Icon arrowRight size={14} />}
+              onPress={() => Linking.openURL(SYMBOLS_URL)}
+            >
+              Material Symbols on GitHub
             </Button>
           </Row>
         </Section>

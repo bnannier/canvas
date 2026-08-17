@@ -142,13 +142,16 @@ function splitLicense(text: string): { copyright: string[]; body: string } {
 function titleFor(body: string, declared: string): string {
   if (/SIL OPEN FONT LICENSE/i.test(body)) return "SIL Open Font License 1.1";
   if (/Apache License/i.test(body)) return "Apache License 2.0";
+  // ISC before MIT: lucide-static's LICENSE is the ISC text followed by a Feather MIT
+  // rider for the derived icons, so the MIT probe below would claim the combined text.
+  // An MIT-only licence never contains the phrase "ISC License", so this order is safe.
+  if (/ISC License/i.test(body) || /^ISC$/i.test(declared)) return "ISC License";
   if (/^\s*MIT License/im.test(body) || /permission is hereby granted, free of charge/i.test(body)) {
     return "MIT License";
   }
   if (/Redistribution and use in source and binary forms/i.test(body)) {
     return /neither the name/i.test(body) ? "BSD 3-Clause License" : "BSD 2-Clause License";
   }
-  if (/ISC License/i.test(body) || /^ISC$/i.test(declared)) return "ISC License";
   return declared;
 }
 
@@ -160,18 +163,30 @@ function collect(dir: string, name: string, version: string, declared: string): 
   const main = pick(LICENSE_FILES);
   const font = pick(FONT_LICENSE_FILES);
 
-  // A font package declares a COMPOUND licence ("MIT AND OFL-1.1") and ships the two
-  // halves as separate files: LICENSE covers the wrapper code, LICENSE_FONT the typeface.
-  // Tag each file with its own half rather than repeating the compound string on both,
-  // so the package reads as "MIT" + "OFL-1.1" instead of "MIT AND OFL-1.1" + "OFL-1.1".
-  const compound = /^(.*?)\s+AND\s+OFL-1\.1$/i.exec(declared);
+  // A font package declares a COMPOUND licence ("MIT AND OFL-1.1", "MIT AND
+  // Apache-2.0") and ships the two halves as separate files: LICENSE covers the wrapper
+  // code, LICENSE_FONT the typeface. Tag each file with its own half rather than
+  // repeating the compound string on both, so the package reads as "MIT" + "OFL-1.1"
+  // instead of "MIT AND OFL-1.1" + "OFL-1.1".
+  const compound = /^(.*?)\s+AND\s+(\S+)$/i.exec(declared);
   const mainTag = font && compound ? compound[1].trim() : declared;
 
-  for (const [file, tag] of [[main, mainTag], [font, "OFL-1.1"]] as const) {
+  // The font file's tag comes from its own text, never from an assumption: the Geist
+  // wrappers ship the OFL there, but material-symbols ships the Apache-2.0 text, and
+  // hard-tagging every font file "OFL-1.1" (as this once did) badged that package with
+  // a licence it does not carry.
+  const fontTag = (body: string) =>
+    /SIL OPEN FONT LICENSE/i.test(body) ? "OFL-1.1"
+    : /Apache License/i.test(body) ? "Apache-2.0"
+    : compound ? compound[2].trim()
+    : declared;
+
+  for (const [file, kind] of [[main, "main"], [font, "font"]] as const) {
     if (!file) continue;
     const text = readFileSync(join(dir, file), "utf8");
     if (!text.trim()) continue;
     const { copyright, body } = splitLicense(text);
+    const tag = kind === "font" ? fontTag(body) : mainTag;
     out.push({
       name,
       version,
@@ -328,7 +343,7 @@ export const THIRD_PARTY_CANVAS =
   ${q(`Canvas itself is published to npm as @nannier/canvas under the MIT License. This app is its reference documentation.`)};
 
 export const THIRD_PARTY_FONTS =
-  ${q(`The Geist and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, which requires the licence and copyright notice to be distributed with the font. Both are reproduced in full below.`)};
+  ${q(`The Geist and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};
 
 /** Package count by declared licence, most common first. */
 export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = ${JSON.stringify(breakdown.map(([license, count]) => ({ license, count })), null, 2)};
