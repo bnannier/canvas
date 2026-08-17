@@ -7,6 +7,8 @@
 //     render re-renders every consumer (the RadioGroup finding).
 //   - no static imports of the optional peers in src/** (they load via a guarded
 //     require(); a value import breaks consumers who skip the peer).
+//   - no Trusted Types sinks in src/**: they throw under a strict CSP, and a sink
+//     on a module's import path takes the whole consuming app down with it.
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import react from "eslint-plugin-react";
@@ -79,6 +81,31 @@ export default tseslint.config(
             allowTypeImports: true,
             message: `${name} is an optional peer: load it via a guarded require(), not a static import.`,
           })),
+        },
+      ],
+      // Trusted Types sinks. The docs site sends `require-trusted-types-for
+      // 'script'` (docs/public/_headers) and any consumer may send it too; under
+      // that CSP Chromium throws a TypeError on every string assigned to one of
+      // these. Because kit modules run their DOM setup at import time, such a
+      // throw escapes the module factory and blanks the whole app rather than
+      // merely losing an effect: that is how the web glass lens took
+      // canvas.nannier.com down. Build DOM with createElementNS + setAttribute.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "AssignmentExpression[left.property.name=/^(innerHTML|outerHTML)$/]",
+          message:
+            "innerHTML/outerHTML is a Trusted Types sink and throws under a require-trusted-types-for CSP. Build nodes with document.createElementNS + setAttribute instead.",
+        },
+        {
+          selector: "CallExpression[callee.property.name='insertAdjacentHTML']",
+          message:
+            "insertAdjacentHTML is a Trusted Types sink and throws under a require-trusted-types-for CSP. Build nodes with document.createElementNS + setAttribute instead.",
+        },
+        {
+          selector: "CallExpression[callee.object.name='document'][callee.property.name=/^(write|writeln)$/]",
+          message:
+            "document.write is a Trusted Types sink and throws under a require-trusted-types-for CSP. Build nodes with document.createElementNS + setAttribute instead.",
         },
       ],
     },

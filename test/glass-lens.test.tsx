@@ -11,7 +11,7 @@ import {
   acquireSizedGlassLens,
   releaseSizedGlassLens,
   sizedGlassLensCount,
-  sizedLensFilterMarkup,
+  sizedLensFilterSpec,
   lensMapDataUri,
   lensBackdropSupported,
 } from "../src/style/glass-surface/glass-lens.ts";
@@ -92,19 +92,23 @@ describe("sized lens defs", () => {
     expect(acquireSizedGlassLens(1200, 0)).toBeNull();
   });
 
-  it("filter markup uses px units, a single dual-channel displacement pass, and the lens grade", () => {
-    const m = sizedLensFilterMarkup("t", 1200, 56);
-    expect(m).toContain('filterUnits="userSpaceOnUse"');
-    // Region inflated 12% each side: x=-144, width=1488; y=-7, height=70.
-    expect(m).toContain('x="-144"');
-    expect(m).toContain('width="1488"');
-    expect(m).toContain('y="-7"');
-    expect(m).toContain('height="70"');
-    expect((m.match(/feDisplacementMap/g) ?? []).length).toBe(1);
-    expect(m).toContain('xChannelSelector="R"');
-    expect(m).toContain('yChannelSelector="G"');
-    expect(m).toContain('stdDeviation="6"');
-    expect(m).toContain('values="1.9"');
+  it("filter spec uses px units, a single dual-channel displacement pass, and the lens grade", () => {
+    const spec = sizedLensFilterSpec("t", 1200, 56);
+    const primitive = (tag: string) => spec.children.filter((c) => c.tag === tag);
+    expect(spec.attrs.filterUnits).toBe("userSpaceOnUse");
+    // Region inflated 12% each side: x=-144, width=1488; y=-7, height=70. The
+    // feImage carries the same region so the map's intrinsic size IS the region.
+    expect(spec.attrs.x).toBe(-144);
+    expect(spec.attrs.width).toBe(1488);
+    expect(spec.attrs.y).toBe(-7);
+    expect(spec.attrs.height).toBe(70);
+    const image = primitive("feImage")[0];
+    expect([image.attrs.x, image.attrs.y, image.attrs.width, image.attrs.height]).toEqual([-144, -7, 1488, 70]);
+    expect(primitive("feDisplacementMap").length).toBe(1);
+    expect(primitive("feDisplacementMap")[0].attrs.xChannelSelector).toBe("R");
+    expect(primitive("feDisplacementMap")[0].attrs.yChannelSelector).toBe("G");
+    expect(primitive("feGaussianBlur")[0].attrs.stdDeviation).toBe(6);
+    expect(primitive("feColorMatrix")[0].attrs.values).toBe(1.9);
   });
 
   it("map geometry: constant 12px rims hugging the element edges inside the inflated region", () => {
@@ -121,11 +125,60 @@ describe("sized lens defs", () => {
   });
 
   it("tiny surfaces shrink the rim so a flat centre survives", () => {
-    const m = sizedLensFilterMarkup("t2", 24, 24);
+    const spec = sizedLensFilterSpec("t2", 24, 24);
     // rim = min(12, floor(24/3)) = 8: the map's first band rect is 8px wide.
-    const uri = m.match(/href="([^"]+)"/)![1];
+    const uri = String(spec.children.find((c) => c.tag === "feImage")!.attrs.href);
     const svg = decodeURIComponent(uri.replace("data:image/svg+xml,", ""));
     expect(svg).toContain("width='8' height='24' fill='rgb(56,128,128)'");
+  });
+});
+
+describe("Trusted Types safety", () => {
+  // The docs site sends `require-trusted-types-for 'script'`, and any consumer
+  // may. Under that CSP Chromium throws a TypeError on EVERY string assigned to
+  // innerHTML. The shared def is injected at import time, so a sink there does
+  // not merely drop the glass, it escapes the module factory and blanks the app:
+  // that is what served canvas.nannier.com a white page. Both injection paths
+  // are therefore driven through a setter that throws exactly as Chromium does.
+  function forbidInnerHTML() {
+    const original = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+    Object.defineProperty(Element.prototype, "innerHTML", {
+      configurable: true,
+      get: original?.get,
+      set() {
+        throw new TypeError(
+          "Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.",
+        );
+      },
+    });
+    return () => {
+      if (original) Object.defineProperty(Element.prototype, "innerHTML", original);
+    };
+  }
+
+  it("builds both the shared and the sized defs without touching an innerHTML sink", () => {
+    // Drop the import-time def so ensureGlassLens does real work under the ban.
+    document.getElementById(GLASS_LENS_ID)?.remove();
+    const restore = forbidInnerHTML();
+    try {
+      expect(ensureGlassLens()).toBe(true);
+      const shared = document.getElementById(GLASS_LENS_ID)!;
+      // Really SVG-namespaced elements, not HTML look-alikes named "filter".
+      expect(shared.namespaceURI).toBe("http://www.w3.org/2000/svg");
+      expect(shared.querySelectorAll("feGaussianBlur").length).toBe(1);
+      expect(shared.querySelectorAll("feDisplacementMap").length).toBe(0);
+
+      const def = acquireSizedGlassLens(320, 96)!;
+      const sized = document.getElementById(def.key)!;
+      expect(sized.getAttribute("filterUnits")).toBe("userSpaceOnUse");
+      expect(sized.querySelectorAll("feDisplacementMap").length).toBe(1);
+      // Case-sensitive SVG attribute names survive setAttribute on an SVG node.
+      expect(sized.querySelector("feDisplacementMap")!.getAttribute("xChannelSelector")).toBe("R");
+      expect(sized.querySelector("feImage")!.getAttribute("href")).toContain("data:image/svg+xml,");
+      releaseSizedGlassLens(def.key);
+    } finally {
+      restore();
+    }
   });
 });
 

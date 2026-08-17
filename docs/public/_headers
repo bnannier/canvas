@@ -26,8 +26,20 @@
   # bundle contains 5 innerHTML assignments and 14 dangerouslySetInnerHTML sites, any of
   # which would throw under Trusted Types, so it was verified before shipping: all 81
   # routes (12 nav pages + 69 component pages) were loaded with this exact policy applied
-  # and reported zero violations and zero console errors. Re-run that sweep before
-  # adding a dependency that touches the DOM directly.
+  # and reported zero violations and zero console errors. All 5 and all 14 are dependency
+  # code on paths this app never takes (React's dangerouslySetInnerHTML and <script>
+  # branches, expo-clipboard's HTML reader, a legacy styleSheet.cssText branch); no Canvas
+  # or docs component uses dangerouslySetInnerHTML.
+  #
+  # The danger this policy actually caught was OUR OWN code, not a dependency. The web
+  # glass lens shipped injecting its SVG filter defs with `innerHTML`, at module-import
+  # time, so the TypeError escaped the module factory before React ever mounted and the
+  # whole site served a blank page. Two guards now stand behind this header: kit source is
+  # linted against every Trusted Types sink (no-restricted-syntax in eslint.config.mjs),
+  # and test/glass-lens.test.tsx drives both def-injection paths through a setter that
+  # throws exactly as Chromium does. Re-run the route sweep anyway whenever a dependency
+  # that touches the DOM is added or upgraded, and note that a violation on an import path
+  # is fatal to the entire app rather than merely to one effect.
   Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://registry.npmjs.org; frame-ancestors 'none'; form-action 'self'; require-trusted-types-for 'script'; upgrade-insecure-requests
 
   # One year, covering this host and anything below it. `includeSubDomains` is scoped to
