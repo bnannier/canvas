@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+Fix the web Liquid Glass lens's displacement geometry. The shared percentage-sized filter silently mis-rendered in Chromium's reference-filter path: the ramp images did not cover the element, most of the surface sampled a transparent-black map, and the two displacement passes compounded that into a large position-dependent smear (content under a glass bar appeared shifted tens of pixels, and content entering at an edge read unblurred before snapping to frost). The lens is now generated per surface size with pixel-unit geometry (`filterUnits="userSpaceOnUse"`, a map image whose intrinsic size is the filter region), acquired on layout and refcounted so equal sizes share one def and resizes clean up after themselves. Rims are now a constant 12px like the real material instead of proportional to the element, a single dual-channel displacement pass replaces the two-pass chain, and the shared `#cds-glass-lens` def the CSS token points at carries the blur+saturate grade only, so raw-CSS consumers get a correct frost rather than a broken lens.
