@@ -93,6 +93,41 @@ describe("Alert", () => {
     );
     expect(screen.getByText("Retry")).toBeTruthy();
   });
+
+  // The width measure axis: every measure is a MAXIMUM, never a floor. The
+  // banner rides width:"100%" under a maxWidth cap (480 default / 320 narrow /
+  // 640 wide; block drops the cap), so it still shrinks to its container. RNW
+  // serializes the pair as inline width/max-width, so the axis is assertable
+  // at the DOM.
+  const alertRoot = (c: HTMLElement) => c.querySelector('[role="alert"]') as HTMLElement;
+
+  it("caps a bare banner at the default 480px measure, filling under the cap", () => {
+    const { container } = ui(<Alert info title="Measured" />);
+    expect(alertRoot(container).style.width).toBe("100%");
+    expect(alertRoot(container).style.maxWidth).toBe("480px");
+  });
+
+  it("narrow and wide pick the other two caps", () => {
+    const n = ui(<Alert narrow info title="Narrow" />);
+    expect(alertRoot(n.container).style.maxWidth).toBe("320px");
+    n.unmount();
+    const w = ui(<Alert wide info title="Wide" />);
+    expect(alertRoot(w.container).style.maxWidth).toBe("640px");
+  });
+
+  it("block fills the container with no cap", () => {
+    const { container } = ui(<Alert block info title="Announcement" />);
+    expect(alertRoot(container).style.width).toBe("100%");
+    expect(alertRoot(container).style.maxWidth).toBe("");
+  });
+
+  it("resolves measure conflicts first-match: narrow > wide > block", () => {
+    const all = ui(<Alert narrow wide block info title="All three" />);
+    expect(alertRoot(all.container).style.maxWidth).toBe("320px");
+    all.unmount();
+    const two = ui(<Alert wide block info title="Wide beats block" />);
+    expect(alertRoot(two.container).style.maxWidth).toBe("640px");
+  });
 });
 
 describe("Stats", () => {

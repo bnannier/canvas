@@ -86,13 +86,13 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — A plain select for short, fixed lists; reserve the autocomplete for long, searchable ones.
 
 ```tsx
-<Select label="Size" options={["Small", "Medium", "Large"]} open placeholder="Select a size" />
+<Select label="Size" options={["Small", "Medium", "Large"]} placeholder="Select a size" />
 ```
 
 **Don't** — Type or click: a search field for three fixed options is overhead with nothing to filter.
 
 ```tsx
-<Autocomplete label="Size" options={["Small", "Medium", "Large"]} open placeholder="Search…" />
+<Autocomplete label="Size" options={["Small", "Medium", "Large"]} placeholder="Search…" />
 ```
 
 ### Filtering
@@ -107,45 +107,20 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
     "Tom Cook",
     "Tanya Fox",
     "Hellen Schmidt"
-  ]} defaultQuery="co" open />
+  ]} defaultQuery="co" />
 ```
 
-**Don't** — Try typing: a search box that ignores input is just a dropdown wearing a costume.
+**Don't** — Try typing: a plain dropdown wearing a search placeholder ignores every keystroke, so a long list stays as long as it started.
 
 ```tsx
-<View style={{ position: "relative", width: "100%", maxWidth: 280 }}>
-  <Text style={{ marginBottom: 6, fontWeight: "500", color: tokens.foreground, fontSize: 14, lineHeight: 20 }}>Assigned to</Text>
-  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>co</Text>
-    <Text style={{ color: tokens["muted-foreground"], fontSize: 14, lineHeight: 20 }}>▾</Text>
-  </View>
-  <View style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, marginTop: 4, maxHeight: 240, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4, ...shadow("lg") }}>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Wade Cooper</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Arlene Mccoy</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Devon Webb</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tom Cook</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tanya Fox</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Hellen Schmidt</Text>
-    </View>
-  </View>
-</View>
+<Select label="Assigned to" options={[
+    "Wade Cooper",
+    "Arlene Mccoy",
+    "Devon Webb",
+    "Tom Cook",
+    "Tanya Fox",
+    "Hellen Schmidt"
+  ]} placeholder="Search a person…" />
 ```
 
 ### Selection
@@ -153,37 +128,13 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — Click an option: it fills the input and stays marked as selected.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"]} defaultValue="Devon Webb" open />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"]} defaultValue="Devon Webb" />
 ```
 
-**Don't** — Click an option: it flashes but the field stays empty, so you can't tell what you picked.
+**Don't** — Click an option: the field is pinned to an empty `value`, so the list closes on nothing and you can't tell what you picked.
 
 ```tsx
-<View style={{ position: "relative", width: "100%", maxWidth: 280 }}>
-  <Text style={{ marginBottom: 6, fontWeight: "500", color: tokens.foreground, fontSize: 14, lineHeight: 20 }}>Assigned to</Text>
-  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, height: 36 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Pick a person…</Text>
-    <Text style={{ color: tokens["muted-foreground"], fontSize: 14, lineHeight: 20 }}>▾</Text>
-  </View>
-  <View style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, marginTop: 4, maxHeight: 240, borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 4, ...shadow("lg") }}>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Wade Cooper</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Arlene Mccoy</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Devon Webb</Text>
-    </View>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 2, paddingHorizontal: 8, paddingVertical: 6 }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"], width: 14 }}> </Text>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["popover-foreground"] }}>Tom Cook</Text>
-    </View>
-  </View>
-</View>
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb", "Tom Cook"]} value="" placeholder="Pick a person…" />
 ```
 
 ### With label
@@ -191,13 +142,13 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — A persistent label keeps the field named after a selection has filled the input.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" open />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" />
 ```
 
 **Don't** — Once a value replaces the placeholder, an unlabeled field has nothing left to name it.
 
 ```tsx
-<Autocomplete options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" open />
+<Autocomplete options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} defaultValue="Devon Webb" />
 ```
 
 ### With helper text
@@ -205,13 +156,13 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 **Do** — A short placeholder plus persistent helper text keeps the rule visible while you type.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Search a person…" helperText="Deactivated users are hidden from the list." />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} placeholder="Search a person…" helperText="Deactivated users are hidden from the list." />
 ```
 
 **Don't** — Type a letter: guidance crammed into the placeholder vanishes the moment you start.
 
 ```tsx
-<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} open placeholder="Pick an active teammate; deactivated users are hidden" />
+<Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} placeholder="Pick an active teammate; deactivated users are hidden" />
 ```
 
 ### Disabled

@@ -6,10 +6,14 @@ export default function Example(scope: ExampleScope) {
   const { DataTable } = scope;
   return (
 <DataTable
-  columns={["Name", "Email", "Status"]}
-  rows={[]}
+  columns={["Name", "Email", "Role", "Status"]}
+  rows={[
+    ["Alice Johnson", "alice@example.com", "Admin", "Active"],
+    ["Bob Smith", "bob@example.com", "Editor", "Inactive"],
+    ["Rachel Chen", "rachel@example.com", "Admin", "Active"]
+  ]}
   bordered
-  loading
+  compact
 />
   );
 }

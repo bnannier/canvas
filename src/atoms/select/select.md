@@ -113,7 +113,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 <Select label="Email notifications" options={["On", "Off"]} defaultValue="On" />
 ```
 
-### sm
+### Small
 
 **Do** — Keep the small select inline with a short label so it stays compact inside toolbars and table footers.
 
@@ -127,7 +127,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 <Select small narrow label="Rows per page" defaultValue="10" options={["10", "25", "50"]} />
 ```
 
-### default
+### Default size
 
 **Do** — Match the default select to sibling inputs at the same height so the form row lines up.
 
@@ -157,7 +157,7 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
 </View>
 ```
 
-### lg
+### Large
 
 **Do** — Scale the text up with the height so the large select reads as a deliberate, touch-friendly target.
 

@@ -1,11 +1,12 @@
-import Svg, { Circle } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { View, Text, useTheme, palette, statusHues, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
 
-// Gauge: a ring (muted track + a tone-colored fill arc for the value) with the
-// value and an optional label centered inside.
+// Gauge: a 180 degree top semicircular arc (muted track + a tone-colored value
+// arc), the percent readout sitting in the open center of the semicircle, and
+// the optional label below the graphic.
 
 export type GaugeTone = "primary" | "success" | "warning" | "destructive";
 
@@ -37,6 +38,29 @@ export function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
   return tokens.primary;
 }
 
+// The graphic is a fixed 120 wide for now (per-instance sizing is a separate,
+// deferred capability). The hand-off's semicircle metrics: a 10-wide stroke
+// inset 10 from each side, so the arc's radius is half the width minus the
+// inset, and the svg extends 12 below the arc baseline to fit the rounded caps.
+const SIZE = 120;
+const STROKE = 10;
+const INSET = 10;
+const RADIUS = SIZE / 2 - INSET;
+const SEMICIRCUMFERENCE = Math.PI * RADIUS;
+const GRAPHIC_HEIGHT = SIZE / 2 + 12;
+
+// Pure semicircle geometry, exported for tests (not re-exported from the
+// barrel), following the gaugeFill precedent. The track and value arcs share
+// one path (a single 180 degree top sweep from the left end to the right end);
+// the value arc reveals its share of the track's length through the dash
+// pattern.
+export function gaugeArc(v: number): { d: string; dasharray: string } {
+  return {
+    d: `M ${INSET} ${SIZE / 2} A ${RADIUS} ${RADIUS} 0 0 1 ${SIZE - INSET} ${SIZE / 2}`,
+    dasharray: `${SEMICIRCUMFERENCE * (v / 100)} ${SEMICIRCUMFERENCE}`,
+  };
+}
+
 export function Gauge(props: GaugeProps) {
   const { value, label, testID, style } = props;
   const { tokens } = useTheme();
@@ -47,39 +71,37 @@ export function Gauge(props: GaugeProps) {
     "[canvas] <Gauge />: `value` is outside 0–100; it is clamped to that range.",
   );
   const v = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
-  const size = 120;
-  const stroke = 8;
-  const r = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * r;
+  // Per the hand-off, the readout shows a whole percent (the display rounds);
+  // the arc keeps the fractional value so the fill stays exact. The accessible
+  // name announces the same number the eye sees.
+  const pct = Math.round(v);
   const fill = gaugeFill(tokens, props);
+  const arc = gaugeArc(v);
 
   return (
     <View
       testID={testID}
-      style={[{ width: size, height: size, alignItems: "center", justifyContent: "center" }, style]}
+      style={[{ width: SIZE, alignItems: "center", gap: 4 }, style]}
       accessibilityRole="image"
-      accessibilityLabel={`${label ?? "Gauge"}: ${v}%`}
-      aria-label={`${label ?? "Gauge"}: ${v}%`}
+      accessibilityLabel={`${label ?? "Gauge"}: ${pct}%`}
+      aria-label={`${label ?? "Gauge"}: ${pct}%`}
     >
-      <Svg width={size} height={size} style={{ position: "absolute" }}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={tokens.muted} strokeWidth={stroke} fill="none" />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke={fill}
-          strokeWidth={stroke}
+      <Svg width={SIZE} height={GRAPHIC_HEIGHT} viewBox={`0 0 ${SIZE} ${GRAPHIC_HEIGHT}`}>
+        <Path d={arc.d} fill="none" stroke={tokens.muted} strokeWidth={STROKE} strokeLinecap="round" />
+        <Path
+          d={arc.d}
           fill="none"
+          stroke={fill}
+          strokeWidth={STROKE}
           strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - v / 100)}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          strokeDasharray={arc.dasharray}
         />
       </Svg>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ fontSize: 24, lineHeight: 32, fontWeight: "600", color: tokens["card-foreground"] }}>{v}%</Text>
-        {label ? <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{label}</Text> : null}
-      </View>
+      {/* The negative margin pulls the readout up into the open center of the
+          semicircle; it is the component's own anatomy (per the hand-off), not
+          a call-site shim. */}
+      <Text style={{ fontSize: 24, lineHeight: 28, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground, marginTop: -20 }}>{pct}%</Text>
+      {label ? <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{label}</Text> : null}
     </View>
   );
 }

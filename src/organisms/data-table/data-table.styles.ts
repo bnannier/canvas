@@ -89,6 +89,25 @@ export interface DataTableSkin {
    */
   separator: ((t: ColorTokens) => ViewStyle) | null;
   /**
+   * Fixed width of the trailing row-actions column (`onRowEdit`/`onRowDelete`):
+   * two icon buttons at the platform touch-target size, plus the cell padding.
+   */
+  actionsColWidth: number;
+  /**
+   * One icon action button (pencil / bin / save / cancel): a square box at the
+   * platform touch-target size (web 28, iOS 44pt, Android 48dp), centered.
+   */
+  actionButton: ViewStyle;
+  /** Size (px) of the glyphs inside the trailing action buttons. */
+  actionIconSize: number;
+  /**
+   * The inline cell editor (`inlineEdit` / pencil-opened row editing): the
+   * platform's cell type inside a primary-ringed field on the background fill.
+   */
+  editInput: (t: ColorTokens) => TextStyle;
+  /** The wash over a row while it is in pencil-opened edit mode. */
+  editTint: (t: ColorTokens) => ViewStyle;
+  /**
    * Collapse a multicolumn table to its PRIMARY (first) column below the compact
    * (`sm`) width, matching SwiftUI Table's compact-width behavior on iPhone. iOS
    * only; web/Android render every column at every width.
@@ -168,6 +187,26 @@ export const webSkin: DataTableSkin = {
   dataCell: DATA_CELL,
   cellText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
   separator: null,
+  // Row actions: 28px icon buttons (the pointer web needs no touch minimum);
+  // two of them plus the gap and px-12 cell padding set the 92px column.
+  actionsColWidth: 92,
+  actionButton: { width: 28, height: 28, borderRadius: 6, alignItems: "center", justifyContent: "center" },
+  actionIconSize: 15,
+  // The inline editor: the 14/20 cell type inside a primary-ringed 28px field.
+  editInput: (t) => ({
+    alignSelf: "stretch",
+    height: 28,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: t.primary,
+    backgroundColor: t.background,
+    color: t.foreground,
+    paddingHorizontal: 6,
+    paddingVertical: 0,
+    fontSize: 14,
+    lineHeight: 20,
+  }),
+  editTint: (t) => ({ backgroundColor: alpha(t.primary, 0.06) }),
   ripple: null,
 };
 
@@ -222,6 +261,29 @@ export const iosSkin: DataTableSkin = {
   // Thin (~0.5pt) separator inset 16pt from the leading edge to align with the
   // content (iOS list/table separators do not run full-bleed).
   separator: (t) => ({ position: "absolute", left: 16, right: 0, bottom: 0, height: 0.5, backgroundColor: t.border }),
+  // Row actions: 44pt HIG touch targets; two of them plus the gap and px-12
+  // cell padding set the column width.
+  actionsColWidth: 116,
+  actionButton: { width: 44, height: 44, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  actionIconSize: 17,
+  // The inline editor: the 17/22 SF cell type inside a primary-ringed 32pt field
+  // with the continuous iOS corner.
+  editInput: (t) => ({
+    alignSelf: "stretch",
+    height: 32,
+    borderRadius: 6,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    borderColor: t.primary,
+    backgroundColor: t.background,
+    color: t.foreground,
+    paddingHorizontal: 8,
+    paddingVertical: 0,
+    fontSize: 17,
+    lineHeight: 22,
+    letterSpacing: -0.43,
+  }),
+  editTint: (t) => ({ backgroundColor: alpha(t.primary, 0.06) }),
   collapsesToPrimaryColumn: true,
   pressableMinHeight: 44,
   ripple: null,
@@ -275,6 +337,28 @@ export const androidSkin: DataTableSkin = {
   // M3 body-large: 16/24/400 with +0.5 tracking.
   cellText: (t) => ({ fontSize: 16, lineHeight: 24, letterSpacing: 0.5, color: t.foreground }),
   separator: null,
+  // Row actions: 48dp M3 touch targets on a circular state layer (the shell
+  // ripples them with controlRipple); two plus the gap and px-12 padding.
+  actionsColWidth: 124,
+  actionButton: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
+  actionIconSize: 18,
+  // The inline editor: the 16/24 body-large cell type in a primary-ringed 36dp field.
+  editInput: (t) => ({
+    alignSelf: "stretch",
+    height: 36,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: t.primary,
+    backgroundColor: t.background,
+    color: t.foreground,
+    paddingHorizontal: 8,
+    paddingVertical: 0,
+    fontSize: 16,
+    lineHeight: 24,
+    letterSpacing: 0.5,
+  }),
+  // The M3 primary state layer as the row-in-edit wash.
+  editTint: (t) => ({ backgroundColor: alpha(t.primary, 0.08) }),
   pressableMinHeight: 48,
   // M3 list-row state layer: on-surface (foreground) ink at ~10% alpha, routed
   // through the shared ripple helper (the wrap's overflow:"hidden" clips it).

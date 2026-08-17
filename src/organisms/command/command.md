@@ -99,7 +99,7 @@ actions match), and groups left with no match drop out.
 <Command trigger />
 ```
 
-**Don't** — A bare search button hides the keyboard shortcut, so power users never learn the &#8984;K entry point.
+**Don't** — A bare search button hides the keyboard shortcut, so power users never learn the ⌘K entry point.
 
 ```tsx
 <Pressable style={{ flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: "transparent", paddingHorizontal: 12, paddingVertical: 6 }}>

@@ -3,23 +3,24 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge, DataTable } = scope;
+  const { Stateful, DataTable } = scope;
   return (
-<DataTable
-  columns={[
-    "Invoice",
-    { label: "Status", centered: true, width: 120, sortable: false },
-    { label: "Amount", numeric: true, sortValue: (cell) => Number(String(cell).replace(/[^0-9.]/g, "")) }
-  ]}
-  rows={[
-    ["INV-0041", <Badge success>Paid</Badge>, "$1,250.00"],
-    ["INV-0042", <Badge warning>Due</Badge>, "$450.00"],
-    ["INV-0043", <Badge neutral>Draft</Badge>, "$8,120.00"],
-    ["INV-0044", <Badge success>Paid</Badge>, "$96.00"]
-  ]}
-  bordered
-  sortable
-  defaultSort={{ column: "Amount", descending: true }}
-/>
+<Stateful initial={[
+  ["/pricing", "12,480"],
+  ["/docs", "8,102"],
+  ["/blog", "5,914"]
+]}>
+  {(rows, setRows) => (
+    <DataTable
+      columns={["Page", { label: "Visits", numeric: true }]}
+      rows={rows}
+      bordered
+      inlineEdit
+      onCellCommit={(i, c, next) =>
+        setRows(rows.map((row, r) => (r === i ? row.map((cell, ci) => (ci === c ? next : cell)) : row)))
+      }
+    />
+  )}
+</Stateful>
   );
 }

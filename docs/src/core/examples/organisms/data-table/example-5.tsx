@@ -3,21 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable, Sparkline } = scope;
+  const { DataTable } = scope;
   return (
 <DataTable
-  columns={[
-    "Page",
-    { label: "7D", centered: true, width: 120, sortValue: (_cell, _row, i) => [96, 41, 78][i] },
-    { label: "Visits", numeric: true, sortValue: (cell) => Number(String(cell).replace(/[^0-9.]/g, "")) }
-  ]}
-  rows={[
-    ["/pricing", <Sparkline values={[52, 60, 55, 71, 68, 84, 96]} />, "12,480"],
-    ["/docs", <Sparkline values={[88, 74, 70, 66, 58, 49, 41]} destructive />, "8,102"],
-    ["/blog", <Sparkline values={[34, 42, 39, 51, 60, 66, 78]} success />, "5,914"]
-  ]}
+  columns={["Employee", "Team"]}
+  rows={Array.from({ length: 23 }, (_, i) => [
+    `Employee ${i + 1}`,
+    ["Design", "Platform", "Growth"][i % 3]
+  ])}
   bordered
-  sortable
+  selectable
+  paginated
+  pageSize={5}
 />
   );
 }

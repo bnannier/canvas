@@ -103,11 +103,13 @@ Floating menus triggered by a button: actions, options, navigation.
 **Don't** — Always open: it clutters the page and there's no way to dismiss it.
 
 ```tsx
-<Dropdown trigger="Actions" open items={[
-    { label: "Edit profile" },
-    { label: "Duplicate" },
-    { label: "Settings" }
-  ]} />
+<Column style={{ minHeight: 190 }}>
+  <Dropdown trigger="Actions" open items={[
+      { label: "Edit profile" },
+      { label: "Duplicate" },
+      { label: "Settings" }
+    ]} />
+</Column>
 ```
 
 ### Sectioning

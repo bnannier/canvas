@@ -11,7 +11,7 @@ import { androidSkin as chipAndroidSkin, iosSkin as chipIosSkin } from "../src/a
 import { Emblem } from "../src/atoms/emblem/emblem.tsx";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 import { Gauge, Heatmap } from "../src/index.ts";
-import { gaugeFill } from "../src/charts/gauge/gauge.shared.tsx";
+import { gaugeArc, gaugeFill } from "../src/charts/gauge/gauge.shared.tsx";
 import { lightColors, palette } from "../src/style/tokens.ts";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
@@ -301,6 +301,40 @@ describe("Charts — Gauge & Heatmap", () => {
     expect(gaugeFill(lightColors, { value: 1, warning: true, destructive: true })).toBe(palette["amber-500"]);
     expect(gaugeFill(lightColors, { value: 1, destructive: true })).toBe(palette["red-500"]);
     expect(gaugeFill(lightColors, { value: 1 })).toBe(lightColors.primary);
+  });
+
+  // The harness stubs react-native-svg, so the arc cannot be read off the DOM;
+  // the pure geometry export is asserted directly (the gaugeFill precedent).
+  it("Gauge draws a 180 degree top semicircle and dashes the value's share of it", () => {
+    const { d, dasharray } = gaugeArc(72);
+    // One sweep across the top of the fixed 120-wide graphic: from the left
+    // end (10, 60) over radius 50 to the right end (110, 60).
+    expect(d).toBe("M 10 60 A 50 50 0 0 1 110 60");
+    // The dash reveals 72% of the semicircle's length against the full track.
+    const semi = Math.PI * 50;
+    expect(dasharray).toBe(`${semi * (72 / 100)} ${semi}`);
+    // Both arcs share the path; only the dash varies with the value.
+    expect(gaugeArc(0).d).toBe(d);
+    expect(gaugeArc(0).dasharray).toBe(`0 ${semi}`);
+    expect(gaugeArc(100).dasharray).toBe(`${semi} ${semi}`);
+  });
+
+  it("Gauge rounds the readout to a whole percent while the arc keeps the fraction", () => {
+    const { getByText } = ui(<Gauge value={72.5} label="Uptime" />);
+    // The display rounds per the hand-off (72.5 reads as 73%)...
+    expect(getByText("73%")).toBeDefined();
+    // ...but the dash still carries the exact fractional share of the track.
+    const semi = Math.PI * 50;
+    expect(gaugeArc(72.5).dasharray).toBe(`${semi * (72.5 / 100)} ${semi}`);
+  });
+
+  it("Gauge renders the readout above the label, below the graphic", () => {
+    const { getByText } = ui(<Gauge value={72} label="Uptime" />);
+    const readout = getByText("72%");
+    const caption = getByText("Uptime");
+    // The semicircle anatomy stacks readout then label; the label follows the
+    // readout in document order.
+    expect(readout.compareDocumentPosition(caption) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("Heatmap's accessible name carries the label and cell count", () => {

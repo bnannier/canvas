@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Dropdown } = scope;
+  const { Dropdown, Column } = scope;
   return (
-<Dropdown trigger="Actions" open items={[
-    { label: "Edit profile" },
-    { label: "Duplicate" },
-    { label: "Settings" }
-  ]} />
+<Column style={{ minHeight: 190 }}>
+  <Dropdown trigger="Actions" open items={[
+      { label: "Edit profile" },
+      { label: "Duplicate" },
+      { label: "Settings" }
+    ]} />
+</Column>
   );
 }

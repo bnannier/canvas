@@ -102,6 +102,7 @@ function CreateKeyLive() {
       {reveal != null ? (
         <>
           <Alert
+            block
             warning
             icon={<Icon alertTriangle size={16} />}
             title="Copy your new key now"

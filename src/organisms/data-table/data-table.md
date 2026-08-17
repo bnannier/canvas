@@ -1,6 +1,6 @@
 # DataTable
 
-A data table rendered from column and row data, with sorting, row selection, pagination, and the loading and empty states built in. Columns are plain header labels or descriptors (`{ label, numeric, width, sortable, ... }`) for per-column alignment, fixed widths, and sorting; compose a toolbar above when the screen needs one. Density tweaks affect padding live.
+A data table rendered from column and row data, with sorting, row selection, pagination, and the loading and empty states built in. Columns are plain header labels or descriptors (`{ label, numeric, width, sortable, ... }`) for per-column alignment, fixed widths, and sorting; compose a toolbar above when the screen needs one. Density tweaks affect padding live. Pass `onRowEdit` / `onRowDelete` for a trailing actions column: the pencil opens the row's string cells as fields with Save/Cancel (committing via `onRowCommit`), and Delete asks for a confirming second press before it fires. `inlineEdit` skips the pencil and lets a string cell be pressed straight into a field, committing via `onCellCommit`. Data stays yours either way: the table reports intent and re-renders whatever rows it is handed back.
 
 ## Usage
 
@@ -50,6 +50,49 @@ A data table rendered from column and row data, with sorting, row selection, pag
   selectable
   defaultSelectedKeys={[1]}
 />
+```
+
+### Row actions
+
+```tsx
+<Stateful initial={[
+  ["Alice Johnson", "alice@example.com", "Admin"],
+  ["Bob Smith", "bob@example.com", "Editor"],
+  ["Rachel Chen", "rachel@example.com", "Viewer"]
+]}>
+  {(rows, setRows) => (
+    <DataTable
+      columns={["Name", "Email", "Role"]}
+      rows={rows}
+      bordered
+      onRowEdit={() => {}}
+      onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
+      onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
+    />
+  )}
+</Stateful>
+```
+
+### Inline editing
+
+```tsx
+<Stateful initial={[
+  ["/pricing", "12,480"],
+  ["/docs", "8,102"],
+  ["/blog", "5,914"]
+]}>
+  {(rows, setRows) => (
+    <DataTable
+      columns={["Page", { label: "Visits", numeric: true }]}
+      rows={rows}
+      bordered
+      inlineEdit
+      onCellCommit={(i, c, next) =>
+        setRows(rows.map((row, r) => (r === i ? row.map((cell, ci) => (ci === c ? next : cell)) : row)))
+      }
+    />
+  )}
+</Stateful>
 ```
 
 ### Paginated

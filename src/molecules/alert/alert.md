@@ -1,6 +1,6 @@
 # Alert
 
-Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.
+Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. Width comes off the measure axis rather than whatever the parent happens to be, so a column of alerts is the same measure top to bottom: a bare banner caps at 480px, `narrow` caps at 320px (the measure of a standard form field, so a banner over a form lines up with it), `wide` caps at 640px, and `block` fills the container with no cap (first match wins: narrow, then wide, then block). Every cap is a maximum, never a floor: the banner still shrinks to its container. For a blocking confirmation prompt, see Alert Dialog.
 
 ## Usage
 
@@ -95,6 +95,34 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
   description="The dashboard may be briefly unavailable on Sunday between 2:00 and 3:00 UTC."
   dismissible
 />
+```
+
+### Measures
+
+```tsx
+<Column snug>
+  <Alert
+    narrow
+    info
+    icon={<Icon info size={16} />}
+    title="Narrow"
+    description="Capped at 320px, the measure of a standard form field."
+  />
+  <Alert
+    wide
+    success
+    icon="✓"
+    title="Wide"
+    description="Capped at 640px for roomy content regions; a banner without a measure prop caps at 480px."
+  />
+  <Alert
+    block
+    warning
+    icon={<Icon alertTriangle size={16} />}
+    title="Block"
+    description="No cap: the announcement bar fills whatever container it sits in."
+  />
+</Column>
 ```
 
 ### Rich body
