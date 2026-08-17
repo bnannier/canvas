@@ -309,7 +309,7 @@ export default function ColorsScreen() {
               Glass forms a distinct functional layer that floats above content. Navigation and overlays live in it; content surfaces stay solid. Spend it sparingly: the material exists to draw attention to what is beneath it, so using it everywhere defeats it.
             </Typography>
             <Typography tiny muted>
-              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, a genuine frosted blur through expo-blur on web and Android, and the translucent popover fill above as the fallback when neither optional peer is installed. It is never a hand-painted blur on one component.
+              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, a real lens on Chromium web (an SVG displacement filter that refracts the backdrop at the rim while the centre stays optically flat), a genuine frosted blur through expo-blur on non-Chromium web and Android, and the translucent popover fill above as the final fallback. It is never a hand-painted blur on one component.
             </Typography>
             <Typography tiny muted>
               It only reads over something worth bending. Over a flat fill it renders flat, so a glass bar has to have content passing behind it.
