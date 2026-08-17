@@ -9,9 +9,9 @@ import { DocsSurface } from "./surface";
 import { geist } from "./fonts";
 
 export interface DoDontCardProps {
-  // Treatment axis, pick one: `dont` is the red card, `do` the green one. Precedence when
-  // both are passed: `dont` wins; passing neither reads as `do` (the Badge `default`
-  // precedent, where the fallback member is still nameable at the call site).
+  // Treatment axis: `dont` is the red card, and everything else is the green Do card.
+  // `do` is nameable at the call site for symmetry in a pair, but it is inert: `dont`
+  // is the only member that changes the render, and it wins when both are passed.
   do?: boolean;
   dont?: boolean;
   // The muted line under the body, saying why this side is right or wrong.
@@ -30,6 +30,10 @@ export interface DoDontCardProps {
 export function DoDontCard(props: DoDontCardProps) {
   const { caption, code, children } = props;
   const { tokens, dark } = useTheme();
+  // `dont` alone decides the treatment. `do` is accepted so a call site can NAME the
+  // side it means (`<DoDontCard do>` reads better in a pair than a bare tag), but it
+  // does not participate in resolution: with only two states, the absence of `dont`
+  // already is the Do side, so reading `do` could not change any outcome.
   const isDont = props.dont === true;
   // The wash reads from the kit palette rather than a hand-written color, so the do/don't
   // red and green track the token layer: palette red-500 / green-500 at the border and

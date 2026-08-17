@@ -110,9 +110,12 @@ export function createSwatch(skin: SwatchSkin) {
     const label = accessibilityLabel ?? dataName(name, value, detail, color);
 
     // `circle` owns the shape, so it keeps the 1:1 footprint even under `block`: a
-    // stretched circle is a pill, not a circle. `block` still widens the ROOT, so the
-    // label column gets the full width either way.
-    const stretch = block === true && !circle;
+    // stretched circle is a pill, not a circle. `inline` puts the label BESIDE the
+    // block, which makes the root a row, and a stretched child of a row has no width
+    // of its own: `block` there collapsed the sample to a sliver. In both cases the
+    // block keeps its square edge and only the ROOT widens, so the label column still
+    // gets the full width.
+    const stretch = block === true && !circle && !inline;
     const hasLabel = children != null || value != null || detail != null;
 
     return (

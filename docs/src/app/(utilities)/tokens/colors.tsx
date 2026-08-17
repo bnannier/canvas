@@ -314,17 +314,16 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Brand constants"
-          description="Fixed brand colors that do not flip with the scheme: the sign-in orbs and the avatar gradient. Never used as component fills."
+          description="Fixed brand colors that do not flip with the scheme. Never used as component fills: they carry the sign-in orbs and the avatar gradient, which runs orb-indigo to orb-violet."
         >
+          {/* The gradient is a two-token composition, not a colour, so it is described
+              by the section rather than dressed up as a fourth sample: hand-building a
+              block with a label column beside it is the exact anatomy Swatch's own
+              Don't fence forbids. */}
           <Row wrap cozy alignStart>
             {(Object.keys(brandColors) as (keyof typeof brandColors)[]).map((key) => (
               <Sample key={key} color={brandColors[key]} name={key} />
             ))}
-            <View style={{ flexGrow: 1, flexBasis: 150, gap: 6 }}>
-              <GradientFill colors={[brandColors["orb-indigo"], brandColors["orb-violet"]]} height={56} />
-              <Typography small medium>Avatar gradient</Typography>
-              <Typography tiny muted mono>orb-indigo → orb-violet</Typography>
-            </View>
           </Row>
         </TokenSection>
 
