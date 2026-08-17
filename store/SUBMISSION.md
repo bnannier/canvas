@@ -212,7 +212,9 @@ that purpose rather than a personal inbox.
 
 Both answers are "nothing is collected". This is verifiable in the source: there is no
 analytics, attribution, advertising, or crash reporting SDK, no account system, and no
-persistence at all (the in-app theme choice is session-only state in memory).
+persistence of user data (the in-app theme choice is session-only state in memory; the
+only disk write is the app's own bundle when an over-the-air update downloads, which
+stores no user data).
 
 ### Apple App Privacy
 
