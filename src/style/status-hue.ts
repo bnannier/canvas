@@ -22,10 +22,20 @@
 export type StatusTone = "success" | "warning" | "error" | "info";
 
 /**
+ * The chromatic hue families the palette carries. This is palette vocabulary, so it
+ * lives beside `palette` rather than inside the one component that first needed it,
+ * and it types the map below: a tone can only resolve to a hue that exists.
+ */
+export type Hue =
+  | "red" | "orange" | "amber" | "yellow" | "lime" | "green" | "emerald"
+  | "teal" | "cyan" | "sky" | "blue" | "indigo" | "violet" | "fuchsia"
+  | "purple" | "pink" | "rose";
+
+/**
  * Palette hue family per status tone. Compose with a step to key into `palette`,
  * e.g. `palette[`${statusHues.warning}-500`]`.
  */
-export const statusHues: Record<StatusTone, string> = {
+export const statusHues: Record<StatusTone, Hue> = {
   success: "green",
   warning: "amber",
   error: "red",

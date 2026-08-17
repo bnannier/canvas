@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, useControllableState, surfaceRipple, pressDim, palette, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, useControllableState, surfaceRipple, pressDim, palette, statusHues, type Hue, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
@@ -22,10 +22,9 @@ import { Icon } from "../icon/icon.js";
 // (32dp sizing, icon-side insets, the selected filter-chip checkmark).
 
 // Chromatic hues backed by the Tailwind palette; each renders a soft tinted tag.
-export type Hue =
-  | "red" | "orange" | "amber" | "yellow" | "lime" | "green" | "emerald"
-  | "teal" | "cyan" | "sky" | "blue" | "indigo" | "violet" | "fuchsia"
-  | "purple" | "pink" | "rose";
+// The union itself lives beside `palette` in the style layer, since Badge, Alert and
+// this file all speak it.
+export type { Hue };
 
 // Literal-hue props, scanned in this order (first match wins) after the status names.
 const HUES: Hue[] = [
@@ -131,10 +130,12 @@ interface Appearance {
 // literal hues resolve to themselves. `neutral`/`gray` carry no hue but flag the
 // muted-gray tag. Status names are scanned first so a semantic intent wins.
 function colorOf(p: ChipProps): { hue: Hue | null; mutedGray: boolean } {
-  if (p.success) return { hue: "green", mutedGray: false };
-  if (p.warning) return { hue: "amber", mutedGray: false };
-  if (p.error) return { hue: "red", mutedGray: false };
-  if (p.info) return { hue: "blue", mutedGray: false };
+  // The status names resolve through the shared map, so a success chip and a
+  // success badge cannot end up on different greens.
+  if (p.success) return { hue: statusHues.success, mutedGray: false };
+  if (p.warning) return { hue: statusHues.warning, mutedGray: false };
+  if (p.error) return { hue: statusHues.error, mutedGray: false };
+  if (p.info) return { hue: statusHues.info, mutedGray: false };
   if (p.neutral) return { hue: null, mutedGray: true };
   for (const h of HUES) if ((p as Record<string, unknown>)[h]) return { hue: h, mutedGray: false };
   if (p.gray) return { hue: null, mutedGray: true };

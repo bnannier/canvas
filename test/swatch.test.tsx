@@ -157,4 +157,14 @@ describe("Swatch boolean axes", () => {
     expect(rootOf(container).style.alignSelf).toBe("stretch");
     expect(blockOf(container).style.width).toBe("56px");
   });
+
+  it("inline keeps the block's width under block (a stretched row child has none)", () => {
+    // `inline` makes the root a ROW, where a stretched child stretches vertically and
+    // has no width of its own, which collapsed the sample to a sliver. The root still
+    // widens so the label column gets the space.
+    const { container } = ui(<Swatch inline block color="#4f46e5" value="--primary">primary</Swatch>);
+    expect(rootOf(container).style.alignSelf).toBe("stretch");
+    expect(blockOf(container).style.width).toBe("56px");
+    expect(blockOf(container).style.alignSelf).not.toBe("stretch");
+  });
 });
