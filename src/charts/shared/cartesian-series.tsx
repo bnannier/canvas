@@ -65,9 +65,10 @@ export const STANDARD_WIDTH = 480;
 export const finite = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
 
 // Shared per-chart setup: warnings, tone/color resolution, the y extent, the
-// accessible name, and the scrub selection.
+// accessible name, and the scrub selection. `displayName` is the component's
+// name, used only to attribute the dev warnings.
 export function useSeriesChart(
-  kind: "line" | "area",
+  displayName: string,
   props: CartesianSeriesProps,
   stacked: boolean,
   opts?: { extraExtent?: number[]; autoTone?: Tone; zeroBased?: boolean },
@@ -79,15 +80,15 @@ export function useSeriesChart(
   const multi = series.length > 1;
   const formatValue = props.formatValue ?? formatCompact;
 
-  devWarn(series.length === 0, `[canvas] <${kind === "line" ? "LineChart" : "AreaChart"} />: \`series\` is empty; the chart renders with no marks.`);
-  devWarn(labels.length === 0, `[canvas] <${kind === "line" ? "LineChart" : "AreaChart"} />: \`labels\` is empty; the chart renders with no columns.`);
+  devWarn(series.length === 0, `[canvas] <${displayName} />: \`series\` is empty; the chart renders with no marks.`);
+  devWarn(labels.length === 0, `[canvas] <${displayName} />: \`labels\` is empty; the chart renders with no columns.`);
   devWarn(
     series.some((sr) => sr.values.length !== labels.length),
-    `[canvas] <${kind === "line" ? "LineChart" : "AreaChart"} />: a series' \`values\` length differs from \`labels\`; missing values are treated as 0.`,
+    `[canvas] <${displayName} />: a series' \`values\` length differs from \`labels\`; missing values are treated as 0.`,
   );
   devWarn(
     multi && !!(props.success || props.destructive),
-    `[canvas] <${kind === "line" ? "LineChart" : "AreaChart"} />: tone props apply to single-series charts only; multi-series charts use the chart-1..8 tokens.`,
+    `[canvas] <${displayName} />: tone props apply to single-series charts only; multi-series charts use the chart-1..8 tokens.`,
   );
 
   const colorOf = (i: number): string => (multi ? s.seriesFill(tokens, i) : s.barFill(tokens, tone));

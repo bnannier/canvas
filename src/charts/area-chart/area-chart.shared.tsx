@@ -18,7 +18,7 @@ export interface AreaChartProps extends CartesianSeriesProps {
 export function createAreaChart(skin: ChartSkin) {
   return function AreaChart(props: AreaChartProps) {
     const stacked = !!props.stacked && props.series.length > 1;
-    const ctx = useSeriesChart("area", props, stacked);
+    const ctx = useSeriesChart("AreaChart", props, stacked);
     const curved = !!props.curved;
 
     return chartShell(skin, props, ctx, (layout) => {
