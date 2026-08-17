@@ -13,14 +13,17 @@
     that do NOT flip with the scheme, `orb-indigo` / `orb-violet` / `orb-cyan`.
     The CSS layer has shipped these as `--orb-*` since the token handoff, but there
     was no JavaScript equivalent, so a React Native surface (and any docs page)
-    had to hard-code the hexes. Keys are the CSS custom-property names verbatim,
-    so `brandColors["orb-indigo"]` and `var(--orb-indigo)` are the same value by
-    construction, and `bun run validate-tokens` now fails when a key here has no
-    matching `--name` in the shipped CSS (the guard `lightColors` already had).
+    had to hard-code the hexes. Keys are the CSS custom-property names verbatim, so
+    `brandColors["orb-indigo"]` and `var(--orb-indigo)` name the same token, and
+    `bun run validate-tokens` now fails when a key here has no matching `--name` in
+    the shipped CSS (the guard `lightColors` already had). That guard checks the
+    name EXISTS, not that the two layers carry the same value; cross-checking values
+    is a separate change, since the CSS states colors in oklch and the JavaScript in
+    hex.
   - `statusHues` (with its `StatusTone` type): the one status-tone to palette-hue
     map, `success` to green, `warning` to amber, `error` to red, `info` to blue.
-    Alert and Badge each carried a private, identical copy; both now read this one,
-    so a toned Alert and a status Badge cannot drift apart. It names the hue only,
+    Alert, Badge and Chip each carried a private, identical copy; all three now read
+    this one, so a toned Alert, a status Badge and a status Chip cannot drift apart. It names the hue only,
     never a step, so each component keeps its own step ladder. No rendered color
     changes.
 
