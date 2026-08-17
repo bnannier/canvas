@@ -123,14 +123,17 @@ applied together.
 
 Glass is NOT a per-component axis: it is a theming-level surface mode, like the
 light/dark scheme, and the `ThemeProvider` spells it in the same boolean grammar as
-every component axis: `<ThemeProvider glass>` forces it on (a frost on non-iOS-26
-platforms), `<ThemeProvider solid>` forces the flat look, and passing neither
+every component axis: `<ThemeProvider glass>` forces it on (the lens or frost
+material on non-iOS-26 platforms), `<ThemeProvider solid>` forces the flat look, and passing neither
 resolves to the PLATFORM DEFAULT: **glass on iOS 26+** (Apple makes Liquid Glass the
 system material for the functional layer there, so a Canvas app matches the OS), and
 **solid everywhere else** (web, Android, iOS < 26, Reduce Transparency). `glass`
 wins if both are passed. The legacy `surface="solid" | "glass"` value prop remains
 supported for config-driven code holding a `Surface` value, and on the web the DOM
-helper is `setSurface("glass")` / `setSurface("solid")`. The platform default is computed from
+helper is `setSurface("glass")` / `setSurface("solid")`. The scheme axis speaks the
+same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
+(`dark` wins if both are passed), omitting both follows the OS appearance, and the
+legacy `scheme` value prop is likewise supported. The platform default is computed from
 `liquidGlassAvailable()` (exported from the kit). Following Apple's Liquid Glass model,
 glass is the material for the FUNCTIONAL layer only: overlays (popovers, menus,
 dropdowns, selects, autocompletes, dialogs, alert dialogs, sheets, drawers, command)

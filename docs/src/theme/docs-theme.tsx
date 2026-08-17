@@ -2,8 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Appearance, Platform, useColorScheme } from "react-native";
 import { ThemeProvider, type Surface } from "@nannier/canvas";
 
-// The docs' theme controls. Canvas's ThemeProvider is driven by `scheme` and
-// `surface`; this holds that state and exposes setters to the toggles, so the
+// The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light
+// and glass/solid boolean axes; this holds that state and exposes setters to the toggles, so the
 // docs are themed by the very kit they document. (Density is a web-only DOM switch in
 // the original docs and has no effect on the native components, so it is omitted here.)
 type Scheme = "light" | "dark";
@@ -73,7 +73,7 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
       {/* The toggle state is a Surface value, so the axis booleans take
           expressions: both are explicit because the docs never want the
           platform default (the Frost/Solid toggle owns the choice). */}
-      <ThemeProvider scheme={scheme} glass={surface === "glass"} solid={surface === "solid"}>{children}</ThemeProvider>
+      <ThemeProvider dark={scheme === "dark"} light={scheme === "light"} glass={surface === "glass"} solid={surface === "solid"}>{children}</ThemeProvider>
     </Ctx.Provider>
   );
 }
