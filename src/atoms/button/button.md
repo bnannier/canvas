@@ -140,6 +140,18 @@ A disabled button ignores presses: `onPress` is wired exactly as above, but it n
 </Stateful>
 ```
 
+### Loading
+
+```tsx
+<Button primary loading>Saving</Button>
+```
+
+### Block
+
+```tsx
+<Button primary block>Create account</Button>
+```
+
 ### With icon
 
 ```tsx

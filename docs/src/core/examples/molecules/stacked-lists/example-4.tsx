@@ -3,22 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, StackedList } = scope;
+  const { Stateful, Button, StackedList } = scope;
   return (
 <Stateful initial={[
-  { id: "rachel", name: "Rachel Chen", detail: "rachel.chen@example.com" },
-  { id: "ada", name: "Ada Lovelace", detail: "ada@example.com" },
-  { id: "kevin", name: "Kevin Turner", detail: "kevin@example.com" },
+  { id: "rachel", name: "Rachel Chen", detail: "Engineering Lead" },
+  { id: "ada", name: "Ada Lovelace", detail: "Staff Engineer" },
 ]}>
   {(people, setPeople) => (
     <StackedList
-      reorderable
+      card
+      title="Team members"
+      action={<Button ghost small onPress={() => setPeople([...people, { id: `invite-${people.length}`, name: "Kevin Turner", detail: "Pending invite" }])}>Invite</Button>}
       items={people}
-      onReorder={({ fromIndex, toIndex }) => {
-        const next = [...people];
-        next.splice(toIndex, 0, ...next.splice(fromIndex, 1));
-        setPeople(next);
-      }}
     />
   )}
 </Stateful>

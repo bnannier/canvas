@@ -6,14 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  compact
-  filename="canvas.config.json"
-  language="json"
-  code={`{
-  "theme": "system",
-  "surface": "glass",
-  "primary": "#6366f1"
-}`}
+  wrap
+  language="ts"
+  code={`const message = "This is a very long line that would normally scroll horizontally, but wrap lets it soft-wrap onto the next line instead.";`}
 />
   );
 }

@@ -59,6 +59,32 @@ your app that state is your own.)
 />
 ```
 
+### Confirm before delete
+
+```tsx
+<Stateful initial={false}>
+  {(open, setOpen) => (
+    <Column snug>
+      <ActionPanel
+        title="Delete this project"
+        description="Once you delete a project, there is no going back. Please be certain."
+        actionLabel="Delete project"
+        destructive
+        onAction={() => setOpen(true)}
+      />
+      <AlertDialog
+        open={open}
+        onOpenChange={setOpen}
+        destructive
+        title="Delete this project?"
+        description="This permanently removes the project and all of its data. This action cannot be undone."
+        confirmLabel="Delete"
+      />
+    </Column>
+  )}
+</Stateful>
+```
+
 ## Do & Don't
 
 ### Simple

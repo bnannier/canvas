@@ -56,6 +56,24 @@ Vertical lists with avatar, two-line items, and trailing metadata. Used for cont
 />
 ```
 
+### Custom header action
+
+```tsx
+<Stateful initial={[
+  { id: "rachel", name: "Rachel Chen", detail: "Engineering Lead" },
+  { id: "ada", name: "Ada Lovelace", detail: "Staff Engineer" },
+]}>
+  {(people, setPeople) => (
+    <StackedList
+      card
+      title="Team members"
+      action={<Button ghost small onPress={() => setPeople([...people, { id: `invite-${people.length}`, name: "Kevin Turner", detail: "Pending invite" }])}>Invite</Button>}
+      items={people}
+    />
+  )}
+</Stateful>
+```
+
 ### Reorderable
 
 Each row gains a leading grip: drag it, or focus it and press Space to grab, the arrow keys to move, Space to drop, Escape to cancel. The order stays controlled: a drop only reports the move (`fromIndex`/`toIndex` plus the new `afterId`/`beforeId` neighbors), and the consumer applies it to its own array.

@@ -16,6 +16,12 @@ Increment, decrement, or type a number in a bounded range. A − button, an edit
 <Stepper label="Quantity" defaultValue={1} min={1} max={9} />
 ```
 
+### With description
+
+```tsx
+<Stepper label="Quantity" description="Up to 10 per order." defaultValue={1} min={1} max={10} />
+```
+
 ### Sizes
 
 ```tsx

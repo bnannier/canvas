@@ -12,6 +12,28 @@ A radial dial: a muted track with a tone-colored fill arc for a 0-100 value, and
 </Card>
 ```
 
+## Variants
+
+### Success tone
+
+```tsx
+<Card padded style={{ maxWidth: 200 }}>
+  <Column alignCenter>
+    <Gauge value={92} success label="Checks passing" />
+  </Column>
+</Card>
+```
+
+### Warning tone
+
+```tsx
+<Card padded style={{ maxWidth: 200 }}>
+  <Column alignCenter>
+    <Gauge value={81} warning label="Budget used" />
+  </Column>
+</Card>
+```
+
 ## Do & Don't
 
 ### Gauge

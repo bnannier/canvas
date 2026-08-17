@@ -86,6 +86,28 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 </Stateful>
 ```
 
+### Neutral
+
+```tsx
+<Alert
+  icon={<Icon bell size={16} />}
+  title="Scheduled maintenance"
+  description="The dashboard may be briefly unavailable on Sunday between 2:00 and 3:00 UTC."
+  dismissible
+/>
+```
+
+### Rich body
+
+```tsx
+<Alert icon={<Icon info size={16} />} title="Design token renamed">
+  <Typography small muted>
+    The field underline now reads from <Typography code>--p-field-underline</Typography> instead
+    of a raw hex value; update any local overrides before upgrading.
+  </Typography>
+</Alert>
+```
+
 ## Do & Don't
 
 ### info

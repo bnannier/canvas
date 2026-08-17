@@ -1,5 +1,5 @@
 import Svg, { Circle } from "react-native-svg";
-import { View, Text, useTheme, palette, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, statusHues, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -7,16 +7,18 @@ import { View, Text, useTheme, palette, devWarn, type ColorTokens, type StylePro
 // Gauge: a ring (muted track + a tone-colored fill arc for the value) with the
 // value and an optional label centered inside.
 
-export type GaugeTone = "primary" | "success" | "destructive";
+export type GaugeTone = "primary" | "success" | "warning" | "destructive";
 
 export interface GaugeProps {
   /** The value to display, 0–100. */
   value: number;
   /** A short caption beneath the number (e.g. "Uptime"). */
   label?: string;
-  // Tone of the fill arc (pick one; default primary).
+  // Tone of the fill arc (pick one; default primary). Precedence when several
+  // are passed: success > warning > destructive (first match wins).
   primary?: boolean;
   success?: boolean;
+  warning?: boolean;
   destructive?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -24,8 +26,13 @@ export interface GaugeProps {
   style?: StyleProp<ViewStyle>;
 }
 
-function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
+// Tone precedence within the axis: success > warning > destructive (first match
+// wins; no tone falls back to the brand primary). The warning hue resolves
+// through the shared statusHues map so a warning gauge reads the same amber as a
+// warning badge or alert. Exported for tests (not re-exported from the barrel).
+export function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
   if (p.success) return palette["green-500"];
+  if (p.warning) return palette[`${statusHues.warning}-500`];
   if (p.destructive) return palette["red-500"];
   return tokens.primary;
 }

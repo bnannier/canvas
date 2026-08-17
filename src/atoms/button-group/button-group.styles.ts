@@ -110,6 +110,15 @@ export const segmentedContainer: ViewStyle = {
   alignItems: "center",
 };
 
+// The `block` modifier, pure color-free layout that is identical on every
+// platform (so it lives here once, not in the skins): the group row takes the
+// full container width (width beats the skins' self-sizing
+// `alignSelf: "flex-start"` wraps), and each segment flexes to an equal share.
+// RN's `flex: 1` sets flex-basis 0, so segments split evenly regardless of how
+// long their labels are.
+export const blockContainer: ViewStyle = { width: "100%" };
+export const blockSegment: ViewStyle = { flex: 1 };
+
 // =============================================================================
 // Web: the established Canvas look (lifted verbatim from the original file).
 // =============================================================================

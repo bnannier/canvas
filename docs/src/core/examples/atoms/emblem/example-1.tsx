@@ -8,6 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Row snug alignCenter>
   <Emblem primary><Icon shield /></Emblem>
   <Emblem success><Icon check /></Emblem>
+  <Emblem warning><Icon circleAlert /></Emblem>
   <Emblem destructive><Icon trash /></Emblem>
   <Emblem muted><Icon bell /></Emblem>
 </Row>

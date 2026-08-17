@@ -41,6 +41,19 @@ A segmented one-time-code field: `length` cells display the typed digits while o
 <InputOTP disabled value="1234" />
 ```
 
+### Completion
+
+```tsx
+<Stateful initial="">
+  {(code, setCode) => (
+    <Column snug>
+      <InputOTP length={4} onComplete={setCode} />
+      <Typography muted>{code === "" ? "Waiting for the 4-digit code" : `Code ${code} received`}</Typography>
+    </Column>
+  )}
+</Stateful>
+```
+
 ## Do & Don't
 
 **Do** — Size the field to the real code length with `length`, so every digit has its own cell and the user can see how many remain.

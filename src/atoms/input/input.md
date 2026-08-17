@@ -58,6 +58,17 @@ The Input component is a React Native text field with semantic boolean props (`e
 <Input readOnly placeholder="rachel.chen@example.com" />
 ```
 
+### Widths
+
+```tsx
+<Column snug>
+  <Input narrow placeholder="Narrow (240px)" />
+  <Input placeholder="Standard (320px)" />
+  <Input wide placeholder="Wide (480px)" />
+  <Input block placeholder="Block (fills the container)" />
+</Column>
+```
+
 ## Do & Don't
 
 ### text

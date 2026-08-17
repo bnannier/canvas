@@ -54,6 +54,38 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
 </AppShell>
 ```
 
+## Variants
+
+### Collapsed rail
+
+```tsx
+<Row loose alignStart>
+  <Sidebar
+    bordered
+    defaultActive="Dashboard"
+    sections={[
+      { title: "Main", items: [
+        { label: "Dashboard", icon: "layoutGrid" },
+        { label: "Inbox", icon: "inbox", badge: "3" },
+        { label: "Settings", icon: "settings" }
+      ] }
+    ]}
+  />
+  <Sidebar
+    bordered
+    collapsed
+    defaultActive="Dashboard"
+    sections={[
+      { title: "Main", items: [
+        { label: "Dashboard", icon: "layoutGrid" },
+        { label: "Inbox", icon: "inbox", badge: "3" },
+        { label: "Settings", icon: "settings" }
+      ] }
+    ]}
+  />
+</Row>
+```
+
 ## Do & Don't
 
 ### Sidebar

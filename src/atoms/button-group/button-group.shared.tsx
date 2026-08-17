@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./button-group.styles.js";
 
@@ -118,6 +118,14 @@ export interface ButtonGroupProps {
   small?: boolean;
   large?: boolean;
 
+  /**
+   * Stretch the group to the container width, the segments sharing the space
+   * equally. An orthogonal layout modifier for the segmented and spaced kinds;
+   * split and stepper ignore it (their cells are fixed-width chrome) with a
+   * dev-only warning.
+   */
+  block?: boolean;
+
   disabled?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -168,13 +176,19 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
      * segments are left unwrapped: they are clipped by the segmentedWrap ancestor.
      */
     standalone?: boolean;
+    /** Flex to an equal share of a `block` group's row. */
+    block?: boolean;
     size: Size;
     disabled?: boolean;
     onPress?: (event: GestureResponderEvent) => void;
   }
 
-  function Segment({ label, selected, selectable, corners, leading, standalone, size, disabled, onPress }: SegmentProps) {
+  function Segment({ label, selected, selectable, corners, leading, standalone, block, size, disabled, onPress }: SegmentProps) {
     const { tokens } = useTheme();
+    // The equal-share flex must ride the segment's OUTERMOST node: the Pressable
+    // itself when attached, but the RippleClip wrapper when standalone (see the
+    // return below), because a `flex: 1` on the Pressable INSIDE that column
+    // wrapper would flex it vertically, not share the row.
     const container: StyleProp<ViewStyle> = [
       s.segmentBase,
       { borderWidth: skin.segmentBorderWidth },
@@ -184,6 +198,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       leading && skin.segmentDivider ? skin.segmentDivider(tokens) : null,
       skin.segmentSurface(tokens, selected),
       disabled ? s.dim : null,
+      block && !standalone ? s.blockSegment : null,
     ];
     // `aria-selected` is only valid on roles that support a selected state. A
     // segmented option reads as a `tab` (matching Tabs) so its selection is
@@ -210,7 +225,13 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // bounded Android ripple is clipped by a rounded overflow:"hidden" RippleClip parent.
     // An attached segment is left bare: the segmentedWrap ancestor already clips it (Shape 3).
     // RippleClip is a transparent layout passthrough on iOS/web. See src/style/ripple-clip.
-    return standalone ? <RippleClip shape={cornerRadii(container)}>{button}</RippleClip> : button;
+    // Per the container comment above, a `block` peer's equal-share flex rides the
+    // RippleClip wrapper (the outermost node), never the Pressable inside it.
+    return standalone ? (
+      <RippleClip shape={cornerRadii(container)} style={block ? s.blockSegment : null}>
+        {button}
+      </RippleClip>
+    ) : button;
   }
 
   // The split kind's secondary control: a chevron that toggles a floating dropdown
@@ -400,6 +421,14 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const { tokens } = useTheme();
     const kind = kindOf(props);
     const size = sizeOf(props);
+    // `block` is a segmented/spaced layout modifier. The split and stepper kinds
+    // are fixed-width chrome (a chevron trigger, prev/next arrow cells) whose
+    // cells cannot meaningfully share a stretched row, so they ignore it, with a
+    // dev-only warning surfacing the call-site mistake.
+    devWarn(
+      !!props.block && (kind === "split" || kind === "stepper"),
+      `[canvas] <ButtonGroup />: \`block\` applies to the segmented and spaced kinds; the ${kind} kind is fixed-width chrome and ignores it.`,
+    );
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // segmented control (or one seeded with `defaultActive`) selects on press
     // instead of sitting inert. Matches the Tabs / Switch controllable contract.
@@ -408,7 +437,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // Spaced: detached peers separated by a gap, each with full rounding.
     if (kind === "spaced") {
       return (
-        <View style={[s.spacedContainer, style]} testID={testID}>
+        <View style={[s.spacedContainer, props.block ? s.blockContainer : null, style]} testID={testID}>
           {items.map((item, i) => (
             <Segment
               key={`${item}-${i}`}
@@ -418,6 +447,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               corners={skin.spacedCorners}
               leading={false}
               standalone
+              block={props.block}
               size={size}
               disabled={disabled}
               onPress={(e) => onSelect?.(i, item, e)}
@@ -475,6 +505,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         selectable
         corners={skin.joinCorners(i, count)}
         leading={i > 0}
+        block={props.block}
         size={size}
         disabled={disabled}
         onPress={(e) => {
@@ -484,10 +515,12 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       />
     ));
     // The segments are a single mutually-exclusive control, so the row is a
-    // `tablist` grouping its `tab` segments (matching the Tabs precedent).
+    // `tablist` grouping its `tab` segments (matching the Tabs precedent). The
+    // `block` width lands AFTER the skin wrap so it beats the iOS/Android wraps'
+    // self-sizing `alignSelf: "flex-start"`.
     if (wrap) {
-      return <View accessibilityRole="tablist" style={[wrap, style]} testID={testID}>{row}</View>;
+      return <View accessibilityRole="tablist" style={[wrap, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
     }
-    return <View accessibilityRole="tablist" style={[s.segmentedContainer, style]} testID={testID}>{row}</View>;
+    return <View accessibilityRole="tablist" style={[s.segmentedContainer, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
   };
 }

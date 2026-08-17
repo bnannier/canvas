@@ -58,6 +58,18 @@ Segmented controls, split buttons, attached groups.
 <ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} disabled small />
 ```
 
+### Block
+
+```tsx
+<ButtonGroup segmented defaultActive={0} items={["Day", "Week", "Month"]} block />
+```
+
+### Block spaced
+
+```tsx
+<ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />
+```
+
 ## Do & Don't
 
 ### Segmented

@@ -49,6 +49,26 @@ Underline, pill, vertical, with badges.
 />
 ```
 
+### Disabled tab
+
+```tsx
+<Tabs
+  tabs={[
+    "Overview",
+    "Activity",
+    { label: "Billing", disabled: true },
+    "Settings"
+  ]}
+  defaultActive={0}
+/>
+```
+
+### Block
+
+```tsx
+<Tabs block tabs={["Overview", "Activity", "Settings"]} defaultActive={0} />
+```
+
 ## Do & Don't
 
 ### Underline

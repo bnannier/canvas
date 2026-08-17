@@ -166,6 +166,38 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 </Card>
 ```
 
+### Icon and footer
+
+```tsx
+<Card
+  title="Identity"
+  icon={<Icon user muted size={16} />}
+  description="Core attributes"
+  body="Name, primary email, and sign-in methods for this account."
+  footer="Updated 2 minutes ago"
+  style={{ maxWidth: 360 }}
+/>
+```
+
+### Density
+
+```tsx
+<Row cozy style={{ width: 480, maxWidth: "100%" }}>
+  <Column fill>
+    <Card compact grow>
+      <Typography lead semibold>Compact</Typography>
+      <Typography small muted>Tight padding and rhythm for dense dashboards.</Typography>
+    </Card>
+  </Column>
+  <Column fill>
+    <Card comfortable grow>
+      <Typography lead semibold>Comfortable</Typography>
+      <Typography small muted>Roomy padding and rhythm for relaxed reading.</Typography>
+    </Card>
+  </Column>
+</Row>
+```
+
 ## Do & Don't
 
 ### stat

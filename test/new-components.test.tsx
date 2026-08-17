@@ -11,6 +11,8 @@ import { androidSkin as chipAndroidSkin, iosSkin as chipIosSkin } from "../src/a
 import { Emblem } from "../src/atoms/emblem/emblem.tsx";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 import { Gauge, Heatmap } from "../src/index.ts";
+import { gaugeFill } from "../src/charts/gauge/gauge.shared.tsx";
+import { lightColors, palette } from "../src/style/tokens.ts";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Breadcrumb } from "../src/atoms/breadcrumb/breadcrumb.tsx";
@@ -236,6 +238,24 @@ describe("Emblem", () => {
     expect(mut).not.toBe("");
     expect(pri).not.toBe(mut); // tone drives a distinct fill
   });
+
+  it("warning tints the surface with the amber wash and paints the monogram to match", () => {
+    const { container, getByText } = ui(<Emblem warning label="W" testID="warn" />);
+    // Light-scheme warning token (#d97706) at the shared 12% tint recipe.
+    expect(at(container, "warn").style.backgroundColor).toBe("rgba(217, 119, 6, 0.12)");
+    // The monogram paints in the solid warning token, not the muted foreground.
+    expect((getByText("W") as HTMLElement).style.color).toBe("rgba(217, 119, 6, 1.00)");
+  });
+
+  it("resolves tone conflicts by fixed precedence (destructive outranks warning)", () => {
+    const { container } = ui(
+      <>
+        <Emblem destructive warning label="A" testID="dw" />
+        <Emblem destructive label="A" testID="d" />
+      </>,
+    );
+    expect(at(container, "dw").style.backgroundColor).toBe(at(container, "d").style.backgroundColor);
+  });
 });
 
 describe("Sparkline", () => {
@@ -263,6 +283,24 @@ describe("Charts — Gauge & Heatmap", () => {
   it("Gauge clamps an out-of-range value into 0–100", () => {
     const { container } = ui(<Gauge value={150} />);
     expect(container.querySelector("[aria-label]")?.getAttribute("aria-label")).toContain("100%");
+  });
+
+  // The harness stubs react-native-svg, so the arc's stroke cannot be read off
+  // the DOM; the tone resolver is asserted directly (the Progress toneFill
+  // precedent), plus a render smoke through the accessible name.
+  it("Gauge's warning tone fills with the shared statusHues amber", () => {
+    expect(gaugeFill(lightColors, { value: 81, warning: true })).toBe(palette["amber-500"]);
+    const { container } = ui(<Gauge warning value={81} label="Budget used" />);
+    const name = container.querySelector("[aria-label]")?.getAttribute("aria-label") ?? "";
+    expect(name).toContain("Budget used");
+    expect(name).toContain("81%");
+  });
+
+  it("Gauge tone precedence: success > warning > destructive, else primary", () => {
+    expect(gaugeFill(lightColors, { value: 1, success: true, warning: true })).toBe(palette["green-500"]);
+    expect(gaugeFill(lightColors, { value: 1, warning: true, destructive: true })).toBe(palette["amber-500"]);
+    expect(gaugeFill(lightColors, { value: 1, destructive: true })).toBe(palette["red-500"]);
+    expect(gaugeFill(lightColors, { value: 1 })).toBe(lightColors.primary);
   });
 
   it("Heatmap's accessible name carries the label and cell count", () => {

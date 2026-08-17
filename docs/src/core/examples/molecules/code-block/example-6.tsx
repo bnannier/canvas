@@ -3,20 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, CodeBlock } = scope;
+  const { CodeBlock } = scope;
   return (
 <CodeBlock
-  collapsible
-  collapsedLines={4}
+  diff
+  copy
   language="ts"
-  code={`export const tokens = {
-  primary: "#6366f1",
-  radius: 8,
-  border: "#e4e4e7",
-  muted: "#f4f4f5",
-  foreground: "#18181b",
-  background: "#ffffff",
-};`}
+  code={`-const theme = "light";
++const theme = getTheme();
+ setTheme(theme);`}
 />
   );
 }

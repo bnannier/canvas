@@ -16,6 +16,12 @@ Animated loading spinner in three sizes.
 <Spinner>Loading…</Spinner>
 ```
 
+### With description
+
+```tsx
+<Spinner description="About 20 seconds">Deploying…</Spinner>
+```
+
 ### Stacked
 
 ```tsx
@@ -32,6 +38,12 @@ Animated loading spinner in three sizes.
 
 ```tsx
 <Spinner large />
+```
+
+### Primary
+
+```tsx
+<Spinner primary>Loading…</Spinner>
 ```
 
 ## Do & Don't

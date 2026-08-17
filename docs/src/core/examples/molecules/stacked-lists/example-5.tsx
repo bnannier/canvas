@@ -3,13 +3,24 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { StackedList, Chip } = scope;
+  const { Stateful, StackedList } = scope;
   return (
-<StackedList
-  items={[
-    { name: "Rachel Chen", detail: "rachel.chen@example.com", trailing: <Chip selectable defaultSelected>Owner</Chip> },
-    { name: "Ada Lovelace", detail: "ada@example.com", trailing: <Chip selectable>Owner</Chip>, meta: "editor" },
-  ]}
-/>
+<Stateful initial={[
+  { id: "rachel", name: "Rachel Chen", detail: "rachel.chen@example.com" },
+  { id: "ada", name: "Ada Lovelace", detail: "ada@example.com" },
+  { id: "kevin", name: "Kevin Turner", detail: "kevin@example.com" },
+]}>
+  {(people, setPeople) => (
+    <StackedList
+      reorderable
+      items={people}
+      onReorder={({ fromIndex, toIndex }) => {
+        const next = [...people];
+        next.splice(toIndex, 0, ...next.splice(fromIndex, 1));
+        setPeople(next);
+      }}
+    />
+  )}
+</Stateful>
   );
 }

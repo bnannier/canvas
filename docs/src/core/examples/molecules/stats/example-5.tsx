@@ -6,9 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Stats } = scope;
   return (
 <Stats
+  plain
+  title="Key metrics"
   items={[
-    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
-    { label: "Latency", value: "142ms", delta: "+12ms", down: true, spark: [10, 9, 11, 10, 12, 11, 13, 12, 14, 13, 15] }
+    { label: "Revenue", value: "$48.2k" },
+    { label: "Orders", value: "842" },
+    { label: "Avg. value", value: "$57.24" },
+    { label: "Conversion", value: "3.6%" }
   ]}
 />
   );

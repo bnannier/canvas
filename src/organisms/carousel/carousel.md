@@ -88,6 +88,68 @@ Start on a later slide with `defaultIndex`; the matching dot reads selected.
 />
 ```
 
+### Arrows and dots everywhere
+
+The chrome defaults are platform-adaptive (web shows both, iOS dots only,
+Android neither); pass `showArrows` and `showDots` to force the full
+arrows-plus-dots anatomy on every platform.
+
+```tsx
+<Carousel
+  showArrows
+  showDots
+  items={[
+    { key: "p", content: (
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
+        <Typography lead medium>Photos</Typography>
+      </Column>
+    ) },
+    { key: "q", content: (
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
+        <Typography lead medium>Albums</Typography>
+      </Column>
+    ) },
+    { key: "r", content: (
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
+        <Typography lead medium>Shared</Typography>
+      </Column>
+    ) }
+  ]}
+  defaultIndex={0}
+  onIndexChange={() => {}}
+/>
+```
+
+### Clamped at the ends
+
+Without `loop` the index clamps: the prev arrow disables on the first slide and
+the next arrow on the last, so the ends are unmistakable.
+
+```tsx
+<Carousel
+  showArrows
+  items={[
+    { key: "first", content: (
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
+        <Typography lead medium>Start</Typography>
+      </Column>
+    ) },
+    { key: "mid", content: (
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
+        <Typography lead medium>Middle</Typography>
+      </Column>
+    ) },
+    { key: "last", content: (
+      <Column alignCenter center style={{ height: 140, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
+        <Typography lead medium>End</Typography>
+      </Column>
+    ) }
+  ]}
+  defaultIndex={0}
+  onIndexChange={() => {}}
+/>
+```
+
 ## Do & Don't
 
 **Do** — Keep one current slide and let the dots mirror it, so the position in

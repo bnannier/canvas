@@ -28,6 +28,27 @@ On / off switch, isolated or grouped in a settings list.
 <Switch defaultChecked disabled>Available to chat</Switch>
 ```
 
+### Controlled
+
+```tsx
+<Stateful initial={true}>
+  {(on, setOn) => (
+    <Switch checked={on} onChange={setOn} description={on ? "Alerts are on." : "Alerts are paused."}>Notifications</Switch>
+  )}
+</Stateful>
+```
+
+### Settings list
+
+```tsx
+<Column relaxed style={{ width: 320, maxWidth: "100%" }}>
+  <Switch defaultChecked description="Show your availability to teammates.">Available to chat</Switch>
+  <Switch defaultChecked>Sound effects</Switch>
+  <Switch>Weekly digest</Switch>
+  <Switch defaultChecked>Push notifications</Switch>
+</Column>
+```
+
 ## Do & Don't
 
 ### Off

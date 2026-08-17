@@ -47,6 +47,25 @@ Form is a composition surface: you stitch the field atoms as children and keep t
 </Form>
 ```
 
+### Required fields
+
+```tsx
+<Form submitLabel="Create account" style={{ width: 360, maxWidth: "100%" }}>
+  <Input block label="Email" required placeholder="you@example.com" />
+  <Input block label="Password" required />
+  <Input block label="Referral code" placeholder="Optional" />
+</Form>
+```
+
+### Select and switch controls
+
+```tsx
+<Form twoColumn submitLabel="Save" cancelLabel="Cancel" style={{ width: 560, maxWidth: "100%" }}>
+  <Select block label="Role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
+  <Switch defaultChecked description="Email me when someone mentions me.">Notifications</Switch>
+</Form>
+```
+
 ## Do & Don't
 
 ### Stacked

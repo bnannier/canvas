@@ -6,12 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  numbered
-  startLine={128}
-  language="ts"
-  code={`function resolveTokens(scheme: Scheme) {
-  return scheme === "dark" ? darkTokens : lightTokens;
-}`}
+  terminal
+  copy
+  tabs={[
+    { label: "npm", code: "npm install @nannier/canvas" },
+    { label: "yarn", code: "yarn add @nannier/canvas" },
+    { label: "bun", code: "bun add @nannier/canvas" },
+  ]}
 />
   );
 }

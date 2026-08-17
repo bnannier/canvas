@@ -27,6 +27,17 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 />
 ```
 
+### Emblem tiles
+
+```tsx
+<Stats
+  items={[
+    { label: "Active users", value: "71,897", delta: "+12.3%", icon: <Emblem small><Icon users /></Emblem> },
+    { label: "Uptime", value: "99.98%", delta: "last 30 days", steady: true, icon: <Emblem small success><Icon check /></Emblem> },
+  ]}
+/>
+```
+
 ### Tappable
 
 ```tsx
