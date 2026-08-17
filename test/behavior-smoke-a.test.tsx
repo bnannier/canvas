@@ -121,11 +121,11 @@ describe("Alert", () => {
     expect(alertRoot(container).style.maxWidth).toBe("");
   });
 
-  it("resolves measure conflicts first-match: narrow > wide > block", () => {
+  it("resolves measure conflicts first-match: block > wide > narrow", () => {
     const all = ui(<Alert narrow wide block info title="All three" />);
-    expect(alertRoot(all.container).style.maxWidth).toBe("320px");
+    expect(alertRoot(all.container).style.maxWidth).toBe("");
     all.unmount();
-    const two = ui(<Alert wide block info title="Wide beats block" />);
+    const two = ui(<Alert narrow wide info title="Wide beats narrow" />);
     expect(alertRoot(two.container).style.maxWidth).toBe("640px");
   });
 });

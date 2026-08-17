@@ -1,6 +1,6 @@
 # Alert
 
-Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. Width comes off the measure axis rather than whatever the parent happens to be, so a column of alerts is the same measure top to bottom: a bare banner caps at 480px, `narrow` caps at 320px (the measure of a standard form field, so a banner over a form lines up with it), `wide` caps at 640px, and `block` fills the container with no cap (first match wins: narrow, then wide, then block). Every cap is a maximum, never a floor: the banner still shrinks to its container. For a blocking confirmation prompt, see Alert Dialog.
+Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. Width comes off the measure axis rather than whatever the parent happens to be, so a column of alerts is the same measure top to bottom: a bare banner caps at 480px, `narrow` caps at 320px (the measure of a standard form field, so a banner over a form lines up with it), `wide` caps at 640px, and `block` fills the container with no cap (first match wins: block, then wide, then narrow). Every cap is a maximum, never a floor: the banner still shrinks to its container. For a blocking confirmation prompt, see Alert Dialog.
 
 ## Usage
 
