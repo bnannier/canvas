@@ -39,7 +39,7 @@ function PopoverTokenProbe() {
 describe("glass token reversion", () => {
   it("uses the translucent popover fill in glass mode by default", async () => {
     render(
-      <ThemeProvider surface="glass">
+      <ThemeProvider glass>
         <PopoverTokenProbe />
       </ThemeProvider>,
     );
@@ -50,7 +50,7 @@ describe("glass token reversion", () => {
     const spy = mockMatchMedia((q) => q.includes("prefers-reduced-transparency"));
     try {
       render(
-        <ThemeProvider surface="glass">
+        <ThemeProvider glass>
           <PopoverTokenProbe />
         </ThemeProvider>,
       );
@@ -64,7 +64,7 @@ describe("glass token reversion", () => {
     const spy = mockMatchMedia((q) => q.includes("prefers-contrast"));
     try {
       render(
-        <ThemeProvider surface="glass">
+        <ThemeProvider glass>
           <PopoverTokenProbe />
         </ThemeProvider>,
       );
@@ -80,7 +80,7 @@ describe("GlassSurface increase-contrast border", () => {
     const spy = mockMatchMedia((q) => q.includes("prefers-contrast"));
     try {
       render(
-        <ThemeProvider surface="glass">
+        <ThemeProvider glass>
           <GlassSurface testID="gs" style={{ borderRadius: 12 }}>
             <Text>content</Text>
           </GlassSurface>
@@ -99,7 +99,7 @@ describe("GlassSurface increase-contrast border", () => {
 
   it("paints no border in ordinary glass mode", async () => {
     render(
-      <ThemeProvider surface="glass">
+      <ThemeProvider glass>
         <GlassSurface testID="gs" style={{ borderRadius: 12 }}>
           <Text>content</Text>
         </GlassSurface>
@@ -128,7 +128,7 @@ describe("GlassSurface reduce-transparency rung", () => {
     const spy = mockMatchMedia((q) => q.includes("prefers-reduced-transparency"));
     try {
       render(
-        <ThemeProvider surface="glass">
+        <ThemeProvider glass>
           <GlassFillProbe testID="rt" />
         </ThemeProvider>,
       );
@@ -147,7 +147,7 @@ describe("GlassSurface reduce-transparency rung", () => {
     const spy = mockMatchMedia((q) => q.includes("prefers-reduced-transparency") || q.includes("prefers-contrast"));
     try {
       render(
-        <ThemeProvider surface="glass">
+        <ThemeProvider glass>
           <GlassSurface testID="both" style={{ borderRadius: 12 }}>
             <Text>x</Text>
           </GlassSurface>
@@ -202,7 +202,7 @@ describe("iOS glass-surface platform file", () => {
   it("imports and renders without throwing (falls back to PlainSurface under the stubbed peers)", async () => {
     const mod = await import("../src/style/glass-surface/glass-surface.ios.tsx");
     render(
-      <ThemeProvider surface="glass">
+      <ThemeProvider glass>
         <mod.GlassSurface testID="ios-gs" style={{ borderRadius: 26 }}>
           <Text>ios</Text>
         </mod.GlassSurface>
@@ -250,5 +250,14 @@ describe("ThemeProvider surface axis booleans", () => {
       </ThemeProvider>,
     );
     await waitFor(() => expect(screen.getByText(/#ffffff/)).toBeDefined());
+  });
+
+  it("legacy surface=\"glass\" alone still resolves to glass", async () => {
+    render(
+      <ThemeProvider surface="glass">
+        <PopoverTokenProbe />
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(/rgba\(255, 255, 255, 0\.72\)/)).toBeDefined());
   });
 });

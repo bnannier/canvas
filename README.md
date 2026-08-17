@@ -95,16 +95,16 @@ Canvas targets all three platforms from one install. The only thing that changes
 
 ## Theming
 
-`ThemeProvider` reads the OS color scheme by default and exposes the resolved tokens to every Canvas component through the `useTheme` hook. Three optional props control it:
+`ThemeProvider` reads the OS color scheme by default and exposes the resolved tokens to every Canvas component through the `useTheme` hook. Optional props control it:
 
 - `scheme` (`"light" | "dark"`): force a color scheme. Omit to follow the OS appearance.
-- `surface` (`"solid" | "glass"`): the functional-layer material. Omit for the platform default (Liquid Glass on iOS 26+, solid everywhere else); pass `"glass"` to force the glass material, `"solid"` to force flat.
+- `glass` / `solid` (booleans): the surface axis, spelled like every other Canvas axis. Omit both for the platform default (Liquid Glass on iOS 26+, solid everywhere else); pass `glass` to force the translucent functional-layer material, `solid` to force flat. `glass` wins if both are passed. The legacy `surface` value prop (`"solid" | "glass"`) stays supported for config-driven code holding a `Surface` value.
 - `tokens`: brand token overrides merged over the active scheme, so you can rebrand without forking the token files. Pass a flat `Partial<ColorTokens>` to apply to both schemes, or `{ light, dark }` to override each separately. Use a stable reference (a module constant or memoized object).
 
 ```jsx
 const brand = { primary: "#7c3aed" };
 
-<ThemeProvider scheme="dark" surface="glass" tokens={brand}>
+<ThemeProvider scheme="dark" glass tokens={brand}>
   <App />
 </ThemeProvider>
 ```
