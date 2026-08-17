@@ -72,7 +72,7 @@ describe("GlassSurface lens tier", () => {
     const restore = overrideUserAgent(CHROME_UA);
     try {
       render(
-        <ThemeProvider surface="glass">
+        <ThemeProvider glass>
           <GlassSurface testID="lens-gs" style={{ borderRadius: 12 }}>
             <Text>content</Text>
           </GlassSurface>
@@ -101,7 +101,7 @@ describe("GlassSurface lens tier", () => {
 
   it("stays off the lens on a non-Chromium UA (happy-dom's own), keeping the ladder's next rung", async () => {
     render(
-      <ThemeProvider surface="glass">
+      <ThemeProvider glass>
         <GlassSurface testID="frost-gs" style={{ borderRadius: 12 }}>
           <Text>content</Text>
         </GlassSurface>
@@ -133,7 +133,7 @@ describe("GlassSurface lens tier", () => {
     );
     try {
       render(
-        <ThemeProvider surface="glass">
+        <ThemeProvider glass>
           <GlassSurface testID="rt-gs" style={{ borderRadius: 12 }}>
             <Text>content</Text>
           </GlassSurface>
