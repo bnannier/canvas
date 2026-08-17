@@ -3,7 +3,7 @@ import { useWindowDimensions } from "react-native";
 import { View, Text, useTheme } from "@nannier/canvas";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { geist, geistMono } from "./fonts";
-import { alpha, readableText } from "./color";
+import { alpha } from "./color";
 
 // Shared primitives for the token reference pages (Colors, Spacing, Typography, Layout).
 // These pages use a LARGER heading scale than the component/guide pages: the page
@@ -79,44 +79,6 @@ export function Chip({ children }: { children: ReactNode }) {
   );
 }
 
-// The code rows for a swatch's value codes: an optional var name plus one or more
-// GROUPS, content only (no frame) so they drop into SwatchCard's attached code
-// region. A group is an optional muted label (e.g. "L"/"D" for a scheme, or
-// "bg"/"fg") followed by one or more value lines. The label sits inline before the
-// group's first line; continuation lines are indented (a monospace run of spaces
-// the width of the label) so every value in the group aligns. Values are FOREGROUND
-// for contrast; the label/indent prefix stays muted. Long values wrap.
-export function MonoRows({ varName, groups }: { varName?: string; groups: { label?: string; lines: string[] }[] }) {
-  const { tokens } = useTheme();
-  const lineStyle = { fontFamily: geistMono("400"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground } as const;
-  return (
-    <>
-      {varName ? (
-        <Text style={{ fontFamily: geistMono("500"), fontSize: 10.5, lineHeight: 15, color: tokens.foreground }}>{varName}</Text>
-      ) : null}
-      {groups.map((g, gi) => {
-        const indent = g.label ? " ".repeat(g.label.length + 1) : "";
-        return (
-          <View key={gi} style={{ gap: 1 }}>
-            {g.lines.map((line, li) => (
-              <Text key={li} style={lineStyle}>
-                <Text style={{ color: tokens["muted-foreground"] }}>{li === 0 ? (g.label ? `${g.label} ` : "") : indent}</Text>
-                {line}
-              </Text>
-            ))}
-          </View>
-        );
-      })}
-    </>
-  );
-}
-
-// A swatch label line — 12.5 / 500, foreground.
-export function SwatchLabel({ children }: { children: ReactNode }) {
-  const { tokens } = useTheme();
-  return <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{children}</Text>;
-}
-
 // A bare linear-gradient fill (RN has no CSS gradient; render it with react-native-svg).
 // No border/radius of its own — it sits in SwatchCard's clipped top region. `angle`
 // is the direction in degrees (135 = top-left → bottom-right, the default).
@@ -146,53 +108,6 @@ export function GradientFill({ colors, height = 80, angle = 135, children }: {
         <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${gid})`} />
       </Svg>
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
-    </View>
-  );
-}
-
-// A swatch card: an optional label, then a single bordered, rounded, overflow-clipped
-// card whose color/gradient preview (top) is ATTACHED directly to its code region
-// (bottom, the MonoRows), divided by a hairline. The card is flex:1 so, inside the
-// equal-width Grid (whose rows stretch by default), every card in a row resolves to
-// an EVEN height — short code regions grow to match the tallest sibling.
-//
-// Provide ONE of: `split` (two hex fills shown side by side, left Light / right Dark,
-// each tagged so both schemes are always visible regardless of the active theme),
-// `color` (a single solid fill), or a custom `top` node (e.g. a GradientFill with an
-// overlay).
-export function SwatchCard({ label, color, split, height = 80, top, children }: {
-  label?: ReactNode;
-  color?: string;
-  split?: { light: string; dark: string };
-  height?: number;
-  top?: ReactNode;
-  children?: ReactNode;
-}) {
-  const { tokens } = useTheme();
-  const preview =
-    top != null ? top
-    : split != null ? (
-      <View style={{ height, flexDirection: "row" }}>
-        <View style={{ flex: 1, backgroundColor: split.light, paddingHorizontal: 7, paddingVertical: 5, borderRightWidth: 1, borderRightColor: "rgba(128,128,128,0.45)" }}>
-          <Text style={{ fontFamily: geistMono("600"), fontSize: 10, lineHeight: 12, color: readableText(split.light), opacity: 0.75 }}>L</Text>
-        </View>
-        <View style={{ flex: 1, backgroundColor: split.dark, paddingHorizontal: 7, paddingVertical: 5 }}>
-          <Text style={{ fontFamily: geistMono("600"), fontSize: 10, lineHeight: 12, color: readableText(split.dark), opacity: 0.75 }}>D</Text>
-        </View>
-      </View>
-    )
-    : <View style={{ height, backgroundColor: color }} />;
-  return (
-    <View style={{ flex: 1, gap: 6 }}>
-      {label != null ? <SwatchLabel>{label}</SwatchLabel> : null}
-      <View style={{ flex: 1, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, overflow: "hidden", backgroundColor: tokens.muted }}>
-        {preview}
-        {children != null ? (
-          <View style={{ flex: 1, borderTopWidth: 1, borderTopColor: tokens.border, paddingVertical: 7, paddingHorizontal: 9, gap: 4 }}>
-            {children}
-          </View>
-        ) : null}
-      </View>
     </View>
   );
 }

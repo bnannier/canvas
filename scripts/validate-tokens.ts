@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { lightColors } from "../src/style/tokens.ts";
+import { brandColors, lightColors } from "../src/style/tokens.ts";
 
 const STYLES_DIR = join(import.meta.dir, "..", "styles");
 
@@ -72,6 +72,18 @@ if (missingInCss.length) {
   failed = true;
 }
 
-console.log(`\nTokens: ${defined.size} defined, ${referenced.size} referenced; ${Object.keys(lightColors).length} JS color tokens cross-checked`);
+// Same cross-check for the fixed brand constants (the orb / avatar-gradient
+// colors). They do not flip with the scheme, so they live in their own JS export
+// rather than the light/dark pair, and their keys ARE the CSS names: a key here
+// with no `--name` in the CSS means a JS consumer and a web consumer would be
+// painting the brand from different sources.
+const brandMissingInCss = Object.keys(brandColors).filter((k) => !cssValueTokens.has(k)).sort();
+if (brandMissingInCss.length) {
+  console.log(`\nBrand tokens in src/style/tokens.ts but MISSING from styles/canvas.css: ${brandMissingInCss.length}`);
+  for (const k of brandMissingInCss) console.log(`  --${k}`);
+  failed = true;
+}
+
+console.log(`\nTokens: ${defined.size} defined, ${referenced.size} referenced; ${Object.keys(lightColors).length} JS color tokens + ${Object.keys(brandColors).length} JS brand tokens cross-checked`);
 if (!failed) console.log("Token validation passed.");
 else process.exit(1);

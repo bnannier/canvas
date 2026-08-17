@@ -31,6 +31,7 @@ export * from "./slider/slider.js";
 export * from "./sparkline/sparkline.js";
 export * from "./spinner/spinner.js";
 export * from "./stepper/stepper.js";
+export * from "./swatch/swatch.js";
 export * from "./switch/switch.js";
 export * from "./textarea/textarea.js";
 export * from "./tooltip/tooltip.js";

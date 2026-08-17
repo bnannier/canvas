@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, useTheme, palette, MONO_FONT, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, statusHues, MONO_FONT, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Badge shell. The structure (a metadata pill, or a status pill with a leading
 // dot), the boolean-prop axes, and the semantic color logic live here once; a platform
@@ -102,16 +102,13 @@ function metaLabel(tokens: ColorTokens, tone: Tone): TextStyle {
   }
 }
 
-const STATUS_HUE: Record<Exclude<Status, "neutral">, string> = {
-  success: "green",
-  warning: "amber",
-  error: "red",
-  info: "blue",
-};
+// The palette hue per status comes from the style layer's shared statusHues map
+// (src/style/status-hue), the same one Alert's banner reads, so the two never
+// drift. Neutral rides the semantic tokens instead of a palette hue.
 
 function statusContainer(tokens: ColorTokens, dark: boolean, status: Status): ViewStyle {
   if (status === "neutral") return { borderColor: tokens.border, backgroundColor: tokens.muted };
-  const hue = STATUS_HUE[status];
+  const hue = statusHues[status];
   return dark
     ? { borderColor: palette[`${hue}-800`], backgroundColor: palette[`${hue}-950`] }
     : { borderColor: palette[`${hue}-200`], backgroundColor: palette[`${hue}-50`] };
@@ -119,13 +116,13 @@ function statusContainer(tokens: ColorTokens, dark: boolean, status: Status): Vi
 
 function statusLabel(tokens: ColorTokens, dark: boolean, status: Status): TextStyle {
   if (status === "neutral") return { color: tokens["muted-foreground"] };
-  const hue = STATUS_HUE[status];
+  const hue = statusHues[status];
   return { color: dark ? palette[`${hue}-400`] : palette[`${hue}-700`] };
 }
 
 function statusDotColor(tokens: ColorTokens, status: Status): string {
   if (status === "neutral") return tokens["muted-foreground"];
-  return palette[`${STATUS_HUE[status]}-500`];
+  return palette[`${statusHues[status]}-500`];
 }
 
 export function createBadge(skin: BadgeSkin) {

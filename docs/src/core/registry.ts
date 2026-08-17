@@ -391,6 +391,16 @@ import e_atoms_stepper_dont_0_do from "./examples/atoms/stepper/dont-0-do";
 import e_atoms_stepper_dont_0_dont from "./examples/atoms/stepper/dont-0-dont";
 import e_atoms_stepper_dont_1_do from "./examples/atoms/stepper/dont-1-do";
 import e_atoms_stepper_dont_1_dont from "./examples/atoms/stepper/dont-1-dont";
+import e_atoms_swatch_example_0 from "./examples/atoms/swatch/example-0";
+import e_atoms_swatch_example_1 from "./examples/atoms/swatch/example-1";
+import e_atoms_swatch_example_2 from "./examples/atoms/swatch/example-2";
+import e_atoms_swatch_example_3 from "./examples/atoms/swatch/example-3";
+import e_atoms_swatch_example_4 from "./examples/atoms/swatch/example-4";
+import e_atoms_swatch_example_5 from "./examples/atoms/swatch/example-5";
+import e_atoms_swatch_dont_0_do from "./examples/atoms/swatch/dont-0-do";
+import e_atoms_swatch_dont_0_dont from "./examples/atoms/swatch/dont-0-dont";
+import e_atoms_swatch_dont_1_do from "./examples/atoms/swatch/dont-1-do";
+import e_atoms_swatch_dont_1_dont from "./examples/atoms/swatch/dont-1-dont";
 import e_atoms_switch_example_0 from "./examples/atoms/switch/example-0";
 import e_atoms_switch_example_1 from "./examples/atoms/switch/example-1";
 import e_atoms_switch_example_2 from "./examples/atoms/switch/example-2";
@@ -1413,6 +1423,22 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     donts: [
       { title: "Bounds", do: { caption: "Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.", code: "<Stepper label=\"Quantity\" defaultValue={1} min={1} max={9} onChange={() => {}} />", render: e_atoms_stepper_dont_0_do }, dont: { caption: "Leaving the range unbounded lets the user push the count below zero or past what the form can accept.", code: "<Stepper defaultValue={1} onChange={() => {}} />", render: e_atoms_stepper_dont_0_dont } },
       { title: "Step", do: { caption: "Match `step` to the real increment, so each tap moves the value by an amount that makes sense for the field.", code: "<Stepper defaultValue={30} min={0} max={120} step={5} onChange={() => {}} />", render: e_atoms_stepper_dont_1_do }, dont: { caption: "A step of 1 on a field that only takes round numbers makes the user tap many times to reach a usable value.", code: "<Stepper defaultValue={30} min={0} max={120} step={1} onChange={() => {}} />", render: e_atoms_stepper_dont_1_dont } },
+    ],
+  },
+  "swatch": {
+    dir: "swatch",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<Swatch color={tokens.primary} value=\"--primary\">\n  primary\n</Swatch>", render: e_atoms_swatch_example_0 },
+      { label: "Sizes", code: "<Row snug alignStart>\n  <Swatch small color={tokens.primary} value=\"--primary\">primary</Swatch>\n  <Swatch color={tokens.success} value=\"--success\">success</Swatch>\n  <Swatch large color={tokens.destructive} value=\"--destructive\">destructive</Swatch>\n</Row>", render: e_atoms_swatch_example_1 },
+      { label: "Circle", code: "<Row snug alignCenter>\n  <Swatch circle color={tokens.primary} value=\"--primary\">primary</Swatch>\n  <Swatch circle color={tokens.accent} value=\"--accent\">accent</Swatch>\n</Row>", render: e_atoms_swatch_example_2 },
+      { label: "Inline", code: "<Column snug>\n  <Swatch inline small color={tokens.background} value=\"--background\">background</Swatch>\n  <Swatch inline small color={tokens.foreground} value=\"--foreground\">foreground</Swatch>\n  <Swatch inline small color={tokens.border} value=\"--border\">border</Swatch>\n</Column>", render: e_atoms_swatch_example_3 },
+      { label: "Block", code: "<Column snug>\n  <Swatch block small color={tokens.primary} value=\"--primary\">primary</Swatch>\n  <Swatch block small color={tokens.secondary} value=\"--secondary\">secondary</Swatch>\n</Column>", render: e_atoms_swatch_example_4 },
+      { label: "Detail line", code: "<Swatch large color={tokens.primary} value=\"--primary\" detail=\"oklch(0.511 0.262 276.966)\">\n  primary\n</Swatch>", render: e_atoms_swatch_example_5 },
+    ],
+    donts: [
+      { title: "Anatomy", do: { caption: "Let Swatch carry the name and the value, so every row of a sheet keeps one lockup and one accessible name.", code: "<Swatch color={tokens.primary} value=\"--primary\">\n  primary\n</Swatch>", render: e_atoms_swatch_dont_0_do }, dont: { caption: "Set a bare block beside a hand-composed text column: the spacing and the type scale drift row to row, and the sample ships as an unnamed block.", code: "<Row snug alignCenter>\n  <View style={{ height: 56, width: 56, borderRadius: 8, backgroundColor: \"#4f46e5\" }} />\n  <Column tight>\n    <Typography small medium>primary</Typography>\n    <Typography tiny subtle>--primary</Typography>\n  </Column>\n</Row>", render: e_atoms_swatch_dont_0_dont } },
+      { title: "Color source", do: { caption: "Pass the live token, so the sample repaints when the scheme flips.", code: "<Swatch color={tokens.card} value=\"--card\">\n  card\n</Swatch>", render: e_atoms_swatch_dont_1_do }, dont: { caption: "Hard-code the value a token resolves to; the sample keeps showing the light color after the scheme flips to dark.", code: "<Swatch color=\"#ffffff\" value=\"#ffffff\">\n  card\n</Swatch>", render: e_atoms_swatch_dont_1_dont } },
     ],
   },
   "switch": {

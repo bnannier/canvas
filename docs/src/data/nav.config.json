@@ -286,6 +286,11 @@
             "icon": "align-left"
           },
           {
+            "slug": "swatch",
+            "label": "Swatch",
+            "icon": "palette"
+          },
+          {
             "slug": "switch",
             "label": "Switch",
             "icon": "toggle-left"

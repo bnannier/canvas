@@ -1,64 +1,86 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, useTheme, colorsByScheme, type ColorTokens } from "@nannier/canvas";
+import {
+  View,
+  Text,
+  alpha,
+  useTheme,
+  colorsByScheme,
+  glassByScheme,
+  palette,
+  brandColors,
+  statusHues,
+  Swatch,
+  Row,
+  Card,
+  Alert,
+  Badge,
+  DataTable,
+  GlassSurface,
+  Typography,
+  type ColorTokens,
+  type StatusTone,
+} from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { CodeBlock } from "../../../ui/code-block";
-import { geist } from "../../../ui/fonts";
-import { alpha, hslToHex, hslTripletToHex, colorFormats } from "../../../ui/color";
-import { TokenH1, TokenLede, TokenSection, Callout, SwatchCard, SwatchLabel, MonoRows, GradientFill, Grid, Surface } from "../../../ui/tokens-kit";
+import { DoDontCard } from "../../../ui/dont";
+import { colorFormats } from "../../../ui/color";
+import { TokenH1, TokenLede, TokenSection, Callout, GradientFill } from "../../../ui/tokens-kit";
 
-// Semantic tokens. Values are not stored here: every notation is derived from the
-// hex the kit actually ships (colorsByScheme) so all three stay mutually consistent.
-const SEMANTIC_PAIRS: { name: string; token: keyof ColorTokens; varName: string }[] = [
-  { name: "Background", token: "background", varName: "--background" },
-  { name: "Foreground", token: "foreground", varName: "--foreground" },
-  { name: "Card", token: "card", varName: "--card" },
-  { name: "Popover", token: "popover", varName: "--popover" },
-  { name: "Primary", token: "primary", varName: "--primary" },
-  { name: "Secondary", token: "secondary", varName: "--secondary" },
-  { name: "Muted", token: "muted", varName: "--muted" },
-  { name: "Accent", token: "accent", varName: "--accent" },
-  { name: "Destructive", token: "destructive", varName: "--destructive" },
-  { name: "Border", token: "border", varName: "--border" },
-  { name: "Input", token: "input", varName: "--input" },
-  { name: "Ring", token: "ring", varName: "--ring" },
+// Every value on this page is read from the kit at render time (useTheme,
+// colorsByScheme, glassByScheme, palette, brandColors). Nothing is restated here:
+// a hard-coded table is how this page used to end up publishing a five-color chart
+// palette the kit stopped shipping.
+
+// The swatch groups, mirroring the design system's own color sheet: brand, then
+// neutrals, then the semantic tones. Each entry is a token key plus the label the
+// sheet gives it.
+const BRAND_KEYS: { key: keyof ColorTokens; name: string }[] = [
+  { key: "primary", name: "primary" },
+  { key: "primary-foreground", name: "primary-foreground" },
+  { key: "ring", name: "ring" },
 ];
 
-const ACCENT_OPTIONS = [
-  { name: "Indigo (default)", h: 240, s: 79, l: 60 },
-  { name: "Violet", h: 271, s: 70, l: 60 },
-  { name: "Teal", h: 173, s: 70, l: 42 },
-  { name: "Rose", h: 346, s: 78, l: 58 },
-  { name: "Amber", h: 38, s: 92, l: 50 },
-  { name: "Slate", h: 215, s: 16, l: 38 },
+const NEUTRAL_KEYS: { key: keyof ColorTokens; name: string }[] = [
+  { key: "background", name: "background" },
+  { key: "card", name: "card" },
+  { key: "muted", name: "muted" },
+  // border and input carry the same value in both schemes, so the sheet samples
+  // them once rather than shipping two identical chips.
+  { key: "border", name: "border / input" },
+  { key: "muted-foreground", name: "muted-foreground" },
+  { key: "foreground", name: "foreground" },
 ];
 
-const STATUS = [
-  { name: "Success", light: { bg: "#dcfce7", fg: "#166534" }, dark: { bg: "rgba(20,83,45,0.3)", fg: "#4ade80" } },
-  { name: "Warning", light: { bg: "#fef9c3", fg: "#854d0e" }, dark: { bg: "rgba(113,63,18,0.3)", fg: "#facc15" } },
-  { name: "Error", light: { bg: "#fee2e2", fg: "#991b1b" }, dark: { bg: "rgba(127,29,29,0.3)", fg: "#f87171" } },
-  { name: "Info", light: { bg: "#dbeafe", fg: "#1e40af" }, dark: { bg: "rgba(30,58,138,0.3)", fg: "#60a5fa" } },
-  { name: "Neutral", light: { bg: "#f4f4f5", fg: "#3f3f46" }, dark: { bg: "rgba(63,63,70,0.3)", fg: "#a1a1aa" } },
+const SEMANTIC_KEYS: { key: keyof ColorTokens; name: string }[] = [
+  { key: "destructive", name: "destructive" },
+  { key: "success", name: "success" },
+  { key: "warning", name: "warning" },
+  { key: "secondary", name: "secondary" },
+  { key: "accent", name: "accent" },
 ];
 
-const STATUS_BADGES = [
-  { label: "Active", i: 0 }, { label: "Pending", i: 1 }, { label: "Failed", i: 2 }, { label: "Info", i: 3 }, { label: "Inactive", i: 4 },
+const CHART_KEYS: (keyof ColorTokens)[] = [
+  "chart-1",
+  "chart-2",
+  "chart-3",
+  "chart-4",
+  "chart-5",
+  "chart-6",
+  "chart-7",
+  "chart-8",
 ];
 
-const CHART_PALETTE = [
-  { name: "Chart 1", varName: "--chart-1", light: "12 76% 61%", dark: "220 70% 50%" },
-  { name: "Chart 2", varName: "--chart-2", light: "173 58% 39%", dark: "160 60% 45%" },
-  { name: "Chart 3", varName: "--chart-3", light: "197 37% 24%", dark: "30 80% 55%" },
-  { name: "Chart 4", varName: "--chart-4", light: "43 74% 66%", dark: "280 65% 60%" },
-  { name: "Chart 5", varName: "--chart-5", light: "27 87% 67%", dark: "340 75% 55%" },
+// The six curated accents, as real palette steps rather than approximate HSL. Only
+// primary and ring move; see the section's note.
+const ACCENTS: { name: string; step: string }[] = [
+  { name: "Indigo (default)", step: "indigo-600" },
+  { name: "Violet", step: "violet-500" },
+  { name: "Teal", step: "teal-600" },
+  { name: "Rose", step: "rose-500" },
+  { name: "Amber", step: "amber-500" },
+  { name: "Slate", step: "slate-600" },
 ];
-
-const BRAND = [
-  { name: "Orb Indigo", hex: "#6366f1", varName: "--orb-indigo" },
-  { name: "Orb Violet", hex: "#8b5cf6", varName: "--orb-violet" },
-  { name: "Orb Cyan", hex: "#06b6d4", varName: "--orb-cyan" },
-];
-
 
 const TOKENS_SRC = `// tokens.ts — plain JS values, RN-usable (no CSS, no DOM)
 export const lightColors = {
@@ -71,11 +93,13 @@ export const darkColors = {
   background: "#09090b",
   // …
 };`;
+
 const THEME_RUNTIME = `// ThemeProvider supplies the active scheme;
 // components read it through useTheme().
 const { tokens } = useTheme();
 
 tokens.primary; // "#4f46e5" light · "#6366f1" dark`;
+
 const DYNAMIC = `<Button primary>Save</Button>
 
 // You set the look with a prop, never a class. The skin
@@ -83,11 +107,13 @@ const DYNAMIC = `<Button primary>Save</Button>
 // resolves live per theme — no restyling:
 //   light       → #4f46e5
 //   dark        → #6366f1
-//   teal accent → #20b6a5`;
+//   teal accent → #0d9488`;
 
-// Do / don't pairs for the colors page. Each renders as a red "Don't" card next to
-// a green "Do" card; every pair is grounded in a Canvas principle (semantic prop
-// styling, paired foregrounds, useTheme-routed values, glass as a surface mode).
+// Do / don't pairs, each grounded in a Canvas principle (semantic prop styling,
+// paired foregrounds, useTheme-routed values, glass as a surface mode). These are
+// deliberately non-compiling fences: the Don'ts show props the kit does not have,
+// which is exactly why they are Don'ts, so they render as code rather than as a
+// live preview.
 const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note: string } }[] = [
   {
     bad: { code: `<View style={{ backgroundColor: "#6366f1" }}>`, note: "A hard-coded hex bypasses the theme. Won't follow accent changes; looks wrong in dark mode." },
@@ -111,99 +137,44 @@ const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note
   },
 ];
 
-function ColorPair({ row }: { row: typeof SEMANTIC_PAIRS[number] }) {
-  const light = colorsByScheme.light[row.token];
-  const dark = colorsByScheme.dark[row.token];
+/** The two notations the sheet prints under a sample: the hex a call site types, and its oklch. */
+function notations(hex: string): { value: string; detail: string } {
+  return { value: hex, detail: colorFormats(hex)[2] };
+}
+
+/** One flexing sample. `flexBasis` is the wrap threshold, not a style override. */
+function Sample({ color, name, basis = 150 }: { color: string; name: string; basis?: number }) {
+  const { value, detail } = notations(color);
   return (
-    <SwatchCard label={row.name} split={{ light, dark }} height={80}>
-      <MonoRows
-        varName={row.varName}
-        groups={[
-          { label: "L", lines: colorFormats(light) },
-          { label: "D", lines: colorFormats(dark) },
-        ]}
-      />
-    </SwatchCard>
+    <Swatch block color={color} value={value} detail={detail} style={{ flexGrow: 1, flexBasis: basis }}>
+      {name}
+    </Swatch>
   );
 }
 
-function StatusCell({ s }: { s: typeof STATUS[number] }) {
-  return (
-    <View style={{ flex: 1, gap: 6 }}>
-      <SwatchLabel>{s.name}</SwatchLabel>
-      <View style={{ flex: 1, flexDirection: "row", gap: 8 }}>
-        {(["light", "dark"] as const).map((mode) => (
-          <SwatchCard
-            key={mode}
-            top={
-              <View style={{ height: 48, backgroundColor: s[mode].bg, alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ fontFamily: geist("500"), fontSize: 12, color: s[mode].fg }}>{mode === "light" ? "Light" : "Dark"}</Text>
-              </View>
-            }
-          >
-            <MonoRows groups={[{ label: "bg", lines: colorFormats(s[mode].bg) }, { label: "fg", lines: colorFormats(s[mode].fg) }]} />
-          </SwatchCard>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-// A status pill: a TRANSPARENT fill, a 1px tone-tinted
-// border, and a tone-colored dot + label (brighter tone in dark mode), not a solid fill.
-function StatusBadge({ label, i }: { label: string; i: number }) {
-  const { dark } = useTheme();
-  const tone = dark ? STATUS[i].dark.fg : STATUS[i].light.fg;
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 2, paddingHorizontal: 8, borderRadius: 9999, borderWidth: 1, borderColor: alpha(tone, 0.3), backgroundColor: "transparent" }}>
-      <View style={{ width: 6, height: 6, borderRadius: 9999, backgroundColor: tone }} />
-      <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tone }}>{label}</Text>
-    </View>
-  );
-}
-
-// One Do-or-Don't card: a green "Do" or red "Don't" label, a code sample, and a note.
-function Guidance({ kind, code, note }: { kind: "do" | "dont"; code: string; note: string }) {
-  const { tokens } = useTheme();
-  const isDo = kind === "do";
-  return (
-    <View
-      style={{
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: isDo ? "hsla(143, 70%, 45%, 0.3)" : "hsla(0, 70%, 60%, 0.3)",
-        backgroundColor: isDo ? "hsla(143, 70%, 45%, 0.05)" : "hsla(0, 70%, 60%, 0.05)",
-        padding: 20,
-        gap: 8,
-      }}
-    >
-      <Text style={{ fontFamily: geist("600"), fontSize: 13, color: isDo ? "hsl(143, 60%, 38%)" : tokens.destructive }}>{isDo ? "Do" : "Don't"}</Text>
-      <CodeBlock code={code} />
-      <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"] }}>{note}</Text>
-    </View>
-  );
-}
-
-function CodeCard({ title, code }: { title: string; code: string }) {
-  const { tokens } = useTheme();
-  return (
-    <Surface>
-      <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground, marginBottom: 8 }}>{title}</Text>
-      <CodeBlock code={code} />
-    </Surface>
-  );
+/** The ramp a status tone is built from, named rather than restated. */
+function ramp(tone: StatusTone): string {
+  return `${statusHues[tone]}-50 / 200 / 500 / 700`;
 }
 
 export default function ColorsScreen() {
-  const { tokens } = useTheme();
+  const { tokens, dark } = useTheme();
   const { width } = useWindowDimensions();
-  // One shared 5-column grid for every swatch section, so columns align down the
-  // whole page and the cards stay wide enough that the oklch/hex codes never wrap.
-  const c5 = width >= 900 ? 5 : width >= 620 ? 3 : 2;
-  // Status tones are wide (a Light + Dark card each), so they sit 3 per row:
-  // Success / Warning / Error, then Info / Neutral.
-  const c3 = width >= 880 ? 3 : width >= 560 ? 2 : 1;
-  const c2 = width >= 760 ? 2 : 1;
+  const wide = width >= 760;
+
+  // The reference table carries both schemes in both notations, which is where the
+  // density belongs once the samples above are calm.
+  const referenceRows = (Object.keys(colorsByScheme.light) as (keyof ColorTokens)[]).sort().map((key) => {
+    const light = colorsByScheme.light[key];
+    const darkValue = colorsByScheme.dark[key];
+    return [
+      `--${key}`,
+      light,
+      colorFormats(light)[2],
+      darkValue,
+      colorFormats(darkValue)[2],
+    ];
+  });
 
   return (
     <Page>
@@ -212,139 +183,200 @@ export default function ColorsScreen() {
         <View style={{ gap: 12 }}>
           <TokenH1>Colors & Theme</TokenH1>
           <TokenLede>
-            Canvas uses a semantic token system. Every color is a named token (primary, muted-foreground, border, …) that ships as a plain value per scheme. Components read the active set through useTheme() and build their React Native styles from it, so the same code themes correctly on iOS, Android, and the web, with no CSS variables and no per-platform fork. You never touch the values directly: you pick a component's look with semantic boolean props.
+            Canvas uses a semantic token system. Every color is a named token (primary, muted-foreground, border, …) that ships as a plain value per scheme. Components read the active set through useTheme() and build their React Native styles from it, so the same code themes correctly on iOS, Android, and the web, with no per-platform fork. You never touch the values directly: you pick a component's look with semantic boolean props.
           </TokenLede>
-          <Callout label="Try this.">Toggle the surface or change the theme. Every swatch below reacts live.</Callout>
+          <Callout label="Try this.">Toggle the theme. Every sample below reads the active scheme live, so the values change with it.</Callout>
         </View>
 
         <TokenSection
-          title="Semantic palette"
-          description="The core token set. Every component reads from these, never from raw color literals."
-          anatomy="Each token has a paired foreground for legible content on top (e.g. primary / primary-foreground). Use the pair together to guarantee contrast in both themes."
+          title="Brand"
+          description="The accent that carries the product: the primary fill, the text that sits on it, and the focus ring. Point these at a new hue and the whole system re-skins."
+          anatomy="ring tracks primary per scheme, so a focus outline always reads as the same colour family as the control it is on."
         >
-          <Grid cols={c5}>{SEMANTIC_PAIRS.map((row) => <ColorPair key={row.varName} row={row} />)}</Grid>
-        </TokenSection>
-
-        <TokenSection
-          title="Accent options"
-          description="The default --primary is Indigo. Point --primary and --ring at any of these six curated hues to re-skin the whole system; they sit at similar perceived weight (chroma and lightness held roughly constant)."
-          anatomy="Accents only override --primary and --ring. All foreground pairings are recalculated downstream with color-mix() against those two, so you don't restate them per accent."
-        >
-          <Grid cols={c5}>
-            {ACCENT_OPTIONS.map((a) => (
-              <SwatchCard key={a.name} label={a.name} color={`hsl(${a.h}, ${a.s}%, ${a.l}%)`} height={80}>
-                <MonoRows groups={[{ lines: colorFormats(hslToHex(a.h, a.s, a.l)) }]} />
-              </SwatchCard>
+          <Row wrap cozy alignStart>
+            {BRAND_KEYS.map((t) => (
+              <Sample key={t.key} color={tokens[t.key]} name={t.name} />
             ))}
-          </Grid>
+            {/* The one place the sheet shows the other scheme outright, because the
+                light/dark difference IS the point for the accent. */}
+            <Sample color={colorsByScheme.dark.primary} name="primary (dark)" />
+          </Row>
         </TokenSection>
 
         <TokenSection
-          title="Semantic status colors"
-          description="Five tones used by StatusBadge and inline alerts. Dark mode uses translucent backgrounds so they read on the deeper page palette without punching through."
+          title="Neutrals"
+          description="The zinc-based surfaces, hairlines, and text greys everything else sits on."
+          anatomy="background and card are the same white in light mode, and foreground is near-black on both: the hairline border is what keeps those samples visible at all."
         >
-          <Grid cols={c3}>{STATUS.map((s) => <StatusCell key={s.name} s={s} />)}</Grid>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-            {STATUS_BADGES.map((b) => <StatusBadge key={b.label} label={b.label} i={b.i} />)}
+          <Row wrap cozy alignStart>
+            {NEUTRAL_KEYS.map((t) => (
+              <Sample key={t.key} color={tokens[t.key]} name={t.name} />
+            ))}
+          </Row>
+        </TokenSection>
+
+        <TokenSection
+          title="Semantic"
+          description="The meaning-bearing tones. Each one has a paired foreground token for legible content on top."
+          anatomy="Use the pair together (destructive with destructive-foreground) to guarantee contrast in both schemes; the full set is in the reference table below."
+        >
+          <Row wrap cozy alignStart>
+            {SEMANTIC_KEYS.map((t) => (
+              <Sample key={t.key} color={tokens[t.key]} name={t.name} />
+            ))}
+          </Row>
+        </TokenSection>
+
+        <TokenSection
+          title="Status surfaces"
+          description="The tinted surfaces behind alerts and status badges. Each tone is one hue family sampled at four steps: a 50 fill, a 200 border, a 500 dot, and a 700 label."
+          anatomy="Alert and Badge read the same tone-to-hue map (statusHues), so a warning banner and a warning pill in one view are guaranteed to be the same amber."
+        >
+          <View style={{ gap: 16 }}>
+            <Row wrap cozy alignStart>
+              <Alert success title="success" description={ramp("success")} icon={<Badge status success accessibilityLabel="success" />} style={{ flexGrow: 1, flexBasis: 210 }} />
+              <Alert warning title="warning" description={ramp("warning")} icon={<Badge status warning accessibilityLabel="warning" />} style={{ flexGrow: 1, flexBasis: 210 }} />
+              <Alert error title="error" description={ramp("error")} icon={<Badge status error accessibilityLabel="error" />} style={{ flexGrow: 1, flexBasis: 210 }} />
+              <Alert info title="info" description={ramp("info")} icon={<Badge status info accessibilityLabel="info" />} style={{ flexGrow: 1, flexBasis: 210 }} />
+            </Row>
+            <Row wrap snug alignCenter>
+              <Badge status success>Active</Badge>
+              <Badge status warning>Pending</Badge>
+              <Badge status error>Failed</Badge>
+              <Badge status info>Info</Badge>
+              <Badge status neutral>Inactive</Badge>
+            </Row>
           </View>
         </TokenSection>
 
         <TokenSection
-          title="Chart palette"
-          description="Five colors tuned for data viz, distinct enough at small marks (1-2px), no two adjacent hues vibrating. The dark-mode set is independently chosen (not just lightness-flipped) for the same readability bar."
+          title="Data-viz series"
+          description="Eight colors for charts, assigned in a fixed order and never re-ranked. Distinct enough at 1-2px marks, with no two adjacent hues vibrating."
+          anatomy="The series is identical in light and dark on purpose: the set was validated against both card surfaces, so a chart keeps its colour identity when the scheme flips."
         >
-          <Grid cols={c5}>
-            {CHART_PALETTE.map((ch) => {
-              const light = hslTripletToHex(ch.light);
-              const dark = hslTripletToHex(ch.dark);
-              return (
-                <SwatchCard key={ch.varName} label={ch.name} split={{ light, dark }} height={64}>
-                  <MonoRows
-                    varName={ch.varName}
-                    groups={[
-                      { label: "L", lines: colorFormats(light) },
-                      { label: "D", lines: colorFormats(dark) },
-                    ]}
-                  />
-                </SwatchCard>
-              );
-            })}
-          </Grid>
-        </TokenSection>
-
-        <TokenSection
-          title="Brand colors"
-          description="Reserved for brand moments: the avatar gradient, sign-in orbs, marketing splashes. Never used as component fills."
-        >
-          <Grid cols={c5}>
-            {[
-              ...BRAND.map((b) => (
-                <SwatchCard key={b.varName} label={b.name} color={b.hex} height={80}>
-                  <MonoRows varName={b.varName} groups={[{ lines: colorFormats(b.hex) }]} />
-                </SwatchCard>
-              )),
-              <SwatchCard key="avatar-gradient" label="Avatar gradient" top={<GradientFill colors={["#6366f1", "#8b5cf6"]} height={80} />}>
-                <MonoRows groups={[{ lines: ["--orb-indigo → --orb-violet"] }]} />
-              </SwatchCard>,
-            ]}
-          </Grid>
-        </TokenSection>
-
-        <TokenSection
-          title="Glass surface"
-          description={`Canvas ships a glass surface mode: set surface="glass" on the ThemeProvider, or call setSurface("glass") on the web (it sets data-surface="glass" on <html>). Following Apple's Liquid Glass model, only the functional layer goes translucent.`}
-          anatomy={`Glass overrides exactly one token: popover. Light becomes rgba(255, 255, 255, 0.72); dark becomes rgba(30, 30, 34, 0.66). The card token stays solid, so content surfaces (cards, lists, tables, charts) never turn to glass; only popover-backed overlays (popovers, menus, dropdowns, selects, dialogs, sheets, command) and the navbar/sidebar shells read as glass.`}
-        >
-          <Grid cols={c2}>
-            {[
-              { label: "Light · popover", fill: "rgba(255, 255, 255, 0.72)", grad: ["#6366f1", "#06b6d4"] as [string, string] },
-              { label: "Dark · popover", fill: "rgba(30, 30, 34, 0.66)", grad: ["#8b5cf6", "#6366f1"] as [string, string] },
-            ].map((g) => (
-              <SwatchCard
-                key={g.label}
-                label={g.label}
-                top={
-                  <GradientFill colors={g.grad} height={96}>
-                    <View style={{ width: "62%", height: "56%", borderRadius: 6, backgroundColor: g.fill, borderWidth: 1, borderColor: "rgba(255,255,255,0.35)" }} />
-                  </GradientFill>
-                }
-              >
-                <MonoRows groups={[{ lines: colorFormats(g.fill) }]} />
-              </SwatchCard>
+          <Row wrap cozy alignStart>
+            {CHART_KEYS.map((key) => (
+              <Sample key={key} color={tokens[key]} name={key} basis={200} />
             ))}
-          </Grid>
+          </Row>
+        </TokenSection>
+
+        <TokenSection
+          title="Glass"
+          description="Glass is a theming-level surface mode, not a per-component prop: set surface=&quot;glass&quot; on the ThemeProvider and the whole functional layer turns translucent together."
+          anatomy={`Glass overrides exactly one token: popover, which becomes ${glassByScheme.light.popover} in light and ${glassByScheme.dark.popover} in dark. The card token stays solid, so content surfaces (cards, lists, tables, charts) never turn to glass; only popover-backed overlays and the navbar/sidebar shells read as glass.`}
+        >
+          <View style={{ gap: 12 }}>
+            {/* A live material sample: the bar floats over content, which is the only
+                condition under which glass reads as glass at all. */}
+            {/* Docs illustration, not a reusable control: a plate of stand-in content
+                with a bar floating over it. Built from the raw primitives on purpose,
+                and every colour still comes from a token (primary-foreground is the
+                kit's "text on a saturated fill"), never a literal. */}
+            <GradientFill colors={[brandColors["orb-indigo"], brandColors["orb-cyan"]]} height={236}>
+              <View style={{ position: "absolute", left: 22, right: 22, top: 18, gap: 7 }}>
+                {[100, 72, 88, 54, 92, 66].map((w, i) => (
+                  <View key={i} style={{ height: 9, width: `${w}%`, borderRadius: 5, backgroundColor: alpha(tokens["primary-foreground"], 0.34) }} />
+                ))}
+              </View>
+              <GlassSurface style={{ position: "absolute", left: 16, right: 16, bottom: 14, height: 56, borderRadius: 9999, backgroundColor: glassByScheme[dark ? "dark" : "light"].popover, flexDirection: "row", alignItems: "center", justifyContent: "space-around" }}>
+                {/* The bar is filled with the popover token, so its labels take the
+                    paired popover-foreground: the pair flips together with the scheme,
+                    which is the rule this page teaches two sections down. */}
+                {["Home", "Library", "Settings"].map((label) => (
+                  <Text key={label} style={{ fontSize: 13, lineHeight: 18, color: tokens["popover-foreground"] }}>{label}</Text>
+                ))}
+              </GlassSurface>
+            </GradientFill>
+            <Typography tiny muted>
+              Glass forms a distinct functional layer that floats above content. Navigation and overlays live in it; content surfaces stay solid. Spend it sparingly: the material exists to draw attention to what is beneath it, so using it everywhere defeats it.
+            </Typography>
+            <Typography tiny muted>
+              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, a genuine frosted blur through expo-blur on web and Android, and the translucent popover fill above as the fallback when neither optional peer is installed. It is never a hand-painted blur on one component.
+            </Typography>
+            <Typography tiny muted>
+              It only reads over something worth bending. Over a flat fill it renders flat, so a glass bar has to have content passing behind it.
+            </Typography>
+          </View>
+        </TokenSection>
+
+        <TokenSection
+          title="Rebranding the accent"
+          description="The default accent is Indigo. Point primary and ring at any of these six curated steps to re-skin the system; they sit at similar perceived weight, so the rest of the palette still balances."
+          anatomy="An accent overrides primary and ring only. The foreground tokens are NOT recalculated: ThemeProvider merges your overrides over the active scheme, so if an accent needs a different foreground you pass that too."
+        >
+          <Row wrap cozy alignStart>
+            {ACCENTS.map((a) => (
+              <Sample key={a.step} color={palette[a.step]} name={a.name} />
+            ))}
+          </Row>
+        </TokenSection>
+
+        <TokenSection
+          title="Brand constants"
+          description="Fixed brand colors that do not flip with the scheme: the sign-in orbs and the avatar gradient. Never used as component fills."
+        >
+          <Row wrap cozy alignStart>
+            {(Object.keys(brandColors) as (keyof typeof brandColors)[]).map((key) => (
+              <Sample key={key} color={brandColors[key]} name={key} />
+            ))}
+            <View style={{ flexGrow: 1, flexBasis: 150, gap: 6 }}>
+              <GradientFill colors={[brandColors["orb-indigo"], brandColors["orb-violet"]]} height={56} />
+              <Typography small medium>Avatar gradient</Typography>
+              <Typography tiny muted mono>orb-indigo → orb-violet</Typography>
+            </View>
+          </Row>
+        </TokenSection>
+
+        <TokenSection
+          title="Full token reference"
+          description="Every color token the kit ships, in both schemes and both notations. The hex is what a React Native call site reads; the oklch is what the web token layer publishes."
+          anatomy="The two notations describe the same colour. For the saturated accents the CSS carries a wider-gamut chroma than an sRGB hex can express, so on a P3 display the web layer is the more saturated of the two."
+        >
+          <DataTable
+            bordered
+            striped
+            columns={["Token", "Light", "Light oklch", "Dark", "Dark oklch"]}
+            rows={referenceRows}
+          />
         </TokenSection>
 
         <TokenSection
           title="How theming works"
           description="You change a component's look with semantic boolean props. Each one resolves through the active scheme's tokens, so the same markup renders correctly in every theme and accent, with no re-skinning and no per-call overrides."
         >
-          <Grid cols={c2}>
-            {[
-              <CodeCard key="1" title="1 · Tokens (tokens.ts)" code={TOKENS_SRC} />,
-              <CodeCard key="2" title="2 · The theme runtime (useTheme)" code={THEME_RUNTIME} />,
-            ]}
-          </Grid>
-          <Surface>
-            <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground, marginBottom: 8 }}>3 · One prop, resolved live</Text>
-            <CodeBlock code={DYNAMIC} />
-            <Text style={{ fontFamily: geist("400"), fontSize: 12.5, lineHeight: 19, color: tokens["muted-foreground"], marginTop: 12 }}>
-              The {"`primary`"} prop is the whole styling API; the button reads {"`tokens.primary`"} from useTheme(). Switch the scheme or point the accent at a new hue and the ThemeProvider swaps the token set, so every component bound to it re-renders with the new color. No classes, no CSS variables.
-            </Text>
-          </Surface>
+          <View style={{ gap: 16 }}>
+            <Row wrap relaxed alignStart>
+              <Card title="1 · Tokens (tokens.ts)" style={{ flexGrow: 1, flexBasis: 320 }}>
+                <CodeBlock code={TOKENS_SRC} />
+              </Card>
+              <Card title="2 · The theme runtime (useTheme)" style={{ flexGrow: 1, flexBasis: 320 }}>
+                <CodeBlock code={THEME_RUNTIME} />
+              </Card>
+            </Row>
+            <Card title="3 · One prop, resolved live">
+              <View style={{ gap: 12 }}>
+                <CodeBlock code={DYNAMIC} />
+                <Typography small muted>
+                  The primary prop is the whole styling API; the button reads tokens.primary from useTheme(). Switch the scheme or point the accent at a new hue and the ThemeProvider swaps the token set, so every component bound to it re-renders with the new colour.
+                </Typography>
+              </View>
+            </Card>
+          </View>
         </TokenSection>
 
-        {/* Do's and don'ts */}
         <TokenSection
           title="Do's and don'ts"
-          description="Keep color theme-routed. These are the patterns that follow the accent and dark mode for free, beside the ones that quietly break them."
+          description="Keep colour theme-routed. These are the patterns that follow the accent and dark mode for free, beside the ones that quietly break them."
         >
-          <Grid cols={c2}>
-            {DO_DONT.flatMap((p, i) => [
-              <Guidance key={`dont${i}`} kind="dont" code={p.bad.code} note={p.bad.note} />,
-              <Guidance key={`do${i}`} kind="do" code={p.good.code} note={p.good.note} />,
-            ])}
-          </Grid>
+          <View style={{ gap: 16 }}>
+            {DO_DONT.map((pair, i) => (
+              <View key={i} style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
+                <DoDontCard dont caption={pair.bad.note} code={pair.bad.code} />
+                <DoDontCard do caption={pair.good.note} code={pair.good.code} />
+              </View>
+            ))}
+          </View>
         </TokenSection>
 
         <PageNav />
