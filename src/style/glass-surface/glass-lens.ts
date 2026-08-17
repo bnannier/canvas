@@ -32,6 +32,19 @@
 // feDisplacementMap (R selects X, G selects Y) replaces the reference's
 // two-pass chain, followed by the blur + saturation the material carries.
 //
+// Every def here is BUILT as DOM nodes (`createElementNS` + `setAttribute`),
+// never parsed from a markup string. Assigning a string to `innerHTML` is a
+// Trusted Types sink: under a `require-trusted-types-for 'script'` CSP, which
+// the docs site sends and any consumer may send, Chromium throws a TypeError on
+// that assignment. The shared def below is injected at IMPORT time, so a sink
+// there does not degrade the glass, it blanks the entire app (it did exactly
+// that: the throw escaped the module factory and canvas.nannier.com served a
+// white page). Node building touches no sink and needs no policy, so the lens
+// renders identically under every CSP. The filter geometry therefore lives in
+// pure `*Spec` builders that describe the tree, with one small builder turning a
+// spec into elements; the displacement map stays a `data:` URI, which is an
+// attribute value rather than a sink.
+//
 // The document also gets ONE shared `#cds-glass-lens` def, because the
 // shipped CSS token layer (`--glass-lens: url(#cds-glass-lens)` in
 // styles/tokens/colors.css) points at that id for raw-CSS web surfaces. Since
@@ -90,20 +103,70 @@ export function lensMapDataUri(w: number, h: number, rimX: number, rimY: number,
   return "data:image/svg+xml," + encodeURIComponent(m);
 }
 
-/** The full sized-filter markup. Pure and exported for tests. */
-export function sizedLensFilterMarkup(id: string, w: number, h: number): string {
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+/** One filter primitive: its tag and its attributes. */
+export interface LensNode {
+  tag: string;
+  attrs: Record<string, string | number>;
+}
+
+/** A whole `<filter>` def: the filter's own attributes plus its primitives. */
+export interface LensFilterSpec {
+  attrs: Record<string, string | number>;
+  children: LensNode[];
+}
+
+/** The shared CSS-token def's spec: the blur + saturation grade with NO
+ *  displacement (see the header for why it cannot carry one). Pure. */
+export function sharedLensFilterSpec(id: string): LensFilterSpec {
+  return {
+    attrs: { id, "color-interpolation-filters": "sRGB" },
+    children: [
+      { tag: "feGaussianBlur", attrs: { in: "SourceGraphic", stdDeviation: BLUR, result: "soft" } },
+      { tag: "feColorMatrix", attrs: { in: "soft", type: "saturate", values: SATURATE } },
+    ],
+  };
+}
+
+/** The full sized-filter spec. Pure and exported for tests. */
+export function sizedLensFilterSpec(id: string, w: number, h: number): LensFilterSpec {
   // Tiny surfaces (chips, knobs) shrink the rim so the flat centre survives.
   const rimX = Math.max(1, Math.min(RIM_PX, Math.floor(w / 3)));
   const rimY = Math.max(1, Math.min(RIM_PX, Math.floor(h / 3)));
   const rx = Math.round(w * INFLATE);
   const ry = Math.round(h * INFLATE);
-  const href = lensMapDataUri(w, h, rimX, rimY, rx, ry);
-  return `<filter id="${id}" x="${-rx}" y="${-ry}" width="${w + 2 * rx}" height="${h + 2 * ry}" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-    <feImage href="${href}" x="${-rx}" y="${-ry}" width="${w + 2 * rx}" height="${h + 2 * ry}" result="map"/>
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="${SCALE}" xChannelSelector="R" yChannelSelector="G" result="bent"/>
-    <feGaussianBlur in="bent" stdDeviation="${BLUR}" result="soft"/>
-    <feColorMatrix in="soft" type="saturate" values="${SATURATE}"/>
-  </filter>`;
+  // The inflated region, shared by the filter and its feImage so the map's
+  // intrinsic size IS the region (see the header on pixel-unit geometry).
+  const region = { x: -rx, y: -ry, width: w + 2 * rx, height: h + 2 * ry };
+  return {
+    attrs: { id, ...region, filterUnits: "userSpaceOnUse", "color-interpolation-filters": "sRGB" },
+    children: [
+      { tag: "feImage", attrs: { href: lensMapDataUri(w, h, rimX, rimY, rx, ry), ...region, result: "map" } },
+      {
+        tag: "feDisplacementMap",
+        attrs: { in: "SourceGraphic", in2: "map", scale: SCALE, xChannelSelector: "R", yChannelSelector: "G", result: "bent" },
+      },
+      { tag: "feGaussianBlur", attrs: { in: "bent", stdDeviation: BLUR, result: "soft" } },
+      { tag: "feColorMatrix", attrs: { in: "soft", type: "saturate", values: SATURATE } },
+    ],
+  };
+}
+
+/** Build a spec into a real `<filter>` element. Node construction only, so no
+ *  Trusted Types sink is touched and no CSP policy is required. */
+function buildLensFilter(spec: LensFilterSpec): SVGElement {
+  const attach = (el: Element, attrs: Record<string, string | number>) => {
+    for (const [name, value] of Object.entries(attrs)) el.setAttribute(name, String(value));
+  };
+  const filter = document.createElementNS(SVG_NS, "filter");
+  attach(filter, spec.attrs);
+  for (const node of spec.children) {
+    const child = document.createElementNS(SVG_NS, node.tag);
+    attach(child, node.attrs);
+    filter.appendChild(child);
+  }
+  return filter;
 }
 
 // One hidden host <svg> holds every def this module injects.
@@ -140,12 +203,7 @@ export function ensureGlassLens(): boolean {
   if (document.getElementById(GLASS_LENS_ID)) return true;
   const host = defsHost();
   if (!host) return false;
-  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  g.innerHTML = `<filter id="${GLASS_LENS_ID}" color-interpolation-filters="sRGB">
-    <feGaussianBlur in="SourceGraphic" stdDeviation="${BLUR}" result="soft"/>
-    <feColorMatrix in="soft" type="saturate" values="${SATURATE}"/>
-  </filter>`;
-  host.appendChild(g.firstElementChild as SVGElement);
+  host.appendChild(buildLensFilter(sharedLensFilterSpec(GLASS_LENS_ID)));
   return true;
 }
 
@@ -170,9 +228,7 @@ export function acquireSizedGlassLens(w: number, h: number): { key: string; url:
   }
   const host = defsHost();
   if (!host) return null;
-  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  g.innerHTML = sizedLensFilterMarkup(key, w, h);
-  const el = g.firstElementChild as SVGElement;
+  const el = buildLensFilter(sizedLensFilterSpec(key, w, h));
   host.appendChild(el);
   sizedDefs.set(key, { el, refs: 1 });
   return { key, url: `url(#${key})` };
