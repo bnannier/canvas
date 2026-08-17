@@ -11,10 +11,12 @@ import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences
 
 // Surface treatment. "glass" makes the functional layer's fills translucent across
 // every overlay/bar component (see glassByScheme); "solid" is opaque. It is a
-// theming dimension, like the color scheme, not a per-component prop. When the
-// ThemeProvider's `surface` prop is omitted the PLATFORM DEFAULT applies: glass on
-// iOS 26+ (Apple makes Liquid Glass the system material for that layer), solid
-// everywhere else.
+// theming dimension, like the color scheme, not a per-component prop. The
+// ThemeProvider spells it as a boolean axis (`<ThemeProvider glass>` /
+// `<ThemeProvider solid>`); when neither is passed the PLATFORM DEFAULT applies:
+// glass on iOS 26+ (Apple makes Liquid Glass the system material for that layer),
+// solid everywhere else. This value type remains the resolved form the theme
+// carries, and the provider's legacy `surface` prop still accepts it.
 export type Surface = "solid" | "glass";
 
 /**
@@ -79,11 +81,18 @@ export interface ThemeProviderProps {
    * next-themes `defaultTheme`). Omit in client-only apps and on native.
    */
   ssrScheme?: ColorScheme;
+  // Surface axis (pick one; omit for the platform default: glass on iOS 26+, the
+  // native system material for that layer, solid elsewhere). The theming-level
+  // glass switch, spelled like every other Canvas axis; there is no per-component
+  // glass prop. `glass` wins when both are passed.
+  /** Force the translucent functional layer (popovers, bars) on. */
+  glass?: boolean;
+  /** Force the opaque functional layer, even on iOS 26+. */
+  solid?: boolean;
   /**
-   * Surface treatment. "glass" makes every functional-layer fill (popover, bars)
-   * translucent; "solid" is opaque. This is the theming-level glass switch, no
-   * per-component glass prop. Omit to use the platform default: glass on iOS 26+
-   * (the native system material for that layer), solid elsewhere.
+   * Legacy value form of the surface axis ("solid" | "glass"), kept for
+   * back-compat and for config-driven code that already holds a `Surface`
+   * value. The boolean axis above wins when both are passed.
    */
   surface?: Surface;
   /**
@@ -107,7 +116,7 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
-export function ThemeProvider({ scheme, ssrScheme, surface, tokens, children }: ThemeProviderProps) {
+export function ThemeProvider({ scheme, ssrScheme, glass, solid, surface, tokens, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
@@ -126,7 +135,9 @@ export function ThemeProvider({ scheme, ssrScheme, surface, tokens, children }: 
   const active: ColorScheme = hydrated
     ? (scheme ?? (system === "dark" ? "dark" : "light"))
     : (ssrScheme as ColorScheme);
-  const resolved: Surface = surface ?? defaultSurface();
+  // Axis first-match (glass over solid), then the legacy value form, then the
+  // platform default. Mirrors every component axis: the prop name is the value.
+  const resolved: Surface = glass ? "glass" : solid ? "solid" : (surface ?? defaultSurface());
   const value = useMemo<ThemeValue>(() => {
     // Merge order: scheme base, then brand overrides, then the glass material
     // overrides; glass stays on top so a rebrand composes with it unchanged.
