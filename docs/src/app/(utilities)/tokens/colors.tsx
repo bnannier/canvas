@@ -135,7 +135,7 @@ const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note
   },
   {
     bad: { code: `<Popover glass>`, note: "Glass is not a per-component prop, and you never hand-paint a blur onto one component." },
-    good: { code: `<ThemeProvider surface="glass">`, note: "Glass is a surface mode set once on the provider, so the whole functional layer turns together. surface is provider configuration, not a component styling axis, which is why it takes a value while components keep boolean props." },
+    good: { code: `<ThemeProvider glass>`, note: "Glass is a surface mode set once on the provider, so the whole functional layer turns together. Same boolean grammar as every component axis: glass or solid, and omitting both keeps the platform default." },
   },
 ];
 
@@ -265,7 +265,7 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Glass"
-          description="Glass is a theming-level surface mode, not a per-component prop: set surface=&quot;glass&quot; on the ThemeProvider and the whole functional layer turns translucent together."
+          description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and the whole functional layer turns translucent together, or solid to force the flat look; neither means the platform default."
           anatomy={`Glass overrides exactly one token: popover, which becomes ${glassByScheme.light.popover} in light and ${glassByScheme.dark.popover} in dark. The card token stays solid, so content surfaces (cards, lists, tables, charts) never turn to glass; only popover-backed overlays and the navbar/sidebar shells read as glass.`}
         >
           <View style={{ gap: 12 }}>

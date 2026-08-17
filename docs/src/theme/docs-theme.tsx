@@ -70,7 +70,10 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={value}>
-      <ThemeProvider scheme={scheme} surface={surface}>{children}</ThemeProvider>
+      {/* The toggle state is a Surface value, so the axis booleans take
+          expressions: both are explicit because the docs never want the
+          platform default (the Frost/Solid toggle owns the choice). */}
+      <ThemeProvider scheme={scheme} glass={surface === "glass"} solid={surface === "solid"}>{children}</ThemeProvider>
     </Ctx.Provider>
   );
 }

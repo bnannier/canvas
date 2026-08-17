@@ -211,3 +211,44 @@ describe("iOS glass-surface platform file", () => {
     await waitFor(() => expect(screen.getByTestId("ios-gs")).toBeDefined());
   });
 });
+
+describe("ThemeProvider surface axis booleans", () => {
+  // The boolean axis is the canonical spelling (<ThemeProvider glass>); the
+  // legacy surface value prop stays supported underneath. These pin the
+  // resolution order: glass > solid > surface > platform default.
+  it("glass turns the translucent popover fill on", async () => {
+    render(
+      <ThemeProvider glass>
+        <PopoverTokenProbe />
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(/rgba\(255, 255, 255, 0\.72\)/)).toBeDefined());
+  });
+
+  it("solid keeps the opaque popover fill", async () => {
+    render(
+      <ThemeProvider solid>
+        <PopoverTokenProbe />
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(/#ffffff/)).toBeDefined());
+  });
+
+  it("glass wins over solid (axis first-match), and both win over legacy surface", async () => {
+    render(
+      <ThemeProvider glass solid surface="solid">
+        <PopoverTokenProbe />
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(/rgba\(255, 255, 255, 0\.72\)/)).toBeDefined());
+  });
+
+  it("solid overrides a legacy surface=\"glass\"", async () => {
+    render(
+      <ThemeProvider solid surface="glass">
+        <PopoverTokenProbe />
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(/#ffffff/)).toBeDefined());
+  });
+});

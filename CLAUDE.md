@@ -122,13 +122,15 @@ So `<Button primary large loading block>` is four props drawn from four axes, al
 applied together.
 
 Glass is NOT a per-component axis: it is a theming-level surface mode, like the
-light/dark scheme. The `ThemeProvider`'s `surface` prop is `"solid" | "glass"`, and
-when omitted it resolves to the PLATFORM DEFAULT: **glass on iOS 26+** (Apple makes
-Liquid Glass the system material for the functional layer there, so a Canvas app
-matches the OS), and **solid everywhere else** (web, Android, iOS < 26, Reduce
-Transparency). Pass `surface="glass"` to force it on (a frost on non-iOS-26
-platforms), or `surface="solid"` to force the flat look; on the web the DOM helper is
-`setSurface("glass")` / `setSurface("solid")`. The platform default is computed from
+light/dark scheme, and the `ThemeProvider` spells it in the same boolean grammar as
+every component axis: `<ThemeProvider glass>` forces it on (a frost on non-iOS-26
+platforms), `<ThemeProvider solid>` forces the flat look, and passing neither
+resolves to the PLATFORM DEFAULT: **glass on iOS 26+** (Apple makes Liquid Glass the
+system material for the functional layer there, so a Canvas app matches the OS), and
+**solid everywhere else** (web, Android, iOS < 26, Reduce Transparency). `glass`
+wins if both are passed. The legacy `surface="solid" | "glass"` value prop remains
+supported for config-driven code holding a `Surface` value, and on the web the DOM
+helper is `setSurface("glass")` / `setSurface("solid")`. The platform default is computed from
 `liquidGlassAvailable()` (exported from the kit). Following Apple's Liquid Glass model,
 glass is the material for the FUNCTIONAL layer only: overlays (popovers, menus,
 dropdowns, selects, autocompletes, dialogs, alert dialogs, sheets, drawers, command)
