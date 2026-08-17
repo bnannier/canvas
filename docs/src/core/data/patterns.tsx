@@ -298,7 +298,7 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
         title: "What 'glass' means in Canvas",
         description: "Glass follows Apple's Liquid Glass model: it is a material for the FUNCTIONAL layer, the navigation and overlays that float above content, never the content layer. The surface mode swaps the popover token translucent, so overlays (popovers, menus, dropdowns, selects, dialogs, sheets, drawers, command) and the bar/sidebar shells go glass, while content surfaces (cards, lists, tables, calendars, charts) stay solid. Those functional surfaces render through the shared GlassSurface primitive, which paints the platform's real material.",
         anatomy: "Toggle with the Solid / Frost switch in the topbar, or pass the boolean to the provider: <ThemeProvider glass> forces glass, <ThemeProvider solid> forces flat, and omitting both picks the platform default (glass on iOS 26+ via liquidGlassAvailable(), solid elsewhere).",
-        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Glass mode swaps one token (popover) translucent and routes the functional-layer surfaces through the GlassSurface primitive, which paints the platform's own material: real Apple Liquid Glass via expo-glass-effect on iOS 26+, a genuine frosted blur via expo-blur on the web and Android, and the translucent popover fill when neither optional peer is installed.</p></div>`,
+        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Glass mode swaps one token (popover) translucent and routes the functional-layer surfaces through the GlassSurface primitive, which paints the platform's own material: real Apple Liquid Glass via expo-glass-effect on iOS 26+, an SVG displacement lens on Chromium web (refraction at the rim, optically flat centre), a genuine frosted blur via expo-blur elsewhere on web and on Android, and the translucent popover fill when neither optional peer is installed.</p></div>`,
       },
       {
         title: "The four ingredients",
@@ -307,7 +307,7 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F4A8;</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">Blur material</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">expo-glass-effect / expo-blur</code>
+    <code style="font-size:11px;color:var(--muted-foreground)">expo-glass-effect / lens / expo-blur</code>
   </div>
   <div class="section-card" style="padding:16px;text-align:center">
     <div style="font-size:24px;margin-bottom:8px">&#x1F3A8;</div>
