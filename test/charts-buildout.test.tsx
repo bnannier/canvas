@@ -12,6 +12,7 @@ import { ringDash, ringFill } from "../src/charts/progress-ring/progress-ring.sh
 import { RadialBarChart } from "../src/charts/radial-bar-chart/radial-bar-chart.tsx";
 import { FunnelChart } from "../src/charts/funnel-chart/funnel-chart.tsx";
 import { RadarChart } from "../src/charts/radar-chart/radar-chart.tsx";
+import { Treemap } from "../src/charts/treemap/treemap.tsx";
 import { rowAccessibleLabel, rowFill } from "../src/charts/shared/breakdown-rows.tsx";
 import { periodStatus, statusSummary } from "../src/charts/shared/status-strip.tsx";
 import { lightColors } from "../src/style/tokens.ts";
@@ -386,5 +387,31 @@ describe("RadarChart", () => {
   it("names the root group after the title", () => {
     const { container } = ui(<RadarChart title="Candidates" axes={axes} series={series} />);
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Candidates chart");
+  });
+});
+
+describe("Treemap", () => {
+  const data = [
+    { label: "Media", value: 620 },
+    { label: "Backups", value: 340 },
+    { label: "Logs", value: 40 },
+  ];
+
+  it("the composition lives in the accessible name with values and shares", () => {
+    const { container } = ui(<Treemap title="Storage" data={data} />);
+    const name = imgLabels(container).join("; ");
+    expect(name).toContain("Storage: Media 620 (62%)");
+    expect(name).toContain("Backups 340 (34%)");
+    expect(name).toContain("Logs 40 (4%)");
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<Treemap title="Storage" data={data} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Storage chart");
+  });
+
+  it("negative and non-finite values read as zero-share tiles", () => {
+    const { container } = ui(<Treemap data={[{ label: "A", value: 10 }, { label: "B", value: -5 }]} />);
+    expect(imgLabels(container).join(" ")).toContain("B 0 (0%)");
   });
 });

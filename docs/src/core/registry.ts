@@ -1007,6 +1007,11 @@ import e_charts_service_health_list_dont_0_dont from "./examples/charts/service-
 import e_charts_stacked_bar_example_0 from "./examples/charts/stacked-bar/example-0";
 import e_charts_stacked_bar_dont_0_do from "./examples/charts/stacked-bar/dont-0-do";
 import e_charts_stacked_bar_dont_0_dont from "./examples/charts/stacked-bar/dont-0-dont";
+import e_charts_treemap_example_0 from "./examples/charts/treemap/example-0";
+import e_charts_treemap_example_1 from "./examples/charts/treemap/example-1";
+import e_charts_treemap_example_2 from "./examples/charts/treemap/example-2";
+import e_charts_treemap_dont_0_do from "./examples/charts/treemap/dont-0-do";
+import e_charts_treemap_dont_0_dont from "./examples/charts/treemap/dont-0-dont";
 import e_charts_uptime_bar_example_0 from "./examples/charts/uptime-bar/example-0";
 import e_charts_uptime_bar_example_1 from "./examples/charts/uptime-bar/example-1";
 import e_charts_uptime_bar_example_2 from "./examples/charts/uptime-bar/example-2";
@@ -2548,6 +2553,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "Stacked bar", do: { caption: "Always ship a legend with a colored dot, label, and percentage per segment.", code: "<Card padded style={{ maxWidth: 560 }}>\n  <StackedBar\n    segments={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>\n", render: e_charts_stacked_bar_dont_0_do }, dont: { caption: "Colored segments with no legend force the reader to guess which channel each band represents.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>\n  <View style={{ flexDirection: \"row\", overflow: \"hidden\", borderRadius: 9999, height: 10, width: 520 }}>\n    <View style={{ width: \"42%\", backgroundColor: \"#6366f1\" }} />\n    <View style={{ width: \"28%\", backgroundColor: \"#14b8a6\" }} />\n    <View style={{ width: \"18%\", backgroundColor: \"#f59e0b\" }} />\n    <View style={{ width: \"12%\", backgroundColor: \"#f43f5e\" }} />\n  </View>\n</View>\n", render: e_charts_stacked_bar_dont_0_dont } },
+    ],
+  },
+  "treemap": {
+    dir: "treemap",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Treemap\n  title=\"Storage by service\"\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"Media\", value: 620 },\n    { label: \"Backups\", value: 340 },\n    { label: \"Logs\", value: 180 },\n    { label: \"Search index\", value: 120 },\n    { label: \"Thumbnails\", value: 90 },\n    { label: \"Exports\", value: 45 },\n    { label: \"Other\", value: 25 },\n  ]}\n/>", render: e_charts_treemap_example_0 },
+      { label: "Compact", code: "<Treemap\n  compact\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"Chrome\", value: 61 },\n    { label: \"Safari\", value: 24 },\n    { label: \"Edge\", value: 8 },\n    { label: \"Firefox\", value: 5 },\n    { label: \"Other\", value: 2 },\n  ]}\n/>", render: e_charts_treemap_example_1 },
+      { label: "Inspected", code: "<Treemap\n  title=\"Revenue by product\"\n  defaultSelected={0}\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"Platform\", value: 4200 },\n    { label: \"Add-ons\", value: 1400 },\n    { label: \"Services\", value: 900 },\n    { label: \"Training\", value: 300 },\n  ]}\n/>", render: e_charts_treemap_example_2 },
+    ],
+    donts: [
+      { title: "Treemap", do: { caption: "Reserve the treemap for part-of-whole data with real size contrast, where area comparison earns the space.", code: "<Treemap\n  title=\"Storage by service\"\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"Media\", value: 620 },\n    { label: \"Backups\", value: 340 },\n    { label: \"Logs\", value: 180 },\n  ]}\n/>", render: e_charts_treemap_dont_0_do }, dont: { caption: "A handful of near-equal shares reads better as a PieChart or a BarList; near-equal tiles defeat the area encoding.", code: "<Treemap\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"A\", value: 26 },\n    { label: \"B\", value: 25 },\n    { label: \"C\", value: 25 },\n    { label: \"D\", value: 24 },\n  ]}\n/>", render: e_charts_treemap_dont_0_dont } },
     ],
   },
   "uptime-bar": {

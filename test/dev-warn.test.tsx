@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart, RadialBarChart, FunnelChart, RadarChart } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart, RadialBarChart, FunnelChart, RadarChart, Treemap } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -158,6 +158,12 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("cannot form a polygon")).toBe(true);
   });
 
+  it("Treemap warns past 24 tiles and on negative values", () => {
+    ui(<Treemap data={Array.from({ length: 25 }, (_, i) => ({ label: `T${i}`, value: i + 1 }))} />);
+    expect(sawWarning("<Treemap />")).toBe(true);
+    expect(sawWarning("read as noise")).toBe(true);
+  });
+
   it("RangeAreaChart warns when low exceeds high and swaps the pair", () => {
     ui(<RangeAreaChart label="R" labels={["A"]} data={[{ low: 9, high: 2 }]} />);
     expect(sawWarning("<RangeAreaChart />")).toBe(true);
@@ -186,6 +192,7 @@ describe("component data-misuse warnings", () => {
         <RadialBarChart data={[{ label: "A", value: 3 }]} max={10} />
         <FunnelChart stages={[{ label: "Visits", value: 10 }, { label: "Paid", value: 4 }]} />
         <RadarChart axes={["A", "B", "C"]} series={[{ label: "X", values: [1, 2, 3] }]} />
+        <Treemap data={[{ label: "A", value: 3 }, { label: "B", value: 1 }]} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);

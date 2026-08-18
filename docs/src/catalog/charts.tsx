@@ -473,6 +473,24 @@ function RadarPreview() {
   );
 }
 
+function TreemapPreview() {
+  const { tokens } = useTheme();
+  const tiles = [
+    { x: 4, y: 4, w: 96, h: 56, fill: tokens["chart-1"] },
+    { x: 102, y: 4, w: 56, h: 34, fill: tokens["chart-2"] },
+    { x: 160, y: 4, w: 36, h: 34, fill: tokens["chart-3"] },
+    { x: 102, y: 40, w: 40, h: 20, fill: tokens["chart-4"] },
+    { x: 144, y: 40, w: 52, h: 20, fill: tokens["chart-5"] },
+  ];
+  return (
+    <Stage>
+      {tiles.map((t, i) => (
+        <Rect key={i} x={t.x} y={t.y} width={t.w} height={t.h} rx={3} fill={t.fill} />
+      ))}
+    </Stage>
+  );
+}
+
 export const CHARTS_TILES: CatTile[] = [
   { title: "Chart", href: "/components/chart", Preview: BarsPreview },
   { title: "LineChart", href: "/components/line-chart", Preview: LinePreview },
@@ -498,4 +516,5 @@ export const CHARTS_TILES: CatTile[] = [
   { title: "RadialBarChart", href: "/components/radial-bar-chart", Preview: RadialBarPreview },
   { title: "FunnelChart", href: "/components/funnel-chart", Preview: FunnelPreview },
   { title: "RadarChart", href: "/components/radar-chart", Preview: RadarPreview },
+  { title: "Treemap", href: "/components/treemap", Preview: TreemapPreview },
 ];

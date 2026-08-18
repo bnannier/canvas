@@ -613,6 +613,11 @@
             "slug": "radar-chart",
             "label": "RadarChart",
             "icon": "hexagon"
+          },
+          {
+            "slug": "treemap",
+            "label": "Treemap",
+            "icon": "layout-grid"
           }
         ]
       },

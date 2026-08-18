@@ -724,6 +724,13 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "treemap",
+    name: "Treemap",
+    description: "Squarified value tiles: each datum's area is proportional to its value, labeled when the tile fits it.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",
