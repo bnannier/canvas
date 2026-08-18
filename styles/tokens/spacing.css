@@ -16,4 +16,11 @@
 
   /* Platform minimum touch targets: HIG 44pt, Material 3 48dp. */
   --target-ios:44px;--target-android:48px;
+
+  /* Z-index reserves. The scale is deliberately shallow — three levels, and every
+     overlay shares the top one rather than escalating into magic numbers.
+     10 = in-component layering (input addons, button-group overlaps);
+     40 = an open dropdown; 50 = every overlay (popover, menu, select, dialog,
+     drawer, sheet, command, toast). Nothing goes past 50. */
+  --z-raised:10 /* @kind other */;--z-dropdown:40 /* @kind other */;--z-overlay:50 /* @kind other */;
 }
