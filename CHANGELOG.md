@@ -1,5 +1,39 @@
 # @nannier/canvas
 
+## 2.25.0
+
+### Minor Changes
+
+- a688631: BoxPlot: a new chart component for comparing distributions. Each `data` category carries raw `values`; the chart computes the Tukey five-number summary (quartiles by linear interpolation, whiskers at the most extreme data inside the 1.5 IQR fences, outliers beyond) and draws the box, whisker spine with caps, median line, and hollow outlier dots per category on the cartesian frame, with the y domain hugging whisker ends and outliers rather than zero. Scrubbing a category flags Max/Q3/Median/Q1/Min and dims the others, with deduped announcements; selection is controlled or uncontrolled as on every cartesian chart. The tone axis resolves success > destructive (default primary); `compact`, `hideGrid`, `hideAxes`, and `formatValue` behave as elsewhere. Minor because it ships a new user-visible chart component, `BoxPlot`, exported from `@nannier/canvas` (with the `BoxSample` type); no existing API changes. Like `Chart` it is a Shared platform treatment (identical on iOS, Android, and the web). Accessibility: the plot's name gives each category its full summary ("us-east: median 46, quartiles 42 to 49, range 38 to 58, 1 outlier"). devWarns cover empty `data` and categories with fewer than 5 finite samples.
+- a688631: Histogram: a new chart component for auto-binned frequency distributions. Pass raw sample `values`; the chart bins them into nice-edged uniform buckets (Sturges' rule by default, `bins` to override) and draws contiguous top-rounded bars on the cartesian frame's numeric x axis, with bars and press/scrub hit-testing both going through the frame's x scale (the frame nices the numeric domain, so bins neither start at pixel 0 nor tile the plot). Press or drag-scrub a bar to flag its range and count, with deduped announcements; selection is controlled via `selected`/`onSelect` or uncontrolled via `defaultSelected`, and the other bars dim while one is inspected. The tone axis resolves success > destructive (default primary); `compact`, `hideGrid`, `hideAxes`, and `formatValue` behave as on the other cartesian charts, with `formatValue` shaping bin edges in ticks, the flag, and the accessible name. Minor because it ships a new user-visible chart component, `Histogram`, exported from `@nannier/canvas`; no existing API changes. Like `Chart` it is a Shared platform treatment (identical on iOS, Android, and the web). Accessibility: the plot's name lists every bin with its bounds and tally ("Latency ms: 30 samples in 6 bins: 30 to 40 4, ..."). devWarns cover empty `values` and input with no finite samples.
+- a688631: WaterfallChart: a new chart component for the running-total bridge (a P&L walk, a headcount bridge). Each step floats from the running total by its signed `value`; a `total` step draws an absolute bar from zero, either snapshotting the running total (omit `value` or pass 0) or opening/re-basing it to a non-zero `value` (the "Q2 total, then the walk, then Q3 total" authoring shape). The coloring is fixed semantics rather than a prop, so every bridge reads the same way: rises green, falls red, totals the brand primary; hairline connectors link each bar's end to the next bar's start. Scrubbing a step flags its change and running total (totals flag just the total) and dims the others, with deduped announcements; selection is controlled or uncontrolled as on every cartesian chart; `compact`, `hideGrid`, `hideAxes`, and `formatValue` behave as elsewhere. Minor because it ships a new user-visible chart component, `WaterfallChart`, exported from `@nannier/canvas` (with the `WaterfallStep` type); no existing API changes. Like `Chart` it is a Shared platform treatment (identical on iOS, Android, and the web). Accessibility: the plot's name walks the bridge ("Q2 total 4.2k, New up 980 to 5.2k, Churn down 540 to 4.6k, Q3 total 4.6k"). devWarn on empty `steps`.
+
+### Patch Changes
+
+- a688631: Colors: align every semantic color token in `src/style/tokens.ts` with the web
+  hand-off (`styles/tokens/colors.css`), which is the source of truth for what the
+  tokens ARE. The hand-off authors its values in `oklch()`; the JS token set carried
+  hand-transcribed Tailwind v3 hexes instead, so the two sides had drifted on 13
+  values and a component painted one color natively while the CSS published another.
+  Six of those were plainly visible: `destructive` was `#dc2626` light / `#ef4444`
+  dark against the hand-off's `#e7000b` / `#ff6467`, and `primary` (with `ring`,
+  which tracks it) was `#4f46e5` / `#6366f1` against `#4f39f6` / `#615fff`. The rest
+  were sub-perceptual: `primary-foreground` and `destructive-foreground` resolve to
+  `#fafafa` rather than pure white, and `muted-foreground` and `warning` shift by one
+  or two 8-bit steps. Every token now carries the exact sRGB rendering of its
+  hand-off `oklch()`, so a native build and a web build paint the same pixel.
+
+  The `chart-1..8` series, the fixed brand constants, and the Tailwind v3 `palette`
+  steps were already in agreement and are unchanged.
+
+  `scripts/validate-tokens.ts` now cross-checks the two sides by VALUE, converting
+  each `oklch()` declaration back to sRGB and failing the build on any difference.
+  It previously checked only that every JS token NAME existed in the CSS, which is
+  what let the values drift apart unnoticed.
+
+  Patch, not minor: no new component, API, option, or platform. This corrects
+  existing token values to the specification they were always meant to carry.
+
 ## 2.24.0
 
 ### Minor Changes
