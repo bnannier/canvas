@@ -213,6 +213,27 @@ describe("Calendar", () => {
     expect(placeOverlay(leftCell, { gap, outletWidth: 800 })).toEqual({ left: 20, top: 100 + 36 + gap });
   });
 
+  it("placeOverlay pins the trailing edge for alignEnd, mirrored in a right-to-left locale", async () => {
+    const { placeOverlay } = await import("../src/style/anchored-overlay.tsx");
+    const gap = 4;
+    // A trigger parked near the end of an 800px surface.
+    const trigger = { x: 600, y: 40, width: 120, height: 32 };
+    const top = 40 + 32 + gap;
+    // Left-to-right: trailing is the physical right, expressed as the inset from
+    // the outlet's right edge (800 - 720). No card measurement is involved, so
+    // there is no measure-then-shift second pass.
+    expect(placeOverlay(trigger, { alignEnd: true, gap, outletWidth: 800 })).toEqual({ right: 80, top });
+    // Right-to-left mirrors it: trailing is the physical left, i.e. the trigger's x.
+    expect(placeOverlay(trigger, { alignEnd: true, rtl: true, gap, outletWidth: 800 })).toEqual({ left: 600, top });
+    // Leading alignment under RTL pins the physical right for the same reason.
+    expect(placeOverlay(trigger, { rtl: true, gap, outletWidth: 800 })).toEqual({ right: 80, top });
+    // The default (left-to-right, no alignEnd) is untouched: physical left.
+    expect(placeOverlay(trigger, { gap, outletWidth: 800 })).toEqual({ left: 600, top });
+    // Outlet width not measured yet: fall back to the leading anchor rather than
+    // guess an inset the card would then jump out of.
+    expect(placeOverlay(trigger, { alignEnd: true, gap, outletWidth: null })).toEqual({ left: 600, top });
+  });
+
   it("day timeline spans the full day, 12-hour labels by default, and the toggle flips to 24-hour", () => {
     ui(
       <Calendar

@@ -11,10 +11,10 @@ button with `onRemove`, so no call site hand-composes a `borderRadius` +
 Two orthogonal axes drive the look:
 
 - **Color** (pick one; default the neutral tag). A semantic status (`success`,
-  `warning`, `error`, `info`, `neutral`) or a free-form palette hue (`red`,
+  `warning`, `destructive`, `info`, `neutral`) or a free-form palette hue (`red`,
   `orange`, `amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`,
   `blue`, `indigo`, `violet`, `fuchsia`, `purple`, `pink`, `rose`, `gray`). Status
-  names alias a hue (`success` → green, `warning` → amber, `error` → red, `info` →
+  names alias a hue (`success` → green, `warning` → amber, `destructive` → red, `info` →
   blue), so they match Badge and their literal hue. Precedence when more than one is
   set: status names first, then hues in the order above.
 - **Emphasis**. `outline` drops the fill for a border-only chip in the same hue;
@@ -53,7 +53,7 @@ Two orthogonal axes drive the look:
 <Row snug wrap alignCenter>
   <Chip success>Passing</Chip>
   <Chip warning>Flaky</Chip>
-  <Chip error>Failing</Chip>
+  <Chip destructive>Failing</Chip>
   <Chip info>Queued</Chip>
   <Chip neutral>Skipped</Chip>
 </Row>

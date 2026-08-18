@@ -20,9 +20,9 @@ fails only on a difference recorded in neither place, so a hand-off revision sur
 | Present in the kit | 72 |
 | Absent (tracked) | 3 |
 | Hand-off props compared | 719 |
-| Same name, present | 503 |
+| Same name, present | 506 |
 | Settled divergences | 151 |
-| Open gaps (tracked) | 65 |
+| Open gaps (tracked) | 62 |
 | **Unclassified** | **0** |
 
 ## Components absent from the kit
@@ -39,13 +39,11 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 
 | Component | Prop | Planned | What it does in the hand-off |
 |---|---|---|---|
-| `Alert` | `destructive` | phase-2 | Canvas spells this intent `error` here while Button and every chart spell it `destructive`. Phase 2 adds `destructive` and keeps `error` as an alias. |
 | `AreaChart` | `bare` | unscheduled | Drop the chart's card surface so it can embed in an existing one. Canvas charts always paint their own card; ChartFrame gains `bare` in phase 5 but the nine series charts do not. |
 | `CandlestickChart` | `subtitle` | unscheduled | A muted second line under a chart title. Canvas charts carry `title` only. |
 | `CandlestickChart` | `lastPrice` | unscheduled | A dashed last-price rule with a label tab. Canvas has no equivalent marker. |
 | `CandlestickChart` | `crosshair` | unscheduled | A tracking crosshair on hover/scrub. Canvas ships scrub-to-inspect with a value flag instead, which is a different affordance. |
 | `CandlestickChart` | `bare` | unscheduled | Drop the chart's card surface so it can embed in an existing one. Canvas charts always paint their own card; ChartFrame gains `bare` in phase 5 but the nine series charts do not. |
-| `Chip` | `destructive` | phase-2 | Same intent-axis naming split as Alert. Phase 2 adds `destructive` alongside the existing `error`. |
 | `DataTable` | `footer` | unscheduled | A summary/footer row under the body. Canvas has no footer slot. |
 | `DepthChart` | `mid` | unscheduled | The mid-price marker between bid and ask walls. Canvas derives the split but draws no marker. |
 | `DepthChart` | `subtitle` | unscheduled | A muted second line under a chart title. Canvas charts carry `title` only. |
@@ -100,7 +98,6 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `TabBar` | `scrollRef` | unscheduled | The scroll view the bar watches to drive minimizing. |
 | `Textarea` | `helper` | phase-3 | The muted hint line under a field. Only Autocomplete has one today (as `helperText`, unlinked for a11y); Field and the shared message chrome give every field family one. |
 | `Textarea` | `maxLength` | phase-4 | Part of the validation rule chain; Textarea already uses maxLength for `showCount` but not as a reporting rule. |
-| `Toast` | `destructive` | phase-2 | Same intent-axis naming split as Alert and Chip. Phase 2 adds `destructive` alongside the existing `error`. |
 | `Tooltip` | `children` | unscheduled | Wrapping an arbitrary node as the tooltip target. Canvas's Tooltip renders its own trigger from a `trigger` string in one of three flavors (button, icon button, inline word) and cannot attach to a caller's node. |
 | `Tooltip` | `reveal` | unscheduled | Choosing the entrance animation (lift, scale, fade, none). Canvas fixes one reveal. |
 | `Tooltip` | `brisk` | unscheduled | Running the reveal at 90ms instead of 140ms. Canvas fixes the timing on Tooltip (its Reveal component does expose `brisk`). |

@@ -44,10 +44,10 @@ Toast is usually driven imperatively: mount a `<ToastProvider>` near your app ro
 <Toast success message="Profile updated" description="Your changes are now live." action={{ label: "View", onPress: () => {} }} />
 ```
 
-### Error
+### Destructive
 
 ```tsx
-<Toast error message="Upload failed" description="Check your connection and try again." action={{ label: "Retry", onPress: () => {} }} />
+<Toast destructive message="Upload failed" description="Check your connection and try again." action={{ label: "Retry", onPress: () => {} }} />
 ```
 
 ### Warning
@@ -70,7 +70,7 @@ Toast is usually driven imperatively: mount a `<ToastProvider>` near your app ro
 
 ## Do & Don't
 
-**Do** — Keep a toast to one short, plain message (with an optional one-line description), and pair an error or success intent with the matching message.
+**Do** — Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.
 
 ```tsx
 <Toast success message="Copied to clipboard" />

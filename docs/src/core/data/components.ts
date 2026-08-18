@@ -56,7 +56,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "chip",
     name: "Chip",
-    description: "An interactive pill: filter chips, tags, and selectable tokens. A low-emphasis soft-tinted tag (never a saturated button fill), with an optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove. Color is a boolean axis: semantic status (success / warning / error / info / neutral) or a free-form palette hue (red … rose, gray); outline and primary set the emphasis.",
+    description: "An interactive pill: filter chips, tags, and selectable tokens. A low-emphasis soft-tinted tag (never a saturated button fill), with an optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove. Color is a boolean axis: semantic status (success / warning / destructive / info / neutral) or a free-form palette hue (red … rose, gray); outline and primary set the emphasis.",
     category: "Atoms",
   },
 
@@ -231,7 +231,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "alert",
     name: "Alert",
-    description: "Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.",
+    description: "Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.",
     category: "Molecules",
     stageAlign: "start",
   },

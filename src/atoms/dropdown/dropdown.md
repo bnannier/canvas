@@ -104,7 +104,7 @@ Floating menus triggered by a button: actions, options, navigation.
 ### End alignment
 
 ```tsx
-<Row end>
+<Row end style={{ width: 360, maxWidth: "100%" }}>
   <Dropdown
     trigger="Account"
     alignEnd

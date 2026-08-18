@@ -59,6 +59,18 @@ const CASES: SkinCase[] = [
       createElement(mod.Avatar as never, { key: "c" }, "EF"),
     ],
   },
+  {
+    // Opened, so the per-OS pill AND the menu it drives both mount on each platform.
+    name: "AvatarMenu",
+    dir: "atoms/avatar",
+    file: "avatar",
+    props: {
+      open: true,
+      name: "Rachel Chen",
+      email: "rachel@example.com",
+      items: [{ label: "Profile" }, { label: "Sign out", destructive: true }],
+    },
+  },
   { name: "Badge", dir: "atoms/badge", file: "badge", children: "New" },
   { name: "Breadcrumb", dir: "atoms/breadcrumb", file: "breadcrumb", props: { items: ["Home", "Library", "Data"] } },
   { name: "BreadcrumbItem", dir: "atoms/breadcrumb", file: "breadcrumb", props: { current: true }, children: "Home" },

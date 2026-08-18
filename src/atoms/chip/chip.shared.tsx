@@ -82,6 +82,11 @@ export interface ChipProps {
   //  - Semantic status (matches Badge): success / warning / error / info / neutral.
   success?: boolean;
   warning?: boolean;
+  /** The danger tone. This is the name the intent axis uses across the kit (Button,
+   *  AlertDialog, and every chart) and the one the design hand-off uses here too. */
+  destructive?: boolean;
+  /** @deprecated Use `destructive`. Kept working so existing call sites are untouched;
+   *  it resolves to exactly the same hue. */
   error?: boolean;
   info?: boolean;
   neutral?: boolean;
@@ -134,7 +139,7 @@ function colorOf(p: ChipProps): { hue: Hue | null; mutedGray: boolean } {
   // success badge cannot end up on different greens.
   if (p.success) return { hue: statusHues.success, mutedGray: false };
   if (p.warning) return { hue: statusHues.warning, mutedGray: false };
-  if (p.error) return { hue: statusHues.error, mutedGray: false };
+  if (p.destructive || p.error) return { hue: statusHues.error, mutedGray: false };
   if (p.info) return { hue: statusHues.info, mutedGray: false };
   if (p.neutral) return { hue: null, mutedGray: true };
   for (const h of HUES) if ((p as Record<string, unknown>)[h]) return { hue: h, mutedGray: false };

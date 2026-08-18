@@ -6,6 +6,7 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
@@ -93,6 +94,30 @@ describe("web a11y state (aria aliases for RNW-dropped accessibilityState)", () 
   it("Dropdown trigger exposes aria-expanded (collapsed by default)", () => {
     const { container } = ui(<Dropdown label="Menu" items={[{ label: "One" }, { label: "Two" }]} />);
     expect(attr(container, "[aria-expanded]", "aria-expanded")).toBe("false");
+  });
+
+  it("Dropdown trigger announces the menu popup, and aria-disabled when it is inert", () => {
+    const items = [{ label: "One" }, { label: "Two" }];
+    const enabled = ui(<Dropdown trigger="Menu" items={items} />);
+    expect(attr(enabled.container, "[aria-expanded]", "aria-haspopup")).toBe("menu");
+    // Not disabled: the alias is absent rather than announced as false.
+    expect(attr(enabled.container, "[aria-expanded]", "aria-disabled")).toBeNull();
+    cleanup();
+
+    const off = ui(<Dropdown trigger="Menu" disabled items={items} />);
+    expect(attr(off.container, "[aria-expanded]", "aria-disabled")).toBe("true");
+    expect(attr(off.container, "[aria-expanded]", "aria-expanded")).toBe("false");
+  });
+
+  it("AvatarMenu's pill names the account and announces a menu popup", () => {
+    const { container } = ui(
+      <AvatarMenu name="Rachel Chen" email="rachel@example.com" items={[{ label: "Profile" }]} />,
+    );
+    // The trigger is a button that announces the popup it opens and its state.
+    expect(attr(container, '[aria-haspopup="menu"]', "aria-expanded")).toBe("false");
+    // The capsule carries the account's name, so the button it labels reads as the
+    // person rather than an unnamed "button".
+    expect(attr(container, "[aria-label]", "aria-label")).toBe("Rachel Chen, rachel@example.com");
   });
 
   it("Chip (tappable) forwards aria-pressed reflecting the active (primary) tone", () => {

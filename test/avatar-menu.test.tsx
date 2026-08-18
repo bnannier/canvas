@@ -3,6 +3,9 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
+import { webMenuSkin, iosMenuSkin, androidMenuSkin } from "../src/atoms/avatar/avatar.styles.ts";
+import { lightColors } from "../src/style/tokens.ts";
+import { alpha } from "../src/style/color.ts";
 import type { DropdownItem } from "../src/atoms/dropdown/dropdown.tsx";
 
 // AvatarMenu: the account identity pill (avatar + name/email + chevron) wired to
@@ -152,5 +155,61 @@ describe("AvatarMenu accessibility and disabled", () => {
     const { container } = ui(<AvatarMenu open disabled name={NAME} items={ITEMS} />);
     expect(container.querySelector('[role="menu"]')).toBeNull();
     expect(trigger(container).getAttribute("aria-expanded")).toBe("false");
+  });
+});
+
+describe("AvatarMenu per-OS pill metrics", () => {
+  // The identity pill's numbers are the web hand-off's --p-idpill-* tokens
+  // (styles/tokens/platforms.css), transcribed into the RN skins so native reads
+  // them from the skin and never from the CSS. These lock the transcription for
+  // all three platforms without needing a native render.
+
+  it("web: a 32px secondary capsule with a hairline that only colours when open", () => {
+    expect(webMenuSkin.menuPill).toMatchObject({ height: 32, gap: 8, paddingStart: 4, paddingEnd: 10, borderWidth: 1 });
+    expect(webMenuSkin.menuPillName).toMatchObject({ fontSize: 13, lineHeight: 16, fontWeight: "500" });
+    // Tracking is 0 on web, so the skin sets none at all.
+    expect(webMenuSkin.menuPillName.letterSpacing).toBeUndefined();
+
+    const closed = webMenuSkin.menuPillFill(lightColors, false);
+    expect(closed.backgroundColor).toBe(lightColors.secondary);
+    expect(closed.borderColor).toBe("transparent");
+
+    const open = webMenuSkin.menuPillFill(lightColors, true);
+    expect(open.borderColor).toBe(lightColors.input);
+    // The open fill is `secondary` lifted 6% toward `foreground` (the CSS
+    // color-mix, computed here instead of with a web colour function).
+    expect(open.backgroundColor).toBe("rgb(230, 230, 231)");
+  });
+
+  it("iOS: a 36pt capsule whose border hairline is always visible", () => {
+    expect(iosMenuSkin.menuPill).toMatchObject({ height: 36, gap: 8, paddingStart: 5, paddingEnd: 12, borderWidth: 1 });
+    expect(iosMenuSkin.menuPillName).toMatchObject({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 });
+
+    const closed = iosMenuSkin.menuPillFill(lightColors, false);
+    expect(closed.backgroundColor).toBe("transparent");
+    expect(closed.borderColor).toBe(lightColors.border);
+    expect(iosMenuSkin.menuPillFill(lightColors, true).backgroundColor).toBe(lightColors.secondary);
+  });
+
+  it("Android: a 40dp tonal pill with no visible outline", () => {
+    expect(androidMenuSkin.menuPill).toMatchObject({ height: 40, gap: 8, paddingStart: 6, paddingEnd: 14, borderWidth: 1 });
+    expect(androidMenuSkin.menuPillName).toMatchObject({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 });
+
+    const closed = androidMenuSkin.menuPillFill(lightColors, false);
+    // primary at 12% closed, 20% open: the M3 state-layer model.
+    expect(closed.backgroundColor).toBe(alpha(lightColors.primary, 0.12));
+    expect(closed.borderColor).toBe("transparent");
+    expect(androidMenuSkin.menuPillFill(lightColors, true).backgroundColor).toBe(alpha(lightColors.primary, 0.2));
+  });
+
+  it("shares the 11/14 secondary line and the 14px chevron across platforms", () => {
+    for (const skin of [webMenuSkin, iosMenuSkin, androidMenuSkin]) {
+      expect(skin.menuPillSecondary).toMatchObject({ fontSize: 11, lineHeight: 14 });
+      expect(skin.menuChevronSize).toBe(14);
+    }
+    // The secondary line follows its platform's name tracking.
+    expect(webMenuSkin.menuPillSecondary.letterSpacing).toBeUndefined();
+    expect(iosMenuSkin.menuPillSecondary.letterSpacing).toBe(-0.15);
+    expect(androidMenuSkin.menuPillSecondary.letterSpacing).toBe(0.1);
   });
 });
