@@ -1002,5 +1002,14 @@
       "plannedIn": "phase-6",
       "reason": "The rearrangeable widget wall on a fixed column grid with legal-fraction spans and row promotion. Canvas has no span-based grid."
     }
+  },
+  "metricGaps": {
+    "avatar-size-scale": {
+      "component": "Avatar",
+      "canvas": "tiny 24 / small 28 / default 40 / large 48",
+      "handoff": "small 24 / default 32 / large 40",
+      "plannedIn": "unscheduled",
+      "reason": "The whole scale sits one step high. The prop check cannot see this: `small` and `large` exist on both sides, so it reports them satisfied while the diameters differ. Re-scaling shipped avatars is a visual break for every consumer, so it is tracked rather than done; the `tiny` 24 step was added for the AvatarMenu pill inset without moving the rest."
+    }
   }
 }
