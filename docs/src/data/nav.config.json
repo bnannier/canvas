@@ -543,6 +543,16 @@
             "slug": "heatmap",
             "label": "Heatmap",
             "icon": "layers"
+          },
+          {
+            "slug": "bar-list",
+            "label": "BarList",
+            "icon": "list-ordered"
+          },
+          {
+            "slug": "metric-breakdown",
+            "label": "MetricBreakdown",
+            "icon": "percent"
           }
         ]
       },
