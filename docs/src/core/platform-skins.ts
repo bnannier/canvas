@@ -53,6 +53,12 @@ import { Calendar as CalendarIOS } from "../../../src/organisms/calendar/calenda
 import { Calendar as CalendarAndroid } from "../../../src/organisms/calendar/calendar.android.js";
 import { Badge as BadgeIOS } from "../../../src/atoms/badge/badge.ios.js";
 import { Badge as BadgeAndroid } from "../../../src/atoms/badge/badge.android.js";
+import { Swatch as SwatchIOS } from "../../../src/atoms/swatch/swatch.ios.js";
+import { Swatch as SwatchAndroid } from "../../../src/atoms/swatch/swatch.android.js";
+import { Board as BoardIOS } from "../../../src/organisms/board/board.ios.js";
+import { Board as BoardAndroid } from "../../../src/organisms/board/board.android.js";
+import { Backdrop as BackdropIOS } from "../../../src/organisms/backdrop/backdrop.ios.js";
+import { Backdrop as BackdropAndroid } from "../../../src/organisms/backdrop/backdrop.android.js";
 import { Avatar as AvatarIOS, AvatarGroup as AvatarGroupIOS, AvatarMenu as AvatarMenuIOS } from "../../../src/atoms/avatar/avatar.ios.js";
 import { Avatar as AvatarAndroid, AvatarGroup as AvatarGroupAndroid, AvatarMenu as AvatarMenuAndroid } from "../../../src/atoms/avatar/avatar.android.js";
 import { Breadcrumb as BreadcrumbIOS } from "../../../src/atoms/breadcrumb/breadcrumb.ios.js";
@@ -130,6 +136,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS, Toast: ToastIOS, ToastProvider: ToastProviderIOS, useToast: useToastIOS,
     Chip: ChipIOS, Emblem: EmblemIOS,
+    Swatch: SwatchIOS, Board: BoardIOS, Backdrop: BackdropIOS,
   },
   android: {
     Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
@@ -148,5 +155,6 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,
     Chip: ChipAndroid, Emblem: EmblemAndroid,
+    Swatch: SwatchAndroid, Board: BoardAndroid, Backdrop: BackdropAndroid,
   },
 };
