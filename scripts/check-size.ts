@@ -35,9 +35,13 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 
 // The shipped JavaScript budget: the whole kit, bundled with react / react-native /
 // react-native-svg and the optional peers externalized (what a consumer's bundler
-// resolves from the outside), minified and gzipped. Measured at ~104KB gzip; the
-// budget is set with headroom to allow growth but catch an accidental doubling.
-const JS_MAX_GZIP = 138_240; // 135 KB
+// resolves from the outside), minified and gzipped. Raised from 135KB for the
+// chart-buildout tier (13 further chart components beyond BarList and
+// MetricBreakdown, each ~0.7-1KB gzip): measured 137.4KB gzip with the first two
+// landed, so the old cap left no room for the planned roster. 160KB keeps the
+// same intent: room for the deliberate growth, tight enough to catch an
+// accidental doubling or a dependency creeping into the bundle.
+const JS_MAX_GZIP = 163_840; // 160 KB
 
 // The optional/required peers a consumer resolves from the outside, excluded from
 // the kit's own JS size the same way their `import`s leave the bundle.
