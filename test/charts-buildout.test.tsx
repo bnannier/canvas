@@ -4,7 +4,10 @@ import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { BarList } from "../src/charts/bar-list/bar-list.tsx";
 import { MetricBreakdown } from "../src/charts/metric-breakdown/metric-breakdown.tsx";
+import { UptimeBar } from "../src/charts/uptime-bar/uptime-bar.tsx";
+import { ServiceHealthList } from "../src/charts/service-health-list/service-health-list.tsx";
 import { rowAccessibleLabel, rowFill } from "../src/charts/shared/breakdown-rows.tsx";
+import { periodStatus, statusSummary } from "../src/charts/shared/status-strip.tsx";
 import { lightColors } from "../src/style/tokens.ts";
 
 // The chart-buildout card/radial/layout charts: behavior and a11y specs.
@@ -171,5 +174,80 @@ describe("MetricBreakdown", () => {
   it("a single-point spark is skipped rather than drawn", () => {
     const { container } = ui(<MetricBreakdown value="1" label="Requests" spark={[42]} />);
     expect(imgLabels(container)).toEqual([]);
+  });
+});
+
+describe("status strip (pure helpers)", () => {
+  it("periodStatus resolves down > degraded > unknown > operational", () => {
+    expect(periodStatus({})).toBe("operational");
+    expect(periodStatus({ unknown: true })).toBe("unknown");
+    expect(periodStatus({ degraded: true, unknown: true })).toBe("degraded");
+    expect(periodStatus({ down: true, degraded: true, unknown: true })).toBe("down");
+  });
+
+  it("statusSummary tallies statuses and omits zero counts", () => {
+    const periods = [{}, {}, { degraded: true }, { down: true }, {}];
+    expect(statusSummary(periods, "API uptime")).toBe("API uptime, 5 periods: 3 operational, 1 degraded, 1 down");
+    expect(statusSummary([{}], undefined)).toBe("Uptime, 1 period: 1 operational");
+    expect(statusSummary([], "X")).toBe("X, 0 periods");
+  });
+});
+
+describe("UptimeBar", () => {
+  it("the strip is one image named by the status tally", () => {
+    const { container } = ui(<UptimeBar label="API uptime" periods={[{}, { down: true }, {}]} />);
+    expect(imgLabels(container)).toContain("API uptime, 3 periods: 2 operational, 1 down");
+  });
+
+  it("caption and edge labels are real text outside the image", () => {
+    const { getByText } = ui(
+      <UptimeBar label="API" caption="99.98% uptime" startLabel="90 days ago" endLabel="Today" periods={[{}]} />,
+    );
+    expect(getByText("99.98% uptime")).toBeTruthy();
+    expect(getByText("90 days ago")).toBeTruthy();
+    expect(getByText("Today")).toBeTruthy();
+    // None of them sit inside the presentational strip image.
+    expect(getByText("Today").closest('[role="img"]')).toBeNull();
+  });
+});
+
+describe("ServiceHealthList", () => {
+  const items = [
+    { label: "API", detail: "99.98%" },
+    { label: "Dashboard", detail: "99.92%", degraded: true },
+    { label: "Webhooks", down: true, periods: [{}, { down: true }] },
+  ];
+
+  it("rows compose label, status, and detail into one accessible name", () => {
+    const { container } = ui(<ServiceHealthList title="System status" items={items} />);
+    const labels = imgLabels(container);
+    expect(labels).toContain("API: operational, 99.98%");
+    expect(labels).toContain("Dashboard: degraded, 99.92%");
+    expect(labels).toContain("Webhooks: down");
+  });
+
+  it("an embedded strip carries its own tallying summary", () => {
+    const { container } = ui(<ServiceHealthList items={items} />);
+    expect(imgLabels(container)).toContain("Webhooks, 2 periods: 1 operational, 1 down");
+  });
+
+  it("compact hides the embedded strips", () => {
+    const { container } = ui(<ServiceHealthList compact items={items} />);
+    expect(imgLabels(container)).not.toContain("Webhooks, 2 periods: 1 operational, 1 down");
+  });
+
+  it("onPressItem turns rows into buttons reporting their index", () => {
+    const pressed: number[] = [];
+    const { container } = ui(<ServiceHealthList items={items} onPressItem={(i) => pressed.push(i)} />);
+    const buttons = [...container.querySelectorAll('[role="button"]')];
+    expect(buttons.length).toBe(3);
+    fireEvent.click(buttons[2]);
+    expect(pressed).toEqual([2]);
+    expect(buttons[1].getAttribute("aria-label")).toBe("Dashboard: degraded, 99.92%");
+  });
+
+  it("a title names the root group as a chart", () => {
+    const { container } = ui(<ServiceHealthList title="System status" items={items} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("System status chart");
   });
 });

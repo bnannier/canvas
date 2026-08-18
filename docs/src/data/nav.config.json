@@ -553,6 +553,16 @@
             "slug": "metric-breakdown",
             "label": "MetricBreakdown",
             "icon": "percent"
+          },
+          {
+            "slug": "uptime-bar",
+            "label": "UptimeBar",
+            "icon": "activity"
+          },
+          {
+            "slug": "service-health-list",
+            "label": "ServiceHealthList",
+            "icon": "heart-pulse"
           }
         ]
       },

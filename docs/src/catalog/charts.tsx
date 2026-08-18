@@ -243,6 +243,39 @@ function MetricBreakdownPreview() {
   );
 }
 
+function UptimeBarPreview() {
+  const { tokens } = useTheme();
+  // A pill strip with one degraded and one down period among operational.
+  const status = (i: number) => (i === 9 ? alpha(tokens.destructive, 0.9) : i === 14 ? alpha(tokens["chart-3"], 0.9) : alpha(tokens["chart-2"], 0.8));
+  return (
+    <Stage>
+      {Array.from({ length: 24 }, (_, i) => (
+        <Rect key={i} x={4 + i * 8} y={22} width={6} height={20} rx={1.5} fill={status(i)} />
+      ))}
+    </Stage>
+  );
+}
+
+function ServiceHealthPreview() {
+  const { tokens } = useTheme();
+  const rows = [
+    { dot: alpha(tokens["chart-2"], 0.9), y: 8 },
+    { dot: alpha(tokens["chart-3"], 0.9), y: 28 },
+    { dot: alpha(tokens["chart-2"], 0.9), y: 48 },
+  ];
+  return (
+    <Stage>
+      {rows.map((r, i) => (
+        <G key={i}>
+          <Circle cx={12} cy={r.y + 4} r={4} fill={r.dot} />
+          <Rect x={24} y={r.y} width={58} height={7} rx={2} fill={alpha(tokens["muted-foreground"], 0.5)} />
+          <Rect x={W - 44} y={r.y} width={36} height={7} rx={2} fill={alpha(tokens["muted-foreground"], 0.25)} />
+        </G>
+      ))}
+    </Stage>
+  );
+}
+
 export const CHARTS_TILES: CatTile[] = [
   { title: "Chart", href: "/components/chart", Preview: BarsPreview },
   { title: "LineChart", href: "/components/line-chart", Preview: LinePreview },
@@ -256,4 +289,6 @@ export const CHARTS_TILES: CatTile[] = [
   { title: "Heatmap", href: "/components/heatmap", Preview: HeatmapPreview },
   { title: "BarList", href: "/components/bar-list", Preview: BarListPreview },
   { title: "MetricBreakdown", href: "/components/metric-breakdown", Preview: MetricBreakdownPreview },
+  { title: "UptimeBar", href: "/components/uptime-bar", Preview: UptimeBarPreview },
+  { title: "ServiceHealthList", href: "/components/service-health-list", Preview: ServiceHealthPreview },
 ];

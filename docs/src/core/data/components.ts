@@ -640,6 +640,20 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "uptime-bar",
+    name: "UptimeBar",
+    description: "The statuspage strip: per-period status pills (operational, degraded, down, unknown) with a summary caption and edge labels.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "service-health-list",
+    name: "ServiceHealthList",
+    description: "Per-service status rows: a status dot, the service name, a right-aligned detail, and an embedded mini uptime strip.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",
