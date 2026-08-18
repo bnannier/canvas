@@ -2,15 +2,16 @@ import { View, Text, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable }
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 
-// The scheme + frost toggles, shown always-visible in the native Android AND iOS top bars
+// The scheme + surface toggles, shown always-visible in the native Android AND iOS top bars
 // (`compact`, placed beside the hamburger) and in the mobile web drill-down sheet's footer
-// (labeled). The compact form always offers the Solid/Frost toggle (both looks are worth
+// (labeled). The compact form always offers the Solid/Glass toggle (both looks are worth
 // switching between even where glass is the OS default); the labeled form only shows it where
-// glass is opt-in.
+// glass is opt-in. The label names the surface MODE, not the material a given platform
+// happens to paint for it (Liquid Glass, a lens, or a frost).
 export function ThemeToggles({ compact = false }: { compact?: boolean }) {
   const { tokens } = useTheme();
   const { scheme, surface, toggleScheme, setSurface } = useDocsTheme();
-  const frostAvailable = !liquidGlassAvailable();
+  const glassAvailable = !liquidGlassAvailable();
 
   const schemeToggle = (
     <Button
@@ -25,9 +26,9 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
 
   // Compact form (the native Android top app bar): icon-only controls so the app-bar
   // title keeps its room. The surface toggle is a single layers icon that flips
-  // Solid<->Frost, tinted primary when frost is on and muted when solid so its state
+  // Solid<->Glass, tinted primary when glass is on and muted when solid so its state
   // reads at a glance; the scheme is the shared sun/moon icon. (The wide labeled
-  // Solid/Frost segmented control is kept for the roomier surfaces below.)
+  // Solid/Glass segmented control is kept for the roomier surfaces below.)
   if (compact) {
     return (
       <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
@@ -35,7 +36,7 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
           ghost
           icon
           small
-          accessibilityLabel={surface === "glass" ? "Frost surface on; tap for solid" : "Solid surface; tap for frost"}
+          accessibilityLabel={surface === "glass" ? "Glass surface on; tap for solid" : "Solid surface; tap for glass"}
           iconLeft={surface === "glass" ? <Icon layers size={16} primary /> : <Icon layers size={16} muted />}
           onPress={() => setSurface(surface === "glass" ? "solid" : "glass")}
         />
@@ -48,11 +49,11 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
     <>
       <Text style={{ fontFamily: geist("500"), fontSize: 13, color: tokens["muted-foreground"] }}>Appearance</Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        {frostAvailable ? (
+        {glassAvailable ? (
           <ButtonGroup
             segmented
             small
-            items={["Solid", "Frost"]}
+            items={["Solid", "Glass"]}
             active={surface === "solid" ? 0 : 1}
             onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
           />

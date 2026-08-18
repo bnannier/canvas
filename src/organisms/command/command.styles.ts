@@ -263,7 +263,7 @@ export const iosSkin: CommandSkin = {
   }),
   // iOS floating functional surfaces read rounder and smooth-cornered: a larger
   // 16pt radius with the continuous (superellipse) corner curve (borderCurve is a
-  // no-op on web/Android). GlassSurface strips the border under Frost.
+  // no-op on web/Android). GlassSurface strips the border under glass.
   cardShape: { borderRadius: 16, borderCurve: "continuous" },
   // HIG minimum interactive target 44x44pt.
   triggerMinHeight: 44,

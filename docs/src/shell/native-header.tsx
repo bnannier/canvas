@@ -117,7 +117,7 @@ export function NativeHeader() {
         options={{
           headerTitle: title,
           // Two trailing items: the section / site-map menu (a native UIMenu), and the kit
-          // appearance toggles (frost + light/dark) beside it — the SAME ThemeToggles the
+          // appearance toggles (surface + light/dark) beside it — the SAME ThemeToggles the
           // Android bar shows. They ride the native bar as a `type:"custom"` item: a React
           // `headerRight` view is dropped when native items are present, so `custom` is how a
           // React element composes alongside the native menu (and it is exempt from iOS 26's
@@ -136,7 +136,7 @@ export function NativeHeader() {
     );
   }
 
-  // Android: a Material top app bar carrying the appearance controls (Solid/Frost + light/dark)
+  // Android: a Material top app bar carrying the appearance controls (Solid/Glass + light/dark)
   // always-visible in the trailing slot, matching the web's top-right controls, followed by the
   // section-menu hamburger. The hamburger opens the responsive Sidebar as an M3 start-edge
   // navigation drawer (the same kit Sidebar the desktop web shows as a rail, drilled down for the

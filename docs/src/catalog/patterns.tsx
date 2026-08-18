@@ -169,7 +169,7 @@ function FormValidationPreview() {
   );
 }
 
-// 4. Glass Surface — a frosted card floating over a soft warm/cool gradient wash.
+// 4. Glass Surface — a glass card floating over a soft warm/cool gradient wash.
 function GlassSurfacePreview() {
   return (
     <View
@@ -212,7 +212,7 @@ function GlassSurfacePreview() {
           justifyContent: "center",
         }}
       >
-        <Text style={{ fontFamily: geist("500"), fontSize: 10, color: "hsl(220, 30%, 20%)" }}>Frosted</Text>
+        <Text style={{ fontFamily: geist("500"), fontSize: 10, color: "hsl(220, 30%, 20%)" }}>Glass</Text>
       </View>
     </View>
   );
