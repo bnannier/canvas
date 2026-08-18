@@ -165,6 +165,8 @@ const CASES: SkinCase[] = [
   { name: "MetricBreakdown", dir: "charts/metric-breakdown", file: "metric-breakdown", props: { value: "12.4k", label: "Requests", breakdown: [{ label: "GET", value: 8 }, { label: "POST", value: 4 }] } },
   { name: "UptimeBar", dir: "charts/uptime-bar", file: "uptime-bar", props: { label: "Uptime", periods: [{}, { down: true }, { degraded: true }] } },
   { name: "ServiceHealthList", dir: "charts/service-health-list", file: "service-health-list", props: { title: "Status", items: [{ label: "API" }, { label: "Web", degraded: true }] } },
+  { name: "BulletChart", dir: "charts/bullet-chart", file: "bullet-chart", props: { title: "Targets", data: [{ label: "Revenue", value: 275, target: 300, ranges: [200, 350] }] } },
+  { name: "ProgressRing", dir: "charts/progress-ring", file: "progress-ring", props: { value: 72, label: "Complete" } },
   { name: "LineChart", dir: "charts/line-chart", file: "line-chart", props: { title: "Signups", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Web", values: [1, 3, 2] }, { label: "Mobile", values: [2, 1, 4] }] } },
   { name: "PieChart", dir: "charts/pie-chart", file: "pie-chart", props: { label: "Traffic", donut: true, slices: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "ScatterPlot", dir: "charts/scatter-plot", file: "scatter-plot", props: { title: "Load vs latency", series: [{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }] } },

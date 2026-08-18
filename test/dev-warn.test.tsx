@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -102,6 +102,23 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("the list renders with no rows")).toBe(true);
   });
 
+  it("BulletChart warns on out-of-order range bounds", () => {
+    ui(<BulletChart data={[{ label: "A", value: 1, ranges: [300, 200] }]} />);
+    expect(sawWarning("<BulletChart />")).toBe(true);
+    expect(sawWarning("`ranges` must ascend")).toBe(true);
+  });
+
+  it("BulletChart warns when data exceeds an explicit max", () => {
+    ui(<BulletChart max={100} data={[{ label: "A", value: 140 }]} />);
+    expect(sawWarning("exceeds `max`")).toBe(true);
+  });
+
+  it("ProgressRing warns on an out-of-range value but still clamps it", () => {
+    const { getByText } = ui(<ProgressRing value={-20} />);
+    expect(sawWarning("<ProgressRing />")).toBe(true);
+    expect(getByText("0%")).toBeDefined();
+  });
+
   it("stays silent for valid data across every wired component", () => {
     ui(
       <>
@@ -114,6 +131,8 @@ describe("component data-misuse warnings", () => {
         <MetricBreakdown value="1" label="Requests" spark={[1, 2]} breakdown={[{ label: "a", value: 1 }]} />
         <UptimeBar periods={[{}, { down: true }]} />
         <ServiceHealthList items={[{ label: "API" }]} />
+        <BulletChart data={[{ label: "A", value: 1, target: 2, ranges: [1, 2] }]} />
+        <ProgressRing value={72} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);

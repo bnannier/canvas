@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": minor
+---
+
+ProgressRing: a new chart component, the full-circle sibling of the semicircular Gauge. A muted track ring and a tone-colored value arc revealed clockwise from 12 o'clock with rounded caps (the ring is a stroked path built from two half arcs, because an SVG circle's dash origin sits at 3 o'clock), the whole-percent readout centered inside, and an optional `label` below the graphic. The API mirrors Gauge exactly: `value` 0-100 (clamped with a devWarn outside the range), the tone axis `primary` / `success` / `warning` / `destructive` with precedence success > warning > destructive, and the same rounding split (the readout and the accessible name round while the arc keeps the fraction). `compact` shrinks the graphic from 120 to 96; per-instance sizing remains a separate, deferred item, as on Gauge. Minor because it ships a new user-visible chart component, `ProgressRing`, exported from `@nannier/canvas`; no existing API changes. Like `Gauge` it is a Shared platform treatment (identical on iOS, Android, and the web). The accessible name announces "label: N%" with the same number the eye sees.

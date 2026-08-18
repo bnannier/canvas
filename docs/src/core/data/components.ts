@@ -654,6 +654,20 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "bullet-chart",
+    name: "BulletChart",
+    description: "Goal-attainment rows: qualitative background bands, the measure bar, and a target tick, all on one shared scale.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "progress-ring",
+    name: "ProgressRing",
+    description: "A full-circle completion ring: muted track, tone-colored arc from 12 o'clock, and the percent readout centered inside.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",
