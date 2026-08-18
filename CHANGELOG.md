@@ -1,5 +1,37 @@
 # @nannier/canvas
 
+## 2.32.0
+
+### Minor Changes
+
+- 072a91e: `Avatar` gains a `tiny` size step, and `AvatarMenu` now hangs its menu from the pill's trailing edge by default.
+
+  New user-visible capabilities (the reason this is a minor, not a patch): a fourth boolean on Avatar's size axis, and a new `alignStart` boolean on AvatarMenu.
+
+  - **`Avatar tiny`** is the 24px disc, joining `small` (28), the default (40), and `large` (48). Precedence on the axis is `tiny` > `small` > `large`. It keeps the 12px initials rather than scaling on down, because a proportional 10px pair of initials stops reading at that diameter. `AvatarGroup` takes it too, with its own overlap row, so a stack of tiny avatars stays uniform.
+  - **`AvatarMenu` uses it for the pill's disc**, which is the fix this step exists for: the capsule is 32 / 36 / 40 tall on web / iOS / Android, so a 24px disc restores the intended 4 / 6 / 8 inset. With the 28px `small` disc it had been using, the web pill left only 2 and read as a tight ring around the photo.
+  - **`AvatarMenu alignStart`** hangs the menu from the pill's leading edge.
+
+  Behavior change to note when upgrading: `AvatarMenu`'s alignment default is now the TRAILING edge, where it was the leading edge in 2.30.0. A topbar parks the account pill at the trailing edge, and a leading-aligned menu there runs off the surface, so the trailing edge is what the design calls for and what almost every call site was already passing `alignEnd` to get. `alignEnd` still works and still means the same thing (it now spells out the default); pass the new `alignStart` for the old behavior. Plain `Dropdown` is untouched and still defaults to its leading edge.
+
+  Also corrected against the design hand-off: the pill's open fill on web is now the real `color-mix(in oklab, ...)` (computed through a new `mixOklab` colour helper) instead of an sRGB channel lerp that landed 2/255 per channel too light in both schemes, and a disabled `Dropdown` trigger or row on iOS now dims to 0.4, the platform's own disabled opacity, instead of the web's 0.5.
+
+### Patch Changes
+
+- 072a91e: `AvatarMenu` opens its own platform's menu, and stands off by the hand-off's 6px.
+
+  The pill rendered per platform while the menu under it did not: `avatar-menu.shared.tsx` imported `Dropdown` from the barrel, and a bare import resolves the web module in a browser bundler, so the docs' iOS and Android rows opened the web menu. Measured on the page before the fix, all three rows reported the web row metrics (0 min-height, 6px/8px padding, 2px row radius) where the plain Dropdown page reported three distinct skins (44pt iOS rows, 48dp Android, web). `createAvatarMenu` now takes the Dropdown to render, and each avatar platform entry builds it from that platform's own dropdown skin, the same injection `createEmptyState(iosSkin, ButtonIOS)` already uses. On a device Metro resolved this correctly either way, so this was the web preview and any web consumer, not native.
+
+  The menu's standoff moves onto `DropdownSkin` as `menuGap` (4 on all three skins, the value the shell used to hard-code) and the account pill's menu is built at the hand-off's 6. It is skin-owned deliberately: a caller-facing pixel spacing prop on a public component is the re-spacing escape hatch the kit bans, and "6 instead of 4" has no honest boolean name.
+
+- 072a91e: `Dropdown`: the menu takes focus when it opens, hands it back when it closes, and names itself.
+
+  Three accessibility defects in the WAI-ARIA menu pattern, all on the path every app and docs page runs (an overlay host is mounted, so the menu is portaled):
+
+  - **Focus never entered the open menu.** Focus was moved in the same commit that flipped `open`, but a portaled card is held back until the trigger measurement lands, so there was no row to focus yet: the roving arrow keys were dead and the menu sat at the end of the tab order. `AnchoredOverlay` now reports `onCardMount`, fired from an effect inside the card's own subtree (after every row's ref is attached) on both the portaled and inline paths, and the first enabled row takes focus there. No polling, no timeout guess. The focus move passes `preventScroll`, so a menu that renders open from its first commit never yanks the page to itself.
+  - **Closing dropped focus on `document.body`.** Escape, a row press, an outside tap, and a controlled close now all return focus to the trigger. A close that did not orphan focus (the app closes the menu after the user has tabbed on) leaves focus exactly where the user put it.
+  - **The menu had no accessible name and its identity header was loose generic text.** The menu is named from the header's title, falling back to the section `label`; the header is a `group` (a valid child of `menu`) named from its two lines. It stays unfocusable and out of the roving-focus count, which is still `items.length`.
+
 ## 2.31.1
 
 ### Patch Changes
