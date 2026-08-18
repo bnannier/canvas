@@ -46,15 +46,24 @@ describe("AvatarMenu pill", () => {
     expect(screen.queryByText(NAME)).toBeNull();
     expect(screen.queryByText(EMAIL)).toBeNull();
     expect(screen.getByText("RC")).toBeDefined();
-    expect(container.querySelector(`[aria-label="${LABEL}"]`)).not.toBeNull();
+    expect(trigger(container).getAttribute("aria-label")).toBe(LABEL);
   });
 
-  it("carries a data-carrying accessible name, falling back when there is no email", () => {
-    const { container } = ui(<AvatarMenu name={NAME} items={ITEMS} />);
-    expect(container.querySelector(`[aria-label="${NAME}"]`)).not.toBeNull();
+  // The name has to sit on the BUTTON, not merely somewhere in the subtree: a
+  // button with no name of its own is named from its contents, which reads the
+  // pill's two text lines back to back with no punctuation ("Rachel
+  // Chenrachel@example.com") and repeats the Avatar's own label after it.
+  it("carries a data-carrying accessible name ON THE TRIGGER, falling back when there is no email", () => {
+    const { container } = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
+    expect(trigger(container).getAttribute("aria-label")).toBe(LABEL);
     cleanup();
+
+    const noEmail = ui(<AvatarMenu name={NAME} items={ITEMS} />).container;
+    expect(trigger(noEmail).getAttribute("aria-label")).toBe(NAME);
+    cleanup();
+
     const bare = ui(<AvatarMenu items={ITEMS} />).container;
-    expect(bare.querySelector('[aria-label="Account menu"]')).not.toBeNull();
+    expect(trigger(bare).getAttribute("aria-label")).toBe("Account menu");
   });
 });
 

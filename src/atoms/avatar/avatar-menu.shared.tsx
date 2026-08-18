@@ -120,6 +120,10 @@ export function createAvatarMenu(skin: AvatarMenuSkin) {
         open={expanded}
         onOpenChange={setOpen}
         onSelect={onSelect}
+        // The account's name goes on the trigger BUTTON, not on the capsule inside
+        // it: a button named from its contents reads the pill's two text lines back
+        // to back with no punctuation and picks up the Avatar's own label too.
+        triggerLabel={label}
         // The identity header above the rows: the same name and email the pill shows.
         title={name}
         description={email}
@@ -136,11 +140,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin) {
             capsule is NOT a Pressable and carries no button role of its own:
             nesting one inside Dropdown's would make a doubly-focusable, invalid
             control (test/no-console-violations.test.tsx locks that). */}
-        <View
-          style={[skin.menuPill, { borderRadius: PILL_RADIUS }, skin.menuPillFill(tokens, expanded)]}
-          accessibilityLabel={label}
-          aria-label={label}
-        >
+        <View style={[skin.menuPill, { borderRadius: PILL_RADIUS }, skin.menuPillFill(tokens, expanded)]}>
           <Avatar small src={src} name={name} initials={initials} />
           {compact ? null : (
             <View style={IDENTITY_COLUMN}>

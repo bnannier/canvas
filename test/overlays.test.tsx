@@ -443,6 +443,29 @@ describe("Dropdown", () => {
     expect(reported).toBeNull();
   });
 
+  // A custom trigger is a View, so nothing names the button unless the caller says
+  // so: without triggerLabel the browser falls back to naming it from its contents,
+  // which concatenates the trigger's text nodes and repeats any nested label.
+  it("names a custom trigger from triggerLabel, on the button itself", () => {
+    const { container } = ui(
+      <Dropdown triggerLabel="Rachel Chen, rachel@example.com" items={[{ label: "Profile" }]}>
+        <Text>Rachel Chen</Text>
+      </Dropdown>,
+    );
+    const trigger = container.querySelector('[aria-haspopup="menu"]')!;
+    expect(trigger.getAttribute("aria-label")).toBe("Rachel Chen, rachel@example.com");
+    cleanup();
+
+    // Omitted, the attribute is absent rather than empty, so the platform's own
+    // name-from-contents still applies to a trigger that reads fine on its own.
+    const plain = ui(
+      <Dropdown items={[{ label: "Profile" }]}>
+        <Text>Account</Text>
+      </Dropdown>,
+    ).container;
+    expect(plain.querySelector('[aria-haspopup="menu"]')!.getAttribute("aria-label")).toBeNull();
+  });
+
   it("keeps a disabled custom trigger inert, even against a controlled open", () => {
     const { container } = ui(
       <Dropdown disabled open items={[{ label: "Edit" }]}>
