@@ -1,5 +1,65 @@
 # @nannier/canvas
 
+## 2.29.0
+
+### Minor Changes
+
+- 8be8ba3: Add `AvatarMenu`, the account identity pill, to the Avatar family.
+
+  New user-visible capability (the reason this is a minor, not a patch): the kit
+  now ships the account-menu anatomy itself, so no app or topbar hand-composes one
+  out of an `Avatar`, a hand-rolled name column, and a chevron. `AvatarMenu` is a
+  single capsule trigger holding the avatar, the person's name over their email,
+  and a trailing chevron that rotates while the menu is open, wired to the kit's
+  own `Dropdown` for the menu (including its new identity header, so the name and
+  email repeat above the rows).
+
+  Boolean props follow the kit's semantic grammar: `compact` drops the name block
+  for a topbar, `alignEnd` hangs the menu off the pill's trailing edge, and
+  `disabled` makes the pill inert. The open state has the usual controlled and
+  uncontrolled duality (`open` plus `onOpenChange`, interactive out of the box with
+  neither), and `items` reuses the existing `DropdownItem` type.
+
+  Per-OS metrics come from the platform skins: a 32px `secondary` capsule on web
+  (with an `input`-coloured hairline and a 6% lifted fill when open), a 36pt
+  hairline-outlined capsule on iOS that fills with `secondary` when open, and a
+  40dp Material 3 tonal pill on Android (`primary` at 12%, 20% when open). The
+  trigger announces itself as a menu button and takes its accessible name from the
+  account holder, so a screen reader hears the person, not "button".
+
+- 8be8ba3: Alert, Chip, and Toast take `destructive` for the danger tone.
+
+  New user-visible capability (the reason this is a minor, not a patch): `destructive` is the name the intent axis already uses everywhere else in the kit, on Button, on AlertDialog, and on every chart, and it is the name the design hand-off uses on these three components too. Until now these three alone spelled it `error`, so a call site moving between a destructive Button and a destructive Alert had to change vocabulary mid-form.
+
+  `error` keeps working, marked deprecated, and resolves through the same branch as `destructive`, so it paints exactly the same tone and no existing call site changes. Passing both is redundant rather than ambiguous: they share one branch, so the result is the danger tone either way, and the rest of the axis (`success`, `warning`, `info`, and the neutral default) is untouched.
+
+- 8be8ba3: Give `Dropdown` an identity header, trailing-edge alignment, and a disabled trigger.
+
+  Three new user-visible capabilities (the reason this is a minor, not a patch),
+  all additive: a Dropdown that passes none of them renders exactly as before.
+
+  `title` and `description` add an identity header block above the menu's rows: the
+  title in the popover foreground, the description muted underneath, closed off by
+  the card's own hairline before the first row. It coexists with the existing
+  `label` section heading, which still sits between the header and the rows. The
+  header is plain text, not a menu item, so it takes no tab stop and never enters
+  the roving-focus count. The skins carry the gutter per platform (8 x 6 on web,
+  16 x 6 on iOS, 16 x 8 on Android, each matching that skin's own section-label
+  gutter) over one shared type scale.
+
+  `alignEnd` hangs the menu off the trigger's trailing edge instead of its leading
+  edge, for a trigger parked at the end of a bar where a leading-aligned menu would
+  run off the surface. It holds on both paths: the inline anchor flips from a
+  logical `start` inset to an `end` one, and the portalled path pins the card by an
+  inset from the outlet's own edge (so no card measurement and no second layout
+  pass). Both are logical, so a right-to-left locale mirrors them.
+
+  `disabled` makes the whole control inert: the trigger dims by each platform's own
+  disabled opacity, the press is a no-op, and a controlled `open` cannot force the
+  menu out of a disabled Dropdown. The trigger carries `accessibilityState` and its
+  `aria-disabled` alias, and both trigger forms now announce `aria-haspopup="menu"`
+  alongside `aria-expanded`.
+
 ## 2.28.1
 
 ### Patch Changes
