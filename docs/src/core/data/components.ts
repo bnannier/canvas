@@ -626,6 +626,20 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "bar-list",
+    name: "BarList",
+    description: "Ranked label and value rows with proportional track bars, Stats-style deltas, share percents, and drill-in presses.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "metric-breakdown",
+    name: "MetricBreakdown",
+    description: "The decomposed-metric dashboard card: headline value, tone-aware rate, Sparkline trend, per-category share rows, and a chip footer.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",

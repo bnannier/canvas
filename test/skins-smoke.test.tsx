@@ -161,6 +161,8 @@ const CASES: SkinCase[] = [
   { name: "StackedBar", dir: "charts/stacked-bar", file: "stacked-bar", props: { label: "Traffic sources", segments: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "Gauge", dir: "charts/gauge", file: "gauge", props: { value: 72, label: "Uptime" } },
   { name: "Heatmap", dir: "charts/heatmap", file: "heatmap", props: { label: "Activity", values: [0.1, 0.4, 0.8, 0.2, 0.9, 0.5] } },
+  { name: "BarList", dir: "charts/bar-list", file: "bar-list", props: { title: "Top pages", items: [{ label: "/docs", value: 4 }, { label: "/blog", value: 2 }] } },
+  { name: "MetricBreakdown", dir: "charts/metric-breakdown", file: "metric-breakdown", props: { value: "12.4k", label: "Requests", breakdown: [{ label: "GET", value: 8 }, { label: "POST", value: 4 }] } },
   { name: "LineChart", dir: "charts/line-chart", file: "line-chart", props: { title: "Signups", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Web", values: [1, 3, 2] }, { label: "Mobile", values: [2, 1, 4] }] } },
   { name: "PieChart", dir: "charts/pie-chart", file: "pie-chart", props: { label: "Traffic", donut: true, slices: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "ScatterPlot", dir: "charts/scatter-plot", file: "scatter-plot", props: { title: "Load vs latency", series: [{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }] } },

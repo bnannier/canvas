@@ -897,6 +897,12 @@ import e_organisms_toast_dont_0_do from "./examples/organisms/toast/dont-0-do";
 import e_organisms_toast_dont_0_dont from "./examples/organisms/toast/dont-0-dont";
 import e_charts_area_chart_example_0 from "./examples/charts/area-chart/example-0";
 import e_charts_area_chart_example_1 from "./examples/charts/area-chart/example-1";
+import e_charts_bar_list_example_0 from "./examples/charts/bar-list/example-0";
+import e_charts_bar_list_example_1 from "./examples/charts/bar-list/example-1";
+import e_charts_bar_list_example_2 from "./examples/charts/bar-list/example-2";
+import e_charts_bar_list_example_3 from "./examples/charts/bar-list/example-3";
+import e_charts_bar_list_dont_0_do from "./examples/charts/bar-list/dont-0-do";
+import e_charts_bar_list_dont_0_dont from "./examples/charts/bar-list/dont-0-dont";
 import e_charts_candlestick_chart_example_0 from "./examples/charts/candlestick-chart/example-0";
 import e_charts_candlestick_chart_example_1 from "./examples/charts/candlestick-chart/example-1";
 import e_charts_candlestick_chart_example_2 from "./examples/charts/candlestick-chart/example-2";
@@ -925,6 +931,12 @@ import e_charts_line_chart_example_3 from "./examples/charts/line-chart/example-
 import e_charts_line_chart_example_4 from "./examples/charts/line-chart/example-4";
 import e_charts_line_chart_dont_0_do from "./examples/charts/line-chart/dont-0-do";
 import e_charts_line_chart_dont_0_dont from "./examples/charts/line-chart/dont-0-dont";
+import e_charts_metric_breakdown_example_0 from "./examples/charts/metric-breakdown/example-0";
+import e_charts_metric_breakdown_example_1 from "./examples/charts/metric-breakdown/example-1";
+import e_charts_metric_breakdown_example_2 from "./examples/charts/metric-breakdown/example-2";
+import e_charts_metric_breakdown_example_3 from "./examples/charts/metric-breakdown/example-3";
+import e_charts_metric_breakdown_dont_0_do from "./examples/charts/metric-breakdown/dont-0-do";
+import e_charts_metric_breakdown_dont_0_dont from "./examples/charts/metric-breakdown/dont-0-dont";
 import e_charts_pie_chart_example_0 from "./examples/charts/pie-chart/example-0";
 import e_charts_pie_chart_dont_0_do from "./examples/charts/pie-chart/dont-0-do";
 import e_charts_pie_chart_dont_0_dont from "./examples/charts/pie-chart/dont-0-dont";
@@ -2206,6 +2218,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
 
     ],
   },
+  "bar-list": {
+    dir: "bar-list",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<BarList\n  title=\"Top pages\"\n  style={{ maxWidth: 420 }}\n  items={[\n    { label: \"/pricing\", value: 18400, delta: \"+12%\" },\n    { label: \"/docs\", value: 12100, delta: \"+4%\" },\n    { label: \"/blog/launch\", value: 8700, delta: \"-2%\", down: true },\n    { label: \"/changelog\", value: 5300, delta: \"+1%\" },\n  ]}\n/>", render: e_charts_bar_list_example_0 },
+      { label: "Share of total", code: "<BarList\n  title=\"Sign-up sources\"\n  share\n  style={{ maxWidth: 420 }}\n  items={[\n    { label: \"google\", value: 412 },\n    { label: \"email\", value: 318 },\n    { label: \"github\", value: 142 },\n    { label: \"passkey\", value: 88 },\n  ]}\n/>", render: e_charts_bar_list_example_1 },
+      { label: "Drill-in rows", code: "<BarList\n  title=\"Top referrers\"\n  onPressItem={() => {}}\n  style={{ maxWidth: 420 }}\n  items={[\n    { label: \"news.ycombinator.com\", value: 4210, delta: \"+18%\" },\n    { label: \"reddit.com\", value: 2380, delta: \"-6%\", down: true },\n    { label: \"linkedin.com\", value: 1240, delta: \"+2%\" },\n  ]}\n/>", render: e_charts_bar_list_example_2 },
+      { label: "Plain, inside a card", code: "<Card padded style={{ maxWidth: 420 }}>\n  <Column>\n    <Typography h4>This week</Typography>\n    <BarList\n      plain\n      compact\n      items={[\n        { label: \"Deploys\", value: 42 },\n        { label: \"Rollbacks\", value: 3, chart4: true },\n        { label: \"Incidents\", value: 1, chart8: true },\n      ]}\n    />\n  </Column>\n</Card>", render: e_charts_bar_list_example_3 },
+    ],
+    donts: [
+      { title: "BarList", do: { caption: "Let the component own the whole row anatomy: swatch, label, value, delta, and the proportional bar.", code: "<BarList\n  title=\"Top pages\"\n  style={{ maxWidth: 420 }}\n  items={[\n    { label: \"/pricing\", value: 18400, delta: \"+12%\" },\n    { label: \"/docs\", value: 12100, delta: \"-4%\", down: true },\n  ]}\n/>", render: e_charts_bar_list_dont_0_do }, dont: { caption: "A hand-rolled row of Text and colored Views splits the anatomy, drifts from the type scale, and hides its share from assistive tech.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 420, gap: 8 }}>\n  <View style={{ flexDirection: \"row\", justifyContent: \"space-between\" }}>\n    <Text>/pricing</Text>\n    <Text>18.4k</Text>\n  </View>\n  <View style={{ height: 3, backgroundColor: tokens.primary, width: \"80%\" }} />\n</View>", render: e_charts_bar_list_dont_0_dont } },
+    ],
+  },
   "candlestick-chart": {
     dir: "candlestick-chart",
     category: "charts",
@@ -2278,6 +2303,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "Line", do: { caption: "Compare series that share one scale, and let the legend plus the fixed series colors carry identity.", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n    { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n  ]}\n  curved\n  style={{ maxWidth: 560 }}\n/>\n", render: e_charts_line_chart_dont_0_do }, dont: { caption: "Mix measures of different scales on one axis: the smaller series flatlines against the baseline and reads as noise. Normalize, or use two charts.", code: "<LineChart\n  title=\"Revenue vs conversion\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Revenue\", values: [12000, 18000, 15000, 24000, 30000, 28000] },\n    { label: \"Conversion rate\", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }\n  ]}\n  style={{ maxWidth: 560 }}\n/>\n", render: e_charts_line_chart_dont_0_dont } },
+    ],
+  },
+  "metric-breakdown": {
+    dir: "metric-breakdown",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<MetricBreakdown\n  value=\"3,771\"\n  label=\"Tokens issued\"\n  rate=\"1.39%\"\n  rateLabel=\"Error rate\"\n  rateDestructive\n  spark={[96, 104, 101, 110, 108, 112, 116, 114, 118, 116]}\n  sparkUnit=\"req/s\"\n  style={{ maxWidth: 420 }}\n  breakdown={[\n    { label: \"authorization_code\", value: 1842, delta: \"+12%\" },\n    { label: \"refresh_token\", value: 1264, delta: \"+4%\" },\n    { label: \"client_credentials\", value: 618, delta: \"-3%\", down: true },\n    { label: \"password (legacy)\", value: 47, delta: \"-22%\", down: true },\n  ]}\n  chipsLabel=\"Errors\"\n  chips={[\n    { label: \"invalid_grant\", count: 38, destructive: true },\n    { label: \"invalid_client\", count: 11, destructive: true },\n    { label: \"unauthorized_client\", count: 4, destructive: true },\n  ]}\n/>", render: e_charts_metric_breakdown_example_0 },
+      { label: "Minimal", code: "<MetricBreakdown\n  value=\"960\"\n  label=\"New sign-ups today\"\n  style={{ maxWidth: 420 }}\n  breakdown={[\n    { label: \"google\", value: 412, delta: \"+18%\" },\n    { label: \"email\", value: 318, delta: \"+3%\" },\n    { label: \"github\", value: 142, delta: \"-6%\", down: true },\n    { label: \"passkey\", value: 88, delta: \"+41%\" },\n  ]}\n/>", render: e_charts_metric_breakdown_example_1 },
+      { label: "Rate and trend", code: "<MetricBreakdown\n  value=\"25,874\"\n  label=\"Requests\"\n  rate=\"0.74%\"\n  rateLabel=\"4xx + 5xx rate\"\n  rateSuccess\n  spark={[180, 196, 188, 204, 210, 202, 214, 220, 208, 216]}\n  sparkUnit=\"req/s\"\n  style={{ maxWidth: 420 }}\n/>", render: e_charts_metric_breakdown_example_2 },
+      { label: "Plain, inside a card", code: "<Card padded style={{ maxWidth: 420 }}>\n  <MetricBreakdown\n    plain\n    compact\n    value=\"25,874\"\n    label=\"Requests\"\n    breakdown={[\n      { label: \"GET\", value: 18248, delta: \"+8%\" },\n      { label: \"POST\", value: 6104, delta: \"+21%\" },\n      { label: \"PATCH\", value: 1212, delta: \"-2%\", down: true },\n    ]}\n    chipsLabel=\"Top codes\"\n    chips={[\n      { label: \"404\", count: 142, warning: true },\n      { label: \"429\", count: 38, warning: true },\n      { label: \"500\", count: 7, destructive: true },\n    ]}\n  />\n</Card>", render: e_charts_metric_breakdown_example_3 },
+    ],
+    donts: [
+      { title: "MetricBreakdown", do: { caption: "Pass preformatted strings and semantic tone booleans; the card owns the header, trend, rows, and chip anatomy.", code: "<MetricBreakdown\n  value=\"12.4k\"\n  label=\"Requests\"\n  rate=\"0.74%\"\n  rateLabel=\"Error rate\"\n  rateSuccess\n  style={{ maxWidth: 420 }}\n  breakdown={[\n    { label: \"GET\", value: 8, delta: \"+8%\" },\n    { label: \"POST\", value: 4, delta: \"+21%\" },\n  ]}\n/>", render: e_charts_metric_breakdown_dont_0_do }, dont: { caption: "Rebuilding the header and trend from Text and Sparkline at the call site splits the anatomy the card owns and loses the rows' accessible shares.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 420, gap: 8 }}>\n  <Text style={{ fontSize: 22, fontWeight: \"600\" }}>12.4k</Text>\n  <Text style={{ fontSize: 11, color: tokens[\"muted-foreground\"] }}>REQUESTS</Text>\n  <Sparkline line values={[96, 104, 110, 108, 116]} style={{ width: \"100%\" }} />\n</View>", render: e_charts_metric_breakdown_dont_0_dont } },
     ],
   },
   "pie-chart": {

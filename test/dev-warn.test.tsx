@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -68,6 +68,28 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("`values` is empty")).toBe(true);
   });
 
+  it("BarList warns when items is empty", () => {
+    ui(<BarList items={[]} />);
+    expect(sawWarning("<BarList />")).toBe(true);
+    expect(sawWarning("`items` is empty")).toBe(true);
+  });
+
+  it("BarList warns when a row's chart slot competes with the list tone", () => {
+    ui(<BarList success items={[{ label: "a", value: 1, chart3: true }]} />);
+    expect(sawWarning("chart1..8 slot beats the list tone")).toBe(true);
+  });
+
+  it("BarList warns on a negative row value and bars treat it as 0", () => {
+    ui(<BarList items={[{ label: "a", value: -3 }]} />);
+    expect(sawWarning("`value` is negative")).toBe(true);
+  });
+
+  it("MetricBreakdown warns when the spark has a single point and skips the strip", () => {
+    ui(<MetricBreakdown value="1" label="Requests" spark={[42]} />);
+    expect(sawWarning("<MetricBreakdown />")).toBe(true);
+    expect(sawWarning("a single point")).toBe(true);
+  });
+
   it("stays silent for valid data across every wired component", () => {
     ui(
       <>
@@ -76,6 +98,8 @@ describe("component data-misuse warnings", () => {
         <StackedBar segments={[{ label: "A", value: 1 }]} />
         <Gauge value={72} />
         <Heatmap values={[0.2, 0.6]} />
+        <BarList items={[{ label: "a", value: 1 }]} />
+        <MetricBreakdown value="1" label="Requests" spark={[1, 2]} breakdown={[{ label: "a", value: 1 }]} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);

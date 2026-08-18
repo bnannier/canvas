@@ -197,6 +197,52 @@ function HeatmapPreview() {
   );
 }
 
+function BarListPreview() {
+  const { tokens } = useTheme();
+  // Three ranked rows: swatch, label line, and a shortening track bar.
+  const rows = [
+    { w: 150, fill: tokens["chart-1"] },
+    { w: 104, fill: tokens["chart-2"] },
+    { w: 62, fill: tokens["chart-3"] },
+  ];
+  return (
+    <Stage>
+      {rows.map((r, i) => (
+        <G key={i}>
+          <Rect x={8} y={6 + i * 20} width={6} height={6} rx={1.5} fill={r.fill} />
+          <Rect x={20} y={7.5 + i * 20} width={46} height={3} rx={1.5} fill={alpha(tokens["muted-foreground"], 0.4)} />
+          <Rect x={8} y={15 + i * 20} width={W - 16} height={3} rx={1.5} fill={alpha(tokens["muted-foreground"], 0.18)} />
+          <Rect x={8} y={15 + i * 20} width={r.w} height={3} rx={1.5} fill={r.fill} />
+        </G>
+      ))}
+    </Stage>
+  );
+}
+
+function MetricBreakdownPreview() {
+  const { tokens } = useTheme();
+  return (
+    <Stage>
+      {/* Headline block and rate. */}
+      <Rect x={8} y={6} width={44} height={8} rx={2} fill={tokens.foreground} />
+      <Rect x={8} y={18} width={28} height={4} rx={1.5} fill={alpha(tokens["muted-foreground"], 0.6)} />
+      <Rect x={W - 34} y={6} width={26} height={5} rx={1.5} fill={alpha(tokens.destructive, 0.8)} />
+      {/* Tiny trend. */}
+      <Polyline
+        points={`8,${34} 40,${31} 72,${32} 104,${28} 136,${29} 168,${26} ${W - 8},${27}`}
+        fill="none"
+        stroke={tokens["chart-1"]}
+        strokeWidth={1.5}
+      />
+      {/* Two share rows. */}
+      <Rect x={8} y={44} width={W - 16} height={3} rx={1.5} fill={alpha(tokens["muted-foreground"], 0.18)} />
+      <Rect x={8} y={44} width={128} height={3} rx={1.5} fill={tokens["chart-1"]} />
+      <Rect x={8} y={54} width={W - 16} height={3} rx={1.5} fill={alpha(tokens["muted-foreground"], 0.18)} />
+      <Rect x={8} y={54} width={74} height={3} rx={1.5} fill={tokens["chart-2"]} />
+    </Stage>
+  );
+}
+
 export const CHARTS_TILES: CatTile[] = [
   { title: "Chart", href: "/components/chart", Preview: BarsPreview },
   { title: "LineChart", href: "/components/line-chart", Preview: LinePreview },
@@ -208,4 +254,6 @@ export const CHARTS_TILES: CatTile[] = [
   { title: "StackedBar", href: "/components/stacked-bar", Preview: StackedBarPreview },
   { title: "Gauge", href: "/components/gauge", Preview: GaugePreview },
   { title: "Heatmap", href: "/components/heatmap", Preview: HeatmapPreview },
+  { title: "BarList", href: "/components/bar-list", Preview: BarListPreview },
+  { title: "MetricBreakdown", href: "/components/metric-breakdown", Preview: MetricBreakdownPreview },
 ];
