@@ -165,10 +165,13 @@ export default function ThemingScreen() {
 
         <Section title="Glass Surface">
           <P>
-            Following Apple's Liquid Glass model, glass is the material for the functional layer: overlays (popovers, menus, dialogs,
-            sheets) plus navbars and sidebars read as glass, while content surfaces (cards, lists, tables) stay solid ("don't use glass
-            in the content layer"). It is a theming-level switch (the ThemeProvider swaps the popover surface token), not a per-component
-            prop. Those functional-layer surfaces render through Canvas's GlassSurface primitive, which paints the real material per
+            Following Apple's Liquid Glass model, glass is the material for the functional layer, and for the floating shells and
+            overlays inside it: popovers, dialogs, action sheets, the command palette, navbars, tab bars and the sidebar read as
+            glass, while content surfaces (cards, lists, tables) stay solid ("don't use glass in the content layer"). The option-list
+            menus opt out too: a dropdown, select, autocomplete or avatar menu stays an opaque card, and so do alert dialogs, toasts
+            and chart tooltips, because a surface whose rows you read and act on has to stay legible over whatever it opens over. It
+            is a theming-level switch (the ThemeProvider turns on the material's own glass-tint fill and rewrites no semantic
+            token), not a per-component prop. The glass surfaces render through Canvas's GlassSurface primitive, which paints the real material per
             platform: Apple's native Liquid Glass on iOS 26+ (via expo-glass-effect), a real lens on Chromium browsers (an SVG
             displacement filter that refracts the backdrop at the rim, where the glass bends most; the centre stays optically flat), a
             genuine frosted blur on non-Chromium web and Android (via expo-blur), and a translucent fallback when no material is
@@ -189,8 +192,9 @@ export default function ThemingScreen() {
           </View>
           <H3>What changes</H3>
           <View style={{ gap: 4 }}>
-            <Bullet>Functional-layer surfaces (overlays, navbars, sidebars) render the glass material via GlassSurface: native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; content cards, lists, and tables stay solid</Bullet>
-            <Bullet>The popover token turns translucent, the one token the glass switch overrides; the card token stays solid, so content surfaces never frost</Bullet>
+            <Bullet>The glass surfaces (popovers, dialogs, action sheets, the command palette, navbars, tab bars, the sidebar) render the material via GlassSurface: native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; content cards, lists, and tables stay solid</Bullet>
+            <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fill, glass-tint, painted under the material by the surfaces that take it</Bullet>
+            <Bullet>The option-list menus (dropdown, select, autocomplete, avatar menu), alert dialogs, toasts and chart tooltips stay opaque in glass mode. A menu is a card of rows the reader picks from, and the Chromium lens keeps the centre of a pane optically flat by design, so a translucent menu shows the page straight through between its rows</Bullet>
             <Bullet>Glass surfaces drop their skin border and the material paints its own white-alpha specular rim</Bullet>
             <Bullet>The page background does not change by itself; these docs mount the kit's Backdrop scene behind the shell in glass mode so the frost has something to refract, an app-level choice</Bullet>
           </View>

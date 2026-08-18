@@ -95,15 +95,38 @@ describe("statusHues", () => {
   });
 });
 
-describe("glassByScheme", () => {
-  it("makes only the popover fill translucent (the functional-layer material)", () => {
-    expect(glassByScheme.light.popover).toMatch(/^rgba\(/);
-    expect(glassByScheme.dark.popover).toMatch(/^rgba\(/);
+describe("glassByScheme (the glass material's own tokens)", () => {
+  it("gives the material its own rgba fill in each scheme", () => {
+    // Read from the web hand-off (--glass-tint in styles/tokens/colors.css), never
+    // invented here; scripts/validate-tokens.ts fails the build on any drift.
+    expect(glassByScheme.light["glass-tint"]).toBe("rgba(255, 255, 255, 0.20)");
+    expect(glassByScheme.dark["glass-tint"]).toBe("rgba(22, 22, 28, 0.30)");
   });
 
-  it("keeps the card token solid (content layer stays opaque)", () => {
-    // card is NOT overridden in glassByScheme — content surfaces stay solid.
-    expect(glassByScheme.light.card).toBeUndefined();
-    expect(glassByScheme.dark.card).toBeUndefined();
+  it("overrides NO semantic token, so an opaque menu and a glass bar are independent", () => {
+    // The regression this shape exists to prevent: glass used to swap `popover`
+    // translucent, so every popover-filled surface (menus, select lists, alert
+    // dialogs) went see-through the moment glass turned on, and making one of them
+    // opaque would have made the bars opaque with it. The material carries its own
+    // fill now; the semantic set is untouched.
+    for (const scheme of ["light", "dark"] as const) {
+      expect(Object.keys(glassByScheme[scheme])).toEqual(["glass-tint"]);
+      expect(glassByScheme[scheme]).not.toHaveProperty("popover");
+      expect(glassByScheme[scheme]).not.toHaveProperty("card");
+    }
+    // popover and card stay opaque in both schemes, exactly as the hand-off ships them.
+    expect(lightColors.popover).toBe("#ffffff");
+    expect(darkColors.popover).toBe("#18181b");
+    expect(lightColors.card).toBe("#ffffff");
+    expect(darkColors.card).toBe("#18181b");
+  });
+
+  it("keys the family by its CSS custom-property name, so the hand-off stays cross-checked", () => {
+    // scripts/validate-tokens.ts matches these keys against `--<name>` in
+    // styles/tokens/colors.css; a key renamed to a JS-style one would silently
+    // drop out of that check, which is how the two layers drift.
+    for (const scheme of ["light", "dark"] as const) {
+      for (const key of Object.keys(glassByScheme[scheme])) expect(key).toMatch(/^glass-[a-z-]+$/);
+    }
   });
 });

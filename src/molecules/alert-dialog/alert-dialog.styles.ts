@@ -9,11 +9,12 @@ import { type InputProps } from "../../atoms/input/input.shared.js";
 export type InputComponent = ComponentType<InputProps>;
 
 // Co-located AlertDialog skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and read as glass when
-// tokens.popover is swapped translucent at the theming level). The BRAND survives
-// on every platform (the `primary` confirm and the `destructive` red); only the
-// native SHAPE, sizing, title alignment, action layout, and press feedback change
-// per OS:
+// (passed in from useTheme so they follow light/dark). The card is OPAQUE on every
+// theming surface: `popover` is an opaque token in both schemes and glass mode
+// never rewrites it, so the prompt that stops the user to confirm a destructive
+// action is never see-through. The BRAND survives on every platform (the `primary`
+// confirm and the `destructive` red); only the native SHAPE, sizing, title
+// alignment, action layout, and press feedback change per OS:
 //   iOS (iOS 27 / Liquid Glass alert): a rounded card (~28 radius, `popover`
 //     fill, soft shadow, no border), a LEFT-aligned bold title and a left-aligned
 //     `muted-foreground` message; exactly two actions rendered as two CAPSULES

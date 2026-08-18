@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { brandColors, darkColors, lightColors, palette } from "../src/style/tokens.ts";
+import { brandColors, darkColors, glassByScheme, lightColors, palette } from "../src/style/tokens.ts";
 
 const STYLES_DIR = join(import.meta.dir, "..", "styles");
 
@@ -50,6 +50,19 @@ function cssColorToHex(raw: string): string | null {
   if (/^#[0-9a-f]{6}$/.test(value)) return value;
   if (/^#[0-9a-f]{3}$/.test(value)) return `#${[...value.slice(1)].map((c) => c + c).join("")}`;
   return null;
+}
+
+// The glass material's tokens are authored as rgba() on BOTH sides (React Native parses
+// rgba natively, so nothing has to be transcribed into another notation), which is exactly
+// the case cssColorToHex declines: a hex compare would drop the alpha, and the alpha is the
+// whole point of a material fill. Canonicalize the four channels instead, so spacing and
+// `0.20` vs `0.2` count as formatting while a real difference still fails.
+function cssRgbaToCanonical(raw: string): string | null {
+  const value = raw.replace(/\/\*[\s\S]*?\*\//g, "").trim().toLowerCase();
+  const m = value.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/);
+  if (!m) return null;
+  const alpha = m[4] === undefined ? 1 : Number(m[4]);
+  return `rgba(${Number(m[1])}, ${Number(m[2])}, ${Number(m[3])}, ${alpha})`;
 }
 
 // Pull the declarations out of one selector block, so the light (:root) and dark
@@ -139,6 +152,19 @@ if (brandMissingInCss.length) {
   failed = true;
 }
 
+// And for the GLASS MATERIAL family. The material owns its fill (`glass-tint`) instead of
+// borrowing the semantic `popover` token, which is what let a change to menu opacity drag
+// the bars along with it. Its keys ARE the CSS names, so a name here with no `--name` in
+// the CSS would mean the web surface renders its glass from a token the native material
+// never sees.
+const glassKeys = Object.keys(glassByScheme.light) as (keyof typeof glassByScheme.light)[];
+const glassMissingInCss = glassKeys.filter((k) => !cssValueTokens.has(k)).sort();
+if (glassMissingInCss.length) {
+  console.log(`\nGlass tokens in src/style/tokens.ts but MISSING from styles/canvas.css: ${glassMissingInCss.length}`);
+  for (const k of glassMissingInCss) console.log(`  --${k}`);
+  failed = true;
+}
+
 // Cross-check the VALUES, not just the names. The names matching only proves a web
 // consumer can reach the token; it says nothing about whether it reaches the same
 // COLOR the native components paint. That gap is exactly how the two sides drifted:
@@ -181,6 +207,27 @@ for (const m of paletteCss.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
     drifted.push(`  step  --${m[1].padEnd(24)} css ${cssHex}  !=  js ${jsValue}`);
   }
 }
+// The glass family compares through the rgba canonicalizer, per scheme. Unlike the loops
+// above, an UNPARSEABLE value fails rather than being skipped: these tokens are rgba by
+// contract (the material composites over whatever is behind it), so a value neither side
+// can parse as rgba is itself the drift.
+for (const [scheme, css] of [
+  ["light", cssLight],
+  ["dark", cssDark],
+] as const) {
+  for (const key of glassKeys) {
+    const raw = css[key];
+    if (raw === undefined) continue; // the name check above already reports this
+    const jsValue = glassByScheme[scheme][key];
+    const cssRgba = cssRgbaToCanonical(raw);
+    const jsRgba = cssRgbaToCanonical(jsValue);
+    if (cssRgba === null || jsRgba === null) {
+      drifted.push(`  ${scheme.padEnd(5)} --${key.padEnd(24)} not an rgba() on both sides: css ${raw.trim()}  /  js ${jsValue}`);
+    } else if (cssRgba !== jsRgba) {
+      drifted.push(`  ${scheme.padEnd(5)} --${key.padEnd(24)} css ${cssRgba}  !=  js ${jsRgba}`);
+    }
+  }
+}
 
 if (drifted.length) {
   console.log(`\nColor VALUES that differ between styles/ (the hand-off) and src/style/tokens.ts: ${drifted.length}`);
@@ -189,6 +236,9 @@ if (drifted.length) {
   failed = true;
 }
 
-console.log(`\nTokens: ${defined.size} defined, ${referenced.size} referenced; ${Object.keys(lightColors).length} JS color tokens + ${Object.keys(brandColors).length} JS brand tokens cross-checked`);
+console.log(
+  `\nTokens: ${defined.size} defined, ${referenced.size} referenced; ${Object.keys(lightColors).length} JS color tokens + ` +
+    `${Object.keys(brandColors).length} JS brand tokens + ${glassKeys.length * 2} JS glass values (both schemes) cross-checked`,
+);
 if (!failed) console.log("Token validation passed.");
 else process.exit(1);

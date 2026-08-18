@@ -24,7 +24,9 @@ import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./se
 // horizontal preview scroller), identically on iOS, Android, and web, with no
 // Platform.OS branch. With no provider it falls back to an inline card positioned
 // absolutely below the trigger (the kit's pre-portal behavior). AnchoredOverlay
-// supplies its own GlassSurface material, so the listbox is passed to it directly.
+// owns the card surface, so the listbox is passed to it directly; the panel asks
+// for the OPAQUE one (`opaque`), an option list being a card of rows rather than
+// one of the kit's glass overlays.
 
 /**
  * An option whose stored value differs from the text shown for it, for lists
@@ -253,6 +255,11 @@ export function createSelect(skin: SelectSkin) {
           gap={4}
           cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
           inlineStyle={PANEL_ANCHOR}
+          // An option list is a card of rows, so the panel stays an OPAQUE card
+          // in glass mode too (the skin's own `popover` fill, no material):
+          // options a user reads and picks from must not have the page showing
+          // through between them.
+          opaque
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}

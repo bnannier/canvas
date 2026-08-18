@@ -3,11 +3,11 @@ import { type ColorTokens, alpha, darkColors, lightColors, shadow } from "../../
 import { type ToastSkin } from "./toast.shared.js";
 
 // Co-located Toast skins, one per platform, all driven by the brand tokens (passed
-// in from useTheme so they follow light/dark and read as glass when the functional
-// surface is swapped translucent at the theming level). The capsule is routed
-// through GlassSurface by the shell, so each skin supplies the SHAPE/type/feedback
-// only; the `backgroundColor: popover` is a fallback GlassSurface overrides with the
-// active material. Toast is a "Full" treatment: the BRAND survives on every platform
+// in from useTheme so they follow light/dark). The capsule is an OPAQUE bar on every
+// theming surface, glass included: each skin's own fill IS the surface (the web
+// hand-off's `--p-toast-fill`, i.e. the `popover` token, and the M3 inverse-surface
+// bar on Android), painted on a plain box by the shell with no material over it.
+// Toast is a "Full" treatment: the BRAND survives on every platform
 // (the indigo `primary` action tint, the semantic `success`/`error`/`warning` intents),
 // only the native shape, type, and press feedback change per OS:
 //
@@ -20,9 +20,8 @@ import { type ToastSkin } from "./toast.shared.js";
 //     in the INVERSE-primary brand indigo (the opposite scheme's `primary`, per the
 //     M3 inverse-primary role, kept on-brand), the close x in the inverse on-surface
 //     tone at the 24dp spec size, trailing padding 8dp beside a trailing control,
-//     48dp touch targets via hitSlop, press = ripple in background-family ink. The
-//     bar stays SOLID even in glass mode: M3 snackbars have no glass idiom, so the
-//     skin opts out of the GlassSurface material (solidSurface).
+//     48dp touch targets via hitSlop, press = ripple in background-family ink. M3
+//     snackbars have no glass idiom, and the inverse fill is the whole read here.
 //   Web (sonner): a rounded-12 card with shadow-lg, 14px medium message + 13px muted
 //     description, a brand action, an x dismiss. Press = opacity dim.
 
@@ -102,7 +101,6 @@ function inversePrimary(t: ColorTokens): string {
 export const webSkin: ToastSkin = {
   container: (t) => capsule(t, 12),
   intentIcon: true,
-  solidSurface: false,
   iconSize: ICON_SIZE,
   message: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
   description: (t) => ({ fontSize: 13, lineHeight: 18, color: t["muted-foreground"] }),
@@ -124,7 +122,6 @@ export const webSkin: ToastSkin = {
 export const iosSkin: ToastSkin = {
   container: (t) => ({ ...capsule(t, 16), borderCurve: "continuous" }),
   intentIcon: true,
-  solidSurface: false,
   iconSize: ICON_SIZE + 1,
   message: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t["popover-foreground"] }),
   description: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
@@ -159,9 +156,6 @@ export const androidSkin: ToastSkin = {
   // The M3 snackbar anatomy has NO leading icon slot: suppress the auto intent
   // glyph (an explicit `icon` prop still renders; intent survives via wording).
   intentIcon: false,
-  // No glass idiom for M3 snackbars: keep the solid inverse-surface bar even when
-  // the theming surface is glass (iOS/web keep the GlassSurface material).
-  solidSurface: true,
   iconSize: ICON_SIZE + 2,
   message: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t.background }),
   description: (t) => ({ fontSize: 13, lineHeight: 18, color: alpha(t.background, 0.7) }),

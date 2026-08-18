@@ -5,8 +5,10 @@ import { type ColorTokens, shadow } from "../../style/index.js";
 
 // Co-located Popover skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
-// ThemeProvider's surface is "glass", since tokens.popover is swapped translucent
-// at the theming level). The BRAND survives on every platform (the heading type
+// ThemeProvider's surface is "glass", since the shell renders the card through
+// GlassSurface, which strips the skin's fill and paints the active material over
+// its own `glass-tint`; the `popover` token itself is opaque in both modes and
+// glass never rewrites it). The BRAND survives on every platform (the heading type
 // and the primary action button stay the indigo brand, never a platform default);
 // only the native SHAPE, fill, border treatment, elevation, and padding change
 // per OS:
@@ -150,10 +152,10 @@ export const iosSkin: PopoverSkin = {
   title: (t) => ({ ...TITLE_TYPE, color: t["popover-foreground"] }),
   description: (t) => ({ ...DESC_TYPE, color: t["muted-foreground"] }),
   // The beak is an SVG <Path> filled with the `popover` token so it reads as one
-  // continuous silhouette with the card edge (in solid mode the exact card fill;
-  // in glass mode the same translucent `popover` fallback the GlassSurface uses
-  // when the native blur module is absent, so the seam stays closed). The path's
-  // base overlaps the card edge by ~1px to weld the two together. It is positioned
+  // continuous silhouette with the card edge: the exact card fill, since the beak
+  // is drawn in SOLID mode only (the shell omits it under glass, where a flat
+  // token-filled beak could not match the material). The path's base overlaps the
+  // card edge by ~1px to weld the two together. It is positioned
   // by the shell flush to the card's anchor-facing edge, inset from the left so it
   // sits under the trigger. The viewBox is flipped vertically for the `top`
   // placement so the apex points down toward an anchor above the card.

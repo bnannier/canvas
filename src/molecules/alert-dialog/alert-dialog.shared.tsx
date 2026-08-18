@@ -1,6 +1,6 @@
 import { type ReactNode, useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { Entrance, GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useEscapeKey, useTheme } from "../../style/index.js";
+import { Entrance, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useEscapeKey, useTheme } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -298,7 +298,14 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             ]}
           >
             <Entrance style={[s.cardBase, s.panelWidth[width], style]}>
-            <GlassSurface style={[s.cardBase, skin.card(tokens)]}>
+            {/* An alert dialog is an OPAQUE card, on every theming surface. It is
+                the prompt that stops the user to confirm a destructive action, so
+                it paints the skin's own `popover` fill on a plain box in glass mode
+                exactly as in solid mode: under a material the page it interrupts
+                reads straight through the very text asking the question. The
+                dimming scrim behind it is unaffected. Dialog, ActionSheet and the
+                command palette are the glass overlays. */}
+            <View style={[s.cardBase, skin.card(tokens)]}>
               {/* The panel content region: a focusable (tabIndex -1) container the
                   web focus manager pulls focus into and traps Tab within, wrapping
                   the content in a KeyboardAvoidingView so the iOS keyboard never
@@ -342,7 +349,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
                   {actionRow}
                 </KeyboardAvoidingView>
               </View>
-            </GlassSurface>
+            </View>
             </Entrance>
           </View>
           </Present>

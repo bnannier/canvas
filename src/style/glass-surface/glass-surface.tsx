@@ -2,9 +2,9 @@
 // renders as the real Liquid Glass LENS (an SVG displacement filter applied as
 // the material's backdrop-filter — see glass-lens.ts); elsewhere it renders as
 // an expo-blur frost (backdrop blur on non-Chromium web via react-native-web,
-// native blur on Android via the dimezis method). Falls back to a plain
-// translucent View when not in glass mode or when no material is available
-// (expo-blur is an optional peer dependency; bare consumers that skip it
+// native blur on Android via the dimezis method). Falls back to a plain View
+// carrying the skin's own opaque fill when not in glass mode or when no material is
+// available (expo-blur is an optional peer dependency; bare consumers that skip it
 // degrade here, and non-Chromium engines without it do too).
 //
 // expo-glass-effect is NOT imported here, so web and Android bundles never pull
@@ -76,10 +76,12 @@ function GlassLensLayer({ style }: { style: StyleProp<ViewStyle> }) {
 }
 
 export function GlassSurface({ style, children, pointerEvents, testID, role, sheer, tint }: GlassSurfaceProps) {
-  const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
-  // The under-fill behind the frost: the caller's `tint` for a bright glass control
-  // (the Slider knob), else the `popover` token that keeps panels legible.
-  const underFill = tint ?? tokens.popover;
+  const { surface, dark, tokens, glass, reducedTransparency, increasedContrast } = useTheme();
+  // The under-fill behind the material: the caller's `tint` for a bright glass control
+  // (the Slider knob), else the glass material's OWN fill, `glass-tint`. It is not the
+  // `popover` token: popover is the opaque fill of a menu/select/dialog card, and
+  // borrowing it here is what made every one of those surfaces see-through in glass mode.
+  const underFill = tint ?? glass["glass-tint"];
   // The Android blur target (see GlassBlurTargetContext in the shared file):
   // non-null only where blurring it is native-sibling-safe — inside an
   // OverlayProvider's outlet or an RN Modal bridged by GlassModalBlurTarget.
@@ -110,9 +112,9 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
   // Chromium web: the real Liquid Glass LENS. The sized SVG displacement filter
   // is the whole material — it bends the backdrop at the rim and carries its own
   // blur + saturation — so it replaces the frost's BlurView (and needs no
-  // expo-blur at all). The popover under-fill stays beneath it and the specular
-  // rim above it, exactly as the iOS 26 native path keeps its under-fill beneath
-  // the GlassView: the fill guarantees a legible panel, the rim supplies the lit
+  // expo-blur at all). The glass tint stays beneath it and the specular rim above
+  // it, exactly as the iOS 26 native path keeps its under-fill beneath the
+  // GlassView: the tint gives the material a body, the rim supplies the lit
   // edge the filter itself does not draw.
   if (lens) {
     const material = (
@@ -129,7 +131,8 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
     );
   }
 
-  // Glass mode but expo-blur is absent: the translucent `popover` fill fallback.
+  // Glass mode but no material module and no lens: PlainSurface keeps the skin's own
+  // (opaque) fill, so a bare consumer gets a flat, legible surface rather than a hole.
   if (!BlurView) {
     return (
       <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role}>
@@ -139,9 +142,8 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
   }
 
   // The blur alone is too faint over a flat surface (a dark blur over a near-black page
-  // reads as clear), so paint the translucent `popover` frost fill UNDER the blur. That
-  // keeps the frost a substantial material in both schemes while the blur still shows
-  // through the remaining translucency.
+  // reads as clear), so paint the glass tint UNDER the blur. That gives the frost a body
+  // in both schemes while the blur still shows through the remaining translucency.
   const material = (
     <>
       <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />

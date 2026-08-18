@@ -3,8 +3,10 @@ import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 import { type IconName } from "../../atoms/icon/icon.js";
 
 // Co-located RowMenu skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and the glass surface, since
-// tokens.popover is swapped translucent at the theming level). The BRAND survives
+// (passed in from useTheme so they follow light/dark). The menu card paints the
+// `popover` fill on an OPAQUE surface in every theming mode: the shell asks
+// AnchoredOverlay for its plain surface (`opaque`), so the menu never takes the
+// glass material and the table row under it never reads through. The BRAND survives
 // on every platform (the destructive red is a fixed Tailwind hue, the trigger and
 // rows take the brand foreground/popover tokens, never a platform default); only
 // the native SHAPE, sizing, structure, and interaction feedback change per OS:

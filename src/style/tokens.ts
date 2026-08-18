@@ -131,30 +131,50 @@ export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
 };
 
 /**
- * Glass-surface token overrides per scheme. Glass follows Apple's Liquid Glass
- * model: it is a material for the FUNCTIONAL layer (controls, navigation, and
- * overlays that float above content), deliberately NOT applied to the content
- * layer (Apple: "don't use Liquid Glass in the content layer"). So only the
- * `popover` fill (the overlay/menu/sheet/dialog material) goes translucent;
- * `card` (the content-surface fill) stays solid, so content cards, lists, tables,
- * calendars, and charts read as opaque content. Bars and sidebars join this same
- * functional layer at the shell level (they paint `popover` in glass mode).
+ * The glass MATERIAL's own tokens, per scheme. Glass follows Apple's Liquid Glass
+ * model: it is a material for the FUNCTIONAL layer (bars, sidebars, sheets, and the
+ * overlays that float above content), deliberately NOT applied to the content layer
+ * (Apple: "don't use Liquid Glass in the content layer").
  *
- * In glass mode these translucent `popover` values are the FALLBACK fill: the
- * GlassSurface primitive (src/style/glass-surface) renders the real material over
- * them per platform (Apple's native Liquid Glass via expo-glass-effect on iOS 26+,
- * an expo-blur frost on web and Android), and falls back to this fill when those
- * optional modules are absent. Only the fill changes here; foreground and border
- * tokens are untouched. Values are rgba so they compose over whatever sits behind
- * the surface, on native and on react-native-web.
+ * The material carries its OWN fill, `glass-tint`, and that fill is the only thing
+ * glass mode contributes. Glass does NOT reach into the semantic color set: `popover`
+ * stays opaque in both schemes, exactly as the web hand-off ships it, so a menu, a
+ * select list, or an alert dialog is an opaque card whatever the surface mode; `card`
+ * stays opaque too, so content surfaces never turn to glass. Nothing that paints a
+ * semantic surface token goes translucent because the theme went to glass. Only the
+ * surfaces that render through the GlassSurface primitive (src/style/glass-surface)
+ * take this tint, and they take it UNDER the real material: Apple's native Liquid
+ * Glass via expo-glass-effect on iOS 26+, the SVG lens on Chromium web, an expo-blur
+ * frost elsewhere. The tint is what keeps such a panel legible when the material is
+ * near-clear (and the whole fill when no material module is available); the material
+ * is what makes it glass.
+ *
+ * Keys are the CSS custom-property names verbatim (`glass-tint` is `--glass-tint` in
+ * styles/tokens/colors.css, the WEB hand-off these values are read from, never
+ * invented here); scripts/validate-tokens.ts fails the build when a key has no
+ * matching `--name` in the shipped CSS or its value drifts from it. Values are rgba
+ * so they compose over whatever sits behind the surface, on native and on
+ * react-native-web.
  */
-export const glassByScheme: Record<ColorScheme, Partial<ColorTokens>> = {
-  light: {
-    popover: "rgba(255, 255, 255, 0.72)",
-  },
-  dark: {
-    popover: "rgba(30, 30, 34, 0.66)",
-  },
+export interface GlassTokens {
+  /** The translucent fill painted UNDER the glass material. */
+  "glass-tint": string;
+}
+
+export const lightGlass: GlassTokens = {
+  "glass-tint": "rgba(255, 255, 255, 0.20)",
+};
+
+export const darkGlass: GlassTokens = {
+  // Dark glass: less light behind it to bend, so the tint drops dimmer rather than
+  // brighter, and the rim carries more of the read (see --glass-tint in the .dark
+  // block of styles/tokens/colors.css).
+  "glass-tint": "rgba(22, 22, 28, 0.30)",
+};
+
+export const glassByScheme: Record<ColorScheme, GlassTokens> = {
+  light: lightGlass,
+  dark: darkGlass,
 };
 
 /**

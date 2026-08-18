@@ -316,6 +316,12 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           gap={4}
           cardStyle={[menuCard, { minWidth: Math.max(triggerWidth, menuMinWidth) }]}
           inlineStyle={menuAnchor}
+          // The overflow menu is an option list (role="menu" over menuitem rows,
+          // and all three skins paint it with the `popover` fill), so it stays an
+          // OPAQUE card in glass mode too, exactly like Dropdown, Select,
+          // Autocomplete and RowMenu: under a material the page's own rows and
+          // rules read straight between the items.
+          opaque
         >
           {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
               each menuitem is orphaned and web SRs/validators flag it. */}

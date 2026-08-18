@@ -2,8 +2,10 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 
 // Co-located Dialog skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and read as glass when
-// tokens.popover is swapped translucent at the theming level). The BRAND
+// (passed in from useTheme so they follow light/dark and read as glass when the
+// shell renders the panel through GlassSurface, which strips the skin's fill and
+// paints the active material over its own `glass-tint`; the `popover` token itself
+// is opaque in both modes and glass never rewrites it). The BRAND
 // survives on every platform (the indigo `primary` confirm action, the
 // `destructive` red for an irreversible confirm); only the native SHAPE, sizing,
 // title alignment, body type, footer layout, and backdrop dimming change per OS:

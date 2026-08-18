@@ -15,12 +15,23 @@
 //
 // Width is the caller's concern: it already measures its trigger (onLayout) and
 // passes the card's width/min-width via `cardStyle`. This helper owns only the
-// x/y placement and the backdrop.
+// x/y placement, the backdrop, and which SURFACE the card is painted on.
+//
+// Surface: an anchored card is a functional-layer overlay, so by default it
+// renders through GlassSurface and takes the active material (real Liquid Glass
+// on iOS 26+, the lens on Chromium web, a frost elsewhere) whenever the theme's
+// surface mode is glass. The OPTION-LIST MENUS opt out with `opaque`: a
+// dropdown / select / autocomplete / row menu / split-button overflow menu is a
+// card of content rows, and a see-through card lets the page's own rows and
+// rules read straight between them. Those paint their skin's own `popover` fill
+// on a plain box, in glass mode exactly as in solid mode. Popovers, the command
+// palette, and the calendar peek keep the material.
 
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
 import { View, Pressable, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
+import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
 import { Entrance } from "./entrance.js";
 
 // A transparent layer filling the outlet: it catches a tap anywhere off the card
@@ -83,6 +94,21 @@ export interface AnchoredOverlayProps {
    */
   preferSide?: boolean;
   /**
+   * Paint the card as an OPAQUE surface: the skin's own `popover` fill on a
+   * plain box, with NO glass material, in glass mode exactly as in solid mode.
+   *
+   * For the anchored surfaces that are option lists (Dropdown, Select,
+   * Autocomplete, RowMenu, SplitButton's overflow menu, and so the AvatarMenu
+   * built on Dropdown). Those cards carry rows the user reads and picks from,
+   * and under a material the page behind them reads through between the rows.
+   * This is NOT a per-component glass prop and it does not paint any glass: it
+   * selects which of the kit's two existing surfaces (the material one or the
+   * plain one) the card is drawn on, the same choice AlertDialog and Toast make
+   * by rendering their own opaque box. Defaults to false, so a Popover, the
+   * Command palette and the Calendar peek keep the material.
+   */
+  opaque?: boolean;
+  /**
    * Fired ONCE per opening, the moment the card and everything inside it are
    * actually mounted. `open` flipping true is NOT that moment on the hosted
    * path: there the card is held back until the trigger measurement lands, so a
@@ -109,6 +135,7 @@ export function AnchoredOverlay({
   preferSide = false,
   alignEnd = false,
   rtl = false,
+  opaque = false,
   onCardMount,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
@@ -119,7 +146,7 @@ export function AnchoredOverlay({
   if (!host) {
     return open ? (
       <Entrance anchor style={inlineStyle}>
-        <OverlayCard cardStyle={cardStyle} onMount={onCardMount}>{children}</OverlayCard>
+        <OverlayCard cardStyle={cardStyle} opaque={opaque} onMount={onCardMount}>{children}</OverlayCard>
       </Entrance>
     ) : null;
   }
@@ -138,6 +165,7 @@ export function AnchoredOverlay({
       preferSide={preferSide}
       alignEnd={alignEnd}
       rtl={rtl}
+      opaque={opaque}
       onCardMount={onCardMount}
     >
       {children}
@@ -152,10 +180,12 @@ export function AnchoredOverlay({
 // move focus into a freshly mounted row from here without waiting on a frame.
 function OverlayCard({
   cardStyle,
+  opaque,
   onMount,
   children,
 }: {
   cardStyle?: StyleProp<ViewStyle>;
+  opaque?: boolean;
   onMount?: () => void;
   children: ReactNode;
 }) {
@@ -166,6 +196,11 @@ function OverlayCard({
   useEffect(() => {
     mount.current?.();
   }, []);
+  // An opaque card takes the kit's plain surface: one View wearing the skin's
+  // style untouched, which is byte for byte what GlassSurface itself renders in
+  // solid mode, so an option list looks and lays out the same under either
+  // theming surface, and no glass is hand-painted anywhere.
+  if (opaque) return <PlainSurface style={cardStyle}>{children}</PlainSurface>;
   return <GlassSurface style={cardStyle}>{children}</GlassSurface>;
 }
 
@@ -182,6 +217,7 @@ interface HostedProps {
   preferSide?: boolean;
   alignEnd?: boolean;
   rtl?: boolean;
+  opaque?: boolean;
   onCardMount?: () => void;
   children: ReactNode;
 }
@@ -246,7 +282,7 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, onCardMount, children }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, onCardMount, children }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
@@ -314,7 +350,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
           shows nothing. */}
       {rect ? (
         <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) }}>
-          <OverlayCard cardStyle={cardStyle} onMount={onCardMount}>{children}</OverlayCard>
+          <OverlayCard cardStyle={cardStyle} opaque={opaque} onMount={onCardMount}>{children}</OverlayCard>
         </Entrance>
       ) : null}
     </Portal>

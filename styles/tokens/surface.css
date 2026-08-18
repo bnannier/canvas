@@ -1,4 +1,4 @@
-/* Surface — the glass theming axis. Glass is NOT a per-component look: it is a
+/* Surface: the glass theming axis. Glass is NOT a per-component look: it is a
    theming-level surface mode (`solid` | `glass`), the same kind of switch as the
    light/dark scheme, and it applies to the FUNCTIONAL layer only.
 
@@ -6,36 +6,52 @@
      <html>                               <!-- solid (the default) -->
      <html class="dark" data-surface="glass">
 
-   Functional layer = navigation and overlays that float above content: navbars,
-   sidebars, tab bars, popovers, menus, dropdowns, selects, tooltips, dialogs,
-   drawers, sheets, command. Content surfaces — cards, lists, tables, calendars,
-   charts — stay solid, per Apple's "don't use Liquid Glass in the content layer".
-   Components read this mode through `useGlassMaterial()`; a `glass` prop is an
-   explicit per-instance override, not the normal way in.
+   Functional layer = the floating shells and overlays that take the material:
+   popovers, dialogs, drawers, action sheets, the command palette, navbars and
+   tab bars. Those paint the `--glass-*` family below.
 
-   The material itself (`--glass-lens`, `--glass-frost`, `--glass-specular`) lives
-   in colors.css. This file only decides WHEN it is on, and gives the page a
-   backdrop worth bending: over a flat fill a lens renders flat.
+   The OPTION-LIST MENUS and the prompt/status surfaces do NOT: dropdowns,
+   selects, autocompletes, avatar menus and alert dialogs stay OPAQUE and keep
+   painting `--popover`, and the toast capsule keeps painting its own opaque
+   `--p-toast-fill`, in glass mode exactly as in solid mode. A menu or a
+   destructive confirmation is a card of rows the user reads and acts on, and a
+   see-through one lets the page's own rows and rules read straight between
+   them. Chart tooltips are opaque for the same reason. Content surfaces
+   (cards, lists, tables, calendars, charts) stay solid too, per Apple's "don't
+   use Liquid Glass in the content layer".
 
-   Light needs a stronger backdrop than dark — white frost over a white page reads
-   as a plain card — so the base block carries the light values (more translucent,
-   a faint cool tint) and the .dark block below overrides them. */
+   So this mode swaps NO semantic color token. `--popover` and `--card` are the
+   same opaque colors under `data-surface="glass"` as without it; only the
+   `--glass-*` material below, painted by the surfaces that opt into it, is new.
+   (Glass once worked by overriding `--popover` translucent here, which is
+   precisely what dragged every popover-filled surface, menus included, into the
+   material.) Nothing takes glass per instance either: there is no per-component
+   `glass` prop, in the CSS or in the kit.
+
+   The material itself (`--glass-tint`, `--glass-lens`, `--glass-frost`,
+   `--glass-specular`) lives in colors.css. This file only decides WHEN it is on,
+   and gives the page a backdrop worth bending: over a flat fill a lens renders
+   flat. */
 [data-surface="glass"]{
-  --popover:oklch(0.99 0.01 286 / 0.66);
   --surface-mode:glass /* @kind other */;
-  /* The aurora the frosted panes refract — the brand orb wash. Never behind
+  /* The aurora the frosted panes refract, the brand orb wash. Never behind
      text-bearing UI on its own. */
   --surface-backdrop:radial-gradient(95% 55% at 8% -6%,var(--orb-indigo),transparent 70%),radial-gradient(85% 50% at 96% 4%,var(--orb-violet),transparent 68%),radial-gradient(120% 65% at 60% 106%,var(--orb-cyan),transparent 72%) /* @kind other */;
-}
-.dark[data-surface="glass"],.dark [data-surface="glass"]{
-  --popover:oklch(0.25 0.006 285.885 / 0.62);
 }
 [data-surface="glass"] body,body[data-surface="glass"]{
   background-image:var(--surface-backdrop);background-attachment:fixed;
 }
 
 /* Accessibility and media fallbacks. Translucency is decorative: it drops the
-   moment it would cost legibility, and it means nothing on paper. */
+   moment it would cost legibility, and it means nothing on paper.
+
+   `--glass-tint:var(--popover)` is what turns the material OFF here. It reads
+   the same opaque `--popover` a menu paints (this file no longer rewrites it),
+   so with the lens and the frost set to none a glass panel collapses to a flat,
+   fully opaque card, the web counterpart of the accessibility rungs
+   GlassSurface applies natively (src/style/glass-surface). While glass swapped
+   `--popover` translucent, this line resolved to that translucent value and the
+   "reduce transparency" panel stayed see-through. */
 @media (prefers-reduced-transparency:reduce){
   [data-surface="glass"]{--glass-tint:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }

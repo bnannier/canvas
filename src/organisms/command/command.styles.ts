@@ -3,7 +3,9 @@ import { type ColorTokens, shadow, surfaceRipple } from "../../style/index.js";
 
 // Co-located Command skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface, since
-// tokens.popover is swapped translucent at the theming level). Command is a
+// the shell renders the panel through GlassSurface, which strips the skin's fill
+// and paints the active material over its own `glass-tint`; the `popover` token
+// itself is opaque in both modes and glass never rewrites it). Command is a
 // "Light" platform treatment: ONE structure (the GlassSurface panel, the search
 // row, grouped result rows, the optional group heading, the optional footer, and
 // the collapsed trigger) with small per-OS touches. The BRAND survives on every

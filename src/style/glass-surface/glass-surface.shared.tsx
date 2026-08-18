@@ -1,7 +1,7 @@
 // Shared internals for the GlassSurface primitive (the glass theming surface
 // mode's renderer). The platform files (glass-surface.tsx for web+Android,
 // glass-surface.ios.tsx for iOS) pick the material — Apple Liquid Glass on iOS
-// 26+, an expo-blur frost on web/Android/older iOS, a translucent View fallback
+// 26+, an expo-blur frost on web/Android/older iOS, the skin's own flat surface
 // otherwise — and hand it to GlassBox, which lays the material behind the content.
 //
 // Why two boxes in the glass path: clipping the material to the skin's rounded
@@ -18,8 +18,9 @@ import type * as ExpoBlurTypes from "expo-blur";
 import { type ColorTokens } from "../tokens.js";
 
 export interface GlassSurfaceProps {
-  /** The skin's shape + fill style (radius, padding, border, shadow, the popover
-   *  fill). The fill is stripped under glass; the material supplies it. */
+  /** The skin's shape + fill style (radius, padding, border, shadow, and the skin's
+   *  own opaque fill). The fill is stripped under glass; the material supplies its own
+   *  (the `glass-tint` token, or `tint` below). */
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   pointerEvents?: ViewProps["pointerEvents"];
@@ -44,7 +45,7 @@ export interface GlassSurfaceProps {
    */
   interactive?: boolean;
   /**
-   * Render a SHEER (more see-through) frost: a lighter blur and a thinner fill so
+   * Render a SHEER (more see-through) frost: a lighter blur and a thinner tint so
    * whatever animates behind the surface reads clearly through it. For CONTENT-layer
    * surfaces that float over a live backdrop and do NOT need to occlude what is behind
    * them (the docs' example stages, tables, and cards over the Canvas Universe). Do NOT
@@ -53,11 +54,12 @@ export interface GlassSurfaceProps {
    */
   sheer?: boolean;
   /**
-   * Override the translucent UNDER-FILL painted behind the material (the fill that keeps
-   * a bare glass panel legible). Defaults to the `popover` token, which suits panels
-   * (menus, dialogs, bars). Pass a brighter value for a small glass CONTROL that must
-   * read as a bright puck rather than a popover-tinted blob — the Slider's Liquid Glass
-   * handle passes a translucent white here so the knob looks like glass on both schemes.
+   * Override the translucent UNDER-FILL painted behind the material (the fill that gives
+   * a bare glass panel a body). Defaults to the active scheme's `glass-tint` token, the
+   * material's own fill, which suits every panel and bar. Pass a brighter value for a
+   * small glass CONTROL that must read as a bright puck rather than a tinted blob: the
+   * Slider's Liquid Glass handle passes an opaque white here so the knob looks like glass
+   * on both schemes.
    * Ignored on the solid + module-absent fallbacks (PlainSurface keeps the skin's own
    * opaque fill).
    */
@@ -130,7 +132,7 @@ export interface GlassBlurTargetHostProps {
 // generation is installed. expo-blur 57+ (detected by its BlurTargetView export) wants
 // `blurMethod` + `blurTarget`; passing the legacy prop there logs a deprecation
 // warning, and naming the dimezis method without a target logs a fallback warning, so
-// without a target it asks for "none" outright (the popover fill under the blur keeps
+// without a target it asks for "none" outright (the glass tint under the blur keeps
 // the surface a substantial material; only surfaces with a safe sibling target — see
 // GlassBlurTargetContext above — get one). Older expo-blur keeps the legacy prop
 // unchanged, which still blurs the content behind the surface there. Web ignores all
@@ -149,11 +151,11 @@ export function frostMethodProps(
 // overlay is layered on top (that would double-darken the material).
 export const GLASS_INTENSITY = 80;
 
-// The SHEER frost (GlassSurfaceProps.sheer): a lighter blur plus a thinner popover
-// fill (the fill layer is drawn at SHEER_FILL_OPACITY, so its effective alpha drops
-// from ~0.66-0.72 to ~0.5), so a live backdrop reads clearly through a content
-// surface. The full frost keeps GLASS_INTENSITY + a solid fill for functional
-// overlays, which must occlude what they open over.
+// The SHEER frost (GlassSurfaceProps.sheer): a lighter blur plus a thinner tint (the
+// fill layer is drawn at SHEER_FILL_OPACITY, so the glass tint's effective alpha drops
+// from 0.20 light / 0.30 dark to 0.15 / 0.225), so a live backdrop reads clearly through
+// a content surface. The full frost keeps GLASS_INTENSITY + the whole tint for functional
+// surfaces, whose material has to stay readable over whatever moves behind it.
 export const SHEER_INTENSITY = 50;
 export const SHEER_FILL_OPACITY = 0.75;
 
@@ -248,7 +250,7 @@ export function GlassBox({
 }
 
 // The no-glass / no-module fallback: one plain View identical to the pre-portal
-// surface (keeps the solid or translucent popover fill from `style`).
+// surface (keeps the skin's own opaque fill from `style`).
 export function PlainSurface({ style, children, pointerEvents, testID, role }: GlassSurfaceProps) {
   return (
     <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role}>
@@ -259,9 +261,9 @@ export function PlainSurface({ style, children, pointerEvents, testID, role }: G
 
 // The accessibility degradation rungs, shared by both platform files so the ladder
 // is defined ONCE (Apple: these modifiers must apply to every glass element). When
-// either setting is on the surface renders opaque via PlainSurface — the ThemeProvider
-// has already reverted the translucent `popover` token to its solid value, so the
-// skin's own fill is opaque here with no extra work. Increase Contrast additionally
+// either setting is on the surface renders opaque via PlainSurface: the skin paints a
+// SEMANTIC surface token, which glass mode never rewrites, so its fill is already opaque
+// here with no extra work. Increase Contrast additionally
 // adds a contrasting `foreground` border. Returns null when neither setting is on, so
 // the caller proceeds to its normal material path. Precedence: Increase Contrast wins
 // over Reduce Transparency (its rung is a superset — opaque plus the border).

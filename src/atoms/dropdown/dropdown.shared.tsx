@@ -280,6 +280,11 @@ export function createDropdown(skin: DropdownSkin) {
           gap={skin.menuGap}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
           inlineStyle={alignEnd ? menuAnchorEnd(skin.menuGap) : menuAnchor(skin.menuGap)}
+          // A menu is a card of action rows, so it stays an OPAQUE card in glass
+          // mode too (the skin's own `popover` fill, no material): under a glass
+          // material the page's own rules and rows read straight between the
+          // items. The bar/sheet/palette overlays are the kit's glass surfaces.
+          opaque
           // Same logical alignment on the hosted path: the portal places the card
           // by the trigger's trailing edge instead of its leading one, mirrored
           // in a right-to-left locale.
