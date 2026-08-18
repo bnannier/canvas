@@ -158,6 +158,10 @@ export function createButton(skin: ButtonSkin) {
           accessibilityLabel={accessibilityLabel}
           accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
           aria-busy={loading ? true : undefined}
+          // RNW drops accessibilityState, so the disabled state needs its aria
+          // alias too (the kit's dual-a11y contract). Only emitted when true, so
+          // an ordinary button's markup is unchanged.
+          aria-disabled={disabled || loading ? true : undefined}
           aria-expanded={props.expanded}
           aria-haspopup={props.haspopup}
           android_ripple={ripple}

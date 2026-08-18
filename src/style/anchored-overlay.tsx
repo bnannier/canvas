@@ -62,6 +62,19 @@ export interface AnchoredOverlayProps {
    *  of aligning to its left edge. Still clamped inside the outlet. */
   centered?: boolean;
   /**
+   * Align the card's TRAILING edge with the trigger's trailing edge instead of
+   * its leading edge (the default). Needs no `cardWidth`: the card is pinned by
+   * an inset from the outlet's own edge, so there is no measure-then-shift pass.
+   */
+  alignEnd?: boolean;
+  /**
+   * The active layout direction, for callers that want logical (leading/trailing)
+   * horizontal alignment. Leading is physical-left in a left-to-right locale and
+   * physical-right in a right-to-left one. Omit to keep the legacy physical-left
+   * anchoring untouched.
+   */
+  rtl?: boolean;
+  /**
    * With `cardWidth`: prefer placing the card BESIDE the trigger, top-aligned —
    * to its right when the outlet has room there, else to its left, and only
    * when neither side fits, below it (the `centered` treatment). For popovers
@@ -83,6 +96,8 @@ export function AnchoredOverlay({
   cardWidth,
   centered = false,
   preferSide = false,
+  alignEnd = false,
+  rtl = false,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
 
@@ -109,6 +124,8 @@ export function AnchoredOverlay({
       cardWidth={cardWidth}
       centered={centered}
       preferSide={preferSide}
+      alignEnd={alignEnd}
+      rtl={rtl}
     >
       {children}
     </HostedAnchoredOverlay>
@@ -126,6 +143,8 @@ interface HostedProps {
   cardWidth?: number;
   centered?: boolean;
   preferSide?: boolean;
+  alignEnd?: boolean;
+  rtl?: boolean;
   children: ReactNode;
 }
 
@@ -147,13 +166,34 @@ const CLAMP_INSET = 8;
  * clamped inside the outlet; `preferSide` instead tries beside the trigger,
  * top-aligned — right first, left when the right lacks room, and below (the
  * centered treatment) when neither side fits.
+ *
+ * `alignEnd`/`rtl` opt into LOGICAL horizontal alignment for the below
+ * placement: the card is pinned by its leading edge (default) or its trailing
+ * edge (`alignEnd`), and which physical side that is flips with `rtl`. Pinning
+ * the trailing edge is expressed as a `right` inset from the outlet, so it needs
+ * no card measurement and never runs a measure-then-shift second pass. Callers
+ * that pass neither keep the legacy physical-left anchoring byte for byte.
  */
 export function placeOverlay(
   rect: Rect,
-  opts: { cardWidth?: number; centered?: boolean; preferSide?: boolean; gap: number; outletWidth: number | null },
-): { left: number; top: number } {
-  const { cardWidth, centered, preferSide, gap, outletWidth } = opts;
+  opts: { cardWidth?: number; centered?: boolean; preferSide?: boolean; alignEnd?: boolean; rtl?: boolean; gap: number; outletWidth: number | null },
+): { left?: number; right?: number; top: number } {
+  const { cardWidth, centered, preferSide, alignEnd, rtl = false, gap, outletWidth } = opts;
   const below = { left: rect.x, top: rect.y + rect.height + gap };
+
+  if (alignEnd || rtl) {
+    // XOR: the trailing edge is on the right in a left-to-right locale and on
+    // the left in a right-to-left one, so leading alignment under RTL pins the
+    // right edge for exactly the same reason `alignEnd` does under LTR.
+    const pinRight = !!alignEnd !== rtl;
+    if (!pinRight) return { left: Math.max(0, rect.x), top: below.top };
+    if (outletWidth != null && outletWidth > 0) {
+      return { right: Math.max(0, outletWidth - (rect.x + rect.width)), top: below.top };
+    }
+    // Outlet width not measured yet: fall through to the leading-edge anchor
+    // rather than guess an inset the card would then jump out of.
+  }
+
   if (cardWidth == null) return below;
 
   if (preferSide && outletWidth != null && outletWidth > 0) {
@@ -168,7 +208,7 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, children }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, children }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
@@ -235,7 +275,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}
       {rect ? (
-        <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth, centered, preferSide, gap, outletWidth }) }}>
+        <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) }}>
           <GlassSurface style={cardStyle}>{children}</GlassSurface>
         </Entrance>
       ) : null}

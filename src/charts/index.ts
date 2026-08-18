@@ -21,4 +21,7 @@ export * from "./range-area-chart/range-area-chart.js";
 export * from "./histogram/histogram.js";
 export * from "./box-plot/box-plot.js";
 export * from "./waterfall-chart/waterfall-chart.js";
+export * from "./radial-bar-chart/radial-bar-chart.js";
+export * from "./funnel-chart/funnel-chart.js";
+export * from "./radar-chart/radar-chart.js";
 export type { ChartSeries, StackedSegment } from "./shared/types.js";

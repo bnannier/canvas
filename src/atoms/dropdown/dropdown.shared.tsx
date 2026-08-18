@@ -56,8 +56,21 @@ export interface DropdownProps {
   children?: ReactNode;
   /** Optional muted section heading rendered above the rows (e.g. "Actions"). */
   label?: string;
+  /** Identity header title, rendered in the popover foreground ABOVE everything
+   *  else in the menu (an account name over its email, say). Pair it with
+   *  `description`; passing neither omits the header block entirely. */
+  title?: string;
+  /** Identity header second line, muted, under `title`. */
+  description?: string;
   /** The menu rows, top to bottom. */
   items: DropdownItem[];
+  /** Align the menu's TRAILING edge with the trigger's trailing edge instead of
+   *  the leading edge (the default). For a trigger parked at the end of a bar,
+   *  where a leading-aligned menu would run off the surface. Logical, so a
+   *  right-to-left locale mirrors it. */
+  alignEnd?: boolean;
+  /** Dimmed, inert trigger: the menu never opens and the press is a no-op. */
+  disabled?: boolean;
   /** Controlled open state. Omit for uncontrolled (the trigger opens/closes it). */
   open?: boolean;
   /** Fired when the open state changes (trigger press, select, etc.). */
@@ -79,21 +92,34 @@ const MENU_MIN_WIDTH = 200;
 // With a provider, AnchoredOverlay positions the card over the page and adds the
 // outside-tap dismiss backdrop instead. The skin owns the card's shape/fill/
 // shadow; this owns the inline anchoring.
+//
+// `start`/`end` (never left/right) so the alignment is LOGICAL: the wrapper
+// shrink-wraps the trigger, so pinning the card's start edge lines it up with the
+// trigger's leading edge and pinning its end edge lines up the trailing edges,
+// mirrored automatically in a right-to-left locale.
 const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: 4 };
+const MENU_ANCHOR_END: ViewStyle = { position: "absolute", top: "100%", end: 0, zIndex: 50, marginTop: 4 };
 
 /** Build a Dropdown component from a platform skin. */
 export function createDropdown(skin: DropdownSkin) {
   return function Dropdown(props: DropdownProps) {
-    const { trigger, children, label, items, open: openProp, onOpenChange, onSelect, testID, style } = props;
+    const { trigger, children, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
     const { tokens, dark } = useTheme();
     // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
     // menu and a select closes it; a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
-    const open = openProp ?? internalOpen;
+    // A disabled Dropdown is closed, full stop: the trigger is inert AND a
+    // controlled `open` cannot force the menu out of a disabled control.
+    const open = !disabled && (openProp ?? internalOpen);
     const setOpen = (next: boolean) => {
+      if (disabled) return;
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
+    // The identity header (title over description) sits above the section label
+    // and the rows. It is plain text, NOT a menu item: nothing here is focusable
+    // and it never enters the roving-focus item count.
+    const hasHeader = title != null || description != null;
 
     // Escape dismisses the open menu on web (no-op natively).
     useEscapeKey(open, () => setOpen(false));
@@ -142,16 +168,23 @@ export function createDropdown(skin: DropdownSkin) {
       >
         {children != null ? (
           <Pressable
-            style={customTrigger}
-            onPress={() => setOpen(!open)}
+            // The disabled dim rides the skin's own disabled opacity, so the
+            // trigger fades by each platform's convention (0.5 on iOS/web, M3's
+            // 0.38 on Android).
+            style={[customTrigger, disabled ? { opacity: skin.disabledOpacity } : null]}
+            onPress={disabled ? undefined : () => setOpen(!open)}
+            disabled={disabled}
             accessibilityRole="button"
-            accessibilityState={{ expanded: open }}
+            accessibilityState={{ expanded: open, disabled: !!disabled }}
+            // RNW forwards neither accessibilityState nor aria-haspopup; alias both.
             aria-expanded={open}
+            aria-disabled={disabled ? true : undefined}
+            {...{ "aria-haspopup": "menu" }}
           >
             {children}
           </Pressable>
         ) : (
-          <Button outline small expanded={open} onPress={() => setOpen(!open)}>
+          <Button outline small expanded={open} haspopup="menu" disabled={disabled} onPress={() => setOpen(!open)}>
             {trigger}
           </Button>
         )}
@@ -162,7 +195,12 @@ export function createDropdown(skin: DropdownSkin) {
           triggerRef={triggerRef}
           gap={4}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
-          inlineStyle={MENU_ANCHOR}
+          inlineStyle={alignEnd ? MENU_ANCHOR_END : MENU_ANCHOR}
+          // Same logical alignment on the hosted path: the portal places the card
+          // by the trigger's trailing edge instead of its leading one, mirrored
+          // in a right-to-left locale.
+          alignEnd={alignEnd}
+          rtl={isRTL()}
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
@@ -173,6 +211,16 @@ export function createDropdown(skin: DropdownSkin) {
                 corners (a no-op on iOS/web; the card itself keeps no overflow). */}
             <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
             <View accessibilityRole="menu" role="menu">
+            {hasHeader ? (
+              <View style={skin.menuHeader}>
+                {title != null ? <Text style={skin.menuHeaderTitle(tokens)}>{title}</Text> : null}
+                {description != null ? <Text style={skin.menuHeaderDescription(tokens)}>{description}</Text> : null}
+              </View>
+            ) : null}
+            {/* The card's own hairline closes the header block off from what
+                follows (Android's M3 skin declares no separator, so there the
+                header's padding does the separating). */}
+            {hasHeader && skin.separator ? <View style={skin.separator(tokens)} /> : null}
             {label ? (
               <Text style={skin.menuLabel(tokens)}>
                 {label}

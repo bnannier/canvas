@@ -9,6 +9,9 @@ import { ServiceHealthList } from "../src/charts/service-health-list/service-hea
 import { BulletChart } from "../src/charts/bullet-chart/bullet-chart.tsx";
 import { ProgressRing } from "../src/charts/progress-ring/progress-ring.tsx";
 import { ringDash, ringFill } from "../src/charts/progress-ring/progress-ring.shared.tsx";
+import { RadialBarChart } from "../src/charts/radial-bar-chart/radial-bar-chart.tsx";
+import { FunnelChart } from "../src/charts/funnel-chart/funnel-chart.tsx";
+import { RadarChart } from "../src/charts/radar-chart/radar-chart.tsx";
 import { rowAccessibleLabel, rowFill } from "../src/charts/shared/breakdown-rows.tsx";
 import { periodStatus, statusSummary } from "../src/charts/shared/status-strip.tsx";
 import { lightColors } from "../src/style/tokens.ts";
@@ -308,5 +311,80 @@ describe("ProgressRing", () => {
     expect(ringFill(t, { value: 1, success: true, warning: true })).toBe(ringFill(t, { value: 1, success: true }));
     expect(ringFill(t, { value: 1 })).toBe(t.primary);
     expect(ringFill(t, { value: 1, warning: true })).not.toBe(t.primary);
+  });
+});
+
+describe("RadialBarChart", () => {
+  const data = [
+    { label: "iOS", value: 64 },
+    { label: "Web", value: 82 },
+  ];
+
+  it("the composition lives in the accessible name as shares of the sweep", () => {
+    const { container } = ui(<RadialBarChart label="Activation" data={data} max={100} />);
+    expect(imgLabels(container)).toContain("Activation: iOS 64%, Web 82%");
+  });
+
+  it("hideLegend hoists the img role to the root and drops the legend text", () => {
+    const withLegend = ui(<RadialBarChart label="A" data={data} max={100} />);
+    expect(withLegend.container.textContent).toContain("iOS");
+    const without = ui(<RadialBarChart label="B" data={data} max={100} hideLegend />);
+    expect(without.container.textContent ?? "").not.toContain("iOS");
+    expect(imgLabels(without.container)).toContain("B: iOS 64%, Web 82%");
+  });
+
+  it("the legend carries formatted values as details", () => {
+    const { getByText } = ui(<RadialBarChart data={[{ label: "Hot", value: 4200 }]} />);
+    expect(getByText("4.2k")).toBeTruthy();
+  });
+});
+
+describe("FunnelChart", () => {
+  const stages = [
+    { label: "Visits", value: 1000 },
+    { label: "Signups", value: 400 },
+    { label: "Paid", value: 120 },
+  ];
+
+  it("names every stage with its conversion from the previous stage", () => {
+    const { container } = ui(<FunnelChart title="Signup funnel" stages={stages} />);
+    const labels = imgLabels(container);
+    expect(labels).toContain("Signup funnel: Visits 1k, Signups 400 (40% of Visits), Paid 120 (30% of Signups)");
+  });
+
+  it("share reads every stage against the first", () => {
+    const { container } = ui(<FunnelChart share stages={stages} />);
+    expect(imgLabels(container).join(" ")).toContain("Paid 120 (12% of Visits)");
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<FunnelChart title="Checkout" stages={stages} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Checkout chart");
+  });
+});
+
+describe("RadarChart", () => {
+  const axes = ["Coding", "Design", "Comms"];
+  const series = [
+    { label: "Casey", values: [8, 6, 9] },
+    { label: "Jordan", values: [6, 9, 7] },
+  ];
+
+  it("folds every axis and value into the plot's accessible name", () => {
+    const { container } = ui(<RadarChart axes={axes} series={series} max={10} />);
+    const name = imgLabels(container).join("; ");
+    expect(name).toContain("Casey: Coding 8, Design 6, Comms 9");
+    expect(name).toContain("Jordan: Coding 6, Design 9, Comms 7");
+  });
+
+  it("shows a reachable legend for multiple series outside the plot image", () => {
+    const { container } = ui(<RadarChart axes={axes} series={series} />);
+    expect(container.textContent).toContain("Casey");
+    expect(container.textContent).toContain("Jordan");
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<RadarChart title="Candidates" axes={axes} series={series} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Candidates chart");
   });
 });

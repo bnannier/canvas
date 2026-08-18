@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { createAvatar, createAvatarGroup } from "./avatar.shared.js";
-import { iosSkin } from "./avatar.styles.js";
+import { createAvatarMenu } from "./avatar-menu.shared.js";
+import { iosSkin, iosMenuSkin } from "./avatar.styles.js";
 import { GlassSurface, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // iOS (HIG) Avatar. Metro resolves this file on iOS; the docs import it for preview.
@@ -21,4 +22,6 @@ function IosGlassAvatarSurface({ style, testID, children }: { style?: StyleProp<
 
 export const Avatar = createAvatar(iosSkin, IosGlassAvatarSurface);
 export const AvatarGroup = createAvatarGroup(iosSkin);
+export const AvatarMenu = createAvatarMenu(iosMenuSkin);
 export type { AvatarProps, AvatarGroupProps } from "./avatar.shared.js";
+export type { AvatarMenuProps } from "./avatar-menu.shared.js";

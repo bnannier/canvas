@@ -1,6 +1,7 @@
-import { type TextStyle } from "react-native";
-import { controlRipple, type ColorTokens } from "../../style/index.js";
+import { type TextStyle, type ViewStyle } from "react-native";
+import { alpha, controlRipple, type ColorTokens } from "../../style/index.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
+import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
 
 // Per-OS Avatar skins. Avatar is a "Light" treatment: identical structure, box
 // sizes, per-name fallback colour, circle radius, and ring outline (those live in
@@ -73,4 +74,104 @@ export const androidSkin: AvatarSkin = {
   pressedOpacity: null,
   // Material 3 accessibility minimum touch target: 48x48dp.
   minTarget: 48,
+};
+
+// ---------------------------------------------------------------------------
+// AvatarMenu: the identity-pill entries added to each Avatar skin.
+// ---------------------------------------------------------------------------
+// The capsule that opens the account menu. Its per-OS numbers are the ones the
+// web hand-off carries as the `--p-idpill-*` custom properties in
+// styles/tokens/platforms.css; they are transcribed here so NATIVE reads them
+// from this file and never from the CSS (the CSS layer is the web hand-off only).
+// Where the CSS expresses a fill with `color-mix()`, the equivalent is computed
+// below with the kit's own colour helpers instead of a web colour function.
+//
+//   web     32px capsule, gap 8, padding 4/10, `secondary` fill, a 1px hairline
+//           that is transparent when closed and `input`-coloured when open, and
+//           an open fill 6% lifted toward `foreground`; name 13/16 weight 500.
+//   iOS     36pt capsule, padding 5/12, a `border` hairline that is ALWAYS
+//           visible over a transparent fill, `secondary` when open; SF name
+//           15/20 semibold with -0.15 tracking.
+//   Android 40dp tonal M3 pill, padding 6/14, no visible outline: `primary` at
+//           12% closed and 20% open; M3 name 14/20 weight 500, +0.1 tracking.
+//
+// The 11/14 secondary (email) line and the 14px muted chevron are the same on
+// every platform; only the tracking follows the platform's name tracking.
+
+// Blend `over` into `base` by `t` (0..1) in sRGB, the RN equivalent of the CSS
+// hand-off's `color-mix(in oklab, <over> <t>%, <base>)`. At the 6% weight the web
+// pill uses, the sRGB and oklab results differ by well under one display step,
+// and this stays token-driven so it follows light and dark. Non-hex inputs (a
+// translucent token value, "transparent") return `base` unchanged, the same
+// defensive contract `alpha()` follows.
+function mix(base: string, over: string, t: number): string {
+  if (base[0] !== "#" || over[0] !== "#") return base;
+  const channels = (c: string) => {
+    const h = c.replace("#", "");
+    const full = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
+    return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
+  };
+  const [br, bg, bb] = channels(base);
+  const [or, og, ob] = channels(over);
+  const ch = (a: number, b: number) => Math.round(a + (b - a) * t);
+  return `rgb(${ch(br, or)}, ${ch(bg, og)}, ${ch(bb, ob)})`;
+}
+
+// The capsule's shared box: a row that centres the avatar, the identity column,
+// and the chevron on one baseline, with the gap the hand-off keeps at 8 on every
+// platform. The radius is applied by the shell (a capsule at every height).
+const PILL_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
+
+// The muted 11/14 secondary line, shared; each skin adds its own tracking.
+const PILL_SECONDARY: TextStyle = { fontSize: 11, lineHeight: 14 };
+
+// The trailing chevron is 14px and muted on every platform.
+const PILL_CHEVRON = 14;
+
+// Web (--p-idpill-* in the :root block of platforms.css): a 32px `secondary`
+// capsule. The hairline is always 1px so opening never changes the pill's box;
+// it is transparent when closed and takes the `input` colour on open, over a fill
+// lifted 6% toward `foreground`. Disabled dims to the web --p-disabled, 0.5.
+export const webMenuSkin: AvatarMenuSkin = {
+  ...webSkin,
+  menuPill: { ...PILL_ROW, height: 32, paddingStart: 4, paddingEnd: 10, borderWidth: 1 },
+  menuPillFill: (t, open) => ({
+    backgroundColor: open ? mix(t.secondary, t.foreground, 0.06) : t.secondary,
+    borderColor: open ? t.input : "transparent",
+  }),
+  menuPillName: { fontSize: 13, lineHeight: 16, fontWeight: "500" },
+  menuPillSecondary: PILL_SECONDARY,
+  menuChevronSize: PILL_CHEVRON,
+  menuDisabledOpacity: 0.5,
+};
+
+// iOS (the [data-platform="ios"] --p-idpill-* block): a 36pt capsule outlined with
+// a permanent `border` hairline over a transparent fill, filling with `secondary`
+// while the menu is open. SF Pro Text name at 15/20 semibold, tracked -0.15 per
+// the SF tracking table, and the same -0.15 on the secondary line. Disabled dims
+// to the iOS --p-disabled, 0.4.
+export const iosMenuSkin: AvatarMenuSkin = {
+  ...iosSkin,
+  menuPill: { ...PILL_ROW, height: 36, paddingStart: 5, paddingEnd: 12, borderWidth: 1 },
+  menuPillFill: (t, open) => ({ backgroundColor: open ? t.secondary : "transparent", borderColor: t.border }),
+  menuPillName: { fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 },
+  menuPillSecondary: { ...PILL_SECONDARY, letterSpacing: -0.15 },
+  menuChevronSize: PILL_CHEVRON,
+  menuDisabledOpacity: 0.4,
+};
+
+// Android (the [data-platform="android"] --p-idpill-* block): Material 3's tonal
+// pill, 40dp tall, filled with `primary` at 12% and lifting to 20% while open (the
+// M3 state-layer model), with no visible outline. The 1px hairline is still
+// reserved but transparent, so the box never shifts between the three platforms or
+// between states. M3 name at 14/20 weight 500 with +0.1 tracking. Disabled dims to
+// the Android --p-disabled, 0.38.
+export const androidMenuSkin: AvatarMenuSkin = {
+  ...androidSkin,
+  menuPill: { ...PILL_ROW, height: 40, paddingStart: 6, paddingEnd: 14, borderWidth: 1 },
+  menuPillFill: (t, open) => ({ backgroundColor: alpha(t.primary, open ? 0.2 : 0.12), borderColor: "transparent" }),
+  menuPillName: { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 },
+  menuPillSecondary: { ...PILL_SECONDARY, letterSpacing: 0.1 },
+  menuChevronSize: PILL_CHEVRON,
+  menuDisabledOpacity: 0.38,
 };

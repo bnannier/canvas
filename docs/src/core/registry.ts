@@ -930,6 +930,11 @@ import e_charts_composed_chart_dont_0_do from "./examples/charts/composed-chart/
 import e_charts_composed_chart_dont_0_dont from "./examples/charts/composed-chart/dont-0-dont";
 import e_charts_depth_chart_example_0 from "./examples/charts/depth-chart/example-0";
 import e_charts_depth_chart_example_1 from "./examples/charts/depth-chart/example-1";
+import e_charts_funnel_chart_example_0 from "./examples/charts/funnel-chart/example-0";
+import e_charts_funnel_chart_example_1 from "./examples/charts/funnel-chart/example-1";
+import e_charts_funnel_chart_example_2 from "./examples/charts/funnel-chart/example-2";
+import e_charts_funnel_chart_dont_0_do from "./examples/charts/funnel-chart/dont-0-do";
+import e_charts_funnel_chart_dont_0_dont from "./examples/charts/funnel-chart/dont-0-dont";
 import e_charts_gauge_example_0 from "./examples/charts/gauge/example-0";
 import e_charts_gauge_example_1 from "./examples/charts/gauge/example-1";
 import e_charts_gauge_example_2 from "./examples/charts/gauge/example-2";
@@ -965,6 +970,16 @@ import e_charts_progress_ring_example_1 from "./examples/charts/progress-ring/ex
 import e_charts_progress_ring_example_2 from "./examples/charts/progress-ring/example-2";
 import e_charts_progress_ring_dont_0_do from "./examples/charts/progress-ring/dont-0-do";
 import e_charts_progress_ring_dont_0_dont from "./examples/charts/progress-ring/dont-0-dont";
+import e_charts_radar_chart_example_0 from "./examples/charts/radar-chart/example-0";
+import e_charts_radar_chart_example_1 from "./examples/charts/radar-chart/example-1";
+import e_charts_radar_chart_example_2 from "./examples/charts/radar-chart/example-2";
+import e_charts_radar_chart_dont_0_do from "./examples/charts/radar-chart/dont-0-do";
+import e_charts_radar_chart_dont_0_dont from "./examples/charts/radar-chart/dont-0-dont";
+import e_charts_radial_bar_chart_example_0 from "./examples/charts/radial-bar-chart/example-0";
+import e_charts_radial_bar_chart_example_1 from "./examples/charts/radial-bar-chart/example-1";
+import e_charts_radial_bar_chart_example_2 from "./examples/charts/radial-bar-chart/example-2";
+import e_charts_radial_bar_chart_dont_0_do from "./examples/charts/radial-bar-chart/dont-0-do";
+import e_charts_radial_bar_chart_dont_0_dont from "./examples/charts/radial-bar-chart/dont-0-dont";
 import e_charts_range_area_chart_example_0 from "./examples/charts/range-area-chart/example-0";
 import e_charts_range_area_chart_example_1 from "./examples/charts/range-area-chart/example-1";
 import e_charts_range_area_chart_example_2 from "./examples/charts/range-area-chart/example-2";
@@ -2350,6 +2365,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
 
     ],
   },
+  "funnel-chart": {
+    dir: "funnel-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<FunnelChart\n  title=\"Signup funnel\"\n  style={{ maxWidth: 480 }}\n  stages={[\n    { label: \"Visits\", value: 12400 },\n    { label: \"Signups\", value: 4200 },\n    { label: \"Activated\", value: 1850 },\n    { label: \"Paid\", value: 480 },\n  ]}\n/>", render: e_charts_funnel_chart_example_0 },
+      { label: "Share of the first stage", code: "<FunnelChart\n  title=\"Checkout\"\n  share\n  style={{ maxWidth: 480 }}\n  stages={[\n    { label: \"Cart\", value: 8600 },\n    { label: \"Address\", value: 5200 },\n    { label: \"Payment\", value: 3900 },\n    { label: \"Placed\", value: 3400 },\n  ]}\n/>", render: e_charts_funnel_chart_example_1 },
+      { label: "Compact, inspected", code: "<FunnelChart\n  compact\n  defaultSelected={1}\n  style={{ maxWidth: 480 }}\n  stages={[\n    { label: \"Leads\", value: 900 },\n    { label: \"Qualified\", value: 340 },\n    { label: \"Closed\", value: 120 },\n  ]}\n/>", render: e_charts_funnel_chart_example_2 },
+    ],
+    donts: [
+      { title: "FunnelChart", do: { caption: "Order the stages widest first and let the taper carry the drop-off.", code: "<FunnelChart\n  title=\"Signup funnel\"\n  style={{ maxWidth: 480 }}\n  stages={[\n    { label: \"Visits\", value: 12400 },\n    { label: \"Signups\", value: 4200 },\n    { label: \"Paid\", value: 480 },\n  ]}\n/>", render: e_charts_funnel_chart_dont_0_do }, dont: { caption: "A funnel that widens mid-way is not a funnel; a stage exceeding its predecessor warns and reads as an error.", code: "<FunnelChart\n  style={{ maxWidth: 480 }}\n  stages={[\n    { label: \"Visits\", value: 4200 },\n    { label: \"Signups\", value: 12400 },\n  ]}\n/>", render: e_charts_funnel_chart_dont_0_dont } },
+    ],
+  },
   "gauge": {
     dir: "gauge",
     category: "charts",
@@ -2432,6 +2459,30 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "ProgressRing", do: { caption: "Put a muted track behind the value arc, the percent readout in the ring's center, and the label below the graphic.", code: "<Card padded style={{ maxWidth: 200 }}>\n  <Column alignCenter>\n    <ProgressRing value={72} label=\"Complete\" />\n  </Column>\n</Card>", render: e_charts_progress_ring_dont_0_do }, dont: { caption: "A bordered circle with no track and no readout gives no baseline to read the fill against and no exact value.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: \"center\" }}>\n  <View style={{ borderRadius: 9999, borderWidth: 10, borderColor: tokens.primary, height: 120, width: 120 }} />\n</View>", render: e_charts_progress_ring_dont_0_dont } },
+    ],
+  },
+  "radar-chart": {
+    dir: "radar-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<RadarChart\n  title=\"Candidate comparison\"\n  axes={[\"Coding\", \"Design\", \"Comms\", \"Ops\", \"Product\"]}\n  style={{ maxWidth: 480 }}\n  series={[\n    { label: \"Casey\", values: [8, 6, 9, 5, 7] },\n    { label: \"Jordan\", values: [6, 9, 7, 8, 5] },\n  ]}\n  max={10}\n/>", render: e_charts_radar_chart_example_0 },
+      { label: "Single series, toned", code: "<RadarChart\n  title=\"Service posture\"\n  success\n  axes={[\"Latency\", \"Uptime\", \"Errors\", \"Cost\", \"Coverage\"]}\n  style={{ maxWidth: 480 }}\n  series={[{ label: \"API\", values: [7, 9, 8, 6, 7] }]}\n  max={10}\n/>", render: e_charts_radar_chart_example_1 },
+      { label: "Compact, no grid", code: "<RadarChart\n  compact\n  hideGrid\n  axes={[\"Spd\", \"Pwr\", \"Def\", \"Mag\", \"Luck\", \"HP\"]}\n  style={{ maxWidth: 480 }}\n  series={[{ label: \"Build A\", values: [12, 18, 9, 15, 7, 14] }]}\n/>", render: e_charts_radar_chart_example_2 },
+    ],
+    donts: [
+      { title: "RadarChart", do: { caption: "Compare a small number of profiles over the same axes, on one shared scale.", code: "<RadarChart\n  title=\"Candidate comparison\"\n  axes={[\"Coding\", \"Design\", \"Comms\", \"Ops\", \"Product\"]}\n  style={{ maxWidth: 480 }}\n  series={[\n    { label: \"Casey\", values: [8, 6, 9, 5, 7] },\n    { label: \"Jordan\", values: [6, 9, 7, 8, 5] },\n  ]}\n  max={10}\n/>", render: e_charts_radar_chart_dont_0_do }, dont: { caption: "Radar axes are unordered categories; a time series belongs on a LineChart, where the x axis carries the order.", code: "<RadarChart\n  axes={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  style={{ maxWidth: 480 }}\n  series={[{ label: \"Revenue\", values: [4, 5, 6, 7, 8, 9] }]}\n/>", render: e_charts_radar_chart_dont_0_dont } },
+    ],
+  },
+  "radial-bar-chart": {
+    dir: "radial-bar-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Card padded style={{ maxWidth: 280 }}>\n  <RadialBarChart\n    label=\"Platform activation\"\n    data={[\n      { label: \"iOS\", value: 64 },\n      { label: \"Android\", value: 48 },\n      { label: \"Web\", value: 82 },\n    ]}\n    max={100}\n  />\n</Card>", render: e_charts_radial_bar_chart_example_0 },
+      { label: "Compact, no legend", code: "<Card padded style={{ maxWidth: 200 }}>\n  <RadialBarChart\n    label=\"Quota\"\n    compact\n    hideLegend\n    data={[\n      { label: \"Q1\", value: 92 },\n      { label: \"Q2\", value: 71 },\n    ]}\n    max={100}\n  />\n</Card>", render: e_charts_radial_bar_chart_example_1 },
+      { label: "Inspected", code: "<Card padded style={{ maxWidth: 280 }}>\n  <RadialBarChart\n    label=\"Storage by tier\"\n    defaultSelected={1}\n    data={[\n      { label: \"Hot\", value: 420 },\n      { label: \"Warm\", value: 260 },\n      { label: \"Cold\", value: 890 },\n    ]}\n  />\n</Card>", render: e_charts_radial_bar_chart_example_2 },
+    ],
+    donts: [
+      { title: "RadialBarChart", do: { caption: "Compare attainment on rings that share one sweep maximum, with the values in the legend.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <RadialBarChart\n    label=\"Platform activation\"\n    data={[\n      { label: \"iOS\", value: 64 },\n      { label: \"Web\", value: 82 },\n    ]}\n    max={100}\n  />\n</Card>", render: e_charts_radial_bar_chart_dont_0_do }, dont: { caption: "Rings encoding shares of a whole belong on PieChart; nested rings without a shared maximum cannot be compared by eye.", code: "<Card padded style={{ maxWidth: 280 }}>\n  <RadialBarChart\n    label=\"Traffic split\"\n    data={[\n      { label: \"Direct\", value: 60 },\n      { label: \"Search\", value: 40 },\n    ]}\n  />\n</Card>", render: e_charts_radial_bar_chart_dont_0_dont } },
     ],
   },
   "range-area-chart": {
