@@ -106,18 +106,22 @@ describe("AvatarMenu open state", () => {
   });
 
   it("anchors the menu to the trailing edge with alignEnd, and to the leading edge without it", () => {
+    // The inline (no OverlayProvider) fallback positions the card absolutely under
+    // the trigger. The kit writes the logical `start`/`end` inset; react-native-web
+    // resolves it to the physical side for the active writing direction, so an LTR
+    // render reads left for the default and right for alignEnd.
     const anchorOf = (c: HTMLElement) => {
-      const menu = c.querySelector('[role="menu"]')!;
-      // Walk out of the menu to the absolutely-positioned inline anchor.
-      let node = menu.parentElement;
-      while (node && getComputedStyle(node).position !== "absolute") node = node.parentElement;
-      return node ? getComputedStyle(node) : null;
+      let node = c.querySelector('[role="menu"]')!.parentElement;
+      while (node && node.style.position !== "absolute") node = node.parentElement;
+      return node!.style;
     };
     const start = ui(<AvatarMenu open name={NAME} items={ITEMS} />).container;
-    expect(anchorOf(start)?.getPropertyValue("inset-inline-start")).toBe("0px");
+    expect(anchorOf(start).left).toBe("0px");
+    expect(anchorOf(start).right).toBe("");
     cleanup();
     const end = ui(<AvatarMenu open alignEnd name={NAME} items={ITEMS} />).container;
-    expect(anchorOf(end)?.getPropertyValue("inset-inline-end")).toBe("0px");
+    expect(anchorOf(end).right).toBe("0px");
+    expect(anchorOf(end).left).toBe("");
   });
 });
 
