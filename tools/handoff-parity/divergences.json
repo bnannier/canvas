@@ -1,0 +1,1028 @@
+{
+  "note": "Adjudicated differences between the design hand-off's prop surface and this kit's. `kind: renamed | boolean-axis | web-only | intentional-omission` means the capability EXISTS in Canvas under another spelling, or is deliberately not offered — these are settled and need no action. `kind: open-gap` means the capability is genuinely missing and is acknowledged; `plannedIn` names the phase that closes it, or `unscheduled`. scripts/check-handoff-parity.ts fails on any difference recorded in NEITHER place, so a hand-off revision surfaces loudly.",
+  "global": {
+    "onClick": {
+      "kind": "renamed",
+      "to": "onPress",
+      "reason": "React Native has no onClick; press handling is onPress across the whole kit."
+    },
+    "type": {
+      "kind": "web-only",
+      "reason": "The DOM <input type> attribute. Canvas carries the shape rule as `validateAs` and the masking as `password`/`masked`."
+    },
+    "glass": {
+      "kind": "intentional-omission",
+      "reason": "Glass is a theming-level surface mode in Canvas (`<ThemeProvider glass>` / `data-surface`), never a per-component prop. CLAUDE.md forbids adding one."
+    },
+    "onClose": {
+      "kind": "renamed",
+      "to": "onOpenChange",
+      "reason": "Canvas's controllable-state convention pairs `open`/`defaultOpen` with `onOpenChange`, which reports both directions rather than close only."
+    },
+    "size": {
+      "kind": "boolean-axis",
+      "to": [
+        "small",
+        "large"
+      ],
+      "reason": "Canvas rejects string and numeric size props; every size axis is flat booleans (CLAUDE.md 'Semantic prop styling')."
+    },
+    "align": {
+      "kind": "boolean-axis",
+      "to": "alignEnd",
+      "reason": "String-enum alignment is rejected; Canvas spells the non-default end as a boolean."
+    },
+    "side": {
+      "kind": "boolean-axis",
+      "to": [
+        "top",
+        "bottom",
+        "left",
+        "right"
+      ],
+      "reason": "String-enum placement is rejected; Canvas spells each side as its own boolean."
+    },
+    "onChange": {
+      "kind": "renamed",
+      "to": [
+        "onChangeText",
+        "onSelect",
+        "onValueChange"
+      ],
+      "reason": "Canvas names the callback for what it reports, per the controllable-state naming table."
+    },
+    "value": {
+      "kind": "renamed",
+      "to": [
+        "selected",
+        "active"
+      ],
+      "reason": "Canvas names the controlled prop for the concept it holds (`selected`, `active`) rather than a generic `value`."
+    },
+    "defaultValue": {
+      "kind": "renamed",
+      "to": [
+        "defaultSelected",
+        "defaultActive"
+      ],
+      "reason": "Paired seed prop for the renamed controlled prop above."
+    },
+    "height": {
+      "kind": "intentional-omission",
+      "reason": "Canvas charts size themselves from the skin's plot height and the `compact` axis, so a caller never hand-sets a pixel height."
+    },
+    "xLabels": {
+      "kind": "renamed",
+      "to": "labels",
+      "reason": "The cartesian frame calls its category axis `labels`; there is no second label axis to disambiguate from."
+    },
+    "yTicks": {
+      "kind": "intentional-omission",
+      "reason": "Canvas's chart-math nices the domain and picks its own tick count; `min`/`max` bound it instead."
+    },
+    "helper": {
+      "kind": "open-gap",
+      "plannedIn": "phase-3",
+      "reason": "The muted hint line under a field. Only Autocomplete has one today (as `helperText`, unlinked for a11y); Field and the shared message chrome give every field family one."
+    },
+    "bare": {
+      "kind": "open-gap",
+      "plannedIn": "unscheduled",
+      "reason": "Drop the chart's card surface so it can embed in an existing one. Canvas charts always paint their own card; ChartFrame gains `bare` in phase 5 but the nine series charts do not."
+    },
+    "subtitle": {
+      "kind": "open-gap",
+      "plannedIn": "unscheduled",
+      "reason": "A muted second line under a chart title. Canvas charts carry `title` only."
+    },
+    "unit": {
+      "kind": "open-gap",
+      "plannedIn": "unscheduled",
+      "reason": "A unit suffix on chart values. Canvas expects `formatValue` to append it, which cannot reach every readout."
+    },
+    "crosshair": {
+      "kind": "open-gap",
+      "plannedIn": "unscheduled",
+      "reason": "A tracking crosshair on hover/scrub. Canvas ships scrub-to-inspect with a value flag instead, which is a different affordance."
+    }
+  },
+  "components": {
+    "Accordion": {
+      "defaultOpen": {
+        "kind": "renamed",
+        "to": "defaultValue",
+        "reason": "Canvas's accordion is value-driven (`value`/`defaultValue`/`onValueChange`) so single and multiple modes share one API."
+      }
+    },
+    "ActionPanel": {
+      "action": {
+        "kind": "renamed",
+        "to": [
+          "actionLabel",
+          "onAction"
+        ],
+        "reason": "Canvas splits the action into its label and its handler rather than taking a ReactNode, so the panel owns the button's look."
+      },
+      "children": {
+        "kind": "renamed",
+        "to": "description",
+        "reason": "The panel's body text is the `description` prop, per the 'components own their label anatomy' rule."
+      },
+      "stacked": {
+        "kind": "renamed",
+        "to": "inline",
+        "reason": "Canvas names the opposite end of the same axis; omitting `inline` gives the stacked layout."
+      }
+    },
+    "ActionSheet": {
+      "items": {
+        "kind": "renamed",
+        "to": "actions",
+        "reason": "Named `actions` to match the sheet's other action-bearing props."
+      }
+    },
+    "Alert": {
+      "destructive": {
+        "kind": "open-gap",
+        "plannedIn": "phase-2",
+        "reason": "Canvas spells this intent `error` here while Button and every chart spell it `destructive`. Phase 2 adds `destructive` and keeps `error` as an alias."
+      }
+    },
+    "AlertDialog": {
+      "confirmField": {
+        "kind": "renamed",
+        "to": [
+          "withInput",
+          "confirmText"
+        ],
+        "reason": "Canvas splits type-to-confirm into the boolean that turns it on and the string that must be matched."
+      },
+      "dismissible": {
+        "kind": "intentional-omission",
+        "reason": "An alert dialog is modal by contract in Canvas: it must be resolved through confirm or cancel, so scrim-dismiss is not offered."
+      },
+      "width": {
+        "kind": "boolean-axis",
+        "to": [
+          "narrow",
+          "small",
+          "large"
+        ],
+        "reason": "Pixel widths are rejected; the width axis is flat booleans."
+      }
+    },
+    "AreaChart": {},
+    "Autocomplete": {
+      "helper": {
+        "kind": "renamed",
+        "to": "helperText",
+        "reason": "Already present under this name; phase 3 aligns the a11y wiring, not the spelling."
+      }
+    },
+    "Avatar": {},
+    "AvatarMenu": {},
+    "Breadcrumb": {
+      "separator": {
+        "kind": "boolean-axis",
+        "to": [
+          "chevron",
+          "slash",
+          "dot"
+        ],
+        "reason": "String-enum separator is rejected; each glyph is its own boolean."
+      }
+    },
+    "Button": {},
+    "ButtonGroup": {
+      "value": {
+        "kind": "renamed",
+        "to": "active",
+        "reason": "The group's controlled prop is `active`, paired with `defaultActive`/`onSelect`."
+      },
+      "onChange": {
+        "kind": "renamed",
+        "to": "onSelect",
+        "reason": "Reports the selected item, so it is named for what it reports."
+      }
+    },
+    "Calendar": {
+      "start": {
+        "kind": "renamed",
+        "to": [
+          "month",
+          "startWeekday"
+        ],
+        "reason": "Canvas takes the displayed month and the week's first day rather than one opaque start date."
+      },
+      "days": {
+        "kind": "renamed",
+        "to": "daysInMonth",
+        "reason": "Named for what it counts, since `day` is a separate single-day prop."
+      }
+    },
+    "CandlestickChart": {
+      "ma": {
+        "kind": "renamed",
+        "to": "overlays",
+        "reason": "Canvas takes a general overlay series list, of which a moving average is one case."
+      },
+      "priceAxis": {
+        "kind": "intentional-omission",
+        "reason": "Canvas always renders the price axis; `hideAxes` is the only control."
+      },
+      "lastPrice": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "A dashed last-price rule with a label tab. Canvas has no equivalent marker."
+      },
+      "currency": {
+        "kind": "renamed",
+        "to": "formatValue",
+        "reason": "Canvas formats values through one callback rather than a currency code plus a precision."
+      },
+      "decimals": {
+        "kind": "renamed",
+        "to": "formatValue",
+        "reason": "Precision is the caller's formatter, not a separate knob."
+      },
+      "children": {
+        "kind": "intentional-omission",
+        "reason": "Canvas's candlestick owns its plot; extra marks go through `overlays` rather than arbitrary children."
+      }
+    },
+    "Carousel": {
+      "slides": {
+        "kind": "renamed",
+        "to": "items",
+        "reason": "Every collection component in Canvas takes `items`."
+      },
+      "swipe": {
+        "kind": "intentional-omission",
+        "reason": "Swipe is always on in Canvas; on native it is the primary gesture and disabling it would strand touch users."
+      }
+    },
+    "Chart": {
+      "tone": {
+        "kind": "boolean-axis",
+        "to": [
+          "success",
+          "destructive"
+        ],
+        "reason": "The one place the hand-off uses a union for the intent axis; Canvas spells it as booleans like everywhere else."
+      }
+    },
+    "Chip": {
+      "destructive": {
+        "kind": "open-gap",
+        "plannedIn": "phase-2",
+        "reason": "Same intent-axis naming split as Alert. Phase 2 adds `destructive` alongside the existing `error`."
+      }
+    },
+    "Collapsible": {
+      "label": {
+        "kind": "renamed",
+        "to": "title",
+        "reason": "Canvas names the disclosure's heading `title`, matching Card and Popover."
+      }
+    },
+    "Command": {},
+    "DataTable": {
+      "footer": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "A summary/footer row under the body. Canvas has no footer slot."
+      },
+      "sortDir": {
+        "kind": "renamed",
+        "to": "sort",
+        "reason": "Canvas carries column and direction together in one `sort` object so they cannot drift apart."
+      },
+      "onSort": {
+        "kind": "renamed",
+        "to": "onSortChange",
+        "reason": "Controllable-state naming: the change callback for the `sort` prop."
+      },
+      "onEdit": {
+        "kind": "renamed",
+        "to": "onRowEdit",
+        "reason": "Prefixed to say what is edited, since the table also commits cells."
+      },
+      "onDelete": {
+        "kind": "renamed",
+        "to": "onRowDelete",
+        "reason": "Same row-scoped prefix."
+      },
+      "onSave": {
+        "kind": "renamed",
+        "to": [
+          "onRowCommit",
+          "onCellCommit"
+        ],
+        "reason": "Canvas distinguishes committing a whole row from committing one cell during inline edit."
+      },
+      "rowActions": {
+        "kind": "renamed",
+        "to": "inlineEdit",
+        "reason": "Canvas drives the per-row affordances from the edit/delete handlers plus `inlineEdit` rather than an action descriptor list."
+      },
+      "onRowClick": {
+        "kind": "renamed",
+        "to": "onRowPress",
+        "reason": "React Native press naming."
+      },
+      "emptyLabel": {
+        "kind": "renamed",
+        "to": "emptyMessage",
+        "reason": "Named `message` because it is a sentence, not a label."
+      }
+    },
+    "DepthChart": {
+      "mid": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "The mid-price marker between bid and ask walls. Canvas derives the split but draws no marker."
+      },
+      "depthAxis": {
+        "kind": "intentional-omission",
+        "reason": "Canvas always renders the depth axis; `hideAxes` is the only control."
+      },
+      "priceAxis": {
+        "kind": "intentional-omission",
+        "reason": "As above."
+      },
+      "currency": {
+        "kind": "renamed",
+        "to": "formatValue",
+        "reason": "One formatter callback rather than a currency code."
+      },
+      "decimals": {
+        "kind": "renamed",
+        "to": "formatValue",
+        "reason": "Precision belongs to the caller's formatter."
+      }
+    },
+    "DescriptionList": {
+      "layout": {
+        "kind": "boolean-axis",
+        "to": [
+          "twoColumn",
+          "stacked",
+          "inline"
+        ],
+        "reason": "String-enum layout is rejected; each arrangement is its own boolean."
+      },
+      "bordered": {
+        "kind": "renamed",
+        "to": "divided",
+        "reason": "Canvas names it for the hairlines between rows, not a box around them."
+      }
+    },
+    "Dialog": {
+      "width": {
+        "kind": "boolean-axis",
+        "to": [
+          "xs",
+          "small",
+          "medium",
+          "large",
+          "wide"
+        ],
+        "reason": "Pixel widths are rejected; the size axis is already flat booleans here."
+      }
+    },
+    "Divider": {
+      "label": {
+        "kind": "renamed",
+        "to": "children",
+        "reason": "The divider owns its label as children, per 'components own their label anatomy'."
+      }
+    },
+    "Drawer": {
+      "title": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Canvas's Drawer is a bare panel; the caller supplies its own header. The hand-off's owns title/description/footer chrome."
+      },
+      "description": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "As above."
+      },
+      "footer": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "As above."
+      }
+    },
+    "Dropdown": {},
+    "EmptyState": {
+      "action": {
+        "kind": "renamed",
+        "to": [
+          "actionLabel",
+          "onAction"
+        ],
+        "reason": "Label plus handler rather than a ReactNode, so the empty state owns its button's look."
+      }
+    },
+    "Feed": {
+      "avatars": {
+        "kind": "renamed",
+        "to": "avatar",
+        "reason": "One boolean turning the avatar column on, rather than a list; each item carries its own image."
+      }
+    },
+    "Gauge": {
+      "max": {
+        "kind": "intentional-omission",
+        "reason": "Canvas's Gauge is fixed to a 0-100 percentage, which is what its semicircle readout is built around."
+      }
+    },
+    "GridList": {
+      "columns": {
+        "kind": "boolean-axis",
+        "to": [
+          "cols2",
+          "cols3"
+        ],
+        "reason": "A numeric column count is rejected; the two supported densities are booleans that also drive the responsive collapse."
+      },
+      "renderItem": {
+        "kind": "intentional-omission",
+        "reason": "Canvas's GridList owns its tile anatomy from `items`; a render prop would let callers rebuild the tile and drift from the kit."
+      }
+    },
+    "Heatmap": {
+      "days": {
+        "kind": "renamed",
+        "to": "values",
+        "reason": "Canvas takes one flat value series and derives the calendar grid from it."
+      },
+      "startDay": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Which weekday the grid starts on. Canvas fixes it."
+      },
+      "rows": {
+        "kind": "intentional-omission",
+        "reason": "Canvas derives the grid shape from the data and the `calendar` mode rather than taking explicit dimensions."
+      },
+      "columns": {
+        "kind": "intentional-omission",
+        "reason": "As above."
+      },
+      "color": {
+        "kind": "intentional-omission",
+        "reason": "The ramp comes from the chart tokens so every heatmap in a product reads alike."
+      },
+      "title": {
+        "kind": "renamed",
+        "to": "label",
+        "reason": "Canvas's Heatmap names its heading `label`, paired with `caption`."
+      },
+      "cell": {
+        "kind": "intentional-omission",
+        "reason": "Cell size is a skin metric, not a caller knob."
+      },
+      "gap": {
+        "kind": "intentional-omission",
+        "reason": "Gutter is a skin metric; a raw gap would be a styling escape hatch."
+      },
+      "legend": {
+        "kind": "renamed",
+        "to": "hideLegend",
+        "reason": "Canvas shows the legend by default and takes the inverse boolean to suppress it."
+      }
+    },
+    "Icon": {
+      "name": {
+        "kind": "boolean-axis",
+        "reason": "Canvas exposes every glyph as its own boolean prop (`<Icon shield />`), so the glyph set is type-checked at the call site rather than stringly-typed."
+      }
+    },
+    "Input": {
+      "iconLeft": {
+        "kind": "renamed",
+        "to": [
+          "icon",
+          "leadingIcon"
+        ],
+        "reason": "Canvas pairs one `icon` glyph with the boolean that places it."
+      },
+      "iconRight": {
+        "kind": "renamed",
+        "to": [
+          "icon",
+          "trailingIcon"
+        ],
+        "reason": "As above."
+      },
+      "password": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Masking plus a reveal toggle the field owns. Canvas has `masked` on InputOTP only, so every caller currently wires its own eye button."
+      },
+      "onBlur": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Needed by the validation display gate, which reports on blur."
+      },
+      "minLength": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Part of the validation rule chain."
+      },
+      "maxLength": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Part of the validation rule chain (a reporting rule, not a hard cap)."
+      },
+      "pattern": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Part of the validation rule chain."
+      },
+      "min": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Part of the validation rule chain."
+      },
+      "max": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Part of the validation rule chain."
+      },
+      "validateAs": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "The built-in email/url/tel/number shape rules."
+      },
+      "validate": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "The bespoke rule callback."
+      },
+      "validateOn": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Chooses when rules start reporting (blur, then live)."
+      },
+      "messages": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Per-rule message overrides."
+      },
+      "submitted": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Forces every field to report for a form's submit pass."
+      },
+      "showValid": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "The success border and tick once a value passes."
+      },
+      "onValidate": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Reports the current error to the parent."
+      }
+    },
+    "InputOTP": {
+      "active": {
+        "kind": "intentional-omission",
+        "reason": "The focused cell is internal state; exposing it would let a caller desync the caret from the value."
+      },
+      "groups": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Splitting the cells into dash-separated groups. Canvas renders one unbroken run."
+      },
+      "numeric": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Restricting entry to digits and asking for the numeric keyboard."
+      },
+      "autoFocus": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Focusing the first cell on mount."
+      }
+    },
+    "LineChart": {
+      "smooth": {
+        "kind": "renamed",
+        "to": "curved",
+        "reason": "Canvas names the curve interpolation `curved` across every cartesian chart."
+      },
+      "area": {
+        "kind": "renamed",
+        "to": "AreaChart",
+        "reason": "Filling under the line is a separate component in Canvas rather than a mode of LineChart."
+      },
+      "yAxis": {
+        "kind": "renamed",
+        "to": [
+          "min",
+          "max"
+        ],
+        "reason": "Canvas bounds the axis with two scalars rather than a domain tuple."
+      },
+      "valueLabels": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Printing each datum's value beside its point. Canvas shows values only on scrub."
+      }
+    },
+    "Listbox": {
+      "options": {
+        "kind": "renamed",
+        "to": "items",
+        "reason": "Every collection component in Canvas takes `items`."
+      },
+      "value": {
+        "kind": "renamed",
+        "to": "selected",
+        "reason": "Named for the concept it holds, paired with `defaultSelected`/`onSelect`."
+      },
+      "multiple": {
+        "kind": "renamed",
+        "to": "multi",
+        "reason": "Canvas's spelling of the same boolean."
+      }
+    },
+    "MediaObject": {
+      "media": {
+        "kind": "renamed",
+        "to": [
+          "leading",
+          "src",
+          "avatar",
+          "icon"
+        ],
+        "reason": "Canvas takes the leading visual as a typed slot per kind rather than one opaque node."
+      },
+      "align": {
+        "kind": "boolean-axis",
+        "to": [
+          "start",
+          "center"
+        ],
+        "reason": "String-enum alignment is rejected; each is its own boolean."
+      }
+    },
+    "Navbar": {
+      "title": {
+        "kind": "renamed",
+        "to": "brand",
+        "reason": "Canvas names the leading identity slot `brand`, which also carries the mark."
+      },
+      "items": {
+        "kind": "renamed",
+        "to": "links",
+        "reason": "Named for what they are, since the bar also carries actions and an avatar."
+      },
+      "actions": {
+        "kind": "renamed",
+        "to": [
+          "actionLabel",
+          "onAction"
+        ],
+        "reason": "Label plus handler rather than a ReactNode, so the bar owns the button's look."
+      }
+    },
+    "Pagination": {
+      "pages": {
+        "kind": "renamed",
+        "to": [
+          "total",
+          "itemCount",
+          "pageSize"
+        ],
+        "reason": "Canvas derives the page count from the item total and page size so the two cannot disagree."
+      }
+    },
+    "PieChart": {
+      "data": {
+        "kind": "renamed",
+        "to": "slices",
+        "reason": "Named for what a pie is made of, matching `series` on the cartesian charts."
+      },
+      "thickness": {
+        "kind": "renamed",
+        "to": "donut",
+        "reason": "Canvas offers the donut as a boolean with a token-set ring width rather than a caller pixel value."
+      },
+      "title": {
+        "kind": "renamed",
+        "to": "label",
+        "reason": "Canvas's PieChart names its heading `label`."
+      },
+      "centerLabel": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Text in the donut hole. Canvas leaves the hole empty."
+      },
+      "centerValue": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "As above."
+      },
+      "sliceLabels": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Labels drawn on the slices themselves; Canvas labels only in the legend."
+      },
+      "legend": {
+        "kind": "renamed",
+        "to": "hideLegend",
+        "reason": "Shown by default; the inverse boolean suppresses it."
+      }
+    },
+    "Popover": {
+      "width": {
+        "kind": "intentional-omission",
+        "reason": "The popover sizes to its content and the skin's max width; a pixel width would be a styling escape hatch."
+      }
+    },
+    "Progress": {
+      "label": {
+        "kind": "renamed",
+        "to": "children",
+        "reason": "Progress owns its label as children, with `description` for the second line."
+      }
+    },
+    "QRCode": {},
+    "Reveal": {
+      "index": {
+        "kind": "intentional-omission",
+        "reason": "Canvas staggers from document order rather than a caller-supplied index."
+      },
+      "from": {
+        "kind": "boolean-axis",
+        "to": [
+          "fromAbove",
+          "fromBelow",
+          "fromLeft",
+          "fromRight"
+        ],
+        "reason": "String-enum direction is rejected; each is its own boolean."
+      },
+      "deep": {
+        "kind": "renamed",
+        "to": "deepInView",
+        "reason": "Canvas names the threshold boolean for what it means: wait until the element is well inside the viewport."
+      }
+    },
+    "ScatterPlot": {
+      "xTitle": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "An axis title under the x axis. Canvas labels ticks but titles no axis."
+      },
+      "yTitle": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "As above, rotated beside the y axis."
+      },
+      "trend": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "A fitted trend line through the points."
+      },
+      "xTicks": {
+        "kind": "intentional-omission",
+        "reason": "Canvas's chart-math nices both domains and picks its own tick counts."
+      },
+      "grid": {
+        "kind": "renamed",
+        "to": "hideGrid",
+        "reason": "Shown by default; the inverse boolean suppresses it."
+      }
+    },
+    "Select": {},
+    "Skeleton": {
+      "circle": {
+        "kind": "renamed",
+        "to": "avatar",
+        "reason": "Canvas names its shapes for what they stand in for (`avatar`, `text`, `card`, `table`, `list`, `button`) rather than for their geometry."
+      },
+      "width": {
+        "kind": "intentional-omission",
+        "reason": "Shape presets carry their own dimensions; a raw width would be a styling escape hatch."
+      },
+      "height": {
+        "kind": "intentional-omission",
+        "reason": "As above."
+      }
+    },
+    "Slider": {
+      "label": {
+        "kind": "renamed",
+        "to": "children",
+        "reason": "Slider owns its title as children, with `description` for the second line."
+      }
+    },
+    "Sparkline": {
+      "data": {
+        "kind": "renamed",
+        "to": "values",
+        "reason": "Canvas names the plain number series `values`."
+      },
+      "width": {
+        "kind": "intentional-omission",
+        "reason": "The strip fills its container; a pixel width would be a styling escape hatch."
+      },
+      "height": {
+        "kind": "boolean-axis",
+        "to": "tall",
+        "reason": "Two heights are offered as a boolean rather than a pixel value."
+      },
+      "color": {
+        "kind": "boolean-axis",
+        "to": [
+          "primary",
+          "success",
+          "destructive",
+          "muted"
+        ],
+        "reason": "A raw color is a styling escape hatch; the tone axis is booleans onto the tokens."
+      }
+    },
+    "Spinner": {
+      "label": {
+        "kind": "renamed",
+        "to": "children",
+        "reason": "Spinner owns its label as children, with `description` for the second line."
+      },
+      "style": {
+        "kind": "intentional-omission",
+        "reason": "Spinner takes no style prop; it is sized by its boolean axis and positioned by its parent."
+      }
+    },
+    "StackedBar": {
+      "categories": {
+        "kind": "renamed",
+        "to": "labels",
+        "reason": "The cartesian frame calls its category axis `labels`."
+      },
+      "series": {
+        "kind": "renamed",
+        "to": "segments",
+        "reason": "Canvas's StackedBar is a single proportional bar whose parts are `segments`, not a multi-series cartesian chart."
+      },
+      "title": {
+        "kind": "intentional-omission",
+        "reason": "Canvas's StackedBar is a bare strip meant to sit inside a Card that carries the heading."
+      },
+      "grouped": {
+        "kind": "renamed",
+        "to": "Chart",
+        "reason": "Side-by-side grouping is Chart's job in Canvas; StackedBar always stacks."
+      },
+      "stretch": {
+        "kind": "intentional-omission",
+        "reason": "The strip always fills its container width."
+      },
+      "yAxis": {
+        "kind": "intentional-omission",
+        "reason": "A proportional strip has no value axis."
+      },
+      "totals": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Printing each stack's total above the bar."
+      },
+      "compact": {
+        "kind": "intentional-omission",
+        "reason": "The strip has one density; its height is a skin metric."
+      }
+    },
+    "StackedList": {
+      "headerAction": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "An action in the list's header row. Canvas's StackedList has no header slot."
+      },
+      "divided": {
+        "kind": "intentional-omission",
+        "reason": "Canvas always draws the row hairlines; they are what makes it a stacked list."
+      },
+      "onItemClick": {
+        "kind": "renamed",
+        "to": "onItemPress",
+        "reason": "React Native press naming."
+      },
+      "selectedId": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Marking one row as current. Canvas's StackedList is not selectable."
+      }
+    },
+    "Stats": {
+      "columns": {
+        "kind": "intentional-omission",
+        "reason": "Stats reflows intrinsically from a minimum tile width rather than a fixed column count, so it adapts inside any parent."
+      }
+    },
+    "Switch": {},
+    "TabBar": {
+      "searchKey": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Marking one tab as the search tab, which iOS treats specially."
+      },
+      "accessory": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "A slot above the bar for a now-playing style accessory."
+      },
+      "minimizeBehavior": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "The iOS 26 scroll-to-minimize behavior."
+      },
+      "minimized": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "The controlled counterpart of the above."
+      },
+      "scrollRef": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "The scroll view the bar watches to drive minimizing."
+      }
+    },
+    "Tabs": {
+      "items": {
+        "kind": "renamed",
+        "to": "tabs",
+        "reason": "Named for what they are, matching the component."
+      },
+      "value": {
+        "kind": "renamed",
+        "to": "active",
+        "reason": "Canvas's tab state is `active`/`defaultActive`/`onChange`."
+      }
+    },
+    "Textarea": {
+      "maxLength": {
+        "kind": "open-gap",
+        "plannedIn": "phase-4",
+        "reason": "Part of the validation rule chain; Textarea already uses maxLength for `showCount` but not as a reporting rule."
+      }
+    },
+    "Toast": {
+      "title": {
+        "kind": "renamed",
+        "to": "children",
+        "reason": "Toast owns its message as children, with `description` for the second line."
+      },
+      "destructive": {
+        "kind": "open-gap",
+        "plannedIn": "phase-2",
+        "reason": "Same intent-axis naming split as Alert and Chip. Phase 2 adds `destructive` alongside the existing `error`."
+      }
+    },
+    "Tooltip": {
+      "children": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Wrapping an arbitrary node as the tooltip target. Canvas's Tooltip renders its own trigger from a `trigger` string in one of three flavors (button, icon button, inline word) and cannot attach to a caller's node."
+      },
+      "reveal": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Choosing the entrance animation (lift, scale, fade, none). Canvas fixes one reveal."
+      },
+      "brisk": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "Running the reveal at 90ms instead of 140ms. Canvas fixes the timing on Tooltip (its Reveal component does expose `brisk`)."
+      }
+    },
+    "Typography": {
+      "as": {
+        "kind": "web-only",
+        "reason": "Choosing the rendered HTML element. React Native has no element to choose; the role props set the type scale and the accessibility role."
+      }
+    }
+  },
+  "absentComponents": {
+    "Field": {
+      "kind": "open-gap",
+      "plannedIn": "phase-3",
+      "reason": "The form-row wrapper (label, control, helper/error) with label delegation into the field families. Removed from the kit in 93dd68a9; phase 3 re-adds it to the hand-off's design, which is not the one that was removed."
+    },
+    "ChartFrame": {
+      "kind": "open-gap",
+      "plannedIn": "phase-5",
+      "reason": "The public chart wrapper (card surface, title, axis gutter, legend) taking a plain children plot. Canvas has the internal render-prop CartesianFrame and the internal chartShell, but exposes neither."
+    },
+    "DashboardGrid": {
+      "kind": "open-gap",
+      "plannedIn": "phase-6",
+      "reason": "The rearrangeable widget wall on a fixed column grid with legal-fraction spans and row promotion. Canvas has no span-based grid."
+    }
+  }
+}

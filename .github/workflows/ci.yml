@@ -107,6 +107,9 @@ jobs:
       - name: Validate theme tokens
         run: bun run validate-tokens
 
+      - name: Check parity with the design hand-off
+        run: bun run check-parity:check
+
       - name: Check CSS + JS size budgets
         run: bun run check-size
 
