@@ -273,7 +273,7 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
   ]} />
 ```
 
-**Don't**: `compact` on a roomy page that names the account nowhere else hides who is signed in behind a press, for space nobody needed back.
+**Don't**: `compact` on a roomy page that names the account nowhere else hides who is signed in behind a press, to save room the row never needed.
 
 ```tsx
 <AvatarMenu compact name="Noor Park" email="noor.park@example.com" src="/noor-park.jpg" items={[

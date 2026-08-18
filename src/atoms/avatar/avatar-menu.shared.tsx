@@ -42,8 +42,6 @@ export interface AvatarMenuSkin extends AvatarSkin {
   menuPillSecondary: TextStyle;
   /** Trailing chevron glyph size, in px. */
   menuChevronSize: number;
-  /** Opacity applied to the whole pill when the menu is disabled. */
-  menuDisabledOpacity: number;
 }
 
 export interface AvatarMenuProps {

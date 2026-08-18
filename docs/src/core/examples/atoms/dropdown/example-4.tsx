@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
     { label: "Edit profile", icon: "pencil" },
     { label: "Duplicate", icon: "copy" },
     { label: "Settings", icon: "settings" },
-    { label: "Delete…", icon: "trash", destructive: true, separatorBefore: true }
+    { label: "Archive", icon: "archive", disabled: true }
   ]}
 />
   );

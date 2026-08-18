@@ -3,12 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Row } = scope;
+  const { AvatarMenu } = scope;
   return (
-<Row relaxed alignCenter>
-  <Avatar small src="/ada-lovelace.jpg" name="AL" />
-  <Avatar src="/marcus-allen.jpg" name="MA" />
-  <Avatar large src="/rachel-chen.jpg" name="RC" />
-</Row>
+<AvatarMenu
+  compact
+  name="Marcus Allen"
+  email="admin@example.com"
+  src="/marcus-allen.jpg"
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]}
+/>
   );
 }

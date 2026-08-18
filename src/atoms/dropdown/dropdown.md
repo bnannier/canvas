@@ -31,6 +31,21 @@ Floating menus triggered by a button: actions, options, navigation.
 />
 ```
 
+### Identity header
+
+```tsx
+<Dropdown
+  trigger="Account"
+  title="Rachel Chen"
+  description="rachel@nannier.com"
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings" },
+    { label: "Log out", icon: "logOut", separatorBefore: true }
+  ]}
+/>
+```
+
 ### Keyboard shortcuts
 
 ```tsx
@@ -84,6 +99,38 @@ Floating menus triggered by a button: actions, options, navigation.
 >
   <Avatar name="Rachel Chen" />
 </Dropdown>
+```
+
+### End alignment
+
+```tsx
+<Row end>
+  <Dropdown
+    trigger="Account"
+    alignEnd
+    title="Rachel Chen"
+    description="rachel@nannier.com"
+    items={[
+      { label: "Profile", icon: "user" },
+      { label: "Settings", icon: "settings" },
+      { label: "Log out", icon: "logOut", separatorBefore: true }
+    ]}
+  />
+</Row>
+```
+
+### Disabled trigger
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  disabled
+  items={[
+    { label: "Edit profile", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" }
+  ]}
+/>
 ```
 
 ## Do & Don't
