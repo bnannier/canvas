@@ -405,6 +405,51 @@ describe("Dropdown", () => {
     expect(screen.getByText("rachel@nannier.com").getAttribute("tabindex")).toBeNull();
   });
 
+  // An unnamed menu is announced as a bare "menu", and two loose Text nodes inside
+  // role="menu" are anonymous generic content. The header names the menu and is
+  // itself a group (a valid child of `menu`), WITHOUT becoming a focusable row.
+  it("names the menu from the identity header and reads the header as one group", () => {
+    const { container } = ui(
+      <Dropdown
+        trigger="Account"
+        title="Rachel Chen"
+        description="rachel@nannier.com"
+        items={[{ label: "Profile" }, { label: "Log out" }]}
+      />,
+    );
+    fireEvent.click(screen.getByText("Account"));
+    const menu = container.querySelector('[role="menu"]')!;
+    // The title is the label target: it is what a user calls that menu.
+    expect(menu.getAttribute("aria-label")).toBe("Rachel Chen");
+
+    const group = container.querySelector('[role="group"]')!;
+    expect(group).not.toBeNull();
+    expect(group.getAttribute("aria-label")).toBe("Rachel Chen, rachel@nannier.com");
+    // Both lines live inside that one group, instead of as loose anonymous nodes.
+    expect(group.contains(screen.getByText("Rachel Chen"))).toBe(true);
+    expect(group.contains(screen.getByText("rachel@nannier.com"))).toBe(true);
+    // ...and the group is not an item: no menuitem role, no tab stop, and the
+    // roving-focus count is still items.length.
+    expect(group.getAttribute("role")).toBe("group");
+    expect(group.getAttribute("tabindex")).toBeNull();
+    expect(container.querySelectorAll('[role="menuitem"]').length).toBe(2);
+  });
+
+  it("falls back to the section label for the menu name, and to none with neither", () => {
+    const labelled = ui(<Dropdown trigger="Actions" label="Account actions" items={[{ label: "Profile" }]} />);
+    fireEvent.click(screen.getByText("Actions"));
+    expect(labelled.container.querySelector('[role="menu"]')!.getAttribute("aria-label")).toBe("Account actions");
+    // No header block came along with the section label.
+    expect(labelled.container.querySelector('[role="group"]')).toBeNull();
+    cleanup();
+
+    // Nothing to name it with: the attribute is absent rather than invented, so
+    // the platform's own name-from-the-trigger computation still applies.
+    const bare = ui(<Dropdown trigger="Actions" items={[{ label: "Profile" }]} />);
+    fireEvent.click(screen.getByText("Actions"));
+    expect(bare.container.querySelector('[role="menu"]')!.getAttribute("aria-label")).toBeNull();
+  });
+
   it("omits the header block entirely when neither title nor description is passed", () => {
     const { container } = ui(<Dropdown trigger="Actions" items={[{ label: "Edit" }, { label: "Duplicate" }]} />);
     fireEvent.click(screen.getByText("Actions"));

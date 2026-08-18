@@ -1,5 +1,5 @@
 import { type TextStyle, type ViewStyle } from "react-native";
-import { alpha, controlRipple, type ColorTokens } from "../../style/index.js";
+import { alpha, controlRipple, mixOklab, type ColorTokens } from "../../style/index.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
 import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
 
@@ -18,7 +18,11 @@ import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
 // pressable trigger's hit area with hitSlop.
 
 // Web initials type, ~40% of the diameter (the current Canvas look), weight 500.
+// `tiny` keeps `small`'s 12px glyph rather than scaling on to 10: that is the type
+// the hand-off sets on its own 24px avatar, and a proportional 10px pair of
+// initials stops reading at that diameter.
 const WEB_LABEL: Record<Size, TextStyle> = {
+  tiny: { fontWeight: "500", fontSize: 12, lineHeight: 16 },
   small: { fontWeight: "500", fontSize: 12, lineHeight: 16 },
   default: { fontWeight: "500", fontSize: 16, lineHeight: 24 },
   large: { fontWeight: "500", fontSize: 18, lineHeight: 28 },
@@ -28,6 +32,7 @@ const WEB_LABEL: Record<Size, TextStyle> = {
 // each point size (12pt = 0, 16pt = -0.31, 18pt = -0.43), so dense initials read
 // crisply without over-tightening the small size.
 const IOS_LABEL: Record<Size, TextStyle> = {
+  tiny: { fontWeight: "600", fontSize: 12, lineHeight: 16 },
   small: { fontWeight: "600", fontSize: 12, lineHeight: 16 },
   default: { fontWeight: "600", fontSize: 16, lineHeight: 24, letterSpacing: -0.31 },
   large: { fontWeight: "600", fontSize: 18, lineHeight: 28, letterSpacing: -0.43 },
@@ -36,6 +41,7 @@ const IOS_LABEL: Record<Size, TextStyle> = {
 // Material 3: a medium (500) label with M3's slight positive tracking
 // (label/title styles carry +0.1 tracking), the same proportional sizes.
 const ANDROID_LABEL: Record<Size, TextStyle> = {
+  tiny: { fontWeight: "500", fontSize: 12, lineHeight: 16, letterSpacing: 0.1 },
   small: { fontWeight: "500", fontSize: 12, lineHeight: 16, letterSpacing: 0.1 },
   default: { fontWeight: "500", fontSize: 16, lineHeight: 24, letterSpacing: 0.1 },
   large: { fontWeight: "500", fontSize: 18, lineHeight: 28, letterSpacing: 0.1 },
@@ -83,8 +89,16 @@ export const androidSkin: AvatarSkin = {
 // web hand-off carries as the `--p-idpill-*` custom properties in
 // styles/tokens/platforms.css; they are transcribed here so NATIVE reads them
 // from this file and never from the CSS (the CSS layer is the web hand-off only).
-// Where the CSS expresses a fill with `color-mix()`, the equivalent is computed
-// below with the kit's own colour helpers instead of a web colour function.
+// Where the CSS expresses a fill with `color-mix(in oklab, ...)`, the same mix is
+// computed below with the kit's own `mixOklab` helper instead of a web colour
+// function, so the native fill matches the hand-off's exactly. (Blending the two
+// channel-wise in sRGB instead lands too light in both schemes, by 2/255 on every
+// channel in light, rgb(230, 230, 231) against the hand-off's rgb(228, 228, 229),
+// and by 2/2/1 in dark.)
+//
+// Each capsule holds a `tiny` (24px) Avatar, the disc the hand-off draws inside
+// it, so the inset around the photo is the hand-off's 4 on web, 6 on iOS, and 8
+// on Android (half of height - 24, hairline included).
 //
 //   web     32px capsule, gap 8, padding 4/10, `secondary` fill, a 1px hairline
 //           that is transparent when closed and `input`-coloured when open, and
@@ -97,25 +111,6 @@ export const androidSkin: AvatarSkin = {
 //
 // The 11/14 secondary (email) line and the 14px muted chevron are the same on
 // every platform; only the tracking follows the platform's name tracking.
-
-// Blend `over` into `base` by `t` (0..1) in sRGB, the RN equivalent of the CSS
-// hand-off's `color-mix(in oklab, <over> <t>%, <base>)`. At the 6% weight the web
-// pill uses, the sRGB and oklab results differ by well under one display step,
-// and this stays token-driven so it follows light and dark. Non-hex inputs (a
-// translucent token value, "transparent") return `base` unchanged, the same
-// defensive contract `alpha()` follows.
-function mix(base: string, over: string, t: number): string {
-  if (base[0] !== "#" || over[0] !== "#") return base;
-  const channels = (c: string) => {
-    const h = c.replace("#", "");
-    const full = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
-    return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
-  };
-  const [br, bg, bb] = channels(base);
-  const [or, og, ob] = channels(over);
-  const ch = (a: number, b: number) => Math.round(a + (b - a) * t);
-  return `rgb(${ch(br, or)}, ${ch(bg, og)}, ${ch(bb, ob)})`;
-}
 
 // The capsule's shared box: a row that centres the avatar, the identity column,
 // and the chevron on one baseline, with the gap the hand-off keeps at 8 on every
@@ -137,7 +132,7 @@ export const webMenuSkin: AvatarMenuSkin = {
   ...webSkin,
   menuPill: { ...PILL_ROW, height: 32, paddingStart: 4, paddingEnd: 10, borderWidth: 1 },
   menuPillFill: (t, open) => ({
-    backgroundColor: open ? mix(t.secondary, t.foreground, 0.06) : t.secondary,
+    backgroundColor: open ? mixOklab(t.secondary, t.foreground, 0.06) : t.secondary,
     borderColor: open ? t.input : "transparent",
   }),
   menuPillName: { fontSize: 13, lineHeight: 16, fontWeight: "500" },

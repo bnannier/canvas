@@ -1,5 +1,6 @@
+import type { ReactElement } from "react";
 import { View, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Dropdown, type DropdownItem } from "../dropdown/dropdown.js";
+import type { DropdownItem, DropdownProps } from "../dropdown/dropdown.shared.js";
 import { Icon } from "../icon/icon.js";
 import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
 
@@ -17,6 +18,10 @@ import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
 // test/no-console-violations.test.tsx). AvatarMenu owns the open state so the pill
 // can paint its open fill and rotate the chevron, and passes open/onOpenChange
 // down to keep Dropdown in step.
+//
+// The pill's disc is the Avatar `tiny` step (24px), the size the hand-off draws
+// inside the capsule on every platform, so the inset around it stays 4 on web, 6
+// on iOS, and 8 on Android instead of collapsing to a ring around the photo.
 //
 // AvatarMenu is a "Light" platform treatment on the same AvatarSkin family as
 // Avatar and AvatarGroup: one structure and one behavior, with the capsule's
@@ -60,8 +65,15 @@ export interface AvatarMenuProps {
   items: DropdownItem[];
   /** Avatar and chevron only, no name block: the topbar form of the pill. */
   compact?: boolean;
-  /** Align the menu's TRAILING edge with the pill's trailing edge (a right-hand
-   *  topbar account menu). Omit for the default leading-edge alignment. */
+  // Menu alignment (pick at most one). The pill's menu hangs from the TRAILING
+  // edge by default, which is where an account pill lives in a topbar and the
+  // only edge a right-parked trigger can open from without running off the
+  // surface. (Plain `Dropdown` defaults the other way, to its leading edge.)
+  // Precedence when both are passed: `alignEnd` > `alignStart`, so the explicit
+  // spelling of the default wins.
+  /** Hang the menu from the pill's LEADING edge instead of its trailing one. */
+  alignStart?: boolean;
+  /** The default, spelled out: the menu's trailing edge meets the pill's. */
   alignEnd?: boolean;
   /** Dimmed, non-opening pill: the menu never opens and the press is inert. */
   disabled?: boolean;
@@ -85,25 +97,25 @@ const PILL_RADIUS = 9999;
 // allowed to shrink so a long email never pushes the chevron out of the capsule.
 const IDENTITY_COLUMN: ViewStyle = { alignItems: "flex-start", flexShrink: 1 };
 
-// The whole capsule's accessible name, so a screen reader hears WHOSE account the
-// button opens instead of just "button". The name and email are the data a sighted
-// user reads off the pill, so they are folded into the name; with neither (a photo
-// only, or a compact pill with no identity at all) it falls back to a plain
-// description of what the control does.
+// The TRIGGER BUTTON's accessible name, handed to Dropdown as `triggerLabel` so a
+// screen reader hears WHOSE account the button opens instead of just "button". The
+// name and email are the data a sighted user reads off the pill, so they are folded
+// into the name, comma-separated; with neither (a photo only, or a compact pill with
+// no identity at all) it falls back to a plain description of what the control does.
 function accountLabel(name?: string, email?: string): string {
   if (name && email) return `${name}, ${email}`;
   return name ?? email ?? "Account menu";
 }
 
 /** Build an AvatarMenu from the same platform skin family as Avatar and AvatarGroup. */
-export function createAvatarMenu(skin: AvatarMenuSkin) {
+export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: DropdownProps) => ReactElement) {
   // The pill's avatar comes from the same skin, built once per platform module. It
   // is never pressable (Dropdown's trigger owns the press), so it takes the plain
   // solid path and never needs iOS's interactive glass fallback surface.
   const Avatar = createAvatar(skin);
 
   return function AvatarMenu(props: AvatarMenuProps) {
-    const { name, email, src, initials, items, compact, alignEnd, disabled, onSelect, testID, style } = props;
+    const { name, email, src, initials, items, compact, alignStart, alignEnd, disabled, onSelect, testID, style } = props;
     const { tokens } = useTheme();
     // Uncontrolled by default (a bare <AvatarMenu /> opens and closes on its own);
     // a controlled `open` prop takes over when supplied. The raw prop goes into the
@@ -113,6 +125,9 @@ export function createAvatarMenu(skin: AvatarMenuSkin) {
     // fill, the chevron, and the announced state all stay collapsed.
     const expanded = open && !disabled;
     const label = accountLabel(name, email);
+    // Trailing-edge by default; `alignStart` is the only way to the leading edge,
+    // and an explicit `alignEnd` outranks it.
+    const menuAlignEnd = alignEnd || !alignStart;
 
     return (
       <Dropdown
@@ -127,21 +142,31 @@ export function createAvatarMenu(skin: AvatarMenuSkin) {
         // The identity header above the rows: the same name and email the pill shows.
         title={name}
         description={email}
-        alignEnd={alignEnd}
+        alignEnd={menuAlignEnd}
         disabled={disabled}
         testID={testID}
         style={style}
       >
-        {/* The capsule. Dropdown wraps it in the button-roled Pressable that owns the
+        {/* The capsule is pure presentation: it is labelled by nothing and focusable
+            by nothing. Dropdown wraps it in the button-roled Pressable that owns the
             press, aria-haspopup="menu", the dual expanded/disabled state, and the
-            platform's disabled dim, so the capsule adds the one thing Dropdown
-            cannot know: the ACCESSIBLE NAME of the account. A labelled child names
-            its button, so a screen reader hears the person instead of "button". The
-            capsule is NOT a Pressable and carries no button role of its own:
-            nesting one inside Dropdown's would make a doubly-focusable, invalid
-            control (test/no-console-violations.test.tsx locks that). */}
+            platform's disabled dim, and that same Pressable carries the account's
+            ACCESSIBLE NAME, set from the `triggerLabel` passed above (Dropdown puts
+            it on the button as accessibilityLabel plus its aria-label alias).
+            Naming the button EXPLICITLY is the point: a button left to be named
+            from its CONTENTS runs the capsule's text nodes together unpunctuated
+            ("Rachel Chenrachel.chen@example.com"), re-reads the label the Avatar
+            already carries for the photo, and under `compact` shrinks to whatever
+            that Avatar label happens to be, since the capsule then holds no text at
+            all. One explicit label on the one focusable node is one punctuated name
+            in every configuration. It also keeps the capsule free of a role of its
+            own: it is NOT a Pressable, since nesting one inside Dropdown's would
+            make a doubly-focusable, invalid control
+            (test/no-console-violations.test.tsx locks that). */}
         <View style={[skin.menuPill, { borderRadius: PILL_RADIUS }, skin.menuPillFill(tokens, expanded)]}>
-          <Avatar small src={src} name={name} initials={initials} />
+          {/* `tiny` (24px) is the disc the capsule is drawn around: it leaves the
+              hand-off's 4/6/8 inset inside the 32/36/40 pill on web/iOS/Android. */}
+          <Avatar tiny src={src} name={name} initials={initials} />
           {compact ? null : (
             <View style={IDENTITY_COLUMN}>
               {name ? (

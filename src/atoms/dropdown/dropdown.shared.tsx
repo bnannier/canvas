@@ -93,6 +93,24 @@ export interface DropdownProps {
 // stays at least this wide; a wider trigger (an account chip) sets the width.
 const MENU_MIN_WIDTH = 200;
 
+// The trigger's own focusable node, inside the wrapper, for the return-focus half
+// of the WAI-ARIA menu pattern. Both trigger shapes (the default Button and a
+// custom `children` Pressable) carry `aria-haspopup="menu"` and nothing else in
+// the wrapper does, so this names the trigger exactly, with no reliance on child
+// order. Web-only by construction: it is used behind a `document` guard, and
+// natively VoiceOver/TalkBack return focus to the trigger themselves.
+const TRIGGER_NODE = '[aria-haspopup="menu"]';
+// An open menu card, wherever it is rendered (inline under the trigger, or
+// portaled into an overlay outlet). Used to tell focus that a close ORPHANED
+// from focus the user has deliberately moved elsewhere.
+const MENU_NODE = '[role="menu"]';
+
+// A menu row's host node, as the open-focus needs it. `preventScroll` is a DOM
+// focus option: react-native-web renders the row as a real element that takes it,
+// while a native View has no focus() at all, so the call is a no-op there exactly
+// like the rest of the roving-focus layer.
+type FocusableRow = { focus?: (options?: { preventScroll?: boolean }) => void } | null;
+
 // The inline-fallback anchor: with no OverlayProvider mounted the menu renders in
 // place, absolutely positioned below the trigger (the kit's pre-portal behavior).
 // With a provider, AnchoredOverlay positions the card over the page and adds the
@@ -103,8 +121,11 @@ const MENU_MIN_WIDTH = 200;
 // shrink-wraps the trigger, so pinning the card's start edge lines it up with the
 // trigger's leading edge and pinning its end edge lines up the trailing edges,
 // mirrored automatically in a right-to-left locale.
-const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: 4 };
-const MENU_ANCHOR_END: ViewStyle = { position: "absolute", top: "100%", end: 0, zIndex: 50, marginTop: 4 };
+// The inline anchors take their standoff from the skin, so a menu built for a
+// taller trigger (the account pill, which the hand-off stands off by 6) can differ
+// without any caller-facing spacing prop. start/end stay logical for RTL.
+const menuAnchor = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: gap });
+const menuAnchorEnd = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", end: 0, zIndex: 50, marginTop: gap });
 
 /** Build a Dropdown component from a platform skin. */
 export function createDropdown(skin: DropdownSkin) {
@@ -123,9 +144,17 @@ export function createDropdown(skin: DropdownSkin) {
       onOpenChange?.(next);
     };
     // The identity header (title over description) sits above the section label
-    // and the rows. It is plain text, NOT a menu item: nothing here is focusable
-    // and it never enters the roving-focus item count.
+    // and the rows. It is a GROUP, never a menu item: `group` is a valid child of
+    // `menu`, so assistive tech reads the two lines as one named node instead of
+    // the loose anonymous text they would otherwise be, while staying
+    // unfocusable, so the roving-focus item count is still items.length.
     const hasHeader = title != null || description != null;
+    const headerName = [title, description].filter((line) => line != null).join(", ");
+    // The menu's own accessible name. A card with an identity header is named by
+    // that header's title (the account name is what a user calls that menu), and
+    // otherwise by the muted section label. With neither, the name is left to the
+    // platform's own computation rather than invented here.
+    const menuName = title ?? description ?? label;
 
     // Escape dismisses the open menu on web (no-op natively).
     useEscapeKey(open, () => setOpen(false));
@@ -135,21 +164,65 @@ export function createDropdown(skin: DropdownSkin) {
     // rows and Enter/Space activates the focused one. Web-only in effect (natively
     // there is no onKeyDown and a View has no focus()).
     const [focusedIndex, setFocusedIndex] = useState(0);
-    const { getItemProps, focusItem } = useRovingFocus({
+    // The rows' host nodes, captured alongside the roving hook's own refs. The
+    // open-focus needs the node itself so it can pass `preventScroll`, the way
+    // every programmatic focus move in the kit is qualified (see use-dialog-focus):
+    // a menu the user just opened is already in view, and a menu that renders open
+    // from its first commit (a docs demo pinned open) must not yank the page to
+    // itself. The arrow keys keep the hook's own move, which scrolls the row it
+    // lands on into view.
+    const rowNodes = useRef<FocusableRow[]>([]);
+    const { getItemProps } = useRovingFocus({
       count: items.length,
       active: focusedIndex,
       onActivate: setFocusedIndex,
       orientation: "vertical",
       rtl: isRTL(),
     });
-    useEffect(() => {
-      if (!open) return;
+    // Focus moves in when the CARD MOUNTS, not when `open` flips. On the hosted
+    // (portaled) path (every real app and every docs stage) AnchoredOverlay holds
+    // the card back until it has measured the trigger, so at the instant `open`
+    // becomes true there is no row to focus and the arrows would be dead. The
+    // overlay's mount callback fires on BOTH paths at the one moment the rows exist
+    // (their refs are attached before it runs), so nothing polls and nothing guesses
+    // a timeout.
+    const focusFirstItem = () => {
       const first = items.findIndex((it) => !it.disabled);
       const start = first >= 0 ? first : 0;
       setFocusedIndex(start);
-      focusItem(start);
-      // Focus the first row once the menu opens; items are mounted by this point.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      rowNodes.current[start]?.focus?.({ preventScroll: true });
+    };
+
+    // ...and back out to the trigger on close (WAI-ARIA: closing a menu returns
+    // focus to the button that opened it). Without this, Escape or a row press
+    // drops focus on document.body and the keyboard user restarts at the top of
+    // the page. Web-only: `document` is undefined natively and during SSR, where
+    // VoiceOver/TalkBack restore the cursor themselves.
+    const restoreFocusToTrigger = () => {
+      if (typeof document === "undefined") return;
+      const wrapper = triggerRef.current as unknown as HTMLElement | null;
+      // The whole Dropdown went with its page: there is no trigger to focus.
+      if (wrapper == null || !document.body.contains(wrapper)) return;
+      const active = document.activeElement as HTMLElement | null;
+      // Reclaim only the focus THIS close orphaned: still on a menu row, or already
+      // dropped on <body> because the card unmounted under it. A close that was not
+      // user-driven (an app flipping `open` after the user has tabbed on) finds
+      // focus on a live element elsewhere and leaves it exactly where it is.
+      const orphaned =
+        active == null ||
+        active === document.body ||
+        !document.body.contains(active) ||
+        active.closest(MENU_NODE) != null;
+      if (!orphaned) return;
+      // preventScroll: returning focus must never yank the page, the way every
+      // programmatic focus move in the kit is qualified (see use-dialog-focus).
+      wrapper.querySelector<HTMLElement>(TRIGGER_NODE)?.focus({ preventScroll: true });
+    };
+    useEffect(() => {
+      if (!open) return;
+      // One cleanup covers every close path: Escape, a row select, an outside tap,
+      // a controlled `open` going false, and the Dropdown unmounting mid-open.
+      return restoreFocusToTrigger;
     }, [open]);
 
     // Match the menu width to the trigger (and let longer rows grow past it), so a
@@ -204,9 +277,9 @@ export function createDropdown(skin: DropdownSkin) {
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
-          gap={4}
+          gap={skin.menuGap}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
-          inlineStyle={alignEnd ? MENU_ANCHOR_END : MENU_ANCHOR}
+          inlineStyle={alignEnd ? menuAnchorEnd(skin.menuGap) : menuAnchor(skin.menuGap)}
           // Same logical alignment on the hosted path: the portal places the card
           // by the trigger's trailing edge instead of its leading one, mirrored
           // in a right-to-left locale.
@@ -215,15 +288,24 @@ export function createDropdown(skin: DropdownSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
+          // The card is where the rows live, so its mount is when focus can move
+          // into them: on the portaled path that is a measurement later than the
+          // open itself.
+          onCardMount={focusFirstItem}
         >
             {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
                 each menuitem is orphaned and web SRs/validators flag it. The RippleClip
                 parent clips the Android bounded-ripple rows to the menu card's rounded
                 corners (a no-op on iOS/web; the card itself keeps no overflow). */}
             <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
-            <View accessibilityRole="menu" role="menu">
+            {/* An unnamed menu is announced as a bare "menu"; naming it from the
+                header (or the section label) is what tells a screen-reader user
+                WHICH menu opened. RNW forwards neither accessibilityLabel nor the
+                role's own name, so both aliases are set, per the kit's dual-a11y
+                contract. */}
+            <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName}>
             {hasHeader ? (
-              <View style={skin.menuHeader}>
+              <View style={skin.menuHeader} role="group" accessibilityLabel={headerName} aria-label={headerName}>
                 {title != null ? <Text style={skin.menuHeaderTitle(tokens)}>{title}</Text> : null}
                 {description != null ? <Text style={skin.menuHeaderDescription(tokens)}>{description}</Text> : null}
               </View>
@@ -252,13 +334,19 @@ export function createDropdown(skin: DropdownSkin) {
                 roving.onKeyDown(e);
               };
               const rovingProps = { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: onItemKeyDown };
+              // One ref feeding two readers: the roving hook (arrow moves) and the
+              // row-node table the open-focus reads.
+              const rowRef = (node: FocusableRow) => {
+                roving.ref(node);
+                rowNodes.current[index] = node;
+              };
               return (
               <View key={`${item.label}-${index}`}>
                 {item.separatorBefore && skin.separator ? (
                   <View style={skin.separator(tokens)} />
                 ) : null}
                 <Pressable
-                  ref={roving.ref}
+                  ref={rowRef}
                   {...(rovingProps as object)}
                   style={({ pressed }) => [
                     skin.itemRow,

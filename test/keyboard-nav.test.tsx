@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
@@ -7,12 +7,35 @@ import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { OverlayProvider } from "../src/style/portal.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { Slider } from "../src/atoms/slider/slider.tsx";
 import { I18nManager } from "react-native";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
+
+// The HOSTED (portaled) overlay path, which every real app and every docs stage
+// runs, holds its card back until the trigger measures a non-zero box, and
+// happy-dom reports every box as 0x0, so a hosted card never mounts in a test
+// unless the layout is stubbed. These two helpers make that path testable: give
+// the DOM a real box for the duration of the case, then let the overlay's
+// measure-and-place frame land (requestAnimationFrame, hence the timer wait).
+const LAID_OUT = { x: 10, y: 20, width: 160, height: 32, top: 20, left: 10, right: 170, bottom: 52, toJSON: () => ({}) } as DOMRect;
+const withLayout = async (run: () => Promise<void>) => {
+  const original = Element.prototype.getBoundingClientRect;
+  Element.prototype.getBoundingClientRect = () => LAID_OUT;
+  try {
+    await run();
+  } finally {
+    Element.prototype.getBoundingClientRect = original;
+  }
+};
+const settle = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
+};
 
 describe("Tabs roving keyboard navigation", () => {
   it("moves + activates the tab with arrows, wraps, and honors Home/End", () => {
@@ -157,6 +180,152 @@ describe("Dropdown menu roving keyboard navigation", () => {
     fireEvent.keyDown(menuitems()[1], { key: "Enter" });
     expect(picked).toBe(1);
     expect(container.querySelectorAll('[role="menuitem"]').length).toBe(0);
+  });
+
+  it("moves DOM focus onto the first row on the inline path, skipping a disabled one", () => {
+    const items = [{ label: "Profile", disabled: true }, { label: "Settings" }, { label: "Sign out" }];
+    const { container } = ui(<Dropdown trigger="Menu" items={items} />);
+    fireEvent.click(screen.getByText("Menu"));
+    const menuitems = [...container.querySelectorAll('[role="menuitem"]')];
+    // The first ENABLED row takes focus and the single tab stop, not row 0.
+    expect(document.activeElement).toBe(menuitems[1]);
+    expect(menuitems[1].getAttribute("tabindex")).toBe("0");
+    expect(menuitems[0].getAttribute("tabindex")).toBe("-1");
+  });
+
+  // The hosted path is the one every app and docs page runs, and it mounts the
+  // card a measurement LATER than `open` flips, so focusing on the open alone
+  // focused nothing, leaving the arrows dead and the menu at the end of the tab
+  // order. Focus must follow the card's mount instead.
+  it("moves focus into the PORTALED menu once its card mounts, so the arrows are live there too", async () => {
+    await withLayout(async () => {
+      let picked = -1;
+      const items = [{ label: "Profile" }, { label: "Settings" }, { label: "Sign out" }];
+      const { container } = ui(
+        <OverlayProvider>
+          <Dropdown trigger="Menu" items={items} onSelect={(_it, i) => { picked = i; }} />
+        </OverlayProvider>,
+      );
+      fireEvent.click(screen.getByText("Menu"));
+      await settle();
+      const menuitems = () => [...container.querySelectorAll('[role="menuitem"]')];
+      expect(menuitems().length).toBe(3);
+      expect(document.activeElement).toBe(menuitems()[0]);
+
+      // Live roving: the arrows move real focus, not just the tab stop.
+      fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
+      expect(document.activeElement).toBe(menuitems()[1]);
+      expect(menuitems()[1].getAttribute("tabindex")).toBe("0");
+      fireEvent.keyDown(document.activeElement!, { key: "End" });
+      expect(document.activeElement).toBe(menuitems()[2]);
+
+      fireEvent.keyDown(document.activeElement!, { key: "Enter" });
+      expect(picked).toBe(2);
+      await settle();
+      expect(container.querySelectorAll('[role="menuitem"]').length).toBe(0);
+    });
+  });
+
+  // WAI-ARIA: closing a menu hands focus back to the button that opened it.
+  // Without that, Escape or a row press drops focus on document.body and the
+  // keyboard user restarts at the top of the page.
+  it("returns focus to the trigger on Escape, on a row select, and on an outside dismissal", async () => {
+    const items = [{ label: "Profile" }, { label: "Settings" }];
+    const { container } = ui(<Dropdown trigger="Menu" items={items} />);
+    const trigger = container.querySelector('[aria-haspopup="menu"]')!;
+
+    fireEvent.click(screen.getByText("Menu"));
+    expect(document.activeElement).toBe(container.querySelector('[role="menuitem"]'));
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+
+    // Selecting a row closes and returns focus the same way.
+    fireEvent.click(screen.getByText("Menu"));
+    fireEvent.click(screen.getByText("Settings"));
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+
+    // ...as does an outside tap on the hosted path's dismiss backdrop.
+    cleanup();
+    await withLayout(async () => {
+      const hosted = ui(
+        <OverlayProvider>
+          <Dropdown trigger="Menu" items={items} />
+        </OverlayProvider>,
+      );
+      const hostedTrigger = hosted.container.querySelector('[aria-haspopup="menu"]')!;
+      fireEvent.click(screen.getByText("Menu"));
+      await settle();
+      // The dismiss backdrop is the outlet CHILD pinned to all four edges (the
+      // outlet itself is pinned the same way, hence the two-step search).
+      const outlet = [...hosted.container.querySelectorAll("div")].find(
+        (d) => getComputedStyle(d).zIndex === "1000" && getComputedStyle(d).position === "absolute",
+      )!;
+      const backdrop = [...outlet.children].find((c) => {
+        const s = getComputedStyle(c);
+        return s.top === "0px" && s.bottom === "0px" && s.left === "0px" && s.right === "0px";
+      })!;
+      expect(backdrop).toBeDefined();
+      fireEvent.click(backdrop);
+      await settle();
+      expect(hosted.container.querySelector('[role="menu"]')).toBeNull();
+      expect(document.activeElement).toBe(hostedTrigger);
+    });
+  });
+
+  it("returns focus to the trigger when a controlled close happens with focus still on a row", () => {
+    const items = [{ label: "Profile" }, { label: "Settings" }];
+    const { container, rerender } = render(
+      <ThemeProvider>
+        <Dropdown trigger="Menu" open onOpenChange={() => {}} items={items} />
+      </ThemeProvider>,
+    );
+    const trigger = container.querySelector('[aria-haspopup="menu"]')!;
+    expect(document.activeElement).toBe(container.querySelector('[role="menuitem"]'));
+    rerender(
+      <ThemeProvider>
+        <Dropdown trigger="Menu" open={false} onOpenChange={() => {}} items={items} />
+      </ThemeProvider>,
+    );
+    // The close orphaned the focused row, so the trigger takes focus back rather
+    // than leaving the keyboard user on document.body.
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("leaves focus where the user moved it when a close was not user-driven", () => {
+    const items = [{ label: "Profile" }, { label: "Settings" }];
+    // A real control elsewhere on the page, the way a user tabs on while a
+    // controlled menu is still open.
+    const elsewhere = document.createElement("button");
+    document.body.appendChild(elsewhere);
+    try {
+      const { container, rerender } = render(
+        <ThemeProvider>
+          <Dropdown trigger="Menu" open onOpenChange={() => {}} items={items} />
+        </ThemeProvider>,
+      );
+      const trigger = container.querySelector('[aria-haspopup="menu"]')!;
+      // Tabbing off the focused row re-renders the row it left (RNW tracks focus
+      // state on a Pressable), so the move goes through act.
+      act(() => {
+        elsewhere.focus();
+      });
+      expect(document.activeElement).toBe(elsewhere);
+
+      // The app closes the menu on its own; focus is not the menu's to reclaim.
+      rerender(
+        <ThemeProvider>
+          <Dropdown trigger="Menu" open={false} onOpenChange={() => {}} items={items} />
+        </ThemeProvider>,
+      );
+      expect(container.querySelector('[role="menu"]')).toBeNull();
+      expect(document.activeElement).toBe(elsewhere);
+      expect(document.activeElement).not.toBe(trigger);
+    } finally {
+      elsewhere.remove();
+    }
   });
 });
 

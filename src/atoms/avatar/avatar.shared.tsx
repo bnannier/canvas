@@ -28,7 +28,7 @@ export type AvatarSurface = ComponentType<{ style?: StyleProp<ViewStyle>; testID
 // the skins apply platform conventions to the shared composition rather than
 // matching a native widget.
 
-export type Size = "small" | "default" | "large";
+export type Size = "tiny" | "small" | "default" | "large";
 export type Shape = "circle" | "rounded";
 
 // The only things a platform skin owns: the rounded-square corner radius, the
@@ -79,7 +79,8 @@ export interface AvatarProps {
    * photo-only or pressable avatar that has no `name`.
    */
   accessibilityLabel?: string;
-  // Size (pick one; default is the 40px row avatar).
+  // Size (pick one; default is the 40px row avatar, `tiny` the 24px disc a capsule holds). Precedence: `tiny` > `small` > `large`.
+  tiny?: boolean;
   small?: boolean;
   large?: boolean;
   // Shape (pick one; default is a circle).
@@ -95,16 +96,24 @@ export interface AvatarProps {
   style?: StyleProp<ViewStyle>;
 }
 
-// Diameter per size: small is the inline topbar/stack size, default the 40px row
-// avatar, large the identity-header size. Platform-neutral.
-const BOX: Record<Size, number> = { small: 28, default: 40, large: 48 };
+// Diameter per size: tiny is the disc that sits inside a capsule (the AvatarMenu
+// identity pill) or a dense toolbar, small the inline topbar/stack size, default
+// the 40px row avatar, large the identity-header size. Platform-neutral.
+//
+// 24 is the size the web hand-off draws inside its identity pill, and it is what
+// keeps the capsule's inset right on every platform: the pill is 32/36/40 tall on
+// web/iOS/Android, so a 24 disc leaves the hand-off's 4/6/8 of breathing room
+// (measured from the outer edge, the 1px hairline included, since RN sizes a box
+// the way `box-sizing: border-box` does).
+const BOX: Record<Size, number> = { tiny: 24, small: 28, default: 40, large: 48 };
 const CIRCLE_RADIUS = 9999;
 // Width of the separator ring (and the matching "+N" chip border) drawn in the
 // background color when avatars overlap in a stack. A thin hairline, owned once.
 const RING_WIDTH = 1.5;
 
-// Size precedence when more than one is passed: first match wins.
+// Size precedence when more than one is passed: first match wins, smallest first.
 function sizeOf(p: AvatarProps): Size {
+  if (p.tiny) return "tiny";
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
@@ -286,6 +295,7 @@ export type Overlap = "tight" | "snug" | "loose";
 // Overlap (negative marginLeft) per size and tightness. The magic negative margin
 // is owned here, once, instead of at every call site.
 const OVERLAP: Record<Size, Record<Overlap, number>> = {
+  tiny: { tight: -11, snug: -7, loose: -3 },
   small: { tight: -13, snug: -8, loose: -3 },
   default: { tight: -16, snug: -10, loose: -5 },
   large: { tight: -20, snug: -13, loose: -7 },
@@ -298,7 +308,8 @@ export interface AvatarGroupProps {
   max?: number;
   /** Override the total behind the "+N" chip (e.g. a server-known member count). */
   total?: number;
-  // Size (pick one; forwarded to every child so the whole stack is uniform).
+  // Size (pick one; forwarded to every child so the whole stack is uniform). Precedence: `tiny` > `small` > `large`.
+  tiny?: boolean;
   small?: boolean;
   large?: boolean;
   // Overlap tightness (pick one; default `tight`). Precedence loose > snug > tight.
@@ -321,7 +332,7 @@ function overlapOf(p: AvatarGroupProps): Overlap {
 /** Build an AvatarGroup from the same platform skin as Avatar. */
 export function createAvatarGroup(skin: AvatarSkin) {
   return function AvatarGroup(props: AvatarGroupProps) {
-    const { children, max, total, small, large, accessibilityLabel, testID } = props;
+    const { children, max, total, tiny, small, large, accessibilityLabel, testID } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
     const overlap = OVERLAP[size][overlapOf(props)];
@@ -335,7 +346,7 @@ export function createAvatarGroup(skin: AvatarSkin) {
     // Size is forwarded only when the group sets one, so a child keeps its own
     // size otherwise. Overlap + ring are always injected, so the caller's
     // Avatars never carry layout style.
-    const sizeProps: Partial<AvatarProps> = small ? { small: true } : large ? { large: true } : {};
+    const sizeProps: Partial<AvatarProps> = tiny ? { tiny: true } : small ? { small: true } : large ? { large: true } : {};
 
     return (
       <View
