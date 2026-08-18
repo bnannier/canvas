@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart, RadialBarChart, FunnelChart, RadarChart } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -140,6 +140,24 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("<WaterfallChart />")).toBe(true);
   });
 
+  it("RadialBarChart warns past six rings", () => {
+    ui(<RadialBarChart data={Array.from({ length: 7 }, (_, i) => ({ label: `R${i}`, value: i + 1 }))} />);
+    expect(sawWarning("<RadialBarChart />")).toBe(true);
+    expect(sawWarning("rings read poorly")).toBe(true);
+  });
+
+  it("FunnelChart warns when a stage exceeds its predecessor", () => {
+    ui(<FunnelChart stages={[{ label: "A", value: 10 }, { label: "B", value: 40 }]} />);
+    expect(sawWarning("<FunnelChart />")).toBe(true);
+    expect(sawWarning("a funnel narrows")).toBe(true);
+  });
+
+  it("RadarChart warns on an axes/values mismatch and under three axes", () => {
+    ui(<RadarChart axes={["A", "B"]} series={[{ label: "X", values: [1, 2, 3] }]} />);
+    expect(sawWarning("<RadarChart />")).toBe(true);
+    expect(sawWarning("cannot form a polygon")).toBe(true);
+  });
+
   it("RangeAreaChart warns when low exceeds high and swaps the pair", () => {
     ui(<RangeAreaChart label="R" labels={["A"]} data={[{ low: 9, high: 2 }]} />);
     expect(sawWarning("<RangeAreaChart />")).toBe(true);
@@ -165,6 +183,9 @@ describe("component data-misuse warnings", () => {
         <Histogram label="ms" values={[1, 2, 2, 3, 4]} />
         <BoxPlot data={[{ label: "A", values: [1, 2, 3, 4, 5] }]} />
         <WaterfallChart steps={[{ label: "S", value: 10, total: true }, { label: "Up", value: 3 }]} />
+        <RadialBarChart data={[{ label: "A", value: 3 }]} max={10} />
+        <FunnelChart stages={[{ label: "Visits", value: 10 }, { label: "Paid", value: 4 }]} />
+        <RadarChart axes={["A", "B", "C"]} series={[{ label: "X", values: [1, 2, 3] }]} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);

@@ -598,6 +598,21 @@
             "slug": "waterfall-chart",
             "label": "WaterfallChart",
             "icon": "trending-up"
+          },
+          {
+            "slug": "radial-bar-chart",
+            "label": "RadialBarChart",
+            "icon": "gauge"
+          },
+          {
+            "slug": "funnel-chart",
+            "label": "FunnelChart",
+            "icon": "filter"
+          },
+          {
+            "slug": "radar-chart",
+            "label": "RadarChart",
+            "icon": "hexagon"
           }
         ]
       },

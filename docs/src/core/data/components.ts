@@ -703,6 +703,27 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "radial-bar-chart",
+    name: "RadialBarChart",
+    description: "Concentric arc rings, one per category, each revealed from 12 o'clock over a muted track, with a value legend.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "funnel-chart",
+    name: "FunnelChart",
+    description: "Stage-by-stage conversion trapezoids with on-stage labels, values, and conversion percents.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "radar-chart",
+    name: "RadarChart",
+    description: "A polygonal multi-axis comparison: nice-tick rings, a spoke per axis, and a washed polygon per series.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",

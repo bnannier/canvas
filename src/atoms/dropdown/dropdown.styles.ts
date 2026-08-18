@@ -32,6 +32,17 @@ export interface DropdownSkin {
   menuCard: (t: ColorTokens) => ViewStyle;
   /** Muted section heading rendered above the rows. */
   menuLabel: (t: ColorTokens) => TextStyle;
+  /** The identity header block (title over description) rendered ABOVE both the
+   *  section label and the rows, when `title`/`description` are passed. Its
+   *  gutter matches `menuLabel`'s, so the header, the label, and the row labels
+   *  share one start column; the type scale is deliberately the SAME on all
+   *  three platforms (the hand-off hard-codes it, there is no per-platform
+   *  header token), so only the gutter is a per-OS value. */
+  menuHeader: ViewStyle;
+  /** The header's title line, in the popover foreground. */
+  menuHeaderTitle: (t: ColorTokens) => TextStyle;
+  /** The header's muted second line under the title. */
+  menuHeaderDescription: (t: ColorTokens) => TextStyle;
   /** A hairline separator above a row that starts a new group. iOS/web draw one;
    *  Android (M3) returns null (no dividers). */
   separator: ((t: ColorTokens) => ViewStyle) | null;
@@ -95,6 +106,11 @@ export const webSkin: DropdownSkin = {
     fontWeight: "500",
     color: t["muted-foreground"],
   }),
+  // Header gutter = the web menu-label gutter (8 x 6), so the identity block
+  // starts on the same column as the label and the row text.
+  menuHeader: { paddingHorizontal: 8, paddingVertical: 6, gap: 2 },
+  menuHeaderTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
+  menuHeaderDescription: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
   separator: (t) => ({ marginTop: 4, marginBottom: 4, height: 1, backgroundColor: t.border }),
   itemRow: {
     flexDirection: "row",
@@ -153,6 +169,11 @@ export const iosSkin: DropdownSkin = {
     fontWeight: "600",
     color: t["muted-foreground"],
   }),
+  // Header gutter = the iOS menu-label gutter (16 x 6): the identity block sits
+  // on the same 16pt start column as every row label.
+  menuHeader: { paddingHorizontal: 16, paddingVertical: 6, gap: 2 },
+  menuHeaderTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
+  menuHeaderDescription: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
   // Hairline group separators run full-bleed across the panel (iOS 26 groups
   // rows with a thin divider).
   separator: (t) => ({ marginTop: 6, marginBottom: 6, height: 1, backgroundColor: t.border }),
@@ -206,7 +227,13 @@ export const androidSkin: DropdownSkin = {
     letterSpacing: 0.5,
     color: t["muted-foreground"],
   }),
-  // M3 menus use no dividers between items.
+  // Header gutter = the M3 menu-label gutter (16 x 8).
+  menuHeader: { paddingHorizontal: 16, paddingVertical: 8, gap: 2 },
+  menuHeaderTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
+  menuHeaderDescription: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  // M3 menus use no dividers between items, so the identity header is separated
+  // by its own padding rather than a rule (the hand-off collapses the M3
+  // separator to 0 height for the same reason).
   separator: null,
   itemRow: {
     flexDirection: "row",

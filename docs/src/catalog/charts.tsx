@@ -407,6 +407,72 @@ function WaterfallPreview() {
   );
 }
 
+function RadialBarPreview() {
+  const { tokens } = useTheme();
+  const rings = [
+    { r: 12, frac: 0.8, color: tokens["chart-1"] },
+    { r: 20, frac: 0.55, color: tokens["chart-2"] },
+    { r: 28, frac: 0.35, color: tokens["chart-3"] },
+  ];
+  const arc = (r: number, frac: number) => {
+    const a = frac * 2 * Math.PI;
+    const x = 100 + r * Math.sin(a);
+    const y = 32 - r * Math.cos(a);
+    return `M 100 ${32 - r} A ${r} ${r} 0 ${frac > 0.5 ? 1 : 0} 1 ${x} ${y}`;
+  };
+  return (
+    <Stage>
+      {rings.map((ring, i) => (
+        <G key={i}>
+          <Circle cx={100} cy={32} r={ring.r} fill="none" stroke={alpha(tokens["muted-foreground"], 0.2)} strokeWidth={5} />
+          <Path d={arc(ring.r, ring.frac)} fill="none" stroke={ring.color} strokeWidth={5} strokeLinecap="round" />
+        </G>
+      ))}
+    </Stage>
+  );
+}
+
+function FunnelPreview() {
+  const { tokens } = useTheme();
+  const widths = [180, 122, 74, 40];
+  return (
+    <Stage>
+      {widths.map((w, i) => {
+        const next = widths[i + 1] ?? w;
+        const y0 = i * 16;
+        return (
+          <Path
+            key={i}
+            d={`M ${100 - w / 2} ${y0} L ${100 + w / 2} ${y0} L ${100 + next / 2} ${y0 + 13} L ${100 - next / 2} ${y0 + 13} Z`}
+            fill={tokens[`chart-${i + 1}` as "chart-1"]}
+          />
+        );
+      })}
+    </Stage>
+  );
+}
+
+function RadarPreview() {
+  const { tokens } = useTheme();
+  const pt = (r: number, i: number) => {
+    const a = (i / 5) * 2 * Math.PI;
+    return `${100 + r * Math.sin(a)},${34 - r * Math.cos(a)}`;
+  };
+  const ring = (r: number) => Array.from({ length: 5 }, (_, i) => pt(r, i)).join(" ");
+  return (
+    <Stage>
+      <Polyline points={`${ring(28)} ${pt(28, 0)}`} fill="none" stroke={alpha(tokens["muted-foreground"], 0.3)} strokeWidth={1} />
+      <Polyline points={`${ring(16)} ${pt(16, 0)}`} fill="none" stroke={alpha(tokens["muted-foreground"], 0.3)} strokeWidth={1} />
+      <Polyline
+        points={`${[26, 18, 24, 12, 22].map((r, i) => pt(r, i)).join(" ")} ${pt(26, 0)}`}
+        fill={alpha(tokens["chart-1"], 0.2)}
+        stroke={tokens["chart-1"]}
+        strokeWidth={2}
+      />
+    </Stage>
+  );
+}
+
 export const CHARTS_TILES: CatTile[] = [
   { title: "Chart", href: "/components/chart", Preview: BarsPreview },
   { title: "LineChart", href: "/components/line-chart", Preview: LinePreview },
@@ -429,4 +495,7 @@ export const CHARTS_TILES: CatTile[] = [
   { title: "Histogram", href: "/components/histogram", Preview: HistogramPreview },
   { title: "BoxPlot", href: "/components/box-plot", Preview: BoxPlotPreview },
   { title: "WaterfallChart", href: "/components/waterfall-chart", Preview: WaterfallPreview },
+  { title: "RadialBarChart", href: "/components/radial-bar-chart", Preview: RadialBarPreview },
+  { title: "FunnelChart", href: "/components/funnel-chart", Preview: FunnelPreview },
+  { title: "RadarChart", href: "/components/radar-chart", Preview: RadarPreview },
 ];

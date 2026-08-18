@@ -1,6 +1,6 @@
 # Avatar
 
-A photo when the account has one, falling back to one or two initials in white on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. A pressable avatar (`onPress`) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter).
+A photo when the account has one, falling back to one or two initials in white on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. A pressable avatar (`onPress`) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter). `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
 
 ## Usage
 
@@ -36,6 +36,42 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
   ]}>
   <Avatar small name="MA" />
 </Dropdown>
+```
+
+### Account menu
+
+The whole account control in one component. `AvatarMenu` renders a single capsule trigger (the avatar, the name over the muted email, a chevron that turns as the menu opens) and the account menu itself, with `name` and `email` repeated as the menu's own identity header. One press target covers the capsule, so nothing beside it has to be wired up.
+
+```tsx
+<AvatarMenu
+  name="Rachel Chen"
+  email="rachel.chen@example.com"
+  src="/rachel-chen.jpg"
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Billing", icon: "creditCard" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
+### Compact menu
+
+`compact` drops the name block for a bar with no room for it, leaving the avatar and the chevron. The identity still travels with the menu, so the name and email head the rows the moment it opens. In a topbar the trigger sits at the trailing edge, where `alignEnd` hangs the menu from that edge instead of the leading one.
+
+```tsx
+<AvatarMenu
+  compact
+  name="Marcus Allen"
+  email="admin@example.com"
+  src="/marcus-allen.jpg"
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]}
+/>
 ```
 
 ### Photo
@@ -114,10 +150,14 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
 
 ### Topbar account menu
 
-**Do** — Wrap the trigger in a Dropdown so it opens the account menu. A lone avatar works (on iOS its glass surface reads as an interactive control); pair it with the account name and a chevron when you want the affordance to be explicit everywhere.
+**Do**: Press the avatar: `AvatarMenu compact` makes it a real trigger in a bar with no room for a name, and the account is named in the menu header the moment the menu opens.
 
 ```tsx
-<Chip outline icon={<Avatar small src="/marcus-allen.jpg" name="MA" />} trailing={<Icon chevronDown muted size={12} />}>admin@example.com</Chip>
+<AvatarMenu compact name="Marcus Allen" email="admin@example.com" src="/marcus-allen.jpg" items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]} />
 ```
 
 **Don't** — A bare avatar with no Dropdown around it is decorative, not a trigger, and opens nothing.
@@ -164,4 +204,81 @@ A lone avatar as the account trigger: on iOS the circle is interactive Liquid Gl
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>admin@example.com</Text>
   </View>
 </View>
+```
+
+### Account identity
+
+**Do**: Press the pill: `name` and `email` go through AvatarMenu, which owns both lines, the shared press target, and the identity header on the menu it opens.
+
+```tsx
+<AvatarMenu name="Rachel Chen" email="rachel.chen@example.com" src="/rachel-chen.jpg" items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+**Don't**: Hand-composing the identity beside the trigger drifts from the pill's type and spacing, and the menu that opens names no account at all.
+
+```tsx
+<Dropdown items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings" },
+    { label: "Sign out", icon: "logOut", separatorBefore: true }
+  ]}>
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+    <Avatar small src="/rachel-chen.jpg" name="RC" />
+    <View>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Rachel Chen</Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>rachel.chen@example.com</Text>
+    </View>
+    <Icon chevronDown muted size={12} />
+  </View>
+</Dropdown>
+```
+
+### Sign out
+
+**Do**: Open the menu: keep the destructive sign out last and behind a separator, a reach away from the rows people press every day.
+
+```tsx
+<AvatarMenu name="Kira Tanaka" email="kira.tanaka@example.com" src="/kira-tanaka.jpg" items={[
+    { label: "Profile", icon: "user" },
+    { label: "Billing", icon: "creditCard" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+**Don't**: Sign out buried mid-list, in the same tone as its neighbours, is one slip away on the path to Settings.
+
+```tsx
+<AvatarMenu name="Kira Tanaka" email="kira.tanaka@example.com" src="/kira-tanaka.jpg" items={[
+    { label: "Profile", icon: "user" },
+    { label: "Sign out", icon: "logOut" },
+    { label: "Billing", icon: "creditCard" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," }
+  ]} />
+```
+
+### Compact trigger
+
+**Do**: Press the pill: where the row has space, the full form says who is signed in before anything is opened.
+
+```tsx
+<AvatarMenu name="Noor Park" email="noor.park@example.com" src="/noor-park.jpg" items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+**Don't**: `compact` on a roomy page that names the account nowhere else hides who is signed in behind a press, for space nobody needed back.
+
+```tsx
+<AvatarMenu compact name="Noor Park" email="noor.park@example.com" src="/noor-park.jpg" items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]} />
 ```
