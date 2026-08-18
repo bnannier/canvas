@@ -297,7 +297,7 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
       {
         title: "What 'glass' means in Canvas",
         description: "Glass follows Apple's Liquid Glass model: it is a material for the FUNCTIONAL layer, the navigation and overlays that float above content, never the content layer. The surface mode swaps the popover token translucent, so overlays (popovers, menus, dropdowns, selects, dialogs, sheets, drawers, command) and the bar/sidebar shells go glass, while content surfaces (cards, lists, tables, calendars, charts) stay solid. Those functional surfaces render through the shared GlassSurface primitive, which paints the platform's real material.",
-        anatomy: "Toggle with the Solid / Frost switch in the topbar, or pass the boolean to the provider: <ThemeProvider glass> forces glass, <ThemeProvider solid> forces flat, and omitting both picks the platform default (glass on iOS 26+ via liquidGlassAvailable(), solid elsewhere).",
+        anatomy: "Toggle with the Solid / Glass switch in the topbar, or pass the boolean to the provider: <ThemeProvider glass> forces glass, <ThemeProvider solid> forces flat, and omitting both picks the platform default (glass on iOS 26+ via liquidGlassAvailable(), solid elsewhere).",
         html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Components never change for glass, and Canvas never hand-paints glass per component. Glass mode swaps one token (popover) translucent and routes the functional-layer surfaces through the GlassSurface primitive, which paints the platform's own material: real Apple Liquid Glass via expo-glass-effect on iOS 26+, an SVG displacement lens on Chromium web (refraction at the rim, optically flat centre), a genuine frosted blur via expo-blur elsewhere on web and on Android, and the translucent popover fill when neither optional peer is installed.</p></div>`,
       },
       {
@@ -351,7 +351,7 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
       },
       {
         title: "Live comparison",
-        description: "An illustrative pair: the same panel drawn opaque and with a frosted material over a colorful backdrop. In the kit only functional-layer surfaces ever take the material (a real stat card stays solid); the Solid / Frost toggle in the topbar switches the whole docs shell at once.",
+        description: "An illustrative pair: the same panel drawn opaque and with a frosted material over a colorful backdrop. In the kit only functional-layer surfaces ever take the material (a real stat card stays solid); the Solid / Glass toggle in the topbar switches the whole docs shell at once.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:12px;padding:20px;background:radial-gradient(120% 120% at 0% 0%, hsl(262 83% 58% / 0.25), transparent 50%), radial-gradient(120% 120% at 100% 100%, hsl(190 90% 50% / 0.2), transparent 50%), var(--background)">
   <div>
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:8px">Solid</div>

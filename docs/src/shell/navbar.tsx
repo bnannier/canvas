@@ -74,7 +74,7 @@ function sectionIcon(name: string, active: boolean) {
   return { [name]: true, [active ? "primary" : "muted"]: true } as unknown as Omit<IconProps, "key">;
 }
 
-// The scheme + frost toggles live in ./theme-toggles now, shared with the native Android
+// The scheme + surface toggles live in ./theme-toggles now, shared with the native Android
 // overflow sheet (iOS hosts the same controls as native UIMenu rows instead).
 
 // Web (every width): desktop = sidebar + glass topbar; narrow = the mobile iOS shell (a

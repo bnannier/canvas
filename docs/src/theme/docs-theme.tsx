@@ -36,8 +36,8 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
   // footer) change it; choosing System restores live OS tracking.
   const [override, setOverride] = useState<Scheme | null>("dark");
   const scheme: Scheme = override ?? systemScheme;
-  // Frost (glass) is the DEFAULT surface on every platform, not just iOS 26. The
-  // Solid/Frost toggle (shown where glass is not the OS material) flips it.
+  // Glass is the DEFAULT surface on every platform, not just iOS 26. The
+  // Solid/Glass toggle (shown where glass is not the OS material) flips it.
   const [surface, setSurface] = useState<Surface>("glass");
 
   // Sync the native system chrome (the iOS Liquid Glass bars, Android's Material
@@ -72,7 +72,7 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
     <Ctx.Provider value={value}>
       {/* The toggle state is a Surface value, so the axis booleans take
           expressions: both are explicit because the docs never want the
-          platform default (the Frost/Solid toggle owns the choice). */}
+          platform default (the Glass/Solid toggle owns the choice). */}
       <ThemeProvider dark={scheme === "dark"} light={scheme === "light"} glass={surface === "glass"} solid={surface === "solid"}>{children}</ThemeProvider>
     </Ctx.Provider>
   );

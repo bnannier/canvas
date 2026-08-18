@@ -61,13 +61,16 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
   const pathname = usePathname();
   const { title, subtitle } = titleFor(pathname);
   const wideEnough = width >= 640;
-  // On iOS 26 glass is the platform default (and not toggleable here), so the Frost
+  // On iOS 26 glass is the platform default (and not toggleable here), so the Glass
   // toggle only shows where glass is opt-in: web, Android, and iOS < 26. Shown at
   // every width there (including phone), beside the theme toggle.
-  const showFrostToggle = !liquidGlassAvailable();
+  const showGlassToggle = !liquidGlassAvailable();
 
   // GlassSurface paints the glass material in glass mode (native Liquid Glass on
-  // iOS, expo-blur frost on web/Android) and the solid background otherwise.
+  // iOS, an SVG displacement lens on Chromium web, an expo-blur frost on the rest
+  // of web and on Android) and the solid background otherwise. The toggle is
+  // labeled for the MODE, not for one platform's material, which is why it reads
+  // Glass rather than Frost.
   return (
     // The topbar is the site header, so it is the banner landmark: it holds the brand
     // row, search and the theme controls, which otherwise sit outside any landmark.
@@ -152,11 +155,11 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
         onPress={() => Linking.openURL(REPO_URL)}
       />
 
-      {showFrostToggle ? (
+      {showGlassToggle ? (
         <ButtonGroup
           segmented
           small
-          items={["Solid", "Frost"]}
+          items={["Solid", "Glass"]}
           active={surface === "solid" ? 0 : 1}
           onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
         />
