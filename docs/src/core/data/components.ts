@@ -668,6 +668,20 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "composed-chart",
+    name: "ComposedChart",
+    description: "Bars, lines, and gradient-washed areas on one categorical axis: each series picks its mark.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "range-area-chart",
+    name: "RangeAreaChart",
+    description: "A min/max envelope band with an optional mid line, for forecasts, error bands, and daily ranges.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",

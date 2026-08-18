@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -119,6 +119,17 @@ describe("component data-misuse warnings", () => {
     expect(getByText("0%")).toBeDefined();
   });
 
+  it("ComposedChart warns when a series' length differs from labels", () => {
+    ui(<ComposedChart labels={["A", "B"]} series={[{ label: "X", values: [1] }]} />);
+    expect(sawWarning("<ComposedChart />")).toBe(true);
+  });
+
+  it("RangeAreaChart warns when low exceeds high and swaps the pair", () => {
+    ui(<RangeAreaChart label="R" labels={["A"]} data={[{ low: 9, high: 2 }]} />);
+    expect(sawWarning("<RangeAreaChart />")).toBe(true);
+    expect(sawWarning("`low` exceeds its `high`")).toBe(true);
+  });
+
   it("stays silent for valid data across every wired component", () => {
     ui(
       <>
@@ -133,6 +144,8 @@ describe("component data-misuse warnings", () => {
         <ServiceHealthList items={[{ label: "API" }]} />
         <BulletChart data={[{ label: "A", value: 1, target: 2, ranges: [1, 2] }]} />
         <ProgressRing value={72} />
+        <ComposedChart labels={["A", "B"]} series={[{ label: "X", values: [1, 2] }, { label: "Y", values: [2, 3], line: true }]} />
+        <RangeAreaChart label="R" labels={["A", "B"]} data={[{ low: 1, high: 2 }, { low: 2, high: 3 }]} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);

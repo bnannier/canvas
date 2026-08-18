@@ -168,6 +168,22 @@ export function monotonePath(points: Pt[]): string {
 }
 
 /**
+ * A bar rectangle with only its TOP corners rounded (the kit's bar idiom:
+ * rounded at the data end, square on the baseline). SVG's `rx` rounds all
+ * four corners, so bars draw through this path instead. The radius clamps to
+ * what the bar can carry.
+ */
+export function topRoundedRect(x: number, y: number, w: number, h: number, r: number): string {
+  if (w <= 0 || h <= 0) return "";
+  const rr = Math.max(0, Math.min(r, w / 2, h));
+  return (
+    `M${fmt(x)},${fmt(y + rr)} A${fmt(rr)},${fmt(rr)} 0 0 1 ${fmt(x + rr)},${fmt(y)} ` +
+    `L${fmt(x + w - rr)},${fmt(y)} A${fmt(rr)},${fmt(rr)} 0 0 1 ${fmt(x + w)},${fmt(y + rr)} ` +
+    `L${fmt(x + w)},${fmt(y + h)} L${fmt(x)},${fmt(y + h)} Z`
+  );
+}
+
+/**
  * Closed polygon path ("M x,y L x,y ... Z") through `points` in order. The
  * radar polygons and funnel trapezoids are drawn with this.
  */

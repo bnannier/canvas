@@ -8,6 +8,8 @@ import { AreaChart } from "../src/charts/area-chart/area-chart.tsx";
 import { PieChart } from "../src/charts/pie-chart/pie-chart.tsx";
 import { ScatterPlot } from "../src/charts/scatter-plot/scatter-plot.tsx";
 import { CandlestickChart } from "../src/charts/candlestick-chart/candlestick-chart.tsx";
+import { ComposedChart } from "../src/charts/composed-chart/composed-chart.tsx";
+import { RangeAreaChart } from "../src/charts/range-area-chart/range-area-chart.tsx";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -279,5 +281,77 @@ describe("AreaChart", () => {
   it("titled area chart exposes the group name", () => {
     const { container } = ui(<AreaChart title="Traffic" labels={labels} series={twoSeries} />);
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Traffic chart");
+  });
+});
+
+describe("ComposedChart", () => {
+  const composed = [
+    { label: "Revenue", values: [420, 510, 480] },
+    { label: "Margin", values: [110, 170, 150], line: true },
+  ];
+
+  it("folds every series' data into the plot's accessible name", () => {
+    const { container } = ui(<ComposedChart labels={labels} series={composed} />);
+    const name = plotName(container);
+    expect(name).toContain("Revenue: Jan 420, Feb 510, Mar 480");
+    expect(name).toContain("Margin: Jan 110, Feb 170, Mar 150");
+  });
+
+  it("names the root group after the title and keeps the legend reachable", () => {
+    const { container } = ui(<ComposedChart title="Revenue and margin" labels={labels} series={composed} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Revenue and margin chart");
+    expect(container.textContent).toContain("Margin");
+  });
+
+  it("hideLegend suppresses the legend text", () => {
+    const { container } = ui(<ComposedChart hideLegend labels={labels} series={composed} />);
+    // The plot name still carries the series; the legend row is gone.
+    const legendTexts = [...container.querySelectorAll("div")].filter((el) => el.textContent === "Margin");
+    expect(legendTexts.length).toBe(0);
+  });
+
+  it("renders under controlled and uncontrolled selection without firing onSelect", () => {
+    // The flag itself needs a measured plot (the frame renders nothing at the
+    // harness's zero layout width; the live flag is verified on the running
+    // docs), so this locks the selection plumbing: both modes render, and a
+    // controlled selection never echoes through onSelect on its own.
+    const seen: Array<number | null> = [];
+    const controlled = ui(<ComposedChart labels={labels} series={composed} selected={1} onSelect={(i) => seen.push(i)} />);
+    expect(plotName(controlled.container)).toContain("Revenue");
+    const uncontrolled = ui(<ComposedChart labels={labels} series={composed} defaultSelected={0} />);
+    expect(plotName(uncontrolled.container)).toContain("Margin");
+    expect(seen).toEqual([]);
+  });
+});
+
+describe("RangeAreaChart", () => {
+  const data = [
+    { low: 42, high: 118, mid: 61 },
+    { low: 38, high: 102, mid: 55 },
+    { low: 44, high: 131, mid: 66 },
+  ];
+
+  it("folds every range into the plot's accessible name", () => {
+    const { container } = ui(<RangeAreaChart label="p50 to p99" labels={labels} data={data} />);
+    const name = plotName(container);
+    expect(name).toContain("p50 to p99: Jan 42 to 118 around 61");
+    expect(name).toContain("Mar 44 to 131 around 66");
+  });
+
+  it("swaps an inverted low/high pair after warning", () => {
+    const { container } = ui(
+      <RangeAreaChart label="Range" labels={["Jan"]} data={[{ low: 10, high: 4 }]} />,
+    );
+    expect(plotName(container)).toContain("Range: Jan 4 to 10");
+  });
+
+  it("renders under a default selection (the flag needs a measured plot)", () => {
+    const { container } = ui(<RangeAreaChart label="Band" labels={labels} data={data} defaultSelected={1} />);
+    expect(plotName(container)).toContain("Band:");
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<RangeAreaChart title="Latency envelope" label="Band" labels={labels} data={data} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Latency envelope chart");
   });
 });

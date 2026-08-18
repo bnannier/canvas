@@ -316,6 +316,43 @@ function ProgressRingPreview() {
   );
 }
 
+function ComposedPreview() {
+  const { tokens } = useTheme();
+  const bars = [26, 38, 20, 44, 32, 52];
+  return (
+    <Stage>
+      {bars.map((v, i) => (
+        <Rect key={i} x={10 + i * 31} y={H - v} width={16} height={v} rx={3} fill={alpha(tokens["chart-1"], 0.85)} />
+      ))}
+      <Polyline
+        points={`18,${H - 34} 49,${H - 42} 80,${H - 30} 111,${H - 50} 142,${H - 44} 173,${H - 56}`}
+        fill="none"
+        stroke={tokens["chart-3"]}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
+    </Stage>
+  );
+}
+
+function RangeAreaPreview() {
+  const { tokens } = useTheme();
+  return (
+    <Stage>
+      <Path
+        d={`M0,${H - 40} C40,${H - 48} 80,${H - 34} 120,${H - 44} S180,${H - 52} ${W},${H - 48} L${W},${H - 24} C160,${H - 28} 120,${H - 16} 80,${H - 22} S30,${H - 16} 0,${H - 20} Z`}
+        fill={alpha(tokens["chart-1"], 0.25)}
+      />
+      <Path
+        d={`M0,${H - 30} C40,${H - 36} 80,${H - 26} 120,${H - 33} S180,${H - 40} ${W},${H - 36}`}
+        fill="none"
+        stroke={tokens["chart-1"]}
+        strokeWidth={2}
+      />
+    </Stage>
+  );
+}
+
 export const CHARTS_TILES: CatTile[] = [
   { title: "Chart", href: "/components/chart", Preview: BarsPreview },
   { title: "LineChart", href: "/components/line-chart", Preview: LinePreview },
@@ -333,4 +370,6 @@ export const CHARTS_TILES: CatTile[] = [
   { title: "ServiceHealthList", href: "/components/service-health-list", Preview: ServiceHealthPreview },
   { title: "BulletChart", href: "/components/bullet-chart", Preview: BulletPreview },
   { title: "ProgressRing", href: "/components/progress-ring", Preview: ProgressRingPreview },
+  { title: "ComposedChart", href: "/components/composed-chart", Preview: ComposedPreview },
+  { title: "RangeAreaChart", href: "/components/range-area-chart", Preview: RangeAreaPreview },
 ];

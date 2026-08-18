@@ -16,4 +16,6 @@ export * from "./uptime-bar/uptime-bar.js";
 export * from "./service-health-list/service-health-list.js";
 export * from "./bullet-chart/bullet-chart.js";
 export * from "./progress-ring/progress-ring.js";
+export * from "./composed-chart/composed-chart.js";
+export * from "./range-area-chart/range-area-chart.js";
 export type { ChartSeries, StackedSegment } from "./shared/types.js";
