@@ -1,5 +1,12 @@
 # @nannier/canvas
 
+## 2.22.0
+
+### Minor Changes
+
+- 33ac55e: ServiceHealthList: a new chart component for the status-overview card. One row per service: a status dot (per-item booleans resolving down > degraded, first match wins, operational otherwise), the truncating service name, an optional right-aligned `detail` string ("99.98%"), and, when the item carries `periods`, an embedded mini uptime strip on a second line rendered by the same internal strip module `UptimeBar` uses, so the two components never drift (both export the `UptimePeriod` type). `onPressItem` turns each row into a drill-in button with the platform press affordance; `compact` hides the embedded strips and tightens the rows; `plain` strips the card surface for nesting inside an existing card, mirroring `Stats`. Minor because it ships a new user-visible chart component, `ServiceHealthList`, exported from `@nannier/canvas`; no existing API changes. Like `Chart` it is a Shared platform treatment (identical on iOS, Android, and the web). Accessibility: each row composes label, status, and detail into one accessible name ("Dashboard: degraded, 99.92%"), the embedded strip carries its own tallying summary, and the status dot is decorative. devWarn on empty `items`.
+- 33ac55e: UptimeBar: a new chart component for the statuspage strip. A single row of per-period status pills, oldest on the left, each period a plain object whose status booleans resolve down > degraded > unknown (first match wins; an unmarked period is operational), colored through the shared status hues so a degraded pill reads the same amber as a warning badge. An optional `caption` summarizes the strip above it ("99.98% uptime"), and `startLabel` / `endLabel` caption the strip's physical edges below; `compact` shortens the pills. The strip is a time axis, so pills and edge captions keep physical left-to-right ordering even under native RTL, matching the plot convention of the cartesian charts. Minor because it ships a new user-visible chart component, `UptimeBar`, exported from `@nannier/canvas` (with the `UptimePeriod` type); no existing API changes. Like `Chart` it is a Shared platform treatment (identical on iOS, Android, and the web). Accessibility: the strip is one image whose name tallies every status with zero counts omitted ("API uptime, 90 periods: 87 operational, 2 degraded, 1 down"); the caption and edge labels are real text outside it. devWarn on empty `periods`.
+
 ## 2.21.0
 
 ### Minor Changes
