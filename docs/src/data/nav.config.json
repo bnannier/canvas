@@ -563,6 +563,16 @@
             "slug": "service-health-list",
             "label": "ServiceHealthList",
             "icon": "heart-pulse"
+          },
+          {
+            "slug": "bullet-chart",
+            "label": "BulletChart",
+            "icon": "target"
+          },
+          {
+            "slug": "progress-ring",
+            "label": "ProgressRing",
+            "icon": "circle-dot"
           }
         ]
       },

@@ -276,6 +276,46 @@ function ServiceHealthPreview() {
   );
 }
 
+function BulletPreview() {
+  const { tokens } = useTheme();
+  const rows = [
+    { bands: [150, 110, 70], value: 120, target: 140, y: 8 },
+    { bands: [150, 100, 60], value: 84, target: 110, y: 28 },
+    { bands: [150, 120, 80], value: 148, target: 132, y: 48 },
+  ];
+  return (
+    <Stage>
+      {rows.map((r, i) => (
+        <G key={i}>
+          {r.bands.map((b, bi) => (
+            <Rect key={bi} x={30} y={r.y} width={b} height={10} rx={2} fill={alpha(tokens["muted-foreground"], 0.12 + bi * 0.1)} />
+          ))}
+          <Rect x={30} y={r.y + 2.5} width={r.value} height={5} rx={1.5} fill={tokens.primary} />
+          <Rect x={30 + r.target} y={r.y - 1} width={2} height={12} fill={tokens.foreground} />
+          <Rect x={6} y={r.y + 3} width={18} height={4} rx={1.5} fill={alpha(tokens["muted-foreground"], 0.5)} />
+        </G>
+      ))}
+    </Stage>
+  );
+}
+
+function ProgressRingPreview() {
+  const { tokens } = useTheme();
+  // A ring at ~70%: the track circle plus a value arc from 12 o'clock.
+  return (
+    <Stage>
+      <Circle cx={100} cy={32} r={24} fill="none" stroke={tokens.muted} strokeWidth={7} />
+      <Path
+        d="M 100 8 A 24 24 0 1 1 77.2 39.4"
+        fill="none"
+        stroke={tokens.primary}
+        strokeWidth={7}
+        strokeLinecap="round"
+      />
+    </Stage>
+  );
+}
+
 export const CHARTS_TILES: CatTile[] = [
   { title: "Chart", href: "/components/chart", Preview: BarsPreview },
   { title: "LineChart", href: "/components/line-chart", Preview: LinePreview },
@@ -291,4 +331,6 @@ export const CHARTS_TILES: CatTile[] = [
   { title: "MetricBreakdown", href: "/components/metric-breakdown", Preview: MetricBreakdownPreview },
   { title: "UptimeBar", href: "/components/uptime-bar", Preview: UptimeBarPreview },
   { title: "ServiceHealthList", href: "/components/service-health-list", Preview: ServiceHealthPreview },
+  { title: "BulletChart", href: "/components/bullet-chart", Preview: BulletPreview },
+  { title: "ProgressRing", href: "/components/progress-ring", Preview: ProgressRingPreview },
 ];

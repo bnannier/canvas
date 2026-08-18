@@ -6,6 +6,9 @@ import { BarList } from "../src/charts/bar-list/bar-list.tsx";
 import { MetricBreakdown } from "../src/charts/metric-breakdown/metric-breakdown.tsx";
 import { UptimeBar } from "../src/charts/uptime-bar/uptime-bar.tsx";
 import { ServiceHealthList } from "../src/charts/service-health-list/service-health-list.tsx";
+import { BulletChart } from "../src/charts/bullet-chart/bullet-chart.tsx";
+import { ProgressRing } from "../src/charts/progress-ring/progress-ring.tsx";
+import { ringDash, ringFill } from "../src/charts/progress-ring/progress-ring.shared.tsx";
 import { rowAccessibleLabel, rowFill } from "../src/charts/shared/breakdown-rows.tsx";
 import { periodStatus, statusSummary } from "../src/charts/shared/status-strip.tsx";
 import { lightColors } from "../src/style/tokens.ts";
@@ -249,5 +252,61 @@ describe("ServiceHealthList", () => {
   it("a title names the root group as a chart", () => {
     const { container } = ui(<ServiceHealthList title="System status" items={items} />);
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("System status chart");
+  });
+});
+
+describe("BulletChart", () => {
+  it("rows compose value and target into one accessible name", () => {
+    const { container } = ui(
+      <BulletChart
+        title="Q3 targets"
+        data={[
+          { label: "Revenue", value: 275, target: 300, ranges: [200, 350] },
+          { label: "NPS", value: 61 },
+        ]}
+      />,
+    );
+    const labels = imgLabels(container);
+    expect(labels).toContain("Revenue: 275 of target 300");
+    expect(labels).toContain("NPS: 61");
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Q3 targets chart");
+  });
+
+  it("formatValue flows into the row names", () => {
+    const { container } = ui(
+      <BulletChart data={[{ label: "Rev", value: 8200, target: 10000 }]} formatValue={(v) => `$${v / 1000}k`} />,
+    );
+    expect(imgLabels(container)).toContain("Rev: $8.2k of target $10k");
+  });
+});
+
+describe("ProgressRing", () => {
+  it("mirrors the Gauge contract: rounding split, clamp, and accessible name", () => {
+    const { getByText, container } = ui(<ProgressRing value={72.5} label="Complete" />);
+    // The readout and the name round; the arc keeps the fraction.
+    expect(getByText("73%")).toBeTruthy();
+    expect(container.querySelector('[aria-label="Complete: 73%"]')).toBeTruthy();
+    const clamped = ui(<ProgressRing value={140} />);
+    expect(clamped.getByText("100%")).toBeTruthy();
+  });
+
+  it("ringDash starts the reveal at 12 o'clock and scales with the value", () => {
+    const arc = ringDash(50, 120);
+    // The path starts at the top center of the 120 box (x=60, y=inset 10).
+    expect(arc.d.startsWith("M 60 10 ")).toBe(true);
+    // Half the value reveals half the circumference of the r=50 ring.
+    const [revealed, circumference] = arc.dasharray.split(" ").map(Number);
+    expect(circumference).toBeCloseTo(2 * Math.PI * 50, 5);
+    expect(revealed).toBeCloseTo(Math.PI * 50, 5);
+    // Zero and full values reveal nothing and everything.
+    expect(Number(ringDash(0).dasharray.split(" ")[0])).toBe(0);
+    expect(Number(ringDash(100).dasharray.split(" ")[0])).toBeCloseTo(2 * Math.PI * 50, 5);
+  });
+
+  it("ringFill resolves success > warning > destructive > primary, matching Gauge", () => {
+    const t = lightColors;
+    expect(ringFill(t, { value: 1, success: true, warning: true })).toBe(ringFill(t, { value: 1, success: true }));
+    expect(ringFill(t, { value: 1 })).toBe(t.primary);
+    expect(ringFill(t, { value: 1, warning: true })).not.toBe(t.primary);
   });
 });
