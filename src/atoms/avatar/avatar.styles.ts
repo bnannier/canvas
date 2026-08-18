@@ -131,7 +131,8 @@ const PILL_CHEVRON = 14;
 // Web (--p-idpill-* in the :root block of platforms.css): a 32px `secondary`
 // capsule. The hairline is always 1px so opening never changes the pill's box;
 // it is transparent when closed and takes the `input` colour on open, over a fill
-// lifted 6% toward `foreground`. Disabled dims to the web --p-disabled, 0.5.
+// lifted 6% toward `foreground`. The disabled dim is not here: Dropdown's trigger
+// already fades by the platform's convention, so the pill never dims twice.
 export const webMenuSkin: AvatarMenuSkin = {
   ...webSkin,
   menuPill: { ...PILL_ROW, height: 32, paddingStart: 4, paddingEnd: 10, borderWidth: 1 },
@@ -142,14 +143,12 @@ export const webMenuSkin: AvatarMenuSkin = {
   menuPillName: { fontSize: 13, lineHeight: 16, fontWeight: "500" },
   menuPillSecondary: PILL_SECONDARY,
   menuChevronSize: PILL_CHEVRON,
-  menuDisabledOpacity: 0.5,
 };
 
 // iOS (the [data-platform="ios"] --p-idpill-* block): a 36pt capsule outlined with
 // a permanent `border` hairline over a transparent fill, filling with `secondary`
 // while the menu is open. SF Pro Text name at 15/20 semibold, tracked -0.15 per
-// the SF tracking table, and the same -0.15 on the secondary line. Disabled dims
-// to the iOS --p-disabled, 0.4.
+// the SF tracking table, and the same -0.15 on the secondary line.
 export const iosMenuSkin: AvatarMenuSkin = {
   ...iosSkin,
   menuPill: { ...PILL_ROW, height: 36, paddingStart: 5, paddingEnd: 12, borderWidth: 1 },
@@ -157,15 +156,13 @@ export const iosMenuSkin: AvatarMenuSkin = {
   menuPillName: { fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 },
   menuPillSecondary: { ...PILL_SECONDARY, letterSpacing: -0.15 },
   menuChevronSize: PILL_CHEVRON,
-  menuDisabledOpacity: 0.4,
 };
 
 // Android (the [data-platform="android"] --p-idpill-* block): Material 3's tonal
 // pill, 40dp tall, filled with `primary` at 12% and lifting to 20% while open (the
 // M3 state-layer model), with no visible outline. The 1px hairline is still
 // reserved but transparent, so the box never shifts between the three platforms or
-// between states. M3 name at 14/20 weight 500 with +0.1 tracking. Disabled dims to
-// the Android --p-disabled, 0.38.
+// between states. M3 name at 14/20 weight 500 with +0.1 tracking.
 export const androidMenuSkin: AvatarMenuSkin = {
   ...androidSkin,
   menuPill: { ...PILL_ROW, height: 40, paddingStart: 6, paddingEnd: 14, borderWidth: 1 },
@@ -173,5 +170,4 @@ export const androidMenuSkin: AvatarMenuSkin = {
   menuPillName: { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 },
   menuPillSecondary: { ...PILL_SECONDARY, letterSpacing: 0.1 },
   menuChevronSize: PILL_CHEVRON,
-  menuDisabledOpacity: 0.38,
 };

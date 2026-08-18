@@ -3,8 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar } = scope;
+  const { AvatarMenu } = scope;
   return (
-<Avatar src="/rachel-chen.jpg" name="RC" />
+<AvatarMenu
+  name="Rachel Chen"
+  email="rachel.chen@example.com"
+  src="/rachel-chen.jpg"
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Billing", icon: "creditCard" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]}
+/>
   );
 }
