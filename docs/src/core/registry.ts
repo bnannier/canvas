@@ -942,9 +942,20 @@ import e_charts_pie_chart_dont_0_do from "./examples/charts/pie-chart/dont-0-do"
 import e_charts_pie_chart_dont_0_dont from "./examples/charts/pie-chart/dont-0-dont";
 import e_charts_scatter_plot_example_0 from "./examples/charts/scatter-plot/example-0";
 import e_charts_scatter_plot_example_1 from "./examples/charts/scatter-plot/example-1";
+import e_charts_service_health_list_example_0 from "./examples/charts/service-health-list/example-0";
+import e_charts_service_health_list_example_1 from "./examples/charts/service-health-list/example-1";
+import e_charts_service_health_list_example_2 from "./examples/charts/service-health-list/example-2";
+import e_charts_service_health_list_example_3 from "./examples/charts/service-health-list/example-3";
+import e_charts_service_health_list_dont_0_do from "./examples/charts/service-health-list/dont-0-do";
+import e_charts_service_health_list_dont_0_dont from "./examples/charts/service-health-list/dont-0-dont";
 import e_charts_stacked_bar_example_0 from "./examples/charts/stacked-bar/example-0";
 import e_charts_stacked_bar_dont_0_do from "./examples/charts/stacked-bar/dont-0-do";
 import e_charts_stacked_bar_dont_0_dont from "./examples/charts/stacked-bar/dont-0-dont";
+import e_charts_uptime_bar_example_0 from "./examples/charts/uptime-bar/example-0";
+import e_charts_uptime_bar_example_1 from "./examples/charts/uptime-bar/example-1";
+import e_charts_uptime_bar_example_2 from "./examples/charts/uptime-bar/example-2";
+import e_charts_uptime_bar_dont_0_do from "./examples/charts/uptime-bar/dont-0-do";
+import e_charts_uptime_bar_dont_0_dont from "./examples/charts/uptime-bar/dont-0-dont";
 
 // Every documented component, keyed by its source directory (the `.md` stem). The
 // consuming page maps a URL slug to its dir via the components data, then renders
@@ -2339,6 +2350,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
 
     ],
   },
+  "service-health-list": {
+    dir: "service-health-list",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<ServiceHealthList\n  title=\"System status\"\n  style={{ maxWidth: 480 }}\n  items={[\n    { label: \"API\", detail: \"99.98%\", periods: Array.from({ length: 45 }, () => ({})) },\n    { label: \"Dashboard\", detail: \"99.92%\", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },\n    { label: \"Webhooks\", detail: \"97.10%\", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true },\n  ]}\n/>", render: e_charts_service_health_list_example_0 },
+      { label: "Compact", code: "<ServiceHealthList\n  title=\"System status\"\n  compact\n  style={{ maxWidth: 480 }}\n  items={[\n    { label: \"API\", detail: \"99.98%\" },\n    { label: \"Dashboard\", detail: \"99.92%\", degraded: true },\n    { label: \"Webhooks\", detail: \"97.10%\", down: true },\n  ]}\n/>", render: e_charts_service_health_list_example_1 },
+      { label: "Drill-in rows", code: "<ServiceHealthList\n  title=\"System status\"\n  onPressItem={() => {}}\n  style={{ maxWidth: 480 }}\n  items={[\n    { label: \"API\", detail: \"99.98%\" },\n    { label: \"Search\", detail: \"99.95%\" },\n    { label: \"Exports\", detail: \"99.80%\", degraded: true },\n  ]}\n/>", render: e_charts_service_health_list_example_2 },
+      { label: "Plain, inside a card", code: "<Card padded style={{ maxWidth: 480 }}>\n  <ServiceHealthList\n    plain\n    compact\n    items={[\n      { label: \"API\", detail: \"operational\" },\n      { label: \"Dashboard\", detail: \"degraded\", degraded: true },\n    ]}\n  />\n</Card>", render: e_charts_service_health_list_example_3 },
+    ],
+    donts: [
+      { title: "ServiceHealthList", do: { caption: "One row per service, with the status carried by the dot, the composed accessible name, and the embedded strip.", code: "<ServiceHealthList\n  title=\"System status\"\n  style={{ maxWidth: 480 }}\n  items={[\n    { label: \"API\", detail: \"99.98%\" },\n    { label: \"Webhooks\", detail: \"97.10%\", down: true },\n  ]}\n/>", render: e_charts_service_health_list_dont_0_do }, dont: { caption: "A hand-rolled status row splits the tap target and loses the status from assistive tech.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 480, gap: 8 }}>\n  <View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n    <View style={{ width: 8, height: 8, borderRadius: 999, backgroundColor: \"green\" }} />\n    <Text>API</Text>\n  </View>\n</View>", render: e_charts_service_health_list_dont_0_dont } },
+    ],
+  },
   "stacked-bar": {
     dir: "stacked-bar",
     category: "charts",
@@ -2347,6 +2371,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "Stacked bar", do: { caption: "Always ship a legend with a colored dot, label, and percentage per segment.", code: "<Card padded style={{ maxWidth: 560 }}>\n  <StackedBar\n    segments={[\n      { label: \"Direct\", value: 42 },\n      { label: \"Organic search\", value: 28 },\n      { label: \"Social\", value: 18 },\n      { label: \"Referral\", value: 12 }\n    ]}\n  />\n</Card>\n", render: e_charts_stacked_bar_dont_0_do }, dont: { caption: "Colored segments with no legend force the reader to guess which channel each band represents.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>\n  <View style={{ flexDirection: \"row\", overflow: \"hidden\", borderRadius: 9999, height: 10, width: 520 }}>\n    <View style={{ width: \"42%\", backgroundColor: \"#6366f1\" }} />\n    <View style={{ width: \"28%\", backgroundColor: \"#14b8a6\" }} />\n    <View style={{ width: \"18%\", backgroundColor: \"#f59e0b\" }} />\n    <View style={{ width: \"12%\", backgroundColor: \"#f43f5e\" }} />\n  </View>\n</View>\n", render: e_charts_stacked_bar_dont_0_dont } },
+    ],
+  },
+  "uptime-bar": {
+    dir: "uptime-bar",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<UptimeBar\n  label=\"API uptime\"\n  caption=\"99.98% uptime\"\n  startLabel=\"90 days ago\"\n  endLabel=\"Today\"\n  style={{ maxWidth: 480 }}\n  periods={Array.from({ length: 90 }, (_, i) =>\n    i === 61 ? { down: true } : i === 62 || i === 78 ? { degraded: true } : {},\n  )}\n/>", render: e_charts_uptime_bar_example_0 },
+      { label: "Compact", code: "<UptimeBar\n  label=\"CDN uptime\"\n  compact\n  style={{ maxWidth: 480 }}\n  periods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {}))}\n/>", render: e_charts_uptime_bar_example_1 },
+      { label: "With unknown periods", code: "<UptimeBar\n  label=\"Worker uptime\"\n  caption=\"Monitoring began mid-window\"\n  startLabel=\"30 days ago\"\n  endLabel=\"Today\"\n  style={{ maxWidth: 480 }}\n  periods={Array.from({ length: 30 }, (_, i) => (i < 6 ? { unknown: true } : i === 21 ? { down: true } : {}))}\n/>", render: e_charts_uptime_bar_example_2 },
+    ],
+    donts: [
+      { title: "UptimeBar", do: { caption: "Let the strip carry the whole anatomy: pills, summary caption, and edge labels, with the status tally in its accessible name.", code: "<UptimeBar\n  label=\"API uptime\"\n  caption=\"99.98% uptime\"\n  startLabel=\"90 days ago\"\n  endLabel=\"Today\"\n  style={{ maxWidth: 480 }}\n  periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : {}))}\n/>", render: e_charts_uptime_bar_dont_0_do }, dont: { caption: "A hand-rolled row of colored Views has no accessible tally and no edge-caption anatomy.", code: "<View style={{ flexDirection: \"row\", gap: 2, maxWidth: 480 }}>\n  {Array.from({ length: 90 }, (_, i) => (\n    <View key={i} style={{ flex: 1, height: 24, borderRadius: 2, backgroundColor: i === 61 ? \"red\" : \"green\" }} />\n  ))}\n</View>", render: e_charts_uptime_bar_dont_0_dont } },
     ],
   },
 };

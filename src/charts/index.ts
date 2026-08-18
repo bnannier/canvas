@@ -12,4 +12,6 @@ export * from "./gauge/gauge.js";
 export * from "./heatmap/heatmap.js";
 export * from "./bar-list/bar-list.js";
 export * from "./metric-breakdown/metric-breakdown.js";
+export * from "./uptime-bar/uptime-bar.js";
+export * from "./service-health-list/service-health-list.js";
 export type { ChartSeries, StackedSegment } from "./shared/types.js";

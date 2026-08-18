@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -90,6 +90,18 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("a single point")).toBe(true);
   });
 
+  it("UptimeBar warns when periods is empty", () => {
+    ui(<UptimeBar periods={[]} />);
+    expect(sawWarning("<UptimeBar />")).toBe(true);
+    expect(sawWarning("`periods` is empty")).toBe(true);
+  });
+
+  it("ServiceHealthList warns when items is empty", () => {
+    ui(<ServiceHealthList items={[]} />);
+    expect(sawWarning("<ServiceHealthList />")).toBe(true);
+    expect(sawWarning("the list renders with no rows")).toBe(true);
+  });
+
   it("stays silent for valid data across every wired component", () => {
     ui(
       <>
@@ -100,6 +112,8 @@ describe("component data-misuse warnings", () => {
         <Heatmap values={[0.2, 0.6]} />
         <BarList items={[{ label: "a", value: 1 }]} />
         <MetricBreakdown value="1" label="Requests" spark={[1, 2]} breakdown={[{ label: "a", value: 1 }]} />
+        <UptimeBar periods={[{}, { down: true }]} />
+        <ServiceHealthList items={[{ label: "API" }]} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);
