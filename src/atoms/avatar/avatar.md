@@ -1,6 +1,6 @@
 # Avatar
 
-A photo when the account has one, falling back to one or two initials in white on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. A pressable avatar (`onPress`) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter). `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
+A photo when the account has one, falling back to one or two initials in white on a colour picked deterministically from the name, so each person stays visually distinct in a stack or list. A pressable avatar (`onPress`) keeps interactive Liquid Glass on iOS 26+ under glass surface mode. Sizes scale font proportionally (40% of diameter), down to `tiny`, the 24px disc a capsule is built around, which holds the 12px glyph rather than shrinking past legibility. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
 
 ## Usage
 
@@ -58,7 +58,7 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
 
 ### Compact menu
 
-`compact` drops the name block for a bar with no room for it, leaving the avatar and the chevron. The identity still travels with the menu, so the name and email head the rows the moment it opens. In a topbar the trigger sits at the trailing edge, where `alignEnd` hangs the menu from that edge instead of the leading one.
+`compact` drops the name block for a bar with no room for it, leaving the avatar and the chevron. The identity still travels with the menu, so the name and email head the rows the moment it opens. A topbar parks the pill at the trailing edge, so the menu hangs from that edge by default; `alignStart` moves it to the leading edge for a pill that sits at the start of a bar.
 
 ```tsx
 <AvatarMenu
@@ -66,6 +66,57 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
   name="Marcus Allen"
   email="admin@example.com"
   src="/marcus-allen.jpg"
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
+### Menu alignment
+
+The menu hangs from the pill's trailing edge by default, the edge a topbar parks the account control against and the only one a right-parked trigger can open from without running off the surface. `alignStart` swings it to the leading edge for a pill that sits at the start of a bar, and `alignEnd` spells the default out. Both are logical, so a right-to-left locale mirrors them. Press each pill to see which edge its menu meets.
+
+```tsx
+<Row between style={{ width: 360, maxWidth: "100%" }}>
+  <AvatarMenu
+    compact
+    alignStart
+    name="Liang Bao"
+    email="liang.bao@example.com"
+    src="/liang-bao.jpg"
+    items={[
+      { label: "Profile", icon: "user" },
+      { label: "Settings", icon: "settings", shortcut: "⌘," },
+      { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+    ]}
+  />
+  <AvatarMenu
+    compact
+    alignEnd
+    name="Kira Tanaka"
+    email="kira.tanaka@example.com"
+    src="/kira-tanaka.jpg"
+    items={[
+      { label: "Profile", icon: "user" },
+      { label: "Settings", icon: "settings", shortcut: "⌘," },
+      { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+    ]}
+  />
+</Row>
+```
+
+### Disabled menu
+
+`disabled` takes the whole pill out of service: it dims to the platform's disabled treatment, the press is a no-op, the menu never opens, and the button announces itself disabled before anyone reaches for it. Reach for it while the session is still resolving, not to park a menu whose rows simply have nothing to offer.
+
+```tsx
+<AvatarMenu
+  disabled
+  name="Ada Lovelace"
+  email="ada.lovelace@example.com"
+  src="/ada-lovelace.jpg"
   items={[
     { label: "Profile", icon: "user" },
     { label: "Settings", icon: "settings", shortcut: "⌘," },
@@ -82,8 +133,11 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
 
 ### Sizes
 
+Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). Initials scale with the circle at about 40% of the diameter, except at `tiny`, which keeps `small`'s 12px glyph rather than shrinking to a 10px pair that stops reading. `tiny` is the disc `AvatarMenu` builds its capsule around, so a standalone tiny avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
+
 ```tsx
 <Row relaxed alignCenter>
+  <Avatar tiny src="/noor-park.jpg" name="NP" />
   <Avatar small src="/ada-lovelace.jpg" name="AL" />
   <Avatar src="/marcus-allen.jpg" name="MA" />
   <Avatar large src="/rachel-chen.jpg" name="RC" />
@@ -280,5 +334,27 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
     { label: "Profile", icon: "user" },
     { label: "Settings", icon: "settings", shortcut: "⌘," },
     { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+### Unavailable account
+
+**Do**: `disabled` on the pill itself: the whole trigger dims, the press is inert, and the button announces itself disabled instead of inviting a press that goes nowhere.
+
+```tsx
+<AvatarMenu disabled name="Ada Lovelace" email="ada.lovelace@example.com" src="/ada-lovelace.jpg" items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings", shortcut: "⌘," },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+**Don't**: Disabling every row instead leaves the pill live: it still opens, onto a menu where nothing can be pressed.
+
+```tsx
+<AvatarMenu name="Ada Lovelace" email="ada.lovelace@example.com" src="/ada-lovelace.jpg" items={[
+    { label: "Profile", icon: "user", disabled: true },
+    { label: "Settings", icon: "settings", shortcut: "⌘,", disabled: true },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true, disabled: true }
   ]} />
 ```

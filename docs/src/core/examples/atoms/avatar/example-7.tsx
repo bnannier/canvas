@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Avatar } = scope;
   return (
-<Avatar rounded src="/liang-bao.jpg" name="LB" />
+<Avatar src="/rachel-chen.jpg" name="RC" />
   );
 }

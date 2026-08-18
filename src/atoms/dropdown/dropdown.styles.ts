@@ -60,6 +60,11 @@ export interface DropdownSkin {
   /** Trailing keyboard shortcut, right-aligned and muted. */
   shortcut: (t: ColorTokens) => TextStyle;
   /** Opacity applied to a disabled row. */
+  /** Standoff between the trigger and the menu card, in px. Skin-owned rather than
+   *  caller-owned: a menu built for a taller trigger stands off further (the
+   *  hand-off's account pill uses 6 where a plain dropdown uses 4), and a spacing
+   *  prop on a public component would be the re-spacing escape hatch. */
+  menuGap: number;
   disabledOpacity: number;
   /** iOS/web dim a row on press via this; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
@@ -134,7 +139,8 @@ export const webSkin: DropdownSkin = {
     letterSpacing: 1.6,
     color: t["muted-foreground"],
   }),
-  disabledOpacity: 0.5,
+  menuGap: 4,
+  disabledOpacity: 0.5, // the hand-off's --p-disabled on web
   pressedOpacity: null, // web tints the row fill on press, no opacity dim
   ripple: null,
 };
@@ -200,7 +206,10 @@ export const iosSkin: DropdownSkin = {
     letterSpacing: 0.5,
     color: t["muted-foreground"],
   }),
-  disabledOpacity: 0.5,
+  // The hand-off dims a disabled iOS control to 0.4 (--p-disabled under
+  // [data-platform="ios"]), not the 0.5 web and the legacy UIKit convention use.
+  menuGap: 4,
+  disabledOpacity: 0.4,
   pressedOpacity: 0.8,
   ripple: null,
 };
@@ -258,7 +267,8 @@ export const androidSkin: DropdownSkin = {
     letterSpacing: 0.5,
     color: t["muted-foreground"],
   }),
-  disabledOpacity: 0.38, // M3 disabled opacity
+  menuGap: 4,
+  disabledOpacity: 0.38, // M3 disabled opacity, the hand-off's --p-disabled on Android
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };

@@ -33,8 +33,10 @@ const noop = () => {};
 type Kids = ReactNode | ((mod: Record<string, unknown>) => ReactNode);
 
 interface SkinCase {
-  /** Exported symbol to render (also the test's display name). */
+  /** Exported symbol to render (also the test's display name unless `label` is set). */
   name: string;
+  /** Display name, when two rows exercise the same export in different shapes. */
+  label?: string;
   /** Component directory under src/, e.g. "atoms/avatar". */
   dir: string;
   /** File base name — the part before `.ios.tsx` / `.android.tsx`. */
@@ -48,6 +50,9 @@ interface SkinCase {
 const CASES: SkinCase[] = [
   // ---- atoms ----
   { name: "Avatar", dir: "atoms/avatar", file: "avatar", children: "AB" },
+  // The `tiny` (24px) step the identity pill is built around: its own labelType
+  // row on every skin, so a missing one throws here instead of at a call site.
+  { name: "Avatar", label: "Avatar (tiny)", dir: "atoms/avatar", file: "avatar", props: { tiny: true }, children: "AB" },
   {
     name: "AvatarGroup",
     dir: "atoms/avatar",
@@ -240,7 +245,7 @@ const PLATFORMS = ["web", "ios", "android"] as const;
 for (const platform of PLATFORMS) {
   describe(`${platform} skins mount inside ThemeProvider`, () => {
     for (const c of CASES) {
-      it(`${c.name}`, async () => {
+      it(`${c.label ?? c.name}`, async () => {
         const suffix = platform === "web" ? "" : `.${platform}`;
         const mod = (await import(`../src/${c.dir}/${c.file}${suffix}.tsx`)) as Record<string, unknown>;
         const Comp = mod[c.name];

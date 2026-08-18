@@ -3,8 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar } = scope;
+  const { Avatar, Row } = scope;
   return (
-<Avatar ring name="AO" />
+<Row relaxed alignCenter>
+  <Avatar tiny src="/noor-park.jpg" name="NP" />
+  <Avatar small src="/ada-lovelace.jpg" name="AL" />
+  <Avatar src="/marcus-allen.jpg" name="MA" />
+  <Avatar large src="/rachel-chen.jpg" name="RC" />
+</Row>
   );
 }

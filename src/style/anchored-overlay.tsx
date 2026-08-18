@@ -17,7 +17,7 @@
 // passes the card's width/min-width via `cardStyle`. This helper owns only the
 // x/y placement and the backdrop.
 
-import { type ReactNode, type RefObject, useEffect, useState } from "react";
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
 import { View, Pressable, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
@@ -82,6 +82,17 @@ export interface AnchoredOverlayProps {
    * cover the grid.
    */
   preferSide?: boolean;
+  /**
+   * Fired ONCE per opening, the moment the card and everything inside it are
+   * actually mounted. `open` flipping true is NOT that moment on the hosted
+   * path: there the card is held back until the trigger measurement lands, so a
+   * caller that moves focus into its content (the WAI-ARIA menu pattern: focus
+   * the first row on open) would otherwise focus a card that does not exist yet.
+   * This fires on BOTH paths, from an effect inside the card's own subtree,
+   * which React runs only after every child below it is committed and its refs
+   * attached, so the caller needs neither polling nor a setTimeout guess.
+   */
+  onCardMount?: () => void;
 }
 
 export function AnchoredOverlay({
@@ -98,6 +109,7 @@ export function AnchoredOverlay({
   preferSide = false,
   alignEnd = false,
   rtl = false,
+  onCardMount,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
 
@@ -107,7 +119,7 @@ export function AnchoredOverlay({
   if (!host) {
     return open ? (
       <Entrance anchor style={inlineStyle}>
-        <GlassSurface style={cardStyle}>{children}</GlassSurface>
+        <OverlayCard cardStyle={cardStyle} onMount={onCardMount}>{children}</OverlayCard>
       </Entrance>
     ) : null;
   }
@@ -126,10 +138,35 @@ export function AnchoredOverlay({
       preferSide={preferSide}
       alignEnd={alignEnd}
       rtl={rtl}
+      onCardMount={onCardMount}
     >
       {children}
     </HostedAnchoredOverlay>
   );
+}
+
+// The floating card itself, shared by the hosted and inline paths so both report
+// the same lifecycle. Its mount effect is the ONE instant at which the card's
+// contents exist on either path: React attaches every descendant's ref during the
+// commit that mounts this subtree, before running this effect, so a caller can
+// move focus into a freshly mounted row from here without waiting on a frame.
+function OverlayCard({
+  cardStyle,
+  onMount,
+  children,
+}: {
+  cardStyle?: StyleProp<ViewStyle>;
+  onMount?: () => void;
+  children: ReactNode;
+}) {
+  // Latch the callback so the usual fresh-closure-per-render caller cannot re-arm
+  // the effect; it must fire once per opening, not once per render.
+  const mount = useRef(onMount);
+  mount.current = onMount;
+  useEffect(() => {
+    mount.current?.();
+  }, []);
+  return <GlassSurface style={cardStyle}>{children}</GlassSurface>;
 }
 
 interface HostedProps {
@@ -145,6 +182,7 @@ interface HostedProps {
   preferSide?: boolean;
   alignEnd?: boolean;
   rtl?: boolean;
+  onCardMount?: () => void;
   children: ReactNode;
 }
 
@@ -208,7 +246,7 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, children }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, onCardMount, children }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
@@ -276,7 +314,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
           shows nothing. */}
       {rect ? (
         <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) }}>
-          <GlassSurface style={cardStyle}>{children}</GlassSurface>
+          <OverlayCard cardStyle={cardStyle} onMount={onCardMount}>{children}</OverlayCard>
         </Entrance>
       ) : null}
     </Portal>
