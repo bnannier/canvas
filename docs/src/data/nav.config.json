@@ -353,7 +353,8 @@
             "label": "DescriptionList",
             "icon": "info"
           },
-          {
+          { "slug": "field", "label": "Field", "icon": "text-cursor-input" },
+            {
             "slug": "empty-state",
             "label": "EmptyState",
             "icon": "inbox"

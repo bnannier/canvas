@@ -212,7 +212,7 @@ export function bannedStyleViolations(code: string): string[] {
 // fences. Explicit `width` stays allowed (deliberate side-by-side comparisons),
 // as do width bounds on wrapper Views/Cards (page-layout composition). The
 // `// docgen-allow-style` line opt-out applies here too.
-const FIELD_WIDTH_TAGS = ["Input", "Textarea", "Select", "Autocomplete", "Listbox"] as const;
+const FIELD_WIDTH_TAGS = ["Input", "Textarea", "Select", "Autocomplete", "Listbox", "Field"] as const;
 const FIELD_WIDTH_BANNED = ["maxWidth", "minWidth"] as const;
 
 /**

@@ -161,6 +161,26 @@ function DescriptionListsPreview() {
   );
 }
 
+// ── Field ────────────────────────────────────────────────────────────────────
+function FieldPreview() {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ gap: 6, width: 168 }}>
+      <View style={{ height: 8, width: 40, borderRadius: 2, backgroundColor: tokens.foreground }} />
+      <View
+        style={{
+          height: 30,
+          borderWidth: 1,
+          borderColor: tokens.destructive,
+          borderRadius: 8,
+          backgroundColor: tokens.background,
+        }}
+      />
+      <View style={{ height: 6, width: 104, borderRadius: 2, backgroundColor: tokens.destructive }} />
+    </View>
+  );
+}
+
 // ── Empty States ─────────────────────────────────────────────────────────────
 function EmptyStatesPreview() {
   const { tokens } = useTheme();
@@ -387,6 +407,7 @@ export const MOLECULES_TILES: CatTile[] = [
   { title: "Card", href: "/components/card", Preview: CardsPreview },
   { title: "DescriptionList", href: "/components/description-lists", Preview: DescriptionListsPreview },
   { title: "EmptyState", href: "/components/empty-state", Preview: EmptyStatesPreview },
+  { title: "Field", href: "/components/field", Preview: FieldPreview },
   { title: "Feed", href: "/components/feeds", Preview: FeedsPreview },
   { title: "Form", href: "/components/form", Preview: FormLayoutsPreview },
   { title: "GridList", href: "/components/grid-lists", Preview: GridListsPreview },

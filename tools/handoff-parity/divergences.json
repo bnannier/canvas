@@ -992,11 +992,6 @@
     }
   },
   "absentComponents": {
-    "Field": {
-      "kind": "open-gap",
-      "plannedIn": "phase-3",
-      "reason": "The form-row wrapper (label, control, helper/error) with label delegation into the field families. Removed from the kit in 93dd68a9; phase 3 re-adds it to the hand-off's design, which is not the one that was removed."
-    },
     "ChartFrame": {
       "kind": "open-gap",
       "plannedIn": "phase-5",

@@ -124,6 +124,7 @@ const CASES: SkinCase[] = [
   { name: "Collapsible", dir: "molecules/collapsible", file: "collapsible", props: { title: "More", description: "Secondary line", card: true, defaultOpen: true }, children: "Panel body" },
   { name: "DescriptionList", dir: "molecules/description-lists", file: "description-lists", props: { items: [{ term: "Name", value: "Ada" }, { term: "Role", value: "Engineer" }] } },
   { name: "EmptyState", dir: "molecules/empty-state", file: "empty-state", props: { icon: "∅", title: "No results", description: "Try a different search.", actionLabel: "Reset" } },
+  { name: "Field", dir: "molecules/field", file: "field", props: { label: "Email", helper: "We'll never share your email." }, children: "control" },
   { name: "Feed", dir: "molecules/feeds", file: "feeds", props: { items: [{ actor: "Rachel Chen", action: "approved the request", time: "2 hours ago" }] } },
   { name: "Form", dir: "molecules/form", file: "form", props: { submitLabel: "Save", cancelLabel: "Cancel", children: "Stitched fields" } },
   { name: "FormSection", dir: "molecules/form", file: "form", props: { title: "Personal info", description: "Displayed on your profile.", children: "Stitched fields" } },

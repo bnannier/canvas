@@ -34,7 +34,7 @@ const at = (c: HTMLElement, id: string) => c.querySelector(`[data-testid="${id}"
 describe("field width axis: harness assumption", () => {
   it("runs at a desktop viewport (the setup.ts visualViewport stub)", () => {
     // The axis itself is viewport-independent, but the rest of the kit's
-    // responsive components (Form, Fieldset, GridLists) branch on this, so
+    // responsive components (Form, Field, GridLists) branch on this, so
     // keep the harness's desktop default locked here where it was diagnosed.
     expect(Dimensions.get("window").width).toBeGreaterThan(640);
   });
