@@ -226,6 +226,60 @@ describe("Dropdown menu roving keyboard navigation", () => {
     });
   });
 
+  // An identity header puts a NON-FOCUSABLE node (a role="group", not a row) at
+  // the top of the card, ahead of every menuitem. The open-focus counts rows, not
+  // children, so it must still land on row 0, and the header must never take the
+  // focus or shift the roving index by the one child it adds.
+  it("opens onto the first ROW when an identity header sits above it, on both overlay paths", async () => {
+    const items = [{ label: "Profile" }, { label: "Settings" }];
+    const inline = ui(
+      <Dropdown trigger="Menu" title="Rachel Chen" description="rachel@nannier.com" items={items} />,
+    );
+    fireEvent.click(screen.getByText("Menu"));
+    const rows = [...inline.container.querySelectorAll('[role="menuitem"]')];
+    expect(rows.length).toBe(2);
+    expect(document.activeElement).toBe(rows[0]);
+    expect(rows[0].getAttribute("tabindex")).toBe("0");
+    const header = inline.container.querySelector('[role="group"]')!;
+    expect(header.getAttribute("tabindex")).toBeNull();
+    expect(header.contains(document.activeElement)).toBe(false);
+    // The arrows still walk the rows, unshifted by the header node.
+    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(rows[1]);
+    cleanup();
+
+    // ...and on the hosted path, where the card (header and rows together) mounts
+    // a measurement later than the open itself.
+    await withLayout(async () => {
+      const hosted = ui(
+        <OverlayProvider>
+          <Dropdown trigger="Menu" title="Rachel Chen" description="rachel@nannier.com" items={items} />
+        </OverlayProvider>,
+      );
+      fireEvent.click(screen.getByText("Menu"));
+      await settle();
+      const hostedRows = [...hosted.container.querySelectorAll('[role="menuitem"]')];
+      expect(hostedRows.length).toBe(2);
+      expect(document.activeElement).toBe(hostedRows[0]);
+      expect(hosted.container.querySelector('[role="group"]')!.contains(document.activeElement)).toBe(false);
+    });
+  });
+
+  it("still skips a disabled first row when an identity header sits above it", () => {
+    const items = [{ label: "Profile", disabled: true }, { label: "Settings" }, { label: "Sign out" }];
+    const { container } = ui(
+      <Dropdown trigger="Menu" title="Rachel Chen" description="rachel@nannier.com" items={items} />,
+    );
+    fireEvent.click(screen.getByText("Menu"));
+    const rows = [...container.querySelectorAll('[role="menuitem"]')];
+    // The first ENABLED row takes focus and the single tab stop, counted from the
+    // rows rather than from the card's children (the header is child 0, the
+    // hairline child 1, so a child-based count would land on the wrong row).
+    expect(document.activeElement).toBe(rows[1]);
+    expect(rows[1].getAttribute("tabindex")).toBe("0");
+    expect(rows[0].getAttribute("tabindex")).toBe("-1");
+  });
+
   // WAI-ARIA: closing a menu hands focus back to the button that opened it.
   // Without that, Escape or a row press drops focus on document.body and the
   // keyboard user restarts at the top of the page.

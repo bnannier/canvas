@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -11,7 +11,14 @@ import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
-import type { ColorTokens } from "../src/style/tokens.ts";
+import type { DropdownProps } from "../src/atoms/dropdown/dropdown.shared.tsx";
+import {
+  webSkin as webMenuSkin,
+  iosSkin as iosMenuSkin,
+  androidSkin as androidMenuSkin,
+  type DropdownSkin,
+} from "../src/atoms/dropdown/dropdown.styles.ts";
+import { lightColors, type ColorTokens } from "../src/style/tokens.ts";
 
 // Open/close/dismiss/select contract for the kit's overlay surfaces. Each test
 // drives the component the way a user does — open via the trigger, assert the
@@ -32,11 +39,60 @@ const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 // The inline fallback anchor (these renders mount no OverlayProvider): walk up
 // from the open menu to the absolutely positioned wrapper and read back the
 // physical edge react-native-web resolved the logical `start`/`end` inset to.
+// It doubles as the HOSTED anchor reader: portaled, the same walk stops on the
+// card's placement wrapper inside the outlet (the outlet's own absolute position
+// rides a CSS class rather than the inline style).
 const anchorStyle = (container: HTMLElement) => {
   let n: HTMLElement | null = container.querySelector('[role="menu"]')?.parentElement ?? null;
   while (n && !(n.getAttribute("style") ?? "").includes("position: absolute")) n = n.parentElement;
   return n?.getAttribute("style") ?? "";
 };
+
+// The hosted (portaled) overlay holds its card back until the trigger measures a
+// non-zero box, and happy-dom reports every box as 0x0, so a hosted card never
+// mounts in a test unless the layout is stubbed. Give the DOM a real box for the
+// duration of a case, then let the measure-and-place frame land.
+const LAID_OUT = { x: 10, y: 20, width: 160, height: 32, top: 20, left: 10, right: 170, bottom: 52, toJSON: () => ({}) } as DOMRect;
+const withLayout = async (run: () => Promise<void>) => {
+  const original = Element.prototype.getBoundingClientRect;
+  Element.prototype.getBoundingClientRect = () => LAID_OUT;
+  try {
+    await run();
+  } finally {
+    Element.prototype.getBoundingClientRect = original;
+  }
+};
+const settle = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
+};
+
+// react-native-web writes every colour into the DOM as `rgba(r, g, b, a.aa)`, so
+// put a skin's own hex / rgb() / rgba() / transparent value into that one shape
+// before comparing the two.
+const asRgba = (color: string): string => {
+  if (color === "transparent") return "rgba(0, 0, 0, 0.00)";
+  const hex = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
+  if (hex) return `rgba(${parseInt(hex[1], 16)}, ${parseInt(hex[2], 16)}, ${parseInt(hex[3], 16)}, 1.00)`;
+  const fn = /^rgba?\(([^)]+)\)$/.exec(color);
+  if (fn) {
+    const [r, g, b, a = "1"] = fn[1].split(",").map((p) => p.trim());
+    return `rgba(${r}, ${g}, ${b}, ${Number(a).toFixed(2)})`;
+  }
+  return color;
+};
+
+// The three platform builds of Dropdown, each with the skin it was built from.
+// Under bun there is no .ios/.android extension resolution, so each build is
+// imported by its explicit filename.
+const PLATFORM_MENUS: { name: string; file: string; skin: DropdownSkin }[] = [
+  { name: "web", file: "dropdown", skin: webMenuSkin },
+  { name: "iOS", file: "dropdown.ios", skin: iosMenuSkin },
+  { name: "Android", file: "dropdown.android", skin: androidMenuSkin },
+];
+const loadDropdown = async (file: string) =>
+  ((await import(`../src/atoms/dropdown/${file}.tsx`)) as { Dropdown: (p: DropdownProps) => ReactNode }).Dropdown;
 
 describe("OverlayProvider outlet (click-through)", () => {
   // Regression guard for the outlet swallowing every click on web. The outlet is a
@@ -450,6 +506,74 @@ describe("Dropdown", () => {
     expect(bare.container.querySelector('[role="menu"]')!.getAttribute("aria-label")).toBeNull();
   });
 
+  // The header block is only a header if something closes it off; without the rule
+  // it reads as an unstyled first row. iOS and web each draw their own hairline,
+  // Android (M3, which groups with spacing rather than dividers) deliberately
+  // draws none, so "no separator" has to be asserted too, or dropping the rule
+  // everywhere would still look correct on the one skin that never had it.
+  it("closes the identity header with each skin's own hairline, and with none where the skin has none", async () => {
+    const items = [{ label: "Profile" }, { label: "Log out" }];
+    for (const { name, file, skin } of PLATFORM_MENUS) {
+      const Native = await loadDropdown(file);
+      const { container } = ui(
+        <Native trigger="Account" title="Rachel Chen" description="rachel@nannier.com" items={items} />,
+      );
+      fireEvent.click(screen.getByText("Account"));
+      const menu = container.querySelector('[role="menu"]')!;
+      const after = menu.children[1] as HTMLElement;
+
+      if (skin.separator) {
+        // header group, hairline, then one wrapper per row.
+        expect(menu.children.length, name).toBe(2 + items.length);
+        // The rule is a bare hairline View, not a row: nothing focusable in it.
+        expect(after.querySelector('[role="menuitem"]'), name).toBeNull();
+        const rule = skin.separator(lightColors);
+        expect(after.style.height, name).toBe(`${rule.height as number}px`);
+        expect(after.style.backgroundColor, name).toBe(asRgba(rule.backgroundColor as string));
+        // ...standing off by the skin's own margin (4 on web, 6 on iOS).
+        expect(after.style.marginTop, name).toBe(`${rule.marginTop as number}px`);
+        expect(after.style.marginBottom, name).toBe(`${rule.marginBottom as number}px`);
+      } else {
+        // M3: the header's own padding does the separating, so the first row
+        // follows the group directly.
+        expect(menu.children.length, name).toBe(1 + items.length);
+        expect(after.querySelector('[role="menuitem"]'), name).not.toBeNull();
+      }
+
+      // Either way the hairline is not a row: the item count is untouched.
+      expect(container.querySelectorAll('[role="menuitem"]').length, name).toBe(items.length);
+      cleanup();
+    }
+  });
+
+  // The header is exercised with both lines, and with neither. Title-only is the
+  // third shape, and the one AvatarMenu produces for an account with no email:
+  // one line in has to mean one line out, with no trailing comma in the name from
+  // the line that is not there.
+  it("renders a title-only header, and a description-only one, without inventing a second line", () => {
+    const titleOnly = ui(<Dropdown trigger="Account" title="Rachel Chen" items={[{ label: "Profile" }]} />);
+    fireEvent.click(screen.getByText("Account"));
+    const group = titleOnly.container.querySelector('[role="group"]') as HTMLElement;
+    expect(group).not.toBeNull();
+    expect(group.children.length).toBe(1);
+    expect(group.getAttribute("aria-label")).toBe("Rachel Chen");
+    expect(titleOnly.container.querySelector('[role="menu"]')!.getAttribute("aria-label")).toBe("Rachel Chen");
+    // A one-line header is still a header: the hairline closes it off.
+    expect((titleOnly.container.querySelector('[role="menu"]')!.children[1] as HTMLElement).style.height).toBe("1px");
+    cleanup();
+
+    // ...and the mirror shape, where only the muted line is supplied, names the
+    // menu from that line rather than leaving it anonymous.
+    const descriptionOnly = ui(
+      <Dropdown trigger="Account" description="rachel@nannier.com" items={[{ label: "Profile" }]} />,
+    );
+    fireEvent.click(screen.getByText("Account"));
+    const line = descriptionOnly.container.querySelector('[role="group"]') as HTMLElement;
+    expect(line.children.length).toBe(1);
+    expect(line.getAttribute("aria-label")).toBe("rachel@nannier.com");
+    expect(descriptionOnly.container.querySelector('[role="menu"]')!.getAttribute("aria-label")).toBe("rachel@nannier.com");
+  });
+
   it("omits the header block entirely when neither title nor description is passed", () => {
     const { container } = ui(<Dropdown trigger="Actions" items={[{ label: "Edit" }, { label: "Duplicate" }]} />);
     fireEvent.click(screen.getByText("Actions"));
@@ -471,6 +595,73 @@ describe("Dropdown", () => {
     fireEvent.click(screen.getByText("Account"));
     expect(anchorStyle(trailing.container)).toContain("right: 0px");
     expect(anchorStyle(trailing.container)).not.toContain("left: 0px");
+  });
+
+  // The anchor above is the no-provider FALLBACK. Every real app and every docs
+  // stage mounts an OverlayProvider, and there the card is portaled and placed by
+  // AnchoredOverlay from an inset it measures, not by the inline start/end style.
+  // Unless `alignEnd` reaches that placement too, a menu that tests as
+  // trailing-aligned ships leading-aligned.
+  it("carries the same alignment onto the hosted (portaled) card, not just the inline fallback", async () => {
+    await withLayout(async () => {
+      const leading = ui(
+        <OverlayProvider>
+          <Dropdown trigger="Account" items={[{ label: "Profile" }]} />
+        </OverlayProvider>,
+      );
+      fireEvent.click(screen.getByText("Account"));
+      await settle();
+      // Hosted, the leading edge is the trigger's own offset inside the outlet...
+      expect(anchorStyle(leading.container)).toContain("left: 0px");
+      expect(anchorStyle(leading.container)).not.toContain("right: 0px");
+      cleanup();
+
+      const trailing = ui(
+        <OverlayProvider>
+          <Dropdown trigger="Account" alignEnd items={[{ label: "Profile" }]} />
+        </OverlayProvider>,
+      );
+      fireEvent.click(screen.getByText("Account"));
+      await settle();
+      // ...and the trailing edge a `right` inset from the outlet's edge, which is
+      // what lets the card be pinned without ever being measured.
+      expect(anchorStyle(trailing.container)).toContain("right: 0px");
+      expect(anchorStyle(trailing.container)).not.toContain("left: 0px");
+    });
+  });
+
+  // Two trigger shapes, two owners of the dim. The CUSTOM trigger is the one the
+  // menu skin fades, by the hand-off's --p-disabled for that platform; the default
+  // trigger is a Button, which owns its own disabled treatment. Both have to be
+  // dimmed AND inert, and only the custom one may read the menu skin's number.
+  it("dims a disabled custom trigger by each platform's own --p-disabled, and the default trigger by the Button's", async () => {
+    for (const { name, file, skin } of PLATFORM_MENUS) {
+      const Native = await loadDropdown(file);
+      const { container } = ui(
+        <Native disabled triggerLabel="Account" items={[{ label: "Edit" }]}>
+          <Text>Account</Text>
+        </Native>,
+      );
+      const custom = container.querySelector('[aria-haspopup="menu"]') as HTMLElement;
+      // 0.5 on web, 0.4 on iOS, M3's 0.38 on Android.
+      expect(custom.style.opacity, name).toBe(String(skin.disabledOpacity));
+      expect(custom.getAttribute("aria-disabled"), name).toBe("true");
+      expect(custom.getAttribute("aria-expanded"), name).toBe("false");
+      cleanup();
+    }
+
+    // The default trigger takes Button's disabled treatment instead, so the menu
+    // skin's number is deliberately NOT applied there. (Which number Button uses
+    // per platform is the Button suite's business; under bun there is no
+    // .ios/.android resolution, so every build here links the web Button.) What
+    // matters at this seam is that the default path is dimmed and out of the tab
+    // order rather than looking live.
+    const { container } = ui(<Dropdown trigger="Actions" disabled items={[{ label: "Edit" }]} />);
+    const button = container.querySelector('[aria-haspopup="menu"]') as HTMLElement;
+    expect(Number(button.style.opacity)).toBeGreaterThan(0);
+    expect(Number(button.style.opacity)).toBeLessThan(1);
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    expect(button.getAttribute("tabindex")).toBe("-1");
   });
 
   it("never opens a disabled Dropdown and marks the default trigger disabled", () => {
