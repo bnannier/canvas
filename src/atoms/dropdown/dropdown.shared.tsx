@@ -54,6 +54,12 @@ export interface DropdownProps {
    *  avatar account chip. It is wrapped in a Pressable that toggles the menu;
    *  the menu itself still comes from `items`. */
   children?: ReactNode;
+  /** The accessible name for a CUSTOM trigger (`children`). Without it the button
+   *  is named from its own contents, which runs the trigger's text together into
+   *  one unpunctuated string ("Rachel Chenrachel@example.com") and repeats any
+   *  label a nested control already carries. Ignored by the default `trigger`
+   *  button, which is named by its own text. */
+  triggerLabel?: string;
   /** Optional muted section heading rendered above the rows (e.g. "Actions"). */
   label?: string;
   /** Identity header title, rendered in the popover foreground ABOVE everything
@@ -103,7 +109,7 @@ const MENU_ANCHOR_END: ViewStyle = { position: "absolute", top: "100%", end: 0, 
 /** Build a Dropdown component from a platform skin. */
 export function createDropdown(skin: DropdownSkin) {
   return function Dropdown(props: DropdownProps) {
-    const { trigger, children, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
+    const { trigger, children, triggerLabel, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
     const { tokens, dark } = useTheme();
     // Uncontrolled by default (Headless-UI style): the trigger opens/closes the
     // menu and a select closes it; a controlled `open` prop overrides this.
@@ -175,6 +181,11 @@ export function createDropdown(skin: DropdownSkin) {
             onPress={disabled ? undefined : () => setOpen(!open)}
             disabled={disabled}
             accessibilityRole="button"
+            // The name belongs on the button itself: a name computed from contents
+            // reads the trigger's own text nodes back to back and picks up the
+            // labels of anything nested inside it.
+            accessibilityLabel={triggerLabel}
+            aria-label={triggerLabel}
             accessibilityState={{ expanded: open, disabled: !!disabled }}
             // RNW forwards neither accessibilityState nor aria-haspopup; alias both.
             aria-expanded={open}
