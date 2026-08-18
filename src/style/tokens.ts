@@ -47,6 +47,14 @@ export interface ColorTokens {
   "chart-8": string;
 }
 
+// The semantic color values below are the sRGB rendering of the WEB hand-off
+// (styles/tokens/colors.css), which is the single source of truth for what these
+// tokens ARE: `--destructive:oklch(0.577 0.245 27.325)` there is `#e7000b` here.
+// RN cannot parse oklch(), so the hand-off's values are carried as the hex they
+// resolve to, and scripts/validate-tokens.ts converts the CSS back to sRGB and
+// fails the build on any drift. Change a value in the CSS hand-off first, never
+// only here. (The `chart-*` series and the Tailwind v3 `palette` below are
+// authored as hex on both sides and compared verbatim.)
 export const lightColors: ColorTokens = {
   background: "#ffffff",
   foreground: "#09090b",
@@ -54,23 +62,23 @@ export const lightColors: ColorTokens = {
   "card-foreground": "#09090b",
   popover: "#ffffff",
   "popover-foreground": "#09090b",
-  primary: "#4f46e5",
-  "primary-foreground": "#ffffff",
+  primary: "#4f39f6",
+  "primary-foreground": "#fafafa",
   secondary: "#f4f4f5",
   "secondary-foreground": "#18181b",
   muted: "#f4f4f5",
-  "muted-foreground": "#71717a",
+  "muted-foreground": "#71717b",
   accent: "#f4f4f5",
   "accent-foreground": "#18181b",
-  destructive: "#dc2626",
-  "destructive-foreground": "#ffffff",
+  destructive: "#e7000b",
+  "destructive-foreground": "#fafafa",
   success: "#16a34a",
   "success-foreground": "#ffffff",
-  warning: "#d97706",
+  warning: "#d97708",
   "warning-foreground": "#ffffff",
   border: "#e4e4e7",
   input: "#e4e4e7",
-  ring: "#4f46e5",
+  ring: "#4f39f6",
   "chart-1": "#6366f1", // indigo-500
   "chart-2": "#0d9488", // teal-600
   "chart-3": "#ea580c", // orange-600
@@ -88,23 +96,23 @@ export const darkColors: ColorTokens = {
   "card-foreground": "#fafafa",
   popover: "#18181b",
   "popover-foreground": "#fafafa",
-  primary: "#6366f1",
-  "primary-foreground": "#ffffff",
+  primary: "#615fff",
+  "primary-foreground": "#fafafa",
   secondary: "#27272a",
   "secondary-foreground": "#fafafa",
   muted: "#27272a",
-  "muted-foreground": "#a1a1aa",
+  "muted-foreground": "#9f9fa9",
   accent: "#27272a",
   "accent-foreground": "#fafafa",
-  destructive: "#ef4444",
+  destructive: "#ff6467",
   "destructive-foreground": "#fafafa",
   success: "#22c55e",
   "success-foreground": "#052e16",
-  warning: "#f59e0b",
+  warning: "#f59e09",
   "warning-foreground": "#451a03",
   border: "#27272a",
   input: "#27272a",
-  ring: "#6366f1",
+  ring: "#615fff",
   // Same series values as light: the palette was validated against both
   // surfaces, so brand overrides stay consistent across schemes by default.
   "chart-1": "#6366f1",

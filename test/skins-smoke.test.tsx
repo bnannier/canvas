@@ -167,6 +167,8 @@ const CASES: SkinCase[] = [
   { name: "ServiceHealthList", dir: "charts/service-health-list", file: "service-health-list", props: { title: "Status", items: [{ label: "API" }, { label: "Web", degraded: true }] } },
   { name: "BulletChart", dir: "charts/bullet-chart", file: "bullet-chart", props: { title: "Targets", data: [{ label: "Revenue", value: 275, target: 300, ranges: [200, 350] }] } },
   { name: "ProgressRing", dir: "charts/progress-ring", file: "progress-ring", props: { value: 72, label: "Complete" } },
+  { name: "ComposedChart", dir: "charts/composed-chart", file: "composed-chart", props: { title: "Revenue", labels: ["Q1", "Q2"], series: [{ label: "Revenue", values: [4, 5] }, { label: "Margin", values: [1, 2], line: true }] } },
+  { name: "RangeAreaChart", dir: "charts/range-area-chart", file: "range-area-chart", props: { title: "Band", label: "Range", labels: ["Mon", "Tue"], data: [{ low: 1, high: 3, mid: 2 }, { low: 2, high: 4, mid: 3 }] } },
   { name: "LineChart", dir: "charts/line-chart", file: "line-chart", props: { title: "Signups", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Web", values: [1, 3, 2] }, { label: "Mobile", values: [2, 1, 4] }] } },
   { name: "PieChart", dir: "charts/pie-chart", file: "pie-chart", props: { label: "Traffic", donut: true, slices: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "ScatterPlot", dir: "charts/scatter-plot", file: "scatter-plot", props: { title: "Load vs latency", series: [{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }] } },

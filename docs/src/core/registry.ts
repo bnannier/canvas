@@ -918,6 +918,11 @@ import e_charts_chart_example_2 from "./examples/charts/chart/example-2";
 import e_charts_chart_example_3 from "./examples/charts/chart/example-3";
 import e_charts_chart_dont_0_do from "./examples/charts/chart/dont-0-do";
 import e_charts_chart_dont_0_dont from "./examples/charts/chart/dont-0-dont";
+import e_charts_composed_chart_example_0 from "./examples/charts/composed-chart/example-0";
+import e_charts_composed_chart_example_1 from "./examples/charts/composed-chart/example-1";
+import e_charts_composed_chart_example_2 from "./examples/charts/composed-chart/example-2";
+import e_charts_composed_chart_dont_0_do from "./examples/charts/composed-chart/dont-0-do";
+import e_charts_composed_chart_dont_0_dont from "./examples/charts/composed-chart/dont-0-dont";
 import e_charts_depth_chart_example_0 from "./examples/charts/depth-chart/example-0";
 import e_charts_depth_chart_example_1 from "./examples/charts/depth-chart/example-1";
 import e_charts_gauge_example_0 from "./examples/charts/gauge/example-0";
@@ -950,6 +955,11 @@ import e_charts_progress_ring_example_1 from "./examples/charts/progress-ring/ex
 import e_charts_progress_ring_example_2 from "./examples/charts/progress-ring/example-2";
 import e_charts_progress_ring_dont_0_do from "./examples/charts/progress-ring/dont-0-do";
 import e_charts_progress_ring_dont_0_dont from "./examples/charts/progress-ring/dont-0-dont";
+import e_charts_range_area_chart_example_0 from "./examples/charts/range-area-chart/example-0";
+import e_charts_range_area_chart_example_1 from "./examples/charts/range-area-chart/example-1";
+import e_charts_range_area_chart_example_2 from "./examples/charts/range-area-chart/example-2";
+import e_charts_range_area_chart_dont_0_do from "./examples/charts/range-area-chart/dont-0-do";
+import e_charts_range_area_chart_dont_0_dont from "./examples/charts/range-area-chart/dont-0-dont";
 import e_charts_scatter_plot_example_0 from "./examples/charts/scatter-plot/example-0";
 import e_charts_scatter_plot_example_1 from "./examples/charts/scatter-plot/example-1";
 import e_charts_service_health_list_example_0 from "./examples/charts/service-health-list/example-0";
@@ -2290,6 +2300,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Bar", do: { caption: "Keep a labelled axis row and a single bar tone so the buckets read at a glance.", code: "<Chart title=\"Signups\" max={100} style={{ maxWidth: 560 }} data={[\n    { label: \"Mon\", value: 45 },\n    { label: \"Tue\", value: 60 },\n    { label: \"Wed\", value: 35 },\n    { label: \"Thu\", value: 70 },\n    { label: \"Fri\", value: 55 },\n    { label: \"Sat\", value: 80 },\n    { label: \"Sun\", value: 95 }\n  ]} />\n", render: e_charts_chart_dont_0_do }, dont: { caption: "Every bar the same full-strength fill and no labels: nothing is emphasized and the axis is unreadable.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>\n  <View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 4, height: 120, width: 520 }}>\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 63 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 84 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 49 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 98 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 77 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 112 }} />\n    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 118 }} />\n  </View>\n</View>\n", render: e_charts_chart_dont_0_dont } },
     ],
   },
+  "composed-chart": {
+    dir: "composed-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<ComposedChart\n  title=\"Revenue and margin\"\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  style={{ maxWidth: 560 }}\n  series={[\n    { label: \"Revenue\", values: [420, 510, 480, 620] },\n    { label: \"Costs\", values: [310, 340, 330, 380] },\n    { label: \"Margin\", values: [110, 170, 150, 240], line: true },\n  ]}\n/>", render: e_charts_composed_chart_example_0 },
+      { label: "Area backdrop", code: "<ComposedChart\n  title=\"Traffic and conversions\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"]}\n  curved\n  style={{ maxWidth: 560 }}\n  series={[\n    { label: \"Sessions\", values: [1200, 1420, 1310, 1680, 1540], area: true },\n    { label: \"Sign-ups\", values: [240, 310, 280, 420, 380] },\n  ]}\n/>", render: e_charts_composed_chart_example_1 },
+      { label: "Dots and inspection", code: "<ComposedChart\n  title=\"Deploys and incidents\"\n  labels={[\"W1\", \"W2\", \"W3\", \"W4\", \"W5\", \"W6\"]}\n  dots\n  defaultSelected={3}\n  style={{ maxWidth: 560 }}\n  series={[\n    { label: \"Deploys\", values: [12, 18, 15, 22, 19, 24] },\n    { label: \"Incidents\", values: [2, 1, 3, 1, 2, 1], line: true },\n  ]}\n/>", render: e_charts_composed_chart_example_2 },
+    ],
+    donts: [
+      { title: "ComposedChart", do: { caption: "Mix marks when the series mean different things: bars for the magnitude, a line for the derived rate.", code: "<ComposedChart\n  title=\"Revenue and margin\"\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  style={{ maxWidth: 560 }}\n  series={[\n    { label: \"Revenue\", values: [420, 510, 480, 620] },\n    { label: \"Margin\", values: [110, 170, 150, 240], line: true },\n  ]}\n/>", render: e_charts_composed_chart_dont_0_do }, dont: { caption: "All-bar composed data belongs on the bar Chart's grouped mode; composed adds nothing but indirection.", code: "<ComposedChart\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  style={{ maxWidth: 560 }}\n  series={[\n    { label: \"Revenue\", values: [420, 510, 480, 620] },\n    { label: \"Costs\", values: [310, 340, 330, 380] },\n  ]}\n/>", render: e_charts_composed_chart_dont_0_dont } },
+    ],
+  },
   "depth-chart": {
     dir: "depth-chart",
     category: "charts",
@@ -2371,6 +2393,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "ProgressRing", do: { caption: "Put a muted track behind the value arc, the percent readout in the ring's center, and the label below the graphic.", code: "<Card padded style={{ maxWidth: 200 }}>\n  <Column alignCenter>\n    <ProgressRing value={72} label=\"Complete\" />\n  </Column>\n</Card>", render: e_charts_progress_ring_dont_0_do }, dont: { caption: "A bordered circle with no track and no readout gives no baseline to read the fill against and no exact value.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: \"center\" }}>\n  <View style={{ borderRadius: 9999, borderWidth: 10, borderColor: tokens.primary, height: 120, width: 120 }} />\n</View>", render: e_charts_progress_ring_dont_0_dont } },
+    ],
+  },
+  "range-area-chart": {
+    dir: "range-area-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<RangeAreaChart\n  title=\"Latency envelope\"\n  label=\"p50 to p99\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"]}\n  curved\n  style={{ maxWidth: 560 }}\n  data={[\n    { low: 42, high: 118, mid: 61 },\n    { low: 38, high: 102, mid: 55 },\n    { low: 44, high: 131, mid: 66 },\n    { low: 40, high: 95, mid: 52 },\n    { low: 47, high: 144, mid: 71 },\n    { low: 36, high: 88, mid: 49 },\n    { low: 34, high: 81, mid: 46 },\n  ]}\n/>", render: e_charts_range_area_chart_example_0 },
+      { label: "Band only", code: "<RangeAreaChart\n  title=\"Daily temperature\"\n  label=\"Range\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  curved\n  style={{ maxWidth: 560 }}\n  data={[\n    { low: -4, high: 6 },\n    { low: -2, high: 9 },\n    { low: 2, high: 14 },\n    { low: 7, high: 19 },\n    { low: 11, high: 24 },\n    { low: 15, high: 28 },\n  ]}\n/>", render: e_charts_range_area_chart_example_1 },
+      { label: "Success tone, inspected", code: "<RangeAreaChart\n  title=\"Forecast\"\n  label=\"Confidence band\"\n  success\n  defaultSelected={2}\n  labels={[\"W1\", \"W2\", \"W3\", \"W4\"]}\n  style={{ maxWidth: 560 }}\n  data={[\n    { low: 90, high: 110, mid: 100 },\n    { low: 95, high: 125, mid: 108 },\n    { low: 100, high: 140, mid: 118 },\n    { low: 104, high: 158, mid: 129 },\n  ]}\n/>", render: e_charts_range_area_chart_example_2 },
+    ],
+    donts: [
+      { title: "RangeAreaChart", do: { caption: "Encode uncertainty as the band and the estimate as the mid line, in one mark.", code: "<RangeAreaChart\n  title=\"Forecast\"\n  label=\"Confidence band\"\n  labels={[\"W1\", \"W2\", \"W3\", \"W4\"]}\n  style={{ maxWidth: 560 }}\n  data={[\n    { low: 90, high: 110, mid: 100 },\n    { low: 95, high: 125, mid: 108 },\n    { low: 100, high: 140, mid: 118 },\n    { low: 104, high: 158, mid: 129 },\n  ]}\n/>", render: e_charts_range_area_chart_dont_0_do }, dont: { caption: "Two separate lines for low and high leave the envelope unreadable as a region and double the legend.", code: "<LineChart\n  labels={[\"W1\", \"W2\", \"W3\", \"W4\"]}\n  style={{ maxWidth: 560 }}\n  series={[\n    { label: \"Low\", values: [90, 95, 100, 104] },\n    { label: \"High\", values: [110, 125, 140, 158] },\n  ]}\n/>", render: e_charts_range_area_chart_dont_0_dont } },
     ],
   },
   "scatter-plot": {

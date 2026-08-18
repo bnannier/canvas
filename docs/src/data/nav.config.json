@@ -573,6 +573,16 @@
             "slug": "progress-ring",
             "label": "ProgressRing",
             "icon": "circle-dot"
+          },
+          {
+            "slug": "composed-chart",
+            "label": "ComposedChart",
+            "icon": "bar-chart-2"
+          },
+          {
+            "slug": "range-area-chart",
+            "label": "RangeAreaChart",
+            "icon": "chart-area"
           }
         ]
       },

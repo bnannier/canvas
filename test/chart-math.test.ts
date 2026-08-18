@@ -21,6 +21,7 @@ import {
   polygonPath,
   squarify,
   stackSeries,
+  topRoundedRect,
   waterfallLayout,
 } from "../src/charts/shared/chart-math.ts";
 
@@ -335,6 +336,22 @@ describe("polarPoint", () => {
     const b = polarPoint(10, 20, 5, 1.2 + 2 * Math.PI);
     expect(b.x).toBeCloseTo(a.x);
     expect(b.y).toBeCloseTo(a.y);
+  });
+});
+
+describe("topRoundedRect", () => {
+  it("rounds only the top corners and closes square on the baseline", () => {
+    const d = topRoundedRect(10, 20, 30, 40, 4);
+    // Two arcs (the top corners), then straight lines to the bottom corners.
+    expect((d.match(/A/g) ?? []).length).toBe(2);
+    expect(d).toContain("L40,60 L10,60 Z");
+  });
+
+  it("clamps the radius to the bar and renders nothing for empty bars", () => {
+    // A 4px-wide bar cannot carry a 4px radius on both corners: it clamps to 2.
+    expect(topRoundedRect(0, 0, 4, 40, 4)).toContain("A2,2");
+    expect(topRoundedRect(0, 0, 0, 40, 4)).toBe("");
+    expect(topRoundedRect(0, 0, 10, 0, 4)).toBe("");
   });
 });
 
