@@ -51,19 +51,11 @@
   --delta-up:#16a34a;
   --delta-down:#dc2626;
 
-  /* Glass: the functional layer's material. Per Apple's adoption guide it forms a distinct
-     functional layer for controls and navigation that FLOATS above the content layer — so it is
-     for bars, sheets, popovers and controls only; content surfaces stay solid, and it should be
-     used sparingly (overuse distracts from the content it exists to reveal).
-
-     Liquid Glass is a LENS, not a frost: it bends and concentrates light through a displacement
-     map rather than scattering it, and the bend is concentrated at the EDGES — the centre of a
-     pane is optically flat. `--glass-lens` is that filter (components/glass-lens.js);
-     `--glass-frost` is the blur+saturate fallback for engines without SVG backdrop filters.
-
-     The highlight is a RIM light, not a diagonal wash: it rings the pane and its intensity varies
-     with the surface normal's angle to a fixed light, so the top-left arc reads brightest and the
-     bottom-right only bounces. `--glass-tint` stays low so content genuinely shows through. */
+  /* Glass: the FUNCTIONAL layer's material (bars, sheets, popovers, controls) floating above
+     the content layer, which stays solid. It is a LENS, not a frost: the bend concentrates at
+     the RIM, so a pane's centre is flat and the highlight rings the edge. `--glass-lens` is
+     that filter (the page supplies #cds-glass-lens), `--glass-frost` the fallback where SVG
+     backdrop filters are unavailable. Why, and the per-platform build: src/style/glass-surface. */
   --glass-tint:rgba(255,255,255,0.20);
   --glass-blur:28px;
   --glass-frost:blur(28px) saturate(190%) /* @kind other */;
