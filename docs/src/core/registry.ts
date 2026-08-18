@@ -903,6 +903,11 @@ import e_charts_bar_list_example_2 from "./examples/charts/bar-list/example-2";
 import e_charts_bar_list_example_3 from "./examples/charts/bar-list/example-3";
 import e_charts_bar_list_dont_0_do from "./examples/charts/bar-list/dont-0-do";
 import e_charts_bar_list_dont_0_dont from "./examples/charts/bar-list/dont-0-dont";
+import e_charts_box_plot_example_0 from "./examples/charts/box-plot/example-0";
+import e_charts_box_plot_example_1 from "./examples/charts/box-plot/example-1";
+import e_charts_box_plot_example_2 from "./examples/charts/box-plot/example-2";
+import e_charts_box_plot_dont_0_do from "./examples/charts/box-plot/dont-0-do";
+import e_charts_box_plot_dont_0_dont from "./examples/charts/box-plot/dont-0-dont";
 import e_charts_bullet_chart_example_0 from "./examples/charts/bullet-chart/example-0";
 import e_charts_bullet_chart_example_1 from "./examples/charts/bullet-chart/example-1";
 import e_charts_bullet_chart_example_2 from "./examples/charts/bullet-chart/example-2";
@@ -934,6 +939,11 @@ import e_charts_heatmap_example_0 from "./examples/charts/heatmap/example-0";
 import e_charts_heatmap_example_1 from "./examples/charts/heatmap/example-1";
 import e_charts_heatmap_dont_0_do from "./examples/charts/heatmap/dont-0-do";
 import e_charts_heatmap_dont_0_dont from "./examples/charts/heatmap/dont-0-dont";
+import e_charts_histogram_example_0 from "./examples/charts/histogram/example-0";
+import e_charts_histogram_example_1 from "./examples/charts/histogram/example-1";
+import e_charts_histogram_example_2 from "./examples/charts/histogram/example-2";
+import e_charts_histogram_dont_0_do from "./examples/charts/histogram/dont-0-do";
+import e_charts_histogram_dont_0_dont from "./examples/charts/histogram/dont-0-dont";
 import e_charts_line_chart_example_0 from "./examples/charts/line-chart/example-0";
 import e_charts_line_chart_example_1 from "./examples/charts/line-chart/example-1";
 import e_charts_line_chart_example_2 from "./examples/charts/line-chart/example-2";
@@ -976,6 +986,11 @@ import e_charts_uptime_bar_example_1 from "./examples/charts/uptime-bar/example-
 import e_charts_uptime_bar_example_2 from "./examples/charts/uptime-bar/example-2";
 import e_charts_uptime_bar_dont_0_do from "./examples/charts/uptime-bar/dont-0-do";
 import e_charts_uptime_bar_dont_0_dont from "./examples/charts/uptime-bar/dont-0-dont";
+import e_charts_waterfall_chart_example_0 from "./examples/charts/waterfall-chart/example-0";
+import e_charts_waterfall_chart_example_1 from "./examples/charts/waterfall-chart/example-1";
+import e_charts_waterfall_chart_example_2 from "./examples/charts/waterfall-chart/example-2";
+import e_charts_waterfall_chart_dont_0_do from "./examples/charts/waterfall-chart/dont-0-do";
+import e_charts_waterfall_chart_dont_0_dont from "./examples/charts/waterfall-chart/dont-0-dont";
 
 // Every documented component, keyed by its source directory (the `.md` stem). The
 // consuming page maps a URL slug to its dir via the components data, then renders
@@ -2262,6 +2277,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "BarList", do: { caption: "Let the component own the whole row anatomy: swatch, label, value, delta, and the proportional bar.", code: "<BarList\n  title=\"Top pages\"\n  style={{ maxWidth: 420 }}\n  items={[\n    { label: \"/pricing\", value: 18400, delta: \"+12%\" },\n    { label: \"/docs\", value: 12100, delta: \"-4%\", down: true },\n  ]}\n/>", render: e_charts_bar_list_dont_0_do }, dont: { caption: "A hand-rolled row of Text and colored Views splits the anatomy, drifts from the type scale, and hides its share from assistive tech.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 420, gap: 8 }}>\n  <View style={{ flexDirection: \"row\", justifyContent: \"space-between\" }}>\n    <Text>/pricing</Text>\n    <Text>18.4k</Text>\n  </View>\n  <View style={{ height: 3, backgroundColor: tokens.primary, width: \"80%\" }} />\n</View>", render: e_charts_bar_list_dont_0_dont } },
     ],
   },
+  "box-plot": {
+    dir: "box-plot",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<BoxPlot\n  title=\"Latency by region\"\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"us-east\", values: [42, 38, 51, 44, 47, 39, 58, 44, 41, 49, 96] },\n    { label: \"eu-west\", values: [55, 61, 58, 64, 57, 63, 59, 66, 60, 62] },\n    { label: \"ap-south\", values: [71, 78, 74, 83, 76, 80, 75, 88, 79, 124] },\n  ]}\n/>", render: e_charts_box_plot_example_0 },
+      { label: "Compact", code: "<BoxPlot\n  compact\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"A\", values: [3.1, 3.4, 3.2, 3.8, 3.5, 3.3, 3.9, 3.6] },\n    { label: \"B\", values: [4.2, 4.6, 4.4, 5.1, 4.8, 4.5, 5.4, 4.9] },\n  ]}\n/>", render: e_charts_box_plot_example_1 },
+      { label: "Inspected", code: "<BoxPlot\n  title=\"Review turnaround\"\n  defaultSelected={1}\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"Mon\", values: [2, 4, 3, 5, 4, 3, 6, 4, 3, 5] },\n    { label: \"Wed\", values: [3, 6, 5, 8, 6, 5, 9, 7, 5, 6] },\n    { label: \"Fri\", values: [5, 9, 7, 12, 9, 8, 14, 10, 8, 22] },\n  ]}\n/>", render: e_charts_box_plot_example_2 },
+    ],
+    donts: [
+      { title: "BoxPlot", do: { caption: "Compare distributions with the full five-number anatomy: box, whiskers, median, outliers.", code: "<BoxPlot\n  title=\"Latency by region\"\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"us-east\", values: [42, 38, 51, 44, 47, 39, 58, 44, 41, 49, 96] },\n    { label: \"eu-west\", values: [55, 61, 58, 64, 57, 63, 59, 66, 60, 62] },\n  ]}\n/>", render: e_charts_box_plot_dont_0_do }, dont: { caption: "A bar of averages hides the spread and the outliers, which are the point of comparing distributions.", code: "<Chart\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"us-east\", value: 46 },\n    { label: \"eu-west\", value: 61 },\n  ]}\n/>", render: e_charts_box_plot_dont_0_dont } },
+    ],
+  },
   "bullet-chart": {
     dir: "bullet-chart",
     category: "charts",
@@ -2344,6 +2371,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "Heatmap", do: { caption: "Pair the grid with a discrete less-to-more legend so the density scale is legible.", code: "<Card padded style={{ maxWidth: 260 }}>\n  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />\n</Card>\n", render: e_charts_heatmap_dont_0_do }, dont: { caption: "A density grid with no legend leaves the alpha-to-value mapping a mystery.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 260 }}>\n  <View style={{ flexDirection: \"row\", flexWrap: \"wrap\", gap: 4, maxWidth: 220 }}>\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.15)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.4)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.7)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,1)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.55)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.25)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.85)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.35)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.6)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.9)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.2)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.5)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.75)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.3)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.95)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.45)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.65)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.1)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.8)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.4)\" }} />\n    <View style={{ borderRadius: 2, height: 18, width: 18, backgroundColor: \"rgba(99,102,241,0.7)\" }} />\n  </View>\n</View>\n", render: e_charts_heatmap_dont_0_dont } },
+    ],
+  },
+  "histogram": {
+    dir: "histogram",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Histogram\n  title=\"Response times\"\n  label=\"Latency ms\"\n  style={{ maxWidth: 560 }}\n  values={[42, 38, 51, 44, 47, 39, 58, 62, 44, 41, 49, 53, 46, 43, 71, 48, 45, 55, 40, 66, 50, 47, 52, 84, 43, 46, 59, 49, 44, 51]}\n/>", render: e_charts_histogram_example_0 },
+      { label: "Explicit bins", code: "<Histogram\n  title=\"Order sizes\"\n  label=\"Items per order\"\n  bins={5}\n  style={{ maxWidth: 560 }}\n  values={[1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8, 9, 12, 2, 3, 1, 4, 2, 3, 5]}\n/>", render: e_charts_histogram_example_1 },
+      { label: "Compact, no grid", code: "<Histogram\n  label=\"Build minutes\"\n  compact\n  hideGrid\n  style={{ maxWidth: 560 }}\n  values={[4.2, 4.8, 5.1, 4.4, 6.2, 5.5, 4.9, 5.0, 4.6, 7.8, 5.2, 4.7, 5.4, 4.3, 5.8]}\n/>", render: e_charts_histogram_example_2 },
+    ],
+    donts: [
+      { title: "Histogram", do: { caption: "Hand the chart raw samples and let it choose nice bin edges.", code: "<Histogram\n  title=\"Response times\"\n  label=\"Latency ms\"\n  style={{ maxWidth: 560 }}\n  values={[42, 38, 51, 44, 47, 39, 58, 62, 44, 41, 49, 53, 46, 43, 71, 48]}\n/>", render: e_charts_histogram_dont_0_do }, dont: { caption: "Pre-bucketing the samples into a bar Chart throws away the distribution's edges and the inspectable ranges.", code: "<Chart\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"small\", value: 9 },\n    { label: \"medium\", value: 5 },\n    { label: \"large\", value: 2 },\n  ]}\n/>", render: e_charts_histogram_dont_0_dont } },
     ],
   },
   "line-chart": {
@@ -2451,6 +2490,18 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "UptimeBar", do: { caption: "Let the strip carry the whole anatomy: pills, summary caption, and edge labels, with the status tally in its accessible name.", code: "<UptimeBar\n  label=\"API uptime\"\n  caption=\"99.98% uptime\"\n  startLabel=\"90 days ago\"\n  endLabel=\"Today\"\n  style={{ maxWidth: 480 }}\n  periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : {}))}\n/>", render: e_charts_uptime_bar_dont_0_do }, dont: { caption: "A hand-rolled row of colored Views has no accessible tally and no edge-caption anatomy.", code: "<View style={{ flexDirection: \"row\", gap: 2, maxWidth: 480 }}>\n  {Array.from({ length: 90 }, (_, i) => (\n    <View key={i} style={{ flex: 1, height: 24, borderRadius: 2, backgroundColor: i === 61 ? \"red\" : \"green\" }} />\n  ))}\n</View>", render: e_charts_uptime_bar_dont_0_dont } },
+    ],
+  },
+  "waterfall-chart": {
+    dir: "waterfall-chart",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<WaterfallChart\n  title=\"Q3 revenue bridge\"\n  style={{ maxWidth: 560 }}\n  steps={[\n    { label: \"Q2\", value: 4200, total: true },\n    { label: \"New\", value: 980 },\n    { label: \"Expansion\", value: 460 },\n    { label: \"Churn\", value: -540 },\n    { label: \"FX\", value: -120 },\n    { label: \"Q3\", total: true },\n  ]}\n/>", render: e_charts_waterfall_chart_example_0 },
+      { label: "Signed steps only", code: "<WaterfallChart\n  title=\"Headcount\"\n  style={{ maxWidth: 560 }}\n  steps={[\n    { label: \"Hired\", value: 24 },\n    { label: \"Backfill\", value: 8 },\n    { label: \"Attrition\", value: -11 },\n    { label: \"Transfers\", value: -3 },\n    { label: \"Net\", total: true },\n  ]}\n/>", render: e_charts_waterfall_chart_example_1 },
+      { label: "Compact, inspected", code: "<WaterfallChart\n  compact\n  defaultSelected={2}\n  style={{ maxWidth: 560 }}\n  steps={[\n    { label: \"Start\", value: 100, total: true },\n    { label: \"Wins\", value: 30 },\n    { label: \"Losses\", value: -12 },\n    { label: \"End\", total: true },\n  ]}\n/>", render: e_charts_waterfall_chart_example_2 },
+    ],
+    donts: [
+      { title: "WaterfallChart", do: { caption: "Bridge from one total to the next with signed steps; let the fixed coloring carry rise and fall.", code: "<WaterfallChart\n  title=\"Q3 revenue bridge\"\n  style={{ maxWidth: 560 }}\n  steps={[\n    { label: \"Q2\", value: 4200, total: true },\n    { label: \"New\", value: 980 },\n    { label: \"Churn\", value: -540 },\n    { label: \"Q3\", total: true },\n  ]}\n/>", render: e_charts_waterfall_chart_dont_0_do }, dont: { caption: "Plain bars of period totals hide the walk: what rose, what fell, and by how much.", code: "<Chart\n  style={{ maxWidth: 560 }}\n  data={[\n    { label: \"Q2\", value: 4200 },\n    { label: \"Q3\", value: 4640 },\n  ]}\n/>", render: e_charts_waterfall_chart_dont_0_dont } },
     ],
   },
 };

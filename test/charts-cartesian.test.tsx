@@ -10,6 +10,9 @@ import { ScatterPlot } from "../src/charts/scatter-plot/scatter-plot.tsx";
 import { CandlestickChart } from "../src/charts/candlestick-chart/candlestick-chart.tsx";
 import { ComposedChart } from "../src/charts/composed-chart/composed-chart.tsx";
 import { RangeAreaChart } from "../src/charts/range-area-chart/range-area-chart.tsx";
+import { Histogram } from "../src/charts/histogram/histogram.tsx";
+import { BoxPlot } from "../src/charts/box-plot/box-plot.tsx";
+import { WaterfallChart } from "../src/charts/waterfall-chart/waterfall-chart.tsx";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -353,5 +356,72 @@ describe("RangeAreaChart", () => {
   it("names the root group after the title", () => {
     const { container } = ui(<RangeAreaChart title="Latency envelope" label="Band" labels={labels} data={data} />);
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Latency envelope chart");
+  });
+});
+
+describe("Histogram", () => {
+  const samples = [1, 2, 2, 3, 3, 3, 4, 4, 9];
+
+  it("names every bin with its bounds and count", () => {
+    const { container } = ui(<Histogram label="Latency" values={samples} bins={4} />);
+    const name = plotName(container);
+    expect(name).toContain("Latency: 9 samples in");
+    expect(name).toMatch(/\d+ to \d+ \d+/);
+  });
+
+  it("counts survive the nice-edged binning (every sample lands somewhere)", () => {
+    const { container } = ui(<Histogram label="X" values={samples} />);
+    const name = plotName(container);
+    const counts = [...name.matchAll(/to -?[\d.]+k? (\d+)/g)].map((m) => Number(m[1]));
+    expect(counts.reduce((a, b) => a + b, 0)).toBe(samples.length);
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<Histogram title="Response times" label="ms" values={samples} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Response times chart");
+  });
+});
+
+describe("BoxPlot", () => {
+  it("names each category with its five-number summary and outliers", () => {
+    const { container } = ui(
+      <BoxPlot
+        data={[
+          { label: "A", values: [1, 2, 3, 4, 5] },
+          { label: "B", values: [0, 0, 0, 100, 0] },
+        ]}
+      />,
+    );
+    const name = plotName(container);
+    expect(name).toContain("A: median 3, quartiles 2 to 4, range 1 to 5");
+    expect(name).toContain("1 outlier");
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<BoxPlot title="Spread" data={[{ label: "A", values: [1, 2, 3, 4, 5] }]} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Spread chart");
+  });
+});
+
+describe("WaterfallChart", () => {
+  const steps = [
+    { label: "Q2", value: 4200, total: true },
+    { label: "New", value: 980 },
+    { label: "Churn", value: -540 },
+    { label: "Q3", value: 0, total: true },
+  ];
+
+  it("walks the bridge in the accessible name with signed steps and totals", () => {
+    const { container } = ui(<WaterfallChart title="Bridge" steps={steps} />);
+    const name = plotName(container);
+    expect(name).toContain("Q2 total 4.2k");
+    expect(name).toContain("New up 980 to 5.2k");
+    expect(name).toContain("Churn down 540 to 4.6k");
+    expect(name).toContain("Q3 total 4.6k");
+  });
+
+  it("names the root group after the title", () => {
+    const { container } = ui(<WaterfallChart title="Q3 bridge" steps={steps} />);
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Q3 bridge chart");
   });
 });

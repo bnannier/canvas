@@ -445,6 +445,19 @@ describe("waterfallLayout", () => {
     expect(max).toBe(130);
   });
 
+  it("a total step with a non-zero value opens (or re-bases) the running total", () => {
+    const { bars } = waterfallLayout([
+      { value: 4200, total: true },
+      { value: 980 },
+      { value: -540 },
+      { total: true },
+    ]);
+    expect(bars[0]).toEqual({ start: 0, end: 4200, kind: "total" });
+    expect(bars[1]).toEqual({ start: 4200, end: 5180, kind: "rise" });
+    expect(bars[2]).toEqual({ start: 5180, end: 4640, kind: "fall" });
+    expect(bars[3]).toEqual({ start: 0, end: 4640, kind: "total" });
+  });
+
   it("tracks a negative running total in the extent", () => {
     const { bars, min } = waterfallLayout([{ value: -40 }, { value: 15 }]);
     expect(bars[0].kind).toBe("fall");

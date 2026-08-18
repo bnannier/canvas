@@ -304,22 +304,24 @@ export interface WaterfallBar {
 
 /**
  * Bar spans for a running-total bridge. Each step floats from the running
- * total to the total plus its signed `value`; a `total` step instead draws an
- * absolute bar from 0 to the running total (start, subtotal, end markers) and
- * leaves the total unchanged. Non-finite values are treated as 0. `min`/`max`
- * span every bar edge and 0, ready for a y extent.
+ * total to the total plus its signed `value`. A `total` step draws an
+ * absolute bar from 0: with a non-zero finite `value` it (re)sets the
+ * running total to that level (an opening or re-based total); with `value`
+ * omitted or 0 it snapshots the running total so far. Non-finite values are
+ * treated as 0. `min`/`max` span every bar edge and 0, ready for a y extent.
  */
-export function waterfallLayout(steps: Array<{ value: number; total?: boolean }>): { bars: WaterfallBar[]; min: number; max: number } {
+export function waterfallLayout(steps: Array<{ value?: number; total?: boolean }>): { bars: WaterfallBar[]; min: number; max: number } {
   let run = 0;
   let min = 0;
   let max = 0;
   const bars = steps.map((step): WaterfallBar => {
     if (step.total) {
+      if (step.value != null && Number.isFinite(step.value) && step.value !== 0) run = step.value;
       min = Math.min(min, run);
       max = Math.max(max, run);
       return { start: 0, end: run, kind: "total" };
     }
-    const v = Number.isFinite(step.value) ? step.value : 0;
+    const v = step.value != null && Number.isFinite(step.value) ? step.value : 0;
     const start = run;
     run += v;
     min = Math.min(min, run);

@@ -90,8 +90,8 @@ function isDarkFill(color: string): boolean {
 
 // The M3 inverse-primary role, brand-preserving: the OPPOSITE scheme's brand indigo,
 // picked off the bar's own fill (`foreground`) so the action reads on the inverted
-// surface — the lighter dark-scheme indigo (#6366f1, ~4.5:1) on the near-black
-// light-mode bar, the deeper light-scheme indigo (#4f46e5, ~6:1) on the near-white
+// surface: the lighter dark-scheme indigo (#615fff, ~4.35:1) on the near-black
+// light-mode bar, the deeper light-scheme indigo (#4f39f6, ~6.2:1) on the near-white
 // dark-mode bar. M3 puts the snackbar action in inversePrimary; this keeps that
 // role while staying on the Canvas brand hue.
 function inversePrimary(t: ColorTokens): string {

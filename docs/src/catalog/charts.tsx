@@ -353,6 +353,60 @@ function RangeAreaPreview() {
   );
 }
 
+function HistogramPreview() {
+  const { tokens } = useTheme();
+  const counts = [6, 14, 26, 40, 34, 22, 12, 5];
+  return (
+    <Stage>
+      {counts.map((c, i) => (
+        <Rect key={i} x={8 + i * 23.5} y={H - 6 - c} width={21} height={c} rx={2} fill={alpha(tokens.primary, 0.85)} />
+      ))}
+    </Stage>
+  );
+}
+
+function BoxPlotPreview() {
+  const { tokens } = useTheme();
+  const boxes = [
+    { cx: 40, min: 52, q1: 42, med: 34, q3: 24, max: 12 },
+    { cx: 100, min: 56, q1: 46, med: 40, q3: 30, max: 18 },
+    { cx: 160, min: 48, q1: 38, med: 28, q3: 20, max: 8 },
+  ];
+  return (
+    <Stage>
+      {boxes.map((b, i) => (
+        <G key={i}>
+          <Line x1={b.cx} y1={b.max} x2={b.cx} y2={b.min} stroke={tokens.primary} strokeWidth={1.5} />
+          <Rect x={b.cx - 12} y={b.q3} width={24} height={b.q1 - b.q3} rx={2} fill={alpha(tokens.primary, 0.25)} stroke={tokens.primary} strokeWidth={1.5} />
+          <Line x1={b.cx - 12} y1={b.med} x2={b.cx + 12} y2={b.med} stroke={tokens.primary} strokeWidth={2} />
+        </G>
+      ))}
+    </Stage>
+  );
+}
+
+function WaterfallPreview() {
+  const { tokens } = useTheme();
+  // start, rise, rise, fall, total: the running-total bridge silhouette.
+  const bars = [
+    { x: 8, y: 28, h: 30, fill: tokens.primary },
+    { x: 47, y: 16, h: 12, fill: alpha(tokens["chart-2"], 0.9) },
+    { x: 86, y: 8, h: 8, fill: alpha(tokens["chart-2"], 0.9) },
+    { x: 125, y: 8, h: 14, fill: alpha(tokens.destructive, 0.9) },
+    { x: 164, y: 22, h: 36, fill: tokens.primary },
+  ];
+  return (
+    <Stage>
+      {bars.map((b, i) => (
+        <Rect key={i} x={b.x} y={b.y} width={28} height={b.h} rx={2} fill={b.fill} />
+      ))}
+      {bars.slice(0, -1).map((b, i) => (
+        <Line key={`c${i}`} x1={b.x + 28} y1={i === 3 ? b.y + b.h : b.y} x2={bars[i + 1].x} y2={i === 3 ? b.y + b.h : bars[i + 1].y + (i === 2 ? 0 : 0)} stroke={alpha(tokens["muted-foreground"], 0.5)} strokeWidth={1} />
+      ))}
+    </Stage>
+  );
+}
+
 export const CHARTS_TILES: CatTile[] = [
   { title: "Chart", href: "/components/chart", Preview: BarsPreview },
   { title: "LineChart", href: "/components/line-chart", Preview: LinePreview },
@@ -372,4 +426,7 @@ export const CHARTS_TILES: CatTile[] = [
   { title: "ProgressRing", href: "/components/progress-ring", Preview: ProgressRingPreview },
   { title: "ComposedChart", href: "/components/composed-chart", Preview: ComposedPreview },
   { title: "RangeAreaChart", href: "/components/range-area-chart", Preview: RangeAreaPreview },
+  { title: "Histogram", href: "/components/histogram", Preview: HistogramPreview },
+  { title: "BoxPlot", href: "/components/box-plot", Preview: BoxPlotPreview },
+  { title: "WaterfallChart", href: "/components/waterfall-chart", Preview: WaterfallPreview },
 ];
