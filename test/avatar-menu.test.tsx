@@ -1,14 +1,17 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Avatar, AvatarGroup, AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
+import type { AvatarMenuProps } from "../src/atoms/avatar/avatar.tsx";
 import { webMenuSkin, iosMenuSkin, androidMenuSkin, webSkin, iosSkin, androidSkin } from "../src/atoms/avatar/avatar.styles.ts";
+import type { AvatarMenuSkin } from "../src/atoms/avatar/avatar-menu.shared.tsx";
 import {
   webSkin as webMenuSurface,
   iosSkin as iosMenuSurface,
   androidSkin as androidMenuSurface,
 } from "../src/atoms/dropdown/dropdown.styles.ts";
+import { OverlayProvider } from "../src/style/portal.tsx";
 import { lightColors, darkColors } from "../src/style/tokens.ts";
 import { alpha, mixOklab } from "../src/style/color.ts";
 import type { DropdownItem } from "../src/atoms/dropdown/dropdown.tsx";
@@ -34,6 +37,72 @@ const LABEL = `${NAME}, ${EMAIL}`;
 
 const trigger = (c: HTMLElement) => c.querySelector('[aria-haspopup="menu"]') as HTMLElement;
 const at = (c: HTMLElement, id: string) => c.querySelector(`[data-testid="${id}"]`) as HTMLElement;
+// The capsule itself: Dropdown's button wraps it, and it is that button's only
+// child (there is deliberately no second Pressable inside).
+const pill = (c: HTMLElement) => trigger(c).firstElementChild as HTMLElement;
+// The chevron's rotating wrapper, the capsule's trailing child. react-native-svg
+// is stubbed in the harness, so the glyph inside it renders as an empty
+// aria-hidden node and the rotation is all that is observable here.
+const chevron = (c: HTMLElement) => pill(c).lastElementChild as HTMLElement;
+
+// The open card's positioned wrapper, on EITHER overlay path: walk up from the
+// menu to the first absolutely positioned ancestor and read back the physical
+// edge react-native-web resolved the logical inset to. Inline that wrapper is the
+// card's own start/end anchor; hosted it is the portal's placement inside the
+// outlet (the outlet's own `position: absolute` rides a CSS class rather than the
+// inline style, so the walk stops on the card).
+const anchorOf = (c: HTMLElement) => {
+  let node = c.querySelector('[role="menu"]')!.parentElement;
+  while (node && node.style.position !== "absolute") node = node.parentElement;
+  return node!.style;
+};
+
+// react-native-web writes every colour into the DOM as `rgba(r, g, b, a.aa)`, so
+// put the skin's own hex / rgb() / rgba() / transparent value into that one shape
+// before comparing the two.
+const asRgba = (color: string): string => {
+  if (color === "transparent") return "rgba(0, 0, 0, 0.00)";
+  const hex = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
+  if (hex) return `rgba(${parseInt(hex[1], 16)}, ${parseInt(hex[2], 16)}, ${parseInt(hex[3], 16)}, 1.00)`;
+  const fn = /^rgba?\(([^)]+)\)$/.exec(color);
+  if (fn) {
+    const [r, g, b, a = "1"] = fn[1].split(",").map((p) => p.trim());
+    return `rgba(${r}, ${g}, ${b}, ${Number(a).toFixed(2)})`;
+  }
+  return color;
+};
+
+// The three platform builds of the pill, each with the skin it was built from.
+// Under bun there is no .ios/.android extension resolution, so each build is
+// imported by its explicit filename.
+const PLATFORM_MENUS: { name: string; file: string; skin: AvatarMenuSkin }[] = [
+  { name: "web", file: "avatar", skin: webMenuSkin },
+  { name: "iOS", file: "avatar.ios", skin: iosMenuSkin },
+  { name: "Android", file: "avatar.android", skin: androidMenuSkin },
+];
+const loadMenu = async (file: string) =>
+  ((await import(`../src/atoms/avatar/${file}.tsx`)) as { AvatarMenu: (p: AvatarMenuProps) => ReactNode }).AvatarMenu;
+
+// The HOSTED (portaled) overlay path holds its card back until the trigger
+// measures a non-zero box, and happy-dom reports every box as 0x0, so a hosted
+// card never mounts in a test unless the layout is stubbed. These give the DOM a
+// real box for the duration of a case, then let the overlay's measure-and-place
+// frame land (requestAnimationFrame, hence the timer wait).
+const LAID_OUT = { x: 10, y: 20, width: 160, height: 32, top: 20, left: 10, right: 170, bottom: 52, toJSON: () => ({}) } as DOMRect;
+const withLayout = async (run: () => Promise<void>) => {
+  const original = Element.prototype.getBoundingClientRect;
+  Element.prototype.getBoundingClientRect = () => LAID_OUT;
+  try {
+    await run();
+  } finally {
+    Element.prototype.getBoundingClientRect = original;
+  }
+};
+const settle = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
+};
 
 // The disc the capsule is drawn around: Avatar's `tiny` step, the size the web
 // hand-off puts inside its identity pill.
@@ -75,6 +144,61 @@ describe("AvatarMenu pill", () => {
     const bare = ui(<AvatarMenu items={ITEMS} />).container;
     expect(trigger(bare).getAttribute("aria-label")).toBe("Account menu");
   });
+
+  // The capsule's disc is the kit's own Avatar, so it has to receive the account's
+  // photo and its ready-made initials; dropping either prop from the inner Avatar
+  // would leave the pill showing name-derived initials for an account that has a
+  // photo.
+  it("hands src and initials down to the capsule's own Avatar", () => {
+    const photo = ui(
+      <AvatarMenu name={NAME} email={EMAIL} src="https://example.com/rachel.png" items={ITEMS} />,
+    ).container;
+    const img = photo.querySelector("img") as HTMLImageElement;
+    expect(img).not.toBeNull();
+    expect(img.getAttribute("src")).toBe("https://example.com/rachel.png");
+    // The photo is alt-texted from the account name, exactly like a plain Avatar.
+    expect(img.getAttribute("alt")).toBe(NAME);
+    // ...and the initials fallback is gone, so the two never stack.
+    expect(screen.queryByText("RC")).toBeNull();
+    cleanup();
+
+    // Ready-made initials are used verbatim, outranking the pair derived from name.
+    ui(<AvatarMenu name={NAME} email={EMAIL} initials="RCX" items={ITEMS} />);
+    expect(screen.getByText("RCX")).toBeDefined();
+    expect(screen.queryByText("RC")).toBeNull();
+  });
+
+  // The chevron repeats the button's own state, so it must actually flip: a glyph
+  // frozen pointing down says "closed" over an open menu.
+  it("flips the chevron up while the menu is open, and never while disabled", () => {
+    const closed = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />).container;
+    expect(chevron(closed).style.transform).toBe("rotate(0deg)");
+    cleanup();
+
+    const open = ui(<AvatarMenu open name={NAME} email={EMAIL} items={ITEMS} />).container;
+    expect(chevron(open).style.transform).toBe("rotate(180deg)");
+    cleanup();
+
+    // A disabled pill can never read as open, so the glyph stays down even when
+    // `open` is forced, matching the collapsed aria-expanded.
+    const inert = ui(<AvatarMenu open disabled name={NAME} email={EMAIL} items={ITEMS} />).container;
+    expect(chevron(inert).style.transform).toBe("rotate(0deg)");
+    expect(trigger(inert).getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("forwards testID and outer layout placement to the control's root", () => {
+    const { container } = ui(
+      <AvatarMenu testID="account" name={NAME} email={EMAIL} items={ITEMS} style={{ alignSelf: "flex-end" }} />,
+    );
+    const root = at(container, "account");
+    expect(root).not.toBeNull();
+    // The E2E hook names the whole control, trigger included, not some inner node.
+    expect(root.contains(trigger(container))).toBe(true);
+    // `style` is outer layout composition only (placement within a parent) and it
+    // composes LAST, so the caller's placement wins over the wrapper's own
+    // self-start default rather than being dropped.
+    expect(root.style.alignSelf).toBe("flex-end");
+  });
 });
 
 describe("AvatarMenu open state", () => {
@@ -97,6 +221,42 @@ describe("AvatarMenu open state", () => {
     fireEvent.click(screen.getByText("Sign out"));
     expect(picked).toEqual({ label: "Sign out", index: 2 });
     expect(container.querySelector('[role="menu"]')).toBeNull();
+  });
+
+  // The other half of the uncontrolled duality: the pill is a TOGGLE, and the
+  // change is reported in uncontrolled mode too (a parent that only wants to log
+  // or mirror the state must not have to take ownership of it).
+  it("reports every uncontrolled change, and a second press closes what the first opened", () => {
+    const changes: boolean[] = [];
+    const { container } = ui(
+      <AvatarMenu name={NAME} email={EMAIL} items={ITEMS} onOpenChange={(o) => { changes.push(o); }} />,
+    );
+
+    fireEvent.click(trigger(container));
+    expect(container.querySelector('[role="menu"]')).not.toBeNull();
+    expect(changes).toEqual([true]);
+
+    fireEvent.click(trigger(container));
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+    expect(changes).toEqual([true, false]);
+    expect(trigger(container).getAttribute("aria-expanded")).toBe("false");
+  });
+
+  // The other half of the controlled contract: a parent holding `open` at false
+  // owns the state, so a press reports the intent and changes nothing. Without
+  // this, an internal state that quietly shadows the prop passes the open-to-
+  // closed case and still opens a menu the parent said was shut.
+  it("never overrides a controlled open={false}: the press reports, it does not open", () => {
+    const changes: boolean[] = [];
+    const { container } = ui(
+      <AvatarMenu open={false} name={NAME} email={EMAIL} items={ITEMS} onOpenChange={(o) => { changes.push(o); }} />,
+    );
+
+    fireEvent.click(trigger(container));
+    expect(changes).toEqual([true]);
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+    expect(trigger(container).getAttribute("aria-expanded")).toBe("false");
+    expect(chevron(container).style.transform).toBe("rotate(0deg)");
   });
 
   it("honours a controlled open prop and reports every change", () => {
@@ -127,6 +287,22 @@ describe("AvatarMenu open state", () => {
     expect(screen.getAllByText(EMAIL).length).toBe(1);
   });
 
+  // An account with no email is the title-only header shape, and it is the one
+  // AvatarMenu produces most often after the full pair. The name must carry no
+  // trailing comma from the line that is not there.
+  it("gives the menu a title-only header for an account with no email", () => {
+    const { container } = ui(<AvatarMenu open name={NAME} items={ITEMS} />);
+    const group = container.querySelector('[role="group"]') as HTMLElement;
+    expect(group).not.toBeNull();
+    expect(group.children.length).toBe(1);
+    expect(group.getAttribute("aria-label")).toBe(NAME);
+    // ...and that one line names the menu too.
+    expect(container.querySelector('[role="menu"]')!.getAttribute("aria-label")).toBe(NAME);
+    // Once in the pill, once in the header, and no empty second line anywhere.
+    expect(screen.getAllByText(NAME).length).toBe(2);
+    expect(container.querySelectorAll('[role="menuitem"]').length).toBe(ITEMS.length);
+  });
+
   // The hand-off's AvatarMenu defaults to align="end": a topbar parks the account
   // pill at the trailing edge, where a leading-aligned menu runs off the surface.
   // Plain Dropdown keeps the opposite default, so this is AvatarMenu's own.
@@ -135,11 +311,6 @@ describe("AvatarMenu open state", () => {
     // the trigger. The kit writes the logical `start`/`end` inset; react-native-web
     // resolves it to the physical side for the active writing direction, so an LTR
     // render reads right for the default and left for alignStart.
-    const anchorOf = (c: HTMLElement) => {
-      let node = c.querySelector('[role="menu"]')!.parentElement;
-      while (node && node.style.position !== "absolute") node = node.parentElement;
-      return node!.style;
-    };
     const byDefault = ui(<AvatarMenu open name={NAME} items={ITEMS} />).container;
     expect(anchorOf(byDefault).right).toBe("0px");
     expect(anchorOf(byDefault).left).toBe("");
@@ -159,6 +330,47 @@ describe("AvatarMenu open state", () => {
     const both = ui(<AvatarMenu open alignStart alignEnd name={NAME} items={ITEMS} />).container;
     expect(anchorOf(both).right).toBe("0px");
     expect(anchorOf(both).left).toBe("");
+  });
+
+  // The inline anchor above is the FALLBACK. Every real app and every docs stage
+  // mounts an OverlayProvider, so the menu is portaled and placed by
+  // AnchoredOverlay from a measured inset instead of its own start/end style. The
+  // alignment has to survive that hand-off, or the pill's trailing-edge default is
+  // right in the test and wrong in the product.
+  it("wires the same alignment into the PORTALED overlay, where every real app runs it", async () => {
+    await withLayout(async () => {
+      const byDefault = ui(
+        <OverlayProvider>
+          <AvatarMenu open name={NAME} email={EMAIL} items={ITEMS} />
+        </OverlayProvider>,
+      ).container;
+      await settle();
+      // Hosted, the trailing edge is a `right` inset measured from the outlet's
+      // own edge, so the card needs no measurement of its own.
+      expect(anchorOf(byDefault).right).toBe("0px");
+      expect(anchorOf(byDefault).left).toBe("");
+      cleanup();
+
+      const start = ui(
+        <OverlayProvider>
+          <AvatarMenu open alignStart name={NAME} email={EMAIL} items={ITEMS} />
+        </OverlayProvider>,
+      ).container;
+      await settle();
+      expect(anchorOf(start).left).toBe("0px");
+      expect(anchorOf(start).right).toBe("");
+      cleanup();
+
+      // ...and the precedence holds on this path too.
+      const both = ui(
+        <OverlayProvider>
+          <AvatarMenu open alignStart alignEnd name={NAME} email={EMAIL} items={ITEMS} />
+        </OverlayProvider>,
+      ).container;
+      await settle();
+      expect(anchorOf(both).right).toBe("0px");
+      expect(anchorOf(both).left).toBe("");
+    });
   });
 });
 
@@ -241,6 +453,38 @@ describe("AvatarMenu per-OS pill metrics", () => {
     expect(closed.backgroundColor).toBe(alpha(lightColors.primary, 0.12));
     expect(closed.borderColor).toBe("transparent");
     expect(androidMenuSkin.menuPillFill(lightColors, true).backgroundColor).toBe(alpha(lightColors.primary, 0.2));
+  });
+
+  // The three tests above prove the skin FUNCTION returns the right pair. They say
+  // nothing about the call site: a pill hard-wired to `menuPillFill(tokens, false)`
+  // satisfies every one of them and still never lights up. These render each
+  // platform build in both states and read the paint back off the capsule.
+  it("paints the skin's own closed AND open fill on the rendered capsule, on every platform build", async () => {
+    for (const { name, file, skin } of PLATFORM_MENUS) {
+      const Menu = await loadMenu(file);
+      const shut = skin.menuPillFill(lightColors, false);
+      const lit = skin.menuPillFill(lightColors, true);
+
+      const closed = pill(ui(<Menu name={NAME} email={EMAIL} items={ITEMS} />).container);
+      expect(closed.style.backgroundColor, name).toBe(asRgba(shut.backgroundColor as string));
+      expect(closed.style.borderColor, name).toBe(asRgba(shut.borderColor as string));
+      cleanup();
+
+      const open = pill(ui(<Menu open name={NAME} email={EMAIL} items={ITEMS} />).container);
+      expect(open.style.backgroundColor, name).toBe(asRgba(lit.backgroundColor as string));
+      expect(open.style.borderColor, name).toBe(asRgba(lit.borderColor as string));
+
+      // The two states are genuinely different paint on every platform (web lifts
+      // the fill and colours the hairline, iOS fills a transparent capsule,
+      // Android steps the tonal layer 12% -> 20%), so no single hard-coded
+      // variant can satisfy both halves above.
+      expect(
+        open.style.backgroundColor !== closed.style.backgroundColor ||
+          open.style.borderColor !== closed.style.borderColor,
+        name,
+      ).toBe(true);
+      cleanup();
+    }
   });
 
   it("shares the 11/14 secondary line and the 14px chevron across platforms", () => {
