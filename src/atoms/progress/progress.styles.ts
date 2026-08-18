@@ -59,7 +59,7 @@ export const iosSkin: ProgressSkin = {
   radius: IOS_RADIUS,
   // iOS trackTint: a NEUTRAL translucent system fill, never a wash of the progressTint.
   // The iOS 27 kit track is rgba(120,120,120,0.2) in Light and rgba(120,120,128,0.36) in
-  // Dark; a 25% wash of the neutral `muted-foreground` token (#71717a light / #a1a1aa
+  // Dark; a 25% wash of the neutral `muted-foreground` token (#71717b light / #9f9fa9
   // dark) lands on both effective grays while staying on the theme's neutral ramp.
   trackColor: (t: ColorTokens) => alpha(t["muted-foreground"], 0.25),
   fillColor: (t: ColorTokens) => t.primary,

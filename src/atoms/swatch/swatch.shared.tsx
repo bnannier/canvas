@@ -83,7 +83,7 @@ function textOf(node: ReactNode): string | null {
  * presentational, so a screen reader never reaches the rendered name/value/detail
  * lines: whatever a sighted user reads off the sample has to be folded into the NAME
  * (the kit's charts rule). Falls back to the raw color string, so a bare
- * `<Swatch color="#4f46e5" />` still announces something instead of shipping an
+ * `<Swatch color="#4f39f6" />` still announces something instead of shipping an
  * unnamed image (WCAG 1.1.1).
  */
 function dataName(name: string | null, value?: string, detail?: string, color?: string): string {

@@ -19,13 +19,13 @@ const blockOf = (c: HTMLElement) => rootOf(c).firstElementChild as HTMLElement;
 describe("Swatch anatomy", () => {
   it("renders the block and owns the name, value, and detail lines", () => {
     const { container, getByText } = ui(
-      <Swatch color="#4f46e5" value="--primary" detail="oklch(0.511 0.262 276.966)">
+      <Swatch color="#4f39f6" value="--primary" detail="oklch(0.511 0.262 276.966)">
         primary
       </Swatch>,
     );
     expect(rootOf(container)).toBeTruthy();
     // react-native-web normalizes the fill to rgba(…) with a two-decimal alpha.
-    expect(blockOf(container).style.backgroundColor).toBe("rgba(79, 70, 229, 1.00)");
+    expect(blockOf(container).style.backgroundColor).toBe("rgba(79, 57, 246, 1.00)");
     expect(getByText("primary")).toBeTruthy();
     expect(getByText("--primary")).toBeTruthy();
     expect(getByText("oklch(0.511 0.262 276.966)")).toBeTruthy();
@@ -38,20 +38,20 @@ describe("Swatch anatomy", () => {
   });
 
   it("renders the block alone when there is no name, value, or detail", () => {
-    const { container } = ui(<Swatch color="#4f46e5" />);
+    const { container } = ui(<Swatch color="#4f39f6" />);
     expect(rootOf(container).children.length).toBe(1);
   });
 });
 
 describe("Swatch accessible name", () => {
   it("folds the name and value into the name (role=img hides the rendered lines)", () => {
-    const { container } = ui(<Swatch color="#4f46e5" value="--primary">primary</Swatch>);
+    const { container } = ui(<Swatch color="#4f39f6" value="--primary">primary</Swatch>);
     expect(rootOf(container).getAttribute("aria-label")).toBe("primary, --primary");
   });
 
   it("carries the detail line too, so no line a sighted user reads is silent", () => {
     const { container } = ui(
-      <Swatch color="#4f46e5" value="--primary" detail="oklch(0.511 0.262 276.966)">
+      <Swatch color="#4f39f6" value="--primary" detail="oklch(0.511 0.262 276.966)">
         primary
       </Swatch>,
     );
@@ -59,13 +59,13 @@ describe("Swatch accessible name", () => {
   });
 
   it("falls back to the color string, so a bare sample is never an unnamed image", () => {
-    const { container } = ui(<Swatch color="#4f46e5" />);
-    expect(rootOf(container).getAttribute("aria-label")).toBe("#4f46e5");
+    const { container } = ui(<Swatch color="#4f39f6" />);
+    expect(rootOf(container).getAttribute("aria-label")).toBe("#4f39f6");
   });
 
   it("uses the explicit accessibilityLabel when provided", () => {
     const { container } = ui(
-      <Swatch color="#4f46e5" value="--primary" accessibilityLabel="Brand indigo">
+      <Swatch color="#4f39f6" value="--primary" accessibilityLabel="Brand indigo">
         primary
       </Swatch>,
     );
@@ -90,7 +90,7 @@ describe("Swatch dev warning", () => {
 
   it("warns when the name is a node and no accessibilityLabel is given", () => {
     ui(
-      <Swatch color="#4f46e5" value="--primary">
+      <Swatch color="#4f39f6" value="--primary">
         <Text>primary</Text>
       </Swatch>,
     );
@@ -99,9 +99,9 @@ describe("Swatch dev warning", () => {
   });
 
   it("stays quiet for a text name, and for a node name that carries accessibilityLabel", () => {
-    ui(<Swatch color="#4f46e5" value="--primary">primary</Swatch>);
+    ui(<Swatch color="#4f39f6" value="--primary">primary</Swatch>);
     ui(
-      <Swatch color="#4f46e5" value="--primary" accessibilityLabel="Brand indigo">
+      <Swatch color="#4f39f6" value="--primary" accessibilityLabel="Brand indigo">
         <Text>primary</Text>
       </Swatch>,
     );
@@ -130,22 +130,22 @@ describe("Swatch boolean axes", () => {
   });
 
   it("circle rounds the block fully", () => {
-    const { container } = ui(<Swatch circle color="#4f46e5" />);
+    const { container } = ui(<Swatch circle color="#4f39f6" />);
     expect(blockOf(container).style.borderTopLeftRadius).toBe("9999px");
   });
 
   it("inline puts the label column beside the block", () => {
-    const { container } = ui(<Swatch inline color="#4f46e5" value="--primary">primary</Swatch>);
+    const { container } = ui(<Swatch inline color="#4f39f6" value="--primary">primary</Swatch>);
     expect(rootOf(container).style.flexDirection).toBe("row");
   });
 
   it("stacks the label column under the block by default", () => {
-    const { container } = ui(<Swatch color="#4f46e5" value="--primary">primary</Swatch>);
+    const { container } = ui(<Swatch color="#4f39f6" value="--primary">primary</Swatch>);
     expect(rootOf(container).style.flexDirection).toBe("column");
   });
 
   it("block stretches the sample and keeps the size as its height", () => {
-    const { container } = ui(<Swatch block color="#4f46e5" value="--primary">primary</Swatch>);
+    const { container } = ui(<Swatch block color="#4f39f6" value="--primary">primary</Swatch>);
     expect(rootOf(container).style.alignSelf).toBe("stretch");
     expect(blockOf(container).style.alignSelf).toBe("stretch");
     expect(blockOf(container).style.height).toBe("56px");
@@ -153,7 +153,7 @@ describe("Swatch boolean axes", () => {
   });
 
   it("circle keeps its 1:1 footprint under block (a stretched circle is not a circle)", () => {
-    const { container } = ui(<Swatch block circle color="#4f46e5" />);
+    const { container } = ui(<Swatch block circle color="#4f39f6" />);
     expect(rootOf(container).style.alignSelf).toBe("stretch");
     expect(blockOf(container).style.width).toBe("56px");
   });
@@ -162,7 +162,7 @@ describe("Swatch boolean axes", () => {
     // `inline` makes the root a ROW, where a stretched child stretches vertically and
     // has no width of its own, which collapsed the sample to a sliver. The root still
     // widens so the label column gets the space.
-    const { container } = ui(<Swatch inline block color="#4f46e5" value="--primary">primary</Swatch>);
+    const { container } = ui(<Swatch inline block color="#4f39f6" value="--primary">primary</Swatch>);
     expect(rootOf(container).style.alignSelf).toBe("stretch");
     expect(blockOf(container).style.width).toBe("56px");
     expect(blockOf(container).style.alignSelf).not.toBe("stretch");

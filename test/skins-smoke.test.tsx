@@ -91,7 +91,7 @@ const CASES: SkinCase[] = [
   { name: "Sparkline", dir: "atoms/sparkline", file: "sparkline", props: { values: [1, 3, 2, 5, 4, 6] } },
   { name: "Spinner", dir: "atoms/spinner", file: "spinner" },
   // `value` + `detail` render both mono label lines alongside the block.
-  { name: "Swatch", dir: "atoms/swatch", file: "swatch", props: { color: "#4f46e5", value: "--primary", detail: "oklch(0.511 0.262 276.966)" }, children: "primary" },
+  { name: "Swatch", dir: "atoms/swatch", file: "swatch", props: { color: "#4f39f6", value: "--primary", detail: "oklch(0.511 0.262 276.966)" }, children: "primary" },
   { name: "Switch", dir: "atoms/switch", file: "switch", props: { checked: true }, children: "Wi-Fi" },
   { name: "Textarea", dir: "atoms/textarea", file: "textarea", props: { placeholder: "Notes", label: "Notes", required: true, rows: 3 } },
   // `open` renders the tip bubble body.
@@ -169,6 +169,9 @@ const CASES: SkinCase[] = [
   { name: "ProgressRing", dir: "charts/progress-ring", file: "progress-ring", props: { value: 72, label: "Complete" } },
   { name: "ComposedChart", dir: "charts/composed-chart", file: "composed-chart", props: { title: "Revenue", labels: ["Q1", "Q2"], series: [{ label: "Revenue", values: [4, 5] }, { label: "Margin", values: [1, 2], line: true }] } },
   { name: "RangeAreaChart", dir: "charts/range-area-chart", file: "range-area-chart", props: { title: "Band", label: "Range", labels: ["Mon", "Tue"], data: [{ low: 1, high: 3, mid: 2 }, { low: 2, high: 4, mid: 3 }] } },
+  { name: "Histogram", dir: "charts/histogram", file: "histogram", props: { title: "Latency", label: "ms", values: [1, 2, 2, 3, 3, 3, 4, 8] } },
+  { name: "BoxPlot", dir: "charts/box-plot", file: "box-plot", props: { title: "Spread", data: [{ label: "A", values: [1, 2, 3, 4, 5] }, { label: "B", values: [2, 3, 4, 5, 9] }] } },
+  { name: "WaterfallChart", dir: "charts/waterfall-chart", file: "waterfall-chart", props: { title: "Bridge", steps: [{ label: "Start", value: 100, total: true }, { label: "Up", value: 30 }, { label: "Down", value: -12 }] } },
   { name: "LineChart", dir: "charts/line-chart", file: "line-chart", props: { title: "Signups", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Web", values: [1, 3, 2] }, { label: "Mobile", values: [2, 1, 4] }] } },
   { name: "PieChart", dir: "charts/pie-chart", file: "pie-chart", props: { label: "Traffic", donut: true, slices: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "ScatterPlot", dir: "charts/scatter-plot", file: "scatter-plot", props: { title: "Load vs latency", series: [{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }] } },

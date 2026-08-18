@@ -18,4 +18,7 @@ export * from "./bullet-chart/bullet-chart.js";
 export * from "./progress-ring/progress-ring.js";
 export * from "./composed-chart/composed-chart.js";
 export * from "./range-area-chart/range-area-chart.js";
+export * from "./histogram/histogram.js";
+export * from "./box-plot/box-plot.js";
+export * from "./waterfall-chart/waterfall-chart.js";
 export type { ChartSeries, StackedSegment } from "./shared/types.js";

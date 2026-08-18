@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart } from "../src/index.ts";
 import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -124,6 +124,22 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("<ComposedChart />")).toBe(true);
   });
 
+  it("Histogram warns when values is empty", () => {
+    ui(<Histogram values={[]} />);
+    expect(sawWarning("<Histogram />")).toBe(true);
+  });
+
+  it("BoxPlot warns when a category has too few samples", () => {
+    ui(<BoxPlot data={[{ label: "A", values: [1, 2] }]} />);
+    expect(sawWarning("<BoxPlot />")).toBe(true);
+    expect(sawWarning("fewer than")).toBe(true);
+  });
+
+  it("WaterfallChart warns when steps is empty", () => {
+    ui(<WaterfallChart steps={[]} />);
+    expect(sawWarning("<WaterfallChart />")).toBe(true);
+  });
+
   it("RangeAreaChart warns when low exceeds high and swaps the pair", () => {
     ui(<RangeAreaChart label="R" labels={["A"]} data={[{ low: 9, high: 2 }]} />);
     expect(sawWarning("<RangeAreaChart />")).toBe(true);
@@ -146,6 +162,9 @@ describe("component data-misuse warnings", () => {
         <ProgressRing value={72} />
         <ComposedChart labels={["A", "B"]} series={[{ label: "X", values: [1, 2] }, { label: "Y", values: [2, 3], line: true }]} />
         <RangeAreaChart label="R" labels={["A", "B"]} data={[{ low: 1, high: 2 }, { low: 2, high: 3 }]} />
+        <Histogram label="ms" values={[1, 2, 2, 3, 4]} />
+        <BoxPlot data={[{ label: "A", values: [1, 2, 3, 4, 5] }]} />
+        <WaterfallChart steps={[{ label: "S", value: 10, total: true }, { label: "Up", value: 3 }]} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);

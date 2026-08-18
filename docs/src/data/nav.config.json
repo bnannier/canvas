@@ -583,6 +583,21 @@
             "slug": "range-area-chart",
             "label": "RangeAreaChart",
             "icon": "chart-area"
+          },
+          {
+            "slug": "histogram",
+            "label": "Histogram",
+            "icon": "chart-column"
+          },
+          {
+            "slug": "box-plot",
+            "label": "BoxPlot",
+            "icon": "box"
+          },
+          {
+            "slug": "waterfall-chart",
+            "label": "WaterfallChart",
+            "icon": "trending-up"
           }
         ]
       },

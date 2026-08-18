@@ -682,6 +682,27 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "histogram",
+    name: "Histogram",
+    description: "An auto-binned frequency distribution: pass raw samples and the chart draws nice-edged bins on a numeric axis.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "box-plot",
+    name: "BoxPlot",
+    description: "Quartile boxes, whiskers, and outlier dots per category, computed from raw samples with the Tukey five-number summary.",
+    category: "Charts",
+    stageAlign: "start",
+  },
+  {
+    slug: "waterfall-chart",
+    name: "WaterfallChart",
+    description: "The running-total bridge: rises green, falls red, totals primary, with hairline connectors between steps.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",
