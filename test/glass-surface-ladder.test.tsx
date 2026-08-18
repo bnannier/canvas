@@ -2,14 +2,19 @@ import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { render, cleanup, waitFor, screen } from "@testing-library/react";
 import { Text } from "react-native";
 import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
+import { glassByScheme } from "../src/style/tokens.ts";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassBox } from "../src/style/glass-surface/glass-surface.shared.tsx";
 
-// The glass accessibility ladder: under Reduce Transparency / Increase Contrast the
-// theme reverts the translucent `popover` token to its solid value (opaque surface for
-// every consumer at once), and Increase Contrast additionally paints a contrasting
-// foreground border on the surface. expo-blur is stubbed in the test setup, so
-// GlassSurface renders its PlainSurface path — which is exactly where these rungs apply.
+// The glass accessibility ladder: under Reduce Transparency / Increase Contrast a glass
+// surface renders opaque (its skin fill, which is a SEMANTIC token glass never rewrites),
+// and Increase Contrast additionally paints a contrasting foreground border on it.
+// expo-blur is stubbed in the test setup, so GlassSurface renders its PlainSurface path,
+// which is exactly where these rungs apply.
+//
+// Also pinned here: what the ThemeProvider actually resolves. The surface mode changes no
+// semantic token at all now (`popover` is opaque in every mode); it selects the mode and
+// publishes the glass material's own tokens, and GlassSurface applies the ladder.
 
 afterEach(cleanup);
 
@@ -31,44 +36,74 @@ function mockMatchMedia(matching: (query: string) => boolean) {
   return spy;
 }
 
-function PopoverTokenProbe() {
-  const { tokens, reducedTransparency, increasedContrast } = useTheme();
-  return <Text>{`${tokens.popover}|rt:${reducedTransparency}|ic:${increasedContrast}`}</Text>;
+// What the provider resolves, all in one string: the surface mode, the popover token
+// (the fill every menu/select/dialog skin paints), the glass material's own fill, and
+// the two accessibility flags.
+function SurfaceProbe() {
+  const { surface, tokens, glass, reducedTransparency, increasedContrast } = useTheme();
+  return (
+    <Text>{`${surface}|popover:${tokens.popover}|tint:${glass["glass-tint"]}|rt:${reducedTransparency}|ic:${increasedContrast}`}</Text>
+  );
 }
 
-describe("glass token reversion", () => {
-  it("uses the translucent popover fill in glass mode by default", async () => {
+describe("glass and the semantic tokens", () => {
+  it("leaves popover OPAQUE in glass mode and publishes the material's own tint", async () => {
+    // The bug: glass used to swap popover to rgba(255, 255, 255, 0.72), so every menu,
+    // select list, and alert dialog turned see-through with the bars. The material has
+    // its own fill now, and the semantic token is untouched.
     render(
       <ThemeProvider glass>
-        <PopoverTokenProbe />
+        <SurfaceProbe />
       </ThemeProvider>,
     );
-    await waitFor(() => expect(screen.getByText(/rgba\(255, 255, 255, 0\.72\)\|rt:false\|ic:false/)).toBeDefined());
+    await waitFor(() =>
+      expect(screen.getByText("glass|popover:#ffffff|tint:rgba(255, 255, 255, 0.20)|rt:false|ic:false")).toBeDefined(),
+    );
   });
 
-  it("reverts popover to a solid fill under Reduce Transparency", async () => {
+  it("resolves the dark material's dimmer tint, with popover still opaque", async () => {
+    render(
+      <ThemeProvider dark glass>
+        <SurfaceProbe />
+      </ThemeProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByText("glass|popover:#18181b|tint:rgba(22, 22, 28, 0.30)|rt:false|ic:false")).toBeDefined(),
+    );
+  });
+
+  it("keeps popover opaque in SOLID mode too (nothing to revert)", async () => {
+    render(
+      <ThemeProvider solid>
+        <SurfaceProbe />
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(/^solid\|popover:#ffffff\|/)).toBeDefined());
+  });
+
+  it("keeps popover opaque under Reduce Transparency", async () => {
     const spy = mockMatchMedia((q) => q.includes("prefers-reduced-transparency"));
     try {
       render(
         <ThemeProvider glass>
-          <PopoverTokenProbe />
+          <SurfaceProbe />
         </ThemeProvider>,
       );
-      await waitFor(() => expect(screen.getByText(/#ffffff\|rt:true\|ic:false/)).toBeDefined());
+      await waitFor(() => expect(screen.getByText(/^glass\|popover:#ffffff\|.*\|rt:true\|ic:false$/)).toBeDefined());
     } finally {
       spy.mockRestore();
     }
   });
 
-  it("reverts popover to a solid fill under Increase Contrast", async () => {
+  it("keeps popover opaque under Increase Contrast", async () => {
     const spy = mockMatchMedia((q) => q.includes("prefers-contrast"));
     try {
       render(
         <ThemeProvider glass>
-          <PopoverTokenProbe />
+          <SurfaceProbe />
         </ThemeProvider>,
       );
-      await waitFor(() => expect(screen.getByText(/#ffffff\|rt:false\|ic:true/)).toBeDefined());
+      await waitFor(() => expect(screen.getByText(/^glass\|popover:#ffffff\|.*\|rt:false\|ic:true$/)).toBeDefined());
     } finally {
       spy.mockRestore();
     }
@@ -113,7 +148,8 @@ describe("GlassSurface increase-contrast border", () => {
 });
 
 // A consumer-style surface: skins paint tokens.popover as the fill, exactly like the
-// real overlay skins do, so the rendered background reflects the token reversion.
+// real overlay skins do, so the rendered background is the one an accessibility rung
+// has to leave opaque.
 function GlassFillProbe({ testID }: { testID: string }) {
   const { tokens } = useTheme();
   return (
@@ -133,10 +169,14 @@ describe("GlassSurface reduce-transparency rung", () => {
         </ThemeProvider>,
       );
       await waitFor(() => {
-        const style = (screen.getByTestId("rt") as HTMLElement).getAttribute("style") ?? "";
-        // The solid light popover (#ffffff), not the translucent 0.72 glass fill.
+        const node = screen.getByTestId("rt") as HTMLElement;
+        const style = node.getAttribute("style") ?? "";
+        // The solid light popover (#ffffff), at full alpha.
         expect(style).toMatch(/background-color: rgba?\(255, ?255, ?255(, ?1(\.0+)?)?\)/);
-        expect(style).not.toContain("0.72");
+        // And no glass tint anywhere: the rung returns PlainSurface, so the material's
+        // under-fill layer is never rendered at all. (react-native-web writes an rgba
+        // color verbatim, so the token's own string is the substring to look for.)
+        expect(node.outerHTML).not.toContain(glassByScheme.light["glass-tint"]);
       });
     } finally {
       spy.mockRestore();
@@ -215,49 +255,51 @@ describe("iOS glass-surface platform file", () => {
 describe("ThemeProvider surface axis booleans", () => {
   // The boolean axis is the canonical spelling (<ThemeProvider glass>); the
   // legacy surface value prop stays supported underneath. These pin the
-  // resolution order: glass > solid > surface > platform default.
-  it("glass turns the translucent popover fill on", async () => {
+  // resolution order: glass > solid > surface > platform default. The observable is
+  // the RESOLVED MODE the provider publishes, which is what GlassSurface branches on;
+  // it is no longer inferred from a token whose value the mode rewrote.
+  it("glass resolves the glass surface mode", async () => {
     render(
       <ThemeProvider glass>
-        <PopoverTokenProbe />
+        <SurfaceProbe />
       </ThemeProvider>,
     );
-    await waitFor(() => expect(screen.getByText(/rgba\(255, 255, 255, 0\.72\)/)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/^glass\|/)).toBeDefined());
   });
 
-  it("solid keeps the opaque popover fill", async () => {
+  it("solid resolves the solid surface mode", async () => {
     render(
       <ThemeProvider solid>
-        <PopoverTokenProbe />
+        <SurfaceProbe />
       </ThemeProvider>,
     );
-    await waitFor(() => expect(screen.getByText(/#ffffff/)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/^solid\|/)).toBeDefined());
   });
 
   it("glass wins over solid (axis first-match), and both win over legacy surface", async () => {
     render(
       <ThemeProvider glass solid surface="solid">
-        <PopoverTokenProbe />
+        <SurfaceProbe />
       </ThemeProvider>,
     );
-    await waitFor(() => expect(screen.getByText(/rgba\(255, 255, 255, 0\.72\)/)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/^glass\|/)).toBeDefined());
   });
 
   it("solid overrides a legacy surface=\"glass\"", async () => {
     render(
       <ThemeProvider solid surface="glass">
-        <PopoverTokenProbe />
+        <SurfaceProbe />
       </ThemeProvider>,
     );
-    await waitFor(() => expect(screen.getByText(/#ffffff/)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/^solid\|/)).toBeDefined());
   });
 
   it("legacy surface=\"glass\" alone still resolves to glass", async () => {
     render(
       <ThemeProvider surface="glass">
-        <PopoverTokenProbe />
+        <SurfaceProbe />
       </ThemeProvider>,
     );
-    await waitFor(() => expect(screen.getByText(/rgba\(255, 255, 255, 0\.72\)/)).toBeDefined());
+    await waitFor(() => expect(screen.getByText(/^glass\|/)).toBeDefined());
   });
 });

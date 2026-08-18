@@ -2,8 +2,10 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 
 // Co-located Dropdown skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and read as glass when
-// tokens.popover is swapped translucent at the theming level). The BRAND
+// (passed in from useTheme so they follow light/dark). The menu card paints the
+// `popover` fill on an OPAQUE surface in every theming mode: the shell asks
+// AnchoredOverlay for its plain surface (`opaque`), so a menu never takes the
+// glass material and its rows never have the page reading through them. The BRAND
 // survives on every platform (the indigo `primary` press tint on Android, the
 // `destructive` red for destructive rows); only the native SHAPE, sizing, fill,
 // separators, and press feedback change per OS:

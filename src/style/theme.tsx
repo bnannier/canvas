@@ -5,13 +5,13 @@
 
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
-import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens } from "./tokens.js";
+import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
 
-// Surface treatment. "glass" makes the functional layer's fills translucent across
-// every overlay/bar component (see glassByScheme); "solid" is opaque. It is a
-// theming dimension, like the color scheme, not a per-component prop. The
+// Surface treatment. "glass" makes the functional layer render through the glass
+// MATERIAL (see glassByScheme, and GlassSurface which paints it); "solid" is flat.
+// It is a theming dimension, like the color scheme, not a per-component prop. The
 // ThemeProvider spells it as a boolean axis (`<ThemeProvider glass>` /
 // `<ThemeProvider solid>`); when neither is passed the PLATFORM DEFAULT applies:
 // glass on iOS 26+ (Apple makes Liquid Glass the system material for that layer),
@@ -47,6 +47,15 @@ export interface ThemeValue {
   scheme: ColorScheme;
   surface: Surface;
   tokens: ColorTokens;
+  /**
+   * The glass material's own tokens for the active scheme (the `glass-tint` fill
+   * GlassSurface paints under the material). Always present, because it describes what
+   * glass LOOKS like in this scheme; whether glass actually paints is `surface` plus the
+   * two accessibility flags below, and GlassSurface owns that ladder. Nothing else may
+   * read this: hand-painting the tint outside GlassSurface would bypass the ladder and
+   * the material (see CLAUDE.md, "no component hand-paints glass").
+   */
+  glass: GlassTokens;
   dark: boolean;
   /** OS "Reduce Transparency" is on: GlassSurface renders opaque (Apple AX). */
   reducedTransparency: boolean;
@@ -59,6 +68,7 @@ const FALLBACK: ThemeValue = {
   scheme: "light",
   surface: "solid",
   tokens: colorsByScheme.light,
+  glass: glassByScheme.light,
   dark: false,
   reducedTransparency: false,
   increasedContrast: false,
@@ -98,9 +108,10 @@ export interface ThemeProviderProps {
   // native system material for that layer, solid elsewhere). The theming-level
   // glass switch, spelled like every other Canvas axis; there is no per-component
   // glass prop. `glass` wins when both are passed.
-  /** Force the translucent functional layer (popovers, bars) on. */
+  /** Force the glass material on for the functional layer (bars, sidebars, sheets,
+   *  popovers). Content surfaces stay solid, and so do the semantic tokens. */
   glass?: boolean;
-  /** Force the opaque functional layer, even on iOS 26+. */
+  /** Force the flat, material-free functional layer, even on iOS 26+. */
   solid?: boolean;
   /**
    * Legacy value form of the surface axis ("solid" | "glass"), kept for
@@ -113,10 +124,10 @@ export interface ThemeProviderProps {
    * consumer can rebrand the kit (e.g. `tokens={{ primary: "#7c3aed" }}`)
    * without forking the token files. Pass a flat `Partial<ColorTokens>` to
    * apply the same overrides to both schemes, or `{ light, dark }` to override
-   * each scheme separately. The glass-surface overrides still compose on top
-   * (base, then brand, then glass), so rebranding never disturbs the glass
-   * material. Pass a stable reference (a module constant or a memoized object);
-   * an inline literal re-creates the theme value on every render.
+   * each scheme separately. These are the SEMANTIC tokens only; the glass material
+   * carries its own fill (`glassByScheme`) and is never rewritten by a rebrand, so
+   * the two are independent. Pass a stable reference (a module constant or a memoized
+   * object); an inline literal re-creates the theme value on every render.
    */
   tokens?: ThemeTokenOverrides;
   children: ReactNode;
@@ -134,7 +145,8 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, glass, solid, su
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
   // the provider re-renders, so defaultSurface() is re-evaluated (on iOS 26 the
-  // native liquidGlassAvailable() flips) and the token merge below re-runs.
+  // native liquidGlassAvailable() flips) and every GlassSurface below re-runs its
+  // accessibility ladder against the fresh flags.
   const reducedTransparency = useReducedTransparency();
   const increasedContrast = useIncreasedContrast();
   // Until the post-mount effect runs, honor `ssrScheme` so the server output is
@@ -154,20 +166,25 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, glass, solid, su
   // platform default. Mirrors every component axis: the prop name is the value.
   const resolved: Surface = glass ? "glass" : solid ? "solid" : (surface ?? defaultSurface());
   const value = useMemo<ThemeValue>(() => {
-    // Merge order: scheme base, then brand overrides, then the glass material
-    // overrides; glass stays on top so a rebrand composes with it unchanged.
+    // Merge order: scheme base, then brand overrides. That is the WHOLE token merge:
+    // the surface mode does not touch the semantic set at all. Glass used to swap
+    // `popover` translucent here, which made every popover-filled surface see-through
+    // the moment the theme went to glass (menus and select lists included), and the
+    // beak an SVG draws outside any GlassSurface with it. The material now owns its
+    // own fill (glassByScheme), so `popover` and `card` stay opaque in every mode and
+    // only what renders through GlassSurface reads as glass.
     const brand = overridesFor(tokens, active);
     const base = brand ? { ...colorsByScheme[active], ...brand } : colorsByScheme[active];
-    // Apply the translucent glass fill only when glass is active AND no
-    // accessibility setting demands an opaque surface. Under Reduce Transparency or
-    // Increase Contrast the `popover` token snaps back to its solid (brand-aware)
-    // value for EVERY glass consumer at once, including the module-absent
-    // PlainSurface fallback (Apple AX1/AX2).
-    const glass = resolved === "glass" && !reducedTransparency && !increasedContrast;
     return {
       scheme: active,
       surface: resolved,
-      tokens: glass ? { ...base, ...glassByScheme[active] } : base,
+      tokens: base,
+      // The material's tokens for this scheme. The provider resolves WHICH mode is
+      // active (`surface`, above) and publishes the accessibility flags; GlassSurface
+      // applies the ladder (solid / Reduce Transparency / Increase Contrast render an
+      // opaque surface, and the skin's own fill is already opaque now that glass never
+      // rewrites it), so no token has to lie about its value to carry that decision.
+      glass: glassByScheme[active],
       dark: active === "dark",
       reducedTransparency,
       increasedContrast,

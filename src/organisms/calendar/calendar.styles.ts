@@ -9,7 +9,8 @@ import { type ColorTokens, alpha, shadow, FOCUS_RESET } from "../../style/index.
 // indigo `primary` token, never a platform default), so each follows light/dark.
 // The calendar is a CONTENT surface that paints the opaque `card` token, so it
 // stays SOLID (does not frost) under the ThemeProvider's "glass" surface: glass
-// swaps only the `popover` token translucent, never `card`.
+// swaps no semantic token at all, and only what renders through GlassSurface takes
+// the material.
 //
 //   iOS (HIG date picker): the SELECTED day is a filled `primary` circle
 //     (radius 9999) with `primary-foreground` text; TODAY is `primary`-colored

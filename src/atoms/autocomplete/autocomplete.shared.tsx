@@ -323,6 +323,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           gap={4}
           cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
           inlineStyle={POPOVER_ANCHOR}
+          // The filtered option list is a card of rows, so it stays an OPAQUE
+          // card in glass mode too (the skin's own `popover` fill, no material):
+          // matches a user reads and picks from must not have the page showing
+          // through between them.
+          opaque
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}

@@ -13,7 +13,6 @@ import {
   Text,
   Pressable,
   Portal,
-  GlassSurface,
   RippleClip,
   cornerRadii,
   StyleSheet,
@@ -28,15 +27,16 @@ import { Icon } from "../../atoms/icon/icon.js";
 // Shared Toast shell. Two layers live here once and a platform file supplies only
 // its skin (capsule shape, type, action/dismiss feedback) and calls createToastSystem:
 //
-//   1. The presentational <Toast> — the skinned notification capsule: an optional
+//   1. The presentational <Toast>, the skinned notification capsule: an optional
 //      intent icon, a message + optional description, an optional trailing action,
-//      and an optional dismiss (x). It is a FUNCTIONAL-layer overlay, so it renders
-//      through GlassSurface (real Liquid Glass on iOS 26+, a frost on web, a solid
-//      popover fill as the fallback) rather than a hand-painted surface — except
-//      where a skin opts out via `solidSurface`: the Android M3 snackbar is an
-//      inverse-surface bar with no glass idiom, so it stays a solid painted bar
-//      even in glass mode (the glass token swap would strip its inverse fill and
-//      leave its inverse text illegible on the frost).
+//      and an optional dismiss (x). It is an OPAQUE capsule on every platform and
+//      on every theming surface: each skin paints its own solid fill (the web
+//      hand-off's `--p-toast-fill`) on a plain box, in glass mode exactly as in
+//      solid mode. A toast is a status message that lands over whatever the user
+//      was reading, and a see-through one lets that page read straight through its
+//      own text; the Android M3 snackbar has no glass idiom at all (a material
+//      would strip its inverse fill and leave its inverse text illegible). Glass
+//      is for the bar/sheet/palette overlays instead.
 //
 //   2. The imperative runtime — <ToastProvider> + useToast(). The provider owns a
 //      queue of live toasts, auto-dismisses each after its duration, and renders the
@@ -103,10 +103,6 @@ export interface ToastSkin {
    *  slot. The M3 snackbar anatomy has no leading icon, so the Android skin turns
    *  this off; an explicit `icon` prop always renders. */
   intentIcon: boolean;
-  /** Paint the capsule as a SOLID bar, skipping the GlassSurface material even in
-   *  glass mode. The M3 snackbar is an inverse-surface bar with no glass idiom, so
-   *  the Android skin opts out; iOS/web render through GlassSurface. */
-  solidSurface: boolean;
   /** The intent icon glyph size, in px. */
   iconSize: number;
   /** The message line type. */
@@ -205,14 +201,12 @@ const STACK_BOTTOM_INSET = 24;
  * re-export all three; an app mounts one ToastProvider near its root.
  */
 export function createToastSystem(skin: ToastSkin) {
-  // The skinned capsule alone: the surface (GlassSurface — real glass on iOS 26+,
-  // frost on web, solid popover fill otherwise — or a plain solid bar where the
-  // skin opts out, the Android M3 snackbar) with the icon, text column, action,
-  // and dismiss. It carries NO live-region semantics of its own: the standalone
-  // <Toast> wraps it in a status region, while <ToastProvider> swaps capsules
-  // inside its single persistent region (a per-capsule region would both nest
-  // regions, double-firing, and mount together with its content, which assistive
-  // tech misses).
+  // The skinned capsule alone: the skin's own opaque bar with the icon, text
+  // column, action, and dismiss. It carries NO live-region semantics of its own:
+  // the standalone <Toast> wraps it in a status region, while <ToastProvider>
+  // swaps capsules inside its single persistent region (a per-capsule region
+  // would both nest regions, double-firing, and mount together with its content,
+  // which assistive tech misses).
   function ToastCapsule(props: Omit<ToastProps, "testID" | "style">) {
     const { message, description, action, icon, onDismiss } = props;
     const { tokens } = useTheme();
@@ -280,14 +274,10 @@ export function createToastSystem(skin: ToastSkin) {
       </>
     );
 
-    // The M3 snackbar exemption: a skin that opts out of the glass material paints
-    // its own solid fill (the inverse-surface bar) on a plain View, in glass mode
-    // too; every other skin renders through GlassSurface.
-    return skin.solidSurface ? (
-      <View style={containerStyle}>{content}</View>
-    ) : (
-      <GlassSurface style={containerStyle}>{content}</GlassSurface>
-    );
+    // A plain box wearing the skin's own opaque fill, whatever the theming
+    // surface: no skin routes the capsule through the glass material (see the
+    // header note above).
+    return <View style={containerStyle}>{content}</View>;
   }
 
   function Toast(props: ToastProps) {
@@ -296,7 +286,7 @@ export function createToastSystem(skin: ToastSkin) {
     return (
       // A directly rendered capsule announces itself as a polite status region (so
       // assistive tech reads it without stealing focus). The a11y wrapper holds the
-      // role because GlassSurface paints a surface and does not forward
+      // role because the capsule below paints a surface and does not forward
       // accessibility props. Caveat of the direct form: the region mounts together
       // with its content, so screen readers can miss a toast that pops into
       // existence; for reliable announcements render through <ToastProvider>,

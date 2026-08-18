@@ -4,11 +4,13 @@ import { type ChartSkin } from "./types.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens (so the surface follows
-// light/dark). Charts are a content surface: they paint tokens.card, which stays
-// opaque in glass mode (glassByScheme swaps only the `popover` token translucent;
-// `card` stays solid), so charts do NOT read as glass. Only overlays that paint
-// the `popover` token (popovers, menus, sheets, dialogs) go frosted. The bar fill
-// per tone is the one palette-vs-token choice, resolved by `barFill`.
+// light/dark). Charts are a content surface: they paint tokens.card, and glass mode
+// swaps NO semantic token (the material carries its own `glass-tint` fill), so
+// charts do NOT read as glass. Only the surfaces that render through GlassSurface
+// take the material (popovers, dialogs, sheets, drawers, the command palette, and
+// the bar/sidebar shells); menus, selects, alert dialogs and the chart tooltip stay
+// opaque cards on every theming surface. The bar fill per tone is the one
+// palette-vs-token choice, resolved by `barFill`.
 
 export type Tone = "primary" | "success" | "destructive";
 

@@ -20,9 +20,10 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // A bordered container reads as a content card: rounded card, hairline border, solid
 // `card` fill, and a 4px inset so rows don't touch the edge. Listbox is an inline,
 // in-page list (the CONTENT layer, not a floating overlay), so it uses the solid `card`
-// token, NOT `popover` — `card` stays opaque under glass (Apple: don't put Liquid Glass
-// in the content layer). In solid mode `card` and `popover` are identical, so this is a
-// no-op there and only fixes the translucent-with-no-material bug under glass.
+// token, NOT `popover`: `card` is the content layer's own fill and never takes the
+// glass material (Apple: don't put Liquid Glass in the content layer). Listbox renders
+// its card as a plain View, never through GlassSurface, so it is opaque in every
+// theming mode.
 function containerBordered(tokens: ColorTokens): ViewStyle {
   return { borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 4 };
 }

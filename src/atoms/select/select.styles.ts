@@ -2,8 +2,11 @@ import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and the glass surface, since
-// tokens.popover is swapped translucent at the theming level). The BRAND survives
+// (passed in from useTheme so they follow light/dark). The option-list panel
+// paints the `popover` fill on an OPAQUE surface in every theming mode: the shell
+// asks AnchoredOverlay for its plain surface (`opaque`), so the panel never takes
+// the glass material and its options never have the page reading through them.
+// The BRAND survives
 // on every platform (the open/focus accent and the selected-row indicator are the
 // indigo `primary`, never a platform default); only the native SHAPE, sizing,
 // fill, border/underline treatment, and press feedback change per OS:
@@ -67,9 +70,10 @@ export interface SelectSkin extends FloatingLabelStyles<Size> {
   /** The chevron character (▾ on web, ⌄ on Android, chevron-up-down on iOS). */
   chevronGlyph: string;
   /** The open option list surface: card visuals only (fill, border, shadow,
-   *  radius, padding, maxHeight). AnchoredOverlay supplies the GlassSurface
-   *  material and the on-page position; the inline no-host fallback adds
-   *  PANEL_ANCHOR for the absolute anchoring. */
+   *  radius, padding, maxHeight). AnchoredOverlay paints it on its OPAQUE plain
+   *  surface (no glass material, in glass mode as in solid) and supplies the
+   *  on-page position; the inline no-host fallback adds PANEL_ANCHOR for the
+   *  absolute anchoring. */
   panel: (t: ColorTokens) => ViewStyle;
   /** An option row. `selected` carries the active tint. */
   optionRow: (t: ColorTokens, selected: boolean) => ViewStyle;

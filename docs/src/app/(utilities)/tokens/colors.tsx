@@ -135,7 +135,7 @@ const DO_DONT: { bad: { code: string; note: string }; good: { code: string; note
   },
   {
     bad: { code: `<Popover glass>`, note: "Glass is not a per-component prop, and you never hand-paint a blur onto one component." },
-    good: { code: `<ThemeProvider glass>`, note: "Glass is a surface mode set once on the provider, so the whole functional layer turns together. Same boolean grammar as every component axis: glass or solid, and omitting both keeps the platform default." },
+    good: { code: `<ThemeProvider glass>`, note: "Glass is a surface mode set once on the provider, so every surface that takes the material turns together. Same boolean grammar as every component axis: glass or solid, and omitting both keeps the platform default." },
   },
 ];
 
@@ -265,8 +265,8 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Glass"
-          description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and the whole functional layer turns translucent together, or solid to force the flat look; neither means the platform default."
-          anatomy={`Glass overrides exactly one token: popover, which becomes ${glassByScheme.light.popover} in light and ${glassByScheme.dark.popover} in dark. The card token stays solid, so content surfaces (cards, lists, tables, charts) never turn to glass; only popover-backed overlays and the navbar/sidebar shells read as glass.`}
+          description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and the floating shells and overlays take the material together, or solid to force the flat look; neither means the platform default."
+          anatomy={`Glass publishes its OWN fill instead of rewriting a semantic one: the material paints glass-tint, ${glassByScheme.light["glass-tint"]} in light and ${glassByScheme.dark["glass-tint"]} in dark. popover keeps its opaque value in BOTH schemes, so an option-list menu, a select panel, an alert dialog, a toast and a chart tooltip stay the same opaque cards in glass mode as in solid; card stays opaque too, so content surfaces (cards, lists, tables, charts) never frost. Only the surfaces that render through GlassSurface (popovers, dialogs, drawers, action sheets, the command palette, navbars, tab bars, the sidebar) take the tint, and they take it UNDER the real material.`}
         >
           <View style={{ gap: 12 }}>
             {/* A live material sample: the bar floats over content, which is the only
@@ -289,17 +289,19 @@ export default function ColorsScreen() {
                 ))}
               </View>
               {/* No backgroundColor here on purpose: GlassSurface paints its own
-                  under-fill (the popover token) behind the frost and the specular
-                  rim. Passing a fill stacks an opaque layer over the material and
+                  under-fill (the glass-tint token, the material's own fill, never a
+                  semantic surface token) behind the frost and the specular rim.
+                  Passing a fill stacks an opaque layer over the material and
                   flattens it, which is exactly what this card exists to show. */}
               {/* `sheer`: the see-through frost for content that floats over a live
                   backdrop. The default frost is tuned for functional overlays, which
                   must occlude what they open over; a showcase bar must do the
                   opposite and let the content read through the material. */}
               <GlassSurface sheer style={{ position: "absolute", left: 16, right: 16, bottom: 14, height: 56, borderRadius: 9999, flexDirection: "row", alignItems: "center", justifyContent: "space-around" }}>
-                {/* The bar is filled with the popover token, so its labels take the
-                    paired popover-foreground: the pair flips together with the scheme,
-                    which is the rule this page teaches two sections down. */}
+                {/* The bar is a functional-layer overlay, so its labels take
+                    popover-foreground, the text partner of the overlay surface: the
+                    pair flips together with the scheme, which is the rule this page
+                    teaches two sections down. */}
                 {["Home", "Library", "Settings"].map((label) => (
                   <Text key={label} style={{ fontSize: 13, lineHeight: 18, color: tokens["popover-foreground"] }}>{label}</Text>
                 ))}
@@ -309,10 +311,13 @@ export default function ColorsScreen() {
               Glass forms a distinct functional layer that floats above content. Navigation and overlays live in it; content surfaces stay solid. Spend it sparingly: the material exists to draw attention to what is beneath it, so using it everywhere defeats it.
             </Typography>
             <Typography tiny muted>
-              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, a real lens on Chromium web (an SVG displacement filter that refracts the backdrop at the rim while the centre stays optically flat), a genuine frosted blur through expo-blur on non-Chromium web and Android, and the translucent popover fill above as the final fallback. It is never a hand-painted blur on one component.
+              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, a real lens on Chromium web (an SVG displacement filter that refracts the backdrop at the rim while the centre stays optically flat), a genuine frosted blur through expo-blur on non-Chromium web and Android, and the glass-tint fill above on its own as the final fallback. It is never a hand-painted blur on one component, and it never reaches into the semantic color set.
             </Typography>
             <Typography tiny muted>
               It only reads over something worth bending. Over a flat fill it renders flat, so a glass bar has to have content passing behind it.
+            </Typography>
+            <Typography tiny muted>
+              The option-list menus are the deliberate exception. A dropdown, select, autocomplete or avatar menu is a card of rows the reader picks from, and the Chromium lens keeps the centre of a pane optically flat by design, so a translucent menu shows the page straight through between its rows. Those, plus alert dialogs, toasts and chart tooltips, keep painting their opaque fill in glass mode exactly as in solid.
             </Typography>
           </View>
         </TokenSection>

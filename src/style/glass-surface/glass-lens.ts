@@ -1,5 +1,5 @@
 // The web Liquid Glass LENS: the top tier of the glass material ladder on
-// Chromium web, above the expo-blur frost and the translucent popover fill.
+// Chromium web, above the expo-blur frost and the material's own `glass-tint` fill.
 //
 // Liquid Glass bends and concentrates light through a 2D displacement map
 // rather than scattering it the way a blur does, and the bend is concentrated

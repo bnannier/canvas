@@ -117,6 +117,11 @@ export function createRowMenu(skin: RowMenuSkin) {
           gap={4}
           cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
           inlineStyle={MENU_ANCHOR}
+          // A row menu is a card of action rows, so it stays an OPAQUE card in
+          // glass mode too (the skin's own `popover` fill, no material): it opens
+          // over the very table row it acts on, which would otherwise read
+          // straight through it.
+          opaque
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}

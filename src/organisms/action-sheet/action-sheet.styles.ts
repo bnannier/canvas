@@ -2,8 +2,10 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, surfaceRipple } from "../../style/index.js";
 
 // Co-located ActionSheet skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and read as glass when
-// `popover` is swapped translucent at the theming level). ActionSheet is a
+// (passed in from useTheme so they follow light/dark and read as glass when the
+// shell renders the sheet through GlassSurface, which strips the skin's fill and
+// paints the active material over its own `glass-tint`; the `popover` token itself
+// is opaque in both modes and glass never rewrites it). ActionSheet is a
 // platform-forward "Full" treatment: the BRAND survives on every platform (the
 // indigo `primary` action tint and the `destructive` red), only the native SHAPE,
 // structure, sizing, type, and press feedback change per OS:

@@ -1,8 +1,8 @@
 // GlassSurface — iOS. Renders Apple's real Liquid Glass via expo-glass-effect's
 // GlassView on iOS 26+ (gated by isLiquidGlassAvailable, which also honors the
 // reduce-transparency accessibility setting); on iOS < 26 it falls to the same
-// expo-blur frost the other platforms use; with neither module it degrades to a
-// translucent View. Both modules are optional peer dependencies.
+// expo-blur frost the other platforms use; with neither module it degrades to a plain
+// View carrying the skin's own opaque fill. Both modules are optional peer dependencies.
 
 import type * as ExpoGlassTypes from "expo-glass-effect";
 import type * as ExpoBlurTypes from "expo-blur";
@@ -44,10 +44,12 @@ try {
 }
 
 export function GlassSurface({ style, children, pointerEvents, testID, role, interactive = false, sheer, tint }: GlassSurfaceProps) {
-  const { surface, dark, tokens, reducedTransparency, increasedContrast } = useTheme();
-  // The under-fill behind the material: the caller's `tint` for a bright glass
-  // control (the Slider knob), else the `popover` token that keeps panels legible.
-  const underFill = tint ?? tokens.popover;
+  const { surface, dark, tokens, glass, reducedTransparency, increasedContrast } = useTheme();
+  // The under-fill behind the material: the caller's `tint` for a bright glass control
+  // (the Slider knob), else the glass material's OWN fill, `glass-tint`. It is not the
+  // `popover` token: popover is the opaque fill of a menu/select/dialog card, and
+  // borrowing it here is what made every one of those surfaces see-through in glass mode.
+  const underFill = tint ?? glass["glass-tint"];
 
   if (surface !== "glass") {
     return (
@@ -64,14 +66,14 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, int
   const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role });
   if (degraded) return degraded;
 
-  // iOS 26+: the genuine system Liquid Glass material. The translucent `popover` fill
-  // sits UNDER the GlassView, exactly as the frost path below layers it under the blur:
-  // a bare regular-glass panel composites nearly clear over a flat surface (and clear
-  // over the page in a portaled overlay), which turns a fill-and-border-stripped glass
-  // menu or dialog into an invisible hole. The under-fill guarantees a legible material
-  // (Apple: functional-layer glass must stay legible) while the GlassView still refracts
-  // through the remaining translucency. (The `GlassView &&` also narrows it for the JSX
-  // below; liquidGlassAvailable() does the safe availability check.)
+  // iOS 26+: the genuine system Liquid Glass material. The glass tint sits UNDER the
+  // GlassView, exactly as the frost path below layers it under the blur: a bare
+  // regular-glass panel composites nearly clear over a flat surface (and clear over the
+  // page in a portaled overlay), which turns a fill-and-border-stripped glass bar or
+  // dialog into an invisible hole. The tint guarantees a legible material (Apple:
+  // functional-layer glass must stay legible) while the GlassView still refracts through
+  // the remaining translucency. (The `GlassView &&` also narrows it for the JSX below;
+  // liquidGlassAvailable() does the safe availability check.)
   if (GlassView && liquidGlassAvailable()) {
     return (
       <GlassBox
@@ -91,9 +93,9 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, int
     );
   }
 
-  // iOS < 26: the same frost as web/Android. The translucent `popover` fill sits
-  // UNDER the blur so the frost stays a substantial material (the blur alone is too
-  // faint over a flat surface), matching the web/Android layering.
+  // iOS < 26: the same frost as web/Android. The glass tint sits UNDER the blur so the
+  // frost keeps a body (the blur alone is too faint over a flat surface), matching the
+  // web/Android layering.
   if (BlurView) {
     return (
       <GlassBox
