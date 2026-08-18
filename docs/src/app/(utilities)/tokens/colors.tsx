@@ -193,7 +193,7 @@ export default function ColorsScreen() {
         <TokenSection
           title="Brand"
           description="The accent that carries the product: the primary fill, the text that sits on it, and the focus ring. Point these at a new hue and the whole system re-skins."
-          anatomy="ring tracks primary per scheme, so a focus outline always reads as the same colour family as the control it is on."
+          anatomy="ring is the one brand token that does NOT flip with the scheme: the same indigo-500 in light and dark, so the focus outline reads against a light page, a dark page, and the primary fill it may sit on."
         >
           <Row wrap cozy alignStart>
             {BRAND_KEYS.map((t) => (

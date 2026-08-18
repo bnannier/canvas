@@ -24,8 +24,10 @@
   --warning-foreground:oklch(1 0 0);
   --border:oklch(0.92 0.004 286.32);
   --input:oklch(0.92 0.004 286.32);
-  /* Ring tracks primary per scheme, so light gets the light primary. */
-  --ring:oklch(0.511 0.262 276.966);
+  /* The focus ring is ONE value in both schemes (indigo-500), not the per-scheme
+     primary. It has to read against a light page, a dark page, and the primary fill
+     itself, and a ring equal to that fill disappears on the control it is marking. */
+  --ring:oklch(0.585 0.233 277.117);
 
   /* Data-viz series palette. Fixed assignment order — series 1 is always chart-1,
      never re-ranked when a series is filtered out. Same values in both schemes. */

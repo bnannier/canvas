@@ -78,7 +78,7 @@ export const lightColors: ColorTokens = {
   "warning-foreground": "#ffffff",
   border: "#e4e4e7",
   input: "#e4e4e7",
-  ring: "#4f39f6",
+  ring: "#615fff", // one ring value in both schemes; see colors.css
   "chart-1": "#6366f1", // indigo-500
   "chart-2": "#0d9488", // teal-600
   "chart-3": "#ea580c", // orange-600
