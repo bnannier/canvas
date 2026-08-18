@@ -1,5 +1,12 @@
 # @nannier/canvas
 
+## 2.23.0
+
+### Minor Changes
+
+- 73c67e3: BulletChart: a new chart component for goal-attainment rows. Each `data` row is a leading label, a track holding qualitative background bands (`ranges`, ascending bounds painted in fading muted washes, widest first so the denser washes sit on top), the tone-colored measure bar, an optional vertical `target` tick, and the trailing formatted value; following the classic bullet-graph anatomy each row carries its own scale (its largest value, target, or bound), and `max` forces one shared scale when the rows genuinely share a unit. The measure tone resolves success > destructive (first match wins, default primary); `compact` tightens rows and thins bars; `formatValue` formats values (default compact k/M/B). Minor because it ships a new user-visible chart component, `BulletChart`, exported from `@nannier/canvas` (with the `BulletDatum` type); no existing API changes. Like `Chart` it is a Shared platform treatment (identical on iOS, Android, and the web). Accessibility: each row is one accessible item composing value and target ("Revenue: 275 of target 300"); bands, bar, and tick are decorative. devWarns cover empty `data`, out-of-order `ranges`, and data exceeding an explicit `max`.
+- 73c67e3: ProgressRing: a new chart component, the full-circle sibling of the semicircular Gauge. A muted track ring and a tone-colored value arc revealed clockwise from 12 o'clock with rounded caps (the ring is a stroked path built from two half arcs, because an SVG circle's dash origin sits at 3 o'clock), the whole-percent readout centered inside, and an optional `label` below the graphic. The API mirrors Gauge exactly: `value` 0-100 (clamped with a devWarn outside the range), the tone axis `primary` / `success` / `warning` / `destructive` with precedence success > warning > destructive, and the same rounding split (the readout and the accessible name round while the arc keeps the fraction). `compact` shrinks the graphic from 120 to 96; per-instance sizing remains a separate, deferred item, as on Gauge. Minor because it ships a new user-visible chart component, `ProgressRing`, exported from `@nannier/canvas`; no existing API changes. Like `Gauge` it is a Shared platform treatment (identical on iOS, Android, and the web). The accessible name announces "label: N%" with the same number the eye sees.
+
 ## 2.22.0
 
 ### Minor Changes
