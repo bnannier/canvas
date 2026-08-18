@@ -87,8 +87,8 @@ describe("generated prop tables", () => {
     expect(getByText("title")).toBeTruthy();
   });
 
-  it("Avatar contributes two prop groups (Avatar + AvatarGroup)", () => {
+  it("Avatar contributes three prop groups (AvatarMenu + Avatar + AvatarGroup)", () => {
     const groups = COMPONENT_PROPS["avatar"];
-    expect(groups.map((g) => g.name)).toEqual(["AvatarProps", "AvatarGroupProps"]);
+    expect(groups.map((g) => g.name)).toEqual(["AvatarMenuProps", "AvatarProps", "AvatarGroupProps"]);
   });
 });
