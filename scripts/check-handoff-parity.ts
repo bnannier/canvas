@@ -285,6 +285,14 @@ if (metricGaps.length) {
     "measuring the rendered result and are recorded by hand.",
   );
   lines.push("");
+  lines.push(
+    "To find one: render the component's three-up in the docs, read the rendered element's own",
+    "computed metrics rather than the source, and compare against a component you believe is",
+    "correct as a control. A control matters more than it sounds \u2014 an AvatarMenu whose three rows",
+    "all reported the web numbers only looked wrong beside a Dropdown whose three rows differed.",
+    "Interactive state has to be driven first: a closed menu measures nothing.",
+  );
+  lines.push("");
   lines.push("| Component | Canvas | Hand-off | Planned | Why |");
   lines.push("|---|---|---|---|---|");
   for (const g of metricGaps)
