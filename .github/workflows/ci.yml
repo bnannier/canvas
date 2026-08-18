@@ -149,6 +149,13 @@ jobs:
         working-directory: docs
         run: bun run check:nav
 
+      # A component that ships per-OS skins must be in the docs' platform-skin
+      # registry, or the three-up preview renders the web build in all three rows
+      # while labelling two of them iOS and Android.
+      - name: Check the platform-skin registry covers every divergent skin
+        working-directory: docs
+        run: bun run check:skins
+
       # docs/tsconfig.json includes docs/src/core/** and maps @nannier/canvas to
       # ../src/index.ts, so this also typechecks every generated example against the
       # real component prop types.
