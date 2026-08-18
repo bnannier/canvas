@@ -11,6 +11,7 @@ import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
+import type { ColorTokens } from "../src/style/tokens.ts";
 
 // Open/close/dismiss/select contract for the kit's overlay surfaces. Each test
 // drives the component the way a user does — open via the trigger, assert the
@@ -27,6 +28,15 @@ import { OverlayProvider } from "../src/style/portal.tsx";
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
+
+// The inline fallback anchor (these renders mount no OverlayProvider): walk up
+// from the open menu to the absolutely positioned wrapper and read back the
+// physical edge react-native-web resolved the logical `start`/`end` inset to.
+const anchorStyle = (container: HTMLElement) => {
+  let n: HTMLElement | null = container.querySelector('[role="menu"]')?.parentElement ?? null;
+  while (n && !(n.getAttribute("style") ?? "").includes("position: absolute")) n = n.parentElement;
+  return n?.getAttribute("style") ?? "";
+};
 
 describe("OverlayProvider outlet (click-through)", () => {
   // Regression guard for the outlet swallowing every click on web. The outlet is a
@@ -368,6 +378,118 @@ describe("Dropdown", () => {
     expect(selected).toBe(false);
     // Still open: a disabled row is a no-op, so the menu stays put.
     expect(screen.getByText("Edit")).toBeDefined();
+  });
+
+  it("renders the identity header above the label and the rows, outside the item count", () => {
+    const { container } = ui(
+      <Dropdown
+        trigger="Account"
+        title="Rachel Chen"
+        description="rachel@nannier.com"
+        label="Account actions"
+        items={[{ label: "Profile" }, { label: "Log out" }]}
+      />,
+    );
+    fireEvent.click(screen.getByText("Account"));
+    const menu = container.querySelector('[role="menu"]')!;
+    const order = menu.textContent ?? "";
+    // Header block first, then the muted section label, then the rows.
+    expect(order.indexOf("Rachel Chen")).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf("Rachel Chen")).toBeLessThan(order.indexOf("rachel@nannier.com"));
+    expect(order.indexOf("rachel@nannier.com")).toBeLessThan(order.indexOf("Account actions"));
+    expect(order.indexOf("Account actions")).toBeLessThan(order.indexOf("Profile"));
+    // The header is not a menu item: the roving-focus count is still the two
+    // rows, and neither header line takes a tab stop.
+    expect(container.querySelectorAll('[role="menuitem"]').length).toBe(2);
+    expect(screen.getByText("Rachel Chen").getAttribute("tabindex")).toBeNull();
+    expect(screen.getByText("rachel@nannier.com").getAttribute("tabindex")).toBeNull();
+  });
+
+  it("omits the header block entirely when neither title nor description is passed", () => {
+    const { container } = ui(<Dropdown trigger="Actions" items={[{ label: "Edit" }, { label: "Duplicate" }]} />);
+    fireEvent.click(screen.getByText("Actions"));
+    // Nothing extra above the rows: the menu's children are exactly the items,
+    // so every pre-existing call site renders byte for byte as before.
+    expect(container.querySelector('[role="menu"]')!.children.length).toBe(2);
+  });
+
+  it("pins the menu's trailing edge to the trigger with alignEnd, the leading edge without it", () => {
+    const leading = ui(<Dropdown trigger="Account" items={[{ label: "Profile" }]} />);
+    fireEvent.click(screen.getByText("Account"));
+    // react-native-web resolves the logical `start`/`end` inset to the physical
+    // edge for the active direction, so the default anchors at the left.
+    expect(anchorStyle(leading.container)).toContain("left: 0px");
+    expect(anchorStyle(leading.container)).not.toContain("right: 0px");
+    cleanup();
+
+    const trailing = ui(<Dropdown trigger="Account" alignEnd items={[{ label: "Profile" }]} />);
+    fireEvent.click(screen.getByText("Account"));
+    expect(anchorStyle(trailing.container)).toContain("right: 0px");
+    expect(anchorStyle(trailing.container)).not.toContain("left: 0px");
+  });
+
+  it("never opens a disabled Dropdown and marks the default trigger disabled", () => {
+    let reported: boolean | null = null;
+    const { container } = ui(
+      <Dropdown trigger="Actions" disabled onOpenChange={(o) => { reported = o; }} items={[{ label: "Edit" }]} />,
+    );
+    const trigger = container.querySelector("[aria-expanded]")!;
+    expect(trigger.getAttribute("aria-disabled")).toBe("true");
+    expect(trigger.getAttribute("aria-haspopup")).toBe("menu");
+
+    fireEvent.click(screen.getByText("Actions"));
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+    expect(reported).toBeNull();
+  });
+
+  it("keeps a disabled custom trigger inert, even against a controlled open", () => {
+    const { container } = ui(
+      <Dropdown disabled open items={[{ label: "Edit" }]}>
+        <Text>Account</Text>
+      </Dropdown>,
+    );
+    const trigger = container.querySelector("[aria-expanded]")!;
+    expect(trigger.getAttribute("aria-disabled")).toBe("true");
+    expect(trigger.getAttribute("aria-haspopup")).toBe("menu");
+    // A controlled `open` cannot force the menu out of a disabled control.
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+
+    fireEvent.click(screen.getByText("Account"));
+    expect(container.querySelector('[role="menu"]')).toBeNull();
+  });
+
+  it("carries the hand-off's identity-header metrics on all three skins", async () => {
+    const { webSkin, iosSkin, androidSkin } = await import("../src/atoms/dropdown/dropdown.styles.ts");
+    // The gutter is the per-OS value: it matches each skin's own section-label
+    // gutter, so the header, the label, and the row labels share one column.
+    expect(webSkin.menuHeader).toEqual({ paddingHorizontal: 8, paddingVertical: 6, gap: 2 });
+    expect(iosSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 6, gap: 2 });
+    expect(androidSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 8, gap: 2 });
+    // The type scale is deliberately shared (the hand-off hard-codes 14/20
+    // medium over 12/16), and each line reads its semantic token.
+    const t = { "popover-foreground": "PF", "muted-foreground": "MF" } as unknown as ColorTokens;
+    for (const skin of [webSkin, iosSkin, androidSkin]) {
+      expect(skin.menuHeaderTitle(t)).toEqual({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: "PF" });
+      expect(skin.menuHeaderDescription(t)).toEqual({ fontSize: 12, lineHeight: 16, color: "MF" });
+    }
+  });
+
+  it("renders the identity header on the iOS and Android builds too", async () => {
+    for (const platform of ["ios", "android"] as const) {
+      const mod = (await import(`../src/atoms/dropdown/dropdown.${platform}.tsx`)) as {
+        Dropdown: (p: Record<string, unknown>) => ReactNode;
+      };
+      const Native = mod.Dropdown;
+      const { container } = ui(
+        <Native trigger="Account" title="Rachel Chen" description="rachel@nannier.com" items={[{ label: "Profile" }]} />,
+      );
+      fireEvent.click(screen.getByText("Account"));
+      expect(screen.getByText("Rachel Chen")).toBeDefined();
+      expect(container.querySelectorAll('[role="menuitem"]').length).toBe(1);
+      cleanup();
+    }
   });
 });
 

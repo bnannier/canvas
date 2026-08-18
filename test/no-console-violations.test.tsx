@@ -10,6 +10,7 @@ import { Toast } from "../src/organisms/toast/toast.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
+import { AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
@@ -112,6 +113,14 @@ describe("no DOM-nesting console violations at render", () => {
         <Select open options={["Low", "Medium", "High"]} value="Medium" onSelect={() => {}} />
         <Autocomplete open options={["Apple", "Banana"]} value="Banana" onSelect={() => {}} />
         <Dropdown label="Actions" items={[{ label: "Rename" }, { label: "Move" }]} />
+        {/* The identity pill is Dropdown's custom trigger, so its capsule must stay a
+            plain View: a Pressable there would nest a button inside the trigger button. */}
+        <AvatarMenu
+          open
+          name="Rachel Chen"
+          email="rachel@example.com"
+          items={[{ label: "Profile" }, { label: "Sign out", destructive: true }]}
+        />
         <Command open active={0} groups={[{ items: [{ label: "New file" }, { label: "Open" }] }]} onSelect={() => {}} />
         <TabBar
           items={[

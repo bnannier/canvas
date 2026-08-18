@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Row snug wrap alignCenter>
   <Chip success>Passing</Chip>
   <Chip warning>Flaky</Chip>
-  <Chip error>Failing</Chip>
+  <Chip destructive>Failing</Chip>
   <Chip info>Queued</Chip>
   <Chip neutral>Skipped</Chip>
 </Row>

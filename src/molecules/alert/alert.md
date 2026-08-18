@@ -1,6 +1,6 @@
 # Alert
 
-Inline notification banners: info, success, warning, and error, plus a full-width announcement bar. Width comes off the measure axis rather than whatever the parent happens to be, so a column of alerts is the same measure top to bottom: a bare banner caps at 480px, `narrow` caps at 320px (the measure of a standard form field, so a banner over a form lines up with it), `wide` caps at 640px, and `block` fills the container with no cap (first match wins: block, then wide, then narrow). Every cap is a maximum, never a floor: the banner still shrinks to its container. For a blocking confirmation prompt, see Alert Dialog.
+Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. Width comes off the measure axis rather than whatever the parent happens to be, so a column of alerts is the same measure top to bottom: a bare banner caps at 480px, `narrow` caps at 320px (the measure of a standard form field, so a banner over a form lines up with it), `wide` caps at 640px, and `block` fills the container with no cap (first match wins: block, then wide, then narrow). Every cap is a maximum, never a floor: the banner still shrinks to its container. For a blocking confirmation prompt, see Alert Dialog.
 
 ## Usage
 
@@ -66,14 +66,14 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 </Stateful>
 ```
 
-### Error
+### Destructive
 
 ```tsx
 <Stateful initial={0}>
   {(retries, setRetries) => (
     <Column snug>
       <Alert
-        error
+        destructive
         icon="✕"
         title="Something went wrong"
         description="Could not save your changes. Please try again."
@@ -197,11 +197,11 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 **Do** — Match the variant to the severity: reserve destructive for genuine failures, success for confirmations.
 
 ```tsx
-<Alert error icon="✕" title="Something went wrong" description="Could not save your changes. Please try again." />
+<Alert destructive icon="✕" title="Something went wrong" description="Could not save your changes. Please try again." />
 ```
 
 **Don't** — Using the destructive variant for non-errors cries wolf; users learn to tune out red and miss real failures.
 
 ```tsx
-<Alert error icon="✕" title="Saved" description="Your changes have been saved successfully." />
+<Alert destructive icon="✕" title="Saved" description="Your changes have been saved successfully." />
 ```

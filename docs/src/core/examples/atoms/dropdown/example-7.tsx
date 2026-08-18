@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dropdown, Row } = scope;
   return (
-<Row end>
+<Row end style={{ width: 360, maxWidth: "100%" }}>
   <Dropdown
     trigger="Account"
     alignEnd

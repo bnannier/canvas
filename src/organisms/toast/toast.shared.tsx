@@ -72,7 +72,11 @@ export interface ToastProps {
   action?: ToastAction;
   /** Green success intent (icon + tint). */
   success?: boolean;
-  /** Red error intent (icon + tint). */
+  /** Red danger intent (icon + tint). This is the name the intent axis uses across the
+   *  kit (Button, AlertDialog, and every chart) and the one the design hand-off uses. */
+  destructive?: boolean;
+  /** @deprecated Use `destructive`. Kept working so existing call sites are untouched;
+   *  it resolves to exactly the same intent. */
   error?: boolean;
   /** Amber warning intent (icon + tint). */
   warning?: boolean;
@@ -136,8 +140,14 @@ export interface ToastSkin {
 
 // Intent precedence when more than one boolean is passed: first match wins.
 // Mirrors Alert's tone precedence (error, warning, success, info).
-function intentOf(p: { success?: boolean; error?: boolean; warning?: boolean; info?: boolean }): Intent {
-  if (p.error) return "error";
+function intentOf(p: {
+  success?: boolean;
+  destructive?: boolean;
+  error?: boolean;
+  warning?: boolean;
+  info?: boolean;
+}): Intent {
+  if (p.destructive || p.error) return "error";
   if (p.warning) return "warning";
   if (p.success) return "success";
   if (p.info) return "info";
@@ -160,6 +170,9 @@ export interface ToastOptions {
   description?: string;
   action?: ToastAction;
   success?: boolean;
+  /** The danger intent; `error` is the deprecated alias. */
+  destructive?: boolean;
+  /** @deprecated Use `destructive`. */
   error?: boolean;
   warning?: boolean;
   info?: boolean;
