@@ -12,6 +12,13 @@ Every difference is adjudicated in `tools/handoff-parity/divergences.json`. **Se
 closed questions. **Open gaps** are real missing capabilities, acknowledged and tracked. The check
 fails only on a difference recorded in neither place, so a hand-off revision surfaces loudly.
 
+**What this check cannot see.** It compares the prop SURFACE, not what a prop resolves to. Where
+a name exists on both sides it is counted satisfied even if the two render different metrics, so
+a scale or spacing drift passes silently. Those are recorded under Metric gaps below, from
+measurement rather than from this check. It also compares against a committed snapshot of the
+hand-off, so it cannot tell you the snapshot itself has fallen behind the design source; refresh
+it with `tools/handoff-parity/extract.ts --from <export>`.
+
 ## Summary
 
 | | |
@@ -23,6 +30,7 @@ fails only on a difference recorded in neither place, so a hand-off revision sur
 | Same name, present | 512 |
 | Settled divergences | 151 |
 | Open gaps (tracked) | 62 |
+| Metric gaps (not detectable here) | 1 |
 | **Unclassified** | **0** |
 
 ## Components absent from the kit
@@ -100,6 +108,16 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `Tooltip` | `children` | unscheduled | Wrapping an arbitrary node as the tooltip target. Canvas's Tooltip renders its own trigger from a `trigger` string in one of three flavors (button, icon button, inline word) and cannot attach to a caller's node. |
 | `Tooltip` | `reveal` | unscheduled | Choosing the entrance animation (lift, scale, fade, none). Canvas fixes one reveal. |
 | `Tooltip` | `brisk` | unscheduled | Running the reveal at 90ms instead of 140ms. Canvas fixes the timing on Tooltip (its Reveal component does expose `brisk`). |
+
+## Metric gaps
+
+Differences this check CANNOT see. It compares the prop surface, so when a prop exists on both
+sides it is reported as satisfied no matter what value it resolves to. These were found by
+measuring the rendered result and are recorded by hand.
+
+| Component | Canvas | Hand-off | Planned | Why |
+|---|---|---|---|---|
+| `Avatar` | tiny 24 / small 28 / default 40 / large 48 | small 24 / default 32 / large 40 | unscheduled | The whole scale sits one step high. The prop check cannot see this: `small` and `large` exist on both sides, so it reports them satisfied while the diameters differ. Re-scaling shipped avatars is a visual break for every consumer, so it is tracked rather than done; the `tiny` 24 step was added for the AvatarMenu pill inset without moving the rest. |
 
 ## Settled divergences
 

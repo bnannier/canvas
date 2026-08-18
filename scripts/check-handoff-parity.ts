@@ -117,6 +117,13 @@ const divergences = JSON.parse(await readFile(DIVERGENCES, "utf-8")) as {
   global: Record<string, Divergence>;
   components: Record<string, Record<string, Divergence>>;
   absentComponents: Record<string, Divergence>;
+  /**
+   * Differences in VALUE rather than in the prop surface: the same prop exists on both sides but
+   * resolves to different metrics. This check cannot detect them — comparing names says nothing
+   * about what a name resolves to — so they are recorded by hand from measurement and reported
+   * here to keep the blind spot visible rather than implied.
+   */
+  metricGaps: Record<string, { component: string; canvas: string; handoff: string; plannedIn?: string; reason: string }>;
 };
 
 let dist: string;
@@ -204,6 +211,15 @@ lines.push(
   "fails only on a difference recorded in neither place, so a hand-off revision surfaces loudly.",
 );
 lines.push("");
+lines.push(
+  "**What this check cannot see.** It compares the prop SURFACE, not what a prop resolves to. Where",
+  "a name exists on both sides it is counted satisfied even if the two render different metrics, so",
+  "a scale or spacing drift passes silently. Those are recorded under Metric gaps below, from",
+  "measurement rather than from this check. It also compares against a committed snapshot of the",
+  "hand-off, so it cannot tell you the snapshot itself has fallen behind the design source; refresh",
+  "it with `tools/handoff-parity/extract.ts --from <export>`.",
+);
+lines.push("");
 lines.push("## Summary");
 lines.push("");
 lines.push("| | |");
@@ -215,6 +231,7 @@ lines.push(`| Hand-off props compared | ${handoffProps} |`);
 lines.push(`| Same name, present | ${satisfied} |`);
 lines.push(`| Settled divergences | ${settled.length} |`);
 lines.push(`| Open gaps (tracked) | ${openGaps.length} |`);
+lines.push(`| Metric gaps (not detectable here) | ${Object.keys(divergences.metricGaps ?? {}).length} |`);
 lines.push(`| **Unclassified** | **${unclassified.length + absentUntracked.length}** |`);
 lines.push("");
 
@@ -255,6 +272,23 @@ if (openGaps.length) {
   lines.push("|---|---|---|---|");
   for (const r of openGaps)
     lines.push(`| \`${r.component}\` | \`${r.prop}\` | ${r.divergence!.plannedIn ?? "unscheduled"} | ${r.divergence!.reason} |`);
+  lines.push("");
+}
+
+const metricGaps = Object.values(divergences.metricGaps ?? {});
+if (metricGaps.length) {
+  lines.push("## Metric gaps");
+  lines.push("");
+  lines.push(
+    "Differences this check CANNOT see. It compares the prop surface, so when a prop exists on both",
+    "sides it is reported as satisfied no matter what value it resolves to. These were found by",
+    "measuring the rendered result and are recorded by hand.",
+  );
+  lines.push("");
+  lines.push("| Component | Canvas | Hand-off | Planned | Why |");
+  lines.push("|---|---|---|---|---|");
+  for (const g of metricGaps)
+    lines.push(`| \`${g.component}\` | ${g.canvas} | ${g.handoff} | ${g.plannedIn ?? "unscheduled"} | ${g.reason} |`);
   lines.push("");
 }
 
