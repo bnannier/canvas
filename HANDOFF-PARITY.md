@@ -17,10 +17,10 @@ fails only on a difference recorded in neither place, so a hand-off revision sur
 | | |
 |---|---|
 | Hand-off components | 75 |
-| Present in the kit | 72 |
-| Absent (tracked) | 3 |
-| Hand-off props compared | 719 |
-| Same name, present | 506 |
+| Present in the kit | 73 |
+| Absent (tracked) | 2 |
+| Hand-off props compared | 725 |
+| Same name, present | 512 |
 | Settled divergences | 151 |
 | Open gaps (tracked) | 62 |
 | **Unclassified** | **0** |
@@ -31,7 +31,6 @@ fails only on a difference recorded in neither place, so a hand-off revision sur
 |---|---|---|---|---|
 | `ChartFrame` | charts | 13 | phase-5 | The public chart wrapper (card surface, title, axis gutter, legend) taking a plain children plot. Canvas has the internal render-prop CartesianFrame and the internal chartShell, but exposes neither. |
 | `DashboardGrid` | organisms | 8 | phase-6 | The rearrangeable widget wall on a fixed column grid with legal-fraction spans and row promotion. Canvas has no span-based grid. |
-| `Field` | molecules | 6 | phase-3 | The form-row wrapper (label, control, helper/error) with label delegation into the field families. Removed from the kit in 93dd68a9; phase 3 re-adds it to the hand-off's design, which is not the one that was removed. |
 
 ## Open gaps
 

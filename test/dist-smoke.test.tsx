@@ -21,7 +21,7 @@ describe.skipIf(!hasDist)("dist artifact", () => {
     for (const name of [
       "View", "Text", "Pressable",
       "Button", "Badge", "Avatar", "AvatarGroup", "Chip", "Emblem", "Row", "Column", "Sparkline",
-      "Card", "DescriptionList", "Form", "FormSection", "Stats",
+      "Card", "DescriptionList", "Field", "Form", "FormSection", "Stats",
       "Chart", "StackedBar", "Gauge", "Heatmap", "LineChart", "AreaChart", "PieChart", "ScatterPlot", "CandlestickChart", "DepthChart", "BarList", "MetricBreakdown", "UptimeBar", "ServiceHealthList", "BulletChart", "ProgressRing", "ComposedChart", "RangeAreaChart", "Histogram", "BoxPlot", "WaterfallChart", "RadialBarChart", "FunnelChart", "RadarChart", "Treemap", "DataTable", "Dialog", "Toast",
       "ThemeProvider", "GlassSurface", "QRCode",
     ]) {

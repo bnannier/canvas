@@ -53,8 +53,8 @@ import { Calendar as CalendarIOS } from "../../../src/organisms/calendar/calenda
 import { Calendar as CalendarAndroid } from "../../../src/organisms/calendar/calendar.android.js";
 import { Badge as BadgeIOS } from "../../../src/atoms/badge/badge.ios.js";
 import { Badge as BadgeAndroid } from "../../../src/atoms/badge/badge.android.js";
-import { Avatar as AvatarIOS } from "../../../src/atoms/avatar/avatar.ios.js";
-import { Avatar as AvatarAndroid } from "../../../src/atoms/avatar/avatar.android.js";
+import { Avatar as AvatarIOS, AvatarGroup as AvatarGroupIOS, AvatarMenu as AvatarMenuIOS } from "../../../src/atoms/avatar/avatar.ios.js";
+import { Avatar as AvatarAndroid, AvatarGroup as AvatarGroupAndroid, AvatarMenu as AvatarMenuAndroid } from "../../../src/atoms/avatar/avatar.android.js";
 import { Breadcrumb as BreadcrumbIOS } from "../../../src/atoms/breadcrumb/breadcrumb.ios.js";
 import { Breadcrumb as BreadcrumbAndroid } from "../../../src/atoms/breadcrumb/breadcrumb.android.js";
 import { Slider as SliderIOS } from "../../../src/atoms/slider/slider.ios.js";
@@ -73,6 +73,8 @@ import { Card as CardIOS, CardMedia as CardMediaIOS } from "../../../src/molecul
 import { Card as CardAndroid, CardMedia as CardMediaAndroid } from "../../../src/molecules/card/card.android.js";
 import { DescriptionList as DescriptionListIOS } from "../../../src/molecules/description-lists/description-lists.ios.js";
 import { DescriptionList as DescriptionListAndroid } from "../../../src/molecules/description-lists/description-lists.android.js";
+import { Field as FieldIOS } from "../../../src/molecules/field/field.ios.js";
+import { Field as FieldAndroid } from "../../../src/molecules/field/field.android.js";
 import { EmptyState as EmptyStateIOS } from "../../../src/molecules/empty-state/empty-state.ios.js";
 import { EmptyState as EmptyStateAndroid } from "../../../src/molecules/empty-state/empty-state.android.js";
 import { Feed as FeedIOS } from "../../../src/molecules/feeds/feeds.ios.js";
@@ -118,10 +120,11 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS,
     Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Pagination: PaginationIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS, Badge: BadgeIOS,
-    Avatar: AvatarIOS, Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
+    Avatar: AvatarIOS, AvatarGroup: AvatarGroupIOS, AvatarMenu: AvatarMenuIOS,
+    Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
     ActionPanel: ActionPanelIOS, Alert: AlertIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
-    EmptyState: EmptyStateIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
+    EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
@@ -135,10 +138,11 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid,
     Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Pagination: PaginationAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid, Badge: BadgeAndroid,
-    Avatar: AvatarAndroid, Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
+    Avatar: AvatarAndroid, AvatarGroup: AvatarGroupAndroid, AvatarMenu: AvatarMenuAndroid,
+    Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
     ActionPanel: ActionPanelAndroid, Alert: AlertAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,
-    EmptyState: EmptyStateAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
+    EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,

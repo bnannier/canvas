@@ -269,6 +269,13 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "field",
+    name: "Field",
+    description: "A form row: a label, the control, and one message line under it. Field owns the helper and error text no control renders on its own, and hands its label down to a wrapped field-family control so each platform still places it its own way \u2014 a static title above on web and iOS, the floating in-container label on Android.",
+    category: "Molecules",
+    stageAlign: "start",
+  },
+  {
     slug: "empty-state",
     name: "EmptyState",
     description: "Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.",

@@ -14,7 +14,7 @@
 // shrinks it).
 //
 // A composing layout that wants to govern width itself (Form columns, dialog
-// bodies, Fieldset) passes `block` to its inner control, which restores the
+// bodies, Field) passes `block` to its inner control, which restores the
 // skin's fill-the-container `width:"100%"`.
 
 import type { ViewStyle } from "react-native";
