@@ -115,6 +115,12 @@ Differences this check CANNOT see. It compares the prop surface, so when a prop 
 sides it is reported as satisfied no matter what value it resolves to. These were found by
 measuring the rendered result and are recorded by hand.
 
+To find one: render the component's three-up in the docs, read the rendered element's own
+computed metrics rather than the source, and compare against a component you believe is
+correct as a control. A control matters more than it sounds — an AvatarMenu whose three rows
+all reported the web numbers only looked wrong beside a Dropdown whose three rows differed.
+Interactive state has to be driven first: a closed menu measures nothing.
+
 | Component | Canvas | Hand-off | Planned | Why |
 |---|---|---|---|---|
 | `Avatar` | tiny 24 / small 28 / default 40 / large 48 | small 24 / default 32 / large 40 | unscheduled | The whole scale sits one step high. The prop check cannot see this: `small` and `large` exist on both sides, so it reports them satisfied while the diameters differ. Re-scaling shipped avatars is a visual break for every consumer, so it is tracked rather than done; the `tiny` 24 step was added for the AvatarMenu pill inset without moving the rest. |
