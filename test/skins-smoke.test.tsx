@@ -175,6 +175,7 @@ const CASES: SkinCase[] = [
   { name: "RadialBarChart", dir: "charts/radial-bar-chart", file: "radial-bar-chart", props: { label: "Activation", data: [{ label: "iOS", value: 64 }, { label: "Web", value: 82 }], max: 100 } },
   { name: "FunnelChart", dir: "charts/funnel-chart", file: "funnel-chart", props: { title: "Funnel", stages: [{ label: "Visits", value: 100 }, { label: "Paid", value: 20 }] } },
   { name: "RadarChart", dir: "charts/radar-chart", file: "radar-chart", props: { title: "Profile", axes: ["A", "B", "C"], series: [{ label: "X", values: [1, 2, 3] }] } },
+  { name: "Treemap", dir: "charts/treemap", file: "treemap", props: { title: "Storage", data: [{ label: "Media", value: 6 }, { label: "Logs", value: 2 }] } },
   { name: "LineChart", dir: "charts/line-chart", file: "line-chart", props: { title: "Signups", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Web", values: [1, 3, 2] }, { label: "Mobile", values: [2, 1, 4] }] } },
   { name: "PieChart", dir: "charts/pie-chart", file: "pie-chart", props: { label: "Traffic", donut: true, slices: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "ScatterPlot", dir: "charts/scatter-plot", file: "scatter-plot", props: { title: "Load vs latency", series: [{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }] } },
