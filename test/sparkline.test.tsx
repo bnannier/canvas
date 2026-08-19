@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
+import { Sparkline } from "../src/charts/sparkline/sparkline.tsx";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);

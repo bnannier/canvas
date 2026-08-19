@@ -9,7 +9,7 @@ import { Chip } from "../src/atoms/chip/chip.tsx";
 import { createChip } from "../src/atoms/chip/chip.shared.tsx";
 import { androidSkin as chipAndroidSkin, iosSkin as chipIosSkin } from "../src/atoms/chip/chip.styles.ts";
 import { Emblem } from "../src/atoms/emblem/emblem.tsx";
-import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
+import { Sparkline } from "../src/charts/sparkline/sparkline.tsx";
 import { Gauge, Heatmap } from "../src/index.ts";
 import { gaugeArc, gaugeFill } from "../src/charts/gauge/gauge.shared.tsx";
 import { lightColors, palette } from "../src/style/tokens.ts";

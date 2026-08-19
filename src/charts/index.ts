@@ -7,6 +7,7 @@ export * from "./pie-chart/pie-chart.js";
 export * from "./scatter-plot/scatter-plot.js";
 export * from "./candlestick-chart/candlestick-chart.js";
 export * from "./depth-chart/depth-chart.js";
+export * from "./sparkline/sparkline.js";
 export * from "./stacked-bar/stacked-bar.js";
 export * from "./gauge/gauge.js";
 export * from "./heatmap/heatmap.js";

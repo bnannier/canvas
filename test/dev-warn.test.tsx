@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
 import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart, RadialBarChart, FunnelChart, RadarChart, Treemap } from "../src/index.ts";
-import { Sparkline } from "../src/atoms/sparkline/sparkline.tsx";
+import { Sparkline } from "../src/charts/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
 // empty frame, out-of-range values clamp). devWarn surfaces the clearest of

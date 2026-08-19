@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Sparkline } from "../../atoms/sparkline/sparkline.js";
+import { Sparkline } from "../../charts/sparkline/sparkline.js";
 import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, sparkStrip, type Surface } from "./stats.styles.js";
 
 // Shared Stats shell. The structure (a wrapping row/grid of metric stacks, each a

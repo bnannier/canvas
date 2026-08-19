@@ -28,7 +28,6 @@ export * from "./reveal/reveal-group.js";
 export * from "./select/select.js";
 export * from "./skeleton/skeleton.js";
 export * from "./slider/slider.js";
-export * from "./sparkline/sparkline.js";
 export * from "./spinner/spinner.js";
 export * from "./stepper/stepper.js";
 export * from "./swatch/swatch.js";

@@ -151,11 +151,6 @@
             "icon": "square"
           },
           {
-            "slug": "sparkline",
-            "label": "Sparkline",
-            "icon": "bar-chart-2"
-          },
-          {
             "slug": "autocomplete",
             "label": "Autocomplete",
             "icon": "search"
@@ -353,8 +348,12 @@
             "label": "DescriptionList",
             "icon": "info"
           },
-          { "slug": "field", "label": "Field", "icon": "text-cursor-input" },
-            {
+          {
+            "slug": "field",
+            "label": "Field",
+            "icon": "text-cursor-input"
+          },
+          {
             "slug": "empty-state",
             "label": "EmptyState",
             "icon": "inbox"
@@ -529,6 +528,11 @@
             "slug": "depth-chart",
             "label": "DepthChart",
             "icon": "activity"
+          },
+          {
+            "slug": "sparkline",
+            "label": "Sparkline",
+            "icon": "bar-chart-2"
           },
           {
             "slug": "stacked-bar",

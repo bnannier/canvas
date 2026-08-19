@@ -4,7 +4,7 @@ import { type ChartSkin } from "../shared/types.js";
 import { chartRootWidth } from "../shared/chart-frame.js";
 import { formatCompact } from "../shared/chart-math.js";
 import { BreakdownRows, type BreakdownRow } from "../shared/breakdown-rows.js";
-import { Sparkline } from "../../atoms/sparkline/sparkline.js";
+import { Sparkline } from "../sparkline/sparkline.js";
 import { Chip } from "../../atoms/chip/chip.js";
 
 // Shared MetricBreakdown shell. The decomposed-metric dashboard card: a
