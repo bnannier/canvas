@@ -36,7 +36,27 @@ truth for both stores' data declarations.
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
-| **iOS submission** | **RESUBMITTED 27 Jul 2026, "Waiting for Review"** (build 7, third attempt). Rejected twice: 2.1.0 App Completeness, then 2.3.10 Accurate Metadata + 4.0 Design. We are APPEALING 2.3.10 rather than complying; see below. Still set to release automatically on approval. |
+| **iOS submission** | **RESUBMITTED 29 Jul 2026, "Waiting for Review"** (build 7, fourth attempt). Rejected three times: 2.1.0, then 2.3.10 + 4.0, then 2.3.10 alone. **The appeal split: Guideline 4 was ACCEPTED, 2.3.10 was not.** Android is now stripped from the metadata only; the app keeps it. Auto-release on approval. |
+
+### Outcome of the appeal (29 Jul 2026)
+
+Apple accepted the Guideline 4 rebuttal and dropped it. That argument was purely factual:
+their template sentence said the app "does not integrate with iOS features other than web
+views, push notifications, or sharing", and the app has none of those three. It uses a
+native UITabBar with SF Symbols, `sidebarAdaptable`, `minimizeBehavior`, real Liquid Glass
+via UIGlassEffect, and a native pull-down UIMenu. **If a future reviewer raises Guideline 4
+again, reuse that list; it worked.**
+
+They did NOT accept the 2.3.10 argument, replying "We still noticed that the app or
+metadata includes information about third-party platforms". Their Next Steps said the same
+thing all three times: "Revise the app's DESCRIPTION to remove Android references."
+
+We complied narrowly, on the owner's call: the **App Store description and keywords** no
+longer mention Android, and **the app itself is untouched** (home screen, orbit logo and
+all 47 source files keep Android). That matches the literal instruction Apple repeated
+three times, without gutting what the product is. If a fourth rejection still cites 2.3.10,
+the remaining exposure is in the app: six home-screen strings, `PLATFORMS` in `home.tsx`,
+and the Android logo in `hero-orbit.tsx`.
 
 ### The 2.3.10 / Guideline 4 rejection, and why we are appealing
 
@@ -174,17 +194,19 @@ release:
 > - Instant search across the entire catalog
 > - Light and dark themes, plus a glass surface mode
 >
-> BUILT FOR ONE API ON EVERY PLATFORM
+> BUILT THE WAY iOS EXPECTS
 >
-> Canvas components adapt their look to the platform they run on, following iOS design
-> conventions here and Material Design on Android, from a single component API. This app
-> is the clearest way to see that: it is built entirely from the library it documents.
+> Canvas components follow iOS design conventions, driven by a single component API. This
+> app is the clearest way to see that: it is built entirely from the library it documents.
 >
 > Canvas is free and open source under the MIT license. No account, no sign-in, no ads,
 > and no tracking of any kind.
 
 **Keywords** (100 max, comma separated, no spaces):
-`react native,ui kit,components,design system,developer,reference,ios,android,expo,mobile,design`
+`react native,ui kit,components,design system,developer,reference,ios,ipad,expo,mobile,design`
+
+NOTE: `android` was REMOVED from the keywords and the description on 2026-07-29 to clear
+Guideline 2.3.10 (see below). Do not put it back. `ipad` took the freed slot.
 
 **Support URL**: `https://github.com/bnannier/canvas/issues`
 **Marketing URL**: `https://canvas.nannier.com/`
