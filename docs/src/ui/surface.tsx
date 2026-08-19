@@ -1,15 +1,25 @@
 import { type ReactNode } from "react";
-import { GlassSurface, useTheme, type StyleProp, type ViewStyle } from "@nannier/canvas";
+import { useTheme, View, type StyleProp, type ViewStyle } from "@nannier/canvas";
 
-// A docs content surface that is SOLID in solid mode and a FROST in frost (glass) mode,
-// so the previews, tables, and cards never read as a clear hole. It leans on the kit's
-// GlassSurface, which reads useTheme().surface: in solid mode it renders a plain View
-// that keeps our token fill verbatim (a solid card); in glass mode it strips the fill and
-// paints the real material (Liquid Glass on iOS 26, an expo-blur frost on web/Android).
+// A docs CONTENT surface: the preview stages, prop tables, do/don't cards and the
+// long-form panels. It is solid in every surface mode, because content is the layer
+// the kit's glass model deliberately leaves alone: "don't use Liquid Glass in the
+// content layer", which is also why the `card` token stays opaque while glass is on.
 //
-// `fill` picks the solid token used in solid mode: `card` for a content panel/stage/table,
-// `muted` for a code/chip surface. `bordered` adds the standard rounded hairline frame.
-// Pass extra border/radius/overflow through `style`.
+// It used to render through the kit's GlassSurface with `sheer`, so in glass mode it
+// stripped its own fill and painted a thin frost. That turned every page's example
+// stage into a hole: the backdrop's aurora read straight through the panes, and
+// anything sitting ON a stage inherited the problem, so a tinted Emblem tile (a 12
+// percent wash of its tone, which is meant to composite against an opaque card) came
+// out looking like glass, and an Icon's pane showed the wash behind the glyph.
+//
+// Glass in these docs belongs to the SHELL only: the topbar, the sidebar and the
+// mobile nav bar, which are the kit's own Navbar/Sidebar and take the material
+// themselves. Nothing here should compete with them.
+//
+// `fill` picks the token: `card` for a content panel/stage/table, `muted` for a
+// code/chip surface. `bordered` adds the standard rounded hairline frame. Pass extra
+// border/radius/overflow through `style`.
 export function DocsSurface({
   children,
   style,
@@ -23,11 +33,7 @@ export function DocsSurface({
 }) {
   const { tokens } = useTheme();
   return (
-    // `sheer`: docs content surfaces float over the live Canvas Universe backdrop and do
-    // not need to occlude it, so they take the lighter, thinner frost (unlike functional
-    // overlays), letting the animation read clearly through them in glass/frost mode.
-    <GlassSurface
-      sheer
+    <View
       style={[
         { backgroundColor: tokens[fill] },
         bordered ? { borderWidth: 1, borderColor: tokens.border, borderRadius: 12, overflow: "hidden" } : null,
@@ -35,6 +41,6 @@ export function DocsSurface({
       ]}
     >
       {children}
-    </GlassSurface>
+    </View>
   );
 }
