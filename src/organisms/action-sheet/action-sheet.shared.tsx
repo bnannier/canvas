@@ -1,5 +1,5 @@
-import { useCallback, useState, Fragment } from "react";
-import { KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
+import { useCallback, useEffect, useRef, useState, Fragment } from "react";
+import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { SafeAreaView } from "../../style/safe-area.js";
 import {
   View,
@@ -11,6 +11,8 @@ import {
   cornerRadii,
   useTheme,
   useHardwareBack,
+  useReducedMotion,
+  supportsNativeDriver,
   GlassModalBlurTarget,
   type StyleProp,
   type ViewStyle,
@@ -126,6 +128,36 @@ export function createActionSheet(skin: ActionSheetSkin) {
     // console.error on every call.
     useHardwareBack(open, close);
 
+    // The sheet SLIDES up by hand (translateY) behind a SEPARATE, stationary dim
+    // layer that FADES in. RN Modal's animationType="slide" transforms the whole
+    // modal, the scrim dim included, so the backdrop used to travel up with the
+    // sheet instead of settling over the page. Driving the slide ourselves keeps
+    // the dim a fixed full-screen scrim that takes over the surface while only the
+    // sheet moves. This mirrors Drawer, which slides its panel the same way. The
+    // Modal stays mounted through the exit so the slide-out is visible, then
+    // unmounts.
+    const reduced = useReducedMotion();
+    const [mounted, setMounted] = useState(open);
+    // The sheet slides on Y, so it needs its own measured height for the off-screen
+    // origin. The 600 fallback only covers the first frame, before onLayout reports a
+    // real height; it clears the tallest sheet the skins can produce (a 360-capped row
+    // scroller plus header, Cancel, and insets), so the sheet never peeks at rest.
+    const [sheetH, setSheetH] = useState(0);
+    const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
+    useEffect(() => {
+      if (open) {
+        setMounted(true);
+        Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
+      } else if (mounted) {
+        Animated.timing(progress, { toValue: 0, duration: reduced ? 0 : 180, useNativeDriver: supportsNativeDriver }).start(({ finished }) => {
+          if (finished) setMounted(false);
+        });
+      }
+    }, [open, mounted, progress, reduced]);
+
+    const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [sheetH || 600, 0] });
+    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, skin.scrimOpacity] });
+
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const hasHeader = title != null || message != null;
 
@@ -193,9 +225,9 @@ export function createActionSheet(skin: ActionSheetSkin) {
           </Button>
         ) : null}
         <Modal
-          visible={open}
+          visible={mounted}
           transparent
-          animationType="slide"
+          animationType="none"
           onRequestClose={close}
           testID={testID}
           // Tell assistive tech the content behind this overlay is inert while the
@@ -212,8 +244,9 @@ export function createActionSheet(skin: ActionSheetSkin) {
               (Android's window handles the resize, web has no soft keyboard), so the
               wrapper is inert there. */}
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-            {/* The dimmed scrim is a plain container; the tap-to-dismiss target is a
-                separate full-bleed Pressable BEHIND the sheet, not a wrapper around it.
+            {/* The scrim container is a plain TRANSPARENT layout box; the dim is the
+                Animated layer beneath, and the tap-to-dismiss target is a separate
+                full-bleed Pressable BEHIND the sheet, not a wrapper around it.
                 A Pressable that wrapped the sheet would nest one interactive element
                 inside another (an invalid <button>-in-<button> on the web, since RNW
                 renders a button-roled Pressable as a real <button>, plus an ambiguous
@@ -222,53 +255,67 @@ export function createActionSheet(skin: ActionSheetSkin) {
                 rows live in their own subtree. The content layer is lifted above the
                 absolute backdrop with zIndex, so a tap on the sheet hits the sheet and
                 a tap on the exposed scrim dismisses (no fall-through wrapper needed). */}
-            <View style={s.scrim(skin.scrimOpacity)}>
+            <View style={s.scrim}>
+              {/* The stationary dim: it fades from transparent to the skin's alpha and
+                  never moves, so the backdrop settles over the page while the sheet
+                  rises. Purely decorative (the Pressable above it carries the dismiss
+                  role), so it is unannounced. */}
+              <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { opacity: dimOpacity }]} />
               <Pressable
                 style={StyleSheet.absoluteFill}
                 onPress={close}
                 accessibilityRole="button"
                 accessibilityLabel={cancelLabel}
               />
-              {/* SafeAreaView lifts the bottom-anchored stack clear of the home
+              {/* The travelling layer: it carries the zIndex that lifts the sheet above
+                  the absolute dim/dismiss siblings, the slide transform, and the layout
+                  measurement (its height INCLUDES the safe-area inset below, so the sheet
+                  starts fully off-screen rather than peeking by the inset).
+                  SafeAreaView lifts the bottom-anchored stack clear of the home
                   indicator on iOS (the dim scrim still fills the gap behind it, matching
                   the native sheet); the inset resolves to 0 elsewhere, so the layout is
                   unchanged off iOS. */}
-              <SafeAreaView style={s.scrimContent}>
-                <View style={[skin.stack, style]}>
-                  <GlassSurface style={skin.actionsCard(tokens)}>
-                    {/* The handle (Android) sits above the header inside the sheet. */}
-                    {skin.handle ? <View style={skin.handle(tokens)} /> : null}
-                    {headerNode}
-                    {/* The rows scroll if they overflow the viewport (a long action list).
-                        rowsContent spaces the rows on iOS (the detached-capsule gap);
-                        web/Android leave it undefined so the rows stay flush. */}
-                    <ScrollView bounces={false} style={{ maxHeight: 360 }}>
-                      {/* RippleClip clips the Android bounded-ripple action rows to the
-                          card's rounded top corners (a no-op on iOS/web). It also carries
-                          the iOS detached-capsule gap (skin.rowsContent), moved off the
-                          ScrollView's contentContainer so it now spaces the rows inside
-                          the clip and iOS layout is unchanged. */}
-                      <RippleClip
-                        shape={cornerRadii(skin.actionsCard(tokens))}
-                        style={[skin.rowsContent, { alignSelf: "stretch" }]}
-                      >
-                        {actionRows}
-                      </RippleClip>
-                      {/* Android: Cancel is the last row in the same sheet. */}
-                      {skin.cancelLayout === "lastRow" ? (
-                        <Fragment>
-                          {skin.divider ? <View style={skin.divider(tokens)} /> : null}
-                          {cancelRow}
-                        </Fragment>
-                      ) : null}
-                    </ScrollView>
-                  </GlassSurface>
-                  {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
-                  {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
-                    <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
-                  ) : null}
-                </View>
-              </SafeAreaView>
+              <Animated.View
+                style={[s.scrimContent, { transform: [{ translateY: slide }] }]}
+                onLayout={(e) => setSheetH(e.nativeEvent.layout.height)}
+              >
+                <SafeAreaView>
+                  <View style={[skin.stack, style]}>
+                    <GlassSurface style={skin.actionsCard(tokens)}>
+                      {/* The handle (Android) sits above the header inside the sheet. */}
+                      {skin.handle ? <View style={skin.handle(tokens)} /> : null}
+                      {headerNode}
+                      {/* The rows scroll if they overflow the viewport (a long action list).
+                          rowsContent spaces the rows on iOS (the detached-capsule gap);
+                          web/Android leave it undefined so the rows stay flush. */}
+                      <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                        {/* RippleClip clips the Android bounded-ripple action rows to the
+                            card's rounded top corners (a no-op on iOS/web). It also carries
+                            the iOS detached-capsule gap (skin.rowsContent), moved off the
+                            ScrollView's contentContainer so it now spaces the rows inside
+                            the clip and iOS layout is unchanged. */}
+                        <RippleClip
+                          shape={cornerRadii(skin.actionsCard(tokens))}
+                          style={[skin.rowsContent, { alignSelf: "stretch" }]}
+                        >
+                          {actionRows}
+                        </RippleClip>
+                        {/* Android: Cancel is the last row in the same sheet. */}
+                        {skin.cancelLayout === "lastRow" ? (
+                          <Fragment>
+                            {skin.divider ? <View style={skin.divider(tokens)} /> : null}
+                            {cancelRow}
+                          </Fragment>
+                        ) : null}
+                      </ScrollView>
+                    </GlassSurface>
+                    {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
+                    {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
+                      <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
+                    ) : null}
+                  </View>
+                </SafeAreaView>
+              </Animated.View>
             </View>
           </KeyboardAvoidingView>
           </GlassModalBlurTarget>

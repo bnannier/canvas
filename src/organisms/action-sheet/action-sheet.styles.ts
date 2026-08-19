@@ -1,4 +1,4 @@
-import { type ViewStyle, type TextStyle } from "react-native";
+import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, surfaceRipple } from "../../style/index.js";
 
 // Co-located ActionSheet skins, one per platform, all driven by the brand tokens
@@ -91,13 +91,23 @@ export interface ActionSheetSkin {
 // --- shared scrim (identical across platforms) ------------------------------
 
 // The full-screen scrim container that fills the Modal and lays the stack against
-// the bottom edge. It is a plain (non-interactive) dimmed View; the tap-to-dismiss
-// target is a separate absolute-fill Pressable the shell renders as its FIRST child
-// (a sibling behind the sheet, so its <button> never wraps the action rows). The
-// dimming alpha is the only per-OS value, supplied by the skin.
-export function scrim(opacity: number): ViewStyle {
-  return { flex: 1, flexDirection: "column", justifyContent: "flex-end", backgroundColor: `rgba(0,0,0,${opacity})` };
-}
+// the bottom edge. It is a plain (non-interactive) TRANSPARENT layout View: the dim
+// itself is a separate absolute-fill Animated layer the shell fades in, so the
+// backdrop stays stationary while only the sheet slides (the skin's `scrimOpacity`
+// is that layer's target alpha). The tap-to-dismiss target is likewise a separate
+// absolute-fill Pressable, a sibling behind the sheet, so its <button> never wraps
+// the action rows.
+export const scrim: ViewStyle = { flex: 1, flexDirection: "column", justifyContent: "flex-end" };
+
+// The dim layer itself: a full-bleed black fill whose opacity the shell animates
+// from 0 to the skin's `scrimOpacity`. Black is fixed here and the alpha rides on
+// `opacity` so the fade can run on the native driver (an animated backgroundColor
+// cannot). It is inert to touch so the dismiss Pressable stacked over it takes
+// every tap; that pointerEvents goes through StyleSheet.create because
+// react-native-web silently drops the declaration from an inline style object.
+export const scrimDim = StyleSheet.create({
+  dim: { backgroundColor: "rgb(0, 0, 0)", pointerEvents: "none" },
+}).dim;
 
 // The sheet content layer. It sits ABOVE the absolute-fill dismiss backdrop (a
 // preceding sibling): zIndex lifts the in-flow content over the out-of-flow

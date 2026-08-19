@@ -22,11 +22,11 @@ import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 // `onRequestClose` to a document `keyup` Escape listener, but only once the Modal
 // has marked itself active (via its show animation's onAnimationEnd). A Drawer with
 // a side/top edge uses animationType="none", so it activates synchronously and the
-// real Escape -> onRequestClose path can be driven here. The bottom-anchored
-// ActionSheet uses animationType="slide", whose activation waits on a CSS
-// onAnimationEnd that never fires under happy-dom, so its Escape path can't be
-// exercised headless; its equivalent scrim/Cancel dismiss path (the same setOpen
-// target) is tested instead.
+// real Escape -> onRequestClose path can be driven here. ActionSheet now animates
+// itself the same way (a hand-driven slide behind a fading dim, so the backdrop no
+// longer travels with the sheet), so it is animationType="none" too; the
+// scrim/Cancel dismiss path exercised below hits the same setOpen target that the
+// scrim, back, and Escape all share.
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
@@ -94,10 +94,8 @@ describe("Drawer — Escape fires the Modal's onRequestClose", () => {
 
 describe("ActionSheet — scrim/Cancel dismiss (Modal close path)", () => {
   it("closes via the Cancel row, reporting through onOpenChange", () => {
-    // The slide-animated Modal never marks itself active under happy-dom (its
-    // activation waits on a CSS onAnimationEnd that does not fire), so the true
-    // keyup-Escape -> onRequestClose path can't be driven here. The Cancel row
-    // hits the same setOpen(false) close target the scrim/back/Escape all share.
+    // The Cancel row hits the same setOpen(false) close target that the scrim,
+    // hardware back, and Escape all share.
     let openState: boolean | null = null;
     ui(
       <ActionSheet
