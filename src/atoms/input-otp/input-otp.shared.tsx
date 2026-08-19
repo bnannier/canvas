@@ -27,7 +27,7 @@ import {
 // Architecture (the crux): the field is driven by ONE real <TextInput> so native
 // SMS autofill, the one-time-code keyboard suggestion, and paste all flow into a
 // single value. That input is positioned ABSOLUTELY to fill the whole row and is
-// made visually invisible (transparent text + caret hidden), so tapping anywhere
+// made visually invisible (opacity 0, caret hidden), so tapping anywhere
 // on the segmented row focuses it and autofill/paste land in it. The visible
 // segment cells (a View + a Text per character) are laid out underneath and read
 // from the resolved `value`; the "active" cell (index === value.length, clamped
@@ -347,9 +347,13 @@ export function createInputOTP(skin: InputOTPSkin) {
                 width: "100%",
                 height: "100%",
                 // Visually invisible: the cells render the value, this only captures input.
-                color: "transparent",
+                // It is hidden with OPACITY rather than a transparent text color, because
+                // Android does not honor `color: "transparent"` here and painted the raw
+                // code straight across the middle of the row, over the cells. Opacity is
+                // honored everywhere and changes nothing else: an opacity-0 view still
+                // takes touches, still focuses, and is still read by assistive tech.
+                opacity: 0,
                 backgroundColor: "transparent",
-                // Keep text out of view if any platform ignores the transparent color.
                 textAlign: "center",
               },
               FOCUS_RESET,
