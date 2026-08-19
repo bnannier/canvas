@@ -38,12 +38,26 @@ const TWINKLE_HALF: Record<Energy, number> = {
   energetic: 2400,
 };
 
+/** One body's full flare cycle per energy, in ms. Renderers spread a field across
+ *  this cycle in phase buckets, so the sky sees a flare roughly every
+ *  period/buckets rather than every period. */
+const SCINTILLATE_PERIOD: Record<Energy, number> = {
+  calm: 6400,
+  default: 4600,
+  energetic: 3200,
+};
+
 export interface BackdropClock {
   /** Master 0..1 ramp over the flight period. Layers derive staggered sawtooth
    *  phases from it, so every layer stays locked to one timeline. */
   flight: Animated.Value;
-  /** Shimmer, 0..1..0. Twinkle, pulse, anything that breathes quickly. */
+  /** Shimmer, 0..1..0. Pulse, breathe, anything that swells and settles as one. */
   twinkle: Animated.Value;
+  /** Scintillation ramp, a linear 0..1 SAWTOOTH at the flare period. The sawtooth
+   *  is the point: it can be phase-shifted per body (see the renderer's buckets)
+   *  so flares land at unrelated moments across the field, which a ping-pong
+   *  cannot do without a discontinuity at the turn. */
+  scintillate: Animated.Value;
   /** Very slow 0..1 ramp (180s). Rotation, hue drift, anything near-static. */
   drift: Animated.Value;
   /** Medium 0..1..0 breath (11s). Scale and opacity swells. */
@@ -68,6 +82,7 @@ function makeClock(): BackdropClock {
   return {
     flight: new Animated.Value(0),
     twinkle: new Animated.Value(0),
+    scintillate: new Animated.Value(0),
     drift: new Animated.Value(0),
     breath: new Animated.Value(0),
     event: new Animated.Value(0),
@@ -115,6 +130,7 @@ function startAll(e: Entry, energy: Energy) {
   e.running = [
     linLoop(e.clock.flight, flight, e.phase),
     breathe(e.clock.twinkle, TWINKLE_HALF[energy]),
+    linLoop(e.clock.scintillate, SCINTILLATE_PERIOD[energy], 0),
     linLoop(e.clock.drift, 180000, 0),
     breathe(e.clock.breath, 5500),
     Animated.loop(
@@ -148,6 +164,10 @@ function poster(e: Entry) {
   stopAll(e);
   e.clock.flight.setValue(0.35);
   e.clock.twinkle.setValue(0.5);
+  // Mid-ramp, not zero: the bucket offsets fan out from here, so the still frame
+  // catches one bucket near its peak and the rest strung down the falloff, which
+  // is a sky with bright and faint stars rather than one flat field.
+  e.clock.scintillate.setValue(0.5);
   e.clock.drift.setValue(0);
   e.clock.breath.setValue(0.5);
   e.clock.event.setValue(0);
