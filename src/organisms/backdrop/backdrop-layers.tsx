@@ -114,6 +114,11 @@ export interface ParticlesProps {
   tint?: string;
   alpha?: number;
   bloom?: boolean;
+  /** Scintillate the field: bodies are dealt into phase buckets that flare at
+   *  unrelated moments, and the bright ones grow a diffraction glint at the peak.
+   *  The flares are deliberately uncorrelated across the field, because a whole
+   *  field brightening at once is a global luminance change the eye adapts through
+   *  and barely registers. */
   twinkle?: boolean;
 }
 

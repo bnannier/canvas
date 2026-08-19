@@ -101,6 +101,40 @@ describe("BackdropHost", () => {
   });
 });
 
+describe("twinkle scintillates rather than shimmering as one", () => {
+  // The contract that keeps regressing back to nothing: a twinkling field must be
+  // dealt into phase buckets that carry DIFFERENT opacities at the same instant.
+  // The original effect multiplied one shimmer into the whole layer, so every body
+  // rose and fell together; a field changing brightness as a unit is a global
+  // luminance change and the eye adapts straight through it, which is why it read
+  // as no effect at all however wide the range was pushed.
+  //
+  // `still` pins the clock on the poster frame, so this reads the fan at a known
+  // phase instead of racing the animation.
+  const opacities = (c: HTMLElement) =>
+    [...(surface(c)?.querySelectorAll<HTMLElement>("[style*='opacity']") ?? [])].map((n) => Number(n.style.opacity));
+
+  function Field({ twinkle }: { twinkle: boolean }) {
+    return (
+      <Backdrop still>
+        <Backdrop.Particles field={FIELD} depth={0} twinkle={twinkle} />
+      </Backdrop>
+    );
+  }
+
+  it("draws a twinkling field at several distinct opacities at once", async () => {
+    const { container } = render(wrap(<Field twinkle />));
+    await waitFor(() => expect(surface(container)).not.toBeNull());
+    expect(new Set(opacities(container)).size).toBeGreaterThan(1);
+  });
+
+  it("leaves a field that does not twinkle on a single opacity", async () => {
+    const { container } = render(wrap(<Field twinkle={false} />));
+    await waitFor(() => expect(surface(container)).not.toBeNull());
+    expect(new Set(opacities(container)).size).toBe(1);
+  });
+});
+
 describe("Backdrop accessibility", () => {
   it("starts on the poster frame so Reduce Motion never shows a moving frame", async () => {
     // useReducedMotion resolves asynchronously and reports false until it does, so

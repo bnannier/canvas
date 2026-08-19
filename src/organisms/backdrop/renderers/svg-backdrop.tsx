@@ -3,7 +3,7 @@ import { Animated } from "react-native";
 import Svg, { Circle, Path, Rect, G, Line, Defs, RadialGradient, Stop } from "react-native-svg";
 import { View } from "../../../style/index.js";
 import { type BackdropClock } from "../backdrop-clock.js";
-import { type Layer, type Particle, type ParticleSprite, type GradientBlob } from "../backdrop-layers.js";
+import { type Layer, type ParticlesLayer, type Particle, type ParticleSprite, type GradientBlob } from "../backdrop-layers.js";
 
 // The Backdrop's baseline renderer, built on react-native-svg (a required kit peer),
 // so it runs anywhere the kit runs with no optional dependency at all.
@@ -13,11 +13,13 @@ import { type Layer, type Particle, type ParticleSprite, type GradientBlob } fro
 // backend boots, the Reduce Motion poster host, and the recovery path if a GPU
 // renderer fails to initialise.
 //
-// Architectural rule, load-bearing: every layer is ONE Animated.View wrapping a
-// STATIC <Svg>. Animated must never wrap an Svg directly, because its forced
+// Architectural rule, load-bearing: every drawn group is ONE Animated.View wrapping
+// a STATIC <Svg>. Animated must never wrap an Svg directly, because its forced
 // collapsable={false} reaches the DOM on react-native-web and React throws (see
 // src/atoms/spinner/spinner.styles.tsx). No SVG element prop is ever animated;
-// all motion is transform and opacity on the wrapper.
+// all motion is transform and opacity on the wrapper. A twinkling layer draws as
+// several such groups (its phase buckets), which is the same rule applied per
+// group rather than a relaxation of it.
 
 type AnimNumber = Animated.Value | Animated.AnimatedInterpolation<number> | number;
 type Interp = Animated.Value | Animated.AnimatedInterpolation<number>;
@@ -60,6 +62,63 @@ function sawtooth(flight: Animated.Value, offset: number): Interp {
 }
 
 // ---------------------------------------------------------------------------
+// Scintillation.
+// ---------------------------------------------------------------------------
+
+// Twinkling used to be one shimmer multiplied into a whole layer, which moved
+// every body in lockstep. A field rising and falling as one is a global luminance
+// change, and the eye adapts straight through it: the effect was nearly invisible
+// however wide the range was pushed. Real scintillation is DIFFERENTIAL, so a
+// twinkling field is dealt into phase buckets that flare at unrelated moments,
+// each bucket its own Animated.View over its own static Svg.
+
+/** Phase buckets per twinkling field. Enough that neighbours are almost never in
+ *  the same bucket, few enough that the extra wrappers stay cheap. */
+const TWINKLE_BUCKETS = 9;
+
+// Deal by a hash of the index, not by `i % k`. Fields are generated on lattices
+// (`(i * 37) % 101` is the shape every example uses), so every k-th body would
+// land on a regular sub-grid, and a sub-grid flashing together reads as a pattern
+// sweeping the sky rather than as stars.
+function bucketOf(i: number, k: number): number {
+  let h = Math.imul(i + 1, 0x27d4eb2d);
+  h ^= h >>> 15;
+  return (h >>> 0) % k;
+}
+
+// One body's flare as a fraction of the layer cap: a fast attack, a quick drop off
+// the peak, then a long rest. The sharp leading edge is what makes a flare read as
+// an event; the old effect eased both ways and never stopped moving, so nothing in
+// it ever registered as happening. The peak stops exactly AT the cap rather than
+// above it, so the prominence axis still means what backdrop.styles.ts says it
+// means; the contrast is bought from the resting floor, not from the budget.
+const FLARE_IN = [0, 0.05, 0.16, 0.45, 1];
+const FLARE_OUT = [0.5, 1, 0.75, 0.5, 0.5];
+
+function flare(scintillate: Animated.Value, offset: number): Interp {
+  return sawtooth(scintillate, offset).interpolate({ inputRange: FLARE_IN, outputRange: FLARE_OUT });
+}
+
+interface Bucket {
+  field: Particle[];
+  opacity: AnimNumber;
+}
+
+/** Split a twinkling field into its phase buckets, riding `base` (the layer's own
+ *  cap or travel fade). A field that does not twinkle is the one bucket it already
+ *  was, so the caller has a single path. */
+function buckets(layer: ParticlesLayer, clock: BackdropClock, base: AnimNumber): Bucket[] {
+  if (!layer.twinkle) return [{ field: layer.field, opacity: base }];
+  const k = Math.min(TWINKLE_BUCKETS, layer.field.length);
+  const out: Bucket[] = Array.from({ length: k }, (_, b) => ({
+    field: [],
+    opacity: Animated.multiply(base, flare(clock.scintillate, b / k)),
+  }));
+  layer.field.forEach((p, i) => out[bucketOf(i, k)].field.push(p));
+  return out.filter((b) => b.field.length > 0);
+}
+
+// ---------------------------------------------------------------------------
 // Sprites.
 // ---------------------------------------------------------------------------
 
@@ -67,6 +126,31 @@ function sawtooth(flight: Animated.Value, offset: number): Interp {
 // astrophotography starburst, drawn as one path.
 function sparkPath(r: number, w: number): string {
   return `M 0 ${-r} L ${w} 0 L 0 ${r} L ${-w} 0 Z M ${-r} 0 L 0 ${-w} L ${r} 0 L 0 ${w} Z`;
+}
+
+// The scintillation glint: the same crossed diamonds, drawn wide and thin under a
+// twinkling body, plus the white core the spark sprite uses. Both ride the bucket's
+// flare opacity, so a flaring body grows spikes and goes white-hot while a resting
+// one stays a plain disc. This is what carries the effect at these sizes: a two-pixel
+// dot changing brightness is easy to miss, a two-pixel dot briefly growing spikes is
+// not. The core is also the one place peak luminance rises without touching the
+// layer cap, since white outreads the tint on a single pixel.
+const GLINT_MIN_R = 1.2;
+const GLINT_MIN_A = 0.5;
+
+/** One body's glint, or null when the body is too small or too faint to have earned
+ *  one. Only the bright bodies scintillate in a real sky, and the threshold is also
+ *  what keeps a 200-body field from doubling its node count. */
+function drawGlint(p: Particle, i: number, bw: number, bh: number, tint: string) {
+  if (p.r < GLINT_MIN_R || p.a < GLINT_MIN_A) return null;
+  const cx = p.x * bw;
+  const cy = p.y * bh;
+  return (
+    <G key={i} transform={`translate(${cx}, ${cy})`}>
+      <Path d={sparkPath(p.r * 4.2, Math.max(0.45, p.r * 0.2))} fill={p.color ?? tint} fillOpacity={p.a * 0.6} />
+      <Circle cx={0} cy={0} r={Math.max(0.6, p.r * 0.22)} fill="#ffffff" fillOpacity={p.a * 0.7} />
+    </G>
+  );
 }
 
 /** Draw one body. `bw`/`bh` are the layer box in px, so unit positions resolve
@@ -133,15 +217,21 @@ interface ParticlesLayerViewProps {
   height: number;
   tint: string;
   bloom: boolean;
+  /** Draw the scintillation glint under each qualifying body. Set for a twinkling
+   *  field, where the flare has to read on bodies a couple of pixels across. */
+  glint: boolean;
   style: object;
   /** Omitted for a pinned layer, which never travels. */
   scale?: Interp;
   opacity: AnimNumber;
 }
 
-function ParticlesLayerView({ field, sprite, width, height, tint, bloom, style, scale, opacity }: ParticlesLayerViewProps) {
+function ParticlesLayerView({ field, sprite, width, height, tint, bloom, glint, style, scale, opacity }: ParticlesLayerViewProps) {
   const haloId = useSvgId("halo");
   const needsHalo = sprite === "halo" || bloom;
+  // A spark is already a starburst and a streak is already elongated; glinting
+  // either one just thickens it. Discs and halos are the round bodies that need it.
+  const glints = glint && (sprite === "disc" || sprite === "halo");
   return (
     <Animated.View style={[style, { width, height, opacity, ...(scale ? { transform: [{ scale }] } : null) }]}>
       <Svg width={width} height={height}>
@@ -153,6 +243,7 @@ function ParticlesLayerView({ field, sprite, width, height, tint, bloom, style, 
             </RadialGradient>
           </Defs>
         ) : null}
+        {glints ? field.map((p, i) => drawGlint(p, i, width, height, tint)) : null}
         {field.map((p, i) => drawParticle(p, i, width, height, sprite, tint, 1, haloId))}
       </Svg>
     </Animated.View>
@@ -214,8 +305,6 @@ export function SvgBackdrop({ layers, width, height, focus, clock, tint, promine
   const boxStyle = { position: "absolute" as const, left: focusX - box / 2, top: focusY - box / 2 };
   const pinnedStyle = { position: "absolute" as const, top: 0, left: 0 };
 
-  const shimmer = clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.95] });
-
   return (
     <>
       {layers.map((layer, i) => {
@@ -252,44 +341,52 @@ export function SvgBackdrop({ layers, width, height, focus, clock, tint, promine
         const cap = layer.alpha * prominence;
 
         // A pinned layer does not travel: it is the deep field behind everything,
-        // sized to the viewport and breathing only on the shimmer channel.
+        // sized to the viewport and scintillating in place.
         if (layer.depth === 0) {
-          const opacity: AnimNumber = layer.twinkle ? Animated.multiply(shimmer, cap) : cap;
           return (
-            <ParticlesLayerView
-              key={i}
-              field={layer.field}
-              sprite={layer.sprite}
-              width={width}
-              height={height}
-              tint={layer.tint ?? tint}
-              bloom={layer.bloom}
-              style={pinnedStyle}
-              opacity={opacity}
-            />
+            <Fragment key={i}>
+              {buckets(layer, clock, cap).map((b, j) => (
+                <ParticlesLayerView
+                  key={j}
+                  field={b.field}
+                  sprite={layer.sprite}
+                  width={width}
+                  height={height}
+                  tint={layer.tint ?? tint}
+                  bloom={layer.bloom}
+                  glint={layer.twinkle}
+                  style={pinnedStyle}
+                  opacity={b.opacity}
+                />
+              ))}
+            </Fragment>
           );
         }
 
         const phase = sawtooth(clock.flight, layer.phase);
         const scale = phase.interpolate(zCurve(layer.depth));
         const fade = phase.interpolate({ inputRange: FADE_IN, outputRange: [0, cap, cap, 0, 0] });
-        const opacity: AnimNumber = layer.twinkle
-          ? Animated.multiply(fade, clock.twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }))
-          : fade;
 
+        // Every bucket of a travelling layer shares the layer's scale: the flight is
+        // a property of the layer, and only the flare phase differs between buckets.
         return (
-          <ParticlesLayerView
-            key={i}
-            field={layer.field}
-            sprite={layer.sprite}
-            width={box}
-            height={box}
-            tint={layer.tint ?? tint}
-            bloom={layer.bloom}
-            style={boxStyle}
-            scale={scale}
-            opacity={opacity}
-          />
+          <Fragment key={i}>
+            {buckets(layer, clock, fade).map((b, j) => (
+              <ParticlesLayerView
+                key={j}
+                field={b.field}
+                sprite={layer.sprite}
+                width={box}
+                height={box}
+                tint={layer.tint ?? tint}
+                bloom={layer.bloom}
+                glint={layer.twinkle}
+                style={boxStyle}
+                scale={scale}
+                opacity={b.opacity}
+              />
+            ))}
+          </Fragment>
         );
       })}
     </>

@@ -4,6 +4,8 @@ The engine for a full-screen animated background. Canvas owns the surface, the s
 
 Layers paint back to front in declaration order. `depth` is the parallax rate: `0` pins a layer to the far field, `1` travels with the flight, and above `1` rushes past in the foreground. `phase` staggers siblings around the cycle so they do not all arrive together.
 
+`twinkle` scintillates a particle field. The bodies are dealt into phase buckets that flare at unrelated moments rather than brightening as one, and the bright ones grow a diffraction glint at the peak, so the effect reads as individual stars catching the light instead of the whole sky breathing.
+
 Mount a single `<BackdropHost>` at your app root and the surface is shared by every `<Backdrop>` beneath it, which keeps one drawing surface alive across navigation instead of one per screen. Without a host a `<Backdrop>` simply renders in place.
 
 **If you are not installing `@shopify/react-native-skia`, add one line to your Metro config.** It is an optional peer used by a future GPU renderer, and Backdrop draws perfectly without it. But Metro resolves `require("...")` at build time and ignores the guarded try/catch around it, so an absent optional peer is a hard bundling failure rather than a graceful runtime fallback. Stub it to an empty module in `metro.config.js`:
