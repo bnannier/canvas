@@ -1329,7 +1329,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     examples: [
       { label: "Default", code: "<InputOTP defaultValue=\"123\" />", render: e_atoms_input_otp_example_0 },
       { label: "Length", code: "<Column relaxed>\n  <InputOTP length={6} defaultValue=\"1234\" />\n  <InputOTP length={4} defaultValue=\"12\" />\n</Column>", render: e_atoms_input_otp_example_1 },
-      { label: "Grouped", code: "<Column relaxed>\n  <InputOTP length={6} groups={3} defaultValue=\"123\" />\n  <InputOTP length={8} groups={4} defaultValue=\"12345\" />\n</Column>", render: e_atoms_input_otp_example_2 },
+      { label: "Grouped", code: "<Column relaxed>\n  <InputOTP length={6} groups={3} defaultValue=\"123\" />\n  <InputOTP length={6} groups={2} small defaultValue=\"1234\" />\n</Column>", render: e_atoms_input_otp_example_2 },
       { label: "Alphanumeric", code: "<InputOTP length={6} alphanumeric defaultValue=\"G7X\" />", render: e_atoms_input_otp_example_3 },
       { label: "Masked", code: "<InputOTP masked defaultValue=\"1234\" />", render: e_atoms_input_otp_example_4 },
       { label: "Sizes", code: "<Column relaxed>\n  <InputOTP small defaultValue=\"123\" />\n  <InputOTP defaultValue=\"123\" />\n  <InputOTP large defaultValue=\"123\" />\n</Column>", render: e_atoms_input_otp_example_5 },

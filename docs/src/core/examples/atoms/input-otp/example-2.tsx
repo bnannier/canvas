@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Column relaxed>
   <InputOTP length={6} groups={3} defaultValue="123" />
-  <InputOTP length={8} groups={4} defaultValue="12345" />
+  <InputOTP length={6} groups={2} small defaultValue="1234" />
 </Column>
   );
 }

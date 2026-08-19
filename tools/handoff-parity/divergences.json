@@ -581,20 +581,10 @@
         "kind": "intentional-omission",
         "reason": "The focused cell is internal state; exposing it would let a caller desync the caret from the value."
       },
-      "groups": {
-        "kind": "open-gap",
-        "plannedIn": "unscheduled",
-        "reason": "Splitting the cells into dash-separated groups. Canvas renders one unbroken run."
-      },
       "numeric": {
-        "kind": "open-gap",
-        "plannedIn": "unscheduled",
-        "reason": "Restricting entry to digits and asking for the numeric keyboard."
-      },
-      "autoFocus": {
-        "kind": "open-gap",
-        "plannedIn": "unscheduled",
-        "reason": "Focusing the first cell on mount."
+        "kind": "renamed",
+        "to": "alphanumeric",
+        "reason": "Canvas names the INVERSE boolean. The hand-off's `numeric` defaults to true, and a default-true boolean reads backwards against the semantic-prop rule that passing a prop turns it on, so the kit spells the opt-out (`alphanumeric` accepts letters and asks for the text keyboard) the way `hideLegend`/`hideGrid`/`hideAxes` do."
       }
     },
     "LineChart": {
