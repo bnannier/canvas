@@ -146,7 +146,7 @@ export function AppShell({
         <View style={{ flex: 1 }} />
         <Avatar small name="Rachel Chen" />
       </Row>
-      <Column pad relaxed style={{ flex: 1 }}>
+      <Column pad relaxed fill>
         <Typography h4>Good morning, Rachel</Typography>
         <Row wrap relaxed>
           <Card raised grow title="$48,250" description="Revenue this week" />

@@ -1,6 +1,6 @@
 import { Component, type ReactNode, useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Tabs, Input, BackdropHost, OverlayProvider, useTheme } from "@nannier/canvas";
+import { ScrollView, View, Text, Column, Tabs, Input, BackdropHost, OverlayProvider, useTheme } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
@@ -28,10 +28,10 @@ export class ExampleErrorBoundary extends Component<{ children: ReactNode }, { e
 function ErrorNote({ message }: { message: string }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.destructive, padding: 10, gap: 4 }}>
+    <Column tight style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.destructive, padding: 10 }}>
       <Text style={{ fontFamily: geist("600"), fontSize: 12, color: tokens.destructive }}>Example failed to render</Text>
       <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>{message}</Text>
-    </View>
+    </Column>
   );
 }
 
@@ -96,11 +96,11 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
           context, so an open menu on an upper row is clipped by the cell and painted
           under lower rows. A single stage-level outlet floats overlays above every
           row instead. */}
-      <View style={{ minWidth: 0, alignItems: "center", justifyContent: "center", paddingVertical: 24, paddingHorizontal: 24, minHeight: 84 }}>
+      <Column flush center alignCenter padLoose style={{ minWidth: 0, minHeight: 84 }}>
         <ExampleErrorBoundary key={resetKey}>
           <FitStage align={stageAlign}>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
-      </View>
+      </Column>
       {showLabel ? (
         <View pointerEvents="none" style={{ position: "absolute", top: 8, left: 12 }}>
           <Text style={{ fontFamily: geist("600"), fontSize: 10, letterSpacing: 0.6, textTransform: "uppercase", color: tokens["muted-foreground"], opacity: 0.55 }}>

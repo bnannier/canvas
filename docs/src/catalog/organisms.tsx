@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, Row, Column, useTheme, alpha } from "@nannier/canvas";
 import Svg, { Path, Circle, Line, Polyline } from "react-native-svg";
 import { geist } from "../ui/fonts";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -19,14 +19,15 @@ function CalendarsPreview() {
         const selected = i === 14;
         const accent = i % 3 === 0;
         return (
-          <View
+          <Column
             key={i}
+            flush
+            center
+            alignCenter
             style={{
               width: (160 - 2 * 6) / 7,
               aspectRatio: 1,
               borderRadius: 4,
-              alignItems: "center",
-              justifyContent: "center",
               backgroundColor: selected ? tokens.primary : accent ? tokens.accent : "transparent",
             }}
           >
@@ -39,7 +40,7 @@ function CalendarsPreview() {
             >
               {i + 1}
             </Text>
-          </View>
+          </Column>
         );
       })}
     </View>
@@ -94,11 +95,10 @@ function CommandPalettePreview() {
 
 function StatusBadge({ label }: { label: string }) {
   return (
-    <View
+    <Row
+      tight
+      alignCenter
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 4,
         alignSelf: "flex-start",
         paddingVertical: 1,
         paddingHorizontal: 6,
@@ -109,7 +109,7 @@ function StatusBadge({ label }: { label: string }) {
     >
       <View style={{ width: 5, height: 5, borderRadius: 9999, backgroundColor: STATUS_SUCCESS }} />
       <Text style={{ fontFamily: geist("500"), fontSize: 9, color: STATUS_SUCCESS }}>{label}</Text>
-    </View>
+    </Row>
   );
 }
 
@@ -121,17 +121,17 @@ function DataTablesPreview() {
   ];
   return (
     <View style={{ width: 380, maxWidth: "100%", borderWidth: 1, borderColor: tokens.border, borderRadius: 10, overflow: "hidden" }}>
-      <View style={{ flexDirection: "row", backgroundColor: alpha(tokens.muted, 0.4), borderBottomWidth: 1, borderColor: tokens.border }}>
+      <Row flush style={{ backgroundColor: alpha(tokens.muted, 0.4), borderBottomWidth: 1, borderColor: tokens.border }}>
         <Text style={{ flex: 1, fontFamily: geist("500"), fontSize: 9, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], paddingVertical: 6, paddingHorizontal: 10 }}>Name</Text>
         <Text style={{ flex: 1, fontFamily: geist("500"), fontSize: 9, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], paddingVertical: 6, paddingHorizontal: 10 }}>Status</Text>
-      </View>
+      </Row>
       {rows.map(([name, status], i) => (
-        <View key={name} style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: i < rows.length - 1 ? 1 : 0, borderColor: tokens.border }}>
+        <Row key={name} flush alignCenter style={{ borderBottomWidth: i < rows.length - 1 ? 1 : 0, borderColor: tokens.border }}>
           <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 10, color: tokens.foreground, paddingVertical: 6, paddingHorizontal: 10 }}>{name}</Text>
           <View style={{ flex: 1, paddingVertical: 6, paddingHorizontal: 10 }}>
             <StatusBadge label={status} />
           </View>
-        </View>
+        </Row>
       ))}
     </View>
   );
@@ -141,7 +141,10 @@ function CheckRow({ label, checked }: { label: string; checked: boolean }) {
   const { tokens } = useTheme();
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-      <View
+      <Column
+        flush
+        center
+        alignCenter
         style={{
           width: 12,
           height: 12,
@@ -149,8 +152,6 @@ function CheckRow({ label, checked }: { label: string; checked: boolean }) {
           borderWidth: 1,
           borderColor: checked ? tokens.primary : tokens.input,
           backgroundColor: checked ? tokens.primary : tokens.background,
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         {checked ? (
@@ -158,7 +159,7 @@ function CheckRow({ label, checked }: { label: string; checked: boolean }) {
             <Polyline points="20 6 9 17 4 12" />
           </Svg>
         ) : null}
-      </View>
+      </Column>
       <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }}>{label}</Text>
     </View>
   );
@@ -167,11 +168,11 @@ function CheckRow({ label, checked }: { label: string; checked: boolean }) {
 function FilterPanelsPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ width: 180, maxWidth: "100%", padding: 8, gap: 4, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 10 }}>
+    <Column tight padTight style={{ width: 180, maxWidth: "100%", backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 10 }}>
       <Text style={{ fontFamily: geist("500"), fontSize: 8, letterSpacing: 0.4, textTransform: "uppercase", color: tokens["muted-foreground"], marginBottom: 2 }}>Status</Text>
       <CheckRow label="Active" checked />
       <CheckRow label="Inactive" checked={false} />
-    </View>
+    </Column>
   );
 }
 
@@ -179,13 +180,12 @@ function NavbarsPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ width: 260, maxWidth: "100%", borderWidth: 1, borderColor: tokens.border, borderRadius: 6, overflow: "hidden" }}>
-      <View
+      <Row
+        snug
+        alignCenter
         style={{
           height: 36,
           paddingHorizontal: 8,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
           backgroundColor: tokens.card,
           borderBottomWidth: 1,
           borderColor: tokens.border,
@@ -194,10 +194,10 @@ function NavbarsPreview() {
         <CanvasMark size={16} />
         <Text style={{ fontFamily: geist("600"), fontSize: 10, color: tokens.foreground }}>Canvas</Text>
         <View style={{ flex: 1 }} />
-        <View style={{ width: 24, height: 24, borderRadius: 9999, backgroundColor: tokens.muted, alignItems: "center", justifyContent: "center" }}>
+        <Column flush center alignCenter style={{ width: 24, height: 24, borderRadius: 9999, backgroundColor: tokens.muted }}>
           <Text style={{ fontFamily: geist("500"), fontSize: 9, color: tokens["muted-foreground"] }}>AL</Text>
-        </View>
-      </View>
+        </Column>
+      </Row>
     </View>
   );
 }
@@ -227,16 +227,16 @@ function SidebarPreview() {
 function DialogPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ width: 200, maxWidth: "100%", height: 64, alignItems: "center", justifyContent: "center" }}>
+    <Column flush center alignCenter style={{ width: 200, maxWidth: "100%", height: 64 }}>
       <View style={{ width: 130, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: 6, padding: 8 }}>
         <View style={{ height: 6, width: 56, borderRadius: 3, backgroundColor: alpha(tokens.foreground, 0.8), marginBottom: 6 }} />
         <View style={{ height: 4, width: "100%", borderRadius: 2, backgroundColor: alpha(tokens["muted-foreground"], 0.4), marginBottom: 8 }} />
-        <View style={{ flexDirection: "row", gap: 4, justifyContent: "flex-end" }}>
+        <Row tight end>
           <View style={{ height: 12, width: 28, borderRadius: 3, borderWidth: 1, borderColor: tokens.border }} />
           <View style={{ height: 12, width: 28, borderRadius: 3, backgroundColor: tokens.primary }} />
-        </View>
+        </Row>
       </View>
-    </View>
+    </Column>
   );
 }
 
@@ -244,19 +244,20 @@ function StepsPreview() {
   const { tokens } = useTheme();
   const steps = [true, true, false, false];
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", width: 220, maxWidth: "100%" }}>
+    <Row flush alignCenter style={{ width: 220, maxWidth: "100%" }}>
       {steps.map((done, i) => {
         const current = i === 2;
         const last = i === steps.length - 1;
         return (
-          <View key={i} style={{ flexDirection: "row", alignItems: "center", flex: last ? 0 : 1 }}>
-            <View
+          <Row key={i} flush alignCenter fill={!last}>
+            <Column
+              flush
+              center
+              alignCenter
               style={{
                 width: 20,
                 height: 20,
                 borderRadius: 10,
-                alignItems: "center",
-                justifyContent: "center",
                 backgroundColor: done ? tokens.primary : current ? "transparent" : tokens.muted,
                 borderWidth: current ? 2 : 0,
                 borderColor: current ? tokens.primary : "transparent",
@@ -269,14 +270,14 @@ function StepsPreview() {
               ) : (
                 <Text style={{ fontFamily: geist("600"), fontSize: 9, color: current ? tokens.primary : tokens["muted-foreground"] }}>{i + 1}</Text>
               )}
-            </View>
+            </Column>
             {!last ? (
               <View style={{ flex: 1, height: 2, marginHorizontal: 4, backgroundColor: done ? tokens.primary : tokens.muted }} />
             ) : null}
-          </View>
+          </Row>
         );
       })}
-    </View>
+    </Row>
   );
 }
 

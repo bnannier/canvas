@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { useWindowDimensions } from "react-native";
-import { View, Text, Pressable, Icon, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, Pressable, Icon, Row, Column, useTheme, alpha } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { geist } from "../ui/fonts";
 
@@ -27,12 +27,13 @@ export function Tile({ tile, width }: { tile: CatTile; width: number }) {
         overflow: "hidden",
       }}
     >
-      <View
+      <Column
+        flush
+        center
+        alignCenter
+        pad
         style={{
           aspectRatio: 16 / 9,
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 16,
           backgroundColor: alpha(tokens.muted, 0.3),
           borderBottomWidth: 1,
           borderColor: tokens.border,
@@ -40,11 +41,11 @@ export function Tile({ tile, width }: { tile: CatTile; width: number }) {
         }}
       >
         <Preview />
-      </View>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, paddingHorizontal: 12 }}>
+      </Column>
+      <Row flush between alignCenter style={{ paddingVertical: 10, paddingHorizontal: 12 }}>
         <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{tile.title}</Text>
         <Icon chevronRight size={12} muted />
-      </View>
+      </Row>
     </Pressable>
   );
 }
@@ -62,6 +63,9 @@ export function CatGrid({ tiles }: { tiles: CatTile[] }) {
   const w = measured || Math.max(280, Math.min(1400, winW >= 1024 ? winW - 240 : winW) - 56);
   const cols = w >= 680 ? 3 : w >= 420 ? 2 : 1;
   const colW = (w - gap * (cols - 1)) / cols;
+  // Stays a raw View: the grid measures itself, and Row does not forward onLayout
+  // (FlexProps carries children / style / testID only), so converting it would drop
+  // the measurement this layout depends on.
   return (
     <View onLayout={(e) => setMeasured(e.nativeEvent.layout.width)} style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
       {tiles.map((t) => (
@@ -75,19 +79,21 @@ export function CatGrid({ tiles }: { tiles: CatTile[] }) {
 export function CatGroup({ label, count, tiles }: { label: string; count: number; tiles: CatTile[] }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ gap: 12 }}>
-      <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" }}>
+    <Column cozy>
+      <Row flush between baseline>
         <Text style={{ fontFamily: geist("600"), fontSize: 18, letterSpacing: -0.18, color: tokens.foreground }}>{label}</Text>
         <Text style={{ fontFamily: geist("500"), fontSize: 11, letterSpacing: 0.88, textTransform: "uppercase", color: tokens["muted-foreground"] }}>
           {count} components
         </Text>
-      </View>
+      </Row>
       <CatGrid tiles={tiles} />
-    </View>
+    </Column>
   );
 }
 
-// The category pill bar with the total component count.
+// The category pill bar with the total component count. Stays a raw View: its 6px
+// gap sits between the tight (4) and snug (8) steps, so no Row gap prop reproduces
+// it and converting would move pixels.
 export function CatSubBar({ categories, total }: { categories: string[]; total: number }) {
   const { tokens } = useTheme();
   return (
@@ -173,5 +179,5 @@ export function MiniAvatar({ initials, size = 32, color, ring }: { initials: str
 
 // A labelled content row used by several previews.
 export function previewWrap(children: ReactNode): ReactNode {
-  return <View style={{ width: "100%", alignItems: "center", justifyContent: "center" }}>{children}</View>;
+  return <Column flush center alignCenter style={{ width: "100%" }}>{children}</Column>;
 }

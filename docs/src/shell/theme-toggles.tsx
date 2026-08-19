@@ -1,4 +1,4 @@
-import { View, Text, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@nannier/canvas";
+import { View, Text, Row, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@nannier/canvas";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 
@@ -48,7 +48,7 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
   return (
     <>
       <Text style={{ fontFamily: geist("500"), fontSize: 13, color: tokens["muted-foreground"] }}>Appearance</Text>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <Row snug alignCenter>
         {glassAvailable ? (
           <ButtonGroup
             segmented
@@ -59,7 +59,7 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
           />
         ) : null}
         {schemeToggle}
-      </View>
+      </Row>
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Platform, useWindowDimensions } from "react-native";
-import { View, Text, Button, Icon, Image, useTheme, useReducedMotion } from "@nannier/canvas";
+import { View, Text, Button, Row, Icon, Image, useTheme, useReducedMotion } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { COMPONENT_DOCS } from "../core/registry";
@@ -104,7 +104,7 @@ function Rotator() {
             chevrons out from under the cursor mid-cycle. LABEL_W clears the longest atom
             name ("Row & Column") with room to spare, and the name truncates rather than
             widening if a longer one is ever added. */}
-        <View style={{ width: LABEL_W, flexDirection: "row", alignItems: "baseline", justifyContent: "center", gap: 8 }}>
+        <Row snug center baseline style={{ width: LABEL_W }}>
           <Text
             numberOfLines={1}
             style={{ fontFamily: geist("600"), fontSize: 17, letterSpacing: -0.17, color: tokens.foreground, flexShrink: 1 }}
@@ -114,7 +114,7 @@ function Rotator() {
           <Text style={{ fontFamily: geistMono("400"), fontSize: 12, color: tokens["muted-foreground"] }}>
             {(index % ATOMS.length) + 1}/{ATOMS.length}
           </Text>
-        </View>
+        </Row>
         <Button ghost small iconLeft={<Icon chevronRight size={15} />} accessibilityLabel="Next atom" onPress={() => step(1)} />
       </View>
 
@@ -150,14 +150,14 @@ function Rotator() {
             </Text>
           </View>
         ) : null}
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+        <Row cozy wrap center>
           <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => router.push("/components" as never)}>
             See every component live
           </Button>
           <Button outline large onPress={() => router.push(`/components/${atom.slug}` as never)}>
             Open {atom.name}
           </Button>
-        </View>
+        </Row>
       </View>
     </View>
   );

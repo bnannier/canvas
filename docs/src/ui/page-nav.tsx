@@ -1,4 +1,4 @@
-import { View, Button, useTheme } from "@nannier/canvas";
+import { View, Row, Button, useTheme } from "@nannier/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { FLAT_PAGES, getActiveSlug } from "../data/nav";
 
@@ -17,11 +17,10 @@ export function PageNav() {
   const next = idx < FLAT_PAGES.length - 1 ? FLAT_PAGES[idx + 1] : undefined;
 
   return (
-    <View
+    <Row
+      between
+      cozy
       style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        gap: 12,
         marginTop: 12,
         paddingTop: 18,
         borderTopWidth: 1,
@@ -42,6 +41,6 @@ export function PageNav() {
       ) : (
         <View />
       )}
-    </View>
+    </Row>
   );
 }

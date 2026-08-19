@@ -8,7 +8,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputKeyPressEventData,
 } from "react-native";
-import { View, Text, Pressable, TextInput, Icon, useTheme, GlassSurface, alpha } from "@nannier/canvas";
+import { View, Text, Pressable, Column, TextInput, Icon, useTheme, GlassSurface, alpha } from "@nannier/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { search } from "../core/data/search";
@@ -152,15 +152,15 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
       keyboardShouldPersistTaps="handled"
     >
       {!query ? (
-        <View style={{ padding: 24, alignItems: "center" }}>
+        <Column flush alignCenter padLoose>
           <Text style={{ fontFamily: geist("400"), fontSize: 13, color: tokens["muted-foreground"], textAlign: "center" }}>
             Type to search components, tokens, and guides.
           </Text>
-        </View>
+        </Column>
       ) : results.length === 0 ? (
-        <View style={{ padding: 24, alignItems: "center" }}>
+        <Column flush alignCenter padLoose>
           <Text style={{ fontFamily: geist("400"), fontSize: 13, color: tokens["muted-foreground"] }}>No results found.</Text>
-        </View>
+        </Column>
       ) : (
         <View style={{ paddingVertical: 6 }}>
           {grouped.map(([category, items]) => (
