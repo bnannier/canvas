@@ -27,9 +27,9 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | Present in the kit | 73 |
 | Absent (tracked) | 2 |
 | Hand-off props compared | 725 |
-| Same name, present | 512 |
+| Same name, present | 515 |
 | Settled divergences | 151 |
-| Open gaps (tracked) | 62 |
+| Open gaps (tracked) | 59 |
 | Metric gaps (not detectable here) | 1 |
 | **Unclassified** | **0** |
 
@@ -76,9 +76,6 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `Input` | `submitted` | phase-4 | Forces every field to report for a form's submit pass. |
 | `Input` | `showValid` | phase-4 | The success border and tick once a value passes. |
 | `Input` | `onValidate` | phase-4 | Reports the current error to the parent. |
-| `InputOTP` | `groups` | unscheduled | Splitting the cells into dash-separated groups. Canvas renders one unbroken run. |
-| `InputOTP` | `numeric` | unscheduled | Restricting entry to digits and asking for the numeric keyboard. |
-| `InputOTP` | `autoFocus` | unscheduled | Focusing the first cell on mount. |
 | `LineChart` | `crosshair` | unscheduled | A tracking crosshair on hover/scrub. Canvas ships scrub-to-inspect with a value flag instead, which is a different affordance. |
 | `LineChart` | `valueLabels` | unscheduled | Printing each datum's value beside its point. Canvas shows values only on scrub. |
 | `LineChart` | `unit` | unscheduled | A unit suffix on chart values. Canvas expects `formatValue` to append it, which cannot reach every readout. |
@@ -213,8 +210,8 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Input` | `defaultValue` | Renamed | `defaultSelected`, `defaultActive` | Paired seed prop for the renamed controlled prop above. |
 | `Input` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
 | `Input` | `type` | Web-only | — | The DOM <input type> attribute. Canvas carries the shape rule as `validateAs` and the masking as `password`/`masked`. |
-| `InputOTP` | `defaultValue` | Renamed | `defaultSelected`, `defaultActive` | Paired seed prop for the renamed controlled prop above. |
 | `InputOTP` | `active` | Not offered | — | The focused cell is internal state; exposing it would let a caller desync the caret from the value. |
+| `InputOTP` | `numeric` | Renamed | `alphanumeric` | Canvas names the INVERSE boolean. The hand-off's `numeric` defaults to true, and a default-true boolean reads backwards against the semantic-prop rule that passing a prop turns it on, so the kit spells the opt-out (`alphanumeric` accepts letters and asks for the text keyboard) the way `hideLegend`/`hideGrid`/`hideAxes` do. |
 | `InputOTP` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
 | `LineChart` | `xLabels` | Renamed | `labels` | The cartesian frame calls its category axis `labels`; there is no second label axis to disambiguate from. |
 | `LineChart` | `height` | Not offered | — | Canvas charts size themselves from the skin's plot height and the `compact` axis, so a caller never hand-sets a pixel height. |
