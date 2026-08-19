@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea } = scope;
   return (
-<Textarea label="Description" showCount maxLength={280} rows={4} wide placeholder="A few words about this project…" />
+<Textarea label="Bio" required rows={4} placeholder="Tell us about yourself…" />
   );
 }

@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { InputOTP, Column } = scope;
   return (
 <Column relaxed>
-  <InputOTP length={6} defaultValue="1234" />
-  <InputOTP length={4} defaultValue="12" />
+  <InputOTP length={6} />
+  <InputOTP length={4} />
 </Column>
   );
 }

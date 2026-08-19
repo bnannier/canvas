@@ -5,7 +5,7 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 ## Usage
 
 ```tsx
-<InputOTP defaultValue="123" />
+<InputOTP />
 ```
 
 ## Variants
@@ -14,8 +14,8 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 
 ```tsx
 <Column relaxed>
-  <InputOTP length={6} defaultValue="1234" />
-  <InputOTP length={4} defaultValue="12" />
+  <InputOTP length={6} />
+  <InputOTP length={4} />
 </Column>
 ```
 
@@ -23,15 +23,15 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 
 ```tsx
 <Column relaxed>
-  <InputOTP length={6} groups={3} defaultValue="123" />
-  <InputOTP length={6} groups={2} small defaultValue="1234" />
+  <InputOTP length={6} groups={3} />
+  <InputOTP length={6} groups={2} small />
 </Column>
 ```
 
 ### Alphanumeric
 
 ```tsx
-<InputOTP length={6} alphanumeric defaultValue="G7X" />
+<InputOTP length={6} alphanumeric defaultValue="G" />
 ```
 
 ### Masked
@@ -44,9 +44,9 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 
 ```tsx
 <Column relaxed>
-  <InputOTP small defaultValue="123" />
-  <InputOTP defaultValue="123" />
-  <InputOTP large defaultValue="123" />
+  <InputOTP small />
+  <InputOTP />
+  <InputOTP large />
 </Column>
 ```
 
@@ -74,7 +74,7 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 **Do** — Size the field to the real code length with `length`, and split a long code with `groups` so the eye can chunk it the way the sender wrote it.
 
 ```tsx
-<InputOTP length={6} groups={3} defaultValue="123" />
+<InputOTP length={6} groups={3} />
 ```
 
 **Don't** — Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.
