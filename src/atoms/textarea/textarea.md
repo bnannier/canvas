@@ -16,6 +16,12 @@ Multi-line input, with character count, with toolbar. Pass `label` (and `require
 <Textarea label="Description" rows={4} placeholder="A few words about this project…" />
 ```
 
+### Pre-filled
+
+```tsx
+<Textarea label="Description" rows={4} defaultValue="Canvas renders the same components natively on iOS and Android and on the web." />
+```
+
 ### Required
 
 ```tsx

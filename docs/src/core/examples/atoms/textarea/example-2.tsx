@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea } = scope;
   return (
-<Textarea label="Bio" required rows={4} placeholder="Tell us about yourself…" />
+<Textarea label="Description" rows={4} defaultValue="Canvas renders the same components natively on iOS and Android and on the web." />
   );
 }

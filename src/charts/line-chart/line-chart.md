@@ -52,6 +52,19 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 />
 ```
 
+### Compact
+
+```tsx
+<LineChart
+  compact
+  title="Signups"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[{ label: "Signups", values: [24, 31, 28, 42, 39, 47, 51] }]}
+  curved
+  style={{ maxWidth: 420 }}
+/>
+```
+
 ### Formatted values
 
 ```tsx

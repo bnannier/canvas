@@ -3,18 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Divider, Textarea, Row } = scope;
+  const { Textarea } = scope;
   return (
-<Card flat flush style={{ width: 400, maxWidth: "100%", overflow: "hidden" }}>
-  <Row alignCenter tight padTight>
-    <Button ghost small>B</Button>
-    <Button ghost small>I</Button>
-    <Button ghost small>{"</>"}</Button>
-    <Divider vertical style={{ height: 16 }} />
-    <Button ghost small>Comment</Button>
-  </Row>
-  <Divider />
-  <Textarea rows={4} flush placeholder="Leave a comment…" />
-</Card>
+<Textarea label="Description" showCount maxLength={280} rows={4} wide placeholder="A few words about this project…" />
   );
 }
