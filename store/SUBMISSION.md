@@ -20,7 +20,30 @@ truth for both stores' data declarations.
 | Google Play Developer account | **FULLY VERIFIED (29 Jul 2026).** Legal name "Robert Nannier", personal, ID `7346390607155774694`. Identity AND phone verification both cleared. |
 | Play app record | **CREATED 29 Jul 2026.** "Canvas UI Kit", package `com.nannier.canvas` (permanent), app ID `4973468766485983757`, free (cannot become paid after publishing). |
 | Android build for Play | **BUILT**, EAS `0b0e49b9`, v1.0.0 **versionCode 6**, production/app-bundle, from `4d2d2e96`. Deliberately NOT the older versionCode 5 build: that one predates the /licenses screen, so it would ship the OFL gap, since the Android binary bundles Geist too. |
-| Play upload | **BLOCKED on a Google Service Account key.** `eas submit` fails with "Google Service Account Keys cannot be set up in --non-interactive mode", and creating one is a Google Cloud credential flow. Upload the .aab by hand, or set the key up once and EAS handles it thereafter. |
+| Play upload | **AUTOMATED (19 Aug 2026).** versionCode 6 is uploaded and sits as a DRAFT release on the internal track. `eas submit -p android` now works end to end. |
+| Play publishing automation | **DONE.** GCP project `canvas-play-publishing`, Google Play Android Developer API enabled, service account `play-publisher@canvas-play-publishing.iam.gserviceaccount.com` granted app-scoped "Release apps to testing tracks" on Canvas UI Kit (no admin, no production, no financial). Key attached to EAS; repo variable `PLAY_SUBMIT_ENABLED=true`, so the deploy workflow now auto-submits. |
+
+### Setting up Play auto-submit (done, recorded so it is not re-derived)
+
+The chain, in order. Steps 1-2 and 4 need a human; 3 and 5 are console/CLI work.
+
+1. Google Cloud: create a project, enable the **Google Play Android Developer API**.
+2. Create a service account (no IAM roles; its power comes from Play, not GCP), then
+   **Keys -> Add key -> JSON**. That download is a live credential with release access.
+3. Play Console -> **Users and permissions -> Invite new users**: paste the service
+   account email, add the app, grant **Release apps to testing tracks**. Least privilege:
+   do NOT grant Admin or production. Service accounts go straight to Active, no email
+   acceptance. NOTE the flow ends in a **"Send invite?" confirmation dialog** that is easy
+   to miss; navigating away silently discards the whole invite.
+4. `cd docs && npx eas-cli credentials --platform android`. TWO separate operations here
+   and the wording is nearly identical: "Upload a Google Service Account Key" only stores
+   it, and **"Manage your Google Service Account Key for Play Store Submissions" ->
+   "Select an existing..."** is what BINDS it to the package. Until it is bound,
+   `eas submit` keeps failing with "Google Service Account Keys cannot be set up in
+   --non-interactive mode", which reads like a flag problem and is not.
+5. `gh variable set PLAY_SUBMIT_ENABLED --repo bnannier/canvas --body true`.
+
+Delete the JSON from disk afterwards; EAS holds its own copy on its servers.
 | Play identity verification | **PASSED (29 Jul 2026).** Confirmed by the console switching the account name from "Bobby Nannier" to the legal name "Robert Nannier" and dropping the step from the checklist. NOTE it briefly regressed to "Verify your identity / Get started" on 28 Jul before clearing, so a reset there is not necessarily a rejection. |
 | Play phone verification | **THE ONLY REMAINING BLOCKER.** Number `+14166693676` is entered; it needs the SMS code, which only the account owner can receive. `Create app` stays locked until it clears, so there is no app record, no package name and no upload before then. |
 | Apple Developer Program membership | Active, team `ZR2R53SLS7` |
