@@ -17,7 +17,10 @@ truth for both stores' data declarations.
 | Public privacy policy URL | **LIVE and verified HTTP 200**, `https://canvas.nannier.com/privacy/` |
 | Android production `.aab` | **Built and ready**, v1.0.0 versionCode 3, SDK 57, from commit `d5daa866` |
 | Android upload keystore | Generated and held by EAS |
-| Google Play Developer account | **EXISTS** (checked 26 Jul 2026): "Bobby Nannier", personal, ID `7346390607155774694`. |
+| Google Play Developer account | **FULLY VERIFIED (29 Jul 2026).** Legal name "Robert Nannier", personal, ID `7346390607155774694`. Identity AND phone verification both cleared. |
+| Play app record | **CREATED 29 Jul 2026.** "Canvas UI Kit", package `com.nannier.canvas` (permanent), app ID `4973468766485983757`, free (cannot become paid after publishing). |
+| Android build for Play | **BUILT**, EAS `0b0e49b9`, v1.0.0 **versionCode 6**, production/app-bundle, from `4d2d2e96`. Deliberately NOT the older versionCode 5 build: that one predates the /licenses screen, so it would ship the OFL gap, since the Android binary bundles Geist too. |
+| Play upload | **BLOCKED on a Google Service Account key.** `eas submit` fails with "Google Service Account Keys cannot be set up in --non-interactive mode", and creating one is a Google Cloud credential flow. Upload the .aab by hand, or set the key up once and EAS handles it thereafter. |
 | Play identity verification | **PASSED (29 Jul 2026).** Confirmed by the console switching the account name from "Bobby Nannier" to the legal name "Robert Nannier" and dropping the step from the checklist. NOTE it briefly regressed to "Verify your identity / Get started" on 28 Jul before clearing, so a reset there is not necessarily a rejection. |
 | Play phone verification | **THE ONLY REMAINING BLOCKER.** Number `+14166693676` is entered; it needs the SMS code, which only the account owner can receive. `Create app` stays locked until it clears, so there is no app record, no package name and no upload before then. |
 | Apple Developer Program membership | Active, team `ZR2R53SLS7` |
@@ -223,8 +226,19 @@ Guideline 2.3.10 (see below). Do not put it back. `ipad` took the freed slot.
 **Short description** (80 max):
 > Live, interactive reference for the Canvas React Native component library.
 
-**Full description** (4000 max): reuse the App Store description above; Play renders
-plain text and accepts the same copy.
+**Full description** (4000 max): the two stores now DIVERGE, do not copy blindly.
+
+Apple made us strip every Android reference under Guideline 2.3.10, so the App Store copy
+above is iOS-only and its heading reads "BUILT THE WAY iOS EXPECTS". That text is wrong on
+Google Play. For Play, use the ORIGINAL cross-platform wording:
+
+> BUILT FOR ONE API ON EVERY PLATFORM
+>
+> Canvas components adapt their look to the platform they run on, following Material Design
+> here and iOS design conventions on Apple devices, from a single component API. This app is
+> the clearest way to see that: it is built entirely from the library it documents.
+
+Everything above that section is shared between the two stores.
 
 **Category**: `Tools` (alternative: `Libraries & Demo`)
 **Contact email**: required by Play and shown publicly, so use an address intended for
