@@ -10,12 +10,18 @@ express.
 
 Every difference is adjudicated in `tools/handoff-parity/divergences.json`. **Settled** ones are
 closed questions. **Open gaps** are real missing capabilities, acknowledged and tracked. The check
-fails only on a difference recorded in neither place, so a hand-off revision surfaces loudly.
+fails on a difference recorded in neither place, so a hand-off revision surfaces loudly, and on a
+**broken redirect**: a settled record naming a Canvas prop that does not exist. That guard was
+added after three records (`Gauge.size`, `PieChart.size`, `Drawer.size`) were found pointing at
+`small`/`large` props their components had never had, which read as settled parity and sent
+documentation examples chasing props that silently do nothing.
 
 **What this check cannot see.** It compares the prop SURFACE, not what a prop resolves to. Where
 a name exists on both sides it is counted satisfied even if the two render different metrics, so
 a scale or spacing drift passes silently. Those are recorded under Metric gaps below, from
-measurement rather than from this check. It also compares against a committed snapshot of the
+measurement rather than from this check. Redirect TARGETS are verified, so a settled record
+cannot name a prop that is absent, but nothing checks that the target is the RIGHT prop. It also
+compares against a committed snapshot of the
 hand-off, so it cannot tell you the snapshot itself has fallen behind the design source; refresh
 it with `tools/handoff-parity/extract.ts --from <export>`.
 
@@ -27,9 +33,9 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | Present in the kit | 73 |
 | Absent (tracked) | 2 |
 | Hand-off props compared | 725 |
-| Same name, present | 515 |
-| Settled divergences | 151 |
-| Open gaps (tracked) | 59 |
+| Same name, present | 520 |
+| Settled divergences | 148 |
+| Open gaps (tracked) | 57 |
 | Metric gaps (not detectable here) | 1 |
 | **Unclassified** | **0** |
 
@@ -59,13 +65,12 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `Drawer` | `title` | unscheduled | Canvas's Drawer is a bare panel; the caller supplies its own header. The hand-off's owns title/description/footer chrome. |
 | `Drawer` | `description` | unscheduled | As above. |
 | `Drawer` | `footer` | unscheduled | As above. |
+| `Gauge` | `size` | unscheduled | A size axis for the dial. GaugeProps carries no size lever at all, so a Gauge is one size everywhere. This was recorded as a settled boolean axis pointing at `small`/`large`, which the component has never had. |
 | `Heatmap` | `startDay` | unscheduled | Which weekday the grid starts on. Canvas fixes it. |
 | `Heatmap` | `subtitle` | unscheduled | A muted second line under a chart title. Canvas charts carry `title` only. |
 | `Input` | `helper` | phase-3 | The muted hint line under a field. Only Autocomplete has one today (as `helperText`, unlinked for a11y); Field and the shared message chrome give every field family one. |
 | `Input` | `password` | unscheduled | Masking plus a reveal toggle the field owns. Canvas has `masked` on InputOTP only, so every caller currently wires its own eye button. |
-| `Input` | `onBlur` | phase-4 | Needed by the validation display gate, which reports on blur. |
 | `Input` | `minLength` | phase-4 | Part of the validation rule chain. |
-| `Input` | `maxLength` | phase-4 | Part of the validation rule chain (a reporting rule, not a hard cap). |
 | `Input` | `pattern` | phase-4 | Part of the validation rule chain. |
 | `Input` | `min` | phase-4 | Part of the validation rule chain. |
 | `Input` | `max` | phase-4 | Part of the validation rule chain. |
@@ -101,7 +106,6 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `TabBar` | `minimized` | unscheduled | The controlled counterpart of the above. |
 | `TabBar` | `scrollRef` | unscheduled | The scroll view the bar watches to drive minimizing. |
 | `Textarea` | `helper` | phase-3 | The muted hint line under a field. Only Autocomplete has one today (as `helperText`, unlinked for a11y); Field and the shared message chrome give every field family one. |
-| `Textarea` | `maxLength` | phase-4 | Part of the validation rule chain; Textarea already uses maxLength for `showCount` but not as a reporting rule. |
 | `Tooltip` | `children` | unscheduled | Wrapping an arbitrary node as the tooltip target. Canvas's Tooltip renders its own trigger from a `trigger` string in one of three flavors (button, icon button, inline word) and cannot attach to a caller's node. |
 | `Tooltip` | `reveal` | unscheduled | Choosing the entrance animation (lift, scale, fade, none). Canvas fixes one reveal. |
 | `Tooltip` | `brisk` | unscheduled | Running the reveal at 90ms instead of 140ms. Canvas fixes the timing on Tooltip (its Reveal component does expose `brisk`). |
@@ -188,12 +192,11 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Drawer` | `side` | Boolean axis | `top`, `bottom`, `left`, `right` | String-enum placement is rejected; Canvas spells each side as its own boolean. |
 | `Drawer` | `onClose` | Renamed | `onOpenChange` | Canvas's controllable-state convention pairs `open`/`defaultOpen` with `onOpenChange`, which reports both directions rather than close only. |
 | `Drawer` | `glass` | Not offered | — | Glass is a theming-level surface mode in Canvas (`<ThemeProvider glass>` / `data-surface`), never a per-component prop. CLAUDE.md forbids adding one. |
-| `Drawer` | `size` | Boolean axis | `small`, `large` | Canvas rejects string and numeric size props; every size axis is flat booleans (CLAUDE.md 'Semantic prop styling'). |
+| `Drawer` | `size` | Renamed | `width` | Canvas sizes a side drawer with a pixel `width` (default 288), not a size axis; it is ignored for the bottom/top sheet, which spans the edge it rises from. |
 | `Dropdown` | `align` | Boolean axis | `alignEnd` | String-enum alignment is rejected; Canvas spells the non-default end as a boolean. |
 | `EmptyState` | `action` | Renamed | `actionLabel`, `onAction` | Label plus handler rather than a ReactNode, so the empty state owns its button's look. |
 | `Feed` | `avatars` | Renamed | `avatar` | One boolean turning the avatar column on, rather than a list; each item carries its own image. |
 | `Gauge` | `max` | Not offered | — | Canvas's Gauge is fixed to a 0-100 percentage, which is what its semicircle readout is built around. |
-| `Gauge` | `size` | Boolean axis | `small`, `large` | Canvas rejects string and numeric size props; every size axis is flat booleans (CLAUDE.md 'Semantic prop styling'). |
 | `GridList` | `columns` | Boolean axis | `cols2`, `cols3` | A numeric column count is rejected; the two supported densities are booleans that also drive the responsive collapse. |
 | `GridList` | `renderItem` | Not offered | — | Canvas's GridList owns its tile anatomy from `items`; a render prop would let callers rebuild the tile and drift from the kit. |
 | `Heatmap` | `days` | Renamed | `values` | Canvas takes one flat value series and derives the calendar grid from it. |
@@ -207,7 +210,6 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Icon` | `name` | Boolean axis | — | Canvas exposes every glyph as its own boolean prop (`<Icon shield />`), so the glyph set is type-checked at the call site rather than stringly-typed. |
 | `Input` | `iconLeft` | Renamed | `icon`, `leadingIcon` | Canvas pairs one `icon` glyph with the boolean that places it. |
 | `Input` | `iconRight` | Renamed | `icon`, `trailingIcon` | As above. |
-| `Input` | `defaultValue` | Renamed | `defaultSelected`, `defaultActive` | Paired seed prop for the renamed controlled prop above. |
 | `Input` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
 | `Input` | `type` | Web-only | — | The DOM <input type> attribute. Canvas carries the shape rule as `validateAs` and the masking as `password`/`masked`. |
 | `InputOTP` | `active` | Not offered | — | The focused cell is internal state; exposing it would let a caller desync the caret from the value. |
@@ -230,7 +232,7 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Navbar` | `glass` | Not offered | — | Glass is a theming-level surface mode in Canvas (`<ThemeProvider glass>` / `data-surface`), never a per-component prop. CLAUDE.md forbids adding one. |
 | `Pagination` | `pages` | Renamed | `total`, `itemCount`, `pageSize` | Canvas derives the page count from the item total and page size so the two cannot disagree. |
 | `PieChart` | `data` | Renamed | `slices` | Named for what a pie is made of, matching `series` on the cartesian charts. |
-| `PieChart` | `size` | Boolean axis | `small`, `large` | Canvas rejects string and numeric size props; every size axis is flat booleans (CLAUDE.md 'Semantic prop styling'). |
+| `PieChart` | `size` | Boolean axis | `compact` | Canvas spells the size change as its density axis: `compact` takes the chart from 160 to 120 and the centre readout from 24 to 20. There is one smaller step and no larger one, so the hand-off's `large` has no equivalent. |
 | `PieChart` | `thickness` | Renamed | `donut` | Canvas offers the donut as a boolean with a token-set ring width rather than a caller pixel value. |
 | `PieChart` | `title` | Renamed | `label` | Canvas's PieChart names its heading `label`. |
 | `PieChart` | `legend` | Renamed | `hideLegend` | Shown by default; the inverse boolean suppresses it. |
@@ -257,7 +259,7 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Spinner` | `size` | Boolean axis | `small`, `large` | Canvas rejects string and numeric size props; every size axis is flat booleans (CLAUDE.md 'Semantic prop styling'). |
 | `Spinner` | `label` | Renamed | `children` | Spinner owns its label as children, with `description` for the second line. |
 | `Spinner` | `style` | Not offered | — | Spinner takes no style prop; it is sized by its boolean axis and positioned by its parent. |
-| `StackedBar` | `categories` | Renamed | `labels` | The cartesian frame calls its category axis `labels`. |
+| `StackedBar` | `categories` | Not offered | — | Canvas's StackedBar is a single proportional strip whose parts each carry their own label, so there is no category axis to name. The cartesian `labels` prop belongs to the multi-column charts and does not exist here. |
 | `StackedBar` | `series` | Renamed | `segments` | Canvas's StackedBar is a single proportional bar whose parts are `segments`, not a multi-series cartesian chart. |
 | `StackedBar` | `title` | Not offered | — | Canvas's StackedBar is a bare strip meant to sit inside a Card that carries the heading. |
 | `StackedBar` | `height` | Not offered | — | Canvas charts size themselves from the skin's plot height and the `compact` axis, so a caller never hand-sets a pixel height. |
@@ -267,16 +269,15 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `StackedBar` | `yTicks` | Not offered | — | Canvas's chart-math nices the domain and picks its own tick count; `min`/`max` bound it instead. |
 | `StackedBar` | `compact` | Not offered | — | The strip has one density; its height is a skin metric. |
 | `StackedList` | `divided` | Not offered | — | Canvas always draws the row hairlines; they are what makes it a stacked list. |
-| `StackedList` | `onItemClick` | Renamed | `onItemPress` | React Native press naming. |
+| `StackedList` | `onItemClick` | Renamed | `onPressItem` | React Native press naming, with the object the handler reports last: `onPressItem`. |
 | `Stats` | `columns` | Not offered | — | Stats reflows intrinsically from a minimum tile width rather than a fixed column count, so it adapts inside any parent. |
 | `TabBar` | `glass` | Not offered | — | Glass is a theming-level surface mode in Canvas (`<ThemeProvider glass>` / `data-surface`), never a per-component prop. CLAUDE.md forbids adding one. |
 | `Tabs` | `items` | Renamed | `tabs` | Named for what they are, matching the component. |
 | `Tabs` | `value` | Renamed | `active` | Canvas's tab state is `active`/`defaultActive`/`onChange`. |
 | `Tabs` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
-| `Textarea` | `defaultValue` | Renamed | `defaultSelected`, `defaultActive` | Paired seed prop for the renamed controlled prop above. |
 | `Textarea` | `onChange` | Renamed | `onChangeText`, `onSelect`, `onValueChange` | Canvas names the callback for what it reports, per the controllable-state naming table. |
-| `Toast` | `title` | Renamed | `children` | Toast owns its message as children, with `description` for the second line. |
-| `Toast` | `onClose` | Renamed | `onOpenChange` | Canvas's controllable-state convention pairs `open`/`defaultOpen` with `onOpenChange`, which reports both directions rather than close only. |
+| `Toast` | `title` | Renamed | `message` | Toast owns its text as `message`, with `description` for the second line. |
+| `Toast` | `onClose` | Renamed | `onDismiss` | Canvas's Toast reports dismissal only (there is no open/close duality to report), so the callback is named for what it reports. |
 | `Tooltip` | `side` | Boolean axis | `top`, `bottom`, `left`, `right` | String-enum placement is rejected; Canvas spells each side as its own boolean. |
 | `Typography` | `as` | Web-only | — | Choosing the rendered HTML element. React Native has no element to choose; the role props set the type scale and the accessibility role. |
 
