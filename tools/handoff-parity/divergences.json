@@ -400,6 +400,11 @@
         "kind": "open-gap",
         "plannedIn": "unscheduled",
         "reason": "As above."
+      },
+      "size": {
+        "kind": "renamed",
+        "to": "width",
+        "reason": "Canvas sizes a side drawer with a pixel `width` (default 288), not a size axis; it is ignored for the bottom/top sheet, which spans the edge it rises from."
       }
     },
     "Dropdown": {},
@@ -424,6 +429,11 @@
       "max": {
         "kind": "intentional-omission",
         "reason": "Canvas's Gauge is fixed to a 0-100 percentage, which is what its semicircle readout is built around."
+      },
+      "size": {
+        "kind": "open-gap",
+        "plannedIn": "unscheduled",
+        "reason": "A size axis for the dial. GaugeProps carries no size lever at all, so a Gauge is one size everywhere. This was recorded as a settled boolean axis pointing at `small`/`large`, which the component has never had."
       }
     },
     "GridList": {
@@ -715,6 +725,11 @@
         "kind": "renamed",
         "to": "hideLegend",
         "reason": "Shown by default; the inverse boolean suppresses it."
+      },
+      "size": {
+        "kind": "boolean-axis",
+        "to": "compact",
+        "reason": "Canvas spells the size change as its density axis: `compact` takes the chart from 160 to 120 and the centre readout from 24 to 20. There is one smaller step and no larger one, so the hand-off's `large` has no equivalent."
       }
     },
     "Popover": {
@@ -840,9 +855,8 @@
     },
     "StackedBar": {
       "categories": {
-        "kind": "renamed",
-        "to": "labels",
-        "reason": "The cartesian frame calls its category axis `labels`."
+        "kind": "intentional-omission",
+        "reason": "Canvas's StackedBar is a single proportional strip whose parts each carry their own label, so there is no category axis to name. The cartesian `labels` prop belongs to the multi-column charts and does not exist here."
       },
       "series": {
         "kind": "renamed",
@@ -888,8 +902,8 @@
       },
       "onItemClick": {
         "kind": "renamed",
-        "to": "onItemPress",
-        "reason": "React Native press naming."
+        "to": "onPressItem",
+        "reason": "React Native press naming, with the object the handler reports last: `onPressItem`."
       },
       "selectedId": {
         "kind": "open-gap",
@@ -953,8 +967,13 @@
     "Toast": {
       "title": {
         "kind": "renamed",
-        "to": "children",
-        "reason": "Toast owns its message as children, with `description` for the second line."
+        "to": "message",
+        "reason": "Toast owns its text as `message`, with `description` for the second line."
+      },
+      "onClose": {
+        "kind": "renamed",
+        "to": "onDismiss",
+        "reason": "Canvas's Toast reports dismissal only (there is no open/close duality to report), so the callback is named for what it reports."
       }
     },
     "Tooltip": {

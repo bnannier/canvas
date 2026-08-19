@@ -86,6 +86,20 @@ function ownMembers(body: string): Set<string> {
 }
 
 /**
+ * A `type X = Pick<Y, "a" | "b">` alias, read as the set of names it picks. The picked names are
+ * string literals, so the base type never has to be resolved. Needed because the field family
+ * inherits its behavior slice this way (`TextEntryProps = Pick<RNTextInputProps, "defaultValue" |
+ * …>`), and without it every prop in that slice reads as missing: `Input.defaultValue` and
+ * `Textarea.defaultValue` both reported as divergences while being present all along.
+ */
+function pickedMembers(src: string, name: string): Set<string> | null {
+  const m = new RegExp(`type\\s+${name}\\s*=\\s*Pick<[^,]+,([^>]+)>`).exec(src);
+  if (!m) return null;
+  const names = [...m[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]);
+  return names.length ? new Set(names) : null;
+}
+
+/**
  * Every prop an interface exposes, including inherited ones. Resolving `extends` is essential and
  * not optional: `AreaChartProps extends CartesianSeriesProps`, so an own-members-only read reports
  * every inherited prop as missing and the whole report becomes noise.
@@ -94,7 +108,7 @@ function allMembers(src: string, name: string, seen = new Set<string>()): Set<st
   if (seen.has(name)) return new Set();
   seen.add(name);
   const found = interfaceAt(src, name);
-  if (!found) return null;
+  if (!found) return pickedMembers(src, name);
   const props = ownMembers(found.body);
   const ext = found.heritage.match(/extends\s+([^{]+)/);
   if (ext) {
@@ -143,9 +157,37 @@ interface Row {
   divergence?: Divergence;
 }
 
+/**
+ * A `renamed` / `boolean-axis` record is a CLAIM: "the kit carries this capability, under this
+ * name". Nothing used to test the claim, because the check only ever looks up the HAND-OFF's name
+ * and, on missing it, believes whatever the record says. So a record could point at a prop that
+ * does not exist and the difference still counted as settled: `Gauge.size` claimed `small`/`large`
+ * on a component with no size axis at all, and writing docs against that claim produced three
+ * "sizes" that rendered identically. Every redirect target is verified here instead.
+ *
+ * A target that names a COMPONENT rather than a prop is legitimate (`LineChart.area` redirects to
+ * the AreaChart component, `StackedBar.grouped` to Chart), so a PascalCase target is accepted when
+ * the kit really exports a props interface under that name.
+ */
+function brokenRedirect(
+  canvas: Set<string>,
+  component: string,
+  prop: string,
+  d: Divergence,
+): string | null {
+  if (d.kind !== "renamed" && d.kind !== "boolean-axis") return null;
+  const targets = (Array.isArray(d.to) ? d.to : d.to ? [d.to] : []).filter((t) => t && t !== "—");
+  if (!targets.length) return null;
+  const resolves = (t: string) =>
+    canvas.has(t) || (/^[A-Z]/.test(t) && allMembers(dist, `${t}Props`) !== null);
+  if (targets.some(resolves)) return null;
+  return `${component}.${prop} (${d.kind}) redirects to ${targets.map((t) => `\`${t}\``).join(", ")}, which ${targets.length > 1 ? "do" : "does"} not exist on ${component}Props`;
+}
+
 const missingComponents: { name: string; tier: string; props: number; divergence?: Divergence }[] = [];
 const classified: Row[] = [];
 const unclassified: Row[] = [];
+const brokenRedirects: string[] = [];
 let satisfied = 0;
 let handoffProps = 0;
 
@@ -168,8 +210,11 @@ for (const [name, comp] of Object.entries(snapshot.components)) {
     }
     const d = divergences.components[name]?.[prop] ?? divergences.global[prop];
     const row: Row = { component: name, tier: comp.tier, prop, type: meta.type, doc: meta.doc, divergence: d };
-    if (d) classified.push(row);
-    else unclassified.push(row);
+    if (d) {
+      classified.push(row);
+      const bad = brokenRedirect(canvas, name, prop, d);
+      if (bad) brokenRedirects.push(bad);
+    } else unclassified.push(row);
   }
 }
 
@@ -208,14 +253,20 @@ lines.push("");
 lines.push(
   "Every difference is adjudicated in `tools/handoff-parity/divergences.json`. **Settled** ones are",
   "closed questions. **Open gaps** are real missing capabilities, acknowledged and tracked. The check",
-  "fails only on a difference recorded in neither place, so a hand-off revision surfaces loudly.",
+  "fails on a difference recorded in neither place, so a hand-off revision surfaces loudly, and on a",
+  "**broken redirect**: a settled record naming a Canvas prop that does not exist. That guard was",
+  "added after three records (`Gauge.size`, `PieChart.size`, `Drawer.size`) were found pointing at",
+  "`small`/`large` props their components had never had, which read as settled parity and sent",
+  "documentation examples chasing props that silently do nothing.",
 );
 lines.push("");
 lines.push(
   "**What this check cannot see.** It compares the prop SURFACE, not what a prop resolves to. Where",
   "a name exists on both sides it is counted satisfied even if the two render different metrics, so",
   "a scale or spacing drift passes silently. Those are recorded under Metric gaps below, from",
-  "measurement rather than from this check. It also compares against a committed snapshot of the",
+  "measurement rather than from this check. Redirect TARGETS are verified, so a settled record",
+  "cannot name a prop that is absent, but nothing checks that the target is the RIGHT prop. It also",
+  "compares against a committed snapshot of the",
   "hand-off, so it cannot tell you the snapshot itself has fallen behind the design source; refresh",
   "it with `tools/handoff-parity/extract.ts --from <export>`.",
 );
@@ -343,15 +394,18 @@ console.log(`  present: ${satisfied}   settled divergences: ${settled.length}   
 console.log(`  components absent from the kit: ${missingComponents.length} (${absentTracked.length} tracked)`);
 console.log(checkOnly ? `Report checked: ${reportStale ? "STALE" : "current"}` : `Report written to ${REPORT}`);
 
-const failures = unclassified.length + absentUntracked.length + (reportStale ? 1 : 0);
+const failures = unclassified.length + absentUntracked.length + brokenRedirects.length + (reportStale ? 1 : 0);
 if (failures) {
   console.log("");
   for (const c of absentUntracked) console.log(`  UNRECORDED COMPONENT  ${c.name} (${c.tier})`);
   for (const r of unclassified) console.log(`  UNCLASSIFIED PROP     ${r.component}.${r.prop}: ${r.type}`);
+  for (const b of brokenRedirects) console.log(`  BROKEN REDIRECT       ${b}`);
   if (reportStale) console.log(`  STALE REPORT          ${REPORT} is out of date; run \`bun run check-parity\`.`);
   console.log("");
   if (unclassified.length || absentUntracked.length)
     console.log("Close the gap in the kit, or record it in tools/handoff-parity/divergences.json.");
+  if (brokenRedirects.length)
+    console.log("A redirect names the prop that carries the capability in Canvas. Point it at a prop that exists, or reclassify the record as an open gap / intentional omission.");
   process.exit(1);
 }
 console.log("Hand-off parity check passed.");
