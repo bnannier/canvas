@@ -3,15 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, InputOTP, Typography, Column } = scope;
+  const { InputOTP, Column } = scope;
   return (
-<Stateful initial="">
-  {(code, setCode) => (
-    <Column snug>
-      <InputOTP length={4} onComplete={setCode} />
-      <Typography muted>{code === "" ? "Waiting for the 4-digit code" : `Code ${code} received`}</Typography>
-    </Column>
-  )}
-</Stateful>
+<Column relaxed>
+  <InputOTP small defaultValue="123" />
+  <InputOTP defaultValue="123" />
+  <InputOTP large defaultValue="123" />
+</Column>
   );
 }
