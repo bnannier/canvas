@@ -30,8 +30,10 @@ const CELL_BASE: ViewStyle = {
 
 // Digit type scale per size (the digit is the value; size scales it with the box).
 // Used by the web (18 base, the established Canvas look) and iOS (600 weight) skins.
+const DIGIT_SIZE: Record<Size, number> = { small: 15, base: 18, large: 22 };
+
 function digitText(t: ColorTokens, size: Size, weight: TextStyle["fontWeight"]): TextStyle {
-  const fontSize = size === "large" ? 22 : size === "small" ? 15 : 18;
+  const fontSize = DIGIT_SIZE[size];
   return {
     fontSize,
     lineHeight: Math.round(fontSize * 1.2),
@@ -46,9 +48,14 @@ function digitText(t: ColorTokens, size: Size, weight: TextStyle["fontWeight"]):
 // title-medium 16/24/+0.15 (base), and the title-large 22/28 metrics for the large
 // cell, held at the 500 title weight so the digit emphasis stays constant across sizes
 // (title-large's 400 would read lighter than the base cell).
+const M3_DIGIT: Record<Size, [number, number, number]> = {
+  small: [14, 20, 0.1],
+  base: [16, 24, 0.15],
+  large: [22, 28, 0],
+};
+
 function androidDigitText(t: ColorTokens, size: Size): TextStyle {
-  const [fontSize, lineHeight, letterSpacing] =
-    size === "large" ? [22, 28, 0] : size === "small" ? [14, 20, 0.1] : [16, 24, 0.15];
+  const [fontSize, lineHeight, letterSpacing] = M3_DIGIT[size];
   return {
     fontSize,
     lineHeight,
@@ -59,13 +66,28 @@ function androidDigitText(t: ColorTokens, size: Size): TextStyle {
   };
 }
 
+// The dash between two `groups`. Muted so it reads as punctuation rather than a
+// character of the code, sized to the skin's own digit so it sits on the same
+// optical line, and carrying its own breathing room ON TOP of whatever gap the
+// platform sets between cells (the connected web skin sets none).
+const SEPARATOR_INSET = 8;
+
+function separatorText(t: ColorTokens, fontSize: number): TextStyle {
+  return {
+    fontSize,
+    lineHeight: Math.round(fontSize * 1.2),
+    color: t["muted-foreground"],
+    marginHorizontal: SEPARATOR_INSET,
+  };
+}
+
 // The caret bar: a thin vertical rule centered in the empty active cell, sized to
 // the digit cap height per size (matches shadcn's h-4 w-px caret geometry). The COLOR
 // is per-skin: iOS/Android pass the brand `primary` (the native insertion-point/cursor
 // idiom), web keeps the established `foreground` bar. The blink lives in the shell
 // (see `caretBlink` on the skin contract).
 function caretBar(color: string, size: Size): ViewStyle {
-  const height = size === "large" ? 22 : size === "small" ? 15 : 18;
+  const height = DIGIT_SIZE[size];
   return { width: 1.5, height, borderRadius: 1, backgroundColor: color };
 }
 
@@ -92,6 +114,7 @@ export const iosSkin: InputOTPSkin = {
     borderColor: active ? t.primary : "transparent",
   }),
   digit: (t, size) => digitText(t, size, "600"),
+  separator: (t, size) => separatorText(t, DIGIT_SIZE[size]),
   // iOS insertion-point idiom: the caret is the tint color (brand primary) and blinks.
   caret: (t, size) => caretBar(t.primary, size),
   caretBlink: true,
@@ -118,6 +141,7 @@ export const androidSkin: InputOTPSkin = {
   }),
   // M3 title-role digit scale (see androidDigitText).
   digit: androidDigitText,
+  separator: (t, size) => separatorText(t, M3_DIGIT[size][0]),
   // M3 text-field cursor idiom: the caret is the primary color and blinks.
   caret: (t, size) => caretBar(t.primary, size),
   caretBlink: true,
@@ -126,35 +150,35 @@ export const androidSkin: InputOTPSkin = {
 
 // ---------- Web: the established Canvas look (shadcn input-otp) ----------
 // Connected group of bordered cells sharing borders (gap 0): the left edge is drawn
-// only on the first cell, every cell draws top/right/bottom, and only the outer
-// corners are rounded (md). The active cell tints to `ring` with a soft 3px ring.
+// only on the cell that STARTS a run, every cell draws top/right/bottom, and only a
+// run's outer corners are rounded (md). With `groups` the row holds several runs, one
+// per chunk, so each chunk closes and rounds its own ends. The active cell tints to
+// `ring` with a soft 3px ring.
 const WEB_RADIUS = 6; // rounded-md
 const WEB_SIZE: Record<Size, number> = { small: 32, base: 36, large: 44 };
 
 export const webSkin: InputOTPSkin = {
   gap: () => 0,
   connected: true,
-  cell: (t, size, { active, index, count }) => {
+  cell: (t, size, { active, groupStart, groupEnd }) => {
     const d = WEB_SIZE[size];
-    const isFirst = index === 0;
-    const isLast = index === count - 1;
     return {
       ...CELL_BASE,
       width: d,
       height: d,
       position: "relative",
       backgroundColor: t.background,
-      // Shared borders: every cell draws top/right/bottom; only the first draws the left.
+      // Shared borders: every cell draws top/right/bottom; only a run's first draws the left.
       borderTopWidth: 1,
       borderBottomWidth: 1,
       borderEndWidth: 1,
-      borderStartWidth: isFirst ? 1 : 0,
+      borderStartWidth: groupStart ? 1 : 0,
       borderColor: active ? t.ring : t.input,
-      // Only the outer corners are rounded (first-left / last-right).
-      borderTopStartRadius: isFirst ? WEB_RADIUS : 0,
-      borderBottomStartRadius: isFirst ? WEB_RADIUS : 0,
-      borderTopEndRadius: isLast ? WEB_RADIUS : 0,
-      borderBottomEndRadius: isLast ? WEB_RADIUS : 0,
+      // Only a run's outer corners are rounded (its first cell's left, its last cell's right).
+      borderTopStartRadius: groupStart ? WEB_RADIUS : 0,
+      borderBottomStartRadius: groupStart ? WEB_RADIUS : 0,
+      borderTopEndRadius: groupEnd ? WEB_RADIUS : 0,
+      borderBottomEndRadius: groupEnd ? WEB_RADIUS : 0,
       // shadcn's data-[active]: a 3px ring at 50% alpha + raised z so it overlaps neighbors.
       // Drawn with the cross-platform `boxShadow` spread (a 0-radius shadow* cannot make an
       // outer ring, and shadow* is deprecated on react-native-web).
@@ -167,6 +191,7 @@ export const webSkin: InputOTPSkin = {
     } as ViewStyle;
   },
   digit: (t, size) => digitText(t, size, "500"),
+  separator: (t, size) => separatorText(t, DIGIT_SIZE[size]),
   // The established Canvas caret: a static `foreground` bar (the web row is the baseline).
   caret: (t, size) => caretBar(t.foreground, size),
   caretBlink: false,

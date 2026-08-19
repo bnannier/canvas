@@ -1,9 +1,13 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
-import { Animated, type TextInput as RNTextInput } from "react-native";
+import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import {
+  Animated,
+  type NativeSyntheticEvent,
+  type TextInput as RNTextInput,
+  type TextInputSelectionChangeEventData,
+} from "react-native";
 import {
   View,
   Text,
-  Pressable,
   TextInput,
   useTheme,
   useControllableState,
@@ -30,22 +34,37 @@ import {
 // to the last cell) shows a caret/ring while the input is focused. Focus is tracked
 // in local state for the active-cell highlight ONLY; the value flows through
 // useControllableState, so InputOTP works controlled OR uncontrolled (a bare one is typeable).
+//
+// Because that one input spans the whole row, a tap drops the native caret wherever
+// the pointer landed, which on a partly-entered code is the MIDDLE of the string. The
+// selection is therefore pinned to the end of the value (see pinCaret below), so a
+// keystroke always lands in the first unfilled cell no matter which cell was tapped.
 
 export type Size = "small" | "base" | "large";
 
 export interface InputOTPProps {
   /** Number of segment cells (and the max code length). Default 6. */
   length?: number;
-  /** Current code (controlled). Only the typed digits, e.g. "123". Omit for
+  /** Current code (controlled). Only the typed characters, e.g. "123". Omit for
    *  uncontrolled use; a bare <InputOTP /> is typeable out of the box. */
   value?: string;
-  /** Called with the new code (digits only, sliced to `length`) on each change (both modes). */
+  /** Starting code for the uncontrolled field. Defaults to empty. */
+  defaultValue?: string;
+  /** Called with the new code (cleaned, sliced to `length`) on each change (both modes). */
   onChangeText?: (code: string) => void;
   /** Fired once when the code reaches `length` digits. */
   onComplete?: (code: string) => void;
+  /** Split the run into groups of this many cells, separated by a dash: `length={6}`
+   *  with `groups={3}` reads 123-456. Omit for one unbroken run. */
+  groups?: number;
+  /** Accept letters as well as digits, and ask for the text keyboard instead of the
+   *  number pad. Off by default: a one-time code is digits only. */
+  alphanumeric?: boolean;
+  /** Focus the field on mount. */
+  autoFocus?: boolean;
   /** Disable input and dim the cells. */
   disabled?: boolean;
-  /** Render a bullet (●) instead of the digit, for passcode entry. */
+  /** Render a bullet (●) instead of the character, for passcode entry. */
   masked?: boolean;
   // Size (pick one; default is the medium cell).
   small?: boolean;
@@ -64,14 +83,18 @@ export interface InputOTPSkin {
   gap: (size: Size) => number;
   /** Whether cells share borders as one connected group (web shadcn) — rounds only the outer corners. */
   connected: boolean;
-  /** A single cell box: shape, fill, border, size. `index`/`count` let the connected web group round only its ends. */
+  /** A single cell box: shape, fill, border, size. `groupStart`/`groupEnd` mark the ends of
+   *  each connected run (the whole row, or one `groups` chunk) so the web skin rounds and
+   *  closes a run's outer edges while its interior cells keep sharing borders. */
   cell: (
     t: ColorTokens,
     size: Size,
-    state: { active: boolean; filled: boolean; index: number; count: number },
+    state: { active: boolean; filled: boolean; groupStart: boolean; groupEnd: boolean },
   ) => ViewStyle;
   /** The digit (or bullet) text inside a cell. */
   digit: (t: ColorTokens, size: Size) => TextStyle;
+  /** The dash drawn between two `groups`. */
+  separator: (t: ColorTokens, size: Size) => TextStyle;
   /** The caret bar drawn in the active empty cell. */
   caret: (t: ColorTokens, size: Size) => ViewStyle;
   /** Whether the caret blinks (~1s cycle), the native insertion-point idiom on iOS/Android.
@@ -90,6 +113,14 @@ function sizeOf(p: InputOTPProps): Size {
 }
 
 const DIGITS_ONLY = /\D/g;
+// U+2013 EN DASH: the group separator, wider than a hyphen and narrower than the
+// em dash, which is what reads as a pause between two halves of a code.
+const SEPARATOR = "–";
+
+// Digits only unless `alphanumeric`, and never longer than the cell count.
+function cleanCode(raw: string, length: number, alphanumeric?: boolean): string {
+  return (alphanumeric ? raw : raw.replace(DIGITS_ONLY, "")).slice(0, length);
+}
 
 // The active-cell caret. Native insertion points blink — the iOS caret and the M3
 // text-field cursor both pulse on a ~1s cycle — so the iOS/Android skins opt in via
@@ -123,14 +154,32 @@ function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
 /** Build an InputOTP component from a platform skin. */
 export function createInputOTP(skin: InputOTPSkin) {
   const InputOTP = forwardRef<RNTextInput, InputOTPProps>(function InputOTP(props, ref) {
-    const { length = 6, onChangeText, onComplete, disabled, masked, testID, style } = props;
+    const {
+      length = 6,
+      defaultValue = "",
+      groups,
+      alphanumeric,
+      autoFocus,
+      onChangeText,
+      onComplete,
+      disabled,
+      masked,
+      testID,
+      style,
+    } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
     const [focused, setFocused] = useState(false);
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
-    // <InputOTP /> accepts typing/paste/autofill out of the box.
-    const [value, setValue] = useControllableState<string>(props.value, "", onChangeText);
+    // <InputOTP /> accepts typing/paste/autofill out of the box. The uncontrolled
+    // seed goes through the same cleaning as typed input, so `defaultValue` can
+    // never seed a code the field would refuse.
+    const [value, setValue] = useControllableState<string>(
+      props.value,
+      cleanCode(defaultValue, length, alphanumeric),
+      onChangeText,
+    );
 
     // Fire onComplete exactly once per "reaches full length" transition: track the
     // last completed code so re-renders with the same full value don't re-fire.
@@ -149,13 +198,44 @@ export function createInputOTP(skin: InputOTPSkin) {
     }, [value, length]);
 
     const handleChange = (raw: string) => {
-      const cleaned = raw.replace(DIGITS_ONLY, "").slice(0, length);
-      setValue(cleaned);
+      setValue(cleanCode(raw, length, alphanumeric));
+    };
+
+    // Caret pinning. `caret` is the selection handed to the input, and it always sits at
+    // the end of the code. Its object IDENTITY is what drives re-application (a platform
+    // only pushes `selection` down when it changes), so the memo deliberately yields a new
+    // object in exactly two cases and no others: the code's length changed (typing, paste,
+    // autofill, a controlled update), or a tap dropped the caret somewhere it does not
+    // belong. Rebuilding it on every render instead would re-collapse the selection on any
+    // unrelated re-render, and holding it fixed would fight the caret while typing.
+    const [strayCaret, reportStrayCaret] = useReducer((n: number) => n + 1, 0);
+    const caret = useMemo(
+      () => ({ start: value.length, end: value.length }),
+      // `strayCaret` is a deliberate identity-only dependency: a stray tap leaves the END
+      // of the code where it was, so nothing in the body changes and only a fresh object
+      // can make the platform re-apply the selection. Excluding it would strand the caret
+      // wherever the tap left it.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [value.length, strayCaret],
+    );
+    const handleSelectionChange = (
+      e: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
+    ) => {
+      const { start, end } = e.nativeEvent.selection;
+      // Already where it belongs.
+      if (start === value.length && end === value.length) return;
+      // A full-range selection is select-all: left alone, so a paste still REPLACES a
+      // complete code instead of being refused by maxLength. Any other position is a
+      // stray caret and gets pushed back to the end, where the next character belongs.
+      if (start === 0 && end === value.length) return;
+      reportStrayCaret();
     };
 
     const gap = skin.gap(size);
-    const count = length;
-    // The active cell is where the next digit lands: value.length, clamped to the
+    // A group size below 1 would put a separator before every cell (and 0 would divide
+    // by zero), so anything under 1 renders as one unbroken run.
+    const groupSize = groups != null && groups >= 1 ? groups : null;
+    // The active cell is where the next character lands: value.length, clamped to the
     // last cell so a full code keeps the last cell highlighted while focused.
     const activeIndex = Math.min(value.length, length - 1);
 
@@ -180,23 +260,42 @@ export function createInputOTP(skin: InputOTPSkin) {
             const filled = char != null;
             const active = focused && !disabled && index === activeIndex;
             const showCaret = active && !filled;
+            // A separator starts a NEW connected run, so the cell after it draws its own
+            // left edge and rounds it; without that the web skin's shared-border seam
+            // would leave the run open on its left.
+            const groupStart = index === 0 || (groupSize ? index % groupSize === 0 : false);
+            const groupEnd =
+              index === length - 1 || (groupSize ? (index + 1) % groupSize === 0 : false);
             return (
-              <View
-                key={index}
-                style={[skin.cell(tokens, size, { active, filled, index, count }), { pointerEvents: "none" }]}
-                // The cells are decorative; the TextInput carries the a11y role/label.
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-              >
-                {filled ? (
-                  // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
-                  // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
-                  // at secure-entry weight (the iOS/Android password-dot idiom).
-                  <Text style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
-                ) : showCaret ? (
-                  <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} />
+              <Fragment key={index}>
+                {groupStart && index > 0 ? (
+                  <Text
+                    style={[skin.separator(tokens, size), { pointerEvents: "none" }]}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                  >
+                    {SEPARATOR}
+                  </Text>
                 ) : null}
-              </View>
+                <View
+                  style={[
+                    skin.cell(tokens, size, { active, filled, groupStart, groupEnd }),
+                    { pointerEvents: "none" },
+                  ]}
+                  // The cells are decorative; the TextInput carries the a11y role/label.
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                >
+                  {filled ? (
+                    // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
+                    // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
+                    // at secure-entry weight (the iOS/Android password-dot idiom).
+                    <Text style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
+                  ) : showCaret ? (
+                    <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} />
+                  ) : null}
+                </View>
+              </Fragment>
             );
           })}
 
@@ -209,11 +308,18 @@ export function createInputOTP(skin: InputOTPSkin) {
             value={value}
             onChangeText={handleChange}
             editable={!disabled}
+            autoFocus={autoFocus}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
+            // Pinned to the end of the code so a tap on any cell still appends at the
+            // first unfilled one (see handleSelectionChange).
+            selection={caret}
+            onSelectionChange={handleSelectionChange}
             caretHidden
-            inputMode="numeric"
-            keyboardType="number-pad"
+            inputMode={alphanumeric ? "text" : "numeric"}
+            keyboardType={alphanumeric ? "default" : "number-pad"}
+            // Codes are entered exactly as shown; nothing is re-cased behind the caller.
+            autoCapitalize="none"
             // When masked, obscure the value at the input layer so the platform
             // masks it for real: RN hides it natively and RNW emits a password
             // input, so a screen reader / the DOM value / password-manager UI no

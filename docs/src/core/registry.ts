@@ -234,6 +234,8 @@ import e_atoms_input_otp_example_2 from "./examples/atoms/input-otp/example-2";
 import e_atoms_input_otp_example_3 from "./examples/atoms/input-otp/example-3";
 import e_atoms_input_otp_example_4 from "./examples/atoms/input-otp/example-4";
 import e_atoms_input_otp_example_5 from "./examples/atoms/input-otp/example-5";
+import e_atoms_input_otp_example_6 from "./examples/atoms/input-otp/example-6";
+import e_atoms_input_otp_example_7 from "./examples/atoms/input-otp/example-7";
 import e_atoms_input_otp_dont_0_do from "./examples/atoms/input-otp/dont-0-do";
 import e_atoms_input_otp_dont_0_dont from "./examples/atoms/input-otp/dont-0-dont";
 import e_atoms_kbd_example_0 from "./examples/atoms/kbd/example-0";
@@ -1325,15 +1327,17 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "input-otp",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<InputOTP value=\"123\" />", render: e_atoms_input_otp_example_0 },
-      { label: "Length", code: "<Column relaxed>\n  <InputOTP length={6} value=\"1234\" />\n  <InputOTP length={4} value=\"12\" />\n</Column>", render: e_atoms_input_otp_example_1 },
-      { label: "Masked", code: "<InputOTP masked value=\"1234\" />", render: e_atoms_input_otp_example_2 },
-      { label: "Sizes", code: "<Column relaxed>\n  <InputOTP small value=\"123\" />\n  <InputOTP value=\"123\" />\n  <InputOTP large value=\"123\" />\n</Column>", render: e_atoms_input_otp_example_3 },
-      { label: "Disabled", code: "<InputOTP disabled value=\"1234\" />", render: e_atoms_input_otp_example_4 },
-      { label: "Completion", code: "<Stateful initial=\"\">\n  {(code, setCode) => (\n    <Column snug>\n      <InputOTP length={4} onComplete={setCode} />\n      <Typography muted>{code === \"\" ? \"Waiting for the 4-digit code\" : `Code ${code} received`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_input_otp_example_5 },
+      { label: "Default", code: "<InputOTP defaultValue=\"123\" />", render: e_atoms_input_otp_example_0 },
+      { label: "Length", code: "<Column relaxed>\n  <InputOTP length={6} defaultValue=\"1234\" />\n  <InputOTP length={4} defaultValue=\"12\" />\n</Column>", render: e_atoms_input_otp_example_1 },
+      { label: "Grouped", code: "<Column relaxed>\n  <InputOTP length={6} groups={3} defaultValue=\"123\" />\n  <InputOTP length={8} groups={4} defaultValue=\"12345\" />\n</Column>", render: e_atoms_input_otp_example_2 },
+      { label: "Alphanumeric", code: "<InputOTP length={6} alphanumeric defaultValue=\"G7X\" />", render: e_atoms_input_otp_example_3 },
+      { label: "Masked", code: "<InputOTP masked defaultValue=\"1234\" />", render: e_atoms_input_otp_example_4 },
+      { label: "Sizes", code: "<Column relaxed>\n  <InputOTP small defaultValue=\"123\" />\n  <InputOTP defaultValue=\"123\" />\n  <InputOTP large defaultValue=\"123\" />\n</Column>", render: e_atoms_input_otp_example_5 },
+      { label: "Disabled", code: "<InputOTP disabled defaultValue=\"1234\" />", render: e_atoms_input_otp_example_6 },
+      { label: "Completion", code: "<Stateful initial=\"\">\n  {(code, setCode) => (\n    <Column snug>\n      <InputOTP length={4} onComplete={setCode} />\n      <Typography muted>{code === \"\" ? \"Waiting for the 4-digit code\" : `Code ${code} received`}</Typography>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_input_otp_example_7 },
     ],
     donts: [
-      { do: { caption: "Size the field to the real code length with `length`, so every digit has its own cell and the user can see how many remain.", code: "<InputOTP length={6} value=\"123\" />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked value=\"123456\" />", render: e_atoms_input_otp_dont_0_dont } },
+      { do: { caption: "Size the field to the real code length with `length`, and split a long code with `groups` so the eye can chunk it the way the sender wrote it.", code: "<InputOTP length={6} groups={3} defaultValue=\"123\" />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked defaultValue=\"123456\" />", render: e_atoms_input_otp_dont_0_dont } },
     ],
   },
   "kbd": {

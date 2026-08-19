@@ -60,6 +60,57 @@ describe("InputOTP", () => {
     rerender(<ThemeProvider><InputOTP value="1234" length={4} onChangeText={() => {}} onComplete={(c) => { done = c; }} /></ThemeProvider>);
     expect(done).toBe("1234");
   });
+
+  it("keeps letters when alphanumeric and asks for the text keyboard", () => {
+    let code = "";
+    const { container } = ui(<InputOTP alphanumeric length={6} onChangeText={(c) => { code = c; }} />);
+    const input = container.querySelector("input") as HTMLInputElement;
+    expect(input.getAttribute("inputmode")).toBe("text");
+    fireEvent.change(input, { target: { value: "G7x" } });
+    expect(code).toBe("G7x");
+  });
+
+  it("seeds an uncontrolled field from defaultValue and stays typeable", () => {
+    const { container } = ui(<InputOTP length={6} defaultValue="12" />);
+    const input = container.querySelector("input") as HTMLInputElement;
+    expect(input.value).toBe("12");
+    fireEvent.change(input, { target: { value: "123" } });
+    expect(input.value).toBe("123");
+  });
+
+  it("cleans the defaultValue seed the same way typed input is cleaned", () => {
+    const { container } = ui(<InputOTP length={4} defaultValue="1a2b345" />);
+    expect((container.querySelector("input") as HTMLInputElement).value).toBe("1234");
+  });
+
+  it("splits the run into groups with one separator between them", () => {
+    const { container } = ui(<InputOTP length={6} groups={3} defaultValue="123" />);
+    expect((container.textContent?.match(/–/g) ?? []).length).toBe(1);
+    const ungrouped = ui(<InputOTP length={6} defaultValue="123" />);
+    expect(ungrouped.container.textContent).not.toContain("–");
+  });
+
+  it("pins a stray caret back to the end so a keystroke never lands mid-code", () => {
+    const { container } = ui(<InputOTP length={6} defaultValue="12" />);
+    const input = container.querySelector("input") as HTMLInputElement;
+    act(() => {
+      input.setSelectionRange(0, 0);
+      fireEvent.select(input);
+    });
+    expect(input.selectionStart).toBe(2);
+    expect(input.selectionEnd).toBe(2);
+  });
+
+  it("leaves a select-all alone so a paste still replaces the whole code", () => {
+    const { container } = ui(<InputOTP length={6} defaultValue="12" />);
+    const input = container.querySelector("input") as HTMLInputElement;
+    act(() => {
+      input.setSelectionRange(0, 2);
+      fireEvent.select(input);
+    });
+    expect(input.selectionStart).toBe(0);
+    expect(input.selectionEnd).toBe(2);
+  });
 });
 
 describe("Collapsible", () => {
