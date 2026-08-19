@@ -1,0 +1,10 @@
+{
+  "note": "Colours the kit deliberately paints differently from the design hand-off. Anything not listed here is drift and fails the check. The hand-off is the authority, so an entry needs a real reason, not just an observation that they differ.",
+  "accepted": {
+    "dark.warning": {
+      "kitPaints": "#f59e09",
+      "handoffPaints": "#f59e0a",
+      "reason": "One step on the blue channel, at a rounding boundary. The hand-off authors this as oklch(0.769 0.165 70.08); converted at high precision the sRGB blue channel is 9.4506, which rounds to 9, so #f59e09 is the mathematically exact rendering and the kit ships it. Chrome paints 10. The difference is 1/255 on a near-zero channel (about 0.0002 in OKLab, far below perception), and matching a browser's rounding quirk in preference to the exact value would be the wrong correction."
+    }
+  }
+}

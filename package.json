@@ -60,6 +60,7 @@
     "check-size": "bun scripts/check-size.ts",
     "check-parity": "bun scripts/check-handoff-parity.ts",
     "check-parity:check": "bun scripts/check-handoff-parity.ts --check",
+    "check-render": "bun scripts/check-render-parity.ts",
     "screenshots": "bun scripts/capture-screenshots.ts",
     "looks": "bun scripts/capture-looks.ts",
     "changeset": "changeset",
