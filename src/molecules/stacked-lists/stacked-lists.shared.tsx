@@ -60,6 +60,12 @@ import { type StackedListSkin } from "./stacked-lists.styles.js";
 //   Pass `flush` to drop the dividers. The card variant always keeps its rows
 //   ruled regardless of `flush`, matching the documented card surface group.
 
+// The row divider is inert to touch. `pointerEvents` must come from
+// StyleSheet.create, not the deprecated `pointerEvents` PROP and not an inline
+// style object: react-native-web silently drops the declaration from an inline
+// literal.
+const dividerStyles = StyleSheet.create({ passthrough: { pointerEvents: "none" } });
+
 /** One row in the list. */
 export interface StackedListItem {
   /** Stable identity for the row's React key, so reorder/insert/delete keeps a
@@ -329,7 +335,7 @@ export function createStackedList(
       // merged into the row's own style: the iOS skin insets the rule past the
       // avatar (marginStart-style), and on the row itself that margin would
       // shift the entire row's content, not just the separator.
-      const divider = ruled && index < lastIndex ? <View pointerEvents="none" style={skin.rowDivider(tokens)} /> : null;
+      const divider = ruled && index < lastIndex ? <View style={[skin.rowDivider(tokens), dividerStyles.passthrough]} /> : null;
       const grip = reorderable ? <DragHandle label={`Reorder ${item.name}`} /> : null;
       const trailingSlot = item.trailing != null ? <View style={s.trailingSlot}>{item.trailing}</View> : null;
       if (variant === "clickable") {
