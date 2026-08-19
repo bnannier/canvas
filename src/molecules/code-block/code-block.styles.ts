@@ -37,7 +37,11 @@ function codeText(tokens: ColorTokens): TextStyle {
 
 // The shared code surface: a muted, bordered, rounded card. `overflow: "hidden"`
 // clips full-bleed row tints (line highlight, diff) at the rounded corners.
-// (w-full self-start overflow-hidden rounded-lg border border-border bg-muted/50)
+// The code surface is OPAQUE: it is a content surface, and the hand-off paints it
+// var(--muted) flat. It used to carry a half-transparent muted fill, translated
+// literally from a Tailwind bg-muted/50 in the kit's shadcn-era origins, which meant
+// a code block sitting over any backdrop (the docs' aurora, a photo, a glass page)
+// showed it straight through the code.
 function surface(tokens: ColorTokens): ViewStyle {
   return {
     width: "100%",
@@ -46,7 +50,7 @@ function surface(tokens: ColorTokens): ViewStyle {
     borderRadius: 8,
     borderWidth: 1,
     borderColor: tokens.border,
-    backgroundColor: alpha(tokens.muted, 0.5),
+    backgroundColor: tokens.muted,
   };
 }
 
