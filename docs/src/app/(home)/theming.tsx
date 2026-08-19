@@ -1,4 +1,4 @@
-import { View, Text, ButtonGroup, useTheme } from "@nannier/canvas";
+import { View, Text, Row, Column, ButtonGroup, useTheme } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { H3, P, Rule, InlineCode } from "../../ui/prose";
@@ -89,10 +89,10 @@ setDensity("compact");  // persists; map it to component booleans`;
 function Bullet({ children }: { children: React.ReactNode }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", gap: 8 }}>
+    <Row snug>
       <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>•</Text>
       <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>{children}</Text>
-    </View>
+    </Row>
   );
 }
 
@@ -145,7 +145,7 @@ export default function ThemingScreen() {
             <InlineCode>dark</InlineCode> / <InlineCode>light</InlineCode> boolean to <InlineCode>ThemeProvider</InlineCode> instead.)
           </P>
           <CodeBlock code={DARK_TOGGLE} />
-          <View style={{ flexDirection: "row" }}>
+          <Row flush>
             <ButtonGroup
               segmented
               small
@@ -153,7 +153,7 @@ export default function ThemingScreen() {
               active={scheme === "light" ? 0 : 1}
               onSelect={(i) => setScheme(i === 0 ? "light" : "dark")}
             />
-          </View>
+          </Row>
           <H3>Web helpers</H3>
           <CodeBlock code={JS_THEME} />
           <H3>Respecting system preference</H3>
@@ -181,7 +181,7 @@ export default function ThemingScreen() {
             the surface from the provider, not from CSS.
           </P>
           <CodeBlock code={GLASS} />
-          <View style={{ flexDirection: "row" }}>
+          <Row flush>
             <ButtonGroup
               segmented
               small
@@ -189,15 +189,15 @@ export default function ThemingScreen() {
               active={surface === "solid" ? 0 : 1}
               onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
             />
-          </View>
+          </Row>
           <H3>What changes</H3>
-          <View style={{ gap: 4 }}>
+          <Column tight>
             <Bullet>The glass surfaces (popovers, dialogs, action sheets, the command palette, navbars, tab bars, the sidebar) render the material via GlassSurface: native Liquid Glass on iOS 26+, an SVG displacement lens on Chromium web, a frosted blur elsewhere on web and on Android; content cards, lists, and tables stay solid</Bullet>
             <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fill, glass-tint, painted under the material by the surfaces that take it</Bullet>
             <Bullet>The option-list menus (dropdown, select, autocomplete, avatar menu), alert dialogs, toasts and chart tooltips stay opaque in glass mode. A menu is a card of rows the reader picks from, and the Chromium lens keeps the centre of a pane optically flat by design, so a translucent menu shows the page straight through between its rows</Bullet>
             <Bullet>Glass surfaces drop their skin border and the material paints its own white-alpha specular rim</Bullet>
             <Bullet>The page background does not change by itself; these docs mount the kit's Backdrop scene behind the shell in glass mode so the frost has something to refract, an app-level choice</Bullet>
-          </View>
+          </Column>
           <H3>Web helpers</H3>
           <P muted>The helpers persist the choice; they restyle nothing by themselves. The provider, fed as above, is what re-themes the components.</P>
           <CodeBlock code={JS_SURFACE} />

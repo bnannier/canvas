@@ -1,5 +1,5 @@
 import { useWindowDimensions } from "react-native";
-import { View, Text, useTheme } from "@nannier/canvas";
+import { View, Text, Row, Column, useTheme } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { geist, geistMono } from "../../../ui/fonts";
@@ -85,10 +85,7 @@ function FontCard({ varName, sample, sampleFamily, sampleTracking, caption, spec
 function ScaleRow({ s, i }: { s: typeof SCALE[number]; i: number }) {
   const { tokens } = useTheme();
   return (
-    <View style={{
-      flexDirection: "row",
-      alignItems: "baseline",
-      gap: 24,
+    <Row loose baseline style={{
       paddingVertical: 16,
       paddingHorizontal: 20,
       borderTopWidth: i ? 1 : 0,
@@ -111,7 +108,7 @@ function ScaleRow({ s, i }: { s: typeof SCALE[number]; i: number }) {
       <Text style={{ fontSize: 11, fontFamily: geistMono("400"), color: tokens["muted-foreground"], textAlign: "right", width: 160 }}>
         {s.spec}
       </Text>
-    </View>
+    </Row>
   );
 }
 
@@ -119,10 +116,7 @@ function HelperRow({ h, i }: { h: typeof HELPERS[number]; i: number }) {
   const { tokens } = useTheme();
   const muted = h.role === "muted" || h.role === "caption";
   return (
-    <View style={{
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 24,
+    <Row loose alignCenter style={{
       paddingVertical: 16,
       paddingHorizontal: 20,
       borderTopWidth: i ? 1 : 0,
@@ -152,17 +146,14 @@ function HelperRow({ h, i }: { h: typeof HELPERS[number]; i: number }) {
       <Text style={{ fontSize: 11, color: tokens["muted-foreground"], textAlign: "right", width: 220 }}>
         {h.use}
       </Text>
-    </View>
+    </Row>
   );
 }
 
 function WeightRow({ row, i }: { row: typeof WEIGHTS[number]; i: number }) {
   const { tokens } = useTheme();
   return (
-    <View style={{
-      flexDirection: "row",
-      alignItems: "baseline",
-      gap: 24,
+    <Row loose baseline style={{
       paddingVertical: 12,
       paddingHorizontal: 20,
       borderTopWidth: i ? 1 : 0,
@@ -173,7 +164,7 @@ function WeightRow({ row, i }: { row: typeof WEIGHTS[number]; i: number }) {
       </Text>
       <Text style={{ flex: 1, fontSize: 20, fontFamily: geist(row.w), color: tokens.foreground }}>{row.name}</Text>
       <Text style={{ fontSize: 12, color: tokens["muted-foreground"] }}>{row.use}</Text>
-    </View>
+    </Row>
   );
 }
 
@@ -187,7 +178,7 @@ export default function TypographyScreen() {
     <Page>
       <View style={{ gap: 40 }}>
         {/* Intro */}
-        <View style={{ gap: 12 }}>
+        <Column cozy>
           <TokenH1>Typography</TokenH1>
           <TokenLede>
             Two families do all the work. Geist Sans for prose and chrome; Geist Mono for code,
@@ -196,7 +187,7 @@ export default function TypographyScreen() {
             <Text style={{ fontFamily: geistMono("400") }}>Typography</Text> component; helper
             roles (muted, caption, code, mono) cover the rest.
           </TokenLede>
-        </View>
+        </Column>
 
         <TokenSection
           title="Font families"
@@ -237,10 +228,10 @@ export default function TypographyScreen() {
           </Surface>
           <Grid cols={cScale} gap={12}>
             {SCALE.map((s) => (
-              <View key={s.role} style={{ flexDirection: "row", gap: 8 }}>
+              <Row key={s.role} snug>
                 <Text style={{ fontSize: 12.5, fontFamily: geistMono("400"), color: tokens.foreground }}>{s.role}</Text>
                 <Text style={{ fontSize: 12.5, color: tokens["muted-foreground"] }}>· {s.use}</Text>
-              </View>
+              </Row>
             ))}
           </Grid>
         </TokenSection>
@@ -277,16 +268,16 @@ export default function TypographyScreen() {
               </Surface>,
               <Surface key="field" padding={20}>
                 <Eyebrow>Field display</Eyebrow>
-                <View style={{ gap: 12 }}>
-                  <View style={{ flexDirection: "row", alignItems: "baseline", gap: 12 }}>
+                <Column cozy>
+                  <Row cozy baseline>
                     <Text style={{ width: 120, fontSize: 13, fontFamily: geist("500"), color: tokens["muted-foreground"] }}>Identifier</Text>
                     <Text style={{ flex: 1, fontSize: 13, color: tokens.foreground }}>rachel.chen@example.com</Text>
-                  </View>
-                  <View style={{ flexDirection: "row", alignItems: "baseline", gap: 12 }}>
+                  </Row>
+                  <Row cozy baseline>
                     <Text style={{ width: 120, fontSize: 13, fontFamily: geist("500"), color: tokens["muted-foreground"] }}>ID</Text>
                     <Text style={{ flex: 1, fontSize: 13, fontFamily: geistMono("400"), color: tokens.foreground }}>01HZK7M8N9P0Q1R2S3T4U5V6W7</Text>
-                  </View>
-                </View>
+                  </Row>
+                </Column>
               </Surface>,
               <Surface key="code" padding={20}>
                 <Eyebrow>Inline code</Eyebrow>

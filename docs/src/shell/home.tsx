@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions, Linking, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Icon, useTheme } from "@nannier/canvas";
+import { View, Text, Pressable, Button, ScrollView, Row, Column, Icon, useTheme } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
@@ -198,12 +198,12 @@ export function Home() {
           <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 16, alignItems: "center" }}>
             {/* Copy */}
             <View style={{ flex: wide ? 1.05 : undefined, width: "100%", minWidth: 0 }}>
-              <View style={{ flexDirection: "row", alignSelf: "flex-start", alignItems: "center", gap: 8, paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
+              <Row snug alignCenter style={{ alignSelf: "flex-start", paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
                 {/* The dot keeps a 7px layout box; the 3px halo ring overflows it (a 0 0 0 3px box-shadow at primary@22%). */}
-                <View style={{ width: 7, height: 7, alignItems: "center", justifyContent: "center" }}>
+                <Column flush center alignCenter style={{ width: 7, height: 7 }}>
                   <View style={{ position: "absolute", width: 13, height: 13, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.22) }} />
                   <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
-                </View>
+                </Column>
                 <Text style={{ fontFamily: geistMono("500"), fontSize: 12, color: tokens["muted-foreground"] }}>
                   {version} ·{" "}
                   <Text
@@ -214,7 +214,7 @@ export function Home() {
                     @nannier/canvas
                   </Text>
                 </Text>
-              </View>
+              </Row>
 
               {/* The page's one level-one heading. Spelled as a heading role rather than
                   a Typography h1 because the size here is fluid (h1Size tracks the
@@ -232,17 +232,17 @@ export function Home() {
                   checks are hidden so the rotating orbit surfaces sooner; desktop keeps them. */}
               {wide ? (
                 <>
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 18 }}>
+                  <Row snug wrap alignCenter style={{ marginTop: 18 }}>
                     <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
                       <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
                     </View>
                     <Text style={{ fontFamily: geist("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
-                  </View>
+                  </Row>
 
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
+                  <Row cozy wrap style={{ marginTop: 30 }}>
                     <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
                     <Button outline large onPress={() => go("/tokens/colors")}>Explore tokens</Button>
-                  </View>
+                  </Row>
 
                   <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
                     {PLATFORMS.map((p) => (
@@ -335,16 +335,16 @@ export function Home() {
           </View>
 
           <View style={{ flex: wide ? 1.1 : undefined, width: "100%", borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", shadowColor: tokens.foreground, shadowOpacity: 0.12, shadowRadius: 30, shadowOffset: { width: 0, height: 20 } }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, height: 40, paddingHorizontal: 14, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.35) }}>
+            <Row cozy alignCenter style={{ height: 40, paddingHorizontal: 14, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.35) }}>
               <View style={{ flexDirection: "row", gap: 7 }}>
                 {[0, 1, 2].map((i) => <View key={i} style={{ width: 11, height: 11, borderRadius: 9999, backgroundColor: alpha(tokens["muted-foreground"], 0.35) }} />)}
               </View>
               <Text style={{ fontFamily: geistMono("400"), fontSize: 12, color: tokens["muted-foreground"] }}>app.tsx</Text>
-            </View>
-            <View style={{ padding: 8, gap: 8 }}>
+            </Row>
+            <Column snug padTight>
               <CodeBlock code={INSTALL_BASH} />
               <CodeBlock code={INSTALL_TSX} />
-            </View>
+            </Column>
           </View>
         </View>
       </Wrap>
@@ -357,7 +357,7 @@ export function Home() {
           desc={`Every page in this site is one of six levels of abstraction, and all ${COMPONENTS.length} components render as real React Native components, straight from their markdown example docs.`}
           titleSize={sectionTitle}
         />
-        <View style={{ gap: 12 }}>
+        <Column cozy>
           {ATOMIC_LEVELS.map((lvl, i) => {
             return (
               <View key={lvl.id} style={{ flexDirection: levelStack ? "column" : "row", borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden" }}>
@@ -375,41 +375,41 @@ export function Home() {
                   borderColor: tokens.border,
                 }}>
                   <Text style={{ fontFamily: geistMono("600"), fontSize: levelStack ? 22 : 30, color: alpha(tokens["muted-foreground"], 0.6) }}>0{i + 1}</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Row snug alignCenter>
                     {lvl.icon}
                     <Text style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
-                  </View>
+                  </Row>
                 </View>
                 <View style={{ flex: 1, paddingVertical: 20, paddingHorizontal: 22, gap: 14 }}>
                   <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 704 }}>{lvl.blurb}</Text>
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                  <Row snug wrap>
                     {lvl.pages.map((pg) => (
                       <Pressable key={pg.to} onPress={() => go(pg.to)} style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 5, paddingHorizontal: 11, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
                         <Text style={{ fontFamily: geist("500"), fontSize: 12.5, color: tokens.foreground }}>{pg.label}</Text>
                         <Icon chevronRight size={11} muted />
                       </Pressable>
                     ))}
-                  </View>
+                  </Row>
                 </View>
               </View>
             );
           })}
-        </View>
+        </Column>
       </Wrap>
 
       {/* ── Closing CTA band ── */}
       <View style={{ marginTop: 72, paddingVertical: 72, borderTopWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.22) }}>
         <Wrap>
-          <View style={{ alignItems: "center" }}>
+          <Column flush alignCenter>
             <Text style={{ fontFamily: geist("600"), fontSize: ctaTitle, letterSpacing: ctaTitle * -0.028, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 16, lineHeight: 25.6, color: tokens["muted-foreground"], maxWidth: 544, textAlign: "center", marginTop: 14, marginBottom: 28 }}>
               Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
             </Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+            <Row cozy wrap center>
               <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
               <Button outline large iconLeft={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)}>View on GitHub</Button>
-            </View>
-          </View>
+            </Row>
+          </Column>
         </Wrap>
       </View>
 
@@ -442,10 +442,10 @@ export function Home() {
               ))}
             </View>
           </View>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8, paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
+          <Row snug wrap between style={{ paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
             <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Canvas · @nannier/canvas {version}</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
-          </View>
+          </Row>
         </Wrap>
       </View>
     </ScrollView>
@@ -461,13 +461,13 @@ function CardGrid({ children, cols }: { children: ReactNode[]; cols: number }) {
   const rows: ReactNode[][] = [];
   for (let i = 0; i < children.length; i += cols) rows.push(children.slice(i, i + cols));
   return (
-    <View style={{ gap: 16 }}>
+    <Column relaxed>
       {rows.map((row, i) => (
-        <View key={i} style={{ flexDirection: "row", gap: 16 }}>
+        <Row key={i} relaxed>
           {row}
           {row.length < cols ? Array.from({ length: cols - row.length }).map((_, j) => <View key={`pad-${j}`} style={{ flex: 1 }} />) : null}
-        </View>
+        </Row>
       ))}
-    </View>
+    </Column>
   );
 }

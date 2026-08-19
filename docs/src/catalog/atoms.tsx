@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, useTheme, alpha, Row } from "@nannier/canvas";
 import Svg, { Path, Circle, Polygon } from "react-native-svg";
 import { geist } from "../ui/fonts";
 import { MiniBtn, MiniInput, type CatTile } from "./tile";
@@ -122,7 +122,7 @@ function ScrollViewPreview() {
 function AvatarsPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row" }}>
+    <Row flush>
       {["AL", "GH", "RC", "LB"].map((s, i) => (
         <View
           key={s}
@@ -142,7 +142,7 @@ function AvatarsPreview() {
           <Text style={{ fontFamily: geist("600"), fontSize: 10, color: "#ffffff" }}>{s}</Text>
         </View>
       ))}
-    </View>
+    </Row>
   );
 }
 
@@ -150,18 +150,18 @@ function BadgesPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ alignItems: "center", gap: 6 }}>
-      <View style={{ flexDirection: "row", gap: 4 }}>
+      <Row tight>
         <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: tokens.primary }}>
           <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tokens["primary-foreground"] }}>Default</Text>
         </View>
         <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: tokens.secondary }}>
           <Text style={{ fontFamily: geist("500"), fontSize: 12, color: tokens["secondary-foreground"] }}>Tag</Text>
         </View>
-      </View>
-      <View style={{ flexDirection: "row", gap: 4 }}>
+      </Row>
+      <Row tight>
         <StatusBadge label="Active" status="success" />
         <StatusBadge label="Pending" status="warning" />
-      </View>
+      </Row>
     </View>
   );
 }
@@ -192,20 +192,20 @@ function BreadcrumbsPreview() {
     </Svg>
   );
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+    <Row tight alignCenter>
       <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Projects</Text>
       {chevron}
       <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Identity</Text>
       {chevron}
       <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens.foreground }}>Profile</Text>
-    </View>
+    </Row>
   );
 }
 
 function ButtonGroupsPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.card, padding: 2 }}>
+    <Row flush style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.card, padding: 2 }}>
       <View style={{ paddingVertical: 2, paddingHorizontal: 8, backgroundColor: tokens.primary, borderRadius: 4, justifyContent: "center" }}>
         <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["primary-foreground"] }}>Day</Text>
       </View>
@@ -215,7 +215,7 @@ function ButtonGroupsPreview() {
       <View style={{ paddingVertical: 2, paddingHorizontal: 8, justifyContent: "center" }}>
         <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Month</Text>
       </View>
-    </View>
+    </Row>
   );
 }
 
@@ -232,7 +232,7 @@ function ButtonsPreview() {
 function CheckRow({ label, checked }: { label: string; checked?: boolean }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+    <Row snug alignCenter>
       <View
         style={{
           width: 14,
@@ -252,7 +252,7 @@ function CheckRow({ label, checked }: { label: string; checked?: boolean }) {
         ) : null}
       </View>
       <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>{label}</Text>
-    </View>
+    </Row>
   );
 }
 
@@ -362,7 +362,7 @@ function PageIconBtn({ children }: { children: React.ReactNode }) {
 function PaginationPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+    <Row tight alignCenter>
       <PageIconBtn>
         <Svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={tokens.foreground} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <Path d="m15 18-6-6 6-6" />
@@ -382,7 +382,7 @@ function PaginationPreview() {
           <Path d="m9 18 6-6-6-6" />
         </Svg>
       </PageIconBtn>
-    </View>
+    </Row>
   );
 }
 
@@ -390,7 +390,7 @@ function PaginationPreview() {
 function RadioRow({ label, checked }: { label: string; checked?: boolean }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+    <Row snug alignCenter>
       <View
         style={{
           width: 14,
@@ -404,7 +404,7 @@ function RadioRow({ label, checked }: { label: string; checked?: boolean }) {
         }}
       />
       <Text style={{ fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>{label}</Text>
-    </View>
+    </Row>
   );
 }
 
@@ -449,13 +449,13 @@ function SkeletonsPreview() {
   const { tokens } = useTheme();
   const bar = alpha(tokens.muted, 0.6);
   return (
-    <View style={{ width: "100%", maxWidth: 180, flexDirection: "row", alignItems: "center", gap: 8 }}>
+    <Row snug alignCenter style={{ width: "100%", maxWidth: 180 }}>
       <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: bar }} />
       <View style={{ flex: 1, gap: 6 }}>
         <View style={{ height: 8, borderRadius: 4, backgroundColor: bar }} />
         <View style={{ height: 8, width: "75%", borderRadius: 4, backgroundColor: bar }} />
       </View>
-    </View>
+    </Row>
   );
 }
 
@@ -488,10 +488,10 @@ function MiniToggle({ on }: { on: boolean }) {
 
 function SwitchPreview() {
   return (
-    <View style={{ flexDirection: "row", gap: 12 }}>
+    <Row cozy>
       <MiniToggle on />
       <MiniToggle on={false} />
-    </View>
+    </Row>
   );
 }
 

@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, useTheme, alpha, Row } from "@nannier/canvas";
 import { geist, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
 
@@ -12,22 +12,22 @@ function ColorsPreview() {
     tokens.secondary, tokens.popover, tokens.background, tokens.ring, tokens.input, tokens.border,
   ];
   return (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, width: 220, maxWidth: "100%" }}>
+    <Row tight wrap style={{ width: 220, maxWidth: "100%" }}>
       {swatches.map((c, i) => (
         <View key={i} style={{ width: 33, height: 28, borderRadius: 4, backgroundColor: c, borderWidth: 1, borderColor: tokens.border }} />
       ))}
-    </View>
+    </Row>
   );
 }
 
 function SpacingPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 4 }}>
+    <Row tight alignEnd>
       {[12, 16, 20, 24, 28].map((n) => (
         <View key={n} style={{ width: n, height: n, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.25), borderWidth: 1, borderColor: alpha(tokens.primary, 0.4) }} />
       ))}
-    </View>
+    </Row>
   );
 }
 

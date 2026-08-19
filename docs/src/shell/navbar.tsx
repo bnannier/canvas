@@ -2,7 +2,7 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
+import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
@@ -175,7 +175,7 @@ function WebNav() {
     <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
       {glass ? <CanvasUniverse /> : null}
-      <View style={{ flex: 1, flexDirection: "row" }}>
+      <Row flush fill>
         {/* The kit Sidebar's column owns the 240/56 width and the flush right hairline now;
             this wrapper is just the column context so the sidebar's shell fills the row height. */}
         <View>
@@ -190,7 +190,7 @@ function WebNav() {
             <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
           </View>
         </View>
-      </View>
+      </Row>
       <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
     </SafeAreaView>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, AccessibilityInfo } from "react-native";
-import { View, Text, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, Row, Column, useTheme, alpha } from "@nannier/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { geist, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";
@@ -52,7 +52,10 @@ function usePulse() {
 function MiniKbd({ children }: { children: string }) {
   const { tokens } = useTheme();
   return (
-    <View
+    <Column
+      flush
+      center
+      alignCenter
       style={{
         height: 18,
         minWidth: 18,
@@ -61,12 +64,10 @@ function MiniKbd({ children }: { children: string }) {
         borderWidth: 1,
         borderColor: tokens.border,
         backgroundColor: tokens.muted,
-        alignItems: "center",
-        justifyContent: "center",
       }}
     >
       <Text style={{ fontFamily: geistMono("500"), fontSize: 11, color: tokens.foreground }}>{children}</Text>
-    </View>
+    </Column>
   );
 }
 
@@ -95,50 +96,55 @@ function AccessibilityPreview() {
 function DensityPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ flexDirection: "row", gap: 4, width: 200, maxWidth: "100%" }}>
-      <View
+    <Row tight style={{ width: 200, maxWidth: "100%" }}>
+      <Column
+        flush
+        center
+        alignCenter
+        fill
         style={{
-          flex: 1,
           backgroundColor: tokens.card,
           borderWidth: 1,
           borderColor: tokens.border,
           borderRadius: 4,
+          // The 4 / 8 / 12 padding ramp is the subject of this tile, so all three stay
+          // literal here rather than one of them becoming the `padTight` boolean.
           padding: 4,
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Compact</Text>
-      </View>
-      <View
+      </Column>
+      <Column
+        flush
+        center
+        alignCenter
+        fill
         style={{
-          flex: 1,
           backgroundColor: tokens.primary,
           borderWidth: 1,
           borderColor: tokens.primary,
           borderRadius: 4,
           padding: 8,
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens["primary-foreground"] }}>Regular</Text>
-      </View>
-      <View
+      </Column>
+      <Column
+        flush
+        center
+        alignCenter
+        fill
         style={{
-          flex: 1,
           backgroundColor: tokens.card,
           borderWidth: 1,
           borderColor: tokens.border,
           borderRadius: 4,
           padding: 12,
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         <Text style={{ fontFamily: geist("400"), fontSize: 8, color: tokens.foreground }}>Comfy</Text>
-      </View>
-    </View>
+      </Column>
+    </Row>
   );
 }
 
@@ -147,7 +153,9 @@ function FormValidationPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ width: 200, maxWidth: "100%", gap: 6 }}>
-      <View
+      <Column
+        flush
+        center
         style={{
           height: 28,
           // A destructive border paired with a 1px destructive ring reads as an emphasized error
@@ -157,13 +165,12 @@ function FormValidationPreview() {
           borderColor: tokens.destructive,
           backgroundColor: tokens.background,
           paddingHorizontal: 10,
-          justifyContent: "center",
         }}
       >
         <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }} numberOfLines={1}>
           not-an-email
         </Text>
-      </View>
+      </Column>
       <Text style={{ fontFamily: geist("400"), fontSize: 9, color: tokens.destructive }}>Not a valid email</Text>
     </View>
   );
@@ -197,7 +204,10 @@ function GlassSurfacePreview() {
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#glassWarm)" />
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#glassCool)" />
       </Svg>
-      <View
+      <Column
+        flush
+        center
+        alignCenter
         style={{
           position: "absolute",
           top: 12,
@@ -208,12 +218,10 @@ function GlassSurfacePreview() {
           borderWidth: 1,
           borderColor: "rgba(255, 255, 255, 0.5)",
           backgroundColor: "rgba(255, 255, 255, 0.55)",
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         <Text style={{ fontFamily: geist("500"), fontSize: 10, color: "hsl(220, 30%, 20%)" }}>Glass</Text>
-      </View>
+      </Column>
     </View>
   );
 }
@@ -224,13 +232,13 @@ function LoadingPreview() {
   const opacity = usePulse();
   const fill = alpha(tokens.muted, 0.6);
   return (
-    <View style={{ width: 200, maxWidth: "100%", flexDirection: "row", alignItems: "center", gap: 8 }}>
+    <Row snug alignCenter style={{ width: 200, maxWidth: "100%" }}>
       <Animated.View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: fill, opacity }} />
       <View style={{ flex: 1, gap: 6 }}>
         <Animated.View style={{ height: 8, borderRadius: 4, backgroundColor: fill, opacity }} />
         <Animated.View style={{ height: 8, width: "75%", borderRadius: 4, backgroundColor: fill, opacity }} />
       </View>
-    </View>
+    </Row>
   );
 }
 

@@ -1,4 +1,4 @@
-import { View, Text, Icon, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, Icon, Column, useTheme, alpha } from "@nannier/canvas";
 import { Page, PageHeader } from "../../../ui/page";
 import { Section } from "../../../ui/section";
 import { P, H3, InlineCode, Rule } from "../../../ui/prose";
@@ -61,16 +61,16 @@ export default function BoilerplateScreen() {
             The boilerplate will be a real Canvas app you can <InlineCode>git clone</InlineCode> and run, not a snippet.
             Here is what it is shaping up to cover:
           </P>
-          <View style={{ gap: 16, marginTop: 4 }}>
+          <Column relaxed style={{ marginTop: 4 }}>
             {PLANNED.map((item) => (
               <Surface key={item.title} padding={16}>
-                <View style={{ gap: 4 }}>
+                <Column tight>
                   <H3>{item.title}</H3>
                   <P muted>{item.description}</P>
-                </View>
+                </Column>
               </Surface>
             ))}
-          </View>
+          </Column>
         </Section>
 
         <PageNav />

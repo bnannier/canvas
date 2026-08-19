@@ -1,4 +1,4 @@
-import { View, Text, useTheme, useResponsive } from "@nannier/canvas";
+import { View, Text, Row, Column, useTheme, useResponsive } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import type { DocExample, ExampleScope } from "../../../core/scope";
 import { Page } from "../../../ui/page";
@@ -252,7 +252,7 @@ export default function LayoutScreen() {
     <Page>
       <View style={{ gap: 40 }}>
         {/* Intro */}
-        <View style={{ gap: 12 }}>
+        <Column cozy>
           <TokenH1>Layout & flexbox</TokenH1>
           <TokenLede>
             Canvas lays out with plain React Native style objects on the raw View primitive, so the same code runs on iOS, Android, and the web. Layout is flexbox: React Native has no CSS grid. The spacing scale is the kit's own 4px grid expressed as numbers (gap: 16 is four steps on the grid), and the useResponsive hook handles breakpoints, so a value can change with the viewport.
@@ -264,20 +264,20 @@ export default function LayoutScreen() {
             </Text>{" "}
             for View, Text, and the rest of the primitives this guide composes.
           </Text>
-        </View>
+        </Column>
 
         <TokenSection
           title="How layout works"
           description="A View is a flex container; you set its layout with a style object (flexDirection, alignItems, justifyContent, gap, ...). Numbers are density-independent pixels. A style array merges left to right, so the last entry wins, which is how a component's outer style prop (layout composition within a parent, never a restyle hook) lands after its own base styles."
           anatomy="Responsive values come from useResponsive({ base, sm, md, ... }), which is desktop-first: base is the desktop value, and a breakpoint entry applies at that width AND BELOW, with the smallest matching breakpoint winning. This is the inverse of mobile-first. Breakpoints (and below): sm 640, md 768, lg 1024, xl 1280, 2xl 1536."
         >
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          <Row wrap snug>
             <Chip>flexDirection: "row"</Chip>
             <Chip>alignItems: "center"</Chip>
             <Chip>gap: 8</Chip>
             <Chip>flex: 1</Chip>
             <Chip>width: "50%"</Chip>
-          </View>
+          </Row>
         </TokenSection>
 
         <TokenSection
@@ -320,7 +320,7 @@ export default function LayoutScreen() {
           description="useResponsive({ base, md, ... }) returns the active value for the viewport. Because the model is desktop-first, a breakpoint entry applies at that width and BELOW. Resize the window across the md (768px) boundary to watch the live preview switch from a row to a column."
         >
           <View>
-            <View
+            <Column flush center alignCenter
               style={{
                 borderWidth: 1,
                 borderColor: tokens.border,
@@ -329,14 +329,12 @@ export default function LayoutScreen() {
                 borderBottomWidth: 0,
                 backgroundColor: tokens.background,
                 minHeight: 84,
-                alignItems: "center",
-                justifyContent: "center",
                 paddingVertical: 24,
                 paddingHorizontal: 16,
               }}
             >
               <ResponsiveDemo />
-            </View>
+            </Column>
             <CodeBlock code={responsiveCode} flush />
           </View>
         </TokenSection>

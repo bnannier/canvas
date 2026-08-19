@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { View, Text, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, Row, Column, useTheme, alpha } from "@nannier/canvas";
 import Svg, { Path, Circle, Line, Polyline } from "react-native-svg";
 import { geist, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
@@ -38,7 +38,10 @@ function ActionPanelsPreview() {
         Permanent and irreversible.
       </Text>
       <View style={{ alignSelf: "flex-start" }}>
-        <View
+        <Column
+          flush
+          center
+          alignCenter
           style={{
             height: 24,
             paddingHorizontal: 8,
@@ -46,12 +49,10 @@ function ActionPanelsPreview() {
             borderWidth: 1,
             borderColor: tokens.destructive,
             backgroundColor: tokens.destructive,
-            alignItems: "center",
-            justifyContent: "center",
           }}
         >
           <Text style={{ fontFamily: geist("500"), fontSize: 10, color: "#fff" }}>Delete</Text>
-        </View>
+        </Column>
       </View>
     </View>
   );
@@ -118,7 +119,7 @@ function CardsPreview() {
           backgroundColor: tokens.card,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <Row flush alignCenter between style={{ marginBottom: 8 }}>
           <Text
             style={{
               fontFamily: geist("500"),
@@ -136,7 +137,7 @@ function CardsPreview() {
             <Path d="M22 21v-2a4 4 0 0 0-3-3.87" />
             <Path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </Svg>
-        </View>
+        </Row>
         <Text style={{ fontFamily: geist("600"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>12.3k</Text>
         <Text style={{ fontFamily: geist("500"), fontSize: 10, marginTop: 4, color: GREEN_TEXT }}>+8%</Text>
       </View>
@@ -149,14 +150,14 @@ function DescriptionListsPreview() {
   const { tokens } = useTheme();
   return (
     <View style={{ width: "100%", maxWidth: 220 }}>
-      <View style={{ flexDirection: "row", paddingVertical: 4 }}>
+      <Row flush style={{ paddingVertical: 4 }}>
         <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Name</Text>
         <Text style={{ flex: 2, fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>Ada Lovelace</Text>
-      </View>
-      <View style={{ flexDirection: "row", paddingVertical: 4, borderTopWidth: 1, borderColor: tokens.border }}>
+      </Row>
+      <Row flush style={{ paddingVertical: 4, borderTopWidth: 1, borderColor: tokens.border }}>
         <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 11, color: tokens["muted-foreground"] }}>Email</Text>
         <Text style={{ flex: 2, fontFamily: geist("400"), fontSize: 11, color: tokens.foreground }}>ada@...</Text>
-      </View>
+      </Row>
     </View>
   );
 }
@@ -185,11 +186,11 @@ function FieldPreview() {
 function EmptyStatesPreview() {
   const { tokens } = useTheme();
   return (
-    <View
+    <Column
+      tight
+      alignCenter
+      pad
       style={{
-        alignItems: "center",
-        gap: 4,
-        padding: 16,
         borderWidth: 1,
         borderColor: tokens.border,
         borderRadius: 12,
@@ -204,7 +205,7 @@ function EmptyStatesPreview() {
       </Svg>
       <Text style={{ fontFamily: geist("600"), fontSize: 12, color: tokens.foreground }}>No items</Text>
       <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Create one to start.</Text>
-    </View>
+    </Column>
   );
 }
 
@@ -228,26 +229,27 @@ function FeedsPreview() {
   return (
     <View style={{ width: "100%", maxWidth: 220, gap: 6 }}>
       {items.map((item) => (
-        <View key={item.label} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <View
+        <Row key={item.label} snug alignCenter>
+          <Column
+            flush
+            center
+            alignCenter
             style={{
               width: 20,
               height: 20,
               borderRadius: 10,
               backgroundColor: alpha(tokens.primary, 0.15),
-              alignItems: "center",
-              justifyContent: "center",
             }}
           >
             <Svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={tokens.primary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               {item.icon}
             </Svg>
-          </View>
+          </Column>
           <Text style={{ flex: 1, fontSize: 10 }}>
             <Text style={{ fontFamily: geist("600"), fontSize: 10, color: tokens.foreground }}>Ada</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>{" " + item.label}</Text>
           </Text>
-        </View>
+        </Row>
       ))}
     </View>
   );
@@ -257,30 +259,31 @@ function FeedsPreview() {
 function FormLayoutsPreview() {
   const { tokens } = useTheme();
   const field = (placeholder: string) => (
-    <View
+    <Column
+      flush
+      center
+      fill
       style={{
-        flex: 1,
         height: 28,
         borderRadius: 6,
         borderWidth: 1,
         borderColor: tokens.input,
         backgroundColor: tokens.background,
         paddingHorizontal: 10,
-        justifyContent: "center",
       }}
     >
       <Text style={{ fontFamily: geist("400"), fontSize: 12, color: tokens["muted-foreground"] }} numberOfLines={1}>
         {placeholder}
       </Text>
-    </View>
+    </Column>
   );
   return (
     <View style={{ width: "100%", maxWidth: 200, gap: 6 }}>
       {field("Name")}
-      <View style={{ flexDirection: "row", gap: 4 }}>
+      <Row tight>
         {field("First")}
         {field("Last")}
-      </View>
+      </Row>
     </View>
   );
 }
@@ -309,24 +312,25 @@ function GridListsPreview() {
 function MediaObjectsPreview() {
   const { tokens } = useTheme();
   return (
-    <View style={{ width: "100%", maxWidth: 220, flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-      <View
+    <Row snug alignStart style={{ width: "100%", maxWidth: 220 }}>
+      <Column
+        flush
+        center
+        alignCenter
         style={{
           width: 32,
           height: 32,
           borderRadius: 16,
           backgroundColor: tokens.muted,
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         <Text style={{ fontFamily: geist("500"), fontSize: 10, color: tokens["muted-foreground"] }}>AL</Text>
-      </View>
+      </Column>
       <View style={{ flex: 1 }}>
         <Text style={{ fontFamily: geist("600"), fontSize: 11, color: tokens.foreground }}>Ada Lovelace</Text>
         <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>Principal eng.</Text>
       </View>
-    </View>
+    </Row>
   );
 }
 
@@ -351,34 +355,34 @@ function StackedListsPreview() {
       }}
     >
       {rows.map((row, i) => (
-        <View
+        <Row
           key={row.initials}
+          snug
+          alignCenter
           style={{
             paddingVertical: 6,
             paddingHorizontal: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
             borderTopWidth: i > 0 ? 1 : 0,
             borderColor: tokens.border,
           }}
         >
-          <View
+          <Column
+            flush
+            center
+            alignCenter
             style={{
               width: 24,
               height: 24,
               borderRadius: 12,
               backgroundColor: tokens.muted,
-              alignItems: "center",
-              justifyContent: "center",
             }}
           >
             <Text style={{ fontFamily: geist("500"), fontSize: 10, color: tokens["muted-foreground"] }}>{row.initials}</Text>
-          </View>
+          </Column>
           <Text style={{ flex: 1, fontFamily: geist("400"), fontSize: 10, color: tokens.foreground }} numberOfLines={1}>
             {row.name}
           </Text>
-        </View>
+        </Row>
       ))}
     </View>
   );
@@ -388,10 +392,10 @@ function StackedListsPreview() {
 function StatsPreview() {
   const { tokens } = useTheme();
   const cell = (label: string, value: string) => (
-    <View style={{ flex: 1, alignItems: "center" }}>
+    <Column flush fill alignCenter>
       <Text style={{ fontFamily: geist("400"), fontSize: 10, color: tokens["muted-foreground"] }}>{label}</Text>
       <Text style={{ fontFamily: geist("600"), fontSize: 14, color: tokens.foreground }}>{value}</Text>
-    </View>
+    </Column>
   );
   return (
     <View style={{ width: "100%", maxWidth: 220, flexDirection: "row", gap: 6 }}>

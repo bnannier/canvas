@@ -11,6 +11,7 @@ import {
   statusHues,
   Swatch,
   Row,
+  Column,
   Card,
   Alert,
   Badge,
@@ -182,13 +183,13 @@ export default function ColorsScreen() {
     <Page>
       <View style={{ gap: 40 }}>
         {/* Intro */}
-        <View style={{ gap: 12 }}>
+        <Column cozy>
           <TokenH1>Colors & Theme</TokenH1>
           <TokenLede>
             Canvas uses a semantic token system. Every color is a named token (primary, muted-foreground, border, …) that ships as a plain value per scheme. Components read the active set through useTheme() and build their React Native styles from it, so the same code themes correctly on iOS, Android, and the web, with no per-platform fork. You never touch the values directly: you pick a component's look with semantic boolean props.
           </TokenLede>
           <Callout label="Try this.">Toggle the theme. Every sample below reads the active scheme live, so the values change with it.</Callout>
-        </View>
+        </Column>
 
         <TokenSection
           title="Brand"
@@ -234,7 +235,7 @@ export default function ColorsScreen() {
           description="The tinted surfaces behind alerts and status badges. Each tone is one hue family sampled at four steps: a 50 fill, a 200 border, a 500 dot, and a 700 label."
           anatomy="Alert and Badge read the same tone-to-hue map (statusHues), so a warning banner and a warning pill in one view are guaranteed to be the same amber."
         >
-          <View style={{ gap: 16 }}>
+          <Column relaxed>
             <Row wrap cozy alignStart>
               <Alert success title="success" description={ramp("success")} icon={<Badge status success accessibilityLabel="success" />} style={{ flexGrow: 1, flexBasis: 210 }} />
               <Alert warning title="warning" description={ramp("warning")} icon={<Badge status warning accessibilityLabel="warning" />} style={{ flexGrow: 1, flexBasis: 210 }} />
@@ -248,7 +249,7 @@ export default function ColorsScreen() {
               <Badge status info>Info</Badge>
               <Badge status neutral>Inactive</Badge>
             </Row>
-          </View>
+          </Column>
         </TokenSection>
 
         <TokenSection
@@ -268,7 +269,7 @@ export default function ColorsScreen() {
           description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and the floating shells and overlays take the material together, or solid to force the flat look; neither means the platform default."
           anatomy={`Glass publishes its OWN fill instead of rewriting a semantic one: the material paints glass-tint, ${glassByScheme.light["glass-tint"]} in light and ${glassByScheme.dark["glass-tint"]} in dark. popover keeps its opaque value in BOTH schemes, so an option-list menu, a select panel, an alert dialog, a toast and a chart tooltip stay the same opaque cards in glass mode as in solid; card stays opaque too, so content surfaces (cards, lists, tables, charts) never frost. Only the surfaces that render through GlassSurface (popovers, dialogs, drawers, action sheets, the command palette, navbars, tab bars, the sidebar) take the tint, and they take it UNDER the real material.`}
         >
-          <View style={{ gap: 12 }}>
+          <Column cozy>
             {/* A live material sample: the bar floats over content, which is the only
                 condition under which glass reads as glass at all. */}
             {/* Docs illustration, not a reusable control: a plate of stand-in content
@@ -319,7 +320,7 @@ export default function ColorsScreen() {
             <Typography tiny muted>
               The option-list menus are the deliberate exception. A dropdown, select, autocomplete or avatar menu is a card of rows the reader picks from, and the Chromium lens keeps the centre of a pane optically flat by design, so a translucent menu shows the page straight through between its rows. Those, plus alert dialogs, toasts and chart tooltips, keep painting their opaque fill in glass mode exactly as in solid.
             </Typography>
-          </View>
+          </Column>
         </TokenSection>
 
         <TokenSection
@@ -366,7 +367,7 @@ export default function ColorsScreen() {
           title="How theming works"
           description="You change a component's look with semantic boolean props. Each one resolves through the active scheme's tokens, so the same markup renders correctly in every theme and accent, with no re-skinning and no per-call overrides."
         >
-          <View style={{ gap: 16 }}>
+          <Column relaxed>
             <Row wrap relaxed alignStart>
               <Card title="1 · Tokens (tokens.ts)" style={{ flexGrow: 1, flexBasis: 320 }}>
                 <CodeBlock code={TOKENS_SRC} />
@@ -376,28 +377,28 @@ export default function ColorsScreen() {
               </Card>
             </Row>
             <Card title="3 · One prop, resolved live">
-              <View style={{ gap: 12 }}>
+              <Column cozy>
                 <CodeBlock code={DYNAMIC} />
                 <Typography small muted>
                   The primary prop is the whole styling API; the button reads tokens.primary from useTheme(). Switch the scheme or point the accent at a new hue and the ThemeProvider swaps the token set, so every component bound to it re-renders with the new colour.
                 </Typography>
-              </View>
+              </Column>
             </Card>
-          </View>
+          </Column>
         </TokenSection>
 
         <TokenSection
           title="Do's and don'ts"
           description="Keep colour theme-routed. These are the patterns that follow the accent and dark mode for free, beside the ones that quietly break them."
         >
-          <View style={{ gap: 16 }}>
+          <Column relaxed>
             {DO_DONT.map((pair, i) => (
               <View key={i} style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
                 <DoDontCard dont caption={pair.bad.note} code={pair.bad.code} style={wide ? { flex: 1 } : null} />
                 <DoDontCard do caption={pair.good.note} code={pair.good.code} style={wide ? { flex: 1 } : null} />
               </View>
             ))}
-          </View>
+          </Column>
         </TokenSection>
 
         <PageNav />

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, Text, Pressable, Icon, GlassSurface, useTheme, alpha } from "@nannier/canvas";
+import { Text, Pressable, Row, Column, Icon, GlassSurface, useTheme, alpha } from "@nannier/canvas";
 import { geist } from "../ui/fonts";
 
 // The mobile-web top bar, built to match the iOS UINavigationBar: a centered title flanked by
@@ -52,17 +52,17 @@ export function MobileNavBar({
   const { tokens } = useTheme();
   return (
     <GlassSurface style={{ height: BAR_HEIGHT, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
-      <View style={{ flex: 1, flexDirection: "row", alignItems: "center", paddingHorizontal: 12 }}>
-        <View style={{ width: SIDE, alignItems: "flex-start" }}>
+      <Row flush fill alignCenter style={{ paddingHorizontal: 12 }}>
+        <Column flush alignStart style={{ width: SIDE }}>
           {showBack ? <CircleButton label="Back" onPress={onBack} icon={<Icon chevronLeft size={20} />} /> : null}
-        </View>
+        </Column>
         <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", fontFamily: geist("600"), fontSize: 17, color: tokens.foreground }}>
           {title}
         </Text>
-        <View style={{ width: SIDE, flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
+        <Row snug end alignCenter style={{ width: SIDE }}>
           <CircleButton label="Menu" onPress={onMenu} icon={<Icon menu size={18} />} />
-        </View>
-      </View>
+        </Row>
+      </Row>
     </GlassSurface>
   );
 }

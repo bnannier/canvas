@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { useWindowDimensions } from "react-native";
-import { View, Text, useTheme } from "@nannier/canvas";
+import { View, Text, Column, useTheme } from "@nannier/canvas";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { geist, geistMono } from "./fonts";
 import { alpha } from "./color";
@@ -56,16 +56,16 @@ export function TokenSection({ title, description, anatomy, children }: {
 }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ gap: 16 }}>
-      <View style={{ gap: 4 }}>
+    <Column relaxed>
+      <Column tight>
         <Text style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>{title}</Text>
         {description ? (
           <Text style={{ fontFamily: geist("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 640 }}>{description}</Text>
         ) : null}
-      </View>
+      </Column>
       {anatomy ? <Callout label="Anatomy.">{anatomy}</Callout> : null}
       {children}
-    </View>
+    </Column>
   );
 }
 
@@ -107,7 +107,7 @@ export function GradientFill({ colors, height = 80, angle = 135, children }: {
         </Defs>
         <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${gid})`} />
       </Svg>
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
+      <Column fill flush center alignCenter>{children}</Column>
     </View>
   );
 }

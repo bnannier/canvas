@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Icon, alpha, palette, useTheme, type StyleProp, type ViewStyle } from "@nannier/canvas";
+import { View, Text, Icon, Column, alpha, palette, useTheme, type StyleProp, type ViewStyle } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair } from "../core/scope";
 import { CodeBlock } from "./code-block";
@@ -83,10 +83,10 @@ export function Donts({ donts }: { donts: DocDontPair[] }) {
   const scope = previews[previews.length - 1].scope;
 
   return (
-    <View style={{ gap: 16 }}>
+    <Column relaxed>
       <Text style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Don’ts</Text>
       {donts.map((d, i) => (
-        <View key={i} style={{ gap: 8 }}>
+        <Column key={i} snug>
           {d.title ? (
             <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground }}>{d.title}</Text>
           ) : null}
@@ -94,8 +94,8 @@ export function Donts({ donts }: { donts: DocDontPair[] }) {
             <DoDontCard dont caption={d.dont.caption} style={wide ? { flex: 1 } : null}>{d.dont.render(scope)}</DoDontCard>
             <DoDontCard do caption={d.do.caption} style={wide ? { flex: 1 } : null}>{d.do.render(scope)}</DoDontCard>
           </View>
-        </View>
+        </Column>
       ))}
-    </View>
+    </Column>
   );
 }
