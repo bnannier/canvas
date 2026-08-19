@@ -21,6 +21,7 @@ truth for both stores' data declarations.
 | Play app record | **CREATED 29 Jul 2026.** "Canvas UI Kit", package `com.nannier.canvas` (permanent), app ID `4973468766485983757`, free (cannot become paid after publishing). |
 | Android build for Play | **BUILT**, EAS `0b0e49b9`, v1.0.0 **versionCode 6**, production/app-bundle, from `4d2d2e96`. Deliberately NOT the older versionCode 5 build: that one predates the /licenses screen, so it would ship the OFL gap, since the Android binary bundles Geist too. |
 | Play upload | **AUTOMATED (19 Aug 2026).** versionCode 6 is uploaded and sits as a DRAFT release on the internal track. `eas submit -p android` now works end to end. |
+| Play store listing | **SAVED 19 Aug 2026.** Name, short + full description, 512 icon, 1024x500 feature graphic, and 8 phone screenshots (1080x1920) are all attached. The 7-inch and 10-inch tablet slots are starred but do NOT block saving; we shipped without them rather than pass phone captures off as tablet ones. |
 | Play publishing automation | **DONE.** GCP project `canvas-play-publishing`, Google Play Android Developer API enabled, service account `play-publisher@canvas-play-publishing.iam.gserviceaccount.com` granted app-scoped "Release apps to testing tracks" on Canvas UI Kit (no admin, no production, no financial). Key attached to EAS; repo variable `PLAY_SUBMIT_ENABLED=true`, so the deploy workflow now auto-submits. |
 
 ### Setting up Play auto-submit (done, recorded so it is not re-derived)
