@@ -18,7 +18,8 @@ truth for both stores' data declarations.
 | Android production `.aab` | **Built and ready**, v1.0.0 versionCode 3, SDK 57, from commit `d5daa866` |
 | Android upload keystore | Generated and held by EAS |
 | Google Play Developer account | **EXISTS** (checked 26 Jul 2026): "Bobby Nannier", personal, ID `7346390607155774694`. |
-| Play identity verification | **PENDING with Google.** Documents uploaded, "may take a few days". Everything else is gated behind it: phone verification, package-name registration, publishing. |
+| Play identity verification | **PASSED (29 Jul 2026).** Confirmed by the console switching the account name from "Bobby Nannier" to the legal name "Robert Nannier" and dropping the step from the checklist. NOTE it briefly regressed to "Verify your identity / Get started" on 28 Jul before clearing, so a reset there is not necessarily a rejection. |
+| Play phone verification | **THE ONLY REMAINING BLOCKER.** Number `+14166693676` is entered; it needs the SMS code, which only the account owner can receive. `Create app` stays locked until it clears, so there is no app record, no package name and no upload before then. |
 | Apple Developer Program membership | Active, team `ZR2R53SLS7` |
 | App Store Connect app record | Created, Apple ID `6794454098`, bundle `com.nannier.canvas` |
 | ASC listing metadata | Done: name, subtitle, description, keywords, support + marketing URLs, categories |
