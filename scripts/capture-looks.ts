@@ -42,6 +42,13 @@ const BLANK_BYTES = 60_000;
 
 const SCHEME = "canvas";
 const ANDROID_PKG = "com.nannier.canvas";
+const IOS_BUNDLE = "com.nannier.canvas";
+// How long a cold start needs before the routed page has painted. Only the FIRST one
+// pays for Metro's bundle; after that Metro serves it from cache and the app is back
+// in seconds. The blank/stale guards below retry anything slower than this.
+const COLD_LINK_MS = 14_000;
+// One-time per-surface warm-up: long enough for a dev build to pull its bundle cold.
+const WARMUP_MS = 18_000;
 const ADB = process.env.ADB ?? "/opt/homebrew/share/android-commandlinetools/platform-tools/adb";
 const BASE = process.env.BASE ?? "http://localhost:8081";
 
@@ -69,12 +76,30 @@ async function captureIos(slug: string, file: string) {
   sh("xcrun", ["simctl", "io", "booted", "screenshot", file]);
 }
 
+// Bring the app up and let it pull its Metro bundle BEFORE the first deep link, the
+// iOS counterpart of androidSetup's warm-up. A cold dev build spends its first
+// half-minute on Metro's "Bundling nn%..." screen, and that screen is not blank: it
+// carries a status bar and a label, so it clears BLANK_BYTES and banks as a real
+// capture. Warming here is what makes the deep links below land on a routed app.
+async function iosSetup() {
+  sh("xcrun", ["simctl", "launch", "booted", IOS_BUNDLE]);
+  await sleep(WARMUP_MS);
+}
+
 // ---------------------------------------------------------------------------
 // Android: same deep link over an intent, screen grabbed off the framebuffer.
 // ---------------------------------------------------------------------------
 async function captureAndroid(slug: string, file: string) {
+  // The app is stopped first so the link starts it. A VIEW intent delivered to a
+  // RUNNING activity is swallowed here (adb says "intent has been delivered to
+  // currently running top-most instance") and the router stays on whatever screen it
+  // was showing, so the grab is a picture of that screen rather than the component's
+  // page. Only a cold start's LAUNCH intent is read as the initial URL. This is the
+  // bug that put the home page in autocomplete-android, and no amount of waiting or
+  // retrying fixes it, because every retry re-delivers to the same running instance.
+  adb("shell", "am", "force-stop", ANDROID_PKG);
   adb("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", `${SCHEME}:///components/${slug}`);
-  await sleep(2600);
+  await sleep(COLD_LINK_MS);
   await writeFile(file, adb("exec-out", "screencap", "-p"));
 }
 
@@ -88,7 +113,7 @@ async function androidSetup() {
   // process that is still coming up and capture a blank splash.
   adb("shell", "am", "force-stop", ANDROID_PKG);
   adb("shell", "monkey", "-p", ANDROID_PKG, "-c", "android.intent.category.LAUNCHER", "1");
-  await sleep(18000);
+  await sleep(WARMUP_MS);
 }
 
 function androidTeardown() {
@@ -169,6 +194,7 @@ async function main() {
       colorScheme: "dark",
     });
   }
+  if (surfaces.includes("ios")) await iosSetup();
   if (surfaces.includes("android")) await androidSetup();
 
   // Last accepted frame per surface, used to prove each deep link actually routed.
