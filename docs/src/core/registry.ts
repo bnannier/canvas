@@ -528,6 +528,10 @@ import e_atoms_view_example_0 from "./examples/atoms/view/example-0";
 import e_atoms_view_example_1 from "./examples/atoms/view/example-1";
 import e_atoms_view_example_2 from "./examples/atoms/view/example-2";
 import e_atoms_view_example_3 from "./examples/atoms/view/example-3";
+import e_atoms_view_dont_0_do from "./examples/atoms/view/dont-0-do";
+import e_atoms_view_dont_0_dont from "./examples/atoms/view/dont-0-dont";
+import e_atoms_view_dont_1_do from "./examples/atoms/view/dont-1-do";
+import e_atoms_view_dont_1_dont from "./examples/atoms/view/dont-1-dont";
 import e_molecules_accordion_example_0 from "./examples/molecules/accordion/example-0";
 import e_molecules_accordion_example_1 from "./examples/molecules/accordion/example-1";
 import e_molecules_accordion_example_2 from "./examples/molecules/accordion/example-2";
@@ -1737,13 +1741,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     dir: "view",
     category: "atoms",
     examples: [
-      { label: "Default", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 12 }}>\n  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />\n  <Text style={{ color: tokens.foreground, fontWeight: \"600\" }}>Two Views in a row</Text>\n</View>", render: e_atoms_view_example_0 },
-      { label: "Column", code: "<View style={{ gap: 8, width: 220 }}>\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</View>", render: e_atoms_view_example_1 },
-      { label: "Flex sizing", code: "<View style={{ flexDirection: \"row\", gap: 8, width: 260 }}>\n  <View style={{ flex: 1, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ flex: 2, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.3) }} />\n</View>", render: e_atoms_view_example_2 },
-      { label: "Padding & border", code: "<View style={{ padding: 16, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, width: 240 }}>\n  <Text style={{ color: tokens.foreground }}>A padded, bordered box</Text>\n</View>", render: e_atoms_view_example_3 },
+      { label: "Default", code: "<Row cozy alignCenter>\n  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />\n  <Typography semibold>Two Views in a row</Typography>\n</Row>", render: e_atoms_view_example_0 },
+      { label: "Column", code: "<Column snug style={{ width: 220 }}>\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</Column>", render: e_atoms_view_example_1 },
+      { label: "Flex sizing", code: "<Row snug style={{ width: 260 }}>\n  <View style={{ flex: 1, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ flex: 2, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.3) }} />\n</Row>", render: e_atoms_view_example_2 },
+      { label: "Padding", code: "<Column pad style={{ width: 240, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card }}>\n  <Typography>A padded, bordered box</Typography>\n</Column>", render: e_atoms_view_example_3 },
     ],
     donts: [
-
+      { title: "Arrangement", do: { caption: "Row and Column carry direction, gap, alignment and padding as boolean props, so the arrangement reads as language and lands on the kit's spacing scale.", code: "<Row cozy alignCenter>\n  <Emblem primary><Icon shield /></Emblem>\n  <Typography semibold>Semantic arrangement</Typography>\n</Row>", render: e_atoms_view_dont_0_do }, dont: { caption: "A hand-written flex style object restates what the primitives already name, drifts off the spacing scale, and has to be re-read to know what it does.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 12 }}>\n  <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: alpha(tokens.primary, 0.12) }} />\n  <Text style={{ color: tokens.foreground, fontWeight: \"600\" }}>Hand-rolled arrangement</Text>\n</View>", render: e_atoms_view_dont_0_dont } },
+      { title: "Surfaces", do: { caption: "A bordered, filled, padded surface is a Card; it carries the platform's own radius, hairline and elevation.", code: "<Card style={{ width: 240 }}>\n  <Typography>A real surface</Typography>\n</Card>", render: e_atoms_view_dont_1_do }, dont: { caption: "Rebuilding the same box out of a View and four style properties drifts from the platform skins the moment one of them changes.", code: "<View style={{ width: 240, padding: 16, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card }}>\n  <Text style={{ color: tokens.foreground }}>A look-alike surface</Text>\n</View>", render: e_atoms_view_dont_1_dont } },
     ],
   },
   "accordion": {

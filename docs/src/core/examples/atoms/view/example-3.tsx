@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text } = scope;
+  const { tokens, Typography, Column } = scope;
   return (
-<View style={{ padding: 16, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, width: 240 }}>
-  <Text style={{ color: tokens.foreground }}>A padded, bordered box</Text>
-</View>
+<Column pad style={{ width: 240, borderRadius: 10, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card }}>
+  <Typography>A padded, bordered box</Typography>
+</Column>
   );
 }

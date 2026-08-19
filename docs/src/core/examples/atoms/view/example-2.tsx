@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View } = scope;
+  const { tokens, alpha, View, Row } = scope;
   return (
-<View style={{ flexDirection: "row", gap: 8, width: 260 }}>
+<Row snug style={{ width: 260 }}>
   <View style={{ flex: 1, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
   <View style={{ flex: 2, height: 32, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.3) }} />
-</View>
+</Row>
   );
 }

@@ -7,7 +7,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "view",
     name: "View",
-    description: "The layout primitive: a flex container that runs identically on iOS, Android, and the web. Set layout with a React Native style object (flexDirection, gap, alignItems, padding).",
+    description: "The layout primitive: a flex container that runs identically on iOS, Android, and the web. Reach for it directly only where no semantic primitive fits: arrangement belongs to Row and Column, which expose direction, gap, alignment and padding as boolean props.",
     category: "Atoms",
   },
   {
