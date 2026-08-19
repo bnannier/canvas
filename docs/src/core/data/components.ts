@@ -71,7 +71,7 @@ export const COMPONENTS: ComponentDoc[] = [
     slug: "sparkline",
     name: "Sparkline",
     description: "A compact trend strip: a row of thin bars whose heights track a series of values, with the series in a soft wash of the tone and the latest bar in the full accent. Pass values and it sizes each bar against the series max and paints the tone, so no call site hand-composes a row of flexGrow + height Views to draw an inline trend on a stat card or dashboard.",
-    category: "Atoms",
+    category: "Charts",
   },
 
   {

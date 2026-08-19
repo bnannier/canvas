@@ -105,7 +105,7 @@ const CASES: SkinCase[] = [
   { name: "Select", dir: "atoms/select", file: "select", props: { options: ["A", "B", "C"], value: "A", open: true, label: "Letter", required: true } },
   { name: "Skeleton", dir: "atoms/skeleton", file: "skeleton" },
   { name: "Slider", dir: "atoms/slider", file: "slider", props: { value: 40, min: 0, max: 100 } },
-  { name: "Sparkline", dir: "atoms/sparkline", file: "sparkline", props: { values: [1, 3, 2, 5, 4, 6] } },
+  { name: "Sparkline", dir: "charts/sparkline", file: "sparkline", props: { values: [1, 3, 2, 5, 4, 6] } },
   { name: "Spinner", dir: "atoms/spinner", file: "spinner" },
   // `value` + `detail` render both mono label lines alongside the block.
   { name: "Swatch", dir: "atoms/swatch", file: "swatch", props: { color: "#4f39f6", value: "--primary", detail: "oklch(0.511 0.262 276.966)" }, children: "primary" },

@@ -391,12 +391,6 @@ import e_atoms_slider_dont_1_do from "./examples/atoms/slider/dont-1-do";
 import e_atoms_slider_dont_1_dont from "./examples/atoms/slider/dont-1-dont";
 import e_atoms_slider_dont_2_do from "./examples/atoms/slider/dont-2-do";
 import e_atoms_slider_dont_2_dont from "./examples/atoms/slider/dont-2-dont";
-import e_atoms_sparkline_example_0 from "./examples/atoms/sparkline/example-0";
-import e_atoms_sparkline_example_1 from "./examples/atoms/sparkline/example-1";
-import e_atoms_sparkline_example_2 from "./examples/atoms/sparkline/example-2";
-import e_atoms_sparkline_example_3 from "./examples/atoms/sparkline/example-3";
-import e_atoms_sparkline_dont_0_do from "./examples/atoms/sparkline/dont-0-do";
-import e_atoms_sparkline_dont_0_dont from "./examples/atoms/sparkline/dont-0-dont";
 import e_atoms_spinner_example_0 from "./examples/atoms/spinner/example-0";
 import e_atoms_spinner_example_1 from "./examples/atoms/spinner/example-1";
 import e_atoms_spinner_example_2 from "./examples/atoms/spinner/example-2";
@@ -1017,6 +1011,12 @@ import e_charts_service_health_list_example_2 from "./examples/charts/service-he
 import e_charts_service_health_list_example_3 from "./examples/charts/service-health-list/example-3";
 import e_charts_service_health_list_dont_0_do from "./examples/charts/service-health-list/dont-0-do";
 import e_charts_service_health_list_dont_0_dont from "./examples/charts/service-health-list/dont-0-dont";
+import e_charts_sparkline_example_0 from "./examples/charts/sparkline/example-0";
+import e_charts_sparkline_example_1 from "./examples/charts/sparkline/example-1";
+import e_charts_sparkline_example_2 from "./examples/charts/sparkline/example-2";
+import e_charts_sparkline_example_3 from "./examples/charts/sparkline/example-3";
+import e_charts_sparkline_dont_0_do from "./examples/charts/sparkline/dont-0-do";
+import e_charts_sparkline_dont_0_dont from "./examples/charts/sparkline/dont-0-dont";
 import e_charts_stacked_bar_example_0 from "./examples/charts/stacked-bar/example-0";
 import e_charts_stacked_bar_dont_0_do from "./examples/charts/stacked-bar/dont-0-do";
 import e_charts_stacked_bar_dont_0_dont from "./examples/charts/stacked-bar/dont-0-dont";
@@ -1559,19 +1559,6 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Range", do: { caption: "Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.", code: "<Slider defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_dont_0_do }, dont: { caption: "Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.", code: "<View style={{ width: 64 }}>\n  <Slider defaultValue={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_dont } },
       { title: "Bounds", do: { caption: "Pair the slider with its current value so the number is explicit, not just inferred from the thumb position. `showValue` renders the live readout above the track.", code: "<Slider showValue narrow defaultValue={48} min={0} max={100} />", render: e_atoms_slider_dont_1_do }, dont: { caption: "A slider with no readout and no label leaves users guessing what the value is and what it controls.", code: "<Slider defaultValue={48} min={0} max={100} />", render: e_atoms_slider_dont_1_dont } },
       { title: "State", do: { caption: "Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.", code: "<Slider disabled defaultValue={20} min={0} max={100} />", render: e_atoms_slider_dont_2_do }, dont: { caption: "Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.", code: "<View style={{ width: 320, height: 20, justifyContent: \"center\" }}>\n  <View style={{ width: \"100%\", height: 4, borderRadius: 999, backgroundColor: tokens.muted }}>\n    <View style={{ position: \"absolute\", left: 0, top: 0, bottom: 0, width: \"20%\", borderRadius: 999, backgroundColor: alpha(tokens.primary, 0.4) }} />\n  </View>\n</View>", render: e_atoms_slider_dont_2_dont } },
-    ],
-  },
-  "sparkline": {
-    dir: "sparkline",
-    category: "atoms",
-    examples: [
-      { label: "Default", code: "<Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} style={{ width: 160 }} />", render: e_atoms_sparkline_example_0 },
-      { label: "Tones", code: "<Column relaxed style={{ maxWidth: 220 }}>\n  <Sparkline primary values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />\n  <Sparkline success values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />\n  <Sparkline destructive values={[89, 82, 77, 72, 67, 65, 65, 64, 64, 65, 63, 63, 64, 64, 66, 60, 57, 53, 51, 47, 49, 45, 48, 48, 45, 40, 40, 36, 31, 29]} />\n  <Sparkline muted values={[18, 19, 20, 23, 19, 21, 17, 16, 16, 19, 20, 20, 21, 22, 26, 25, 24, 23, 24, 22, 20, 23, 20, 20, 20, 17, 16, 17, 19, 20]} />\n</Column>", render: e_atoms_sparkline_example_1 },
-      { label: "Sizes", code: "<Column relaxed style={{ maxWidth: 220 }}>\n  <Sparkline compact values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />\n  <Sparkline values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />\n  <Sparkline tall values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />\n</Column>", render: e_atoms_sparkline_example_2 },
-      { label: "Line", code: "<Column relaxed style={{ maxWidth: 220 }}>\n  <Sparkline line success values={[185.3, 184.0, 183.5, 185.0, 185.8, 186.2, 187.2, 188.7, 189.1, 187.8, 187.7, 187.0, 186.9, 187.0, 188.1, 187.5, 188.9, 188.8, 189.8, 190.6, 189.4, 188.1, 189.0, 190.1, 191.6, 192.6, 193.6, 194.4, 195.8, 194.7, 193.4, 192.8, 191.7, 191.0]} />\n  <Sparkline line destructive values={[191.0, 191.7, 192.8, 193.4, 194.7, 195.8, 194.4, 193.6, 192.6, 191.6, 190.1, 189.0, 188.1, 189.4, 190.6, 189.8, 188.8, 188.9, 187.5, 188.1, 187.0, 186.9, 187.0, 187.7, 187.8, 189.1, 188.7, 187.2, 186.2, 185.8, 185.0, 183.5, 184.0, 185.3]} />\n</Column>", render: e_atoms_sparkline_example_3 },
-    ],
-    donts: [
-      { title: "Pair with a value", do: { caption: "Anchor the sparkline to an explicit headline value and delta with the Stats molecule, which owns the metric-card anatomy and renders the trend strip from its `spark` field.", code: "<Stats style={{ maxWidth: 220 }} items={[{ label: \"Requests\", value: \"24.5k\", delta: \"+8.2%\", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }]} />", render: e_atoms_sparkline_dont_0_do }, dont: { caption: "Draw a bare trend strip with no current value; the reader has to decode the slope.", code: "<View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 2, height: 24 }}>\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 8 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 16 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 24 }} />\n</View>", render: e_atoms_sparkline_dont_0_dont } },
     ],
   },
   "spinner": {
@@ -2574,6 +2561,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "ServiceHealthList", do: { caption: "One row per service, with the status carried by the dot, the composed accessible name, and the embedded strip.", code: "<ServiceHealthList\n  title=\"System status\"\n  style={{ maxWidth: 480 }}\n  items={[\n    { label: \"API\", detail: \"99.98%\" },\n    { label: \"Webhooks\", detail: \"97.10%\", down: true },\n  ]}\n/>", render: e_charts_service_health_list_dont_0_do }, dont: { caption: "A hand-rolled status row splits the tap target and loses the status from assistive tech.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 480, gap: 8 }}>\n  <View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n    <View style={{ width: 8, height: 8, borderRadius: 999, backgroundColor: \"green\" }} />\n    <Text>API</Text>\n  </View>\n</View>", render: e_charts_service_health_list_dont_0_dont } },
+    ],
+  },
+  "sparkline": {
+    dir: "sparkline",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<Sparkline values={[4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24]} style={{ width: 160 }} />", render: e_charts_sparkline_example_0 },
+      { label: "Tones", code: "<Column relaxed style={{ maxWidth: 220 }}>\n  <Sparkline primary values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />\n  <Sparkline success values={[29, 31, 36, 40, 40, 45, 48, 48, 45, 49, 47, 51, 53, 57, 60, 66, 64, 64, 63, 63, 65, 64, 64, 65, 65, 67, 72, 77, 82, 89]} />\n  <Sparkline destructive values={[89, 82, 77, 72, 67, 65, 65, 64, 64, 65, 63, 63, 64, 64, 66, 60, 57, 53, 51, 47, 49, 45, 48, 48, 45, 40, 40, 36, 31, 29]} />\n  <Sparkline muted values={[18, 19, 20, 23, 19, 21, 17, 16, 16, 19, 20, 20, 21, 22, 26, 25, 24, 23, 24, 22, 20, 23, 20, 20, 20, 17, 16, 17, 19, 20]} />\n</Column>", render: e_charts_sparkline_example_1 },
+      { label: "Sizes", code: "<Column relaxed style={{ maxWidth: 220 }}>\n  <Sparkline compact values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />\n  <Sparkline values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />\n  <Sparkline tall values={[28, 33, 39, 45, 45, 42, 48, 45, 47, 53, 55, 60, 61, 63, 63, 62, 64, 65, 62, 69, 72, 78, 78, 82, 85, 92, 94, 92, 91, 96]} />\n</Column>", render: e_charts_sparkline_example_2 },
+      { label: "Line", code: "<Column relaxed style={{ maxWidth: 220 }}>\n  <Sparkline line success values={[185.3, 184.0, 183.5, 185.0, 185.8, 186.2, 187.2, 188.7, 189.1, 187.8, 187.7, 187.0, 186.9, 187.0, 188.1, 187.5, 188.9, 188.8, 189.8, 190.6, 189.4, 188.1, 189.0, 190.1, 191.6, 192.6, 193.6, 194.4, 195.8, 194.7, 193.4, 192.8, 191.7, 191.0]} />\n  <Sparkline line destructive values={[191.0, 191.7, 192.8, 193.4, 194.7, 195.8, 194.4, 193.6, 192.6, 191.6, 190.1, 189.0, 188.1, 189.4, 190.6, 189.8, 188.8, 188.9, 187.5, 188.1, 187.0, 186.9, 187.0, 187.7, 187.8, 189.1, 188.7, 187.2, 186.2, 185.8, 185.0, 183.5, 184.0, 185.3]} />\n</Column>", render: e_charts_sparkline_example_3 },
+    ],
+    donts: [
+      { title: "Pair with a value", do: { caption: "Anchor the sparkline to an explicit headline value and delta with the Stats molecule, which owns the metric-card anatomy and renders the trend strip from its `spark` field.", code: "<Stats style={{ maxWidth: 220 }} items={[{ label: \"Requests\", value: \"24.5k\", delta: \"+8.2%\", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }]} />", render: e_charts_sparkline_dont_0_do }, dont: { caption: "Draw a bare trend strip with no current value; the reader has to decode the slope.", code: "<View style={{ flexDirection: \"row\", alignItems: \"flex-end\", gap: 2, height: 24 }}>\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 8 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 16 }} />\n  <View style={{ flexGrow: 1, borderRadius: 2, backgroundColor: \"#4f46e5\", height: 24 }} />\n</View>", render: e_charts_sparkline_dont_0_dont } },
     ],
   },
   "stacked-bar": {
