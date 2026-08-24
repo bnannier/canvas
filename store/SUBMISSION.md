@@ -65,7 +65,8 @@ Delete the JSON from disk afterwards; EAS holds its own copy on its servers.
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
 | **iOS submission** | **APPROVED.** Build 1.0.0 (7) shows Review Status "Approved", the submission reads "Review Completed", and the version is **Ready for Distribution**. Rejected three times first (2.1.0, then 2.3.10 + 4.0, then 2.3.10 alone); the metadata-only fix was accepted. |
-| **App Store availability** | **TURNED ON 24 Aug 2026, 148 of 175 territories Available.** It had NEVER been set up, which is the only reason an approved app was still absent from the store. The 27 holdouts are the EU, blocked on a DSA trader declaration. See below. |
+| **App Store availability** | **LIVE 24 Aug 2026.** The listing resolves: `https://apps.apple.com/us/app/canvas-ui-kit/id6794454098` returns HTTP 200 and renders Canvas UI Kit, "React Native component docs", Free, Developer Tools, 4+, 50.1 MB, iPhone and iPad. Availability had NEVER been set up, which is the only reason an approved app was absent. 148 of 175 went Available at once; the EU 27 followed the trader declaration. |
+| **EU DSA trader status** | **DECLARED NON-TRADER 24 Aug 2026.** Business tab now shows Compliance: Digital Services Act, 27 countries, Active. |
 | Free Apps Agreement | **Active since 18 Aug 2026**, term to 30 Jun 2027. This is what makes distribution possible at all. The Paid Apps Agreement is still "New" and unsigned. |
 
 ### Approved but invisible: availability is a separate record (24 Aug 2026)
@@ -107,9 +108,25 @@ Requirements". It offers exactly two choices:
 - **"I'm not a trader under the DSA or I don't plan to distribute in the EU"**: no
   contact details are collected, and no EU distribution happens.
 
-**Left undecided deliberately.** It is a legal self-declaration, and the legal entity
-address on file is a residential Toronto address that would become public on every EU
-product page, so it is the owner's call and not an agent's.
+**Decided 24 Aug 2026: non-trader.** Apple's own four factors all pointed that way for
+this app. There is no revenue (free, no in-app purchases, no ads, and the Paid Apps
+Agreement is unsigned), no commercial practice toward consumers (it showcases a free
+MIT-licensed package), and the account is registered personal rather than as a company.
+The declaration is recorded on the Business tab as Compliance, Digital Services Act, 27
+countries, Active.
+
+**Correct a myth before repeating it:** declaring non-trader does NOT forfeit the EU.
+Apple's announcement says apps were removed "until trader status is provided and verified
+if necessary", so it is the ABSENCE of any answer that blocks the EU. A non-trader answer
+unblocks distribution and publishes nothing; EU consumers are instead told that consumer
+protection rights do not apply to contracts with the developer. Only a trader answer
+publishes an address, phone and email on every EU product page.
+
+**Propagation, not a missing step.** For a while after the declaration the availability
+page still listed the 27 as "Trader Status Not Provided" even after a hard reload. That is
+lag. Manage Availability proves it: the dialog reads "Country or Region Availability (175)"
+with every EU country already ticked and Next greyed out, so there is nothing left to
+re-save.
 
 ### Outcome of the appeal (29 Jul 2026)
 
