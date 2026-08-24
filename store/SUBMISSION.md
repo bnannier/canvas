@@ -64,7 +64,52 @@ Delete the JSON from disk afterwards; EAS holds its own copy on its servers.
 | iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
 | iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
 | Android phone screenshots | Done, 10 in `store/screenshots/android` |
-| **iOS submission** | **RESUBMITTED 29 Jul 2026, "Waiting for Review"** (build 7, fourth attempt). Rejected three times: 2.1.0, then 2.3.10 + 4.0, then 2.3.10 alone. **The appeal split: Guideline 4 was ACCEPTED, 2.3.10 was not.** Android is now stripped from the metadata only; the app keeps it. Auto-release on approval. |
+| **iOS submission** | **APPROVED.** Build 1.0.0 (7) shows Review Status "Approved", the submission reads "Review Completed", and the version is **Ready for Distribution**. Rejected three times first (2.1.0, then 2.3.10 + 4.0, then 2.3.10 alone); the metadata-only fix was accepted. |
+| **App Store availability** | **TURNED ON 24 Aug 2026, 148 of 175 territories Available.** It had NEVER been set up, which is the only reason an approved app was still absent from the store. The 27 holdouts are the EU, blocked on a DSA trader declaration. See below. |
+| Free Apps Agreement | **Active since 18 Aug 2026**, term to 30 Jun 2027. This is what makes distribution possible at all. The Paid Apps Agreement is still "New" and unsigned. |
+
+### Approved but invisible: availability is a separate record (24 Aug 2026)
+
+Apple approved build 7 and the version sat at **Ready for Distribution**, yet the app
+was on no storefront at all: `itunes.apple.com/lookup?id=6794454098` returned
+`resultCount: 0` for every country tried, and `apps.apple.com/us/app/id6794454098`
+returned HTTP 404.
+
+**App Review was never the problem.** The version page carried a banner reading "This
+app was removed from sale from the App Store. Go to Pricing and Availability to add it
+back", and on that page **App Availability was still in its empty state**, offering a
+"Set Up Availability" button. Nobody had ever configured it.
+
+The trap worth remembering: **a price schedule is not availability.** Prices already
+covered 175 countries, which looks finished at a glance, but pricing and availability
+are two independent records and an app with prices and no availability counts as
+removed from sale. Check availability explicitly, do not infer it from the price table.
+
+Fix: Set Up Availability, "All Countries or Regions", Confirm. It commits on Confirm,
+with **no separate Save press** (the page's own Save button stays greyed out, which
+reads as if nothing happened). Rows went "Processing to Available" and then "Available"
+in about two minutes. Apple states storefront changes take **up to 24 hours** to appear,
+so a 404 immediately after the flip is expected and is not evidence the fix failed.
+
+### The EU 27 need a DSA trader declaration
+
+Only **148 of 175** territories went available. Every one of the 27 holdouts is an EU
+member state, each reading "Trader Status Not Provided", because the Digital Services
+Act requires Apple to verify and publicly display trader contact information before any
+EU distribution.
+
+The form is App Store Connect, **Business** tab, red banner, "Complete Compliance
+Requirements". It offers exactly two choices:
+
+- **"I'm a trader under the DSA"**: requires an address, phone number and email, which
+  Apple then **publishes on the App Store product page**. Apple notes this is display
+  only and does not change account or membership contact details.
+- **"I'm not a trader under the DSA or I don't plan to distribute in the EU"**: no
+  contact details are collected, and no EU distribution happens.
+
+**Left undecided deliberately.** It is a legal self-declaration, and the legal entity
+address on file is a residential Toronto address that would become public on every EU
+product page, so it is the owner's call and not an agent's.
 
 ### Outcome of the appeal (29 Jul 2026)
 
@@ -346,7 +391,7 @@ the licence text generated into the tarball at pack time by `tools/licensegen`; 
 committed, because a `LICENSE` at the repository root is how GitHub decides a repository's
 licence. Two consequences to keep in mind: MIT on the package cannot be walked back for
 versions already published, and a public repository means the source is readable whatever
-the licence says — closing it properly means making the repository private. The docs site
+the licence says, so closing it properly means making the repository private. The docs site
 no longer ships JavaScript source maps for the same reason: they embedded 363 of the kit's
 own source files in full.
 
@@ -381,7 +426,7 @@ Two obligations follow from the dependency audit and are worth not losing:
   previously seven 128x128 photographs of identifiable real people with no recorded
   source, which meant shipping two unverifiable rights at once: copyright in the image
   and the subject's likeness. They are now flat-vector cartoon characters drawn by
-  `bun run avatars:gen` (`tools/avatargen`) — original geometry, no traced source, no
+  `bun run avatars:gen` (`tools/avatargen`): original geometry, no traced source, no
   model. Regenerate rather than replacing by hand, and do not reintroduce photographs of
   real people without recording a licence here.
 
