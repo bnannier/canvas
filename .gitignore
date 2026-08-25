@@ -8,6 +8,10 @@ test/screenshots/*.current.png
 test/verify/
 test/ui/
 
+# lookout evidence (screenshots; regenerable). The config, rubric, backlog,
+# and ledger under .lookout/ ARE committed.
+.lookout/evidence/
+
 # Local Claude Code session state
 .claude/
 
