@@ -33,8 +33,8 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | Present in the kit | 73 |
 | Absent (tracked) | 2 |
 | Hand-off props compared | 725 |
-| Same name, present | 520 |
-| Settled divergences | 148 |
+| Same name, present | 522 |
+| Settled divergences | 146 |
 | Open gaps (tracked) | 57 |
 | Metric gaps (not detectable here) | 1 |
 | **Unclassified** | **0** |
@@ -134,7 +134,6 @@ Differences in spelling or shape where the kit carries the capability its own wa
 |---|---|---|---|---|
 | `Accordion` | `defaultOpen` | Renamed | `defaultValue` | Canvas's accordion is value-driven (`value`/`defaultValue`/`onValueChange`) so single and multiple modes share one API. |
 | `ActionPanel` | `action` | Renamed | `actionLabel`, `onAction` | Canvas splits the action into its label and its handler rather than taking a ReactNode, so the panel owns the button's look. |
-| `ActionPanel` | `children` | Renamed | `description` | The panel's body text is the `description` prop, per the 'components own their label anatomy' rule. |
 | `ActionPanel` | `stacked` | Renamed | `inline` | Canvas names the opposite end of the same axis; omitting `inline` gives the stacked layout. |
 | `ActionSheet` | `items` | Renamed | `actions` | Named `actions` to match the sheet's other action-bearing props. |
 | `ActionSheet` | `onClose` | Renamed | `onOpenChange` | Canvas's controllable-state convention pairs `open`/`defaultOpen` with `onOpenChange`, which reports both directions rather than close only. |
@@ -228,7 +227,6 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `MediaObject` | `align` | Boolean axis | `start`, `center` | String-enum alignment is rejected; each is its own boolean. |
 | `Navbar` | `title` | Renamed | `brand` | Canvas names the leading identity slot `brand`, which also carries the mark. |
 | `Navbar` | `items` | Renamed | `links` | Named for what they are, since the bar also carries actions and an avatar. |
-| `Navbar` | `actions` | Renamed | `actionLabel`, `onAction` | Label plus handler rather than a ReactNode, so the bar owns the button's look. |
 | `Navbar` | `glass` | Not offered | — | Glass is a theming-level surface mode in Canvas (`<ThemeProvider glass>` / `data-surface`), never a per-component prop. CLAUDE.md forbids adding one. |
 | `Pagination` | `pages` | Renamed | `total`, `itemCount`, `pageSize` | Canvas derives the page count from the item total and page size so the two cannot disagree. |
 | `PieChart` | `data` | Renamed | `slices` | Named for what a pie is made of, matching `series` on the cartesian charts. |
