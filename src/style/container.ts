@@ -18,9 +18,34 @@
 // one (the docs catalog precedent: relying on onLayout alone hid every tile
 // when the web ResizeObserver did not fire).
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import { Dimensions, type LayoutChangeEvent, type ViewStyle } from "react-native";
 import { responsive, useBreakpoint, type Responsive } from "./responsive.js";
+
+// Nothing ever changes, so the subscribe callback never fires; the value flips
+// only because React reads the server snapshot for the server render AND for
+// the hydration render, then the client snapshot from the first commit on.
+const subscribeNever = () => () => {};
+
+/**
+ * False for the server render and the hydration render, true from the first
+ * commit onward.
+ *
+ * The window-width fallback below cannot be read during hydration. On the
+ * server there is no window, so a cell renders with no width; on the client the
+ * window is right there, so the same cell would render an explicit pixel width
+ * and React would report a hydration mismatch it does not patch up. Deferring
+ * the fallback by one render keeps the hydration pass byte-identical to the
+ * server and lets the real value land in the commit immediately after, which is
+ * the same contract `ThemeProvider`'s `ssrScheme` gives the colour axis.
+ */
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+}
 
 /**
  * Container probe for HUGGING components. A component whose root hugs its
@@ -67,11 +92,16 @@ export function useMeasuredWidth(): MeasuredWidth {
  *  first layout: the best available guess for the unmeasured first frame. For
  *  components whose threshold is a raw px value rather than a breakpoint
  *  (Form's two-column stack). Subscribes at bucket granularity so the fallback
- *  stays fresh across breakpoint-sized resizes without per-pixel re-renders. */
+ *  stays fresh across breakpoint-sized resizes without per-pixel re-renders.
+ *
+ *  The fallback is withheld until after hydration (see `useHydrated`), so a
+ *  server-rendered app hydrates against the same markup it shipped. */
 export function useContainerWidth(): MeasuredWidth {
   const { width, measured, onLayout } = useMeasuredWidth();
+  const hydrated = useHydrated();
   useBreakpoint();
-  return { width: measured ? width : Dimensions.get("window").width, measured, onLayout };
+  if (measured) return { width, measured, onLayout };
+  return { width: hydrated ? Dimensions.get("window").width : 0, measured, onLayout };
 }
 
 export interface ContainerBreakpointOptions {
@@ -97,6 +127,10 @@ export function useContainerBreakpoint<T>(
   // across breakpoint-sized resizes; once measured it costs at most one
   // re-render per bucket crossing.
   useBreakpoint();
-  const effective = !measured && options?.seedViewport ? Dimensions.get("window").width : width;
+  // The seed is withheld until after hydration for the same reason the window
+  // fallback is in useContainerWidth: reading the window during the hydration
+  // render resolves a different branch than the one the server shipped.
+  const hydrated = useHydrated();
+  const effective = !measured && options?.seedViewport && hydrated ? Dimensions.get("window").width : width;
   return { value: responsive(effective, map), width, measured, onLayout };
 }
