@@ -1,6 +1,6 @@
 import { Component, type ReactNode, useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Column, Tabs, Input, BackdropHost, OverlayProvider, useTheme } from "@nannier/canvas";
+import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, BackdropHost, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
@@ -13,6 +13,27 @@ import { geist } from "./fonts";
 // publishes its text through IconSearchContext, so that one control filters every platform column
 // at once (see IconGallery) instead of a separate box per column. The value is the placeholder.
 const SEARCHABLE_EXAMPLES: Record<string, string> = { IconGallery: "Search icons" };
+
+// The form-factor simulator behind the icon switcher in the stage header (WEB
+// docs only: on a device you ARE the form factor, so the native app never
+// renders it). Selecting a tier does two things at once, so the container- and
+// viewport-driven halves of the kit's responsive system tell the same story:
+//   - constrains the preview card to the tier's width, which the
+//     container-measured components (DataTable, Grid, Row stacks, Navbar)
+//     re-fit to, and
+//   - pins the kit's viewport bucket via BreakpointOverride, which the
+//     useBreakpoint / useResponsive / useFormFactor consumers (the Sidebar and
+//     FilterPanel drawers, DescriptionList) resolve as the simulated tier. The
+//     override wraps the stage's OverlayProvider, so portaled overlay content
+//     (menus, dialogs, the calendar peek) simulates too.
+// Desktop is the resting state: no width constraint, no override. In a stage
+// narrower than the tier (tablet in a mid-width window) the card clamps to the
+// stage and the readout shows the MEASURED width, so it never overstates.
+const FORM_FACTORS: readonly { label: string; icon: IconName; width: number | null; bucket: BreakpointKey | "base" | null }[] = [
+  { label: "Phone width (375px)", icon: "smartphone", width: 375, bucket: "sm" },
+  { label: "Tablet width (768px)", icon: "tablet", width: 768, bucket: "md" },
+  { label: "Desktop width (full)", icon: "monitor", width: null, bucket: null },
+];
 
 export class ExampleErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null as string | null };
@@ -135,6 +156,16 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   // three previews. Reset when the selected example changes so a stale query never carries over.
   const [query, setQuery] = useState("");
   useEffect(() => { setQuery(""); }, [selected]);
+  // The simulated form factor (see FORM_FACTORS). Desktop (the last entry) is
+  // the resting state; the choice survives example switches on purpose, so a
+  // breakpoint sweep can walk every variant at one tier.
+  const [factorIndex, setFactorIndex] = useState(FORM_FACTORS.length - 1);
+  const simulated = FORM_FACTORS[factorIndex] ?? FORM_FACTORS[FORM_FACTORS.length - 1];
+  const simulating = Platform.OS === "web" && simulated.width != null;
+  // The simulated card's REAL width: in a stage narrower than the tier the
+  // card clamps (maxWidth 100%), and the readout follows this measurement so
+  // it never overstates the frame.
+  const { width: cardWidth, onLayout: onCardLayout } = useMeasuredWidth();
   const ex = examples[selected] ?? examples[0];
   if (!ex) return null;
 
@@ -150,13 +181,19 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   const searchPlaceholder = Object.entries(SEARCHABLE_EXAMPLES).find(([tag]) => ex.code.includes(tag))?.[1];
 
   const stage = (
-    // ONE overlay host per stage (not per cell). A portaled overlay (an open
-    // Dropdown / Select / Autocomplete / Popover / Row-menu menu) renders into this
-    // stage-level outlet, which paints above ALL device rows AND the code block, so
-    // it is neither clipped by the stage nor occluded by a lower row's trigger.
-    // Anchoring stays correct: AnchoredOverlay measures the trigger relative to this
-    // outlet. Because overlays no longer render inside the stage card, the card can
-    // keep its clean `overflow: "hidden"` rounded corners.
+    // The form-factor override wraps the WHOLE stage, OverlayProvider included:
+    // the kit Portal renders overlay children at the provider's outlet (a React
+    // sibling of the provider's children), so an override mounted below the
+    // provider would never reach portaled overlay content. Above it, an open
+    // menu / dialog / peek simulates the same tier as the inline preview.
+    <BreakpointOverride value={simulating ? simulated.bucket : null}>
+    {/* ONE overlay host per stage (not per cell). A portaled overlay (an open
+        Dropdown / Select / Autocomplete / Popover / Row-menu menu) renders into this
+        stage-level outlet, which paints above ALL device rows AND the code block, so
+        it is neither clipped by the stage nor occluded by a lower row's trigger.
+        Anchoring stays correct: AnchoredOverlay measures the trigger relative to this
+        outlet. Because overlays no longer render inside the stage card, the card can
+        keep its clean `overflow: "hidden"` rounded corners. */}
     <OverlayProvider style={{ flex: 1, minWidth: 0 }}>
       <IconSearchContext.Provider value={query}>
       <View
@@ -185,28 +222,65 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
             />
           </View>
         ) : null}
+        {/* The form-factor switcher (web only; see FORM_FACTORS): icon segments
+            depicting each tier, the simulated width read out beside them. */}
+        {Platform.OS === "web" ? (
+          <View style={{ marginBottom: 8 }}>
+            <Row tight end alignCenter>
+              {simulating ? (
+                <Text style={{ fontFamily: geist("500"), fontSize: 11, color: tokens["muted-foreground"] }}>
+                  {`${cardWidth || simulated.width}px`}
+                </Text>
+              ) : null}
+              <ButtonGroup
+                segmented
+                small
+                iconsOnly
+                accessibilityLabel="Preview form factor"
+                items={FORM_FACTORS.map(({ label, icon }) => ({ label, icon }))}
+                active={factorIndex}
+                onSelect={setFactorIndex}
+              />
+            </Row>
+          </View>
+        ) : null}
         {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
             (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
-            clear hole. The cells below inherit it. */}
-        <DocsSurface
-          fill="card"
-          style={{
-            borderWidth: 1,
-            borderBottomWidth: 0,
-            borderColor: tokens.border,
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            overflow: "hidden",
-          }}
-        >
-          {previews.map((p, i) => (
-            <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
-          ))}
-        </DocsSurface>
-        <CodeBlock code={ex.code} flush />
+            clear hole. The cells below inherit it. When simulating, the card narrows to the
+            tier's width as a centered, fully-rounded frame detached from the code block
+            (which stays full width), and the kit's viewport bucket is pinned to match. */}
+        {/* onLayout attaches UNCONDITIONALLY: react-native-web registers its
+            ResizeObserver in a mount-once effect, so toggling the prop from
+            undefined to a handler on a live View never observes it (the
+            measurement would sit at 0 forever). Measuring while not simulating
+            is free; the readout only shows during simulation. */}
+        <View onLayout={onCardLayout} style={simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center", marginBottom: 10 } : null}>
+          <DocsSurface
+            fill="card"
+            style={{
+              borderWidth: 1,
+              borderBottomWidth: simulating ? 1 : 0,
+              borderColor: tokens.border,
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+              borderBottomLeftRadius: simulating ? 12 : 0,
+              borderBottomRightRadius: simulating ? 12 : 0,
+              overflow: "hidden",
+            }}
+          >
+            {previews.map((p, i) => (
+              <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
+            ))}
+          </DocsSurface>
+        </View>
+        {/* The block attaches to the card's flush bottom edge normally; a
+            simulated card is a detached rounded frame, so the block reverts to
+            its standalone rounded look instead of squaring up to nothing. */}
+        <CodeBlock code={ex.code} flush={!simulating} />
       </View>
       </IconSearchContext.Provider>
     </OverlayProvider>
+    </BreakpointOverride>
   );
 
   if (examples.length <= 1) return stage;

@@ -6,9 +6,17 @@ export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
 <ButtonGroup
-  split
-  items={["Save"]}
-  menu={["Save as draft", "Save and close", "Save a copy"]}
+  stepper
+  items={[
+    "May 21",
+    "May 22",
+    "May 23",
+    "Today",
+    "May 25",
+    "May 26",
+    "May 27"
+  ]}
+  active={3}
   small
 />
   );

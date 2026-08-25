@@ -124,6 +124,7 @@ import e_atoms_button_group_example_4 from "./examples/atoms/button-group/exampl
 import e_atoms_button_group_example_5 from "./examples/atoms/button-group/example-5";
 import e_atoms_button_group_example_6 from "./examples/atoms/button-group/example-6";
 import e_atoms_button_group_example_7 from "./examples/atoms/button-group/example-7";
+import e_atoms_button_group_example_8 from "./examples/atoms/button-group/example-8";
 import e_atoms_button_group_dont_0_do from "./examples/atoms/button-group/dont-0-do";
 import e_atoms_button_group_dont_0_dont from "./examples/atoms/button-group/dont-0-dont";
 import e_atoms_button_group_dont_1_do from "./examples/atoms/button-group/dont-1-do";
@@ -1183,13 +1184,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     category: "atoms",
     examples: [
       { label: "Default", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} small />", render: e_atoms_button_group_example_0 },
-      { label: "Stepper", code: "<ButtonGroup\n  stepper\n  items={[\n    \"May 21\",\n    \"May 22\",\n    \"May 23\",\n    \"Today\",\n    \"May 25\",\n    \"May 26\",\n    \"May 27\"\n  ]}\n  active={3}\n  small\n/>", render: e_atoms_button_group_example_1 },
-      { label: "Split", code: "<ButtonGroup\n  split\n  items={[\"Save\"]}\n  menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]}\n  small\n/>", render: e_atoms_button_group_example_2 },
-      { label: "Medium", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_3 },
-      { label: "Large", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} large />", render: e_atoms_button_group_example_4 },
-      { label: "Disabled", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} disabled small />", render: e_atoms_button_group_example_5 },
-      { label: "Block", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} block />", render: e_atoms_button_group_example_6 },
-      { label: "Block spaced", code: "<ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} block />", render: e_atoms_button_group_example_7 },
+      { label: "Icon segments", code: "<ButtonGroup\n  segmented\n  small\n  iconsOnly\n  defaultActive={2}\n  items={[\n    { label: \"Phone width\", icon: \"smartphone\" },\n    { label: \"Tablet width\", icon: \"tablet\" },\n    { label: \"Desktop width\", icon: \"monitor\" }\n  ]}\n/>", render: e_atoms_button_group_example_1 },
+      { label: "Stepper", code: "<ButtonGroup\n  stepper\n  items={[\n    \"May 21\",\n    \"May 22\",\n    \"May 23\",\n    \"Today\",\n    \"May 25\",\n    \"May 26\",\n    \"May 27\"\n  ]}\n  active={3}\n  small\n/>", render: e_atoms_button_group_example_2 },
+      { label: "Split", code: "<ButtonGroup\n  split\n  items={[\"Save\"]}\n  menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]}\n  small\n/>", render: e_atoms_button_group_example_3 },
+      { label: "Medium", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_4 },
+      { label: "Large", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} large />", render: e_atoms_button_group_example_5 },
+      { label: "Disabled", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} disabled small />", render: e_atoms_button_group_example_6 },
+      { label: "Block", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} block />", render: e_atoms_button_group_example_7 },
+      { label: "Block spaced", code: "<ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} block />", render: e_atoms_button_group_example_8 },
     ],
     donts: [
       { title: "Segmented", do: { caption: "Keep a segmented control to a few mutually-exclusive views.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_dont_0_do }, dont: { caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\", \"Quarter\", \"Year\", \"5Y\", \"All\"]} />", render: e_atoms_button_group_dont_0_dont } },
