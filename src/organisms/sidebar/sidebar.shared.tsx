@@ -14,6 +14,7 @@ import {
   GlassSurface,
   breakpoints,
   useBreakpoint,
+  devWarn,
   type BreakpointKey,
   type ColorTokens,
   type StyleProp,
@@ -345,6 +346,13 @@ export function createSidebar(skin: SidebarSkin) {
     const bucket = useBreakpoint();
     const asDrawer =
       !!props.responsive && bucket !== "base" && breakpoints[bucket] <= breakpoints[props.drawerBreakpoint ?? "lg"];
+    // The inline rail is unusable chrome on a phone; `responsive` is opt-in only
+    // because the drawer needs a consumer-owned hamburger (open/onOpenChange), so
+    // surface the gap in DEV instead of silently rendering a 240px column.
+    devWarn(
+      !props.responsive && bucket === "sm",
+      "[canvas] <Sidebar>: rendering the inline rail at a phone-width viewport. Pass `responsive` (with `open`/`onOpenChange` wired to your hamburger) to switch to the drill-down drawer below the `drawerBreakpoint`.",
+    );
 
     // Normalize to a sections list; a flat `items` array becomes one untitled
     // section. Sections always win when both are supplied.

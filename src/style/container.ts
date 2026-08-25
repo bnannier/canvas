@@ -16,7 +16,7 @@
 
 import { useCallback, useState } from "react";
 import { Dimensions, type LayoutChangeEvent } from "react-native";
-import { responsive, type Responsive } from "./responsive.js";
+import { responsive, useBreakpoint, type Responsive } from "./responsive.js";
 
 export interface MeasuredWidth {
   /** The element's rounded layout width in px; 0 until the first layout. */
@@ -40,6 +40,17 @@ export function useMeasuredWidth(): MeasuredWidth {
   return { width, measured: width > 0, onLayout };
 }
 
+/** Like useMeasuredWidth, but `width` falls back to the WINDOW width until the
+ *  first layout: the best available guess for the unmeasured first frame. For
+ *  components whose threshold is a raw px value rather than a breakpoint
+ *  (Form's two-column stack). Subscribes at bucket granularity so the fallback
+ *  stays fresh across breakpoint-sized resizes without per-pixel re-renders. */
+export function useContainerWidth(): MeasuredWidth {
+  const { width, measured, onLayout } = useMeasuredWidth();
+  useBreakpoint();
+  return { width: measured ? width : Dimensions.get("window").width, measured, onLayout };
+}
+
 export interface ContainerBreakpointOptions {
   /** Resolve against the WINDOW width until the element has measured, instead
    *  of rendering `base`. For above-the-fold grids whose desktop arrangement
@@ -59,6 +70,10 @@ export function useContainerBreakpoint<T>(
   options?: ContainerBreakpointOptions,
 ): ContainerBreakpoint<T> {
   const { width, measured, onLayout } = useMeasuredWidth();
+  // Bucket-granular viewport subscription: keeps the pre-measurement seed fresh
+  // across breakpoint-sized resizes; once measured it costs at most one
+  // re-render per bucket crossing.
+  useBreakpoint();
   const effective = !measured && options?.seedViewport ? Dimensions.get("window").width : width;
   return { value: responsive(effective, map), width, measured, onLayout };
 }
