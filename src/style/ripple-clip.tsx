@@ -21,7 +21,7 @@
 // (radial, unmasked) need no clip and must not use it.
 
 import { type ReactNode } from "react";
-import { Platform, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import { View } from "./primitives.js";
 
 // The clip itself. Kept separate (not merged into `shape`) so the rounded outline comes
@@ -54,13 +54,19 @@ export interface RippleClipProps {
    * lives here, not on the wrapped pressable, so layout is identical with or without the clip.
    */
   style?: StyleProp<ViewStyle>;
+  /**
+   * Layout observation on the wrapper (the control's outermost node), so a parent that
+   * positions its children — a tab row scrolling the active trigger into view — measures
+   * the same frame on every platform, clip or no clip.
+   */
+  onLayout?: (event: LayoutChangeEvent) => void;
   children: ReactNode;
 }
 
 /** Rounded clip parent for a bounded-ripple pressable. See the file header for the why. */
-export function RippleClip({ shape, style, children }: RippleClipProps): ReactNode {
+export function RippleClip({ shape, style, onLayout, children }: RippleClipProps): ReactNode {
   return (
-    <View style={[rippleClipWrapperStyle(shape, Platform.OS === "android"), style]}>{children}</View>
+    <View onLayout={onLayout} style={[rippleClipWrapperStyle(shape, Platform.OS === "android"), style]}>{children}</View>
   );
 }
 

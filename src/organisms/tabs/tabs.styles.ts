@@ -37,6 +37,17 @@ export function blockWidth(block: boolean): ViewStyle {
   return block ? { width: "100%" } : { alignSelf: "flex-start" };
 }
 
+// The horizontal overflow scroller around a non-block underline/pills row: hugs
+// the row like `blockWidth(false)` (alignSelf flex-start), caps at the container
+// (maxWidth 100%) so a long row pans instead of clipping, and zeroes ScrollView's
+// default flexGrow:1 so the scroller never claims spare space in a flex parent.
+export const overflowScroller: ViewStyle = {
+  flexGrow: 0,
+  flexShrink: 1,
+  alignSelf: "flex-start",
+  maxWidth: "100%",
+};
+
 // =============================================================================
 // Web: the established Canvas look (lifted verbatim from the original file).
 // =============================================================================
