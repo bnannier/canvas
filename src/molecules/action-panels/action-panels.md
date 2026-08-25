@@ -59,6 +59,33 @@ your app that state is your own.)
 />
 ```
 
+### Embedded fields
+
+```tsx
+<ActionPanel
+  title="Workspace profile"
+  description="These details appear on every invoice this workspace sends out."
+  actionLabel="Save changes"
+>
+  <Input label="Workspace name" defaultValue="Northwind" block />
+  <Input label="Billing email" defaultValue="billing@northwind.com" block />
+  <Input label="VAT number" defaultValue="GB123456789" block />
+</ActionPanel>
+```
+
+### Fields under a pinned action
+
+```tsx
+<ActionPanel
+  title="Two-factor authentication"
+  description="Add an extra layer of security to your account by requiring a verification code on login."
+  toggle
+  defaultChecked
+>
+  <Input label="Recovery phone" defaultValue="+1 555 0148" block />
+</ActionPanel>
+```
+
 ### Confirm before delete
 
 ```tsx

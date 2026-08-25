@@ -1,4 +1,4 @@
-import { type ComponentType } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import { View, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { type CardProps } from "../card/card.shared.js";
@@ -41,6 +41,15 @@ import { type ActionPanelSkin, type Tone, type Layout, titleColor } from "./acti
 // The axes are orthogonal: `<ActionPanel destructive inline />` is a red
 // action sitting to the right of its danger copy, and `<ActionPanel toggle
 // checked title="..." description="..." />` is a settings row whose switch is on.
+//
+// The panel also HOSTS content: `children` embed inside it, between the copy and
+// the action, so a settings panel can carry its own field rows without the caller
+// rebuilding the card around it. Where they land follows the layout: stacked, they
+// join the panel's gap column between the copy and the action; inline (and in
+// toggle mode) the action is pinned beside the copy, so they sit full width below
+// that row. Both paths use the skin's stacked gap, so the embedded block keeps the
+// panel's own vertical rhythm and each element of a multi-element block is spaced
+// by it too.
 
 export interface ActionPanelProps {
   /** The headline: what the action acts on. */
@@ -64,6 +73,13 @@ export interface ActionPanelProps {
   defaultChecked?: boolean;
   /** Fired with the next checked value when the toggle Switch is flipped. */
   onToggle?: (next: boolean) => void;
+  /**
+   * Content embedded in the panel between the copy and the action (a block of
+   * field rows in a settings panel, say). Stacked, it joins the panel's gap
+   * column between the copy and the action; inline and in toggle mode the action
+   * is pinned beside the copy, so it renders full width below that row.
+   */
+  children?: ReactNode;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -122,7 +138,7 @@ export function createActionPanel(
   Card: CardComponent = WebCard,
 ) {
   return function ActionPanel(props: ActionPanelProps) {
-    const { title, description, actionLabel, onAction, toggle, checked, defaultChecked, onToggle, testID, style } = props;
+    const { title, description, actionLabel, onAction, toggle, checked, defaultChecked, onToggle, children, testID, style } = props;
     const { tokens, dark } = useTheme();
     const tone = toneOf(props);
     // The toggle affordance always reads as an inline settings row.
@@ -161,18 +177,36 @@ export function createActionPanel(
       </View>
     ) : null;
 
+    // The body. Stacked, the whole panel IS one gap column, so embedded children
+    // simply take their place in it between the copy and the action. Inline (and
+    // in toggle mode) the action is pinned beside the copy, so the row stays
+    // intact and the children hang below it, full width, in a gap column of the
+    // same stacked rhythm. Absent children the inline body is the bare row it has
+    // always been: the Card keeps receiving exactly one child either way, so the
+    // panel, not the Card's own flat-children gap, owns the spacing.
+    const body =
+      layout === "inline" ? (
+        <View style={{ flexDirection: "row", alignItems: skin.inlineAlign, gap: skin.inlineGap }}>
+          {copy}
+          {action}
+        </View>
+      ) : (
+        <View style={{ gap: skin.stackedGap }}>
+          {copy}
+          {children}
+          {action}
+        </View>
+      );
+
     return (
       <Card padded testID={testID} style={[cardWidth, style]}>
-        {layout === "inline" ? (
-          <View style={{ flexDirection: "row", alignItems: skin.inlineAlign, gap: skin.inlineGap }}>
-            {copy}
-            {action}
+        {layout === "inline" && children != null ? (
+          <View style={{ gap: skin.stackedGap }}>
+            {body}
+            {children}
           </View>
         ) : (
-          <View style={{ gap: skin.stackedGap }}>
-            {copy}
-            {action}
-          </View>
+          body
         )}
       </Card>
     );
