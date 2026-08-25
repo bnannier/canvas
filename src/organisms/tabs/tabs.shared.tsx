@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -347,10 +347,15 @@ export function createTabs(skin: TabsSkin) {
 
   return function Tabs(props: TabsProps) {
     const { tabs = DEFAULT_TABS, onSelect, disabled, style, testID } = props;
-    // `responsive` (vertical look only): the rail measures its own container
-    // and renders the EXISTING horizontal underline look at/below sm, where a
-    // side rail would starve the panel. The hook is unconditional (rules of
-    // hooks); the measurement only attaches with `responsive` on a vertical.
+    // `responsive` (vertical look only): render the EXISTING horizontal
+    // underline look when the CONTAINER is at/below sm, where a side rail
+    // would starve the panel. The hook is unconditional (rules of hooks); the
+    // measurement only attaches with `responsive` on a vertical. Both the rail
+    // and the flattened row's scroller HUG their content, so neither can learn
+    // the container's width by measuring itself (the rail's ~180px self-measure
+    // used to latch `narrow` true in any container): the handler rides an
+    // out-of-flow containerProbe sibling instead, rendered in BOTH states so a
+    // widening container restores the rail.
     const { value: narrow, onLayout: onResponsiveLayout } = useContainerBreakpoint(
       { base: false, sm: true },
       { seedViewport: true },
@@ -358,6 +363,15 @@ export function createTabs(skin: TabsSkin) {
     const requested = variantOf(props);
     const variant = requested === "vertical" && props.responsive && narrow ? "underline" : requested;
     const measureResponsive = props.responsive && requested === "vertical" ? onResponsiveLayout : undefined;
+    const withResponsiveProbe = (root: ReactNode) =>
+      measureResponsive ? (
+        <>
+          <View style={containerProbe} onLayout={measureResponsive} />
+          {root}
+        </>
+      ) : (
+        root
+      );
     const { tokens } = useTheme();
 
     // Controlled when `active` is provided, self-managed otherwise, so a bare
@@ -457,9 +471,6 @@ export function createTabs(skin: TabsSkin) {
     };
     const onScrollerLayout = (event: LayoutChangeEvent) => {
       scrollGeom.current.viewport = event.nativeEvent.layout.width;
-      // A flattened responsive vertical measures the scroller frame (capped at
-      // the container), the outermost node of the underline look it renders.
-      measureResponsive?.(event);
       ensureActiveVisible(false);
     };
     const onScrollerContent = (width: number) => {
@@ -506,8 +517,8 @@ export function createTabs(skin: TabsSkin) {
     if (variant === "vertical") {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
-      return (
-        <View accessibilityRole="tablist" testID={testID} onLayout={measureResponsive} style={[verticalRail(!!props.block), style]}>
+      return withResponsiveProbe(
+        <View accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -546,16 +557,18 @@ export function createTabs(skin: TabsSkin) {
     // segmented track (iOS). Block shares the row equally (never overflows);
     // otherwise the row rides the overflow scroller.
     if (props.block) {
-      return (
-        <View accessibilityRole="tablist" testID={testID} onLayout={measureResponsive} style={[skin.underlineRow(tokens), s.blockWidth(true), style]}>
+      return withResponsiveProbe(
+        <View accessibilityRole="tablist" testID={testID} style={[skin.underlineRow(tokens), s.blockWidth(true), style]}>
           {horizontalTriggers("underline")}
-        </View>
+        </View>,
       );
     }
-    return scrollRow(
-      <View accessibilityRole="tablist" testID={testID} style={skin.underlineRow(tokens)}>
-        {horizontalTriggers("underline")}
-      </View>,
+    return withResponsiveProbe(
+      scrollRow(
+        <View accessibilityRole="tablist" testID={testID} style={skin.underlineRow(tokens)}>
+          {horizontalTriggers("underline")}
+        </View>,
+      ),
     );
   };
 }
