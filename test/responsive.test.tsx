@@ -14,7 +14,8 @@ import {
   useBreakpoint,
   formFactor,
   useFormFactor,
-} from "../src/style/responsive.ts";
+  BreakpointOverride,
+} from "../src/style/responsive.tsx";
 import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
@@ -109,6 +110,50 @@ describe("useBreakpoint store", () => {
     resizeViewport(1000);
     expect(renders).toBe(after + 1);
     expect(screen.getByTestId("bucket").textContent).toBe("lg");
+  });
+});
+
+describe("BreakpointOverride (the simulation seam)", () => {
+  it("pins the bucket for the subtree, overriding the real 1280 window", () => {
+    render(
+      <ThemeProvider>
+        <BreakpointOverride value="sm">
+          <BucketProbe />
+          <ValueProbe />
+        </BreakpointOverride>
+      </ThemeProvider>,
+    );
+    expect(screen.getByTestId("bucket").textContent).toBe("sm");
+    expect(screen.getByTestId("value").textContent).toBe("phone");
+    expect(screen.getByTestId("factor").textContent).toBe("phone");
+  });
+
+  it("null clears the simulation: the real viewport applies again", () => {
+    render(
+      <ThemeProvider>
+        <BreakpointOverride value={null}>
+          <BucketProbe />
+        </BreakpointOverride>
+      </ThemeProvider>,
+    );
+    expect(screen.getByTestId("bucket").textContent).toBe("xl");
+  });
+
+  it("does not leak outside its subtree, and follows a real resize when cleared", () => {
+    render(
+      <ThemeProvider>
+        <BucketProbe />
+        <BreakpointOverride value="md">
+          <ValueProbe />
+        </BreakpointOverride>
+      </ThemeProvider>,
+    );
+    expect(screen.getByTestId("bucket").textContent).toBe("xl"); // outside: real window
+    expect(screen.getByTestId("factor").textContent).toBe("tablet"); // inside: simulated
+    // The override wins even when the real window resizes underneath it.
+    resizeViewport(375);
+    expect(screen.getByTestId("bucket").textContent).toBe("sm");
+    expect(screen.getByTestId("factor").textContent).toBe("tablet");
   });
 });
 

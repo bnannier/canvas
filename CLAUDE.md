@@ -93,7 +93,7 @@ the inverse of mobile-first.
 3. **Viewport breakpoints** (window-level chrome only): `useBreakpoint`,
    `useFormFactor` (phone <= sm 640 / tablet <= lg 1024 / desktop above; macOS
    and desktop web ARE the desktop form factor), `useResponsive`
-   (`src/style/responsive.ts`, one shared subscription, bucket-granular
+   (`src/style/responsive.tsx`, one shared subscription, bucket-granular
    re-renders; width <= 0 resolves to `base`; SSR apps pass ThemeProvider's
    `ssrBreakpoint`). Only the Sidebar/FilterPanel drawer modes and app shells
    qualify. Pointer capability comes from `usePointerCoarse` /
