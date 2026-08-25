@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Navbar } from "../src/organisms/navbars/navbars.tsx";
 import { Steps } from "../src/organisms/steps/steps.tsx";
@@ -62,6 +63,52 @@ describe("Navbar — action + avatar clusters", () => {
     ui(<Navbar brand="Acme" links={["Home"]} avatar="Ada Lovelace" />);
     // Avatar reduces "Ada Lovelace" to the initials "AL".
     expect(screen.getByText("AL")).toBeDefined();
+  });
+});
+
+// The console topbar shape: a logo mark for a brand, arbitrary trailing controls,
+// and no middle nav at all. Both slots are additive, so the built-in brand
+// wordmark, action button and avatar keep rendering exactly where they did.
+describe("Navbar: brand element and trailing actions slots", () => {
+  const follows = (first: Element, second: Element) =>
+    Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+  it("leads the left cluster with brandContent and keeps brand as the wordmark beside it", () => {
+    ui(<Navbar brand="Acme" brandContent={<Text testID="logo">◆</Text>} links={["Home"]} />);
+    const logo = screen.getByTestId("logo");
+    expect(follows(logo, screen.getByText("Acme"))).toBe(true);
+    // The links row still trails the whole brand group.
+    expect(follows(screen.getByText("Acme"), screen.getByText("Home"))).toBe(true);
+  });
+
+  it("renders brandContent as the whole brand when no wordmark is given", () => {
+    ui(<Navbar brandContent={<Text testID="logo">◆</Text>} />);
+    expect(screen.getByTestId("logo")).toBeDefined();
+    expect(screen.queryByText("Acme")).toBeNull();
+  });
+
+  it("leads the right cluster with actions, ahead of the built-in action button and avatar", () => {
+    ui(
+      <Navbar
+        brand="Acme"
+        links={["Home"]}
+        actions={<Text testID="search">Search</Text>}
+        actionLabel="Sign up"
+        avatar="Ada Lovelace"
+      />,
+    );
+    const search = screen.getByTestId("search");
+    expect(follows(search, screen.getByText("Sign up"))).toBe(true);
+    expect(follows(screen.getByText("Sign up"), screen.getByText("AL"))).toBe(true);
+  });
+
+  it("renders no links row for a bar with no middle nav, and leaves the slots rendering", () => {
+    ui(<Navbar brandContent={<Text testID="logo">◆</Text>} actions={<Text testID="search">Search</Text>} />);
+    expect(screen.getByTestId("logo")).toBeDefined();
+    expect(screen.getByTestId("search")).toBeDefined();
+    // No link tile, and no menu button standing in for one.
+    expect(document.querySelectorAll('[aria-current="page"]').length).toBe(0);
+    expect(screen.queryByLabelText("Navigation menu")).toBeNull();
   });
 });
 

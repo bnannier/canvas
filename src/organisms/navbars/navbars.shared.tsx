@@ -1,4 +1,4 @@
-import { type ComponentType } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
@@ -17,6 +17,15 @@ import { type Surface } from "./navbars.styles.js";
 // navigation links in the middle with one active, and actions on the right (a
 // primary action button and/or an account avatar). It is a fixed-height
 // horizontal bar, laid out desktop-first.
+//
+// Both clusters take a caller-supplied element beside their built-in parts, so a
+// console topbar composes out of the same bar: `brandContent` leads the left
+// cluster (a logo mark ahead of, or instead of, the `brand` wordmark) and
+// `actions` leads the right one (a search button, icon buttons, a notification
+// dropdown, an account menu, ahead of `actionLabel` and `avatar`). Both sit as
+// direct children of the existing group rows, so they take those rows' own gap
+// and no skin field is involved. `links` is optional: a bar with no middle nav
+// renders neither the links row nor its collapsed menu button.
 //
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). The surface axis sets
@@ -67,13 +76,32 @@ export interface NavbarSkin {
 
 export interface NavbarProps {
   /** Brand or product name shown at the left, in a semibold face. */
-  brand: string;
-  /** Ordered navigation link labels rendered in the middle row. */
-  links: string[];
+  brand?: string;
+  /**
+   * A brand ELEMENT for the left cluster (a logo mark, a workspace switcher).
+   * It LEADS the cluster, so passing it beside `brand` renders the mark first and
+   * keeps the wordmark beside it; passing it alone makes the mark the whole brand.
+   * It takes the left cluster's own gap, so it needs no wrapper.
+   */
+  brandContent?: ReactNode;
+  /**
+   * Ordered navigation link labels rendered in the middle row. Omit it (or pass an
+   * empty array) for a bar with no middle nav: neither the links row nor the
+   * narrow menu button that stands in for it renders.
+   */
+  links?: string[];
   /** Index of the active link (CONTROLLED; its label reads in the foreground color). Omit for uncontrolled use. */
   active?: number;
   /** Initial active link for uncontrolled use (a bare navbar moves the active link on press). */
   defaultActive?: number;
+  /**
+   * Free-form trailing controls for the right cluster: a ghost search button, icon
+   * buttons, a notification dropdown, an account menu. They LEAD the cluster, ahead
+   * of the built-in `actionLabel` button and `avatar`, and take the cluster's own
+   * gap, so they need no wrapper. Keep them few and compact: the bar is a fixed
+   * height and the slot is rendered as given at every width.
+   */
+  actions?: ReactNode;
   /** Optional primary action; renders a <Button primary small> on the right. */
   actionLabel?: string;
   /** Called when the action button is pressed. */
@@ -110,7 +138,7 @@ export interface NavbarParts {
 export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Dropdown = parts.Dropdown ?? WebDropdown;
   return function Navbar(props: NavbarProps) {
-    const { brand, links, actionLabel, onAction, avatar, onSelect, testID, style } = props;
+    const { brand, brandContent, links = [], actions, actionLabel, onAction, avatar, onSelect, testID, style } = props;
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
     // Controlled when `active` is provided, self-managed otherwise, so a bare
@@ -125,6 +153,11 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
       { base: false, sm: true },
       { seedViewport: true },
     );
+    // The collapse stands in for the LINKS row, so a bar with no links has nothing
+    // to collapse: it renders neither the row nor the menu button, rather than a
+    // hamburger opening an empty popover. A trailing `actions` slot is unaffected
+    // either way; it is not nav, so it never folds into the menu.
+    const hasLinks = links.length > 0;
     const menuItems: DropdownItem[] = links.map((link, index) => ({
       label: link,
       // The active link carries the conventional menu checkmark.
@@ -145,8 +178,9 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     return (
       <GlassSurface testID={testID} style={container} onLayout={onBarLayout}>
         <View style={skin.leftGroup(tokens)}>
-          <Text style={skin.brand(tokens)}>{brand}</Text>
-          {collapsed ? (
+          {brandContent}
+          {brand ? <Text style={skin.brand(tokens)}>{brand}</Text> : null}
+          {!hasLinks ? null : collapsed ? (
             <Dropdown
               triggerLabel="Navigation menu"
               items={menuItems}
@@ -191,6 +225,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
           )}
         </View>
         <View style={skin.rightGroup(tokens)}>
+          {actions}
           {actionLabel ? (
             <Button primary small onPress={onAction}>
               {actionLabel}

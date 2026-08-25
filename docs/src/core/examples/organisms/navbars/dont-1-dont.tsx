@@ -3,15 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, TextInput } = scope;
+  const { Navbar } = scope;
   return (
-<View style={{ width: "100%", overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: tokens.border }}>
-  <View style={{ flexDirection: "row", height: 56, alignItems: "center", gap: 8, backgroundColor: tokens.card, paddingHorizontal: 16 }}>
-    <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Canvas</Text>
-    <View style={{ marginHorizontal: 16, maxWidth: 400, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
-      <TextInput placeholder="Search…" style={{ height: 36, width: "100%", borderRadius: 6, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 4, fontSize: 14, lineHeight: 20, color: tokens.foreground }} />
-    </View>
-  </View>
-</View>
+<Navbar bordered brand="Canvas" defaultActive={0} links={[
+    "Dashboard",
+    "Users",
+    "Settings",
+    "Billing",
+    "Reports",
+    "Integrations",
+    "Audit",
+    "Webhooks"
+  ]} avatar="RC" />
   );
 }

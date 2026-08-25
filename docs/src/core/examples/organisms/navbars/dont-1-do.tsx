@@ -3,15 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, Icon, Kbd, Typography, Row, Column } = scope;
+  const { Navbar } = scope;
   return (
-<Card flat flush style={{ width: "100%", overflow: "hidden" }}>
-  <Row alignCenter snug pad style={{ height: 56 }}>
-    <Typography small semibold>Canvas</Typography>
-    <Column grow style={{ maxWidth: 400 }}>
-      <Button outline block iconLeft={<Icon search muted size={13} />} iconRight={<Kbd>⌘K</Kbd>}>Search…</Button>
-    </Column>
-  </Row>
-</Card>
+<Navbar bordered brand="Canvas" defaultActive={0} links={["Dashboard", "Users", "Settings"]} actionLabel="New" avatar="RC" />
   );
 }
