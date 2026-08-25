@@ -3,28 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, ActionPanel, AlertDialog, Column } = scope;
+  const { ActionPanel, Input } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) => (
-    <Column snug>
-      <ActionPanel
-        title="Delete this project"
-        description="Once you delete a project, there is no going back. Please be certain."
-        actionLabel="Delete project"
-        destructive
-        onAction={() => setOpen(true)}
-      />
-      <AlertDialog
-        open={open}
-        onOpenChange={setOpen}
-        destructive
-        title="Delete this project?"
-        description="This permanently removes the project and all of its data. This action cannot be undone."
-        confirmLabel="Delete"
-      />
-    </Column>
-  )}
-</Stateful>
+<ActionPanel
+  title="Workspace profile"
+  description="These details appear on every invoice this workspace sends out."
+  actionLabel="Save changes"
+>
+  <Input label="Workspace name" defaultValue="Northwind" block />
+  <Input label="Billing email" defaultValue="billing@northwind.com" block />
+  <Input label="VAT number" defaultValue="GB123456789" block />
+</ActionPanel>
   );
 }

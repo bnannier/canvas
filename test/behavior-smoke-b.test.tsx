@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { ActionPanel } from "../src/molecules/action-panels/action-panels.tsx";
+import { Input } from "../src/atoms/input/input.tsx";
 import { CodeBlock } from "../src/molecules/code-block/code-block.tsx";
 import { DescriptionList } from "../src/molecules/description-lists/description-lists.tsx";
 import { MediaObject } from "../src/molecules/media-objects/media-objects.tsx";
@@ -49,6 +50,61 @@ describe("ActionPanel", () => {
     // Flipping the uncontrolled Switch reports the next value.
     fireEvent.click(sw);
     expect(next).toBe(true);
+  });
+
+  it("stacked layout embeds children between the copy and the action", () => {
+    ui(
+      <ActionPanel title="Workspace profile" description="Shown on every invoice." actionLabel="Save changes">
+        <Input label="Workspace name" defaultValue="Northwind" block />
+      </ActionPanel>,
+    );
+    const desc = screen.getByText("Shown on every invoice.");
+    const field = screen.getByText("Workspace name");
+    const save = screen.getByText("Save changes");
+    // Copy, then the embedded field, then the action, in document order.
+    expect(desc.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(field.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("inline layout drops children below the pinned copy + action row", () => {
+    ui(
+      <ActionPanel title="Workspace profile" description="Shown on every invoice." actionLabel="Save changes" inline>
+        <Input label="Workspace name" defaultValue="Northwind" block />
+      </ActionPanel>,
+    );
+    const save = screen.getByText("Save changes");
+    const field = screen.getByText("Workspace name");
+    // The action stays pinned beside the copy, so the field follows the whole row.
+    expect(save.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("toggle layout drops children below the switch row", () => {
+    ui(
+      <ActionPanel title="Two-factor authentication" description="Require a code on login." toggle defaultChecked>
+        <Input label="Recovery email" defaultValue="ops@northwind.com" block />
+      </ActionPanel>,
+    );
+    const sw = screen.getByRole("switch");
+    const field = screen.getByText("Recovery email");
+    expect(sw.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("a multi-field block keeps its own order inside the panel's gap column", () => {
+    ui(
+      <ActionPanel title="Workspace profile" actionLabel="Save changes">
+        <Input label="Workspace name" defaultValue="Northwind" block />
+        <Input label="Billing email" defaultValue="billing@northwind.com" block />
+        <Input label="VAT number" defaultValue="GB123456789" block />
+      </ActionPanel>,
+    );
+    // Each field is its own sibling in the column, so the skin's stacked gap
+    // spaces them, and they keep the order they were passed in.
+    const name = screen.getByText("Workspace name");
+    const email = screen.getByText("Billing email");
+    const vat = screen.getByText("VAT number");
+    expect(name.compareDocumentPosition(email) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(email.compareDocumentPosition(vat) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(vat.compareDocumentPosition(screen.getByText("Save changes")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
 
