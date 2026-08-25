@@ -105,9 +105,13 @@ export function NativeHeader() {
     // builds abort at launch on the `attempts < 1024` assert in ShadowTree.cpp.
     // Bisected: the menu without image icons is fine, the sfSymbol icon on the Menu
     // button is fine, tinted and untinted images both crash; react-native-screens
-    // 4.26.2 and 4.27.0 both reproduce it. The real fix is upstream in
-    // react-native-screens' header-item image handling; flip this flag back on once
-    // a fixed release lands and a dev build boots with it.
+    // 4.26.2 and 4.27.0 both reproduce it. Filed upstream with a standalone repro:
+    // https://github.com/software-mansion/react-native-screens/issues/4549 (repro:
+    // https://github.com/bnannier/rns-header-item-image-repro). The full recipe is
+    // image icons + the type:"custom" ThemeToggles item + a large early commit
+    // (the Backdrop's still-to-live swap); dropping the icons is the least
+    // invasive workaround. Flip this flag back on once a fixed release lands and
+    // a dev build boots with it.
     const NATIVE_MENU_IMAGE_ICONS = false;
     type MenuIcon = { type: "image"; source: number; tinted: true };
     const glyphIcon = (name: string): MenuIcon | undefined => {
