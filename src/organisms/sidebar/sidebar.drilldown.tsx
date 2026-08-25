@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver } from "../../style/index.js";
-import { Badge } from "../../atoms/badge/badge.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type Density } from "./sidebar.styles.js";
-import { type SidebarSkin, type SidebarItem, type SidebarSection } from "./sidebar.shared.js";
+import { SidebarItemBadge, type SidebarSkin, type SidebarItem, type SidebarSection } from "./sidebar.shared.js";
 
 // The narrow-viewport presentation of the Sidebar: a two-level DRILL-DOWN of the same
 // `sections` data, rendered inside the kit Drawer (which owns the start-edge slide + scrim).
@@ -117,7 +116,7 @@ export function createSidebarDrillDown(skin: SidebarSkin) {
             <Text style={skin.label(tokens, active, density)} numberOfLines={1}>
               {item.label}
             </Text>
-            {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
+            <SidebarItemBadge item={item} />
           </Pressable>
         </RippleClip>
       );

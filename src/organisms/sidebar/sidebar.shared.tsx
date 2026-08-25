@@ -43,7 +43,8 @@ export type SidebarIconTint = { primary?: boolean; muted?: boolean };
 // A sidebar is the vertical app-navigation panel that runs down the left of a
 // layout: an optional list of titled sections, each holding nav rows. A row is a
 // leading icon glyph + label, with at most one row carrying the active highlight
-// and the rest sitting inactive. Rows may carry a trailing count <Badge>.
+// and the rest sitting inactive. Rows may carry a trailing count <Badge>, secondary
+// by default and in the error status tone when the row sets `badgeError`.
 //
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf).
@@ -156,6 +157,11 @@ export interface SidebarItem {
   icon?: IconName;
   /** Trailing count rendered as a <Badge> (e.g. "12"). */
   badge?: string;
+  /** Render `badge` in the Badge atom's error status tone (a red status pill with a
+   *  leading dot) instead of the default secondary metadata pill, for a count that
+   *  reports a problem rather than a volume (e.g. account lockouts). Ignored when the
+   *  row carries no `badge`. */
+  badgeError?: boolean;
   /** Inert navigation target carried as data (e.g. "/settings"). The Sidebar never
    *  routes; a consumer reads it in `onSelect` (e.g. `router.push(item.href)`). */
   href?: string;
@@ -304,6 +310,16 @@ function fromSet(open: Set<string>, independent: boolean): string | string[] {
 // name rather than losing it.
 function rowA11yLabel(item: SidebarItem): string {
   return item.badge != null ? `${item.label}, ${item.badge}` : item.label;
+}
+
+/** A row's trailing count. Two Badge families: the default secondary metadata pill,
+ *  and `badgeError`'s error status pill (`status` is Badge's family switch, `error`
+ *  its tone within that family) for a count that reports a problem. Lives here once
+ *  so the rail row and the narrow drill-down leaf cannot drift apart. */
+export function SidebarItemBadge({ item }: { item: SidebarItem }) {
+  if (item.badge == null) return null;
+  if (item.badgeError) return <Badge status error>{item.badge}</Badge>;
+  return <Badge secondary>{item.badge}</Badge>;
 }
 
 /** Build a Sidebar component from a platform skin. */
@@ -517,7 +533,7 @@ export function createSidebar(skin: SidebarSkin) {
                 <Text style={skin.label(tokens, activeRow, density)} numberOfLines={1}>
                   {item.label}
                 </Text>
-                {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
+                <SidebarItemBadge item={item} />
               </>
             )}
           </Pressable>

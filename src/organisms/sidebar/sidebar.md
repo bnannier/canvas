@@ -86,6 +86,22 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
 </Row>
 ```
 
+### Error badge
+
+```tsx
+<Sidebar
+  bordered
+  defaultActive="Dashboard"
+  sections={[
+    { title: "Admin", items: [
+      { label: "Dashboard", icon: "layoutGrid" },
+      { label: "Members", icon: "users", badge: "24" },
+      { label: "Security", icon: "shield", badge: "3", badgeError: true }
+    ] }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Sidebar

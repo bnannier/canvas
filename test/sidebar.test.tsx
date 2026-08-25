@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
 import { createSidebarDrillDown } from "../src/organisms/sidebar/sidebar.drilldown.tsx";
 import { webSkin } from "../src/organisms/sidebar/sidebar.styles.ts";
@@ -67,6 +68,49 @@ describe("Sidebar collapse (mini icon-rail)", () => {
     );
     fireEvent.click(screen.getByLabelText("Collapse sidebar"));
     expect(toggled).toBe(1);
+  });
+});
+
+// The rendered badge pill for a count: the label Text has no element children, so its
+// parent is the Badge root. Comparing that root's markup against a standalone Badge is
+// what pins the tone: the pill's fill, border, dot and label color all ride inline
+// styles, and an approximate assertion would not catch a swap between the two families.
+const badgeHtml = (root: HTMLElement, count: string) =>
+  [...root.querySelectorAll<HTMLElement>("div")].find((el) => el.textContent === count && el.childElementCount === 0)?.parentElement?.outerHTML;
+
+// The same measurement taken on a bare Badge, as the reference to match.
+const badgeReference = (node: ReactNode) => {
+  const html = ui(node).container.firstElementChild?.outerHTML;
+  cleanup();
+  return html;
+};
+
+describe("Sidebar item badges", () => {
+  it("renders a plain count as the Badge secondary metadata pill", () => {
+    const reference = badgeReference(<Badge secondary>3</Badge>);
+    const { container } = ui(<Sidebar items={[{ id: "inbox", label: "Inbox", badge: "3" }]} />);
+    expect(reference).toBeTruthy();
+    expect(badgeHtml(container, "3")).toBe(reference);
+  });
+
+  it("renders a badgeError count as the Badge error status pill", () => {
+    const reference = badgeReference(<Badge status error>3</Badge>);
+    const { container } = ui(<Sidebar items={[{ id: "sec", label: "Security", badge: "3", badgeError: true }]} />);
+    expect(reference).toBeTruthy();
+    expect(badgeHtml(container, "3")).toBe(reference);
+  });
+
+  it("ignores badgeError on a row that carries no count", () => {
+    const plain = ui(<Sidebar items={[{ id: "sec", label: "Security" }]} />).container.innerHTML;
+    cleanup();
+    const flagged = ui(<Sidebar items={[{ id: "sec", label: "Security", badgeError: true }]} />).container.innerHTML;
+    expect(flagged).toBe(plain);
+  });
+
+  it("still folds the count into the collapsed rail's accessible name", () => {
+    ui(<Sidebar header={<Text>Brand</Text>} defaultCollapsed items={[{ id: "sec", label: "Security", icon: "shield", badge: "3", badgeError: true }]} />);
+    expect(screen.queryByText("Security")).toBeNull();
+    expect(screen.getByLabelText("Security, 3")).toBeTruthy();
   });
 });
 
@@ -197,5 +241,23 @@ describe("Sidebar narrow drill-down (SidebarDrillDown)", () => {
     fireEvent.click(screen.getByText("Home"));
     expect(picked).toBe("Home");
     expect(closed).toBe(true);
+  });
+
+  it("paints a leaf row's badgeError count in the same Badge error status tone as the rail", () => {
+    const item = { id: "sec", label: "Security", badge: "7", badgeError: true };
+    const reference = badgeReference(<Badge status error>7</Badge>);
+    const { container } = ui(
+      <DrillDown
+        groups={[{ section: { id: "admin", items: [item] }, key: "admin", rows: [{ item, index: 0 }] }]}
+        activeIndex={-1}
+        activeSectionKey={null}
+        density="default"
+        open
+        onSelect={() => {}}
+        onRequestClose={() => {}}
+      />,
+    );
+    expect(reference).toBeTruthy();
+    expect(badgeHtml(container, "7")).toBe(reference);
   });
 });
