@@ -1,6 +1,9 @@
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { type ComponentType } from "react";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassSurface, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
+import { Icon } from "../../atoms/icon/icon.js";
+import { Dropdown as WebDropdown, type DropdownProps, type DropdownItem } from "../../atoms/dropdown/dropdown.js";
 import { type Surface } from "./navbars.styles.js";
 
 // Shared Navbar shell. The structure (the left brand + links cluster, the right
@@ -95,8 +98,17 @@ function surfaceOf(p: NavbarProps): Surface {
   return "default";
 }
 
-/** Build a Navbar component from a platform skin. */
-export function createNavbar(skin: NavbarSkin) {
+// The platform-styled parts the bar composes: the Dropdown behind the narrow
+// menu button. Passed by each platform's thin wrapper (the literal `.ios`/
+// `.android` imports there are required for the WEB docs 3-up, where a barrel
+// import would resolve the web atom in every column); defaults to the web atom.
+export interface NavbarParts {
+  Dropdown?: ComponentType<DropdownProps>;
+}
+
+/** Build a Navbar component from a platform skin (plus the platform-correct Dropdown its narrow menu composes; defaults to the web base when omitted). */
+export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
+  const Dropdown = parts.Dropdown ?? WebDropdown;
   return function Navbar(props: NavbarProps) {
     const { brand, links, actionLabel, onAction, avatar, onSelect, testID, style } = props;
     const { tokens } = useTheme();
@@ -104,6 +116,20 @@ export function createNavbar(skin: NavbarSkin) {
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // navbar moves the active link to the pressed one instead of ignoring taps.
     const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0);
+    // Narrow collapse (automatic, no prop): the bar measures its OWN width and
+    // at/below sm swaps the links row for a menu button opening the platform
+    // Dropdown. The previous narrow rendering was a plain row clipping links
+    // off-screen, so there is no working behavior to preserve; the kit owns the
+    // whole trigger + menu, and `onSelect`/`active` keep their contract.
+    const { value: collapsed, onLayout: onBarLayout } = useContainerBreakpoint(
+      { base: false, sm: true },
+      { seedViewport: true },
+    );
+    const menuItems: DropdownItem[] = links.map((link, index) => ({
+      label: link,
+      // The active link carries the conventional menu checkmark.
+      icon: index === active ? "check" : undefined,
+    }));
 
     // The bar joins the functional glass layer: GlassSurface paints the native
     // Liquid Glass (iOS) or frost (web/Android) in glass mode, and the solid skin
@@ -117,9 +143,21 @@ export function createNavbar(skin: NavbarSkin) {
     ];
 
     return (
-      <GlassSurface testID={testID} style={container}>
+      <GlassSurface testID={testID} style={container} onLayout={onBarLayout}>
         <View style={skin.leftGroup(tokens)}>
           <Text style={skin.brand(tokens)}>{brand}</Text>
+          {collapsed ? (
+            <Dropdown
+              triggerLabel="Navigation menu"
+              items={menuItems}
+              onSelect={(_item, index) => {
+                setActive(index);
+                onSelect?.(index);
+              }}
+            >
+              <Icon menu size={20} />
+            </Dropdown>
+          ) : (
           <View style={skin.linksRow(tokens)}>
             {links.map((link, index) => {
               const isActive = index === active;
@@ -150,6 +188,7 @@ export function createNavbar(skin: NavbarSkin) {
               );
             })}
           </View>
+          )}
         </View>
         <View style={skin.rightGroup(tokens)}>
           {actionLabel ? (

@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -106,6 +106,14 @@ export interface TabsProps {
 
   // Layout: equal full-width triggers vs. leading-aligned hugging triggers.
   block?: boolean;
+
+  /**
+   * Responsive (vertical look only): render the EXISTING horizontal underline
+   * look when the component's own CONTAINER is at or below `sm` (640), where a
+   * side rail would starve the panel beside it. Container-measured with a
+   * viewport seed. `pills` and `underline` are unaffected.
+   */
+  responsive?: boolean;
 
   disabled?: boolean;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -299,7 +307,17 @@ export function createTabs(skin: TabsSkin) {
 
   return function Tabs(props: TabsProps) {
     const { tabs = DEFAULT_TABS, onSelect, disabled, style, testID } = props;
-    const variant = variantOf(props);
+    // `responsive` (vertical look only): the rail measures its own container
+    // and renders the EXISTING horizontal underline look at/below sm, where a
+    // side rail would starve the panel. The hook is unconditional (rules of
+    // hooks); the measurement only attaches with `responsive` on a vertical.
+    const { value: narrow, onLayout: onResponsiveLayout } = useContainerBreakpoint(
+      { base: false, sm: true },
+      { seedViewport: true },
+    );
+    const requested = variantOf(props);
+    const variant = requested === "vertical" && props.responsive && narrow ? "underline" : requested;
+    const measureResponsive = props.responsive && requested === "vertical" ? onResponsiveLayout : undefined;
     const { tokens } = useTheme();
 
     // Controlled when `active` is provided, self-managed otherwise, so a bare
@@ -362,7 +380,7 @@ export function createTabs(skin: TabsSkin) {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
       return (
-        <View accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block), style]}>
+        <View accessibilityRole="tablist" testID={testID} onLayout={measureResponsive} style={[verticalRail(!!props.block), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -403,7 +421,7 @@ export function createTabs(skin: TabsSkin) {
     // Underline: the row sits on a hairline bottom border (web/Android) or a gray
     // segmented track (iOS).
     return (
-      <View accessibilityRole="tablist" testID={testID} style={[skin.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
+      <View accessibilityRole="tablist" testID={testID} onLayout={measureResponsive} style={[skin.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
         {tabs.map((item, i) => (
           <Trigger
             key={`${labelOf(item)}-${i}`}

@@ -7,10 +7,10 @@ export default function Example(scope: ExampleScope) {
   return (
 <Tabs
   tabs={[
-    "Overview",
-    "Activity",
-    { label: "Billing", disabled: true },
-    "Settings"
+    { label: "All", badge: "142" },
+    { label: "Active", badge: "89" },
+    { label: "Pending", badge: "12" },
+    { label: "Archived", badge: "53" }
   ]}
   defaultActive={0}
 />

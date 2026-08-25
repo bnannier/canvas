@@ -1,6 +1,11 @@
 # Navbar
 
-Topbars with a brand, navigation links, and an action button. Used as the primary app-level navigation.
+Topbars with a brand, navigation links, and an action button. Used as the
+primary app-level navigation. The bar measures its own width: at and below the
+`sm` breakpoint (640) the links row automatically collapses into a menu button
+opening a dropdown of the same links (the active one checkmarked), so links
+never clip off a phone screen; `active` and `onSelect` keep their contract in
+both renderings.
 
 ## Usage
 

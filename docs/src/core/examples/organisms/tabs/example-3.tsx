@@ -6,12 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Tabs } = scope;
   return (
 <Tabs
-  tabs={[
-    { label: "All", badge: "142" },
-    { label: "Active", badge: "89" },
-    { label: "Pending", badge: "12" },
-    { label: "Archived", badge: "53" }
-  ]}
+  vertical
+  responsive
+  tabs={["General", "Security", "Notifications", "API Keys", "Billing"]}
   defaultActive={0}
 />
   );

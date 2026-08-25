@@ -35,6 +35,22 @@ Underline, pill, vertical, with badges.
 />
 ```
 
+### Responsive vertical
+
+`responsive` renders a vertical rail as the horizontal underline look when the
+component's own container is at or below `sm` (640): container-measured, so a
+settings rail inside a narrow column flattens to a top tab bar instead of
+starving the panel beside it.
+
+```tsx
+<Tabs
+  vertical
+  responsive
+  tabs={["General", "Security", "Notifications", "API Keys", "Billing"]}
+  defaultActive={0}
+/>
+```
+
 ### Badge counts
 
 ```tsx

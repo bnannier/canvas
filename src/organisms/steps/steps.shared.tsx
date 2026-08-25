@@ -1,5 +1,5 @@
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -30,6 +30,17 @@ export interface StepsProps {
   vertical?: boolean;
   /** Render a labeled percentage progress bar instead of discrete steps. */
   progress?: boolean;
+  /**
+   * Responsive (horizontal layout only): render the EXISTING vertical layout
+   * when the component's own CONTAINER is at or below `stackBreakpoint`
+   * (default `sm` = 640). Container-measured with a viewport seed, mirroring
+   * Row `stacks`. `vertical` and `progress` are unaffected (a progress bar is
+   * already fluid).
+   */
+  stacks?: boolean;
+  /** The breakpoint at and below which `stacks` goes vertical (default `"sm"`).
+   *  Only meaningful with `stacks`. */
+  stackBreakpoint?: BreakpointKey;
   /** Progress mode only: filled fraction, 0-100 (clamped). Defaults to 0. */
   value?: number;
   /** Progress mode only: caption shown left of the percentage. */
@@ -96,7 +107,16 @@ export function createSteps(skin: StepsSkin) {
   return function Steps(props: StepsProps) {
     const { steps, value, label, onStepPress, testID, style } = props;
     const { tokens } = useTheme();
-    const layout = layoutOf(props);
+    // `stacks` (horizontal only): the component measures its own root and
+    // renders the existing vertical layout in narrow containers. The hook is
+    // unconditional (rules of hooks); the measurement only attaches with `stacks`.
+    const { value: narrow, onLayout: onStacksLayout } = useContainerBreakpoint(
+      { base: false, [props.stackBreakpoint ?? "sm"]: true } as Responsive<boolean>,
+      { seedViewport: true },
+    );
+    const requested = layoutOf(props);
+    const layout = requested === "horizontal" && props.stacks && narrow ? "vertical" : requested;
+    const measureStacks = props.stacks && requested === "horizontal" ? onStacksLayout : undefined;
     // Controlled when `current` is provided, self-managed otherwise, so a bare
     // Steps with pressable steps moves the active step instead of ignoring it.
     const [current, setCurrent] = useControllableState<number>(props.current, props.defaultCurrent ?? 0);
@@ -125,7 +145,7 @@ export function createSteps(skin: StepsSkin) {
 
     if (layout === "vertical") {
       return (
-        <View testID={testID} style={[s.fullWidth, style]}>
+        <View testID={testID} onLayout={measureStacks} style={[s.fullWidth, style]}>
           {steps.map((step, i) => {
             const state = stateOf(i, current);
             const isLast = i === steps.length - 1;
@@ -152,7 +172,7 @@ export function createSteps(skin: StepsSkin) {
 
     // Horizontal: a row of circle + label columns, joined by flex-filling rules.
     return (
-      <View testID={testID} style={[s.horizontalRow, style]}>
+      <View testID={testID} onLayout={measureStacks} style={[s.horizontalRow, style]}>
         {steps.map((step, i) => {
           const state = stateOf(i, current);
           const isLast = i === steps.length - 1;
