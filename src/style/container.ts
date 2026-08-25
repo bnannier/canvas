@@ -4,7 +4,11 @@
 // is on a phone or in a 320px desktop panel, and only its container width is
 // truthful (the DataTable precedent). These hooks are the shared primitives
 // behind that pattern; attach the returned `onLayout` to the component's
-// existing root so no wrapper View perturbs the flex layout.
+// existing root so no wrapper View perturbs the flex layout. That only works
+// when the root SPANS the container: a hugging root (a fixed-width rail, a
+// shrink-wrapped row) would measure its own hugged width, latching the narrow
+// branch forever. Such components attach the handler to a `containerProbe`
+// sibling instead (below), which spans the container out of flow.
 //
 // First-frame policy: `width` is 0 until the first layout, and a Responsive
 // map resolves 0 to `base`, the desktop variant, matching the server and the
@@ -15,8 +19,27 @@
 // when the web ResizeObserver did not fire).
 
 import { useCallback, useState } from "react";
-import { Dimensions, type LayoutChangeEvent } from "react-native";
+import { Dimensions, type LayoutChangeEvent, type ViewStyle } from "react-native";
 import { responsive, useBreakpoint, type Responsive } from "./responsive.js";
+
+/**
+ * Container probe for HUGGING components. A component whose root hugs its
+ * content cannot learn its container's width by measuring itself (the Tabs
+ * vertical rail post-mortem: the rail measured its own ~180px and `narrow`
+ * latched true in any container). Render a sibling View with this style
+ * beside the root and attach the measurement hook's `onLayout` to it:
+ * absolutely positioned against the parent (RN Views are position:relative
+ * by default), it spans the container's width in either flex direction,
+ * takes no space in the flex flow (no gap slot), and intercepts nothing.
+ */
+export const containerProbe: ViewStyle = {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  top: 0,
+  height: 0,
+  pointerEvents: "none",
+};
 
 export interface MeasuredWidth {
   /** The element's rounded layout width in px; 0 until the first layout. */

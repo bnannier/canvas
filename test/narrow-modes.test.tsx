@@ -2,7 +2,7 @@
 // container-measured collapse here is exercised through its viewport seed via
 // test/viewport.ts (fresh render per width).
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup, screen, fireEvent } from "@testing-library/react";
+import { render, cleanup, screen, fireEvent, act } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Navbar } from "../src/organisms/navbars/navbars.tsx";
 import { Steps } from "../src/organisms/steps/steps.tsx";
@@ -62,8 +62,59 @@ describe("Steps stacks", () => {
 describe("Tabs responsive vertical", () => {
   const TABS = ["General", "Security", "Billing"];
 
+  // happy-dom has no ResizeObserver, so RNW's onLayout never fires on its own; fire the
+  // handler RNW attaches to the host node (the progress.test.tsx idiom). The responsive
+  // measurement rides an out-of-flow probe SIBLING that spans the container (the rail
+  // hugs ~180px, so self-measure would latch `narrow` true in any container). The probe
+  // renders before the tablist root, so it is the first layout-handling div in document
+  // order in both states.
+  type LayoutHost = { __reactLayoutHandler?: (e: unknown) => void };
+  const probe = () => {
+    for (const el of Array.from(document.querySelectorAll("div"))) {
+      const h = (el as unknown as LayoutHost).__reactLayoutHandler;
+      if (typeof h === "function") {
+        return {
+          el,
+          fire: (width: number) =>
+            act(() => h({ nativeEvent: { layout: { x: 0, y: 0, width, height: 0, left: 0, top: 0 } }, timeStamp: 1 })),
+        };
+      }
+    }
+    throw new Error("no layout-handling container probe in the tree");
+  };
+  // Settle useReducedMotion's async AccessibilityInfo read within act (the
+  // progress.test.tsx idiom): the probe-driving tests take extra event-loop
+  // turns, so without this the read's state update lands outside act.
+  const settle = () => act(async () => {});
+
   it("keeps the vertical rail at desktop widths", () => {
     ui(<Tabs vertical responsive tabs={TABS} testID="tabs" />);
+    expect(rootOf("tabs").style.flexDirection).toBe("column");
+  });
+
+  it("measures the CONTAINER through the probe, never the hugging rail", async () => {
+    ui(<Tabs vertical responsive tabs={TABS} testID="tabs" />);
+    await settle();
+    const rail = rootOf("tabs");
+    // The regression: the rail itself must carry no measurement (its ~180px
+    // self-measure is what used to flatten it inside any container).
+    expect((rail as unknown as LayoutHost).__reactLayoutHandler).toBeUndefined();
+    const p = probe();
+    expect(rail.contains(p.el)).toBe(false);
+    // A real wide-container measurement keeps the rail.
+    p.fire(1400);
+    expect(rootOf("tabs").style.flexDirection).toBe("column");
+  });
+
+  it("flattens when the probe reports a narrow container and restores when it widens", async () => {
+    ui(<Tabs vertical responsive tabs={TABS} testID="tabs" />);
+    await settle();
+    probe().fire(500);
+    expect(rootOf("tabs").style.flexDirection).toBe("row");
+    // The probe stays mounted in the flattened state and still reports the
+    // CONTAINER (not the scroller's min(content, container)), so widening
+    // un-flattens instead of latching.
+    probe().fire(900);
     expect(rootOf("tabs").style.flexDirection).toBe("column");
   });
 
