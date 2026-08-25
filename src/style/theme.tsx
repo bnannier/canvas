@@ -5,7 +5,8 @@
 
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
-import { colorsByScheme, glassByScheme, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
+import { colorsByScheme, glassByScheme, type BreakpointKey, type ColorScheme, type ColorTokens, type GlassTokens } from "./tokens.js";
+import { SsrBreakpointContext } from "./responsive.js";
 import { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 import { useReducedTransparency, useIncreasedContrast } from "./a11y-preferences.js";
 
@@ -104,6 +105,17 @@ export interface ThemeProviderProps {
    * next-themes `defaultTheme`). Omit in client-only apps and on native.
    */
   ssrScheme?: ColorScheme;
+  /**
+   * The breakpoint bucket the SERVER should assume, for SSR/SSG apps (the
+   * `ssrScheme` contract applied to the viewport axis). The server cannot
+   * measure a window, so `useBreakpoint`/`useResponsive`/`useFormFactor`
+   * resolve to the desktop `base` there by default; an app that knows it is
+   * serving a narrow client (UA hints) passes the bucket the server should
+   * render instead (e.g. "sm" for phones). The server render and the
+   * hydration render use it, then the real measured bucket re-renders every
+   * consumer right after hydration. Omit in client-only apps and on native.
+   */
+  ssrBreakpoint?: BreakpointKey | "base";
   // Surface axis (pick one; omit for the platform default: glass on iOS 26+, the
   // native system material for that layer, solid elsewhere). The theming-level
   // glass switch, spelled like every other Canvas axis; there is no per-component
@@ -140,7 +152,7 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
-export function ThemeProvider({ dark, light, scheme, ssrScheme, glass, solid, surface, tokens, children }: ThemeProviderProps) {
+export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, glass, solid, surface, tokens, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
@@ -190,7 +202,15 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, glass, solid, su
       increasedContrast,
     };
   }, [active, resolved, tokens, reducedTransparency, increasedContrast]);
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  const themed = <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  // The viewport axis' server assumption rides the theme provider (the only
+  // provider Canvas apps already mount); useBreakpoint reads it as its server
+  // snapshot only, so omitting the prop costs nothing at runtime.
+  return ssrBreakpoint != null ? (
+    <SsrBreakpointContext.Provider value={ssrBreakpoint}>{themed}</SsrBreakpointContext.Provider>
+  ) : (
+    themed
+  );
 }
 
 export function useTheme(): ThemeValue {

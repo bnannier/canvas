@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Animated, useWindowDimensions, type GestureResponderEvent } from "react-native";
+import { Animated, type GestureResponderEvent } from "react-native";
 import {
   View,
   Pressable,
@@ -13,6 +13,7 @@ import {
   supportsNativeDriver,
   GlassSurface,
   breakpoints,
+  useBreakpoint,
   type BreakpointKey,
   type ColorTokens,
   type StyleProp,
@@ -337,11 +338,13 @@ export function createSidebar(skin: SidebarSkin) {
     const [active, setActive] = useControllableState<string | number | undefined>(props.active, props.defaultActive);
     const [collapsed, setCollapsed] = useControllableState<boolean>(props.collapsed, props.defaultCollapsed ?? false);
 
-    // Responsive drawer (opt-in): the narrow drawer's open flag + the current mode. Default to
-    // the rail when the width is unknown (0 at first paint) so the layout never flashes.
+    // Responsive drawer (opt-in): the narrow drawer's open flag + the current mode. The
+    // bucket resolves to "base" while the width is unknown (0 at first paint), so the
+    // layout defaults to the rail and never flashes.
     const [drawerOpen, setDrawerOpen] = useControllableState<boolean>(props.open, props.defaultOpen ?? false, props.onOpenChange);
-    const { width } = useWindowDimensions();
-    const asDrawer = !!props.responsive && width > 0 && width <= breakpoints[props.drawerBreakpoint ?? "lg"];
+    const bucket = useBreakpoint();
+    const asDrawer =
+      !!props.responsive && bucket !== "base" && breakpoints[bucket] <= breakpoints[props.drawerBreakpoint ?? "lg"];
 
     // Normalize to a sections list; a flat `items` array becomes one untitled
     // section. Sections always win when both are supplied.

@@ -10,25 +10,45 @@ if (!(globalThis as { document?: unknown }).document) GlobalRegistrator.register
 // window.visualViewport (falling back to documentElement.clientWidth), and
 // happy-dom reports both as 0, which flips every useResponsive/useWindowDimensions
 // consumer into its phone (≤ sm) branch. The kit is desktop-first, so tests must
-// exercise the desktop branch by default: stub a fixed 1280x800 visualViewport
+// exercise the desktop branch by default: stub a 1280x800 visualViewport
 // (RNW multiplies by `scale`, and subscribes via addEventListener) before
 // react-native-web first computes dimensions.
+//
+// The stub is STATEFUL: it stores the `resize` listeners RNW registers and
+// exposes a `__canvasTestViewport` handle that mutates the size and re-fires
+// them, which is exactly the production resize signal. test/viewport.ts wraps
+// the handle as `resizeViewport(width, height)` so tests can drive narrow
+// branches (RNW's own `Dimensions.set` throws in a browser environment, so
+// this stub is the only seam).
+const viewportState = { width: 1280, height: 800 };
+const viewportResizeListeners = new Set<(event: unknown) => void>();
 if (!(window as { visualViewport?: unknown }).visualViewport) {
   Object.defineProperty(window, "visualViewport", {
     configurable: true,
     value: {
-      width: 1280,
-      height: 800,
+      get width() { return viewportState.width; },
+      get height() { return viewportState.height; },
       scale: 1,
       offsetLeft: 0,
       offsetTop: 0,
       pageLeft: 0,
       pageTop: 0,
-      addEventListener() {},
-      removeEventListener() {},
+      addEventListener(type: string, listener: (event: unknown) => void) {
+        if (type === "resize") viewportResizeListeners.add(listener);
+      },
+      removeEventListener(type: string, listener: (event: unknown) => void) {
+        if (type === "resize") viewportResizeListeners.delete(listener);
+      },
       dispatchEvent() { return true; },
     },
   });
+  (globalThis as Record<string, unknown>).__canvasTestViewport = {
+    set(width: number, height: number) {
+      viewportState.width = width;
+      viewportState.height = height;
+      viewportResizeListeners.forEach((listener) => listener({ type: "resize" }));
+    },
+  };
 }
 
 import { plugin } from "bun";
