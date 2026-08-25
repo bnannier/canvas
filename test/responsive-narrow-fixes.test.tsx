@@ -7,6 +7,8 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { monthCellSize } from "../src/organisms/calendar/calendar.shared.tsx";
 import { DescriptionList } from "../src/molecules/description-lists/description-lists.tsx";
 import { GridList } from "../src/molecules/grid-lists/grid-lists.tsx";
+import { Form } from "../src/molecules/form/form.tsx";
+import { Input } from "../src/atoms/input/input.tsx";
 import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
@@ -52,6 +54,44 @@ describe("DescriptionList twoColumn term narrowing", () => {
     ui();
     resizeViewport(375);
     expect((screen.getByText("Full name") as HTMLElement).style.width).toBe("120px");
+  });
+});
+
+describe("Form twoColumn container stacking", () => {
+  // happy-dom never fires onLayout, so these exercise the seedViewport path:
+  // the wrapper resolves against the window until its own measurement lands.
+  const rowsWrapperOf = (root: HTMLElement) => {
+    const el = root.querySelector('[data-testid="probe-input"]') as HTMLElement;
+    // input -> field column -> twoColumnItem -> rows wrapper
+    let node: HTMLElement | null = el;
+    while (node && node.style.flexDirection !== "row" && node.style.flexDirection !== "column") {
+      node = node.parentElement;
+    }
+    return node!;
+  };
+
+  it("lays out two-up at desktop widths and stacks at phone widths", () => {
+    const { container, unmount } = render(
+      <ThemeProvider>
+        <Form twoColumn>
+          <Input label="First name" testID="probe-input" />
+          <Input label="Last name" />
+        </Form>
+      </ThemeProvider>,
+    );
+    expect(rowsWrapperOf(container as HTMLElement).style.flexDirection).toBe("row");
+    unmount();
+
+    resizeViewport(375);
+    const { container: narrow } = render(
+      <ThemeProvider>
+        <Form twoColumn>
+          <Input label="First name" testID="probe-input" />
+          <Input label="Last name" />
+        </Form>
+      </ThemeProvider>,
+    );
+    expect(rowsWrapperOf(narrow as HTMLElement).style.flexDirection).toBe("column");
   });
 });
 

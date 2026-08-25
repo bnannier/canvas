@@ -1,6 +1,6 @@
 import { Children, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, useResponsive, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, useContainerWidth, fieldWidths, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./form.styles.js";
@@ -129,15 +129,23 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
   return function Form(props: FormProps) {
     const { children, twoColumn, submitLabel, cancelLabel, onSubmit, onCancel, disabled, testID, style } = props;
 
-    // The two-column flow: rows wrap into a two-up grid on wide viewports and
-    // collapse to a single full-width column on small screens (desktop-first).
-    const direction = useResponsive<"row" | "column">({ base: "row", sm: "column" });
-    const itemBasis = useResponsive<ViewStyle>({ base: s.flex1, sm: s.flexAuto });
+    // The two-column flow: rows wrap into a two-up grid in wide CONTAINERS and
+    // collapse to a single full-width column in narrow ones (desktop-first). The
+    // form measures its own row wrapper rather than the window (the DataTable
+    // precedent): a form inside a narrow desktop column stacks too, instead of
+    // crushing two-up. The threshold is one `wide` field (480), not a viewport
+    // breakpoint: a two-up split narrower than that cannot give each column a
+    // usable field, while the kit's canonical 560-wide forms stay two-up.
+    const { width: rowsWidth, onLayout: onRowsLayout } = useContainerWidth();
+    const twoUp = rowsWidth <= 0 || rowsWidth > fieldWidths.wide;
 
     const rows = twoColumn ? (
-      <View style={{ flexDirection: direction, flexWrap: "wrap", gap: s.twoColumnGap }}>
+      <View
+        onLayout={onRowsLayout}
+        style={{ flexDirection: twoUp ? "row" : "column", flexWrap: "wrap", gap: s.twoColumnGap }}
+      >
         {Children.toArray(children).map((child, i) => (
-          <View key={i} style={[itemBasis, s.twoColumnItem]}>
+          <View key={i} style={[twoUp ? s.flex1 : s.flexAuto, s.twoColumnItem]}>
             {child}
           </View>
         ))}

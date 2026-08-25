@@ -6,6 +6,7 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
 import { createSidebarDrillDown } from "../src/organisms/sidebar/sidebar.drilldown.tsx";
 import { webSkin } from "../src/organisms/sidebar/sidebar.styles.ts";
+import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -112,13 +113,37 @@ describe("Sidebar responsive rail (wide)", () => {
     { id: "over", items: [{ id: "home", label: "Home" }] },
     { id: "cat", title: "Category", collapsible: true, items: [{ id: "p1", label: "Page One" }] },
   ];
-  // The test viewport is a fixed 1280 desktop (test/setup.ts stubs visualViewport), which is
-  // above the lg breakpoint, so `responsive` renders the inline rail — never the drawer Modal.
-  // The narrow drawer switch is exercised end-to-end in the running docs app.
+  // The default test viewport is a 1280 desktop (test/setup.ts stubs visualViewport), above
+  // the lg breakpoint, so `responsive` renders the inline rail — never the drawer Modal.
   it("keeps the inline rail (no drawer Modal) at desktop width", () => {
     ui(<Sidebar responsive sections={RESP} />);
     expect(screen.getByText("Home")).toBeTruthy();
     expect(document.querySelector('[aria-modal="true"]')).toBeNull();
+  });
+
+  it("switches to the drawer at a phone-width viewport (rail rows unmount)", () => {
+    ui(<Sidebar responsive sections={RESP} />);
+    resizeViewport(375);
+    // Closed drawer: nothing renders until the consumer's hamburger opens it.
+    expect(screen.queryByText("Home")).toBeNull();
+  });
+
+  it("opens the drill-down drawer when `open` at a phone-width viewport", () => {
+    resizeViewport(375);
+    ui(<Sidebar responsive open sections={RESP} />);
+    // Drill-down root: pinned rows and the section drill row show; section items
+    // stay behind the drill.
+    expect(screen.getByText("Home")).toBeTruthy();
+    expect(screen.getByText("Category")).toBeTruthy();
+    expect(screen.queryByText("Page One")).toBeNull();
+  });
+
+  it("returns to the inline rail when the viewport widens back", () => {
+    ui(<Sidebar responsive sections={RESP} />);
+    resizeViewport(375);
+    expect(screen.queryByText("Home")).toBeNull();
+    resizeViewport(1280);
+    expect(screen.getByText("Home")).toBeTruthy();
   });
 });
 
