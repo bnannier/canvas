@@ -1,6 +1,6 @@
 # Chart
 
-A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels. Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8` tokens, or give a series its own `success` / `destructive` tone when it means success or failure; press or scrub a category to inspect it.
+A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels. Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8` tokens, add `stacked` to accumulate those series within one column per category, or give a series its own `success` / `destructive` tone when it means success or failure; press or scrub a category to inspect it.
 
 ## Usage
 
@@ -32,6 +32,23 @@ A single- or multi-series bar chart: vertical columns (or horizontal rows) sized
     { label: "Revenue", values: [49, 51, 61, 61, 62, 70, 84, 89] },
     { label: "Costs", values: [32, 32, 33, 38, 41, 48, 55, 59] },
     { label: "Profit", values: [17, 19, 28, 23, 21, 22, 29, 30] }
+  ]}
+  style={{ maxWidth: 560 }}
+/>
+```
+
+### Stacked columns
+
+```tsx
+<Chart
+  title="Token issuance by client"
+  stacked
+  labels={["acme", "globex", "initech", "umbrella", "soylent"]}
+  series={[
+    { label: "Authorization code", values: [1840, 1210, 960, 640, 410] },
+    { label: "Client credentials", values: [920, 1480, 340, 1120, 260] },
+    { label: "Refresh token", values: [610, 380, 720, 290, 180] },
+    { label: "Device code", values: [140, 90, 260, 70, 55] }
   ]}
   style={{ maxWidth: 560 }}
 />

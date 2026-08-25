@@ -37,6 +37,12 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("`data` is empty")).toBe(true);
   });
 
+  it("Chart warns when stacked is passed to a single-series chart", () => {
+    ui(<Chart stacked data={[{ label: "Mon", value: 3 }]} />);
+    expect(sawWarning("<Chart />")).toBe(true);
+    expect(sawWarning("`stacked` applies to grouped charts")).toBe(true);
+  });
+
   it("Sparkline warns when values is empty", () => {
     ui(<Sparkline values={[]} />);
     expect(sawWarning("<Sparkline />")).toBe(true);
@@ -174,6 +180,7 @@ describe("component data-misuse warnings", () => {
     ui(
       <>
         <Chart data={[{ label: "Mon", value: 3 }]} />
+        <Chart stacked labels={["Mon"]} series={[{ label: "Web", values: [3] }]} />
         <Sparkline values={[1, 2, 3]} />
         <StackedBar segments={[{ label: "A", value: 1 }]} />
         <Gauge value={72} />

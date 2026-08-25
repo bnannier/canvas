@@ -131,6 +131,87 @@ describe("Chart (grouped bars)", () => {
   });
 });
 
+describe("Chart (stacked columns)", () => {
+  // Token issuance by client, split by grant type: the column IS the client's
+  // total, so the axis follows the totals and the segments accumulate.
+  const grants = [
+    { label: "Authorization code", values: [10, 5] },
+    { label: "Client credentials", values: [10, 0] },
+  ];
+  const clients = ["acme", "globex"];
+  // Every bar/segment style, in DOM order (the plot row and the legend dots
+  // carry no bar radius, so this selects exactly the marks).
+  const barStyles = (c: HTMLElement) =>
+    Array.from(c.querySelectorAll("div"))
+      .map((el) => el.getAttribute("style") ?? "")
+      .filter((st) => st.includes("border-top-left-radius") && st.includes("height:"));
+  const heightOf = (style: string) => Number(/height: (\d+)px/.exec(style)?.[1]);
+
+  it("measures the axis against per-category totals, not the largest single value", () => {
+    const { container } = ui(<Chart stacked labels={clients} series={grants} />);
+    // acme totals 20 (the tallest column) and fills the 140px plot: 70 + 70.
+    // globex totals 5, a quarter of the axis: 35 and an empty segment.
+    expect(barStyles(container).map(heightOf)).toEqual([70, 70, 35, 0]);
+  });
+
+  it("clusters against the largest single value when stacked is omitted", () => {
+    // The same data unstacked: max is 10, so every 10 is a full-height bar.
+    const { container } = ui(<Chart labels={clients} series={grants} />);
+    expect(barStyles(container).map(heightOf)).toEqual([140, 140, 70, 2]);
+  });
+
+  it("caps the topmost non-empty segment and paints nothing for an empty one", () => {
+    const { container } = ui(<Chart stacked labels={clients} series={grants} />);
+    const [bottom, top, loneSegment, empty] = barStyles(container);
+    // Only the column's cap is rounded, so the stack reads as one column.
+    expect(bottom).toContain("border-top-left-radius: 0px");
+    expect(top).toContain("border-top-left-radius: 4px");
+    // globex's second grant type is 0: the surviving segment takes the cap and
+    // the empty one has no height at all (a 2px floor would inflate the total).
+    expect(loneSegment).toContain("border-top-left-radius: 4px");
+    expect(heightOf(empty)).toBe(0);
+  });
+
+  it("names each column's total in its accessible item", () => {
+    const { container } = ui(<Chart stacked labels={clients} series={grants} />);
+    const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
+    expect(items).toContain("acme: Authorization code 10, Client credentials 10, total 20");
+    expect(items).toContain("globex: Authorization code 5, Client credentials 0, total 5");
+  });
+
+  it("keeps the legend, the value flag, and the dimming working", () => {
+    const { container } = ui(<Chart stacked labels={clients} series={grants} defaultSelected={0} />);
+    expect(container.textContent).toContain("Authorization code");
+    expect(container.textContent).toContain("Client credentials");
+    // The flag renders the selected column's per-series values ...
+    expect(container.textContent).toContain("10");
+    // ... and the unselected column dims.
+    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
+    expect(styles.some((st) => st.includes("opacity: 0.45"))).toBe(true);
+  });
+
+  it("clamps a column to the plot when max is below the true total", () => {
+    // A caller-supplied max under the real total cannot overflow the column.
+    const { container } = ui(<Chart stacked max={10} labels={["acme"]} series={[
+      { label: "Authorization code", values: [10] },
+      { label: "Client credentials", values: [10] },
+    ]} />);
+    const heights = barStyles(container).map(heightOf);
+    expect(heights).toEqual([140, 0]);
+    expect(heights.reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(140);
+  });
+
+  it("treats a negative segment as zero", () => {
+    const { container } = ui(<Chart stacked labels={["acme"]} series={[
+      { label: "Granted", values: [10] },
+      { label: "Refunded", values: [-4] },
+    ]} />);
+    // The total is 10, so the positive segment fills the plot and the negative
+    // one contributes no length (it cannot be drawn below the baseline).
+    expect(barStyles(container).map(heightOf)).toEqual([140, 0]);
+  });
+});
+
 describe("per-series semantic tones", () => {
   // A series that MEANS success or failure colors by that meaning; every other
   // series keeps its chart-1..8 ramp position.

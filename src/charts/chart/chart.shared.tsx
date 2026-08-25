@@ -35,6 +35,9 @@ import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 //   `destructive` paints them red. Precedence: success > destructive > default.
 // - Orientation: `horizontal` lays bars out as sideways rows; omit for the
 //   default vertical column chart.
+// - Arrangement (grouped mode): `stacked` accumulates the series within one
+//   column per category (composition), measured against the per-category
+//   totals; omit for side-by-side clusters (comparison).
 // - Density: `compact` shrinks the plot area and tightens the gaps; omit for
 //   the default density.
 
@@ -58,9 +61,11 @@ export interface ChartProps {
   labels?: string[];
   /** Multiple series rendered as grouped columns per category, colored by the chart-1..8 tokens (or a series' own `success`/`destructive` tone). */
   series?: ChartSeries[];
+  /** Stack the grouped series within one column per category (composition) instead of clustering them side by side. */
+  stacked?: boolean;
   /** Optional heading shown above the plot. */
   title?: string;
-  /** Axis maximum. Defaults to the largest value in the data. */
+  /** Axis maximum. Defaults to the largest value in the data (the largest category TOTAL when `stacked`). */
   max?: number;
   // Tone (pick one; default is the primary fill). Single-series only.
   success?: boolean;
@@ -112,6 +117,9 @@ export function createChart(skin: ChartSkin) {
     const labels = props.labels ?? [];
     const data = props.data ?? [];
     const horizontal = !!props.horizontal && !grouped;
+    // Stacking is an arrangement of GROUPED series (a column is the category's
+    // composition); single-series data has nothing to accumulate.
+    const stacked = !!props.stacked && grouped;
 
     devWarn(
       props.data != null && props.series != null,
@@ -134,18 +142,31 @@ export function createChart(skin: ChartSkin) {
       "[canvas] <Chart />: `horizontal` applies to single-series charts only; grouped series render vertical columns.",
     );
     devWarn(
+      !!props.stacked && !grouped,
+      "[canvas] <Chart />: `stacked` applies to grouped charts (`labels`+`series`) only; a single `data` series has nothing to accumulate.",
+    );
+    devWarn(
       grouped && !!(props.success || props.destructive),
       "[canvas] <Chart />: tone props apply to single-series charts only; set `success`/`destructive` on a SERIES to color it by meaning, else grouped series use the chart-1..8 tokens.",
     );
 
     const fill = s.barFill(tokens, tone);
     const plot = compact ? PLOT_LENGTH.compact : PLOT_LENGTH.default;
+    // A segment's contribution to a stacked column: negatives and non-finite
+    // values carry no length, so they count as 0 (matching the stacked area
+    // chart's running sums).
+    const positive = (value: number | undefined): number => (Number.isFinite(value) && (value as number) > 0 ? (value as number) : 0);
+    // The category totals a stacked chart is measured against: the column IS
+    // the sum, so the tallest column, not the largest single value, sets the axis.
+    const totals = labels.map((_, i) => series.reduce((sum, sr) => sum + positive(sr.values[i]), 0));
     // Axis max: the caller's, else the largest finite value, else 1 to avoid /0.
     // Non-finite data (NaN / Infinity) is filtered here so a single bad datum
     // cannot poison `max` (and thus every bar) with NaN.
-    const values = grouped
-      ? series.flatMap((sr) => sr.values).filter((v) => Number.isFinite(v))
-      : data.map((d) => d.value).filter((v) => Number.isFinite(v));
+    const values = stacked
+      ? totals
+      : grouped
+        ? series.flatMap((sr) => sr.values).filter((v) => Number.isFinite(v))
+        : data.map((d) => d.value).filter((v) => Number.isFinite(v));
     const max = props.max != null && props.max > 0 ? props.max : Math.max(1, ...values);
 
     // Map a value to a clamped pixel length along the plot axis. A non-finite
@@ -157,16 +178,35 @@ export function createChart(skin: ChartSkin) {
       return Math.max(2, Math.round(ratio * plot));
     };
 
+    // One stacked category's segment heights, bottom series first. An empty
+    // segment paints nothing (a 2px floor would inflate the column past its
+    // total), a non-empty one keeps a 1px hairline, and the running sum is
+    // clamped to the plot so a caller-supplied `max` below the true total
+    // cannot overflow the column.
+    const stackHeights = (i: number): number[] => {
+      let used = 0;
+      return series.map((sr) => {
+        const v = positive(sr.values[i]);
+        if (v === 0) return 0;
+        const h = Math.min(Math.max(1, Math.round((v / max) * plot)), plot - used);
+        used += h;
+        return h;
+      });
+    };
+
     // Per-bar gap by density: gap-1.5 (6) compact, gap-2 (8) default.
     const gap = compact ? 6 : 8;
 
     // Press-to-inspect (vertical charts): pressing a category toggles its
     // selection, dims the other categories, and (grouped) flags the values.
     // The announcement mirrors the flag for assistive tech.
-    const categoryName = (i: number): string =>
-      grouped
-        ? `${labels[i]}: ${series.map((sr) => `${sr.label} ${Number.isFinite(sr.values[i]) ? sr.values[i] : 0}`).join(", ")}`
-        : `${data[i]?.label}: ${data[i]?.value}`;
+    const categoryName = (i: number): string => {
+      if (!grouped) return `${data[i]?.label}: ${data[i]?.value}`;
+      const parts = series.map((sr) => `${sr.label} ${Number.isFinite(sr.values[i]) ? sr.values[i] : 0}`).join(", ");
+      // A stacked column's height encodes the category total, and no other
+      // channel carries it, so the accessible item names it after the segments.
+      return stacked ? `${labels[i]}: ${parts}, total ${totals[i]}` : `${labels[i]}: ${parts}`;
+    };
     const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
     const setSelected = (i: number | null) => {
       if (i === selected) return;
@@ -212,35 +252,58 @@ export function createChart(skin: ChartSkin) {
           // Grouped: each category is a cluster of series bars sharing the
           // column, colored by the chart-1..8 tokens in fixed series order (or
           // by a series' own success/destructive tone). A 2px gap keeps
-          // adjacent fills separable (the dataviz spacer rule).
+          // adjacent fills separable (the dataviz spacer rule). `stacked` turns
+          // the cluster into ONE column whose segments accumulate.
           <View>
             <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
-              {labels.map((label, i) => (
-                // Each category is one accessible item announcing every
-                // series' value ("Mon: Revenue 45, Costs 30"); the scrub
-                // surface below drives the inspection flag.
-                <View
-                  key={i}
-                  accessible
-                  accessibilityRole="image"
-                  role="img"
-                  accessibilityLabel={categoryName(i)}
-                  aria-label={categoryName(i)}
-                  style={s.verticalColumn}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2, opacity: dimmed(i) }}>
-                    {series.map((sr, j) => (
-                      <View
-                        key={sr.id ?? j}
-                        style={[
-                          s.verticalBar(s.seriesColor(tokens, sr, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
-                          { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
-                        ]}
-                      />
-                    ))}
+              {labels.map((label, i) => {
+                // Stacked: segment heights bottom-up, and the topmost NON-EMPTY
+                // segment carries the column's rounded cap (a zero-height top
+                // series must not square off the column).
+                const heights = stacked ? stackHeights(i) : null;
+                const cap = heights ? heights.reduce((top, h, j) => (h > 0 ? j : top), -1) : -1;
+                return (
+                  // Each category is one accessible item announcing every
+                  // series' value ("Mon: Revenue 45, Costs 30"); the scrub
+                  // surface below drives the inspection flag.
+                  <View
+                    key={i}
+                    accessible
+                    accessibilityRole="image"
+                    role="img"
+                    accessibilityLabel={categoryName(i)}
+                    aria-label={categoryName(i)}
+                    style={s.verticalColumn}
+                  >
+                    {heights ? (
+                      // column-reverse stacks the first series on the baseline,
+                      // matching the stacked AreaChart's band order. The
+                      // segments abut (no gap), like StackedBar, so the column
+                      // reads as one total.
+                      <View style={{ flexDirection: "column-reverse", opacity: dimmed(i) }}>
+                        {series.map((sr, j) => (
+                          <View
+                            key={sr.id ?? j}
+                            style={s.verticalBar(s.seriesColor(tokens, sr, j), heights[j], j === cap ? skin.barRadius : 0)}
+                          />
+                        ))}
+                      </View>
+                    ) : (
+                      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2, opacity: dimmed(i) }}>
+                        {series.map((sr, j) => (
+                          <View
+                            key={sr.id ?? j}
+                            style={[
+                              s.verticalBar(s.seriesColor(tokens, sr, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
+                              { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
+                            ]}
+                          />
+                        ))}
+                      </View>
+                    )}
                   </View>
-                </View>
-              ))}
+                );
+              })}
               <ScrubSurface indexAt={columnAt} selected={selected} onScrub={setSelected} style={StyleSheet.absoluteFill} />
               {selected != null && labels[selected] != null ? (
                 <ChartValueFlag
