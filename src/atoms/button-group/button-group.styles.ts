@@ -145,6 +145,8 @@ export const webSkin: ButtonGroupSkin = {
   segmentLabel(t, selected) {
     return { fontWeight: "500", color: selected ? t["primary-foreground"] : t.foreground };
   },
+  // Glyphs track the label: on-primary over the selected fill, foreground otherwise.
+  segmentIconColor: (selected) => (selected ? "primaryForeground" : "foreground"),
   showSelectedCheck: false,
 
   // --- split ---
@@ -272,6 +274,8 @@ export const iosSkin: ButtonGroupSkin = {
     // (the selected pill is white/elevated, not a brand fill).
     return { fontWeight: selected ? "600" : "500", color: t.foreground };
   },
+  // Glyphs track the label: on-foreground on and off the white/elevated thumb.
+  segmentIconColor: () => "foreground",
   showSelectedCheck: false,
 
   // --- split (HIG: primary action + chevron, brand fill, capsule) ---
@@ -398,6 +402,8 @@ export const androidSkin: ButtonGroupSkin = {
     // labelMedium; selected reads in brand indigo (onSecondaryContainer ≈ primary).
     return { fontWeight: "500", color: selected ? t.primary : t.foreground };
   },
+  // Glyphs track the label: brand indigo on the tonal selected fill.
+  segmentIconColor: (selected) => (selected ? "primary" : "foreground"),
   showSelectedCheck: true,
 
   // --- split (M3: brand-filled primary + chevron, stadium) ---

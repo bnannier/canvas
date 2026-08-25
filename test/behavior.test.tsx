@@ -396,6 +396,52 @@ describe("ButtonGroup", () => {
     expect(tab.style.flexGrow).toBe("");
   });
 
+  it("iconsOnly segments hide the label, take it as the accessible name, and report it on select", () => {
+    let picked = "";
+    ui(
+      <ButtonGroup
+        segmented
+        small
+        iconsOnly
+        accessibilityLabel="Preview form factor"
+        defaultActive={2}
+        items={[
+          { label: "Phone width", icon: "smartphone" },
+          { label: "Tablet width", icon: "tablet" },
+          { label: "Desktop width", icon: "monitor" },
+        ]}
+        onSelect={(_i, item) => { picked = item; }}
+      />,
+    );
+    // No visible label text; the segment is named by the item label instead,
+    // and the tablist itself carries the group's accessible name.
+    expect(screen.queryByText("Phone width")).toBeNull();
+    const list = document.querySelector('[role="tablist"]') as HTMLElement;
+    expect(list.getAttribute("aria-label")).toBe("Preview form factor");
+    const phone = screen.getByLabelText("Phone width");
+    expect(phone.getAttribute("aria-selected")).toBe("false");
+    fireEvent.click(phone);
+    expect(picked).toBe("Phone width");
+    expect(phone.getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("labeled icon items keep their visible label; string items keep working", () => {
+    // The glyph itself is untestable here (react-native-svg is stubbed to
+    // fragments; see test/setup.ts); the visual pass covers it.
+    let picked = "";
+    ui(
+      <ButtonGroup
+        segmented
+        defaultActive={0}
+        items={[{ label: "Day", icon: "calendar" }, "Week"]}
+        onSelect={(_i, item) => { picked = item; }}
+      />,
+    );
+    expect(screen.getByText("Day")).toBeTruthy();
+    fireEvent.click(screen.getByText("Week"));
+    expect(picked).toBe("Week");
+  });
+
   it("block flexes spaced peers through their outermost RippleClip wrapper", () => {
     const { container } = ui(<ButtonGroup spaced items={["Edit", "Duplicate", "Archive"]} block />);
     const buttons = Array.from(container.querySelectorAll('[role="button"]')) as HTMLElement[];

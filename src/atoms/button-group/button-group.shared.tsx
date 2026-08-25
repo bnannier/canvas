@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Icon } from "../icon/icon.js";
+import { Icon, type IconName } from "../icon/icon.js";
 import * as s from "./button-group.styles.js";
 
 // Shared ButtonGroup shell. The structure (the four kinds, their layout, the
@@ -32,6 +32,19 @@ import * as s from "./button-group.styles.js";
 
 export type Kind = "segmented" | "split" | "stepper" | "spaced";
 export type Size = "small" | "default" | "large";
+
+/** A segment: a bare label, or a label paired with a kit icon glyph rendered
+ *  before it (or alone, under the group-level `iconsOnly`, where the label
+ *  becomes the segment's accessible name). Strings stay fully supported. */
+export type ButtonGroupItem = string | { label: string; icon?: IconName };
+
+function itemLabelOf(item: ButtonGroupItem): string {
+  return typeof item === "string" ? item : item.label;
+}
+
+function itemIconOf(item: ButtonGroupItem): IconName | undefined {
+  return typeof item === "string" ? undefined : item.icon;
+}
 
 // Icon color axis (semantic boolean props), chosen by the skin per platform.
 export type IconColor = "primary" | "primaryForeground" | "muted" | "foreground";
@@ -67,6 +80,9 @@ export interface ButtonGroupSkin {
   segmentSurface: (t: ColorTokens, selected: boolean) => ViewStyle;
   /** Segment label color/weight for selected vs. unselected. */
   segmentLabel: (t: ColorTokens, selected: boolean) => TextStyle;
+  /** Segment icon glyph color (the semantic Icon boolean axis) for selected vs.
+   *  unselected, tracking each skin's segmentLabel treatment. */
+  segmentIconColor: (selected: boolean) => IconColor;
   /** Show a leading check glyph on the selected segment (Android M3). */
   showSelectedCheck: boolean;
 
@@ -96,8 +112,9 @@ export interface ButtonGroupSkin {
 }
 
 export interface ButtonGroupProps {
-  /** Segment labels for segmented/spaced; the values the stepper cycles through. */
-  items?: string[];
+  /** Segments for segmented/spaced: a label string, or `{ label, icon }` for a
+   *  leading kit glyph. The stepper cycles the labels (icons ignored there). */
+  items?: ButtonGroupItem[];
   /** Selected segment index (segmented, CONTROLLED), or the stepper's initial index. Omit for uncontrolled use. */
   active?: number;
   /** Initial selected segment index for uncontrolled use (a bare segmented control selects on press). */
@@ -117,6 +134,19 @@ export interface ButtonGroupProps {
   // Size (pick one; default is the medium size).
   small?: boolean;
   large?: boolean;
+
+  /**
+   * Segmented/spaced only: each segment renders its `icon` alone and the item's
+   * `label` becomes the segment's ACCESSIBLE name (an icon-only view or
+   * form-factor switcher). An item without an icon keeps its visible label,
+   * with a dev-only warning. Split and stepper ignore it (dev-only warning).
+   */
+  iconsOnly?: boolean;
+
+  /** Accessible name for the segmented row (the `tablist`), announcing what
+   *  the group switches (e.g. "Preview form factor"). Segmented kind only:
+   *  spaced peers are independent buttons with no group role. */
+  accessibilityLabel?: string;
 
   /**
    * Stretch the group to the container width, the segments sharing the space
@@ -158,6 +188,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
 
   interface SegmentProps {
     label: string;
+    /** Leading kit glyph, colored by the skin's segmentIconColor. */
+    icon?: IconName;
+    /** Render the glyph alone; `label` becomes the accessible name. */
+    iconOnly?: boolean;
     selected: boolean;
     /**
      * Whether this segment can read selected. Segmented options are a single
@@ -183,7 +217,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     onPress?: (event: GestureResponderEvent) => void;
   }
 
-  function Segment({ label, selected, selectable, corners, leading, standalone, block, size, disabled, onPress }: SegmentProps) {
+  function Segment({ label, icon, iconOnly, selected, selectable, corners, leading, standalone, block, size, disabled, onPress }: SegmentProps) {
     const { tokens } = useTheme();
     // The equal-share flex must ride the segment's OUTERMOST node: the Pressable
     // itself when attached, but the RippleClip wrapper when standalone (see the
@@ -207,18 +241,32 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const selectionA11y = selectable
       ? { accessibilityRole: "tab" as const, accessibilityState: { selected, disabled: !!disabled }, "aria-selected": selected }
       : { accessibilityRole: "button" as const, accessibilityState: { disabled: !!disabled } };
+    const showIconAlone = iconOnly && icon != null;
     const button = (
       <Pressable
         style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         onPress={onPress}
         disabled={disabled}
         android_ripple={ripple ? ripple(tokens) : undefined}
+        // An icon-only segment has no text to read; the item label is its name
+        // (both aliases, per the kit a11y contract: RNW drops one or the other
+        // depending on the prop it receives).
+        accessibilityLabel={showIconAlone ? label : undefined}
+        aria-label={showIconAlone ? label : undefined}
         {...selectionA11y}
       >
-        {skin.showSelectedCheck && selected ? (
+        {/* The M3 selected check yields to a segment glyph: an icon segmented
+            control marks selection by the fill, not check + icon side by side. */}
+        {skin.showSelectedCheck && selected && icon == null ? (
           <Icon check primary size={s.chevronSize[size]} style={{ marginEnd: 6 }} />
         ) : null}
-        <Text style={[s.sizeLabel[size], skin.segmentLabel(tokens, selected)]}>{label}</Text>
+        {icon != null ? (
+          // decorative: the segment's name is the label (visible Text, or the
+          // accessibilityLabel above when icon-only), so the glyph itself must
+          // stay silent to assistive tech.
+          <Icon {...{ [icon]: true }} decorative size={s.chevronSize[size]} {...iconColorProps(skin.segmentIconColor(selected && selectable))} style={showIconAlone ? undefined : { marginEnd: 6 }} />
+        ) : null}
+        {showIconAlone ? null : <Text style={[s.sizeLabel[size], skin.segmentLabel(tokens, selected)]}>{label}</Text>}
       </Pressable>
     );
     // A detached (spaced) peer carries its own radius with no clipping ancestor, so its
@@ -435,6 +483,14 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       !!props.block && (kind === "split" || kind === "stepper"),
       `[canvas] <ButtonGroup />: \`block\` applies to the segmented and spaced kinds; the ${kind} kind is fixed-width chrome and ignores it.`,
     );
+    devWarn(
+      !!props.iconsOnly && (kind === "split" || kind === "stepper"),
+      `[canvas] <ButtonGroup />: \`iconsOnly\` applies to the segmented and spaced kinds; the ${kind} kind renders labels and ignores it.`,
+    );
+    devWarn(
+      !!props.iconsOnly && (kind === "segmented" || kind === "spaced") && items.some((it) => itemIconOf(it) == null),
+      "[canvas] <ButtonGroup iconsOnly />: an item without an `icon` keeps its visible label; give every item an icon (the label stays as its accessible name).",
+    );
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // segmented control (or one seeded with `defaultActive`) selects on press
     // instead of sitting inert. Matches the Tabs / Switch controllable contract.
@@ -446,8 +502,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         <View style={[s.spacedContainer, props.block ? s.blockContainer : null, style]} testID={testID}>
           {items.map((item, i) => (
             <Segment
-              key={`${item}-${i}`}
-              label={item}
+              key={`${itemLabelOf(item)}-${i}`}
+              label={itemLabelOf(item)}
+              icon={itemIconOf(item)}
+              iconOnly={props.iconsOnly}
               selected={false}
               selectable={false}
               corners={skin.spacedCorners}
@@ -456,7 +514,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               block={props.block}
               size={size}
               disabled={disabled}
-              onPress={(e) => onSelect?.(i, item, e)}
+              onPress={(e) => onSelect?.(i, itemLabelOf(item), e)}
             />
           ))}
         </View>
@@ -466,7 +524,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // Split: a primary action attached to a chevron that opens a dropdown of
     // related actions.
     if (kind === "split") {
-      const labels = items.length > 0 ? items : DEFAULT_ITEMS;
+      const labels = (items.length > 0 ? items : DEFAULT_ITEMS).map(itemLabelOf);
       const primary = labels[0] ?? "Save";
       return (
         <SplitButton
@@ -484,7 +542,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // Stepper: a prev / current / next control that cycles through items; the
     // component owns the chevrons and the position.
     if (kind === "stepper") {
-      const list = items.length > 0 ? items : DEFAULT_ITEMS;
+      const list = (items.length > 0 ? items : DEFAULT_ITEMS).map(itemLabelOf);
       return (
         <Stepper
           items={list}
@@ -505,8 +563,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const wrap = skin.segmentedWrap(tokens);
     const row = items.map((item, i) => (
       <Segment
-        key={`${item}-${i}`}
-        label={item}
+        key={`${itemLabelOf(item)}-${i}`}
+        label={itemLabelOf(item)}
+        icon={itemIconOf(item)}
+        iconOnly={props.iconsOnly}
         selected={i === active}
         selectable
         corners={skin.joinCorners(i, count)}
@@ -516,7 +576,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         disabled={disabled}
         onPress={(e) => {
           setActive(i);
-          onSelect?.(i, item, e);
+          onSelect?.(i, itemLabelOf(item), e);
         }}
       />
     ));
@@ -525,8 +585,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // `block` width lands AFTER the skin wrap so it beats the iOS/Android wraps'
     // self-sizing `alignSelf: "flex-start"`.
     if (wrap) {
-      return <View accessibilityRole="tablist" style={[wrap, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
+      return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[wrap, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
     }
-    return <View accessibilityRole="tablist" style={[s.segmentedContainer, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
+    return <View accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[s.segmentedContainer, props.block ? s.blockContainer : null, style]} testID={testID}>{row}</View>;
   };
 }
