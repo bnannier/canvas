@@ -1,6 +1,6 @@
 {
   "name": "@nannier/canvas",
-  "version": "2.40.1",
+  "version": "2.40.2",
   "description": "Universal React Native UI kit: one component API renders natively on iOS, Android, and web.",
   "license": "MIT",
   "homepage": "https://canvas.nannier.com/",
