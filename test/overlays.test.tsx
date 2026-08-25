@@ -7,6 +7,7 @@ import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 import { Popover } from "../src/atoms/popover/popover.tsx";
 import { Tooltip } from "../src/atoms/tooltip/tooltip.tsx";
+import { Button } from "../src/atoms/button/button.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
@@ -369,6 +370,112 @@ describe("Tooltip", () => {
       expect(screen.queryByText("Extra context")).toBeNull();
       unmount();
     }
+  });
+
+  // The element trigger (`children`): the tip hangs off a control the caller
+  // already has (the console's icon Button), so the wrapper may only LISTEN. It
+  // takes no role, no tab stop, and no press responder; the child stays the one
+  // interactive, labelled element.
+  it("hangs the tip off an element trigger without claiming the child's press", () => {
+    let presses = 0;
+    const { container } = ui(
+      <Tooltip label="Glass on">
+        <Button ghost small onPress={() => { presses += 1; }}>Glass</Button>
+      </Tooltip>,
+    );
+    const child = container.querySelector("button")!;
+    expect(container.querySelectorAll("button").length).toBe(1);
+
+    fireEvent.click(child);
+    // The child's own onPress still runs, and the press does NOT toggle the tip.
+    expect(presses).toBe(1);
+    expect(screen.queryByText("Glass on")).toBeNull();
+  });
+
+  it("shows the tip on the element trigger's hover and focus, and hides it again", () => {
+    const { container } = ui(
+      <Tooltip label="Glass on">
+        <Button ghost small onPress={() => {}}>Glass</Button>
+      </Tooltip>,
+    );
+    const child = container.querySelector("button")!;
+
+    // The wrapper takes RN's pointer events, which React synthesizes from
+    // pointerover/pointerout (RTL's pointerEnter/pointerLeave fire both), so
+    // entering the CHILD enters the wrapper too.
+    fireEvent.pointerEnter(child);
+    expect(screen.getByText("Glass on")).toBeDefined();
+
+    fireEvent.pointerLeave(child);
+    expect(screen.queryByText("Glass on")).toBeNull();
+
+    // Focus/blur bubble out of the child, so a keyboard tab onto it opens the tip.
+    fireEvent.focus(child);
+    expect(screen.getByText("Glass on")).toBeDefined();
+    fireEvent.blur(child);
+    expect(screen.queryByText("Glass on")).toBeNull();
+  });
+
+  // The bubble renders IN FLOW, so opening it pushes the trigger over by the
+  // bubble's height. If the hover region hugged the child, the trigger would slide
+  // out from under a stationary pointer and the browser's post-layout hover
+  // recompute would close the tip the moment it appeared (verified in Chrome). The
+  // region is the whole tooltip instead, so crossing onto the bubble keeps it up.
+  it("keeps an element trigger's tip up while the pointer crosses onto the bubble", () => {
+    const { container } = ui(
+      <Tooltip label="Glass on">
+        <Button ghost small onPress={() => {}}>Glass</Button>
+      </Tooltip>,
+    );
+    const child = container.querySelector("button")!;
+    fireEvent.pointerEnter(child);
+    const bubble = container.querySelector('[role="alert"]')!;
+    expect(bubble.textContent).toBe("Glass on");
+
+    // Trigger -> bubble: a move WITHIN the tooltip must not close it.
+    fireEvent.pointerOut(child, { relatedTarget: bubble });
+    fireEvent.pointerOver(bubble, { relatedTarget: child });
+    expect(screen.getByText("Glass on")).toBeDefined();
+
+    // Leaving the tooltip altogether does close it.
+    fireEvent.pointerLeave(bubble);
+    expect(screen.queryByText("Glass on")).toBeNull();
+  });
+
+  it("gives the element trigger's wrapper no role and no tab stop", () => {
+    const { container } = ui(
+      <Tooltip label="Glass on" open testID="glass-tip">
+        <Button ghost small onPress={() => {}}>Glass</Button>
+      </Tooltip>,
+    );
+    const root = container.querySelector('[data-testid="glass-tip"]')!;
+    const child = container.querySelector("button")!;
+    // Every node between the child and the tooltip root is inert: no role, so
+    // nothing extra is announced, and no tab stop, so the child is the only
+    // keyboard target.
+    let ancestors = 0;
+    for (let node = child.parentElement; node != null && node !== root.parentElement; node = node.parentElement) {
+      expect(node.getAttribute("role")).toBeNull();
+      expect(node.getAttribute("tabindex")).toBeNull();
+      ancestors += 1;
+    }
+    expect(ancestors).toBeGreaterThan(0);
+    // No second interactive element, and no button nested inside another button.
+    expect(container.querySelectorAll("button").length).toBe(1);
+    expect(child.parentElement?.closest("button")).toBeNull();
+  });
+
+  it("gives children precedence over iconTrigger and textTrigger", () => {
+    const { container } = ui(
+      <Tooltip label="Glass on" iconTrigger textTrigger trigger="Hover me">
+        <Button ghost small onPress={() => {}}>Glass</Button>
+      </Tooltip>,
+    );
+    // Only the child renders: no built-in trigger, so no aria-expanded node.
+    expect(container.querySelectorAll("button").length).toBe(1);
+    expect(container.querySelector("[aria-expanded]")).toBeNull();
+    expect(screen.getByText("Glass")).toBeDefined();
+    expect(screen.queryByText("Hover me")).toBeNull();
   });
 });
 
