@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Appearance, Platform, useColorScheme } from "react-native";
+import { useGlobalSearchParams } from "expo-router";
 import { ThemeProvider, type Surface } from "@nannier/canvas";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light
@@ -30,21 +31,41 @@ export function useDocsTheme(): DocsThemeContext {
 export function DocsThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const systemScheme: Scheme = system === "dark" ? "dark" : "light";
+  // Launch-URL seeding: ?scheme=dark|light and ?surface=solid|glass on the
+  // opening URL (web address bar, or a native deep link such as
+  // canvas:///components/button?scheme=light) pick the INITIAL look. The docs
+  // stay session-only (no storage, by privacy declaration); this reads the
+  // one-shot launch state so shared links and capture tooling can open a
+  // specific look on every platform. Captured once via ref: later
+  // navigations must not fight the in-app toggles.
+  const params = useGlobalSearchParams<{ scheme?: string; surface?: string }>();
+  const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+  const seed = useRef({
+    scheme: ((): Scheme | null => {
+      const v = first(params.scheme);
+      return v === "light" || v === "dark" ? v : null;
+    })(),
+    surface: ((): Surface | null => {
+      const v = first(params.surface);
+      return v === "solid" || v === "glass" ? v : null;
+    })(),
+  }).current;
   // The docs DEFAULT to dark on every platform (the Canvas Universe is the brand
   // stage and reads best in deep space). The web topbar sun/moon and the native
   // Appearance controls (the iOS header menu rows, the Android overflow-sheet
   // footer) change it; choosing System restores live OS tracking.
-  const [override, setOverride] = useState<Scheme | null>("dark");
+  const [override, setOverride] = useState<Scheme | null>(seed.scheme ?? "dark");
   const scheme: Scheme = override ?? systemScheme;
   // Glass is the DEFAULT surface on every platform, not just iOS 26. The
   // Solid/Glass toggle (shown where glass is not the OS material) flips it.
-  const [surface, setSurface] = useState<Surface>("glass");
+  const [surface, setSurface] = useState<Surface>(seed.surface ?? "glass");
 
   // Sync the native system chrome (the iOS Liquid Glass bars, Android's Material
-  // bars) to the dark default once at startup, since the initial override is set
-  // without going through setScheme.
+  // bars) to the initial scheme once at startup, since the initial override is
+  // set without going through setScheme.
   useEffect(() => {
-    if (Platform.OS !== "web") Appearance.setColorScheme("dark");
+    if (Platform.OS !== "web") Appearance.setColorScheme(seed.scheme ?? "dark");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- launch-time seed, runs once
   }, []);
 
   // On native the override also drives the SYSTEM appearance for this app via

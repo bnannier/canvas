@@ -53,6 +53,7 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
           <ButtonGroup
             segmented
             small
+            accessibilityLabel="Surface"
             items={["Solid", "Glass"]}
             active={surface === "solid" ? 0 : 1}
             onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}

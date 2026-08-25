@@ -160,6 +160,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
         <ButtonGroup
           segmented
           small
+          accessibilityLabel="Surface"
           items={["Solid", "Glass"]}
           active={surface === "solid" ? 0 : 1}
           onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}

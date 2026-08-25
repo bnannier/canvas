@@ -111,7 +111,13 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
 }) {
   const { tokens } = useTheme();
   return (
-    <View style={{ borderTopWidth: first ? 0 : 1, borderColor: tokens.border }}>
+    <View
+      // Marks the row with its platform for tooling (element crops, row-level
+      // assertions). Web-only attribute; a no-op on native, where a single
+      // unlabeled preview renders. Same dataSet pattern as previewStage below.
+      {...(Platform.OS === "web" ? ({ dataSet: { platformRow: label.toLowerCase() } } as object) : null)}
+      style={{ borderTopWidth: first ? 0 : 1, borderColor: tokens.border }}
+    >
       {/* The live render cell. The overlay host is ONE per stage (see Playground),
           not per cell: a per-cell host traps its outlet inside the cell's stacking
           context, so an open menu on an upper row is clipped by the cell and painted
@@ -254,7 +260,13 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
             undefined to a handler on a live View never observes it (the
             measurement would sit at 0 forever). Measuring while not simulating
             is free; the readout only shows during simulation. */}
-        <View onLayout={onCardLayout} style={simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center", marginBottom: 10 } : null}>
+        <View
+          // Marks the preview card (the platform-rows surface, without the
+          // switcher row or the code block) for tooling screenshots.
+          {...(Platform.OS === "web" ? ({ dataSet: { previewCard: "" } } as object) : null)}
+          onLayout={onCardLayout}
+          style={simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center", marginBottom: 10 } : null}
+        >
           <DocsSurface
             fill="card"
             style={{
@@ -298,10 +310,10 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   // gone (it also blocked the kit scroller from capping, being content-sized).
   const rail = wide ? (
     <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false}>
-      <Tabs vertical block tabs={labels} active={selected} onSelect={setSelected} />
+      <Tabs vertical block testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
     </ScrollView>
   ) : (
-    <Tabs underline tabs={labels} active={selected} onSelect={setSelected} />
+    <Tabs underline testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
   );
 
   return (
