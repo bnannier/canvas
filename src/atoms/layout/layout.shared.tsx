@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { View, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, devWarn, useContainerBreakpoint, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type FlexSkin } from "./layout.styles.js";
 
 // Shared layout primitives: Row (horizontal) and Column (vertical). The kit had
@@ -60,6 +60,20 @@ export interface FlexProps {
   fill?: boolean; // flex: 1
   grow?: boolean; // flexGrow: 1
   /**
+   * Responsive (Row only): render as a Column when the row's own CONTAINER is
+   * at or below `stackBreakpoint` (default `sm` = 640). Container-measured with
+   * a viewport seed for the first frame, so a Row inside a narrow desktop
+   * column stacks too, not just on phones. When stacked, the Row IS the Column
+   * with the same props: gap, justify, align, and padding apply to the new
+   * axes, the default `stretch` cross-axis makes children full width, and
+   * `wrap` is inert. Ignored (with a DEV warning) on Column: a Column that
+   * must become a Row is a Row that stacks.
+   */
+  stacks?: boolean;
+  /** The breakpoint at and below which `stacks` flips to a column (default
+   *  `"sm"`). Only meaningful with `stacks` (DEV warns without it). */
+  stackBreakpoint?: BreakpointKey;
+  /**
    * Indent the whole stack by one control gutter (24: a control box plus the row
    * gap), so a nested option group lines up under its parent control's label
    * instead of its box. For nesting checkboxes/radios under a "select all" parent.
@@ -101,7 +115,8 @@ const ALIGN: Record<Align, ViewStyle["alignItems"]> = {
 
 // Gap precedence when more than one is passed: first match wins, largest-first
 // (mirrors Typography's roleOf ordering). Default `snug` when none is set.
-function gapOf(p: FlexProps): Gap {
+// Exported for Grid, which shares the gap axis and its precedence.
+export function gapOf(p: Pick<FlexProps, Gap>): Gap {
   if (p.loose) return "loose";
   if (p.relaxed) return "relaxed";
   if (p.cozy) return "cozy";
@@ -141,20 +156,52 @@ function padOf(p: FlexProps): Pad | null {
 
 /** Build a Row or Column component from a platform skin and a fixed direction. */
 export function createFlex(skin: FlexSkin, direction: Direction) {
-  return function Flex(props: FlexProps) {
-    const { children, wrap, fill, grow, testID, style } = props;
+  // Resolve every axis to one ViewStyle for a concrete direction. While stacked
+  // (a Row rendering as a Column), `wrap` is inert: a single column has nothing
+  // to wrap, and dropping it keeps the stacked layout byte-identical to the
+  // equivalent Column.
+  function flexStyle(props: FlexProps, dir: Direction, stacked: boolean): ViewStyle {
     const layout: ViewStyle = {
-      flexDirection: direction,
+      flexDirection: dir,
       gap: skin.gap[gapOf(props)],
       justifyContent: JUSTIFY[justifyOf(props)],
       alignItems: ALIGN[alignOf(props)],
     };
-    if (wrap) layout.flexWrap = "wrap";
-    if (fill) layout.flex = 1;
-    if (grow) layout.flexGrow = 1;
+    if (props.wrap && !stacked) layout.flexWrap = "wrap";
+    if (props.fill) layout.flex = 1;
+    if (props.grow) layout.flexGrow = 1;
     if (props.indent) layout.paddingLeft = 24; // one control gutter: box (16) + row gap (8)
     const pad = padOf(props);
     if (pad) layout.padding = skin.pad[pad];
-    return <View style={[layout, style]} testID={testID}>{children}</View>;
+    return layout;
+  }
+
+  // The measuring variant, mounted only when a Row passes `stacks`: a bare
+  // Row/Column keeps zero hooks and a byte-identical DOM.
+  function StackingRow(props: FlexProps) {
+    const bp = props.stackBreakpoint ?? "sm";
+    const { value: stacked, onLayout } = useContainerBreakpoint(
+      { base: false, [bp]: true } as Responsive<boolean>,
+      { seedViewport: true },
+    );
+    return (
+      <View onLayout={onLayout} style={[flexStyle(props, stacked ? "column" : "row", stacked), props.style]} testID={props.testID}>
+        {props.children}
+      </View>
+    );
+  }
+
+  return function Flex(props: FlexProps) {
+    const { children, testID, style } = props;
+    devWarn(
+      direction === "column" && !!props.stacks,
+      "[canvas] <Column stacks>: `stacks` applies to Row only (a stacked Row IS the Column); it is ignored here.",
+    );
+    devWarn(
+      !!props.stackBreakpoint && !props.stacks,
+      "[canvas] <Row stackBreakpoint>: `stackBreakpoint` refines `stacks` and does nothing without it.",
+    );
+    if (direction === "row" && props.stacks) return <StackingRow {...props} />;
+    return <View style={[flexStyle(props, direction, false), style]} testID={testID}>{children}</View>;
   };
 }
