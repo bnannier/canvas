@@ -218,22 +218,16 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
 
   // Wide: Tabs' `vertical` rail (a settings-style side rail, active row filled)
   // beside the stage, in a fixed 200px scroller so many examples still scroll.
-  // Narrow: the horizontal `underline` tab bar above the stage, in a horizontal
-  // scroller so long/many labels overflow by scrolling rather than cramping.
+  // Narrow: the horizontal `underline` tab bar above the stage, bare — the kit's
+  // own overflow scroller pans long/many labels and keeps the selected tab in
+  // view, so the docs-side horizontal ScrollView wrapper this once needed is
+  // gone (it also blocked the kit scroller from capping, being content-sized).
   const rail = wide ? (
     <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false}>
       <Tabs vertical block tabs={labels} active={selected} onSelect={setSelected} />
     </ScrollView>
   ) : (
-    // flexGrow: 0 mirrors the wide rail. Without it, RNW's ScrollView default
-    // (flexGrow: 1) competes with the stage's flex-basis-0 in the content-sized
-    // column: web flexbox hands the rail a share of the stage's min-content
-    // height, inflating the ~41px tab strip to ~200px of empty band above the
-    // stage. Native yoga resolves the same tree without the inflation, so the
-    // gap was web-only.
-    <ScrollView horizontal style={{ flexGrow: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-      <Tabs underline tabs={labels} active={selected} onSelect={setSelected} />
-    </ScrollView>
+    <Tabs underline tabs={labels} active={selected} onSelect={setSelected} />
   );
 
   return (
