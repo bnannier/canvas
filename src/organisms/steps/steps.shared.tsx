@@ -1,5 +1,6 @@
+import { type ReactNode } from "react";
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -107,9 +108,16 @@ export function createSteps(skin: StepsSkin) {
   return function Steps(props: StepsProps) {
     const { steps, value, label, onStepPress, testID, style } = props;
     const { tokens } = useTheme();
-    // `stacks` (horizontal only): the component measures its own root and
-    // renders the existing vertical layout in narrow containers. The hook is
+    // `stacks` (horizontal only): the component measures its own CONTAINER and
+    // renders the existing vertical layout in narrow ones. The hook is
     // unconditional (rules of hooks); the measurement only attaches with `stacks`.
+    // In a ROW parent the horizontal root HUGS its content (and the stacked
+    // branch spans full width), so neither branch can learn the container's
+    // width by measuring itself: the hugged self-measure latched `stacks`
+    // vertical inside any wide row, and every relayout flickered it back
+    // through horizontal (the Tabs vertical-rail post-mortem). The handler
+    // rides an out-of-flow containerProbe sibling instead, rendered in BOTH
+    // states so a widening container un-stacks.
     const { value: narrow, onLayout: onStacksLayout } = useContainerBreakpoint(
       { base: false, [props.stackBreakpoint ?? "sm"]: true } as Responsive<boolean>,
       { seedViewport: true },
@@ -117,6 +125,15 @@ export function createSteps(skin: StepsSkin) {
     const requested = layoutOf(props);
     const layout = requested === "horizontal" && props.stacks && narrow ? "vertical" : requested;
     const measureStacks = props.stacks && requested === "horizontal" ? onStacksLayout : undefined;
+    const withStacksProbe = (root: ReactNode) =>
+      measureStacks ? (
+        <>
+          <View style={containerProbe} onLayout={measureStacks} />
+          {root}
+        </>
+      ) : (
+        root
+      );
     // Controlled when `current` is provided, self-managed otherwise, so a bare
     // Steps with pressable steps moves the active step instead of ignoring it.
     const [current, setCurrent] = useControllableState<number>(props.current, props.defaultCurrent ?? 0);
@@ -144,8 +161,8 @@ export function createSteps(skin: StepsSkin) {
     }
 
     if (layout === "vertical") {
-      return (
-        <View testID={testID} onLayout={measureStacks} style={[s.fullWidth, style]}>
+      return withStacksProbe(
+        <View testID={testID} style={[s.fullWidth, style]}>
           {steps.map((step, i) => {
             const state = stateOf(i, current);
             const isLast = i === steps.length - 1;
@@ -166,13 +183,13 @@ export function createSteps(skin: StepsSkin) {
               </View>
             );
           })}
-        </View>
+        </View>,
       );
     }
 
     // Horizontal: a row of circle + label columns, joined by flex-filling rules.
-    return (
-      <View testID={testID} onLayout={measureStacks} style={[s.horizontalRow, style]}>
+    return withStacksProbe(
+      <View testID={testID} style={[s.horizontalRow, style]}>
         {steps.map((step, i) => {
           const state = stateOf(i, current);
           const isLast = i === steps.length - 1;
@@ -190,7 +207,7 @@ export function createSteps(skin: StepsSkin) {
             </View>
           );
         })}
-      </View>
+      </View>,
     );
   };
 }

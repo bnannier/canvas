@@ -15,6 +15,31 @@ afterEach(cleanup);
 const ui = (node: React.ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 const rootOf = (testID: string) => document.querySelector(`[data-testid="${testID}"]`) as HTMLElement;
 
+// happy-dom has no ResizeObserver, so RNW's onLayout never fires on its own; fire the
+// handler RNW attaches to the host node (the progress.test.tsx idiom). Steps' and Tabs'
+// container measurements ride an out-of-flow probe SIBLING that spans the container
+// (their roots hug their content in a row parent, so self-measure would latch the
+// narrow branch in any container). The probe renders before the component root, so it
+// is the first layout-handling div in document order in both states.
+type LayoutHost = { __reactLayoutHandler?: (e: unknown) => void };
+const probe = () => {
+  for (const el of Array.from(document.querySelectorAll("div"))) {
+    const h = (el as unknown as LayoutHost).__reactLayoutHandler;
+    if (typeof h === "function") {
+      return {
+        el,
+        fire: (width: number) =>
+          act(() => h({ nativeEvent: { layout: { x: 0, y: 0, width, height: 0, left: 0, top: 0 } }, timeStamp: 1 })),
+      };
+    }
+  }
+  throw new Error("no layout-handling container probe in the tree");
+};
+// Settle async-read hooks (Tabs' useReducedMotion AccessibilityInfo read) within act
+// (the progress.test.tsx idiom): the probe-driving tests take extra event-loop turns,
+// so without this the read's state update lands outside act.
+const settle = () => act(async () => {});
+
 describe("Navbar narrow collapse", () => {
   const LINKS = ["Overview", "Deploys", "Alerts"];
 
@@ -57,35 +82,35 @@ describe("Steps stacks", () => {
     ui(<Steps steps={STEPS} testID="steps" />);
     expect(rootOf("steps").style.flexDirection).toBe("row");
   });
+
+  it("measures the CONTAINER through the probe, never the hugging row", () => {
+    ui(<Steps stacks steps={STEPS} testID="steps" />);
+    const root = rootOf("steps");
+    // The regression: the row itself must carry no measurement (its hugged
+    // self-measure is what used to stack it inside any wide row parent).
+    expect((root as unknown as LayoutHost).__reactLayoutHandler).toBeUndefined();
+    const p = probe();
+    expect(root.contains(p.el)).toBe(false);
+    // A real wide-container measurement keeps the horizontal row.
+    p.fire(1400);
+    expect(rootOf("steps").style.flexDirection).toBe("row");
+  });
+
+  it("stacks when the probe reports a narrow container and restores when it widens", () => {
+    ui(<Steps stacks steps={STEPS} testID="steps" />);
+    probe().fire(500);
+    expect(rootOf("steps").style.flexDirection).not.toBe("row");
+    expect(screen.getByText("Profile")).toBeTruthy();
+    // The probe stays mounted in the stacked state and still reports the
+    // CONTAINER (not the vertical branch's full width), so widening un-stacks
+    // instead of latching or oscillating.
+    probe().fire(900);
+    expect(rootOf("steps").style.flexDirection).toBe("row");
+  });
 });
 
 describe("Tabs responsive vertical", () => {
   const TABS = ["General", "Security", "Billing"];
-
-  // happy-dom has no ResizeObserver, so RNW's onLayout never fires on its own; fire the
-  // handler RNW attaches to the host node (the progress.test.tsx idiom). The responsive
-  // measurement rides an out-of-flow probe SIBLING that spans the container (the rail
-  // hugs ~180px, so self-measure would latch `narrow` true in any container). The probe
-  // renders before the tablist root, so it is the first layout-handling div in document
-  // order in both states.
-  type LayoutHost = { __reactLayoutHandler?: (e: unknown) => void };
-  const probe = () => {
-    for (const el of Array.from(document.querySelectorAll("div"))) {
-      const h = (el as unknown as LayoutHost).__reactLayoutHandler;
-      if (typeof h === "function") {
-        return {
-          el,
-          fire: (width: number) =>
-            act(() => h({ nativeEvent: { layout: { x: 0, y: 0, width, height: 0, left: 0, top: 0 } }, timeStamp: 1 })),
-        };
-      }
-    }
-    throw new Error("no layout-handling container probe in the tree");
-  };
-  // Settle useReducedMotion's async AccessibilityInfo read within act (the
-  // progress.test.tsx idiom): the probe-driving tests take extra event-loop
-  // turns, so without this the read's state update lands outside act.
-  const settle = () => act(async () => {});
 
   it("keeps the vertical rail at desktop widths", () => {
     ui(<Tabs vertical responsive tabs={TABS} testID="tabs" />);
