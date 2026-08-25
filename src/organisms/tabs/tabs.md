@@ -85,6 +85,30 @@ starving the panel beside it.
 <Tabs block tabs={["Overview", "Activity", "Settings"]} defaultActive={0} />
 ```
 
+### Scrollable overflow
+
+A row longer than its container pans horizontally instead of clipping, at any
+container width and with no prop: the scroller is inert while the row fits.
+Selecting a tab (press or arrow key) scrolls it fully into view with a sliver
+of its neighbor left showing. `block` shares the row equally and never
+overflows; a vertical rail stacks instead.
+
+```tsx
+<View style={{ width: 320, maxWidth: "100%" }}>
+  <Tabs
+    tabs={[
+      "General",
+      "Security",
+      "Notifications",
+      "Billing",
+      "Integrations",
+      "Advanced"
+    ]}
+    defaultActive={0}
+  />
+</View>
+```
+
 ## Do & Don't
 
 ### Underline
