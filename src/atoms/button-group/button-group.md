@@ -10,6 +10,27 @@ Segmented controls, split buttons, attached groups.
 
 ## Variants
 
+### Icon segments
+
+An item may pair its label with a kit glyph (`{ label, icon }`); `iconsOnly`
+renders each segment as the glyph alone, with the label as the segment's
+accessible name. An icon-only segmented control: a view switcher, a
+form-factor switcher.
+
+```tsx
+<ButtonGroup
+  segmented
+  small
+  iconsOnly
+  defaultActive={2}
+  items={[
+    { label: "Phone width", icon: "smartphone" },
+    { label: "Tablet width", icon: "tablet" },
+    { label: "Desktop width", icon: "monitor" }
+  ]}
+/>
+```
+
 ### Stepper
 
 ```tsx
