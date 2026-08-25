@@ -8,6 +8,7 @@ import {
   cornerRadii,
   useTheme,
   useControllableState,
+  useMeasuredWidth,
   type StyleProp,
   type ViewStyle,
 } from "../../style/index.js";
@@ -145,6 +146,11 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
   function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel }: LanesProps) {
     const { tokens } = useTheme();
     const dragging = useDragActive();
+    // Lanes fit the measured board: in a container narrower than the configured
+    // lane (a phone), a lane fills most of the width with a 32pt peek of the
+    // next lane (240 floor); containers that fit keep `columnWidth` untouched.
+    const { width: boardWidth, measured, onLayout: onBoardLayout } = useMeasuredWidth();
+    const laneWidth = measured ? Math.min(columnWidth, Math.max(boardWidth - 32, 240)) : columnWidth;
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const pressFeedback = (pressed: boolean) =>
       skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null;
@@ -209,11 +215,11 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     );
 
     return (
-      <ScrollView horizontal scrollEnabled={!dragging} showsHorizontalScrollIndicator={false} contentContainerStyle={skin.lanes(compact)}>
+      <ScrollView horizontal onLayout={onBoardLayout} scrollEnabled={!dragging} showsHorizontalScrollIndicator={false} contentContainerStyle={skin.lanes(compact)}>
         {columns.map((col) => {
           const colItems = list.filter((it) => it.columnId === col.id);
           return (
-            <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} style={[skin.column(tokens, compact), { width: columnWidth }]}>
+            <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} style={[skin.column(tokens, compact), { width: laneWidth }]}>
               <View style={skin.columnHeader}>
                 <Text style={skin.columnLabel(tokens)}>{col.label}</Text>
                 <Badge secondary>{col.badge ?? String(colItems.length)}</Badge>

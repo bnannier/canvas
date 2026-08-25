@@ -1,5 +1,5 @@
 import { type ComponentType, useState } from "react";
-import { View, Text, TextInput, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -242,6 +242,9 @@ export function createDescriptionList(
     const { items, title, subtitle, divided, card, onUpdate, onCopy, testID, style } = props;
     const { tokens } = useTheme();
     const layout = layoutOf(props);
+    // The two-column term label narrows at phone widths (160 -> 120) so the
+    // value column keeps room to breathe.
+    const narrowTermColumn = useResponsive({ base: false, sm: true });
     const hasHeader = card && !!title;
 
     // Inline-edit state. `editing` is the single row currently in edit mode and
@@ -294,7 +297,7 @@ export function createDescriptionList(
           <Text
             style={[
               stacked ? [s.termStacked(tokens), skin.stackedTermTracking] : skin.termType(tokens),
-              layout === "twoColumn" ? s.termColumn : null,
+              layout === "twoColumn" ? [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null] : null,
             ]}
           >
             {item.term}

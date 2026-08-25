@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useEscapeKey, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useEscapeKey, useMeasuredWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 
@@ -39,6 +39,28 @@ import { type CalendarSkin, type DayState, type Density } from "./calendar.style
 // skin's per-density metrics). The timelines instead flex their day columns inside
 // a fixed desktop-first container width capped at 100%, so week/day scale down to
 // a phone without a breakpoint.
+
+// The month container never exceeds its parent (day/week already carry the same
+// cap on their fixed timeline widths); the fluid cell math below does the shrinking.
+const MONTH_CAP: ViewStyle = { maxWidth: "100%" };
+
+// The container's horizontal chrome (padding + border on both sides) between its
+// measured outer width and the width the seven-cell grid can actually use.
+function containerChrome(base: ViewStyle): number {
+  const pad = typeof base.padding === "number" ? base.padding : 0;
+  const border = typeof base.borderWidth === "number" ? base.borderWidth : 0;
+  return 2 * (pad + border);
+}
+
+/** Fluid month cell (pure, tested): the skin's preferred cell, shrunk so seven
+ *  fit the measured container (32px floor), or kept as-is while unmeasured or
+ *  when the container fits. Converges: the grid re-lays-out at 7*cell, which is
+ *  never wider than the measurement that produced it. */
+export function monthCellSize(preferred: number, measuredWidth: number, chrome: number): number {
+  if (measuredWidth <= 0) return preferred;
+  const fit = Math.floor((measuredWidth - chrome) / 7);
+  return Math.max(32, Math.min(preferred, fit));
+}
 
 export interface CalendarEvent {
   /** Day of month the event falls on (1-based). */
@@ -238,7 +260,27 @@ export function createCalendar(skin: CalendarSkin) {
     const { tokens } = useTheme();
     const density = densityOf(props);
     const view = viewOf(props);
-    const m = skin.metrics[density];
+    // Month-grid fluid cells: the grid is seven fixed-width cells, so a container
+    // narrower than the natural grid (a phone screen with page padding) shrinks
+    // the cell toward a 32px floor instead of overflowing; the month root is
+    // capped at 100% and measured below. Only the month view attaches the
+    // measurement, so the week/day timelines keep the skin metrics untouched.
+    const { width: monthMeasuredWidth, onLayout: onMonthLayout } = useMeasuredWidth();
+    const baseMetrics = skin.metrics[density];
+    const preferredCell = baseMetrics.cell.width as number;
+    const fluidCell =
+      view === "month"
+        ? monthCellSize(preferredCell, monthMeasuredWidth, containerChrome(skin.containerBase))
+        : preferredCell;
+    const m =
+      fluidCell === preferredCell
+        ? baseMetrics
+        : {
+            ...baseMetrics,
+            cell: { ...baseMetrics.cell, width: fluidCell, height: fluidCell },
+            head: { ...baseMetrics.head, width: fluidCell },
+            gridWidth: fluidCell * 7,
+          };
     const tm = skin.timeline[density];
     const lead = ((startWeekday % 7) + 7) % 7;
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
@@ -676,7 +718,7 @@ export function createCalendar(skin: CalendarSkin) {
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (
-      <View testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), style]}>
+      <View testID={testID} onLayout={onMonthLayout} style={[skin.containerBase, skin.containerSurface(tokens), MONTH_CAP, style]}>
         {header(month)}
 
         {/* Weekday label row. */}

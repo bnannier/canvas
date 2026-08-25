@@ -528,6 +528,13 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
 
     const wrap: StyleProp<ViewStyle> = [
       skin.wrap,
+      // The skin's 320 floor keeps columns readable in content-sized contexts,
+      // but once the table has MEASURED a narrower container (a real phone, a
+      // narrow docs column) the collapse/pan machinery above guarantees
+      // readability, and keeping the floor would clip: drop it. Converges: the
+      // floored table measures its (narrow) container, the floor drops, and the
+      // remeasure at true container width stays below sm.
+      measuredWidth > 0 && measuredWidth < breakpoints.sm ? { minWidth: 0 } : null,
       // RN has no ring; a rounded 1px border is the bordered outline.
       bordered ? skin.borderedOutline(tokens) : null,
       style,
