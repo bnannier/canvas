@@ -201,6 +201,20 @@ const CASES: SkinCase[] = [
   { name: "DepthChart", dir: "charts/depth-chart", file: "depth-chart", props: { title: "Book", bids: [{ price: 10, size: 5 }], asks: [{ price: 11, size: 4 }] } },
   { name: "AreaChart", dir: "charts/area-chart", file: "area-chart", props: { title: "Traffic", labels: ["Jan", "Feb", "Mar"], series: [{ label: "Direct", values: [1, 3, 2] }, { label: "Search", values: [2, 1, 4] }], stacked: true } },
   { name: "Command", dir: "organisms/command", file: "command", props: { open: true, placeholder: "Search…", active: 0, groups: [{ heading: "Actions", items: [{ label: "New file" }, { label: "Open" }] }] } },
+  // Unlocked, so each platform mounts the customize-mode anatomy too: the cell affordance,
+  // the grip row, and that platform's own DragDrop family around every cell.
+  {
+    name: "DashboardGrid",
+    dir: "organisms/dashboard-grid",
+    file: "dashboard-grid",
+    props: {
+      unlocked: true,
+      widgets: [
+        { id: "a", span: 8, title: "Revenue", content: txt("Revenue widget") },
+        { id: "b", span: 4, narrowSpan: 6, title: "Signups", content: txt("Signups widget") },
+      ],
+    },
+  },
   { name: "DataTable", dir: "organisms/data-table", file: "data-table", props: { columns: ["Name", "Role"], rows: [["Ada", "Eng"], ["Bob", "PM"]] } },
   { name: "Dialog", dir: "organisms/dialog", file: "dialog", props: { open: true, onOpenChange: noop, title: "Edit profile", description: "Update your details.", confirmLabel: "Save", cancelLabel: "Cancel" } },
   // DragDropProvider renders a full mini-board so all four skin-consuming members (provider,

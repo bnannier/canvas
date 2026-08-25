@@ -5,6 +5,7 @@ export * from "./board/board.js";
 export * from "./calendar/calendar.js";
 export * from "./carousel/carousel.js";
 export * from "./command/command.js";
+export * from "./dashboard-grid/dashboard-grid.js";
 export * from "./data-table/data-table.js";
 export * from "./dialog/dialog.js";
 export * from "./drag-drop/drag-drop.js";

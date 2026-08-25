@@ -19,6 +19,7 @@ import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Board } from "../src/organisms/board/board.tsx";
+import { DashboardGrid } from "../src/organisms/dashboard-grid/dashboard-grid.tsx";
 import { StackedList } from "../src/molecules/stacked-lists/stacked-lists.tsx";
 import { Tooltip } from "../src/atoms/tooltip/tooltip.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
@@ -147,6 +148,16 @@ describe("no DOM-nesting console violations at render", () => {
           columns={[{ id: "todo", label: "To do" }, { id: "doing", label: "Doing" }]}
           items={[{ id: "a", columnId: "todo", title: "Task A", badge: "3", menu: [{ label: "Archive" }] }]}
           onPressItem={() => {}}
+        />
+        {/* An unlocked DashboardGrid puts a drag grip beside each widget's own content, and
+            that content routinely carries its own buttons: the grip must stay a SIBLING of
+            whatever the widget brings, never a wrapper around it. */}
+        <DashboardGrid
+          unlocked
+          widgets={[
+            { id: "revenue", span: 6, title: "Revenue", content: <Button ghost onPress={() => {}}>Export</Button> },
+            { id: "signups", span: 6, title: "Signups", content: <Text>1,204</Text> },
+          ]}
         />
         {/* A reorderable, clickable StackedList with a trailing control moves the row's
             press target to the content region so grip/trailing/menu stay siblings. */}
