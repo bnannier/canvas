@@ -1,16 +1,27 @@
 /* Minimal base layer: the box model, the body surface + face, and the hairline default every
    bordered element inherits. Components carry their own styling.
 
+   The rules sit in `@layer base` so a consuming app can override them. An unlayered rule beats
+   every layered one whatever the order, so while these were unlayered a Tailwind app could not
+   restyle an anchor at all: `a{color:var(--primary)}` outranked `.text-primary-foreground`, and a
+   link that carried a button's fill painted its label in the link colour, which is invisible on a
+   primary fill. Inside `@layer base` these rules still win over a framework reset (they are
+   imported after it, and layers resolve in declaration order) while losing to the component and
+   utility layers, which is the precedence a design-system base is supposed to have.
+
    `border-box` is global on purpose. Every component here sizes by its declared height token and
    then adds padding inside it — under the default `content-box`, padding and borders would grow
    the box past its own token (an 80dp bar with 8px + 12px of inset renders 100px), so each
    component was having to re-declare `box-sizing` by hand and any that forgot silently overshot. */
-*,::before,::after{box-sizing:border-box;border-color:var(--border)}
-body{background-color:var(--background);color:var(--foreground);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;margin:0}
-a{color:var(--primary);text-decoration:underline;text-underline-offset:2px}
-a:hover{opacity:0.9}
+@layer base {
+  *,::before,::after{box-sizing:border-box;border-color:var(--border)}
+  body{background-color:var(--background);color:var(--foreground);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;margin:0}
+  a{color:var(--primary);text-decoration:underline;text-underline-offset:2px}
+  a:hover{opacity:0.9}
+}
 
-/* Keyframes the components reference (spinner ring, skeleton shimmer). */
+/* Keyframes the components reference (spinner ring, skeleton shimmer). Left unlayered: cascade
+   layers order @keyframes name resolution too, and these names are the kit's own. */
 @keyframes canvas-spin{to{transform:rotate(360deg)}}
 @keyframes canvas-shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 @keyframes canvas-caret{0%,49%{opacity:1}50%,100%{opacity:0}}
