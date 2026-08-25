@@ -35,6 +35,9 @@ export type Placement = "top" | "bottom";
 // omits the beak: a flat token-filled beak cannot match the Liquid Glass material,
 // so a beak-less rounded card (how iOS 26 menus read) is used instead.
 export interface PopoverSkin {
+  /** The card's fixed width in px. The shell hands it to AnchoredOverlay so a
+   *  narrow outlet (a phone screen) clamps the card instead of overflowing. */
+  cardWidth: number;
   /** The floating card frame: width, radius, border, fill, padding, shadow. */
   card: (t: ColorTokens) => ViewStyle;
   /** The popover heading. */
@@ -89,8 +92,10 @@ const DESC_TYPE: TextStyle = { marginTop: 4, fontSize: 14, lineHeight: 20 };
 // A fixed 260px card, the menu radius (8), a full 1px `border`, the `popover`
 // fill (translucent under glass), 16 padding, shadow-lg; no arrow.
 export const webSkin: PopoverSkin = {
+  cardWidth: 260,
   card: (t) => ({
     width: 260,
+    maxWidth: "100%",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: t.border,
@@ -142,8 +147,10 @@ const beakUpPath = [
 ].join(" ");
 
 export const iosSkin: PopoverSkin = {
+  cardWidth: 260,
   card: (t) => ({
     width: 260,
+    maxWidth: "100%",
     borderRadius: 26,
     backgroundColor: t.popover,
     padding: 16,
@@ -188,8 +195,10 @@ export const iosSkin: PopoverSkin = {
 // surface. A flat-cornered card (~12dp radius) over `popover` with M3 elevation
 // (md shadow), NO border and NO arrow — mirrors the select Android menu surface.
 export const androidSkin: PopoverSkin = {
+  cardWidth: 260,
   card: (t) => ({
     width: 260,
+    maxWidth: "100%",
     borderRadius: 12,
     backgroundColor: t.popover,
     padding: 16,

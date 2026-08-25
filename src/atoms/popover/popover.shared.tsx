@@ -176,6 +176,7 @@ export function createPopover(skin: PopoverSkin) {
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
           gap={4}
+          cardWidth={skin.cardWidth}
           cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
           inlineStyle={s.cardFloating}
           // A controlled `open` with no onOpenChange can never actually close, so

@@ -65,12 +65,13 @@ export interface FilterPanelSkin {
 
 // --- shared layout fragments (identical across platforms) -------------------
 
-// Fixed panel width (w-[280px]) and column layout.
-const PANEL_BASE: ViewStyle = { width: 280, flexDirection: "column" };
+// Fixed panel width (w-[280px]) and column layout; capped so the panel shrinks
+// inside narrower parents (which is all a phone screen is) instead of overflowing.
+const PANEL_BASE: ViewStyle = { width: 280, maxWidth: "100%", flexDirection: "column" };
 
 // Android side-sheet container token: 256dp width (M3 side sheets docked-modal
 // container width; max 400dp). The web/iOS panel keeps the established 280 rail.
-const ANDROID_PANEL_BASE: ViewStyle = { width: 256, flexDirection: "column" };
+const ANDROID_PANEL_BASE: ViewStyle = { width: 256, maxWidth: "100%", flexDirection: "column" };
 
 // Header row: title cluster on the left, the Clear action on the right.
 const HEADER_ROW: ViewStyle = {

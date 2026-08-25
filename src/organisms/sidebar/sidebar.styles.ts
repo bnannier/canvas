@@ -35,9 +35,11 @@ export type Frame = "flush" | "bordered";
 function makeColumn(radius: number, collapsedWidth: number, pad: ViewStyle) {
   return (tokens: ColorTokens, frame: Frame, collapsed: boolean, shell: boolean): ViewStyle => {
     const width = collapsed ? collapsedWidth : 240;
+    // maxWidth caps the rail inside narrower parents (a phone screen without the
+    // responsive drawer mode) so a bare sidebar can shrink instead of overflowing.
     const base: ViewStyle = shell
-      ? { width, backgroundColor: tokens.background, flex: 1 }
-      : { width, backgroundColor: tokens.background, ...pad };
+      ? { width, maxWidth: "100%", backgroundColor: tokens.background, flex: 1 }
+      : { width, maxWidth: "100%", backgroundColor: tokens.background, ...pad };
     if (frame === "bordered") {
       return { ...base, borderRadius: radius, borderWidth: 1, borderColor: tokens.border, overflow: "hidden" };
     }
