@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -338,7 +338,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // container, not the window: the docs 3-up and a real iPhone both render the
     // table narrower than a desktop window would report, so useWindowDimensions
     // cannot see the narrow column.
-    const [measuredWidth, setMeasuredWidth] = useState(0);
+    const { width: measuredWidth, onLayout: onMeasureLayout } = useMeasuredWidth();
     // SwiftUI Table collapses to its PRIMARY (first) column in compact width on
     // iPhone; the iOS skin opts in. Every other platform renders all columns.
     const collapsed =
@@ -612,10 +612,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         testID={testID}
         style={wrap}
         role="table"
-        onLayout={(e) => {
-          const w = Math.round(e.nativeEvent.layout.width);
-          setMeasuredWidth((prev) => (prev !== w ? w : prev));
-        }}
+        onLayout={onMeasureLayout}
       >
         {pans ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.panContent}>

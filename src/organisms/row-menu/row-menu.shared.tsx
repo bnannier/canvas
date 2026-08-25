@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, useEscapeKey, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -72,7 +72,7 @@ export function createRowMenu(skin: RowMenuSkin) {
     // measured width is a floor for the menu; a wide trigger never yields a
     // narrower menu than the skin's own minimum.
     const triggerRef = useRef<View>(null);
-    const [triggerWidth, setTriggerWidth] = useState(0);
+    const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
@@ -83,7 +83,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         ref={triggerRef}
         testID={testID}
         style={[skin.anchor, open ? anchorLifted : null, style]}
-        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
+        onLayout={onTriggerLayout}
       >
         {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
             outline (a no-op on iOS/web). */}

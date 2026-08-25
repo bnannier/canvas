@@ -10,6 +10,7 @@ import {
   useEscapeKey,
   useFieldWidth,
   AnchoredOverlay,
+  useMeasuredWidth,
   FloatingLabel,
   LabelContent,
   FOCUS_RESET,
@@ -188,7 +189,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // also spans the label and helper text). Measured via onLayout so the list
     // takes at least the field's width when portaled over the page.
     const fieldRef = useRef<View>(null);
-    const [triggerWidth, setTriggerWidth] = useState(0);
+    const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
     // Escape closes the open option list on web (no-op natively). A disabled
     // control renders no list, so it never subscribes.
@@ -227,7 +228,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         ) : null}
         <View
           ref={fieldRef}
-          onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
+          onLayout={onTriggerLayout}
           style={[
             skin.field(tokens, size, open),
             disabled ? { opacity: skin.disabledOpacity } : null,

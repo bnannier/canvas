@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useEscapeKey, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, useEscapeKey, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -229,7 +229,7 @@ export function createDropdown(skin: DropdownSkin) {
     // wide trigger like a topbar account chip gets a menu of the same width.
     // Measured via the wrapper's layout; the menu is absolute, so it never feeds
     // back into this width.
-    const [triggerWidth, setTriggerWidth] = useState(0);
+    const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     // The wrapper tightly wraps the trigger (the menu portals out when hosted), so
     // measuring it gives the trigger's box for anchoring the floating card.
     const triggerRef = useRef<View>(null);
@@ -243,7 +243,7 @@ export function createDropdown(skin: DropdownSkin) {
         ref={triggerRef}
         testID={testID}
         style={[wrapper, open ? wrapperLifted : null, style]}
-        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
+        onLayout={onTriggerLayout}
       >
         {children != null ? (
           <Pressable

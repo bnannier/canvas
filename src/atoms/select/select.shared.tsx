@@ -1,6 +1,6 @@
-import { useId, useRef, useState } from "react";
+import { useId, useRef } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -151,7 +151,7 @@ export function createSelect(skin: SelectSkin) {
     // list's minimum width when portaled over the page (a wider row can grow past
     // it), and AnchoredOverlay reads the trigger's box to place the list below it.
     const triggerRef = useRef<View>(null);
-    const [triggerWidth, setTriggerWidth] = useState(0);
+    const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
     const hasValue = value !== "";
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
@@ -188,7 +188,7 @@ export function createSelect(skin: SelectSkin) {
         <RippleClip shape={cornerRadii(skin.trigger(tokens, size, open))} style={{ alignSelf: "stretch" }}>
         <Pressable
           ref={triggerRef}
-          onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
+          onLayout={onTriggerLayout}
           style={({ pressed }) => [
             skin.trigger(tokens, size, open),
             disabled ? { opacity: skin.disabledOpacity } : null,
