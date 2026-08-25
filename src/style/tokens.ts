@@ -578,8 +578,11 @@ export const lineHeight: Record<string, number> = {
   "10": 40,
 };
 
+/** The breakpoint keys, in ascending pixel order. */
+export type BreakpointKey = "sm" | "md" | "lg" | "xl" | "2xl";
+
 /** Desktop-first breakpoints in px: a variant applies at this width and below. */
-export const breakpoints: Record<string, number> = {
+export const breakpoints: Record<BreakpointKey, number> = {
   sm: 640,
   md: 768,
   lg: 1024,
