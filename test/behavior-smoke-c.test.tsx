@@ -44,6 +44,29 @@ describe("Feed", () => {
     const av = ui(<Feed avatar items={one} />);
     expect(within(av.container).queryByText("RC")).toBeNull();
   });
+
+  it("an item icon leads the connector node, taking precedence over the actor initials", () => {
+    const one = [{ actor: "Rachel Chen", action: "x", time: "y", icon: "shieldCheck" as const }];
+    const { container } = ui(<Feed items={one} />);
+    // The glyph wins the node, so the initials fallback never renders.
+    expect(within(container).queryByText("RC")).toBeNull();
+    // It is decorative (the actor/action line beside it carries the meaning), so
+    // assistive tech skips it. react-native-svg is stubbed in the harness, so the
+    // aria-hidden wrapper is what is observable here.
+    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBe(1);
+  });
+
+  it("the icon also replaces the actor-less dot, and the avatar lead ignores it", () => {
+    // No actor: the glyph stands in for the muted dot rather than beside it.
+    const anon = [{ action: "the nightly export finished", time: "y", icon: "check" as const }];
+    const conn = ui(<Feed items={anon} />);
+    expect(conn.container.querySelectorAll('[aria-hidden="true"]').length).toBe(1);
+    cleanup();
+    // The avatar lead leads with the person, so an item icon changes nothing there.
+    const av = ui(<Feed avatar items={[{ actor: "Rachel Chen", action: "x", time: "y", icon: "check" as const }]} />);
+    expect(within(av.container).getByText("RC")).toBeTruthy();
+    expect(av.container.querySelectorAll('[aria-hidden="true"]').length).toBe(0);
+  });
 });
 
 // GridList — src/molecules/grid-lists/grid-lists.tsx (createGridList(webSkin)).

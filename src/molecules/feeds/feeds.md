@@ -17,6 +17,25 @@ Vertical activity streams with icons and timestamps. Used for audit logs, change
 
 ## Variants
 
+### Icon lead
+
+An item may name a kit glyph (`{ icon }`) for the connector node, which suits an
+audit or automation stream where a glyph reads the kind of event faster than a
+pair of initials. Node content resolves in one order: the glyph, then the actor's
+initials, then a muted dot. The avatar lead ignores `icon` and keeps leading with
+the person.
+
+```tsx
+<Feed
+  connector
+  items={[
+    { icon: "shieldCheck", actor: "System", action: "rotated the signing key", time: "12 minutes ago" },
+    { icon: "userPlus", actor: "Rachel Chen", action: "invited", target: "marco@acme.co", time: "2 hours ago" },
+    { icon: "gitMerge", actor: "Ada Lovelace", action: "merged", target: "release/4.2", time: "1 day ago" }
+  ]}
+/>
+```
+
 ### Avatar
 
 ```tsx
