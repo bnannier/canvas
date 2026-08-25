@@ -7,7 +7,7 @@ Horizontal, vertical, with label, with action.
 A divider spans the width of its parent, so give it a bounded container.
 
 ```tsx
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Typography small>Profile</Typography>
   <Divider />
   <Typography small>Account</Typography>
@@ -35,7 +35,7 @@ A divider spans the width of its parent, so give it a bounded container.
 ### Action
 
 ```tsx
-<Column cozy style={{ width: 320 }}>
+<Column cozy style={{ width: 320, maxWidth: "100%" }}>
   <Column snug>
     <Card padded>
       <Typography small>Ada commented on the draft</Typography>
@@ -85,7 +85,7 @@ A divider spans the width of its parent, so give it a bounded container.
 **Do** — Click a provider: keep the label to a few words and let the buttons carry the options.
 
 ```tsx
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Button primary block>Sign in</Button>
   <Divider>or continue with</Divider>
   <Row snug>
@@ -102,7 +102,7 @@ A divider spans the width of its parent, so give it a bounded container.
 **Don't** — Click Sign in: a full sentence in the label divider buries the choice.
 
 ```tsx
-<View style={{ width: 320, flexDirection: "column", gap: 8 }}>
+<View style={{ width: 320, maxWidth: "100%", flexDirection: "column", gap: 8 }}>
   <Button primary block>Sign in</Button>
   <Divider>or continue with one of your previously linked third-party accounts</Divider>
 </View>
@@ -113,7 +113,7 @@ A divider spans the width of its parent, so give it a bounded container.
 **Do** — Click Show more: the button toggles its label and reveals the rest.
 
 ```tsx
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Typography small muted>Logged in from 2 new devices · 3 more entries</Typography>
   <Divider>
     <Button ghost small>Show less</Button>
@@ -124,7 +124,7 @@ A divider spans the width of its parent, so give it a bounded container.
 **Don't** — Click the button: an action divider that does nothing is just decoration.
 
 ```tsx
-<View style={{ width: 320 }}>
+<View style={{ width: 320, maxWidth: "100%" }}>
   <Divider>
     <Button ghost small>Show more</Button>
   </Divider>

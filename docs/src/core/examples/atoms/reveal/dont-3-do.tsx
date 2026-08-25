@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Card, Reveal, Typography } = scope;
   return (
 <Reveal pronounced>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Reveals itself</Typography>
   </Card>
 </Reveal>

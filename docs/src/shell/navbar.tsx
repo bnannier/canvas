@@ -1,8 +1,8 @@
 import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import { Platform, useWindowDimensions } from "react-native";
+import { Platform } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, useTheme, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
+import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, useTheme, useFormFactor, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
@@ -83,11 +83,13 @@ function sectionIcon(name: string, active: boolean) {
 // scrollbar gutter, aurora wash in glass mode are shared.
 function WebNav() {
   const { tokens, surface } = useTheme();
-  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
-  const wide = width >= 1024;
+  // The kit's form-factor tier draws the same desktop line the old `width >= 1024`
+  // check did (desktop is width > lg = 1024; only a viewport of exactly 1024 moves
+  // from the desktop shell to the mobile shell, matching the sidebar's drawer cut).
+  const wide = useFormFactor() === "desktop";
   const glass = surface === "glass";
   const [searchOpen, setSearchOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);

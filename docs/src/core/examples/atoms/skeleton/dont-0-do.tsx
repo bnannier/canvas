@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Skeleton, Column } = scope;
   return (
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Skeleton text animate style={{ width: "100%" }} />
   <Skeleton text animate style={{ width: "95%" }} />
   <Skeleton text animate style={{ width: "60%" }} />

@@ -7,6 +7,7 @@ import {
   scopeNamesFromLiveScope,
   bannedStyleViolations,
   fieldWidthShimViolations,
+  bareWidthViolations,
   prosePhantomApiViolations,
 } from "./parse-md.ts";
 
@@ -417,6 +418,51 @@ describe("fieldWidthShimViolations", () => {
   it("respects the // docgen-allow-style opt-out on the style's line", () => {
     const code = `<Input style={{ maxWidth: 320 }} /> {/* docgen-allow-style */}`;
     expect(fieldWidthShimViolations(code)).toEqual([]);
+  });
+});
+
+describe("bareWidthViolations", () => {
+  it("flags a fixed width >= 280 with no maxWidth in the same style", () => {
+    expect(bareWidthViolations(`<View style={{ width: 320 }} />`)).toEqual(["width: 320 without maxWidth"]);
+  });
+
+  it("flags the threshold width itself (280 is included)", () => {
+    expect(bareWidthViolations(`<Card padded style={{ width: 280 }} />`)).toEqual(["width: 280 without maxWidth"]);
+  });
+
+  it("passes when the same style also carries maxWidth", () => {
+    expect(bareWidthViolations(`<View style={{ width: 320, maxWidth: "100%" }} />`)).toEqual([]);
+  });
+
+  it("passes a width under the threshold", () => {
+    expect(bareWidthViolations(`<View style={{ width: 240 }} />`)).toEqual([]);
+  });
+
+  it("passes a non-numeric width (a percentage string self-bounds)", () => {
+    expect(bareWidthViolations(`<Skeleton text style={{ width: "60%" }} />`)).toEqual([]);
+  });
+
+  it("does not mistake a maxWidth/minWidth/borderWidth key for width", () => {
+    expect(bareWidthViolations(`<View style={{ maxWidth: 560 }} />`)).toEqual([]);
+    expect(bareWidthViolations(`<View style={{ minWidth: 320, borderWidth: 300 }} />`)).toEqual([]);
+  });
+
+  it("unions violations across multiple style blocks in one fence", () => {
+    const code = `<View style={{ width: 320 }}>\n  <View style={{ width: 400 }} />\n</View>`;
+    expect(bareWidthViolations(code).sort()).toEqual([
+      "width: 320 without maxWidth",
+      "width: 400 without maxWidth",
+    ]);
+  });
+
+  it("flags only the unbounded style, not a sibling that carries maxWidth", () => {
+    const code = `<View style={{ width: 320, maxWidth: "100%" }}>\n  <View style={{ width: 400 }} />\n</View>`;
+    expect(bareWidthViolations(code)).toEqual(["width: 400 without maxWidth"]);
+  });
+
+  it("respects the // docgen-allow-style opt-out on the style's line", () => {
+    const code = `<View style={{ width: 320 }} /> {/* docgen-allow-style */}`;
+    expect(bareWidthViolations(code)).toEqual([]);
   });
 });
 

@@ -205,6 +205,65 @@ export function bannedStyleViolations(code: string): string[] {
   return [...found];
 }
 
+// Bare-width guardrail. The docs page's content box is the viewport minus 56px,
+// so a fence that pins a fixed width at or above this threshold with no
+// `maxWidth` in the same style expression overflows the page at phone width.
+// Adding `maxWidth: "100%"` beside the width keeps the desktop size and lets the
+// demo shrink on narrow viewports. Unlike the style-shim guardrail, "Don't"
+// fences are NOT exempt: a wrong-way demo must still not overflow the page it
+// renders on. The same `// docgen-allow-style` line opt-out applies.
+export const BARE_WIDTH_MIN = 280;
+
+/**
+ * Bare fixed widths in a fence: each entry is `width: <N> without maxWidth` for
+ * a numeric `width` >= BARE_WIDTH_MIN found inside a style={…} expression that
+ * carries no `maxWidth` key. A `maxWidth` anywhere in the expression clears it
+ * (React Native merges array styles, so a sibling array member's bound applies).
+ */
+export function bareWidthViolations(code: string): string[] {
+  const found = new Set<string>();
+  const marker = "style={";
+  let idx = 0;
+  while (true) {
+    const at = code.indexOf(marker, idx);
+    if (at === -1) break;
+    // Move to the first "{" of the expression after "style=".
+    let i = code.indexOf("{", at + marker.length - 1);
+    if (i === -1) break;
+    // Brace-match the whole `{…}` expression (object or array of objects).
+    const start = i;
+    let depth = 0;
+    for (; i < code.length; i++) {
+      if (code[i] === "{") depth++;
+      else if (code[i] === "}") {
+        depth--;
+        if (depth === 0) { i++; break; }
+      }
+    }
+    const expr = code.slice(start, i);
+    idx = i;
+
+    // Per-line opt-out on the line where the style begins.
+    const lineStart = code.lastIndexOf("\n", at) + 1;
+    let lineEnd = code.indexOf("\n", at);
+    if (lineEnd === -1) lineEnd = code.length;
+    if (code.slice(lineStart, lineEnd).includes("docgen-allow-style")) continue;
+
+    if (/(?:^|[{,\s])maxWidth\s*:/.test(expr)) continue;
+
+    // Numeric `width` members only ("width: 320"); percentage strings and other
+    // non-numeric values self-bound. The boundary chars keep `maxWidth`/
+    // `minWidth`/`borderWidth` from matching as `width`.
+    const widthRe = /(?:^|[{,\s])width\s*:\s*(\d+)/g;
+    let m: RegExpExecArray | null;
+    while ((m = widthRe.exec(expr)) !== null) {
+      const n = Number(m[1]);
+      if (n >= BARE_WIDTH_MIN) found.add(`width: ${n} without maxWidth`);
+    }
+  }
+  return [...found];
+}
+
 // The input-like controls carrying the standard field width axis
 // (block/narrow/wide, src/style/field-width.ts). Width on these is a semantic
 // choice, so a `maxWidth`/`minWidth` in a `style` placed DIRECTLY on one of

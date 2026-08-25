@@ -14,7 +14,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, fieldWidthShimViolations, prosePhantomApiViolations, type Example, type DontPair } from "./parse-md.ts";
+import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, fieldWidthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type Example, type DontPair } from "./parse-md.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -95,6 +95,18 @@ const proseViolations: { source: string; hits: { line: number; token: string; ki
 function recordProse(md: string, source: string) {
   const hits = prosePhantomApiViolations(md);
   if (hits.length) proseViolations.push({ source, hits });
+}
+
+// Bare-width guardrail: a fixed width >= BARE_WIDTH_MIN with no maxWidth in the
+// same style overflows the docs page at phone width (the content box is the
+// viewport minus 56px). Runs over EVERY fence — "Don't" fences included (a
+// wrong-way demo must still not overflow the page) — and over the primitive
+// pages too (EXEMPT_STYLE_DIRS covers WHICH style keys they may teach, not
+// overflow). Same STRICT gate and `// docgen-allow-style` line opt-out.
+const bareWidthFindings: { source: string; kind: string; widths: string[] }[] = [];
+function recordFenceBareWidth(code: string, source: string, kind: string) {
+  const widths = bareWidthViolations(code);
+  if (widths.length) bareWidthFindings.push({ source, kind, widths });
 }
 
 const styleViolations: { source: string; kind: string; props: string[] }[] = [];
@@ -204,13 +216,17 @@ function writeModule(category: Category, dir: string, name: string, code: string
 
 function buildEntry(category: Category, dir: string, examples: Example[], donts: DontPair[]): Entry {
   const source = `src/${category}/${dir}/${dir}.md`;
-  for (const ex of examples) { recordFenceTags(ex.code, source); recordFenceStyle(ex.code, source, "example", dir); }
+  for (const ex of examples) { recordFenceTags(ex.code, source); recordFenceStyle(ex.code, source, "example", dir); recordFenceBareWidth(ex.code, source, "example"); }
   for (const d of donts) {
     recordFenceTags(d.do.code, source);
     recordFenceTags(d.dont.code, source);
     // Only the "Do" side is held to the no-escape-hatches rule; the "Don't" side
     // intentionally hand-rolls the anti-pattern it is teaching against.
     recordFenceStyle(d.do.code, source, "Do", dir);
+    // The bare-width rule binds BOTH sides: a "Don't" demo still renders on the
+    // page, so it must not overflow it either.
+    recordFenceBareWidth(d.do.code, source, "Do");
+    recordFenceBareWidth(d.dont.code, source, "Don't");
   }
   const exampleRefs: ExampleRef[] = examples.map((ex, i) => {
     const m = writeModule(category, dir, `example-${i}`, ex.code, source);
@@ -360,6 +376,26 @@ function main() {
       throw new Error(`docs:gen — ${header}\n${lines.join("\n")}`);
     }
     console.warn(`\n⚠ docs:gen — ${header}\n${lines.join("\n")}\n  (warning only; set DOCGEN_STYLE_STRICT=1 to fail.)\n`);
+  }
+
+  if (bareWidthFindings.length) {
+    const bySource = new Map<string, Set<string>>();
+    for (const v of bareWidthFindings) {
+      const set = bySource.get(v.source) ?? new Set<string>();
+      v.widths.forEach((w) => set.add(w));
+      bySource.set(v.source, set);
+    }
+    const lines = [...bySource.entries()]
+      .sort()
+      .map(([src, widths]) => `    ${src}: ${[...widths].sort().join(", ")}`);
+    const header =
+      `${bareWidthFindings.length} fence(s) across ${bySource.size} component(s) pin a bare fixed width >= ` +
+      `${BARE_WIDTH_MIN} with no maxWidth in the same style; that overflows the docs page at phone width. ` +
+      `Add maxWidth: "100%" beside the width ("Don't" fences included).`;
+    if (STYLE_STRICT) {
+      throw new Error(`docs:gen: ${header}\n${lines.join("\n")}`);
+    }
+    console.warn(`\n⚠ docs:gen: ${header}\n${lines.join("\n")}\n  (warning only; set DOCGEN_STYLE_STRICT=1 to fail.)\n`);
   }
 
   if (proseViolations.length) {

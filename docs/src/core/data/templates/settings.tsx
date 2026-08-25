@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Tabs, Input, Select, Switch, Divider, useResponsive, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Tabs, Input, Select, Switch, Divider, useFormFactor, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Workspace settings built from real Canvas components: a vertical Tabs rail
@@ -39,7 +39,10 @@ const SECTIONS = [
 
 function SettingsLive() {
   const { toast } = useToast();
-  const narrow = useResponsive({ base: false, sm: true });
+  // Phone stacks the rail over the panes AND flips the rail Tabs to `block`, so
+  // the flag stays a hook (it drives a prop, and the wide branch's fill column
+  // rules out a Row `stacks` rewrite).
+  const narrow = useFormFactor() === "phone";
   const [tab, setTab] = useState(0);
   const [saved, setSaved] = useState(INITIAL);
   const [draft, setDraft] = useState(INITIAL);

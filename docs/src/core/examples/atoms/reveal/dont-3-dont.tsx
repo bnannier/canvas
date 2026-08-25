@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { View, Card, Typography } = scope;
   return (
-<View style={{ opacity: 0.35, width: 300 }}>
+<View style={{ opacity: 0.35, width: 300, maxWidth: "100%" }}>
   <Card padded>
     <Typography small semibold>Stuck half-arrived</Typography>
   </Card>

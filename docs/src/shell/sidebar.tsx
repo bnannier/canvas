@@ -1,5 +1,5 @@
-import { Platform, useWindowDimensions } from "react-native";
-import { Sidebar as KitSidebar, Pressable, Row, Column, Typography, type IconName, type SidebarSection } from "@nannier/canvas";
+import { Platform } from "react-native";
+import { Sidebar as KitSidebar, Pressable, Row, Column, Typography, useFormFactor, type IconName, type SidebarSection } from "@nannier/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
 import { ThemeToggles } from "./theme-toggles";
@@ -50,8 +50,9 @@ export function Sidebar({
   const activeSlug = getActiveSlug(pathname);
   // At and below lg the sidebar is the drill-down drawer; the drawer footer hosts the appearance
   // toggles on mobile-web (the old bottom-sheet footer's home), matching the Android header bar.
-  const { width } = useWindowDimensions();
-  const narrow = width > 0 && width <= 1024;
+  // Phone and tablet form factors are exactly the old `width > 0 && width <= 1024` band
+  // (an unknown 0 viewport resolves desktop-first, i.e. not narrow, as before).
+  const narrow = useFormFactor() !== "desktop";
 
   // Overview is pinned (no header); Tokens is pinned with its heading; the category groups
   // are collapsible accordion sections (the kit auto-opens the one holding the active page).

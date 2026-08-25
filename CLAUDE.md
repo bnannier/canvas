@@ -77,6 +77,37 @@ Author desktop-first: lay out and size each component for the desktop case first
 then add the responsive variants that scale it down to tablet and phone. This is
 the inverse of mobile-first.
 
+### The responsiveness system (three mechanisms, in order of preference)
+
+1. **Intrinsic sizing** (default, zero JS): a fixed desktop width plus
+   `maxWidth:"100%"` (fields, dialogs, chart roots), or `minWidth` floors plus
+   `flexWrap` (Stats). Never swap a fixed width for `width:"100%"` below a
+   threshold (the `src/style/field-width.ts` post-mortem: in a content-sized
+   parent the element then tracks its own content).
+2. **Container measurement** (components that switch layout): measure the
+   component's OWN width via `useContainerBreakpoint` / `useMeasuredWidth` /
+   `useContainerWidth` (`src/style/container.ts`), never the window; a component
+   cannot know whether it is on a phone or in a 320px desktop panel. Render the
+   `base` (desktop) variant on the unmeasured frame; gate on `measured` only
+   where the base variant is unrenderable (chart geometry).
+3. **Viewport breakpoints** (window-level chrome only): `useBreakpoint`,
+   `useFormFactor` (phone <= sm 640 / tablet <= lg 1024 / desktop above; macOS
+   and desktop web ARE the desktop form factor), `useResponsive`
+   (`src/style/responsive.ts`, one shared subscription, bucket-granular
+   re-renders; width <= 0 resolves to `base`; SSR apps pass ThemeProvider's
+   `ssrBreakpoint`). Only the Sidebar/FilterPanel drawer modes and app shells
+   qualify. Pointer capability comes from `usePointerCoarse` /
+   `useHoverCapable` (`src/style/pointer.ts`).
+
+Layout at call sites: equal-width tiles that renumber columns are `Grid`
+(`minTileWidth` floor + `columns` cap, container-measured); content-sized rows
+that stack at narrow widths are `Row stacks` (+ `stackBreakpoint`). Responsive
+props follow the boolean grammar (`stacks`, `responsive`) with
+`BreakpointKey`-valued config props (`stackBreakpoint`, `drawerBreakpoint`);
+`Responsive<T>`-valued component props are rejected (compose the public hooks
+in app code instead). Rule of thumb: viewport for the shell, container for the
+components, intrinsic wherever possible.
+
 ## Semantic prop styling
 
 Semantic prop styling is the way to change a component's style, and Canvas does it

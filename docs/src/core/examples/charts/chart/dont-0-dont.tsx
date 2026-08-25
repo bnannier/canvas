@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { tokens, View } = scope;
   return (
 <View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>
-  <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 4, height: 120, width: 520 }}>
+  <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 4, height: 120, width: 520, maxWidth: "100%" }}>
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 63 }} />
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 84 }} />
     <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: tokens.primary, height: 49 }} />

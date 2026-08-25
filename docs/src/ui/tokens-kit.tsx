@@ -1,9 +1,9 @@
 import { type ReactNode } from "react";
-import { useWindowDimensions } from "react-native";
 import { View, Text, Column, useTheme } from "@nannier/canvas";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { geist, geistMono } from "./fonts";
 import { alpha } from "./color";
+import { useFluidType } from "../lib/fluid-type";
 
 // Shared primitives for the token reference pages (Colors, Spacing, Typography, Layout).
 // These pages use a LARGER heading scale than the component/guide pages: the page
@@ -14,8 +14,7 @@ import { alpha } from "./color";
 // Page title — clamp(32px, 5vw, 40px) / 700 / -0.025em.
 export function TokenH1({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
-  const { width } = useWindowDimensions();
-  const size = Math.round(Math.min(40, Math.max(32, width * 0.05)));
+  const size = useFluidType(32, 40, 0.05);
   return (
     <Text style={{ fontFamily: geist("700"), fontSize: size, letterSpacing: size * -0.025, color: tokens.foreground }}>
       {children}

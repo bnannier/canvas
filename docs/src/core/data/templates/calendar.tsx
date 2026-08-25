@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, Button, Badge, Calendar, Divider, Icon, useResponsive, useToast } from "@nannier/canvas";
+import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, Button, Badge, Calendar, Divider, Icon, useFormFactor, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Month-view calendar built from real Canvas components: the Calendar organism
@@ -73,7 +73,10 @@ const TODAY_DAY = 24;
 
 function MonthViewLive() {
   const { toast } = useToast();
-  const narrow = useResponsive({ base: false, sm: true });
+  // Phone stacks grid over panel AND flips the Calendar to `compact`, so the
+  // flag stays a hook (it drives a prop, and the stacked/wide branches use
+  // different gap scales, which a Row `stacks` would collapse into one).
+  const narrow = useFormFactor() === "phone";
   const [monthIndex, setMonthIndex] = useState(TODAY_MONTH);
   const [selected, setSelected] = useState(TODAY_DAY);
   const month = MONTHS[monthIndex];

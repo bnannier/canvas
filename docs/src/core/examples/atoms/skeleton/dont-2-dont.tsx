@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, View } = scope;
   return (
-<View style={{ backgroundColor: tokens.muted, width: 320, height: 72, borderRadius: 6 }} />
+<View style={{ backgroundColor: tokens.muted, width: 320, maxWidth: "100%", height: 72, borderRadius: 6 }} />
   );
 }

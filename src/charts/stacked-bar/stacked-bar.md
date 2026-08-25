@@ -41,7 +41,7 @@ One proportional horizontal bar split into colored segments (the `chart-1`..`cha
 
 ```tsx
 <View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 560 }}>
-  <View style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, width: 520 }}>
+  <View style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, width: 520, maxWidth: "100%" }}>
     <View style={{ width: "42%", backgroundColor: "#6366f1" }} />
     <View style={{ width: "28%", backgroundColor: "#14b8a6" }} />
     <View style={{ width: "18%", backgroundColor: "#f59e0b" }} />
