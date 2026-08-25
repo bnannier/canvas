@@ -8,7 +8,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputKeyPressEventData,
 } from "react-native";
-import { View, Text, Pressable, Column, TextInput, Icon, useTheme, GlassSurface, alpha } from "@nannier/canvas";
+import { View, Text, Pressable, Column, TextInput, Icon, useTheme, useFormFactor, GlassSurface, alpha } from "@nannier/canvas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { search } from "../core/data/search";
@@ -101,9 +101,10 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
     return [...map.entries()];
   }, [results]);
 
-  // Below the desktop breakpoint the search is launched from the bottom tab bar, so it
-  // reads as a bottom sheet rather than a top-anchored command palette.
-  const mobile = width < 1024;
+  // Below the desktop form factor the search is launched from the bottom tab bar, so it
+  // reads as a bottom sheet rather than a top-anchored command palette. (Same line the
+  // shell draws: desktop is width > 1024, so exactly 1024 now sheets like the mobile shell.)
+  const mobile = useFormFactor() !== "desktop";
   const panelWidth = Math.min(560, width - 32);
 
   // The search field. On desktop it sits at the TOP of the panel; on mobile it docks at

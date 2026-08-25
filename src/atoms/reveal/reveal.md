@@ -6,7 +6,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Column tight>
       <Typography h4 semibold>Built for scroll</Typography>
       <Typography small muted>This card rose into place when it reached the viewport.</Typography>
@@ -23,7 +23,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 <Ticker values={[1, 2]} interval={2800}>
   {(pass) => (
     <Reveal key={pass}>
-      <Card padded style={{ width: 300 }}>
+      <Card padded style={{ width: 300, maxWidth: "100%" }}>
         <Column tight>
           <Typography h4 semibold>Arriving</Typography>
           <Typography small muted>The same entrance, played again every few seconds.</Typography>
@@ -66,7 +66,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromAbove>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Descends into place</Typography>
   </Card>
 </Reveal>
@@ -76,7 +76,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromLeft>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Slides in from the left</Typography>
   </Card>
 </Reveal>
@@ -86,7 +86,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal fromRight>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Slides in from the right</Typography>
   </Card>
 </Reveal>
@@ -96,7 +96,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal pronounced>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Travels further before settling</Typography>
   </Card>
 </Reveal>
@@ -106,7 +106,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal brisk>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Arrives faster</Typography>
   </Card>
 </Reveal>
@@ -116,7 +116,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal deepInView>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Waits until it is properly in view</Typography>
   </Card>
 </Reveal>
@@ -218,7 +218,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Column tight>
       <Typography h4 semibold>One entrance</Typography>
       <Typography small muted>The card and its lines arrive as a single object.</Typography>
@@ -230,7 +230,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 **Don't** - Reveal each leaf inside one card; the card assembles itself in pieces in front of the reader.
 
 ```tsx
-<Card padded style={{ width: 300 }}>
+<Card padded style={{ width: 300, maxWidth: "100%" }}>
   <Column tight>
     <Reveal>
       <Typography h4 semibold>Three entrances</Typography>
@@ -248,7 +248,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 
 ```tsx
 <Reveal pronounced>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Typography small semibold>Reveals itself</Typography>
   </Card>
 </Reveal>
@@ -257,7 +257,7 @@ An entrance for page content: what it wraps starts slightly offset and transpare
 **Don't** - Hand-roll it with a wrapper and a hard-coded opacity: it never arrives, never watches the scroll position, and ignores Reduce Motion.
 
 ```tsx
-<View style={{ opacity: 0.35, width: 300 }}>
+<View style={{ opacity: 0.35, width: 300, maxWidth: "100%" }}>
   <Card padded>
     <Typography small semibold>Stuck half-arrived</Typography>
   </Card>

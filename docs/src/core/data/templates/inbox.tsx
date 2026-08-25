@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Input, Avatar, StackedList, Divider, useResponsive, Icon, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Input, Avatar, StackedList, Divider, useFormFactor, Icon, useToast } from "@nannier/canvas";
 import type { StackedListItem } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Inbox built from real Canvas components: a message list beside the open
-// thread on desktop, stacking to a single column on phones via useResponsive.
+// thread on desktop, stacking to a single column on phones via useFormFactor.
 // Pressing a conversation opens its canned thread, and Send appends the typed
 // reply to whichever thread is open.
 
@@ -124,7 +124,10 @@ function Message({ initials, name, time, children }: { initials: string; name: s
 }
 
 function InboxLive() {
-  const narrow = useResponsive({ base: false, sm: true });
+  // Phone stacks list over thread; wider keeps the fixed 300px rail beside the
+  // fill thread pane. The stacked list must drop that fixed width, so this
+  // stays a hook-driven branch rather than a Row `stacks`.
+  const narrow = useFormFactor() === "phone";
   const { toast } = useToast();
   const [openIndex, setOpenIndex] = useState(0);
   const [threads, setThreads] = useState<InboxMessage[][]>(() => CONVERSATIONS.map((c) => c.messages));

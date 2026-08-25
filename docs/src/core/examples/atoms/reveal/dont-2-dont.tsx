@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Reveal, Typography, Column } = scope;
   return (
-<Card padded style={{ width: 300 }}>
+<Card padded style={{ width: 300, maxWidth: "100%" }}>
   <Column tight>
     <Reveal>
       <Typography h4 semibold>Three entrances</Typography>

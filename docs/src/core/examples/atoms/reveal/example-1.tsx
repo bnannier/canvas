@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Ticker values={[1, 2]} interval={2800}>
   {(pass) => (
     <Reveal key={pass}>
-      <Card padded style={{ width: 300 }}>
+      <Card padded style={{ width: 300, maxWidth: "100%" }}>
         <Column tight>
           <Typography h4 semibold>Arriving</Typography>
           <Typography small muted>The same entrance, played again every few seconds.</Typography>

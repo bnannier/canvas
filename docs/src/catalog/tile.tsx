@@ -1,6 +1,5 @@
-import { type ReactNode, useState } from "react";
-import { useWindowDimensions } from "react-native";
-import { View, Text, Pressable, Icon, Row, Column, useTheme, alpha } from "@nannier/canvas";
+import { type ReactNode } from "react";
+import { View, Text, Pressable, Icon, Row, Column, Grid, GridItem, useTheme, alpha } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { geist } from "../ui/fonts";
 
@@ -10,8 +9,8 @@ import { geist } from "../ui/fonts";
 export type CatTile = { title: string; href: string; span?: boolean; Preview: () => ReactNode };
 
 // A single catalog tile: a card with a centered 16:9 preview stage over a muted wash, and a
-// footer with the title and a chevron.
-export function Tile({ tile, width }: { tile: CatTile; width: number }) {
+// footer with the title and a chevron. Sized by the Grid cell it sits in.
+export function Tile({ tile }: { tile: CatTile }) {
   const { tokens } = useTheme();
   const router = useRouter();
   const Preview = tile.Preview;
@@ -19,7 +18,7 @@ export function Tile({ tile, width }: { tile: CatTile; width: number }) {
     <Pressable
       onPress={() => router.push(tile.href as never)}
       style={{
-        width,
+        width: "100%",
         borderRadius: 12,
         borderWidth: 1,
         borderColor: tokens.border,
@@ -50,28 +49,22 @@ export function Tile({ tile, width }: { tile: CatTile; width: number }) {
   );
 }
 
-// The responsive tile grid: 3 columns when wide, 2 when medium, 1 when narrow. A `span` tile
-// takes two cell widths (used by Data Tables).
+// The responsive tile grid: the kit Grid's container-measured auto-fit (as many 220px-floor
+// tiles as fit, capped at 3 columns, cozy 12px gap; it owns the viewport seed for the first
+// paint). A `span` tile takes two cells via GridItem `wide` (used by Data Tables).
 export function CatGrid({ tiles }: { tiles: CatTile[] }) {
-  const { width: winW } = useWindowDimensions();
-  const [measured, setMeasured] = useState(0);
-  const gap = 12;
-  // Seed the width from the viewport so tiles render on the first paint; onLayout then
-  // refines it to the grid's exact width. Relying on onLayout alone hid every tile whenever
-  // the web ResizeObserver did not fire until a later reflow (the grid sits in the centered
-  // content column: viewport minus the sidebar on wide web, minus the 28px page gutters).
-  const w = measured || Math.max(280, Math.min(1400, winW >= 1024 ? winW - 240 : winW) - 56);
-  const cols = w >= 680 ? 3 : w >= 420 ? 2 : 1;
-  const colW = (w - gap * (cols - 1)) / cols;
-  // Stays a raw View: the grid measures itself, and Row does not forward onLayout
-  // (FlexProps carries children / style / testID only), so converting it would drop
-  // the measurement this layout depends on.
   return (
-    <View onLayout={(e) => setMeasured(e.nativeEvent.layout.width)} style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
-      {tiles.map((t) => (
-        <Tile key={t.href} tile={t} width={t.span && cols > 1 ? colW * 2 + gap : colW} />
-      ))}
-    </View>
+    <Grid minTileWidth={220} columns={3} cozy>
+      {tiles.map((t) =>
+        t.span ? (
+          <GridItem wide key={t.href}>
+            <Tile tile={t} />
+          </GridItem>
+        ) : (
+          <Tile key={t.href} tile={t} />
+        ),
+      )}
+    </Grid>
   );
 }
 

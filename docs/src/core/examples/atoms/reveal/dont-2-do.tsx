@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Card, Reveal, Typography, Column } = scope;
   return (
 <Reveal>
-  <Card padded style={{ width: 300 }}>
+  <Card padded style={{ width: 300, maxWidth: "100%" }}>
     <Column tight>
       <Typography h4 semibold>One entrance</Typography>
       <Typography small muted>The card and its lines arrive as a single object.</Typography>

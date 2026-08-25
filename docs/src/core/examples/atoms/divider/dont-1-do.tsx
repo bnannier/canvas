@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Divider, Row, Column } = scope;
   return (
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Button primary block>Sign in</Button>
   <Divider>or continue with</Divider>
   <Row snug>

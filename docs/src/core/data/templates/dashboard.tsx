@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useResponsive, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useFormFactor, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Admin dashboard built from real Canvas components: a Stats hero row with
@@ -40,7 +40,10 @@ const SERVICES = [
 ];
 
 function ActivityAndChartLive() {
-  const narrow = useResponsive({ base: false, sm: true });
+  // Phone stacks the panes; wider form factors split them into two equal fill
+  // columns (equal-width fill children, so this stays a hook-driven branch
+  // rather than a Row `stacks`, which keeps children's own sizing).
+  const narrow = useFormFactor() === "phone";
   const [range, setRange] = useState(0);
   const { toast } = useToast();
   const r = SIGN_IN_RANGES[range];

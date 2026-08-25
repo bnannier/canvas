@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Card, Divider, Typography, Column } = scope;
   return (
-<Column cozy style={{ width: 320 }}>
+<Column cozy style={{ width: 320, maxWidth: "100%" }}>
   <Column snug>
     <Card padded>
       <Typography small>Ada commented on the draft</Typography>

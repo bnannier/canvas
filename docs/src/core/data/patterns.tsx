@@ -495,11 +495,11 @@ const surface = getSurface();
   {
     slug: "responsive",
     name: "Responsive",
-    description: "Desktop-first responsive system with breakpoints, sidebar drawer-to-fixed transition, and reusable grid patterns.",
+    description: "The desktop-first responsive system: three mechanisms (intrinsic caps, container measurement, viewport breakpoints), a phone/tablet/desktop form-factor tier, and the Grid and Row-stacks layout primitives.",
     sections: [
       {
         title: "Breakpoints",
-        description: "Canvas is desktop-first. The base value is the desktop case; a breakpoint entry (sm, md, lg, xl, 2xl) applies at that width and below. Components resolve the active value with the useResponsive hook.",
+        description: "Canvas is desktop-first. The base value is the desktop case; a breakpoint entry (sm, md, lg, xl, 2xl) applies at that width and below. useResponsive resolves a value map, useBreakpoint returns the active bucket, and useFormFactor collapses it to phone / tablet / desktop (phone at or below sm, tablet at or below lg, desktop above; macOS and desktop web are the desktop form factor). An unknown viewport (SSR, the pre-layout first frame) resolves to base, the desktop variant; SSR apps that know better pass ThemeProvider's ssrBreakpoint.",
         html: `<div style="font-size:13px">
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
     <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Name</div>
@@ -528,6 +528,16 @@ const surface = getSurface();
 </div>`,
       },
       {
+        title: "Choosing a mechanism",
+        description: "Three official layers, in order of preference. Rule of thumb: viewport for the shell, container for the components, intrinsic wherever possible.",
+        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">1. Intrinsic sizing</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">A fixed desktop width plus maxWidth 100% (fields, dialogs, chart roots), or minWidth floors plus wrapping (Stats). Zero JS, correct in any container, correct on the server. Never swap a fixed width for width 100% below a threshold: in a content-sized parent that makes the element track its own content.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">2. Container measurement</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">A component that switches layout measures its OWN width (useContainerBreakpoint, useMeasuredWidth), never the window: it cannot know whether it is on a phone or in a 320px desktop panel. DataTable, Grid, Row stacks, the Navbar collapse, and Form's two-column stack all work this way.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">3. Viewport breakpoints</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Only window-level chrome reads the viewport (useBreakpoint, useFormFactor, useResponsive): the Sidebar's drawer mode, the FilterPanel's drawer, app shells. If the component could plausibly sit inside a column, it is not window-level chrome.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Pointer capability</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">usePointerCoarse and useHoverCapable expose the input class: touch-first constants on native, live media queries on the web, desktop-first on the server. The desktop form factor is a size AND an input class.</div></div>
+</div>`,
+      },
+      {
         title: "Sidebar - drawer ↔ fixed",
         description: "The kit Sidebar's `responsive` prop does this: a fixed accordion rail on the desktop base, and at lg (1024px) and below a start-edge drill-down drawer opened by the hamburger button. Above lg, the fixed panel stays.",
         html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -552,31 +562,31 @@ const surface = getSurface();
 </div>`,
       },
       {
-        title: "Grid templates",
-        description: "Three reusable responsive grid templates that adapt across breakpoints.",
+        title: "Layout primitives: Grid and Row stacks",
+        description: "Equal-width tiles belong to Grid: minTileWidth sets the floor (default 240), columns caps the desktop count, and the measured container decides how many fit, exactly like the auto-fit demo below. Content-sized rows that should stack at narrow widths belong to Row stacks (a toolbar, a label beside its actions); when stacked, the Row is the Column with the same props.",
         html: `<div style="display:flex;flex-direction:column;gap:16px">
   <div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:6px">Stats grid (auto-fit 220px)</div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:6px">Grid minTileWidth={140}: as many tiles as fit</div>
     <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Stat 1</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Stat 2</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Stat 3</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Stat 4</div>
+      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
+      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
+      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
+      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
     </div>
   </div>
   <div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:6px">Content + sidebar (2fr + 1fr at lg)</div>
-    <div style="display:grid;gap:8px;grid-template-columns:2fr 1fr">
-      <div class="section-card" style="padding:10px;font-size:12px">Main content</div>
-      <div class="section-card" style="padding:10px;font-size:12px">Sidebar</div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:6px">GridItem wide: a hero tile spanning two cells</div>
+    <div style="display:grid;gap:8px;grid-template-columns:repeat(3,1fr)">
+      <div class="section-card" style="padding:10px;font-size:12px;grid-column:span 2">Wide tile</div>
+      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
     </div>
   </div>
   <div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:6px">Card grid (auto-fit 280px)</div>
-    <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Card</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Card</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Card</div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:6px">Row stacks: a toolbar that becomes a column in narrow containers</div>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center">
+      <div class="section-card" style="padding:8px 12px;font-size:12px;flex:1">Search runs&#8230;</div>
+      <div class="section-card" style="padding:8px 12px;font-size:12px">Filter</div>
+      <div class="section-card" style="padding:8px 12px;font-size:12px">New run</div>
     </div>
   </div>
 </div>`,
@@ -585,12 +595,12 @@ const surface = getSurface();
         title: "What's behind the scenes",
         description: "Specific responsive treatments worth noting beyond just stacking grids.",
         html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Topbar: progressive disclosure</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Search text shrinks to just "Search..." at small sizes, the Cmd+K kbd hides below sm, and the user pill collapses to an avatar below md.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Tables: horizontal scroll</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Tables get a min-width and live inside a scroll container that overflows horizontally. Easier to scroll than to pack columns into a phone screen.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Drawer: viewport cap</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The slide-over width is wrapped in min(width, 100vw) so an open drawer can never exceed the phone's width.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Page header: wrap actions</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The actions row uses flex-wrap. On small screens, a row of buttons wraps to a second line rather than overflowing.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">DataTable: pan or collapse</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The table measures its own container. Below sm, web and Android pan the columns in a horizontal scroller with readable minimums; iOS collapses to the primary column, the SwiftUI compact-width treatment. The 320px floor drops once a narrower container is measured.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Navbar: automatic menu</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">At and below sm container width, the links row swaps for a menu button opening the platform dropdown, with the active link checkmarked. No prop: links never clip off a phone screen.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Overlays: outlet clamp</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Anchored cards (popovers, the calendar peek) clamp both their position and their width inside the overlay outlet, so a fixed-width card fits a phone-width screen instead of running off it.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Calendar: fluid month cells</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The month grid is seven fixed cells; in a container narrower than the natural grid, the cell shrinks toward a 32px floor so the month fits a 320pt phone with no breakpoint.</div></div>
   <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Density is orthogonal</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The compact and comfortable booleans are per-component and independent of the viewport, so a dense surface keeps its tight padding at every width.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Mobile is real, not an afterthought</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Every page was checked at 375px and 768px. No desktop-only surfaces.</div></div>
+  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Opt-in narrow modes</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Sidebar responsive becomes a drill-down drawer, FilterPanel responsive becomes a Filters button opening a drawer, Steps stacks goes vertical, and vertical Tabs responsive flattens to the underline bar.</div></div>
 </div>`,
       },
       {

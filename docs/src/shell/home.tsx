@@ -12,6 +12,7 @@ import { CodeBlock } from "../ui/code-block";
 import { geist, geistMono } from "../ui/fonts";
 import { alpha } from "../ui/color";
 import { useLatestVersion } from "../ui/use-latest-version";
+import { useFluidType } from "../lib/fluid-type";
 import { CONTENT_TOP_INSET } from "./topbar";
 import { ScreenFrame } from "./native-header";
 
@@ -170,9 +171,9 @@ export function Home() {
   // threshold, not `wide`, so a future tweak to `wide` cannot silently re-expose it.
   const DESKTOP_LOOKS_MIN_WIDTH = 920;
   const showThreeLooks = LOOKS_AVAILABLE && width >= DESKTOP_LOOKS_MIN_WIDTH;
-  const h1Size = Math.round(Math.min(58, Math.max(36, width * 0.05)));
-  const sectionTitle = Math.round(Math.min(36, Math.max(26, width * 0.034)));
-  const ctaTitle = Math.round(Math.min(42, Math.max(28, width * 0.04)));
+  const h1Size = useFluidType(36, 58, 0.05);
+  const sectionTitle = useFluidType(26, 36, 0.034);
+  const ctaTitle = useFluidType(28, 42, 0.04);
 
   // Glass is a theming-level surface mode: the canvas goes transparent so the Canvas
   // Universe backdrop reads through (the web shell mounts it; native mounts it via

@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Divider, Typography, Column } = scope;
   return (
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Typography small>Profile</Typography>
   <Divider />
   <Typography small>Account</Typography>

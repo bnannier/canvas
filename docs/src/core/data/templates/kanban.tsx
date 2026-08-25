@@ -26,7 +26,7 @@ import {
   DropZone,
   Draggable,
   DragHandle,
-  useResponsive,
+  useFormFactor,
   useToast,
   type RowMenuItem,
   type ToastHandle,
@@ -58,7 +58,7 @@ import type { TemplateDoc } from "../types";
 // One `Overlay` union drives every dialog surface, so at most one is ever open;
 // delete-from-detail swaps the overlay rather than stacking dialogs. Columns and
 // tasks carry stable IDS (names are editable), so all references are by id.
-// `useResponsive` is used in ONE place: the filter toolbar. The board pans and
+// `useFormFactor` is used in ONE place: the filter toolbar. The board pans and
 // the dialogs cap their own width, but the field-width Select and search Input
 // don't shrink, so at phone width the toolbar stacks (chips + Reset on one row,
 // then the assignee Select and the search Input each full width) instead of
@@ -463,7 +463,10 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, dn
 // one overlay union that guarantees at most one dialog surface is open at a time.
 function BoardLive() {
   const { toast } = useToast() as ToastHandle;
-  const stackToolbar = useResponsive({ base: false, sm: true });
+  // Phone restructures the toolbar (Select/Input leave the chips row and go
+  // full-width `block`), not just a row-to-column flip, so this stays a
+  // hook-driven branch rather than a Row `stacks`.
+  const stackToolbar = useFormFactor() === "phone";
   const [columns, setColumns] = useState<BoardColumn[]>(SEED_COLUMNS);
   const [tagFilter, setTagFilter] = useState<Tag | null>(null);
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);

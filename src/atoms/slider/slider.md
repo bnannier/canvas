@@ -91,7 +91,7 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 **Don't** — Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.
 
 ```tsx
-<View style={{ width: 320, height: 20, justifyContent: "center" }}>
+<View style={{ width: 320, maxWidth: "100%", height: 20, justifyContent: "center" }}>
   <View style={{ width: "100%", height: 4, borderRadius: 999, backgroundColor: tokens.muted }}>
     <View style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "20%", borderRadius: 999, backgroundColor: alpha(tokens.primary, 0.4) }} />
   </View>

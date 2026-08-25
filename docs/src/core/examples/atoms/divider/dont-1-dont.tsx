@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { View, Button, Divider } = scope;
   return (
-<View style={{ width: 320, flexDirection: "column", gap: 8 }}>
+<View style={{ width: 320, maxWidth: "100%", flexDirection: "column", gap: 8 }}>
   <Button primary block>Sign in</Button>
   <Divider>or continue with one of your previously linked third-party accounts</Divider>
 </View>

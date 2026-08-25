@@ -1,4 +1,4 @@
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useResponsive, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useFormFactor, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Order detail built from real Canvas components: breadcrumb + header with the
@@ -27,7 +27,10 @@ const SUMMARY = [
 
 function DetailSidebarLive() {
   const { toast } = useToast();
-  const narrow = useResponsive({ base: false, sm: true });
+  // Phone stacks main over sidebar; wider is a 2fr/1fr split of fill columns
+  // (equal-fill children, so this stays a hook-driven branch rather than a
+  // Row `stacks`, which keeps children's own sizing).
+  const narrow = useFormFactor() === "phone";
 
   const header = (
     <Column snug>

@@ -63,8 +63,9 @@ A template is a working product surface, not a picture of one:
   `minWidth`, `flexBasis`). Never colors, borders, radii, fonts, padding,
   margins, gaps: those come from component props and `Row`/`Column` axes.
 - No `Platform.OS` branches, no web-only DOM/CSS tricks. Cross-viewport
-  behavior uses `useResponsive({ base, sm })` (desktop-first: `sm` applies at
-  640px and below).
+  behavior uses `useFormFactor() === "phone"` (desktop-first: phone is the
+  `sm` bucket, 640px and below), or `useResponsive({ base, sm })` when a
+  value, not a tier, varies.
 - Do not edit kit source (`src/`) from a template task. If a component is
   missing a capability, note the gap in your report instead.
 - Check exact props in the component's own doc:
@@ -73,7 +74,8 @@ A template is a working product surface, not a picture of one:
   `src/atoms/icon/icon.glyphs.ts` before using it.
 - Desktop-first and responsive: verify mentally at ~860px stage width AND
   ~300px (phone). Multi-column rows wrap (`Row relaxed wrap` + per-child
-  `style={{ flexBasis: 300, minWidth: 280 }}`), or stack via `useResponsive`.
+  `style={{ flexBasis: 300, minWidth: 280 }}`), content-sized rows stack via
+  `Row stacks`, and fill-column splits branch on `useFormFactor()`.
   Fixed-width boards/tables pan inside a horizontal `ScrollView`.
 
 ## Definition of done

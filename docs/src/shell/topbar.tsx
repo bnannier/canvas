@@ -1,5 +1,5 @@
-import { Linking, Platform, useWindowDimensions } from "react-native";
-import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, GlassSurface, liquidGlassAvailable, alpha } from "@nannier/canvas";
+import { Linking, Platform } from "react-native";
+import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, useBreakpoint, GlassSurface, liquidGlassAvailable, alpha } from "@nannier/canvas";
 import { usePathname } from "expo-router";
 import { getComponent } from "../core/data/components";
 import { getTemplate } from "../core/data/templates";
@@ -57,10 +57,11 @@ export function titleFor(pathname: string): { title: string; subtitle?: string }
 export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMenu: () => void; onSearch?: () => void }) {
   const { tokens } = useTheme();
   const { scheme, surface, toggleScheme, setSurface } = useDocsTheme();
-  const { width } = useWindowDimensions();
   const pathname = usePathname();
   const { title, subtitle } = titleFor(pathname);
-  const wideEnough = width >= 640;
+  // Anything above the sm bucket (width > 640) keeps the full search pill and subtitle;
+  // the sm bucket gets the compact bar (exactly 640 was wide before and is compact now).
+  const wideEnough = useBreakpoint() !== "sm";
   // On iOS 26 glass is the platform default (and not toggleable here), so the Glass
   // toggle only shows where glass is opt-in: web, Android, and iOS < 26. Shown at
   // every width there (including phone), beside the theme toggle.

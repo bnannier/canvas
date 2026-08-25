@@ -5,7 +5,7 @@ Placeholders for loading content.
 ## Usage
 
 ```tsx
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Skeleton text animate />
   <Skeleton text animate style={{ width: "60%" }} />
 </Column>
@@ -50,7 +50,7 @@ Placeholders for loading content.
 **Do** — Vary the line widths and shorten the last line so it reads like real wrapped text.
 
 ```tsx
-<Column snug style={{ width: 320 }}>
+<Column snug style={{ width: 320, maxWidth: "100%" }}>
   <Skeleton text animate style={{ width: "100%" }} />
   <Skeleton text animate style={{ width: "95%" }} />
   <Skeleton text animate style={{ width: "60%" }} />
@@ -60,7 +60,7 @@ Placeholders for loading content.
 **Don't** — Three full-width lines read as a solid block, not as a paragraph of prose.
 
 ```tsx
-<View style={{ width: 320, flexDirection: "column", gap: 6 }}>
+<View style={{ width: 320, maxWidth: "100%", flexDirection: "column", gap: 6 }}>
   <Skeleton text animate style={{ width: "100%" }} />
   <Skeleton text animate style={{ width: "100%" }} />
   <Skeleton text animate style={{ width: "100%" }} />
@@ -92,7 +92,7 @@ Placeholders for loading content.
 **Don't** — An oversized bar overstates a button and the layout jumps when the real control mounts.
 
 ```tsx
-<View style={{ backgroundColor: tokens.muted, width: 320, height: 72, borderRadius: 6 }} />
+<View style={{ backgroundColor: tokens.muted, width: 320, maxWidth: "100%", height: 72, borderRadius: 6 }} />
 ```
 
 ### card
@@ -106,7 +106,7 @@ Placeholders for loading content.
 **Don't** — A generic block that ignores the content's shape causes a jarring shift when it loads.
 
 ```tsx
-<View style={{ backgroundColor: tokens.muted, borderRadius: 6, width: 320, height: 88 }} />
+<View style={{ backgroundColor: tokens.muted, borderRadius: 6, width: 320, maxWidth: "100%", height: 88 }} />
 ```
 
 ### list
@@ -120,7 +120,7 @@ Placeholders for loading content.
 **Don't** — One tall block hides the row rhythm, so the list reflows when each item appears.
 
 ```tsx
-<View style={{ backgroundColor: tokens.muted, width: 400, height: 120, borderRadius: 6 }} />
+<View style={{ backgroundColor: tokens.muted, width: 400, maxWidth: "100%", height: 120, borderRadius: 6 }} />
 ```
 
 ### table
@@ -134,5 +134,5 @@ Placeholders for loading content.
 **Don't** — A single rectangle gives no column structure; cells shift sideways once data lands.
 
 ```tsx
-<View style={{ backgroundColor: tokens.muted, width: 400, height: 120, borderRadius: 6 }} />
+<View style={{ backgroundColor: tokens.muted, width: 400, maxWidth: "100%", height: 120, borderRadius: 6 }} />
 ```

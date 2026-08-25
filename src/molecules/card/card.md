@@ -5,7 +5,7 @@ Three families. `StatCard` = a single metric, big number + delta. `SectionCard` 
 ## Usage
 
 ```tsx
-<Card padded style={{ width: 280 }}>
+<Card padded style={{ width: 280, maxWidth: "100%" }}>
   <Row between alignStart>
     <Column tight>
       <Typography caption medium>Active identities</Typography>

@@ -12,7 +12,7 @@ import {
   EmptyState,
   Icon,
   useToast,
-  useResponsive,
+  useFormFactor,
   type ToastHandle,
 } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
@@ -125,7 +125,10 @@ const BRAND_FEATURES = ["Multi-factor authentication", "OAuth2 and OIDC support"
 
 function SplitScreenLive() {
   const { toast } = useToast();
-  const stacked = useResponsive({ base: false, sm: true });
+  // Phone stacks brand over form; wider splits them into two equal fill columns
+  // (equal-width fill children, so this stays a hook-driven branch rather than
+  // a Row `stacks`, which keeps children's own sizing).
+  const stacked = useFormFactor() === "phone";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const brand = (
