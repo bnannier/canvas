@@ -432,6 +432,11 @@
             "icon": "terminal"
           },
           {
+            "slug": "dashboard-grid",
+            "label": "DashboardGrid",
+            "icon": "layout-dashboard"
+          },
+          {
             "slug": "data-table",
             "label": "DataTable",
             "icon": "table"

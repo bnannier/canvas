@@ -331,6 +331,14 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "dashboard-grid",
+    name: "DashboardGrid",
+    description: "A 12-column widget board for overview screens: every widget declares a span in twelfths, and the grid measures its own width to reflow them through a wide, narrow, and phone tier. Cells render bare, so a widget arrives with its own surface. Locked it is a plain static grid; unlocked it turns into customize mode, where the kit's own drag-and-drop reorders the board by pointer, keyboard, or screen reader and reports the new id order.",
+    category: "Organisms",
+    stageAlign: "start",
+  },
+
+  {
     slug: "data-table",
     name: "DataTable",
     description: "Sortable, selectable, paginated data table with the loading and empty states built in. Columns are labels or descriptors (alignment, fixed widths, sort). Density tweaks affect padding live.",

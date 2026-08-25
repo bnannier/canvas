@@ -47,6 +47,7 @@ export const GLYPH_RASTERS: Record<string, number> = {
   keyboard: require("../../assets/images/menu-glyphs/keyboard.png"),
   layers: require("../../assets/images/menu-glyphs/layers.png"),
   layout: require("../../assets/images/menu-glyphs/layout.png"),
+  layoutDashboard: require("../../assets/images/menu-glyphs/layoutDashboard.png"),
   layoutGrid: require("../../assets/images/menu-glyphs/layoutGrid.png"),
   list: require("../../assets/images/menu-glyphs/list.png"),
   listChecks: require("../../assets/images/menu-glyphs/listChecks.png"),
