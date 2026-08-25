@@ -6,18 +6,15 @@ export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
 <ButtonGroup
-  stepper
-  items={[
-    "May 21",
-    "May 22",
-    "May 23",
-    "Today",
-    "May 25",
-    "May 26",
-    "May 27"
-  ]}
-  active={3}
+  segmented
   small
+  iconsOnly
+  defaultActive={2}
+  items={[
+    { label: "Phone width", icon: "smartphone" },
+    { label: "Tablet width", icon: "tablet" },
+    { label: "Desktop width", icon: "monitor" }
+  ]}
 />
   );
 }
