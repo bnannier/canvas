@@ -6,11 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { Feed } = scope;
   return (
 <Feed
-  avatar
+  connector
   items={[
-    { actor: "Rachel Chen", action: "commented on the pull request", time: "2 hours ago" },
-    { actor: "Ada Lovelace", action: "pushed 3 commits", time: "5 hours ago" },
-    { actor: "Kevin Turner", action: "opened the pull request", time: "1 day ago" }
+    { icon: "shieldCheck", actor: "System", action: "rotated the signing key", time: "12 minutes ago" },
+    { icon: "userPlus", actor: "Rachel Chen", action: "invited", target: "marco@acme.co", time: "2 hours ago" },
+    { icon: "gitMerge", actor: "Ada Lovelace", action: "merged", target: "release/4.2", time: "1 day ago" }
   ]}
 />
   );

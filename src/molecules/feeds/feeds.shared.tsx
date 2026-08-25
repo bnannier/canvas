@@ -13,6 +13,7 @@ import {
 } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
+import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import * as s from "./feeds.styles.js";
 
 // The composed Avatar type so each platform can pass its own resolved atom (the
@@ -34,7 +35,9 @@ export type AvatarComponent = ComponentType<AvatarProps>;
 // 1. The connector feed (default): each row leads with a small bordered node
 //    and a vertical connector line links one event to the next. The connector
 //    is dropped on the final item so the line terminates cleanly at the last
-//    event rather than dangling past it.
+//    event rather than dangling past it. The node's content follows its own
+//    first-match precedence: the item's kit glyph, then the actor's initials,
+//    then a muted dot for an actor-less event.
 // 2. The avatar feed (`avatar`): each row leads with the actor's avatar and the
 //    rows are separated by hairline rules instead of a connector line.
 //
@@ -68,6 +71,16 @@ export interface FeedItem {
   time: string;
   /** Photo URL for the avatar lead; falls back to initials from the actor. */
   avatar?: string;
+  /**
+   * Leading Canvas glyph for the CONNECTOR node, named from the kit icon set
+   * (e.g. `"shieldCheck"`, `"gitMerge"`, `"keyRound"`). Rendered through the
+   * `Icon` atom, muted and decorative (the row's own text carries the meaning),
+   * and it takes precedence over the actor's initials and the actor-less dot.
+   * Reach for it on system or automation events, where a glyph names the kind of
+   * event better than a pair of letters. The avatar lead ignores it: that row
+   * leads with the person's photo or initials.
+   */
+  icon?: IconName;
 }
 
 export interface FeedProps {
@@ -136,6 +149,13 @@ export interface FeedSkin {
    */
   minTarget: number;
 }
+
+// Glyph size inside the connector node. The node is a 28pt circle on every
+// platform (its 1px border leaves 26pt of room), so a 16pt glyph sits centered
+// with a hair of breathing room and matches the optical weight of the 12pt
+// initials it replaces. It lives here rather than in the skin because the node
+// geometry it is derived from is identical across the three skins.
+const NODE_ICON_SIZE = 16;
 
 // Lead precedence when more than one is passed: first match wins.
 function leadOf(p: FeedProps): Lead {
@@ -261,7 +281,13 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
             <View style={skin.connectorLine(tokens)} />
           ) : null}
           <View style={skin.node(tokens)}>
-            {item.actor ? (
+            {/* Node content, first match wins: the item's kit glyph, then the
+                actor's initials, then a muted dot for an actor-less event. The
+                glyph is decorative because the actor/action line beside it
+                already says what happened. */}
+            {item.icon ? (
+              <Icon {...{ [item.icon]: true }} muted size={NODE_ICON_SIZE} decorative />
+            ) : item.actor ? (
               <Text style={skin.nodeInitials(tokens)}>{initialsFrom(item.actor)}</Text>
             ) : (
               <View style={s.nodeDot(tokens)} />
