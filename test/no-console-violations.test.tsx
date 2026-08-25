@@ -20,6 +20,8 @@ import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 import { Board } from "../src/organisms/board/board.tsx";
 import { StackedList } from "../src/molecules/stacked-lists/stacked-lists.tsx";
+import { Tooltip } from "../src/atoms/tooltip/tooltip.tsx";
+import { Button } from "../src/atoms/button/button.tsx";
 
 // A console-error gate: React DOM (which react-native-web renders through) logs a
 // DOM-nesting violation whenever one interactive element ends up inside another —
@@ -159,6 +161,12 @@ describe("no DOM-nesting console violations at render", () => {
           onPressItem={() => {}}
           onReorder={() => {}}
         />
+        {/* Tooltip's element trigger hangs the tip off a control the caller already
+            owns. Its wrapper only listens for hover/focus and takes no role, so an
+            icon Button child must never land inside a second button. */}
+        <Tooltip open label="Glass on">
+          <Button ghost icon accessibilityLabel="Glass on" iconLeft={<Text>G</Text>} onPress={() => {}} />
+        </Tooltip>
       </>,
     );
     expect(violations).toEqual([]);

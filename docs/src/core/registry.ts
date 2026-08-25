@@ -479,6 +479,7 @@ import e_atoms_tooltip_example_3 from "./examples/atoms/tooltip/example-3";
 import e_atoms_tooltip_example_4 from "./examples/atoms/tooltip/example-4";
 import e_atoms_tooltip_example_5 from "./examples/atoms/tooltip/example-5";
 import e_atoms_tooltip_example_6 from "./examples/atoms/tooltip/example-6";
+import e_atoms_tooltip_example_7 from "./examples/atoms/tooltip/example-7";
 import e_atoms_tooltip_dont_0_do from "./examples/atoms/tooltip/dont-0-do";
 import e_atoms_tooltip_dont_0_dont from "./examples/atoms/tooltip/dont-0-dont";
 import e_atoms_tooltip_dont_1_do from "./examples/atoms/tooltip/dont-1-do";
@@ -1730,7 +1731,8 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Left", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" open left />", render: e_atoms_tooltip_example_3 },
       { label: "Button", code: "<Tooltip label=\"Open settings\" trigger=\"Hover me\" open top />", render: e_atoms_tooltip_example_4 },
       { label: "Text", code: "<Tooltip textTrigger label=\"Open settings\" trigger=\"hover this text\" open top />", render: e_atoms_tooltip_example_5 },
-      { label: "On hover", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" top />", render: e_atoms_tooltip_example_6 },
+      { label: "Element trigger", code: "<Tooltip label=\"Glass on\" open top>\n  <Button ghost icon accessibilityLabel=\"Glass on\" iconLeft={<Icon settings size={16} />} onPress={() => {}} />\n</Tooltip>", render: e_atoms_tooltip_example_6 },
+      { label: "On hover", code: "<Tooltip label=\"Open settings\" iconTrigger trigger=\"Hover me\" top />", render: e_atoms_tooltip_example_7 },
     ],
     donts: [
       { do: { caption: "Keep tooltips short and supplementary; put essential steps in visible copy.", code: "<Tooltip iconTrigger bottom open label=\"Rotate key\" />", render: e_atoms_tooltip_dont_0_do }, dont: { caption: "Long, essential instructions hidden in a tooltip are missed on touch and by screen readers.", code: "<Tooltip iconTrigger bottom open label=\"To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours.\" />", render: e_atoms_tooltip_dont_0_dont } },
