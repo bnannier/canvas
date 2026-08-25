@@ -2,10 +2,10 @@
 // exposes __canvasTestViewport; resizing through it mutates the stubbed size
 // and re-fires the `resize` listeners react-native-web registered, which makes
 // RNW's Dimensions recompute and notify its "change" subscribers: the exact
-// signal a real browser resize produces. Importing this file also registers an
-// afterEach that restores the 1280x800 desktop default, so one test's narrow
-// viewport can never leak into the next file's desktop assumptions.
-import { afterEach } from "bun:test";
+// signal a real browser resize produces. The 1280x800 desktop default is
+// restored by a GLOBAL beforeEach living in setup.ts (an afterEach here would
+// register only in the first importing file, thanks to module caching), so a
+// resized viewport never leaks into another test.
 import { act } from "@testing-library/react";
 
 type ViewportHandle = { set(width: number, height: number): void };
@@ -23,7 +23,3 @@ export const DEFAULT_VIEWPORT = { width: 1280, height: 800 } as const;
 export function resizeViewport(width: number, height: number = DEFAULT_VIEWPORT.height): void {
   act(() => handle().set(width, height));
 }
-
-afterEach(() => {
-  resizeViewport(DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height);
-});

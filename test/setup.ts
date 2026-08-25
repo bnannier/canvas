@@ -49,6 +49,19 @@ if (!(window as { visualViewport?: unknown }).visualViewport) {
       viewportResizeListeners.forEach((listener) => listener({ type: "resize" }));
     },
   };
+  // Restore the desktop default before EVERY test, from the preload so it is
+  // global (an afterEach inside an imported helper registers only in the first
+  // file that imports it, thanks to module caching, and a resized viewport then
+  // leaks across files). At beforeEach nothing is mounted, so re-firing RNW's
+  // resize listener recomputes Dimensions without any React involvement.
+  const { beforeEach } = require("bun:test") as typeof import("bun:test");
+  beforeEach(() => {
+    if (viewportState.width !== 1280 || viewportState.height !== 800) {
+      viewportState.width = 1280;
+      viewportState.height = 800;
+      viewportResizeListeners.forEach((listener) => listener({ type: "resize" }));
+    }
+  });
 }
 
 import { plugin } from "bun";

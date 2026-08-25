@@ -70,6 +70,10 @@ export function termStacked(tokens: ColorTokens): TextStyle {
 // The two-column term's fixed label column (w-40). Lands on a Text.
 export const termColumn: TextStyle = { width: 160 };
 
+// The label column narrows at phone widths so the value column keeps room to
+// breathe (restores the pre-refactor Field behavior: 160 -> 120 at/below sm).
+export const termColumnNarrow: TextStyle = { width: 120 };
+
 // The inline value is right-aligned in its row.
 export const valueAlignRight: TextStyle = { textAlign: "right" };
 
