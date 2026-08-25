@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { useEffect, useRef, type ReactNode } from "react";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from "../../style/index.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -38,6 +38,15 @@ import { type Variant } from "./tabs.styles.js";
 // The active underline is drawn as an explicit indicator View under the trigger
 // rather than as a bottom border in markup (mirroring how ButtonGroup hand-rolls
 // its hairline divider).
+//
+// Horizontal overflow: a non-block underline/pills row rides inside a horizontal
+// ScrollView (the Board-lanes pattern), so a row longer than its container pans
+// instead of clipping. The scroller is inert when the row fits (it hugs the row
+// and caps at the container width), so nothing changes until there is overflow;
+// activation — press, roving arrow key, or a controlled `active` change — scrolls
+// the active trigger fully into view (a jump on first layout, animated after,
+// honoring reduced motion). `block` shares the row equally by definition and
+// `vertical` stacks, so neither scrolls.
 
 // The platform-varying surface. Everything color/shape-bearing the three looks
 // need lives here, built from the active tokens (so each follows light/dark/glass).
@@ -158,6 +167,34 @@ function verticalRail(block: boolean): ViewStyle {
   };
 }
 
+// Peek padding for scroll-into-view: the activated trigger stops this far from
+// the scroller's edge, so a sliver of the neighboring tab stays visible as the
+// affordance that the row continues (there is no scrollbar).
+const SCROLL_PEEK = 24;
+
+/**
+ * The offset that brings an activated trigger fully into a horizontal scroller's
+ * view, or null when no scroll is needed (row fits, trigger already visible, or
+ * the correction is subpixel). `rect.x` is relative to the scroll content, and
+ * the result is clamped to the scrollable range. Pure so the math is unit-testable
+ * without layout events (the board-logic/chart-math precedent).
+ */
+export function tabScrollTarget(
+  rect: { x: number; width: number },
+  viewport: number,
+  content: number,
+  offset: number,
+  pad: number = SCROLL_PEEK,
+): number | null {
+  if (viewport <= 0 || content <= viewport) return null;
+  let target: number;
+  if (rect.x - pad < offset) target = rect.x - pad;
+  else if (rect.x + rect.width + pad > offset + viewport) target = rect.x + rect.width + pad - viewport;
+  else return null;
+  target = Math.max(0, Math.min(content - viewport, target));
+  return Math.abs(target - offset) < 1 ? null : target;
+}
+
 /** Build a Tabs component from a platform skin. */
 export function createTabs(skin: TabsSkin) {
   const ripple = skin.ripple;
@@ -182,9 +219,12 @@ export function createTabs(skin: TabsSkin) {
     onPress?: () => void;
     /** Roving-focus wiring (the single tab stop + arrow-key handler) from useRovingFocus. */
     itemProps?: RovingItemProps;
+    /** Frame observation on the trigger's outermost node (the RippleClip wrapper),
+     *  so the overflow scroller knows where each trigger sits in the row. */
+    onLayout?: (event: LayoutChangeEvent) => void;
   }
 
-  function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps }: TriggerProps) {
+  function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps, onLayout }: TriggerProps) {
     const { tokens, dark } = useTheme();
     // The roving tab stop + web arrow-key handler ride onto the Pressable. `ref` is
     // passed explicitly (React never spreads it); `onKeyDown` is web-only, so the
@@ -248,7 +288,7 @@ export function createTabs(skin: TabsSkin) {
         // Round the pill trigger's bounded Android ripple to its capsule corners via this
         // RippleClip parent (Android only). Block-mode flex moves here so the tab still shares
         // the row width.
-        <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null}>
+        <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout}>
           <Pressable
             ref={itemRef}
             {...(rovingProps as object)}
@@ -284,7 +324,7 @@ export function createTabs(skin: TabsSkin) {
       // RippleClip parent (Android only; iOS draws a capsule pill instead). Block-mode flex
       // moves here so the tab still shares the row width. The absolute bottom indicator stays
       // inside the Pressable, which fills this wrapper.
-      <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null}>
+      <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout}>
         <Pressable
           ref={itemRef}
           {...(rovingProps as object)}
@@ -376,6 +416,93 @@ export function createTabs(skin: TabsSkin) {
       };
     };
 
+    // --- horizontal overflow scrolling (non-block underline/pills rows) -------
+    // The row rides in a horizontal ScrollView that hugs it and caps at the
+    // container, so a long row pans instead of clipping. Geometry lives in refs
+    // (viewport/content from the scroller's own events, per-trigger frames from
+    // the RippleClip wrappers): none of it should re-render, only position the
+    // scroller imperatively when the active trigger would sit out of view.
+    const scroller = useRef<ScrollView>(null);
+    const scrollGeom = useRef({ viewport: 0, content: 0, offset: 0 });
+    const triggerRects = useRef<Array<{ x: number; width: number } | undefined>>([]);
+    // First positioning (a defaultActive/active starting off-screen) is a jump;
+    // activations after that animate, unless the user prefers reduced motion.
+    const settled = useRef(false);
+    const reducedMotion = useReducedMotion();
+
+    const ensureActiveVisible = (animated: boolean) => {
+      const rect = triggerRects.current[active];
+      if (!rect) return;
+      const { viewport, content, offset } = scrollGeom.current;
+      const target = tabScrollTarget(rect, viewport, content, offset);
+      if (target != null) scroller.current?.scrollTo({ x: target, animated });
+    };
+
+    // Bring a newly activated trigger into view (press, roving arrow key, or a
+    // controlled `active` change). The layout handlers below cover first layout.
+    useEffect(() => {
+      ensureActiveVisible(settled.current && !reducedMotion);
+      settled.current = true;
+      // The geometry lives in refs on purpose; `active` is the only render value read.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [active]);
+
+    const trackTriggerLayout = (i: number) => (event: LayoutChangeEvent) => {
+      const layout = event.nativeEvent?.layout;
+      if (!layout) return;
+      // The row is the scroll content's sole child at x 0, so a trigger's
+      // row-relative frame is its content-relative frame.
+      triggerRects.current[i] = { x: layout.x, width: layout.width };
+      if (i === active) ensureActiveVisible(false);
+    };
+    const onScrollerLayout = (event: LayoutChangeEvent) => {
+      scrollGeom.current.viewport = event.nativeEvent.layout.width;
+      // A flattened responsive vertical measures the scroller frame (capped at
+      // the container), the outermost node of the underline look it renders.
+      measureResponsive?.(event);
+      ensureActiveVisible(false);
+    };
+    const onScrollerContent = (width: number) => {
+      scrollGeom.current.content = width;
+    };
+    const onScrollerScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollGeom.current.offset = event.nativeEvent.contentOffset.x;
+    };
+
+    // The consumer's outer `style` rides the scroller (the outermost node);
+    // alwaysBounceHorizontal off so a row that fits does not rubber-band on iOS.
+    const scrollRow = (row: ReactNode) => (
+      <ScrollView
+        ref={scroller}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        alwaysBounceHorizontal={false}
+        scrollEventThrottle={16}
+        onScroll={onScrollerScroll}
+        onContentSizeChange={onScrollerContent}
+        onLayout={onScrollerLayout}
+        style={[s.overflowScroller, style]}
+      >
+        {row}
+      </ScrollView>
+    );
+
+    const horizontalTriggers = (rowVariant: "underline" | "pills") =>
+      tabs.map((item, i) => (
+        <Trigger
+          key={`${labelOf(item)}-${i}`}
+          label={labelOf(item)}
+          badge={badgeOf(item)}
+          selected={i === active}
+          variant={rowVariant}
+          block={props.block}
+          disabled={disabled || itemDisabled[i]}
+          onPress={() => setActive(i)}
+          itemProps={rovingFor(i)}
+          onLayout={props.block ? undefined : trackTriggerLayout(i)}
+        />
+      ));
+
     if (variant === "vertical") {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
@@ -399,43 +526,36 @@ export function createTabs(skin: TabsSkin) {
     }
 
     if (variant === "pills") {
-      return (
-        <View accessibilityRole="tablist" testID={testID} style={[skin.pillsRow(tokens), s.blockWidth(!!props.block), style]}>
-          {tabs.map((item, i) => (
-            <Trigger
-              key={`${labelOf(item)}-${i}`}
-              label={labelOf(item)}
-              badge={badgeOf(item)}
-              selected={i === active}
-              variant="pills"
-              block={props.block}
-              disabled={disabled || itemDisabled[i]}
-              onPress={() => setActive(i)}
-              itemProps={rovingFor(i)}
-            />
-          ))}
-        </View>
+      // Block shares the row equally (never overflows); otherwise the track
+      // rides the overflow scroller.
+      if (props.block) {
+        return (
+          <View accessibilityRole="tablist" testID={testID} style={[skin.pillsRow(tokens), s.blockWidth(true), style]}>
+            {horizontalTriggers("pills")}
+          </View>
+        );
+      }
+      return scrollRow(
+        <View accessibilityRole="tablist" testID={testID} style={skin.pillsRow(tokens)}>
+          {horizontalTriggers("pills")}
+        </View>,
       );
     }
 
     // Underline: the row sits on a hairline bottom border (web/Android) or a gray
-    // segmented track (iOS).
-    return (
-      <View accessibilityRole="tablist" testID={testID} onLayout={measureResponsive} style={[skin.underlineRow(tokens), s.blockWidth(!!props.block), style]}>
-        {tabs.map((item, i) => (
-          <Trigger
-            key={`${labelOf(item)}-${i}`}
-            label={labelOf(item)}
-            badge={badgeOf(item)}
-            selected={i === active}
-            variant="underline"
-            block={props.block}
-            disabled={disabled || itemDisabled[i]}
-            onPress={() => setActive(i)}
-            itemProps={rovingFor(i)}
-          />
-        ))}
-      </View>
+    // segmented track (iOS). Block shares the row equally (never overflows);
+    // otherwise the row rides the overflow scroller.
+    if (props.block) {
+      return (
+        <View accessibilityRole="tablist" testID={testID} onLayout={measureResponsive} style={[skin.underlineRow(tokens), s.blockWidth(true), style]}>
+          {horizontalTriggers("underline")}
+        </View>
+      );
+    }
+    return scrollRow(
+      <View accessibilityRole="tablist" testID={testID} style={skin.underlineRow(tokens)}>
+        {horizontalTriggers("underline")}
+      </View>,
     );
   };
 }
