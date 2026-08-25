@@ -82,7 +82,7 @@ export function createRadarChart(skin: ChartSkin) {
     devWarn(series.length > MAX_SERIES, `[canvas] <RadarChart />: more than ${MAX_SERIES} overlapping polygons read poorly.`);
     devWarn(
       multi && !!(props.success || props.destructive),
-      "[canvas] <RadarChart />: tone props apply to single-series charts only; multi-series charts use the chart-1..8 tokens.",
+      "[canvas] <RadarChart />: tone props apply to single-series charts only; set `success`/`destructive` on a SERIES to color it by meaning, else multi-series charts use the chart-1..8 tokens.",
     );
 
     const finite = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
@@ -92,7 +92,9 @@ export function createRadarChart(skin: ChartSkin) {
     const rOf = (v: number): number => Math.max(0, Math.min(1, v / niceMax)) * plot.radius;
     const angleOf = (i: number): number => (i / Math.max(1, axes.length)) * 2 * Math.PI;
 
-    const colorOf = (i: number): string => (multi ? s.seriesFill(tokens, i) : s.barFill(tokens, toneOf(props)));
+    // A series' own tone wins; a single series then takes the chart-level
+    // tone, and a multi-series chart falls through to its ramp position.
+    const colorOf = (i: number): string => s.seriesColor(tokens, series[i], i, multi ? null : toneOf(props));
 
     // The accessible name folds every axis and value, series-prefixed.
     const name = series.map((sr) => seriesAccessibleName(sr.label, sr.values, axes, formatValue)).join("; ");

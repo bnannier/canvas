@@ -3,35 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chart, Column } = scope;
+  const { Chart } = scope;
   return (
-<Column loose>
-  <Chart
-    title="Checks passing"
-    success
-    data={[
-      { label: "Mon", value: 82 },
-      { label: "Tue", value: 88 },
-      { label: "Wed", value: 91 },
-      { label: "Thu", value: 86 },
-      { label: "Fri", value: 94 }
-    ]}
-    max={100}
-    style={{ maxWidth: 560 }}
-  />
-  <Chart
-    title="Error rate"
-    destructive
-    data={[
-      { label: "Mon", value: 14 },
-      { label: "Tue", value: 9 },
-      { label: "Wed", value: 22 },
-      { label: "Thu", value: 12 },
-      { label: "Fri", value: 7 }
-    ]}
-    max={25}
-    style={{ maxWidth: 560 }}
-  />
-</Column>
+<Chart
+  title="Coverage"
+  horizontal
+  data={[
+    { label: "Atoms", value: 92 },
+    { label: "Molecules", value: 78 },
+    { label: "Organisms", value: 64 },
+    { label: "Charts", value: 85 }
+  ]}
+  max={100}
+  style={{ maxWidth: 560 }}
+/>
   );
 }

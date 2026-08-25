@@ -27,7 +27,7 @@ export interface CandlestickChartProps {
   candles: Candle[];
   /** Optional volume per candle, drawn as a docked pane under the price plot. */
   volume?: number[];
-  /** Optional overlay series (e.g. moving averages), colored by the chart-1..8 tokens. */
+  /** Optional overlay series (e.g. moving averages), colored by the chart-1..8 tokens (or an overlay's own `success`/`destructive` tone). */
   overlays?: ChartSeries[];
   /** Optional heading shown above the plot. */
   title?: string;
@@ -171,7 +171,7 @@ export function createCandlestickChart(skin: ChartSkin) {
             <Path
               key={`o${sr.id ?? i}`}
               d={linePath(labels.slice(0, count).map((_, j) => ({ x: band.center(j), y: layout.y(num(sr.values[j])) })))}
-              stroke={s.seriesFill(tokens, i)}
+              stroke={s.seriesColor(tokens, sr, i)}
               strokeWidth={1.5}
               fill="none"
               strokeLinejoin="round"
@@ -230,7 +230,7 @@ export function createCandlestickChart(skin: ChartSkin) {
         </View>
 
         {overlays.length > 0 && !props.hideLegend ? (
-          <ChartLegend horizontal items={overlays.map((sr, i) => ({ label: sr.label, color: s.seriesFill(tokens, i) }))} />
+          <ChartLegend horizontal items={overlays.map((sr, i) => ({ label: sr.label, color: s.seriesColor(tokens, sr, i) }))} />
         ) : null}
       </View>
     );

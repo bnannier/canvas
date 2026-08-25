@@ -1,6 +1,6 @@
 # LineChart
 
-Categorical-x series lines with nice y ticks, gridlines, and a legend for multiple series. `curved` draws a monotone cubic that never overshoots the data, `dots` marks each datum, and `baseline` + `fade` give the trading-app price idiom (dashed previous close, gain/loss auto tone, gradient fill). Press or scrub the plot to inspect a category.
+Categorical-x series lines with nice y ticks, gridlines, and a legend for multiple series. `curved` draws a monotone cubic that never overshoots the data, `dots` marks each datum, and `baseline` + `fade` give the trading-app price idiom (dashed previous close, gain/loss auto tone, gradient fill). A series that means success or failure carries its own `success` / `destructive` tone instead of a ramp color. Press or scrub the plot to inspect a category.
 
 ## Usage
 
@@ -47,6 +47,21 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
     { label: "Android", values: [19, 22, 21, 27, 30, 33, 41] }
   ]}
   fade
+  curved
+  style={{ maxWidth: 560 }}
+/>
+```
+
+### Success vs failure
+
+```tsx
+<LineChart
+  title="Sign-ins"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[
+    { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
+    { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
+  ]}
   curved
   style={{ maxWidth: 560 }}
 />

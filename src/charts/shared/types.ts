@@ -23,6 +23,12 @@ export interface ChartSeries {
   label: string;
   /** One value per category label, aligned by index. */
   values: number[];
+  // Semantic tone for this series (pick one; first match wins, mirroring the
+  // chart-level tone precedence). Omit for the series' chart-1..8 ramp
+  // position. Reach for these when a series MEANS success or failure
+  // (sign-ins granted vs denied), never to hand-pick a color.
+  success?: boolean;
+  destructive?: boolean;
 }
 
 /** One StackedBar segment / PieChart slice: a label and its magnitude. */

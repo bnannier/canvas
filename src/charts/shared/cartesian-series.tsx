@@ -17,7 +17,7 @@ import { formatCompact, seriesAccessibleName, type Pt } from "./chart-math.js";
 export interface CartesianSeriesProps {
   /** Category labels along the x axis, one per data column. */
   labels: string[];
-  /** The series to plot; colors follow the chart-1..8 tokens in fixed order. */
+  /** The series to plot; colors follow the chart-1..8 tokens in fixed order, or a series' own `success`/`destructive` tone. */
   series: ChartSeries[];
   /** Optional heading shown above the plot. */
   title?: string;
@@ -88,10 +88,12 @@ export function useSeriesChart(
   );
   devWarn(
     multi && !!(props.success || props.destructive),
-    `[canvas] <${displayName} />: tone props apply to single-series charts only; multi-series charts use the chart-1..8 tokens.`,
+    `[canvas] <${displayName} />: tone props apply to single-series charts only; set \`success\`/\`destructive\` on a SERIES to color it by meaning, else multi-series charts use the chart-1..8 tokens.`,
   );
 
-  const colorOf = (i: number): string => (multi ? s.seriesFill(tokens, i) : s.barFill(tokens, tone));
+  // A series' own tone wins; a single series then takes the chart-level tone,
+  // and a multi-series chart falls through to its ramp position.
+  const colorOf = (i: number): string => s.seriesColor(tokens, series[i], i, multi ? null : tone);
 
   // Y extent: zero-based unless the data (or the caller) goes below.
   const values = series.flatMap((sr) => labels.map((_, i) => finite(sr.values[i])));

@@ -6,15 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { Chart } = scope;
   return (
 <Chart
-  title="Coverage"
-  horizontal
-  data={[
-    { label: "Atoms", value: 92 },
-    { label: "Molecules", value: 78 },
-    { label: "Organisms", value: 64 },
-    { label: "Charts", value: 85 }
+  title="Sign-ins"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[
+    { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
+    { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
   ]}
-  max={100}
   style={{ maxWidth: 560 }}
 />
   );

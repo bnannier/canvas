@@ -1,6 +1,6 @@
 # Chart
 
-A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels. Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8` tokens; press or scrub a category to inspect it.
+A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels. Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8` tokens, or give a series its own `success` / `destructive` tone when it means success or failure; press or scrub a category to inspect it.
 
 ## Usage
 
@@ -32,6 +32,20 @@ A single- or multi-series bar chart: vertical columns (or horizontal rows) sized
     { label: "Revenue", values: [49, 51, 61, 61, 62, 70, 84, 89] },
     { label: "Costs", values: [32, 32, 33, 38, 41, 48, 55, 59] },
     { label: "Profit", values: [17, 19, 28, 23, 21, 22, 29, 30] }
+  ]}
+  style={{ maxWidth: 560 }}
+/>
+```
+
+### Success vs failure
+
+```tsx
+<Chart
+  title="Sign-ins"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[
+    { label: "Granted", values: [812, 905, 874, 961, 1024, 640, 588], success: true },
+    { label: "Denied", values: [41, 38, 56, 47, 62, 29, 24], destructive: true }
   ]}
   style={{ maxWidth: 560 }}
 />

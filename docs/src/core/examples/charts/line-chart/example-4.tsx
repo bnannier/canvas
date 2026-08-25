@@ -6,13 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { LineChart } = scope;
   return (
 <LineChart
-  title="Monthly recurring revenue"
-  labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
-  series={[{ label: "MRR", values: [112, 118, 127, 125, 138, 151] }]}
-  formatValue={(v) => `$${v}k`}
+  compact
+  title="Signups"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[{ label: "Signups", values: [24, 31, 28, 42, 39, 47, 51] }]}
   curved
-  defaultSelected={4}
-  style={{ maxWidth: 560 }}
+  style={{ maxWidth: 420 }}
 />
   );
 }

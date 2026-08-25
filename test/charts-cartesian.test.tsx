@@ -13,6 +13,8 @@ import { RangeAreaChart } from "../src/charts/range-area-chart/range-area-chart.
 import { Histogram } from "../src/charts/histogram/histogram.tsx";
 import { BoxPlot } from "../src/charts/box-plot/box-plot.tsx";
 import { WaterfallChart } from "../src/charts/waterfall-chart/waterfall-chart.tsx";
+import { seriesColor } from "../src/charts/shared/charts.styles.ts";
+import { lightColors, palette } from "../src/style/tokens.ts";
 
 // LineChart / AreaChart: the a11y contract (the plot is an img whose accessible
 // name carries every value, series-prefixed; the legend stays reachable outside
@@ -30,6 +32,13 @@ const twoSeries = [
 ];
 
 const plotName = (c: HTMLElement) => c.querySelector('[role="img"]')?.getAttribute("aria-label") ?? "";
+
+// react-native-web writes every color into the DOM as `rgba(r, g, b, a.aa)`, so
+// put a token's own hex into that shape before matching it in a style attribute.
+const asRgba = (hex: string): string => {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;
+  return `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 1.00)`;
+};
 
 // Two-category variant for grouped-Chart tests (values align with 2 labels).
 const twoSeriesShort = [
@@ -119,6 +128,66 @@ describe("Chart (grouped bars)", () => {
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Signups chart");
     const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
     expect(items).toContain("Mon: 3");
+  });
+});
+
+describe("per-series semantic tones", () => {
+  // A series that MEANS success or failure colors by that meaning; every other
+  // series keeps its chart-1..8 ramp position.
+  const signIns = [
+    { label: "Granted", values: [90, 95], success: true },
+    { label: "Denied", values: [4, 6], destructive: true },
+  ];
+
+  it("seriesColor resolves series tone > chart tone > ramp position", () => {
+    const t = lightColors;
+    expect(seriesColor(t, { label: "Granted", values: [], success: true }, 0)).toBe(palette["green-500"]);
+    expect(seriesColor(t, { label: "Denied", values: [], destructive: true }, 1)).toBe(palette["red-500"]);
+    // Both set: success wins, matching the chart-level tone precedence.
+    expect(seriesColor(t, { label: "Both", values: [], success: true, destructive: true }, 0)).toBe(palette["green-500"]);
+    // No series tone: the chart-level tone when there is one (single-series)...
+    expect(seriesColor(t, { label: "Web", values: [] }, 0, "destructive")).toBe(palette["red-500"]);
+    // ...else the ramp, which still follows the series index, never its rank.
+    expect(seriesColor(t, { label: "Web", values: [] }, 2)).toBe(t["chart-3"]);
+    expect(seriesColor(t, undefined, 1)).toBe(t["chart-2"]);
+  });
+
+  it("paints the grouped Chart's bars and legend dots by meaning", () => {
+    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={signIns} />);
+    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
+    const green = styles.filter((st) => st.includes(asRgba(palette["green-500"])));
+    const red = styles.filter((st) => st.includes(asRgba(palette["red-500"])));
+    // Two categories' bars plus the legend dot, for each series.
+    expect(green.length).toBe(3);
+    expect(red.length).toBe(3);
+    // No ramp color is left over for a fully toned chart.
+    expect(styles.some((st) => st.includes(asRgba(lightColors["chart-1"])))).toBe(false);
+  });
+
+  it("an untoned series in the same chart keeps its ramp position", () => {
+    const { container } = ui(
+      <Chart labels={["Q1"]} series={[{ label: "Granted", values: [9], success: true }, { label: "Pending", values: [2] }]} />,
+    );
+    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
+    expect(styles.some((st) => st.includes(asRgba(palette["green-500"])))).toBe(true);
+    // Identity follows the series index: the second series is still chart-2.
+    expect(styles.some((st) => st.includes(asRgba(lightColors["chart-2"])))).toBe(true);
+  });
+
+  it("carries a toned series through the LineChart legend", () => {
+    const { container } = ui(<LineChart labels={["Q1", "Q2"]} series={signIns} />);
+    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
+    // The marks are SVG (stubbed in this harness); the legend dots are Views.
+    expect(styles.some((st) => st.includes(asRgba(palette["green-500"])))).toBe(true);
+    expect(styles.some((st) => st.includes(asRgba(palette["red-500"])))).toBe(true);
+  });
+
+  it("leaves an untoned multi-series chart on the ramp", () => {
+    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} />);
+    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
+    expect(styles.some((st) => st.includes(asRgba(lightColors["chart-1"])))).toBe(true);
+    expect(styles.some((st) => st.includes(asRgba(lightColors["chart-2"])))).toBe(true);
+    expect(styles.some((st) => st.includes(asRgba(palette["green-500"])))).toBe(false);
   });
 });
 
