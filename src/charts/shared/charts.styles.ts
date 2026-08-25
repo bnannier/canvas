@@ -1,6 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, shadow } from "../../style/index.js";
-import { type ChartSkin } from "./types.js";
+import { type ChartSeries, type ChartSkin } from "./types.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens (so the surface follows
@@ -75,6 +75,32 @@ const SERIES_TOKENS = [
 /** The fill for series `i` (0-based), from the theme's chart tokens. */
 export function seriesFill(tokens: ColorTokens, i: number): string {
   return tokens[SERIES_TOKENS[i % SERIES_TOKENS.length]];
+}
+
+/**
+ * A series' own semantic tone, first match wins (the chart-level precedence:
+ * success > destructive). Null when the series carries none, which is the
+ * signal to fall through to the ramp.
+ */
+export function seriesTone(sr: ChartSeries): Tone | null {
+  if (sr.success) return "success";
+  if (sr.destructive) return "destructive";
+  return null;
+}
+
+/**
+ * The color for series `i`: the series' OWN semantic tone first (a series that
+ * means success or failure is colored by that meaning), then the chart-level
+ * tone when there is one (single-series charts), then the categorical ramp
+ * position. Mirrors `rowFill`'s slot > tone > ramp resolution, and is the one
+ * place the Chart family resolves a series color, so the plot, the value flag,
+ * and the legend cannot drift apart.
+ */
+export function seriesColor(tokens: ColorTokens, sr: ChartSeries | undefined, i: number, tone?: Tone | null): string {
+  const own = sr ? seriesTone(sr) : null;
+  if (own) return barFill(tokens, own);
+  if (tone) return barFill(tokens, tone);
+  return seriesFill(tokens, i);
 }
 
 // --- horizontal layout ------------------------------------------------------

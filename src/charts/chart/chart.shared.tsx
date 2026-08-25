@@ -56,7 +56,7 @@ export interface ChartProps {
   data?: ChartDatum[];
   /** Category labels along the x axis (grouped mode, with `series`). */
   labels?: string[];
-  /** Multiple series rendered as grouped columns per category, colored by the chart-1..8 tokens. */
+  /** Multiple series rendered as grouped columns per category, colored by the chart-1..8 tokens (or a series' own `success`/`destructive` tone). */
   series?: ChartSeries[];
   /** Optional heading shown above the plot. */
   title?: string;
@@ -135,7 +135,7 @@ export function createChart(skin: ChartSkin) {
     );
     devWarn(
       grouped && !!(props.success || props.destructive),
-      "[canvas] <Chart />: tone props apply to single-series charts only; grouped series use the chart-1..8 tokens.",
+      "[canvas] <Chart />: tone props apply to single-series charts only; set `success`/`destructive` on a SERIES to color it by meaning, else grouped series use the chart-1..8 tokens.",
     );
 
     const fill = s.barFill(tokens, tone);
@@ -210,8 +210,9 @@ export function createChart(skin: ChartSkin) {
 
         {grouped ? (
           // Grouped: each category is a cluster of series bars sharing the
-          // column, colored by the chart-1..8 tokens in fixed series order. A
-          // 2px gap keeps adjacent fills separable (the dataviz spacer rule).
+          // column, colored by the chart-1..8 tokens in fixed series order (or
+          // by a series' own success/destructive tone). A 2px gap keeps
+          // adjacent fills separable (the dataviz spacer rule).
           <View>
             <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
               {labels.map((label, i) => (
@@ -232,7 +233,7 @@ export function createChart(skin: ChartSkin) {
                       <View
                         key={sr.id ?? j}
                         style={[
-                          s.verticalBar(s.seriesFill(tokens, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
+                          s.verticalBar(s.seriesColor(tokens, sr, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
                           { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
                         ]}
                       />
@@ -246,7 +247,7 @@ export function createChart(skin: ChartSkin) {
                   title={labels[selected]}
                   rows={series.map((sr, j) => ({
                     label: sr.label,
-                    color: s.seriesFill(tokens, j),
+                    color: s.seriesColor(tokens, sr, j),
                     value: String(Number.isFinite(sr.values[selected]) ? sr.values[selected] : 0),
                   }))}
                   x={columnCenter(selected)}
@@ -265,7 +266,7 @@ export function createChart(skin: ChartSkin) {
             </View>
             {/* Series identity, outside the per-category img items. */}
             {props.hideLegend ? null : (
-              <ChartLegend horizontal items={series.map((sr, j) => ({ label: sr.label, color: s.seriesFill(tokens, j) }))} />
+              <ChartLegend horizontal items={series.map((sr, j) => ({ label: sr.label, color: s.seriesColor(tokens, sr, j) }))} />
             )}
           </View>
         ) : horizontal ? (
