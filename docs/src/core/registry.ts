@@ -194,6 +194,12 @@ import e_atoms_emblem_example_3 from "./examples/atoms/emblem/example-3";
 import e_atoms_emblem_example_4 from "./examples/atoms/emblem/example-4";
 import e_atoms_emblem_dont_0_do from "./examples/atoms/emblem/dont-0-do";
 import e_atoms_emblem_dont_0_dont from "./examples/atoms/emblem/dont-0-dont";
+import e_atoms_grid_example_0 from "./examples/atoms/grid/example-0";
+import e_atoms_grid_example_1 from "./examples/atoms/grid/example-1";
+import e_atoms_grid_example_2 from "./examples/atoms/grid/example-2";
+import e_atoms_grid_example_3 from "./examples/atoms/grid/example-3";
+import e_atoms_grid_dont_0_do from "./examples/atoms/grid/dont-0-do";
+import e_atoms_grid_dont_0_dont from "./examples/atoms/grid/dont-0-dont";
 import e_atoms_icon_example_0 from "./examples/atoms/icon/example-0";
 import e_atoms_icon_example_1 from "./examples/atoms/icon/example-1";
 import e_atoms_icon_example_2 from "./examples/atoms/icon/example-2";
@@ -256,6 +262,7 @@ import e_atoms_layout_example_2 from "./examples/atoms/layout/example-2";
 import e_atoms_layout_example_3 from "./examples/atoms/layout/example-3";
 import e_atoms_layout_example_4 from "./examples/atoms/layout/example-4";
 import e_atoms_layout_example_5 from "./examples/atoms/layout/example-5";
+import e_atoms_layout_example_6 from "./examples/atoms/layout/example-6";
 import e_atoms_layout_dont_0_do from "./examples/atoms/layout/dont-0-do";
 import e_atoms_layout_dont_0_dont from "./examples/atoms/layout/dont-0-dont";
 import e_atoms_layout_dont_1_do from "./examples/atoms/layout/dont-1-do";
@@ -1273,6 +1280,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { title: "Surface", do: { caption: "Use Emblem so the tint and icon color stay in sync from one tone prop.", code: "<Emblem primary>\n  <Icon shield />\n</Emblem>", render: e_atoms_emblem_dont_0_do }, dont: { caption: "Hand-compose the tinted square with raw `borderRadius`, `backgroundColor`, and padding.", code: "<View style={{ height: 40, width: 40, alignItems: \"center\", justifyContent: \"center\", borderRadius: 8, backgroundColor: \"rgba(79,70,229,0.1)\" }}>\n  <Icon shield primary />\n</View>", render: e_atoms_emblem_dont_0_dont } },
     ],
   },
+  "grid": {
+    dir: "grid",
+    category: "atoms",
+    examples: [
+      { label: "Default", code: "<Grid minTileWidth={220}>\n  <Card padded>\n    <Typography medium>Overview</Typography>\n    <Typography small muted>Traffic is up 12% this week.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Deploys</Typography>\n    <Typography small muted>14 releases shipped to production.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Alerts</Typography>\n    <Typography small muted>2 open, both acknowledged.</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_0 },
+      { label: "Capped columns", code: "<Grid minTileWidth={200} columns={2}>\n  <Card padded>\n    <Typography medium>Production</Typography>\n    <Typography small muted>All systems normal.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Staging</Typography>\n    <Typography small muted>Deploy in progress.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Preview</Typography>\n    <Typography small muted>Idle.</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Development</Typography>\n    <Typography small muted>3 branches active.</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_1 },
+      { label: "Wide tile", code: "<Grid minTileWidth={200} columns={3}>\n  <GridItem wide>\n    <Card padded>\n      <Typography medium>Latency</Typography>\n      <Typography small muted>The hero tile spans two cells.</Typography>\n    </Card>\n  </GridItem>\n  <Card padded>\n    <Typography medium>Errors</Typography>\n    <Typography small muted>0.02%</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Throughput</Typography>\n    <Typography small muted>1.2k rps</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Saturation</Typography>\n    <Typography small muted>41%</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_2 },
+      { label: "Tight gap", code: "<Grid minTileWidth={160} tight>\n  <Card padded>\n    <Typography small>CPU</Typography>\n  </Card>\n  <Card padded>\n    <Typography small>Memory</Typography>\n  </Card>\n  <Card padded>\n    <Typography small>Disk</Typography>\n  </Card>\n  <Card padded>\n    <Typography small>Network</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_example_3 },
+    ],
+    donts: [
+      { title: "Column math", do: { caption: "Give the grid a tile floor (and optionally a desktop cap) and let it", code: "<Grid minTileWidth={220} columns={3}>\n  <Card padded>\n    <Typography medium>Overview</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Deploys</Typography>\n  </Card>\n  <Card padded>\n    <Typography medium>Alerts</Typography>\n  </Card>\n</Grid>", render: e_atoms_grid_dont_0_do }, dont: { caption: "Hand-roll percent tile widths on a wrapping Row; the column count", code: "<Row wrap snug>\n  <Card padded style={{ width: \"31%\" }}>\n    <Typography medium>Overview</Typography>\n  </Card>\n  <Card padded style={{ width: \"31%\" }}>\n    <Typography medium>Deploys</Typography>\n  </Card>\n  <Card padded style={{ width: \"31%\" }}>\n    <Typography medium>Alerts</Typography>\n  </Card>\n</Row>", render: e_atoms_grid_dont_0_dont } },
+    ],
+  },
   "icon": {
     dir: "icon",
     category: "atoms",
@@ -1369,6 +1389,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Space between", code: "<Row between alignCenter>\n  <Typography small>Request ID</Typography>\n  <Typography mono>req_8f2c10ab</Typography>\n</Row>", render: e_atoms_layout_example_3 },
       { label: "Wrap", code: "<Row wrap snug>\n  <Badge>alpha</Badge>\n  <Badge>beta</Badge>\n  <Badge>gamma</Badge>\n  <Badge>delta</Badge>\n  <Badge>epsilon</Badge>\n  <Badge>zeta</Badge>\n</Row>", render: e_atoms_layout_example_4 },
       { label: "Padded surround", code: "<Row relaxed pad>\n  <MediaObject avatar=\"RC\" title=\"Rachel Chen\" description=\"rachel.chen@example.com\" />\n</Row>", render: e_atoms_layout_example_5 },
+      { label: "Stacks at narrow widths", code: "<Row stacks between alignCenter relaxed>\n  <Input placeholder=\"Search runs…\" />\n  <Row snug>\n    <Button outline>Filter</Button>\n    <Button primary>New run</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_6 },
     ],
     donts: [
       { title: "Gap", do: { caption: "Use the gap scale so spacing tracks the kit's spacing tokens.", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>", render: e_atoms_layout_dont_0_do }, dont: { caption: "Hand-roll `flexDirection` and a raw `gap`; that is a styling escape hatch.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</View>", render: e_atoms_layout_dont_0_dont } },

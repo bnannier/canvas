@@ -67,6 +67,27 @@ distribution (`center`, `between`, …), cross-axis alignment (`alignCenter`,
 </Row>
 ```
 
+### Stacks at narrow widths
+
+`stacks` renders the Row as a Column when the row's own container is at or
+below `stackBreakpoint` (default `sm` = 640): container-measured, so it stacks
+inside a narrow desktop column too, and the same gap, distribution, alignment,
+and padding props apply to the new axes. Children keep their own sizing, which
+makes `stacks` the tool for content-sized rows (a toolbar, a label beside its
+actions); equal-width tiles that should renumber columns belong to `Grid`. A
+Column never needs the inverse: a Column that must become a Row is a Row that
+stacks.
+
+```tsx
+<Row stacks between alignCenter relaxed>
+  <Input placeholder="Search runs…" />
+  <Row snug>
+    <Button outline>Filter</Button>
+    <Button primary>New run</Button>
+  </Row>
+</Row>
+```
+
 ## Do & Don't
 
 ### Gap

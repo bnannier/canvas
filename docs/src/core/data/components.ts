@@ -54,6 +54,13 @@ export const COMPONENTS: ComponentDoc[] = [
   },
 
   {
+    slug: "grid",
+    name: "Grid",
+    description: "The container-measured auto-fit tile grid. minTileWidth sets the floor (default 240): the grid fits as many equal-width columns of at least that width as its own container allows and re-fits as the container changes, columns caps the desktop count, the gap scale is Row and Column's own, and a GridItem with wide spans two cells. No breakpoints at the call site: three-up on desktop, one column on a phone, by container math alone.",
+    category: "Atoms",
+  },
+
+  {
     slug: "chip",
     name: "Chip",
     description: "An interactive pill: filter chips, tags, and selectable tokens. A low-emphasis soft-tinted tag (never a saturated button fill), with an optional leading icon and label, tappable with onPress, and a trailing × remove button with onRemove. Color is a boolean axis: semantic status (success / warning / destructive / info / neutral) or a free-form palette hue (red … rose, gray); outline and primary set the emphasis.",

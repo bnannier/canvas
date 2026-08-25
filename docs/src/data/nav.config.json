@@ -138,6 +138,11 @@
           {
             "slug": "row-column",
             "label": "Row & Column",
+            "icon": "columns-2"
+          },
+          {
+            "slug": "grid",
+            "label": "Grid",
             "icon": "layout-grid"
           },
           {
