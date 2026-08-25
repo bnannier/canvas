@@ -43,7 +43,7 @@
 // layout off viewport height today. Reading raw pixels stays available via the
 // `useWindowDimensions` re-export.
 
-import { createContext, useContext, useSyncExternalStore } from "react";
+import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
 import { Dimensions, useWindowDimensions } from "react-native";
 import { breakpoints, type BreakpointKey } from "./tokens.js";
 
@@ -131,12 +131,43 @@ function getBucketSnapshot(): BreakpointKey | "base" {
  *  prop feeds this; components never read it directly (useBreakpoint does). */
 export const SsrBreakpointContext = createContext<BreakpointKey | "base">("base");
 
+// The simulation seam: a non-null value pins the bucket every viewport hook
+// resolves for the subtree, overriding the real window. See BreakpointOverride.
+const BreakpointOverrideContext = createContext<BreakpointKey | "base" | null>(null);
+
+/**
+ * Pin the viewport bucket for a subtree: every `useBreakpoint` /
+ * `useResponsive` / `useFormFactor` consumer under the provider resolves
+ * `value` instead of the real window, so a preview stage or a test can
+ * exercise a phone or tablet branch inside a desktop window (the docs
+ * playground's form-factor switcher). `null` clears the override (the real
+ * viewport applies), which lets a switcher's "desktop" state simply stop
+ * simulating.
+ *
+ * Two boundaries to know:
+ * - Context reaches REACT descendants. The kit Portal renders overlay
+ *   children at the OverlayProvider's outlet, so an override mounted BELOW
+ *   the provider never reaches portaled overlay content (menus, dialogs,
+ *   toasts): mount the override above the OverlayProvider when overlays
+ *   should simulate too, as the docs playground does.
+ * - This simulates the VIEWPORT tier only. Container-measured components
+ *   (DataTable, Grid, Row `stacks`) follow their real measured width:
+ *   constrain the subtree's width to the matching size alongside the
+ *   override, and both mechanisms tell the same story.
+ */
+export function BreakpointOverride({ value, children }: { value: BreakpointKey | "base" | null; children?: ReactNode }) {
+  return <BreakpointOverrideContext.Provider value={value}>{children}</BreakpointOverrideContext.Provider>;
+}
+
 /** The active viewport bucket: the smallest breakpoint covering the current
  *  window width ("sm" on phones), or "base" on a desktop wider than 2xl.
- *  Re-renders only when the bucket changes, never per resize pixel. */
+ *  Re-renders only when the bucket changes, never per resize pixel. A
+ *  `BreakpointOverride` ancestor wins over the real window. */
 export function useBreakpoint(): BreakpointKey | "base" {
   const ssrBucket = useContext(SsrBreakpointContext);
-  return useSyncExternalStore(subscribeViewport, getBucketSnapshot, () => ssrBucket);
+  const override = useContext(BreakpointOverrideContext);
+  const live = useSyncExternalStore(subscribeViewport, getBucketSnapshot, () => ssrBucket);
+  return override ?? live;
 }
 
 /** Hook form: resolve a Responsive map against the current viewport width. */
