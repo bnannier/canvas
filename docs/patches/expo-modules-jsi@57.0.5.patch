@@ -1,0 +1,41 @@
+diff --git a/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h b/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h
+index 6115e87a6e430f55570fbf759283dca0cca1ee80..a56d62c569b85625916cacc02de21684a4ffcae2 100644
+--- a/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h
++++ b/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h
+@@ -5,6 +5,18 @@
+ #include <atomic>
+ #include <swift/bridging>
+ 
++/*
++ Swift's ClangImporter in Apple clang 17 (Xcode 26.x) rejects
++ SWIFT_RETURNS_RETAINED on constructors of a SWIFT_SHARED_REFERENCE type,
++ while Xcode 27's compiler warns when the annotation is missing. Apply it
++ only on toolchains that accept it (clang-1800 and newer).
++ */
++#if defined(__apple_build_version__) && __apple_build_version__ < 18000000
++#define EXPO_CTOR_RETURNS_RETAINED
++#else
++#define EXPO_CTOR_RETURNS_RETAINED SWIFT_RETURNS_RETAINED
++#endif
++
+ namespace expo {
+ 
+ /**
+@@ -50,7 +62,7 @@ public:
+    `scheduleTask` dispatches through `fn`, which the host implements against
+    the real react::RuntimeScheduler.
+    */
+-  SWIFT_RETURNS_RETAINED RuntimeScheduler(void *scheduler, ScheduleFn fn) noexcept
++  EXPO_CTOR_RETURNS_RETAINED RuntimeScheduler(void *scheduler, ScheduleFn fn) noexcept
+       : nativeScheduler(scheduler), scheduleFn(fn) {}
+ 
+   /**
+@@ -58,7 +70,7 @@ public:
+    caller's thread — intended for standalone runtimes (e.g. tests) that have
+    no React scheduler.
+    */
+-  SWIFT_RETURNS_RETAINED RuntimeScheduler() {}
++  EXPO_CTOR_RETURNS_RETAINED RuntimeScheduler() {}
+ 
+   RuntimeScheduler(const RuntimeScheduler &) = delete;
+ 
