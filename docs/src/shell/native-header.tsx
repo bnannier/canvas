@@ -97,8 +97,21 @@ export function NativeHeader() {
     // the web sidebar / Android drawer render. Every menu glyph is baked by
     // `bun run raster:gen`, so a lookup miss means a stale map (regenerate); undefined
     // then just omits the icon rather than crashing.
+    //
+    // WORKAROUND (2026-08-25): the image icons are temporarily disabled. On the
+    // Expo SDK 57 stack (react-native 0.86.2, new architecture, iOS 26) any
+    // `type:"image"` icon on a header menu item throws RNSScreenStackHeaderConfig's
+    // shadow-state update into an infinite ShadowTree commit-retry loop, and debug
+    // builds abort at launch on the `attempts < 1024` assert in ShadowTree.cpp.
+    // Bisected: the menu without image icons is fine, the sfSymbol icon on the Menu
+    // button is fine, tinted and untinted images both crash; react-native-screens
+    // 4.26.2 and 4.27.0 both reproduce it. The real fix is upstream in
+    // react-native-screens' header-item image handling; flip this flag back on once
+    // a fixed release lands and a dev build boots with it.
+    const NATIVE_MENU_IMAGE_ICONS = false;
     type MenuIcon = { type: "image"; source: number; tinted: true };
     const glyphIcon = (name: string): MenuIcon | undefined => {
+      if (!NATIVE_MENU_IMAGE_ICONS) return undefined;
       const source = GLYPH_RASTERS[name];
       return source != null ? { type: "image", source, tinted: true } : undefined;
     };

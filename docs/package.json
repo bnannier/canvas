@@ -6,28 +6,28 @@
   "dependencies": {
     "@expo-google-fonts/geist": "^0.4.2",
     "@expo-google-fonts/geist-mono": "^0.4.2",
-    "expo": "~57.0.7",
+    "expo": "~57.0.16",
     "expo-blur": "~57.0.2",
     "expo-clipboard": "~57.0.1",
-    "expo-constants": "~57.0.6",
+    "expo-constants": "~57.0.14",
     "expo-font": "~57.0.1",
     "expo-glass-effect": "~57.0.1",
-    "expo-linking": "~57.0.3",
-    "expo-router": "~57.0.7",
+    "expo-linking": "~57.0.7",
+    "expo-router": "~57.0.16",
     "expo-status-bar": "~57.0.1",
-    "expo-system-ui": "~57.0.1",
-    "expo-updates": "~57.0.8",
+    "expo-system-ui": "~57.0.2",
+    "expo-updates": "~57.0.17",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-native": "0.86.0",
+    "react-native": "0.86.2",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-qrcode-svg": "^6.3.15",
-    "react-native-reanimated": "4.5.0",
+    "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "4.25.2",
+    "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
     "react-native-web": "~0.21.0",
-    "react-native-worklets": "0.10.0"
+    "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
@@ -45,5 +45,8 @@
     "lint": "expo lint",
     "check:nav": "bun scripts/check-nav-sync.ts",
     "check:skins": "bun scripts/check-platform-skins.ts"
+  },
+  "patchedDependencies": {
+    "expo-modules-jsi@57.0.5": "patches/expo-modules-jsi@57.0.5.patch"
   }
 }
