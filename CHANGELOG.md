@@ -1,5 +1,34 @@
 # @nannier/canvas
 
+## 2.41.0
+
+### Minor Changes
+
+- 6129f30: `BreakpointOverride`: pin the viewport tier for a subtree.
+
+  Minor justification (new public API): wrapping a subtree in
+  `<BreakpointOverride value="sm">` makes the `useBreakpoint` / `useResponsive`
+  / `useFormFactor` consumers under the provider resolve that bucket instead of
+  the real window, so a preview stage or a test can exercise a phone or tablet
+  branch inside a desktop window; `value={null}` clears the simulation. Two
+  boundaries: mount it ABOVE your OverlayProvider when portaled overlay content
+  should simulate too (the kit Portal renders overlays at the provider's
+  outlet), and pair it with a width constraint on the same subtree, since
+  container-measured components follow their real measured width (the docs
+  playground's form-factor switcher does both).
+
+- 9e1f1a7: ButtonGroup: icon segments.
+
+  Minor justification (new public capability): an item may pair its label with a
+  kit glyph (`items={[{ label, icon }]}`, new `ButtonGroupItem` type; strings
+  keep working untouched), and the group-level `iconsOnly` boolean renders each
+  segment as its glyph alone with the label as the segment's ACCESSIBLE name, so
+  an icon-only segmented control (a view switcher, the docs' form-factor
+  switcher) needs no hand-rolled look-alike. Glyph color tracks each platform
+  skin's segment label treatment (new `segmentIconColor` skin field); the
+  stepper and split kinds cycle the labels and ignore icons, with dev-only
+  warnings on misuse.
+
 ## 2.40.5
 
 ### Patch Changes
