@@ -339,6 +339,20 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
 
   if (!open) return null;
 
+  // A width-aware card never renders wider than its outlet: when the outlet is
+  // narrower than the card plus its edge insets (a phone-width screen or docs
+  // stage), the card is clamped to the outlet minus the insets and placeOverlay
+  // pins it at the inset. The minWidth in the override also retires any
+  // trigger-derived minWidth in cardStyle, which would be unsatisfiable there.
+  const fittedCardWidth =
+    cardWidth != null && outletWidth != null && outletWidth > 0
+      ? Math.min(cardWidth, Math.max(0, outletWidth - 2 * CLAMP_INSET))
+      : cardWidth;
+  const fittedCardStyle =
+    fittedCardWidth != null && fittedCardWidth !== cardWidth
+      ? [cardStyle, { width: fittedCardWidth, minWidth: fittedCardWidth }]
+      : cardStyle;
+
   return (
     <Portal>
       {/* The dismiss backdrop only earns its keep when a tap on it can close the
@@ -349,8 +363,8 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}
       {rect ? (
-        <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) }}>
-          <OverlayCard cardStyle={cardStyle} opaque={opaque} onMount={onCardMount}>{children}</OverlayCard>
+        <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth: fittedCardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) }}>
+          <OverlayCard cardStyle={fittedCardStyle} opaque={opaque} onMount={onCardMount}>{children}</OverlayCard>
         </Entrance>
       ) : null}
     </Portal>

@@ -135,12 +135,18 @@ function disabledOf(item: TabItem): boolean {
 }
 
 // vertical: flex-col items-stretch gap-1; width w-full (block) or w-[180px].
+// The fixed rail flexes down (to a 96px floor, never past 40% of the row) so a
+// narrow container keeps most of its width for the panel instead of overflowing.
 function verticalRail(block: boolean): ViewStyle {
+  if (block) return { flexDirection: "column", alignItems: "stretch", gap: 4, width: "100%" };
   return {
     flexDirection: "column",
     alignItems: "stretch",
     gap: 4,
-    width: block ? "100%" : 180,
+    width: 180,
+    maxWidth: "40%",
+    minWidth: 96,
+    flexShrink: 1,
   };
 }
 
@@ -211,7 +217,9 @@ export function createTabs(skin: TabsSkin) {
             aria-disabled={disabled || undefined}
             style={({ pressed }) => [container, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           >
-            <Text style={skin.verticalLabel(tokens, selected)}>{label}</Text>
+            {/* One line: when the rail flexes down in a narrow container the label
+                truncates instead of wrapping the rail taller. */}
+            <Text numberOfLines={1} style={skin.verticalLabel(tokens, selected)}>{label}</Text>
             {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
           </Pressable>
         </RippleClip>
