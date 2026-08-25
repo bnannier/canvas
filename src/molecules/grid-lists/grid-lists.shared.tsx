@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType } from "react";
 import { FlatList, StyleSheet, type DimensionValue } from "react-native";
-import { View, Pressable, Text, useTheme, useResponsive, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -242,10 +242,15 @@ export function createGridList(
     const { items, gallery, compact, virtualized, testID, style, onPressItem } = props;
     const columns = columnsOf(props);
     const gap = compact ? skin.gap.compact : skin.gap.default;
-    // ONE responsive resolution for the whole grid: at phone widths the tiles
-    // fill the row, and the windowed path's column count follows suit (it used
-    // to stay at 2-3 columns of 100%-wide tiles).
-    const phone = useResponsive({ base: false, sm: true });
+    // ONE responsive resolution for the whole grid, measured against the grid's
+    // OWN container (the DataTable precedent: a grid in a narrow desktop column
+    // collapses too, and a viewport seed keeps the first frame plausible): at
+    // narrow widths the tiles fill the row, and the windowed path's column
+    // count follows suit (it used to stay at 2-3 columns of 100%-wide tiles).
+    const { value: phone, onLayout: onGridLayout } = useContainerBreakpoint(
+      { base: false, sm: true },
+      { seedViewport: true },
+    );
     const tileWidth: DimensionValue = phone ? "100%" : s.TILE_WIDTH[columns];
     // FlatList lays out `numColumns` tiles per row itself (mirrors the flex-wrap
     // grid's column count): one at phone widths, else cols3 -> 3, cols2 (the
@@ -289,6 +294,7 @@ export function createGridList(
           // responsive column count crosses the breakpoint.
           key={numColumns}
           testID={testID}
+          onLayout={onGridLayout}
           style={style}
           data={items}
           renderItem={({ item, index }) => renderTile(item, index)}
@@ -302,7 +308,7 @@ export function createGridList(
     }
 
     return (
-      <View testID={testID} style={[s.container, { gap }, style]}>
+      <View testID={testID} onLayout={onGridLayout} style={[s.container, { gap }, style]}>
         {items.map((item, index) => (
           <Fragment key={keyOf(item, index)}>{renderTile(item, index)}</Fragment>
         ))}

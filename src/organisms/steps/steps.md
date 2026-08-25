@@ -39,6 +39,21 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 />
 ```
 
+### Stacks at narrow widths
+
+`stacks` renders the horizontal layout as the vertical one when the component's
+own container is at or below `stackBreakpoint` (default `sm` = 640):
+container-measured, like Row `stacks`, so a wizard header inside a narrow
+column stacks too.
+
+```tsx
+<Steps
+  stacks
+  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }, { label: "Done" }]}
+  defaultCurrent={1}
+/>
+```
+
 ### Progress bar
 
 ```tsx

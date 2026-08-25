@@ -75,7 +75,7 @@ function GlassLensLayer({ style }: { style: StyleProp<ViewStyle> }) {
   return <View onLayout={onLayout} style={[style, { backdropFilter: filter, pointerEvents: "none" } as unknown as ViewStyle]} />;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, role, sheer, tint }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, role, onLayout, sheer, tint }: GlassSurfaceProps) {
   const { surface, dark, tokens, glass, reducedTransparency, increasedContrast } = useTheme();
   // The under-fill behind the material: the caller's `tint` for a bright glass control
   // (the Slider knob), else the glass material's OWN fill, `glass-tint`. It is not the
@@ -96,7 +96,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
 
   if (surface !== "glass") {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout}>
         {children}
       </PlainSurface>
     );
@@ -106,7 +106,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
   // opaque, before the frost material below AND before the no-module fallback, so an
   // opaque + bordered surface is guaranteed even when expo-blur is not installed
   // (Apple AX1/AX2).
-  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role });
+  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role, onLayout });
   if (degraded) return degraded;
 
   // Chromium web: the real Liquid Glass LENS. The sized SVG displacement filter
@@ -125,7 +125,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
       </>
     );
     return (
-      <GlassBox style={style} material={material} pointerEvents={pointerEvents} testID={testID} role={role}>
+      <GlassBox style={style} material={material} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout}>
         {children}
       </GlassBox>
     );
@@ -135,7 +135,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
   // (opaque) fill, so a bare consumer gets a flat, legible surface rather than a hole.
   if (!BlurView) {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout}>
         {children}
       </PlainSurface>
     );
@@ -159,7 +159,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, she
   );
 
   return (
-    <GlassBox style={style} material={material} pointerEvents={pointerEvents} testID={testID} role={role}>
+    <GlassBox style={style} material={material} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout}>
       {children}
     </GlassBox>
   );

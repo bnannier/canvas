@@ -24,6 +24,10 @@ export interface GlassSurfaceProps {
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
   pointerEvents?: ViewProps["pointerEvents"];
+  /** Layout callback forwarded to the ROOT element of every material branch, so
+   *  a shell built on GlassSurface (a navbar measuring itself for its narrow
+   *  collapse) can use the container-measurement hooks. */
+  onLayout?: ViewProps["onLayout"];
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
@@ -236,11 +240,12 @@ export function GlassBox({
   pointerEvents,
   testID,
   role,
+  onLayout,
   material,
 }: GlassSurfaceProps & { material: ReactNode }) {
   const { outer, clip } = splitSurfaceStyle(style);
   return (
-    <View style={[outer, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role}>
+    <View style={[outer, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout}>
       <View style={clip}>
         {material}
         {children}
@@ -251,9 +256,9 @@ export function GlassBox({
 
 // The no-glass / no-module fallback: one plain View identical to the pre-portal
 // surface (keeps the skin's own opaque fill from `style`).
-export function PlainSurface({ style, children, pointerEvents, testID, role }: GlassSurfaceProps) {
+export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout }: GlassSurfaceProps) {
   return (
-    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role}>
+    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout}>
       {children}
     </View>
   );
@@ -274,7 +279,7 @@ export function degradedGlassSurface(
   if (!flags.increasedContrast && !flags.reducedTransparency) return null;
   const style = flags.increasedContrast ? [props.style, contrastBorder(flags.tokens)] : props.style;
   return (
-    <PlainSurface style={style} pointerEvents={props.pointerEvents} testID={props.testID}>
+    <PlainSurface style={style} pointerEvents={props.pointerEvents} testID={props.testID} onLayout={props.onLayout}>
       {props.children}
     </PlainSurface>
   );

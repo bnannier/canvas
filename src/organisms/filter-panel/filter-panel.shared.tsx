@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { View, Text, Pressable, useTheme, useControllableState, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Checkbox as WebCheckbox } from "../../atoms/checkbox/checkbox.js";
+import { Drawer } from "../drawer/drawer.js";
 import {
   type Density,
   type FilterPanelSkin,
@@ -80,6 +81,23 @@ export interface FilterPanelProps {
   bordered?: boolean;
   // Density (pick one): tighten the panel's padding and row spacing.
   compact?: boolean;
+
+  // Responsive drawer axis: at and below `drawerBreakpoint` the docked panel
+  // collapses to a kit-owned "Filters (n)" outline Button that opens the panel
+  // inside a start-edge Drawer, so a phone keeps its width for the results.
+  /** Opt in to the responsive panel->drawer behavior. Off by default: a bare
+   *  panel is the docked column at every width, exactly as before. */
+  responsive?: boolean;
+  /** The width at and below which `responsive` collapses to the drawer
+   *  (default `sm` = 640). */
+  drawerBreakpoint?: BreakpointKey;
+  /** The responsive drawer's open state (CONTROLLED). Omit for the
+   *  self-managed trigger button. */
+  open?: boolean;
+  /** Initial open state for the uncontrolled responsive drawer (default closed). */
+  defaultOpen?: boolean;
+  /** Fired when the responsive drawer opens or closes (trigger, scrim, back). */
+  onOpenChange?: (open: boolean) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -154,9 +172,16 @@ export function createFilterPanel(
     // overrides it for callers that manage the number themselves.
     const shownCount = activeCount ?? selectedSet.size;
 
-    return (
+    // Responsive drawer mode (opt-in): viewport-based like the Sidebar (the
+    // Drawer overlays the WINDOW, so the window is the truthful basis here).
+    const bucket = useBreakpoint();
+    const asDrawer =
+      !!props.responsive && bucket !== "base" && breakpoints[bucket] <= breakpoints[props.drawerBreakpoint ?? "sm"];
+    const [panelOpen, setPanelOpen] = useControllableState<boolean>(props.open, props.defaultOpen ?? false, props.onOpenChange);
+
+    const panel = (
       <View
-        testID={testID}
+        testID={asDrawer ? undefined : testID}
         style={[
           skin.panelBase,
           // `bordered` wraps it as a rounded card with a border and a card fill;
@@ -243,5 +268,24 @@ export function createFilterPanel(
         ))}
       </View>
     );
+
+    if (asDrawer) {
+      // The kit-owned trigger: an outline Button carrying the live filter count,
+      // opening the SAME panel inside a start-edge Drawer. Controlled use goes
+      // through `open`/`onOpenChange`; a bare responsive panel self-manages.
+      const filtersLabel = shownCount > 0 ? `Filters (${shownCount})` : "Filters";
+      return (
+        <View testID={testID}>
+          <Button outline small onPress={() => setPanelOpen(true)}>
+            {filtersLabel}
+          </Button>
+          <Drawer open={panelOpen} onOpenChange={setPanelOpen}>
+            {panel}
+          </Drawer>
+        </View>
+      );
+    }
+
+    return panel;
   };
 }
