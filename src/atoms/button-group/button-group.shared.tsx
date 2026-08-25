@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./button-group.styles.js";
 
@@ -262,7 +262,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const triggerHeight = s.sizeHeight[size];
     // Measure the split control so the dropdown can match its width and never
     // render narrower than the button it drops from.
-    const [triggerWidth, setTriggerWidth] = useState(0);
+    const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
     // The skin's splitMenu merges the card visuals (fill/border/shadow/radius)
     // with the inline anchor (position/top/end/marginTop/zIndex). Split them so
@@ -276,7 +276,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         ref={triggerRef}
         style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}
         testID={testID}
-        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
+        onLayout={onTriggerLayout}
       >
         {/* Each half is its own rounded surface, so its bounded Android ripple is clipped
             to those corners by a RippleClip parent (no-op on iOS/web). See src/style/ripple-clip. */}

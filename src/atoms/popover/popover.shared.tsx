@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useEscapeKey, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useMeasuredWidth, useEscapeKey, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -108,7 +108,7 @@ export function createPopover(skin: PopoverSkin) {
     // Match the floating card's min width to the trigger, measured off the wrapper
     // (the card portals out, so it never feeds back into this width). The wrapper
     // hugs the trigger, so its laid-out width is the trigger's box.
-    const [triggerWidth, setTriggerWidth] = useState(0);
+    const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
 
     // The card body (heading, supporting line, custom content, optional action),
@@ -159,7 +159,7 @@ export function createPopover(skin: PopoverSkin) {
         ref={triggerRef}
         testID={testID}
         style={[s.wrapper, open ? s.wrapperLifted : null, style]}
-        onLayout={(e) => { const l = e.nativeEvent.layout; if (l) setTriggerWidth(l.width); }}
+        onLayout={onTriggerLayout}
       >
         <View style={s.triggerWrap}>
           <Button outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
