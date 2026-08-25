@@ -160,10 +160,10 @@ export function createGridList(
   Button: ButtonComponent = WebButton,
 ) {
   // A borderless gallery thumbnail: a square color block with a filename and size
-  // below. Owns the responsive width so it collapses to full width on phones.
-  function GalleryTile({ item, columns, onPress }: { item: GridListItem; columns: Columns; onPress?: () => void }) {
+  // below. The parent GridList resolves the responsive width ONCE and passes it
+  // down, so an N-tile grid carries one viewport subscription, not N.
+  function GalleryTile({ item, width, onPress }: { item: GridListItem; width: DimensionValue; onPress?: () => void }) {
     const { tokens } = useTheme();
-    const width = useResponsive<DimensionValue>({ base: s.TILE_WIDTH[columns], sm: "100%" });
     const inner = (
       <>
         {/* Square color block. A single translucent tint stands in for the legacy
@@ -204,13 +204,12 @@ export function createGridList(
   }
 
   // A bordered people card tile: a leading avatar, a title, supporting text, an
-  // optional badge, and an optional action row. Owns the responsive width so it
-  // collapses to full width on phones. Its surface and press feedback come from
-  // the Card atom (already platform-correct per build), so the skin only sets the
-  // tile padding density and the title type.
-  function PeopleTile({ item, columns, compact, onPress }: { item: GridListItem; columns: Columns; compact: boolean; onPress?: () => void }) {
+  // optional badge, and an optional action row. The parent GridList resolves the
+  // responsive width once and passes it down. Its surface and press feedback come
+  // from the Card atom (already platform-correct per build), so the skin only sets
+  // the tile padding density and the title type.
+  function PeopleTile({ item, width, compact, onPress }: { item: GridListItem; width: DimensionValue; compact: boolean; onPress?: () => void }) {
     const { tokens } = useTheme();
-    const width = useResponsive<DimensionValue>({ base: s.TILE_WIDTH[columns], sm: "100%" });
     const pad = compact ? skin.tilePad.compact : skin.tilePad.default;
     return (
       <Card onPress={onPress} style={[{ flexGrow: 1, alignItems: "center", padding: pad }, { width }]}>
@@ -243,18 +242,24 @@ export function createGridList(
     const { items, gallery, compact, virtualized, testID, style, onPressItem } = props;
     const columns = columnsOf(props);
     const gap = compact ? skin.gap.compact : skin.gap.default;
+    // ONE responsive resolution for the whole grid: at phone widths the tiles
+    // fill the row, and the windowed path's column count follows suit (it used
+    // to stay at 2-3 columns of 100%-wide tiles).
+    const phone = useResponsive({ base: false, sm: true });
+    const tileWidth: DimensionValue = phone ? "100%" : s.TILE_WIDTH[columns];
     // FlatList lays out `numColumns` tiles per row itself (mirrors the flex-wrap
-    // grid's column count): cols3 -> 3, cols2 (the default) -> 2.
-    const numColumns = columns === "cols3" ? 3 : 2;
+    // grid's column count): one at phone widths, else cols3 -> 3, cols2 (the
+    // default) -> 2.
+    const numColumns = phone ? 1 : columns === "cols3" ? 3 : 2;
 
     // One tile, keyless so it can be used both by the eager `.map` (which supplies
     // the key via a Fragment) and by FlatList's renderItem (which keys via keyExtractor).
     const renderTile = (item: GridListItem, index: number) => {
       const onPress = onPressItem ? () => onPressItem(index) : undefined;
       return gallery ? (
-        <GalleryTile item={item} columns={columns} onPress={onPress} />
+        <GalleryTile item={item} width={tileWidth} onPress={onPress} />
       ) : (
-        <PeopleTile item={item} columns={columns} compact={!!compact} onPress={onPress} />
+        <PeopleTile item={item} width={tileWidth} compact={!!compact} onPress={onPress} />
       );
     };
 
@@ -280,6 +285,9 @@ export function createGridList(
     if (virtualized && bounded) {
       return (
         <FlatList
+          // FlatList cannot change numColumns on a live list; remount when the
+          // responsive column count crosses the breakpoint.
+          key={numColumns}
           testID={testID}
           style={style}
           data={items}

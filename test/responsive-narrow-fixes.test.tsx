@@ -6,6 +6,7 @@ import { render, cleanup, screen } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { monthCellSize } from "../src/organisms/calendar/calendar.shared.tsx";
 import { DescriptionList } from "../src/molecules/description-lists/description-lists.tsx";
+import { GridList } from "../src/molecules/grid-lists/grid-lists.tsx";
 import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
@@ -51,5 +52,42 @@ describe("DescriptionList twoColumn term narrowing", () => {
     ui();
     resizeViewport(375);
     expect((screen.getByText("Full name") as HTMLElement).style.width).toBe("120px");
+  });
+});
+
+describe("GridList responsive tiles (one resolution, virtualized path included)", () => {
+  const items = [
+    { title: "Design", subtitle: "12 files" },
+    { title: "Docs", subtitle: "4 files" },
+    { title: "Assets", subtitle: "31 files" },
+  ];
+  const tileOf = (title: string) => {
+    // Walk up from the title Text to the ancestor carrying the width style.
+    let node: HTMLElement | null = screen.getByText(title) as HTMLElement;
+    while (node && !node.style.width) node = node.parentElement;
+    return node!;
+  };
+
+  it("gallery tiles collapse to full width at phone widths", () => {
+    render(
+      <ThemeProvider>
+        <GridList gallery items={items} />
+      </ThemeProvider>,
+    );
+    expect(tileOf("Design").style.width).toBe("48%");
+    resizeViewport(375);
+    expect(tileOf("Design").style.width).toBe("100%");
+  });
+
+  it("virtualized grids drop to one full-width column at phone widths", () => {
+    resizeViewport(375);
+    render(
+      <ThemeProvider>
+        <GridList gallery virtualized style={{ maxHeight: 480 }} items={items} />
+      </ThemeProvider>,
+    );
+    // Every tile is full width; the old bug kept 2-3 FlatList columns of
+    // 100%-wide tiles at phone widths.
+    for (const item of items) expect(tileOf(item.title).style.width).toBe("100%");
   });
 });
