@@ -3,6 +3,7 @@
 // test/viewport.ts (fresh render per width).
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, screen, fireEvent, act } from "@testing-library/react";
+import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Navbar } from "../src/organisms/navbars/navbars.tsx";
 import { Steps } from "../src/organisms/steps/steps.tsx";
@@ -59,6 +60,17 @@ describe("Navbar narrow collapse", () => {
     fireEvent.click(trigger);
     fireEvent.click(screen.getByText("Deploys"));
     expect(picked).toBe(1);
+  });
+
+  it("collapses nothing for a bar with no links: no menu button, trailing actions intact", () => {
+    resizeViewport(375);
+    // A console topbar carries its controls in `actions`, which is not nav and so
+    // never folds into the menu. With no links there is nothing to collapse, so the
+    // hamburger would open an empty popover; it is not rendered at all.
+    ui(<Navbar brand="Canvas" actions={<Text testID="bell">Alerts</Text>} avatar="RC" />);
+    expect(screen.queryByLabelText("Navigation menu")).toBeNull();
+    expect(screen.getByTestId("bell")).toBeTruthy();
+    expect(screen.getByText("RC")).toBeTruthy();
   });
 });
 

@@ -5,7 +5,12 @@ primary app-level navigation. The bar measures its own width: at and below the
 `sm` breakpoint (640) the links row automatically collapses into a menu button
 opening a dropdown of the same links (the active one checkmarked), so links
 never clip off a phone screen; `active` and `onSelect` keep their contract in
-both renderings.
+both renderings. Either cluster takes a caller-supplied element beside its
+built-in parts: `brandContent` leads the left one with a logo mark (beside or
+instead of the `brand` wordmark) and `actions` leads the right one with
+free-form trailing controls, ahead of `actionLabel` and `avatar`. `links` is
+optional, so a console topbar with no middle nav renders neither the links row
+nor the menu button that stands in for it.
 
 ## Usage
 
@@ -47,7 +52,57 @@ both renderings.
 />
 ```
 
+### Console topbar
+
+```tsx
+<Navbar
+  bordered
+  brandContent={<Icon layers size={22} />}
+  actions={
+    <>
+      <Button ghost small accessibilityLabel="Search" iconLeft={<Icon search muted size={13} />} iconRight={<Kbd>⌘K</Kbd>} />
+      <Dropdown
+        alignEnd
+        triggerLabel="Notifications"
+        items={[
+          { label: "Deploy finished", icon: "check" },
+          { label: "Quota at 90%", icon: "bell" },
+        ]}
+      >
+        <Row tight alignCenter>
+          <Icon bell muted size={18} />
+          <Badge status error accessibilityLabel="2 unread notifications">2</Badge>
+        </Row>
+      </Dropdown>
+      <AvatarMenu
+        compact
+        name="Rachel Chen"
+        email="rachel@example.com"
+        items={[
+          { label: "Profile", icon: "user" },
+          { label: "Sign out", icon: "logOut", separatorBefore: true },
+        ]}
+      />
+    </>
+  }
+/>
+```
+
 ## Do & Don't
+
+### Brand element
+
+**Do**: Pass the mark through `brandContent`, so the bar owns the whole brand group and the wordmark keeps its own type.
+
+```tsx
+<Navbar bordered brandContent={<Icon layers size={20} />} brand="Console" links={["Overview", "Access", "Audit"]} avatar="RC" />
+```
+
+**Don't**: Folding the mark into the wordmark string leaves it as text, stuck in the title's size and color.
+
+```tsx
+<Navbar bordered brand="◆ Console" links={["Overview", "Access", "Audit"]} avatar="RC" />
+```
 
 ### Standard topbar
 

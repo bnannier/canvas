@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Navbar } = scope;
+  const { Icon, Navbar } = scope;
   return (
-<Navbar bordered brand="Canvas" defaultActive={0} links={["Dashboard", "Users", "Settings"]} actionLabel="New" avatar="RC" />
+<Navbar bordered brandContent={<Icon layers size={20} />} brand="Console" links={["Overview", "Access", "Audit"]} avatar="RC" />
   );
 }
