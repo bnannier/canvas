@@ -1,6 +1,6 @@
 # DashboardGrid
 
-A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width. Cells render bare, because a widget arrives with its own surface (a Card, a Chart, a Stats row) and a second frame around it would only double up. Locked, it is a plain static grid and no drag machinery is mounted at all; `unlocked` turns on customize mode, where every cell gains a grip and the board reorders by pointer, keyboard, or screen reader through the kit's own drag-and-drop. The order is a plain array of ids, controlled through `order` and `onOrderChange` so the app can persist it, or left to the grid with `defaultOrder`. The board takes its widgets through `items`, the collection prop every other collection-taking component in the kit uses; the original `widgets` spelling still works as a deprecated alias and warns in development.
+A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width. Cells render bare, because a widget arrives with its own surface (a Card, a Chart, a Stats row) and a second frame around it would only double up. A widget's `title` is its accessible name rather than a header the grid paints: customize mode uses it to name the widget's drag grip and its drop zone. Locked, it is a plain static grid and no drag machinery is mounted at all; `unlocked` turns on customize mode, where every cell gains a grip and the board reorders by pointer, keyboard, or screen reader through the kit's own drag-and-drop. The order is a plain array of ids, controlled through `order` and `onOrderChange` so the app can persist it, or left to the grid with `defaultOrder`. The board takes its widgets through `items`, the collection prop every other collection-taking component in the kit uses; the original `widgets` spelling still works as a deprecated alias and warns in development.
 
 ## Usage
 
@@ -145,6 +145,46 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
   items={[
     { id: "revenue", span: 6, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
     { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
+  ]}
+/>
+```
+
+### `title` names the widget for assistive tech
+
+**Do**: Give every widget the title its own header already shows. Nothing paints it, but customize mode reads it out: the grip announces "Reorder Signups", and moving the widget announces which one moved and what it landed against.
+
+```tsx
+<DashboardGrid
+  unlocked
+  items={[
+    {
+      id: "signups",
+      span: 6,
+      title: "Signups",
+      content: (
+        <Card>
+          <CardHeader>
+            <CardTitle>Signups</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Typography h2>1,204</Typography>
+          </CardContent>
+        </Card>
+      ),
+    },
+    { id: "revenue", span: 6, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
+  ]}
+/>
+```
+
+**Don't**: Don't pass a slug, an id, or a placeholder. The board looks identical, and that is the trap: a keyboard or screen-reader user in customize mode is left dragging "widget-2" around with nothing to tell them which tile it is.
+
+```tsx
+<DashboardGrid
+  unlocked
+  items={[
+    { id: "signups", span: 6, title: "widget-1", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
+    { id: "revenue", span: 6, title: "widget-2", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
   ]}
 />
 ```

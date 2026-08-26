@@ -3,20 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, DashboardGrid } = scope;
+  const { DashboardGrid, BarList } = scope;
   return (
 <DashboardGrid
+  unlocked
   items={[
-    {
-      id: "signups",
-      span: 6,
-      title: "Signups",
-      content: (
-        <View style={{ backgroundColor: tokens.card, borderRadius: 12, padding: 16 }}>
-          <Text style={{ fontSize: 24, fontWeight: "600", color: tokens.foreground }}>1,204</Text>
-        </View>
-      ),
-    },
+    { id: "signups", span: 6, title: "widget-1", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
+    { id: "revenue", span: 6, title: "widget-2", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
   ]}
 />
   );

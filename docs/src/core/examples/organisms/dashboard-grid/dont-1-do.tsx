@@ -6,6 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Card, CardContent, CardHeader, CardTitle, DashboardGrid, Typography, BarList } = scope;
   return (
 <DashboardGrid
+  unlocked
   items={[
     {
       id: "signups",

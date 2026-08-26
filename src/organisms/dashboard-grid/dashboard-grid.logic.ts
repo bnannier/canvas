@@ -36,7 +36,14 @@ export interface DashboardWidget {
   span: number;
   /** Width in columns on the `narrow` tier; omit to take the span-derived default. */
   narrowSpan?: number;
-  /** Widget header label. */
+  /**
+   * The widget's ACCESSIBLE NAME, never visible chrome. Cells render bare (a widget arrives
+   * with its own surface, which carries its own heading), so nothing paints this. Customize
+   * mode is what reads it: it names the widget's drop zone and its draggable, so the grip
+   * announces "Reorder {title}" and every drag announcement says which widget moved and what
+   * it landed against. Locked, nothing reads it at all, but it is still required, because the
+   * board can be unlocked at any time. Give it the same words the widget's own header shows.
+   */
   title: string;
   /** The widget body. */
   content?: ReactNode;
