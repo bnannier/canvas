@@ -83,8 +83,8 @@ export const GEO_MAP_ASPECT = WORLD_VIEW_BOX.width / WORLD_VIEW_BOX.height;
 // Bubble radii in viewBox units (a 2000-wide box), so they scale with the map.
 // The largest count fills MAX_RADIUS; MIN_RADIUS is the floor that keeps a
 // place with a tiny count on the map at all.
-const MAX_RADIUS = 52;
-const MIN_RADIUS = 12;
+export const MAX_RADIUS = 52;
+export const MIN_RADIUS = 12;
 
 // Stroke widths, also in viewBox units. The coastline is what separates land from
 // ocean when both are near-neighbours on the scheme's ramp (muted land on a card
@@ -99,7 +99,7 @@ const BORDER_WIDTH = 1.4;
 const BORDER_OPACITY = 0.28;
 
 // The ring that lifts a bubble off the land, and the selection ring outside it.
-const BUBBLE_RING_WIDTH = 4;
+export const BUBBLE_RING_WIDTH = 4;
 const SELECTION_RING_GAP = 10;
 const SELECTION_RING_WIDTH = 6;
 // Press slop in px: the smallest bubbles are far under a finger, so a press
