@@ -25,7 +25,10 @@
 import { projectNaturalEarth } from "./geo-map.projection.js";
 import { WORLD_VIEW_BOX } from "./geo-map.world.js";
 import { MAX_ZOOM_LEVEL } from "./geo-map.camera.js";
-import { bubbleRadius, MIN_RADIUS, BUBBLE_RING_WIDTH, type GeoMapPoint, type GeoMapBubble } from "./geo-map.shared.js";
+import { bubbleRadius, MIN_RADIUS, BUBBLE_RING_WIDTH, type GeoMapBubble } from "./geo-map.bubbles.js";
+// Type-only, so it is erased and cannot re-create the runtime cycle that
+// geo-map.bubbles.ts exists to break.
+import type { GeoMapPoint } from "./geo-map.shared.js";
 import type { FlagRow } from "../shared/chart-inspect.js";
 
 /** One merge in the linkage, ascending by `distance` across the array. */
@@ -78,6 +81,16 @@ function project(p: GeoMapPoint) {
 /** A count that can be summed: negatives and NaN read as 0, matching bubbleRadius. */
 function weight(p: GeoMapPoint): number {
   return Number.isFinite(p.count) && p.count > 0 ? p.count : 0;
+}
+
+/**
+ * The count a FLAG shows, which is not quite the count an AREA encodes: only a
+ * non-numeric value is coerced here, so a negative count still displays as itself
+ * (a devWarn already fires for it) even though it contributes nothing to the disc.
+ * This is exactly what the flag showed before clustering existed.
+ */
+function display(p: GeoMapPoint): number {
+  return Number.isFinite(p.count) ? p.count : 0;
 }
 
 /**
@@ -208,6 +221,10 @@ export function geoMapClusters(
       wy += at[i].y * w;
       if (w > weight(points[lead])) lead = i;
     }
+    // A single place is its own centroid, taken directly rather than as x*c/c:
+    // the round trip through a weighted mean is not bit-exact, and the
+    // un-clustered map has to land on precisely the coordinates it always did.
+    if (members.length === 1) return { x: at[lead].x, y: at[lead].y, count, members, lead };
     const x = count > 0 ? wx / count : members.reduce((s, i) => s + at[i].x, 0) / members.length;
     const y = count > 0 ? wy / count : members.reduce((s, i) => s + at[i].y, 0) / members.length;
     return { x, y, count, members, lead };
@@ -262,15 +279,15 @@ export function geoClusterRows(
   points: readonly GeoMapPoint[],
   formatValue: (v: number) => string,
 ): FlagRow[] {
-  if (cluster.members.length === 1) return [{ value: formatValue(cluster.count) }];
+  if (cluster.members.length === 1) return [{ value: formatValue(display(points[cluster.members[0]])) }];
   const ranked = [...cluster.members].sort(
     (a, b) => weight(points[b]) - weight(points[a]) || a - b,
   );
   const named = ranked.slice(0, NAMED_IN_FLAG);
-  const rows: FlagRow[] = named.map((i) => ({ label: points[i]?.label ?? "", value: formatValue(weight(points[i])) }));
+  const rows: FlagRow[] = named.map((i) => ({ label: points[i]?.label ?? "", value: formatValue(display(points[i])) }));
   const rest = ranked.slice(NAMED_IN_FLAG);
   if (rest.length > 0) {
-    rows.push({ label: `+${rest.length} more`, value: formatValue(rest.reduce((s, i) => s + weight(points[i]), 0)) });
+    rows.push({ label: `+${rest.length} more`, value: formatValue(rest.reduce((s, i) => s + display(points[i]), 0)) });
   }
   return rows;
 }
