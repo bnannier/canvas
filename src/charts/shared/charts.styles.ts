@@ -217,9 +217,22 @@ export function verticalLabel(tokens: ColorTokens): TextStyle {
 // look verbatim (a rounded-lg (8) card surface and rounded (4) bar corners); the iOS
 // and Android skins reference it directly so the three columns stay byte-identical.
 
-/** The zoom control bar under a zoomable chart's plot. A kit-internal constant, so
- *  the spacing is the chart's own decision and never a call-site style. */
-export const zoomBar: ViewStyle = { marginTop: 12, justifyContent: "flex-end" };
+/**
+ * The zoom control bar, laid OVER a zoomable chart's plot at its bottom-right, the
+ * corner every map puts its controls in.
+ *
+ * Absolutely positioned rather than stacked under the plot, for two reasons: it
+ * takes no layout space, so the map keeps its full height, and it stays a SIBLING
+ * of the plot rather than a child. A control inside the plot would end the
+ * hit layer's run as the plot's last child and, worse, make a mouse press's
+ * target-relative offsetX measure from the control instead of the plot (see the
+ * note in chart-inspect.tsx). Yoga positions an absolute child inside the parent's
+ * padding box, so zero insets land it on the plot's own corner.
+ *
+ * A kit-internal constant: the placement is the chart's decision, never a
+ * call-site style.
+ */
+export const zoomBar: ViewStyle = { position: "absolute", right: 0, bottom: 0, flexDirection: "row" };
 
 export const webSkin: ChartSkin = {
   surfaceRadius: 8,
