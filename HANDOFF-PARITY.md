@@ -16,6 +16,14 @@ added after three records (`Gauge.size`, `PieChart.size`, `Drawer.size`) were fo
 `small`/`large` props their components had never had, which read as settled parity and sent
 documentation examples chasing props that silently do nothing.
 
+It also fails on a **dead record**: one for a prop the kit now declares under the hand-off's own
+name, or for a component the kit now exports. A record is consulted only while the hand-off prop
+is ABSENT here, so shipping the capability makes its record unreadable, and every dead one found
+so far had gone false as well (`Tooltip.children` still said the Tooltip could not attach to a
+caller's node; `ActionPanel.children` and `Navbar.actions` denied slots their components had
+gained the day before). Those went unnoticed because closing a gap regenerates this report and
+the row simply disappears, leaving the record behind with nothing pointing at it.
+
 **What this check cannot see.** It compares the prop SURFACE, not what a prop resolves to. Where
 a name exists on both sides it is counted satisfied even if the two render different metrics, so
 a scale or spacing drift passes silently. Those are recorded under Metric gaps below, from

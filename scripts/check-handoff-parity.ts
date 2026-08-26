@@ -188,6 +188,25 @@ const missingComponents: { name: string; tier: string; props: number; divergence
 const classified: Row[] = [];
 const unclassified: Row[] = [];
 const brokenRedirects: string[] = [];
+/**
+ * Records this check can never read: the same guarantee as `brokenRedirect`, from the other end.
+ * That one catches a settled record pointing at a prop the kit LACKS; this one catches a record
+ * about a prop the kit HAS. A divergence is consulted only when the hand-off prop is absent, so
+ * the day a component ships that prop under the hand-off's own name its record stops being
+ * adjudication and becomes an unread claim nothing tests. Every one found so far was false by
+ * then: `Tooltip.children` asserted Canvas's Tooltip "cannot attach to a caller's node" while the
+ * element trigger shipped, `ActionPanel.children` sent the reader to `description` past the
+ * component's own children slot, and `Navbar.actions` denied a ReactNode slot the bar takes.
+ * Deleting them one sweep at a time is what this replaces.
+ *
+ * Scoped to claims about the KIT, deliberately. A `global` record is the fallback for any
+ * component prop no component-level record claims, so it is legitimately unread whenever every
+ * such prop happens to be adjudicated per component: unread is its resting state. A record under
+ * a component the kit has not shipped is skipped as well (the component is reported absent as a
+ * whole, and the record goes live the day it lands), and a record whose hand-off prop is gone is
+ * a claim about the SNAPSHOT rather than the kit, which the extract tool owns.
+ */
+const deadRecords: string[] = [];
 let satisfied = 0;
 let handoffProps = 0;
 
@@ -206,6 +225,11 @@ for (const [name, comp] of Object.entries(snapshot.components)) {
     handoffProps++;
     if (canvas.has(prop)) {
       satisfied++;
+      const dead = divergences.components[name]?.[prop];
+      if (dead)
+        deadRecords.push(
+          `${name}.${prop} (${dead.kind}) is recorded in divergences.json, but ${name}Props declares \`${prop}\` itself, so the record is never read`,
+        );
       continue;
     }
     const d = divergences.components[name]?.[prop] ?? divergences.global[prop];
@@ -216,6 +240,15 @@ for (const [name, comp] of Object.entries(snapshot.components)) {
       if (bad) brokenRedirects.push(bad);
     } else unclassified.push(row);
   }
+}
+
+// An absent-component record outlives its purpose the same way: once the kit exports the
+// component, the record is no longer why it is missing, it is a claim that it still is.
+for (const name of Object.keys(divergences.absentComponents)) {
+  if (allMembers(dist, `${name}Props`))
+    deadRecords.push(
+      `absentComponents.${name} (${divergences.absentComponents[name]!.kind}) is recorded in divergences.json, but the kit exports ${name}Props, so the record is never read`,
+    );
 }
 
 // ---------- report ----------
@@ -258,6 +291,16 @@ lines.push(
   "added after three records (`Gauge.size`, `PieChart.size`, `Drawer.size`) were found pointing at",
   "`small`/`large` props their components had never had, which read as settled parity and sent",
   "documentation examples chasing props that silently do nothing.",
+);
+lines.push("");
+lines.push(
+  "It also fails on a **dead record**: one for a prop the kit now declares under the hand-off's own",
+  "name, or for a component the kit now exports. A record is consulted only while the hand-off prop",
+  "is ABSENT here, so shipping the capability makes its record unreadable, and every dead one found",
+  "so far had gone false as well (`Tooltip.children` still said the Tooltip could not attach to a",
+  "caller's node; `ActionPanel.children` and `Navbar.actions` denied slots their components had",
+  "gained the day before). Those went unnoticed because closing a gap regenerates this report and",
+  "the row simply disappears, leaving the record behind with nothing pointing at it.",
 );
 lines.push("");
 lines.push(
@@ -394,18 +437,22 @@ console.log(`  present: ${satisfied}   settled divergences: ${settled.length}   
 console.log(`  components absent from the kit: ${missingComponents.length} (${absentTracked.length} tracked)`);
 console.log(checkOnly ? `Report checked: ${reportStale ? "STALE" : "current"}` : `Report written to ${REPORT}`);
 
-const failures = unclassified.length + absentUntracked.length + brokenRedirects.length + (reportStale ? 1 : 0);
+const failures =
+  unclassified.length + absentUntracked.length + brokenRedirects.length + deadRecords.length + (reportStale ? 1 : 0);
 if (failures) {
   console.log("");
   for (const c of absentUntracked) console.log(`  UNRECORDED COMPONENT  ${c.name} (${c.tier})`);
   for (const r of unclassified) console.log(`  UNCLASSIFIED PROP     ${r.component}.${r.prop}: ${r.type}`);
   for (const b of brokenRedirects) console.log(`  BROKEN REDIRECT       ${b}`);
+  for (const d of deadRecords) console.log(`  DEAD RECORD           ${d}`);
   if (reportStale) console.log(`  STALE REPORT          ${REPORT} is out of date; run \`bun run check-parity\`.`);
   console.log("");
   if (unclassified.length || absentUntracked.length)
     console.log("Close the gap in the kit, or record it in tools/handoff-parity/divergences.json.");
   if (brokenRedirects.length)
     console.log("A redirect names the prop that carries the capability in Canvas. Point it at a prop that exists, or reclassify the record as an open gap / intentional omission.");
+  if (deadRecords.length)
+    console.log("The kit closed that difference: delete the record from tools/handoff-parity/divergences.json, since nothing reads it and it still reads as adjudication.");
   process.exit(1);
 }
 console.log("Hand-off parity check passed.");
