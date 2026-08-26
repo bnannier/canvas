@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { GeoMap } from "../src/charts/geo-map/geo-map.tsx";
 import { bubbleAt, bubbleRadius, geoMapAccessibleName, geoMapBubbles, GEO_MAP_ASPECT } from "../src/charts/geo-map/geo-map.shared.tsx";
+import { geoMapClusterBubbles, geoMapClusters, geoMapLinkage, geoMapPeak } from "../src/charts/geo-map/geo-map.cluster.ts";
+import { formatCompact } from "../src/charts/shared/chart-math.ts";
 import { WORLD_VIEW_BOX } from "../src/charts/geo-map/geo-map.world.ts";
 
 // GeoMap: behavior, the data-carrying accessible name, and the selection
@@ -259,5 +261,95 @@ describe("GeoMap", () => {
     const plot = container.querySelector('[role="img"]') as HTMLElement;
     // react-native-web writes the ratio as the CSS `<width> / <height>` pair.
     expect(plot.style.aspectRatio).toBe(`${GEO_MAP_ASPECT} / 1`);
+  });
+});
+
+// --- zoomable: aggregation that splits as the map is driven in ----------------
+//
+// The controlled `zoom` prop is what makes any of this reachable in a harness that
+// can render no SVG at all: it drives the split end to end with no gesture code.
+
+// Every pair here is under 10 viewBox units apart, so they are one bubble at world
+// zoom. Measured: SF-Oakland 0.9, SF-San Jose 3.3, SF-Sacramento 8.6.
+const BAY = [
+  { label: "San Francisco", lat: 37.7749, lng: -122.4194, count: 4820 },
+  { label: "Oakland", lat: 37.8044, lng: -122.2712, count: 1100 },
+  { label: "San Jose", lat: 37.3382, lng: -121.8863, count: 2400 },
+  { label: "Sacramento", lat: 38.5816, lng: -121.4944, count: 700 },
+];
+
+describe("GeoMap zoomable", () => {
+  it("leaves an ordinary map exactly as it was", () => {
+    // The behaviour-break guard for every consumer that never opts in: no
+    // `zoomable`, nothing merges, and the accessible name is byte-identical.
+    const plain = ui(<GeoMap title="Installs" points={BAY} />);
+    expect(imgLabel(plain.container)).toBe(geoMapAccessibleName(BAY, "Installs", formatCompact));
+    expect(imgLabel(plain.container)).not.toContain("group");
+  });
+
+  it("aggregates crowded places into one bubble and names the group after its largest", () => {
+    const { container } = ui(<GeoMap zoomable title="Installs" points={BAY} defaultSelected={1} />);
+    expect(imgLabel(container)).toContain("4 places in 1 group.");
+    fireLayout(container.querySelector('[role="img"]')!, 480);
+    // Oakland was selected, but the bubble drawn is the group, so the flag names
+    // the group rather than claiming to be Oakland alone.
+    expect(screen.getByText("San Francisco +3")).toBeTruthy();
+  });
+
+  it("splits that group as the zoom rises", () => {
+    const { container, rerender } = ui(<GeoMap zoomable zoom={1} title="Installs" points={BAY} />);
+    expect(imgLabel(container)).toContain("in 1 group.");
+    rerender(
+      <ThemeProvider>
+        <GeoMap zoomable zoom={16} title="Installs" points={BAY} />
+      </ThemeProvider>,
+    );
+    // At full zoom every place has its own bubble, so nothing is grouped at all.
+    expect(imgLabel(container)).toContain("4 places.");
+    expect(imgLabel(container)).not.toContain("group");
+  });
+
+  it("reports the pressed group's leading place, and every place inside it", () => {
+    let picked: number | null | undefined;
+    let places: number[] | undefined;
+    const { container } = ui(
+      <GeoMap
+        zoomable
+        title="Installs"
+        points={BAY}
+        onSelect={(i) => { picked = i; }}
+        onSelectPlaces={(ids) => { places = ids; }}
+      />,
+    );
+    const plot = container.querySelector('[role="img"]')!;
+    fireLayout(plot, 480);
+
+    const links = geoMapLinkage(BAY);
+    const clusters = geoMapClusters(BAY, links, 0);
+    const bubble = geoMapClusterBubbles(clusters, geoMapPeak(BAY, links))[0];
+    const scale = 480 / WORLD_VIEW_BOX.width;
+    fireEvent.click(plot.lastElementChild!, { offsetX: bubble.x * scale, offsetY: bubble.y * scale });
+
+    // onSelect keeps its exact meaning, a POINT index, so no existing consumer
+    // silently starts receiving something else; the members ride alongside.
+    expect(picked).toBe(0);
+    expect(places).toEqual([0, 1, 2, 3]);
+
+    fireEvent.click(plot.lastElementChild!, { offsetX: 480 * 0.47, offsetY: (480 / GEO_MAP_ASPECT) * 0.62 });
+    expect(picked).toBeNull();
+    expect(places).toEqual([]);
+  });
+
+  it("keeps the hit layer the last child of the plot, zoomable or not", () => {
+    // chart-inspect resolves a mouse press through offsetX, which is TARGET-relative,
+    // so the hit layer must stay empty AND last. A control rendered inside the plot
+    // should fail this named test rather than read as a harness mystery.
+    for (const node of [<GeoMap points={BAY} />, <GeoMap zoomable points={BAY} />]) {
+      cleanup();
+      const { container } = ui(node);
+      const plot = container.querySelector('[role="img"]')!;
+      fireLayout(plot, 480);
+      expect(plot.lastElementChild!.childElementCount).toBe(0);
+    }
   });
 });

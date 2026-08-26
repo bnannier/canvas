@@ -14,7 +14,7 @@
  * stay a constant size on screen, and bubbleAt keeps working in pixels.
  */
 import { WORLD_VIEW_BOX } from "./geo-map.world.js";
-import type { GeoMapBubble } from "./geo-map.shared.js";
+import type { GeoMapBubble } from "./geo-map.bubbles.js";
 
 /** The map camera in viewBox units: a content point `u` draws at `k * u + t`. */
 export interface GeoMapCamera {
