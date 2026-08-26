@@ -18,34 +18,16 @@
 // one (the docs catalog precedent: relying on onLayout alone hid every tile
 // when the web ResizeObserver did not fire).
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useState } from "react";
 import { Dimensions, type LayoutChangeEvent, type ViewStyle } from "react-native";
 import { responsive, useBreakpoint, type Responsive } from "./responsive.js";
-
-// Nothing ever changes, so the subscribe callback never fires; the value flips
-// only because React reads the server snapshot for the server render AND for
-// the hydration render, then the client snapshot from the first commit on.
-const subscribeNever = () => () => {};
-
-/**
- * False for the server render and the hydration render, true from the first
- * commit onward.
- *
- * The window-width fallback below cannot be read during hydration. On the
- * server there is no window, so a cell renders with no width; on the client the
- * window is right there, so the same cell would render an explicit pixel width
- * and React would report a hydration mismatch it does not patch up. Deferring
- * the fallback by one render keeps the hydration pass byte-identical to the
- * server and lets the real value land in the commit immediately after, which is
- * the same contract `ThemeProvider`'s `ssrScheme` gives the colour axis.
- */
-function useHydrated(): boolean {
-  return useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
-}
+// False for the server render and the hydration render, true from the first commit
+// onward. The window-width fallback below is a client-only fact: on the server there
+// is no window, so a cell renders with no width, and reading it during the hydration
+// render would make the same cell claim an explicit pixel width the server never
+// shipped. `use-hydrated.ts` carries the full note; DashboardGrid gates its stored
+// widget order behind the same hook.
+import { useHydrated } from "./use-hydrated.js";
 
 /**
  * Container probe for HUGGING components. A component whose root hugs its
