@@ -123,11 +123,6 @@
         ],
         "reason": "Canvas splits the action into its label and its handler rather than taking a ReactNode, so the panel owns the button's look."
       },
-      "children": {
-        "kind": "renamed",
-        "to": "description",
-        "reason": "The panel's body text is the `description` prop, per the 'components own their label anatomy' rule."
-      },
       "stacked": {
         "kind": "renamed",
         "to": "inline",
@@ -684,14 +679,6 @@
         "kind": "renamed",
         "to": "links",
         "reason": "Named for what they are, since the bar also carries actions and an avatar."
-      },
-      "actions": {
-        "kind": "renamed",
-        "to": [
-          "actionLabel",
-          "onAction"
-        ],
-        "reason": "Label plus handler rather than a ReactNode, so the bar owns the button's look."
       }
     },
     "Pagination": {
