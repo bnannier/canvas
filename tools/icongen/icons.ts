@@ -89,7 +89,7 @@ export const SOURCES: string[] = [
   "zoom-in", "zoom-out", "list-ordered", "list-tree", "layout-list", "layout-dashboard",
   "ellipsis-vertical", "grip", "grip-vertical", "grip-horizontal", "text-align-center",
   "text-align-justify", "sliders-horizontal", "sliders-vertical", "cog", "wand-sparkles",
-  "loader-circle", "circle-user", "life-buoy", "medal", "trophy", "wand",
+  "loader-circle", "circle-user", "life-buoy", "medal", "trophy", "wand", "blend",
 
   // --- security ---
   "eye-off", "lock-open", "shield-check", "shield-alert", "scan", "scan-line", "qr-code",
