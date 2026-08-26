@@ -41,7 +41,18 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // landed, so the old cap left no room for the planned roster. 160KB keeps the
 // same intent: room for the deliberate growth, tight enough to catch an
 // accidental doubling or a dependency creeping into the bundle.
-const JS_MAX_GZIP = 163_840; // 160 KB
+//
+// Raised again from 160KB for the GeoMap detail pass. The generated world data
+// went from Natural Earth 1:110m land alone to 1:50m land PLUS the 1:50m internal
+// country border mesh, on a viewBox widened from 1000 to 2000 units, which took
+// src/charts/geo-map/geo-map.world.ts from 5.6KB to 23.8KB gzip and the measured
+// bundle from 161.5KB to 180.8KB. The whole increase is one @generated data
+// module: it is a pair of string constants with no logic, and it tree-shakes out
+// entirely for a consumer who never imports GeoMap. 192KB leaves ~6% headroom over
+// the measured figure. That is deliberately more slack than the 160KB cap ended up
+// with (1.4%, which meant any addition at all failed CI) and still far under the
+// 1.6x an accidental doubling would need.
+const JS_MAX_GZIP = 196_608; // 192 KB
 
 // The optional/required peers a consumer resolves from the outside, excluded from
 // the kit's own JS size the same way their `import`s leave the bundle.

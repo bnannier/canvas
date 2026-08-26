@@ -17,12 +17,12 @@ import { chartRootWidth } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { formatCompact } from "../shared/chart-math.js";
 import { projectNaturalEarth } from "./geo-map.projection.js";
-import { WORLD_LAND_PATH, WORLD_VIEW_BOX } from "./geo-map.world.js";
+import { WORLD_BORDER_PATH, WORLD_LAND_PATH, WORLD_VIEW_BOX } from "./geo-map.world.js";
 
 // Shared GeoMap shell. A world map in the Natural Earth I projection: the land
-// silhouette is ONE muted path, precomputed at build time (see
-// geo-map.world.ts), and every datum is a circle at its projected coordinate
-// whose AREA carries the count. Pressing a bubble selects it (the rest dim) and
+// silhouette is ONE muted path and the shared country boundaries are ONE stroked
+// path, both precomputed at build time (see geo-map.world.ts), and every datum is
+// a circle at its projected coordinate whose AREA carries the count. Pressing a bubble selects it (the rest dim) and
 // flags its label and value, exactly as the rest of the Chart family inspects.
 //
 // The map is drawn in the generated viewBox's own units and scaled by the Svg's
@@ -80,11 +80,28 @@ const STANDARD_WIDTH = { default: 480, compact: 320 } as const;
 /** Width / height of the generated viewBox, and so of the rendered map. */
 export const GEO_MAP_ASPECT = WORLD_VIEW_BOX.width / WORLD_VIEW_BOX.height;
 
-// Bubble radii in viewBox units (a 1000-wide box), so they scale with the map.
+// Bubble radii in viewBox units (a 2000-wide box), so they scale with the map.
 // The largest count fills MAX_RADIUS; MIN_RADIUS is the floor that keeps a
 // place with a tiny count on the map at all.
-const MAX_RADIUS = 26;
-const MIN_RADIUS = 6;
+const MAX_RADIUS = 52;
+const MIN_RADIUS = 12;
+
+// Stroke widths, also in viewBox units. The coastline is what separates land from
+// ocean when both are near-neighbours on the scheme's ramp (muted land on a card
+// surface is only a few steps apart in dark), and the borders are what turn a
+// continent-shaped blob into a readable map. Both are drawn in the muted
+// FOREGROUND rather than a new token: it is the one mid-tone that reads against
+// the muted fill in both schemes. The borders sit fainter than the coast, so the
+// silhouette stays the primary read and the subdivisions stay secondary.
+const COASTLINE_WIDTH = 1.6;
+const COASTLINE_OPACITY = 0.45;
+const BORDER_WIDTH = 1.4;
+const BORDER_OPACITY = 0.28;
+
+// The ring that lifts a bubble off the land, and the selection ring outside it.
+const BUBBLE_RING_WIDTH = 4;
+const SELECTION_RING_GAP = 10;
+const SELECTION_RING_WIDTH = 6;
 // Press slop in px: the smallest bubbles are far under a finger, so a press
 // within this distance of a center counts as a hit on it.
 const MIN_HIT = 12;
@@ -257,7 +274,26 @@ export function createGeoMap(skin: ChartSkin) {
                 {/* The land, as one path in the generated viewBox's units. The
                     ocean is the chart surface itself, so both sides of the
                     coastline follow the scheme with no second fill. */}
-                <Path d={WORLD_LAND_PATH} fill={tokens.muted} />
+                <Path
+                  d={WORLD_LAND_PATH}
+                  fill={tokens.muted}
+                  stroke={tokens["muted-foreground"]}
+                  strokeWidth={COASTLINE_WIDTH}
+                  strokeOpacity={COASTLINE_OPACITY}
+                  strokeLinejoin="round"
+                />
+                {/* The shared country boundaries, as one STROKED path. Its
+                    subpaths are open lines, not rings, so it must never take a
+                    fill: the generator excludes coastlines from this mesh
+                    precisely because the path above already draws them. */}
+                <Path
+                  d={WORLD_BORDER_PATH}
+                  fill="none"
+                  stroke={tokens["muted-foreground"]}
+                  strokeWidth={BORDER_WIDTH}
+                  strokeOpacity={BORDER_OPACITY}
+                  strokeLinejoin="round"
+                />
                 {points.map((p, i) => (
                   <Circle
                     key={p.id ?? i}
@@ -270,7 +306,7 @@ export function createGeoMap(skin: ChartSkin) {
                     // separable (the ScatterPlot precedent) and lifts a bubble
                     // off the land it sits on.
                     stroke={tokens.card}
-                    strokeWidth={2}
+                    strokeWidth={BUBBLE_RING_WIDTH}
                   />
                 ))}
                 {/* Selection ring, drawn over the bubbles. */}
@@ -278,10 +314,10 @@ export function createGeoMap(skin: ChartSkin) {
                   <Circle
                     cx={placed[selected].x}
                     cy={placed[selected].y}
-                    r={placed[selected].r + 5}
+                    r={placed[selected].r + SELECTION_RING_GAP}
                     fill="none"
                     stroke={tokens.primary}
-                    strokeWidth={3}
+                    strokeWidth={SELECTION_RING_WIDTH}
                   />
                 ) : null}
               </Svg>

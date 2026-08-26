@@ -1,6 +1,6 @@
 # GeoMap
 
-A world map with a bubble per place: the land silhouette is one muted path precomputed at build time (no runtime fetch, no map dependency, no tiles), and each point is a circle at its projected coordinate whose AREA is proportional to its count, so doubling the count doubles the disc rather than its width. Single-identity encoding, so there is no tone axis and no legend. Press a bubble to flag its label and count (the others dim); the accessible name carries the biggest places with their values, because a screen reader user cannot see bubbles.
+A world map with a bubble per place: the land silhouette and the shared country borders are two paths precomputed at build time from Natural Earth 1:50m (no runtime fetch, no map dependency, no tiles), and each point is a circle at its projected coordinate whose AREA is proportional to its count, so doubling the count doubles the disc rather than its width. Single-identity encoding, so there is no tone axis and no legend. Press a bubble to flag its label and count (the others dim); the accessible name carries the biggest places with their values, because a screen reader user cannot see bubbles.
 
 ## Usage
 
