@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, spyOn } from "bun:test";
 import { render, cleanup, act, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { Text } from "react-native";
+import { AccessibilityInfo, Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 // Web build (the alias serves <name>.tsx); per-OS skins are covered by skins-smoke.
@@ -59,6 +59,28 @@ async function keyboardDrag(container: HTMLElement, label: string, keys: string[
   await flush();
   for (const key of keys) act(() => { fireEvent.keyDown(grip, { key }); });
   act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
+}
+
+// happy-dom lays nothing out, so every getBoundingClientRect reports 0x0 and the drag layer
+// measures a board with no geometry at all. Give the CELLS a rect derived from their LIVE
+// position in the grid row, which is what a real stacked layout reports: the widget rendered
+// first sits at the top. Read on every measure, so a board that has already been reordered
+// measures its NEW arrangement, exactly as the browser would.
+const CELL_HEIGHT = 100;
+const CELL_WIDTH = 600;
+function stubCellLayout(container: HTMLElement) {
+  const row = (container.querySelector("[data-testid='grid']") as HTMLElement).firstElementChild!;
+  const original = Element.prototype.getBoundingClientRect;
+  Element.prototype.getBoundingClientRect = function (this: Element) {
+    const index = this.parentElement === row ? Array.from(row.children).indexOf(this) : -1;
+    if (index < 0) return original.call(this);
+    const top = index * CELL_HEIGHT;
+    return {
+      x: 0, y: top, left: 0, top, right: CELL_WIDTH, bottom: top + CELL_HEIGHT,
+      width: CELL_WIDTH, height: CELL_HEIGHT, toJSON: () => ({}),
+    } as DOMRect;
+  };
+  return () => { Element.prototype.getBoundingClientRect = original; };
 }
 
 describe("DashboardGrid collection prop", () => {
@@ -259,6 +281,95 @@ describe("DashboardGrid uncontrolled order", () => {
   it("seeds from defaultOrder", () => {
     const { container } = ui(<DashboardGrid items={items} defaultOrder={["c", "b", "a"]} />);
     expect(bodyOrder(container)).toEqual(["body-c", "body-b", "body-a"]);
+  });
+});
+
+describe("DashboardGrid keyboard reorder tracks the rendered order", () => {
+  it("moves the second reorder by what is on screen, not by mount order", async () => {
+    let latest: string[] | null = null;
+    const { container } = ui(
+      <DashboardGrid unlocked testID="grid" items={items} onOrderChange={(o) => { latest = o; }} />,
+    );
+    const restore = stubCellLayout(container);
+    try {
+      // First reorder: Revenue past Signups. Mount order and rendered order still agree here.
+      await keyboardDrag(container, "Revenue", ["ArrowRight", "ArrowDown"]);
+      expect(bodyOrder(container)).toEqual(["body-b", "body-a", "body-c"]);
+      expect(latest).toEqual(["b", "a", "c"]);
+
+      // Second reorder, the regression: Signups now renders FIRST, and the widget after it on
+      // screen is Revenue. One step forward and past its midpoint must swap the two back. A
+      // cursor that walked the mount order would step to Latency instead and land ["a","c","b"].
+      await keyboardDrag(container, "Signups", ["ArrowRight", "ArrowDown"]);
+      expect(latest).toEqual(["a", "b", "c"]);
+      expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
+    } finally {
+      restore();
+    }
+  });
+
+  it("announces the widget the cursor is really over, and what the drop did", async () => {
+    const announced: string[] = [];
+    const spy = spyOn(AccessibilityInfo, "announceForAccessibility").mockImplementation((text: string) => {
+      announced.push(text);
+    });
+    const { container } = ui(<DashboardGrid unlocked testID="grid" items={items} />);
+    const restore = stubCellLayout(container);
+    try {
+      await keyboardDrag(container, "Revenue", ["ArrowRight", "ArrowDown"]);
+      expect(bodyOrder(container)).toEqual(["body-b", "body-a", "body-c"]);
+
+      // Second grab, on the widget that now renders first.
+      announced.length = 0;
+      const grip = byLabel(container, "Reorder Signups");
+      fireEvent.keyDown(grip, { key: " " });
+      await flush();
+      expect(announced[0]).toContain("Picked up Signups");
+      expect(announced.at(-1)).toBe("Signups, position 1 of 1.");
+
+      // One step forward lands on Revenue, the widget beside it on screen, not on Latency.
+      act(() => { fireEvent.keyDown(grip, { key: "ArrowRight" }); });
+      expect(announced.at(-1)).toBe("Revenue, position 1 of 2.");
+      act(() => { fireEvent.keyDown(grip, { key: "ArrowDown" }); });
+      expect(announced.at(-1)).toBe("Revenue, position 2 of 2.");
+      act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
+      expect(announced.at(-1)).toBe("Moved Signups to Revenue, position 2.");
+      expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
+    } finally {
+      restore();
+      spy.mockRestore();
+    }
+  });
+
+  it("walks back the way it came, and Escape leaves the board untouched", async () => {
+    let latest: string[] | null = null;
+    const { container } = ui(
+      <DashboardGrid unlocked testID="grid" items={items} onOrderChange={(o) => { latest = o; }} />,
+    );
+    const restore = stubCellLayout(container);
+    try {
+      // Revenue to the end of the board: forward past Signups, then past Latency.
+      await keyboardDrag(container, "Revenue", ["ArrowRight", "ArrowRight", "ArrowDown"]);
+      expect(bodyOrder(container)).toEqual(["body-b", "body-c", "body-a"]);
+
+      // And back to the front: Revenue is last on screen, so two steps back reach Signups, and
+      // ArrowUp puts the cursor before it.
+      await keyboardDrag(container, "Revenue", ["ArrowLeft", "ArrowLeft", "ArrowUp"]);
+      expect(latest).toEqual(["a", "b", "c"]);
+      expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
+
+      // Escape after moving the cursor around changes nothing at all.
+      const grip = byLabel(container, "Reorder Revenue");
+      fireEvent.keyDown(grip, { key: " " });
+      await flush();
+      act(() => { fireEvent.keyDown(grip, { key: "ArrowRight" }); });
+      act(() => { fireEvent.keyDown(grip, { key: "ArrowDown" }); });
+      act(() => { fireEvent.keyDown(grip, { key: "Escape" }); });
+      expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
+      expect(latest).toEqual(["a", "b", "c"]);
+    } finally {
+      restore();
+    }
   });
 });
 

@@ -19,6 +19,7 @@ import {
   insertionIndexFor,
   insertionOffset,
   sortByMainAxis,
+  zonesInReadingOrder,
   keyboardMove,
   type Rect,
   type CardRect,
@@ -137,7 +138,8 @@ interface DraggableEntry {
 // responder owns the gesture, so nothing scrolls or relayouts under it).
 interface DragMeasure {
   zoneRects: Map<string, Rect>; // non-disabled zones only
-  zoneOrder: string[]; // registration order, non-disabled
+  zoneOrder: string[]; // registration (paint) order, non-disabled: which zone wins an overlap
+  zoneReadingOrder: string[]; // the same zones as they READ on screen: row by row, left to right
   cardsByZone: Map<string, CardRect[]>; // every draggable, provider-relative
 }
 
@@ -308,7 +310,11 @@ export function createDragDrop(skin: DragDropSkin) {
         );
         // Restore registration order for hit-testing (Promise.all resolves out of order).
         order.sort((a, b) => zoneOrder.current.indexOf(a) - zoneOrder.current.indexOf(b));
-        return { provider, m: { zoneRects, zoneOrder: order, cardsByZone } };
+        // The keyboard cursor walks the same zones as they READ on screen instead. Registration
+        // order is mount order and goes stale the moment a zone moves (a reordered dashboard
+        // cell, a lane the app moved): React reuses the keyed element, so nothing re-registers.
+        // The rects measured just above are the live truth, so the cursor sorts by them.
+        return { provider, m: { zoneRects, zoneOrder: order, zoneReadingOrder: zonesInReadingOrder(order, zoneRects), cardsByZone } };
       };
 
       // The zone's cards (provider-relative, sorted, dragged card removed) plus its main-axis
@@ -432,9 +438,11 @@ export function createDragDrop(skin: DragDropSkin) {
       };
 
       // Zone counts for the keyboard cursor: cards per non-disabled zone, minus the dragged card
-      // from its own source zone (it is being lifted out).
+      // from its own source zone (it is being lifted out). In READING order, so prevZone /
+      // nextZone step to the zone the user sees beside this one; the pointer path hit-tests real
+      // rects, and this is how the keyboard path stays true to the same arrangement.
       const keyboardZones = (a: ActiveDrag): ZoneCount[] =>
-        a.zoneOrder.map((id) => {
+        a.zoneReadingOrder.map((id) => {
           const n = (a.cardsByZone.get(id) ?? []).length;
           return { id, count: id === a.sourceZoneId ? Math.max(0, n - 1) : n };
         });

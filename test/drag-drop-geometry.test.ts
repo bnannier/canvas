@@ -5,6 +5,7 @@ import {
   insertionIndexFor,
   insertionOffset,
   sortByMainAxis,
+  zonesInReadingOrder,
   keyboardMove,
   type Rect,
   type CardRect,
@@ -116,6 +117,51 @@ describe("sortByMainAxis", () => {
     const sorted = sortByMainAxis(cards, false);
     expect(sorted.map((c) => c.id)).toEqual(["a", "b", "c"]);
     expect(cards.map((c) => c.id)).toEqual(["b", "a", "c"]); // input untouched
+  });
+});
+
+describe("zonesInReadingOrder", () => {
+  it("reads a wrapped grid row by row, left to right, whatever order the zones registered in", () => {
+    // Two 6-column cells on the first row, one on the second: the arrangement a dashboard has
+    // after a reorder, with the registry still holding the original mount order.
+    const rects = new Map<string, Rect>([
+      ["a", r(608, 0, 592, 200)],
+      ["b", r(0, 0, 592, 200)],
+      ["c", r(0, 216, 592, 200)],
+    ]);
+    expect(zonesInReadingOrder(["a", "b", "c"], rects)).toEqual(["b", "a", "c"]);
+  });
+
+  it("keeps lanes of very different heights on one row", () => {
+    const rects = new Map<string, Rect>([
+      ["doing", r(316, 0, 300, 180)],
+      ["todo", r(0, 0, 300, 900)],
+      ["done", r(632, 0, 300, 400)],
+    ]);
+    expect(zonesInReadingOrder(["todo", "doing", "done"], rects)).toEqual(["todo", "doing", "done"]);
+  });
+
+  it("starts a new row only once a zone clears the row above", () => {
+    const rects = new Map<string, Rect>([
+      ["top-left", r(0, 0, 100, 100)],
+      ["top-right", r(120, 0, 100, 300)],
+      ["below", r(0, 316, 100, 100)], // clears the tallest box above, so it is a new row
+    ]);
+    expect(zonesInReadingOrder(["below", "top-right", "top-left"], rects)).toEqual(["top-left", "top-right", "below"]);
+  });
+
+  it("leaves the given order alone when nothing has been laid out", () => {
+    const rects = new Map<string, Rect>([
+      ["a", r(0, 0, 0, 0)],
+      ["b", r(0, 0, 0, 0)],
+      ["c", r(0, 0, 0, 0)],
+    ]);
+    expect(zonesInReadingOrder(["a", "b", "c"], rects)).toEqual(["a", "b", "c"]);
+  });
+
+  it("appends zones that have no rect yet, in their given order", () => {
+    const rects = new Map<string, Rect>([["b", r(0, 0, 100, 100)]]);
+    expect(zonesInReadingOrder(["a", "b", "c"], rects)).toEqual(["b", "a", "c"]);
   });
 });
 
