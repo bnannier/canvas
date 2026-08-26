@@ -9,6 +9,9 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "../../style/index.js";
+// KIT-INTERNAL, so it comes in by path rather than through the style barrel (the
+// `useDragActive` precedent): it gates a client-only read out of the hydration render.
+import { useHydrated } from "../../style/use-hydrated.js";
 import {
   DragDropProvider as WebDragDropProvider,
   DropZone as WebDropZone,
@@ -92,6 +95,13 @@ const EMPTY: DashboardWidget[] = [];
 // native there is no localStorage (the kit takes no storage dependency), and during SSR
 // there is no window, so both read and write fall through silently and the uncontrolled
 // order is simply session-only there.
+//
+// WHEN the read happens matters as much as the guard. A saved order is a CLIENT fact the
+// server never saw, and on the web the first client render IS the hydration render, so a
+// board that read storage there would rearrange markup the server did not ship. React does
+// not patch that up: it discards the server tree and rebuilds the subtree. So the read is
+// withheld until after hydration (`useHydrated`) and the first render is seeded from the
+// declared default, exactly as ThemeProvider withholds the real scheme behind `ssrScheme`.
 function readStoredOrder(storageKey: string): string[] | null {
   try {
     const raw = localStorage.getItem(STORAGE_PREFIX + storageKey);
@@ -177,7 +187,9 @@ export interface DashboardGridProps {
   /** Web-only convenience for the UNCONTROLLED path: seed the initial order from browser
    *  storage under this key and write each drop back to it. Ignored when `order` is passed
    *  (the controlled order owns persistence). On native there is no storage, so the order is
-   *  session-only there; `clearStoredDashboardOrder` forgets a saved layout. */
+   *  session-only there; `clearStoredDashboardOrder` forgets a saved layout. A server-rendered
+   *  board renders `defaultOrder` first and adopts the saved layout in the commit right after
+   *  hydration, so React always hydrates against the markup the server actually sent. */
   storageKey?: string;
   // Density axis (pass none for the default density).
   compact?: boolean;
@@ -289,18 +301,29 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
     // Storage is an uncontrolled-path convenience only, so it is off entirely when controlled.
     const persistKey = controlledOrder === undefined ? storageKey : undefined;
 
-    // The seed is read ONCE (useControllableState only ever uses it on the first render), so
-    // the storage read must not repeat on every render either.
+    // The seed is read ONCE (useControllableState only ever uses it on the first render). It is
+    // the DECLARED default, never the stored order: the first render has to reproduce what the
+    // server shipped, and the server has no browser storage (see the note above readStoredOrder).
     const seed = useRef<string[] | null>(null);
-    if (seed.current === null) {
-      seed.current = (persistKey != null ? readStoredOrder(persistKey) : null) ?? defaultOrder ?? items.map((w) => w.id);
-    }
+    if (seed.current === null) seed.current = defaultOrder ?? items.map((w) => w.id);
     const [order, setOrder] = useControllableState<string[]>(controlledOrder, seed.current, onOrderChange);
+
+    // The saved layout joins in the first commit AFTER hydration, and the ref then mirrors what
+    // is in storage for the rest of the board's life (every drop writes both). Reading it once,
+    // lazily, keeps it off the hydration render without costing a storage hit per render.
+    const hydrated = useHydrated();
+    const persisted = useRef<string[] | null | undefined>(undefined);
+    if (hydrated && persisted.current === undefined) {
+      persisted.current = persistKey != null ? readStoredOrder(persistKey) : null;
+    }
+    // A stored layout outranks the declared default; a controlled board never gets one, because
+    // `persistKey` is undefined there and the consumer owns persistence outright.
+    const active = persisted.current ?? order;
 
     // The rendered arrangement, reconciled against the live widget list. Its ids are also the
     // basis every move is computed from, so a widget appended because the stored order predates
     // it is still movable, and the reported order is always complete.
-    const arranged = orderedWidgets(items, order);
+    const arranged = orderedWidgets(items, active);
 
     const handleDrop = (e: DropEvent) => {
       const ids = arranged.map((w) => w.id);
@@ -311,7 +334,10 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
       // Uncontrolled mode stores the next order internally; controlled mode leaves it to the
       // consumer (setOrder only fires onOrderChange there).
       setOrder(next);
-      if (persistKey != null) writeStoredOrder(persistKey, next);
+      if (persistKey != null) {
+        writeStoredOrder(persistKey, next);
+        persisted.current = next;
+      }
     };
 
     const cells = <DashboardCells items={arranged} unlocked={unlocked} compact={compact} onDrop={handleDrop} />;
