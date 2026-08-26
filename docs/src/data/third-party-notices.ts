@@ -37,7 +37,7 @@ export const THIRD_PARTY_INTRO =
   "Canvas is built on open source. This page lists every third-party package the app ships, with its licence and copyright notice, and reproduces the full text of each licence. It is generated from the packages actually installed, so it cannot drift from what is in the build.";
 
 export const THIRD_PARTY_CANVAS =
-  "Canvas itself is published to npm as @nannier/canvas under the MIT License. This app is its reference documentation.";
+  "Canvas itself is published to npm as @nannier-com/canvas under the MIT License. This app is its reference documentation.";
 
 export const THIRD_PARTY_FONTS =
   "The Geist and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.";
@@ -121,7 +121,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/cli",
-    "version": "57.0.9",
+    "version": "57.0.18",
     "licenses": [
       "MIT"
     ],
@@ -141,7 +141,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/log-box",
-    "version": "57.0.1",
+    "version": "57.0.3",
     "licenses": [
       "MIT"
     ],
@@ -151,7 +151,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/metro-runtime",
-    "version": "56.0.17",
+    "version": "57.0.6",
     "licenses": [
       "MIT"
     ],
@@ -161,7 +161,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/ui",
-    "version": "57.0.7",
+    "version": "57.0.13",
     "licenses": [
       "MIT"
     ],
@@ -329,7 +329,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/assets-registry",
-    "version": "0.86.0",
+    "version": "0.86.2",
     "licenses": [
       "MIT"
     ],
@@ -337,7 +337,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/js-polyfills",
-    "version": "0.86.0",
+    "version": "0.86.2",
     "licenses": [
       "MIT"
     ],
@@ -345,7 +345,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/normalize-colors",
-    "version": "0.86.0",
+    "version": "0.86.2",
     "licenses": [
       "MIT"
     ],
@@ -353,7 +353,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/virtualized-lists",
-    "version": "0.86.0",
+    "version": "0.86.2",
     "licenses": [
       "MIT"
     ],
@@ -569,7 +569,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo",
-    "version": "57.0.7",
+    "version": "57.0.16",
     "licenses": [
       "MIT"
     ],
@@ -579,7 +579,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-asset",
-    "version": "57.0.6",
+    "version": "57.0.14",
     "licenses": [
       "MIT"
     ],
@@ -609,7 +609,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-constants",
-    "version": "57.0.6",
+    "version": "57.0.14",
     "licenses": [
       "MIT"
     ],
@@ -629,7 +629,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-file-system",
-    "version": "57.0.1",
+    "version": "57.0.5",
     "licenses": [
       "MIT"
     ],
@@ -679,7 +679,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-linking",
-    "version": "57.0.3",
+    "version": "57.0.7",
     "licenses": [
       "MIT"
     ],
@@ -699,7 +699,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-modules-core",
-    "version": "57.0.6",
+    "version": "57.0.13",
     "licenses": [
       "MIT"
     ],
@@ -709,7 +709,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-modules-jsi",
-    "version": "57.0.3",
+    "version": "57.0.5",
     "licenses": [
       "MIT"
     ],
@@ -719,7 +719,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-router",
-    "version": "57.0.7",
+    "version": "57.0.16",
     "licenses": [
       "MIT"
     ],
@@ -745,7 +745,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-symbols",
-    "version": "57.0.1",
+    "version": "57.0.2",
     "licenses": [
       "MIT"
     ],
@@ -755,7 +755,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-system-ui",
-    "version": "57.0.1",
+    "version": "57.0.2",
     "licenses": [
       "MIT"
     ],
@@ -765,7 +765,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-updates",
-    "version": "57.0.8",
+    "version": "57.0.17",
     "licenses": [
       "MIT"
     ],
@@ -893,7 +893,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "metro-runtime",
-    "version": "0.84.4",
+    "version": "0.84.5",
     "licenses": [
       "MIT"
     ],
@@ -1021,7 +1021,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "react-native",
-    "version": "0.86.0",
+    "version": "0.86.2",
     "licenses": [
       "MIT"
     ],
@@ -1051,7 +1051,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "react-native-reanimated",
-    "version": "4.5.0",
+    "version": "4.5.1",
     "licenses": [
       "MIT"
     ],
@@ -1071,7 +1071,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "react-native-screens",
-    "version": "4.25.2",
+    "version": "4.26.2",
     "licenses": [
       "MIT"
     ],
@@ -1101,7 +1101,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "react-native-worklets",
-    "version": "0.10.0",
+    "version": "0.10.1",
     "licenses": [
       "MIT"
     ],

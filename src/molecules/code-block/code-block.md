@@ -40,7 +40,7 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 <CodeBlock
   terminal
   copy
-  code={`$ npm install @nannier/canvas
+  code={`$ npm install @nannier-com/canvas
 added 42 packages in 3s
 $ npm run dev`}
 />
@@ -76,7 +76,7 @@ setTheme(theme === "dark" ? "light" : "dark");`}
   numbered
   language="tsx"
   highlightLines={["4-5"]}
-  code={`import { Button } from "@nannier/canvas";
+  code={`import { Button } from "@nannier-com/canvas";
 
 export function Cta() {
   const label = getLabel();
@@ -123,9 +123,9 @@ export function Cta() {
   terminal
   copy
   tabs={[
-    { label: "npm", code: "npm install @nannier/canvas" },
-    { label: "yarn", code: "yarn add @nannier/canvas" },
-    { label: "bun", code: "bun add @nannier/canvas" },
+    { label: "npm", code: "npm install @nannier-com/canvas" },
+    { label: "yarn", code: "yarn add @nannier-com/canvas" },
+    { label: "bun", code: "bun add @nannier-com/canvas" },
   ]}
 />
 ```
@@ -209,14 +209,14 @@ setTheme(theme === "dark" ? "light" : "dark");`} />
 **Do** — Use the terminal variant: the prompt stays out of the selection, so a copy yields only the command, not the shell glyph.
 
 ```tsx
-<CodeBlock terminal code="npm install @nannier/canvas" />
+<CodeBlock terminal code="npm install @nannier-com/canvas" />
 ```
 
 **Don't** — Selectable prompt text means a reader who copies the line drags the $ marker into their shell.
 
 ```tsx
 <View style={{ width: "100%", alignSelf: "flex-start", borderRadius: 8, backgroundColor: palette["zinc-900"], padding: 16 }}>
-  <Text style={{ fontSize: 13, color: palette["zinc-100"], fontFamily: "monospace" }}>$ npm install @nannier/canvas</Text>
+  <Text style={{ fontSize: 13, color: palette["zinc-100"], fontFamily: "monospace" }}>$ npm install @nannier-com/canvas</Text>
 </View>
 ```
 
@@ -270,8 +270,8 @@ setTheme(theme);`} />
 
 ```tsx
 <CodeBlock terminal tabs={[
-  { label: "npm", code: "npm install @nannier/canvas" },
-  { label: "bun", code: "bun add @nannier/canvas" },
+  { label: "npm", code: "npm install @nannier-com/canvas" },
+  { label: "bun", code: "bun add @nannier-com/canvas" },
 ]} />
 ```
 
@@ -279,9 +279,9 @@ setTheme(theme);`} />
 
 ```tsx
 <Column snug>
-  <CodeBlock terminal code="npm install @nannier/canvas" />
-  <CodeBlock terminal code="yarn add @nannier/canvas" />
-  <CodeBlock terminal code="bun add @nannier/canvas" />
+  <CodeBlock terminal code="npm install @nannier-com/canvas" />
+  <CodeBlock terminal code="yarn add @nannier-com/canvas" />
+  <CodeBlock terminal code="bun add @nannier-com/canvas" />
 </Column>
 ```
 
@@ -292,7 +292,7 @@ setTheme(theme);`} />
 ```tsx
 <Column snug style={{ maxWidth: 360 }}>
   <Typography body>Run the setup command:</Typography>
-  <CodeBlock code={`npm install @nannier/canvas
+  <CodeBlock code={`npm install @nannier-com/canvas
 npm run build`} />
 </Column>
 ```
@@ -303,7 +303,7 @@ npm run build`} />
 <View style={{ maxWidth: 360, flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
   <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}>Run </Text>
   <View style={{ alignSelf: "flex-start", borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.muted, paddingHorizontal: 6, paddingVertical: 2 }}>
-    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @nannier/canvas && npm run build && npm run preview</Text>
+    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @nannier-com/canvas && npm run build && npm run preview</Text>
   </View>
   <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}> to start.</Text>
 </View>

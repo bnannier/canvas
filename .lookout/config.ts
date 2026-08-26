@@ -1,5 +1,5 @@
 /**
- * lookout config for the Canvas docs (https://github.com/bnannier/lookout).
+ * lookout config for the Canvas docs (https://github.com/nannier-com/lookout).
  *
  * Targets the running docs app (bun run dev in docs/, Metro on 8081) and
  * derives the 100 component routes from nav.config.json, the same source
@@ -13,9 +13,9 @@
  * (canvas:///components/button?scheme=light).
  *
  * Type-only imports: erased at runtime (bun executes this file directly), so
- * nothing here requires @nannier/lookout to be installed in canvas.
+ * nothing here requires @nannier-com/lookout to be installed in canvas.
  */
-import type { LookoutConfig, RouteDef, StateRecipe } from "@nannier/lookout";
+import type { LookoutConfig, RouteDef, StateRecipe } from "@nannier-com/lookout";
 import type { Page } from "playwright";
 import navConfig from "../docs/src/data/nav.config.json";
 

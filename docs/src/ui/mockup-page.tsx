@@ -1,4 +1,4 @@
-import { View, Text, useTheme, useResponsive } from "@nannier/canvas";
+import { View, Text, useTheme, useResponsive } from "@nannier-com/canvas";
 import { Page } from "./page";
 import { H2 } from "./prose";
 import { PageNav } from "./page-nav";

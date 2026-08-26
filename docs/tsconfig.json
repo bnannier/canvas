@@ -5,7 +5,7 @@
     "skipLibCheck": true,
     "types": ["node"],
     "paths": {
-      "@nannier/canvas": ["../src/index.ts"]
+      "@nannier-com/canvas": ["../src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"]

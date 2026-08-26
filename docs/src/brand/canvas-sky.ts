@@ -1,4 +1,4 @@
-import type { Particle, GradientBlob } from "@nannier/canvas";
+import type { Particle, GradientBlob } from "@nannier-com/canvas";
 
 // The Canvas Universe's art: seeds, distributions and palettes.
 //

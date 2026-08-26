@@ -1,6 +1,6 @@
 import { Component, type ReactNode, useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, BackdropHost, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey } from "@nannier/canvas";
+import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, BackdropHost, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey } from "@nannier-com/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";

@@ -33,7 +33,7 @@ on:
         description: "Deprecation message. LEAVE EMPTY to UN-deprecate the range."
         type: string
         required: false
-        default: "Obsolete numbering. Use @nannier/canvas@latest (2.x)."
+        default: "Renamed. Use @nannier-com/canvas instead: npm i @nannier-com/canvas"
 
 # Never let two registry writes overlap.
 concurrency:

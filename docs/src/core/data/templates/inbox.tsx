@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Input, Avatar, StackedList, Divider, useFormFactor, Icon, useToast } from "@nannier/canvas";
-import type { StackedListItem } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Input, Avatar, StackedList, Divider, useFormFactor, Icon, useToast } from "@nannier-com/canvas";
+import type { StackedListItem } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Inbox built from real Canvas components: a message list beside the open
