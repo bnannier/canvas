@@ -191,3 +191,61 @@ describe("Board interaction", () => {
     expect(grip.getAttribute("aria-pressed")).toBeNull();
   });
 });
+
+// happy-dom lays nothing out, so every getBoundingClientRect reports 0x0 and the drag layer sees
+// a board with no geometry. Give the LANES a rect from their live position in the scroller, which
+// is what a real row of lanes reports, and re-read it on every measure so a board whose columns
+// the app has since reordered measures the lanes where they now are.
+function stubLaneLayout(container: HTMLElement, labels: string[]) {
+  const nodes = Array.from(container.querySelectorAll("div")) as HTMLElement[];
+  // The lane row is the one node whose children map ONE-TO-ONE onto the column labels; an
+  // ancestor holds all of them in a single child, so it is not it.
+  const holds = (el: Element, label: string) => el.textContent?.includes(label) === true;
+  const lanes = nodes.find((el) => {
+    const kids = Array.from(el.children);
+    return (
+      kids.length === labels.length &&
+      kids.every((kid) => labels.filter((label) => holds(kid, label)).length === 1) &&
+      labels.every((label) => kids.filter((kid) => holds(kid, label)).length === 1)
+    );
+  });
+  if (!lanes) throw new Error("no lane row in the board (the DropZone lanes were not found)");
+  const original = Element.prototype.getBoundingClientRect;
+  Element.prototype.getBoundingClientRect = function (this: Element) {
+    const index = this.parentElement === lanes ? Array.from(lanes.children).indexOf(this) : -1;
+    if (index < 0) return original.call(this);
+    const left = index * 300;
+    return {
+      x: left, y: 0, left, top: 0, right: left + 300, bottom: 400, width: 300, height: 400,
+      toJSON: () => ({}),
+    } as DOMRect;
+  };
+  return () => { Element.prototype.getBoundingClientRect = original; };
+}
+
+describe("Board keyboard lane cursor", () => {
+  it("steps to the lane the user sees beside this one after the app reorders the columns", async () => {
+    let move: BoardMove | null = null;
+    const board = (cols: BoardColumn[]) => (
+      <ThemeProvider>
+        <Board columns={cols} items={items} onMove={(m) => { move = m; }} />
+      </ThemeProvider>
+    );
+    const { container, rerender } = render(board(columns));
+    // The app moves Doing in front of To do. The lanes are keyed by column id, so React reuses
+    // them and nothing re-registers: only the geometry knows they swapped.
+    rerender(board([columns[1]!, columns[0]!]));
+    const restore = stubLaneLayout(container, ["Doing", "To do"]);
+    try {
+      const grip = byLabel(container, "Move Task A");
+      fireEvent.keyDown(grip, { key: " " });
+      await flush();
+      // Task A sits in To do, which now renders SECOND, so the lane to its LEFT is Doing.
+      act(() => { fireEvent.keyDown(grip, { key: "ArrowLeft" }); });
+      act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
+      expect(move!.to).toBe("doing");
+    } finally {
+      restore();
+    }
+  });
+});

@@ -95,6 +95,55 @@ export function sortByMainAxis(cards: readonly CardRect[], horizontal: boolean):
   return [...cards].sort((a, b) => (horizontal ? a.rect.x - b.rect.x : a.rect.y - b.rect.y));
 }
 
+/**
+ * The zone ids in READING order: row by row down the surface, left to right within a row, read
+ * off the measured rects rather than off the order the zones happened to register in.
+ *
+ * Registration order is MOUNT order, and it never changes again: a zone that moves on screen
+ * (a reordered dashboard cell, a lane a consumer moved) keeps its original slot, because React
+ * reuses the keyed element instead of remounting it. Anything that walks zones the way a user
+ * sees them (the keyboard cursor) must therefore ask the geometry, which the measurement pass
+ * already captured, not the registry.
+ *
+ * Rows are swept, not bucketed by a tolerance: a zone joins the row being built while its top
+ * edge is above the row's running bottom, which is exactly "these boxes share a band of the
+ * screen" and needs no guess about how tall a row is. A wrapped line always starts below the
+ * tallest box of the line above, so it clears the band and opens a new row; lanes of wildly
+ * different heights still read as one row.
+ *
+ * Ids with no rect yet (a zone that mounted after the measure, or measured non-finite) keep
+ * their given relative order and land at the end, and rects that are all zeros (nothing has
+ * been laid out) leave the given order untouched, because every comparison ties and both sorts
+ * are stable. So the worst case degrades to the input order rather than to a scramble.
+ */
+export function zonesInReadingOrder(order: readonly string[], rects: ReadonlyMap<string, Rect>): string[] {
+  const measured: string[] = [];
+  const unmeasured: string[] = [];
+  for (const id of order) (rects.has(id) ? measured : unmeasured).push(id);
+  measured.sort((a, b) => {
+    const ra = rects.get(a)!;
+    const rb = rects.get(b)!;
+    return ra.y - rb.y || ra.x - rb.x;
+  });
+
+  const out: string[] = [];
+  let row: string[] = [];
+  let rowBottom = 0;
+  const flushRow = () => {
+    row.sort((a, b) => rects.get(a)!.x - rects.get(b)!.x);
+    out.push(...row);
+    row = [];
+  };
+  for (const id of measured) {
+    const r = rects.get(id)!;
+    if (row.length > 0 && r.y >= rowBottom) flushRow();
+    rowBottom = row.length === 0 ? r.y + r.height : Math.max(rowBottom, r.y + r.height);
+    row.push(id);
+  }
+  flushRow();
+  return [...out, ...unmeasured];
+}
+
 // ---------------------------------------------------------------------------
 // Keyboard drag cursor: pure state transitions for the screen-reader/keyboard path (no pointer
 // geometry). `zones` lists each drop target in registration order with the number of cards it
