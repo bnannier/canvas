@@ -35,7 +35,7 @@ function fireGridLayout(container: HTMLElement, width: number) {
   throw new Error("no layout-handling node in the grid (RNW layout hook absent)");
 }
 
-const widgets: DashboardWidget[] = [
+const items: DashboardWidget[] = [
   { id: "a", span: 6, title: "Revenue", content: <Text testID="body-a">Revenue body</Text> },
   { id: "b", span: 6, title: "Signups", content: <Text testID="body-b">Signups body</Text> },
   { id: "c", span: 4, title: "Latency", content: <Text testID="body-c">Latency body</Text> },
@@ -61,16 +61,64 @@ async function keyboardDrag(container: HTMLElement, label: string, keys: string[
   act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
 }
 
+describe("DashboardGrid collection prop", () => {
+  /** Run `body` with console.warn captured, and hand back every message it produced. */
+  function withWarnings(body: () => void): string[] {
+    resetDevWarnings();
+    const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      body();
+      return warnSpy.mock.calls.map((c) => String(c[0]));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  }
+
+  it("lays the board out from the canonical `items`, silently", () => {
+    const messages = withWarnings(() => {
+      const { container } = ui(<DashboardGrid items={items} />);
+      expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
+    });
+    expect(messages.some((m) => m.includes("<DashboardGrid />") && m.includes("`widgets`"))).toBe(false);
+  });
+
+  it("still lays the board out from the deprecated `widgets` alias, warning once toward `items`", () => {
+    const messages = withWarnings(() => {
+      const { container } = ui(<DashboardGrid widgets={items} order={["c", "a"]} />);
+      // The alias feeds the same path: reconciliation, ordering, and appending all still run.
+      expect(bodyOrder(container)).toEqual(["body-c", "body-a", "body-b"]);
+    });
+    const deprecation = messages.filter((m) => m.includes("<DashboardGrid />") && m.includes("deprecated"));
+    expect(deprecation.length).toBe(1);
+    expect(deprecation[0]).toContain("pass `items` instead");
+  });
+
+  it("lets `items` win when both are passed, and says so", () => {
+    const legacy: DashboardWidget[] = [{ id: "z", span: 12, title: "Legacy", content: <Text testID="body-z">Legacy body</Text> }];
+    const messages = withWarnings(() => {
+      const { container } = ui(<DashboardGrid items={items} widgets={legacy} />);
+      expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
+    });
+    expect(messages.some((m) => m.includes("<DashboardGrid />") && m.includes("`widgets` is ignored"))).toBe(true);
+  });
+
+  it("renders an empty board when neither is passed", () => {
+    const { container } = ui(<DashboardGrid testID="grid" />);
+    expect(bodyOrder(container)).toEqual([]);
+    expect(container.querySelector("[data-testid='grid']")).toBeTruthy();
+  });
+});
+
 describe("DashboardGrid layout", () => {
   it("renders every widget's content, and no title chrome (the title names the cell for a11y)", () => {
-    const { getByText, queryByText } = ui(<DashboardGrid widgets={widgets} />);
+    const { getByText, queryByText } = ui(<DashboardGrid items={items} />);
     expect(getByText("Revenue body")).toBeTruthy();
     expect(getByText("Latency body")).toBeTruthy();
     expect(queryByText("Revenue")).toBeNull();
   });
 
   it("sizes each cell from its span once the grid has measured its own width", () => {
-    const { container } = ui(<DashboardGrid widgets={widgets} />);
+    const { container } = ui(<DashboardGrid items={items} />);
     fireGridLayout(container, 1200);
     // 12 columns and 11 x 16 gaps in 1200px: a 6-span cell is 592, and two of them plus the
     // gap between them fill the row exactly.
@@ -80,7 +128,7 @@ describe("DashboardGrid layout", () => {
   });
 
   it("reflows to the narrow tier at or below the lg breakpoint, and stacks on a phone", () => {
-    const narrow = ui(<DashboardGrid widgets={widgets} />);
+    const narrow = ui(<DashboardGrid items={items} />);
     fireGridLayout(narrow.container, 800);
     // narrow: a 6-span widget declares no narrowSpan, and a span of 5 or more is a primary
     // tile, so it takes the full 12 columns; the 4-span pairs up at half the board.
@@ -88,7 +136,7 @@ describe("DashboardGrid layout", () => {
     expect(cellWidthOf(narrow.container, "c")).toBe(dashboardCellWidth(800, 6, 16));
     cleanup();
 
-    const phone = ui(<DashboardGrid widgets={widgets} />);
+    const phone = ui(<DashboardGrid items={items} />);
     fireGridLayout(phone.container, 375);
     // phone: every widget is full width, whatever it declared.
     expect(cellWidthOf(phone.container, "a")).toBe(375);
@@ -99,26 +147,26 @@ describe("DashboardGrid layout", () => {
     const wide: DashboardWidget[] = [
       { id: "a", span: 8, narrowSpan: 6, title: "Revenue", content: <Text testID="body-a">Revenue body</Text> },
     ];
-    const { container } = ui(<DashboardGrid widgets={wide} />);
+    const { container } = ui(<DashboardGrid items={wide} />);
     fireGridLayout(container, 800);
     expect(cellWidthOf(container, "a")).toBe(dashboardCellWidth(800, 6, 16));
   });
 
   it("tightens the gap on the density axis", () => {
-    const { container } = ui(<DashboardGrid compact widgets={widgets} />);
+    const { container } = ui(<DashboardGrid compact items={items} />);
     fireGridLayout(container, 1200);
     expect(cellWidthOf(container, "a")).toBe(dashboardCellWidth(1200, 6, 8));
   });
 
-  it("orders the cells by the id order, appending widgets the order does not mention", () => {
-    const { container } = ui(<DashboardGrid widgets={widgets} order={["c", "a"]} />);
+  it("orders the cells by the id order, appending items the order does not mention", () => {
+    const { container } = ui(<DashboardGrid items={items} order={["c", "a"]} />);
     expect(bodyOrder(container)).toEqual(["body-c", "body-a", "body-b"]);
   });
 });
 
 describe("DashboardGrid locked mode", () => {
   it("renders no grips and mounts no drag provider", () => {
-    const { container } = ui(<DashboardGrid testID="grid" widgets={widgets} />);
+    const { container } = ui(<DashboardGrid testID="grid" items={items} />);
     expect(container.querySelectorAll("[aria-label^='Reorder ']").length).toBe(0);
     // The provider always renders its ghost outlet beside the content, so a root holding only
     // the grid row is proof the provider is not mounted.
@@ -127,7 +175,7 @@ describe("DashboardGrid locked mode", () => {
   });
 
   it("mounts the provider and a grip per widget once unlocked", () => {
-    const { container } = ui(<DashboardGrid unlocked testID="grid" widgets={widgets} />);
+    const { container } = ui(<DashboardGrid unlocked testID="grid" items={items} />);
     expect(container.querySelectorAll("[aria-label^='Reorder ']").length).toBe(3);
     const grip = byLabel(container, "Reorder Revenue");
     expect(grip.getAttribute("role")).toBe("button");
@@ -140,7 +188,7 @@ describe("DashboardGrid locked mode", () => {
     const interactive: DashboardWidget[] = [
       { id: "a", span: 6, title: "Revenue", content: <Text testID="body-a">Revenue body</Text> },
     ];
-    const { container } = ui(<DashboardGrid unlocked widgets={interactive} />);
+    const { container } = ui(<DashboardGrid unlocked items={interactive} />);
     const buttons = Array.from(container.querySelectorAll("button"));
     expect(buttons.length).toBeGreaterThan(0);
     expect(buttons.some((b) => b.parentElement?.closest("button") != null)).toBe(false);
@@ -151,7 +199,7 @@ describe("DashboardGrid controlled order", () => {
   it("reports the full next order on a drop and leaves the rendered order to the consumer", async () => {
     let next: string[] | null = null;
     const { container } = ui(
-      <DashboardGrid unlocked widgets={widgets} order={["a", "b", "c"]} onOrderChange={(o) => { next = o; }} />,
+      <DashboardGrid unlocked items={items} order={["a", "b", "c"]} onOrderChange={(o) => { next = o; }} />,
     );
     // ArrowRight walks to the next widget's zone, ArrowDown moves past its midpoint, so the
     // drop lands AFTER Signups.
@@ -164,7 +212,7 @@ describe("DashboardGrid controlled order", () => {
   it("reports a complete order even when the controlled one predates a widget", async () => {
     let next: string[] | null = null;
     const { container } = ui(
-      <DashboardGrid unlocked widgets={widgets} order={["a", "b"]} onOrderChange={(o) => { next = o; }} />,
+      <DashboardGrid unlocked items={items} order={["a", "b"]} onOrderChange={(o) => { next = o; }} />,
     );
     // "c" is appended by the reconciliation; moving it must still produce a full order.
     await keyboardDrag(container, "Latency", ["ArrowLeft", "ArrowLeft"]);
@@ -174,7 +222,7 @@ describe("DashboardGrid controlled order", () => {
   it("stays silent when a drop leaves the order unchanged", async () => {
     let calls = 0;
     const { container } = ui(
-      <DashboardGrid unlocked widgets={widgets} order={["a", "b", "c"]} onOrderChange={() => { calls += 1; }} />,
+      <DashboardGrid unlocked items={items} order={["a", "b", "c"]} onOrderChange={() => { calls += 1; }} />,
     );
     // Dropping Revenue BEFORE Signups is where it already sits.
     await keyboardDrag(container, "Revenue", ["ArrowRight"]);
@@ -184,7 +232,7 @@ describe("DashboardGrid controlled order", () => {
   it("Escape cancels a keyboard drag without reporting an order", async () => {
     let calls = 0;
     const { container } = ui(
-      <DashboardGrid unlocked widgets={widgets} order={["a", "b", "c"]} onOrderChange={() => { calls += 1; }} />,
+      <DashboardGrid unlocked items={items} order={["a", "b", "c"]} onOrderChange={() => { calls += 1; }} />,
     );
     const grip = byLabel(container, "Reorder Revenue");
     fireEvent.keyDown(grip, { key: " " });
@@ -198,9 +246,9 @@ describe("DashboardGrid controlled order", () => {
 });
 
 describe("DashboardGrid uncontrolled order", () => {
-  it("seeds from the widgets array and applies each drop itself", async () => {
+  it("seeds from the items array and applies each drop itself", async () => {
     let next: string[] | null = null;
-    const { container } = ui(<DashboardGrid unlocked widgets={widgets} onOrderChange={(o) => { next = o; }} />);
+    const { container } = ui(<DashboardGrid unlocked items={items} onOrderChange={(o) => { next = o; }} />);
     expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
     await keyboardDrag(container, "Revenue", ["ArrowRight", "ArrowDown"]);
     expect(next).toEqual(["b", "a", "c"]);
@@ -209,7 +257,7 @@ describe("DashboardGrid uncontrolled order", () => {
   });
 
   it("seeds from defaultOrder", () => {
-    const { container } = ui(<DashboardGrid widgets={widgets} defaultOrder={["c", "b", "a"]} />);
+    const { container } = ui(<DashboardGrid items={items} defaultOrder={["c", "b", "a"]} />);
     expect(bodyOrder(container)).toEqual(["body-c", "body-b", "body-a"]);
   });
 });
@@ -221,7 +269,7 @@ describe("DashboardGrid storageKey", () => {
 
   it("seeds the uncontrolled order from storage and writes each drop back", async () => {
     localStorage.setItem(`canvas-dashboard-order:${KEY}`, JSON.stringify(["c", "b", "a"]));
-    const { container } = ui(<DashboardGrid unlocked widgets={widgets} storageKey={KEY} />);
+    const { container } = ui(<DashboardGrid unlocked items={items} storageKey={KEY} />);
     expect(bodyOrder(container)).toEqual(["body-c", "body-b", "body-a"]);
     // Move Latency (first) past Signups (second).
     await keyboardDrag(container, "Latency", ["ArrowRight", "ArrowDown"]);
@@ -229,16 +277,16 @@ describe("DashboardGrid storageKey", () => {
     expect(JSON.parse(localStorage.getItem(`canvas-dashboard-order:${KEY}`)!)).toEqual(["b", "c", "a"]);
   });
 
-  it("falls back to the widgets order when the stored value is unusable, and clears on demand", () => {
+  it("falls back to the items order when the stored value is unusable, and clears on demand", () => {
     localStorage.setItem(`canvas-dashboard-order:${KEY}`, "{ not an order }");
-    const bad = ui(<DashboardGrid widgets={widgets} storageKey={KEY} />);
+    const bad = ui(<DashboardGrid items={items} storageKey={KEY} />);
     expect(bodyOrder(bad.container)).toEqual(["body-a", "body-b", "body-c"]);
     cleanup();
 
     localStorage.setItem(`canvas-dashboard-order:${KEY}`, JSON.stringify(["c", "b", "a"]));
     clearStoredDashboardOrder(KEY);
     expect(localStorage.getItem(`canvas-dashboard-order:${KEY}`)).toBeNull();
-    const cleared = ui(<DashboardGrid widgets={widgets} storageKey={KEY} defaultOrder={["b", "a", "c"]} />);
+    const cleared = ui(<DashboardGrid items={items} storageKey={KEY} defaultOrder={["b", "a", "c"]} />);
     expect(bodyOrder(cleared.container)).toEqual(["body-b", "body-a", "body-c"]);
   });
 
@@ -247,7 +295,7 @@ describe("DashboardGrid storageKey", () => {
     const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
     try {
       localStorage.setItem(`canvas-dashboard-order:${KEY}`, JSON.stringify(["c", "b", "a"]));
-      const { container } = ui(<DashboardGrid widgets={widgets} order={["a", "b", "c"]} storageKey={KEY} />);
+      const { container } = ui(<DashboardGrid items={items} order={["a", "b", "c"]} storageKey={KEY} />);
       // The controlled order wins; the stored one is not read.
       expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
       const messages = warnSpy.mock.calls.map((c) => String(c[0]));

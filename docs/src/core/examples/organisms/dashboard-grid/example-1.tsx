@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
       <Switch checked={unlocked} onChange={setUnlocked}>Customize layout</Switch>
       <DashboardGrid
         unlocked={unlocked}
-        widgets={[
+        items={[
           { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
           { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
         ]}

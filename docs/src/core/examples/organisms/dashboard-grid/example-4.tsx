@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   unlocked
   compact
   defaultOrder={["signups", "revenue", "errors"]}
-  widgets={[
+  items={[
     { id: "revenue", span: 4, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
     { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
     { id: "errors", span: 4, title: "Errors", content: <BarList title="Errors" items={[{ label: "5xx", value: 12 }]} /> },

@@ -11,7 +11,7 @@ export default function Example(scope: ExampleScope) {
       unlocked
       order={order}
       onOrderChange={setOrder}
-      widgets={[
+      items={[
         { id: "revenue", span: 6, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
         { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
       ]}

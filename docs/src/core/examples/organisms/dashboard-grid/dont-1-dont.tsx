@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, DashboardGrid } = scope;
   return (
 <DashboardGrid
-  widgets={[
+  items={[
     {
       id: "signups",
       span: 6,

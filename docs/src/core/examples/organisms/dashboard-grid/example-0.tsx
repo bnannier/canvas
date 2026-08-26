@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Card, CardContent, CardDescription, CardHeader, CardTitle, Chart, DashboardGrid, Typography, Sparkline, BarList } = scope;
   return (
 <DashboardGrid
-  widgets={[
+  items={[
     {
       id: "revenue",
       span: 8,

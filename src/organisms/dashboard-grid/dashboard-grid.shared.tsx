@@ -83,6 +83,11 @@ const GRID: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "f
 // a short name of their own ("overview", "billing") rather than a global-scope collision.
 const STORAGE_PREFIX = "canvas-dashboard-order:";
 
+// One shared array stands in for an omitted widget list, so a board with nothing configured
+// keeps the same list identity on every render rather than minting a new empty array. Never
+// written to: every consumer of it only reads.
+const EMPTY: DashboardWidget[] = [];
+
 // localStorage is guarded exactly like src/theme.ts guards it: a try/catch that no-ops. On
 // native there is no localStorage (the kit takes no storage dependency), and during SSR
 // there is no window, so both read and write fall through silently and the uncontrolled
@@ -109,7 +114,7 @@ function writeStoredOrder(storageKey: string, order: readonly string[]): void {
 
 /**
  * Forget the widget order saved under `storageKey`, so the next uncontrolled DashboardGrid
- * seeded from that key falls back to `defaultOrder` (or the `widgets` array order). This is
+ * seeded from that key falls back to `defaultOrder` (or the `items` array order). This is
  * what a "Reset layout" action calls. A no-op wherever there is no storage (native, SSR),
  * matching the write side, and safe to call for a key that was never written.
  */
@@ -141,10 +146,17 @@ function sameOrder(a: readonly string[], b: readonly string[]): boolean {
 }
 
 export interface DashboardGridProps {
-  /** The widgets to lay out. Their array order is the fallback order: any widget whose id
-   *  is missing from the active order is appended, so adding one to a release never breaks
-   *  a saved layout. */
-  widgets: DashboardWidget[];
+  /** The widgets to lay out, and the canonical collection prop. Their array order is the
+   *  fallback order: any widget whose id is missing from the active order is appended, so
+   *  adding one to a release never breaks a saved layout. */
+  items?: DashboardWidget[];
+  /**
+   * Deprecated alias for `items`, kept working so existing call sites are untouched. Pass
+   * `items` instead: it is the spelling every collection-taking component in the kit uses
+   * (Sidebar, StackedList, DescriptionList, Feed, Stats). `items` wins if both are passed.
+   * @deprecated Use `items`.
+   */
+  widgets?: DashboardWidget[];
   /**
    * CONTROLLED widget order, as ids. The primary path: the consuming app owns the array and
    * persists it through its own API, applying each `onOrderChange`. Ids the widget list does
@@ -153,7 +165,7 @@ export interface DashboardGridProps {
    */
   order?: string[];
   /** Initial order for UNCONTROLLED use; the grid then applies each drop itself. Defaults to
-   *  the `widgets` array order. */
+   *  the `items` array order. */
   defaultOrder?: string[];
   /** Fired with the full, reconciled next order after every drop that changes it, in BOTH
    *  the controlled and the uncontrolled mode. */
@@ -196,7 +208,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
   const { DragDropProvider, DropZone, Draggable, DragHandle } = parts;
 
   interface CellsProps {
-    widgets: DashboardWidget[];
+    items: DashboardWidget[];
     unlocked: boolean;
     compact: boolean;
     onDrop: (e: DropEvent) => void;
@@ -205,7 +217,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
   // The cells live in their own component so the measurement re-renders only the grid row,
   // never the order state above it. The SAME row renders in both modes, so toggling
   // customize mode changes the paint and the drag wiring, not the arrangement.
-  function DashboardCells({ widgets, unlocked, compact, onDrop }: CellsProps) {
+  function DashboardCells({ items, unlocked, compact, onDrop }: CellsProps) {
     const { tokens } = useTheme();
     const gap = skin.gap(compact);
     // One container query serves both jobs: `value` is the tier the spans resolve against,
@@ -216,7 +228,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
 
     return (
       <View onLayout={onLayout} style={[GRID, { gap }]}>
-        {widgets.map((widget) => {
+        {items.map((widget) => {
           const span = effectiveSpan(widget, tier);
           const cell = width > 0 ? { width: dashboardCellWidth(width, span, gap) } : null;
           if (!unlocked) {
@@ -253,7 +265,20 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
   }
 
   return function DashboardGrid(props: DashboardGridProps) {
-    const { widgets, defaultOrder, onOrderChange, unlocked = false, storageKey, compact = false, testID, style } = props;
+    const { defaultOrder, onOrderChange, unlocked = false, storageKey, compact = false, testID, style } = props;
+    // `widgets` is the pre-rename spelling of `items`, kept working for call sites written
+    // against the first release. `items` is canonical, so it wins outright; each misuse warns
+    // once in dev and neither is an error at runtime (an unconfigured board is a legal empty
+    // state, so a grid given neither simply renders nothing).
+    devWarn(
+      props.widgets != null,
+      "[canvas] <DashboardGrid />: the `widgets` prop is deprecated; pass `items` instead, the collection prop every other Canvas component uses.",
+    );
+    devWarn(
+      props.items != null && props.widgets != null,
+      "[canvas] <DashboardGrid />: `items` and `widgets` were both passed; `widgets` is ignored, because `items` is the canonical spelling.",
+    );
+    const items = props.items ?? props.widgets ?? EMPTY;
     // Read the controlled prop RAW (never destructured with a default): coalescing it would
     // latch the component into controlled mode and a bare grid would stop reordering.
     const controlledOrder = props.order;
@@ -268,14 +293,14 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
     // the storage read must not repeat on every render either.
     const seed = useRef<string[] | null>(null);
     if (seed.current === null) {
-      seed.current = (persistKey != null ? readStoredOrder(persistKey) : null) ?? defaultOrder ?? widgets.map((w) => w.id);
+      seed.current = (persistKey != null ? readStoredOrder(persistKey) : null) ?? defaultOrder ?? items.map((w) => w.id);
     }
     const [order, setOrder] = useControllableState<string[]>(controlledOrder, seed.current, onOrderChange);
 
     // The rendered arrangement, reconciled against the live widget list. Its ids are also the
     // basis every move is computed from, so a widget appended because the stored order predates
     // it is still movable, and the reported order is always complete.
-    const arranged = orderedWidgets(widgets, order);
+    const arranged = orderedWidgets(items, order);
 
     const handleDrop = (e: DropEvent) => {
       const ids = arranged.map((w) => w.id);
@@ -289,7 +314,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
       if (persistKey != null) writeStoredOrder(persistKey, next);
     };
 
-    const cells = <DashboardCells widgets={arranged} unlocked={unlocked} compact={compact} onDrop={handleDrop} />;
+    const cells = <DashboardCells items={arranged} unlocked={unlocked} compact={compact} onDrop={handleDrop} />;
     // Locked: a plain static grid, with no drag provider mounted at all.
     if (!unlocked) {
       return (
