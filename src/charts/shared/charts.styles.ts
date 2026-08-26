@@ -217,6 +217,10 @@ export function verticalLabel(tokens: ColorTokens): TextStyle {
 // look verbatim (a rounded-lg (8) card surface and rounded (4) bar corners); the iOS
 // and Android skins reference it directly so the three columns stay byte-identical.
 
+/** The zoom control bar under a zoomable chart's plot. A kit-internal constant, so
+ *  the spacing is the chart's own decision and never a call-site style. */
+export const zoomBar: ViewStyle = { marginTop: 12, justifyContent: "flex-end" };
+
 export const webSkin: ChartSkin = {
   surfaceRadius: 8,
   barRadius: 4,

@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { StyleSheet } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
+import { Button } from "../../atoms/button/button.js";
+import { Icon } from "../../atoms/icon/icon.js";
+import { Row } from "../../atoms/layout/layout.js";
 import {
   View,
   Text,
@@ -20,11 +23,16 @@ import { formatCompact } from "../shared/chart-math.js";
 import { projectNaturalEarth } from "./geo-map.projection.js";
 import { WORLD_BORDER_PATH, WORLD_LAND_PATH, WORLD_VIEW_BOX } from "./geo-map.world.js";
 import {
+  MAX_ZOOM,
   WORLD_CAMERA,
+  ZOOM_STEP,
+  type GeoMapCamera,
   geoMapClampCamera,
   geoMapInView,
+  geoMapKeyCamera,
   geoMapMatrix,
   geoMapPlace,
+  geoMapZoomBy,
   geoZoomLevel,
 } from "./geo-map.camera.js";
 import {
@@ -36,6 +44,7 @@ import {
   geoMapClusters,
   geoMapLinkage,
   geoMapPeak,
+  geoZoomAnnouncement,
   type GeoMapCluster,
 } from "./geo-map.cluster.js";
 
@@ -249,8 +258,8 @@ export function createGeoMap(skin: ChartSkin) {
     // nobody has asked for. Without `zoomable` the camera is the world verbatim,
     // so none of this can move.
     const zoomable = !!props.zoomable;
-    const [zoom] = useControllableState<number>(props.zoom, props.defaultZoom ?? 1, props.onZoomChange);
-    const [offset] = useState({ tx: 0, ty: 0 });
+    const [zoom, setZoom] = useControllableState<number>(props.zoom, props.defaultZoom ?? 1, props.onZoomChange);
+    const [offset, setOffset] = useState({ tx: 0, ty: 0 });
     const camera = zoomable ? geoMapClampCamera({ k: zoom, tx: offset.tx, ty: offset.ty }) : WORLD_CAMERA;
 
     // The merge tree is built once per data set and cut per zoom LEVEL, so a
@@ -290,6 +299,20 @@ export function createGeoMap(skin: ChartSkin) {
       const same = selectedCluster === at;
       setSelected(same ? null : cluster.lead);
       props.onSelectPlaces?.(same ? [] : cluster.members);
+    };
+
+    // One way in for every zoom source: the controls, the keys, the assistive
+    // actions and (next) the wheel and the fingers all land here, so the clamp and
+    // the announcement cannot be forgotten by one of them.
+    const setCamera = (next: GeoMapCamera) => {
+      const held = geoMapClampCamera(next);
+      setOffset({ tx: held.tx, ty: held.ty });
+      if (held.k !== camera.k) {
+        setZoom(held.k);
+        announceSelection(
+          geoZoomAnnouncement(held.k, geoMapClusters(points, links, geoZoomLevel(held.k)).length, points.length),
+        );
+      }
     };
 
     const name = geoMapAccessibleName(points, title, formatValue, zoomable ? clusters : undefined);
@@ -370,6 +393,31 @@ export function createGeoMap(skin: ChartSkin) {
           accessibilityLabel={name}
           aria-label={name}
           onLayout={onLayout}
+          // A pointer-free user has no wheel and no fingers to pinch with, so the
+          // map itself takes focus and the arrow / +- / 0 keys drive the camera.
+          // VoiceOver and TalkBack get the same reach through the standard
+          // increment / decrement actions rather than a bespoke gesture.
+          {...(zoomable
+            ? ({
+                focusable: true,
+                accessibilityActions: [{ name: "increment" }, { name: "decrement" }],
+                onAccessibilityAction: (event: { nativeEvent: { actionName: string } }) => {
+                  const factor = event.nativeEvent.actionName === "increment" ? ZOOM_STEP : 1 / ZOOM_STEP;
+                  setCamera(geoMapZoomBy(camera, factor));
+                },
+                // RNW forwards onKeyDown to the DOM node; RN's ViewProps does not
+                // declare it, and a phone has no key to press, so it is inert there.
+                // The slider.shared.tsx idiom.
+                onKeyDown: (event: { key: string; preventDefault: () => void }) => {
+                  const next = geoMapKeyCamera(camera, event.key);
+                  // A key the map cannot act on is left for the page: an arrow at
+                  // 1x must still scroll, and Tab must still move focus.
+                  if (!next) return;
+                  event.preventDefault();
+                  setCamera(next);
+                },
+              } as object)
+            : null)}
           style={{ width: "100%", aspectRatio: GEO_MAP_ASPECT }}
         >
           {measured ? (
@@ -422,6 +470,10 @@ export function createGeoMap(skin: ChartSkin) {
                   bubbles are far under a finger). Empty ocean clears. */}
               <Pressable
                 accessible={false}
+                // RNW gives every Pressable tabIndex 0 regardless of
+                // accessible={false}, so without this the map carries a second,
+                // nameless tab stop that announces nothing.
+                {...({ tabIndex: -1 } as object)}
                 onPress={(e) => {
                   const point = pressPoint(e);
                   if (!point) return;
@@ -432,6 +484,39 @@ export function createGeoMap(skin: ChartSkin) {
             </>
           ) : null}
         </View>
+
+        {/* The zoom controls, a SIBLING of the plot and never inside it: the hit
+            layer has to stay the plot's last child, and a control within it would
+            make a mouse press's offsetX relative to the control instead of the
+            plot. Disabled at the ends the way Stepper disables its minus at min. */}
+        {zoomable ? (
+          <Row snug alignCenter style={s.zoomBar}>
+            <Button
+              icon
+              ghost
+              disabled={camera.k <= 1}
+              accessibilityLabel="Zoom out"
+              iconLeft={<Icon zoomOut decorative size={16} />}
+              onPress={() => setCamera(geoMapZoomBy(camera, 1 / ZOOM_STEP))}
+            />
+            <Button
+              icon
+              ghost
+              disabled={camera.k >= MAX_ZOOM}
+              accessibilityLabel="Zoom in"
+              iconLeft={<Icon zoomIn decorative size={16} />}
+              onPress={() => setCamera(geoMapZoomBy(camera, ZOOM_STEP))}
+            />
+            <Button
+              icon
+              ghost
+              disabled={camera.k === 1 && camera.tx === 0 && camera.ty === 0}
+              accessibilityLabel="Reset zoom"
+              iconLeft={<Icon maximize decorative size={16} />}
+              onPress={() => setCamera(WORLD_CAMERA)}
+            />
+          </Row>
+        ) : null}
       </View>
     );
   };
