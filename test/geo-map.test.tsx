@@ -340,6 +340,46 @@ describe("GeoMap zoomable", () => {
     expect(places).toEqual([]);
   });
 
+  it("zooms from the keyboard, because a pointer-free user has no wheel", () => {
+    const seen: number[] = [];
+    const { container } = ui(<GeoMap zoomable title="Installs" points={BAY} onZoomChange={(z) => seen.push(z)} />);
+    const plot = container.querySelector('[role="img"]')!;
+    fireEvent.keyDown(plot, { key: "+" });
+    expect(seen).toEqual([2]);
+    fireEvent.keyDown(plot, { key: "0" });
+    expect(seen).toEqual([2, 1]);
+  });
+
+  it("leaves a key it cannot act on to the page", () => {
+    // An arrow at 1x cannot pan, so swallowing it would break page scrolling; Tab
+    // must always keep moving focus.
+    const seen: number[] = [];
+    const { container } = ui(<GeoMap zoomable title="Installs" points={BAY} onZoomChange={(z) => seen.push(z)} />);
+    const plot = container.querySelector('[role="img"]')!;
+    for (const key of ["ArrowRight", "ArrowDown", "Tab", "a"]) {
+      const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+      fireEvent(plot, event);
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(seen).toEqual([]);
+  });
+
+  it("offers zoom controls that stop at the ends", () => {
+    const { container } = ui(<GeoMap zoomable title="Installs" points={BAY} />);
+    const labels = [...container.querySelectorAll("[aria-label]")].map((n) => n.getAttribute("aria-label"));
+    expect(labels).toContain("Zoom in");
+    expect(labels).toContain("Zoom out");
+    expect(labels).toContain("Reset zoom");
+    // At 1x there is nothing to zoom out of and nothing to reset.
+    const out = container.querySelector('[aria-label="Zoom out"]')!;
+    expect(out.getAttribute("aria-disabled") ?? out.getAttribute("disabled")).toBeTruthy();
+  });
+
+  it("shows no controls at all on a map that is not zoomable", () => {
+    const { container } = ui(<GeoMap title="Installs" points={BAY} />);
+    expect(container.querySelector('[aria-label="Zoom in"]')).toBeNull();
+  });
+
   it("keeps the hit layer the last child of the plot, zoomable or not", () => {
     // chart-inspect resolves a mouse press through offsetX, which is TARGET-relative,
     // so the hit layer must stay empty AND last. A control rendered inside the plot
