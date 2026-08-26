@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { StyleSheet } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { PanResponder, StyleSheet } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 import { Button } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
@@ -15,6 +15,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "../../style/index.js";
+import { GESTURE_SURFACE, useWheel } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { chartRootWidth } from "../shared/chart-frame.js";
@@ -32,8 +33,15 @@ import {
   geoMapKeyCamera,
   geoMapMatrix,
   geoMapPlace,
+  geoMapZoomAt,
   geoMapZoomBy,
+  geoMapWheelFactor,
+  geoMapGestureEvent,
   geoZoomLevel,
+  GEO_MAP_GESTURE_IDLE,
+  PAN_SLOP,
+  type GeoMapGesture,
+  type GeoMapTouch,
 } from "./geo-map.camera.js";
 import {
   NO_LINKS,
@@ -230,6 +238,29 @@ export function geoMapAccessibleName(
   return `${head}: ${points.length} places${grouped}. ${named}${rest > 0 ? `, +${rest} more` : ""}`;
 }
 
+/**
+ * The fingers currently down, in viewBox units.
+ *
+ * Read by ARRAY POSITION within one event and never matched by identifier across
+ * events: react-native-web normalizes touch identifiers with `identifier % 20`,
+ * so two live touches can collide on one id and a matched pair would swap.
+ *
+ * `locationX`/`locationY` are relative to the responder's own currentTarget, so
+ * both fingers share one reference box and their separation is meaningful; RNW
+ * computes them lazily, hence the fallback to the page coordinates for any
+ * platform that leaves them undefined.
+ */
+function touchesOf(
+  event: { nativeEvent: { touches: readonly { locationX?: number; locationY?: number; pageX?: number; pageY?: number }[] } },
+  scale: number,
+): GeoMapTouch[] {
+  if (!(scale > 0)) return [];
+  return event.nativeEvent.touches.map((t) => ({
+    x: (t.locationX ?? t.pageX ?? 0) / scale,
+    y: (t.locationY ?? t.pageY ?? 0) / scale,
+  }));
+}
+
 /** Build a GeoMap from a platform skin. */
 export function createGeoMap(skin: ChartSkin) {
   return function GeoMap(props: GeoMapProps) {
@@ -301,19 +332,85 @@ export function createGeoMap(skin: ChartSkin) {
       props.onSelectPlaces?.(same ? [] : cluster.members);
     };
 
+    // What the event handlers read. The PanResponder is created once and the wheel
+    // listener is bound once, so neither can see a later render's closure; this ref
+    // is how they reach the current camera, scale and setter.
+    //
+    // `camera` is re-seeded from state on EVERY render, and setCamera writes it
+    // ahead of that render. Without the optimistic write, several wheel events
+    // arriving in one frame (which a trackpad does routinely) would every one of
+    // them compute from the same stale camera and collapse into a single step. The
+    // re-seed is what keeps a CONTROLLED `zoom` authoritative: if the parent
+    // declines the change, the next render puts its value back.
+    const live = useRef({ camera, scale: 0, measured: false, setCamera: (_: GeoMapCamera) => {} });
+    live.current.camera = camera;
+
     // One way in for every zoom source: the controls, the keys, the assistive
-    // actions and (next) the wheel and the fingers all land here, so the clamp and
-    // the announcement cannot be forgotten by one of them.
+    // actions, the wheel and the fingers all land here, so the clamp and the
+    // announcement cannot be forgotten by one of them.
     const setCamera = (next: GeoMapCamera) => {
+      const from = live.current.camera;
       const held = geoMapClampCamera(next);
+      live.current.camera = held;
       setOffset({ tx: held.tx, ty: held.ty });
-      if (held.k !== camera.k) {
-        setZoom(held.k);
+      if (held.k === from.k) return;
+      setZoom(held.k);
+      // Only when the GROUPING actually changes, which is at most MAX_ZOOM_LEVEL
+      // times over the whole range. Announcing every k would spam a screen reader
+      // on every frame of a pinch.
+      const reached = geoZoomLevel(held.k);
+      if (reached !== geoZoomLevel(from.k)) {
         announceSelection(
-          geoZoomAnnouncement(held.k, geoMapClusters(points, links, geoZoomLevel(held.k)).length, points.length),
+          geoZoomAnnouncement(held.k, geoMapClusters(points, links, reached).length, points.length),
         );
       }
     };
+    live.current.setCamera = setCamera;
+
+    // The wheel. Not an onWheel prop: React registers its root wheel listener as
+    // passive, so a prop handler could not stop the page scrolling under the map.
+    const wheelRef = useWheel(zoomable, (g) => {
+      const { camera: from, scale: px, measured: laid } = live.current;
+      if (!laid || px <= 0) return false;
+      // Anchored under the cursor: the place you point at is the place that stays.
+      const next = geoMapZoomAt(from, from.k * geoMapWheelFactor(g.deltaY), g.x / px, g.y / px);
+      if (next.k === from.k && next.tx === from.tx && next.ty === from.ty) return false;
+      live.current.setCamera(next);
+      return true;
+    });
+
+    // Pinch, and drag-to-pan once zoomed.
+    const gesture = useRef<GeoMapGesture>(GEO_MAP_GESTURE_IDLE);
+    const responder = useMemo(
+      () =>
+        PanResponder.create({
+          // A two-finger start is never a tap, so claim it immediately. A ONE
+          // finger drag is only claimed past the slop AND only above 1x, so at
+          // world zoom every press still reaches the hit layer exactly as before.
+          onStartShouldSetPanResponderCapture: (e) => e.nativeEvent.touches.length >= 2,
+          onMoveShouldSetPanResponderCapture: (e, state) =>
+            e.nativeEvent.touches.length >= 2 ||
+            (live.current.camera.k > 1 && Math.hypot(state.dx, state.dy) > PAN_SLOP),
+          onPanResponderGrant: (e) => {
+            const out = geoMapGestureEvent("grant", touchesOf(e, live.current.scale), gesture.current, live.current.camera);
+            gesture.current = out.gesture;
+          },
+          onPanResponderMove: (e) => {
+            const out = geoMapGestureEvent("move", touchesOf(e, live.current.scale), gesture.current, live.current.camera);
+            gesture.current = out.gesture;
+            live.current.setCamera(out.camera);
+          },
+          onPanResponderRelease: () => {
+            gesture.current = GEO_MAP_GESTURE_IDLE;
+          },
+          onPanResponderTerminate: () => {
+            gesture.current = GEO_MAP_GESTURE_IDLE;
+          },
+          // Nothing may take a pinch away mid-gesture.
+          onPanResponderTerminationRequest: () => false,
+        }),
+      [],
+    );
 
     const name = geoMapAccessibleName(points, title, formatValue, zoomable ? clusters : undefined);
 
@@ -325,6 +422,8 @@ export function createGeoMap(skin: ChartSkin) {
     const height = width / GEO_MAP_ASPECT;
     // viewBox units -> px, for the RN layers positioned over the Svg.
     const scale = width / WORLD_VIEW_BOX.width;
+    live.current.scale = scale;
+    live.current.measured = measured;
 
     // The map's two paths, hoisted out of the render. On iOS and Android a
     // re-render re-parses the `d` string, and the land alone is 12,032 points, so
@@ -392,7 +491,9 @@ export function createGeoMap(skin: ChartSkin) {
           role="img"
           accessibilityLabel={name}
           aria-label={name}
+          ref={zoomable ? wheelRef : undefined}
           onLayout={onLayout}
+          {...(zoomable ? responder.panHandlers : null)}
           // A pointer-free user has no wheel and no fingers to pinch with, so the
           // map itself takes focus and the arrow / +- / 0 keys drive the camera.
           // VoiceOver and TalkBack get the same reach through the standard
@@ -418,7 +519,10 @@ export function createGeoMap(skin: ChartSkin) {
                 },
               } as object)
             : null)}
-          style={{ width: "100%", aspectRatio: GEO_MAP_ASPECT }}
+          // touchAction:'none' so a two-finger pinch reaches the responder system
+          // instead of the browser zooming the whole page. Kit-internal, and only
+          // while the chart actually owns a gesture.
+          style={[{ width: "100%", aspectRatio: GEO_MAP_ASPECT }, zoomable ? GESTURE_SURFACE : null]}
         >
           {measured ? (
             <>
