@@ -274,6 +274,31 @@
       }
     },
     "Command": {},
+    "DashboardGrid": {
+      "onReorder": {
+        "kind": "renamed",
+        "to": "onOrderChange",
+        "reason": "Canvas's controllable-state convention pairs `order`/`defaultOrder` with `onOrderChange`, the same pairing `onClose` to `onOpenChange` records above."
+      },
+      "locked": {
+        "kind": "renamed",
+        "to": "unlocked",
+        "reason": "Renamed and deliberately inverted. A dashboard is static in normal use and reorderable only in an explicit customize mode, so the absent default has to be the static one; a `locked` prop would make every consumer pass it just to get ordinary behavior. Locked is also the cheaper state here, mounting no drag provider at all."
+      },
+      "gap": {
+        "kind": "boolean-axis",
+        "to": "compact",
+        "reason": "Raw numeric spacing is rejected; gutters come from the named spacing scale, and the grid exposes the one it varies as the density axis."
+      },
+      "columns": {
+        "kind": "intentional-omission",
+        "reason": "The board is twelve columns by definition, and a widget states its width as a span within them. A caller-set track count would leave `span` meaning nothing, since the same 6 would be half a board or the whole of it."
+      },
+      "rowHeight": {
+        "kind": "intentional-omission",
+        "reason": "Rows are sized by their content, because a widget arrives with its own surface and owns its height (a Card, a Chart, a Stats row). A fixed row height would clip the tall ones and stretch the short ones."
+      }
+    },
     "DataTable": {
       "footer": {
         "kind": "open-gap",
@@ -1005,11 +1030,6 @@
       "kind": "open-gap",
       "plannedIn": "phase-5",
       "reason": "The public chart wrapper (card surface, title, axis gutter, legend) taking a plain children plot. Canvas has the internal render-prop CartesianFrame and the internal chartShell, but exposes neither."
-    },
-    "DashboardGrid": {
-      "kind": "open-gap",
-      "plannedIn": "phase-6",
-      "reason": "The rearrangeable widget wall on a fixed column grid with legal-fraction spans and row promotion. Canvas has no span-based grid."
     }
   },
   "metricGaps": {

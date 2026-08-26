@@ -210,7 +210,7 @@ const CASES: SkinCase[] = [
     file: "dashboard-grid",
     props: {
       unlocked: true,
-      widgets: [
+      items: [
         { id: "a", span: 8, title: "Revenue", content: txt("Revenue widget") },
         { id: "b", span: 4, narrowSpan: 6, title: "Signups", content: txt("Signups widget") },
       ],

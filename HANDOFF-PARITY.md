@@ -30,12 +30,12 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | | |
 |---|---|
 | Hand-off components | 75 |
-| Present in the kit | 73 |
-| Absent (tracked) | 2 |
-| Hand-off props compared | 725 |
-| Same name, present | 522 |
-| Settled divergences | 146 |
-| Open gaps (tracked) | 57 |
+| Present in the kit | 74 |
+| Absent (tracked) | 1 |
+| Hand-off props compared | 733 |
+| Same name, present | 526 |
+| Settled divergences | 151 |
+| Open gaps (tracked) | 56 |
 | Metric gaps (not detectable here) | 1 |
 | **Unclassified** | **0** |
 
@@ -44,7 +44,6 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | Component | Tier | Hand-off props | Planned | Why it is missing |
 |---|---|---|---|---|
 | `ChartFrame` | charts | 13 | phase-5 | The public chart wrapper (card surface, title, axis gutter, legend) taking a plain children plot. Canvas has the internal render-prop CartesianFrame and the internal chartShell, but exposes neither. |
-| `DashboardGrid` | organisms | 8 | phase-6 | The rearrangeable widget wall on a fixed column grid with legal-fraction spans and row promotion. Canvas has no span-based grid. |
 
 ## Open gaps
 
@@ -106,7 +105,6 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `TabBar` | `minimized` | unscheduled | The controlled counterpart of the above. |
 | `TabBar` | `scrollRef` | unscheduled | The scroll view the bar watches to drive minimizing. |
 | `Textarea` | `helper` | phase-3 | The muted hint line under a field. Only Autocomplete has one today (as `helperText`, unlinked for a11y); Field and the shared message chrome give every field family one. |
-| `Tooltip` | `children` | unscheduled | Wrapping an arbitrary node as the tooltip target. Canvas's Tooltip renders its own trigger from a `trigger` string in one of three flavors (button, icon button, inline word) and cannot attach to a caller's node. |
 | `Tooltip` | `reveal` | unscheduled | Choosing the entrance animation (lift, scale, fade, none). Canvas fixes one reveal. |
 | `Tooltip` | `brisk` | unscheduled | Running the reveal at 90ms instead of 140ms. Canvas fixes the timing on Tooltip (its Reveal component does expose `brisk`). |
 
@@ -168,6 +166,11 @@ Differences in spelling or shape where the kit carries the capability its own wa
 | `Collapsible` | `label` | Renamed | `title` | Canvas names the disclosure's heading `title`, matching Card and Popover. |
 | `Command` | `onClose` | Renamed | `onOpenChange` | Canvas's controllable-state convention pairs `open`/`defaultOpen` with `onOpenChange`, which reports both directions rather than close only. |
 | `Command` | `glass` | Not offered | — | Glass is a theming-level surface mode in Canvas (`<ThemeProvider glass>` / `data-surface`), never a per-component prop. CLAUDE.md forbids adding one. |
+| `DashboardGrid` | `columns` | Not offered | — | The board is twelve columns by definition, and a widget states its width as a span within them. A caller-set track count would leave `span` meaning nothing, since the same 6 would be half a board or the whole of it. |
+| `DashboardGrid` | `gap` | Boolean axis | `compact` | Raw numeric spacing is rejected; gutters come from the named spacing scale, and the grid exposes the one it varies as the density axis. |
+| `DashboardGrid` | `rowHeight` | Not offered | — | Rows are sized by their content, because a widget arrives with its own surface and owns its height (a Card, a Chart, a Stats row). A fixed row height would clip the tall ones and stretch the short ones. |
+| `DashboardGrid` | `onReorder` | Renamed | `onOrderChange` | Canvas's controllable-state convention pairs `order`/`defaultOrder` with `onOrderChange`, the same pairing `onClose` to `onOpenChange` records above. |
+| `DashboardGrid` | `locked` | Renamed | `unlocked` | Renamed and deliberately inverted. A dashboard is static in normal use and reorderable only in an explicit customize mode, so the absent default has to be the static one; a `locked` prop would make every consumer pass it just to get ordinary behavior. Locked is also the cheaper state here, mounting no drag provider at all. |
 | `DataTable` | `sortDir` | Renamed | `sort` | Canvas carries column and direction together in one `sort` object so they cannot drift apart. |
 | `DataTable` | `onSort` | Renamed | `onSortChange` | Controllable-state naming: the change callback for the `sort` prop. |
 | `DataTable` | `onEdit` | Renamed | `onRowEdit` | Prefixed to say what is edited, since the table also commits cells. |

@@ -154,7 +154,7 @@ describe("no DOM-nesting console violations at render", () => {
             whatever the widget brings, never a wrapper around it. */}
         <DashboardGrid
           unlocked
-          widgets={[
+          items={[
             { id: "revenue", span: 6, title: "Revenue", content: <Button ghost onPress={() => {}}>Export</Button> },
             { id: "signups", span: 6, title: "Signups", content: <Text>1,204</Text> },
           ]}

@@ -1,12 +1,12 @@
 # DashboardGrid
 
-A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width. Cells render bare, because a widget arrives with its own surface (a Card, a Chart, a Stats row) and a second frame around it would only double up. Locked, it is a plain static grid and no drag machinery is mounted at all; `unlocked` turns on customize mode, where every cell gains a grip and the board reorders by pointer, keyboard, or screen reader through the kit's own drag-and-drop. The order is a plain array of ids, controlled through `order` and `onOrderChange` so the app can persist it, or left to the grid with `defaultOrder`.
+A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width. Cells render bare, because a widget arrives with its own surface (a Card, a Chart, a Stats row) and a second frame around it would only double up. Locked, it is a plain static grid and no drag machinery is mounted at all; `unlocked` turns on customize mode, where every cell gains a grip and the board reorders by pointer, keyboard, or screen reader through the kit's own drag-and-drop. The order is a plain array of ids, controlled through `order` and `onOrderChange` so the app can persist it, or left to the grid with `defaultOrder`. The board takes its widgets through `items`, the collection prop every other collection-taking component in the kit uses; the original `widgets` spelling still works as a deprecated alias and warns in development.
 
 ## Usage
 
 ```tsx
 <DashboardGrid
-  widgets={[
+  items={[
     {
       id: "revenue",
       span: 8,
@@ -53,7 +53,7 @@ A 12-column widget board for overview screens. Each widget declares a span in tw
       <Switch checked={unlocked} onChange={setUnlocked}>Customize layout</Switch>
       <DashboardGrid
         unlocked={unlocked}
-        widgets={[
+        items={[
           { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
           { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
         ]}
@@ -74,7 +74,7 @@ The primary path: the app owns the id array and persists it through its own API,
       unlocked
       order={order}
       onOrderChange={setOrder}
-      widgets={[
+      items={[
         { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
         { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
       ]}
@@ -89,7 +89,7 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
 
 ```tsx
 <DashboardGrid
-  widgets={[
+  items={[
     { id: "revenue", span: 8, narrowSpan: 12, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
     { id: "signups", span: 4, narrowSpan: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }]} /> },
     { id: "errors", span: 4, narrowSpan: 6, title: "Errors", content: <BarList title="Errors" items={[{ label: "5xx", value: 12 }]} /> },
@@ -106,7 +106,7 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
   unlocked
   compact
   defaultOrder={["signups", "revenue", "errors"]}
-  widgets={[
+  items={[
     { id: "revenue", span: 4, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
     { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
     { id: "errors", span: 4, title: "Errors", content: <BarList title="Errors" items={[{ label: "5xx", value: 12 }]} /> },
@@ -127,7 +127,7 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
       unlocked
       order={order}
       onOrderChange={setOrder}
-      widgets={[
+      items={[
         { id: "revenue", span: 6, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
         { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
       ]}
@@ -142,7 +142,7 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
 <DashboardGrid
   unlocked
   order={["signups", "revenue"]}
-  widgets={[
+  items={[
     { id: "revenue", span: 6, title: "Revenue", content: <BarList title="Revenue" items={[{ label: "Pro", value: 82 }]} /> },
     { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 64 }]} /> },
   ]}
@@ -155,7 +155,7 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
 
 ```tsx
 <DashboardGrid
-  widgets={[
+  items={[
     {
       id: "signups",
       span: 6,
@@ -180,7 +180,7 @@ A wide board is not a narrow one cut in half, so a widget can declare the width 
 
 ```tsx
 <DashboardGrid
-  widgets={[
+  items={[
     {
       id: "signups",
       span: 6,
