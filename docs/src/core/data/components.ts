@@ -753,6 +753,13 @@ export const COMPONENTS: ComponentDoc[] = [
     category: "Charts",
     stageAlign: "start",
   },
+  {
+    slug: "geo-map",
+    name: "GeoMap",
+    description: "A world map with a bubble per place, its area proportional to the count, over a precomputed land silhouette.",
+    category: "Charts",
+    stageAlign: "start",
+  },
 
   {
     slug: "navbars",

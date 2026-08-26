@@ -633,6 +633,11 @@
             "slug": "treemap",
             "label": "Treemap",
             "icon": "layout-grid"
+          },
+          {
+            "slug": "geo-map",
+            "label": "GeoMap",
+            "icon": "globe"
           }
         ]
       },

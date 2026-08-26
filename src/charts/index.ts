@@ -26,4 +26,5 @@ export * from "./radial-bar-chart/radial-bar-chart.js";
 export * from "./funnel-chart/funnel-chart.js";
 export * from "./radar-chart/radar-chart.js";
 export * from "./treemap/treemap.js";
+export * from "./geo-map/geo-map.js";
 export type { ChartSeries, StackedSegment } from "./shared/types.js";

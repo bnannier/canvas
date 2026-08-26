@@ -996,6 +996,12 @@ import e_charts_gauge_example_1 from "./examples/charts/gauge/example-1";
 import e_charts_gauge_example_2 from "./examples/charts/gauge/example-2";
 import e_charts_gauge_dont_0_do from "./examples/charts/gauge/dont-0-do";
 import e_charts_gauge_dont_0_dont from "./examples/charts/gauge/dont-0-dont";
+import e_charts_geo_map_example_0 from "./examples/charts/geo-map/example-0";
+import e_charts_geo_map_example_1 from "./examples/charts/geo-map/example-1";
+import e_charts_geo_map_example_2 from "./examples/charts/geo-map/example-2";
+import e_charts_geo_map_example_3 from "./examples/charts/geo-map/example-3";
+import e_charts_geo_map_dont_0_do from "./examples/charts/geo-map/dont-0-do";
+import e_charts_geo_map_dont_0_dont from "./examples/charts/geo-map/dont-0-dont";
 import e_charts_heatmap_example_0 from "./examples/charts/heatmap/example-0";
 import e_charts_heatmap_example_1 from "./examples/charts/heatmap/example-1";
 import e_charts_heatmap_dont_0_do from "./examples/charts/heatmap/dont-0-do";
@@ -2516,6 +2522,19 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
     ],
     donts: [
       { title: "Gauge", do: { caption: "Put a muted track behind the value arc, the percent readout in the semicircle's open center, and the label below the graphic.", code: "<Card padded style={{ maxWidth: 200 }}>\n  <Column alignCenter>\n    <Gauge value={72} label=\"Uptime\" />\n  </Column>\n</Card>\n", render: e_charts_gauge_dont_0_do }, dont: { caption: "An arc with no track and no number: there is no baseline to read the fill against and no exact value.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 200, alignItems: \"center\" }}>\n  <View style={{ borderRadius: 9999, borderWidth: 8, borderColor: tokens.primary, height: 120, width: 120 }} />\n</View>\n", render: e_charts_gauge_dont_0_dont } },
+    ],
+  },
+  "geo-map": {
+    dir: "geo-map",
+    category: "charts",
+    examples: [
+      { label: "Default", code: "<GeoMap\n  title=\"Active installs\"\n  style={{ maxWidth: 560 }}\n  points={[\n    { label: \"San Francisco\", lat: 37.7749, lng: -122.4194, count: 4820 },\n    { label: \"New York\", lat: 40.7128, lng: -74.006, count: 6310 },\n    { label: \"Sao Paulo\", lat: -23.5505, lng: -46.6333, count: 2140 },\n    { label: \"London\", lat: 51.5072, lng: -0.1276, count: 5170 },\n    { label: \"Lagos\", lat: 6.5244, lng: 3.3792, count: 980 },\n    { label: \"Berlin\", lat: 52.52, lng: 13.405, count: 2650 },\n    { label: \"Bengaluru\", lat: 12.9716, lng: 77.5946, count: 3890 },\n    { label: \"Singapore\", lat: 1.3521, lng: 103.8198, count: 1420 },\n    { label: \"Tokyo\", lat: 35.6895, lng: 139.6917, count: 3110 },\n    { label: \"Sydney\", lat: -33.8688, lng: 151.2093, count: 1260 },\n  ]}\n/>", render: e_charts_geo_map_example_0 },
+      { label: "Compact", code: "<GeoMap\n  compact\n  title=\"Edge nodes\"\n  points={[\n    { label: \"Ashburn\", lat: 39.0438, lng: -77.4874, count: 42 },\n    { label: \"Frankfurt\", lat: 50.1109, lng: 8.6821, count: 36 },\n    { label: \"Mumbai\", lat: 19.076, lng: 72.8777, count: 18 },\n    { label: \"Sydney\", lat: -33.8688, lng: 151.2093, count: 9 },\n  ]}\n/>", render: e_charts_geo_map_example_1 },
+      { label: "Inspected", code: "<GeoMap\n  title=\"Support tickets\"\n  defaultSelected={1}\n  style={{ maxWidth: 560 }}\n  points={[\n    { label: \"Toronto\", lat: 43.6532, lng: -79.3832, count: 310 },\n    { label: \"Dublin\", lat: 53.3498, lng: -6.2603, count: 940 },\n    { label: \"Cape Town\", lat: -33.9249, lng: 18.4241, count: 220 },\n    { label: \"Seoul\", lat: 37.5665, lng: 126.978, count: 470 },\n  ]}\n/>", render: e_charts_geo_map_example_2 },
+      { label: "Formatted counts", code: "<GeoMap\n  title=\"Bandwidth served\"\n  formatValue={(v) => `${v} TB`}\n  style={{ maxWidth: 560 }}\n  points={[\n    { label: \"Los Angeles\", lat: 34.0522, lng: -118.2437, count: 88 },\n    { label: \"Amsterdam\", lat: 52.3676, lng: 4.9041, count: 64 },\n    { label: \"Nairobi\", lat: -1.2921, lng: 36.8219, count: 12 },\n    { label: \"Santiago\", lat: -33.4489, lng: -70.6693, count: 21 },\n    { label: \"Osaka\", lat: 34.6937, lng: 135.5023, count: 39 },\n  ]}\n/>", render: e_charts_geo_map_example_3 },
+    ],
+    donts: [
+      { title: "GeoMap", do: { caption: "Plot a modest number of places whose counts really differ, so the area encoding has something to say.", code: "<GeoMap\n  title=\"Signups by city\"\n  style={{ maxWidth: 560 }}\n  points={[\n    { label: \"London\", lat: 51.5072, lng: -0.1276, count: 5170 },\n    { label: \"Bengaluru\", lat: 12.9716, lng: 77.5946, count: 3890 },\n    { label: \"Sao Paulo\", lat: -23.5505, lng: -46.6333, count: 2140 },\n    { label: \"Lagos\", lat: 6.5244, lng: 3.3792, count: 980 },\n  ]}\n/>", render: e_charts_geo_map_dont_0_do }, dont: { caption: "Places that all carry the same count draw identical bubbles, so the map costs a lot of space to say nothing; rank them in a BarList instead.", code: "<GeoMap\n  style={{ maxWidth: 560 }}\n  points={[\n    { label: \"London\", lat: 51.5072, lng: -0.1276, count: 100 },\n    { label: \"Paris\", lat: 48.8566, lng: 2.3522, count: 100 },\n    { label: \"Madrid\", lat: 40.4168, lng: -3.7038, count: 100 },\n    { label: \"Rome\", lat: 41.9028, lng: 12.4964, count: 100 },\n  ]}\n/>", render: e_charts_geo_map_dont_0_dont } },
     ],
   },
   "heatmap": {
