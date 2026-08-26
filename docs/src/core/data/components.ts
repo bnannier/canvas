@@ -756,7 +756,7 @@ export const COMPONENTS: ComponentDoc[] = [
   {
     slug: "geo-map",
     name: "GeoMap",
-    description: "A world map with a bubble per place, its area proportional to the count, over precomputed coastlines and country borders.",
+    description: "A world map with a bubble per place, its area proportional to the count, over precomputed coastlines and country borders. Optionally zoomable, aggregating crowded places into one bubble that splits as you zoom in.",
     category: "Charts",
     stageAlign: "start",
   },
