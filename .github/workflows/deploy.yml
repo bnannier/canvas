@@ -56,7 +56,7 @@ on:
       npm:
         # Defaults to FALSE unlike the others: this publishes a real, public, immutable
         # release, so it must be opted into deliberately rather than left ticked.
-        description: "Publish @nannier/canvas to npm"
+        description: "Publish @nannier-com/canvas to npm"
         type: boolean
         default: false
       ios:
@@ -273,7 +273,7 @@ jobs:
       - name: Block automatic major releases
         id: major_guard
         run: |
-          major=$(grep -lE "^['\"]?@nannier/canvas['\"]?:[[:space:]]*major" .changeset/*.md 2>/dev/null | wc -l | tr -d ' ')
+          major=$(grep -lE "^['\"]?@nannier-com/canvas['\"]?:[[:space:]]*major" .changeset/*.md 2>/dev/null | wc -l | tr -d ' ')
           echo "major=$major" >> "$GITHUB_OUTPUT"
           if [ "$major" != "0" ] && [ "${{ github.event_name }}" = "push" ]; then
             echo "blocked=true" >> "$GITHUB_OUTPUT"
@@ -347,6 +347,10 @@ jobs:
         if: steps.major_guard.outputs.blocked != 'true'
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          # Both scopes: the kit publishes as @nannier-com/canvas, and the old
+          # @nannier line stays so the deprecation of the former name (see
+          # npm-deprecate.yml) keeps resolving against the same registry.
+          echo "@nannier-com:registry=https://registry.npmjs.org" >> .npmrc
           echo "@nannier:registry=https://registry.npmjs.org" >> .npmrc
 
       # Runs UNCONDITIONALLY (not gated on pending changesets): publish is
@@ -376,9 +380,9 @@ jobs:
             if [ "${{ steps.has_changesets.outputs.count }}" = "0" ]; then
               echo "No pending changesets, so nothing was published. Current version is \`$version\`."
             else
-              echo "Published **@nannier/canvas@$version**"
+              echo "Published **@nannier-com/canvas@$version**"
               echo ""
-              echo "- [View on npm](https://www.npmjs.com/package/@nannier/canvas/v/$version)"
+              echo "- [View on npm](https://www.npmjs.com/package/@nannier-com/canvas/v/$version)"
               echo "- [Release tag](https://github.com/${{ github.repository }}/releases/tag/v$version)"
             fi
           } >> "$GITHUB_STEP_SUMMARY"

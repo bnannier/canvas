@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   numbered
   language="tsx"
   highlightLines={["4-5"]}
-  code={`import { Button } from "@nannier/canvas";
+  code={`import { Button } from "@nannier-com/canvas";
 
 export function Cta() {
   const label = getLabel();

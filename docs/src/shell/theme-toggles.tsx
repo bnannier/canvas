@@ -1,4 +1,4 @@
-import { View, Text, Row, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@nannier/canvas";
+import { View, Text, Row, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@nannier-com/canvas";
 import { useDocsTheme } from "../theme/docs-theme";
 import { geist } from "../ui/fonts";
 

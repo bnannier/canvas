@@ -1,4 +1,4 @@
-import { View, Text, Row, Column, useTheme, alpha } from "@nannier/canvas";
+import { View, Text, Row, Column, useTheme, alpha } from "@nannier-com/canvas";
 import Svg, { Polyline, LinearGradient, Stop, Defs, Rect } from "react-native-svg";
 import { geist } from "../ui/fonts";
 import { CanvasMark } from "../brand/canvas-mark";

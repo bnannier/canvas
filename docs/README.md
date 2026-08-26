@@ -1,7 +1,7 @@
 # Canvas docs — native (Expo Router)
 
 The universal Canvas documentation app. One Expo Router codebase renders the docs on
-iOS, Android, and the web. It consumes the source-only `@nannier/canvas` library as a
+iOS, Android, and the web. It consumes the source-only `@nannier-com/canvas` library as a
 **live symlink**, created by `postinstall` (`scripts/link-sources.mjs`) — bun copies
 `file:` deps, which would freeze a stale snapshot, so we symlink instead. The generated
 docs core lives in-tree at `src/core`.

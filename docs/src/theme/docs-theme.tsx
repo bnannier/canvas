@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Appearance, Platform, useColorScheme } from "react-native";
 import { useGlobalSearchParams } from "expo-router";
-import { ThemeProvider, type Surface } from "@nannier/canvas";
+import { ThemeProvider, type Surface } from "@nannier-com/canvas";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light
 // and glass/solid boolean axes; this holds that state and exposes setters to the toggles, so the

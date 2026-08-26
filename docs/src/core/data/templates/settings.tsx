@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Tabs, Input, Select, Switch, Divider, useFormFactor, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Tabs, Input, Select, Switch, Divider, useFormFactor, useToast } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Workspace settings built from real Canvas components: a vertical Tabs rail

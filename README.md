@@ -1,10 +1,10 @@
-# @nannier/canvas
+# @nannier-com/canvas
 
 **One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
 
 ![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/bnannier/canvas/main/.github/assets/hero.gif)
 
-[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
+[![npm](https://img.shields.io/npm/v/@nannier-com/canvas.svg)](https://www.npmjs.com/package/@nannier-com/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
 
 **Try it live:** the [component catalog](https://canvas.nannier.com/components) renders all 81 components (atoms, molecules, organisms, and a full chart family) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
@@ -13,7 +13,7 @@ Write your screen once and it runs everywhere. Canvas is built entirely from Rea
 ## Install
 
 ```bash
-npm install @nannier/canvas
+npm install @nannier-com/canvas
 ```
 
 Canvas ships compiled (no build step in your app) and declares three **required** peer dependencies you install alongside it:
@@ -39,10 +39,10 @@ npm install react-native-qrcode-svg expo-glass-effect expo-blur
 
 ## Quick start
 
-Wrap your app once in `ThemeProvider`, then compose components imported from `@nannier/canvas`. The provider supplies the active color scheme, surface, and token map to every component below it.
+Wrap your app once in `ThemeProvider`, then compose components imported from `@nannier-com/canvas`. The provider supplies the active color scheme, surface, and token map to every component below it.
 
 ```jsx
-import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@nannier/canvas";
+import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@nannier-com/canvas";
 
 export default function App() {
   return (
@@ -113,7 +113,7 @@ const brand = { primary: "#7c3aed" };
 
 Full docs, live examples, and the complete prop reference live at **<https://canvas.nannier.com/>**.
 
-The kit exports 60+ components across atoms, molecules, and organisms, all from `@nannier/canvas`:
+The kit exports 60+ components across atoms, molecules, and organisms, all from `@nannier-com/canvas`:
 
 - **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Autocomplete, Listbox.
 - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown, Action Sheet, Toast, Command palette.

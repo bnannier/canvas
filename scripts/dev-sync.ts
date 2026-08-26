@@ -5,7 +5,7 @@ import { dirname, join, resolve } from "node:path";
 /**
  * Mirrors the kit's build output into every locally linked consumer.
  *
- * Consumers register themselves by overlaying `node_modules/@nannier/canvas`
+ * Consumers register themselves by overlaying `node_modules/@nannier-com/canvas`
  * with a copy of this checkout's build output, stamped with an `.origin` file
  * naming the checkout (their postinstall does this). The overlay is a real
  * directory rather than a symlink because Next 16 Turbopack refuses to
@@ -47,20 +47,34 @@ function candidateDirs(): string[] {
 	return out;
 }
 
+// Both scopes are probed while the @nannier -> @nannier-com migration is in
+// flight: a consumer that has already moved overlays @nannier-com/canvas, one
+// that has not still overlays the old scope, and this watcher must feed
+// either without the operator noticing a difference. Probing only one scope
+// fails SILENTLY (no overlay found, nothing synced, no error), which is the
+// worst failure mode this script has. Drop the legacy entry once every
+// consumer has migrated.
+const OVERLAY_SCOPES = [
+	["@nannier-com", "canvas"],
+	["@nannier", "canvas"],
+] as const;
+
 function findConsumers(): Consumer[] {
 	const consumers: Consumer[] = [];
 	for (const dir of candidateDirs()) {
-		const overlay = join(dir, "node_modules", "@nannier", "canvas");
-		try {
-			if (lstatSync(overlay).isSymbolicLink()) continue;
-			// `.origin` names the checkout the overlay was built from; only sync
-			// overlays that came from THIS checkout (a registry install has no
-			// .origin and is never written to).
-			const origin = readFileSync(join(overlay, ".origin"), "utf8").trim();
-			if (realpathSync(origin) !== realpathSync(ROOT)) continue;
-			consumers.push({ name: dir.split("/").pop() ?? dir, target: overlay });
-		} catch {
-			// No overlay (or no readable .origin): not a consumer right now.
+		for (const [scope, name] of OVERLAY_SCOPES) {
+			const overlay = join(dir, "node_modules", scope, name);
+			try {
+				if (lstatSync(overlay).isSymbolicLink()) continue;
+				// `.origin` names the checkout the overlay was built from; only sync
+				// overlays that came from THIS checkout (a registry install has no
+				// .origin and is never written to).
+				const origin = readFileSync(join(overlay, ".origin"), "utf8").trim();
+				if (realpathSync(origin) !== realpathSync(ROOT)) continue;
+				consumers.push({ name: dir.split("/").pop() ?? dir, target: overlay });
+			} catch {
+				// No overlay (or no readable .origin): not a consumer right now.
+			}
 		}
 	}
 	return consumers;

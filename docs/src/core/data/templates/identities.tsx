@@ -14,7 +14,7 @@ import {
   Divider,
   Icon,
   useToast,
-} from "@nannier/canvas";
+} from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // The canonical list view built from real Canvas components: a page header with

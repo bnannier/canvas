@@ -1,5 +1,5 @@
-import * as Canvas from "@nannier/canvas";
-import type { ColorTokens } from "@nannier/canvas";
+import * as Canvas from "@nannier-com/canvas";
+import type { ColorTokens } from "@nannier-com/canvas";
 import { PLATFORM_SKINS } from "./platform-skins";
 import { Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen, AppShell } from "./live-state";
 import { applyResolvedPhotos } from "./photos";

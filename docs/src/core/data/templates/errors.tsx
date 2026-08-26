@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Alert, Emblem, EmptyState, Icon, useToast } from "@nannier/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Alert, Emblem, EmptyState, Icon, useToast } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Error and empty states built from real Canvas components: the honest 404 and

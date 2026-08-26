@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, Button, Badge, Calendar, Divider, Icon, useFormFactor, useToast } from "@nannier/canvas";
+import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, Button, Badge, Calendar, Divider, Icon, useFormFactor, useToast } from "@nannier-com/canvas";
 import type { TemplateDoc } from "../types";
 
 // Month-view calendar built from real Canvas components: the Calendar organism
