@@ -545,20 +545,10 @@
         "plannedIn": "unscheduled",
         "reason": "Masking plus a reveal toggle the field owns. Canvas has `masked` on InputOTP only, so every caller currently wires its own eye button."
       },
-      "onBlur": {
-        "kind": "open-gap",
-        "plannedIn": "phase-4",
-        "reason": "Needed by the validation display gate, which reports on blur."
-      },
       "minLength": {
         "kind": "open-gap",
         "plannedIn": "phase-4",
         "reason": "Part of the validation rule chain."
-      },
-      "maxLength": {
-        "kind": "open-gap",
-        "plannedIn": "phase-4",
-        "reason": "Part of the validation rule chain (a reporting rule, not a hard cap)."
       },
       "pattern": {
         "kind": "open-gap",
@@ -982,13 +972,6 @@
         "reason": "Canvas's tab state is `active`/`defaultActive`/`onChange`."
       }
     },
-    "Textarea": {
-      "maxLength": {
-        "kind": "open-gap",
-        "plannedIn": "phase-4",
-        "reason": "Part of the validation rule chain; Textarea already uses maxLength for `showCount` but not as a reporting rule."
-      }
-    },
     "Toast": {
       "title": {
         "kind": "renamed",
@@ -1002,11 +985,6 @@
       }
     },
     "Tooltip": {
-      "children": {
-        "kind": "open-gap",
-        "plannedIn": "unscheduled",
-        "reason": "Wrapping an arbitrary node as the tooltip target. Canvas's Tooltip renders its own trigger from a `trigger` string in one of three flavors (button, icon button, inline word) and cannot attach to a caller's node."
-      },
       "reveal": {
         "kind": "open-gap",
         "plannedIn": "unscheduled",
