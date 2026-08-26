@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { StyleSheet } from "react-native";
-import Svg, { Circle, Path } from "react-native-svg";
+import Svg, { Circle, G, Path } from "react-native-svg";
 import {
   View,
   Text,
@@ -18,6 +19,7 @@ import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../s
 import { formatCompact } from "../shared/chart-math.js";
 import { projectNaturalEarth } from "./geo-map.projection.js";
 import { WORLD_BORDER_PATH, WORLD_LAND_PATH, WORLD_VIEW_BOX } from "./geo-map.world.js";
+import { WORLD_CAMERA, geoMapMatrix, geoMapPlace } from "./geo-map.camera.js";
 
 // Shared GeoMap shell. A world map in the Natural Earth I projection: the land
 // silhouette is ONE muted path and the shared country boundaries are ONE stroked
@@ -222,7 +224,8 @@ export function createGeoMap(skin: ChartSkin) {
     );
 
     // Every bubble in viewBox units: the same space the land path is drawn in.
-    const placed = geoMapBubbles(points);
+    const camera = WORLD_CAMERA;
+    const placed = geoMapPlace(geoMapBubbles(points), camera);
 
     // Press-to-inspect: pressing a bubble flags its count and dims the rest.
     const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
@@ -243,6 +246,41 @@ export function createGeoMap(skin: ChartSkin) {
     const height = width / GEO_MAP_ASPECT;
     // viewBox units -> px, for the RN layers positioned over the Svg.
     const scale = width / WORLD_VIEW_BOX.width;
+
+    // The map's two paths, hoisted out of the render. On iOS and Android a
+    // re-render re-parses the `d` string, and the land alone is 12,032 points, so
+    // they are rebuilt only when a colour they actually draw with moves. Panning
+    // and zooming change the GROUP's transform instead, which costs nothing.
+    const world = useMemo(
+      () => (
+        <>
+          {/* The land, as one path in the generated viewBox's units. The
+              ocean is the chart surface itself, so both sides of the
+              coastline follow the scheme with no second fill. */}
+          <Path
+            d={WORLD_LAND_PATH}
+            fill={tokens.muted}
+            stroke={tokens["muted-foreground"]}
+            strokeWidth={COASTLINE_WIDTH}
+            strokeOpacity={COASTLINE_OPACITY}
+            strokeLinejoin="round"
+          />
+          {/* The shared country boundaries, as one STROKED path. Its
+              subpaths are open lines, not rings, so it must never take a
+              fill: the generator excludes coastlines from this mesh
+              precisely because the path above already draws them. */}
+          <Path
+            d={WORLD_BORDER_PATH}
+            fill="none"
+            stroke={tokens["muted-foreground"]}
+            strokeWidth={BORDER_WIDTH}
+            strokeOpacity={BORDER_OPACITY}
+            strokeLinejoin="round"
+          />
+        </>
+      ),
+      [tokens.muted, tokens["muted-foreground"]],
+    );
 
     return (
       <View
@@ -271,29 +309,10 @@ export function createGeoMap(skin: ChartSkin) {
           {measured ? (
             <>
               <Svg width={width} height={height} viewBox={`0 0 ${WORLD_VIEW_BOX.width} ${WORLD_VIEW_BOX.height}`}>
-                {/* The land, as one path in the generated viewBox's units. The
-                    ocean is the chart surface itself, so both sides of the
-                    coastline follow the scheme with no second fill. */}
-                <Path
-                  d={WORLD_LAND_PATH}
-                  fill={tokens.muted}
-                  stroke={tokens["muted-foreground"]}
-                  strokeWidth={COASTLINE_WIDTH}
-                  strokeOpacity={COASTLINE_OPACITY}
-                  strokeLinejoin="round"
-                />
-                {/* The shared country boundaries, as one STROKED path. Its
-                    subpaths are open lines, not rings, so it must never take a
-                    fill: the generator excludes coastlines from this mesh
-                    precisely because the path above already draws them. */}
-                <Path
-                  d={WORLD_BORDER_PATH}
-                  fill="none"
-                  stroke={tokens["muted-foreground"]}
-                  strokeWidth={BORDER_WIDTH}
-                  strokeOpacity={BORDER_OPACITY}
-                  strokeLinejoin="round"
-                />
+                {/* Only the MAP is drawn through the camera. Bubbles are placed
+                    by geoMapPlace and drawn outside this group, so their radii are
+                    never scaled by the zoom and the area encoding is safe. */}
+                <G transform={geoMapMatrix(camera)}>{world}</G>
                 {points.map((p, i) => (
                   <Circle
                     key={p.id ?? i}
