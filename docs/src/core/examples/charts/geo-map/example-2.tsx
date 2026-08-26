@@ -6,14 +6,20 @@ export default function Example(scope: ExampleScope) {
   const { GeoMap } = scope;
   return (
 <GeoMap
-  title="Support tickets"
-  defaultSelected={1}
+  zoomable
+  title="Sessions by city"
   style={{ maxWidth: 560 }}
   points={[
-    { label: "Toronto", lat: 43.6532, lng: -79.3832, count: 310 },
-    { label: "Dublin", lat: 53.3498, lng: -6.2603, count: 940 },
-    { label: "Cape Town", lat: -33.9249, lng: 18.4241, count: 220 },
-    { label: "Seoul", lat: 37.5665, lng: 126.978, count: 470 },
+    { label: "San Francisco", lat: 37.7749, lng: -122.4194, count: 4820 },
+    { label: "Oakland", lat: 37.8044, lng: -122.2712, count: 1100 },
+    { label: "San Jose", lat: 37.3382, lng: -121.8863, count: 2400 },
+    { label: "Sacramento", lat: 38.5816, lng: -121.4944, count: 700 },
+    { label: "London", lat: 51.5072, lng: -0.1276, count: 5170 },
+    { label: "Paris", lat: 48.8566, lng: 2.3522, count: 3100 },
+    { label: "Brussels", lat: 50.8503, lng: 4.3517, count: 900 },
+    { label: "Amsterdam", lat: 52.3676, lng: 4.9041, count: 1400 },
+    { label: "Berlin", lat: 52.52, lng: 13.405, count: 2650 },
+    { label: "Tokyo", lat: 35.6895, lng: 139.6917, count: 3110 },
   ]}
 />
   );

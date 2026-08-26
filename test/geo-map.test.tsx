@@ -380,6 +380,77 @@ describe("GeoMap zoomable", () => {
     expect(container.querySelector('[aria-label="Zoom in"]')).toBeNull();
   });
 
+  it("zooms on the wheel, about the pointer", () => {
+    const seen: number[] = [];
+    const { container } = ui(<GeoMap zoomable title="Installs" points={BAY} onZoomChange={(z) => seen.push(z)} />);
+    const plot = container.querySelector('[role="img"]')! as HTMLElement;
+    fireLayout(plot, 480);
+    plot.getBoundingClientRect = () =>
+      ({ x: 0, y: 0, width: 480, height: 480 / GEO_MAP_ASPECT, top: 0, left: 0, right: 480, bottom: 480 / GEO_MAP_ASPECT, toJSON: () => ({}) }) as DOMRect;
+
+    const wheel = new WheelEvent("wheel", { deltaY: -320, cancelable: true, bubbles: true });
+    Object.defineProperty(wheel, "clientX", { value: 240, configurable: true });
+    Object.defineProperty(wheel, "clientY", { value: 120, configurable: true });
+    fireEvent(plot, wheel);
+    // One doubling of travel is one doubling of zoom.
+    expect(seen).toEqual([2]);
+    // happy-dom reports defaultPrevented for a passive listener too, so this can
+    // only show the gesture was CLAIMED, never that the page did not scroll. That
+    // half is verified in a real browser.
+    expect(wheel.defaultPrevented).toBe(true);
+  });
+
+  it("accumulates wheel notches that arrive in one frame, as a trackpad sends them", () => {
+    // Every handler reads the camera from a ref that setCamera writes ahead of the
+    // next render. Without that, several events in one tick would each compute
+    // from the same stale camera and collapse into a single step.
+    const seen: number[] = [];
+    const { container } = ui(<GeoMap zoomable title="Installs" points={BAY} onZoomChange={(z) => seen.push(z)} />);
+    const plot = container.querySelector('[role="img"]')! as HTMLElement;
+    fireLayout(plot, 480);
+    plot.getBoundingClientRect = () =>
+      ({ x: 0, y: 0, width: 480, height: 250, top: 0, left: 0, right: 480, bottom: 250, toJSON: () => ({}) }) as DOMRect;
+
+    for (let i = 0; i < 2; i += 1) {
+      const wheel = new WheelEvent("wheel", { deltaY: -320, cancelable: true, bubbles: true });
+      Object.defineProperty(wheel, "clientX", { value: 240, configurable: true });
+      Object.defineProperty(wheel, "clientY", { value: 120, configurable: true });
+      fireEvent(plot, wheel);
+    }
+    expect(seen).toEqual([2, 4]);
+  });
+
+  it("hands back a wheel gesture it cannot act on, so the page keeps scrolling", () => {
+    const seen: number[] = [];
+    const { container } = ui(<GeoMap zoomable title="Installs" points={BAY} onZoomChange={(z) => seen.push(z)} />);
+    const plot = container.querySelector('[role="img"]')! as HTMLElement;
+    fireLayout(plot, 480);
+    plot.getBoundingClientRect = () =>
+      ({ x: 0, y: 0, width: 480, height: 250, top: 0, left: 0, right: 480, bottom: 250, toJSON: () => ({}) }) as DOMRect;
+
+    // Already at 1x: scrolling further out changes nothing, so the notch is the
+    // page's to keep.
+    const wheel = new WheelEvent("wheel", { deltaY: 320, cancelable: true, bubbles: true });
+    Object.defineProperty(wheel, "clientX", { value: 240, configurable: true });
+    Object.defineProperty(wheel, "clientY", { value: 120, configurable: true });
+    fireEvent(plot, wheel);
+    expect(seen).toEqual([]);
+    expect(wheel.defaultPrevented).toBe(false);
+  });
+
+  it("never binds a wheel listener on a map that is not zoomable", () => {
+    const seen: number[] = [];
+    const { container } = ui(<GeoMap title="Installs" points={BAY} onZoomChange={(z) => seen.push(z)} />);
+    const plot = container.querySelector('[role="img"]')! as HTMLElement;
+    fireLayout(plot, 480);
+    plot.getBoundingClientRect = () =>
+      ({ x: 0, y: 0, width: 480, height: 250, top: 0, left: 0, right: 480, bottom: 250, toJSON: () => ({}) }) as DOMRect;
+    const wheel = new WheelEvent("wheel", { deltaY: -320, cancelable: true, bubbles: true });
+    fireEvent(plot, wheel);
+    expect(seen).toEqual([]);
+    expect(wheel.defaultPrevented).toBe(false);
+  });
+
   it("keeps the hit layer the last child of the plot, zoomable or not", () => {
     // chart-inspect resolves a mouse press through offsetX, which is TARGET-relative,
     // so the hit layer must stay empty AND last. A control rendered inside the plot
