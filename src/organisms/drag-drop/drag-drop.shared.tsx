@@ -11,7 +11,7 @@ import {
   type RefObject,
 } from "react";
 import { Animated, PanResponder, StyleSheet, AccessibilityInfo, type GestureResponderEvent } from "react-native";
-import { View, Text, useTheme, FOCUS_RESET, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
+import { View, Text, useTheme, isRTL, FOCUS_RESET, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type DragDropSkin } from "./drag-drop.styles.js";
 import {
@@ -314,25 +314,27 @@ export function createDragDrop(skin: DragDropSkin) {
         // order is mount order and goes stale the moment a zone moves (a reordered dashboard
         // cell, a lane the app moved): React reuses the keyed element, so nothing re-registers.
         // The rects measured just above are the live truth, so the cursor sorts by them.
-        return { provider, m: { zoneRects, zoneOrder: order, zoneReadingOrder: zonesInReadingOrder(order, zoneRects), cardsByZone } };
+        return { provider, m: { zoneRects, zoneOrder: order, zoneReadingOrder: zonesInReadingOrder(order, zoneRects, isRTL()), cardsByZone } };
       };
 
-      // The zone's cards (provider-relative, sorted, dragged card removed) plus its main-axis
-      // origin: the inputs both the insertion index and the indicator offset need.
+      // The zone's cards (provider-relative, in data order, dragged card removed) plus the axis
+      // and direction they read along and the zone's own rect: the inputs both the insertion
+      // index and the indicator offset need. `isRTL()` is read here, once per query, so the pure
+      // geometry never has to touch the platform (see drag-drop.geometry.ts).
       const zoneCards = (a: ActiveDrag, zoneId: string) => {
         const horizontal = zones.current.get(zoneId)?.horizontal ?? false;
+        const rtl = isRTL();
         const all = a.cardsByZone.get(zoneId) ?? [];
-        const cards = sortByMainAxis(all.filter((c) => c.id !== a.dragId), horizontal);
-        const zr = a.zoneRects.get(zoneId);
-        const origin = horizontal ? zr?.x ?? 0 : zr?.y ?? 0;
-        return { cards: cards.map((c) => c.rect), horizontal, origin };
+        const cards = sortByMainAxis(all.filter((c) => c.id !== a.dragId), horizontal, rtl);
+        const zone = a.zoneRects.get(zoneId) ?? { x: 0, y: 0, width: 0, height: 0 };
+        return { cards: cards.map((c) => c.rect), horizontal, rtl, zone };
       };
 
       const publishActive = (a: ActiveDrag) => {
         let offset = 0;
         if (a.overZoneId) {
-          const { cards, horizontal, origin } = zoneCards(a, a.overZoneId);
-          offset = insertionOffset(cards, a.index, origin, horizontal, INDICATOR_GAP);
+          const { cards, horizontal, rtl, zone } = zoneCards(a, a.overZoneId);
+          offset = insertionOffset(cards, a.index, zone, horizontal, rtl, INDICATOR_GAP);
         }
         setSnap({
           active: true,
@@ -397,8 +399,8 @@ export function createDragDrop(skin: DragDropSkin) {
             keyboard: false,
           };
           // Seed the index from the pointer's start so the source hole reads correctly.
-          const { cards, horizontal } = zoneCards(a, sourceZoneId);
-          a.index = insertionIndexFor(pointerLocalGrant.x, pointerLocalGrant.y, cards, horizontal);
+          const { cards, horizontal, rtl } = zoneCards(a, sourceZoneId);
+          a.index = insertionIndexFor(pointerLocalGrant.x, pointerLocalGrant.y, cards, horizontal, rtl);
           active.current = a;
           pan.setValue({ x: a.cardLocal.x, y: a.cardLocal.y });
           // Ghost node + size are published now; publishActive keeps them across index changes.
@@ -417,8 +419,8 @@ export function createDragDrop(skin: DragDropSkin) {
         const over = hitTestZone(px, py, a.zoneRects, a.zoneOrder);
         let index = a.index;
         if (over) {
-          const { cards, horizontal } = zoneCards(a, over);
-          index = insertionIndexFor(px, py, cards, horizontal);
+          const { cards, horizontal, rtl } = zoneCards(a, over);
+          index = insertionIndexFor(px, py, cards, horizontal, rtl);
         }
         if (over !== a.overZoneId || index !== a.index) {
           const zoneChanged = over !== a.overZoneId;
@@ -462,13 +464,14 @@ export function createDragDrop(skin: DragDropSkin) {
           const { m } = measured;
           const info = d.info.current;
           const sourceZoneId = d.zoneId;
-          // Sort along the SOURCE ZONE's own main axis, the same axis zoneCards uses, so the
-          // cursor opens on the card's real position. Ranking a horizontal zone down Y says
-          // nothing about the order it reads in: cards of unequal height rank by their tops
-          // rather than left to right, and a row whose tops all agree is a pile of ties that
-          // resolves to whatever order the measure pass happened to build.
+          // Sort along the SOURCE ZONE's own main axis and direction, the same both zoneCards
+          // uses, so the cursor opens on the card's real position. Ranking a horizontal zone
+          // down Y says nothing about the order it reads in: cards of unequal height rank by
+          // their tops rather than along the row, and a row whose tops all agree is a pile of
+          // ties that resolves to whatever order the measure pass happened to build. Under RTL
+          // that row reads right to left, which is why the direction rides along too.
           const horizontal = zones.current.get(sourceZoneId)?.horizontal ?? false;
-          const cards = sortByMainAxis(m.cardsByZone.get(sourceZoneId) ?? [], horizontal);
+          const cards = sortByMainAxis(m.cardsByZone.get(sourceZoneId) ?? [], horizontal, isRTL());
           const sourceIndex = Math.max(0, cards.findIndex((c) => c.id === dragId));
           const a: ActiveDrag = {
             ...m,
@@ -588,8 +591,13 @@ export function createDragDrop(skin: DragDropSkin) {
       api?.getSnapshot ?? getEmpty,
     );
     const isOver = s.active && !disabled && s.overZoneId === id;
+    // `insertionOffset` measures from the zone's LEADING edge along the reading axis, so the
+    // horizontal line anchors with the LOGICAL `insetInlineStart` rather than a physical `left`:
+    // that resolves to the right edge in a right-to-left locale on every platform, with no
+    // branch (in LTR the two are the same property, so nothing about this changes). The vertical
+    // line uses `top`, which never mirrors.
     const indicatorStyle: ViewStyle = horizontal
-      ? { top: INDICATOR_INSET, bottom: INDICATOR_INSET, left: s.insertionOffset - INDICATOR_THICKNESS / 2, width: INDICATOR_THICKNESS }
+      ? { top: INDICATOR_INSET, bottom: INDICATOR_INSET, insetInlineStart: s.insertionOffset - INDICATOR_THICKNESS / 2, width: INDICATOR_THICKNESS }
       : { left: INDICATOR_INSET, right: INDICATOR_INSET, top: s.insertionOffset - INDICATOR_THICKNESS / 2, height: INDICATOR_THICKNESS };
     // Stable context value so subscribed Draggables don't re-render on every provider render.
     const zoneCtx = useMemo(() => ({ zoneId: id, horizontal }), [id, horizontal]);
@@ -701,6 +709,10 @@ export function createDragDrop(skin: DragDropSkin) {
     // Space/Enter drops, Escape cancels. `View` has no native onKeyDown, so it rides in through
     // a cast (a no-op on native, the slider pattern). Between-zone moves use Left/Right; within
     // a single-zone list they fall back to index moves so a lone list still reorders by arrows.
+    // The two horizontal arrows SWAP roles in a right-to-left locale (Right Arrow moves to the
+    // previous item, per the WAI-ARIA practices), the same flip useRovingFocus applies to a
+    // tablist and the Slider applies to its step; Up/Down keep their logical direction because
+    // the block axis never mirrors.
     const s = useSyncExternalStore(
       api?.subscribe ?? noopSubscribe,
       api?.getSnapshot ?? getEmpty,
@@ -712,6 +724,9 @@ export function createDragDrop(skin: DragDropSkin) {
       const d = drag;
       if (!a || !d || disabled) return;
       const multiZone = a.zoneCount() > 1;
+      const back: KeyboardMove = multiZone ? "prevZone" : "prevIndex";
+      const forward: KeyboardMove = multiZone ? "nextZone" : "nextIndex";
+      const rtl = isRTL();
       if (!grabbed) {
         if (event.key === " " || event.key === "Enter" || event.key === "Spacebar") {
           event.preventDefault();
@@ -740,11 +755,11 @@ export function createDragDrop(skin: DragDropSkin) {
           break;
         case "ArrowLeft":
           event.preventDefault();
-          a.moveKeyboardDrag(multiZone ? "prevZone" : "prevIndex");
+          a.moveKeyboardDrag(rtl ? forward : back);
           break;
         case "ArrowRight":
           event.preventDefault();
-          a.moveKeyboardDrag(multiZone ? "nextZone" : "nextIndex");
+          a.moveKeyboardDrag(rtl ? back : forward);
           break;
         default:
           break;
