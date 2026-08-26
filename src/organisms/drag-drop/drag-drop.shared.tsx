@@ -462,7 +462,13 @@ export function createDragDrop(skin: DragDropSkin) {
           const { m } = measured;
           const info = d.info.current;
           const sourceZoneId = d.zoneId;
-          const { cards } = { cards: sortByMainAxis((m.cardsByZone.get(sourceZoneId) ?? []), false) };
+          // Sort along the SOURCE ZONE's own main axis, the same axis zoneCards uses, so the
+          // cursor opens on the card's real position. Ranking a horizontal zone down Y says
+          // nothing about the order it reads in: cards of unequal height rank by their tops
+          // rather than left to right, and a row whose tops all agree is a pile of ties that
+          // resolves to whatever order the measure pass happened to build.
+          const horizontal = zones.current.get(sourceZoneId)?.horizontal ?? false;
+          const cards = sortByMainAxis(m.cardsByZone.get(sourceZoneId) ?? [], horizontal);
           const sourceIndex = Math.max(0, cards.findIndex((c) => c.id === dragId));
           const a: ActiveDrag = {
             ...m,
