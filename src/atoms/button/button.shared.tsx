@@ -32,6 +32,21 @@ export interface ButtonProps {
   accessibilityLabel?: string;
   onPress?: (event: GestureResponderEvent) => void;
   /**
+   * Renders the button as a REAL link on the web: react-native-web gives the
+   * root Pressable an `<a href>`, so middle-click, cmd-click, open-in-new-tab,
+   * and crawlers all see the destination, and assistive tech hears a link.
+   * Native platforms have no anchors and ignore it, so pair `href` with an
+   * `onPress` that runs the same navigation through the host's router. While
+   * `disabled` or `loading` the anchor is suppressed, exactly like `onPress`.
+   */
+  href?: string;
+  /**
+   * Anchor attributes forwarded with `href` on the web (react-native-web's
+   * `hrefAttrs`): `target`, `rel`, `download`. Ignored without `href`, and
+   * everywhere natively.
+   */
+  hrefAttrs?: { target?: "_blank" | "_self"; rel?: string; download?: boolean | string };
+  /**
    * Called when a pointer starts hovering the button. Fires on pointer devices
    * only (web via react-native-web, pointer-equipped iPads/desktops natively);
    * touch never triggers it. For hover-driven disclosure such as Tooltip.
@@ -109,7 +124,7 @@ export function minTargetSlop(minTarget: number, width: number, height: number):
 /** Build a Button component from a platform skin. */
 export function createButton(skin: ButtonSkin) {
   return function Button(props: ButtonProps) {
-    const { children, iconLeft, iconRight, accessibilityLabel, onPress, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
+    const { children, iconLeft, iconRight, accessibilityLabel, onPress, href, hrefAttrs, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
     const { tokens } = useTheme();
     const intent = intentOf(props);
     const size = sizeOf(props);
@@ -139,12 +154,22 @@ export function createButton(skin: ButtonSkin) {
             setHitSlop((prev) => (prev?.top === next?.top && prev?.left === next?.left ? prev : next));
           };
 
+    // A real anchor on the web: react-native-web renders a Pressable carrying
+    // `href` as an `<a>` (and forwards hrefAttrs' target/rel/download), while
+    // native ignores both. Suppressed when disabled/loading, since a disabled
+    // control must not keep navigating through the browser's own anchor
+    // behavior after onPress is already blocked. RN's prop types don't know
+    // these web-forwarded props, hence the narrow spread object below rather
+    // than direct attributes.
+    const anchor = href != null && !(disabled || loading) ? { href, hrefAttrs } : null;
+
     // Outer layout (block/full width + the consumer `style`) lives on the <RippleClip> wrapper,
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
       <RippleClip shape={clipShape} style={[block ? { width: "100%" } : null, style]}>
         <Pressable
+          {...(anchor ?? undefined)}
           onPress={onPress}
           onHoverIn={onHoverIn}
           onHoverOut={onHoverOut}
@@ -154,7 +179,7 @@ export function createButton(skin: ButtonSkin) {
           testID={testID}
           onLayout={onTargetLayout}
           hitSlop={hitSlop}
-          accessibilityRole="button"
+          accessibilityRole={href != null ? "link" : "button"}
           accessibilityLabel={accessibilityLabel}
           accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
           aria-busy={loading ? true : undefined}
